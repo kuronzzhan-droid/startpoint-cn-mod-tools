@@ -2,7 +2,12 @@
 
 自架 **World Flipper 私服**（[startpoint-cn](https://github.com/DontBeAlarmed/startpoint-cn) 模拟器）的本地数据修改器：一个浏览器界面，点鼠标就能改角色词条 / 技能 / 数值 / 立绘语音，并一键发布让客户端拉取更新。**纯 Python 标准库，无任何 pip 依赖。**
 
+> **No game assets. No game data. No official-service bypass.**
+> This repository ships **zero** game content — no client binaries, art, audio, or data packages. It is a local editor for data you legally own, used with a **self-hosted offline** [startpoint-cn](https://github.com/DontBeAlarmed/startpoint-cn) private server for preservation and study. Do **not** use it against official online services or for any commercial purpose.
+
 > ⚠️ 面向自架私服的单机自娱 / 数据保存 / 学习。本仓库**不含任何游戏数据、美术、音频、客户端**——你得自备自己私服的数据包。请勿用于官方在线服务。
+
+首次使用请按 [CHECKLIST.md](CHECKLIST.md) 逐项检查（路径配置 → 启动自检 → 金丝雀发布）。
 
 ---
 
