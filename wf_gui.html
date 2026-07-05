@@ -124,6 +124,8 @@ td.ldesc{color:var(--okfg);font-size:11px;white-space:normal;max-width:250px;lin
 .share.solo{color:var(--faint);cursor:default}
 .sharebox{background:var(--panel);border:1px solid var(--border);border-radius:var(--rs);padding:4px 8px;margin:2px 0;font-size:11.5px}
 .awk-h{color:var(--gold);font-size:11.5px;margin:8px 0 2px;padding:3px 10px;border-left:2px solid var(--gold);background:#2a241533;border-radius:4px;user-select:none}
+.ldr-sep{color:var(--accent,#7aa2f7);font-size:11px;letter-spacing:1px;text-align:center;margin:16px 0 2px;opacity:.8;user-select:none}
+.ldr-h{border-left:3px solid var(--accent,#7aa2f7)}
 #assetBox{display:flex;flex-wrap:wrap;gap:10px}
 .acard{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:9px;width:236px;display:flex;flex-direction:column;gap:5px}
 .acard img{max-width:218px;max-height:170px;object-fit:contain;background:#0c0e13;border-radius:5px;align-self:center}
@@ -341,6 +343,13 @@ td.ldesc{color:var(--okfg);font-size:11px;white-space:normal;max-width:250px;lin
       <section data-t="finder">
         <div class="row">
           <input id="findQ" placeholder="关键字:效果中文 / 角色名 / 词条ID / string_id" style="width:320px">
+          <select id="findKind" title="按来源表筛选:角色能力和队长技分开查">
+            <option value="">全部来源</option>
+            <option value="ability">角色能力</option>
+            <option value="leader_ability">队长技</option>
+            <option value="equipment_enhancement_ability">武器词条</option>
+            <option value="ability_soul">能力魂</option>
+          </select>
           <button id="btnFind">搜索</button>
           <span class="hint" id="findCount"></span>
         </div>
@@ -349,6 +358,13 @@ td.ldesc{color:var(--okfg);font-size:11px;white-space:normal;max-width:250px;lin
       </section>
       <section data-t="newchar">
         <h3>新建角色(克隆模板 → 全新 ID)· 实验功能</h3>
+        <div class="hint" style="border:1px solid #b4484899;background:#3a1d1d55;color:#e8a0a0;padding:8px 11px;border-radius:6px">
+          ⚠ <b>坏档风险</b>:全新 ID 角色属于高危实验,曾多次导致<b>客户端反复闪退与存档损坏</b>
+          (服务端把存档里"客户端造不出的角色"通告给 /load → 进不去游戏;删除角色后存档里的残留引用同样会崩)。
+          务必:①创建前先在「角色资料」页给模板角色<b>拍快照</b>;②发放进存档前先在 admin 导出一份<b>存档备份</b>;
+          ③金丝雀验证(列表→详情→编队→战斗)任何一步不对,立即「删除角色」回滚 + admin 从存档移除;
+          ④实验角色<b>不要留在日常使用的存档</b>里。
+        </div>
         <div class="hint"><b>流程</b>:①填模板与新 ID → 预览 → 创建(写入 ②层 <b>16 张按角色索引的表</b> + ①层,含写入后校验,自动备份) → ②右上角<b>发布</b> → ③<b>重启服务端</b>(start-cn.bat) → ④admin 后台把新 ID 加进存档(邮件/发放,跳过扭蛋) → ⑤进游戏<b>金丝雀验证</b>:角色列表→详情页(立绘/玛纳板)→编队→战斗,有问题就下面「删除角色」回滚 + admin 从存档移除。</div>
         <div class="hint">已覆盖客户端全部 16 张按 character_id 索引的表(角色/词条×6/队长技/文本/数值/觉醒/语音/技能预览/站位/立绘定位/立绘属性/玛纳板/玛纳节点/开板条件/技能升级/抽卡音效)。<b>扭蛋不影响</b>:新角色只是不在任何卡池,用官方邮件/admin 直接发放即可(抽卡音效表已一并克隆,真去抽也不缺)。称号/剧情/任务等进度类表未克隆(不影响显示与战斗,缺了只是没有称号任务)。</div>
         <div class="row">
@@ -605,8 +621,13 @@ async function loadRows(){
       const isAwk=(k==='1'&&lv!==''&&lv!=='0')||k==='2';
       parts[isAwk?'awake':'base'].push({l,desc:(ab.line_descs||[])[i]});
     });
-    const h=document.createElement('div');h.className='abil-h';
-    const label=ab.leader?('队长技'+(data.leader_title?' · '+data.leader_title:'')):('槽位 '+(slotIdx+1));
+    if(ab.leader){ // 队长技与角色能力分区:不同表(124列,无主位开关),视觉隔开防混淆
+      const sep=document.createElement('div');sep.className='ldr-sep';
+      sep.innerHTML='━━ 队长技(leader_ability 表,与上方角色能力分表存储)━━';
+      box.appendChild(sep);
+    }
+    const h=document.createElement('div');h.className='abil-h'+(ab.leader?' ldr-h':'');
+    const label=ab.leader?('队长技'+(data.leader_title?' · '+data.leader_title:'')):('能力 '+(slotIdx+1));
     const cnt=ab.missing?'':` <span class="hint">${parts.base.length} 行${parts.awake.length?' + 觉醒 '+parts.awake.length+' 行':''}</span>`;
     h.innerHTML=`<span class="tri">▾</span>${label} · <b>${ab.ability}</b>`+(ab.missing?' <span class="miss">数据包中不存在</span>':cnt)+(ab.desc?` <span class="desc">${ab.desc}</span>`:'');
     box.appendChild(h);
@@ -1587,12 +1608,16 @@ async function doFind(){
   let r;
   try{r=await api('/search_abilities?q='+encodeURIComponent(q));}
   catch(e){$('#findCount').textContent='';return;}
-  $('#findCount').textContent='命中 '+r.count+(r.count>=150?'(已截断,换更精确的关键字)':'');
+  const kindSel=$('#findKind').value;
+  const KIND_CN={ability:'角色能力',leader_ability:'队长技',equipment_enhancement_ability:'武器',ability_soul:'能力魂'};
+  const shown=kindSel?r.results.filter(e=>e.kind===kindSel):r.results;
+  $('#findCount').textContent='命中 '+shown.length+(kindSel?('/'+r.count+'(已按「'+KIND_CN[kindSel]+'」筛选)'):'')
+    +(r.count>=150?'(已截断,换更精确的关键字)':'');
   const box=$('#findBox');box.innerHTML='';
-  if(!r.results.length){box.innerHTML='<div class="empty">没有命中,试试更短的关键字</div>';return;}
+  if(!shown.length){box.innerHTML='<div class="empty">没有命中'+(kindSel?',试试切回「全部来源」':',试试更短的关键字')+'</div>';return;}
   const tbl=document.createElement('table');
   tbl.innerHTML='<tr><th>词条键</th><th>归属</th><th>游戏效果(全部行)</th><th>共用</th></tr>';
-  r.results.forEach(e=>{
+  shown.forEach(e=>{
     const tr=document.createElement('tr');
     const td0=document.createElement('td');
     const a=document.createElement('span');a.className='findkey';a.textContent=e.key;a.title='点击跳转编辑';
@@ -1604,7 +1629,8 @@ async function doFind(){
     td0.appendChild(cp);
     if(e.sid){const s=document.createElement('div');s.className='hint';s.textContent=e.sid;td0.appendChild(s);}
     tr.appendChild(td0);
-    const td1=document.createElement('td');td1.className='fname';td1.textContent=e.owner+(e.slot?('·槽'+e.slot):'');tr.appendChild(td1);
+    const td1=document.createElement('td');td1.className='fname';
+    td1.textContent=(KIND_CN[e.kind]?'['+KIND_CN[e.kind]+'] ':'')+e.owner+(e.slot?('·槽'+e.slot):'');tr.appendChild(td1);
     const td2=document.createElement('td');td2.className='ldesc';td2.style.maxWidth='560px';td2.textContent=e.desc;tr.appendChild(td2);
     const td3=document.createElement('td');
     const sh=document.createElement('span');
@@ -1629,6 +1655,7 @@ async function doFind(){
 }
 $('#btnFind').onclick=doFind;
 $('#findQ').onkeydown=e=>{if(e.key==='Enter')doFind();};
+$('#findKind').onchange=()=>{if($('#findQ').value.trim())doFind();};
 async function goKey(key){
   if(!guardDirty())return;
   if(key.startsWith('W:')){

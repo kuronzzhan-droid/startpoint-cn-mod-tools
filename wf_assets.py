@@ -23,9 +23,9 @@ from pathlib import Path
 import wf_mod_tool as core
 
 HERE = Path(__file__).resolve().parent
-# 全角色语音 datamine(角色目录 <code>/{ally,battle,home}/*.mp3 + voiceLines.json 台词)。
-# 你自备的语音 dump 目录,用环境变量 WF_VOICE_DUMP 指向它;不设则跳过语音清单(不影响其它功能)。
-VOICE_DUMP = Path(os.environ.get("WF_VOICE_DUMP", str(HERE / "voice_dump")))
+# 全角色语音 datamine(537 角色,ally/battle/home 三分类 + voiceLines.json 台词文本)。
+# 实测游戏路径 = character/<code>/voice/<分类>/<名>.mp3,与 dump 一一对应(fire_dragon 18/18)。
+VOICE_DUMP = Path(os.environ.get("WF_VOICE_DUMP", r"D:\WF\角色语音"))
 
 PNG_REAL = bytes([137, 80, 78, 71, 13, 10, 26, 10])
 PNG_FAKE = bytes([137, 112, 110, 103, 13, 10, 26, 10])

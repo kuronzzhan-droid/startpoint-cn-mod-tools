@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import re
 import shutil
 import sys
@@ -31,9 +30,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import wf_mod_tool as core  # noqa: E402
 
-# CDN 发布目标:你 startpoint-cn 服务端的 .cdn/cn 目录。环境变量 WF_CDN_DIR 指向它;不设则用本工具目录下 .cdn/cn。
-CDN_CN = Path(os.environ["WF_CDN_DIR"]).resolve() if os.environ.get("WF_CDN_DIR")     else Path(__file__).resolve().parent / ".cdn" / "cn"
-CDN_DIFF = CDN_CN / "archive-common-diff"
+ROOT = Path(__file__).resolve().parent.parent
+CDN_DIFF = ROOT / ".cdn" / "cn" / "archive-common-diff"
 WORK = Path(__file__).resolve().parent / "work"
 PENDING = WORK / "sync_pending.json"
 CHANGELOG = WORK / "changelog.jsonl"
@@ -179,9 +177,9 @@ def main() -> None:
     group_defs = {
         "": (store, CDN_DIFF, "production/upload"),
         "medium:": (store.parent / "medium_upload",
-                    CDN_CN / "archive-medium-diff", "production/medium_upload"),
+                    ROOT / ".cdn" / "cn" / "archive-medium-diff", "production/medium_upload"),
         "android:": (store.parent / "android_upload",
-                     CDN_CN / "archive-android-diff", "production/android_upload"),
+                     ROOT / ".cdn" / "cn" / "archive-android-diff", "production/android_upload"),
     }
     grouped: dict[str, list[tuple[Path, str]]] = {k: [] for k in group_defs}
     for rel in rels:

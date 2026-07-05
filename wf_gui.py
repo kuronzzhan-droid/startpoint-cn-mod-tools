@@ -41,10 +41,9 @@ import wf_describe  # noqa: E402  行级中文描述器(逆向布局+枚举直�
 import wf_assets  # noqa: E402    角色资产(立绘/图标/语音)编解码与清单
 import wf_dsl  # noqa: E402       技能 ActionDsl 数值编辑
 
-ROOT = core.project_root()  # WF_PROJECT_ROOT 或本工具目录
+ROOT = Path(__file__).resolve().parent.parent
 _PROFILE = core.resolve_profile(os.environ.get("WF_PROFILE"))
-# ① 层数据目录 = 你服务端的 assets/cdndata。优先级:WF_CDNDATA > profile.cdndata > <ROOT>/assets/cdndata
-CDNDATA = Path(os.environ["WF_CDNDATA"]).resolve() if os.environ.get("WF_CDNDATA")     else (_PROFILE.cdndata if _PROFILE and _PROFILE.cdndata else ROOT / "assets" / "cdndata")
+CDNDATA = (_PROFILE.cdndata if _PROFILE and _PROFILE.cdndata else ROOT / "assets" / "cdndata")
 WORK_DIR = Path(__file__).resolve().parent / "work"
 PENDING_FILE = WORK_DIR / "sync_pending.json"
 
@@ -426,6 +425,44 @@ def _write_with_backup(table: core.OrderedMap, parsed: dict, log_lines: list[str
     return written
 
 
+def _table_row_width(parsed: dict, fallback: int) -> int:
+    """表真实行宽 = 现有行宽度的众数(leader=124 / ability=126)。
+    勿用 schema 的 125:对 leader 多一列、对 ability 少一列,客户端 CSV 解析器
+    要求整表等宽,差一列即 InvalidRowWidth 崩溃(2026-07-06 实锤)。"""
+    cnt: dict[int, int] = {}
+    for rows in parsed.values():
+        for r in rows:
+            cnt[len(r)] = cnt.get(len(r), 0) + 1
+    return max(cnt, key=cnt.get) if cnt else fallback
+
+
+def _fit_row_width(row: list, width: int) -> list:
+    """行宽对齐:短则补空;长且多余尾列全空则裁掉(非空尾列保留并由调用方自查)。"""
+    row = core.normalize_row_length(list(row), width)
+    if len(row) > width and all(x == "" for x in row[width:]):
+        row = row[:width]
+    return row
+
+
+def _remap_cross_table(row: list, src_logical: str, dst_logical: str, dst_rows: list) -> tuple[list, str]:
+    """角色词条(126列)↔队长技(124列)跨表列重排(全表 md §2 铁律):
+    leader = ability 去掉 c1(unisonable)/c2(类别串),其余整体 -2。
+    leader→ability 补 c1=true、c2=目标首行类别(缺省 attack_common);ability→leader 去掉这两列。
+    不重排直接跨表写入会整行错位 2 列 → 客户端 U0000(2026-07-05 实测)。"""
+    if src_logical == dst_logical:
+        return list(row), ""
+    if {src_logical, dst_logical} != {core.ABILITY_LOGICAL, LEADER_LOGICAL}:
+        raise ValueError("跨表列重排仅支持 角色词条<->队长技(武器/魂列图不同,禁止跨表)")
+    if src_logical == LEADER_LOGICAL:
+        cat = ""
+        if dst_rows:
+            r0 = list(dst_rows[0])
+            cat = r0[2] if len(r0) > 2 else ""
+        cat = cat or "attack_common"
+        return [row[0], "true", cat] + list(row[1:]), f"跨表重排 leader→ability(+2 列,补 c1=true c2={cat!r})"
+    return [row[0]] + list(row[3:]), "跨表重排 ability→leader(-2 列,去掉 unisonable/类别串)"
+
+
 def save_row_edits(edits: list[dict], dry_run: bool) -> dict:
     """edits: [{ability, line, index, value}];ability 以 "L:" 开头时写 leader_ability 表。"""
     schema = load_schema()
@@ -434,6 +471,8 @@ def save_row_edits(edits: list[dict], dry_run: bool) -> dict:
     leader = core.load_table(LEADER_LOGICAL, TARGET_STORE, SOURCE_STORE)
     parsed_a = {k: core.read_csv_lines(t) for k, t in table.text_rows().items()}
     parsed_l = {k: core.read_csv_lines(t) for k, t in leader.text_rows().items()}
+    width_a = _table_row_width(parsed_a, len(names))
+    width_l = _table_row_width(parsed_l, len(names))
     log_lines = []
     changes = {"a": 0, "l": 0}
     for e in edits:
@@ -446,7 +485,7 @@ def save_row_edits(edits: list[dict], dry_run: bool) -> dict:
             raise ValueError(f"键不存在: {aid}")
         if line < 1 or line > len(parsed[key]):
             raise ValueError(f"行号越界: {aid} line {line}")
-        row = core.normalize_row_length(parsed[key][line - 1], len(names))
+        row = _fit_row_width(parsed[key][line - 1], width_l if tag == "l" else width_a)
         old = row[idx]
         if old == value:
             continue
@@ -492,14 +531,19 @@ def copy_row(src: dict, dst: dict, preserve_string_id: bool, dry_run: bool) -> d
         raise ValueError(f"来源不存在: {src['key']}")
     if dkey not in dp:
         raise ValueError(f"目标不存在: {dst['key']}")
-    srow = core.normalize_row_length(list(sp[skey][int(src.get("line", 1)) - 1]), len(names))
+    dst_width = _table_row_width(dp, len(names))
+    srow = list(sp[skey][int(src.get("line", 1)) - 1])
+    remap_note = ""
+    if slog != dlog:
+        srow, remap_note = _remap_cross_table(srow, slog, dlog, dp[dkey])
+    srow = _fit_row_width(srow, dst_width)
     sid_idx = idx_by.get("string_id", 0)
     uni_idx = idx_by.get("unisonable", 1)
     # 仅 ability 目标有 unisonable 列(c1);其余表 c1 含义不同,强设 true 会毁坏该行
     if dlog == core.ABILITY_LOGICAL and srow[uni_idx] in ("0", "1", "false", ""):
         srow[uni_idx] = "true"
     mode = dst.get("line", "all")
-    old_rows = [core.normalize_row_length(list(r), len(names)) for r in dp[dkey]]
+    old_rows = [_fit_row_width(r, dst_width) for r in dp[dkey]]
     keep_sid = old_rows[0][sid_idx] if (preserve_string_id and old_rows) else None
     new_row = list(srow)
     if keep_sid is not None:
@@ -517,6 +561,8 @@ def copy_row(src: dict, dst: dict, preserve_string_id: bool, dry_run: bool) -> d
         old_rows[li - 1] = new_row
         action = f"覆盖第 {li} 行"
     log_lines = [f"{src['key']} 行{src.get('line', 1)} -> {dst['key']} ({action})"]
+    if remap_note:
+        log_lines.append("  " + remap_note)
     written = []
     if not dry_run:
         dp[dkey] = old_rows
@@ -552,8 +598,8 @@ def append_line_adapted(src_key: str, src_line: int, dst_key: str, element: str 
     srows = parsed[skey]
     if not (1 <= int(src_line) <= len(srows)):
         raise ValueError(f"来源行号越界: {src_key} 共 {len(srows)} 行")
-    ncols = int(lay["ncols"])
-    row = core.normalize_row_length(list(srows[int(src_line) - 1]), ncols)
+    ncols = _table_row_width(parsed, int(lay["ncols"]))
+    row = _fit_row_width(srows[int(src_line) - 1], ncols)
     log = [f"复制 {src_key} 行{src_line} → {dst_key}(追加为第 {len(parsed[dkey]) + 1} 行)"]
 
     # ---- 目标属性解析 + 元素适配
@@ -651,11 +697,19 @@ def append_ability_lines(src_key: str, dst_key: str, preserve_string_id: bool,
         raise ValueError(f"目标不存在: {dst_key}")
     sid_idx = idx_by.get("string_id", 0)
     uni_idx = idx_by.get("unisonable", 1)
-    dst_rows = [core.normalize_row_length(list(r), len(names)) for r in dp[dkey]]
+    stag = "l" if str(src_key).startswith("L:") else "a"
+    slog_t = LEADER_LOGICAL if stag == "l" else core.ABILITY_LOGICAL
+    dlog_t = LEADER_LOGICAL if dtag == "l" else core.ABILITY_LOGICAL
+    dst_width = _table_row_width(parsed_l if dtag == "l" else parsed_a, len(names))
+    dst_rows = [_fit_row_width(r, dst_width) for r in dp[dkey]]
     keep_sid = dst_rows[0][sid_idx] if (preserve_string_id and dst_rows) else None
     added = []
+    remap_note = ""
     for r in sp[skey]:
-        row = core.normalize_row_length(list(r), len(names))
+        row = list(r)
+        if slog_t != dlog_t:
+            row, remap_note = _remap_cross_table(row, slog_t, dlog_t, dp[dkey])
+        row = _fit_row_width(row, dst_width)
         # 仅 ability 目标有 unisonable 列(c1);leader 表 c1=awake_kind,强设 true 会毁坏该行
         if dtag == "a" and row[uni_idx] in ("0", "1", "false", ""):
             row[uni_idx] = "true"
@@ -665,6 +719,8 @@ def append_ability_lines(src_key: str, dst_key: str, preserve_string_id: bool,
     new_rows = dst_rows + added
     log_lines = [f"{src_key} 全部 {len(added)} 行 -> 追加到 {dst_key}"
                  f"(原 {len(dst_rows)} 行 → 共 {len(new_rows)} 行)"]
+    if remap_note:
+        log_lines.append("  " + remap_note)
     written = None
     if not dry_run:
         dp[dkey] = new_rows
@@ -717,7 +773,7 @@ def transplant_line(src_key: str, src_line: int, dst_key: str, mode: str,
             return parsed_l, "l", str(keystr)[2:]
         return parsed_a, "a", str(keystr)
 
-    sp, _, skey = pick(src_key)
+    sp, stag, skey = pick(src_key)
     dp, dtag, dkey = pick(dst_key)
     if skey not in sp:
         raise ValueError(f"来源不存在: {src_key}")
@@ -727,11 +783,18 @@ def transplant_line(src_key: str, src_line: int, dst_key: str, mode: str,
         raise ValueError(f"来源行越界: {src_key} 共 {len(sp[skey])} 行")
     sid_idx = idx_by.get("string_id", 0)
     uni_idx = idx_by.get("unisonable", 1)
-    new_row = core.normalize_row_length(list(sp[skey][int(src_line) - 1]), len(names))
+    dst_width = _table_row_width(parsed_l if dtag == "l" else parsed_a, len(names))
+    new_row = list(sp[skey][int(src_line) - 1])
+    remap_note = ""
+    if stag != dtag:
+        new_row, remap_note = _remap_cross_table(
+            new_row, LEADER_LOGICAL if stag == "l" else core.ABILITY_LOGICAL,
+            LEADER_LOGICAL if dtag == "l" else core.ABILITY_LOGICAL, dp[dkey])
+    new_row = _fit_row_width(new_row, dst_width)
     # 仅 ability 目标有 unisonable 列(c1);leader 表 c1=awake_kind,强设 true 会毁坏该行
     if dtag == "a" and new_row[uni_idx] in ("0", "1", "false", ""):
         new_row[uni_idx] = "true"
-    dst_rows = [core.normalize_row_length(list(r), len(names)) for r in dp[dkey]]
+    dst_rows = [_fit_row_width(r, dst_width) for r in dp[dkey]]
     if preserve_string_id and dst_rows:
         new_row[sid_idx] = dst_rows[0][sid_idx]
     strip_pairs: list[tuple[int, str]] = []  # (绝对列号, 日志用字段名)
@@ -768,6 +831,8 @@ def transplant_line(src_key: str, src_line: int, dst_key: str, mode: str,
             raise ValueError(f"目标行越界: {li}")
         dst_rows[li - 1] = new_row; action = f"覆盖第 {li} 行"
     log_lines = [f"{src_key} 行{src_line} -> {dst_key} ({action})"]
+    if remap_note:
+        log_lines.append("  " + remap_note)
     if stripped:
         log_lines.append("  清除前置: " + ", ".join(stripped))
     written = None
@@ -831,9 +896,8 @@ def copy_leader_to_slot(from_character: str, to_character: str, slot: int,
     """把 from_character 的队长技(leader_ability 表)复制为 to_character 的第 slot 个词条。
 
     ⚠️ 不安全:leader 表 124 列、ability 表 126 列,头部与块基址不同(全表 §2)。
-    本函数原样搬 leader 行进 ability 键,**未做列重排**,会整体错位 2 列 → 客户端
-    加载/查看时 U0000 崩溃(2026-07-05 已实测)。跨表移植请改用带列重排的路径;
-    队长技效果要给别人,优先 copy_leader_to_leader(同表)或把效果做成 ability 原生行。"""
+    2026-07-06 起已内置 leader→ability 列重排(+2 列,补 c1=true/c2=类别串)+行宽对齐,
+    不再产生错位 2 列的 U0000。仍建议优先 copy_leader_to_leader(同表语义更直观)。"""
     schema = load_schema()
     names = core.schema_names(schema)
     index_by_name = core.schema_index(schema)
@@ -845,8 +909,7 @@ def copy_leader_to_slot(from_character: str, to_character: str, slot: int,
     src_text = leader.text_rows().get(from_character)
     if src_text is None:
         raise ValueError(f"leader_ability 表中没有角色 {from_character}")
-    src_rows = [core.normalize_row_length(r, len(names))
-                for r in core.read_csv_lines(src_text)]
+    src_rows = [list(r) for r in core.read_csv_lines(src_text)]
 
     target_ids = core.ability_ids_for_character(to_character, char_table)
     if not (1 <= int(slot) <= len(target_ids)):
@@ -856,18 +919,24 @@ def copy_leader_to_slot(from_character: str, to_character: str, slot: int,
     if dst_key not in parsed:
         raise ValueError(f"目标词条不存在于数据包: {dst_key}")
 
-    old_rows = [core.normalize_row_length(list(r), len(names)) for r in parsed[dst_key]]
+    dst_width = _table_row_width(parsed, len(names))
+    old_rows = [_fit_row_width(r, dst_width) for r in parsed[dst_key]]
     sid_idx = index_by_name.get("string_id", 0)
     uni_idx = index_by_name.get("unisonable", 1)
-    new_rows = [list(r) for r in src_rows]
     log_lines = []
+    new_rows = []
+    remap_note = ""
+    for r in src_rows:
+        nr, remap_note = _remap_cross_table(r, LEADER_LOGICAL, core.ABILITY_LOGICAL, parsed[dst_key])
+        new_rows.append(_fit_row_width(nr, dst_width))
     for i, row in enumerate(new_rows):
         if preserve_string_id and i < len(old_rows):
             row[sid_idx] = old_rows[i][sid_idx]
-        # leader 表的 unisonable 是 0/1,统一为 true 以免主位限制
         if row[uni_idx] in ("0", "1", "false", ""):
             row[uni_idx] = "true"
     log_lines.append(f"{from_character} 队长技 ({len(new_rows)} 行) -> {dst_key} (槽位 {slot})")
+    if remap_note:
+        log_lines.append("  " + remap_note)
 
     written = None
     if not dry_run:
@@ -899,8 +968,9 @@ def copy_leader_to_leader(from_character: str, to_character: str,
     if to_character not in parsed:
         raise ValueError(f"leader_ability 表中没有目标角色 {to_character}")
     sid_idx = index_by_name.get("string_id", 0)
-    src_rows = [core.normalize_row_length(list(r), len(names)) for r in parsed[from_character]]
-    old_rows = [core.normalize_row_length(list(r), len(names)) for r in parsed[to_character]]
+    lw = _table_row_width(parsed, len(names))
+    src_rows = [_fit_row_width(r, lw) for r in parsed[from_character]]
+    old_rows = [_fit_row_width(r, lw) for r in parsed[to_character]]
     old_sid = old_rows[0][sid_idx] if old_rows else None
     new_rows = [list(r) for r in src_rows]
     if preserve_string_id and old_sid is not None:
@@ -1141,6 +1211,7 @@ def _save_single_table_edits(logical: str, edits: list[dict], dry_run: bool, bak
     names = core.schema_names(schema)
     table = core.load_table(logical, TARGET_STORE, SOURCE_STORE)
     parsed = {k: core.read_csv_lines(t) for k, t in table.text_rows().items()}
+    width = _table_row_width(parsed, len(names))
     log_lines = []
     changes = 0
     for e in edits:
@@ -1149,7 +1220,7 @@ def _save_single_table_edits(logical: str, edits: list[dict], dry_run: bool, bak
             raise ValueError(f"键不存在: {key}")
         if line < 1 or line > len(parsed[key]):
             raise ValueError(f"行号越界: {key} line {line}")
-        row = core.normalize_row_length(parsed[key][line - 1], len(names))
+        row = _fit_row_width(parsed[key][line - 1], width)
         if row[idx] == value:
             continue
         col = names[idx] if idx < len(names) else str(idx)
@@ -1224,7 +1295,7 @@ def mainpos_one(ability: str, line: int, action: str, dry_run: bool) -> dict:
     rows = parsed[str(ability)]
     if not (1 <= int(line) <= len(rows)):
         raise ValueError(f"行号越界: {ability} 共 {len(rows)} 行")
-    row = core.normalize_row_length(rows[int(line) - 1], len(names))
+    row = _fit_row_width(rows[int(line) - 1], _table_row_width(parsed, len(names)))
     log = []
     if action == "on":
         if row[uni] != "false":
@@ -2287,7 +2358,9 @@ def clone_character(src_id: str, new_id: str, new_name: str, dry_run: bool,
         log.append(f"已写入并校验 {len(CLONE_EXTRA_TABLES) + len(CLONE_NESTED_TABLES) + 6} 张按角色索引的表")
     return {"changes": 1, "log": "\n".join(log),
             "written": "; ".join(written) or None, "dry_run": dry_run,
-            "note": "写入后:点「发布并重启游戏」推 ②层 → 重启服务端推 ①层 → admin 发放角色 → 进游戏金丝雀验证"}
+            "note": "⚠ 坏档风险:全新 ID 角色曾导致客户端反复闪退/存档损坏,发放前先备份存档,"
+                    "金丝雀验证不过立即删除角色并从存档移除。"
+                    "写入后:点「发布并重启游戏」推 ②层 → 重启服务端推 ①层 → admin 发放角色 → 进游戏金丝雀验证"}
 
 
 def delete_character(cid: str, dry_run: bool) -> dict:
@@ -2457,6 +2530,7 @@ def rollback_and_publish(name: str) -> dict:
 # ---------------------------------------------------------------- adb sync
 
 ADB_CANDIDATES = [
+    r"D:\WF\MuMuPlayer\nx_main\adb.exe",
     r"C:\Program Files\Netease\MuMuPlayer-12.0\shell\adb.exe",
     r"C:\Program Files\Netease\MuMu Player 12\shell\adb.exe",
     r"C:\Program Files (x86)\Netease\MuMuPlayer-12.0\shell\adb.exe",

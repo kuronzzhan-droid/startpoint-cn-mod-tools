@@ -303,13 +303,8 @@ class VersionProfile:
 
 
 def project_root() -> Path:
-    """profiles.json 里相对路径的基准目录。
-    默认 = 本工具所在目录;设环境变量 WF_PROJECT_ROOT 可覆盖(独立部署时指向你的
-    startpoint-cn 仓库根)。建议:profiles.json 里直接写绝对路径,最省心。"""
-    env = os.environ.get("WF_PROJECT_ROOT")
-    if env:
-        return Path(env).resolve()
-    return Path(__file__).resolve().parent
+    """mod-tools/ 的上一级 = startpoint-cn 仓库根;profiles.json 里的相对路径以此为基准。"""
+    return Path(__file__).resolve().parent.parent
 
 
 def profiles_file() -> Path:
