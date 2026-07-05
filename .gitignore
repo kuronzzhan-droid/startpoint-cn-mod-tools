@@ -1,0 +1,25 @@
+# 个人配置(从 profiles.example.json 复制)
+profiles.json
+
+# 运行时产物:待发布列表 / 改动日志 / 角色快照 / 备份
+work/
+*.bak*
+*.bak-wfmod-*
+__pycache__/
+*.pyc
+
+# 游戏数据 / 资产 dump —— 版权内容,严禁提交!!
+voice_dump/
+*.orderedmap
+弹国服/
+assets/cdndata/
+.cdn/
+decompile/
+*.apk
+*.swf
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
