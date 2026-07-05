@@ -43,10 +43,8 @@ import wf_dsl  # noqa: E402       技能 ActionDsl 数值编辑
 
 ROOT = core.project_root()  # WF_PROJECT_ROOT 或本工具目录
 _PROFILE = core.resolve_profile(os.environ.get("WF_PROFILE"))
-# ① 层数据(character.json / character_text.json)所在目录 = 你服务端的 assets/cdndata。
-# 优先级:环境变量 WF_CDNDATA > profile.cdndata > <ROOT>/assets/cdndata。
-CDNDATA = Path(os.environ["WF_CDNDATA"]).resolve() if os.environ.get("WF_CDNDATA") \
-    else (_PROFILE.cdndata if _PROFILE and _PROFILE.cdndata else ROOT / "assets" / "cdndata")
+# ① 层数据目录 = 你服务端的 assets/cdndata。优先级:WF_CDNDATA > profile.cdndata > <ROOT>/assets/cdndata
+CDNDATA = Path(os.environ["WF_CDNDATA"]).resolve() if os.environ.get("WF_CDNDATA")     else (_PROFILE.cdndata if _PROFILE and _PROFILE.cdndata else ROOT / "assets" / "cdndata")
 WORK_DIR = Path(__file__).resolve().parent / "work"
 PENDING_FILE = WORK_DIR / "sync_pending.json"
 
@@ -2458,12 +2456,11 @@ def rollback_and_publish(name: str) -> dict:
 
 # ---------------------------------------------------------------- adb sync
 
-# adb 仅用于「备用」的直推模拟器功能;正道是「发布」走 CDN,无需 adb。
-# 找不到时设环境变量 WF_ADB 指向你的 adb.exe 即可(MuMu 12 常见安装路径如下)。
 ADB_CANDIDATES = [
     r"C:\Program Files\Netease\MuMuPlayer-12.0\shell\adb.exe",
     r"C:\Program Files\Netease\MuMu Player 12\shell\adb.exe",
     r"C:\Program Files (x86)\Netease\MuMuPlayer-12.0\shell\adb.exe",
+    r"D:\Program Files\Netease\MuMuPlayer-12.0\shell\adb.exe",
     r"C:\Program Files\Netease\MuMuPlayerGlobal-12.0\shell\adb.exe",
 ]
 

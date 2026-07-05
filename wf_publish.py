@@ -31,11 +31,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import wf_mod_tool as core  # noqa: E402
 
-# CDN 发布目标:你 startpoint-cn 服务端的 .cdn/cn 目录(服务端会动态扫描这里的 diff 包)。
-# 用环境变量 WF_CDN_DIR 指向它(如 D:\你的服务端\.cdn\cn 或 /home/you/startpoint-cn/.cdn/cn);
-# 不设则用本工具目录下的 .cdn/cn(方便本地试跑)。
-CDN_CN = Path(os.environ["WF_CDN_DIR"]).resolve() if os.environ.get("WF_CDN_DIR") \
-    else Path(__file__).resolve().parent / ".cdn" / "cn"
+# CDN 发布目标:你 startpoint-cn 服务端的 .cdn/cn 目录。环境变量 WF_CDN_DIR 指向它;不设则用本工具目录下 .cdn/cn。
+CDN_CN = Path(os.environ["WF_CDN_DIR"]).resolve() if os.environ.get("WF_CDN_DIR")     else Path(__file__).resolve().parent / ".cdn" / "cn"
 CDN_DIFF = CDN_CN / "archive-common-diff"
 WORK = Path(__file__).resolve().parent / "work"
 PENDING = WORK / "sync_pending.json"
