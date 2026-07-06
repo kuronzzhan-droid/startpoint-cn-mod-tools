@@ -23,3 +23,7 @@ decompile/
 .idea/
 .DS_Store
 Thumbs.db
+
+# 生成物:路径复原 CSV / 全量导出目录
+*.csv
+export/
