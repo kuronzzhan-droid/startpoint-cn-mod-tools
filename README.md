@@ -39,7 +39,7 @@ python mod-tools/wf_publish.py --tables ability,character_status
 
 | 工具 | 用途 |
 |---|---|
-| `wf_gui.py` + `wf_gui.html` | 网页修改器,分组导航(角色 / 武器 / 全局 / 系统):词条 / 数值 / 技能·倍率 / 资料 / 资产 / 新建角色 / 武器·魂珠 / Boss·副本 / 速查 / 移植 / 配方 / 工具箱 / 日志 / 备份 |
+| `wf_gui.py` + `wf_gui.html` | 网页修改器,分组导航(角色 / 武器 / 全局 / 系统):词条 / 数值 / 技能·倍率(含**效果文件上传**) / 资料 / 资产(含**立绘定位**) / 新建角色 / 武器·魂珠 / Boss·副本 / **特殊效果(unique_condition)** / **商店(Boss币,三处同步)** / 速查 / 移植 / **JSON 直改** / 配方 / 工具箱 / 日志 / 备份 |
 | `wf_mod_tool.py` | 核心引擎:orderedmap(含嵌套表)读写、AMF3 schema 解析、recipe 配方、版本档案 |
 | `wf_publish.py` | 把改动打成增量包发布到服务端 CDN(与官方增量更新同构) |
 | `wf_boss.py` / `wf_quest_lib.py` | Boss 数值 + 22 类副本列表;quest 系三层压缩索引嵌套表读写 |
@@ -50,12 +50,15 @@ python mod-tools/wf_publish.py --tables ability,character_status
 | `wf_decrypt_all.py` | 单文件零依赖版全量解密(不依赖本工具链任何文件,便于独立分发) |
 | `wf_char_editor.py` | ① 层角色资料(名字 / 描述 / 稀有度 / 元素…)编辑 |
 | `wf_scan_masterdata.py` / `wf_extract_paths.py` / `wf_harvest_paths.py` | 数据定位 / 路径逆向 |
+| **[server-patch/](server-patch/)** | **startpoint-cn 服务端增量补丁**:mod-admin 热重载接口(推送服务端/商店同步依赖),更新服务端后按其 README 套回 |
 
 ## 能力总览(② 层可改项)
 
 技能能量(action_skill) · 队长技移植/修改(leader_ability) · 角色词条增删改(ability) ·
 词条主位限制开关(全局 + 单条) · 能力魂(ability_soul) · **武器词条(equipment_enhancement_ability)** ·
-基础数值/觉醒/倍率 · 一键发布到 CDN(客户端只下增量)· **自动改动日志 + 一键回溯**。**移植不崩的规律见下方规律方案。**
+基础数值/觉醒/倍率 · 特殊效果(固有状态)图标+注释含新增 · Boss币商店(②层+cdndata+服务端 json 三处同步) ·
+立绘定位(详情页 pivot/scale + 概览页 face + 内容框按图自动) · 技能效果文件上传(觉醒前后+形态变体,可新建) ·
+任意支持表整键 JSON 直改 · 一键发布到 CDN(客户端只下增量)· 服务端热重载推送 · **自动改动日志 + 一键回溯**。**移植不崩的规律见下方规律方案。**
 端点清单见 [角色改动规律方案.md §7](角色改动规律方案.md) 或 [API.md](API.md)。
 
 ## 文档
