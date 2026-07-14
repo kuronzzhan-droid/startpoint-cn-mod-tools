@@ -73,9 +73,11 @@ mod-tools/
 | `wf_export_assets.py` | 全量解密导出(下载包+bundle → 逻辑路径目录树;GUI 工具箱可跑) |
 | `wf_recover_pathlist.py` | 复原哈希→逻辑路径表 WF_PATHLIST_recovered(GUI 工具箱可跑) |
 | `wf_decrypt_all.py` | 单文件零依赖版全量解密(不依赖本工具链任何文件,便于独立分发) |
+| `wf_rogue_rewards.py` / `wf_rogue_build.py` / `wf_rogue_shop.py` | **深渊连战 roguelike**:自制 rush 活动 700099(每轮不同 boss)+ 15 把专属武装(equipment+ability_soul)+ 深渊代币兑换商店的纯数据生成 |
+| `wf_rogue_banner.py` / `wf_rogue_nerf.py` / `wf_rogue_reroll.py` / `wf_rogue_save.py` | roguelike 运营工具:换专属横幅 / 逐轮修正曲线(boss·炮台 HP·ATK) / 一键重开 / 独立武器池存档 |
 | `wf_char_editor.py` | ① 层角色资料(名字 / 描述 / 稀有度 / 元素…)编辑 |
 | `wf_scan_masterdata.py` / `wf_extract_paths.py` / `wf_harvest_paths.py` | 数据定位 / 路径逆向 |
-| `wf_all_analysis.py` / `wf_unique_mech.py` / `wf_balance_suite.py` 等 | 平衡分析与增强总包(本地工作流;输出报告到 `docs/`) |
+| `wf_unique_mech.py` | 独特机制挖掘与下放分析(输出方案到 `docs/`) |
 
 ## 能力总览(② 层可改项)
 
@@ -100,7 +102,7 @@ mod-tools/
 - **[角色改动规律方案.md](docs/角色改动规律方案.md)** — 改动规律总纲:五表列图、五类改动标准做法、**移植铁律(同属性/别去共鸣/统一sid/跨表重排)**、做不到的边界、效果代码速查、工具能力矩阵。
 - [角色数据逆向与修改指南.md](docs/角色数据逆向与修改指南.md) — 两层数据架构 + HP/ATK / 觉醒破解过程。
 - [版本切换设计.md](docs/版本切换设计.md) — 多版本档案(profile)设计。
-- 其余:形态切换/资产替换/强化弹射逆向结论、Boss 与副本分析、六属性平衡分析(生成物)等,见 `docs/` 目录。
+- 其余:形态切换/资产替换/强化弹射逆向结论、Boss 与副本分析、深渊连战 roguelike 方案等,见 `docs/` 目录。
 
 配套还有一个 Claude Code skill(`.claude/skills/wf-mod/`),把整条工作流固化,便于用 AI 辅助操作。
 
