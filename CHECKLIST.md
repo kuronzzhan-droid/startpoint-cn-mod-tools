@@ -4,7 +4,8 @@
 
 ## 0. 环境
 
-- [ ] `python -V` ≥ **3.10**（用到 `str | None` 语法；无需任何 pip 依赖）
+- [ ] `python -V` ≥ **3.10**（用到 `str | None` 语法）
+- [ ] `pip install -r requirements.txt`（仅 Pillow；不用图像/金丝雀类工具可跳过）
 - [ ] 有一个**已经能跑起来的 startpoint-cn 私服**（本工具只改数据）
 - [ ] 自备数据包：手机端 `WorldFlipper/dummy/download/production/upload` 目录（②层）
 

@@ -40,19 +40,20 @@ python mod-tools/wf_publish.py --tables ability,character_status
 ```
 mod-tools/
 ├── wf_*.py                可执行工具与库,全部平铺在根(同目录互 import;见下表)
-├── *.bat                  Windows 一键入口(wf-gui / 一键平衡包 / 导出 / 采集)
+├── *.bat                  Windows 一键入口(wf-gui / wf-mod)
 ├── README.md / API.md / WF_mod_tool_usage.md      使用文档(留根)
 ├── CN-Mod字段手册.md(.html) / 词条条件代码全表.md   核心参考(全表被 wf_describe 运行时读取)
 ├── ability_enum_map.json / WF_PATHLIST_recovered.txt / HarvestedPaths.csv
 │                          运行时数据(逆向产物,工具按固定文件名读取,勿移动)
 ├── *.csv                  路径/目录采集产物(生成物,可由工具箱重建)
 ├── profiles.json          数据包档案(本地配置;模板见 profiles.example.json)
+├── requirements.txt       pip 依赖(仅 Pillow;图像/金丝雀类工具用)
 ├── docs/                  分析报告·设计方案·逆向结论(过程性文档,不参与运行)
-├── tests/                 pytest 自测(核心读写/DSL/ATF)
+├── schemas/               角色包 manifest 的 JSON Schema 契约
+├── tests/                 unittest 自测(300 项:核心读写/DSL/发布/角色包/资产治理)
 ├── examples/              recipe 配方示例
 ├── work/                  运行期状态(待发布清单/改动日志/角色快照),自动生成
-├── server-patch/          startpoint-cn 服务端 mod-admin 补丁(更新服务端后套回)
-└── qq_monitor/            QQ 群反馈监控管线(NapCat)
+└── server-patch/          startpoint-cn 服务端 mod-admin 补丁(更新服务端后套回)
 ```
 
 约定:**代码平铺、文档进 docs/、运行时数据留根、生成物可重建**。
@@ -75,6 +76,12 @@ mod-tools/
 | `wf_decrypt_all.py` | 单文件零依赖版全量解密(不依赖本工具链任何文件,便于独立分发) |
 | `wf_rogue_rewards.py` / `wf_rogue_build.py` / `wf_rogue_shop.py` | **深渊连战 roguelike**:自制 rush 活动 700099(每轮不同 boss)+ 15 把专属武装(equipment+ability_soul)+ 深渊代币兑换商店的纯数据生成 |
 | `wf_rogue_banner.py` / `wf_rogue_nerf.py` / `wf_rogue_reroll.py` / `wf_rogue_save.py` | roguelike 运营工具:换专属横幅 / 逐轮修正曲线(boss·炮台 HP·ATK) / 一键重开 / 独立武器池存档 |
+| `wf_character_workspace.py` / `wf_character_pack.py` / `wf_character_requirements.py` | **自制新角色·打包**:角色包工作区、manifest(schema 契约见 `schemas/`)、统一 37 项资源契约 |
+| `wf_character_flow.py` / `wf_release.py` / `wf_character_rollback.py` | **自制新角色·发布**:preflight→发布→CDN 增量链锚定→一键回滚 |
+| `wf_kyle_canary.py` / `wf_canary_skin.py` | 克隆金丝雀端到端验证 / 皮肤·立绘替换(需 Pillow) |
+| `wf_seris_release_pack.py` | 双新角色(赛瑞斯/史黛拉)发布包组装实例 |
+| `wf_asset_maintenance.py` / `wf_asset_policy.py` / `wf_asset_quarantine.py` / `wf_asset_archive.py` / `wf_asset_inventory.py` | 资产治理:清单/维护策略(`asset-maintenance-policy-v1.json`)/隔离区/归档 |
+| `wf_remediation_baseline.py` / `wf_server_auth.py` | 运维基线快照(自动脱敏)/ 服务端管理 API 的 Bearer 认证 |
 | `wf_char_editor.py` | ① 层角色资料(名字 / 描述 / 稀有度 / 元素…)编辑 |
 | `wf_scan_masterdata.py` / `wf_extract_paths.py` / `wf_harvest_paths.py` | 数据定位 / 路径逆向 |
 | `wf_unique_mech.py` | 独特机制挖掘与下放分析(输出方案到 `docs/`) |
@@ -100,6 +107,9 @@ mod-tools/
 分析与方案(docs/):
 
 - **[角色改动规律方案.md](docs/角色改动规律方案.md)** — 改动规律总纲:五表列图、五类改动标准做法、**移植铁律(同属性/别去共鸣/统一sid/跨表重排)**、做不到的边界、效果代码速查、工具能力矩阵。
+- **[角色包工作流.md](docs/角色包工作流.md)** — 自制新角色从工作区到发布的完整流程(manifest/preflight/发布/回滚)。
+- **[新角色制作心得.md](docs/新角色制作心得.md)** — 双新角色(赛瑞斯/史黛拉)上线全程沉淀:先例原则、解析器 schema、崩溃图鉴、发布链路坑。
+- [角色生成器方案.md](docs/角色生成器方案.md) / [角色生成器-Codex任务书.md](docs/角色生成器-Codex任务书.md) — 角色生成器设计与任务书。
 - [角色数据逆向与修改指南.md](docs/角色数据逆向与修改指南.md) — 两层数据架构 + HP/ATK / 觉醒破解过程。
 - [版本切换设计.md](docs/版本切换设计.md) — 多版本档案(profile)设计。
 - 其余:形态切换/资产替换/强化弹射逆向结论、Boss 与副本分析、深渊连战 roguelike 方案等,见 `docs/` 目录。
