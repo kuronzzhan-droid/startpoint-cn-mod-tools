@@ -486,13 +486,20 @@ def detect_canonical_base_version(cdn_root: Path, repo_root: Path) -> str:
     except FileNotFoundError:
         active = None
     if active is not None:
-        if set(active) != {"schema_version", "base_version", "releases"} \
+        if set(active) not in (
+            {"schema_version", "base_version", "releases"},
+            {
+                "schema_version", "base_version", "base_package_owners",
+                "releases",
+            },
+        ) \
                 or active.get("schema_version") != 1:
             raise ReleaseError("active.json anchor fields are invalid")
+        _validate_base_package_owners(active)
         base = active.get("base_version")
         releases = active.get("releases")
         if not isinstance(base, str) or VERSION_RE.fullmatch(base) is None \
-                or not isinstance(releases, list) or not releases:
+                or not isinstance(releases, list):
             raise ReleaseError("active.json anchor is invalid")
         expected = base
         for index, release in enumerate(releases):
@@ -770,6 +777,71 @@ def rebase_runtime_package(
         raise
 
 
+ROLLBACK_PACKAGE_SUFFIX = character_pack.ROLLBACK_PACKAGE_SUFFIX
+
+
+def _validate_base_package_owners(
+    manifest: dict,
+) -> tuple[tuple[str, str], ...]:
+    raw = manifest.get("base_package_owners", [])
+    if not isinstance(raw, list):
+        raise ReleaseError("active.json base package owners are invalid")
+    pairs: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    for item in raw:
+        if (
+            not isinstance(item, list)
+            or len(item) != 2
+            or not isinstance(item[0], str)
+            or TOKEN_RE.fullmatch(item[0]) is None
+            or item[0].endswith(ROLLBACK_PACKAGE_SUFFIX)
+            or item[0] in seen
+            or not isinstance(item[1], str)
+            or HASH_RE.fullmatch(item[1]) is None
+        ):
+            raise ReleaseError("active.json base package owners are invalid")
+        seen.add(item[0])
+        pairs.append((item[0], item[1]))
+    if pairs != sorted(pairs):
+        raise ReleaseError("active.json base package owners are not canonical")
+    return tuple(pairs)
+
+
+def derive_package_owners(
+    releases: list[dict],
+    *,
+    base_package_owners: tuple[tuple[str, str], ...] = (),
+) -> tuple[tuple[str, str], ...]:
+    """从 active 链推导每个 package_id 当前生效的 manifest 哈希。
+
+    正常条目把该包的哈希压栈；`<pkg>-rollback` 条目（snapshot 回滚增量）弹出
+    源包最近一次发布，使所有权回退到上一版（无上一版则该包不再是所有者）。
+    """
+    stacks: dict[str, list[str]] = {
+        package_id: [manifest_hash]
+        for package_id, manifest_hash in base_package_owners
+    }
+    for index, release in enumerate(releases):
+        package_id = release["package_id"]
+        if package_id.endswith(ROLLBACK_PACKAGE_SUFFIX):
+            source = package_id[: -len(ROLLBACK_PACKAGE_SUFFIX)]
+            stack = stacks.get(source)
+            if not stack:
+                raise ReleaseError(
+                    f"active.json releases[{index}]: rollback entry has no "
+                    f"matching source release for {source}"
+                )
+            stack.pop()
+        else:
+            stacks.setdefault(package_id, []).append(
+                release["package_manifest_sha256"]
+            )
+    return tuple(sorted(
+        (package_id, stack[-1])
+        for package_id, stack in stacks.items() if stack
+    ))
+
+
 class ActiveReleaseStore:
     def __init__(self, cdn_root: Path, *, canonical_base_version: str):
         self.cdn_root = Path(cdn_root)
@@ -783,15 +855,22 @@ class ActiveReleaseStore:
         if raw is None:
             return None, None
         manifest = _strict_object(raw, "active.json")
-        if set(manifest) != {"schema_version", "base_version", "releases"}:
+        if set(manifest) not in (
+            {"schema_version", "base_version", "releases"},
+            {
+                "schema_version", "base_version", "base_package_owners",
+                "releases",
+            },
+        ):
             raise ReleaseError("active.json fields are invalid")
         if manifest["schema_version"] != 1 or type(manifest["schema_version"]) is not int:
             raise ReleaseError("active.json schema_version must be 1")
         if manifest["base_version"] != self.canonical_base_version:
             raise ReleaseError("active.json base_version is detached from the canonical legacy tail")
+        _validate_base_package_owners(manifest)
         releases = manifest["releases"]
-        if not isinstance(releases, list) or not releases:
-            raise ReleaseError("active.json releases must be a non-empty array")
+        if not isinstance(releases, list):
+            raise ReleaseError("active.json releases must be an array")
         expected_from = self.canonical_base_version
         seen_ids: set[str] = set()
         for index, release in enumerate(releases):
@@ -874,8 +953,24 @@ class ActiveReleaseStore:
                 validated_chain_tail=self.canonical_base_version,
                 expected_from_version=self.canonical_base_version,
                 active_package_manifest_sha256=None,
+                package_owners=(),
             )
-        last = manifest["releases"][-1]
+        base_package_owners = _validate_base_package_owners(manifest)
+        releases = manifest["releases"]
+        package_owners = derive_package_owners(
+            releases, base_package_owners=base_package_owners
+        )
+        if not releases:
+            return character_pack.ReleaseBaseState(
+                active_raw=raw,
+                active_sha256=_sha256(raw),
+                current_release_id=None,
+                validated_chain_tail=self.canonical_base_version,
+                expected_from_version=self.canonical_base_version,
+                active_package_manifest_sha256=None,
+                package_owners=package_owners,
+            )
+        last = releases[-1]
         return character_pack.ReleaseBaseState(
             active_raw=raw,
             active_sha256=_sha256(raw),
@@ -883,6 +978,7 @@ class ActiveReleaseStore:
             validated_chain_tail=last["version"],
             expected_from_version=last["version"],
             active_package_manifest_sha256=last["package_manifest_sha256"],
+            package_owners=package_owners,
         )
 
 
@@ -1000,6 +1096,7 @@ class AtomicReleasePublisher:
         *,
         server_running: Callable[[], bool],
         fail_after: str | None = None,
+        prepare_live_guard: Callable[[], Callable[[], None] | None] | None = None,
     ) -> ReleaseResult:
         self._validate_payload(payload, check_live=False)
         with _release_lock(self.lock_path):
@@ -1023,6 +1120,8 @@ class AtomicReleasePublisher:
                 )
                 relative = f"{ROOT_DIRS[archive.root]}/{filename}"
                 target = self.cdn_root / ROOT_DIRS[archive.root] / filename
+                if target.exists():
+                    raise ReleaseError(f"final archive already exists: {target}")
                 final_archives.append((archive, target, relative))
                 archive_records.append({
                     "root": archive.root,
@@ -1077,6 +1176,9 @@ class AtomicReleasePublisher:
             committed = False
             promoted_files: list[ReleaseFile] = []
             promoted_archives: list[Path] = []
+            guard_rollback = (
+                prepare_live_guard() if prepare_live_guard is not None else None
+            )
             try:
                 _atomic_write(journal, _canonical(journal_value))
                 self._checkpoint(fail_after, "after_journal_fsync")
@@ -1109,8 +1211,6 @@ class AtomicReleasePublisher:
                     self._checkpoint(fail_after, f"after_live_{index}")
                 self._checkpoint(fail_after, "after_live_promotions")
                 for index, (archive, target, _relative) in enumerate(final_archives):
-                    if target.exists():
-                        raise ReleaseError(f"final archive already exists: {target}")
                     def mark_archive_replaced(target: Path = target) -> None:
                         promoted_archives.append(target)
 
@@ -1175,6 +1275,13 @@ class AtomicReleasePublisher:
                         target.unlink(missing_ok=True)
                     except Exception as cleanup_exc:
                         cleanup_errors.append(f"remove {target}: {cleanup_exc}")
+                if guard_rollback is not None:
+                    try:
+                        guard_rollback()
+                    except Exception as cleanup_exc:
+                        cleanup_errors.append(
+                            f"rollback prepared live guard: {cleanup_exc}"
+                        )
                 try:
                     journal.unlink(missing_ok=True)
                 except Exception as cleanup_exc:
@@ -1245,6 +1352,13 @@ def _server_running(repo_root: Path) -> bool:
     try:
         lines = env_path.read_text(encoding="utf-8").splitlines()
     except FileNotFoundError:
+        lines = []
+    except PermissionError:
+        if not (
+            os.environ.get("CN_LISTEN_HOST")
+            and os.environ.get("CN_LISTEN_PORT")
+        ):
+            raise
         lines = []
     for line in lines:
         token = line.strip()
@@ -1487,6 +1601,9 @@ def preflight_package(
     mode = _validate_qa_contract(manifest)
     repo_root, live_roots, cdn_root = _repo_paths(profile_id)
     canonical_base = detect_canonical_base_version(cdn_root, repo_root)
+    import wf_release_guard
+
+    charpkg_strand = wf_release_guard.charpkg_strand_report(cdn_root, repo_root)
     if mode == "production":
         status = _production_workspace_status(package_dir)
         tail = _reachable_client_base(
@@ -1521,6 +1638,7 @@ def preflight_package(
         and (status.release_ready if status is not None else False),
         "workspace_input_sha256": status.input_digest if status is not None else None,
         "validated_chain_tail": tail,
+        "charpkg_strand": charpkg_strand,
         "writes_live": False,
     })
     return report
@@ -1540,6 +1658,10 @@ def publish_package(
     if _server_running(repo_root):
         raise ReleaseError("CN server must be stopped before character publication")
     canonical_base = detect_canonical_base_version(cdn_root, repo_root)
+    # 重锚防孤儿门禁:被 active.json 丢弃的 charpkg 历史必须仍可达 tail,
+    # 缺口自动补 charbridge 副本,补不齐则拒绝发布(2026-07-18 链重锚事故)
+    import wf_release_guard
+
     staging_root = repo_root / "work" / "character_releases" / "staging"
     snapshot_root = repo_root / "work" / "character_releases" / "snapshots"
     if mode == "production":
@@ -1569,12 +1691,44 @@ def publish_package(
             staging_root=staging_root,
             snapshot_root=snapshot_root,
         )
+
+    def prepare_live_guard() -> Callable[[], None] | None:
+        report = wf_release_guard.ensure_charpkg_history_bridged(
+            cdn_root, repo_root, assume_lock_held=True
+        )
+        receipts = tuple(report["bridge_receipts"])
+        if not receipts:
+            return None
+        return lambda: wf_release_guard.rollback_charpkg_bridges(
+            receipts, cdn_root, assume_lock_held=True
+        )
+
     try:
         result = AtomicReleasePublisher(
             cdn_root, canonical_base_version=canonical_base
-        ).publish(prepared.payload, server_running=lambda: _server_running(repo_root))
-    finally:
+        ).publish(
+            prepared.payload,
+            server_running=lambda: _server_running(repo_root),
+            prepare_live_guard=prepare_live_guard,
+        )
+    except Exception as exc:
+        try:
+            close_prepared_runtime_release(prepared, discard_staging=True)
+        except Exception as cleanup_exc:
+            detail = f"{exc}; prepared release cleanup failed: {cleanup_exc}"
+            if isinstance(exc, CommittedReleaseError):
+                raise CommittedReleaseError(detail) from exc
+            raise ReleaseError(detail) from exc
+        raise
+    try:
         close_prepared_runtime_release(prepared, discard_staging=True)
+    except Exception as cleanup_exc:
+        if result.committed:
+            raise CommittedReleaseError(
+                "release committed; prepared release cleanup only: "
+                + str(cleanup_exc)
+            ) from cleanup_exc
+        raise
     return replace(result, snapshot_dir=prepared.snapshot.snapshot_dir)
 
 
