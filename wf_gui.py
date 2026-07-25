@@ -7279,6 +7279,106 @@ _rogue_auto_load()
 threading.Thread(target=_rogue_auto_thread, daemon=True).start()
 
 
+# ---------------------------------------------------------------- 增量包整合
+# 独立功能:手选/上传已发布增量 zip → wf_pack_consolidate 合并去冗余。
+# 产物只写 work/pack_consolidate/<tag>,不碰 CDN(部署由用户自行拷贝)。
+
+PM_UPLOAD_DIR = Path(__file__).resolve().parent / "work" / "pack_consolidate" / "uploads"
+
+
+def _pack_mod():
+    import wf_pack_consolidate as pcons
+    return pcons
+
+
+def _pack_upload_meta(path: Path) -> dict | None:
+    match = _pack_mod().squash.ARCHIVE_RE.fullmatch(path.name)
+    if match is None or not path.is_file():
+        return None
+    root = "common"
+    try:
+        root = json.loads((path.parent / (path.name + ".meta.json"))
+                          .read_text(encoding="utf-8")).get("root") or "common"
+    except Exception:
+        pass
+    stat = path.stat()
+    return {"id": f"upload:{path.name}", "origin": "upload", "origin_cn": "上传",
+            "root": root, "from": match.group(1), "to": match.group(2),
+            "seq": int(match.group(3)), "tag": match.group(4), "name": path.name,
+            "size": stat.st_size, "mtime": int(stat.st_mtime), "on_path": True}
+
+
+def pack_list() -> dict:
+    pcons = _pack_mod()
+    cdn_root, repo_root = pcons._resolve_dirs()
+    listing = pcons.scan_selectable(cdn_root, repo_root)
+    listing["uploads"] = [meta for p in sorted(PM_UPLOAD_DIR.glob("*.zip"))
+                          if (meta := _pack_upload_meta(p))] if PM_UPLOAD_DIR.is_dir() else []
+    listing["out_root"] = str(pcons.WORK_DIR)
+    listing["cdn_root"] = str(cdn_root)
+    return listing
+
+
+def _pack_upload_name(body: dict) -> str:
+    name = str(body.get("name") or "")
+    if not name or "/" in name or "\\" in name or name.startswith("."):
+        raise ValueError(f"非法文件名: {name!r}")
+    return name
+
+
+def pack_upload(body: dict) -> dict:
+    pcons = _pack_mod()
+    name = _pack_upload_name(body)
+    if body.get("delete"):
+        (PM_UPLOAD_DIR / name).unlink(missing_ok=True)
+        (PM_UPLOAD_DIR / (name + ".meta.json")).unlink(missing_ok=True)
+        return {"ok": True, "deleted": name}
+    root = str(body.get("root") or "common")
+    if pcons.squash.ARCHIVE_RE.fullmatch(name) is None:
+        raise ValueError(
+            f"文件名不符合发布命名 pinball-<from>-<to>-<seq>-<tag>.zip: {name!r}")
+    raw = base64.b64decode(str(body.get("data_b64") or ""))
+    if not raw:
+        raise ValueError("上传内容为空")
+    PM_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    target = PM_UPLOAD_DIR / name
+    target.write_bytes(raw)
+    try:
+        pcons._parse_upload(target, root)  # 复用完整校验:root/命名/版本边/zip 有效性
+    except ValueError:
+        target.unlink(missing_ok=True)
+        raise
+    (PM_UPLOAD_DIR / (name + ".meta.json")).write_text(
+        json.dumps({"root": root}), encoding="utf-8")
+    return {"ok": True, "pack": _pack_upload_meta(target)}
+
+
+def pack_consolidate_run(body: dict) -> dict:
+    pcons = _pack_mod()
+    cdn_root, repo_root = pcons._resolve_dirs()
+    ids: list[str] = []
+    files: list[tuple[Path, str]] = []
+    for pid in body.get("ids") or ():
+        pid = str(pid)
+        if pid.startswith("upload:"):
+            name = pid[len("upload:"):]
+            if "/" in name or "\\" in name:
+                raise ValueError(f"非法上传 id: {pid!r}")
+            meta = _pack_upload_meta(PM_UPLOAD_DIR / name)
+            if meta is None:
+                raise ValueError(f"上传包不存在或命名非法: {name}")
+            files.append((PM_UPLOAD_DIR / name, meta["root"]))
+        else:
+            ids.append(pid)
+    tag = str(body.get("tag") or "").strip() or time.strftime("merge%m%d")
+    raw_mib = body.get("max_zip_mib", 5)
+    max_zip_mib = 5 if raw_mib in (None, "") else int(raw_mib)
+    return pcons.consolidate(
+        cdn_root, repo_root, tag=tag, ids=ids, files=files,
+        max_zip_mib=max_zip_mib, dry_run=bool(body.get("dry_run")),
+        force=bool(body.get("force")))
+
+
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):
         pass
@@ -7384,6 +7484,9 @@ class Handler(BaseHTTPRequestHandler):
                 return
             if path == "/boss/list":
                 self._json(wf_boss.boss_list())
+                return
+            if path == "/pack/list":
+                self._json(pack_list())
                 return
             if path == "/chain/state":
                 self._json(chain_state())
@@ -7805,6 +7908,12 @@ class Handler(BaseHTTPRequestHandler):
                                        str(body.get("new_name", "")),
                                        str(body.get("node_name", "")),
                                        bool(body.get("dry_run"))))
+                return
+            if path == "/pack/upload":
+                self._json(pack_upload(body))
+                return
+            if path == "/pack/consolidate":
+                self._json(pack_consolidate_run(body))
                 return
             if path == "/chain/apply":
                 self._json(chain_apply(body, bool(body.get("dry_run"))))

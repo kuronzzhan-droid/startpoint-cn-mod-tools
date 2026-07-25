@@ -204,6 +204,10 @@ td.ldesc{color:var(--okfg);font-size:11px;white-space:normal;max-width:250px;lin
 .tbbar.busy>div{background:repeating-linear-gradient(45deg,var(--acc),var(--acc) 8px,#3d7ad4 8px,#3d7ad4 16px);animation:tbmove 1s linear infinite;width:100%!important}
 @keyframes tbmove{from{background-position:0 0}to{background-position:23px 0}}
 #tbLog{background:#0c0e13;border:1px solid var(--border);border-radius:var(--rs);padding:7px 10px;font:11px/1.5 Consolas,monospace;white-space:pre-wrap;max-height:260px;overflow:auto;color:#9fb4d8}
+#pmOut pre{background:#0c0e13;border:1px solid var(--border);border-radius:var(--rs);padding:7px 10px;font:11px/1.5 Consolas,monospace;white-space:pre-wrap;max-height:320px;overflow:auto;color:#9fb4d8;margin:6px 0}
+#pmList{max-height:420px;overflow:auto;border:1px solid var(--border);border-radius:var(--r);margin:4px 0 10px}
+#pmList table{margin:0;border:none;width:100%}
+#pmList tr.pmoff td{opacity:.5}
 
 /* ---------- 通用弹窗(词条工坊 / 技能效果词条) ---------- */
 .wfov{position:fixed;inset:0;background:rgba(5,8,14,.62);z-index:60;display:flex;align-items:center;justify-content:center}
@@ -349,6 +353,7 @@ td.ldesc{color:var(--okfg);font-size:11px;white-space:normal;max-width:250px;lin
       <div class="navgrp">
         <span class="ngl">系统</span>
         <div class="tab" data-t="toolbox">工具箱</div>
+        <div class="tab" data-t="packmerge">增量整合</div>
         <div class="tab" data-t="history">日志</div>
         <div class="tab" data-t="backup">备份</div>
       </div>
@@ -974,6 +979,28 @@ td.ldesc{color:var(--okfg);font-size:11px;white-space:normal;max-width:250px;lin
         <div class="row"><h3 style="margin:0">备份 / 还原</h3><button class="sec" id="btnBkRefresh">刷新</button></div>
         <div class="hint">「还原」只写回本地表(并加入待发布),不自动发布;要让游戏拉回改动,还原后点右上角<b>发布</b>,或直接用「改动日志」页签的一键回溯。</div>
         <div id="bkList"></div>
+      </section>
+      <section data-t="packmerge">
+        <div class="row"><h3 style="margin:0">增量包整合</h3><button class="sec" id="pmRefresh">刷新</button><span class="hint" style="margin:0" id="pmChainInfo"></span></div>
+        <div class="hint">把勾选的多个<b>已发布历史增量包</b>按实际发布顺序合并:同路径文件<b>后发布覆盖先发布</b>,终态每个路径只保留最后一次的有效文件,生成单个整合包 <b>pinball-&lt;最早from&gt;-&lt;最新to&gt;-&lt;seq&gt;-&lt;tag&gt;.zip</b>(版本号取所选内容<b>最早版本</b>)。产物只写输出目录,<b>不动 CDN、不动任何原包</b>,日常增量发布完全不受影响。勾选不全时按客户端实际路径<b>自动补齐</b>可见归档(asset-patch/锚定角色包),防止整合包丢内容。<b>红线:范围内还有玩家停在中间版本时,不要删除被整合的旧包(会永久搁浅);整链瘦身请用工具 wf_chain_squash(自带全版本硬链桥)。</b></div>
+        <div class="row">
+          <button class="mini" id="pmSelAll">全选</button>
+          <button class="mini" id="pmSelNone">清空</button>
+          <span class="hint" style="margin:0" id="pmSelInfo"></span>
+          <span style="flex:1"></span>
+          <input type="file" id="pmFile" accept=".zip" multiple style="display:none">
+          <label>上传 root</label>
+          <select id="pmUpRoot"><option value="common">common</option><option value="medium">medium</option><option value="android">android</option></select>
+          <button class="sec" id="pmUpload" title="上传外部/历史增量 zip(须符合 pinball-<from>-<to>-<seq>-<tag>.zip 命名),与 CDN 里的包一起参与整合">上传增量包…</button>
+        </div>
+        <div id="pmList"><div class="empty">加载中…</div></div>
+        <div class="row">
+          <label>tag</label><input id="pmTag" placeholder="merge0725" style="width:120px" title="整合包 tag,纯小写字母数字">
+          <label>单包上限MiB</label><input id="pmMax" type="number" value="5" min="0" style="width:64px" title="超过按 seq 拆分(CI 门禁 5MiB);0=不拆,合成单个 zip">
+          <button class="sec" id="pmPlan" title="只计算合并计划与去冗余统计,不写任何文件">预览整合</button>
+          <button id="pmBuild">生成整合包</button>
+        </div>
+        <div id="pmOut"></div>
       </section>
     </div>
     <div id="logwrap">
@@ -3184,6 +3211,7 @@ function switchTab(name){
   if(name==='chain')loadChain();
   if(name==='rogue')loadRogue();
   if(name==='toolbox')loadToolbox();
+  if(name==='packmerge')pmLoad();
   if(name==='rawjson')loadRjTables();
   if(name==='unique')loadUnique();
   if(name==='shop')loadShopCats();
@@ -3249,6 +3277,111 @@ $$('.tbcard .tbrun').forEach(btn=>btn.onclick=async()=>{
   log('工具箱启动: '+r.title+'  '+r.cmd);
   loadToolbox();
 });
+
+// ---- 增量包整合:手选/上传历史增量包 → 合并去冗余(后端 wf_pack_consolidate) ----
+let pmData=null;
+async function pmLoad(){
+  let d;try{d=await api('/pack/list');}catch(e){return;}
+  pmData=d;
+  $('#pmChainInfo').textContent=`mod 链 ${d.base} → ${d.tail} · 可见包 ${d.packs.length} 个`
+    +(d.uploads.length?` · 已上传 ${d.uploads.length} 个`:'')
+    +(d.issues.length?` · 图异常 ${d.issues.length}(详见后端日志)`:'');
+  const now=new Date();
+  $('#pmTag').placeholder='merge'+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0');
+  pmRender();
+}
+function pmFmtSize(n){return n>=1048576?(n/1048576).toFixed(2)+' MiB':Math.round(n/1024)+' KiB';}
+function pmRender(){
+  const box=$('#pmList');box.innerHTML='';
+  const rows=[...(pmData.packs||[]),...(pmData.uploads||[])];
+  if(!rows.length){box.innerHTML='<div class="empty">没有可整合的增量包</div>';return;}
+  const tbl=document.createElement('table');
+  const head=document.createElement('tr');
+  head.innerHTML='<th style="width:26px"><input type="checkbox" id="pmCkAll" title="全选/清空"></th><th>版本边</th><th>root</th><th>文件名</th><th>tag</th><th>大小</th><th>来源</th><th></th>';
+  tbl.appendChild(head);
+  rows.forEach(p=>{
+    const tr=document.createElement('tr');
+    if(p.on_path===false){tr.className='pmoff';tr.title='不在客户端实际路径上(平行边/已被更短捷径取代),整合时会被排除';}
+    const ck=document.createElement('input');ck.type='checkbox';ck.className='pmck';ck.dataset.id=p.id;
+    const td0=document.createElement('td');td0.appendChild(ck);tr.appendChild(td0);
+    [['edge',p.from+' → '+p.to],['root',p.root],['name',p.name],['tag',p.tag],
+     ['size',pmFmtSize(p.size)],['origin',p.origin_cn+(p.on_path===false?' ⚠':'')]].forEach(([k,v])=>{
+      const td=document.createElement('td');td.textContent=v;
+      if(k==='name')td.style.cssText='font:11px Consolas,monospace';
+      tr.appendChild(td);
+    });
+    const tdOp=document.createElement('td');
+    if(p.origin==='upload'){
+      const del=document.createElement('button');del.className='mini';del.textContent='删';
+      del.onclick=async()=>{if(!confirm('删除已上传的 '+p.name+'?'))return;
+        try{await api('/pack/upload',{name:p.name,delete:true});}catch(e){return;}pmLoad();};
+      tdOp.appendChild(del);
+    }
+    tr.appendChild(tdOp);
+    ck.onchange=pmSelInfo;
+    tbl.appendChild(tr);
+  });
+  box.appendChild(tbl);
+  $('#pmCkAll').onchange=e=>{$$('.pmck').forEach(c=>c.checked=e.target.checked);pmSelInfo();};
+  pmSelInfo();
+}
+function pmSelInfo(){
+  const all=[...(pmData?.packs||[]),...(pmData?.uploads||[])],by={};
+  all.forEach(p=>by[p.id]=p);
+  const sel=$$('.pmck').filter(c=>c.checked).map(c=>by[c.dataset.id]).filter(Boolean);
+  if(!sel.length){$('#pmSelInfo').textContent='';return;}
+  const vk=v=>v.split('.').map(Number),cmp=(a,b)=>{const x=vk(a),y=vk(b);for(let i=0;i<x.length;i++){if(x[i]!==y[i])return x[i]-y[i];}return 0;};
+  let lo=sel[0].from,hi=sel[0].to,bytes=0;
+  sel.forEach(p=>{if(cmp(p.from,lo)<0)lo=p.from;if(cmp(p.to,hi)>0)hi=p.to;bytes+=p.size;});
+  $('#pmSelInfo').textContent=`已选 ${sel.length} 个 · 范围 ${lo} → ${hi} · ${pmFmtSize(bytes)} · 整合包 pinball-${lo}-${hi}-…`;
+}
+function pmShowReport(r){
+  const s=r.stats,L=[];
+  L.push((r.dry_run?'[预览] ':'[已生成] ')+`整合范围 ${r.from} → ${r.to}(中间版本 ${r.middle_versions.length} 个) tag=${r.tag}`);
+  L.push(`输入 ${s.input_zips} 个 zip / ${s.input_entries} entries / ${pmFmtSize(s.input_zip_bytes)}`);
+  (r.auto_included||[]).forEach(m=>L.push(`  [自动纳入] ${m.id}(${m.origin_cn},客户端可见,不并会丢内容)`));
+  (r.excluded||[]).forEach(m=>L.push(`  [排除] ${m.id}: ${m.reason}`));
+  L.push(`终态 ${s.final_entries} entries(去除被后续版本覆盖的冗余 ${s.removed_entries} 个)`);
+  (r.outputs||[]).forEach(o=>L.push(`  ${o.dir}/${o.name}  ${pmFmtSize(o.size!==undefined?o.size:o.est_size)} (${o.entries} entries)`));
+  if(!r.dry_run)L.push(`产物目录: ${r.out_dir}(含 report.json 回执;原包未做任何改动)`);
+  (r.warnings||[]).forEach(w=>L.push('[警告] '+w));
+  const d=$('#pmOut');d.innerHTML='';
+  const pre=document.createElement('pre');pre.textContent=L.join('\n');d.appendChild(pre);
+}
+async function pmRun(dry){
+  const ids=$$('.pmck').filter(c=>c.checked).map(c=>c.dataset.id);
+  if(!ids.length){toast('先勾选要整合的增量包',true);return;}
+  const body={ids,tag:$('#pmTag').value.trim(),max_zip_mib:Number($('#pmMax').value===''?5:$('#pmMax').value),dry_run:dry};
+  if(!dry&&!confirm(`把选中的 ${ids.length} 个增量包整合为一个新增量包?\n只生成到输出目录,不改 CDN 与原包。`))return;
+  let r;
+  try{r=await api('/pack/consolidate',body);}
+  catch(e){
+    if(!dry&&String(e&&e.message||'').includes('输出目录已存在')
+       &&confirm('该 tag 已生成过(输出目录非空)。覆盖旧产物?')){
+      try{r=await api('/pack/consolidate',{...body,force:true});}catch(e2){return;}
+    }else return;
+  }
+  pmShowReport(r);
+  if(!dry){log('增量包整合完成: '+r.out_dir);toast('整合包已生成,见输出目录');}
+}
+$('#pmRefresh').onclick=()=>pmLoad();
+$('#pmSelAll').onclick=()=>{$$('.pmck').forEach(c=>c.checked=true);const a=$('#pmCkAll');if(a)a.checked=true;pmSelInfo();};
+$('#pmSelNone').onclick=()=>{$$('.pmck').forEach(c=>c.checked=false);const a=$('#pmCkAll');if(a)a.checked=false;pmSelInfo();};
+$('#pmPlan').onclick=()=>pmRun(true);
+$('#pmBuild').onclick=()=>pmRun(false);
+$('#pmUpload').onclick=()=>$('#pmFile').click();
+$('#pmFile').onchange=async()=>{
+  const files=[...$('#pmFile').files];$('#pmFile').value='';
+  const root=$('#pmUpRoot').value;
+  for(const f of files){
+    if(f.size>60*1048576){log('跳过 '+f.name+': 超过 60MB 上传上限',true);continue;}
+    const b64=await new Promise((res,rej)=>{const rd=new FileReader();
+      rd.onload=()=>res(String(rd.result).split(',')[1]||'');rd.onerror=rej;rd.readAsDataURL(f);});
+    try{await api('/pack/upload',{name:f.name,root,data_b64:b64});log('已上传 '+f.name+' (root='+root+')');}
+    catch(e){}
+  }
+  pmLoad();
+};
 
 // ---- Boss·副本:boss_level 数值编辑 + 全副本列表(类别分组 chips + boss「出现于」标签) ----
 let bossData=null,questCatsData=null,bossUsage=null,curQuestCat='';
