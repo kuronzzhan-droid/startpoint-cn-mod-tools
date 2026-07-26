@@ -1,5 +1,6 @@
 {
   "_comment": "复制为 profiles.json 并按你的目录改路径。store=手机数据包 production/upload 目录;cdndata=服务端 assets/cdndata;路径相对仓库根或写绝对路径。可加多个版本档案,active 指定当前使用哪个。",
+  "_comment_standalone": "工具与服务端分仓部署时用下面两个字段告诉工具服务端在哪:server_dir=服务端仓根(能同时推出 CDN 与 assets/asset-patch,最省事);cdn_dir=直接指定 CDN 根(…/cn),优先级高于 server_dir。都留 null 则按'工具住在服务端仓内'的旧布局取 <仓库根>/.cdn/cn。环境变量 WF_CDN_DIR / WF_SERVER_DIR 优先级更高。",
   "active": "cn",
   "profiles": {
     "cn": {
@@ -7,7 +8,9 @@
       "store": "path/to/WorldFlipper/dummy/download/production/upload",
       "cdndata": "assets/cdndata",
       "res_version": "1.4.54",
-      "fallback": null
+      "fallback": null,
+      "cdn_dir": null,
+      "server_dir": null
     }
   }
 }

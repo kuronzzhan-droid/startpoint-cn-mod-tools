@@ -19,6 +19,9 @@ import wf_rogue_shop as shop  # noqa: E402
 
 
 SHOP_IDS = tuple(str(9_700_101 + index) for index in range(15))
+LEGACY_MODE_DESCRIPTION = (
+    "【测试版·连战专属】仅在深渊连战、宝物域连战 2001 与木桩假人生效。"
+)
 CLIENT_FIELDS = {
     0: "6",
     1: "700099",
@@ -183,6 +186,33 @@ class TestClientShop(unittest.TestCase):
         first = shop.build_client_shop(client_fixture(), rewards.WEAPONS)
         second = shop.build_client_shop(first, rewards.WEAPONS)
         self.assertEqual(first, second)
+
+    def test_known_legacy_rows_are_upgraded_without_mutating_input(self):
+        current = shop.build_client_shop(client_fixture(), rewards.WEAPONS)
+        legacy = copy.deepcopy(current)
+        for shop_id in SHOP_IDS:
+            row = core.read_csv_lines(legacy[shop_id])[0]
+            row[11] = LEGACY_MODE_DESCRIPTION
+            legacy[shop_id] = core.write_csv_lines([row])
+        original = copy.deepcopy(legacy)
+
+        upgraded = shop.build_client_shop(legacy, rewards.WEAPONS)
+
+        self.assertEqual(original, legacy)
+        self.assertEqual(current, upgraded)
+
+    def test_legacy_description_does_not_hide_other_reserved_row_changes(self):
+        source = shop.build_client_shop(client_fixture(), rewards.WEAPONS)
+        row = core.read_csv_lines(source[SHOP_IDS[0]])[0]
+        row[11] = LEGACY_MODE_DESCRIPTION
+        row[19] = "999"
+        source[SHOP_IDS[0]] = core.write_csv_lines([row])
+        original = copy.deepcopy(source)
+
+        with self.assertRaisesRegex(ValueError, SHOP_IDS[0]):
+            shop.build_client_shop(source, rewards.WEAPONS)
+
+        self.assertEqual(original, source)
 
 
 class TestServerShop(unittest.TestCase):

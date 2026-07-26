@@ -332,6 +332,9 @@ class VersionProfile:
     cdndata: Path | None = None
     res_version: str = ""
     fallback: Path | None = None
+    # T2 两仓独立(2026-07-26):CDN 位置以服务端为准,工具经解析链接入。
+    cdn_dir: Path | None = None      # 显式 CDN 根(…/cn),仅次于 WF_CDN_DIR env
+    server_dir: Path | None = None   # 服务端仓根,用于自动识别其 CDN 配置
 
 
 def project_root() -> Path:
@@ -370,7 +373,125 @@ def resolve_profile(profile_id: str | None = None) -> VersionProfile | None:
         cdndata=_resolve_profile_path(entry["cdndata"]) if entry.get("cdndata") else None,
         res_version=entry.get("res_version", ""),
         fallback=_resolve_profile_path(entry["fallback"]) if entry.get("fallback") else None,
+        cdn_dir=_resolve_profile_path(entry["cdn_dir"]) if entry.get("cdn_dir") else None,
+        server_dir=_resolve_profile_path(entry["server_dir"]) if entry.get("server_dir") else None,
     )
+
+
+# ---------------------------------------------------------------------------
+# CDN 根解析链(T2 两仓独立):CDN 位置以服务端为准,工具只读发现、永不搬移。
+#   1. WF_CDN_DIR env(显式,最高优先)   2. profile.cdn_dir(持久化显式)
+#   3. 自动识别:WF_SERVER_DIR env / profile.server_dir → 复读服务端自身配置
+#      (dev:服务端 .env 的 CDN_DIR 指向含 cn/ 的父目录 → CDN_DIR/cn;
+#       缺省与 main 同为 <server>/.cdn/cn)
+#   4. 嵌套遗留兜底:project_root()/.cdn/cn(工具仍住在服务端仓内时)
+# 显式配置(1/2)不合法=硬报错(配置错误不该被兜底掩盖);派生候选(3/4)不合法则
+# 顺延下一级;全部落空报出完整尝试清单。
+# ---------------------------------------------------------------------------
+
+
+def looks_like_cdn_root(path: Path) -> bool:
+    """签名校验:是归档目录形态的 CDN 根(…/cn)。"""
+    return path.is_dir() and (
+        (path / "archive-common-diff").is_dir()
+        or (path / "archive-common-full").is_dir()
+    )
+
+
+def _read_server_cdn_dir(server_dir: Path) -> Path | None:
+    """复读服务端 .env 的 CDN_DIR(容忍引号/空白/注释行),相对路径按服务端根解析。"""
+    env_file = server_dir / ".env"
+    if not env_file.is_file():
+        return None
+    try:
+        for line in env_file.read_text(encoding="utf-8", errors="replace").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, value = line.partition("=")
+            if key.strip() != "CDN_DIR":
+                continue
+            value = value.strip().strip('"').strip("'")
+            if not value:
+                return None
+            candidate = Path(value)
+            return candidate if candidate.is_absolute() else (server_dir / candidate)
+    except OSError:
+        return None
+    return None
+
+
+def resolve_cdn_root(profile_id: str | None = None) -> Path:
+    """按四级解析链返回 CDN 根;全部落空抛 ValueError(含尝试清单)。"""
+    tried: list[str] = []
+
+    env_value = os.environ.get("WF_CDN_DIR")
+    if env_value:
+        path = Path(env_value)
+        if looks_like_cdn_root(path):
+            return path
+        raise ValueError(f"WF_CDN_DIR 指向的目录不是 CDN 根(缺 archive-common-*): {path}")
+
+    try:
+        profile = resolve_profile(profile_id)
+    except (OSError, ValueError):
+        profile = None
+    if profile and profile.cdn_dir:
+        if looks_like_cdn_root(profile.cdn_dir):
+            return profile.cdn_dir
+        raise ValueError(
+            f"profile[{profile.id}].cdn_dir 不是 CDN 根: {profile.cdn_dir}"
+        )
+
+    server_env = os.environ.get("WF_SERVER_DIR")
+    server_dir = Path(server_env) if server_env else (
+        profile.server_dir if profile else None
+    )
+    if server_dir is not None:
+        declared = _read_server_cdn_dir(server_dir)
+        for candidate in (
+            *((declared / "cn",) if declared else ()),
+            server_dir / ".cdn" / "cn",
+        ):
+            if looks_like_cdn_root(candidate):
+                return candidate
+            tried.append(f"服务端识别: {candidate}")
+
+    legacy = project_root() / ".cdn" / "cn"
+    if looks_like_cdn_root(legacy):
+        return legacy
+    tried.append(f"嵌套遗留: {legacy}")
+
+    raise ValueError(
+        "无法定位 CDN 根;请设 WF_CDN_DIR / profile.cdn_dir / WF_SERVER_DIR。已尝试: "
+        + "; ".join(tried)
+    )
+
+
+def resolve_cdn_root_lax(profile_id: str | None = None) -> Path:
+    """解析失败时退回嵌套遗留默认路径(供模块级常量等不可抛错场景)。"""
+    try:
+        return resolve_cdn_root(profile_id)
+    except ValueError:
+        return project_root() / ".cdn" / "cn"
+
+
+def resolve_server_dir(profile_id: str | None = None) -> Path:
+    """服务端仓根:WF_SERVER_DIR > profile.server_dir > 嵌套遗留(project_root)。
+
+    用于 asset-patch manifest、client-patch 等"贴着服务端仓"的路径推导;
+    lax 语义,始终有返回值(独立仓布局下未配置时按嵌套遗留猜,调用方自然报错)。
+    """
+    env = os.environ.get("WF_SERVER_DIR")
+    if env:
+        return Path(env)
+    try:
+        profile = resolve_profile(profile_id)
+    except (OSError, ValueError):
+        profile = None
+    if profile and profile.server_dir:
+        return profile.server_dir
+    return project_root()
 
 
 def parse_index(raw: bytes) -> tuple[list[str], list[tuple[int, int]], int]:
@@ -424,6 +545,16 @@ def read_orderedmap_file_from_bytes(raw: bytes) -> dict[str, str]:
         prev = row_end
         out[key] = zlib.decompress(chunk).decode("utf-8") if chunk else ""
     return out
+
+
+def read_orderedmap_raw_rows_from_bytes(
+    raw: bytes, logical_path: str = "[memory-bytes]"
+) -> OrderedMap:
+    """Decode an orderedmap index while preserving every stored row byte."""
+    keys, rows = _strict_orderedmap_rows(
+        raw, label=logical_path, compressed_rows=False
+    )
+    return OrderedMap(logical_path, keys, rows, Path(logical_path))
 
 
 def build_orderedmap(ordered: OrderedMap) -> bytes:

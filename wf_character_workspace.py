@@ -304,9 +304,13 @@ def _semantic_manifest_digest(path: Path) -> tuple[int, str] | None:
     return len(data), hashlib.sha256(data).hexdigest()
 
 
-def _scan_package(workspace: Workspace) -> tuple[list[dict[str, Any]], int, dict[str, str]]:
+def _scan_package(
+    workspace: Workspace,
+    *,
+    use_disk_hash_cache: bool,
+) -> tuple[list[dict[str, Any]], int, dict[str, str]]:
     cache_path = workspace.evidence_dir / "hash-cache.json"
-    old_cache = _load_hash_cache(cache_path)
+    old_cache = _load_hash_cache(cache_path) if use_disk_hash_cache else {}
     new_cache: dict[str, dict[str, Any]] = {}
     entries: list[dict[str, Any]] = []
     raw_hashes: dict[str, str] = {}
@@ -342,7 +346,8 @@ def _scan_package(workspace: Workspace) -> tuple[list[dict[str, Any]], int, dict
             if semantic is not None:
                 semantic_size, semantic_digest = semantic
         entries.append({"path": relative, "size": semantic_size, "sha256": semantic_digest})
-    _atomic_json(cache_path, new_cache)
+    if use_disk_hash_cache:
+        _atomic_json(cache_path, new_cache)
     return entries, cache_hits, raw_hashes
 
 
@@ -407,9 +412,15 @@ def _strip_root(relative: str) -> tuple[str, str] | None:
     return parts[1], parts[2]
 
 
-def workspace_status(workspace: Workspace | Path) -> WorkspaceStatus:
+def workspace_status(
+    workspace: Workspace | Path,
+    *,
+    persist: bool = True,
+) -> WorkspaceStatus:
     current = load_workspace(workspace.root if isinstance(workspace, Workspace) else workspace)
-    entries, cache_hits, raw_hashes = _scan_package(current)
+    entries, cache_hits, raw_hashes = _scan_package(
+        current, use_disk_hash_cache=persist,
+    )
     input_digest = hashlib.sha256(_canonical_bytes(entries)).hexdigest()
 
     rooted = [item for item in (_strip_root(entry["path"]) for entry in entries) if item]
@@ -494,8 +505,20 @@ def workspace_status(workspace: Workspace | Path) -> WorkspaceStatus:
         release_ready=release_ready,
         next_command=next_command,
     )
-    _atomic_json(current.evidence_dir / "status.json", status.to_dict())
+    if persist:
+        _atomic_json(current.evidence_dir / "status.json", status.to_dict())
     return status
+
+
+def inspect_workspace(workspace: Workspace | Path) -> dict[str, Any]:
+    """Calculate a workspace report without changing the workspace on disk."""
+    current = load_workspace(workspace.root if isinstance(workspace, Workspace) else workspace)
+    report = workspace_status(current, persist=False).to_dict()
+    report["identity"] = {
+        "character_id": current.character_id,
+        "code_name": current.code_name,
+    }
+    return report
 
 
 def seal_workspace(workspace: Workspace | Path) -> WorkspaceStatus:

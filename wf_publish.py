@@ -35,9 +35,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import wf_mod_tool as core  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
-# CDN 发布根(.cdn/cn):独立部署时用 WF_CDN_DIR 指向服务端的 .cdn/cn,
-# 默认按"本目录=startpoint-cn/mod-tools"布局取仓库根下 .cdn/cn
-CDN_ROOT = Path(os.environ["WF_CDN_DIR"]) if os.environ.get("WF_CDN_DIR") else ROOT / ".cdn" / "cn"
+# CDN 发布根:WF_CDN_DIR 显式优先(原样使用);否则走 core 四级解析链
+# (profile.cdn_dir > 服务端识别 > 嵌套遗留 <repo>/.cdn/cn),见 T2 两仓独立。
+CDN_ROOT = (
+    Path(os.environ["WF_CDN_DIR"]) if os.environ.get("WF_CDN_DIR")
+    else core.resolve_cdn_root_lax()
+)
 CDN_DIFF = CDN_ROOT / "archive-common-diff"
 WORK = Path(__file__).resolve().parent / "work"
 PENDING = WORK / "sync_pending.json"
@@ -147,7 +150,8 @@ def current_max_version(default: str = "1.4.54") -> str:
     # 上游服务端(2026-07 起)另有 assets/asset-patch 补丁机制:getEffectiveVersion()
     # 取 max(CDN, 启用的 patch 版本)。若某启用 patch 版本高于 CDN,我们不越过它,
     # 客户端 res_ver 会停在 patch 版,新发的低版本 diff 拉取不到 —— 一并纳入 max。
-    manifest = ROOT / "assets" / "asset-patch" / "manifest.json"
+    # 路径按服务端仓解析(T2 两仓独立;嵌套布局下与旧 ROOT 相同)。
+    manifest = core.resolve_server_dir() / "assets" / "asset-patch" / "manifest.json"
     try:
         for p in json.loads(manifest.read_text(encoding="utf-8")).get("patches", []):
             v = str(p.get("version", ""))
@@ -333,20 +337,25 @@ def _build_archives(
     prepared: list[PreparedFile],
     from_ver: str,
     to_ver: str,
+    *,
+    layer_placeholders: bool = True,
 ) -> list[Path]:
     outdirs = {
         "": CDN_DIFF,
         "medium:": CDN_ROOT / "archive-medium-diff",
         "android:": CDN_ROOT / "archive-android-diff",
     }
-    tag = time.strftime("mod%m%d%H%M")
+    # dev content:sync 的扫描器只认纯 hex 后缀(pinball-<from>-<to>-<n>-<hex>.zip),
+    # 旧 "mod%m%d%H%M" 带字母 m/o/d 会被 dev 硬拒;%m%d%H%M 全数字即合法 hex。
+    # 同分钟重发同边=同名,走既有的备份+原子替换路径,语义为幂等覆盖。
+    tag = time.strftime("%m%d%H%M")
     staged: list[tuple[Path, Path]] = []
     backups: list[tuple[Path, Path]] = []
     published: list[Path] = []
     try:
         for prefix, outdir in outdirs.items():
             files = [entry for entry in prepared if entry.prefix == prefix]
-            if not files:
+            if not files and not layer_placeholders:
                 continue
             outdir.mkdir(parents=True, exist_ok=True)
             final = outdir / f"pinball-{from_ver}-{to_ver}-1-{tag}.zip"
@@ -356,9 +365,15 @@ def _build_archives(
             os.close(handle)
             temporary = Path(temporary_name)
             staged.append((temporary, final))
-            with zipfile.ZipFile(temporary, "w", zipfile.ZIP_DEFLATED) as archive:
-                for entry in files:
-                    archive.writestr(entry.archive_name, entry.payload)
+            if files:
+                with zipfile.ZipFile(temporary, "w", zipfile.ZIP_DEFLATED) as archive:
+                    for entry in files:
+                        archive.writestr(entry.archive_name, entry.payload)
+            else:
+                # dev catalog 要求每条边 common/quality/platform 三层齐全;
+                # 与官方 diff 同构:无内容层写 1 字节 .empty 占位包(STORED)。
+                with zipfile.ZipFile(temporary, "w", zipfile.ZIP_STORED) as archive:
+                    archive.writestr(".empty", b"\n")
         for _temporary, final in staged:
             if not final.exists():
                 continue
@@ -421,6 +436,14 @@ def main(argv: list[str] | None = None) -> int:
     )
     ap.add_argument("--list", action="store_true", help="只显示将发布的内容,不打包")
     ap.add_argument("--from-ver", help="覆盖起始版本(默认=CDN 现有最高版本)")
+    ap.add_argument(
+        "--no-layer-placeholders", action="store_true",
+        help="不为无内容的 medium/android 层补 .empty 占位包(新边将不满足 dev 三层契约)",
+    )
+    ap.add_argument(
+        "--no-dev-catalog", action="store_true",
+        help="发布后不重新产出 dev 格式 catalog/EntityLists(启动前编译路径的输入)",
+    )
     args = ap.parse_args(argv)
 
     try:
@@ -492,7 +515,10 @@ def main(argv: list[str] | None = None) -> int:
                     f"store={current_store_value}"
                 )
 
-        outputs = _build_archives(prepared, from_ver, to_ver)
+        outputs = _build_archives(
+            prepared, from_ver, to_ver,
+            layer_placeholders=not args.no_layer_placeholders,
+        )
     except Exception as exc:
         print(f"[ERR] publish preflight failed: {exc}", file=sys.stderr)
         return 1
@@ -530,13 +556,40 @@ def main(argv: list[str] | None = None) -> int:
             f"改动日志: {stamped} 条标记为 {to_ver},"
             "已公布 changelog.md (work/ + CDN)。"
         )
-    return 0
+
+    # 双路径产出:发布已提交(运行时接收路径生效)后,追加重产 dev 启动前编译
+    # 路径的输入(catalog manifest + 合并 EntityLists)。失败仅告警,不回滚发布。
+    if not args.no_dev_catalog:
+        try:
+            import wf_dev_catalog as devcat
+
+            manifest_path, dev_issues, dev_summary = devcat.emit_dev_catalog(
+                CDN_ROOT,
+                # asset-patch 覆盖层是本仓库相对路径,只在发布目标就是本仓库
+                # 默认 CDN 根时纳入;外部 WF_CDN_DIR 部署/测试临时根不适用。
+                devcat.ASSET_PATCH_ACTIVE if CDN_ROOT == devcat.CDN_ROOT else None,
+                digest_mode="cache",
+                allow_issues=True,
+            )
+            blocking = len(dev_issues)
+            print(
+                f"dev catalog: {manifest_path}"
+                f" (存量问题 {blocking} 项,详见 report.json;新边本身已 dev 合规)"
+            )
+        except Exception as exc:
+            print(
+                "[WARN] publish committed; dev catalog emit failed: "
+                f"{type(exc).__name__}: {exc}",
+                file=sys.stderr,
+            )
 
     # 发布来源=pending 时自动清空(与 GUI run_publish 语义对齐;CLI 直跑曾留残留,
-    # 下次发布会把已发文件重复打进 diff——无害但包变大、日志变噪)
+    # 下次发布会把已发文件重复打进 diff——无害但包变大、日志变噪)。
+    # 必须留在 main 末尾:所有失败路径都在此之前 return 1,走到这里=发布已提交。
     if not args.tables and PENDING.exists():
         PENDING.write_text("[]", encoding="utf-8")
         print("pending 列表已清空。")
+    return 0
 
 
 if __name__ == "__main__":

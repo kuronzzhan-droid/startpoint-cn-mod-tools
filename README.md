@@ -50,7 +50,7 @@ mod-tools/
 ├── requirements.txt       pip 依赖(仅 Pillow;图像/金丝雀类工具用)
 ├── docs/                  分析报告·设计方案·逆向结论(过程性文档,不参与运行)
 ├── schemas/               角色包 manifest 的 JSON Schema 契约
-├── tests/                 unittest 自测(300 项:核心读写/DSL/发布/角色包/资产治理)
+├── tests/                 unittest 自测(445 项:核心读写/DSL/发布/角色包/资产治理/dev Catalog)
 ├── examples/              recipe 配方示例
 ├── work/                  运行期状态(待发布清单/改动日志/角色快照),自动生成
 └── server-patch/          startpoint-cn 服务端 mod-admin 补丁(更新服务端后套回)
@@ -69,6 +69,7 @@ mod-tools/
 | `wf_publish.py` | 把改动打成增量包发布到服务端 CDN(与官方增量更新同构) |
 | `wf_pack_consolidate.py` | **增量包整合**:手选/上传多个已发布增量包按发布顺序合并去冗余,产出 `pinball-<最早from>-<最新to>` 单包(GUI「增量整合」页签同源;产物只写 work 输出目录,不碰 CDN/原包) |
 | `wf_chain_squash.py` | **整链压缩**:mod 增量链(≥base)压成最终版合集单边 + 全历史版本硬链桥 + verify/retire/undo,治链条无限变长 |
+| `wf_dev_catalog.py` | **dev Catalog 适配层**:把上游 dev 分支 `content:sync` 的整套 CDN 校验移植到 Python(错误码逐一对应),`audit` 体检 / `emit` 产出 dev 格式 manifest + 合并 EntityLists / `heal-layers` 补缺层占位包 / `export-pack` 产出**分享包**(含 `requires.json` 依赖声明)/ `verify-baseline` 金样验证。运行时接收与启动前编译两条路径并存,只读不改现有链目录 |
 | `wf_boss.py` / `wf_quest_lib.py` | Boss 数值 + 22 类副本列表;quest 系三层压缩索引嵌套表读写 |
 | `wf_assets.py` / `wf_dsl.py` / `wf_describe.py` | 角色资产编解码;技能 ActionDsl 编辑(AMF3);行级中文描述 |
 | `wf_dsl_sig.py` | 技能/强化弹射 DSL 命令签名表(自反编译 AS3 生成:112 命令+6 事件+46 枚举类+42 种 AC 状态词条,含中文标注) |
@@ -94,7 +95,9 @@ mod-tools/
 词条主位限制开关(全局 + 单条) · 能力魂(ability_soul) · **武器词条(equipment_enhancement_ability)** ·
 技能效果命令级编辑(**效果词条**:改参数/删段/从全库插入命令) · **强化弹射**(改种类/提取内置动作可编辑/克隆新种类+词条override激活) ·
 基础数值/觉醒/倍率 · 一键发布到 CDN(客户端只下增量)· **自动改动日志 + 一键回溯** · **全链路自检** ·
-**增量包整合/整链压缩**(历史增量包去冗余合并,后发布覆盖先发布)。
+**增量包整合/整链压缩**(历史增量包去冗余合并,后发布覆盖先发布)·
+**dev 架构兼容**(发布同时产出 dev 格式 catalog/EntityLists,新边自动补齐三层占位包)·
+**分享包导出**(把整链或任意区间打成收方零工具即可落地的包,附 `requires.json` 依赖声明)。
 **移植不崩的规律见下方规律方案。**
 端点清单见 [角色改动规律方案.md §7](docs/角色改动规律方案.md) 或 [API.md](API.md)。
 
@@ -112,6 +115,7 @@ mod-tools/
 - **[角色改动规律方案.md](docs/角色改动规律方案.md)** — 改动规律总纲:五表列图、五类改动标准做法、**移植铁律(同属性/别去共鸣/统一sid/跨表重排)**、做不到的边界、效果代码速查、工具能力矩阵。
 - **[角色包工作流.md](docs/角色包工作流.md)** — 自制新角色从工作区到发布的完整流程(manifest/preflight/发布/回滚)。
 - **[新角色制作心得.md](docs/新角色制作心得.md)** — 双新角色(赛瑞斯/史黛拉)上线全程沉淀:先例原则、解析器 schema、崩溃图鉴、发布链路坑。
+- **[分享包收方指南.md](docs/分享包收方指南.md)** — 面向**收方服主**(不装任何工具):分享包结构、链尾衔接前提、main / dev 两种服务端的落地步骤、`requires.json` 字段速查、常见问题。
 - [角色生成器方案.md](docs/角色生成器方案.md) / [角色生成器-Codex任务书.md](docs/角色生成器-Codex任务书.md) — 角色生成器设计与任务书。
 - [角色数据逆向与修改指南.md](docs/角色数据逆向与修改指南.md) — 两层数据架构 + HP/ATK / 觉醒破解过程。
 - [版本切换设计.md](docs/版本切换设计.md) — 多版本档案(profile)设计。

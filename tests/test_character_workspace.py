@@ -17,6 +17,94 @@ import wf_character_workspace as workspace_module  # noqa: E402
 
 
 class TestCharacterWorkspace(unittest.TestCase):
+    def tree_bytes(self, root: Path) -> dict[str, bytes]:
+        return {
+            path.relative_to(root).as_posix(): path.read_bytes()
+            for path in sorted(root.rglob("*"))
+            if path.is_file()
+        }
+
+    def make_release_ready_workspace(
+        self,
+        *,
+        character_id: int = 129999,
+        code_name: str = "seris_dragon_king",
+    ) -> workspace_module.Workspace:
+        tempdir = tempfile.TemporaryDirectory()
+        self.addCleanup(tempdir.cleanup)
+        workspace = workspace_module.init_workspace(
+            Path(tempdir.name), 111165, character_id, code_name, code_name,
+        )
+        package = workspace.package_dir
+        roots = {name: [] for name in ("common", "medium", "android", "server")}
+        for requirement in workspace_module.char_asset_requirements(code_name):
+            if requirement.category != "required":
+                continue
+            logical = requirement.logical_path
+            path = package / "roots" / "medium" / logical
+            path.parent.mkdir(parents=True, exist_ok=True)
+            raw = logical.encode("utf-8")
+            path.write_bytes(raw)
+            roots["medium"].append({
+                "logical_path": logical,
+                "sha256": hashlib.sha256(raw).hexdigest(),
+                "size": len(raw),
+            })
+        for logical in ("cdndata/character.json", "cdndata/character_text.json", "character.json"):
+            path = package / "roots" / "server" / logical
+            path.parent.mkdir(parents=True, exist_ok=True)
+            raw = b"{}"
+            path.write_bytes(raw)
+            roots["server"].append({
+                "logical_path": logical,
+                "sha256": hashlib.sha256(raw).hexdigest(),
+                "size": len(raw),
+            })
+        manifest_path = package / "manifest.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest["roots"] = roots
+        manifest["tables"] = [{"root": "medium"}]
+        manifest["qa"].update({
+            "release_ready": True,
+            "required_assets_total": 37,
+            "required_assets_present": 37,
+        })
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+        binding = workspace_module.workspace_status(workspace)
+        manifest["qa"].update({
+            "workspace_input_sha256": binding.input_digest,
+        })
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+        return workspace
+
+    def test_inspect_workspace_does_not_write_status_or_hash_cache(self):
+        workspace = self.make_release_ready_workspace()
+        before = self.tree_bytes(workspace.root)
+
+        report = workspace_module.inspect_workspace(workspace.root)
+
+        self.assertTrue(report["release_ready"], report)
+        self.assertEqual(before, self.tree_bytes(workspace.root))
+
+    def test_inspect_workspace_rejects_identity_mismatch_without_writing(self):
+        workspace = self.make_release_ready_workspace(
+            character_id=139999, code_name="stella_summer_goddess",
+        )
+        manifest_path = workspace.package_dir / "manifest.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest["character_id"] = 129999
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+        before = self.tree_bytes(workspace.root)
+
+        report = workspace_module.inspect_workspace(workspace.root)
+
+        self.assertEqual(report["identity"], {
+            "character_id": 139999,
+            "code_name": "stella_summer_goddess",
+        })
+        self.assertIn("manifest character_id does not match workspace", report["manifest_errors"])
+        self.assertEqual(before, self.tree_bytes(workspace.root))
+
     def test_status_recognizes_server_paths_relative_to_assets_live_root(self):
         with tempfile.TemporaryDirectory() as tmp:
             workspace = workspace_module.init_workspace(

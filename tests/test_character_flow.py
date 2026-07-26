@@ -2,7 +2,9 @@
 """Unified character-flow CLI tests (temporary roots and injected release API)."""
 from __future__ import annotations
 
+import contextlib
 import hashlib
+import io
 import json
 import shutil
 import sys
@@ -16,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import wf_character_flow as flow  # noqa: E402
 import wf_character_workspace as workspace_module  # noqa: E402
+import wf_dev_catalog as dev_catalog  # noqa: E402
 import wf_release  # noqa: E402
 
 
@@ -72,6 +75,26 @@ class ReadyPreflightModule(FakeReleaseModule):
     def preflight_package(self, package_dir, profile_id, installed_package_dir=None):
         self.preflight_calls.append((Path(package_dir), profile_id, installed_package_dir))
         return {"can_prepare": True, "release_ready": True, "conflicts": []}
+
+
+class CdnReleaseModule(FakeReleaseModule):
+    """归档落进真实链根的 release 模块(dev catalog 钩子应当发射)。"""
+
+    def __init__(self, cdn_root: Path):
+        super().__init__()
+        self.cdn_root = Path(cdn_root)
+
+    def publish_package(self, package_dir, profile_id, confirmation, installed_package_dir=None):
+        result = super().publish_package(
+            package_dir, profile_id, confirmation,
+            installed_package_dir=installed_package_dir,
+        )
+        archive = (
+            self.cdn_root / "archive-common-diff"
+            / "pinball-1.4.139-1.4.140-1-charpkg-seris-r1-common.zip"
+        )
+        archive.write_bytes(b"archive")
+        return SimpleNamespace(**{**vars(result), "archive_paths": (archive,)})
 
 
 class TestCharacterFlow(unittest.TestCase):
@@ -312,6 +335,72 @@ class TestCharacterFlow(unittest.TestCase):
             self.assertTrue(result["ok"])
             self.assertEqual("production", result["delivery_mode"])
             self.assertEqual("PUBLISH_CHARACTER_PACKAGE", fake.publish_calls[0][2])
+
+
+class TestDevCatalogHook(unittest.TestCase):
+    """发布后重产 dev 启动前编译输入:只对真实链根发射,失败只告警。"""
+
+    def _publish(self, tmp: str, release_module, **kwargs):
+        workspace = workspace_module.init_workspace(
+            Path(tmp), 111165, 129999, "seris_dragon_king", "seris",
+        )
+        ready = SimpleNamespace(
+            release_ready=True,
+            to_dict=lambda: {"release_ready": True, "manifest_errors": []},
+        )
+        with patch.object(flow.workspace_module, "workspace_status", return_value=ready):
+            return flow.run_command([
+                "publish", "--workspace", str(workspace.root),
+                "--confirm", "PUBLISH_CHARACTER_PACKAGE",
+            ], release_module=release_module, **kwargs)
+
+    def test_publish_emits_dev_catalog_when_archives_land_in_chain_root(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cdn = Path(tmp) / "cdn"
+            (cdn / "archive-common-diff").mkdir(parents=True)
+            manifest = cdn / "dev-catalog" / "catalog-cn-1.4.140.json"
+            with patch.object(dev_catalog, "CDN_ROOT", cdn), patch.object(
+                dev_catalog, "emit_dev_catalog", return_value=(manifest, [], {})
+            ) as emit:
+                code, result = self._publish(tmp, CdnReleaseModule(cdn))
+
+            self.assertEqual(0, code)
+            self.assertEqual(str(manifest), result["dev_catalog"])
+            emit.assert_called_once()
+            self.assertEqual(cdn, emit.call_args.args[0])
+            self.assertEqual("cache", emit.call_args.kwargs["digest_mode"])
+            self.assertTrue(emit.call_args.kwargs["allow_issues"])
+
+    def test_publish_skips_dev_catalog_when_archives_are_outside_chain_root(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cdn = Path(tmp) / "cdn"
+            (cdn / "archive-common-diff").mkdir(parents=True)
+            with patch.object(dev_catalog, "CDN_ROOT", cdn), patch.object(
+                dev_catalog, "emit_dev_catalog"
+            ) as emit:
+                code, result = self._publish(tmp, FakeReleaseModule())
+
+            self.assertEqual(0, code)
+            self.assertTrue(result["ok"])
+            self.assertIsNone(result["dev_catalog"])
+            emit.assert_not_called()
+
+    def test_publish_return_code_survives_dev_catalog_failure(self):
+        def exploding_hook(_result):
+            raise RuntimeError("fixture emit failure")
+
+        stderr = io.StringIO()
+        with tempfile.TemporaryDirectory() as tmp, contextlib.redirect_stderr(stderr):
+            code, result = self._publish(
+                tmp, FakeReleaseModule(), dev_catalog_hook=exploding_hook,
+            )
+
+        self.assertEqual(0, code)
+        self.assertTrue(result["ok"])
+        self.assertEqual([], result["errors"])
+        self.assertIsNone(result["dev_catalog"])
+        self.assertIn("[WARN]", stderr.getvalue())
+        self.assertIn("fixture emit failure", stderr.getvalue())
 
 
 class TestReleaseQaContract(unittest.TestCase):

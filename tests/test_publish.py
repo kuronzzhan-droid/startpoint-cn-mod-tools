@@ -118,6 +118,18 @@ class PublisherCase(unittest.TestCase):
     def archives(self) -> list[Path]:
         return sorted(self.cdn.rglob("*.zip")) if self.cdn.exists() else []
 
+    def common_archives(self) -> list[Path]:
+        directory = self.cdn / "archive-common-diff"
+        return sorted(directory.glob("*.zip")) if directory.exists() else []
+
+    def assert_layer_placeholders(self) -> None:
+        """medium/android 占位包:单个 .empty 条目(dev 三层契约,官方同构)。"""
+        for sub in ("archive-medium-diff", "archive-android-diff"):
+            zips = sorted((self.cdn / sub).glob("*.zip"))
+            self.assertEqual(1, len(zips), sub)
+            with zipfile.ZipFile(zips[0]) as archive:
+                self.assertEqual([".empty"], archive.namelist())
+
 
 class TestStrictSnapshotPublisher(PublisherCase):
     def test_snapshot_success_archives_the_exact_prevalidated_bytes(self):
@@ -136,8 +148,11 @@ class TestStrictSnapshotPublisher(PublisherCase):
 
         self.assertEqual(0, result)
         self.assertIn("[OK]", stdout)
-        self.assertEqual(1, len(self.archives()))
-        with zipfile.ZipFile(self.archives()[0]) as archive:
+        # 实包(common)+ medium/android 占位包 = 3(dev 三层契约)
+        self.assertEqual(3, len(self.archives()))
+        self.assertEqual(1, len(self.common_archives()))
+        self.assert_layer_placeholders()
+        with zipfile.ZipFile(self.common_archives()[0]) as archive:
             self.assertEqual(set(expected), set(archive.namelist()))
             for name, payload in expected.items():
                 self.assertEqual(payload, archive.read(name))
@@ -267,7 +282,7 @@ class TestStrictSnapshotPublisher(PublisherCase):
         self.assertIn("[WARN]", stderr)
         self.assertIn("committed", stderr.lower())
         self.assertIn("stat", stderr.lower())
-        self.assertEqual(1, len(self.archives()))
+        self.assertEqual(3, len(self.archives()))
 
     def test_committed_archive_changelog_failure_is_warning_only(self):
         logical = "master/test/one.orderedmap"
@@ -289,7 +304,7 @@ class TestStrictSnapshotPublisher(PublisherCase):
         self.assertIn("[WARN]", stderr)
         self.assertIn("committed", stderr.lower())
         self.assertIn("changelog", stderr.lower())
-        self.assertEqual(1, len(self.archives()))
+        self.assertEqual(3, len(self.archives()))
 
 
 class TestPendingCompatibility(PublisherCase):
@@ -304,8 +319,9 @@ class TestPendingCompatibility(PublisherCase):
 
         self.assertEqual(0, result)
         self.assertIn("[OK]", stdout)
-        self.assertEqual(1, len(self.archives()))
-        with zipfile.ZipFile(self.archives()[0]) as archive:
+        self.assertEqual(3, len(self.archives()))
+        self.assert_layer_placeholders()
+        with zipfile.ZipFile(self.common_archives()[0]) as archive:
             self.assertEqual(
                 b"pending-bytes",
                 archive.read(f"production/upload/{relative}"),
@@ -396,6 +412,102 @@ class TestPendingCompatibility(PublisherCase):
                 b"new-medium",
                 archive.read(f"production/medium_upload/{medium_relative}"),
             )
+
+    def test_pending_list_is_cleared_after_a_successful_publish(self):
+        logical = "master/test/pending.orderedmap"
+        relative = self.write_logical(logical, b"pending-bytes")
+        self.pending.write_text(json.dumps([relative]), encoding="utf-8")
+
+        result, stdout, _stderr = self.run_publish([])
+
+        self.assertEqual(0, result)
+        self.assertIn("[OK]", stdout)
+        self.assertIn("pending 列表已清空", stdout)
+        self.assertEqual([], json.loads(self.pending.read_text(encoding="utf-8")))
+
+    def test_pending_list_survives_a_failed_publish(self):
+        logical = "master/test/pending.orderedmap"
+        relative = self.write_logical(logical, b"pending-bytes")
+        self.pending.write_text(json.dumps([relative]), encoding="utf-8")
+
+        with mock.patch.object(
+            wf_publish.zipfile,
+            "ZipFile",
+            side_effect=RuntimeError("fixture zip failure"),
+        ):
+            result, stdout, _stderr = self.run_publish([])
+
+        self.assertNotEqual(0, result)
+        self.assertNotIn("[OK]", stdout)
+        self.assertEqual([], self.archives())
+        self.assertEqual(
+            [relative], json.loads(self.pending.read_text(encoding="utf-8"))
+        )
+
+    def test_explicit_tables_publish_leaves_pending_untouched(self):
+        """--tables 直发不碰 pending:清空只对 pending 来源生效(GUI 走逐表移除)。"""
+        published = "master/test/published.orderedmap"
+        self.write_logical(published, b"explicit-bytes")
+        unrelated = "aa/unrelated-pending-entry"
+        self.pending.write_text(json.dumps([unrelated]), encoding="utf-8")
+
+        result, stdout, _stderr = self.run_publish(["--tables", published])
+
+        self.assertEqual(0, result)
+        self.assertIn("[OK]", stdout)
+        self.assertNotIn("pending 列表已清空", stdout)
+        self.assertEqual(
+            [unrelated], json.loads(self.pending.read_text(encoding="utf-8"))
+        )
+
+
+class TestDevDualOutput(PublisherCase):
+    """双路径产出:hex 命名、三层占位、发布后 dev catalog 发射。"""
+
+    def _publish_pending(self, extra: list[str] | None = None):
+        logical = "master/test/dual.orderedmap"
+        relative = self.write_logical(logical, b"dual-bytes")
+        self.pending.write_text(json.dumps([relative]), encoding="utf-8")
+        return self.run_publish(list(extra or []))
+
+    def test_new_names_match_dev_scanner_pattern(self):
+        import wf_dev_catalog as devcat
+
+        with mock.patch.object(
+            wf_publish.time, "strftime", return_value="07261830"
+        ):
+            result, stdout, _stderr = self._publish_pending()
+        self.assertEqual(0, result)
+        names = [path.name for path in self.archives()]
+        self.assertEqual(3, len(names))
+        for name in names:
+            self.assertRegex(name, devcat.DIFF_NAME_RE)
+
+    def test_no_layer_placeholders_flag(self):
+        result, _stdout, _stderr = self._publish_pending(
+            ["--no-layer-placeholders", "--no-dev-catalog"]
+        )
+        self.assertEqual(0, result)
+        self.assertEqual(1, len(self.archives()))
+        self.assertEqual(1, len(self.common_archives()))
+
+    def test_dev_catalog_emitted_after_publish(self):
+        result, stdout, _stderr = self._publish_pending()
+        self.assertEqual(0, result)
+        self.assertIn("dev catalog:", stdout)
+        out_dir = self.cdn / "dev-catalog"
+        manifests = sorted(out_dir.glob("catalog-cn-*.json"))
+        self.assertEqual(1, len(manifests))
+        manifest = json.loads(manifests[0].read_text(encoding="utf-8"))
+        self.assertEqual(1, manifest["schemaVersion"])
+        self.assertEqual("cn-1.4.54", manifest["baseline"])
+        self.assertTrue((out_dir / "report.json").is_file())
+
+    def test_no_dev_catalog_flag_skips_emit(self):
+        result, stdout, _stderr = self._publish_pending(["--no-dev-catalog"])
+        self.assertEqual(0, result)
+        self.assertNotIn("dev catalog:", stdout)
+        self.assertFalse((self.cdn / "dev-catalog").exists())
 
 
 if __name__ == "__main__":

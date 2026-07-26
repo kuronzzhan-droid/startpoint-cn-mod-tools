@@ -109,6 +109,48 @@ def _release_result_payload(result: Any) -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
+# 双路径产出(与 wf_publish 的发布后钩子同义):角色包发布提交后,追加重产 dev
+# 启动前编译路径的输入(catalog manifest + 合并 EntityLists)。只在归档确实落进
+# 真实 CDN 链根时发射——注入了假 release 模块的测试写不到链根,自然跳过。
+# 失败仅 [WARN] 到 stderr,不改发布返回码(发布已提交,不可回滚)。
+# ---------------------------------------------------------------------------
+
+
+def _archives_inside(result: Any, cdn_root: Path) -> bool:
+    try:
+        root = cdn_root.resolve()
+    except OSError:
+        return False
+    for archive in getattr(result, "archive_paths", ()) or ():
+        try:
+            if Path(archive).resolve().is_relative_to(root):
+                return True
+        except OSError:
+            continue
+    return False
+
+
+def emit_dev_catalog_after_publish(result: Any) -> str | None:
+    """返回 dev catalog manifest 路径;不满足发射条件时返回 None。"""
+    if not getattr(result, "committed", False):
+        return None
+    import wf_dev_catalog as devcat
+
+    cdn_root = Path(devcat.CDN_ROOT)
+    if not (cdn_root / "archive-common-diff").is_dir():
+        return None
+    if not _archives_inside(result, cdn_root):
+        return None
+    manifest_path, _issues, _summary = devcat.emit_dev_catalog(
+        cdn_root,
+        devcat.ASSET_PATCH_ACTIVE,
+        digest_mode="cache",
+        allow_issues=True,
+    )
+    return str(manifest_path) if manifest_path is not None else None
+
+
+# ---------------------------------------------------------------------------
 # master 表资产引用门禁(2026-07-16 unique_seris_wet F1009 事故)
 # 纯逻辑在 wf_character_requirements;这里只做 I/O:解码包内表/DSL、读 manifest
 # 声明、探测 live store(sha1 桶),然后把缺失清单折进 preflight/publish 的
@@ -392,6 +434,7 @@ def run_command(
     argv: list[str] | None = None,
     *,
     release_module=wf_release,
+    dev_catalog_hook=emit_dev_catalog_after_publish,
 ) -> tuple[int, dict[str, Any]]:
     command = "unknown"
     workspace_path: str | None = None
@@ -525,12 +568,23 @@ def run_command(
                 args.confirm,
                 installed_package_dir=args.installed_package_dir,
             )
+            dev_catalog: str | None = None
+            if dev_catalog_hook is not None:
+                try:
+                    dev_catalog = dev_catalog_hook(result)
+                except Exception as exc:
+                    print(
+                        "[WARN] publish committed; dev catalog emit failed: "
+                        f"{type(exc).__name__}: {exc}",
+                        file=sys.stderr,
+                    )
             return 0, _base_payload(
                 stage="publish",
                 workspace=workspace_path,
                 release_ready=mode == "production",
                 next_command=None,
                 delivery_mode=mode,
+                dev_catalog=dev_catalog,
                 **_release_result_payload(result),
             )
 

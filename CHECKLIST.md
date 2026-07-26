@@ -21,6 +21,11 @@ set WF_CDN_DIR=D:\...\startpoint-cn\.cdn\cn
 
 **方式 B：profiles.json**（`copy profiles.example.json profiles.json` 后编辑，store/cdndata 建议写**绝对路径**）
 
+> **本仓库是独立平铺布局**（工具不住在服务端仓里），所以 CDN 位置必须显式告诉工具。
+> 解析顺序：`WF_CDN_DIR` → profile 的 `cdn_dir` → 由 `WF_SERVER_DIR` / profile 的 `server_dir`
+> 自动识别（复读服务端 `.env` 的 `CDN_DIR`，缺省按 `<服务端>/.cdn/cn`）。
+> 只配 `server_dir` 指向服务端仓根是最省事的一种——CDN 和 `assets/asset-patch` 都能推出来。
+
 检查点：
 
 - [ ] `store` 目录下能看到两位十六进制子目录（`00/`、`a3/`…），里面是 38 位无扩展名文件

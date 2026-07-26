@@ -37,6 +37,9 @@ EVENT_ID = rewards.EVENT_ID
 TOKEN_ID = rewards.TOKEN_ID
 MODE_DESCRIPTION = rewards.MODE_DESCRIPTION
 IMAGE_PREFIX = rewards.IMAGE_PREFIX
+_LEGACY_MODE_DESCRIPTIONS = (
+    "【测试版·连战专属】仅在深渊连战、宝物域连战 2001 与木桩假人生效。",
+)
 
 CLIENT_COLUMNS = 51
 STOCK = 5
@@ -165,7 +168,13 @@ def build_client_shop(
         raise TypeError("客户端 event_item_shop 必须是 dict")
     expected = _expected_client_leaves(table, weapons)
     for shop_id, leaf in expected.items():
-        if shop_id in table and table[shop_id] != leaf:
+        row, template_leaf = _single_row(leaf, f"event_item_shop[{shop_id}]")
+        known_leaves = [leaf]
+        for description in _LEGACY_MODE_DESCRIPTIONS:
+            legacy_row = list(row)
+            legacy_row[11] = description
+            known_leaves.append(_join_like(legacy_row, template_leaf))
+        if shop_id in table and table[shop_id] not in known_leaves:
             raise ValueError(f"保留商店 ID {shop_id} 已被外来客户端条目占用")
 
     result = copy.deepcopy(table)
