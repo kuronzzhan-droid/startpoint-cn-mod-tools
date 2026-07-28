@@ -7,8 +7,9 @@
 ## ⚠️ 免责声明
 
 - 本工具仅用于**学习、研究、单机 / 私服环境**下对**你自己拥有的**游戏资源进行修改。
-- **不包含、不分发任何游戏本体资产**(数据包、APK、美术、语音等版权内容归游戏运营方所有)。
-  使用者需自备合法获得的游戏资源。
+- **仓库代码不包含任何游戏本体资产**(数据包、美术、语音等版权内容归游戏运营方所有),
+  使用者需自备合法获得的游戏资源。Release 提供的客户端整合包为**自签名私服客户端**,
+  仅供离线自架私服的个人使用(见下「客户端整合包」)。
 - 修改联网正式服数据、用于作弊或商业用途均可能违反游戏服务条款,由使用者自行承担后果。
 - 逆向所得的字段语义 / 解密方式仅供技术交流;上游生态(wfax / wdfp-extractor)已公开同类逻辑。
 
@@ -34,6 +35,21 @@ python mod-tools/wf_publish.py --tables ability,character_status
 
 # 4) 重启服务端 + 重启游戏 → 改动生效
 ```
+
+## 客户端整合包(Release 下载)
+
+只想直接游玩(连**本服**)、不需要自己改数据的玩家,从本仓
+[Releases](https://github.com/kuronzzhan-droid/startpoint-cn-mod-tools/releases)
+下载**「深渊连战+三自制角色整合包 v2.0」**(`WorldFlipper-abyss-v2.apk`,约 133 MB):
+
+- 五合一客户端补丁(免登录 / 服务器重定向 / 深渊装备战斗门控 / 赛瑞斯双形态 P-code / 逐角色 render-scale),
+  启动后自动增量更新到 1.4.107,邮箱领取三位自制角色(赛瑞斯 / 史黛拉 / 杰拉德)
+- ‼️ 本包**硬编码指向服主自己的服务器**,对官服无效;**自建服请勿使用**——照服务端仓库的
+  [部署攻略](https://github.com/kuronzzhan-droid/startpoint-cn/blob/release/modes-20260714/docs/%E9%83%A8%E7%BD%B2%E6%94%BB%E7%95%A5.md)
+  重打指向你自己服务器的客户端
+- 从 v1.0 升级:**签名已变更,须卸载旧包再装**;卸载会开新号,找服主按 `device_id` 重绑老存档
+- 与 [wf-abyss-client](https://github.com/kuronzzhan-droid/wf-abyss-client/releases) 同一文件(镜像发布),
+  SHA-256:`9b539c210a80d76856ddbdf67e426746c020e9b389f78a63771a750327608772`
 
 ## 目录结构(约定)
 
