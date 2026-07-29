@@ -654,6 +654,49 @@ def print_chain_reports(reports: list[dict]) -> int:
     return bad
 
 
+# zone 的 boss 槽 = 三对列,每对 (单人战代号, 多人战代号)。客户端
+# ZoneSourceValues.get_bossN() 按 isSingleBattle 二选一读其中**一列**
+# (single→c24/28/32,multi→c26/30/34),所以两列必须始终指向同一只 boss;
+# 只改半边 = 换 boss 在一种战斗模式下静默失效(2026-07-30 法阵克隆实锤,见
+# gimmick_field)。
+ZONE_BOSS_SLOTS = ((24, 26), (28, 30), (32, 34))
+
+
+def zone_boss_slots(zn) -> list[set[str]]:
+    """zone 嵌套 dict → 每个**已占用** boss 槽的代号集合(单人/多人列合并)。
+
+    返回长度 = 该 zone 实际会出场的 boss 实体数(跨波次累加)。
+    """
+    out: list[set[str]] = []
+    if not isinstance(zn, dict):
+        return out
+    for wrow in zn.values():
+        if isinstance(wrow, dict):
+            continue                    # 异形嵌套 zone,交给上层拒绝
+        wc = cells(wrow)
+        for a, b in ZONE_BOSS_SLOTS:
+            codes = {wc[i] for i in (a, b)
+                     if len(wc) > i and wc[i] not in ("", "(None)")}
+            if codes:
+                out.append(codes)
+    return out
+
+
+def apply_boss_swap(wc: list[str], old: str, new: str) -> list[str]:
+    """把 zone wave 行里的 boss 代号 old 换成 new——**单人 + 多人两列都换**。
+
+    客户端 ZoneSourceValues.get_bossN() 按 isSingleBattle 二选一读
+    (single→c24/28/32,multi→c26/30/34),只换半边的话另一种战斗模式仍指向
+    原 boss:法阵载体克隆静默失效,成对 boss 变成「克隆 + 原体」各打各的。
+    2026-07-30 修(swap_zone_bosses 六列全换,gimmick_field 这条路漏了三列)。
+    """
+    for a, b in ZONE_BOSS_SLOTS:
+        for i in (a, b):
+            if len(wc) > i and wc[i] == old:
+                wc[i] = new
+    return wc
+
+
 def swap_zone_bosses(zn: dict, bosses: list[str]) -> dict:
     """zone 嵌套 dict 的 boss 槽(单人 c24/28/32 + 多人 c26/30/34)按序循环换成 bosses。
 
@@ -671,6 +714,109 @@ def swap_zone_bosses(zn: dict, bosses: list[str]) -> dict:
                     bi += 1
         out[wk] = join(wc, isinstance(wrow, (bytes, bytearray)))
     return out
+
+
+_PHASE_LINKED: frozenset[str] | None = None
+
+
+def phase_linked_bosses(zone_t: dict | None = None,
+                        fd_t: dict | None = None,
+                        bbq_t: dict | None = None) -> frozenset[str]:
+    """**数据驱动**的「成对 / 分阶段」boss 名单(不硬编码任何名字)。
+
+    两路信号并集:
+      A. 官方成对出场——boss 在**官方任一 zone 的同一波次**里与别的 boss 实体
+         共存(青之女王 form1/form2、深渊之兽云 cloud/p3、机工神兵 multi/foom2、
+         风神/雷神…)。
+      B. 官方阶段链——boss 出现在 `boss_battle_quest`(三层嵌套 章→战斗→阶段,
+         c109=field)同一场**战斗**的多个阶段里,且各阶段 boss 组互不相同
+         (维·索拉斯 不死王→猫头鹰 是典型:zone 各自单实体,只有 A 抓不到)。
+
+    这类 boss 的击杀/转场联动按**代号**串联,法阵载体克隆只换得动其中一只
+    (make_caster_boss 只克隆首只 general boss),联动一断就表现为「打不死」
+    (2026-07-30 玩家实测)。进程内缓存。
+    """
+    global _PHASE_LINKED
+    if _PHASE_LINKED is not None and zone_t is None and fd_t is None and bbq_t is None:
+        return _PHASE_LINKED
+    zone = zone_t if zone_t is not None else _tbl(ZONE_T)
+    fd = fd_t if fd_t is not None else _tbl(FIELD_DATA_T)
+    try:
+        bbq = bbq_t if bbq_t is not None else _tbl("master/quest/boss_battle_quest.orderedmap")
+    except Exception:
+        bbq = {}
+    flagged: set[str] = set()
+    # ---- A:同 wave 多实体 ----
+    for zk, zv in zone.items():
+        if str(zk).startswith("mod_rogue"):
+            continue                    # 自家克隆层不当判据(否则越滚越大)
+        slots = zone_boss_slots(zv)
+        if len(slots) > 1:
+            for s in slots:
+                flagged |= s
+    # ---- B:boss_battle_quest 阶段链 ----
+    def _field_bosses(fid: str) -> set[str]:
+        frow = fd.get(fid)
+        if frow is None or isinstance(frow, dict):
+            return set()
+        fc = cells(frow)
+        if len(fc) < 3:
+            return set()
+        out: set[str] = set()
+        for s in zone_boss_slots(zone.get(fc[2])):
+            out |= s
+        return out
+
+    for chv in bbq.values():
+        if not isinstance(chv, dict):
+            continue
+        for btv in chv.values():
+            if not isinstance(btv, dict):
+                continue
+            per_phase = []
+            for row in btv.values():
+                if isinstance(row, dict):
+                    continue
+                c = cells(row)
+                fid = c[109] if len(c) > 109 else ""
+                if fid and fid != "(None)":
+                    bs = _field_bosses(fid)
+                    if bs:
+                        per_phase.append(frozenset(bs))
+            if len({s for s in per_phase}) > 1:      # 同一场战斗出现 ≥2 组不同 boss
+                for s in per_phase:
+                    flagged |= set(s)
+    result = frozenset(flagged)
+    if zone_t is None and fd_t is None and bbq_t is None:
+        _PHASE_LINKED = result
+    return result
+
+
+def caster_carrier_block(field_id: str, bosses: list[str],
+                         fd_t: dict, zone_t: dict,
+                         phase_set: frozenset[str] | None = None) -> str | None:
+    """「深渊法阵」载体门禁:返回拒绝理由(None = 可以当载体)。
+
+    法阵的施法载体 = 克隆该轮首只 general boss 并给它追加官方场程序
+    (make_caster_boss)。两种情况必须拒发:
+      ① 该层 zone 有 **多个 boss 实体** —— 只换得动一只,余下的仍指向原代号,
+         成对 boss 从此各打各的;
+      ② 该层 boss 属于官方**成对/分阶段族**(phase_linked_bosses)—— 即便这层
+         只摆了一只,它的阶段转场仍按代号找同伴,克隆即断链。
+    两条都是数据判据,不认名字(索拉斯/女王/机工神兵一视同仁)。
+    """
+    frow = fd_t.get(field_id)
+    if isinstance(frow, (str, bytes, bytearray)):
+        fc = cells(frow)
+        if len(fc) > 2:
+            slots = zone_boss_slots(zone_t.get(fc[2]))
+            if len(slots) > 1:
+                return f"zone 有 {len(slots)} 个 boss 实体(法阵只换得动一只)"
+    linked = phase_set if phase_set is not None else phase_linked_bosses()
+    hit = {b for b in bosses if b in linked}     # bosses 可能含单人/多人同码重复
+    if hit:
+        return f"{','.join(sorted(hit))} 属官方成对/分阶段族"
+    return None
 
 
 def live_forged_dsl_logicals(gb: dict | None = None) -> list[str]:
@@ -2412,6 +2558,9 @@ def main() -> int:
     # ---- terrain 能力表(2026-07-20:锚点决定祭坛/板子能否生效)----
     # 板子能力 = 数据驱动:官方存在"zone 挂 c36 板子"配对的 terrain 集合;
     # 出生点能力 = terrain(Tiled) 二进制含 SPAWNn 标记(排除 FUNNEL_SPAWNn)。
+    # 成对/分阶段 boss 名单(数据驱动,进程内算一次)+ 被门禁挡下的层的理由
+    phase_linked = phase_linked_bosses(zone_t, fd_t)
+    caster_blocked: dict[str, str] = {}
     panel_terrains: set[str] = set()
     for fk, fv in fd_t.items():
         if not isinstance(fv, (str, bytes, bytearray)):
@@ -2439,7 +2588,14 @@ def main() -> int:
         if isinstance(frow, (str, bytes, bytearray)):
             fc = cells(frow)
             panel = len(fc) > 2 and fc[1] in panel_terrains
-        return {"boss": any(b in belem_map for b in bosses), "panel": panel}
+        carrier = any(b in belem_map for b in bosses)
+        if carrier:
+            # 成对/分阶段 boss 层禁发法阵(2026-07-30 玩家「打不死」实锤)
+            why = caster_carrier_block(field_id, bosses, fd_t, zone_t, phase_linked)
+            if why:
+                caster_blocked[field_id] = why
+                carrier = False
+        return {"boss": carrier, "panel": panel}
 
     def make_caster_boss(r: int, boss_code: str, program: str):
         """克隆 general boss 当法阵载体:第一条现役 action 列(c111-160,逗号数组)
@@ -2496,9 +2652,7 @@ def main() -> int:
             if panels:
                 wc[36], wc[37] = GIM_DASH, GIM_ROT
             if boss_swap:
-                for i in (24, 28, 32):            # boss1/2/3 单人槽代号列
-                    if len(wc) > i and wc[i] == boss_swap[0]:
-                        wc[i] = boss_swap[1]
+                apply_boss_swap(wc, boss_swap[0], boss_swap[1])
             nz[wk] = join(wc, isinstance(wrow, (bytes, bytearray)))
         zone_t[zkey] = nz
         nf = list(fc)
@@ -2793,7 +2947,9 @@ def main() -> int:
                 curse["caster"] = fm
                 curse["desc"] = (curse["desc"] + f" 「深渊法阵」{fm[0]}·{fm[2]}").strip()
             else:
-                print(f"[WARN] 第{r}战无 general boss 载体,--test-field 落不了法阵")
+                why = caster_blocked.get(pick["field"])
+                print(f"[WARN] 第{r}战无 general boss 载体,--test-field 落不了法阵"
+                      + (f"(门禁:{why})" if why else ""))
         if curse["gimmick"] or curse["caster"]:
             swap = None
             if curse["caster"]:
@@ -2873,6 +3029,10 @@ def main() -> int:
         print(f"[ERR] {len(broken)}/{len(reports)} 关解析链断裂,拒绝产出(未写入任何表)")
         return 1
     print(f"[门禁] {len(reports)} 关解析链复核通过(quest→field→zone→boss/zako 全可解析)")
+    if caster_blocked:
+        print(f"[门禁] 成对/分阶段 boss 层已禁发深渊法阵({len(caster_blocked)} 个场地):")
+        for _f, _why in sorted(caster_blocked.items()):
+            print(f"        {_f} — {_why}")
 
     if not args.write:
         print("[DRY-RUN] 未写入。加 --write 生效,--publish 顺带发 CDN。")

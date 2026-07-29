@@ -1243,5 +1243,161 @@ class CdnChainCase(unittest.TestCase):
         self.assertIn("store 文件缺失", problems[0][1])
 
 
+def wave_pair(bosses: tuple = ()) -> str:
+    """41 列 zone wave 行,boss 槽的**单人+多人两列**都填(官方常态)。
+
+    槽位 = (门, 单人列, 多人列):(23,24,26)/(27,28,30)/(31,32,34)。
+    """
+    row = [""] * 41
+    for n, b in enumerate(bosses):
+        gate, single, multi = ((23, 24, 26), (27, 28, 30), (31, 32, 34))[n]
+        row[gate] = "1"
+        row[single] = b
+        row[multi] = b
+    return ",".join(row)
+
+
+class BossSwapColumnPairCase(unittest.TestCase):
+    """法阵载体克隆:单人/多人两列必须同步换(2026-07-30「打不死」根因之一)。
+
+    客户端 ZoneSourceValues.get_bossN() 按 isSingleBattle 二选一读列,
+    只换 c24/28/32 的话多人模式仍指向原 boss。
+    """
+
+    def test_both_columns_swapped(self):
+        wc = wave_pair(bosses=("old_a",)).split(",")
+        rb.apply_boss_swap(wc, "old_a", "mod_rogue_boss7")
+        self.assertEqual(wc[24], "mod_rogue_boss7")
+        self.assertEqual(wc[26], "mod_rogue_boss7")   # ← 修复前这里还是 old_a
+
+    def test_second_slot_pair_swapped(self):
+        wc = wave_pair(bosses=("old_a", "old_b")).split(",")
+        rb.apply_boss_swap(wc, "old_b", "clone_b")
+        self.assertEqual([wc[28], wc[30]], ["clone_b", "clone_b"])
+        self.assertEqual([wc[24], wc[26]], ["old_a", "old_a"])   # 别的槽不动
+
+    def test_unrelated_code_untouched(self):
+        wc = wave_pair(bosses=("old_a",)).split(",")
+        rb.apply_boss_swap(wc, "not_here", "x")
+        self.assertEqual([wc[24], wc[26]], ["old_a", "old_a"])
+
+    def test_swap_zone_bosses_keeps_pair_in_sync(self):
+        """姊妹路径(--mix)一直是六列全换,回归锁住。"""
+        out = rb.swap_zone_bosses({"0": wave_pair(bosses=("old_a",))}, ["new_x"])
+        cells = out["0"].split(",")
+        self.assertEqual([cells[24], cells[26]], ["new_x", "new_x"])
+
+
+class PhaseLinkedBossCase(unittest.TestCase):
+    """成对/分阶段 boss 检测(数据驱动,不认名字)。"""
+
+    ZONE = {
+        "z_single": {"0": wave_pair(bosses=("lone_boss",))},
+        "z_pair": {"0": wave_pair(bosses=("form1", "form2"))},
+        "z_ph1": {"0": wave_pair(bosses=("lich",))},      # 阶段链第 1 阶段
+        "z_ph2": {"0": wave_pair(bosses=("owl",))},       # 阶段链第 2 阶段
+        "mod_rogue_z3": {"0": wave_pair(bosses=("cloneA", "cloneB"))},  # 自家克隆
+    }
+    FD = {
+        "f_single": "f_single,terrain_a,z_single",
+        "f_pair": "f_pair,terrain_a,z_pair",
+        "f_ph1": "f_ph1,terrain_a,z_ph1",
+        "f_ph2": "f_ph2,terrain_a,z_ph2",
+    }
+
+    @staticmethod
+    def bbq_row(field: str) -> str:
+        row = [""] * 124
+        row[109] = field
+        return ",".join(row)
+
+    def chain_table(self) -> dict:
+        """章 → 战斗 → 阶段(三层嵌套,c109=field)。"""
+        return {
+            "1": {
+                "1": {"1": self.bbq_row("f_ph1"), "2": self.bbq_row("f_ph2")},
+                "2": {"1": self.bbq_row("f_single")},      # 单阶段战斗,不算链
+            }
+        }
+
+    def flagged(self):
+        return rb.phase_linked_bosses(self.ZONE, self.FD, self.chain_table())
+
+    def test_same_wave_pair_flagged(self):
+        f = self.flagged()
+        self.assertIn("form1", f)
+        self.assertIn("form2", f)
+
+    def test_quest_phase_chain_flagged(self):
+        """zone 各自单实体,只有 boss_battle_quest 阶段链能抓到(索拉斯型)。"""
+        f = self.flagged()
+        self.assertIn("lich", f)
+        self.assertIn("owl", f)
+
+    def test_plain_boss_not_flagged(self):
+        self.assertNotIn("lone_boss", self.flagged())
+
+    def test_own_clone_zone_ignored(self):
+        """mod_rogue_* 是本工具自己写的层,不能拿来当判据(否则名单自我膨胀)。"""
+        f = self.flagged()
+        self.assertNotIn("cloneA", f)
+        self.assertNotIn("cloneB", f)
+
+    def test_missing_bbq_table_degrades_quietly(self):
+        f = rb.phase_linked_bosses(self.ZONE, self.FD, {})
+        self.assertIn("form1", f)          # 信号 A 仍在
+        self.assertNotIn("lich", f)
+
+
+class CasterCarrierGateCase(unittest.TestCase):
+    """「深渊法阵」载体门禁:成对/分阶段层拒发(2026-07-30 玩家第10战打不死)。"""
+
+    ZONE = PhaseLinkedBossCase.ZONE
+    FD = PhaseLinkedBossCase.FD
+
+    def test_plain_field_allowed(self):
+        why = rb.caster_carrier_block("f_single", ["lone_boss"],
+                                      self.FD, self.ZONE, frozenset())
+        self.assertIsNone(why)
+
+    def test_multi_entity_zone_blocked(self):
+        why = rb.caster_carrier_block("f_pair", ["form1", "form2"],
+                                      self.FD, self.ZONE, frozenset())
+        self.assertIsNotNone(why)
+        self.assertIn("boss 实体", why)
+
+    def test_phase_linked_boss_blocked_even_when_alone(self):
+        """索拉斯型:这层只摆了一只,但它的转场按代号找同伴,克隆即断链。"""
+        why = rb.caster_carrier_block("f_ph1", ["lich"],
+                                      self.FD, self.ZONE, frozenset({"lich", "owl"}))
+        self.assertIsNotNone(why)
+        self.assertIn("分阶段", why)
+
+    def test_unknown_field_falls_back_to_boss_check(self):
+        self.assertIsNone(rb.caster_carrier_block("f_ghost", ["lone_boss"],
+                                                  self.FD, self.ZONE, frozenset()))
+        self.assertIsNotNone(rb.caster_carrier_block("f_ghost", ["lich"],
+                                                     self.FD, self.ZONE,
+                                                     frozenset({"lich"})))
+
+
+class ZoneBossSlotsCase(unittest.TestCase):
+    def test_counts_entities_not_columns(self):
+        zn = {"0": wave_pair(bosses=("a", "b"))}
+        self.assertEqual(rb.zone_boss_slots(zn), [{"a"}, {"b"}])
+
+    def test_single_multi_variants_are_one_entity(self):
+        wc = wave_pair(bosses=("x_single",)).split(",")
+        wc[26] = "x_multi"                      # 官方 78 处这样写
+        zn = {"0": ",".join(wc)}
+        self.assertEqual(rb.zone_boss_slots(zn), [{"x_single", "x_multi"}])
+
+    def test_nested_wave_skipped(self):
+        self.assertEqual(rb.zone_boss_slots({"0": {"weird": "nested"}}), [])
+
+    def test_non_dict_zone_empty(self):
+        self.assertEqual(rb.zone_boss_slots("not-a-zone"), [])
+
+
 if __name__ == "__main__":
     unittest.main()
