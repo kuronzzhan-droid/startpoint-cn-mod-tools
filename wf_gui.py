@@ -7029,7 +7029,18 @@ def _rogue_reload_server() -> None:
                     break
     except Exception:
         pass
-    for host in ("127.0.0.1", "192.168.0.130"):
+    # 服务端可能只绑在 LAN 网卡上:127.0.0.1 之外再探本机全部 IPv4;
+    # 远程 GUI 场景用 WF_RELOAD_HOST 显式指定。
+    hosts = ["127.0.0.1"]
+    try:
+        import socket
+        hosts += [ip for ip in socket.gethostbyname_ex(socket.gethostname())[2]
+                  if not ip.startswith("127.")]
+    except Exception:
+        pass
+    if os.environ.get("WF_RELOAD_HOST"):
+        hosts.insert(0, os.environ["WF_RELOAD_HOST"])
+    for host in hosts:
         try:
             req = urllib.request.Request(
                 f"http://{host}:8001/api/mod-admin/reload_assets", data=b"", method="POST")
