@@ -81,13 +81,23 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="深渊连战一键重开(重摇+清进度+发布+重启游戏)")
     ap.add_argument("--rounds", type=int, default=15, help="爬塔轮数(与线上不同须重启服务端)")
     ap.add_argument("--seed", type=int, help="留空=每次随机;填数字可复现同一座塔")
-    ap.add_argument("--enemy-level", type=int, default=80)
+    ap.add_argument("--enemy-level", default="max",
+                    help="敌等级:数字或 max=每层取该 boss 最高档(默认 max)")
     ap.add_argument("--event", default="700099", help="rush 活动 id(默认深渊连战)")
     ap.add_argument("--player", type=int, help="只清指定存档的进度(默认全部存档)")
     ap.add_argument("--keep-progress", action="store_true",
                     help="不清进度只换楼层(旧进度会接在新楼层上,一般不建议)")
     ap.add_argument("--no-restart", action="store_true",
-                    help="不自动 force-stop/拉起游戏(自己手动重启生效)")
+                    help="不自动 force-stop/拉起游戏(自己手动重启生效)。"
+                         "⚠ 游戏若正在局内,残局结算会写进清空后的新进度(幽灵行,"
+                         "2026-07-27 卡第1关实锤),确保没在打再用")
+    ap.add_argument("--curse", choices=("off", "standard", "abyss", "hell"),
+                    help="深渊诅咒档位(缺省=wf_rogue_build 默认 abyss)")
+    ap.add_argument("--mix", action="store_true",
+                    help="模块化拼接:塔层地形与 boss 独立随机组合(透传 wf_rogue_build)")
+    ap.add_argument("--difficulty", choices=("easy", "normal", "hell", "gradient"),
+                    help="全塔难度预设:easy 全简单/hell 全炼狱/gradient 从简单到难"
+                         "(透传 wf_rogue_build,层数自适应)")
     ap.add_argument("--apply", action="store_true", help="真执行(默认 dry-run 预览)")
     args = ap.parse_args()
 
@@ -116,6 +126,12 @@ def main() -> int:
         cmd = [sys.executable, "-u", BUILD,
                "--rounds", str(args.rounds), "--seed", str(seed),
                "--enemy-level", str(args.enemy_level)]
+        if args.curse:
+            cmd += ["--curse", args.curse]
+        if args.mix:
+            cmd += ["--mix"]
+        if args.difficulty:
+            cmd += ["--difficulty", args.difficulty]
         if args.apply:
             cmd += ["--write", "--publish"]
         rc = subprocess.run(cmd, cwd=ROOT).returncode

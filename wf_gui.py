@@ -6656,7 +6656,14 @@ def chain_apply(body: dict, dry_run: bool) -> dict:
 
     if mode == "fixed":
         n = max(1, min(int(body.get("floors") or 5), len(pool)))
-        picks = rng.sample(pool, n)
+        fl = [str(x) for x in (body.get("floor_list") or []) if str(x).strip()]
+        if fl:
+            picks = [e for k in fl for e in pool if e[0] == k]
+            n = len(picks) or n
+            if not picks:
+                picks = rng.sample(pool, n)
+        else:
+            picks = rng.sample(pool, n)
         chain = "\n".join(ln for _fdk, ln, _b in picks)
         chain_lines = [ln for _fdk, ln, _b in picks]
         log.append(f"floor[{CHAIN_KEY}] = 固定链 {n} 层(种子 {seed})")
@@ -6753,7 +6760,9 @@ ROGUE_SHOP_KEYS = [str(i) for i in range(9700101, 9700116)]
 # c32 奖励type c33 奖励id c34 数量
 ROGUE_SHOP_COLS = {"name": 7, "cost_id": 18, "price": 19, "stock": 29,
                    "reward_type": 32, "reward_id": 33, "reward_count": 34}
-ROGUE_ELEM_CN = ["火", "水", "雷", "风", "光", "暗"]
+# quest c69 枚举(0风1火2水3雷4暗5光)——boss_element_map 已换算成这一套,
+# 与 general_boss c0(1火2水3雷4风5光6暗)不是同一个枚举,别混用。
+ROGUE_ELEM_CN = ["风", "火", "水", "雷", "暗", "光"]
 
 
 def _rogue_cells(leaf) -> list[str]:
@@ -6855,15 +6864,353 @@ def rogue_state() -> dict:
             "endless": endless, "curve": curve, "drops": drops, "shop": shop}
 
 
+def _rogue_boss_stats() -> dict:
+    """boss 代号 → {hp, atk, minion};基础数值取 boss_level/standard_boss 首个等级档。"""
+    import wf_quest_lib as qlib
+    import wf_rogue_build as rb
+    out: dict = {}
+    try:
+        bl = qlib.load_table("master/battle/boss/boss_level.orderedmap")
+        sbs = qlib.load_table(rb.STANDARD_BOSS)
+        gz = set(map(str, qlib.load_table(rb.GENERAL_ZAKO)))
+    except Exception:
+        return out
+
+    def leaves(node):
+        if isinstance(node, dict):
+            for value in node.values():
+                yield from leaves(value)
+        else:
+            yield node if isinstance(node, str) else node.decode("utf-8")
+
+    for code in set(bl) | set(sbs):
+        hp = atk = None
+        source = bl.get(code) if code in bl else sbs.get(code)
+        for text in leaves(source):
+            for line in text.split(chr(10)):
+                cells = _rogue_cells(line)
+                for i, cell in enumerate(cells):
+                    if i + 1 >= len(cells):
+                        break
+                    nxt = cells[i + 1].replace(".", "", 1)
+                    if not nxt.isdigit():
+                        continue
+                    if cell == "hit_hp_basic_normal":
+                        hp = max(hp or 0, float(cells[i + 1]))
+                    elif cell == "atk_basic_normal":
+                        atk = max(atk or 0, float(cells[i + 1]))
+            break
+        if hp is not None or atk is not None:
+            out[code] = {"hp": hp or 0, "atk": atk or 0,
+                         "minion": rb.is_minion_boss(code, gz)}
+    return out
+
+
+def rogue_tower() -> dict:
+    """新版塔总览:逐层 boss + 基础数值 + 门禁状态 + 名单摘要。"""
+    import wf_quest_lib as qlib
+    import wf_rogue_build as rb
+    names = wf_boss.boss_names()
+    stats = _rogue_boss_stats()
+    fd, zone, enemies, zakos, lv_ceil, lv_floor, lv_gb = rb.store_chain_ctx(fresh=True)
+    quest = qlib.load_table(ROGUE_Q_LOGICAL)
+    inner = quest.get(ROGUE_EVENT_ID) or {}
+    floors, endless = [], None
+    for qno, leaf in inner.items():
+        cells = _rogue_cells(leaf)
+        field = cells[98] if len(cells) > 98 else ""
+        level = int(cells[95]) if len(cells) > 95 and cells[95].isdigit() else None
+        chain = rb.check_field_chain(field, fd, zone, enemies, zakos, level=level,
+                                     lv_ceil=lv_ceil, lv_floor=lv_floor, lv_gb=lv_gb)
+        bosses = []
+        for code in chain["bosses"]:
+            stat = stats.get(code, {})
+            bosses.append({"code": code, "name": str(names.get(code, code)),
+                           "hp": stat.get("hp"), "atk": stat.get("atk"),
+                           "minion": bool(stat.get("minion"))})
+        # 条件槽:带中文与语义(抗性/完全免疫/易伤/减益免疫)——光看 kind 数字读不出来
+        KIND_CN = {"0": "能力", "1": "直击", "2": "强化弹射", "3": "技能", "4": "减益"}
+        effects = []
+        for slot in range(5):
+            ki = 71 + slot * 2
+            if len(cells) > ki + 1 and cells[ki] not in ("", "(None)"):
+                kind, s = cells[ki], cells[ki + 1]
+                try:
+                    fv = float(s) if s not in ("", "(None)") else None
+                except ValueError:
+                    fv = None
+                if kind == "4":
+                    mode = "免疫"
+                elif fv is None:
+                    mode = ""
+                elif fv >= 1:
+                    mode = "完全免疫"
+                elif fv < 0:
+                    mode = "易伤"
+                else:
+                    mode = "抗性"
+                effects.append({"kind": kind, "strength": s,
+                                "kind_cn": KIND_CN.get(kind, "k" + kind),
+                                "mode": mode,
+                                "pct": ("" if fv is None else
+                                        f"{abs(fv) * 100:.0f}%" if abs(fv) <= 1 else str(fv))})
+        elem = cells[69] if len(cells) > 69 else ""
+        # 游戏内实际显示的三件套:缩略图(c5)/名称(c4)/副标题(c3)——工具里要能预览
+        desc = cells[3] if len(cells) > 3 else ""
+        combo = ""
+        if desc.startswith("【") and "】" in desc:
+            combo = desc[1:desc.index("】")]
+        thumb = cells[5] if len(cells) > 5 else ""
+        series = sorted({s for b in chain["bosses"]
+                         if (s := rb.boss_series_of(b))})
+        entry = {
+            "qno": qno, "round": cells[2] if len(cells) > 2 else "",
+            "subname": cells[4] if len(cells) > 4 else "", "field": field,
+            "thumb": thumb, "desc": desc, "combo": combo, "series": series,
+            "tp": cells[94] if len(cells) > 94 else "",
+            "fever": cells[97] if len(cells) > 97 else "",
+            "time_limit": cells[100] if len(cells) > 100 else "",
+            "composed": field.startswith("mod_rogue_f"),
+            "element": elem,
+            "element_cn": (ROGUE_ELEM_CN[int(elem)]
+                           if elem.isdigit() and int(elem) < 6 else ""),
+            "level": cells[95] if len(cells) > 95 else "",
+            "rank": __import__("wf_rogue_build").rank_of(
+                cells[95] if len(cells) > 95 else ""),
+            "hp_mult": cells[86] if len(cells) > 86 else "",
+            "atk_mult": cells[89] if len(cells) > 89 else "",
+            "bosses": bosses, "effects": effects,
+            "ok": chain["ok"], "errors": chain["errors"],
+        }
+        if entry["round"] == "0":
+            endless = entry
+        else:
+            floors.append(entry)
+    floors.sort(key=lambda item: int(item["round"] or 0))
+    cfg = {}
+    try:
+        with open(os.path.join(MOD_DIR, "rogue_special_bosses.json"), encoding="utf-8") as fh:
+            cfg = json.load(fh)
+    except Exception:
+        pass
+    # 当前设计参数一并回传,GUI 直接显示,不用人去翻源码
+    design = {
+        "difficulty_default": "hell",
+        "series_caps": {k: rb.series_cap(k, len(floors) or 30) for k in rb.SERIES_CAPS},
+        "series_caps_base": dict(rb.SERIES_CAPS),
+        "combos": [{"name": c["name"], "curses": list(c["curses"]),
+                    "field_cat": c.get("field_cat", ""), "note": c.get("note", "")}
+                   for c in rb.CURSE_COMBOS],
+        "combo_rate": rb.COMBO_RATE,
+        "min_quest_level": rb.MIN_QUEST_LEVEL,
+        "field_random_cats": sorted(rb.FIELD_RANDOM_CATS),
+        "field_menu_count": len(rb.field_menu_all()),
+        "blocked_fields": list(rb.FIELD_BLOCKED_PREFIXES),
+        "blocked_bosses": list(rb.C8016_BLOCKED_BOSS_PREFIXES),
+    }
+    return {"event": ROGUE_EVENT_ID, "floors": floors, "endless": endless,
+            "count": len(floors), "design": design,
+            "authentic": cfg.get("authentic") or [],
+            "authentic_movement": cfg.get("authentic_movement") or [],
+            "socket_families": cfg.get("socket_families") or [],
+            "transplant_safe": cfg.get("transplant_safe") or [],
+            "strict_transplant": bool(cfg.get("strict_transplant", True))}
+
+
+def _rogue_reload_server() -> None:
+    """通知服务端热重载 mod assets(奖励/掉落改动即时生效,不必重启)。"""
+    import urllib.request
+    token = ""
+    try:
+        with open(os.path.join(ROOT, ".env"), encoding="utf-8") as fh:
+            for line in fh:
+                if line.startswith("CN_ADMIN_TOKEN"):
+                    token = line.split("=", 1)[1].strip().strip(chr(34))
+                    break
+    except Exception:
+        pass
+    for host in ("127.0.0.1", "192.168.0.130"):
+        try:
+            req = urllib.request.Request(
+                f"http://{host}:8001/api/mod-admin/reload_assets", data=b"", method="POST")
+            if token:
+                req.add_header("Authorization", f"Bearer {token}")
+            urllib.request.urlopen(req, timeout=5).read()
+            return
+        except Exception:
+            continue
+
+
+def rogue_rewards(body: dict | None = None) -> dict:
+    """通关奖励读写:固定表(rush_event_quest_folder.json)+随机/概率(rogue_event.json)。"""
+    fixed_path = _rogue_asset_path("rush_event_quest_folder.json")
+    rogue_path = _rogue_asset_path("rogue_event.json")
+    if body:
+        if body.get("fixed") is not None:
+            with open(fixed_path, encoding="utf-8") as fh:
+                fj = json.load(fh)
+            fj.setdefault(ROGUE_EVENT_ID, {})["1"] = body["fixed"]
+            with open(fixed_path, "w", encoding="utf-8") as fh:
+                json.dump(fj, fh, ensure_ascii=False, indent=1)
+        with open(rogue_path, encoding="utf-8") as fh:
+            rj = json.load(fh)
+        event = rj.setdefault("events", {}).setdefault(ROGUE_EVENT_ID, {})
+        for key in ("folder_clear_random", "folder_clear_chance"):
+            if body.get(key) is not None:
+                event[key] = body[key]
+        with open(rogue_path, "w", encoding="utf-8") as fh:
+            json.dump(rj, fh, ensure_ascii=False, indent=1)
+        _rogue_reload_server()
+    with open(fixed_path, encoding="utf-8") as fh:
+        fixed = (json.load(fh).get(ROGUE_EVENT_ID) or {}).get("1") or []
+    with open(rogue_path, encoding="utf-8") as fh:
+        event = (json.load(fh).get("events") or {}).get(ROGUE_EVENT_ID) or {}
+    item_names = {}
+    try:
+        rows = core.load_table("master/item/item.orderedmap",
+                               TARGET_STORE, SOURCE_STORE).text_rows()
+        for iid, line in rows.items():
+            cells = _rogue_cells(line.split(chr(10))[0])
+            if len(cells) > 2:
+                item_names[str(iid)] = cells[2]
+    except Exception:
+        pass
+    return {"fixed": fixed,
+            "random": event.get("folder_clear_random") or [],
+            "chance": event.get("folder_clear_chance") or [],
+            "item_names": item_names}
+
+
+def rogue_lists(body: dict | None = None) -> dict:
+    """原味保护 / 移植白名单读写(rogue_special_bosses.json)。"""
+    path = os.path.join(MOD_DIR, "rogue_special_bosses.json")
+    try:
+        with open(path, encoding="utf-8") as fh:
+            cfg = json.load(fh)
+    except Exception:
+        cfg = {}
+    if body:
+        for key in ("authentic", "authentic_prefixes", "authentic_movement",
+                    "socket_families", "transplant_safe"):
+            if body.get(key) is not None:
+                cfg[key] = body[key]
+        if body.get("strict_transplant") is not None:
+            cfg["strict_transplant"] = bool(body["strict_transplant"])
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump(cfg, fh, ensure_ascii=False, indent=1)
+    names = wf_boss.boss_names()
+    codes = (set(cfg.get("authentic") or []) | set(cfg.get("authentic_movement") or [])
+             | set(cfg.get("transplant_safe") or []))
+    return {**{k: v for k, v in cfg.items() if not str(k).startswith("_")},
+            "names": {code: str(names.get(code, code)) for code in codes}}
+
+
+def rogue_curse_info() -> dict:
+    """诅咒/法阵图鉴:直接 import wf_rogue_build 取单一事实源(三档数值+领域菜单)。"""
+    import random as _random
+    import wf_rogue_build as rb
+    tiers = [rb._curse_pool(t, _random.Random(0)) for t in range(3)]
+    names = [c["name"] for c in tiers[0]]
+    curses = []
+    for i, n in enumerate(names):
+        curses.append({
+            "name": n,
+            "caster": bool(tiers[0][i].get("caster")),
+            "tiers": [tiers[t][i].get("text", "") for t in range(3)],
+        })
+    cat_map = {"圣蟹充能阵": "加成", "连击法阵": "加成",
+               "封连领域": "诅咒", "禁疗领域": "诅咒", "禁益领域": "诅咒", "血滑领域": "诅咒",
+               "深渊之水": "场地", "元素统一场": "场地",
+               "元素结界": "领域", "炎兽领域": "领域"}
+    # 全量目录(wf_field_catalog 产出)提供扩展项的分类
+    json_cat = {}
+    try:
+        with open(MOD_DIR / "rogue_field_menu.json", encoding="utf-8") as fh:
+            for c in json.load(fh):
+                json_cat[c["program"]] = c.get("cat", "领域")
+    except Exception:
+        pass
+    menu = [{"label": m[0], "note": m[2], "program": m[1],
+             "cat": (m[3] if len(m) > 3 else None) or cat_map.get(m[0]) or json_cat.get(m[1], "领域"),
+             "src": m[1].split("/")[-1].split("$")[0].replace("boss_", "")}
+            for m in rb.field_menu_all()]
+    return {"curses": curses, "menu": menu, "tiers": ["标准", "深渊", "炼狱"],
+            "tuning": rb.field_tuning()}
+
+
+def rogue_plan_get() -> dict:
+    """连战工坊布局计划(阶段难度 + 逐层显式词条/领域)。"""
+    try:
+        with open(MOD_DIR / "rogue_layout_plan.json", encoding="utf-8") as fh:
+            return json.load(fh)
+    except Exception:
+        return {"stages": [], "floors": {}}
+
+
+def rogue_plan_save(body: dict) -> dict:
+    stages = []
+    for st in (body.get("stages") or [])[:20]:
+        try:
+            f, t = int(st["from"]), int(st["to"])
+        except (KeyError, ValueError, TypeError):
+            continue
+        tier = str(st.get("tier", "elite"))
+        if tier in ("easy", "normal", "elite", "hell") and 1 <= f <= t <= 99:
+            stages.append({"from": f, "to": t, "tier": tier})
+    floors = {}
+    for k, v in (body.get("floors") or {}).items():
+        if not str(k).isdigit() or not isinstance(v, dict):
+            continue
+        ent = {}
+        cs = [str(x) for x in (v.get("curses") or []) if str(x).strip()][:4]
+        if cs:
+            ent["curses"] = cs
+        if str(v.get("field", "")).strip():
+            ent["field"] = str(v["field"]).strip()
+        if ent:
+            floors[str(k)] = ent
+    data = {"stages": stages, "floors": floors}
+    (MOD_DIR / "rogue_layout_plan.json").write_text(
+        json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+    return {"ok": True, **data}
+
+
+def rogue_field_tuning_save(body: dict) -> dict:
+    """保存领域调值(全局按分类 + 单程序覆盖);下次构建生效(锻造缩放变体)。"""
+    def _clean(d):
+        out = {}
+        for k, v in (d or {}).items():
+            try:
+                f = float(v)
+            except (TypeError, ValueError):
+                continue
+            if abs(f - 1.0) > 1e-9 and 0 < f <= 20:
+                out[k] = f
+        return out
+    data = {"global": _clean(body.get("global")), "per": _clean(body.get("per"))}
+    (MOD_DIR / "rogue_field_tuning.json").write_text(
+        json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+    return {"ok": True, **data}
+
+
 def rogue_build_apply(body: dict, dry_run: bool) -> dict:
     """难度曲线 + 重摇:封装 wf_rogue_build。dry_run=预览,否则 --write --publish。"""
     def _num(key, default):
         v = body.get(key)
         return str(default if v in (None, "") else v)
     args = ["--rounds", str(int(float(_num("rounds", 15)))),
-            "--hp-base", _num("hp_base", 0.5), "--hp-growth", _num("hp_growth", 1.185),
-            "--atk-base", _num("atk_base", 0.35), "--atk-growth", _num("atk_growth", 1.13),
-            "--enemy-level", str(int(float(_num("enemy_level", 80))))]
+            "--hp-base", _num("hp_base", 0.6), "--hp-growth", _num("hp_growth", 1.2),
+            "--atk-base", _num("atk_base", 0.4), "--atk-growth", _num("atk_growth", 1.145),
+            "--enemy-level", (lambda v: "max" if str(v).strip().lower() in ("", "max", "最强")
+                              else str(int(float(v))))(body.get("enemy_level", "max"))]
+    if str(body.get("curse", "")).strip() in ("off", "standard", "abyss", "hell"):
+        args += ["--curse", str(body["curse"]).strip()]
+    if str(body.get("test_field", "")).strip():
+        args += ["--test-field", str(int(float(body["test_field"])))]
+    if body.get("mix"):
+        args += ["--mix"]
+    if str(body.get("difficulty", "")).strip() in ("easy", "normal", "hell", "gradient"):
+        args += ["--difficulty", str(body["difficulty"]).strip()]
     if body.get("seed") not in (None, ""):
         args += ["--seed", str(int(float(body["seed"])))]
     if not dry_run:
@@ -6993,6 +7340,9 @@ ROGUE_POOL_CATS = [
     ("hard_multi", "机兵"), ("raid", "战阵之宴"), ("expert_single", "专家单人"),
     ("score_attack", "积分战"), ("solo_time_attack", "计时战"), ("ranking", "排名战"),
     ("world_story_boss", "剧情boss"), ("challenge_dungeon", "临境域/幽玄"),
+    # 2026-07-29 补全:联动/活动/训练场 boss 的宿主类别(以前整类缺席)
+    ("world_story", "世界剧情"), ("story_event", "剧情活动"),
+    ("practice", "训练场"), ("carnival", "嘉年华"), ("main", "主线"),
 ]
 
 
@@ -7010,18 +7360,30 @@ def rogue_pool(force: bool = False) -> dict:
     import wf_chain_build as cb
     names = wf_boss.boss_names()
     belem = rb.boss_element_map()
+    # 引用完整性硬门禁(2026-07-26 关13 water_sphere 崩溃):悬空楼层进不了候选池
+    fd_c, zone_c, enemies_c, zakos_c, _ce_c, _fl_c, _gb_c = rb.store_chain_ctx()
     seen: dict = {}
     out: list = []
+    dropped: list = []
 
-    def push(cat, field, disp, bosses, thumb=""):
+    def push(cat, field, disp, bosses, thumb="", extra=None):
+        extra = extra or {}
         if not field or field in seen:
             return
         seen[field] = 1
+        if rb.field_blocked(field):     # 宝物域等非 boss 战场地不进候选池
+            dropped.append(f"{field}: 楼层黑名单(非 boss 战场地)")
+            return
+        chain = rb.check_field_chain(field, fd_c, zone_c, enemies_c, zakos_c)
+        if not chain["ok"]:
+            dropped.append(f"{field}: {chain['errors'][0]}")
+            return
         el = next((belem[b] for b in bosses if belem.get(b) is not None), None)
         out.append({"field": field, "cat": cat, "boss": disp or field,
                     "label": f"{cat} · {disp or field}  [{field}]",
                     "element": ("" if el is None else str(el)),
                     "element_cn": (ROGUE_ELEM_CN[el] if el is not None and el < 6 else ""),
+                    "level": extra.get("level", ""), "rank": extra.get("rank", ""),
                     "thumb": thumb or ""})
     try:
         for fdk, _ln, b in cb.build_pool():
@@ -7032,7 +7394,8 @@ def rogue_pool(force: bool = False) -> dict:
         try:
             for e in rb.quest_pool(cat_key):
                 cat = "机兵" if "steampunk" in e["field"] else cat_cn
-                push(cat, e["field"], e["name"], e.get("bosses", []), e.get("thumb", ""))
+                push(cat, e["field"], e["name"], e.get("bosses", []), e.get("thumb", ""),
+                     {"level": e.get("level", ""), "rank": e.get("rank", "")})
         except Exception:
             continue
     try:
@@ -7046,7 +7409,11 @@ def rogue_pool(force: bool = False) -> dict:
          ("", "专家单人"), ("", "临境域/幽玄"), ("", "剧情boss"), ("", "积分战"),
          ("", "计时战"), ("", "排名战"), ("", "连战塔"), ("", "小怪房")])}
     out.sort(key=lambda x: (cat_order.get(x["cat"], 99), x["boss"]))
-    _ROGUE_POOL_CACHE = {"pool": out,
+    if dropped:
+        print(f"[rogue_pool] 门禁剔除 {len(dropped)} 个引用悬空楼层:", flush=True)
+        for d in dropped:
+            print(f"  {d}", flush=True)
+    _ROGUE_POOL_CACHE = {"pool": out, "dropped": dropped,
                          "cats": sorted({x["cat"] for x in out}, key=lambda c: cat_order.get(c, 99))}
     return _ROGUE_POOL_CACHE
 
@@ -7073,7 +7440,10 @@ def rogue_layout_apply(body: dict, dry_run: bool) -> dict:
         c = _rogue_cells(v)
         if len(c) > 2 and c[1] == "1":
             qno_by_round[c[2]] = k
-    log, pend = [], {}
+    # 引用完整性+等级覆盖硬门禁:悬空/等级不覆盖的 field 拒绝写入
+    # (fresh=每次重读,store 可能刚被构建改过;等级按该轮 quest 行 c95)
+    fd_c, zone_c, enemies_c, zakos_c, ceil_c, floor_c, gb_c = rb.store_chain_ctx(fresh=True)
+    log, pend, refused = [], {}, []
     for rd in rounds:
         rn = str(rd.get("round", "")).strip()
         qno = qno_by_round.get(rn)
@@ -7084,6 +7454,13 @@ def rogue_layout_apply(body: dict, dry_run: bool) -> dict:
         row = list(_rogue_cells(like))
         field = str(rd.get("field", "")).strip()
         if field and len(row) > 98:
+            lv = int(row[95]) if len(row) > 95 and str(row[95]).isdigit() else None
+            chain = rb.check_field_chain(field, fd_c, zone_c, enemies_c, zakos_c,
+                                         level=lv, lv_ceil=ceil_c, lv_floor=floor_c,
+                                         lv_gb=gb_c)
+            if not chain["ok"]:
+                refused.append(f"[拒绝] 轮{rn} field={field}: " + "; ".join(chain["errors"]))
+                continue
             if row[98] != field:
                 log.append(f"轮{rn} 场地: {row[98]!r} -> {field!r}")
             row[98] = field
@@ -7108,6 +7485,9 @@ def rogue_layout_apply(body: dict, dry_run: bool) -> dict:
         if rd.get("subname") is not None and len(row) > 4:
             row[4] = str(rd["subname"]).strip() or "(None)"
         pend[qno] = rb.join(row, isinstance(like, (bytes, bytearray)))
+    if refused:
+        return {"ok": False, "log": "\n".join(log + refused)
+                + "\n[拒绝] 存在引用悬空楼层(进本必崩 U_50fc52),本次一轮都未写入"}
     if not pend:
         return {"ok": True, "log": "没有可写的轮次"}
     # (下方写入+可选发布)
@@ -7148,12 +7528,51 @@ ROGUE_TABLES_LOGICAL = ",".join([
     "master/quest/event/event_list.orderedmap",
     "master/quest/event/rush_event_battle_quest_correction.orderedmap",
 ])
+# 构建会往这七张 battle 表写 mod_rogue_* 克隆(法阵载体/克隆场)。历史事故
+# (C8601 key=mod_rogue_f9):GUI 随机走 build --write 不发布,发布按钮又只发
+# ②五表,克隆永远上不了链 → quest 引用在客户端侧断裂。发布按钮必须把
+# store 与链不一致的 battle 表一并带上。
+ROGUE_BATTLE_LOGICALS = [
+    "master/battle/field_data.orderedmap",
+    "master/battle/zone.orderedmap",
+    "master/battle/zako/general_zako.orderedmap",
+    "master/battle/zako/zako_level.orderedmap",
+    "master/battle/boss/general_boss.orderedmap",
+    "master/battle/boss/boss_level.orderedmap",
+    "master/battle/boss/general_boss_variable.orderedmap",
+]
 
 
 def rogue_publish() -> dict:
-    """发布 rush 五表到 CDN(与写入分离的独立动作)。"""
-    r = _rogue_run("wf_publish.py", ["--tables", ROGUE_TABLES_LOGICAL])
+    """发布 rush 五表 + 链上过期的 battle 表/锻造 DSL 到 CDN,发布后跑字节级自检。"""
+    import wf_rogue_build as rb
+    base = ROGUE_TABLES_LOGICAL.split(",")
+    try:
+        forged = rb.live_forged_dsl_logicals()   # 克隆 boss 引用的领域变体文件
+    except Exception:
+        forged = []
+    extras = ROGUE_BATTLE_LOGICALS + forged
+    try:
+        stale = [logical for logical, _w in rb.verify_cdn_chain(extras)]
+    except Exception:
+        stale = list(extras)                    # 自检不可用 → 宁多发不漏发(全部<1MB)
+    r = _rogue_run("wf_publish.py", ["--tables", ",".join(base + stale)])
     r["log"] = (r["log"] or "")[-1200:]
+    if stale:
+        r["log"] = f"[发布] {len(stale)} 个文件与链不一致,一并发布:" \
+                   + ",".join(t.rsplit('/', 1)[-1] for t in stale) + "\n" + r["log"]
+    if r.get("ok"):
+        try:
+            left = rb.verify_cdn_chain(base + extras)
+        except Exception as exc:
+            left = [("(发布自检)", f"{type(exc).__name__}: {exc}")]
+        if left:
+            r["ok"] = False
+            r["log"] += "\n[ERR] 发布自检未通过(链上仍缺/旧字节):\n" \
+                        + "\n".join(f"  {l}: {w}" for l, w in left)
+        else:
+            r["log"] += ("\n[OK] 发布自检:②五表 + battle 七表 + 锻造 DSL "
+                         f"{len(forged)} 个,全部在 CDN 链上且字节一致")
     return r
 
 
@@ -7196,7 +7615,8 @@ def rogue_randomize(body: dict, dry_run: bool) -> dict:
 ROGUE_AUTO_PATH = MOD_DIR / "work" / "rogue_auto.json"
 _ROGUE_AUTO_LOCK = threading.Lock()
 _ROGUE_AUTO = {"enabled": False, "time": "04:30", "rounds": 15, "enemy_level": 80,
-               "clear_progress": True, "restart_game": False, "last_run_date": ""}
+               "curse": "abyss", "clear_progress": True, "restart_game": False,
+               "last_run_date": ""}
 _ROGUE_AUTO_RT = {"running": False, "last_run": "", "last_log": ""}
 
 
@@ -7247,7 +7667,8 @@ def _rogue_auto_run() -> dict:
         _ROGUE_AUTO_RT["running"] = True
     try:
         args = ["--apply", "--rounds", str(_ROGUE_AUTO.get("rounds", 15)),
-                "--enemy-level", str(_ROGUE_AUTO.get("enemy_level", 80))]
+                "--enemy-level", str(_ROGUE_AUTO.get("enemy_level", 80)),
+                "--curse", str(_ROGUE_AUTO.get("curse", "abyss"))]
         if not _ROGUE_AUTO.get("clear_progress", True):
             args.append("--keep-progress")
         if not _ROGUE_AUTO.get("restart_game"):
@@ -7500,8 +7921,23 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/rogue/pool":
                 self._json(rogue_pool())
                 return
+            if path == "/rogue/curse_info":
+                self._json(rogue_curse_info())
+                return
+            if path == "/rogue/plan":
+                self._json(rogue_plan_get())
+                return
             if path == "/rogue/auto":
                 self._json(_rogue_auto_state())
+                return
+            if path == "/rogue/tower":
+                self._json(rogue_tower())
+                return
+            if path == "/rogue/rewards":
+                self._json(rogue_rewards())
+                return
+            if path == "/rogue/lists":
+                self._json(rogue_lists())
                 return
             if path == "/skill_switch":
                 character = (qs.get("character") or [""])[0]
@@ -7933,8 +8369,20 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/rogue/layout":
                 self._json(rogue_layout_apply(body, bool(body.get("dry_run"))))
                 return
+            if path == "/rogue/field_tuning":
+                self._json(rogue_field_tuning_save(body))
+                return
+            if path == "/rogue/plan":
+                self._json(rogue_plan_save(body))
+                return
             if path == "/rogue/randomize":
                 self._json(rogue_randomize(body, bool(body.get("dry_run"))))
+                return
+            if path == "/rogue/rewards":
+                self._json(rogue_rewards(body))
+                return
+            if path == "/rogue/lists":
+                self._json(rogue_lists(body))
                 return
             if path == "/rogue/publish":
                 self._json(rogue_publish())
@@ -7948,6 +8396,8 @@ class Handler(BaseHTTPRequestHandler):
                 for k in ("rounds", "enemy_level"):
                     if body.get(k) not in (None, ""):
                         _ROGUE_AUTO[k] = int(float(body[k]))
+                if str(body.get("curse", "")).strip() in ("off", "standard", "abyss", "hell"):
+                    _ROGUE_AUTO["curse"] = str(body["curse"]).strip()
                 _rogue_auto_save()
                 self._json(_rogue_auto_state())
                 return

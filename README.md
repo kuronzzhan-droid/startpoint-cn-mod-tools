@@ -66,7 +66,7 @@ mod-tools/
 ├── requirements.txt       pip 依赖(仅 Pillow;图像/金丝雀类工具用)
 ├── docs/                  分析报告·设计方案·逆向结论(过程性文档,不参与运行)
 ├── schemas/               角色包 manifest 的 JSON Schema 契约
-├── tests/                 unittest 自测(445 项:核心读写/DSL/发布/角色包/资产治理/dev Catalog)
+├── tests/                 unittest 自测(573 项:核心读写/DSL/发布/角色包/资产治理/dev Catalog/roguelike 门禁)
 ├── examples/              recipe 配方示例
 ├── work/                  运行期状态(待发布清单/改动日志/角色快照),自动生成
 └── server-patch/          startpoint-cn 服务端 mod-admin 补丁(更新服务端后套回)
@@ -95,6 +95,9 @@ mod-tools/
 | `wf_decrypt_all.py` | 单文件零依赖版全量解密(不依赖本工具链任何文件,便于独立分发) |
 | `wf_rogue_rewards.py` / `wf_rogue_build.py` / `wf_rogue_shop.py` | **深渊连战 roguelike**:自制 rush 活动 700099(每轮不同 boss)+ 15 把专属武装(equipment+ability_soul)+ 深渊代币兑换商店的纯数据生成 |
 | `wf_rogue_banner.py` / `wf_rogue_nerf.py` / `wf_rogue_reroll.py` / `wf_rogue_save.py` | roguelike 运营工具:换专属横幅 / 逐轮修正曲线(boss·炮台 HP·ATK) / 一键重开 / 独立武器池存档 |
+| `wf_field_catalog.py` | **场地效果目录**(深渊法阵弹药库):扫全库 action DSL 解出 StartBuffField / StartModifierField / CreateFlood 场程序(效果种类+数值+时长,过滤带攻击判定的脏程序),自动分类产出 `rogue_field_menu.json`;附**锻造**变体程序(净化/数值缩放,build→parse 自校验) |
+| `rogue_field_menu.json` / `rogue_special_bosses.json` / `rogue_layout_plan.json` | roguelike 数据文件:场地效果菜单(wf_field_catalog 产出,GUI 图鉴与 wf_rogue_build 的单一事实源)/ 原味保护·移植白名单(authentic boss 名单)/ 连战工坊布局计划(GUI 写入,层级排程+逐层诅咒) |
+| `tests/test_rogue_chain_gate.py` | roguelike **引用完整性门禁**回归:三表并集判悬空 boss + 发布清单必带 battle 表(2026-07-26 进本崩/C8601 事故的回归防线) |
 | `wf_character_workspace.py` / `wf_character_pack.py` / `wf_character_requirements.py` | **自制新角色·打包**:角色包工作区、manifest(schema 契约见 `schemas/`)、统一 37 项资源契约 |
 | `wf_character_flow.py` / `wf_release.py` / `wf_character_rollback.py` | **自制新角色·发布**:preflight→发布→CDN 增量链锚定→一键回滚 |
 | `wf_kyle_canary.py` / `wf_canary_skin.py` | 克隆金丝雀端到端验证 / 皮肤·立绘替换(需 Pillow) |
@@ -135,6 +138,9 @@ mod-tools/
 - [角色生成器方案.md](docs/角色生成器方案.md) / [角色生成器-Codex任务书.md](docs/角色生成器-Codex任务书.md) — 角色生成器设计与任务书。
 - [角色数据逆向与修改指南.md](docs/角色数据逆向与修改指南.md) — 两层数据架构 + HP/ATK / 觉醒破解过程。
 - [版本切换设计.md](docs/版本切换设计.md) — 多版本档案(profile)设计。
+- [深渊连战-随机方案-当前.md](docs/深渊连战-随机方案-当前.md) — 深渊连战(700099)随机方案**当前生效版单一事实源**:生成命令、楼层排程、数值归一。
+- [深渊连战-随机要素全表.md](docs/深渊连战-随机要素全表.md) — 每层可随机要素穷举:随机轴/写入列/取值空间,配合上文方案使用。
+- [索拉斯双阶段boss分析与深渊连战增强方案.md](docs/索拉斯双阶段boss分析与深渊连战增强方案.md) — 双阶段转场机制逆向(quest 阶段链)+ 深渊连战增强方案演进编年体(P0–P11)。
 - 其余:形态切换/资产替换/强化弹射逆向结论、Boss 与副本分析、深渊连战 roguelike 方案等,见 `docs/` 目录。
 
 配套还有一个 Claude Code skill(`.claude/skills/wf-mod/`),把整条工作流固化,便于用 AI 辅助操作。

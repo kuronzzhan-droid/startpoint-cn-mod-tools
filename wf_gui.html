@@ -57,6 +57,187 @@ input[type=number]{width:80px}
 input[type=checkbox]{accent-color:var(--acc)}
 label{color:var(--dim);font-size:12px}
 
+/* ---------- 全局动效(2026-07-20 UX 改造)---------- */
+@keyframes secIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+section.sel{animation:secIn .22s ease-out}
+#content h3{display:flex;align-items:center;gap:8px;margin:18px 0 8px;padding:8px 12px;font-size:13.5px;
+  background:linear-gradient(90deg,var(--panel2),transparent 70%);border-left:3px solid var(--acc);border-radius:0 var(--rs) var(--rs) 0;
+  transition:border-color .2s}
+#content h3:hover{border-left-color:var(--gold)}
+input:hover,select:hover,textarea:hover{border-color:var(--border2)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+#apibar{position:fixed;top:0;left:0;height:2px;width:0;z-index:200;opacity:0;
+  background:linear-gradient(90deg,var(--acc),#8b5fd4);box-shadow:0 0 10px var(--acc);
+  transition:width .3s ease,opacity .35s}
+#toTop{position:fixed;right:18px;bottom:18px;z-index:90;width:38px;height:38px;border-radius:50%;
+  background:linear-gradient(180deg,var(--acc),var(--acc2));color:#fff;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;opacity:0;pointer-events:none;transition:opacity .25s,transform .15s;
+  box-shadow:0 4px 14px rgba(0,0,0,.45);font-size:16px;user-select:none}
+#toTop.show{opacity:.88;pointer-events:auto}
+#toTop:hover{transform:translateY(-2px);opacity:1}
+#rgNav{position:sticky;top:0;z-index:6;display:flex;gap:6px;flex-wrap:wrap;padding:8px 10px;margin:8px 0;
+  background:rgba(14,16,22,.85);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:var(--r)}
+#rgNav .chip{font-size:11.5px;padding:3px 10px;border-radius:99px;border:1px solid var(--border2);
+  color:var(--dim);cursor:pointer;transition:all .15s;user-select:none}
+#rgNav .chip:hover{color:var(--fg);border-color:var(--acc);background:var(--acc-soft);transform:translateY(-1px)}
+
+/* ---------- 深渊连战 v2(2026-07-28 全面重做)---------- */
+.rgTop{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.rgTitle{font-size:15px;font-weight:700}
+.rgEv{font-size:11px;color:var(--faint);font-weight:400}
+.rgStat{font-size:12px;color:var(--faint)}
+.rgStat b{color:var(--fg)}
+.rgStat .bad{color:#ef4444;font-weight:700}
+.rgStat .good{color:#22c55e}
+.rgTabs{display:flex;gap:2px;border-bottom:2px solid var(--border);margin-bottom:12px}
+.rgTab{padding:8px 16px;cursor:pointer;font-size:13px;border-radius:6px 6px 0 0;
+  color:var(--faint);border:1px solid transparent;border-bottom:none;margin-bottom:-2px}
+.rgTab:hover{background:var(--panel2);color:var(--fg)}
+.rgTab.on{background:var(--panel2);color:var(--fg);font-weight:600;
+  border-color:var(--border);border-bottom:2px solid var(--panel2)}
+.rgPane{display:none}
+.rgPane.on{display:block}
+.rgCard{background:var(--panel2);border:1px solid var(--border);border-radius:var(--r);
+  padding:12px 14px;margin-bottom:10px}
+.rgCardHd{font-size:12px;font-weight:700;margin-bottom:8px;display:flex;
+  align-items:center;gap:8px}
+.rgCardHd .sub{font-size:10px;color:var(--faint);font-weight:400}
+.rgForm{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center}
+.rgForm label{display:flex;align-items:center;gap:5px;font-size:12px}
+.rgForm input[type=number],.rgForm input:not([type]){width:72px}
+.rgForm select{width:auto;min-width:100px}
+.rgForm label.ck{gap:4px}
+.tip{display:inline-flex;width:14px;height:14px;border-radius:50%;background:var(--border);
+  align-items:center;justify-content:center;font-size:9px;cursor:help}
+.rgBtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.rgBtns button .sub{display:block;font-size:9px;opacity:.75;font-weight:400}
+button.danger{background:#b91c1c;color:#fff}
+button.danger:hover{background:#dc2626}
+.rgLog{white-space:pre-wrap;font-size:11px;max-height:340px;overflow:auto;
+  background:var(--panel2);border:1px solid var(--border);border-radius:var(--r);
+  padding:10px;margin:8px 0 0}
+.rgLog:empty{display:none}
+.rgToolbar{display:flex;align-items:center;gap:12px;margin-bottom:8px;flex-wrap:wrap}
+.twWrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r)}
+.twTable{width:100%;border-collapse:collapse;font-size:12px}
+.twTable th{background:var(--panel2);padding:7px 9px;text-align:left;font-weight:600;
+  position:sticky;top:0;white-space:nowrap;border-bottom:1px solid var(--border)}
+.twTable td{padding:6px 9px;border-bottom:1px solid var(--border);vertical-align:top}
+.twTable tr:hover td{background:var(--panel2)}
+.twTable tr.bad td{background:rgba(239,68,68,.09)}
+.twRound{font-weight:700;text-align:center;width:38px}
+.twBoss{font-weight:600}
+.twCode{font-size:10px;color:var(--faint);font-family:monospace}
+.twStat{font-family:monospace;font-size:11px;white-space:nowrap}
+.twBar{display:inline-block;height:4px;border-radius:2px;background:#3b82f6;
+  vertical-align:middle;margin-left:5px;min-width:2px}
+.twBar.atk{background:#f59e0b}
+.twChip{display:inline-block;padding:1px 6px;border-radius:8px;font-size:10px;
+  background:var(--border);margin:1px 2px 1px 0;white-space:nowrap}
+.twChip.mix{background:#7c3aed;color:#fff}
+.twChip.imm{background:#b91c1c;color:#fff}      /* 完全免疫 */
+.twChip.weak{background:#15803d;color:#fff}     /* 易伤 */
+.twChip.combo{background:#c2410c;color:#fff;font-weight:600}
+.twIcon{width:56px;height:44px;object-fit:cover;border-radius:4px;
+  border:1px solid var(--border);background:#0b0e14;display:block}
+.twIngame{max-width:270px}
+.twTitle{font-size:12px;color:#e2e8f0;font-weight:600}
+.twSub{font-size:10px;color:#94a3b8;line-height:1.35;display:inline-block}
+.twChip.minion{background:#a16207;color:#fff}
+.twChip.auth{background:#0e7490;color:#fff}
+.twChip.rank{background:#334155;color:#e2e8f0}
+.twChip.rank.hell{background:#991b1b;color:#fff;font-weight:700}
+.twChip.rank.sp{background:#c2410c;color:#fff}
+.twErr{color:#ef4444;font-size:10px}
+.rwList{display:flex;flex-direction:column;gap:6px}
+.rwRow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px}
+.rwRow input{width:80px}
+.rwRow input.id{width:88px}
+.rwRow input.pool{width:220px}
+.rwRow .nm{font-size:11px;color:var(--faint);min-width:96px}
+.rwRow .x{cursor:pointer;color:#ef4444;font-weight:700;padding:0 4px}
+.sfGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.sfTags{display:flex;flex-wrap:wrap;gap:4px;max-height:190px;overflow:auto}
+.sfTag{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:10px;
+  background:var(--border);font-size:11px}
+.sfTag .x{cursor:pointer;color:#ef4444;font-weight:700}
+.rgAcc{border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;
+  background:var(--panel2)}
+.rgAcc summary{padding:9px 13px;cursor:pointer;font-size:13px;font-weight:600;
+  user-select:none}
+.rgAcc summary:hover{background:var(--border)}
+.rgAcc[open] summary{border-bottom:1px solid var(--border)}
+.rgAcc>*:not(summary){padding:10px 13px}
+/* ---------- 深渊连战工坊(2026-07-20 大改)---------- */
+.wsTabs{display:flex;gap:4px;margin:8px 0}
+.wsTab{padding:7px 18px;border-radius:var(--rs) var(--rs) 0 0;border:1px solid var(--border);border-bottom:0;
+  background:var(--panel);color:var(--dim);cursor:pointer;font-size:13px;user-select:none;transition:all .15s}
+.wsTab.on{background:linear-gradient(180deg,var(--panel3),var(--panel2));color:var(--fg);
+  box-shadow:inset 0 2px 0 var(--acc)}
+.wsBody{border:1px solid var(--border);border-radius:0 var(--r) var(--r) var(--r);padding:14px;background:var(--panel)}
+.stageBar{display:flex;flex-direction:column;gap:6px;margin:6px 0}
+.stageRow{display:flex;align-items:center;gap:7px;flex-wrap:wrap;background:var(--panel2);border:1px solid var(--border);border-radius:var(--rs);padding:6px 10px}
+.stageRow input{width:48px}
+.tierPill{font-size:11px;padding:2px 9px;border-radius:99px;font-weight:600;letter-spacing:.5px}
+.tier-easy{background:#1d3a2a;color:#5fd08a;border:1px solid #2c5a3d}
+.tier-normal{background:#1d2c3a;color:#6fb0ff;border:1px solid #2c405a}
+.tier-elite{background:#2e1d3a;color:#c99bff;border:1px solid #452c5a}
+.tier-hell{background:#3a1717;color:#ff7b7b;border:1px solid #6a2020;box-shadow:0 0 8px rgba(255,80,80,.25)}
+.lanes{display:flex;flex-direction:column;gap:5px;margin:10px 0}
+.lane{display:flex;align-items:stretch;gap:8px;border:1px solid var(--border);border-radius:var(--rs);
+  background:linear-gradient(90deg,var(--panel2),var(--panel));overflow:hidden;transition:box-shadow .12s,border-color .12s}
+.lane.dragover{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc-soft)}
+.lane .lno{flex-shrink:0;width:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:var(--panel3);font-size:12px;gap:2px;padding:5px}
+.lane .lno b{font-size:15px;color:var(--fg)}
+.lane .ltier{font-size:9px;padding:1px 6px;border-radius:99px}
+.lane .slots{flex:1;display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding:7px 9px;min-height:44px}
+.lane .lboss{flex-shrink:0;padding:5px 8px;font-size:11px;color:var(--faint);border-right:1px dashed var(--border);margin-right:4px}
+.effpill{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:99px;font-size:11.5px;
+  border:1px solid var(--border2);background:var(--panel3);cursor:default;animation:tin .16s ease-out}
+.effpill .x{cursor:pointer;color:var(--faint);font-weight:700}
+.effpill .x:hover{color:var(--err)}
+.effpill.c加成{border-color:#2c5a3d;background:#16281d}
+.effpill.c诅咒,.effpill.ccurse{border-color:#5a2c2c;background:#281616}
+.effpill.c场地{border-color:#2c405a;background:#16202b}
+.effpill.c领域{border-color:#452c5a;background:#20162b}
+.laneHint{flex:1;color:var(--faint);font-size:11px;align-self:center}
+.palette{margin-top:12px;border-top:1px solid var(--border);padding-top:10px}
+.palGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;max-height:270px;overflow:auto;padding:2px}
+.palItem{display:flex;flex-direction:column;gap:2px;padding:6px 9px;border-radius:var(--rs);border:1px solid var(--border);
+  background:var(--panel2);cursor:grab;transition:all .12s;user-select:none}
+.palItem:hover{border-color:var(--acc);transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.3)}
+.palItem:active{cursor:grabbing}
+.palItem.dragging{opacity:.4}
+.palItem b{font-size:12px}
+.palItem .pn{font-size:10.5px;color:var(--dim)}
+
+/* ---------- rogue 深渊连战:卡片化 + 图鉴 ---------- */
+.rgdex{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:8px;margin:8px 0}
+.cursecard{background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--border);border-radius:var(--r);padding:9px 11px;
+  transition:border-color .15s,transform .1s;position:relative;overflow:hidden}
+.cursecard:hover{border-color:#4a3f6b;transform:translateY(-1px)}
+.cursecard::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:linear-gradient(180deg,#8b5fd4,#5b3d8f)}
+.cursecard.caster::before{background:linear-gradient(180deg,var(--gold),#a87f2a)}
+.cursecard b{font-size:13px;letter-spacing:.5px}
+.cursecard .tiers{margin-top:6px;display:flex;flex-direction:column;gap:3px}
+.cursecard .tier{display:flex;gap:6px;align-items:baseline;font-size:11.5px;color:var(--dim)}
+.cursecard .tier .tn{flex-shrink:0;font-size:10px;padding:1px 6px;border-radius:99px;border:1px solid var(--border2);color:var(--faint)}
+.cursecard .tier.t1 .tn{color:#7fb5ff;border-color:#2c3a5a}
+.cursecard .tier.t2 .tn{color:#c39bff;border-color:#3f2c5a}
+.cursecard .tier.t3 .tn{color:#ff9b9b;border-color:#5a2c2c}
+.fieldgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:7px;margin:8px 0}
+.fieldchip{display:flex;flex-direction:column;gap:3px;background:var(--panel2);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;transition:border-color .15s}
+.fieldchip:hover{border-color:var(--border2)}
+.fieldchip b{font-size:12.5px}
+.fieldchip .note{font-size:11px;color:var(--dim)}
+.fieldchip .src{font-size:10px;color:var(--faint);font-family:Consolas,monospace}
+.fcat{align-self:flex-start;font-size:10px;padding:1px 7px;border-radius:99px;letter-spacing:1px}
+.fcat.c加成{background:#1d3a2a;color:#5fd08a;border:1px solid #2c5a3d}
+.fcat.c诅咒{background:#3a1d1d;color:#ff8b8b;border:1px solid #5a2c2c}
+.fcat.c场地{background:#1d2c3a;color:#6fb0ff;border:1px solid #2c405a}
+.fcat.c领域{background:#2e1d3a;color:#c99bff;border:1px solid #452c5a}
+
 /* ---------- layout ---------- */
 main{flex:1;display:flex;min-height:0}
 #left{width:242px;border-right:1px solid var(--border);display:flex;flex-direction:column;background:var(--panel)}
@@ -90,7 +271,7 @@ nav{display:flex;gap:0;padding:0 10px;background:var(--panel);border-bottom:1px 
 .navgrp .ngl{align-self:center;color:var(--faint);font-size:10px;letter-spacing:2px;margin-right:2px;user-select:none;writing-mode:horizontal-tb;white-space:nowrap}
 nav .tab{padding:9px 2px 7px;cursor:pointer;color:var(--dim);font-size:12.8px;border-bottom:2px solid transparent;margin-bottom:-1px;user-select:none;transition:color .12s;white-space:nowrap}
 nav .tab:hover{color:var(--fg)}
-nav .tab.sel{color:var(--fg);border-bottom-color:var(--acc);font-weight:600}
+nav .tab.sel{color:var(--fg);border-bottom-color:var(--acc);font-weight:600;text-shadow:0 0 12px rgba(91,157,255,.45)}
 #content{flex:1;overflow:auto;padding:12px 14px}
 section{display:none} section.sel{display:block}
 h3{margin:4px 0 8px;font-size:13.5px;color:var(--fg)}
@@ -364,6 +545,8 @@ td.ldesc{color:var(--okfg);font-size:11px;white-space:normal;max-width:250px;lin
           <b id="editTitle"></b>
           <button class="sec" id="btnReload">刷新</button>
           <label><input type="checkbox" id="showAll"> 全部字段</label>
+          <button class="mini" id="btnAbExpandAll" title="展开全部词条组">⊞ 全展开</button>
+          <button class="mini" id="btnAbCollapseAll" title="收起全部词条组">⊟ 全收起</button>
           <span style="flex:1"></span>
           <button id="btnSaveRows">保存修改</button>
         </div>
@@ -441,6 +624,7 @@ td.ldesc{color:var(--okfg);font-size:11px;white-space:normal;max-width:250px;lin
           <button class="sec" id="btnBossReload">刷新</button>
           <span class="hint" style="margin:0">共 <span id="bossCount">-</span> 条,最多显示 150 条</span>
         </div>
+        <div id="bossCatBar" style="margin:6px 0"></div>
         <div class="hint">HP = 基础值 × 等级曲线 × 修正曲线:<b>改「HP基础」即等比调血</b>(Hit 模式基础值≈打点数,减半=血量减半,0.5倍=输入原值一半);ATK打点/修正、TP 同理。保存自动备份+进待发布,点右上角「发布并重启游戏」生效。</div>
         <div id="bossList"><div class="empty">点「刷新」加载 boss 列表</div></div>
         <div class="row" style="align-items:center;margin-top:14px">
@@ -796,93 +980,190 @@ td.ldesc{color:var(--okfg);font-size:11px;white-space:normal;max-width:250px;lin
         <div id="chainBox"></div>
       </section>
       <section data-t="rogue">
-        <div class="row" style="align-items:center">
-          <b>深渊连战(rush 活动 700099)</b>
-          <button class="sec" id="btnRogueReload">刷新</button>
-          <span id="rgEnabled" style="opacity:.7"></span>
-        </div>
-        <div class="hint">连战活动 700099 的一站式编辑。②层表(轮次/难度/商店)改后点右上角「<b>发布并重启游戏</b>」;
-          服务端 json(掉落/代币)热重载即时生效。boss 阵容一个 run 内固定=客户端机制,换 boss 靠重摇。</div>
-
-        <h3 style="margin-top:14px">① 随机生成(层数 / 各层池子 / 难度)</h3>
-        <div class="hint">每轮 HP=hp_base×hp_growth^(轮-1),ATK 同理。各层池子:「默认方案」=内置排程(1-2小怪房/3领主/6机兵/8降临/9女帝/11无幻/15始龙/其余塔),选池子=该层只从该池随机。
-          <b>随机只写入、不发布</b>——可再到⑥逐层微调,满意后点「📤 发布」一次推送。</div>
-        <div class="row" style="align-items:center;flex-wrap:wrap">
-          <label>轮数</label><input id="rgRounds" type="number" min="1" value="15" style="width:60px">
-          <label>敌等级</label><input id="rgLvl" type="number" value="80" style="width:64px">
-          <label>hp基</label><input id="rgHpBase" value="0.5" style="width:56px">
-          <label>hp斜率</label><input id="rgHpGrow" value="1.185" style="width:64px">
-          <label>atk基</label><input id="rgAtkBase" value="0.35" style="width:56px">
-          <label>atk斜率</label><input id="rgAtkGrow" value="1.13" style="width:64px">
-          <label>种子</label><input id="rgSeed" placeholder="留空=随机" style="width:110px">
-        </div>
-        <div id="rgPlanGrid" class="row" style="flex-wrap:wrap;gap:6px;margin-top:8px"></div>
-        <div class="row" style="margin-top:8px">
-          <button class="sec" id="btnRgRandPreview">预览(不写)</button>
-          <button id="btnRgRandApply">🎲 随机生成(写入)</button>
-          <button id="btnRgPublish1">📤 发布</button>
+        <div class="rgTop">
+          <div class="rgTitle">深渊连战 <span class="rgEv">700099</span></div>
+          <div id="rgStatus" class="rgStat">读取中…</div>
+          <button class="sec" id="btnRogueReload">🔄 刷新</button>
         </div>
 
-        <h3 style="margin-top:16px">⏰ 定时自动随机刷新</h3>
-        <div class="hint">到点自动整局重开:默认方案随机全部楼层 + 发布 CDN(+可选 清爬塔进度/重启游戏)。游戏下次启动即新塔。<b>需要本修改器保持运行</b>。</div>
-        <div class="row" style="align-items:center;flex-wrap:wrap">
-          <label><input type="checkbox" id="rgAutoEn"> 启用</label>
-          <label>每天</label><input id="rgAutoTime" type="time" value="04:30">
-          <label>轮数</label><input id="rgAutoRounds" type="number" value="15" style="width:60px">
-          <label>敌等级</label><input id="rgAutoLvl" type="number" value="80" style="width:64px">
-          <label><input type="checkbox" id="rgAutoClear" checked> 清爬塔进度</label>
-          <label><input type="checkbox" id="rgAutoRestart"> 自动重启游戏</label>
-          <button class="sec" id="btnRgAutoSave">保存设置</button>
-          <button class="sec" id="btnRgAutoRun">立即执行一次</button>
-        </div>
-        <div id="rgAutoStatus" class="hint"></div>
-
-        <h3 style="margin-top:16px">② 无尽修正曲线</h3>
-        <div class="hint">无尽档逐轮 HP/ATK 缩放(软上限看末两键斜率)。hp-scale/atk-scale=全轮乘;或 hp-values 逗号分隔逐轮指定。留空=只看当前曲线。</div>
-        <div class="row" style="align-items:center;flex-wrap:wrap">
-          <label>HP×</label><input id="rgNerfHp" placeholder="如 0.5" style="width:70px">
-          <label>ATK×</label><input id="rgNerfAtk" placeholder="如 0.8" style="width:70px">
-          <label>hp-values</label><input id="rgNerfVals" placeholder="0.5,0.65,0.8,…(个数=轮数键)" style="width:280px">
-        </div>
-        <div class="row" style="margin-top:8px">
-          <button class="sec" id="btnRgNerfPreview">预览/查看曲线</button>
-          <button id="btnRgNerfApply">写入并发布</button>
-        </div>
-        <div id="rgCurveBox"></div>
-
-        <h3 style="margin-top:16px">③ 掉落 / 代币配置(rogue_event.json,热重载)</h3>
-        <div class="hint">events.700099 的掉落配置(每轮代币 per_round_drops、掉落池 drop_pool、pool_draws、drop_equipment_level 等)。直接编辑 JSON;<code>enabled</code> 是全局总开关。</div>
-        <div class="row" style="align-items:center">
-          <label><input type="checkbox" id="rgDropEnabled"> 启用肉鸽掉落(enabled 总开关)</label>
-        </div>
-        <textarea id="rgDropJson" spellcheck="false" style="width:100%;min-height:200px;font-family:monospace;font-size:12px"></textarea>
-        <div class="row" style="margin-top:8px">
-          <button class="sec" id="btnRgDropPreview">预览 diff</button>
-          <button id="btnRgDropApply">保存 + 热重载</button>
+        <div class="rgTabs">
+          <div class="rgTab on" data-rg="gen">🎲 生成</div>
+          <div class="rgTab" data-rg="tower">🗼 当前塔</div>
+          <div class="rgTab" data-rg="reward">🎁 通关奖励</div>
+          <div class="rgTab" data-rg="safe">🛡 安全名单</div>
+          <div class="rgTab" data-rg="adv">⚙️ 高级</div>
         </div>
 
-        <h3 style="margin-top:16px">④ boss 阵容(当前)</h3>
-        <div id="rgRounds_box"></div>
-
-        <h3 style="margin-top:16px">⑤ 深渊兑换商店(15 件武器)</h3>
-        <div class="hint">event_item_shop 9700101-9700115。改价格/货币/奖励/库存/名称,②表+服务端 json 三处同步;写入自动发布 ②表 + 热重载服务端。</div>
-        <div id="rgShopBox"></div>
-        <div class="row" style="margin-top:8px">
-          <button class="sec" id="btnRgShopPreview">预览改动</button>
-          <button id="btnRgShopApply">保存商店 + 发布</button>
+        <!-- ============ 生成 ============ -->
+        <div class="rgPane on" data-rgp="gen">
+          <div class="rgCard">
+            <div class="rgCardHd">塔参数</div>
+            <div class="rgForm">
+              <label>层数<input id="ngRounds" type="number" min="2" max="98" value="30"></label>
+              <label>难度<select id="ngDiff">
+                <option value="gradient" selected>渐进(简单→炼狱)</option>
+                <option value="easy">全简单</option>
+                <option value="normal">普通</option>
+                <option value="hell">全炼狱</option>
+                <option value="">自定义曲线</option>
+              </select></label>
+              <label>敌等级<input id="ngLevel" value="max" title="max=每层取该 boss 数据里的最高档(全 boss 最强形态);也可填数字如 90"></label>
+              <label>种子<input id="ngSeed" placeholder="留空=随机"></label>
+              <label class="ck"><input type="checkbox" id="ngMix" checked> 拼接模式
+                <span class="tip" title="boss 与地形独立随机组合;白名单外的 boss 自动原味出场">?</span></label>
+            </div>
+            <div class="rgForm rgCustom" id="ngCustomRow" style="display:none">
+              <label>hp基<input id="ngHpBase" value="0.6"></label>
+              <label>hp斜率<input id="ngHpGrow" value="1.2"></label>
+              <label>atk基<input id="ngAtkBase" value="0.4"></label>
+              <label>atk斜率<input id="ngAtkGrow" value="1.145"></label>
+              <label>诅咒<select id="ngCurse">
+                <option value="">随难度</option><option value="off">关闭</option>
+                <option value="standard">标准</option><option value="abyss">深渊</option>
+                <option value="hell">炼狱</option></select></label>
+            </div>
+            <div class="rgBtns">
+              <button class="sec" id="btnNgPreview">👁 预览(不写)</button>
+              <button id="btnNgBuild">✍ 生成(写入)</button>
+              <button id="btnNgPublish">📤 生成并发布</button>
+              <button class="danger" id="btnNgReroll">🔄 一键重开<span class="sub">清进度+重启游戏</span></button>
+            </div>
+            <div class="hint">生成规则:第1层热身、末层终始之龙、比例锚落位领主战/机兵/降临/女帝/无幻之宴;
+              过 1/3 后只出真 boss;同模型族全塔不重复;近 3 塔出过的 boss 降权;所有楼层过四重防崩门禁。
+              <b>改层数后需重启服务端</b>(一键重开会提示)。</div>
+          </div>
+          <pre id="ngOut" class="rgLog"></pre>
         </div>
 
-        <h3 style="margin-top:16px">⑥ 手动布局(逐层指定 boss + 场地效果)</h3>
-        <div class="hint">逐轮手动选 boss/场地(可搜,含<b>机工神兵菲诺梅那</b>及全部机兵)+ 每轮 5 个场地效果槽。
-          效果 kind:<b>0能力/1直击/2弹射/3技能</b> 的耐性或易伤,强度=小数(<b>正=敌减伤/玩家变弱,负=敌易伤/玩家变强</b>,如 0.3=耐性30%、-0.4=易伤40%);<b>4=减益免疫</b>(无强度)。
-          属性留「继承」= 不动;选了 = 覆盖(固定元素 boss 换 field 时会自动填)。每行可先选<b>池子</b>缩小搜索范围,🎲=从该池随机一个。只改 folder1 各轮,难度曲线/轮链保留。<b>写入不发布</b>,满意后点「📤 发布」。</div>
-        <datalist id="rgPoolDL"></datalist>
-        <div class="row"><button class="sec" id="btnRgLayoutLoad">读取当前布局</button><span id="rgPoolCount" style="opacity:.6"></span></div>
-        <div id="rgLayoutBox"><div class="empty">点「读取当前布局」加载各轮</div></div>
-        <div class="row" style="margin-top:8px">
-          <button class="sec" id="btnRgLayoutPreview">预览改动</button>
-          <button id="btnRgLayoutApply">写入(不发布)</button>
-          <button id="btnRgPublish2">📤 发布</button>
+        <!-- ============ 当前塔 ============ -->
+        <div class="rgPane" data-rgp="tower">
+          <div class="rgToolbar">
+            <span id="twSummary" class="rgStat"></span>
+            <label class="ck"><input type="checkbox" id="twOnlyBad"> 只看异常</label>
+            <button class="sec" id="btnTwReload">重新读取</button>
+            <button id="btnTwPublish">📤 发布 ②层</button>
+          </div>
+          <details class="rgAcc"><summary>⚙️ 当前随机方案(实时读代码)</summary>
+            <div id="twDesign" class="hint">读取中…</div></details>
+          <div class="twWrap"><table class="twTable" id="twTable">
+            <thead><tr><th>层</th><th>图标</th><th>BOSS</th><th>基础 HP / ATK</th>
+              <th>游戏内显示</th><th>推荐属性</th>
+              <th>难度</th><th>等级</th><th>血×/攻×</th><th>诅咒·领域</th><th>场地</th><th></th></tr></thead>
+            <tbody id="twBody"><tr><td colspan="12" class="empty">读取中…</td></tr></tbody>
+          </table></div>
+        </div>
+
+        <!-- ============ 通关奖励 ============ -->
+        <div class="rgPane" data-rgp="reward">
+          <div class="hint">通关最终层发放。<b>固定</b>=必得;<b>随机</b>=从池里随机挑几种、每种数量在区间内随机;
+            <b>概率</b>=独立掷骰。客户端结算面板<b>只有 10 个道具槽</b>,货币类(星导石)不占槽也不显示。
+            保存后<b>热重载即时生效</b>,不必重启服务端或重开塔。</div>
+          <div class="rgCard">
+            <div class="rgCardHd">固定奖励 <button class="mini" id="btnRwAddFixed">＋ 加一项</button></div>
+            <div id="rwFixed" class="rwList"></div>
+          </div>
+          <div class="rgCard">
+            <div class="rgCardHd">随机奖励 <button class="mini" id="btnRwAddRandom">＋ 加一组</button></div>
+            <div id="rwRandom" class="rwList"></div>
+          </div>
+          <div class="rgCard">
+            <div class="rgCardHd">概率奖励 <button class="mini" id="btnRwAddChance">＋ 加一项</button></div>
+            <div id="rwChance" class="rwList"></div>
+          </div>
+          <div class="rgBtns">
+            <button class="sec" id="btnRwRoll">🎲 试掷 5 次</button>
+            <button id="btnRwSave">💾 保存 + 热重载</button>
+          </div>
+          <pre id="rwOut" class="rgLog"></pre>
+        </div>
+
+        <!-- ============ 安全名单 ============ -->
+        <div class="rgPane" data-rgp="safe">
+          <div class="hint">拼接会把 boss 移植到别的地形,部分 boss 因位移锚点/插座绑定会崩(C14102)。
+            <b>严格模式</b>下只有白名单里的 boss 允许移植,其余一律原味出场(自己的场地+机制,诅咒照常叠)。</div>
+          <div class="rgCard">
+            <label class="ck"><input type="checkbox" id="sfStrict"> 严格移植模式(推荐开)</label>
+          </div>
+          <div class="sfGrid">
+            <div class="rgCard"><div class="rgCardHd">✅ 移植白名单<span class="sub">实战验证可拼接</span></div>
+              <div id="sfSafe" class="sfTags"></div></div>
+            <div class="rgCard"><div class="rgCardHd">🏛 原味保护<span class="sub">抽中即回老家</span></div>
+              <div id="sfAuth" class="sfTags"></div></div>
+            <div class="rgCard"><div class="rgCardHd">💨 位移族<span class="sub">扫描生成·冲锋/传送</span></div>
+              <div id="sfMove" class="sfTags"></div></div>
+            <div class="rgCard"><div class="rgCardHd">🔌 插座族<span class="sub">嵌场地固定点·双向禁</span></div>
+              <div id="sfSocket" class="sfTags"></div></div>
+          </div>
+          <div class="rgBtns"><button id="btnSfSave">💾 保存名单</button>
+            <span class="hint" style="margin:0;align-self:center">点标签 ✕ 移除;下次生成生效</span></div>
+        </div>
+
+        <!-- ============ 高级 ============ -->
+        <div class="rgPane" data-rgp="adv">
+          <details class="rgAcc"><summary>🃏 深渊诅咒图鉴</summary>
+            <div id="rgCurseDex" class="rgdex"><div class="empty">展开加载…</div></div></details>
+          <details class="rgAcc"><summary>🔮 深渊法阵领域菜单 + 倍率调值</summary>
+            <div id="rgTuneBar" class="row" style="align-items:center;flex-wrap:wrap;background:var(--panel2);border:1px solid var(--border);border-radius:var(--r);padding:8px 12px">
+              <b style="font-size:12px">整体倍率</b>
+              <label>加成×</label><input id="rgTuneBuff" placeholder="1" style="width:56px">
+              <label>诅咒×</label><input id="rgTuneCurse" placeholder="1" style="width:56px">
+              <label>场地×</label><input id="rgTuneField" placeholder="1" style="width:56px">
+              <label>领域×</label><input id="rgTuneDomain" placeholder="1" style="width:56px">
+              <button class="sec" id="btnRgTuneSave">💾 保存调值</button>
+            </div>
+            <div id="rgFieldDex"><div class="empty">展开加载…</div></div></details>
+          <details class="rgAcc"><summary>♾ 无尽修正曲线</summary>
+            <div class="row" style="align-items:center;flex-wrap:wrap">
+              <label>HP×</label><input id="rgNerfHp" placeholder="如 0.5" style="width:70px">
+              <label>ATK×</label><input id="rgNerfAtk" placeholder="如 0.8" style="width:70px">
+              <label>hp-values</label><input id="rgNerfVals" placeholder="0.5,0.65,…" style="width:260px">
+            </div>
+            <div class="row" style="margin-top:8px">
+              <button class="sec" id="btnRgNerfPreview">预览曲线</button>
+              <button id="btnRgNerfApply">写入并发布</button>
+            </div>
+            <div id="rgCurveBox"></div></details>
+          <details class="rgAcc"><summary>🛒 深渊兑换商店(15 件武器)</summary>
+            <div id="rgShopBox"></div>
+            <div class="row" style="margin-top:8px">
+              <button class="sec" id="btnRgShopPreview">预览改动</button>
+              <button id="btnRgShopApply">保存商店 + 发布</button>
+            </div></details>
+          <details class="rgAcc"><summary>💧 每轮掉落 / 代币(rogue_event.json)</summary>
+            <div class="row" style="align-items:center">
+              <label><input type="checkbox" id="rgDropEnabled"> 启用肉鸽掉落(总开关)</label>
+            </div>
+            <textarea id="rgDropJson" spellcheck="false" style="width:100%;min-height:180px;font-family:monospace;font-size:12px"></textarea>
+            <div class="row" style="margin-top:8px">
+              <button class="sec" id="btnRgDropPreview">预览 diff</button>
+              <button id="btnRgDropApply">保存 + 热重载</button>
+            </div></details>
+          <details class="rgAcc"><summary>⏰ 定时自动重摇</summary>
+            <div class="row" style="align-items:center;flex-wrap:wrap">
+              <label><input type="checkbox" id="rgAutoEn"> 启用</label>
+              <label>每天</label><input id="rgAutoTime" type="time" value="04:30">
+              <label>轮数</label><input id="rgAutoRounds" type="number" value="30" style="width:60px">
+              <label>敌等级</label><input id="rgAutoLvl" type="number" value="90" style="width:64px">
+              <label>诅咒</label><select id="rgAutoCurse" style="width:80px">
+                <option value="off">关闭</option><option value="standard">标准</option>
+                <option value="abyss" selected>深渊</option><option value="hell">炼狱</option>
+              </select>
+              <label><input type="checkbox" id="rgAutoClear" checked> 清进度</label>
+              <label><input type="checkbox" id="rgAutoRestart"> 重启游戏</label>
+              <button class="sec" id="btnRgAutoSave">保存</button>
+              <button class="sec" id="btnRgAutoRun">立即执行</button>
+            </div>
+            <div id="rgAutoStatus" class="hint"></div></details>
+          <details class="rgAcc"><summary>🎯 逐层精编(指定 boss / 场地效果)</summary>
+            <datalist id="rgPoolDL"></datalist>
+            <div class="row"><button class="sec" id="btnRgLayoutLoad">读取当前布局</button>
+              <span id="rgPoolCount" style="opacity:.6"></span></div>
+            <div id="rgLayoutBox"><div class="empty">点「读取当前布局」加载</div></div>
+            <div class="row" style="margin-top:8px">
+              <button class="sec" id="btnRgLayoutPreview">预览改动</button>
+              <button id="btnRgLayoutApply">写入(不发布)</button>
+              <button id="btnRgPublish2">📤 发布</button>
+            </div></details>
         </div>
         <div id="rogueBox"></div>
       </section>
@@ -1057,11 +1338,21 @@ function toast(msg,isErr){
 }
 // 标准前缀 /api/mod(为并入服务端后台准备,见 API.md);body 存在时 POST,否则 GET
 const API='/api/mod';
+let apiPending=0;
+function apiBar(delta){
+  let b=document.getElementById('apibar');
+  if(!b){b=document.createElement('div');b.id='apibar';document.body.appendChild(b);}
+  apiPending=Math.max(0,apiPending+delta);
+  if(apiPending>0){b.style.opacity='1';b.style.width=(30+Math.min(55,apiPending*12))+'%';}
+  else{b.style.width='100%';setTimeout(()=>{b.style.opacity='0';setTimeout(()=>{if(!apiPending)b.style.width='0';},350);},130);}
+}
 async function api(path,body){
   const opt=body!==undefined?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{};
+  apiBar(1);
   let r;
   try{r=await fetch(API+path,opt);}
   catch(e){log('后端连接失败: '+e.message+'(wf_gui.py 进程可能已退出——重启它后刷新本页)',true);toast('后端连接失败,请重启 wf_gui.py',true);throw e;}
+  finally{apiBar(-1);}
   let j;
   try{j=await r.json();}
   catch(e){log('后端响应异常(HTTP '+r.status+',非 JSON)——端口可能被其他程序占用(如输入法),确认地址是 wf_gui.py 启动时打印的端口',true);toast('后端响应异常(HTTP '+r.status+')',true);throw e;}
@@ -1235,7 +1526,7 @@ async function loadRows(){
     const h=document.createElement('div');h.className='abil-h'+(ab.leader?' ldr-h':'');
     const label=ab.leader?('队长技'+(data.leader_title?' · '+data.leader_title:'')):('能力 '+(slotIdx+1));
     const cnt=ab.missing?'':` <span class="hint">${parts.base.length} 行${parts.awake.length?' + 觉醒 '+parts.awake.length+' 行':''}</span>`;
-    h.innerHTML=`<span class="tri">▾</span>${label} · <b>${ab.ability}</b>`+(ab.missing?' <span class="miss">数据包中不存在</span>':cnt)+(ab.desc?` <span class="desc">${ab.desc}</span>`:'');
+    h.innerHTML=`<span class="tri">▸</span>${label} · <b>${ab.ability}</b>`+(ab.missing?' <span class="miss">数据包中不存在</span>':cnt)+(ab.desc?` <span class="desc">${ab.desc}</span>`:'');
     box.appendChild(h);
     if(ab.missing){
       // 角色引用了该键但表中没有:工坊可新建整键(客户端会开始读它,等于点亮这个空槽)
@@ -1309,6 +1600,7 @@ async function loadRows(){
       }
     };
     box.appendChild(wrap);
+    wrap.style.display='none';wrap.classList.add('abwrap');
     h.onclick=()=>{const hide=wrap.style.display!=='none';wrap.style.display=hide?'none':'';h.querySelector('.tri').textContent=hide?'▸':'▾';};
   });
   $('#btnSaveRows').textContent='保存修改';
@@ -2224,20 +2516,60 @@ async function loadStat(){
   catch(e){$('#statBox').innerHTML='<div class="hint">该角色无基础数值表(见日志)。</div>';return;}
   statEntries=data.entries;
   const box=$('#statBox');box.innerHTML='';
+  const awakeInfo=data.awake?{hp:data.awake.hp_plus,atk:data.awake.atk_plus}:null;
   const tbl=document.createElement('table');
-  tbl.innerHTML='<tr><th>等级断点</th><th>HP</th><th>ATK</th></tr>';
-  statEntries.forEach((e,i)=>{
-    const tr=document.createElement('tr');
-    const td0=document.createElement('td');td0.className='fname';td0.innerHTML='Lv <b>'+e.level+'</b>';tr.appendChild(td0);
-    ['hp','atk'].forEach(f=>{
-      const td=document.createElement('td');const inp=document.createElement('input');
-      inp.value=e[f];inp.dataset.orig=e[f];inp.dataset.i=i;inp.dataset.f=f;inp.className='statInp';
-      inp.oninput=()=>{inp.classList.toggle('mod',inp.value!==inp.dataset.orig);};
-      td.appendChild(inp);tr.appendChild(td);
+  tbl.innerHTML='<tr><th>等级</th><th>HP(断点可改)</th><th>ATK(断点可改)</th><th style="color:var(--faint)">HP×倍率</th><th style="color:var(--faint)">ATK×倍率</th></tr>';
+  const bpLv=statEntries.map(e=>+e.level);
+  const lo=Math.min(...bpLv),hi=Math.max(...bpLv);
+  const milestones=[...new Set([...bpLv,20,30,40,50,60,70,90].filter(l=>l>=lo&&l<=hi))].sort((a,b)=>a-b);
+  const val=(f,lv)=>{
+    const pts=statEntries.map((e,i)=>{
+      const inp=tbl.querySelector('input[data-i="'+i+'"][data-f="'+f+'"]');
+      return {lv:+e.level,v:inp?(parseFloat(inp.value)||0):+e[f]};
+    }).sort((a,b)=>a.lv-b.lv);
+    if(lv<=pts[0].lv)return pts[0].v;
+    for(let k=1;k<pts.length;k++){if(lv<=pts[k].lv){const a=pts[k-1],b=pts[k];return a.v+(b.v-a.v)*(lv-a.lv)/(b.lv-a.lv);}}
+    return pts[pts.length-1].v;
+  };
+  const rowRefs=[];
+  const statRefresh=()=>{
+    const fac=parseFloat($('#statFactor').value)||1;
+    rowRefs.forEach(r=>{
+      if(r.interp){r.hpCell.textContent=Math.round(val('hp',r.lv));r.atkCell.textContent=Math.round(val('atk',r.lv));}
+      r.hpPrev.textContent=Math.round(val('hp',r.lv)*fac);
+      r.atkPrev.textContent=Math.round(val('atk',r.lv)*fac);
     });
-    tbl.appendChild(tr);
+    const el=$('#statSummary');
+    if(el)el.innerHTML='Lv'+hi+' 面板:HP <b>'+Math.round(val('hp',hi))+'</b> / ATK <b>'+Math.round(val('atk',hi))+'</b>'
+      +(awakeInfo?' · 觉醒每大节点另 +'+awakeInfo.hp+' HP / +'+awakeInfo.atk+' ATK':'')
+      +' · <span style="color:var(--faint)">×倍率列 = 「倍率」输入框实时预览,「HP/ATK ×倍率」按钮才真正写入</span>';
+  };
+  milestones.forEach(lv=>{
+    const bi=statEntries.findIndex(e=>+e.level===lv);
+    const tr=document.createElement('tr');const interp=bi<0;
+    if(interp)tr.style.opacity='.55';
+    const td0=document.createElement('td');td0.className='fname';
+    td0.innerHTML='Lv <b>'+lv+'</b>'+(interp?' <span style="font-size:10px;color:var(--faint)">插值</span>':'');
+    tr.appendChild(td0);
+    const ref={lv,interp};
+    ['hp','atk'].forEach(f=>{
+      const td=document.createElement('td');
+      if(!interp){
+        const e=statEntries[bi];
+        const inp=document.createElement('input');
+        inp.value=e[f];inp.dataset.orig=e[f];inp.dataset.i=bi;inp.dataset.f=f;inp.className='statInp';
+        inp.oninput=()=>{inp.classList.toggle('mod',inp.value!==inp.dataset.orig);statRefresh();};
+        td.appendChild(inp);
+      }else{ref[f+'Cell']=td;}
+      tr.appendChild(td);
+    });
+    ['hp','atk'].forEach(f=>{const td=document.createElement('td');td.style.color='var(--faint)';ref[f+'Prev']=td;tr.appendChild(td);});
+    rowRefs.push(ref);tbl.appendChild(tr);
   });
   box.appendChild(tbl);
+  const sm=document.createElement('div');sm.id='statSummary';sm.className='hint';box.appendChild(sm);
+  statRefresh();
+  $('#statFactor').oninput=statRefresh;
   // 觉醒加成(character_awake_status,36 个有觉醒板的角色)
   const aw=document.createElement('div');
   if(data.awake){
@@ -3395,7 +3727,7 @@ async function loadBoss(force){
     try{const c=await api('/quest/cats');questCatsData=c.cats.filter(x=>x.exists);renderQuestCats();}catch(e){}
   }
   if(force||!bossUsage){
-    try{const u=await api('/boss/usage'+(force?'?force=1':''));bossUsage=u.usage||{};renderBossList();}catch(e){}
+    try{const u=await api('/boss/usage'+(force?'?force=1':''));bossUsage=u.usage||{};renderBossCatBar();renderBossList();}catch(e){}
   }
 }
 function catByAlias(a){return (questCatsData||[]).find(x=>x.alias===a);}
@@ -3429,10 +3761,36 @@ function usageIcons(key){
   if(cats.length>6){const m=document.createElement('span');m.textContent='+'+(cats.length-6);m.style.fontSize='10px';m.style.color='var(--faint)';box.appendChild(m);}
   return box;
 }
+let bossCatSel='';
+function renderBossCatBar(){
+  const box=$('#bossCatBar');if(!box)return;box.innerHTML='';
+  if(!questCatsData||!bossUsage)return;
+  const counts={};let noUse=0;
+  (bossData?bossData.bosses:[]).forEach(b=>{
+    const u=(bossUsage||{})[b.key]||[];
+    if(!u.length)noUse++;
+    u.forEach(a=>counts[a]=(counts[a]||0)+1);
+  });
+  const mk=(alias,txt,n)=>{
+    const c=document.createElement('div');c.className='qcat'+(bossCatSel===alias?' sel':'');
+    c.innerHTML=txt+(n!=null?'<span class="qn">'+n+'</span>':'');
+    c.onclick=()=>{bossCatSel=bossCatSel===alias?'':alias;renderBossCatBar();renderBossList();};
+    return c;
+  };
+  box.appendChild(mk('','全部',bossData?bossData.bosses.length:0));
+  questCatsData.forEach(c=>{if(counts[c.alias])box.appendChild(mk(c.alias,'<span>'+c.icon+'</span><span>'+c.cn+'</span>',counts[c.alias]));});
+  if(noUse)box.appendChild(mk('__none__','🚫 未登记副本',noUse));
+  box.style.display='flex';box.style.flexWrap='wrap';box.style.gap='5px';
+}
 function renderBossList(){
   if(!bossData)return;
   const s=($('#bossSearch').value||'').trim().toLowerCase();
-  const list=bossData.bosses.filter(b=>!s||b.key.toLowerCase().includes(s)||(b.name||'').toLowerCase().includes(s));
+  const list=bossData.bosses.filter(b=>{
+    if(s&&!(b.key.toLowerCase().includes(s)||(b.name||'').toLowerCase().includes(s)))return false;
+    if(!bossCatSel)return true;
+    const u=(bossUsage||{})[b.key]||[];
+    return bossCatSel==='__none__'?!u.length:u.includes(bossCatSel);
+  });
   const box=$('#bossList');box.innerHTML='';
   if(!list.length){box.innerHTML='<div class="empty">无匹配 boss</div>';return;}
   const tb=document.createElement('table');
@@ -3601,7 +3959,286 @@ $('#btnChainApply').onclick=async()=>{
   loadChain();
 };
 
-// ---- 深渊连战(700099)----
+// ============ 深渊连战 v2(2026-07-28 全面重做)============
+let TW_DATA=null, RW_DATA=null, SF_DATA=null;
+// 绑定辅助(元素不存在时静默跳过 —— 高级页折叠内的控件可能尚未展开)
+function on(id,ev,fn){const el=document.getElementById(id);if(el)el[ev]=fn;}
+// 安全选择器:v2 重做后部分旧 DOM 已移除,顶层绑定若直接 $('#x').onclick= 会因
+// null 抛错并中断整个脚本(2026-07-28 全站无数据事故)。$s 在元素缺失时返回惰性
+// stub,让残留绑定静默失效而不炸脚本。
+const _NOOP_EL=new Proxy({},{get:(t,k)=>(typeof k==='string'&&['addEventListener','removeEventListener','appendChild','focus','click'].includes(k))?(()=>{}):undefined,set:()=>true});
+function $s(sel){return document.querySelector(sel)||_NOOP_EL;}
+
+function rgTabInit(){
+  document.querySelectorAll('.rgTab').forEach(t=>{
+    t.onclick=()=>{
+      document.querySelectorAll('.rgTab').forEach(x=>x.classList.toggle('on',x===t));
+      const key=t.dataset.rg;
+      document.querySelectorAll('.rgPane').forEach(p=>p.classList.toggle('on',p.dataset.rgp===key));
+      if(key==='tower'&&!TW_DATA)twLoad();
+      if(key==='reward'&&!RW_DATA)rwLoad();
+      if(key==='safe'&&!SF_DATA)sfLoad();
+      if(key==='adv'){loadRogueDex();}
+    };
+  });
+  const dif=$('#ngDiff'); if(dif)dif.onchange=()=>{
+    $('#ngCustomRow').style.display=dif.value?'none':'flex';
+  };
+}
+
+// ---- 塔总览 ----
+async function twLoad(){
+  let d; try{d=await api('/rogue/tower');}catch(e){return;}
+  TW_DATA=d; twRender(); twDesign(d.design);
+  const bad=d.floors.filter(f=>!f.ok).length;
+  const st=$('#rgStatus');
+  if(st)st.innerHTML='当前 <b>'+d.count+'</b> 层 · '+
+    (bad?'<span class="bad">'+bad+' 层异常</span>':'<span class="good">全部通过门禁</span>');
+}
+// 当前设计参数(后端实时从代码读,不写死在前端,免得改了代码文档两头对不上)
+function twDesign(g){
+  const el=$s('#twDesign'); if(!el)return;
+  if(!g){el.textContent='(后端未返回 design)';return;}
+  const caps=Object.entries(g.series_caps||{}).map(([k,v])=>k+' ×'+v).join(' · ');
+  const combos=(g.combos||[]).map(c=>'<span class="twChip combo">'+chEsc(c.name)+'</span>'+
+    '<span class="twCode">'+chEsc(c.curses.join(' + '))+
+    (c.field_cat?'('+chEsc(c.field_cat)+'类法阵)':'')+'</span>').join('<br>');
+  el.innerHTML=
+    '难度默认 <b>'+chEsc(g.difficulty_default||'')+'</b>(全塔烈狱) · '+
+    '副本池难度门槛 <b>≥'+chEsc(String(g.min_quest_level))+'</b> · '+
+    '场地效果目录 <b>'+chEsc(String(g.field_menu_count))+'</b> 项(随机放行:'+
+    chEsc((g.field_random_cats||[]).join('/'))+')<br>'+
+    '系列配额(按当前层数缩放):<b>'+chEsc(caps)+'</b>,其余 boss ×1<br>'+
+    '楼层黑名单 <span class="twCode">'+chEsc((g.blocked_fields||[]).join(','))+'</span> · '+
+    'boss 黑名单 <span class="twCode">'+chEsc((g.blocked_bosses||[]).join(','))+'</span><br>'+
+    '诅咒组合(名额≥2 时 '+Math.round((g.combo_rate||0)*100)+'% 整套落地):<br>'+combos;
+}
+function twStatBar(v,max,cls){
+  if(v===null||v===undefined)return '<span class="twCode">—</span>';
+  const w=Math.max(2,Math.round(38*Math.min(1,v/(max||1))));
+  return Math.round(v).toLocaleString()+'<span class="twBar '+(cls||'')+'" style="width:'+w+'px"></span>';
+}
+function twRender(){
+  const d=TW_DATA; if(!d)return;
+  const onlyBad=$('#twOnlyBad')&&$('#twOnlyBad').checked;
+  const all=d.floors.concat(d.endless?[Object.assign({},d.endless,{round:'∞'})]:[]);
+  let maxHp=1,maxAtk=1;
+  all.forEach(f=>f.bosses.forEach(b=>{if(b.hp)maxHp=Math.max(maxHp,b.hp);if(b.atk)maxAtk=Math.max(maxAtk,b.atk);}));
+  const auth=new Set((d.authentic||[]).concat(d.authentic_movement||[]));
+  const rows=all.filter(f=>!onlyBad||!f.ok).map(f=>{
+    const bs=f.bosses.length?f.bosses.map(b=>
+      '<div class="twBoss">'+chEsc(b.name.split('/')[0])+
+      (b.minion?' <span class="twChip minion">杂兵</span>':'')+
+      (auth.has(b.code)?' <span class="twChip auth">原味</span>':'')+
+      '</div><div class="twCode">'+chEsc(b.code)+'</div>').join('')
+      :'<span class="twCode">(小怪房)</span>';
+    const stat=f.bosses.length?f.bosses.map(b=>
+      '<div class="twStat">'+twStatBar(b.hp,maxHp)+' / '+twStatBar(b.atk,maxAtk,'atk')+'</div>').join('')
+      :'<span class="twCode">—</span>';
+    // 效果带语义:完全免疫红 / 易伤绿 / 抗性灰 —— 只看 kind 数字读不出来
+    const eff=(f.effects||[]).map(e=>{
+      const cls=e.mode==='完全免疫'?' imm':(e.mode==='易伤'?' weak':'');
+      return '<span class="twChip'+cls+'">'+chEsc(e.kind_cn||('k'+e.kind))+
+        (e.mode?' '+chEsc(e.mode):'')+(e.pct&&e.mode!=='免疫'?' '+chEsc(e.pct):'')+'</span>';
+    }).join('')||'<span class="twCode">—</span>';
+    // 图标 = 游戏内那张缩略图(c5),/asset 路由解码 PNG
+    // ⚠ 必须带 API 前缀:后端 _route() 只认 /api/mod|/api 开头,裸 /asset 会被判 404
+    const icon=f.thumb
+      // ⚠ 不能用 loading="lazy":塔面板初始是 display:none,懒加载观察器注册不上,
+      //   面板显示后也不会补加载(实测 31 张全是 0x0)。31 张缩略图直接 eager。
+      ? '<img class="twIcon" src="'+API+'/asset?logical='+
+        encodeURIComponent(f.thumb+'.png')+'" alt="" '+
+        'onerror="this.replaceWith(Object.assign(document.createElement(\'span\'),'+
+        '{className:\'twCode\',textContent:\'无图\'}))">'
+      : '<span class="twCode">—</span>';
+    // 游戏内显示:大标题(c4)+ 副标题(c3,诅咒串,带【组合】前缀)
+    const ingame='<div class="twTitle">'+chEsc(f.subname||'')+'</div>'+
+      (f.combo?'<span class="twChip combo">'+chEsc(f.combo)+'</span> ':'')+
+      '<span class="twSub">'+chEsc((f.desc||'').replace(/^【[^】]*】/,''))+'</span>'+
+      (f.series&&f.series.length?'<div><span class="twChip">系列 '+
+        chEsc(f.series.join('/'))+'</span></div>':'')+
+      '<div class="twCode">韧×'+chEsc(f.tp||'1')+' · FEVER '+chEsc(f.fever||'400')+
+      ' · '+Math.round((+f.time_limit||54000)/3600)+'分</div>';
+    return '<tr class="'+(f.ok?'':'bad')+'">'+
+      '<td class="twRound">'+chEsc(f.round)+'</td>'+
+      '<td>'+icon+'</td>'+
+      '<td>'+bs+'</td><td>'+stat+'</td>'+
+      '<td class="twIngame">'+ingame+'</td>'+
+      '<td>'+chEsc(f.element_cn||'—')+'</td>'+
+      '<td><span class="twChip rank'+(f.rank==='地狱级'?' hell':(f.rank==='超级+'?' sp':''))+'">'+chEsc(f.rank||'—')+'</span></td>'+
+      '<td class="twStat">'+chEsc(f.level||'')+'</td>'+
+      '<td class="twStat">'+chEsc(f.hp_mult||'')+' / '+chEsc(f.atk_mult||'')+'</td>'+
+      '<td>'+eff+'</td>'+
+      '<td><span class="twCode">'+chEsc(f.field)+'</span>'+
+        (f.composed?' <span class="twChip mix">拼接</span>':'')+'</td>'+
+      '<td>'+(f.ok?'✓':'<span class="twErr">✗ '+chEsc((f.errors||[])[0]||'').slice(0,60)+'</span>')+'</td></tr>';
+  }).join('');
+  $('#twBody').innerHTML=rows||'<tr><td colspan="12" class="empty">无</td></tr>';
+  const nMix=all.filter(f=>f.composed).length, nBad=all.filter(f=>!f.ok).length;
+  $('#twSummary').innerHTML='共 <b>'+all.length+'</b> 关 · 拼接 <b>'+nMix+'</b> · '+
+    (nBad?'<span class="bad">异常 '+nBad+'</span>':'<span class="good">全绿</span>');
+}
+
+// ---- 生成 ----
+function ngBody(){
+  const b={rounds:+$('#ngRounds').value||30, enemy_level:($('#ngLevel').value.trim()||'max'),
+    mix:$('#ngMix').checked};
+  const d=$('#ngDiff').value; if(d)b.difficulty=d;
+  const seed=$('#ngSeed').value.trim(); if(seed)b.seed=seed;
+  if(!d){b.hp_base=$('#ngHpBase').value;b.hp_growth=$('#ngHpGrow').value;
+    b.atk_base=$('#ngAtkBase').value;b.atk_growth=$('#ngAtkGrow').value;
+    const c=$('#ngCurse').value; if(c)b.curse=c;}
+  return b;
+}
+async function ngRun(mode){
+  const b=ngBody();
+  if(mode!=='preview')b.publish=(mode==='publish');
+  $('#ngOut').textContent='执行中…';
+  let r; try{r=await api('/rogue/build',{...b,dry_run:mode==='preview'});}catch(e){$('#ngOut').textContent='失败';return;}
+  $('#ngOut').textContent=r.log||'(无输出)';
+  if(mode!=='preview'){TW_DATA=null;twLoad();log('塔已生成');}
+}
+
+// ---- 奖励 ----
+function rwName(id){return (RW_DATA&&RW_DATA.item_names&&RW_DATA.item_names[String(id)])||'';}
+function rwRowFixed(e,i){
+  return '<div class="rwRow" data-i="'+i+'">'+
+    '<select class="ty"><option value="0"'+(e.type==0?' selected':'')+'>道具</option>'+
+    '<option value="3"'+(e.type==3?' selected':'')+'>星导石(不占槽)</option>'+
+    '<option value="4"'+(e.type==4?' selected':'')+'>玛娜</option></select>'+
+    '<input class="id" placeholder="道具id" value="'+(e.id!==undefined?e.id:'')+'">'+
+    '<span class="nm">'+chEsc(rwName(e.id))+'</span>'+
+    '<input class="cnt" type="number" value="'+(e.count||1)+'">'+
+    '<span class="x" title="删除">✕</span></div>';
+}
+function rwRowRandom(e,i){
+  return '<div class="rwRow" data-i="'+i+'">'+
+    '<input class="pool" placeholder="道具id,逗号分隔" value="'+((e.pool||[]).join(','))+'">'+
+    '<label>选<input class="p0" type="number" style="width:48px" value="'+((e.pick||[])[0]!==undefined?e.pick[0]:(e.pool||[]).length)+'">'+
+    '-<input class="p1" type="number" style="width:48px" value="'+((e.pick||[])[1]!==undefined?e.pick[1]:(e.pool||[]).length)+'">种</label>'+
+    '<label>每种<input class="c0" type="number" style="width:56px" value="'+((e.count||[1])[0]||1)+'">'+
+    '-<input class="c1" type="number" style="width:56px" value="'+((e.count||[1,1])[1]||(e.count||[1])[0]||1)+'">个</label>'+
+    '<span class="nm">'+chEsc((e.pool||[]).map(rwName).filter(Boolean).join('/'))+'</span>'+
+    '<span class="x" title="删除">✕</span></div>';
+}
+function rwRowChance(e,i){
+  return '<div class="rwRow" data-i="'+i+'">'+
+    '<input class="id" placeholder="道具id" value="'+(e.id!==undefined?e.id:'')+'">'+
+    '<span class="nm">'+chEsc(rwName(e.id))+'</span>'+
+    '<input class="cnt" type="number" value="'+(e.count||1)+'">个'+
+    '<label>概率<input class="ch" type="number" step="0.05" min="0" max="1" style="width:64px" value="'+(e.chance!==undefined?e.chance:0.5)+'"></label>'+
+    '<span class="x" title="删除">✕</span></div>';
+}
+function rwBind(box,arr,render){
+  box.querySelectorAll('.x').forEach(x=>x.onclick=()=>{
+    arr.splice(+x.closest('.rwRow').dataset.i,1);
+    box.innerHTML=arr.map(render).join(''); rwBind(box,arr,render);
+  });
+  box.querySelectorAll('input.id').forEach(inp=>inp.oninput=()=>{
+    const nm=inp.closest('.rwRow').querySelector('.nm'); if(nm)nm.textContent=rwName(inp.value);
+  });
+}
+async function rwLoad(){
+  let d; try{d=await api('/rogue/rewards');}catch(e){return;}
+  RW_DATA=d; rwRender();
+}
+function rwRender(){
+  const d=RW_DATA; if(!d)return;
+  $('#rwFixed').innerHTML=d.fixed.map(rwRowFixed).join(''); rwBind($('#rwFixed'),d.fixed,rwRowFixed);
+  $('#rwRandom').innerHTML=d.random.map(rwRowRandom).join(''); rwBind($('#rwRandom'),d.random,rwRowRandom);
+  $('#rwChance').innerHTML=d.chance.map(rwRowChance).join(''); rwBind($('#rwChance'),d.chance,rwRowChance);
+}
+function rwCollect(){
+  const fixed=[...$('#rwFixed').querySelectorAll('.rwRow')].map(r=>{
+    const t=+r.querySelector('.ty').value, o={type:t,count:+r.querySelector('.cnt').value||1};
+    const id=r.querySelector('.id').value.trim(); if(id&&t!==3&&t!==4)o.id=+id; return o;});
+  const random=[...$('#rwRandom').querySelectorAll('.rwRow')].map(r=>({
+    pool:r.querySelector('.pool').value.split(',').map(x=>+x.trim()).filter(x=>x),
+    pick:[+r.querySelector('.p0').value,+r.querySelector('.p1').value],
+    count:[+r.querySelector('.c0').value,+r.querySelector('.c1').value]}));
+  const chance=[...$('#rwChance').querySelectorAll('.rwRow')].map(r=>({
+    type:0,id:+r.querySelector('.id').value||0,count:+r.querySelector('.cnt').value||1,
+    chance:+r.querySelector('.ch').value||0}));
+  return {fixed,folder_clear_random:random,folder_clear_chance:chance};
+}
+
+// ---- 安全名单 ----
+function sfTags(box,arr,names){
+  box.innerHTML=arr.length?arr.map((c,i)=>'<span class="sfTag" data-i="'+i+'">'+
+    chEsc((names[c]||c).split('/')[0])+'<span class="x">✕</span></span>').join('')
+    :'<span class="empty">(空)</span>';
+  box.querySelectorAll('.x').forEach(x=>x.onclick=()=>{
+    arr.splice(+x.closest('.sfTag').dataset.i,1); sfTags(box,arr,names);});
+}
+async function sfLoad(){
+  let d; try{d=await api('/rogue/lists');}catch(e){return;}
+  SF_DATA=d;
+  $('#sfStrict').checked=!!d.strict_transplant;
+  const n=d.names||{};
+  sfTags($('#sfSafe'),d.transplant_safe=d.transplant_safe||[],n);
+  sfTags($('#sfAuth'),d.authentic=d.authentic||[],n);
+  sfTags($('#sfMove'),d.authentic_movement=d.authentic_movement||[],n);
+  sfTags($('#sfSocket'),d.socket_families=d.socket_families||[],{});
+}
+
+// ---- 装配 ----
+async function loadRogue(){
+  rgTabInit();
+  on('btnRogueReload','onclick',()=>{TW_DATA=RW_DATA=SF_DATA=null;twLoad();});
+  on('btnTwReload','onclick',()=>{TW_DATA=null;twLoad();});
+  on('twOnlyBad','onchange',twRender);
+  on('btnNgPreview','onclick',()=>ngRun('preview'));
+  on('btnNgBuild','onclick',()=>ngRun('build'));
+  on('btnNgPublish','onclick',()=>{if(confirm('生成并发布到客户端?'))ngRun('publish');});
+  on('btnNgReroll','onclick',async()=>{
+    const b=ngBody();
+    if(!confirm('一键重开:重摇 '+b.rounds+' 层 + 发布 + 清爬塔进度 + 重启游戏。\n层数与线上不同还需重启服务端。继续?'))return;
+    $('#ngOut').textContent='重开中(约 30 秒)…';
+    let r; try{r=await api('/rogue/auto/run',{...b,clear_progress:true,restart_game:true});}
+    catch(e){$('#ngOut').textContent='失败';return;}
+    $('#ngOut').textContent=r.log||'完成'; TW_DATA=null; twLoad();
+  });
+  on('btnTwPublish','onclick',async()=>{
+    if(!confirm('发布 ②层改动到客户端?'))return;
+    try{const r=await api('/rogue/publish',{});$('#ngOut').textContent=r.log||'';log('已发布');}catch(e){}
+  });
+  on('btnRwAddFixed','onclick',()=>{RW_DATA.fixed.push({type:0,id:'',count:1});rwRender();});
+  on('btnRwAddRandom','onclick',()=>{RW_DATA.random.push({pool:[],pick:[1,1],count:[1,1]});rwRender();});
+  on('btnRwAddChance','onclick',()=>{RW_DATA.chance.push({type:0,id:'',count:1,chance:0.5});rwRender();});
+  on('btnRwSave','onclick',async()=>{
+    const b=rwCollect();
+    try{await api('/rogue/rewards',b);log('奖励已保存并热重载');toast('奖励已保存,热重载生效');
+      RW_DATA=null;rwLoad();}catch(e){}
+  });
+  on('btnRwRoll','onclick',async()=>{
+    let r; try{r=await api('/rogue/rewards');}catch(e){return;}
+    const lines=[];
+    for(let n=1;n<=5;n++){
+      const got=[];
+      r.fixed.forEach(e=>got.push((rwName(e.id)||(e.type==3?'星导石':'type'+e.type))+'×'+e.count));
+      (r.random||[]).forEach(g=>{
+        const pool=[...(g.pool||[])], pick=g.pick||[pool.length,pool.length];
+        const take=Math.min(pool.length,pick[0]+Math.floor(Math.random()*(pick[1]-pick[0]+1)));
+        for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+        const c=g.count||[1,1];
+        pool.slice(0,take).forEach(id=>got.push((rwName(id)||id)+'×'+(c[0]+Math.floor(Math.random()*(c[1]-c[0]+1)))));
+      });
+      (r.chance||[]).forEach(e=>{if(Math.random()<e.chance)got.push((rwName(e.id)||e.id)+'×'+e.count);});
+      lines.push('第'+n+'次('+got.length+'格): '+got.join('  '));
+    }
+    $('#rwOut').textContent=lines.join('\n');
+  });
+  on('btnSfSave','onclick',async()=>{
+    const b={strict_transplant:$('#sfStrict').checked,
+      transplant_safe:SF_DATA.transplant_safe, authentic:SF_DATA.authentic,
+      authentic_movement:SF_DATA.authentic_movement, socket_families:SF_DATA.socket_families};
+    try{await api('/rogue/lists',b);log('名单已保存');toast('名单已保存');}catch(e){}
+  });
+  twLoad(); loadRogueAuto();
+  try{renderRogue(await api('/rogue/state'));}catch(e){}
+}
+// ---- 深渊连战(700099)旧版辅助(图鉴/商店/掉落/无尽,继续复用)----
+
 function rgRoundsHtml(rounds,endless){
   let h='<table><tr><th>轮</th><th>boss / 场地</th><th>属性</th><th>HP×</th><th>ATK×</th><th>场地效果(kind:强度)</th></tr>';
   (rounds||[]).forEach(r=>{h+='<tr><td>'+chEsc(r.round)+'</td><td>'+chEsc(r.boss)+'</td><td>'+
@@ -3625,17 +4262,225 @@ function rgShopHtml(shop){
 let ROGUE=null;
 function renderRogue(s){
   ROGUE=s;
-  $('#rgEnabled').textContent=s.enabled?'· 掉落已启用':'· 掉落未启用(enabled=false)';
-  $('#rgDropEnabled').checked=!!s.enabled;
-  $('#rgDropJson').value=JSON.stringify(s.drops||{},null,2);
-  $('#rgRounds_box').innerHTML=rgRoundsHtml(s.rounds,s.endless);
-  $('#rgShopBox').innerHTML=rgShopHtml(s.shop);
-  $('#rgCurveBox').innerHTML=(s.curve&&s.curve.length)?
-    '<div class="hint">当前无尽曲线(轮:HP×/ATK×)  '+s.curve.map(c=>chEsc(c.round)+':'+chEsc(c.hp)+'/'+chEsc(c.atk)).join('   ')+'</div>':'';
+  const set=(id,fn)=>{const el=document.getElementById(id);if(el)fn(el);};
+  set('rgDropEnabled',el=>el.checked=!!s.enabled);
+  set('rgDropJson',el=>el.value=JSON.stringify(s.drops||{},null,2));
+  set('rgRounds_box',el=>el.innerHTML=rgRoundsHtml(s.rounds,s.endless));
+  set('rgShopBox',el=>el.innerHTML=rgShopHtml(s.shop));
+  set('rgCurveBox',el=>el.innerHTML=(s.curve&&s.curve.length)?
+    '<div class="hint">当前无尽曲线(轮:HP×/ATK×)  '+s.curve.map(c=>chEsc(c.round)+':'+chEsc(c.hp)+'/'+chEsc(c.atk)).join('   ')+'</div>':'');
 }
-async function loadRogue(){let s;try{s=await api('/rogue/state');}catch(e){return;}renderRogue(s);rgLayoutLoad();loadRogueAuto();}
-function rgOut(r){$('#rogueBox').innerHTML='<pre style="white-space:pre-wrap">'+chEsc(r.log||'')+'</pre>';}
-$('#btnRogueReload').onclick=loadRogue;
+// (旧 loadRogue 已由 v2 版取代;渲染入口见上方 loadRogue)
+(function bindWorkshop(){ try{
+  const on=(id,ev,fn)=>{const el=document.getElementById(id);if(el)el[ev]=fn;};
+  on('btnWsAddStage','onclick',()=>{const last=WS.stages[WS.stages.length-1];
+    const from=last?Math.min(WS.rounds,last.to+1):1;
+    WS.stages.push({from,to:Math.min(WS.rounds,from+2),tier:'elite'});renderStages();syncLaneTiers();});
+  on('btnWsAutoStage','onclick',()=>{WS.rounds=parseInt($s('#wsRounds').value)||15;WS.stages=wsAutoStages(WS.rounds);renderStages();renderLanes();});
+  on('btnWsRandom','onclick',()=>{if(confirm('按当前工坊计划随机生成全部楼层(写入,不发布)?逐层设定的层保持固定。'))wsGenerate(false);});
+  on('btnWsPreview','onclick',()=>wsGenerate(true));
+  on('btnWsSavePlan','onclick',wsSavePlan);
+  on('btnWsPublish','onclick',async()=>{if(!confirm('发布当前 ②层改动到客户端?'))return;try{const r=await api('/rogue/publish',{});rgOut(r);log('已发布');}catch(e){}});
+  on('wsRounds','oninput',()=>{WS.rounds=parseInt($s('#wsRounds').value)||15;renderLanes();});
+  on('wsPalCat','onchange',renderPalette);
+  on('wsPalSearch','oninput',renderPalette);
+  }catch(e){/* v2 已移除旧工坊 DOM */}
+})();
+function buildRgNav(){
+  if(document.getElementById('rgNav'))return;
+  const sec=document.querySelector('section[data-t="rogue"]');
+  const h3s=[...sec.querySelectorAll('h3')];
+  if(!h3s.length)return;
+  const nav=document.createElement('div');nav.id='rgNav';
+  h3s.forEach(h=>{
+    const t=h.childNodes[0].textContent.trim();
+    const c=document.createElement('span');c.className='chip';c.textContent=t.length>14?t.slice(0,14)+'…':t;
+    c.onclick=()=>h.scrollIntoView({behavior:'smooth',block:'start'});
+    nav.appendChild(c);
+  });
+  sec.insertBefore(nav,sec.children[2]);
+}
+(function(){
+  const content=document.getElementById('content');
+  const b=document.createElement('div');b.id='toTop';b.textContent='↑';b.title='回到顶部';
+  b.onclick=()=>content.scrollTo({top:0,behavior:'smooth'});
+  document.body.appendChild(b);
+  content.addEventListener('scroll',()=>{b.classList.toggle('show',content.scrollTop>500);},{passive:true});
+})();
+$s('#btnAbExpandAll').onclick=()=>{document.querySelectorAll('.abwrap').forEach(w=>{w.style.display='';});document.querySelectorAll('.abil-h .tri').forEach(t=>t.textContent='▾');};
+$s('#btnAbCollapseAll').onclick=()=>{document.querySelectorAll('.abwrap').forEach(w=>{w.style.display='none';});document.querySelectorAll('.abil-h .tri').forEach(t=>t.textContent='▸');};
+// ============ 深渊连战工坊 ============
+const WS={rounds:15,stages:[],floors:{},curses:[],menu:[],selLane:0,loaded:false};
+const TIER_CN={easy:'简单',normal:'普通',elite:'精英',hell:'炼狱'};
+const TIER_ORDER=['easy','normal','elite','hell'];
+function wsAutoStages(n){
+  // 均分 4 段:简单→普通→精英→炼狱
+  const segs=[['easy',0,.15],['normal',.15,.4],['elite',.4,.75],['hell',.75,1]];
+  return segs.map(([tier,a,b])=>({from:Math.max(1,Math.floor(n*a)+1),to:Math.round(n*b),tier}))
+    .filter(s=>s.from<=s.to);
+}
+function wsTierOf(r){for(const s of WS.stages){if(r>=s.from&&r<=s.to)return s.tier;}return 'elite';}
+async function loadWorkshop(){
+  if(WS.loaded)return;
+  let info,plan;
+  try{info=await api('/rogue/curse_info');plan=await api('/rogue/plan');}catch(e){return;}
+  WS.loaded=true;WS.curses=info.curses;WS.menu=info.menu;
+  WS.stages=(plan.stages&&plan.stages.length)?plan.stages:wsAutoStages(WS.rounds);
+  WS.floors=plan.floors||{};
+  renderStages();renderLanes();renderPalette();
+}
+function renderStages(){
+  const box=$s('#wsStageBar');if(!box)return;box.innerHTML='';
+  WS.stages.forEach((st,i)=>{
+    const row=document.createElement('div');row.className='stageRow';
+    row.innerHTML=`<span class="tierPill tier-${st.tier}">${TIER_CN[st.tier]}</span>`;
+    const mk=(v,f)=>{const inp=document.createElement('input');inp.type='number';inp.value=v;inp.min=1;
+      inp.oninput=()=>{st[f]=parseInt(inp.value)||1;syncLaneTiers();};return inp;};
+    row.appendChild(document.createTextNode('层'));row.appendChild(mk(st.from,'from'));
+    row.appendChild(document.createTextNode('→'));row.appendChild(mk(st.to,'to'));
+    const sel=document.createElement('select');sel.style.width='84px';
+    TIER_ORDER.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=TIER_CN[t];if(t===st.tier)o.selected=true;sel.appendChild(o);});
+    sel.onchange=()=>{st.tier=sel.value;renderStages();syncLaneTiers();};
+    row.appendChild(sel);
+    const del=document.createElement('button');del.className='mini';del.textContent='✕';
+    del.onclick=()=>{WS.stages.splice(i,1);renderStages();syncLaneTiers();};
+    row.appendChild(del);
+    box.appendChild(row);
+  });
+}
+function bossOfFloor(r){const f=WS.floors[String(r)]||{};return f._boss||'';}
+function renderLanes(){
+  const box=$s('#wsLaneBox');if(!box)return;box.innerHTML='';
+  const n=WS.rounds;
+  for(let r=1;r<=n;r++){
+    const tier=wsTierOf(r);
+    const lane=document.createElement('div');lane.className='lane';lane.dataset.r=r;
+    lane.innerHTML=`<div class="lno"><b>${r}</b><span class="ltier tier-${tier}">${TIER_CN[tier]}</span>${r===n?'<span style="font-size:9px;color:var(--gold)">终·始龙</span>':''}</div>`;
+    const slots=document.createElement('div');slots.className='slots';slots.dataset.r=r;
+    renderLaneSlots(slots,r);
+    lane.appendChild(slots);
+    lane.onclick=()=>{WS.selLane=r;highlightSel();};
+    lane.ondragover=e=>{e.preventDefault();lane.classList.add('dragover');};
+    lane.ondragleave=()=>lane.classList.remove('dragover');
+    lane.ondrop=e=>{e.preventDefault();lane.classList.remove('dragover');
+      const d=JSON.parse(e.dataTransfer.getData('text/plain')||'{}');wsAddEffect(r,d);};
+    box.appendChild(lane);
+  }
+  highlightSel();
+}
+function renderLaneSlots(slots,r){
+  slots.innerHTML='';
+  const f=WS.floors[String(r)]||{};
+  const items=[...(f.curses||[]).map(c=>({t:'curse',v:c})),...(f.field?[{t:'field',v:f.field}]:[])];
+  if(!items.length){const h=document.createElement('span');h.className='laneHint';h.textContent='空 · 随机时按阶段档填充(拖效果到此固定)';slots.appendChild(h);return;}
+  items.forEach(it=>{
+    let label,cat;
+    if(it.t==='curse'){label=it.v;cat='ccurse';}
+    else{const m=WS.menu.find(x=>x.program===it.v);label=m?m.label:'领域';cat='c'+(m?m.cat:'领域');}
+    const p=document.createElement('span');p.className='effpill '+cat;
+    p.innerHTML=`<span>${chEsc(label)}</span><span class="x">✕</span>`;
+    p.querySelector('.x').onclick=ev=>{ev.stopPropagation();wsDelEffect(r,it);};
+    slots.appendChild(p);
+  });
+}
+function wsAddEffect(r,d){
+  const k=String(r);const f=WS.floors[k]||{};
+  if(d.t==='curse'){f.curses=[...new Set([...(f.curses||[]),d.v])].slice(0,4);}
+  else if(d.t==='field'){f.field=d.v;}
+  WS.floors[k]=f;WS.selLane=r;
+  const slots=$s('#wsLaneBox').querySelector(`.slots[data-r="${r}"]`);if(slots)renderLaneSlots(slots,r);
+  highlightSel();
+}
+function wsDelEffect(r,it){
+  const k=String(r);const f=WS.floors[k]||{};
+  if(it.t==='curse')f.curses=(f.curses||[]).filter(c=>c!==it.v);
+  else delete f.field;
+  if(!(f.curses&&f.curses.length)&&!f.field)delete WS.floors[k];else WS.floors[k]=f;
+  const slots=$s('#wsLaneBox').querySelector(`.slots[data-r="${r}"]`);if(slots)renderLaneSlots(slots,r);
+}
+function highlightSel(){document.querySelectorAll('#wsLaneBox .lane').forEach(l=>{
+  l.style.outline=+l.dataset.r===WS.selLane?'2px solid var(--acc)':'';});}
+function syncLaneTiers(){document.querySelectorAll('#wsLaneBox .lane').forEach(l=>{
+  const t=wsTierOf(+l.dataset.r);const el=l.querySelector('.ltier');if(el){el.className='ltier tier-'+t;el.textContent=TIER_CN[t];}});}
+function renderPalette(){
+  const grid=$s('#wsPalGrid');if(!grid)return;
+  const cat=$s('#wsPalCat').value,q=($s('#wsPalSearch').value||'').trim().toLowerCase();
+  let items;
+  if(cat==='curse')items=WS.curses.filter(c=>!c.caster).map(c=>({t:'curse',v:c.name,label:c.name,note:(c.tiers||[]).slice(-1)[0]||''}));
+  else items=WS.menu.filter(m=>m.cat===cat).map(m=>({t:'field',v:m.program,label:m.label,note:m.note}));
+  if(q)items=items.filter(x=>x.label.toLowerCase().includes(q)||(x.note||'').toLowerCase().includes(q));
+  grid.innerHTML='';
+  items.forEach(it=>{
+    const el=document.createElement('div');el.className='palItem';el.draggable=true;
+    el.innerHTML=`<b>${chEsc(it.label)}</b><span class="pn">${chEsc(it.note||'')}</span>`;
+    el.ondragstart=e=>{e.dataTransfer.setData('text/plain',JSON.stringify({t:it.t,v:it.v}));el.classList.add('dragging');};
+    el.ondragend=()=>el.classList.remove('dragging');
+    el.onclick=()=>{wsAddEffect(WS.selLane||1,{t:it.t,v:it.v});};
+    grid.appendChild(el);
+  });
+  if(!items.length)grid.innerHTML='<div class="empty">无匹配</div>';
+}
+function wsPlanBody(){
+  const floors={};
+  Object.entries(WS.floors).forEach(([k,f])=>{
+    const e={};if(f.curses&&f.curses.length)e.curses=f.curses;if(f.field)e.field=f.field;
+    if(Object.keys(e).length)floors[k]=e;
+  });
+  return {stages:WS.stages,floors};
+}
+async function wsSavePlan(){try{await api('/rogue/plan',wsPlanBody());log('工坊计划已保存');toast('工坊计划已保存');}catch(e){}}
+async function wsGenerate(dry){
+  await api('/rogue/plan',wsPlanBody());   // 先落盘计划,构建期读取
+  const b={rounds:$s('#wsRounds').value,enemy_level:$s('#wsLvl').value,seed:$s('#wsSeed').value.trim(),dry_run:dry};
+  let r;try{r=await api('/rogue/build',b);}catch(e){return;}
+  rgOut(r);log(dry?'工坊预览完成':'工坊已生成(未发布),点发布推送');if(!dry)loadRogue();
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('.wsTab');if(!t)return;
+  document.querySelectorAll('.wsTab').forEach(x=>x.classList.toggle('on',x===t));
+  $s('#wsStage').style.display=t.dataset.ws==='stage'?'':'none';
+  $s('#wsLanes').style.display=t.dataset.ws==='lanes'?'':'none';
+  if(t.dataset.ws==='lanes'){WS.rounds=parseInt($s('#wsRounds').value)||15;renderLanes();}
+});
+document.addEventListener('DOMContentLoaded',()=>{
+  const bind=(id,fn)=>{const el=$(id);if(el)el.addEventListener('input',fn);};
+});
+let rgDexLoaded=false;
+async function loadRogueDex(){
+  if(rgDexLoaded)return;
+  let d;try{d=await api('/rogue/curse_info');}catch(e){return;}
+  rgDexLoaded=true;
+  $s('#rgCurseDex').innerHTML=d.curses.map(c=>{
+    const tiers=c.caster
+      ?'<div class="tier"><span style="color:var(--gold);font-size:11.5px">领域全池随机,克隆 boss 施法展开</span></div>'
+      :c.tiers.map((t,i)=>`<div class="tier t${i+1}"><span class="tn">${chEsc(d.tiers[i])}</span><span>${chEsc(t)}</span></div>`).join('');
+    return `<div class="cursecard${c.caster?' caster':''}"><b>${c.caster?'🔮 ':''}${chEsc(c.name)}</b><div class="tiers">${tiers}</div></div>`;
+  }).join('');
+  const tun=d.tuning||{},per=tun.per||{},glob=tun.global||{};
+  $s('#rgTuneBuff').value=glob['加成']||'';$s('#rgTuneCurse').value=glob['诅咒']||'';
+  $s('#rgTuneField').value=glob['场地']||'';$s('#rgTuneDomain').value=glob['领域']||'';
+  const cats=['加成','诅咒','场地','领域'];
+  $s('#rgFieldDex').innerHTML=cats.map(cat=>{
+    const items=d.menu.filter(m=>m.cat===cat);
+    if(!items.length)return '';
+    return `<div style="margin:10px 0 6px;font-size:12px;color:var(--dim)"><span class="fcat c${cat}">${cat}</span> <b style="color:var(--fg)">${items.length}</b> 项</div>`+
+      `<div class="fieldgrid">`+items.map(m=>
+        `<div class="fieldchip"><div class="row" style="justify-content:space-between;margin:0;gap:4px"><b>${chEsc(m.label)}</b>`+
+        `<input class="ftune" data-prog="${chEsc(m.program)}" value="${per[m.program]||''}" placeholder="×" title="单个倍率覆盖" style="width:44px;padding:1px 5px;font-size:11px"></div>`+
+        `<span class="note">${chEsc(m.note)}</span><span class="src">${chEsc(m.src)}</span></div>`
+      ).join('')+`</div>`;
+  }).join('');
+}
+$s('#btnRgTuneSave').onclick=async()=>{
+  const per={};
+  document.querySelectorAll('#rgFieldDex .ftune').forEach(i=>{if(i.value.trim())per[i.dataset.prog]=i.value.trim();});
+  const body={global:{'加成':$s('#rgTuneBuff').value.trim(),'诅咒':$s('#rgTuneCurse').value.trim(),
+    '场地':$s('#rgTuneField').value.trim(),'领域':$s('#rgTuneDomain').value.trim()},per};
+  let r;try{r=await api('/rogue/field_tuning',body);}catch(e){return;}
+  log(r.ok?'领域调值已保存(下次随机生成生效)':'保存失败');
+};
+function rgOut(r){$s('#rogueBox').innerHTML='<pre style="white-space:pre-wrap">'+chEsc(r.log||'')+'</pre>';}
+$s('#btnRogueReload').onclick=loadRogue;
 // ① 随机生成(层数/各层池子/难度)+ 发布分离
 let rgPlanSel={};
 function rgDlId(cat){const i=rgCats.indexOf(cat);return i<0?'rgPoolDL':'rgDL_'+i;}
@@ -3648,8 +4493,8 @@ function rgBuildCatDatalists(){
   });
 }
 function renderPlanGrid(){
-  const n=Math.max(1,parseInt($('#rgRounds').value,10)||15);
-  const box=$('#rgPlanGrid');box.innerHTML='';
+  const n=Math.max(1,parseInt($s('#rgRounds').value,10)||15);
+  const box=$s('#rgPlanGrid');box.innerHTML='';
   for(let i=1;i<=n;i++){
     const sp=document.createElement('span');sp.style.whiteSpace='nowrap';
     sp.innerHTML='<span style="opacity:.6">层'+i+'</span> <select class="rgplan" data-round="'+i+'">'+
@@ -3661,17 +4506,19 @@ function renderPlanGrid(){
     box.appendChild(sp);
   }
 }
-$('#rgRounds').addEventListener('input',renderPlanGrid);
+$s('#rgRounds').addEventListener('input',renderPlanGrid);
 function rgRandBody(){
   const plan=Array.from(document.querySelectorAll('#rgPlanGrid .rgplan'))
     .map(s=>({round:s.dataset.round,cat:s.value})).filter(p=>p.cat);
-  return{rounds:$('#rgRounds').value,enemy_level:$('#rgLvl').value,
-    hp_base:$('#rgHpBase').value,hp_growth:$('#rgHpGrow').value,
-    atk_base:$('#rgAtkBase').value,atk_growth:$('#rgAtkGrow').value,
-    seed:$('#rgSeed').value.trim(),plan};
+  return{rounds:$s('#rgRounds').value,enemy_level:$s('#rgLvl').value,
+    hp_base:$s('#rgHpBase').value,hp_growth:$s('#rgHpGrow').value,
+    atk_base:$s('#rgAtkBase').value,atk_growth:$s('#rgAtkGrow').value,
+    curse:$s('#rgCurse').value,
+    test_field:($s('#rgTestField').value||'').trim().replace(/^0$/,''),
+    seed:$s('#rgSeed').value.trim(),plan};
 }
-$('#btnRgRandPreview').onclick=async()=>{let r;try{r=await api('/rogue/randomize',{...rgRandBody(),dry_run:true});}catch(e){return;}rgOut(r);};
-$('#btnRgRandApply').onclick=async()=>{
+$s('#btnRgRandPreview').onclick=async()=>{let r;try{r=await api('/rogue/randomize',{...rgRandBody(),dry_run:true});}catch(e){return;}rgOut(r);};
+$s('#btnRgRandApply').onclick=async()=>{
   if(!confirm('随机生成全部轮次(写入 store,不发布)?各层按池子计划;可在⑥微调后再点「📤 发布」。'))return;
   let r;try{r=await api('/rogue/randomize',{...rgRandBody(),dry_run:false});}catch(e){return;}
   rgOut(r);log(r.ok?'已随机生成(未发布)':'随机失败,看结果框');loadRogue();
@@ -3681,49 +4528,51 @@ async function rgPublish(){
   let r;try{r=await api('/rogue/publish',{});}catch(e){return;}
   rgOut(r);log(r.ok?'已发布(重启游戏生效)':'发布失败,看结果框');
 }
-$('#btnRgPublish1').onclick=rgPublish;$('#btnRgPublish2').onclick=rgPublish;
+$s('#btnRgPublish1').onclick=rgPublish;$s('#btnRgPublish2').onclick=rgPublish;
 // ⏰ 定时自动随机刷新
 function renderAuto(a){
-  $('#rgAutoEn').checked=!!a.enabled;$('#rgAutoTime').value=a.time||'04:30';
-  $('#rgAutoRounds').value=a.rounds||15;$('#rgAutoLvl').value=a.enemy_level||80;
-  $('#rgAutoClear').checked=a.clear_progress!==false;$('#rgAutoRestart').checked=!!a.restart_game;
-  $('#rgAutoStatus').innerHTML=(a.running?'<b>⏳ 执行中…</b> · ':'')+
+  $s('#rgAutoEn').checked=!!a.enabled;$s('#rgAutoTime').value=a.time||'04:30';
+  $s('#rgAutoRounds').value=a.rounds||15;$s('#rgAutoLvl').value=a.enemy_level||80;
+  $s('#rgAutoCurse').value=a.curse||'abyss';
+  $s('#rgAutoClear').checked=a.clear_progress!==false;$s('#rgAutoRestart').checked=!!a.restart_game;
+  $s('#rgAutoStatus').innerHTML=(a.running?'<b>⏳ 执行中…</b> · ':'')+
     '上次: '+chEsc(a.last_run||'—')+' · 下次: '+chEsc(a.next_due||'未启用')+
     (a.last_log?' <details style="display:inline"><summary style="display:inline;cursor:pointer">上次日志</summary><pre style="white-space:pre-wrap">'+chEsc(a.last_log)+'</pre></details>':'');
 }
 async function loadRogueAuto(){try{renderAuto(await api('/rogue/auto'));}catch(e){}}
-$('#btnRgAutoSave').onclick=async()=>{
-  const b={enabled:$('#rgAutoEn').checked,time:$('#rgAutoTime').value,
-    rounds:$('#rgAutoRounds').value,enemy_level:$('#rgAutoLvl').value,
-    clear_progress:$('#rgAutoClear').checked,restart_game:$('#rgAutoRestart').checked};
+$s('#btnRgAutoSave').onclick=async()=>{
+  const b={enabled:$s('#rgAutoEn').checked,time:$s('#rgAutoTime').value,
+    rounds:$s('#rgAutoRounds').value,enemy_level:$s('#rgAutoLvl').value,
+    curse:$s('#rgAutoCurse').value,
+    clear_progress:$s('#rgAutoClear').checked,restart_game:$s('#rgAutoRestart').checked};
   try{renderAuto(await api('/rogue/auto',b));log('定时刷新设置已保存');}catch(e){}
 };
-$('#btnRgAutoRun').onclick=async()=>{
-  if(!confirm('立即整局重开?(重摇+发布+'+($('#rgAutoClear').checked?'清进度':'保留进度')+($('#rgAutoRestart').checked?'+重启游戏':'')+')'))return;
+$s('#btnRgAutoRun').onclick=async()=>{
+  if(!confirm('立即整局重开?(重摇+发布+'+($s('#rgAutoClear').checked?'清进度':'保留进度')+($s('#rgAutoRestart').checked?'+重启游戏':'')+')'))return;
   let r;try{r=await api('/rogue/auto/run',{});}catch(e){return;}
   rgOut(r);setTimeout(loadRogueAuto,4000);
 };
 // ② 无尽修正
-function rgNerfBody(){return{hp_scale:$('#rgNerfHp').value.trim(),atk_scale:$('#rgNerfAtk').value.trim(),hp_values:$('#rgNerfVals').value.trim()};}
-$('#btnRgNerfPreview').onclick=async()=>{let r;try{r=await api('/rogue/nerf',{...rgNerfBody(),dry_run:true});}catch(e){return;}rgOut(r);};
-$('#btnRgNerfApply').onclick=async()=>{
+function rgNerfBody(){return{hp_scale:$s('#rgNerfHp').value.trim(),atk_scale:$s('#rgNerfAtk').value.trim(),hp_values:$s('#rgNerfVals').value.trim()};}
+$s('#btnRgNerfPreview').onclick=async()=>{let r;try{r=await api('/rogue/nerf',{...rgNerfBody(),dry_run:true});}catch(e){return;}rgOut(r);};
+$s('#btnRgNerfApply').onclick=async()=>{
   if(!confirm('写入无尽修正曲线并发布 CDN?'))return;
   let r;try{r=await api('/rogue/nerf',{...rgNerfBody(),dry_run:false});}catch(e){return;}
   rgOut(r);log(r.ok?'无尽曲线已发布':'失败');
 };
 // ③ 掉落/代币
-function rgDropBody(){let cfg;try{cfg=JSON.parse($('#rgDropJson').value);}catch(e){alert('JSON 解析失败: '+e.message);return null;}
-  return{config:cfg,enabled:$('#rgDropEnabled').checked};}
-$('#btnRgDropPreview').onclick=async()=>{const b=rgDropBody();if(!b)return;let r;try{r=await api('/rogue/drops',{...b,dry_run:true});}catch(e){return;}rgOut(r);};
-$('#btnRgDropApply').onclick=async()=>{const b=rgDropBody();if(!b)return;
+function rgDropBody(){let cfg;try{cfg=JSON.parse($s('#rgDropJson').value);}catch(e){alert('JSON 解析失败: '+e.message);return null;}
+  return{config:cfg,enabled:$s('#rgDropEnabled').checked};}
+$s('#btnRgDropPreview').onclick=async()=>{const b=rgDropBody();if(!b)return;let r;try{r=await api('/rogue/drops',{...b,dry_run:true});}catch(e){return;}rgOut(r);};
+$s('#btnRgDropApply').onclick=async()=>{const b=rgDropBody();if(!b)return;
   let r;try{r=await api('/rogue/drops',{...b,dry_run:false});}catch(e){return;}
   rgOut(r);log(r.ok?'掉落配置已保存并热重载':'失败');loadRogue();
 };
 // ⑤ 商店
 function rgShopBody(){return{items:Array.from(document.querySelectorAll('#rgShopBox tr[data-sid]')).map(tr=>{
   const o={id:tr.dataset.sid};tr.querySelectorAll('.rgsh').forEach(inp=>o[inp.dataset.f]=inp.value.trim());return o;})};}
-$('#btnRgShopPreview').onclick=async()=>{let r;try{r=await api('/rogue/shop',{...rgShopBody(),dry_run:true});}catch(e){return;}rgOut(r);};
-$('#btnRgShopApply').onclick=async()=>{
+$s('#btnRgShopPreview').onclick=async()=>{let r;try{r=await api('/rogue/shop',{...rgShopBody(),dry_run:true});}catch(e){return;}rgOut(r);};
+$s('#btnRgShopApply').onclick=async()=>{
   if(!confirm('保存商店改动:②表发布 + 服务端 json 热重载?'))return;
   let r;try{r=await api('/rogue/shop',{...rgShopBody(),dry_run:false});}catch(e){return;}
   rgOut(r);log(r.ok?'商店已保存并发布':'失败,看结果框');loadRogue();
@@ -3733,12 +4582,12 @@ let rgPool=null, rgCats=[], rgFieldByLabel={}, rgLabelByField={}, rgMetaByField=
 async function rgLoadPool(){
   if(rgPool)return;
   try{const d=await api('/rogue/pool');rgPool=d.pool||[];rgCats=d.cats||[];}catch(e){rgPool=[];rgCats=[];}
-  $('#rgPoolDL').innerHTML=rgPool.map(x=>'<option value="'+chEsc(x.label)+'">').join('');
+  $s('#rgPoolDL').innerHTML=rgPool.map(x=>'<option value="'+chEsc(x.label)+'">').join('');
   rgFieldByLabel={};rgLabelByField={};rgMetaByField={};
   rgPool.forEach(x=>{rgFieldByLabel[x.label]={field:x.field,element:x.element,cat:x.cat};rgLabelByField[x.field]=x.label;rgMetaByField[x.field]=x;});
   rgBuildCatDatalists();
   renderPlanGrid();
-  $('#rgPoolCount').textContent='可选 '+rgPool.length+' 个 boss/场地';
+  $s('#rgPoolCount').textContent='可选 '+rgPool.length+' 个 boss/场地';
 }
 const RG_KINDS=[['','—'],['0','能力'],['1','直击'],['2','弹射'],['3','技能'],['4','减益免疫']];
 function rgEffCls(kind,str){
@@ -3760,7 +4609,7 @@ function rgEffSlots(effects){
 }
 const RG_ELS=['火','水','雷','风','光','暗'];
 function renderLayout(){
-  if(!ROGUE||!ROGUE.rounds){$('#rgLayoutBox').innerHTML='<div class="empty">先刷新页面</div>';return;}
+  if(!ROGUE||!ROGUE.rounds){$s('#rgLayoutBox').innerHTML='<div class="empty">先刷新页面</div>';return;}
   let h='<div class="rglegend"><span><b style="background:#3aa855"></b>易伤(负值=玩家变强)</span>'+
     '<span><b style="background:#d27030"></b>耐性(正值=玩家变弱)</span>'+
     '<span><b style="background:#5a8cff"></b>减益免疫(kind 4)</span></div>'+
@@ -3778,14 +4627,14 @@ function renderLayout(){
         RG_ELS.map((e,i)=>'<option value="'+i+'"'+(String(r.element)===String(i)?' selected':'')+'>'+e+'</option>').join('')+'</select></td>'+
       '<td>'+rgEffSlots(r.effects)+'</td></tr>';
   });
-  $('#rgLayoutBox').innerHTML=h+'</tbody></table></div>';
+  $s('#rgLayoutBox').innerHTML=h+'</tbody></table></div>';
 }
 // 事件委托:field 变更→自动填属性;效果 kind/强度变更→更新 chip 配色
 function rgSyncChip(el){
   const chip=el.closest('.rgeff');if(!chip)return;
   chip.className=rgEffCls(chip.querySelector('.rgek').value, chip.querySelector('.rges').value);
 }
-$('#rgLayoutBox').addEventListener('change',ev=>{
+$s('#rgLayoutBox').addEventListener('change',ev=>{
   const t=ev.target;
   if(t.classList.contains('rgfield')){
     const meta=rgFieldByLabel[t.value.trim()];
@@ -3795,8 +4644,8 @@ $('#rgLayoutBox').addEventListener('change',ev=>{
     inp.setAttribute('list', t.value==='*'?'rgPoolDL':rgDlId(t.value));
   }else if(t.classList.contains('rgek')||t.classList.contains('rges')){rgSyncChip(t);}
 });
-$('#rgLayoutBox').addEventListener('input',ev=>{if(ev.target.classList.contains('rges'))rgSyncChip(ev.target);});
-$('#rgLayoutBox').addEventListener('click',ev=>{
+$s('#rgLayoutBox').addEventListener('input',ev=>{if(ev.target.classList.contains('rges'))rgSyncChip(ev.target);});
+$s('#rgLayoutBox').addEventListener('click',ev=>{
   const b=ev.target.closest('.rgdice');if(!b)return;
   const tr=b.closest('tr');const cat=tr.querySelector('.rgcat').value;
   const cand=cat==='*'?(rgPool||[]):(rgPool||[]).filter(x=>x.cat===cat);
@@ -3806,7 +4655,7 @@ $('#rgLayoutBox').addEventListener('click',ev=>{
   if(pick.element!==''){tr.querySelector('.rgel').value=pick.element;}
 });
 async function rgLayoutLoad(){await rgLoadPool();renderLayout();}
-$('#btnRgLayoutLoad').onclick=rgLayoutLoad;
+$s('#btnRgLayoutLoad').onclick=rgLayoutLoad;
 function rgFieldOf(label){
   const m=rgFieldByLabel[label];if(m)return m.field;
   const br=label.match(/\[([^\]]+)\]\s*$/);return br?br[1]:label;
@@ -3821,8 +4670,8 @@ function rgLayoutBody(){
   });
   return {rounds};
 }
-$('#btnRgLayoutPreview').onclick=async()=>{let r;try{r=await api('/rogue/layout',{...rgLayoutBody(),dry_run:true});}catch(e){return;}rgOut(r);};
-$('#btnRgLayoutApply').onclick=async()=>{
+$s('#btnRgLayoutPreview').onclick=async()=>{let r;try{r=await api('/rogue/layout',{...rgLayoutBody(),dry_run:true});}catch(e){return;}rgOut(r);};
+$s('#btnRgLayoutApply').onclick=async()=>{
   if(!confirm('按手动布局写入各轮 boss/场地效果?(只写 store 不发布;满意后点「📤 发布」)'))return;
   let r;try{r=await api('/rogue/layout',{...rgLayoutBody(),dry_run:false});}catch(e){return;}
   rgOut(r);log(r.ok?'手动布局已写入(未发布)':'失败,看结果框');loadRogue();

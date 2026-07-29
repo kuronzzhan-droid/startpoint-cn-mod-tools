@@ -1,0 +1,82 @@
+{
+ "_说明": "特殊 boss 原味保护名单:authentic 里的 boss 被随机抽中时保持原场地原机制(mix 不拆解拼接),诅咒/难度修正照常叠加。general 系名单 boss 的深渊法阵仍可落(克隆自身追加程序);standard 系(菲诺梅那等)无 action 列可挂,法阵落不上。工坊 floors.{N}.terrain 显式钉地形可覆盖本保护。",
+ "authentic": [
+  "steampunk_another_multi",
+  "steampunk_another_foom2_multi",
+  "eye_dragon_multibattle_boss",
+  "dark_matter_single",
+  "dark_matter_single_70",
+  "dark_matter_single_75",
+  "dark_matter_multi"
+ ],
+ "authentic_prefixes": [
+  "guardian_golem",
+  "dark_matter"
+ ],
+ "_说明位移": "带位移/变身技的 boss 族:位移锚点烤在老家地形,异地拼接必 C14102(2026-07-27 魔像突击充能/深渊之兽变身双实锤),整族前缀保护",
+ "authentic_movement": [
+  "arc_guardian",
+  "dark_matter_single",
+  "dark_matter_single_70",
+  "dark_matter_single_75",
+  "discarded_dragon_wind_single",
+  "discarded_dragon_wind_tower",
+  "guardian_golem_another_light_kc",
+  "guardian_golem_another_light_single",
+  "guardian_golem_another_light_single_tower",
+  "guardian_golem_another_water_single",
+  "guardian_golem_another_water_single_tower",
+  "guardian_golem_fire_multi",
+  "guardian_golem_fire_single",
+  "guardian_golem_fire_single_tower",
+  "guardian_golem_fire_single_tower_unique_9th",
+  "halloween_jack",
+  "halloween_jack_rush_re01",
+  "variant_empress",
+  "variant_empress_form2",
+  "variant_empress_form2_lv80"
+ ],
+ "_说明movement": "实证致崩位移标记(punch_move突击/dimention_warp次元跳/center_move/warpN)扫描命中的 boss,拼接必位移崩(C14102),一律原味;泛 move1 标记已被鬼女/沙漠士兵/寄居蟹实战拼接通过证伪,不纳入。再崩一个→窄标记加一族重扫",
+ "socket_families": [
+  "administrator",
+  "security_armour"
+ ],
+ "_说明socket": "插座式 boss(嵌入场地固定点,用户实证判断):boss 侧=永远原味;地形侧=老巢楼层不当拼接容器。bug1 方舟屏幕移植已实战通过,不属此列",
+ "strict_transplant": true,
+ "transplant_safe": [
+  "bug1",
+  "bug2",
+  "desert_soldier",
+  "enemy_orc",
+  "fox",
+  "hermit_crab_another_light_single",
+  "land_dragon",
+  "land_dragon_tower",
+  "oct_helm",
+  "oni",
+  "owl_single_tower",
+  "pirates_big",
+  "treant_single",
+  "treant_single_tower"
+ ],
+ "_说明transplant": "白名单制(2026-07-28 地鼠钻地第三崩后反转默认):strict_transplant=true 时只有 transplant_safe 里的 boss 允许被拼接移植,其余一律原味出场。名单=实战通关移植记录;新塔通关后想扩充就把新过的移植 boss 加进来;关 false 回到黑名单模式",
+ "_说明featured": "精选 boss 加权(2026-07-29):前缀匹配,命中的候选在抽取时权重 ×featured_weight。不是硬钉——池子照常随机,只是天平往稀有 boss 倾斜;与全塔去重/历史降权叠加。默认名单=P3 新解锁的专用表 boss(八岐大蛇/海妖/五元素球/指挥者/东亚奇廉CEO)+ 索拉斯双阶段的不死王与猫头鹰八套。不想加权就把列表清空。",
+ "featured_bosses": [
+  "orochi_all_head",
+  "orochi_ex",
+  "kraken_",
+  "fire_sphere",
+  "water_sphere",
+  "thunder_sphere",
+  "wind_sphere",
+  "holy_sphere",
+  "boss_conductor",
+  "touyakiren_ceo",
+  "double_owl_lich_",
+  "owl_ability",
+  "owl_skill",
+  "owl_direct",
+  "owl_pf"
+ ],
+ "featured_weight": 4
+}

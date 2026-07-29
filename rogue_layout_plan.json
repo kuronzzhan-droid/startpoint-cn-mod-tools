@@ -1,0 +1,52 @@
+{
+ "stages": [
+  {
+   "from": 1,
+   "to": 2,
+   "tier": "hell"
+  },
+  {
+   "from": 3,
+   "to": 6,
+   "tier": "hell"
+  },
+  {
+   "from": 7,
+   "to": 11,
+   "tier": "hell"
+  },
+  {
+   "from": 12,
+   "to": 15,
+   "tier": "hell"
+  },
+  {
+   "from": 15,
+   "to": 15,
+   "tier": "hell"
+  },
+  {
+   "from": 15,
+   "to": 15,
+   "tier": "hell"
+  }
+ ],
+ "floors": {
+  "5": {
+   "curses": [
+    "绝对壁垒"
+   ],
+   "field": "battle/action/enemy/action/boss_spirit_beast_water/boss_spirit_beast_water$drown_buf"
+  },
+  "12": {
+   "curses": [
+    "绝对壁垒"
+   ]
+  },
+  "13": {
+   "curses": [
+    "玻璃深渊"
+   ]
+  }
+ }
+}
