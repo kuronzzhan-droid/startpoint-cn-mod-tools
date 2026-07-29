@@ -1158,12 +1158,32 @@ td.ldesc{color:var(--okfg);font-size:11px;white-space:normal;max-width:250px;lin
             <datalist id="rgPoolDL"></datalist>
             <div class="row"><button class="sec" id="btnRgLayoutLoad">读取当前布局</button>
               <span id="rgPoolCount" style="opacity:.6"></span></div>
+            <div class="row" style="flex-wrap:wrap;align-items:center;margin-top:6px">
+              <b style="opacity:.75">诅咒预设</b>
+              <select id="rgcfCombo" style="max-width:140px"><option value="">组合…</option></select>
+              <input id="rgcfName" list="rgcfDL" placeholder="加单条诅咒" style="width:120px">
+              <datalist id="rgcfDL"></datalist>
+              <button class="sec" id="rgcfAdd">＋</button>
+              <span id="rgcfChips" style="display:flex;gap:4px;flex-wrap:wrap"></span>
+              <label>档位</label><select id="rgcfTier"><option value="standard">标准</option>
+                <option value="abyss" selected>深渊</option><option value="hell">炼狱</option></select>
+              <label>轮</label><input id="rgcfRows" placeholder="3-7,12;空=全部" style="width:110px">
+              <button class="sec" id="rgcfApply">铺词条</button>
+            </div>
+            <div id="rgcfOut" class="hint" style="margin:4px 0"></div>
             <div id="rgLayoutBox"><div class="empty">点「读取当前布局」加载</div></div>
             <div class="row" style="margin-top:8px">
               <button class="sec" id="btnRgLayoutPreview">预览改动</button>
               <button id="btnRgLayoutApply">写入(不发布)</button>
               <button id="btnRgPublish2">📤 发布</button>
             </div></details>
+          <details class="rgAcc"><summary>📌 层钉选(写进计划,重摇/生成时生效:命名诅咒+场地程序)</summary>
+            <div class="hint">精编只能改数值词条;<b>领域/法阵/环境场</b>(含刮风·重力,真机验证)与
+              <b>血攻倍率类诅咒</b>要钉在这里,下次生成或重摇该层才落地。诅咒名点上方预设的候选(逗号分隔,最多4)。</div>
+            <div class="row"><button class="sec" id="rgpinLoad">读取计划</button>
+              <span id="rgpinCount" class="hint" style="margin:0"></span></div>
+            <div id="rgpinBox"><div class="empty">点「读取计划」</div></div>
+            <div class="row" style="margin-top:6px"><button id="rgpinSave">保存计划</button></div></details>
         </div>
         <div id="rogueBox"></div>
       </section>
@@ -4654,7 +4674,7 @@ $s('#rgLayoutBox').addEventListener('click',ev=>{
   const inp=tr.querySelector('.rgfield');inp.value=pick.label;inp.title=pick.label;
   if(pick.element!==''){tr.querySelector('.rgel').value=pick.element;}
 });
-async function rgLayoutLoad(){await rgLoadPool();renderLayout();}
+async function rgLayoutLoad(){await rgLoadPool();await rgcfInit();renderLayout();}
 $s('#btnRgLayoutLoad').onclick=rgLayoutLoad;
 function rgFieldOf(label){
   const m=rgFieldByLabel[label];if(m)return m.field;
@@ -4675,6 +4695,89 @@ $s('#btnRgLayoutApply').onclick=async()=>{
   if(!confirm('按手动布局写入各轮 boss/场地效果?(只写 store 不发布;满意后点「📤 发布」)'))return;
   let r;try{r=await api('/rogue/layout',{...rgLayoutBody(),dry_run:false});}catch(e){return;}
   rgOut(r);log(r.ok?'手动布局已写入(未发布)':'失败,看结果框');loadRogue();
+};
+// ⑦ 诅咒预设铺槽(精编) + 层钉选(计划)
+let rgcfSel=[], rgcfInfo=null, rgpinPlan=null;
+async function rgcfInit(){
+  if(rgcfInfo)return;
+  try{rgcfInfo=await api('/rogue/curse_info');}catch(e){rgcfInfo={curses:[],combos:[],menu:[]};return;}
+  $s('#rgcfDL').innerHTML=(rgcfInfo.curses||[]).map(c=>'<option value="'+chEsc(c.name)+'">').join('');
+  $s('#rgcfCombo').innerHTML='<option value="">组合…</option>'+(rgcfInfo.combos||[]).map(c=>
+    '<option value="'+chEsc(c.name)+'">'+chEsc(c.name)+'('+c.curses.length+(c.field_cat?'+法阵':'')+')</option>').join('');
+}
+function rgcfRender(){$s('#rgcfChips').innerHTML=rgcfSel.map((n,i)=>
+  '<span class="rgeff" style="cursor:pointer" data-i="'+i+'" title="点击移除">'+chEsc(n)+' ✕</span>').join('');}
+$s('#rgcfChips').addEventListener('click',ev=>{const s=ev.target.closest('[data-i]');if(!s)return;
+  rgcfSel.splice(+s.dataset.i,1);rgcfRender();});
+$s('#rgcfCombo').onchange=()=>{const c=((rgcfInfo||{}).combos||[]).find(x=>x.name===$s('#rgcfCombo').value);
+  if(!c)return;rgcfSel=c.curses.slice();if(c.field_cat&&!rgcfSel.includes('深渊法阵'))rgcfSel.push('深渊法阵');rgcfRender();};
+$s('#rgcfAdd').onclick=()=>{const v=$s('#rgcfName').value.trim();
+  if(v&&!rgcfSel.includes(v)){rgcfSel.push(v);rgcfRender();}$s('#rgcfName').value='';};
+function rgcfTargets(){
+  const spec=$s('#rgcfRows').value.trim();
+  const rows=Array.from(document.querySelectorAll('#rgLayoutBox tr[data-round]'));
+  if(!spec)return rows;
+  const want=new Set();
+  spec.split(/[,，]/).forEach(p=>{const m=p.trim().match(/^(\d+)(?:-(\d+))?$/);if(!m)return;
+    const a=+m[1],b=m[2]?+m[2]:a;for(let i=a;i<=b;i++)want.add(String(i));});
+  return rows.filter(tr=>want.has(String(tr.dataset.round)));
+}
+$s('#rgcfApply').onclick=async()=>{
+  if(!rgcfSel.length){alert('先选组合或添加诅咒');return;}
+  const rows=rgcfTargets();
+  if(!rows.length){alert('先「读取当前布局」,并检查轮范围');return;}
+  let r;try{r=await api('/rogue/curse_fill',{names:rgcfSel,tier:$s('#rgcfTier').value});}catch(e){return;}
+  if(!r.ok){$s('#rgcfOut').textContent=r.log||'失败';return;}
+  rows.forEach(tr=>{
+    const ks=tr.querySelectorAll('.rgek'),ss=tr.querySelectorAll('.rges');
+    for(let i=0;i<5;i++){const e=r.effects[i]||{kind:'',strength:''};
+      ks[i].value=String(e.kind==null?'':e.kind);ss[i].value=String(e.strength==null?'':e.strength);
+      rgSyncChip(ks[i]);}
+  });
+  const bits=['已铺 '+rows.length+' 轮:'+(r.desc||'(空)')];
+  (r.refused||[]).forEach(x=>bits.push('⚠ 冲突剔除「'+x.name+'」:'+x.why));
+  if((r.unknown||[]).length)bits.push('⚠ 未知诅咒:'+r.unknown.join('、'));
+  (r.notes||[]).forEach(n=>bits.push('ℹ '+n));
+  $s('#rgcfOut').innerHTML=bits.map(chEsc).join('<br>');
+};
+function rgpinMenuOpts(sel){
+  const cats={};(((rgcfInfo||{}).menu)||[]).forEach(m=>{const c=m.cat||'领域';(cats[c]=cats[c]||[]).push(m);});
+  let h='<option value="">(无)</option>';
+  Object.keys(cats).forEach(cat=>{h+='<optgroup label="'+chEsc(cat)+'">'+cats[cat].map(m=>
+    '<option value="'+chEsc(m.program)+'"'+(m.program===sel?' selected':'')+
+    ' title="'+chEsc(m.note||'')+'">'+chEsc(m.label)+'</option>').join('')+'</optgroup>';});
+  return h;
+}
+async function rgpinLoadFn(){
+  await rgcfInit();
+  let plan;try{plan=await api('/rogue/plan');}catch(e){return;}
+  rgpinPlan=plan;
+  const n=Math.max(1,parseInt($s('#rgRounds').value,10)||((window.ROGUE&&ROGUE.rounds)?ROGUE.rounds.length:30));
+  const fl=plan.floors||{};
+  let h='<div style="overflow-x:auto"><table class="rglay"><thead><tr><th>层</th>'+
+    '<th>诅咒(逗号分隔,最多4)</th><th>场地程序(领域/环境等)</th></tr></thead><tbody>';
+  for(let i=1;i<=n;i++){const f=fl[String(i)]||{};
+    h+='<tr data-floor="'+i+'"><td>'+i+'</td>'+
+      '<td><input class="rgpinC" list="rgcfDL" value="'+chEsc((f.curses||[]).join(','))+'" style="width:230px"></td>'+
+      '<td><select class="rgpinF" style="max-width:280px">'+rgpinMenuOpts(f.field||'')+'</select></td></tr>';}
+  $s('#rgpinBox').innerHTML=h+'</tbody></table></div>';
+  $s('#rgpinCount').textContent='已钉 '+Object.keys(fl).length+' 层 · 程序目录 '+(((rgcfInfo||{}).menu)||[]).length+' 项';
+}
+$s('#rgpinLoad').onclick=rgpinLoadFn;
+$s('#rgpinSave').onclick=async()=>{
+  if(!rgpinPlan){alert('先读取计划');return;}
+  const floors={};
+  document.querySelectorAll('#rgpinBox tr[data-floor]').forEach(tr=>{
+    const cs=tr.querySelector('.rgpinC').value.split(/[,，]/).map(s=>s.trim()).filter(Boolean).slice(0,4);
+    const fd=tr.querySelector('.rgpinF').value;
+    const ent={};if(cs.length)ent.curses=cs;if(fd)ent.field=fd;
+    if(cs.length||fd)floors[tr.dataset.floor]=ent;
+  });
+  let r;try{r=await api('/rogue/plan',{stages:rgpinPlan.stages||[],floors});}catch(e){return;}
+  rgpinPlan=r;
+  const w=r.warnings||[];
+  log('计划已保存('+Object.keys(r.floors||{}).length+' 层钉选'+(w.length?','+w.length+' 条警告':'')+')');
+  if(w.length){$s('#rgcfOut').innerHTML=w.map(chEsc).join('<br>');}else{toast('计划已保存,重摇/生成后生效');}
 };
 
 $$('nav .tab').forEach(t=>t.onclick=()=>switchTab(t.dataset.t));

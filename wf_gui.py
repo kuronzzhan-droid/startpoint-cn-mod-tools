@@ -7145,8 +7145,66 @@ def rogue_curse_info() -> dict:
              "cat": (m[3] if len(m) > 3 else None) or cat_map.get(m[0]) or json_cat.get(m[1], "领域"),
              "src": m[1].split("/")[-1].split("$")[0].replace("boss_", "")}
             for m in rb.field_menu_all()]
+    combos = [{"name": c["name"], "curses": list(c["curses"]),
+               "field_cat": c.get("field_cat")} for c in getattr(rb, "CURSE_COMBOS", [])]
     return {"curses": curses, "menu": menu, "tiers": ["标准", "深渊", "炼狱"],
-            "tuning": rb.field_tuning()}
+            "combos": combos, "tuning": rb.field_tuning()}
+
+
+def rogue_curse_fill(body: dict) -> dict:
+    """逐层精编的诅咒预设翻译:命名诅咒(按档位)→ 5 槽词条,过冲突闸。
+    施法者类(深渊法阵)与血/攻/韧性/FEVER/限时倍率不落词条槽,返回提示——
+    那些只在生成期落地(层钉选+重摇),与 abyss_curses 的 forced 路径同一语义。"""
+    import random as _random
+    import wf_rogue_build as rb
+    names = [str(x).strip() for x in (body.get("names") or []) if str(x).strip()]
+    if not names:
+        return {"ok": False, "log": "names 为空"}
+    tiers = list(getattr(rb, "CURSE_TIERS", ("standard", "abyss", "hell")))
+    tier = str(body.get("tier", "abyss"))
+    t = tiers.index(tier) if tier in tiers else 1
+    rng = _random.Random(body["seed"]) if body.get("seed") is not None else _random.Random()
+    pool = rb._curse_pool(t, rng)
+    by_name = {}
+    for c in pool:
+        by_name.setdefault(c["name"], c)
+    unknown = [n for n in names if n not in by_name]
+    picks, refused, caster = [], [], None
+    for n in names:
+        c = by_name.get(n)
+        if c is None:
+            continue
+        if c.get("caster"):
+            fm = c["caster"]
+            caster = {"label": fm[0], "program": fm[1], "note": fm[2]}
+            continue
+        why = rb.curse_conflict(picks + [c])
+        if why:
+            refused.append({"name": n, "why": why})
+            continue
+        picks.append(c)
+    mults = {"hp": 1.0, "atk": 1.0, "tp": None, "fever": None, "time": None}
+    for c in picks:
+        mults["hp"] *= c.get("hp", 1.0)
+        mults["atk"] *= c.get("atk", 1.0)
+        if "tp" in c:
+            mults["tp"] = max(mults["tp"] or 0, c["tp"])
+        if "fever" in c:
+            mults["fever"] = max(mults["fever"] or 0, c["fever"])
+        if "time" in c:
+            mults["time"] = min(mults["time"] or 10 ** 9, c["time"])
+    notes = []
+    if caster:
+        notes.append(f"「深渊法阵」({caster['label']})是施法者类,精编不落地——"
+                     "用「层钉选」写进计划后重摇该层生效")
+    if (mults["hp"] != 1.0 or mults["atk"] != 1.0
+            or mults["tp"] or mults["fever"] or mults["time"]):
+        notes.append("血/攻/韧性/FEVER/限时倍率不写词条槽,同样只在生成期落地(钉选+重摇)")
+    return {"ok": True,
+            "effects": [{"kind": k, "strength": s} for k, s in rb.merge_conds(picks)[:5]],
+            "refused": refused, "unknown": unknown, "caster": caster, "mults": mults,
+            "desc": " ".join(f"「{c['name']}」{c['text']}" for c in picks),
+            "notes": notes}
 
 
 def rogue_plan_get() -> dict:
@@ -7182,8 +7240,25 @@ def rogue_plan_save(body: dict) -> dict:
             floors[str(k)] = ent
     data = {"stages": stages, "floors": floors}
     (MOD_DIR / "rogue_layout_plan.json").write_text(
-        json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
-    return {"ok": True, **data}
+        json.dumps(data, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    # 软校验:未知诅咒名/目录外程序在生成期会被静默忽略,这里显式提醒
+    warnings = []
+    try:
+        import random as _random
+        import wf_rogue_build as rb
+        known = {c["name"] for c in rb._curse_pool(0, _random.Random(0))}
+        progs = {m[1] for m in rb.field_menu_all()}
+        for k, v in floors.items():
+            for nm in v.get("curses") or []:
+                if nm == "深渊法阵":
+                    warnings.append(f"层{k}:「深渊法阵」不按名钉选,请用「场地程序」列指定具体程序")
+                elif nm not in known:
+                    warnings.append(f"层{k}:未知诅咒「{nm}」(生成时会被忽略)")
+            if v.get("field") and v["field"] not in progs:
+                warnings.append(f"层{k}:场程序不在目录:{v['field']}")
+    except Exception:
+        pass
+    return {"ok": True, "warnings": warnings, **data}
 
 
 def rogue_field_tuning_save(body: dict) -> dict:
@@ -8379,6 +8454,9 @@ class Handler(BaseHTTPRequestHandler):
                 return
             if path == "/rogue/layout":
                 self._json(rogue_layout_apply(body, bool(body.get("dry_run"))))
+                return
+            if path == "/rogue/curse_fill":
+                self._json(rogue_curse_fill(body))
                 return
             if path == "/rogue/field_tuning":
                 self._json(rogue_field_tuning_save(body))
