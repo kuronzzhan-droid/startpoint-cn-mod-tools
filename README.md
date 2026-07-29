@@ -48,8 +48,8 @@ python mod-tools/wf_publish.py --tables ability,character_status
   [部署攻略](https://github.com/kuronzzhan-droid/startpoint-cn/blob/release/modes-20260714/docs/%E9%83%A8%E7%BD%B2%E6%94%BB%E7%95%A5.md)
   重打指向你自己服务器的客户端
 - 从 v1.0 升级:**签名已变更,须卸载旧包再装**;卸载会开新号,找服主按 `device_id` 重绑老存档
-- 与 [wf-abyss-client](https://github.com/kuronzzhan-droid/wf-abyss-client/releases) 同一文件(镜像发布),
-  SHA-256:`9b539c210a80d76856ddbdf67e426746c020e9b389f78a63771a750327608772`
+- 本仓 Releases 即整合包**唯一发布地**(原独立仓 wf-abyss-client 已于 2026-07-29 并入本仓并注销;
+  v1.0 历史包同步迁入),SHA-256:`9b539c210a80d76856ddbdf67e426746c020e9b389f78a63771a750327608772`
 
 ## 目录结构(约定)
 
