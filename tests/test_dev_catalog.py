@@ -512,8 +512,14 @@ class ExportPackTest(unittest.TestCase):
             )
             self.assertFalse(requires["requires"]["serverRestart"])
             self.assertFalse(stats["serverRestart"])
+            # 本通道整 zip 原样搬运,只能是 full 变体,必须诚实声明带增强
+            self.assertEqual(2, requires["schemaVersion"])
+            self.assertEqual("full", requires["pack"]["variant"])
+            self.assertTrue(requires["enhancement"])
+            self.assertIn("content-only", requires["enhancementDetail"]["note"])
             readme = (pack_dir / "说明.txt").read_text(encoding="utf-8")
             self.assertIn("纯 CDN 内容包", readme)
+            self.assertIn("变体: full", readme)
 
     def test_requires_auto_detects_character_table(self) -> None:
         import wf_mod_tool as core

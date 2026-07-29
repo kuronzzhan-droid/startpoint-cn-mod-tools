@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import wf_chain_squash as squash  # noqa: E402
 import wf_pack_consolidate as pc  # noqa: E402
+import wf_quest_lib as quest  # noqa: E402
 
 
 def make_zip(path: Path, entries: dict[str, bytes]) -> None:
@@ -292,6 +293,66 @@ class SplitTest(unittest.TestCase):
             files=[(z1, "common")], max_zip_mib=0, out_dir=self.root / "out2")
         self.assertEqual(len(report2["outputs"]), 1)
         self.assertEqual(report2["outputs"][0]["name"], "pinball-2.0.0-2.0.1-1-single.zip")
+
+
+class DropListTest(unittest.TestCase):
+    """entry 级排除:按逻辑路径(sha1 正向算)或 store 相对路径剔除条目。"""
+
+    KEEP = "character/seris_dragon_king/ui/full_shot_1440_1920_0.png"
+    DROP = "battle/action/skill/action/rare4/white_tiger$white_tiger_2.action.dsl.amf3.deflate"
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        self.out = self.root / "out"
+        self.upload = self.root / "uploads" / "pinball-2.0.0-2.0.1-1-src.zip"
+        make_zip(self.upload, {
+            f"production/upload/{quest.hashed_rel(self.KEEP)}": b"keep-me",
+            f"production/upload/{quest.hashed_rel(self.DROP)}": b"drop-me",
+        })
+
+    def consolidate(self, **kwargs):
+        return pc.consolidate(self.root / "cdn", self.root / "repo", tag="droptest",
+                              files=[(self.upload, "common")], out_dir=self.out, **kwargs)
+
+    def test_drop_by_logical_path(self):
+        report = self.consolidate(drop_logicals=[self.DROP])
+        self.assertEqual(1, report["stats"]["dropped_entries"])
+        self.assertEqual(1, report["stats"]["final_entries"])
+        self.assertEqual([], report["drop_not_found"])
+        members = read_zip(Path(report["outputs"][0]["path"]))
+        self.assertEqual([f"production/upload/{quest.hashed_rel(self.KEEP)}"],
+                         list(members))
+        self.assertTrue(any("drop 清单" in w for w in report["warnings"]))
+
+    def test_drop_by_store_relative_path(self):
+        report = self.consolidate(drop_entries=[quest.hashed_rel(self.DROP)])
+        self.assertEqual(1, report["stats"]["dropped_entries"])
+
+    def test_drop_by_full_member_name(self):
+        report = self.consolidate(
+            drop_entries=[f"production/upload/{quest.hashed_rel(self.DROP)}"])
+        self.assertEqual(1, report["stats"]["dropped_entries"])
+
+    def test_unknown_drop_is_reported_not_fatal(self):
+        report = self.consolidate(drop_logicals=["master/nope/none.orderedmap"])
+        self.assertEqual(0, report["stats"]["dropped_entries"])
+        self.assertEqual(["master/nope/none.orderedmap"], report["drop_not_found"])
+        self.assertTrue(any("终态里不存在" in w for w in report["warnings"]))
+
+    def test_malformed_drop_entry_rejected(self):
+        with self.assertRaises(ValueError):
+            self.consolidate(drop_entries=["not-a-hashed-path"])
+
+    def test_dropping_everything_is_rejected(self):
+        with self.assertRaises(ValueError):
+            self.consolidate(drop_logicals=[self.KEEP, self.DROP])
+
+    def test_plan_previews_drops(self):
+        report = self.consolidate(drop_logicals=[self.DROP], dry_run=True)
+        self.assertEqual(1, report["stats"]["dropped_entries"])
+        self.assertEqual([(1, 1)], [(o["seq"], o["entries"]) for o in report["outputs"]])
 
 
 class CliTest(ConsolidateCase):

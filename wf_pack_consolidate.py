@@ -38,6 +38,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import shutil
 import sys
 import time
@@ -46,10 +47,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import wf_chain_squash as squash  # noqa: E402
+import wf_quest_lib as quest  # noqa: E402
 import wf_release  # noqa: E402
 
 DEFAULT_BASE = squash.DEFAULT_BASE
 CI_ZIP_CAP = 5 << 20
+MEMBER_REL_RE = re.compile(r"^[0-9a-f]{2}/[0-9a-f]{38}$")
 WORK_DIR = Path(__file__).resolve().parent / "work" / "pack_consolidate"
 ORIGIN_CN = {"legacy": "常规增量", "patch": "asset-patch", "anchored": "锚定角色包", "upload": "上传"}
 
@@ -158,6 +161,29 @@ def _check_tag(tag: str) -> None:
         raise ValueError(f"tag 必须是纯 [a-z0-9] 且不含 charpkg/charbridge: {tag!r}")
 
 
+def _drop_member_set(
+    drop_logicals: list[str] | None, drop_entries: list[str] | None
+) -> tuple[set[str], dict[str, str]]:
+    """(逻辑路径 | store 相对路径 | 完整成员名) → 待丢弃的 rel 集合 + 溯源标签。
+
+    sha1 不可逆,逻辑路径必须正向算成 rel;同一 rel 在 common/medium/android
+    三层同名,所以按 rel 匹配即可覆盖三层。"""
+    rels: set[str] = set()
+    labels: dict[str, str] = {}
+    for logical in drop_logicals or ():
+        rel = quest.hashed_rel(logical)
+        rels.add(rel)
+        labels[rel] = logical
+    for raw in drop_entries or ():
+        rel = raw.replace("\\", "/").strip("/")
+        rel = "/".join(rel.split("/")[-2:])
+        if not MEMBER_REL_RE.fullmatch(rel):
+            raise ValueError(f"--drop-entry 必须是 xx/38位hex 或完整成员名: {raw!r}")
+        rels.add(rel)
+        labels.setdefault(rel, rel)
+    return rels, labels
+
+
 def consolidate(
     cdn_root: Path,
     repo_root: Path,
@@ -170,11 +196,18 @@ def consolidate(
     base: str = DEFAULT_BASE,
     max_zip_mib: int = 5,
     out_dir: Path | None = None,
+    drop_logicals: list[str] | None = None,
+    drop_entries: list[str] | None = None,
     dry_run: bool = False,
     force: bool = False,
 ) -> dict:
     """整合入口。ids 来自 scan_selectable;files=[(zip路径, root)] 为上传/外部包;
-    from_ver/to_ver 为区间快捷选择(自动圈入区间内全部可见归档)。返回报告 dict。"""
+    from_ver/to_ver 为区间快捷选择(自动圈入区间内全部可见归档)。返回报告 dict。
+
+    drop_logicals/drop_entries = entry 级排除清单(对外分享时剔除个别文件)。
+    **只能用于整文件即整内容的条目**(独立资产文件);orderedmap 表是整文件,
+    丢一张表 = 客户端 C8601,表里既有官方行又有内容行时必须走
+    wf_enhancement_policy 的按行重建(wf_share_variant.py),不要用这里的 drop。"""
     _check_tag(tag)
     ids = list(dict.fromkeys(ids or ()))
     files = list(files or ())
@@ -263,6 +296,21 @@ def consolidate(
     ]
 
     final, conflicts = squash.replay(work, path_edges)
+
+    drop_rels, drop_labels = _drop_member_set(drop_logicals, drop_entries)
+    dropped: list[str] = []
+    hit_rels: set[str] = set()
+    if drop_rels:
+        for name in list(final):
+            rel = "/".join(name.replace("\\", "/").split("/")[-2:])
+            if rel in drop_rels:
+                del final[name]
+                hit_rels.add(rel)
+                dropped.append(name)
+        if not final:
+            raise ValueError("drop 清单把终态清空了,整合包不能是空包")
+    drop_missing = sorted(label for rel, label in drop_labels.items() if rel not in hit_rels)
+
     inputs_meta = []
     input_entries = input_zip_bytes = 0
     for edge, archive in required:
@@ -286,6 +334,12 @@ def consolidate(
             "整链瘦身请用 wf_chain_squash,自带全版本硬链桥)")
     if any(m["origin"] == "anchored" for m in inputs_meta):
         warnings.append("整合内容含 active.json 锚定的角色包归档:charpkg 原件与 active.json 必须原样保留(只并内容,不动簿记)")
+    if dropped:
+        warnings.append(
+            f"已按 drop 清单剔除 {len(dropped)} 个条目:产物不再等于原链终态,"
+            "只能对外分享,不要拿它当自服链的整合包")
+    if drop_missing:
+        warnings.append(f"drop 清单里有 {len(drop_missing)} 项在终态里不存在(拼写错?): {drop_missing[:5]}")
     for conflict in conflicts:
         warnings.append(f"边内冲突(按后写覆盖先写解决): {conflict}")
 
@@ -297,12 +351,15 @@ def consolidate(
         "auto_included": auto_included,
         "excluded": excluded,
         "middle_versions": middle,
+        "dropped": sorted(dropped),
+        "drop_not_found": drop_missing,
         "stats": {
             "input_zips": len(inputs_meta),
             "input_zip_bytes": input_zip_bytes,
             "input_entries": input_entries,
             "final_entries": len(final),
-            "removed_entries": input_entries - len(final),
+            "removed_entries": input_entries - len(final) - len(dropped),
+            "dropped_entries": len(dropped),
         },
         "outputs": [],
         "warnings": warnings,
@@ -389,7 +446,9 @@ def _print_report(report: dict) -> None:
     for meta in report["excluded"]:
         print(f"  [排除] {meta['id']}: {meta['reason']}")
     print(f"终态: {stats['final_entries']} entries"
-          f"(去除被后续版本覆盖的冗余 {stats['removed_entries']} 个)")
+          f"(去除被后续版本覆盖的冗余 {stats['removed_entries']} 个"
+          + (f",按 drop 清单剔除 {stats['dropped_entries']} 个" if stats.get("dropped_entries") else "")
+          + ")")
     for out in report["outputs"]:
         size = out.get("size", out.get("est_size", 0))
         print(f"  {out['dir']}/{out['name']}  {_mib(size)} ({out['entries']} entries)")
@@ -412,6 +471,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--max-zip-mib", type=int, default=5,
                         help="单 zip 上限 MiB(CI 门禁 5;0=不拆分成单包)")
     parser.add_argument("--out", help=f"输出目录(默认 {WORK_DIR}\\<tag>)")
+    parser.add_argument("--drop-logical", action="append", default=[], metavar="逻辑路径",
+                        help="entry 级排除:按逻辑路径(sha1 正向算)剔除,可重复。"
+                             "只能排独立资产文件;表要去增强请用 wf_share_variant.py")
+    parser.add_argument("--drop-entry", action="append", default=[], metavar="xx/38hex",
+                        help="entry 级排除:直接给 store 相对路径或完整成员名,可重复")
     parser.add_argument("--base", default=DEFAULT_BASE, help="mod 链起点(默认 1.4.54)")
     parser.add_argument("--cdn", help="CDN 根(默认 WF_CDN_DIR 或 <repo>/.cdn/cn)")
     parser.add_argument("--repo-root", help="仓库根(默认按脚本位置)")
@@ -442,6 +506,7 @@ def main(argv: list[str] | None = None) -> int:
             from_ver=args.from_ver, to_ver=args.to_ver, base=args.base,
             max_zip_mib=args.max_zip_mib,
             out_dir=Path(args.out) if args.out else None,
+            drop_logicals=args.drop_logical, drop_entries=args.drop_entry,
             dry_run=(args.command == "plan"), force=args.force)
     except (ValueError, RuntimeError) as exc:
         print(f"[ERR] {exc}", file=sys.stderr)

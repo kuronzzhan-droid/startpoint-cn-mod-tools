@@ -535,6 +535,7 @@ td.ldesc{color:var(--okfg);font-size:11px;white-space:normal;max-width:250px;lin
         <span class="ngl">系统</span>
         <div class="tab" data-t="toolbox">工具箱</div>
         <div class="tab" data-t="packmerge">增量整合</div>
+        <div class="tab" data-t="enh">增强开关</div>
         <div class="tab" data-t="history">日志</div>
         <div class="tab" data-t="backup">备份</div>
       </div>
@@ -1302,6 +1303,24 @@ td.ldesc{color:var(--okfg);font-size:11px;white-space:normal;max-width:250px;lin
           <button id="pmBuild">生成整合包</button>
         </div>
         <div id="pmOut"></div>
+      </section>
+      <section data-t="enh">
+        <div class="row"><h3 style="margin:0">增强开关</h3>
+          <button class="sec" id="enhReload">刷新</button>
+          <button class="sec" id="enhSnapBtn" title="把当前 store 冻结成「增强侧」。只在装完新增强、还没切过官方时做">重新冻结增强基线</button>
+          <span class="hint" style="margin:0" id="enhInfo"></span>
+        </div>
+        <div class="hint">在<b>官方原版</b>与<b>已冻结的增强态</b>之间逐格取值:开=用增强值,关=回官方原值。<b>不重跑平衡套件</b>(那个会把三个自制角色和 15 把深渊武器一起回滚),自制内容行永远不碰。写盘前跑两条自检等式:全关必须逐行等于官方、全开必须逐行等于增强基线,任一不成立就拒绝写。写盘自带 pre-image,可一键回滚。</div>
+        <div class="row">
+          <button class="sec" data-enh-preset="on" data-enh-scope="all">一键全部增强</button>
+          <button class="sec" data-enh-preset="default" data-enh-scope="all">默认档</button>
+          <button class="sec" data-enh-preset="official" data-enh-scope="all">一键全部切回官方</button>
+          <span style="flex:1"></span>
+          <button class="sec" id="enhPlanBtn" title="只算不写">预览</button>
+          <button id="enhApplyBtn">写入 store</button>
+        </div>
+        <div id="enhBody"><div class="empty">加载中…</div></div>
+        <div id="enhOut"></div>
       </section>
     </div>
     <div id="logwrap">
@@ -3564,6 +3583,7 @@ function switchTab(name){
   if(name==='rogue')loadRogue();
   if(name==='toolbox')loadToolbox();
   if(name==='packmerge')pmLoad();
+  if(name==='enh')enhLoad();
   if(name==='rawjson')loadRjTables();
   if(name==='unique')loadUnique();
   if(name==='shop')loadShopCats();
@@ -4781,6 +4801,149 @@ $s('#rgpinSave').onclick=async()=>{
 };
 
 $$('nav .tab').forEach(t=>t.onclick=()=>switchTab(t.dataset.t));
+
+// ---- 增强开关:官方原版 ↔ 已冻结的增强态,逐格取值 ----
+// 全局名一律 enh 前缀:本文件只有一个 <script>,同名函数会静默互相覆盖。
+let ENH=null, enhWant={}, enhSub={}, enhPlanCache=null, enhTimer=0;
+const ENH_SCOPES=[['character','角色'],['weapon','武器'],['enemy','敌人'],['other','关卡·商店·美术']];
+const ENH_STATE_CN={official:'官方',enhanced:'增强',mixed:'混合',foreign:'外来','n/a':'—'};
+const ENH_SUB_CN={power:'强度数值',feel:'冷却与次数',gate:'触发门槛'};
+
+async function enhLoad(){
+  let r;try{r=await api('/enh/state');}catch(e){return;}
+  if(r.state==='idle'){try{await api('/enh/prime',{});}catch(e){return;}}
+  if(r.state==='error'){
+    $s('#enhBody').innerHTML='<div class="empty">算不出来: '+chEsc(r.error||'')+'</div>';
+    $s('#enhInfo').textContent='';
+    return;
+  }
+  if(r.state!=='done'||!r.status){
+    $s('#enhInfo').textContent='正在比对… '+(r.step||'');
+    $s('#enhBody').innerHTML='<div class="empty">首次要读官方基准索引(要打开官方全量包),几十秒到几分钟,之后有缓存</div>';
+    clearTimeout(enhTimer);
+    enhTimer=setTimeout(enhLoad,2500);
+    return;
+  }
+  ENH=r.status;
+  enhWant=Object.assign({},ENH.current||{});
+  (ENH.subs||[]).forEach(s=>{if(enhSub[s]===undefined)enhSub[s]=true;});
+  $s('#enhInfo').textContent='基线 '+(ENH.snapshot&&ENH.snapshot.name||'?')+' · 算于 '+(r.computedAt||'');
+  enhRender();
+}
+
+function enhRender(){
+  if(!ENH)return;
+  const byScope={};
+  (ENH.toggles||[]).forEach(t=>{(byScope[t.scope]=byScope[t.scope]||[]).push(t);});
+  let html='';
+  ENH_SCOPES.forEach(([scope,label])=>{
+    const list=byScope[scope]||[];
+    if(!list.length)return;
+    html+='<div class="row" style="margin-top:8px"><b>'+label+'</b>'
+      +'<button class="mini" data-enh-preset="on" data-enh-scope="'+scope+'">全部启用</button>'
+      +'<button class="mini" data-enh-preset="default" data-enh-scope="'+scope+'">默认档</button>'
+      +'<button class="mini" data-enh-preset="official" data-enh-scope="'+scope+'">切回官方</button></div>';
+    list.forEach(t=>{
+      const c=t.counts||{};
+      const total=(c.official||0)+(c.enhanced||0)+(c.foreign||0);
+      const locked=t.guiReadonly;
+      html+='<div class="row" style="align-items:flex-start">'
+        +'<label style="min-width:340px"><input type="checkbox" class="enhFlag" data-k="'+t.id+'"'
+        +(enhWant[t.id]?' checked':'')+(locked?' disabled':'')+'> '+chEsc(t.label)+'</label>'
+        +'<span class="badge'+(c.foreign?' err':'')+'">'+ENH_STATE_CN[t.state]+'</span>'
+        +'<span class="hint" style="margin:0">'+total+' 处'
+        +(c.foreign?(' · <b>外来 '+c.foreign+'</b>'):'')
+        +(t.offEqualsOfficial?'':' · <b>关≠官方</b>')
+        +(locked?' · 需 CLI 联动服务端/存档':'')+'</span></div>';
+      if(t.warn)html+='<div class="hint" style="margin:0 0 4px 24px">⚠ '+chEsc(t.warn)+'</div>';
+      else if(t.note)html+='<div class="hint" style="margin:0 0 4px 24px">'+chEsc(t.note)+'</div>';
+      (t.subs||[]).forEach(s=>{
+        html+='<div class="row" style="margin-left:24px"><label><input type="checkbox" class="enhSub" data-s="'+s+'"'
+          +(enhSub[s]?' checked':'')+(enhWant[t.id]?'':' disabled')+'> '+ENH_SUB_CN[s]+'</label></div>';
+      });
+    });
+  });
+  const esc=ENH.escalated||{};
+  html+='<div class="hint" style="margin-top:8px">跨规则耦合被整行处理:枚举/哨兵 '+(esc.R1||0)
+    +' 行、子桶跨越 '+(esc.R2||0)+' 行(这些行只能跟父开关整体走,子勾选对它们无效)</div>';
+  $s('#enhBody').innerHTML=html;
+}
+
+function enhCollect(){
+  $$('#enhBody .enhFlag').forEach(x=>{enhWant[x.dataset.k]=x.checked;});
+  $$('#enhBody .enhSub').forEach(x=>{enhSub[x.dataset.s]=x.checked;});
+}
+
+async function enhDo(write){
+  if(!ENH)return;
+  enhCollect();
+  const body={toggles:enhWant,sub:enhSub,scope:'all'};
+  if(write){
+    if(!enhPlanCache){toast('先点预览',true);return;}
+    body.digest=enhPlanCache.digest;
+    body.allowForeign=false;
+  }
+  let r;try{r=await api(write?'/enh/apply':'/enh/plan',body);}catch(e){return;}
+  const plan=write?(r.plan||{}):r;
+  enhPlanCache=write?null:plan;
+  const sc=plan.selfcheck||{};
+  let out='<div class="row"><span class="badge'+(sc.E1&&sc.E2?'':' err')+'">自检 E1 全关=官方 '
+    +(sc.E1?'✔':'✘')+' / E2 全开=增强 '+(sc.E2?'✔':'✘')+'</span></div>';
+  const rows=(plan.details||[]);
+  if(!rows.length)out+='<div class="hint">store 已经是目标状态,无需改动</div>';
+  rows.forEach(d=>{
+    out+='<div class="hint" style="margin:0">'+chEsc(d.logical.replace('master/',''))
+      +': →官方 '+d.toOfficial+' 格 / →增强 '+d.toEnhanced+' 格'
+      +(d.rowsAdded?' / 加行 '+d.rowsAdded:'')+(d.rowsDropped?' / 删行 '+d.rowsDropped:'')
+      +(d.rowsRestored?' / 补回官方行 '+d.rowsRestored:'')+'</div>';
+  });
+  if(plan.foreignCount){
+    out+='<div class="hint" style="margin-top:4px"><b>'+plan.foreignCount
+      +' 处快照之后的第三方改动</b>,已保留现值不覆盖:<br>'
+      +(plan.foreign||[]).slice(0,8).map(chEsc).join('<br>')+'</div>';
+  }
+  if(write){
+    out+='<div class="row"><b>已写入 '+(r.changed||0)+' 张表</b>'
+      +(r.preimage?'<button class="mini" id="enhRollback" data-p="'+r.preimage+'">回滚这次改动</button>':'')+'</div>';
+    log('增强开关: 写入 '+(r.changed||0)+' 张表,pre-image '+(r.preimage||'-'));
+    toast('已写入 '+(r.changed||0)+' 张表');
+  }
+  $s('#enhOut').innerHTML=out;
+  if(write)enhLoad();
+}
+
+document.addEventListener('click',async function(ev){
+  const preset=ev.target&&ev.target.closest&&ev.target.closest('[data-enh-preset]');
+  if(preset){
+    if(!ENH)return;
+    enhCollect();
+    const name=preset.dataset.enhPreset, scope=preset.dataset.enhScope;
+    const excluded=(ENH.presetExcluded||[]).concat(ENH.guarded||[]);
+    (ENH.toggles||[]).forEach(t=>{
+      if(scope!=='all'&&t.scope!==scope)return;
+      if(excluded.indexOf(t.id)>=0)return;
+      enhWant[t.id]=name==='on'?true:(name==='official'?false:t.default);
+    });
+    enhPlanCache=null;
+    enhRender();
+    return;
+  }
+  const rb=ev.target&&ev.target.id==='enhRollback'?ev.target:null;
+  if(rb){
+    try{await api('/enh/rollback',{preimage:rb.dataset.p});}catch(e){return;}
+    toast('已回滚');
+    enhLoad();
+  }
+});
+$s('#enhReload').addEventListener('click',()=>{api('/enh/prime',{force:true}).then(()=>enhLoad()).catch(()=>{});});
+$s('#enhPlanBtn').addEventListener('click',()=>enhDo(false));
+$s('#enhApplyBtn').addEventListener('click',()=>enhDo(true));
+$s('#enhSnapBtn').addEventListener('click',async()=>{
+  if(!confirm('把当前 store 冻结成「增强侧」基线?\n只有在装完新增强、且还没切过官方时才该做。'))return;
+  try{await api('/enh/snapshot',{tag:'base'});}catch(e){return;}
+  toast('已重新冻结增强基线');
+  enhLoad();
+});
 
 // ---- 角色/武器 模式切换:左栏列表整体换成武器,不相干页签隐藏 ----
 let mode='char';

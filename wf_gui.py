@@ -7798,6 +7798,138 @@ def _pack_mod():
     return pcons
 
 
+# ---------------------------------------------------------------- 增强开关
+# 在「官方原版」与「已冻结的增强态」之间按地址取值。引擎见 wf_enhancement_switch.py。
+# 首次要建官方基准索引(要打开多 GB 的官方全量包),因此一律在后台线程里算,
+# do_GET 只读缓存——同步跑会把整个界面挂住几十秒。
+
+_ENH_LOCK = threading.Lock()
+_ENH: dict = {"seq": 0, "state": "idle", "step": "", "error": "",
+              "status": None, "computed_at": ""}
+
+
+def _enh_mod():
+    import wf_enhancement_switch as sw
+    return sw
+
+
+def _enh_worker(seq: int) -> None:
+    try:
+        sw = _enh_mod()
+        ctx = sw.resolve_context()
+        with _ENH_LOCK:
+            if _ENH["seq"] != seq:
+                return
+            _ENH["step"] = "读官方基准索引"
+        snap = sw.load_snapshot()
+        with _ENH_LOCK:
+            if _ENH["seq"] != seq:
+                return
+            _ENH["step"] = f"比对 store 与增强基线 {snap.name}"
+        payload = sw.status(ctx, snap)
+        with _ENH_LOCK:
+            if _ENH["seq"] != seq:
+                return
+            _ENH.update(state="done", step="", error="", status=payload,
+                        computed_at=time.strftime("%Y-%m-%d %H:%M:%S"))
+    except Exception as exc:  # 后台线程,异常必须落进状态里,否则界面永远转圈
+        with _ENH_LOCK:
+            if _ENH["seq"] == seq:
+                _ENH.update(state="error", step="", error=str(exc))
+
+
+def enh_prime(force: bool = False) -> dict:
+    with _ENH_LOCK:
+        if _ENH["state"] == "running" and not force:
+            return {"seq": _ENH["seq"], "state": "running"}
+        _ENH["seq"] += 1
+        seq = _ENH["seq"]
+        _ENH.update(state="running", step="启动", error="")
+    threading.Thread(target=_enh_worker, args=(seq,), daemon=True).start()
+    return {"seq": seq, "state": "running"}
+
+
+def enh_state() -> dict:
+    with _ENH_LOCK:
+        payload = {"state": _ENH["state"], "step": _ENH["step"],
+                   "error": _ENH["error"], "computedAt": _ENH["computed_at"]}
+        status = _ENH["status"]
+    if status is not None:
+        payload["status"] = status
+    return payload
+
+
+def _enh_invalidate() -> None:
+    with _ENH_LOCK:
+        _ENH.update(state="idle", status=None, computed_at="")
+
+
+def enh_plan(body: dict) -> dict:
+    sw = _enh_mod()
+    ctx = sw.resolve_context()
+    snap = sw.load_snapshot(body.get("snapshot") or None)
+    current = sw.status(ctx, snap)["current"]
+    desired = dict(current)
+    desired.update({k: bool(v) for k, v in (body.get("toggles") or {}).items()
+                    if k in sw.TOGGLE_BY_ID})
+    for guarded in sw.GUARDED_TOGGLES:
+        desired[guarded] = current.get(guarded, sw.TOGGLE_BY_ID[guarded].default)
+    sub = {name: bool(v) for name, v in (body.get("sub") or {}).items()}
+    plan = sw.build_plan(ctx, snap, desired, sub=sub,
+                         scope=str(body.get("scope") or "all"),
+                         allow_foreign=bool(body.get("allowForeign")))
+    return plan.as_dict()
+
+
+def enh_apply(body: dict) -> dict:
+    sw = _enh_mod()
+    ctx = sw.resolve_context()
+    snap = sw.load_snapshot(body.get("snapshot") or None)
+    current = sw.status(ctx, snap)["current"]
+    desired = dict(current)
+    desired.update({k: bool(v) for k, v in (body.get("toggles") or {}).items()
+                    if k in sw.TOGGLE_BY_ID})
+    for guarded in sw.GUARDED_TOGGLES:
+        desired[guarded] = current.get(guarded, sw.TOGGLE_BY_ID[guarded].default)
+    sub = {name: bool(v) for name, v in (body.get("sub") or {}).items()}
+    plan = sw.build_plan(ctx, snap, desired, sub=sub,
+                         scope=str(body.get("scope") or "all"),
+                         allow_foreign=bool(body.get("allowForeign")))
+    expected = body.get("digest")
+    if expected and expected != plan.digest:
+        raise ValueError("store 在你预览之后变过了,请重新预览再写入")
+    dry = bool(body.get("dryRun"))
+    result = sw.apply_plan(ctx, plan, dry_run=dry,
+                           allow_foreign=bool(body.get("allowForeign")))
+    if not dry:
+        for logical in plan.payloads:
+            try:
+                add_pending(ctx.table_path(logical))
+                record_change(logical, f"增强开关: {plan.digest}", result.get("preimage"))
+            except Exception:
+                pass
+        _enh_invalidate()
+    result["plan"] = plan.as_dict()
+    return result
+
+
+def enh_snapshot(body: dict) -> dict:
+    sw = _enh_mod()
+    snap = sw.snapshot_freeze(sw.resolve_context(), tag=str(body.get("tag") or "base"),
+                              force=bool(body.get("force")))
+    _enh_invalidate()
+    return snap.as_dict()
+
+
+def enh_rollback(body: dict) -> dict:
+    sw = _enh_mod()
+    result = sw.rollback(sw.resolve_context(), str(body.get("preimage") or ""),
+                         dry_run=bool(body.get("dryRun")))
+    if not result["dry_run"]:
+        _enh_invalidate()
+    return result
+
+
 def _pack_upload_meta(path: Path) -> dict | None:
     match = _pack_mod().squash.ARCHIVE_RE.fullmatch(path.name)
     if match is None or not path.is_file():
@@ -8196,6 +8328,12 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/raw_json":
                 self._json(get_raw_json((qs.get("table") or [""])[0],
                                         (qs.get("key") or [""])[0]))
+                return
+            if path == "/enh/state":
+                self._json(enh_state())
+                return
+            if path == "/enh/snapshots":
+                self._json({"snapshots": _enh_mod().list_snapshots()})
                 return
             self._json({"error": "not found"}, 404)
         except Exception as exc:
@@ -8643,6 +8781,21 @@ class Handler(BaseHTTPRequestHandler):
                 return
             if path == "/toolbox/cancel":
                 self._json(toolbox_cancel())
+                return
+            if path == "/enh/prime":
+                self._json(enh_prime(bool(body.get("force"))))
+                return
+            if path == "/enh/plan":
+                self._json(enh_plan(body))
+                return
+            if path == "/enh/apply":
+                self._json(enh_apply(body))
+                return
+            if path == "/enh/snapshot":
+                self._json(enh_snapshot(body))
+                return
+            if path == "/enh/rollback":
+                self._json(enh_rollback(body))
                 return
             self._json({"error": "not found"}, 404)
         except Exception as exc:

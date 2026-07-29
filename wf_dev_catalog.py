@@ -1552,8 +1552,16 @@ def export_share_pack(
     # 依赖声明:自动检测(重启敏感表)+ 手动声明(模式类服务端逻辑/客户端补丁)
     restart, restart_reasons = detect_pack_requirements(selected, cdn_root)
     requires = {
-        "schemaVersion": 1,
-        "pack": {"since": since, "tail": tail, "edges": len(edges)},
+        "schemaVersion": 2,
+        # 本通道是整 zip 原样搬运,产物必然带发包方的个人增强(平衡总包/白虎重做等);
+        # 去增强的 content-only 变体走 wf_share_variant.py,那边会把 enhancement 写成 false。
+        "pack": {"variant": "full", "since": since, "tail": tail, "edges": len(edges)},
+        "enhancement": True,
+        "enhancementDetail": {
+            "note": "整链原样打包,含发包方自服的个人增强;"
+                    "需要官方原值的收方请索取 content-only 变体"
+                    "(mod-tools/wf_share_variant.py)",
+        },
         "requires": {
             "serverRestart": restart,
             "restartReasons": restart_reasons,
@@ -1584,6 +1592,8 @@ def export_share_pack(
         requires_lines.append(f"- 需要客户端补丁: {', '.join(client_patches)}")
     if len(requires_lines) == 1 and not restart:
         requires_lines.append("- 纯 CDN 内容包,无额外依赖")
+    requires_lines.append(
+        "- 变体: full(含发包方个人增强;要官方原值请索取 content-only 变体)")
 
     (out_dir / "说明.txt").write_text(
         SHARE_README_TEMPLATE.format(

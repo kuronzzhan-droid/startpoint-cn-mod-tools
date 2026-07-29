@@ -86,6 +86,9 @@ mod-tools/
 | `wf_pack_consolidate.py` | **增量包整合**:手选/上传多个已发布增量包按发布顺序合并去冗余,产出 `pinball-<最早from>-<最新to>` 单包(GUI「增量整合」页签同源;产物只写 work 输出目录,不碰 CDN/原包) |
 | `wf_chain_squash.py` | **整链压缩**:mod 增量链(≥base)压成最终版合集单边 + 全历史版本硬链桥 + verify/retire/undo,治链条无限变长 |
 | `wf_dev_catalog.py` | **dev Catalog 适配层**:把上游 dev 分支 `content:sync` 的整套 CDN 校验移植到 Python(错误码逐一对应),`audit` 体检 / `emit` 产出 dev 格式 manifest + 合并 EntityLists / `heal-layers` 补缺层占位包 / `export-pack` 产出**分享包**(含 `requires.json` 依赖声明)/ `verify-baseline` 金样验证。运行时接收与启动前编译两条路径并存,只读不改现有链目录 |
+| `wf_enhancement_policy.py` | **去增强策略引擎**:审计 mod 链终态里的"个人增强"(全角色平衡/官方角色重做/boss 血量上调),官方基准=官方 CDN 归档重放(非 store 备份,钉死哈希启动即校验);纠缠表按行重建(官方 key 取官方值、自制行原样保留),被改官方资产文件走 drop-list。只做策略与重建,不写 zip 不碰 CDN |
+| `wf_enhancement_switch.py` | **增强开关**:在「官方原版」与「已冻结增强态」之间按 `(key, path, col)` 地址逐格取值,分类开关可逆切换而不碰自制角色/武器/模式;枚举·哨兵锁行 + 子桶跨越锁行两条护栏,E1/E2 自检等式不成立拒写;snapshot/plan/apply/rollback 全链路 |
+| `wf_share_variant.py` | **分享包双变体构建**:同一批内容产出 full(自服完整终态,含个人增强)/ content-only(官方行回滚官方原值,被改官方资产不下发)两个变体,`requires.json` 声明 `pack.variant`/`enhancement`/`enhancementDetail`;按收方链尾重新锚定,产物只写 work 输出目录,已消费的 from-to 边拒绝重切 |
 | `wf_boss.py` / `wf_quest_lib.py` | Boss 数值 + 22 类副本列表;quest 系三层压缩索引嵌套表读写 |
 | `wf_assets.py` / `wf_dsl.py` / `wf_describe.py` | 角色资产编解码;技能 ActionDsl 编辑(AMF3);行级中文描述 |
 | `wf_dsl_sig.py` | 技能/强化弹射 DSL 命令签名表(自反编译 AS3 生成:112 命令+6 事件+46 枚举类+42 种 AC 状态词条,含中文标注) |
@@ -134,7 +137,9 @@ mod-tools/
 - **[角色改动规律方案.md](docs/角色改动规律方案.md)** — 改动规律总纲:五表列图、五类改动标准做法、**移植铁律(同属性/别去共鸣/统一sid/跨表重排)**、做不到的边界、效果代码速查、工具能力矩阵。
 - **[角色包工作流.md](docs/角色包工作流.md)** — 自制新角色从工作区到发布的完整流程(manifest/preflight/发布/回滚)。
 - **[新角色制作心得.md](docs/新角色制作心得.md)** — 双新角色(赛瑞斯/史黛拉)上线全程沉淀:先例原则、解析器 schema、崩溃图鉴、发布链路坑。
-- **[分享包收方指南.md](docs/分享包收方指南.md)** — 面向**收方服主**(不装任何工具):分享包结构、链尾衔接前提、main / dev 两种服务端的落地步骤、`requires.json` 字段速查、常见问题。
+- **[分享包收方指南.md](docs/分享包收方指南.md)** — 面向**收方服主**(不装任何工具):分享包结构、full / content-only 变体选择、链尾衔接前提、main / dev 两种服务端的落地步骤、`requires.json` 字段速查、常见问题。
+- **[去增强变体.md](docs/去增强变体.md)** — 面向发包方:content-only 变体的设计与操作(官方基准=官方 CDN 归档、纠缠表按行重建、官方资产 drop-list),配套 `wf_enhancement_policy.py` / `wf_share_variant.py`。
+- **[增强开关.md](docs/增强开关.md)** — 自服运维:分类关闭/恢复个人增强的逐格取值模型、两条锁行护栏、自检等式与回滚,配套 `wf_enhancement_switch.py`。
 - [角色生成器方案.md](docs/角色生成器方案.md) / [角色生成器-Codex任务书.md](docs/角色生成器-Codex任务书.md) — 角色生成器设计与任务书。
 - [角色数据逆向与修改指南.md](docs/角色数据逆向与修改指南.md) — 两层数据架构 + HP/ATK / 觉醒破解过程。
 - [版本切换设计.md](docs/版本切换设计.md) — 多版本档案(profile)设计。
