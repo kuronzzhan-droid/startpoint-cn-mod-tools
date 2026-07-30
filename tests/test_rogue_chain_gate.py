@@ -663,17 +663,24 @@ class DifficultyPresetCase(unittest.TestCase):
             hp0, hpg, atk0, atkg = rb.difficulty_curve(diff, 30)
             hp_end, atk_end = hp0 * hpg ** 29, atk0 * atkg ** 29
             # 末层不得超过官方 lv100 的 atk 天花板(6.63,且那是全库孤例)
-            self.assertLessEqual(atk_end, 3.5, f"{diff} atk 终点越界")
+            # 端点求幂有浮点残差(4.0 会算成 4.00000000000001),留 1e-9 容差
+            self.assertLessEqual(atk_end, 3.5 + 1e-9, f"{diff} atk 终点越界")
             # 血量终点参照:无幻之宴/菲诺梅那 官方 ×1.0,末层最多几倍,不是几十倍
-            self.assertLessEqual(hp_end, 4.0, f"{diff} hp 终点越界")
+            self.assertLessEqual(hp_end, 4.0 + 1e-9, f"{diff} hp 终点越界")
             self.assertGreater(hp_end, hp0, f"{diff} 曲线必须递增")
             self.assertGreater(atk_end, atk0, f"{diff} 曲线必须递增")
 
     def test_atk_ceiling_guards_curse_stacking(self):
-        """诅咒叠乘(玻璃深渊 ×3.0)+ 工坊 ×1.15 会把 atk 冲高,硬上限兜底。
-        官方全库 atk 修正最大 6.63,没有任何一行 > 10。"""
-        self.assertLessEqual(rb.ATK_MULT_CEILING, 10.0)
-        self.assertGreaterEqual(rb.ATK_MULT_CEILING, 6.63)
+        """诅咒叠乘 + 工坊 ×1.15 会把 atk 冲高,硬上限兜底。
+
+        ⚠ 2026-07-30 反向收紧:旧值 8.0 **从未触发过**(现役塔最高 6.58),
+        所以它压不到中位,只是个摆设。新值 6.6 卡在官方全库孤例 6.63 之下 ——
+        真正干活的是 ATK_COMBO_CAP / NOBASE_ATK_CAP / TRUE_DMG_CAP / 分位闸,
+        ceiling 只当最后一道兜底。别再往上放。"""
+        self.assertLessEqual(rb.ATK_MULT_CEILING, 6.63, "不许超官方全库孤例")
+        self.assertGreaterEqual(rb.ATK_MULT_CEILING, 4.0)
+        self.assertLessEqual(rb.ATK_COMBO_CAP, rb.ATK_MULT_CEILING)
+        self.assertLessEqual(rb.NOBASE_ATK_CAP, rb.ATK_COMBO_CAP)
 
     def test_easy_below_hell(self):
         e = rb.difficulty_curve("easy", 20)
@@ -1397,6 +1404,193 @@ class ZoneBossSlotsCase(unittest.TestCase):
 
     def test_non_dict_zone_empty(self):
         self.assertEqual(rb.zone_boss_slots("not-a-zone"), [])
+
+
+# ---------------------------------------------------------------- 伤害硬闸
+# 2026-07-30 玩家「连战 boss 伤害过高」审计后落地。审计实测(现役 249 塔):
+# col 中位 2.91、中后段中位 4.03、20/30 层超官方全库第二名 1.8;col>4 的层
+# **全部**是攻击诅咒层;同 field 锚点 = 把官方原版战斗做成 4.7~6.8 倍每跳。
+class AtkCurseTierCase(unittest.TestCase):
+    def test_hell_tier_matches_the_agreed_numbers(self):
+        """烈狱档端点 = 用户 2026-07-30 指定的 1.7 / 1.8 / 2.6(旧 2.0/2.2/3.0)。"""
+        self.assertEqual(rb.ATK_CURSE_TIERS["嗜血狂潮"][2], 1.7)
+        self.assertEqual(rb.ATK_CURSE_TIERS["深渊逆鳞"][2], 1.8)
+        self.assertEqual(rb.ATK_CURSE_TIERS["玻璃深渊"][2], 2.6)
+
+    def test_tiers_are_a_monotone_ladder(self):
+        """阶梯本身就是降档闸的台阶,不单调就降不下去。"""
+        for name, tiers in rb.ATK_CURSE_TIERS.items():
+            self.assertEqual(len(tiers), 3, name)
+            self.assertLess(tiers[0], tiers[1], name)
+            self.assertLess(tiers[1], tiers[2], name)
+            self.assertGreater(tiers[0], 1.0, name)
+
+    def test_text_always_matches_the_number(self):
+        """落表值与文案同源 —— 降档后 desc 写 ×1.4 就必须真的是 ×1.4。"""
+        for name in rb.ATK_CURSE_TIERS:
+            for t in range(3):
+                e = rb.atk_curse_entry(name, t)
+                self.assertIn(f"敌攻×{e['atk']}", e["text"], (name, t))
+                self.assertEqual(e["atk_tier"], t)
+
+
+class DowngradeAtkCurseCase(unittest.TestCase):
+    def _hell_floor(self, name):
+        e = rb.atk_curse_entry(name, 2, weak=1)
+        return rb.apply_picks({}, [e, {"name": "深渊重甲", "tp": 9, "text": "韧性×9"}],
+                              "绞肉机")
+
+    def test_每次调用都严格下降并最终摘除(self):
+        for name in rb.ATK_CURSE_TIERS:
+            curse = self._hell_floor(name)
+            seen = [curse["atk"]]
+            while rb.downgrade_atk_curse(curse) is not None:
+                self.assertLess(curse["atk"], seen[-1], (name, seen))
+                seen.append(curse["atk"])
+            self.assertEqual(curse["atk"], 1.0, name)     # 收敛到无攻击诅咒
+            self.assertLessEqual(len(seen), 5, name)      # 2→1→0→摘,最多 4 步
+
+    def test_desc_follows_the_downgrade(self):
+        curse = self._hell_floor("玻璃深渊")
+        self.assertIn("敌攻×2.6", curse["desc"])
+        rb.downgrade_atk_curse(curse)
+        self.assertIn("敌攻×2.3", curse["desc"])
+        self.assertNotIn("敌攻×2.6", curse["desc"])
+
+    def test_removal_drops_the_combo_label(self):
+        """【绞肉机】的承诺(血厚攻高)没了就别再挂这个名,别骗玩家。"""
+        curse = self._hell_floor("嗜血狂潮")
+        for _ in range(3):
+            rb.downgrade_atk_curse(curse)
+        self.assertNotIn("绞肉机", curse["desc"])
+        self.assertIsNone(curse["combo"])
+
+    def test_no_atk_curse_returns_none(self):
+        curse = rb.apply_picks({}, [{"name": "深渊重甲", "tp": 9, "text": "韧性×9"}])
+        self.assertIsNone(rb.downgrade_atk_curse(curse))
+
+    def test_other_effects_survive_the_downgrade(self):
+        """降的是攻击项,韧性/词条槽不该被顺手抹掉。"""
+        curse = self._hell_floor("深渊逆鳞")
+        rb.downgrade_atk_curse(curse)
+        self.assertEqual(curse["tp"], 9)
+        self.assertTrue(any(k == "1" for k, _v in curse["conds"]))
+
+
+class SolveAtkCase(unittest.TestCase):
+    def _rec(self, **kw):
+        base = {"r": 30, "ba": 1.0, "curse": {"atk": 1.0}, "st_mult": 1.0,
+                "no_base": False, "anchor": None}
+        base.update(kw)
+        return base
+
+    def test_combo_cap_binds_on_base_times_curse(self):
+        """单项都不越界、乘起来越界的层(第26战 基础2.99×逆鳞2.2=6.58)。"""
+        rec = self._rec(ba=3.0, curse={"atk": 2.2})
+        self.assertAlmostEqual(rb.solve_atk(rec, 1.0, 1.0), rb.ATK_COMBO_CAP)
+
+    def test_nobase_floor_is_capped_harder(self):
+        rec = self._rec(ba=3.0, curse={"atk": 1.0}, no_base=True)
+        self.assertAlmostEqual(rb.solve_atk(rec, 1.0, 1.0), rb.NOBASE_ATK_CAP)
+
+    def test_true_damage_cap_catches_the_invisible_spike(self):
+        """青之女王:col 只有 1.90 却是全塔每跳最疼的一层(原生 atk ≈ 中位 3 倍)。"""
+        rec = self._rec(ba=1.9, anchor=(3.0, 1.0))       # 原生是中位的 3 倍
+        got = rb.solve_atk(rec, 1.0, 1.0)
+        self.assertAlmostEqual(got * 3.0 / 1.0, rb.TRUE_DMG_CAP)
+
+    def test_ceiling_is_the_last_backstop(self):
+        rec = self._rec(ba=100.0, st_mult=100.0)
+        self.assertLessEqual(rb.solve_atk(rec, 1.0, 1.0), rb.ATK_MULT_CEILING)
+
+    def test_scale_is_applied_to_the_curve(self):
+        rec = self._rec(ba=1.0)
+        self.assertAlmostEqual(rb.solve_atk(rec, 1.0, 1.0, scale=0.5), 0.5)
+
+
+class AtkBandCase(unittest.TestCase):
+    def _tower(self, cols, n=30):
+        """构造中后段 col = cols 的假塔(每层都带一个顶格玻璃深渊可供降档)。"""
+        recs = []
+        for i, col in enumerate(cols):
+            curse = rb.apply_picks({}, [rb.atk_curse_entry("玻璃深渊", 2)])
+            recs.append({"r": n - len(cols) + 1 + i, "ba": col / 2.6,
+                         "curse": curse, "st_mult": 1.0, "no_base": False,
+                         "anchor": None})
+        return recs
+
+    def test_band_violation_reports_the_worst_metric_first(self):
+        self.assertIsNone(rb.band_violation([1.0, 1.5, 2.0]))
+        self.assertEqual(rb.band_violation([1.0, 1.0, 99.0])[0], "max")
+        self.assertEqual(rb.band_violation([9.0] * 10)[0], "max")
+
+    def test_p90_uses_nearest_rank(self):
+        cols = [1.0] * 18 + [2.9, 2.9]            # n=20 → P90 = 第 18 小
+        self.assertIsNone(rb.band_violation(cols))
+
+    def test_enforce_converges_into_the_band(self):
+        recs = self._tower([6.0] * 20)
+        rb.enforce_atk_band(recs, 1.0, 1.0, 30)
+        self.assertIsNone(rb.band_violation([r["atk"] for r in recs]))
+
+    def test_enforce_prefers_downgrade_over_hard_clamp(self):
+        """闸门是"降档"不是"闷头夹":有诅咒可降就别直接砍数值。"""
+        recs = self._tower([4.0] * 20)
+        _scale, log = rb.enforce_atk_band(recs, 1.0, 1.0, 30)
+        self.assertTrue(log)
+        self.assertTrue(any("×2.6→×2.3" in ln for ln in log), log[:3])
+        self.assertFalse(any("单层夹到" in ln for ln in log), log[:3])
+
+    def test_curve_scale_kicks_in_when_no_curse_left(self):
+        """中后段已无攻击诅咒可降 = 基础曲线本身太热,全塔等比缩放。"""
+        recs = []
+        for i in range(20):
+            recs.append({"r": 11 + i, "ba": 5.0, "curse": rb.apply_picks({}, []),
+                         "st_mult": 1.0, "no_base": False, "anchor": None})
+        scale, log = rb.enforce_atk_band(recs, 1.0, 1.0, 30)
+        self.assertLess(scale, 1.0)
+        self.assertIsNone(rb.band_violation([r["atk"] for r in recs]))
+        self.assertTrue(any("全塔曲线" in ln for ln in log))
+
+    def test_early_floors_are_out_of_scope(self):
+        """闸门只管中后段(进度 > 1/3);前段玩家反馈「都不算强」,别再削。"""
+        recs = [{"r": 1, "ba": 5.0, "curse": rb.apply_picks({}, []), "st_mult": 1.0,
+                 "no_base": False, "anchor": None}]
+        rb.enforce_atk_band(recs, 1.0, 1.0, 30)
+        self.assertGreater(recs[0]["atk"], rb.BAND_TARGET["median"])
+
+
+class NoBaseFloorCase(unittest.TestCase):
+    def test_nobase_floor_never_gets_an_atk_curse(self):
+        """standard 表 boss 归一化返回 1.0,拿到裸曲线值,原生数值不在审计视野内。
+        第15/18/26/29/30 战都是这种,还叠了攻击诅咒 —— 直接从池子里摘掉。"""
+        import random as _r
+        for seed in range(40):
+            out = rb.abyss_curses(29, 30, _r.Random(seed), "hell",
+                                  caps={"boss": True}, no_base=True)
+            names = [c["name"] for c in out["picks"]]
+            self.assertFalse(set(names) & set(rb.ATK_CURSE_TIERS), (seed, names))
+            self.assertEqual(out["atk"], 1.0, seed)
+
+    def test_normal_floor_still_gets_them(self):
+        import random as _r
+        hit = 0
+        for seed in range(40):
+            out = rb.abyss_curses(29, 30, _r.Random(seed), "hell", caps={"boss": True})
+            hit += bool(set(c["name"] for c in out["picks"]) & set(rb.ATK_CURSE_TIERS))
+        self.assertGreater(hit, 0, "有基数的层不该被一起误伤")
+
+
+class LevelRampCase(unittest.TestCase):
+    def test_ramp_is_monotone_and_tops_out_at_100(self):
+        self.assertEqual(list(rb.LEVEL_RAMP), sorted(rb.LEVEL_RAMP))
+        self.assertEqual(rb.LEVEL_RAMP[-1], 100)
+        self.assertLess(rb.LEVEL_RAMP[0], 100)
+
+    def test_funnel_column_is_downgraded(self):
+        """炮台弹幕同吃 boss 倍率,玩家会把它算进"boss 伤害"。"""
+        self.assertLess(rb.FUNNEL_ATK_SCALE, 1.0)
+        self.assertGreater(rb.FUNNEL_ATK_SCALE, 0.0)
 
 
 if __name__ == "__main__":

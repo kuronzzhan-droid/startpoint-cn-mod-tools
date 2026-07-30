@@ -81,8 +81,11 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="深渊连战一键重开(重摇+清进度+发布+重启游戏)")
     ap.add_argument("--rounds", type=int, default=15, help="爬塔轮数(与线上不同须重启服务端)")
     ap.add_argument("--seed", type=int, help="留空=每次随机;填数字可复现同一座塔")
-    ap.add_argument("--enemy-level", default="max",
-                    help="敌等级:数字或 max=每层取该 boss 最高档(默认 max)")
+    ap.add_argument("--enemy-level", default="ramp",
+                    help="敌等级:ramp=按深度爬坡(**默认**,前1/3 lv80→中段 lv90→"
+                         "尾段 lv100)/ 数字 / max=每层取该 boss 最高档。"
+                         "⚠ 2026-07-30 前默认是 max,全塔平坦 lv100 站在曲线悬崖顶"
+                         "(官方只有 4.2%% 内容上 lv100),是 boss 伤害过高的结构成因之一")
     ap.add_argument("--event", default="700099", help="rush 活动 id(默认深渊连战)")
     ap.add_argument("--player", type=int, help="只清指定存档的进度(默认全部存档)")
     ap.add_argument("--keep-progress", action="store_true",

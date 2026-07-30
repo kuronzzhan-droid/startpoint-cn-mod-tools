@@ -38,9 +38,11 @@ import csv
 import hashlib
 import io
 import json
+import math
 import os
 import random
 import re
+import statistics
 import struct
 import subprocess
 import sys
@@ -539,6 +541,121 @@ def stat_normalize(bosses, hp_med: dict, atk_med: dict,
         else:
             fa = f
     return fh, fa
+
+
+def stat_anchor(bosses, med: dict, kind: str, level: int) -> tuple[float, float] | None:
+    """该层的 (原生数值, 同曲线组中位锚);查不到基数返回 None。
+
+    None = standard 表 boss(无 boss_level 条目)——归一化对它们**无效**,拿到的
+    是裸曲线值,原生数值不在审计视野内。返回值有两个用途:
+      · None → 走 NOBASE_ATK_CAP + 禁攻击类诅咒
+      · 非 None → 真伤指数闸(原生 atk 高的 boss,col 合规也可能每跳爆表)
+    与 stat_normalize 同口径:一层多 boss 取基数最大的那个。"""
+    best = None
+    for c in bosses:
+        t = true_stat(c, kind, level)
+        if t and med.get(t[1]) and (best is None or t[0] > best[0]):
+            best = (t[0], med[t[1]])
+    return best
+
+
+def solve_atk(rec: dict, atk_base: float, atk_growth: float,
+              scale: float = 1.0) -> float:
+    """一层写进 c89-91 的 atk 修正 —— 四道构建期硬闸依次夹。
+
+    rec = {r, ba, curse, st_mult, no_base, anchor, hard_cap?}。
+    纯函数:降档闸改完 curse 后原样重算即可,不留隐藏状态。"""
+    curve = atk_base * (atk_growth ** (rec["r"] - 1)) * rec["ba"] * scale
+    # ① 组合上限:曲线×来源补偿×攻击诅咒。单项不越界、乘起来越界的层靠这条压住
+    cap = NOBASE_ATK_CAP if rec["no_base"] else ATK_COMBO_CAP
+    val = min(curve * rec["curse"]["atk"], cap)
+    val *= rec["st_mult"]                       # 工坊阶段乘区(hell ×1.15)
+    # ② 真伤指数闸:原生 atk 高的 boss(青之女王≈中位 3 倍)col 合规≠每跳合规
+    if rec["anchor"]:
+        native, med = rec["anchor"]
+        val = min(val, TRUE_DMG_CAP * med / native)
+    # ③ 分位闸的逐层夹子(见 enforce_atk_band)
+    val = min(val, rec.get("hard_cap", float("inf")))
+    # ④ 全局兜底
+    return min(val, ATK_MULT_CEILING)
+
+
+def band_stats(cols: list[float]) -> dict:
+    """col 分布的三个受检分位(P90 = 最近秩)。闸门与体检读数**共用**这一个口径,
+    否则会出现"闸门说过了、体检说超了"的自相矛盾。"""
+    s = sorted(cols)
+    return {"median": statistics.median(s), "max": s[-1],
+            "p90": s[min(len(s) - 1, math.ceil(0.9 * len(s)) - 1)]}
+
+
+def band_violation(cols: list[float]) -> tuple[str, float] | None:
+    """中后段 col 分布是否落进官方带 → (超标项, 实测值) 或 None。"""
+    if not cols:
+        return None
+    got = band_stats(cols)
+    for key in ("max", "p90", "median"):
+        if got[key] > BAND_TARGET[key] + 1e-9:
+            return key, got[key]
+    return None
+
+
+def enforce_atk_band(recs: list[dict], atk_base: float, atk_growth: float,
+                     n: int) -> tuple[float, list[str]]:
+    """全塔 col 分位硬闸 → (全局曲线缩放, 逐条降档日志)。
+
+    ⚠ 这是**对任意 seed 的保证**,不是对某个 roll 手调:烈狱档 40% 层起 3 诅咒,
+    重摇方差极大——交接文档对标时那一 roll 中位 1.46,下一 roll 就 2.91。
+    收敛手段按治本程度:
+      ① 最热层的攻击类诅咒降一档(2→1→0→摘除),desc 同步改,文案不骗人
+      ② max 超标且该层已无攻击诅咒 → 只夹这一层(单点离群不该拖累全塔)
+      ③ 中位/P90 超标且中后段已无攻击诅咒可降 → 说明**基础曲线本身太热**,
+         全塔等比缩放(几何收敛),并在日志里提示该回头调 DIFF_PRESETS 端点
+    """
+    scale, log = 1.0, []
+
+    def recalc() -> None:
+        for rec in recs:
+            rec["atk"] = solve_atk(rec, atk_base, atk_growth, scale)
+
+    def has_atk(rec: dict) -> bool:
+        return any(c.get("name") in ATK_CURSE_TIERS
+                   for c in rec["curse"].get("picks") or [])
+
+    recalc()
+    for _ in range(600):
+        late = [rec for rec in recs if rec["r"] / n > BAND_FROM]
+        bad = band_violation([rec["atk"] for rec in late])
+        if not bad:
+            break
+        key, got = bad
+        top = max(late, key=lambda rec: (rec["atk"], rec["r"]))
+        if key == "max":
+            note = downgrade_atk_curse(top["curse"]) if has_atk(top) else None
+            if note is None:
+                top["hard_cap"] = BAND_TARGET["max"]
+                note = f"无攻击诅咒可降 → 单层夹到 ×{BAND_TARGET['max']}"
+            log.append(f"[分位闸] max={got:.2f} → 第{top['r']}战 {note}")
+        else:
+            hot = max((rec for rec in late if has_atk(rec)),
+                      key=lambda rec: (rec["atk"], rec["r"]), default=None)
+            if hot is not None:
+                log.append(f"[分位闸] {key}={got:.2f} → 第{hot['r']}战 "
+                           f"{downgrade_atk_curse(hot['curse'])}")
+            else:
+                scale *= 0.95
+                log.append(f"[分位闸] {key}={got:.2f} 且中后段已无攻击诅咒可降 "
+                           f"→ 全塔曲线 ×{scale:.3f}(该调 DIFF_PRESETS atk 端点了)")
+        recalc()
+    else:
+        # 600 步还没收敛只可能是闸门写错了,宁可硬夹也不许把越界值发出去
+        for rec in recs:
+            if rec["r"] / n > BAND_FROM:
+                rec["hard_cap"] = min(rec.get("hard_cap", float("inf")),
+                                      BAND_TARGET["median"])
+        recalc()
+        log.append("[分位闸] ⚠ 未在 600 步内收敛,中后段全部硬夹到 "
+                   f"×{BAND_TARGET['median']}(闸门逻辑有 bug,去查)")
+    return scale, log
 
 
 def resolve_level(bosses, want: int, lv_ceil: dict | None,
@@ -1397,17 +1514,58 @@ def save_boss_history(bosses: list[str]) -> None:
 # 所以曲线端点本身必须压。
 # 新口径:**×1.0 ≈ 无幻之宴/菲诺梅那 那一档**,曲线只负责深度推进(首层 0.6× → 末层 3×);
 # boss 之间的强弱差由归一化补偿承担,不再靠曲线堆。
+# ⚠ **2026-07-30 二次压回:刀→血**(玩家「连战 boss 伤害过高」审计)。
+# 上一轮把 atk 终点从 18.0 压到 2.5 之后,实测中后段 col 中位仍有 4.03 —— 因为
+# 终点只管曲线,真正落表的是 曲线×来源补偿×归一化×**攻击诅咒**。烈狱档 16/30 层
+# 带攻击诅咒且顶格,叠在塔尾自身已达 2.4-3.3 的曲线上。
+# 端点扫描(3 seed × 5 档,scratchpad/sweep_endpoint.py):atk 终点 2.5 时分位闸要
+# 出手 20 次、把中后段攻击诅咒**全部摘光**才进带;终点 1.7 时只出手 6 次(多为降档
+# 而非摘除),中后段仍有 6/20 层保留攻击诅咒 —— 闸门回到"兜底"而不是"主力"。
+# atk **起点不动**(0.8):玩家反馈「前10关都不算强」,前段本就不该再削。
+# hp 端点上调作难度补偿(用户 2026-07-30 授权「按官方 rush 把难度转向 hp/机制」):
+# 官方 rush **hp 堆到 100×、atk 只在 0.2-1.95**,我们 hp max 才 12 左右,空间很大。
 DIFF_PRESETS = {
     #            hp起  hp终   atk起 atk终  诅咒档
     "easy":     (0.3,  1.2,   0.3,  0.9,  "off"),
-    "normal":   (0.5,  2.2,   0.5,  1.6,  "abyss"),
-    "hell":     (0.6,  3.0,   0.8,  2.5,  "hell"),
-    "gradient": (0.5,  2.6,   0.6,  2.0,  None),
+    "normal":   (0.5,  2.2,   0.5,  1.3,  "abyss"),
+    "hell":     (0.9,  4.0,   0.8,  1.7,  "hell"),
+    "gradient": (0.5,  2.6,   0.6,  1.5,  None),
 }
 
-# 写进 c89-91 的 atk 修正**硬上限**。官方全库最大 6.63(且是孤例,第二名 1.8),
-# 这里留到 8.0 给诅咒叠乘一点空间,再高就是一击秒杀墙,不是难度。
-ATK_MULT_CEILING = 8.0
+# ---- atk 落表值的**构建期硬闸**(2026-07-30 玩家「连战 boss 伤害过高」审计后落地)----
+# 审计实测(现役 249 塔):col 中位 2.91、中后段中位 4.03、20/30 层超官方全库第二名
+# 1.8;同 field 锚点(白虎/圣诞魔像/菲诺梅那)= 把官方原版战斗做成 4.7~6.8 倍每跳。
+# 上一轮只调 ceiling 的思路被证伪:ceiling 从未触发(最高 6.58 < 8.0),削不到中位。
+# 所以闸门分四层,从治本到兜底:
+#   ① 攻击类诅咒降档(ATK_CURSE_TIERS)—— 病灶:col>4 的层**全部**是攻击诅咒层
+#   ② 组合上限:曲线×来源补偿×攻击诅咒 的乘积封顶(单层不许"基础高 + 诅咒顶格"双叠)
+#   ③ 无基数层单独限幅 + 真伤指数闸(见 NOBASE_ATK_CAP / TRUE_DMG_CAP)
+#   ④ 全塔分位硬闸(见 BAND_TARGET)——保证**任意 seed** 合规,不是对某个 roll 手调
+# 写进 c89-91 的 atk 修正**硬上限**。官方全库最大 6.63(且是孤例,第二名 1.8)。
+ATK_MULT_CEILING = 6.6
+# 「曲线×来源补偿×归一化 × 攻击诅咒」的组合上限。单项都不越界、乘起来越界的层
+# (第26战 基础2.99×逆鳞2.2=6.58)靠这条压住。
+ATK_COMBO_CAP = 4.0
+# standard 表 boss 无 boss_level 基数 → stat_normalize 返回 1.0(归一化不生效),
+# 它们拿到的是**裸曲线值**,而原生数值不在审计视野内,真实伤害无上界保证。
+# 这类层单独限幅,并禁掉攻击类诅咒(见 abyss_curses 的 no_base 参数)。
+NOBASE_ATK_CAP = 1.5
+# 真伤指数 = boss 原生 atk(该层等级)× 落表 col ÷ 同曲线组中位锚。
+# col 合规 ≠ 真伤合规:第6战青之女王 col 只有 1.90,但原生 atk ≈ 中位 3 倍,
+# 0.55 幂压缩没压平 → 真伤指数 5.62 = 全塔第一(隐形尖峰)。这条直接封每跳伤害。
+TRUE_DMG_CAP = 4.0
+# 带 funnel 的层:炮台弹幕同吃 boss 列倍率(第18战巫妖 4.68/第29战深渊之云 4.81),
+# 玩家会把它算进"boss 伤害"。c90 相对 c91 降档。
+FUNNEL_ATK_SCALE = 0.6
+# 全塔 col 分位硬闸(中后段 = 进度 > BAND_FROM)。官方坐标系:lv100 档中位 1.0/
+# P90 1.2/max 6.63(孤例)。超标即逐层降档重算,直到任意 seed 都落进带内。
+BAND_FROM = 1 / 3
+BAND_TARGET = {"median": 2.0, "p90": 3.0, "max": 6.0}
+# 敌等级爬坡三段(--enemy-level ramp,默认)。官方 enemy_level 分布:lv80 是主流
+# 难档(662 行 21.9%),lv100 只有 127 行(4.2%);atk_correction_curve 实解
+# lv79=1.898 / lv89=1.992 / lv99=2.505 / lv100=3.267 —— lv100 是曲线悬崖顶,
+# 全塔平坦 lv100 等于把 96% 官方内容不敢站的位置站满 30 层。
+LEVEL_RAMP = (80, 90, 100)
 
 
 def difficulty_curve(diff: str, n: int) -> tuple[float, float, float, float]:
@@ -1686,6 +1844,32 @@ CURSE_COMBOS = (
 )
 COMBO_RATE = 0.55        # 名额 ≥2 时走组合的概率,其余走独立随机
 
+# ---- 攻击类诅咒分档表(2026-07-30 降档)----
+# 旧值 (1.4,1.7,2.0)/(1.5,1.8,2.2)/(2.2,2.6,3.0),烈狱档顶格叠在塔尾自身已达
+# 2.4-3.3 的基础曲线上 → col>4 的层全是这三个。新烈狱端点 1.7/1.8/2.6
+# (2026-07-30 用户指定),低档按同比例下调保持单调阶梯——阶梯本身也是**降档闸**
+# 的台阶(超标层 tier 2→1→0→摘除,逐级重算,desc 跟着改,落表值与文案永不脱节)。
+ATK_CURSE_TIERS = {
+    "嗜血狂潮": (1.3, 1.5, 1.7),
+    "深渊逆鳞": (1.4, 1.6, 1.8),
+    "玻璃深渊": (2.0, 2.3, 2.6),
+}
+
+
+def atk_curse_entry(name: str, t: int, weak: int = 0) -> dict:
+    """攻击类诅咒在档位 t 的完整条目。降档闸复用同一入口 → 数值与 text 恒一致。"""
+    mult = ATK_CURSE_TIERS[name][t]
+    if name == "嗜血狂潮":
+        return {"name": name, "atk": mult, "hp": 0.85, "atk_tier": t,
+                "text": f"敌攻×{mult}·血-15%"}
+    if name == "玻璃深渊":
+        return {"name": name, "atk": mult, "hp": 0.5, "atk_tier": t,
+                "text": f"敌攻×{mult}·血-50%"}
+    w = (0.3, 0.4, 0.5)[t]                       # 深渊逆鳞:易伤系绑三重壁垒放行系
+    return {"name": name, "atk": mult, "atk_tier": t, "weak": weak,
+            "cond": [(str(weak), fmt(-w))],
+            "text": f"敌攻×{mult}·{COND_KIND_CN[weak]}易伤{int(w * 100)}%"}
+
 
 def _curse_pool(t: int, rng) -> list[dict]:
     """t = 档位索引 0/1/2。每项:name + 效果键(cond/hp/atk/tp/fever/time/text)。"""
@@ -1709,17 +1893,14 @@ def _curse_pool(t: int, rng) -> list[dict]:
          "text": f"FEVER需求×{(1.5, 2, 3)[t]}"},
         {"name": "时之枷锁", "time": (21600, 14400, 10800)[t],
          "text": f"限时{(6, 4, 3)[t]}分"},
-        {"name": "嗜血狂潮", "atk": (1.4, 1.7, 2.0)[t], "hp": 0.85,
-         "text": f"敌攻×{(1.4, 1.7, 2.0)[t]}·血-15%"},
+        atk_curse_entry("嗜血狂潮", t),
         {"name": "深渊壁垒", "cond": [(str(k), fmt((0.2, 0.25, 0.3)[t])) for k in range(4)],
          "text": f"全系耐性{int((0.2, 0.25, 0.3)[t] * 100)}%"},
         {"name": "亡者不屈", "cond": [("4", ""), ("0", fmt((0.3, 0.4, 0.5)[t]))],
          "text": f"减益免疫·能耐{int((0.3, 0.4, 0.5)[t] * 100)}%"},
         {"name": "血肉高墙", "hp": (1.6, 2.0, 2.5)[t],
          "text": f"敌血×{(1.6, 2.0, 2.5)[t]}"},
-        {"name": "深渊逆鳞", "atk": (1.5, 1.8, 2.2)[t],
-         "cond": [(str(weak), fmt(-(0.3, 0.4, 0.5)[t]))],
-         "text": f"敌攻×{(1.5, 1.8, 2.2)[t]}·{COND_KIND_CN[weak]}易伤{int((0.3, 0.4, 0.5)[t] * 100)}%"},
+        atk_curse_entry("深渊逆鳞", t, weak),
         # 绝对壁垒:随机一系伤害极高耐性,炼狱=完全免疫(强度1.0=伤害×0),逼构筑切换
         {"name": "绝对壁垒", "cond": [(str(wall), fmt((0.7, 0.85, 1.0)[t]))],
          "text": f"{COND_KIND_CN[wall]}{'完全免疫' if t == 2 else '耐性' + str(int((0.7, 0.85, 1.0)[t] * 100)) + '%'}"},
@@ -1732,8 +1913,7 @@ def _curse_pool(t: int, rng) -> list[dict]:
                   + ('三重免疫' if t == 2 else f"三重耐性{int((0.5, 0.7, 1.0)[t] * 100)}%")
                   + f"(只剩{COND_KIND_CN[wall_open]}能打)")},
         # 玻璃深渊:攻击爆表但血量减半,速杀或被杀
-        {"name": "玻璃深渊", "atk": (2.2, 2.6, 3.0)[t], "hp": 0.5,
-         "text": f"敌攻×{(2.2, 2.6, 3.0)[t]}·血-50%"},
+        atk_curse_entry("玻璃深渊", t),
         # 深渊法阵:克隆 boss 追加官方场程序(领域/淹水/结界,详见 FIELD_MENU)。
         # 2026-07-20 真机验证通过(白虎战「连击加成领域效果发动」)。
         # ⚠「乱流机关」已除名:c36/37 只是预载清单不控板子渲染皮肤(真机 falsified),
@@ -1742,16 +1922,67 @@ def _curse_pool(t: int, rng) -> list[dict]:
     ]
 
 
+def apply_picks(out: dict, picks: list[dict], combo: str | None = None) -> dict:
+    """把一组诅咒条目合成效果包。**降档闸改了 picks 之后重算走同一条路**,
+    保证 hp/atk/conds/desc 永远与 picks 一致(不会出现"文案写×2.6、落表 1.4")。"""
+    out.update({"conds": [], "hp": 1.0, "atk": 1.0, "tp": None, "fever": None,
+                "time": None, "gimmick": False, "caster": None,
+                "picks": picks, "combo": combo})
+    names = []
+    for c in picks:
+        out["hp"] *= c.get("hp", 1.0)
+        out["atk"] *= c.get("atk", 1.0)
+        out["gimmick"] = out["gimmick"] or c.get("gimmick", False)
+        out["caster"] = out["caster"] or c.get("caster")
+        if "tp" in c:
+            out["tp"] = max(out["tp"] or 0, c["tp"])
+        if "fever" in c:
+            out["fever"] = max(out["fever"] or 0, c["fever"])
+        if "time" in c:
+            out["time"] = min(out["time"] or 10 ** 9, c["time"])
+        names.append(f"「{c['name']}」{c['text']}")
+    out["conds"] = merge_conds(picks)[:5]
+    out["desc"] = (f"【{combo}】" if combo else "") + " ".join(names)
+    return out
+
+
+def downgrade_atk_curse(curse: dict) -> str | None:
+    """把该层的攻击类诅咒降一档;已在最低档则整条摘掉。返回变更说明,无可降 → None。
+
+    分位硬闸的**唯一收敛手段**:每调用一次 atk 严格下降,最多 4 步(2→1→0→摘)
+    就回到无攻击诅咒的裸曲线,故循环必然终止。"""
+    picks = list(curse.get("picks") or [])
+    i = next((i for i, c in enumerate(picks) if c.get("name") in ATK_CURSE_TIERS), None)
+    if i is None:
+        return None
+    c = picks[i]
+    t = int(c.get("atk_tier", 0))
+    if t > 0:
+        picks[i] = atk_curse_entry(c["name"], t - 1, int(c.get("weak", 0)))
+        note = f"「{c['name']}」×{c['atk']}→×{picks[i]['atk']}"
+        combo = curse.get("combo")
+    else:
+        picks.pop(i)
+        note = f"摘除「{c['name']}」"
+        # 组合的承诺(【速攻】=敌攻爆表+限时)已经不成立,标签一并摘掉,别骗玩家
+        combo = None
+    apply_picks(curse, picks, combo)
+    return note
+
+
 def abyss_curses(r: int, n: int, rng, tier: str, caps: dict | None = None,
-                 forced: dict | None = None) -> dict:
-    """轮次诅咒包:{conds,hp,atk,tp,fever,time,gimmick,caster,desc}。tier=off 返回空包。
+                 forced: dict | None = None, no_base: bool = False) -> dict:
+    """轮次诅咒包:{conds,hp,atk,tp,fever,time,gimmick,caster,desc,picks,combo}。
 
     caps = 地形能力 {"spawn": 有SPAWNn锚点, "panel": 官方板子配对地形}——
     祭坛/板子诅咒只在能生效的地形掉落(2026-07-20 真机实证:歼灭者类 boss 擂台
     只有 FUNNEL_SPAWN 锚点,zone-zako 出生静默失败)。
+    no_base = 该层 boss 查不到基数(standard 表)→ 归一化不生效、真实伤害无上界
+    保证,**禁掉攻击类诅咒**(2026-07-30 伤害审计:第15/18/26/29/30 战都是这种)。
     """
     out = {"conds": [], "hp": 1.0, "atk": 1.0, "tp": None, "fever": None,
-           "time": None, "gimmick": False, "caster": None, "desc": ""}
+           "time": None, "gimmick": False, "caster": None, "desc": "",
+           "picks": [], "combo": None}
     has_forced = bool(forced and (forced.get("curses") or forced.get("field")))
     if tier == "off" and not has_forced:
         return out
@@ -1770,10 +2001,17 @@ def abyss_curses(r: int, n: int, rng, tier: str, caps: dict | None = None,
         count = 1 if d <= 0.45 else 2
     caps = caps or {}
     pool = _curse_pool(t, rng)
+    if no_base:
+        # 无基数层:归一化返回 1.0,裸曲线值 + 顶格攻击诅咒 = 第26战 6.58 的成因
+        pool = [c for c in pool if c["name"] not in ATK_CURSE_TIERS]
     # 显式指定(工坊拖拽):按名取该档位数值,数量=指定数,跳过随机
     if forced and (forced.get("curses") or forced.get("field")):
         picks = [c for nm in (forced.get("curses") or [])
                  for c in pool if c["name"] == nm and not c.get("caster")]
+        for nm in (forced.get("curses") or []):
+            if no_base and nm in ATK_CURSE_TIERS:
+                print(f"[WARN] 工坊钉选第{r}战:剔除「{nm}」(该层 boss 无基数,"
+                      "归一化不生效,攻击类诅咒会失控)")
         if forced.get("field"):
             fm_forced = next((m for m in field_menu_all() if m[1] == forced["field"]), None)
             if fm_forced and caps.get("boss"):
@@ -1787,21 +2025,7 @@ def abyss_curses(r: int, n: int, rng, tier: str, caps: dict | None = None,
                 print(f"[WARN] 工坊钉选第{r}战:剔除「{c['name']}」({why})")
                 continue
             kept.append(c)
-        picks = kept
-        for c in picks:
-            out["hp"] *= c.get("hp", 1.0)
-            out["atk"] *= c.get("atk", 1.0)
-            out["gimmick"] = out["gimmick"] or c.get("gimmick", False)
-            out["caster"] = out["caster"] or c.get("caster")
-            if "tp" in c:
-                out["tp"] = max(out["tp"] or 0, c["tp"])
-            if "fever" in c:
-                out["fever"] = max(out["fever"] or 0, c["fever"])
-            if "time" in c:
-                out["time"] = min(out["time"] or 10 ** 9, c["time"])
-        out["conds"] = merge_conds(picks)[:5]
-        out["desc"] = " ".join(f"「{c['name']}」{c['text']}" for c in picks)
-        return out
+        return apply_picks(out, kept)
     # 攻击类诅咒(嗜血/逆鳞/玻璃)每轮至多 1 个——双叠=一击秒杀墙,是恶心不是大胆
     picks, atk_used = [], False
     combo_name = None
@@ -1855,22 +2079,7 @@ def abyss_curses(r: int, n: int, rng, tier: str, caps: dict | None = None,
             continue                              # 全免疫死锁 / 条件槽超 5
         picks.append(c)
         atk_used = atk_used or is_atk
-    names = []
-    for c in picks:
-        out["hp"] *= c.get("hp", 1.0)
-        out["atk"] *= c.get("atk", 1.0)
-        out["gimmick"] = out["gimmick"] or c.get("gimmick", False)
-        out["caster"] = out["caster"] or c.get("caster")
-        if "tp" in c:
-            out["tp"] = max(out["tp"] or 0, c["tp"])
-        if "fever" in c:
-            out["fever"] = max(out["fever"] or 0, c["fever"])
-        if "time" in c:
-            out["time"] = min(out["time"] or 10 ** 9, c["time"])
-        names.append(f"「{c['name']}」{c['text']}")
-    out["conds"] = merge_conds(picks)[:5]
-    out["desc"] = (f"【{combo_name}】" if combo_name else "") + " ".join(names)
-    return out
+    return apply_picks(out, picks, combo_name)
 
 
 def _leaf_rows(node):
@@ -2124,9 +2333,13 @@ def main() -> int:
     ap.add_argument("--hp-growth", type=float, default=None)
     ap.add_argument("--atk-base", type=float, default=None)
     ap.add_argument("--atk-growth", type=float, default=None)
-    ap.add_argument("--enemy-level", default="max",
-                    help="敌等级:数字(如 90)或 max=每层取该 boss 数据里的最高档"
-                         "(默认 max,即全 boss 最强形态)")
+    ap.add_argument("--enemy-level", default="ramp",
+                    help="敌等级:ramp=按深度爬坡(**默认**,前1/3 lv80→中段 lv90→"
+                         "尾段 lv100,见 LEVEL_RAMP)/ 数字(如 90)/ "
+                         "max=每层取该 boss 数据里的最高档。"
+                         "⚠ 官方 96%% 内容停在 lv80 以下,lv100 是曲线悬崖顶"
+                         "(atk_single lv99→100 单档 ×1.30、lv80→100 ×1.72),"
+                         "全塔平坦 lv100 = 每层都站在悬崖上")
     ap.add_argument("--curse", choices=("off",) + CURSE_TIERS, default=None,
                     help="深渊诅咒档位(默认随 --difficulty;无预设时 abyss;off=关闭)")
     ap.add_argument("--mix", action="store_true",
@@ -2159,9 +2372,20 @@ def main() -> int:
         print(f"[OK] 全部 {len(reports)} 关解析链完整")
         return 0
 
-    # 敌等级:max = 逐层取该 boss 支持的最高档(全 boss 最强形态)
-    want_max = str(args.enemy_level).strip().lower() in ("max", "最强", "-1")
-    args.enemy_level = 100 if want_max else int(args.enemy_level)
+    # 敌等级:max = 逐层取该 boss 支持的最高档;ramp = 按深度爬坡(默认)
+    _lvarg = str(args.enemy_level).strip().lower()
+    want_max = _lvarg in ("max", "最强", "-1")
+    want_ramp = _lvarg in ("ramp", "爬坡")
+    # 素材池门禁仍按最高档试算(resolve_level 找不到可行档才判悬空),爬坡是**逐层**的
+    args.enemy_level = 100 if (want_max or want_ramp) else int(args.enemy_level)
+
+    def want_level(r: int) -> int:
+        """该层的目标敌等级。resolve_level 再按 boss 实际支持的档位就近落。"""
+        if not want_ramp:
+            return args.enemy_level
+        d = r / max(1, args.rounds)
+        return LEVEL_RAMP[0] if d <= 1 / 3 else (LEVEL_RAMP[1] if d <= 2 / 3
+                                                 else LEVEL_RAMP[2])
 
     rng = random.Random(args.seed)
 
@@ -2863,8 +3087,11 @@ def main() -> int:
         else:
             elem, tag = rng.randrange(6), "(随机)"
         row[69] = str(elem)
-        row[95] = str(resolve_level(pick["bosses"], args.enemy_level, sb_t, gv_t, gb_t,
-                                    prefer_max=want_max) or args.enemy_level)
+        # 楼层等级在循环里按爬坡档已经算好(pick["level"]);无尽档等走老路
+        row[95] = str(pick.get("level")
+                      or resolve_level(pick["bosses"], args.enemy_level, sb_t, gv_t,
+                                       gb_t, prefer_max=want_max)
+                      or args.enemy_level)
         row[98] = pick.get("play_field") or pick["field"]   # 乱流机关=克隆场
         if pick.get("bgm"):
             row[99] = pick["bgm"]                        # 塔层带专属 BGM;来源副本保持模板
@@ -2894,6 +3121,7 @@ def main() -> int:
                 used_counts[_k] = used_counts.get(_k, 0) + 1
 
     tower_bosses: list[str] = []
+    floor_recs: list[dict] = []
     for r in range(1, args.rounds + 1):
         label = schedule.get(r)
         forced = (((plan.get("floors") or {}).get(str(r))) or {}) if not args.ignore_plan else {}
@@ -2928,10 +3156,14 @@ def main() -> int:
             row[13] = str(700099000 + r - 1)
         bh, ba = (SRC_BOOST.get(label, (1.0, 1.0)) if label
                   else tower_area_boost(pick.get("boost_field") or pick["field"]))
+        _lv = int(resolve_level(pick["bosses"], want_level(r), sb_t, gv_t,
+                                gb_t, prefer_max=want_max) or want_level(r))
+        pick["level"] = _lv
+        # 该层有没有可归一的基数?standard 表 boss 查不到 → 归一化不生效,
+        # 拿到的是裸曲线值,真实伤害无上界保证(2026-07-30 审计盲区实锤)
+        _anchor = stat_anchor(pick["bosses"], _atk_med, "atk", _lv)
         # 基础数值归一:按 boss 基数相对同曲线组中位数反向补偿(2026-07-29 用户需求)
         if args.normalize:
-            _lv = int(resolve_level(pick["bosses"], args.enemy_level, sb_t, gv_t,
-                                    gb_t, prefer_max=want_max) or 100)
             nh, na = stat_normalize(pick["bosses"], _hp_med, _atk_med,
                                     args.normalize_min, args.normalize_max, _lv,
                                     {"hp": args.normalize_hp, "atk": args.normalize_atk})
@@ -2939,13 +3171,15 @@ def main() -> int:
             pick["norm"] = (nh, na)
         caps = field_caps(pick["field"], pick["bosses"])
         st_tier, st_mult = plan_tier_for(plan, r, round_tier(r))
-        curse = abyss_curses(r, args.rounds, rng, st_tier, caps, forced)
+        curse = abyss_curses(r, args.rounds, rng, st_tier, caps, forced,
+                             no_base=_anchor is None)
         if args.test_field == r and not curse["caster"]:
             if caps["boss"]:
                 _menu = field_menu_all()
                 fm = _menu[rng.randrange(len(_menu))]
-                curse["caster"] = fm
-                curse["desc"] = (curse["desc"] + f" 「深渊法阵」{fm[0]}·{fm[2]}").strip()
+                apply_picks(curse, (curse.get("picks") or [])
+                            + [{"name": "深渊法阵", "caster": fm,
+                                "text": f"{fm[0]}·{fm[2]}"}], curse.get("combo"))
             else:
                 why = caster_blocked.get(pick["field"])
                 print(f"[WARN] 第{r}战无 general boss 载体,--test-field 落不了法阵"
@@ -2960,7 +3194,11 @@ def main() -> int:
                 factor = float(tun.get("per", {}).get(program)
                                or tun.get("global", {}).get(fcat, 1) or 1)
                 if abs(factor - 1.0) > 1e-9:
-                    curse["desc"] += f"×{factor:g}"
+                    # 缩放标注挂在法阵条目自己的 text 上,降档闸重渲 desc 时不会丢
+                    for _c in curse.get("picks") or []:
+                        if _c.get("caster") is fm_:
+                            _c["text"] += f"×{factor:g}"
+                    apply_picks(curse, curse.get("picks") or [], curse.get("combo"))
                     if args.write:
                         import wf_field_catalog as wfc
                         program = wfc.forge(program, scale=factor)
@@ -2971,33 +3209,76 @@ def main() -> int:
                 swap = (target, clone) if clone else None
             pick["play_field"] = gimmick_field(pick["field"], r,
                                                panels=curse["gimmick"], boss_swap=swap)
-        hp = fmt(hp_base * (hp_growth ** (r - 1)) * bh * curse["hp"] * st_mult)
-        # 硬上限:官方全库 atk 修正最大 6.63(孤例,第二名 1.8),超过就是一击秒杀墙。
-        # 曲线×来源补偿×诅咒(封顶 ×3.0)×工坊乘区 叠起来能冲很高,这里兜底夹住。
-        atk_raw = atk_base * (atk_growth ** (r - 1)) * ba * curse["atk"] * st_mult
-        atk = fmt(min(atk_raw, ATK_MULT_CEILING))
+        note = patch_common(row, f"{EVENT_NAME} 第{r}战", pick)
+        quest_rows[str(r)] = row
+        # ⚠ 数值列**不在这里落**:分位硬闸要看到全塔分布才能决定哪层降档,
+        # 降档又会改回 hp/诅咒词条/副标题。所以先攒 record,闸门跑完再统一写。
+        floor_recs.append({
+            "r": r, "row": row, "pick": pick, "note": note, "bh": bh, "ba": ba,
+            "curse": curse, "st_mult": st_mult, "no_base": _anchor is None,
+            "anchor": _anchor,
+            "funnel": any(fc.startswith(b) for b in pick["bosses"]
+                          for fc in funnel_levels()),
+        })
+
+    # ---- 分位硬闸 + 数值列落表(2026-07-30)----
+    curve_scale, band_log = enforce_atk_band(floor_recs, atk_base, atk_growth,
+                                             args.rounds)
+    for frec in floor_recs:
+        r, row, curse = frec["r"], frec["row"], frec["curse"]
+        hp = fmt(hp_base * (hp_growth ** (r - 1)) * frec["bh"] * curse["hp"]
+                 * frec["st_mult"])
+        atk = fmt(frec["atk"])
         row[86], row[87], row[88] = hp, hp, hp           # hp 小怪/炮台/boss(小怪房也吃曲线)
-        row[89], row[90], row[91] = atk, atk, atk        # atk
+        row[89], row[91] = atk, atk                      # atk 小怪/boss
+        # 带 funnel 的层:炮台弹幕同吃 boss 倍率,观感全算在"boss 伤害"头上 → 单独降档
+        row[90] = fmt(frec["atk"] * FUNNEL_ATK_SCALE) if frec["funnel"] else atk
         row[92] = row[93] = "1"                          # tp 小怪/炮台
         row[94] = str(curse["tp"]) if curse["tp"] else "1"   # boss 韧性(官方无尽先例×9)
-        if curse["fever"]:
-            row[97] = str(curse["fever"])                # FEVER 槽上限(模板 400)
-        if curse["time"]:
-            row[100] = str(curse["time"])                # 时限帧(模板 54000=15分)
-        rec = patch_common(row, f"{EVENT_NAME} 第{r}战", pick)
+        row[97] = str(curse["fever"]) if curse["fever"] else row[97]
+        row[100] = str(curse["time"]) if curse["time"] else row[100]
         # 诅咒词条:battle_enemy_condition_1..5(c71-80)+ 副标题(c3)
         for slot in range(5):
             kind, strength = curse["conds"][slot] if slot < len(curse["conds"]) else ("(None)", "")
             row[71 + slot * 2] = kind
             row[72 + slot * 2] = strength
         row[3] = curse["desc"] if curse["desc"] else "(None)"
-        quest_rows[str(r)] = row
+        pick = frec["pick"]
         eff = f" | {curse['desc']}" if curse["desc"] else ""
-        boost = f" 补偿hp×{bh:.2f}/atk×{ba:.2f}" if (bh, ba) != (1.0, 1.0) else ""
+        boost = (f" 补偿hp×{frec['bh']:.2f}/atk×{frec['ba']:.2f}"
+                 if (frec["bh"], frec["ba"]) != (1.0, 1.0) else "")
         if pick.get("norm") and pick["norm"] != (1.0, 1.0):
             boost += f"(含归一 ×{pick['norm'][0]:.2f}/×{pick['norm'][1]:.2f})"
         fdisp = pick["field"] + (f"→{pick['play_field']}" if pick.get("play_field") else "")
-        plan_lines.append(f"  第{r}战 [{pick['label']}] field={fdisp} hp×{hp} atk×{atk}{boost}{rec}{eff}")
+        fun = f" 炮台atk×{row[90]}" if frec["funnel"] else ""
+        plan_lines.append(f"  第{r}战 [{pick['label']}] lv{pick.get('level')} "
+                          f"field={fdisp} hp×{hp} atk×{atk}{fun}{boost}"
+                          f"{frec['note']}{eff}")
+    if band_log:
+        plan_lines.append(f"  ---- 分位硬闸动作 {len(band_log)} 次 ----")
+        plan_lines += [f"  {ln}" for ln in band_log]
+    # ---- 数值带体检(发布前一眼看穿这座塔热不热)----
+    _late = sorted(f["atk"] for f in floor_recs if f["r"] / args.rounds > BAND_FROM)
+    _early = sorted(f["atk"] for f in floor_recs if f["r"] / args.rounds <= BAND_FROM)
+    _hp = sorted(float(f["row"][88]) for f in floor_recs)
+    _tdi = [f["anchor"][0] * f["atk"] / f["anchor"][1]
+            for f in floor_recs if f["anchor"]]
+    _lv = {}
+    for f in floor_recs:
+        _lv[f["pick"].get("level")] = _lv.get(f["pick"].get("level"), 0) + 1
+    _bs = band_stats(_late)
+    plan_lines.append(
+        f"  [数值带] 中后段 col 中位 {_bs['median']:.2f}"
+        f"/P90 {_bs['p90']:.2f}/max {_bs['max']:.2f}"
+        f"(带 ≤{BAND_TARGET['median']}/≤{BAND_TARGET['p90']}/≤{BAND_TARGET['max']})"
+        f" · 前段中位 {statistics.median(_early):.2f}"
+        f" · hp 中位 {statistics.median(_hp):.2f}/max {_hp[-1]:.2f}"
+        f"(官方 rush max 100)"
+        + (f" · 真伤指数 max {max(_tdi):.2f}(闸 {TRUE_DMG_CAP})" if _tdi else "")
+        + (f" · 曲线缩放 ×{curve_scale:.3f}" if curve_scale != 1.0 else ""))
+    plan_lines.append("  [数值带] 敌等级:"
+                      + " ".join(f"lv{k}×{v}" for k, v in sorted(_lv.items(),
+                                                                 key=lambda kv: kv[0] or 0)))
 
     # 无尽档:folder 2 / round 0,修正曲线接管难度(quest 行修正=round-0 锚点)
     endless_pick = tower_pick()

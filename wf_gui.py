@@ -5326,7 +5326,7 @@ TOOLBOX_TOOLS = {
 TOOLBOX_ARG_WHITELIST = {
     "selftest": {"deep": bool, "sample": int},
     "balance_suite": {"apply": bool, "publish": bool, "export-pack": bool, "force": bool},
-    "rogue_reroll": {"rounds": int, "seed": int, "enemy-level": int, "event": str,
+    "rogue_reroll": {"rounds": int, "seed": int, "enemy-level": str, "event": str,
                      "player": int, "keep-progress": bool, "no-restart": bool, "apply": bool},
     "export_assets": {"out": str, "limit": int, "workers": int,
                       "only-bundle": bool, "no-skip": bool},
@@ -7285,10 +7285,18 @@ def rogue_build_apply(body: dict, dry_run: bool) -> dict:
         v = body.get(key)
         return str(default if v in (None, "") else v)
     args = ["--rounds", str(int(float(_num("rounds", 15)))),
-            "--hp-base", _num("hp_base", 0.6), "--hp-growth", _num("hp_growth", 1.2),
-            "--atk-base", _num("atk_base", 0.4), "--atk-growth", _num("atk_growth", 1.145),
-            "--enemy-level", (lambda v: "max" if str(v).strip().lower() in ("", "max", "最强")
-                              else str(int(float(v))))(body.get("enemy_level", "max"))]
+            "--enemy-level", (lambda v: str(v).strip().lower()
+                              if str(v).strip().lower() in ("", "max", "最强", "ramp", "爬坡")
+                              else str(int(float(v))))(body.get("enemy_level", "ramp")
+                                                       or "ramp")]
+    # ⚠ 曲线四参**只在前端显式填了才透传**。以前无条件带上写死的 0.6/1.2/0.4/1.145,
+    # 而前端根本不发这四个字段 → 每次都用兜底值,把 --difficulty 的 DIFF_PRESETS
+    # 端点整个盖掉:2026-07-29 的「atk 终点 18.0→2.5」押回从 GUI 这条路**从未生效**
+    # (30 轮末层仍是 0.4×1.145^29 ≈ 17.6)。缺省一律交给难度预设。
+    for _key, _flag in (("hp_base", "--hp-base"), ("hp_growth", "--hp-growth"),
+                        ("atk_base", "--atk-base"), ("atk_growth", "--atk-growth")):
+        if body.get(_key) not in (None, ""):
+            args += [_flag, str(float(body[_key]))]
     if str(body.get("curse", "")).strip() in ("off", "standard", "abyss", "hell"):
         args += ["--curse", str(body["curse"]).strip()]
     if str(body.get("test_field", "")).strip():
