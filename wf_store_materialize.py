@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Materialize the CN CDN archive stack into a fresh three-root store tree."""
+"""Materialize the CN CDN archive stack into a fresh three-root store tree.
+
+Exit codes: 0 = ok, 2 = plan/write error (MaterializeError), 3 = chain break --
+the visible graph holds edges above the materialized tail whose start version
+cannot be reached from the official base, so the store silently stops at an old
+tail (2026-07-17 rollback incident, docs/self-host-modes.md "前提 0"). Only the
+default auto-tail mode fails; --tail / --official-only / --allow-partial-chain
+state an intent, so they downgrade the same finding to a warning.
+"""
 from __future__ import annotations
 
 import argparse
@@ -30,6 +38,8 @@ ROOT_DIRECTORIES = {
     "android": "android_upload",
 }
 VERSION_RE = re.compile(r"^\d+\.\d+\.\d+$")
+# JSON 里最多列几条够不到的边(全量可能上百条,样例足够定位)
+SAMPLE_LIMIT = 5
 
 
 class MaterializeError(RuntimeError):
@@ -47,11 +57,26 @@ class PlannedEntry:
 
 
 @dataclass(frozen=True, slots=True)
+class ChainHealth:
+    """链体检:可见图里够不到的边 + 链上可见的最高版本 + 建图告警。"""
+
+    max_visible: str = ""
+    unreachable: tuple[str, ...] = ()
+    issues: tuple[str, ...] = ()
+
+    def gap(self, tail: str) -> bool:
+        if not self.max_visible or not tail:
+            return False
+        return wf_chain_squash.vkey(self.max_visible) > wf_chain_squash.vkey(tail)
+
+
+@dataclass(frozen=True, slots=True)
 class MaterializePlan:
     tail: str
     entries: dict[tuple[str, str], PlannedEntry]
     rejected: int
     edge_count: int
+    health: ChainHealth = ChainHealth()
 
     def summary(self, *, ok: bool = True) -> dict[str, object]:
         per_root = {
@@ -70,6 +95,10 @@ class MaterializePlan:
             "bytes": sum(entry.size for entry in self.entries.values()),
             "rejected": self.rejected,
             "per_root": per_root,
+            "unreachable_edges": len(self.health.unreachable),
+            "unreachable_samples": list(self.health.unreachable[:SAMPLE_LIMIT]),
+            "max_visible_version": self.health.max_visible,
+            "chain_issues": list(self.health.issues),
         }
 
 
@@ -142,6 +171,63 @@ def _targeted_path(
     return best[target]
 
 
+def _reachable(graph: wf_chain_squash.VisibleGraph, start: str) -> set[str]:
+    outgoing = graph.outgoing()
+    seen = {start}
+    queue: deque[str] = deque([start])
+    while queue:
+        for _frm, to in outgoing.get(queue.popleft(), ()):
+            if to not in seen:
+                seen.add(to)
+                queue.append(to)
+    return seen
+
+
+def _edge_label(
+    graph: wf_chain_squash.VisibleGraph, edge: tuple[str, str]
+) -> str:
+    archives = sorted(archive.relative for archive in graph.edges.get(edge, ()))
+    if not archives:
+        return f"{edge[0]}->{edge[1]}"
+    extra = f" (+{len(archives) - 1})" if len(archives) > 1 else ""
+    return f"{edge[0]}->{edge[1]} {archives[0]}{extra}"
+
+
+def _chain_health(
+    graph: wf_chain_squash.VisibleGraph, tail: str, *, official_only: bool = False
+) -> ChainHealth:
+    """够不到的边 = 起点从 FULL_BASE 走不到、且终点高于 tail 的边。
+
+    2026-07-17 野外事故就长这样:官方基座链尾停在 1.4.54,mod 边从 1.4.90 起,
+    工具沿图只能走到 1.4.54 却照样 ok:true —— 拿这棵落后的 store 发布会把客户端
+    滚回几十个版本(docs/self-host-modes.md「前提 0」)。
+
+    终点 <= tail 的不可达边不是缺陷:wf_chain_squash 的硬链接桥就是成批的
+    "中间版本 -> 合集"别名边(实测本仓 7 条),它们的起点本来就不在基座链上,
+    内容也早已被 tail 覆盖 —— 按起点一刀切会在健康的链上误报。
+    """
+    versions = graph.endpoints() | {wf_chain_squash.FULL_BASE, tail}
+    max_visible = max(versions, key=wf_chain_squash.vkey)
+    if official_only:
+        # --official-only 停在官方段是模式契约,不是链断。
+        return ChainHealth(max_visible, (), tuple(graph.issues))
+    reachable = _reachable(graph, wf_chain_squash.FULL_BASE)
+    stranded = sorted(
+        (
+            edge
+            for edge in graph.edges
+            if edge[0] not in reachable
+            and wf_chain_squash.vkey(edge[1]) > wf_chain_squash.vkey(tail)
+        ),
+        key=lambda edge: (wf_chain_squash.vkey(edge[0]), wf_chain_squash.vkey(edge[1])),
+    )
+    return ChainHealth(
+        max_visible,
+        tuple(_edge_label(graph, edge) for edge in stranded),
+        tuple(graph.issues),
+    )
+
+
 def _official_graph(
     graph: wf_chain_squash.VisibleGraph,
 ) -> wf_chain_squash.VisibleGraph:
@@ -158,9 +244,11 @@ def _diff_plan(
     repo_root: Path,
     target_tail: str | None,
     official_only: bool,
-) -> tuple[str, dict[tuple[str, str], PlannedEntry], int, int]:
+) -> tuple[str, dict[tuple[str, str], PlannedEntry], int, int, ChainHealth]:
     graph = wf_chain_squash.build_visible_graph(cdn_root, repo_root)
     if official_only:
+        # --official-only 的契约就是只要官方段:体检也只看官方图,mod 边够不到
+        # 是这个模式的预期而非缺陷。
         graph = _official_graph(graph)
         tail = target_tail or wf_chain_squash.DEFAULT_BASE
         if VERSION_RE.fullmatch(tail) is None:
@@ -182,6 +270,7 @@ def _diff_plan(
     else:
         tail = target_tail
         path_edges = _targeted_path(graph, wf_chain_squash.FULL_BASE, tail)
+    health = _chain_health(graph, tail, official_only=official_only)
     rejected = 0
     for edge in path_edges:
         for visible in sorted(graph.edges[edge], key=wf_chain_squash.VisibleArchive.order_key):
@@ -222,7 +311,7 @@ def _diff_plan(
             crc=final.crc,
             size=final.size,
         )
-    return tail, entries, rejected, len(path_edges)
+    return tail, entries, rejected, len(path_edges), health
 
 
 def _build_plan(
@@ -232,11 +321,13 @@ def _build_plan(
     official_only: bool,
 ) -> MaterializePlan:
     entries, rejected = _scan_full_archives(cdn_root)
-    tail, diff_entries, diff_rejected, edge_count = _diff_plan(
+    tail, diff_entries, diff_rejected, edge_count, health = _diff_plan(
         cdn_root, repo_root, target_tail, official_only
     )
     entries.update(diff_entries)
-    return MaterializePlan(tail, entries, rejected + diff_rejected, edge_count)
+    return MaterializePlan(
+        tail, entries, rejected + diff_rejected, edge_count, health
+    )
 
 
 def _write_plan(plan: MaterializePlan, destination: Path, workers: int) -> None:
@@ -347,7 +438,29 @@ def _verify_plan(plan: MaterializePlan, destination: Path, workers: int) -> None
                 )
 
 
-def _write_profile(profiles_path: Path, store_root: Path) -> Path | None:
+def _new_profile_paths(server_dir: Path | None) -> dict[str, str]:
+    """新建档案的路径键:只写解析得到且真实存在的目录,拿不到就不写这个键。"""
+    if server_dir is None:
+        return {}
+    try:
+        resolved = server_dir.resolve()
+    except OSError:
+        return {}
+    if not resolved.is_dir():
+        return {}
+    paths = {"server_dir": str(resolved)}
+    cdndata = resolved / "assets" / "cdndata"
+    if cdndata.is_dir():
+        paths["cdndata"] = str(cdndata)
+    return paths
+
+
+def _write_profile(
+    profiles_path: Path,
+    store_root: Path,
+    res_version: str,
+    server_dir: Path | None = None,
+) -> Path | None:
     profiles_path = profiles_path.absolute()
     original: bytes | None
     if profiles_path.exists():
@@ -373,9 +486,12 @@ def _write_profile(profiles_path: Path, store_root: Path) -> Path | None:
         payload["active"] = active
     current = profiles.get(active)
     if current is None:
+        # 新建档案:res_version 必须是真正物化到的链尾(写死 DEFAULT_BASE 会让
+        # 后续发布拿 1.4.54 当基线),再补上 GUI ①层与 CDN 解析要用的两把路径钥匙。
         current = {
             "label": "国服(雷霆)" if active == "cn" else active,
-            "res_version": wf_chain_squash.DEFAULT_BASE,
+            "res_version": res_version or wf_chain_squash.DEFAULT_BASE,
+            **_new_profile_paths(server_dir),
         }
     elif not isinstance(current, dict):
         raise MaterializeError(f"profile {active!r} must be a JSON object")
@@ -428,7 +544,58 @@ def _empty_summary(tail: str = "") -> dict[str, object]:
         "per_root": {
             root: {"files": 0, "bytes": 0} for root in ROOT_NAMES
         },
+        "unreachable_edges": 0,
+        "unreachable_samples": [],
+        "max_visible_version": "",
+        "chain_issues": [],
     }
+
+
+def _report_chain_health(
+    plan: MaterializePlan, *, official_only: bool, allow_partial: bool,
+    explicit_tail: bool,
+) -> bool:
+    """把建图告警与「够不到的边」打到 stderr;返回 True 表示必须失败退出。
+
+    只有默认模式(自动取可达最高版本)才致命 —— 那正是链断了也无声无息的路径;
+    --tail 是用户指名道姓要的版本,--official-only 只要官方段,两者降级为告警。
+    """
+    health = plan.health
+    for issue in health.issues:
+        print(f"[WARN] chain issue: {issue}", file=sys.stderr)
+    if official_only or not health.unreachable:
+        if health.gap(plan.tail) and not official_only:
+            print(
+                f"[WARN] chain stops at {plan.tail} while the visible chain shows "
+                f"{health.max_visible}; check --tail before publishing this store.",
+                file=sys.stderr,
+            )
+        return False
+    fatal = not allow_partial and not explicit_tail
+    level = "ERR" if fatal else "WARN"
+    print(
+        f"[{level}] chain break: materialized tail={plan.tail} but the visible chain "
+        f"reaches {health.max_visible} -- "
+        f"{len(health.unreachable)} edge(s) cannot be reached from "
+        f"{wf_chain_squash.FULL_BASE} and were dropped:",
+        file=sys.stderr,
+    )
+    for label in health.unreachable[:SAMPLE_LIMIT]:
+        print(f"[{level}]   unreachable edge: {label}", file=sys.stderr)
+    if len(health.unreachable) > SAMPLE_LIMIT:
+        print(
+            f"[{level}]   ... and {len(health.unreachable) - SAMPLE_LIMIT} more",
+            file=sys.stderr,
+        )
+    print(
+        f"[{level}] this store would be a {plan.tail} baseline: publishing it over a "
+        f"{health.max_visible} client rolls the client back "
+        "(2026-07-17 incident, docs/self-host-modes.md 前提 0). "
+        "Repair the base chain (bridge the gap) or pass --allow-partial-chain "
+        "to accept a partial store.",
+        file=sys.stderr,
+    )
+    return fatal
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -439,6 +606,11 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--dest", type=Path, required=True, help="fresh output directory")
     parser.add_argument("--tail", help="target version (default: highest reachable)")
     parser.add_argument("--official-only", action="store_true")
+    parser.add_argument(
+        "--allow-partial-chain",
+        action="store_true",
+        help="downgrade the unreachable-edge failure to a warning (partial store)",
+    )
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--dry-run", action="store_true", help="plan only (default)")
     mode.add_argument("--apply", action="store_true", help="write the planned store")
@@ -470,6 +642,17 @@ def main(argv: list[str] | None = None) -> int:
             f"[plan] tail={plan.tail} edges={plan.edge_count} files={summary['files']} "
             f"bytes={summary['bytes']} rejected={plan.rejected}"
         )
+        fatal = _report_chain_health(
+            plan,
+            official_only=args.official_only,
+            allow_partial=args.allow_partial_chain,
+            explicit_tail=args.tail is not None,
+        )
+        if fatal:
+            # 链断了就地停手:此时还没写过任何文件,绝不产出会滚回客户端的 store。
+            print(json.dumps(plan.summary(ok=False), ensure_ascii=False,
+                             separators=(",", ":")))
+            return 3
         if args.apply:
             _write_plan(plan, destination, args.workers)
             if args.verify:
@@ -480,7 +663,10 @@ def main(argv: list[str] | None = None) -> int:
                     args.profiles if args.profiles is not None else wf_mod_tool.profiles_file()
                 )
                 backup = _write_profile(
-                    profiles_path, destination / "production" / ROOT_DIRECTORIES["common"]
+                    profiles_path,
+                    destination / "production" / ROOT_DIRECTORIES["common"],
+                    plan.tail,
+                    repo_root,
                 )
                 suffix = f" backup={backup}" if backup is not None else ""
                 print(f"[profile] updated={profiles_path}{suffix}")

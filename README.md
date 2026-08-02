@@ -16,47 +16,72 @@
 ## 环境
 
 - Python ≥ 3.10(仅标准库,无第三方依赖)
-- 一份合法的手机端游戏数据包(`WorldFlipper/dummy/download/production/upload`)
-- startpoint-cn 服务端(用于把改动下发给客户端)
+- 已部署的 startpoint-cn 服务端 **+ 它那份基础 CDN(`.cdn/cn`)**:既用来物化数据,也用来下发改动
+- 或一份合法的手机端游戏数据包(`WorldFlipper/dummy/download/production/upload`)
 - 可选:MuMu 12 模拟器 + adb(用于直接同步 / 重启游戏)
 
 ## 快速开始
 
-首选:已经部署 startpoint-cn,且仓内有 `.cdn/cn`。
+> 本仓是**平铺布局**:`wf_*.py` 都在仓根,命令直接写 `python wf_xxx.py`(不带 `mod-tools/` 前缀)。
+
+### 前提(先读)
+
+**CDN 直解不是凭空生成数据包**,而是**从你自己那份基础 CDN 本地重放**出来的。它替你省掉的是
+"另外再自备一份手机端数据包 `production/upload`"(约 10 GB),**不是**省掉基础 CDN。开跑前确认:
+
+- **基础 CDN 仍须自备**:按服务端仓库 `deploy.ps1` 的说明取得并放到服务端仓内 `.cdn/cn`
+  (版权原因本仓不分发任何游戏资产)。
+- **三个 full 目录一个都不能少**:`.cdn/cn/archive-common-full`、`.cdn/cn/archive-medium-full`、
+  `.cdn/cn/archive-android-full`(官方约 11 GB dump 自带)。缺任一个,工具直接报
+  `full archive directory is missing: <目录>` 并退出,**不写盘**。
+- **官方链尾要 ≥ mod 链起点(本链为 `1.4.90`)**:够不到时重放出来的是**不含任何 mod 内容的
+  纯官方 store**。这种情况工具会告警并以非零码退出;确认只要官方段,再加
+  `--allow-partial-chain` 显式放行。
+- **本仓与服务端仓是分开的两个目录**,`.cdn/cn` 不在默认位置时用 `--cdn <服务端仓>/.cdn/cn`
+  指定,同时用 `--server-dir <服务端仓>` 告诉工具服务端在哪(也可用环境变量
+  `WF_CDN_DIR` / `WF_SERVER_DIR`)。
+- **跑完 `--write-profile` 后**:若 GUI 角色列表为空,检查 `profiles.json` 的 `cdndata` 是否
+  指向服务端的 `assets/cdndata`(平铺布局下可能还需自行补 `cdndata` / `server_dir`)。
+
+### 首选:从服务端 CDN 直解
+
+已经部署 startpoint-cn、且服务端仓内有 `.cdn/cn` 时走这条。
 
 ```bash
 # 1) 先做只读规划(默认 dry-run,不会创建或写入目标目录)
-python mod-tools/wf_store_materialize.py --dest ../wf-store-fresh
+python wf_store_materialize.py --dest ../wf-store-fresh
 
 # 2) 确认规划后物化、校验,并写入当前版本档案
-python mod-tools/wf_store_materialize.py --dest ../wf-store-fresh --apply --verify --write-profile
+python wf_store_materialize.py --dest ../wf-store-fresh --apply --verify --write-profile
 
 # 3) 首跑自检
-python mod-tools/wf_selftest.py
+python wf_selftest.py
 
 # 4) 启动网页修改器
-python mod-tools/wf_gui.py          # 浏览器打开 http://127.0.0.1:8765
+python wf_gui.py          # 浏览器打开 http://127.0.0.1:8765
 ```
 
 `--dest` 必须不存在或是空目录。物化结果写到
 `<dest>/production/{upload,medium_upload,android_upload}`;不加 `--apply` 时始终只规划、不写盘。
 `--official-only` 可只重放官方归档链,终点固定为 `1.4.54`。
 
-备用:自备合法数据包并手工配置版本档案。
+### 备用:自备手机端数据包
+
+自备合法数据包并手工配置版本档案。
 
 ```bash
-cp mod-tools/profiles.example.json mod-tools/profiles.json
+cp profiles.example.json profiles.json
 # 编辑 profiles.json,把 store 指向你的 production/upload 目录
 
-python mod-tools/wf_selftest.py
-python mod-tools/wf_gui.py
+python wf_selftest.py
+python wf_gui.py
 ```
 
-开始修改后:
+### 开始修改后
 
 ```bash
 # 把改动打成 CDN 增量包(客户端增量更新时拉取)
-python mod-tools/wf_publish.py --tables ability,character_status
+python wf_publish.py --tables ability,character_status
 
 # 重启服务端 + 重启游戏 → 改动生效
 ```
@@ -91,7 +116,7 @@ mod-tools/
 ├── requirements.txt       pip 依赖(仅 Pillow;图像/金丝雀类工具用)
 ├── docs/                  分析报告·设计方案·逆向结论(过程性文档,不参与运行)
 ├── schemas/               角色包 manifest 的 JSON Schema 契约
-├── tests/                 unittest 自测(742 项:核心读写/DSL/发布/角色包/资产治理/dev Catalog/roguelike 门禁/CDN 物化)
+├── tests/                 unittest 自测(755 项:核心读写/DSL/发布/角色包/资产治理/dev Catalog/roguelike 门禁/CDN 物化)
 ├── examples/              recipe 配方示例
 ├── work/                  运行期状态(待发布清单/改动日志/角色快照),自动生成
 └── server-patch/          startpoint-cn 服务端 mod-admin 补丁(更新服务端后套回)
