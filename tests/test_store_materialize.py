@@ -678,7 +678,7 @@ class ProfileFieldsTest(MaterializeCase):
         self.assertNotIn("cdndata", entry)
         self.assertEqual(str(self.fx.server.resolve()), entry["server_dir"])
 
-    def test_existing_profile_keeps_its_own_paths_and_version(self):
+    def test_existing_profile_keeps_own_values_but_gains_missing_keys(self):
         self.fx.full("common", {COMMON_A: b"base"})
         (self.fx.server / "assets" / "cdndata").mkdir(parents=True)
         profiles = self.fx.root / "profiles.json"
@@ -706,12 +706,64 @@ class ProfileFieldsTest(MaterializeCase):
 
         self.assertEqual(0, code)
         entry = json.loads(profiles.read_text(encoding="utf-8"))["profiles"]["cn"]
+        # 用户已填的一律不动
         self.assertEqual("1.4.125", entry["res_version"])
         self.assertEqual("my/own/cdndata", entry["cdndata"])
-        self.assertNotIn("server_dir", entry)
+        # 缺失的键补上(缺 server_dir 会让下次运行重新丢失 CDN 解析)
+        self.assertEqual(str(self.fx.server.resolve()), entry["server_dir"])
         self.assertEqual(
             str((self.fx.dest / "production" / "upload").resolve()), entry["store"]
         )
+
+    def test_existing_profile_without_cdndata_gets_it_filled(self):
+        """缺 cdndata 的症状是 GUI 角色列表静默为空,补上它比留着更安全。"""
+        self.fx.full("common", {COMMON_A: b"base"})
+        cdndata = self.fx.server / "assets" / "cdndata"
+        cdndata.mkdir(parents=True)
+        profiles = self.fx.root / "profiles.json"
+        profiles.write_text(
+            json.dumps(
+                {
+                    "active": "cn",
+                    "profiles": {"cn": {"label": "CN", "store": "old/store"}},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+
+        code, _summary, _stdout, stderr = self.run_cli(
+            "--apply", "--write-profile", "--profiles", str(profiles)
+        )
+
+        self.assertEqual(0, code)
+        entry = json.loads(profiles.read_text(encoding="utf-8"))["profiles"]["cn"]
+        self.assertEqual(str(cdndata.resolve()), entry["cdndata"])
+        self.assertEqual(str(self.fx.server.resolve()), entry["server_dir"])
+        self.assertIn("filled missing cdndata", stderr)
+
+    def test_existing_profile_keeps_empty_string_untouched_when_dir_absent(self):
+        """推导不出真实目录时宁可不写,绝不写空串或猜的路径。"""
+        self.fx.full("common", {COMMON_A: b"base"})
+        profiles = self.fx.root / "profiles.json"
+        profiles.write_text(
+            json.dumps(
+                {
+                    "active": "cn",
+                    "profiles": {"cn": {"label": "CN", "store": "old/store"}},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+
+        code, _summary, _stdout, _stderr = self.run_cli(
+            "--apply", "--write-profile", "--profiles", str(profiles)
+        )
+
+        self.assertEqual(0, code)
+        entry = json.loads(profiles.read_text(encoding="utf-8"))["profiles"]["cn"]
+        self.assertNotIn("cdndata", entry)
 
     def test_write_profile_accepts_a_missing_server_dir_without_writing_keys(self):
         module = self.module()

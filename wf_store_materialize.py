@@ -497,6 +497,13 @@ def _write_profile(
         raise MaterializeError(f"profile {active!r} must be a JSON object")
     else:
         current = dict(current)
+        # 已有档案:只补**缺失**的键,绝不覆盖用户已填的值。缺 cdndata 的症状是
+        # GUI 角色列表静默为空(界面不报错),新手很难查到是档案少了一个键;
+        # _new_profile_paths 只返回磁盘上真实存在的目录,所以补不上时是不写,而不是写错。
+        for key, value in _new_profile_paths(server_dir).items():
+            if not current.get(key):
+                current[key] = value
+                print(f"[profile] filled missing {key}: {value}", file=sys.stderr)
     current["store"] = str(store_root.resolve())
     profiles[active] = current
     payload["profiles"] = profiles
@@ -591,8 +598,14 @@ def _report_chain_health(
         f"[{level}] this store would be a {plan.tail} baseline: publishing it over a "
         f"{health.max_visible} client rolls the client back "
         "(2026-07-17 incident, docs/self-host-modes.md 前提 0). "
-        "Repair the base chain (bridge the gap) or pass --allow-partial-chain "
-        "to accept a partial store.",
+        "Repair the base chain (bridge the gap) first.",
+        file=sys.stderr,
+    )
+    print(
+        f"[{level}] only need the official segment? use --official-only "
+        "(it stops at the official tail by contract and never trips this gate; "
+        "the GUI toolbox card exposes it). "
+        "--allow-partial-chain accepts a knowingly partial store instead.",
         file=sys.stderr,
     )
     return fatal
@@ -607,6 +620,10 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--tail", help="target version (default: highest reachable)")
     parser.add_argument("--official-only", action="store_true")
     parser.add_argument(
+        # 刻意**不**进 GUI 工具箱卡片:这是绕过安全门禁的开关,而门禁存在的理由就是
+        # 2026-07-17 那次「拿落后 store 发布把客户端滚回 71 版」的事故。GUI 用户真正
+        # 需要的场景(只要官方段)已由 --official-only 覆盖,那个是暴露在卡片上的。
+        # 命令行的那点摩擦在这里是特性,不是缺陷 —— 别"顺手"给它加复选框。
         "--allow-partial-chain",
         action="store_true",
         help="downgrade the unreachable-edge failure to a warning (partial store)",
