@@ -379,6 +379,82 @@ def resolve_profile(profile_id: str | None = None) -> VersionProfile | None:
 
 
 # ---------------------------------------------------------------------------
+# 目标 store 解析链(唯一权威;wf_gui / wf_selftest / wf_quest_lib / wf_publish 同用)
+#   1. WF_TARGET_STORE env(显式最高优先;设了但目录不存在 = 配置错误,硬报错)
+#   2. profiles.json 激活档案的 store(WF_PROFILE env 可指定档案 id)
+#   3. find_world_upload 自动探测(给定 root → 仓库根 → 当前工作目录)
+# 全部落空返回 None,由调用方决定兜底或报错(报错文案请带上 TARGET_STORE_HINT)。
+# ---------------------------------------------------------------------------
+
+def _tool_dir_prefix() -> str:
+    """命令/路径前缀:嵌套在服务端仓里是 mod-tools/,平铺的独立工具仓是空。
+
+    提示文案要能被直接复制粘贴,写死 mod-tools/ 会让平铺仓的用户照抄后 file not found。
+    """
+    return "mod-tools/" if Path(__file__).resolve().parent.name == "mod-tools" else ""
+
+
+TARGET_STORE_HINT = (
+    "请设置环境变量 WF_TARGET_STORE 指向数据包目录"
+    "(…/WorldFlipper/dummy/download/production/upload),"
+    f"或在 {_tool_dir_prefix()}profiles.json 里配置激活档案的 store"
+    f"(可用 python {_tool_dir_prefix()}wf_store_materialize.py "
+    "--dest <一个空目录> --apply --write-profile 生成)。"
+)
+
+_UNSET_PROFILE = object()
+
+
+def env_target_store() -> Path | None:
+    """WF_TARGET_STORE 的解析:未设返回 None;设了但目录不存在 → ValueError(配置错误不兜底)。"""
+    env = os.environ.get("WF_TARGET_STORE")
+    if not env:
+        return None
+    store = Path(env)
+    if store.exists():
+        return store
+    raise ValueError(f"WF_TARGET_STORE 不存在: {env}\n{TARGET_STORE_HINT}")
+
+
+def resolve_active_store(
+    root: Path | None = None,
+    *,
+    profile: Any = _UNSET_PROFILE,
+    profile_id: str | None = None,
+) -> Path | None:
+    """按标准链解析当前生效的目标 store;找不到返回 None。
+
+    profile 可由调用方预先 resolve_profile() 后传入(None 表示"确无档案"),
+    避免重复读盘,也避免打乱调用方对 resolve_profile 的调用次数假设。
+
+    注意与本文件末尾 CLI 用的 resolve_target_store(value, profile) 区分:
+    那个是 `--target-store` 命令行参数的解析,不读环境变量。
+    """
+    env = env_target_store()
+    if env is not None:
+        return env
+    if profile is _UNSET_PROFILE:
+        profile = resolve_profile(profile_id or os.environ.get("WF_PROFILE"))
+    if profile is not None and getattr(profile, "store", None):
+        return Path(profile.store)
+    seen: list[Path] = []
+    for base in (root, project_root(), Path.cwd()):
+        if base is None:
+            continue
+        base = Path(base)
+        if base in seen:
+            continue
+        seen.append(base)
+        try:
+            found = find_world_upload(base)
+        except OSError:
+            found = None
+        if found:
+            return found
+    return None
+
+
+# ---------------------------------------------------------------------------
 # CDN 根解析链(T2 两仓独立):CDN 位置以服务端为准,工具只读发现、永不搬移。
 #   1. WF_CDN_DIR env(显式,最高优先)   2. profile.cdn_dir(持久化显式)
 #   3. 自动识别:WF_SERVER_DIR env / profile.server_dir → 复读服务端自身配置

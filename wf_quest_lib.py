@@ -45,14 +45,44 @@ SALT = "K6R9T9Hz22OpeIGEWB0ui6c6PYFQnJGy"
 
 # ---------------------------------------------------------------- store 定位
 
+# 作者本机的历史布局;只作为解析链全落空时的最后兜底,外部用户不该被它绑架。
+LEGACY_STORE_REL = "弹国服/WorldFlipper/dummy/download/production/upload"
+
+
 def _store_base() -> Path:
-    prof = _m.load_profiles() if hasattr(_m, "load_profiles") else None
-    # 与 profiles.json 保持一致;失败则退回硬编码 cn store
-    try:
-        store = prof.active_store  # type: ignore[union-attr]
-        return ROOT / store
-    except Exception:
-        return ROOT / "弹国服/WorldFlipper/dummy/download/production/upload"
+    """目标 store 根目录。
+
+    走 wf_mod_tool 的标准解析链(WF_TARGET_STORE > profiles.json 激活档案 >
+    自动探测),与 wf_gui.resolve_store()/wf_selftest 完全一致;全部落空时
+    才退回作者本机的历史路径(存在才用),否则抛出带配置指引的错误。
+
+    历史缺陷:这里曾写 `load_profiles().active_store`,而 load_profiles() 返回
+    dict —— 必抛 AttributeError,于是永远落到 `弹国服/...`,WF_TARGET_STORE 与
+    profiles.json 一律失效(外部用户的 Boss/连战塔/商店等功能因此全部不可用)。
+    """
+    store = _m.resolve_active_store(ROOT)
+    if store is not None:
+        return store
+    legacy = ROOT / LEGACY_STORE_REL
+    if legacy.exists():
+        return legacy
+    raise FileNotFoundError(
+        "未找到数据包 store:WF_TARGET_STORE / mod-tools/profiles.json / 自动探测均未命中。\n"
+        + _m.TARGET_STORE_HINT
+    )
+
+
+def _require_store_root(p: Path) -> None:
+    """p = <store>/<xx>/<hash>;store 根不存在就明确报错。
+
+    否则 mkdir(parents=True) 会在用户机器上凭空造出一棵目录树,改动落进
+    没人加载的目录,而且永远发不出去(发布器读的是真 store)。
+    """
+    base = p.parent.parent
+    if not base.exists():
+        raise FileNotFoundError(
+            f"目标 store 不存在,拒绝在此凭空创建目录树: {base}\n" + _m.TARGET_STORE_HINT
+        )
 
 
 def hashed_rel(logical: str) -> str:
@@ -145,6 +175,8 @@ def build_node(node) -> bytes:
 
 def load_table(logical: str, path: Path | None = None) -> dict:
     p = path or store_path(logical)
+    if path is None:
+        _require_store_root(p)
     tree = parse_node(p.read_bytes())
     if not isinstance(tree, dict):
         raise ValueError(f"{logical} 顶层不是 map")
@@ -154,6 +186,8 @@ def load_table(logical: str, path: Path | None = None) -> dict:
 def save_table(logical: str, tree: dict, path: Path | None = None, backup: bool = True) -> Path:
     """写回 store(默认),自动 .bak-wfquest-<ts> 备份;返回写入路径。"""
     p = path or store_path(logical)
+    if path is None:
+        _require_store_root(p)
     data = build_node(tree)
     # 写前自校验: 重新解析必须结构等价
     if parse_node(data) != tree:

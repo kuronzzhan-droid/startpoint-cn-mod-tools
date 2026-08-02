@@ -450,9 +450,11 @@ def main(argv: list[str] | None = None) -> int:
         if args.snapshot is not None and not args.tables:
             raise ValueError("--snapshot must be used with --tables")
         profile = core.resolve_profile()
-        store_value = profile.store if profile else core.default_target_store()
+        # 标准链:WF_TARGET_STORE > profiles.json 激活档案 > 自动探测。
+        # (旧版只读 profiles.json,CHECKLIST 里"纯环境变量"的用法必报未找到 store。)
+        store_value = core.resolve_active_store(ROOT, profile=profile)
         if not store_value:
-            raise ValueError("未找到数据包 store")
+            raise ValueError("未找到数据包 store。" + core.TARGET_STORE_HINT)
         store = Path(store_value).resolve()
 
         logicals = _explicit_logicals(args.tables) if args.tables else None
@@ -495,10 +497,8 @@ def main(argv: list[str] | None = None) -> int:
 
         if snapshot_records is not None:
             current_profile = core.resolve_profile()
-            current_store_value = (
-                current_profile.store
-                if current_profile
-                else core.default_target_store()
+            current_store_value = core.resolve_active_store(
+                ROOT, profile=current_profile
             )
             if (
                 current_profile is None
