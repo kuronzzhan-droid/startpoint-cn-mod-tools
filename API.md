@@ -53,6 +53,7 @@
 | `/asset` | `?logical=路径` | **二进制**响应(自动解混淆:PNG 魔数/MP3 帧头),Content-Type 按扩展名 |
 | `/skill_dsl` | `?character=&level=` | 技能效果 DSL 数值树 `{program_path, numbers:[{offset, len, type, value, ctx}], note}` |
 | `/skill_dsl_json` | `?character=&level=` 或 `?pp=路径` | 整棵技能 DSL 命令树 JSON `{program_path, json_text, bytes, sharers[], note}`(往返自检失败的文件拒绝导出;int/double 以 3/3.0 区分,「效果词条」编辑器与 JSON 编辑共用;`pp`=直接按 program_path 打开,强化弹射/变体用) |
+| `/skill_switch` | `?character=ID` | 技能形态切换(character 表 col9-16)`{kind, threshold, condition, multiballs, skill, no_voice, no_ready_voice, targets[]}`(targets=switched_action_skill 现有 6 键) |
 | `/pixelart_data` | `?character=ID&name=atlas\|special_atlas\|frame\|timeline\|special_frame\|special_timeline` | 像素图排布/动画数据解码 JSON `{logical, source, desc, bytes, entries, byte_roundtrip, json_text, note}`(atlas=AMF3 列表每项 `{n,x,y,w,h[,r]}`;store 优先 APK bundle 兜底;容器 raw deflate(-15),全库实测字节级往返) |
 | `/raw_json/tables` | — | JSON 直改支持的表 `{tables:[{alias, kind:flat\|nested\|cdn, cn, target}]}`(②平表9张/②嵌套2张/①cdndata 8个) |
 | `/raw_json/keys` | `?table=别名&q=过滤` | `{total, keys[]}`(最多 100) |
@@ -76,8 +77,14 @@
 | `/effects` | `?character=ID` | **战斗特效预览**:`{effects:[{dir, name, sheet, frames:[{frame,x,y,w,h,r,fx,fy}], sequences, sounds, n_images, n_layers}]}`;贴图=目录图集 `<dir>/<目录名>.png`+同名 atlas(帧名 `.gen/<效果>/x`),帧墙切割用;完整骨架播放不复刻 |
 | `/skill_summary` | `?character=&level=` | **技能效果摘要**:DSL 命令树按类别分组(伤害/增益状态/治疗/召唤/移动/演出/其他)成中文行 `{headline, groups:[{cat,count,lines[]}], program_path}`(wf_dsl_sig.brief_command) |
 | `/composer/catalog` | — | **效果构建器**目录:`{triggers×16(含 dash 冲刺/flip 弹射), effects×23(精选,带默认单位/阈值;含 dmg_all/dmg_near/dmg_trig 对敌能力伤害伪 kind 与 invoke=InvokeSkill 629), all:{trigger:{instant[262],during[230]}, effect:{instant[724],during[422]}, precondition}(全量枚举,每项{kind,cn,en,n}按使用频次排序), pullers, targets, groups, preconditions_common×6(无/Fever中/非Fever/HP≥/HP≤/技能槽≥)}`;精选=常用速选,all=自由组合 |
+| `/boss/list` | — | `{bosses:[{key, name, kind, hp_value, hp_coef, atk_hits, atk_corr, tp_value, levels[], hp_curve, atk_curve}]}`(boss_level 531 条) |
+| `/quest/cats` | — | `{cats:[{alias, cn, exists}]}`(22 类副本表) |
+| `/quest/list` | `?cat=别名&q=关键字` | `{total, shown, rows:[{path, id, name, bosses:[{key,name}]}]}`(quest→field_data→zone 自动解析 boss) |
+| `/toolbox/status` | — | 工具箱任务状态 `{state:idle/running/cancelling/done/failed/cancelled, tool, title, log[](尾120行), rc, progress:{done,total}, started, ended, cmd, tools:{名:{title,desc,available}}}` |
 | `/backups` | — | `[{table, name, size, mtime}]` |
 | `/mainpos` | — | `{restricted_rows, state}`(主位限制现状) |
+| `/enh/state` | — | 增强开关状态 `{state:idle/running/done/error, step, error, computedAt, status?}`;`status` = `{store, cdn, snapshot, toggles[{id,label,scope,state,counts:{official,enhanced,foreign},default,subs,offEqualsOfficial,guiReadonly,warn,note,tables}], current, presets, presetExcluded, guarded, escalated:{R1,R2}, misaligned}`。**只读缓存,不同步计算**(首次要建官方基准索引,先 POST `/enh/prime`) |
+| `/enh/snapshots` | — | `{snapshots:[{name, created, entries, forced}]}`(增强基线快照列表) |
 
 ## POST 端点(写;均支持 `"dry_run": true`)
 
@@ -111,6 +118,8 @@
 | `/skill_level_delete` | `{character, level}` | 删技能级别(至少留 1;删"2"影响已进化存档,慎用) |
 | `/skill_dsl/save` | `{character, level, edits:[{offset, len, type, value}]}` | 技能效果数值**原地补丁**(U29 等长补位/double 覆写;超出原字节数拒绝) |
 | `/skill_dsl_json/save` | `{character, level, json_text}` 或 `{pp, json_text}` | 整树 JSON 替换(encode→parse 自校验,失败拒写;备份+进待发布;「效果词条」编辑器的保存出口——前端字面量保持序列化,无改动时=字节级一致返回 changes:0;`pp` 直写任意效果文件) |
+| `/skill_switch/save` | `{character, edits:{kind,threshold,condition,multiballs,skill,no_voice,no_ready_voice}}` | 形态切换条件写 character 表 col9-16;kind=(None)/0-4;切换目标限 targets 白名单 |
+| `/boss/save` | `{key, edits:{hp_value,hp_coef,atk_hits,atk_corr,tp_value}}` | boss_level 数值(HP=基础值×等级曲线,改基础值=等比调血);自动备份+进待发布 |
 | `/pixelart_data/save` | `{character, name, json_text?\|data_b64?, dry_run}` | 像素图数据写入:json_text=页内编辑保存;data_b64=上传文档(.json/.amf3.deflate/裸 AMF3 自动识别)。encode→decode 自校验(dict 键序参与比较),同内容 changes:0;bundle-only 文件保存=新建 store 文件下载优先接管;备份 .bak-wfmod-pixdata-* +进待发布 |
 | `/raw_json/save` | `{table, key, json_text}` | **JSON 直改**整键写回:flat 强制整表等宽(超宽尾列非空拒绝)、nested 内层已有键相对顺序不可重排、不允许新增顶层键;单元格数字/布尔自动转字符串;②层自动备份+进待发布,①cdndata 备份后直写(重启服务端生效,不发 CDN);ml 标记的表(unique_condition/boss_coin_shop*)走多行安全 CSV |
 | `/server/push` | `{}` | **推送服务端**:POST 服务端 `/api/mod-admin/reload_assets`,让其重读 9 个热重载 json(商店 7 文件+character.json),①层/服务端侧改动即时生效不用重启;服务端离线报友好错误 |
@@ -139,6 +148,13 @@
 | `/rollback` | `{name, restart?}` | 一键回溯 = restore + 自动发布 + 重启游戏 → restore 响应 + `{ok, publish_log, restart_log?}` |
 | `/publish` | `{tables?, list_only?, restart?}` | 一键发布:调 wf_publish 打增量包到 CDN → `{ok, log, list_only, restart_log?}`;`tables` 缺省=发布 pending 并清空;`list_only:true` 只预检不打包(代替 dry_run);成功后默认重启游戏 |
 | `/sync` | `{restart:true}` | adb push pending + 重启游戏 → `{ok, log}`(备用手段;② 层正道是 `/publish`) |
+| `/toolbox/run` | `{tool:"export_assets"\|"recover_pathlist"\|"restore_package", args:{out?,limit?,workers?,...}}` | 启动工具箱长任务(子进程;同时只允许一个,参数白名单透传;**无 dry_run,输出均在 store 之外**) → `{ok, tool, title, cmd}` |
+| `/toolbox/cancel` | `{}` | 终止当前工具箱任务 → `{ok, log}` |
+| `/enh/prime` | `{force?}` | 后台线程重算增强开关状态(官方基准索引 + 逐表比对)→ `{seq, state}`;结果轮询 GET `/enh/state` |
+| `/enh/plan` | `{toggles:{开关ID:bool}, sub:{power,feel,gate}, scope:"all"\|"character"\|"weapon"\|"enemy"\|"other", allowForeign?}` | 预览:`{digest, details[{logical,toOfficial,toEnhanced,rowsAdded,rowsDropped,rowsRestored,foreignCount}], selfcheck:{E1,E2}, escalated, misaligned, foreign[], tables[]}`。**不写任何文件**;`toggles` 里没给的开关取 store 实测态 |
+| `/enh/apply` | `{toggles, sub, scope, digest, dryRun?, allowForeign?}` | 写 store:`{written[], preimage, changed, plan}`。`digest` 与重算结果不符即拒绝(store 在预览之后变过);写后自动登记待发布 + 改动日志 |
+| `/enh/snapshot` | `{tag?, force?}` | 把当前 store 冻结成「增强侧」基线 → `{name, created, store, entries}`。守卫:自制内容行必须在场 |
+| `/enh/rollback` | `{preimage, dryRun?}` | 回滚某次 apply → `{restored[], preimage, dry_run}` |
 
 ## 环境变量
 

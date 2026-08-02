@@ -5295,6 +5295,11 @@ TOOLBOX_TOOLS = {
         "desc": "环境可用性检测 + 功能模拟演练(词条工坊/技能DSL/命令库/强化弹射/发布预检);"
                 "deep=含金丝雀写入闭环(写入后立即复原,校验字节一致)",
     },
+    "store_materialize": {
+        "title": "CDN 直解数据包",
+        "script": MOD_DIR / "wf_store_materialize.py",
+        "desc": "从本机 CDN 重放完整链到全新 store;默认只预览,显式 apply 才写盘",
+    },
     "balance_suite": {
         "title": "平衡增强总包",
         "script": MOD_DIR / "wf_balance_suite.py",
@@ -5325,6 +5330,8 @@ TOOLBOX_TOOLS = {
 # 各工具允许透传的 CLI 参数(白名单;flag 型值为 True 时加开关)
 TOOLBOX_ARG_WHITELIST = {
     "selftest": {"deep": bool, "sample": int},
+    "store_materialize": {"dest": str, "official-only": bool, "verify": bool,
+                          "apply": bool, "write-profile": bool},
     "balance_suite": {"apply": bool, "publish": bool, "export-pack": bool, "force": bool},
     "rogue_reroll": {"rounds": int, "seed": int, "enemy-level": str, "event": str,
                      "player": int, "keep-progress": bool, "no-restart": bool, "apply": bool},

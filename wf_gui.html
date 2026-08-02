@@ -925,6 +925,21 @@ td.ldesc{color:var(--okfg);font-size:11px;white-space:normal;max-width:250px;lin
               <button class="tbrun">开始</button>
             </div>
           </div>
+          <div class="tbcard" data-tool="store_materialize">
+            <div class="tbt">CDN 直解数据包 <span class="tbava"></span></div>
+            <div class="hint">从本机 <code>.cdn/cn</code> 重放官方全量包与增量链,物化成一棵全新 store 树。<b>目标目录必须不存在或为空,绝不选择或写入现役 store。</b>默认只预览,不会创建约 10 GB 数据;勾「应用」才写盘。verify 会额外全量读取并核验落盘文件,耗时更长。</div>
+            <div class="row">
+              <label><b>目标目录(必填)</b></label><input data-a="dest" required placeholder="D:\WF\wf-materialized-store(必须不存在或为空)" style="flex:1;min-width:280px">
+            </div>
+            <div class="row">
+              <label title="只重放官方全量包与旧官方增量链,不叠加角色包或本地资产补丁"><input type="checkbox" data-a="official-only"> 仅官方链</label>
+              <label title="写盘后额外全量读取并核验所有文件,耗时更长"><input type="checkbox" data-a="verify"> verify(全量核验)</label>
+              <label title="显式写入目标目录;不勾时只预览计划,不创建数据"><input type="checkbox" data-a="apply"> 应用(写约 10 GB)</label>
+              <label title="只有勾选应用且物化成功后才更新 profiles.json"><input type="checkbox" data-a="write-profile"> 成功后写 profile</label>
+              <span style="flex:1"></span>
+              <button class="tbrun">开始</button>
+            </div>
+          </div>
         </div>
         <div id="tbStatus"></div>
       </section>

@@ -263,10 +263,74 @@ def deobf_png(raw):
     return bytes(fixed) if bytes(fixed[:8]) == PNG_MAGIC else None
 
 
+def _mp3_frame_signature(raw):
+    pos = 0
+    if raw[:3] == b"ID3":
+        if len(raw) < 10 or any(value & 0x80 for value in raw[6:10]):
+            return None
+        pos = 10 + (
+            (raw[6] << 21) | (raw[7] << 14) | (raw[8] << 7) | raw[9]
+        )
+    if pos + 4 > len(raw) or raw[pos] not in (0x7F, 0xFF):
+        return None
+    if (raw[pos + 1] >> 5 & 7) != 7:
+        return None
+    header = int.from_bytes(raw[pos:pos + 4], "big")
+    version = header >> 19 & 3
+    layer = header >> 17 & 3
+    bitrate_index = header >> 12 & 0x0F
+    srate_index = header >> 10 & 3
+    if version == 1 or layer != 1 or bitrate_index in (0, 15) or srate_index == 3:
+        return None
+    return raw[pos]
+
+
 def deobf_mp3(raw):
-    if len(raw) > 4 and raw[0] == 0x7F and (raw[1] & 0xE0) == 0xE0:
-        return b"\xff" + raw[1:]
-    return None
+    if _mp3_frame_signature(raw) != 0x7F:
+        return None
+    bitrate_v1 = [0, 32000, 40000, 48000, 56000, 64000, 80000, 96000, 122000,
+                  128000, 160000, 192000, 224000, 256000, 320000]
+    bitrate_v2 = [0, 8000, 16000, 24000, 32000, 40000, 48000, 56000, 64000,
+                  80000, 96000, 112000, 128000, 144000, 160000]
+    srate_v1 = [44100, 48000, 32000]
+    srate_v2 = [22050, 24000, 16000]
+    srate_v25 = [11025, 12000, 8000]
+    fixed = bytearray(raw)
+    pos = 0
+    while pos + 4 <= len(fixed):
+        if fixed[pos] == 0x49:
+            if fixed[pos:pos + 3] != b"ID3":
+                break
+            size = 0
+            encoded_size = int.from_bytes(fixed[pos + 6:pos + 10], "big")
+            mask = 0x7F000000
+            while mask:
+                size >>= 1
+                size |= encoded_size & mask
+                mask >>= 8
+            pos += size + 10
+            continue
+        if fixed[pos] == 0x54:
+            if fixed[pos:pos + 3] != b"TAG":
+                break
+            pos += 128
+            continue
+        if fixed[pos] != 0x7F or (fixed[pos + 1] >> 5 & 7) != 7:
+            break
+        header = int.from_bytes(fixed[pos:pos + 4], "big")
+        version = header >> 19 & 3
+        layer = header >> 17 & 3
+        bitrate_index = header >> 12 & 0x0F
+        srate_index = header >> 10 & 3
+        padding = header >> 9 & 1
+        if version == 1 or layer != 1 or bitrate_index in (0, 15) or srate_index == 3:
+            break
+        bitrate = (bitrate_v1 if version == 3 else bitrate_v2)[bitrate_index]
+        srate = (srate_v1 if version == 3 else srate_v2 if version == 2 else srate_v25)[srate_index]
+        fixed[pos] = 0xFF
+        pos += int(144 * bitrate / srate + padding + 2e-10)
+    decoded = bytes(fixed)
+    return decoded if decoded != raw else None
 
 
 def try_inflate(raw):
@@ -284,11 +348,11 @@ def decode(raw: bytes):
     csvtext = orderedmap_to_csv(raw)
     if csvtext is not None:
         return ".csv", csvtext.encode("utf-8-sig")
-    if raw[:3] == b"ID3" or raw[:2] == b"\xff\xfb":
+    mp3_signature = _mp3_frame_signature(raw)
+    if mp3_signature == 0xFF:
         return ".mp3", raw
-    mp3 = deobf_mp3(raw)
-    if mp3:
-        return ".mp3", mp3
+    if mp3_signature == 0x7F:
+        return ".mp3", deobf_mp3(raw)
     if raw[:4] == b"OggS":
         return ".ogg", raw
     png = deobf_png(raw)

@@ -7,9 +7,9 @@
 ## ⚠️ 免责声明
 
 - 本工具仅用于**学习、研究、单机 / 私服环境**下对**你自己拥有的**游戏资源进行修改。
-- **仓库代码不包含任何游戏本体资产**(数据包、美术、语音等版权内容归游戏运营方所有),
-  使用者需自备合法获得的游戏资源。Release 提供的客户端整合包为**自签名私服客户端**,
-  仅供离线自架私服的个人使用(见下「客户端整合包」)。
+- **仓库代码不包含任何游戏本体资产**(数据包、APK、美术、语音等版权内容归游戏运营方所有)。
+  CDN 直解只读取使用者自己部署的 startpoint-cn 服务端 CDN;使用者需自备合法获得的游戏资源。
+  Release 提供的客户端整合包为**自签名私服客户端**,仅供离线自架私服的个人使用(见下「客户端整合包」)。
 - 修改联网正式服数据、用于作弊或商业用途均可能违反游戏服务条款,由使用者自行承担后果。
 - 逆向所得的字段语义 / 解密方式仅供技术交流;上游生态(wfax / wdfp-extractor)已公开同类逻辑。
 
@@ -22,18 +22,43 @@
 
 ## 快速开始
 
+首选:已经部署 startpoint-cn,且仓内有 `.cdn/cn`。
+
 ```bash
-# 1) 配置数据包路径
-cp mod-tools/profiles.example.json mod-tools/profiles.json
-#    编辑 profiles.json,把 store 指向你的 upload 目录
+# 1) 先做只读规划(默认 dry-run,不会创建或写入目标目录)
+python mod-tools/wf_store_materialize.py --dest ../wf-store-fresh
 
-# 2) 启动网页修改器
+# 2) 确认规划后物化、校验,并写入当前版本档案
+python mod-tools/wf_store_materialize.py --dest ../wf-store-fresh --apply --verify --write-profile
+
+# 3) 首跑自检
+python mod-tools/wf_selftest.py
+
+# 4) 启动网页修改器
 python mod-tools/wf_gui.py          # 浏览器打开 http://127.0.0.1:8765
+```
 
-# 3) 改完发布到 CDN(客户端增量更新时拉取)
+`--dest` 必须不存在或是空目录。物化结果写到
+`<dest>/production/{upload,medium_upload,android_upload}`;不加 `--apply` 时始终只规划、不写盘。
+`--official-only` 可只重放官方归档链,终点固定为 `1.4.54`。
+
+备用:自备合法数据包并手工配置版本档案。
+
+```bash
+cp mod-tools/profiles.example.json mod-tools/profiles.json
+# 编辑 profiles.json,把 store 指向你的 production/upload 目录
+
+python mod-tools/wf_selftest.py
+python mod-tools/wf_gui.py
+```
+
+开始修改后:
+
+```bash
+# 把改动打成 CDN 增量包(客户端增量更新时拉取)
 python mod-tools/wf_publish.py --tables ability,character_status
 
-# 4) 重启服务端 + 重启游戏 → 改动生效
+# 重启服务端 + 重启游戏 → 改动生效
 ```
 
 ## 客户端整合包(Release 下载)
@@ -66,7 +91,7 @@ mod-tools/
 ├── requirements.txt       pip 依赖(仅 Pillow;图像/金丝雀类工具用)
 ├── docs/                  分析报告·设计方案·逆向结论(过程性文档,不参与运行)
 ├── schemas/               角色包 manifest 的 JSON Schema 契约
-├── tests/                 unittest 自测(573 项:核心读写/DSL/发布/角色包/资产治理/dev Catalog/roguelike 门禁)
+├── tests/                 unittest 自测(742 项:核心读写/DSL/发布/角色包/资产治理/dev Catalog/roguelike 门禁/CDN 物化)
 ├── examples/              recipe 配方示例
 ├── work/                  运行期状态(待发布清单/改动日志/角色快照),自动生成
 └── server-patch/          startpoint-cn 服务端 mod-admin 补丁(更新服务端后套回)
@@ -81,7 +106,8 @@ mod-tools/
 |---|---|
 | `wf_gui.py` + `wf_gui.html` | 网页修改器,分组导航(角色 / 武器 / 全局 / 系统):词条(含**词条工坊**结构化组装) / 数值 / 技能·倍率(含**效果词条**命令级编辑、**强化弹射**) / 资料 / 资产 / 新建角色 / 武器·魂珠 / Boss·副本 / 速查 / 移植 / 配方 / 工具箱 / **增量整合** / 日志 / 备份 |
 | `wf_mod_tool.py` | 核心引擎:orderedmap(含嵌套表)读写、AMF3 schema 解析、recipe 配方、版本档案 |
-| `wf_selftest.py` | **全链路自检**:环境可用性检测 + 功能模拟演练(--deep 含金丝雀写入闭环,写完即复原);GUI 工具箱可跑 |
+| `wf_store_materialize.py` | **首次部署首选**:从自己服务端的 `.cdn/cn` 本地重放到全新 store;默认只规划,`--apply` 才写盘 |
+| `wf_selftest.py` | **首跑自检**:物化/配置版本档案后先运行;环境可用性检测 + 功能模拟演练(--deep 含金丝雀写入闭环,写完即复原);GUI 工具箱可跑 |
 | `wf_publish.py` | 把改动打成增量包发布到服务端 CDN(与官方增量更新同构) |
 | `wf_pack_consolidate.py` | **增量包整合**:手选/上传多个已发布增量包按发布顺序合并去冗余,产出 `pinball-<最早from>-<最新to>` 单包(GUI「增量整合」页签同源;产物只写 work 输出目录,不碰 CDN/原包) |
 | `wf_chain_squash.py` | **整链压缩**:mod 增量链(≥base)压成最终版合集单边 + 全历史版本硬链桥 + verify/retire/undo,治链条无限变长 |

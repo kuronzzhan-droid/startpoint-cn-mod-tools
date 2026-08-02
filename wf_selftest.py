@@ -22,6 +22,7 @@ import argparse
 import hashlib
 import io
 import json
+import os
 import sys
 import time
 import zlib
@@ -61,6 +62,26 @@ def check(name: str, fn, warn_only: bool = False):
         (warn if warn_only else fail)(name, f"{type(e).__name__}: {e}")
 
 
+def _resolve_selftest_store(core) -> Path:
+    """Resolve the self-test store with the same env-first fallback as the GUI."""
+    env = os.environ.get("WF_TARGET_STORE")
+    if env:
+        store = Path(env)
+        if store.exists():
+            return store
+        raise ValueError(f"WF_TARGET_STORE 不存在: {env}")
+
+    profile = core.resolve_profile()
+    if profile is not None:
+        return profile.store
+
+    raise ValueError(
+        "未找到可用的数据包 store。请先运行 "
+        "python mod-tools/wf_store_materialize.py --apply --write-profile，"
+        "或设置 WF_TARGET_STORE。"
+    )
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--deep", action="store_true", help="含金丝雀写入闭环(写入后立即复原)")
@@ -73,8 +94,11 @@ def main() -> int:
 
     # ---------------- 检测:环境与资料 ----------------
     import wf_mod_tool as core
-    prof = core.resolve_profile()
-    store = prof.store
+    try:
+        store = _resolve_selftest_store(core)
+    except ValueError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 2
 
     check("数据包 store 可达", lambda: (
         f"{store}" if store.is_dir() else (_ for _ in ()).throw(RuntimeError("目录不存在"))))

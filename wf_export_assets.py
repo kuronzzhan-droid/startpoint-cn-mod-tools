@@ -30,6 +30,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import wf_mod_tool as core
+import wf_assets
 
 PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
 DL_STORES = ["upload", "medium_upload", "android_upload"]
@@ -45,10 +46,33 @@ def deobf_png(raw: bytes):
     return bytes(fixed) if bytes(fixed[:8]) == PNG_MAGIC else None
 
 
+def _mp3_frame_signature(raw: bytes):
+    pos = 0
+    if raw[:3] == b"ID3":
+        if len(raw) < 10 or any(value & 0x80 for value in raw[6:10]):
+            return None
+        pos = 10 + (
+            (raw[6] << 21) | (raw[7] << 14) | (raw[8] << 7) | raw[9]
+        )
+    if pos + 4 > len(raw) or raw[pos] not in (0x7F, 0xFF):
+        return None
+    if (raw[pos + 1] >> 5 & 7) != 7:
+        return None
+    header = int.from_bytes(raw[pos:pos + 4], "big")
+    version = header >> 19 & 3
+    layer = header >> 17 & 3
+    bitrate_index = header >> 12 & 0x0F
+    srate_index = header >> 10 & 3
+    if version == 1 or layer != 1 or bitrate_index in (0, 15) or srate_index == 3:
+        return None
+    return raw[pos]
+
+
 def deobf_mp3(raw: bytes):
-    if len(raw) > 4 and raw[0] == 0x7F and (raw[1] & 0xE0) == 0xE0:
-        return b"\xff" + raw[1:]
-    return None
+    if _mp3_frame_signature(raw) != 0x7F:
+        return None
+    decoded = wf_assets.mp3_decode(raw)
+    return decoded if decoded != raw else None
 
 
 def try_inflate(raw: bytes):
@@ -91,11 +115,11 @@ def decode(raw: bytes):
     except Exception:
         pass
     # 2) MP3
-    if raw[:3] == b"ID3" or raw[:2] == b"\xff\xfb":
+    mp3_signature = _mp3_frame_signature(raw)
+    if mp3_signature == 0xFF:
         return ".mp3", raw
-    mp3 = deobf_mp3(raw)
-    if mp3:
-        return ".mp3", mp3
+    if mp3_signature == 0x7F:
+        return ".mp3", deobf_mp3(raw)
     # 3) OGG
     if raw[:4] == b"OggS":
         return ".ogg", raw
