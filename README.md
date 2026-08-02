@@ -93,7 +93,8 @@ python wf_publish.py --tables ability,character_status
 下载**「深渊连战+三自制角色整合包 v2.0」**(`WorldFlipper-abyss-v2.apk`,约 133 MB):
 
 - 五合一客户端补丁(免登录 / 服务器重定向 / 深渊装备战斗门控 / 赛瑞斯双形态 P-code / 逐角色 render-scale),
-  启动后自动增量更新到 1.4.107,邮箱领取三位自制角色(赛瑞斯 / 史黛拉 / 杰拉德)
+  启动后自动增量更新到服务端链尾(当前 1.4.277),邮箱领取四位自制角色
+  (赛瑞斯 129999 / 史黛拉 139999 / 杰拉德 149999 / 风巨蜥 149998)
 - ‼️ 本包**硬编码指向服主自己的服务器**,对官服无效;**自建服请勿使用**——照服务端仓库的
   [部署攻略](https://github.com/kuronzzhan-droid/startpoint-cn/blob/release/modes-20260714/docs/%E9%83%A8%E7%BD%B2%E6%94%BB%E7%95%A5.md)
   重打指向你自己服务器的客户端
