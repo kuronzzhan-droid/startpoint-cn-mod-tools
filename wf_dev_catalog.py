@@ -34,9 +34,12 @@ import json
 import os
 import posixpath
 import re
+import shutil
+import stat
 import sys
 import tempfile
 import zipfile
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -92,6 +95,14 @@ ARCHIVE_DIRECTORIES = (
 LAYER_ORDER = {"common": 0, "quality": 1, "platform": 2}
 ASSET_SIZE_KINDS = ("shortened", "fulfill")
 DIGEST_PLACEHOLDER = "0" * 64
+JS_MAX_SAFE_INTEGER = (1 << 53) - 1
+OVERLAY_SCHEMA = 1
+OVERLAY_CLIENT = "CN 1.8.1"
+OVERLAY_LAYER_NAMES = {
+    "common": ("common", "archive-common-diff"),
+    "quality": ("medium", "archive-medium-diff"),
+    "platform": ("android", "archive-android-diff"),
+}
 
 
 @dataclass
@@ -104,6 +115,28 @@ class Issue:
     def line(self) -> str:
         suffix = f"  [{self.relative_path}]" if self.relative_path else ""
         return f"{self.code}: {self.message}{suffix}"
+
+
+class OverlayExportError(ValueError):
+    """Stable machine-readable failure raised before an Overlay batch is published."""
+
+    def __init__(
+        self,
+        code: str,
+        message: str,
+        category: str,
+        *,
+        target_version: str,
+        relative_path: str | None = None,
+    ) -> None:
+        self.code = code
+        self.category = category
+        self.target_version = target_version
+        self.relative_path = relative_path
+        suffix = f" path={relative_path}" if relative_path else ""
+        super().__init__(
+            f"{code}: {message} [category={category} target={target_version}{suffix}]"
+        )
 
 
 @dataclass
@@ -128,6 +161,28 @@ class ArchiveInput:
 
     def edge_group_key(self) -> tuple:
         return (self.kind, self.from_version, self.to_version, self.platform)
+
+
+@dataclass
+class OverlaySource:
+    archive: ArchiveInput
+    source_root: Path
+    source_relative_path: str
+    snapshot_path: Path
+    snapshot_identity: tuple[int, int, int, int, int]
+
+
+@dataclass(frozen=True)
+class PinnedPackageMember:
+    relative_path: str
+    path: Path
+    identity: tuple[int, int, int, int, int]
+
+
+@dataclass(frozen=True)
+class OverlayCandidatePin:
+    root_identity: tuple[int, int, int, int, int]
+    members: tuple[PinnedPackageMember, ...]
 
 
 @dataclass
@@ -1424,10 +1479,8 @@ RESTART_SENSITIVE_LOGICALS = {
 }
 
 
-def detect_pack_requirements(
-    selected: list[ArchiveInput], cdn_root: Path,
-) -> tuple[bool, list[str]]:
-    """扫描选中归档的成员哈希,反查是否命中重启敏感表。只读 namelist,不解压。"""
+def _detect_pack_requirements_from_paths(paths: list[Path]) -> tuple[bool, list[str]]:
+    """扫描归档成员哈希,反查是否命中重启敏感表。只读 namelist,不解压。"""
     import wf_mod_tool as core
 
     sensitive = {
@@ -1436,9 +1489,9 @@ def detect_pack_requirements(
     }
     reasons: list[str] = []
     seen: set[str] = set()
-    for archive in selected:
+    for path in paths:
         try:
-            with zipfile.ZipFile(cdn_root / archive.relative_path) as bundle:
+            with zipfile.ZipFile(path) as bundle:
                 names = bundle.namelist()
         except (OSError, zipfile.BadZipFile):
             continue
@@ -1451,6 +1504,15 @@ def detect_pack_requirements(
                 seen.add(reason)
                 reasons.append(reason)
     return bool(reasons), reasons
+
+
+def detect_pack_requirements(
+    selected: list[ArchiveInput], cdn_root: Path,
+) -> tuple[bool, list[str]]:
+    """Legacy boundary: resolve selected archives beneath the single CDN root."""
+    return _detect_pack_requirements_from_paths([
+        cdn_root / archive.relative_path for archive in selected
+    ])
 
 
 SHARE_README_TEMPLATE = """WF mod 分享包  {name}
@@ -1611,6 +1673,1581 @@ def export_share_pack(
     return out_dir, stats, issues
 
 
+# ---------------------------------------------------------------- Patch Overlay 导出
+
+def _overlay_path_is_safe(relative_path: str) -> bool:
+    if (
+        not isinstance(relative_path, str)
+        or not relative_path
+        or not relative_path.endswith(".zip")
+        or relative_path.startswith("/")
+        or "\\" in relative_path
+        or "//" in relative_path
+        or any(character in relative_path for character in ":?#%")
+        or any(ord(character) < 0x21 or ord(character) > 0x7e for character in relative_path)
+        or posixpath.normpath(relative_path) != relative_path
+    ):
+        return False
+    parts = relative_path.split("/")
+    return all(part not in ("", ".", "..") for part in parts)
+
+
+def _overlay_version_is_valid(version: str) -> bool:
+    parsed = parse_version(version)
+    return parsed is not None and all(part <= JS_MAX_SAFE_INTEGER for part in parsed)
+
+
+def _overlay_positive_safe_integer(value: object) -> bool:
+    return (
+        isinstance(value, int) and not isinstance(value, bool)
+        and 0 < value <= JS_MAX_SAFE_INTEGER
+    )
+
+
+def _path_components(path: Path) -> list[Path]:
+    absolute = path.absolute()
+    parts = absolute.parts
+    if not parts:
+        return []
+    current = Path(parts[0])
+    result = [current]
+    for part in parts[1:]:
+        current = current / part
+        result.append(current)
+    return result
+
+
+def _is_link_or_reparse(file_stat: os.stat_result) -> bool:
+    """Treat Windows junctions/reparse points like symlinks on every path boundary."""
+    return stat.S_ISLNK(file_stat.st_mode) or bool(
+        getattr(file_stat, "st_file_attributes", 0) & 0x400
+    )
+
+
+def _validated_overlay_file(
+    package_root: Path,
+    relative_path: str,
+    target_version: str,
+) -> Path:
+    if not _overlay_path_is_safe(relative_path):
+        raise OverlayExportError(
+            "PATCH_ARCHIVE_PATH_INVALID",
+            "archive relativePath must be a safe printable ASCII ZIP path",
+            "archive",
+            target_version=target_version,
+            relative_path=relative_path,
+        )
+    try:
+        root_resolved = package_root.resolve(strict=True)
+    except OSError as exc:
+        raise OverlayExportError(
+            "PATCH_ARCHIVE_FILE_MISSING", str(exc), "archive",
+            target_version=target_version, relative_path=relative_path,
+        ) from exc
+    candidate = package_root.joinpath(*relative_path.split("/"))
+    try:
+        for component in _path_components(candidate):
+            component_stat = os.lstat(component)
+            if _is_link_or_reparse(component_stat):
+                raise OverlayExportError(
+                    "PATCH_ARCHIVE_SYMLINK",
+                    "declared path contains a symbolic link",
+                    "archive",
+                    target_version=target_version,
+                    relative_path=relative_path,
+                )
+        final_stat = os.lstat(candidate)
+    except OverlayExportError:
+        raise
+    except FileNotFoundError as exc:
+        raise OverlayExportError(
+            "PATCH_ARCHIVE_FILE_MISSING", "declared path is missing", "archive",
+            target_version=target_version, relative_path=relative_path,
+        ) from exc
+    except OSError as exc:
+        raise OverlayExportError(
+            "PATCH_ARCHIVE_FILE_TYPE", str(exc), "archive",
+            target_version=target_version, relative_path=relative_path,
+        ) from exc
+    if not stat.S_ISREG(final_stat.st_mode) or not _overlay_positive_safe_integer(final_stat.st_size):
+        raise OverlayExportError(
+            "PATCH_ARCHIVE_FILE_TYPE",
+            "declared path must be a nonempty safe-sized regular file",
+            "archive",
+            target_version=target_version,
+            relative_path=relative_path,
+        )
+    try:
+        resolved = candidate.resolve(strict=True)
+        resolved.relative_to(root_resolved)
+    except (OSError, ValueError) as exc:
+        raise OverlayExportError(
+            "PATCH_ARCHIVE_SYMLINK",
+            "declared path resolves outside package root",
+            "archive",
+            target_version=target_version,
+            relative_path=relative_path,
+        ) from exc
+    descriptor = -1
+    try:
+        flags = (
+            os.O_RDONLY
+            | getattr(os, "O_BINARY", 0)
+            | getattr(os, "O_NOFOLLOW", 0)
+            | getattr(os, "O_NONBLOCK", 0)
+        )
+        descriptor = os.open(candidate, flags)
+        opened = os.fstat(descriptor)
+        if (
+            _is_link_or_reparse(opened)
+            or not stat.S_ISREG(opened.st_mode)
+            or _overlay_object_key(opened) != _overlay_object_key(final_stat)
+        ):
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_SYMLINK", "declared path changed before ZIP validation",
+                "archive", target_version=target_version,
+                relative_path=relative_path,
+            )
+        with os.fdopen(descriptor, "rb", closefd=True) as stream:
+            descriptor = -1
+            with zipfile.ZipFile(stream) as bundle:
+                bad_member = bundle.testzip()
+            after_read = os.fstat(stream.fileno())
+        after_path = os.lstat(candidate)
+        if (
+            _is_link_or_reparse(after_path)
+            or _overlay_file_identity(after_read) != _overlay_file_identity(opened)
+            or _overlay_file_identity(after_path) != _overlay_file_identity(final_stat)
+        ):
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_SYMLINK", "declared path changed during ZIP validation",
+                "archive", target_version=target_version,
+                relative_path=relative_path,
+            )
+    except OverlayExportError:
+        raise
+    except (OSError, zipfile.BadZipFile) as exc:
+        raise OverlayExportError(
+            "PATCH_ARCHIVE_FILE_TYPE", "declared path is not a valid ZIP", "archive",
+            target_version=target_version, relative_path=relative_path,
+        ) from exc
+    finally:
+        if descriptor >= 0:
+            try:
+                os.close(descriptor)
+            except OSError:
+                pass
+    if bad_member is not None:
+        raise OverlayExportError(
+            "PATCH_ARCHIVE_FILE_TYPE",
+            f"declared ZIP has a corrupt member: {bad_member}",
+            "archive",
+            target_version=target_version,
+            relative_path=relative_path,
+        )
+    return candidate
+
+
+def _overlay_file_identity(file_stat: os.stat_result) -> tuple[int, int, int, int, int]:
+    return (
+        file_stat.st_dev,
+        file_stat.st_ino,
+        file_stat.st_size,
+        file_stat.st_mtime_ns,
+        file_stat.st_ctime_ns,
+    )
+
+
+def _overlay_object_key(file_stat: os.stat_result) -> tuple[int, int]:
+    """Fields with comparable semantics between Windows path and handle stats."""
+    return file_stat.st_dev, file_stat.st_ino
+
+
+def _private_directory_pin(
+    path: Path,
+    target_version: str,
+    relative_path: str,
+) -> tuple[Path, tuple[int, int, int, int, int]]:
+    try:
+        path_stat = os.lstat(path)
+    except OSError as exc:
+        raise OverlayExportError(
+            "PATCH_STAGING_IO_FAILED", f"could not inspect private staging directory: {exc}",
+            "output", target_version=target_version,
+            relative_path=relative_path,
+        ) from exc
+    if _is_link_or_reparse(path_stat) or not stat.S_ISDIR(path_stat.st_mode):
+        raise OverlayExportError(
+            "PATCH_ARCHIVE_SYMLINK",
+            "private staging parent must be a real directory",
+            "output", target_version=target_version,
+            relative_path=relative_path,
+        )
+    return path, _overlay_file_identity(path_stat)
+
+
+def _revalidate_private_directories(
+    pins: list[tuple[Path, tuple[int, int, int, int, int]]],
+    target_version: str,
+    relative_path: str,
+) -> None:
+    for path, identity in pins:
+        try:
+            path_stat = os.lstat(path)
+        except OSError as exc:
+            raise OverlayExportError(
+                "PATCH_STAGING_IO_FAILED",
+                f"could not recheck private staging directory: {exc}",
+                "output", target_version=target_version,
+                relative_path=relative_path,
+            ) from exc
+        if (
+            _is_link_or_reparse(path_stat)
+            or not stat.S_ISDIR(path_stat.st_mode)
+            or _overlay_file_identity(path_stat) != identity
+        ):
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_SYMLINK",
+                "private staging parent identity changed",
+                "output", target_version=target_version,
+                relative_path=relative_path,
+            )
+
+
+def _refresh_mutated_private_parent(
+    pins: list[tuple[Path, tuple[int, int, int, int, int]]],
+    target_version: str,
+    relative_path: str,
+) -> None:
+    """Accept metadata changes caused by our child creation, but not parent replacement."""
+    if len(pins) > 1:
+        _revalidate_private_directories(pins[:-1], target_version, relative_path)
+    path, identity = pins[-1]
+    refreshed = _private_directory_pin(path, target_version, relative_path)
+    if refreshed[1][:2] != identity[:2]:
+        raise OverlayExportError(
+            "PATCH_ARCHIVE_SYMLINK", "private staging parent object changed",
+            "output", target_version=target_version,
+            relative_path=relative_path,
+        )
+    pins[-1] = refreshed
+
+
+@contextmanager
+def _secure_private_leaf(
+    trusted_root: Path,
+    leaf: Path,
+    *,
+    target_version: str,
+    relative_path: str,
+):
+    """Exclusively create one private leaf while pinning every parent directory."""
+    trusted_absolute = trusted_root.absolute()
+    leaf_absolute = leaf.absolute()
+    try:
+        leaf_relative = leaf_absolute.relative_to(trusted_absolute)
+    except ValueError as exc:
+        raise OverlayExportError(
+            "PATCH_ARCHIVE_PATH_INVALID", "private staging leaf escapes its trusted root",
+            "output", target_version=target_version,
+            relative_path=relative_path,
+        ) from exc
+    if not leaf_relative.parts or any(part in ("", ".", "..") for part in leaf_relative.parts):
+        raise OverlayExportError(
+            "PATCH_ARCHIVE_PATH_INVALID", "private staging leaf path is invalid",
+            "output", target_version=target_version,
+            relative_path=relative_path,
+        )
+
+    pins = [_private_directory_pin(
+        trusted_absolute, target_version, relative_path,
+    )]
+    current = trusted_absolute
+    try:
+        for component in leaf_relative.parts[:-1]:
+            next_parent = current / component
+            try:
+                os.lstat(next_parent)
+            except FileNotFoundError:
+                _revalidate_private_directories(pins, target_version, relative_path)
+                os.mkdir(next_parent, 0o700)
+                _refresh_mutated_private_parent(pins, target_version, relative_path)
+            pins.append(_private_directory_pin(
+                next_parent, target_version, relative_path,
+            ))
+            current = next_parent
+        _revalidate_private_directories(pins, target_version, relative_path)
+
+        flags = (
+            os.O_WRONLY | os.O_CREAT | os.O_EXCL
+            | getattr(os, "O_BINARY", 0)
+            | getattr(os, "O_NOFOLLOW", 0)
+        )
+        descriptor = os.open(leaf_absolute, flags, 0o600)
+    except OverlayExportError:
+        raise
+    except OSError as exc:
+        raise OverlayExportError(
+            "PATCH_STAGING_IO_FAILED", f"could not create private staging leaf: {exc}",
+            "output", target_version=target_version,
+            relative_path=relative_path,
+        ) from exc
+
+    stream = None
+    try:
+        opened = os.fstat(descriptor)
+        if _is_link_or_reparse(opened) or not stat.S_ISREG(opened.st_mode):
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_FILE_TYPE", "private staging leaf is not a regular file",
+                "output", target_version=target_version,
+                relative_path=relative_path,
+            )
+        _refresh_mutated_private_parent(pins, target_version, relative_path)
+        stream = os.fdopen(descriptor, "wb", closefd=True)
+        descriptor = -1
+        yield stream
+        stream.flush()
+        os.fsync(stream.fileno())
+        after_write = os.fstat(stream.fileno())
+        if not stat.S_ISREG(after_write.st_mode) or _overlay_object_key(after_write) != _overlay_object_key(opened):
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_FILE_TYPE", "private staging leaf identity changed while writing",
+                "output", target_version=target_version,
+                relative_path=relative_path,
+            )
+        stream.close()
+        stream = None
+        _revalidate_private_directories(pins, target_version, relative_path)
+        after_path = os.lstat(leaf_absolute)
+        if (
+            _is_link_or_reparse(after_path)
+            or not stat.S_ISREG(after_path.st_mode)
+            or _overlay_object_key(after_path) != _overlay_object_key(after_write)
+        ):
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_SYMLINK", "private staging leaf changed after writing",
+                "output", target_version=target_version,
+                relative_path=relative_path,
+            )
+    except OverlayExportError:
+        raise
+    except OSError as exc:
+        raise OverlayExportError(
+            "PATCH_STAGING_IO_FAILED", f"private staging leaf write failed: {exc}",
+            "output", target_version=target_version,
+            relative_path=relative_path,
+        ) from exc
+    finally:
+        if stream is not None:
+            try:
+                stream.close()
+            except OSError:
+                pass
+        elif descriptor >= 0:
+            try:
+                os.close(descriptor)
+            except OSError:
+                pass
+
+
+def _validate_overlay_archive_metadata(archive: ArchiveInput) -> None:
+    target_version = archive.to_version
+    if not _overlay_path_is_safe(archive.relative_path):
+        raise OverlayExportError(
+            "PATCH_ARCHIVE_PATH_INVALID", "source archive path is unsafe",
+            "archive", target_version=target_version,
+            relative_path=archive.relative_path,
+        )
+    if (
+        archive.from_version is None
+        or not _overlay_version_is_valid(archive.from_version)
+        or not _overlay_version_is_valid(archive.to_version)
+    ):
+        raise OverlayExportError(
+            "PATCH_TARGET_VERSION_INVALID", "archive edge has an unsafe version",
+            "archive", target_version=target_version,
+            relative_path=archive.relative_path,
+        )
+    if not _overlay_positive_safe_integer(archive.order):
+        raise OverlayExportError(
+            "PATCH_ARCHIVE_ORDER_INVALID", "archive order must be a positive safe integer",
+            "archive", target_version=target_version,
+            relative_path=archive.relative_path,
+        )
+
+
+def _overlay_source_location(
+    archive: ArchiveInput,
+    cdn_root: Path,
+    asset_patch_active: Path | None,
+) -> tuple[Path, str]:
+    if not archive.foreign_root:
+        return cdn_root, archive.relative_path
+    prefix = "asset-patch/active/"
+    if asset_patch_active is None or not archive.relative_path.startswith(prefix):
+        raise OverlayExportError(
+            "PATCH_ARCHIVE_FILE_MISSING", "foreign archive source root is unavailable",
+            "archive", target_version=archive.to_version,
+            relative_path=archive.relative_path,
+        )
+    source_relative = archive.relative_path.removeprefix(prefix)
+    return Path(asset_patch_active), source_relative
+
+
+def _pin_overlay_source(
+    archive: ArchiveInput,
+    source_root: Path,
+    source_relative_path: str,
+    snapshot_path: Path,
+    staging_root: Path,
+) -> OverlaySource:
+    """Snapshot a source through a pinned no-follow handle and reject identity races."""
+    _validate_overlay_archive_metadata(archive)
+    source = _validated_overlay_file(
+        source_root, source_relative_path, archive.to_version,
+    )
+    relative_context = archive.relative_path
+    descriptor = -1
+    try:
+        before = os.lstat(source)
+        if _is_link_or_reparse(before):
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_SYMLINK", "source archive is a link or reparse point",
+                "archive", target_version=archive.to_version,
+                relative_path=relative_context,
+            )
+        if not stat.S_ISREG(before.st_mode):
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_FILE_TYPE", "source archive must remain a regular file",
+                "archive", target_version=archive.to_version,
+                relative_path=relative_context,
+            )
+        if not _overlay_positive_safe_integer(before.st_size):
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_SIZE_INVALID", "archive bytes must be a positive safe integer",
+                "archive", target_version=archive.to_version,
+                relative_path=relative_context,
+            )
+        flags = (
+            os.O_RDONLY
+            | getattr(os, "O_BINARY", 0)
+            | getattr(os, "O_NOFOLLOW", 0)
+            | getattr(os, "O_NONBLOCK", 0)
+        )
+        descriptor = os.open(source, flags)
+    except OverlayExportError:
+        raise
+    except OSError as exc:
+        raise OverlayExportError(
+            "PATCH_ARCHIVE_FILE_TYPE", f"could not pin source archive: {exc}", "archive",
+            target_version=archive.to_version, relative_path=relative_context,
+        ) from exc
+    digest = hashlib.sha256()
+    total_bytes = 0
+    try:
+        opened = os.fstat(descriptor)
+        if (
+            _is_link_or_reparse(opened)
+            or not stat.S_ISREG(opened.st_mode)
+            or _overlay_object_key(opened) != _overlay_object_key(before)
+        ):
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_SYMLINK", "source archive identity changed before open",
+                "archive", target_version=archive.to_version,
+                relative_path=relative_context,
+            )
+        with os.fdopen(descriptor, "rb", closefd=True) as source_stream, _secure_private_leaf(
+            staging_root, snapshot_path,
+            target_version=archive.to_version,
+            relative_path=relative_context,
+        ) as target:
+            descriptor = -1
+            for block in iter(lambda: source_stream.read(1 << 20), b""):
+                target.write(block)
+                digest.update(block)
+                total_bytes += len(block)
+            after_read = os.fstat(source_stream.fileno())
+        after_path = os.lstat(source)
+        if (
+            _is_link_or_reparse(after_path)
+            or _overlay_file_identity(after_read) != _overlay_file_identity(opened)
+            or _overlay_file_identity(after_path) != _overlay_file_identity(before)
+        ):
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_SYMLINK", "source archive identity changed while snapshotting",
+                "archive", target_version=archive.to_version,
+                relative_path=relative_context,
+            )
+        if not _overlay_positive_safe_integer(total_bytes):
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_SIZE_INVALID", "archive bytes must be a positive safe integer",
+                "archive", target_version=archive.to_version,
+                relative_path=relative_context,
+            )
+        _validated_overlay_file(snapshot_path.parent, snapshot_path.name, archive.to_version)
+    except BaseException as exc:
+        if descriptor >= 0:
+            try:
+                os.close(descriptor)
+            except OSError:
+                pass
+        try:
+            snapshot_path.unlink(missing_ok=True)
+        except OSError:
+            pass
+        if isinstance(exc, OverlayExportError):
+            raise
+        if isinstance(exc, OSError):
+            raise OverlayExportError(
+                "PATCH_STAGING_IO_FAILED", f"private source snapshot failed: {exc}",
+                "output", target_version=archive.to_version,
+                relative_path=str(snapshot_path),
+            ) from exc
+        raise
+    archive.compressed_bytes = total_bytes
+    archive.sha256 = digest.hexdigest()
+    snapshot_stat = os.lstat(snapshot_path)
+    return OverlaySource(
+        archive=archive,
+        source_root=source_root,
+        source_relative_path=source_relative_path,
+        snapshot_path=snapshot_path,
+        snapshot_identity=_overlay_file_identity(snapshot_stat),
+    )
+
+
+def _overlay_full_base(version: str) -> list[ArchiveInput]:
+    return [
+        ArchiveInput(
+            kind="full", from_version=None, to_version=version,
+            platform="android", layer=layer, order=1,
+            relative_path=(
+                f"archive-{directory.removeprefix('archive-').removesuffix('-diff')}-full/"
+                f"pinball-{version}-1-{index:02x}00.zip"
+            ),
+            compressed_bytes=1, sha256="0" * 64,
+        )
+        for index, (layer, (_manifest_layer, directory)) in enumerate(
+            OVERLAY_LAYER_NAMES.items(), start=1,
+        )
+    ]
+
+
+def _first_unreachable_target(
+    archives: list[ArchiveInput], from_version: str,
+) -> str | None:
+    edges = sorted(
+        {(archive.from_version, archive.to_version) for archive in archives},
+        key=lambda edge: parse_version(edge[1]) or (0, 0, 0),
+    )
+    reachable = {from_version}
+    changed = True
+    while changed:
+        changed = False
+        for edge_from, edge_to in edges:
+            if edge_from in reachable and edge_to not in reachable:
+                reachable.add(edge_to)
+                changed = True
+    return next((edge_to for edge_from, edge_to in edges if edge_from not in reachable), None)
+
+
+def _raise_overlay_issue(
+    issue: Issue,
+    archives: list[ArchiveInput],
+    from_version: str,
+) -> None:
+    by_path = {archive.relative_path: archive.to_version for archive in archives}
+    target_version = by_path.get(issue.relative_path or "")
+    if target_version is None and issue.code == "MISSING_PATH":
+        target_version = _first_unreachable_target(archives, from_version)
+    if target_version is None:
+        target_version = max(
+            (archive.to_version for archive in archives),
+            key=lambda version: parse_version(version) or (0, 0, 0),
+            default=from_version,
+        )
+    raise OverlayExportError(
+        issue.code, issue.message, issue.category,
+        target_version=target_version, relative_path=issue.relative_path,
+    )
+
+
+def _validate_overlay_graph(
+    archives: list[ArchiveInput], from_version: str,
+) -> None:
+    _catalog, issues = build_catalog(
+        _overlay_full_base(from_version) + archives,
+        0,
+        "EntityLists/overlay-android_medium.csv",
+    )
+    if issues:
+        _raise_overlay_issue(issues[0], archives, from_version)
+
+
+def _manifest_archive_input(item: dict) -> ArchiveInput:
+    match = DIFF_NAME_RE.fullmatch(Path(item["relativePath"]).name)
+    if match is None:
+        raise AssertionError("validated Overlay filename did not parse")
+    catalog_layer = {"common": "common", "medium": "quality", "android": "platform"}[
+        item["layer"]
+    ]
+    return ArchiveInput(
+        kind="diff", from_version=match.group(1), to_version=match.group(2),
+        platform="android", layer=catalog_layer, order=item["order"],
+        relative_path=item["relativePath"], compressed_bytes=item["bytes"],
+        sha256=item["sha256"],
+    )
+
+
+def _validate_staged_overlay(package_root: Path, manifest: dict) -> None:
+    target_version = manifest.get("targetVersion", "<missing>")
+    if manifest.get("schema") != OVERLAY_SCHEMA:
+        raise OverlayExportError(
+            "PATCH_MANIFEST_SCHEMA", "manifest must use schema 1", "manifest",
+            target_version=target_version,
+        )
+    if manifest.get("compatibleClient") != OVERLAY_CLIENT:
+        raise OverlayExportError(
+            "PATCH_CLIENT_INCOMPATIBLE", "compatibleClient must be CN 1.8.1", "manifest",
+            target_version=target_version,
+        )
+    if not _overlay_version_is_valid(target_version):
+        raise OverlayExportError(
+            "PATCH_TARGET_VERSION_INVALID", "targetVersion must use safe version components",
+            "manifest", target_version=target_version,
+        )
+    if (
+        "baseVersion" in manifest
+        and not _overlay_version_is_valid(manifest["baseVersion"])
+    ):
+        raise OverlayExportError(
+            "PATCH_BASE_VERSION_INVALID", "baseVersion must use safe version components",
+            "manifest", target_version=target_version,
+        )
+    if not isinstance(manifest.get("archives"), list) or not manifest["archives"]:
+        raise OverlayExportError(
+            "PATCH_ARCHIVES_INVALID", "archives must be a nonempty array", "archive",
+            target_version=target_version,
+        )
+    archives: list[ArchiveInput] = []
+    for item in manifest["archives"]:
+        relative_path = item["relativePath"]
+        layer = item.get("layer")
+        if layer not in ("common", "medium", "android"):
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_LAYER_INVALID", "archive layer is invalid", "archive",
+                target_version=target_version, relative_path=relative_path,
+            )
+        expected_directory = f"archive-{layer}-diff"
+        match = DIFF_NAME_RE.fullmatch(Path(relative_path).name)
+        if (
+            not _overlay_path_is_safe(relative_path)
+            or relative_path.split("/")[:-1] != [expected_directory]
+            or match is None
+        ):
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_PATH_INVALID",
+                "archive layer and filename must agree with relativePath",
+                "archive", target_version=target_version,
+                relative_path=relative_path,
+            )
+        if not _overlay_positive_safe_integer(item.get("order")):
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_ORDER_INVALID", "archive order must be a positive safe integer",
+                "archive", target_version=target_version, relative_path=relative_path,
+            )
+        if not _overlay_positive_safe_integer(item.get("bytes")):
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_SIZE_INVALID", "archive bytes must be a positive safe integer",
+                "archive", target_version=target_version, relative_path=relative_path,
+            )
+        if (
+            not _overlay_version_is_valid(match.group(1))
+            or not _overlay_version_is_valid(match.group(2))
+        ):
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_TARGET_MISMATCH", "archive filename has unsafe versions",
+                "archive", target_version=target_version, relative_path=relative_path,
+            )
+        if match.group(2) != target_version or int(match.group(3)) != item["order"]:
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_TARGET_MISMATCH",
+                "archive filename edge/order does not match manifest",
+                "archive", target_version=target_version,
+                relative_path=relative_path,
+            )
+        path = _validated_overlay_file(package_root, relative_path, target_version)
+        if path.stat().st_size != item["bytes"]:
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_SIZE_MISMATCH", "archive size does not match manifest",
+                "archive", target_version=target_version, relative_path=relative_path,
+            )
+        if not SHA256_HEX_RE.fullmatch(item["sha256"] or ""):
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_SHA256_INVALID", "archive sha256 must be lowercase hexadecimal",
+                "archive", target_version=target_version, relative_path=relative_path,
+            )
+        if file_sha256(path) != item["sha256"]:
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_HASH_MISMATCH", "archive digest does not match manifest",
+                "archive", target_version=target_version, relative_path=relative_path,
+            )
+        archives.append(_manifest_archive_input(item))
+    edge_from = archives[0].from_version
+    assert edge_from is not None
+    _validate_overlay_graph(archives, edge_from)
+
+
+def _publish_overlay_manifest(package_root: Path, manifest: dict) -> Path:
+    """Publish the runtime completion marker after every other package file exists."""
+    target = package_root / "patch-manifest.json"
+    handle = -1
+    temporary_name: str | None = None
+    try:
+        handle, temporary_name = tempfile.mkstemp(
+            prefix=".patch-manifest.", suffix=".tmp", dir=package_root,
+        )
+        with os.fdopen(handle, "w", encoding="utf-8", newline="\n") as stream:
+            json.dump(manifest, stream, ensure_ascii=False, indent=2)
+            stream.write("\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary_name, target)
+    except BaseException as exc:
+        if handle >= 0:
+            try:
+                os.close(handle)
+            except OSError:
+                pass
+        if temporary_name is not None:
+            try:
+                Path(temporary_name).unlink(missing_ok=True)
+            except OSError:
+                pass
+        if isinstance(exc, OverlayExportError):
+            raise
+        raise OverlayExportError(
+            "PATCH_MANIFEST_WRITE_FAILED", f"manifest publication failed: {exc}",
+            "output", target_version=manifest.get("targetVersion", "<unknown>"),
+            relative_path="patch-manifest.json",
+        ) from exc
+    return target
+
+
+OVERLAY_README_TEMPLATE = """# World Flipper Patch Overlay {target}
+
+This package requires Overlay schema 1 and a compatible CN 1.8.1 server.
+
+Install by extracting this outer ZIP directly into `CDN_DIR/patches/{target}/`.
+Use a normal supported restart such as `npm run start:cn`; startup Content Sync discovers,
+validates, and activates the package. Do not merge these files into `cn`.
+
+`requires.json` contains author/dependency metadata and does not replace patch-manifest.json,
+which is the runtime authority. `dev-catalog/EntityLists` and `server-patch/` are legacy and
+are not required in this Overlay mode.
+"""
+
+
+def _overlay_requires(
+    sources: list[OverlaySource],
+    from_version: str,
+    target_version: str,
+    *,
+    min_server: str | None,
+    server_features: tuple[str, ...],
+    client_patches: tuple[str, ...],
+) -> dict:
+    restart, reasons = _detect_pack_requirements_from_paths([
+        source.snapshot_path for source in sources
+    ])
+    return {
+        "schemaVersion": 2,
+        "pack": {
+            "format": "patch-overlay", "variant": "full",
+            "from": from_version, "tail": target_version, "edges": 1,
+        },
+        "enhancement": True,
+        "enhancementDetail": {
+            "note": "Author/dependency metadata only; patch-manifest.json is runtime authority",
+        },
+        "requires": {
+            "serverRestart": restart,
+            "restartReasons": reasons,
+            "minServerVersion": min_server,
+            "serverFeatures": list(server_features),
+            "clientPatches": list(client_patches),
+        },
+    }
+
+
+def _guarded_copy_file(
+    source: Path,
+    target: Path,
+    *,
+    target_root: Path,
+    expected_identity: tuple[int, int, int, int, int],
+    expected_sha256: str,
+    target_version: str,
+    relative_path: str,
+) -> tuple[int, str]:
+    """Copy a pinned regular file through a no-follow handle while rechecking identity."""
+    descriptor = -1
+    try:
+        before = os.lstat(source)
+        if (
+            _is_link_or_reparse(before)
+            or not stat.S_ISREG(before.st_mode)
+            or _overlay_file_identity(before) != expected_identity
+        ):
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_SYMLINK", "private source snapshot identity changed",
+                "archive", target_version=target_version,
+                relative_path=relative_path,
+            )
+        flags = (
+            os.O_RDONLY
+            | getattr(os, "O_BINARY", 0)
+            | getattr(os, "O_NOFOLLOW", 0)
+            | getattr(os, "O_NONBLOCK", 0)
+        )
+        descriptor = os.open(source, flags)
+        opened = os.fstat(descriptor)
+        if (
+            _is_link_or_reparse(opened)
+            or not stat.S_ISREG(opened.st_mode)
+            or _overlay_object_key(opened) != expected_identity[:2]
+        ):
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_SYMLINK", "private source snapshot changed before open",
+                "archive", target_version=target_version,
+                relative_path=relative_path,
+            )
+        digest = hashlib.sha256()
+        total_bytes = 0
+        with os.fdopen(descriptor, "rb", closefd=True) as source_stream, _secure_private_leaf(
+            target_root, target,
+            target_version=target_version,
+            relative_path=relative_path,
+        ) as target_stream:
+            descriptor = -1
+            for block in iter(lambda: source_stream.read(1 << 20), b""):
+                target_stream.write(block)
+                digest.update(block)
+                total_bytes += len(block)
+            after_read = os.fstat(source_stream.fileno())
+        after_path = os.lstat(source)
+        if (
+            _is_link_or_reparse(after_path)
+            or _overlay_file_identity(after_read) != _overlay_file_identity(opened)
+            or _overlay_file_identity(after_path) != expected_identity
+        ):
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_SYMLINK", "private source snapshot changed while copying",
+                "archive", target_version=target_version,
+                relative_path=relative_path,
+            )
+        actual_sha256 = digest.hexdigest()
+        if not _overlay_positive_safe_integer(total_bytes) or actual_sha256 != expected_sha256:
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_HASH_MISMATCH", "private source snapshot bytes changed",
+                "archive", target_version=target_version,
+                relative_path=relative_path,
+            )
+        return total_bytes, actual_sha256
+    finally:
+        if descriptor >= 0:
+            try:
+                os.close(descriptor)
+            except OSError:
+                pass
+
+
+def _stage_overlay_package(
+    package_root: Path,
+    sources: list[OverlaySource],
+    dependency_sources: list[OverlaySource],
+    *,
+    base_version: str | None,
+    min_server: str | None,
+    server_features: tuple[str, ...],
+    client_patches: tuple[str, ...],
+) -> dict:
+    first = sources[0].archive
+    edge_from = first.from_version
+    target_version = first.to_version
+    assert edge_from is not None
+    try:
+        package_root.mkdir(parents=True)
+    except OSError as exc:
+        raise OverlayExportError(
+            "PATCH_STAGING_IO_FAILED", f"could not create package staging: {exc}",
+            "output", target_version=target_version,
+            relative_path=str(package_root),
+        ) from exc
+    manifest_archives: list[dict] = []
+    for pinned in sorted(
+        sources,
+        key=lambda item: (
+            LAYER_ORDER[item.archive.layer], item.archive.order,
+            item.archive.relative_path,
+        ),
+    ):
+        archive = pinned.archive
+        source = pinned.snapshot_path
+        manifest_layer, directory = OVERLAY_LAYER_NAMES[archive.layer]
+        digest = archive.sha256
+        filename = (
+            f"pinball-{archive.from_version}-{archive.to_version}-{archive.order}-"
+            f"{digest[:12]}.zip"
+        )
+        relative_path = f"{directory}/{filename}"
+        target = package_root.joinpath(*relative_path.split("/"))
+        try:
+            staged_bytes, staged_sha256 = _guarded_copy_file(
+                source, target,
+                target_root=package_root,
+                expected_identity=pinned.snapshot_identity,
+                expected_sha256=archive.sha256,
+                target_version=target_version,
+                relative_path=archive.relative_path,
+            )
+        except OverlayExportError:
+            raise
+        except OSError as exc:
+            raise OverlayExportError(
+                "PATCH_STAGING_IO_FAILED", f"could not stage archive bytes: {exc}",
+                "output", target_version=target_version,
+                relative_path=relative_path,
+            ) from exc
+        _validated_overlay_file(package_root, relative_path, target_version)
+        manifest_archives.append({
+            "relativePath": relative_path,
+            "layer": manifest_layer,
+            "order": archive.order,
+            "bytes": staged_bytes,
+            "sha256": staged_sha256,
+        })
+
+    requires = _overlay_requires(
+        dependency_sources, edge_from, target_version,
+        min_server=min_server, server_features=server_features,
+        client_patches=client_patches,
+    )
+    try:
+        (package_root / "requires.json").write_text(
+            json.dumps(requires, ensure_ascii=False, indent=2) + "\n", encoding="utf-8",
+        )
+        (package_root / "README.md").write_text(
+            OVERLAY_README_TEMPLATE.format(target=target_version), encoding="utf-8",
+        )
+    except OSError as exc:
+        raise OverlayExportError(
+            "PATCH_STAGING_IO_FAILED", f"could not write package metadata: {exc}",
+            "output", target_version=target_version,
+            relative_path=str(package_root),
+        ) from exc
+    manifest = {
+        "schema": OVERLAY_SCHEMA,
+        "targetVersion": target_version,
+        "compatibleClient": OVERLAY_CLIENT,
+        "archives": manifest_archives,
+    }
+    if base_version is not None:
+        manifest["baseVersion"] = base_version
+    _validate_staged_overlay(package_root, manifest)
+    _publish_overlay_manifest(package_root, manifest)
+    return manifest
+
+
+def _overlay_package_files(package_root: Path, manifest: dict) -> list[PinnedPackageMember]:
+    expected = {
+        "README.md", "requires.json", "patch-manifest.json",
+        *(item["relativePath"] for item in manifest["archives"]),
+    }
+    actual: set[str] = set()
+    pinned: dict[str, PinnedPackageMember] = {}
+    expected_directories = {
+        Path(item["relativePath"]).parent.as_posix()
+        for item in manifest["archives"]
+    }
+    for current, directory_names, file_names in os.walk(package_root, followlinks=False):
+        current_path = Path(current)
+        for name in [*directory_names, *file_names]:
+            path = current_path / name
+            relative = path.relative_to(package_root).as_posix()
+            try:
+                path_stat = os.lstat(path)
+            except OSError as exc:
+                raise OverlayExportError(
+                    "PATCH_ARCHIVE_FILE_TYPE", f"could not inspect staged path: {exc}",
+                    "archive", target_version=manifest["targetVersion"],
+                    relative_path=relative,
+                ) from exc
+            if _is_link_or_reparse(path_stat):
+                raise OverlayExportError(
+                    "PATCH_ARCHIVE_SYMLINK", "staged package contains a symbolic link",
+                    "archive", target_version=manifest["targetVersion"],
+                    relative_path=relative,
+                )
+            if stat.S_ISDIR(path_stat.st_mode):
+                if relative not in expected_directories:
+                    raise OverlayExportError(
+                        "PATCH_ARCHIVE_FILE_TYPE", "staged package contains an unexpected directory",
+                        "archive", target_version=manifest["targetVersion"],
+                        relative_path=relative,
+                    )
+                continue
+            if not stat.S_ISREG(path_stat.st_mode):
+                raise OverlayExportError(
+                    "PATCH_ARCHIVE_FILE_TYPE", "staged package contains a non-regular file",
+                    "archive", target_version=manifest["targetVersion"],
+                    relative_path=relative,
+                )
+            actual.add(relative)
+            pinned[relative] = PinnedPackageMember(
+                relative_path=relative,
+                path=path,
+                identity=_overlay_file_identity(path_stat),
+            )
+    unexpected = sorted(actual - expected)
+    missing = sorted(expected - actual)
+    if unexpected or missing:
+        relative = unexpected[0] if unexpected else missing[0]
+        raise OverlayExportError(
+            "PATCH_ARCHIVE_FILE_TYPE",
+            "staged package does not match the explicit manifest allowlist",
+            "archive", target_version=manifest["targetVersion"],
+            relative_path=relative,
+        )
+    ordered = [
+        "README.md", "requires.json",
+        *sorted(item["relativePath"] for item in manifest["archives"]),
+        "patch-manifest.json",
+    ]
+    return [pinned[relative] for relative in ordered]
+
+
+def _write_pinned_package_member(
+    bundle: zipfile.ZipFile,
+    member: PinnedPackageMember,
+    target_version: str,
+) -> None:
+    descriptor = -1
+    try:
+        before = os.lstat(member.path)
+        if (
+            _is_link_or_reparse(before)
+            or not stat.S_ISREG(before.st_mode)
+            or _overlay_file_identity(before) != member.identity
+        ):
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_SYMLINK", "staged package member identity changed",
+                "archive", target_version=target_version,
+                relative_path=member.relative_path,
+            )
+        flags = (
+            os.O_RDONLY
+            | getattr(os, "O_BINARY", 0)
+            | getattr(os, "O_NOFOLLOW", 0)
+            | getattr(os, "O_NONBLOCK", 0)
+        )
+        descriptor = os.open(member.path, flags)
+        opened = os.fstat(descriptor)
+        if (
+            _is_link_or_reparse(opened)
+            or not stat.S_ISREG(opened.st_mode)
+            or _overlay_object_key(opened) != member.identity[:2]
+        ):
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_SYMLINK", "staged package member changed before open",
+                "archive", target_version=target_version,
+                relative_path=member.relative_path,
+            )
+        with os.fdopen(descriptor, "rb", closefd=True) as source, bundle.open(
+            member.relative_path, "w",
+        ) as target:
+            descriptor = -1
+            for block in iter(lambda: source.read(1 << 20), b""):
+                target.write(block)
+            after_read = os.fstat(source.fileno())
+        after_path = os.lstat(member.path)
+        if (
+            _is_link_or_reparse(after_path)
+            or _overlay_file_identity(after_read) != _overlay_file_identity(opened)
+            or _overlay_file_identity(after_path) != member.identity
+        ):
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_SYMLINK", "staged package member changed while streaming",
+                "archive", target_version=target_version,
+                relative_path=member.relative_path,
+            )
+    finally:
+        if descriptor >= 0:
+            try:
+                os.close(descriptor)
+            except OSError:
+                pass
+
+
+def _write_outer_overlay(package_root: Path, outer_path: Path, manifest: dict) -> None:
+    temporary = outer_path.with_name(f".{outer_path.name}.tmp")
+    try:
+        members = _overlay_package_files(package_root, manifest)
+        member_names = [member.relative_path for member in members]
+        with zipfile.ZipFile(temporary, "w", compression=zipfile.ZIP_DEFLATED) as bundle:
+            for member in members:
+                _write_pinned_package_member(bundle, member, manifest["targetVersion"])
+        with zipfile.ZipFile(temporary) as bundle:
+            names = bundle.namelist()
+            if (
+                bundle.testzip() is not None
+                or names != member_names
+                or len(names) != len(set(names))
+            ):
+                raise OverlayExportError(
+                    "PATCH_ARCHIVE_FILE_TYPE", "outer ZIP member allowlist verification failed",
+                    "archive", target_version=manifest["targetVersion"],
+                    relative_path=outer_path.name,
+                )
+            if json.loads(bundle.read("patch-manifest.json")) != manifest:
+                raise OverlayExportError(
+                    "PATCH_ARCHIVE_HASH_MISMATCH", "outer ZIP manifest changed while writing",
+                    "archive", target_version=manifest["targetVersion"],
+                    relative_path="patch-manifest.json",
+                )
+            for item in manifest["archives"]:
+                digest = hashlib.sha256()
+                total_bytes = 0
+                with bundle.open(item["relativePath"]) as stream:
+                    for block in iter(lambda: stream.read(1 << 20), b""):
+                        digest.update(block)
+                        total_bytes += len(block)
+                if total_bytes != item["bytes"] or digest.hexdigest() != item["sha256"]:
+                    raise OverlayExportError(
+                        "PATCH_ARCHIVE_HASH_MISMATCH",
+                        "outer ZIP archive bytes do not match manifest",
+                        "archive", target_version=manifest["targetVersion"],
+                        relative_path=item["relativePath"],
+                    )
+        os.replace(temporary, outer_path)
+    except BaseException as exc:
+        try:
+            temporary.unlink(missing_ok=True)
+        except OSError:
+            pass
+        if isinstance(exc, OverlayExportError):
+            raise
+        raise OverlayExportError(
+            "PATCH_OUTER_ZIP_WRITE_FAILED", f"outer ZIP publication failed: {exc}",
+            "output", target_version=manifest["targetVersion"],
+            relative_path=outer_path.name,
+        ) from exc
+
+
+def _empty_consolidated_layer(
+    root: Path, layer: str, from_version: str, to_version: str,
+) -> tuple[ArchiveInput, Path]:
+    _manifest_layer, directory = OVERLAY_LAYER_NAMES[layer]
+    filename = f"pinball-{from_version}-{to_version}-1-e0e0.zip"
+    path = root / directory / filename
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED):
+        pass
+    return ArchiveInput(
+        kind="diff", from_version=from_version, to_version=to_version,
+        platform="android", layer=layer, order=1,
+        relative_path=f"{directory}/{filename}", compressed_bytes=path.stat().st_size,
+        sha256=file_sha256(path),
+    ), path
+
+
+def _consolidated_overlay_sources(
+    selected: list[OverlaySource],
+    work_dir: Path,
+    from_version: str,
+    target_version: str,
+) -> list[OverlaySource]:
+    import wf_pack_consolidate
+
+    root_names = {"common": "common", "quality": "medium", "platform": "android"}
+    inputs = [
+        (source.snapshot_path, root_names[source.archive.layer])
+        for source in selected
+    ]
+    try:
+        report = wf_pack_consolidate.consolidate(
+            selected[0].source_root, ROOT, tag="c0decafe", files=inputs,
+            max_zip_mib=0, out_dir=work_dir, force=False,
+        )
+    except (OSError, RuntimeError, ValueError) as exc:
+        raise OverlayExportError(
+            "PATCH_ARCHIVE_FILE_TYPE", f"consolidation failed: {exc}", "archive",
+            target_version=target_version,
+        ) from exc
+    if report.get("from") != from_version or report.get("to") != target_version:
+        raise OverlayExportError(
+            "PATCH_ARCHIVE_TARGET_MISMATCH",
+            "consolidator output edge does not match requested from/final target",
+            "graph", target_version=target_version,
+        )
+    catalog_layers = {"common": "common", "medium": "quality", "android": "platform"}
+    result: list[OverlaySource] = []
+    for output in report["outputs"]:
+        try:
+            layer = catalog_layers[output["root"]]
+            _manifest_layer, directory = OVERLAY_LAYER_NAMES[layer]
+            reported_path = Path(output["path"])
+        except (KeyError, TypeError, ValueError) as exc:
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_PATH_INVALID", "consolidator reported invalid output metadata",
+                "archive", target_version=target_version,
+            ) from exc
+        expected_path = work_dir / directory / reported_path.name
+        if reported_path.absolute() != expected_path.absolute():
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_PATH_INVALID",
+                "consolidator output path is not the exact private work path",
+                "archive", target_version=target_version,
+                relative_path=str(reported_path),
+            )
+        path = _validated_overlay_file(
+            work_dir, f"{directory}/{reported_path.name}", target_version,
+        )
+        try:
+            if path.resolve(strict=True) != expected_path.resolve(strict=True):
+                raise ValueError("resolved output path differs")
+        except (OSError, ValueError) as exc:
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_PATH_INVALID",
+                "consolidator output does not resolve to its private work path",
+                "archive", target_version=target_version,
+                relative_path=str(reported_path),
+            ) from exc
+        match = DIFF_NAME_RE.fullmatch(path.name)
+        if match is None:
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_PATH_INVALID", "consolidator emitted an invalid filename",
+                "archive", target_version=target_version, relative_path=path.name,
+            )
+        path_stat = os.lstat(path)
+        archive = ArchiveInput(
+            kind="diff", from_version=match.group(1), to_version=match.group(2),
+            platform="android", layer=layer, order=int(match.group(3)),
+            relative_path=f"{directory}/{path.name}", compressed_bytes=path_stat.st_size,
+            sha256=file_sha256(path),
+        )
+        result.append(OverlaySource(
+            archive=archive, source_root=work_dir,
+            source_relative_path=archive.relative_path, snapshot_path=path,
+            snapshot_identity=_overlay_file_identity(path_stat),
+        ))
+    present = {source.archive.layer for source in result}
+    for layer in OVERLAY_LAYER_NAMES:
+        if layer not in present:
+            archive, path = _empty_consolidated_layer(
+                work_dir, layer, from_version, target_version,
+            )
+            result.append(OverlaySource(
+                archive=archive, source_root=work_dir,
+                source_relative_path=archive.relative_path, snapshot_path=path,
+                snapshot_identity=_overlay_file_identity(os.lstat(path)),
+            ))
+    _validate_overlay_graph([source.archive for source in result], from_version)
+    return result
+
+
+def _resolved_path_is_within(path: Path, root: Path) -> bool:
+    try:
+        path.relative_to(root)
+        return True
+    except ValueError:
+        return False
+
+
+def _validate_overlay_output_parent(
+    output_parent: Path,
+    cdn_root: Path,
+    asset_patch_active: Path | None,
+    target_version: str,
+) -> None:
+    output_resolved = output_parent.resolve(strict=False)
+    protected = [cdn_root, cdn_root.parent / "patches"]
+    if asset_patch_active is not None:
+        protected.append(Path(asset_patch_active))
+    for protected_root in protected:
+        protected_resolved = protected_root.resolve(strict=False)
+        if _resolved_path_is_within(output_resolved, protected_resolved):
+            raise OverlayExportError(
+                "PATCH_OUTPUT_PROTECTED",
+                "--out must not be equal to or inside a live CDN/patch root",
+                "output", target_version=target_version,
+                relative_path=str(output_parent),
+            )
+
+
+def _remove_overlay_work(work_dir: Path) -> None:
+    shutil.rmtree(work_dir)
+    if work_dir.exists():
+        raise OSError(f"private work directory still exists: {work_dir}")
+
+
+def _validate_overlay_candidate(
+    candidate: Path,
+    expected_names: list[str],
+    target_version: str,
+) -> OverlayCandidatePin:
+    try:
+        root_stat = os.lstat(candidate)
+        if _is_link_or_reparse(root_stat) or not stat.S_ISDIR(root_stat.st_mode):
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_FILE_TYPE", "batch candidate root is not a real directory",
+                "output", target_version=target_version,
+                relative_path=str(candidate),
+            )
+        actual_names: list[str] = []
+        members: list[PinnedPackageMember] = []
+        for path in candidate.iterdir():
+            path_stat = os.lstat(path)
+            if _is_link_or_reparse(path_stat) or not stat.S_ISREG(path_stat.st_mode):
+                raise OverlayExportError(
+                    "PATCH_ARCHIVE_FILE_TYPE",
+                    "batch candidate contains a non-regular outer ZIP",
+                    "output", target_version=target_version,
+                    relative_path=path.name,
+                )
+            actual_names.append(path.name)
+            members.append(PinnedPackageMember(
+                relative_path=path.name,
+                path=path,
+                identity=_overlay_file_identity(path_stat),
+            ))
+        if sorted(actual_names) != sorted(expected_names) or len(actual_names) != len(set(actual_names)):
+            raise OverlayExportError(
+                "PATCH_ARCHIVE_FILE_TYPE",
+                "batch candidate does not contain exactly the expected outer ZIPs",
+                "output", target_version=target_version,
+            )
+        after_root = os.lstat(candidate)
+        if _overlay_file_identity(after_root) != _overlay_file_identity(root_stat):
+            raise OverlayExportError(
+                "PATCH_BATCH_PUBLISH_FAILED", "batch candidate root changed during validation",
+                "output", target_version=target_version,
+                relative_path=str(candidate),
+            )
+        return OverlayCandidatePin(
+            root_identity=_overlay_file_identity(root_stat),
+            members=tuple(sorted(members, key=lambda item: item.relative_path)),
+        )
+    except OverlayExportError:
+        raise
+    except OSError as exc:
+        raise OverlayExportError(
+            "PATCH_BATCH_PUBLISH_FAILED", f"could not verify batch candidate: {exc}",
+            "output", target_version=target_version,
+        ) from exc
+
+
+def _recheck_overlay_candidate(
+    candidate: Path,
+    pin: OverlayCandidatePin,
+    expected_names: list[str],
+    target_version: str,
+) -> None:
+    """Recheck the pinned candidate immediately before the atomic directory rename."""
+    try:
+        root_stat = os.lstat(candidate)
+        if (
+            _is_link_or_reparse(root_stat)
+            or not stat.S_ISDIR(root_stat.st_mode)
+            or _overlay_file_identity(root_stat) != pin.root_identity
+        ):
+            raise OverlayExportError(
+                "PATCH_BATCH_PUBLISH_FAILED", "batch candidate root identity changed",
+                "output", target_version=target_version,
+                relative_path=str(candidate),
+            )
+        current = {path.name: path for path in candidate.iterdir()}
+        if sorted(current) != sorted(expected_names) or len(current) != len(expected_names):
+            raise OverlayExportError(
+                "PATCH_BATCH_PUBLISH_FAILED", "batch candidate members changed",
+                "output", target_version=target_version,
+                relative_path=str(candidate),
+            )
+        for member in pin.members:
+            path_stat = os.lstat(current[member.relative_path])
+            if (
+                _is_link_or_reparse(path_stat)
+                or not stat.S_ISREG(path_stat.st_mode)
+                or _overlay_file_identity(path_stat) != member.identity
+            ):
+                raise OverlayExportError(
+                    "PATCH_BATCH_PUBLISH_FAILED", "batch candidate file identity changed",
+                    "output", target_version=target_version,
+                    relative_path=member.relative_path,
+                )
+    except OverlayExportError:
+        raise
+    except OSError as exc:
+        raise OverlayExportError(
+            "PATCH_BATCH_PUBLISH_FAILED", f"could not recheck batch candidate: {exc}",
+            "output", target_version=target_version,
+            relative_path=str(candidate),
+        ) from exc
+
+
+def export_patch_overlays(
+    cdn_root: Path = CDN_ROOT,
+    asset_patch_active: Path | None = ASSET_PATCH_ACTIVE,
+    out_dir: Path | None = None,
+    *,
+    from_version: str,
+    base_version: str | None = None,
+    consolidate: bool = False,
+    min_server: str | None = None,
+    server_features: tuple[str, ...] = (),
+    client_patches: tuple[str, ...] = (),
+) -> tuple[Path, dict, list[Issue]]:
+    """Build atomic schema-1 Patch Overlay outer ZIPs without writing the CDN/store."""
+    if not _overlay_version_is_valid(from_version):
+        raise OverlayExportError(
+            "PATCH_TARGET_VERSION_INVALID",
+            "--from-ver must use safe semantic-version components", "graph",
+            target_version=from_version,
+        )
+    if base_version is not None and not _overlay_version_is_valid(base_version):
+        raise OverlayExportError(
+            "PATCH_BASE_VERSION_INVALID",
+            "--base-version must use safe semantic-version components",
+            "manifest", target_version=from_version,
+        )
+    cdn_root = Path(cdn_root)
+    output_parent = Path(out_dir) if out_dir is not None else cdn_root.parent / "share"
+    _validate_overlay_output_parent(
+        output_parent, cdn_root, asset_patch_active, from_version,
+    )
+    scan = scan_chain(cdn_root, asset_patch_active, digest_mode="skip")
+    selected = [
+        archive for archive in scan.archives
+        if archive.kind == "diff" and compare_versions(archive.to_version, from_version) > 0
+    ]
+    if not selected:
+        raise OverlayExportError(
+            "MISSING_PATH", f"no upgrade edge is available from {from_version}", "graph",
+            target_version=from_version,
+        )
+    for archive in selected:
+        _validate_overlay_archive_metadata(archive)
+    _validate_overlay_graph(selected, from_version)
+
+    edges = sorted(
+        {(archive.from_version, archive.to_version) for archive in selected},
+        key=lambda edge: parse_version(edge[1]) or (0, 0, 0),
+    )
+    tail = edges[-1][1]
+    assert tail is not None
+    generated_targets = {edge_to for _edge_from, edge_to in edges}
+    if base_version is not None and base_version in generated_targets:
+        raise OverlayExportError(
+            "PATCH_BASE_VERSION_CYCLE",
+            "--base-version must not depend on a package generated by this batch",
+            "graph", target_version=base_version,
+        )
+    batch_name = f"wf-overlay-{from_version}-to-{tail}"
+    final_batch = output_parent / batch_name
+    if final_batch.exists():
+        raise OverlayExportError(
+            "PATCH_OUTPUT_EXISTS", "output batch already exists", "output",
+            target_version=tail, relative_path=batch_name,
+        )
+    work_dir: Path | None = None
+    candidate: Path | None = None
+    try:
+        output_parent.mkdir(parents=True, exist_ok=True)
+        work_dir = Path(tempfile.mkdtemp(prefix=f".{batch_name}.work.", dir=output_parent))
+        candidate = Path(tempfile.mkdtemp(prefix=f".{batch_name}.candidate.", dir=output_parent))
+    except OSError as exc:
+        if work_dir is not None:
+            shutil.rmtree(work_dir, ignore_errors=True)
+        raise OverlayExportError(
+            "PATCH_BATCH_PUBLISH_FAILED", f"could not create private output staging: {exc}",
+            "output", target_version=tail, relative_path=str(output_parent),
+        ) from exc
+    stats = {"from": from_version, "tail": tail, "packages": 0, "outerZips": []}
+    published = False
+    assert work_dir is not None and candidate is not None
+    try:
+        pinned_sources: list[OverlaySource] = []
+        for index, archive in enumerate(selected, start=1):
+            source_root, source_relative = _overlay_source_location(
+                archive, cdn_root, asset_patch_active,
+            )
+            pinned_sources.append(_pin_overlay_source(
+                archive, source_root, source_relative,
+                work_dir / "sources" / f"{index:04d}"
+                / Path(archive.relative_path).name,
+                work_dir,
+            ))
+        _validate_overlay_graph(
+            [source.archive for source in pinned_sources], from_version,
+        )
+
+        package_stage = work_dir / "packages"
+        plans: list[tuple[str, str, list[OverlaySource], list[OverlaySource]]] = []
+        if consolidate:
+            consolidated_dir = work_dir / "consolidated"
+            consolidated = _consolidated_overlay_sources(
+                pinned_sources, consolidated_dir, from_version, tail,
+            )
+            plans.append((from_version, tail, consolidated, pinned_sources))
+        else:
+            for edge_from, edge_to in edges:
+                assert edge_from is not None
+                edge_sources = [
+                    source for source in pinned_sources
+                    if source.archive.from_version == edge_from
+                    and source.archive.to_version == edge_to
+                ]
+                plans.append((edge_from, edge_to, edge_sources, edge_sources))
+
+        for edge_from, edge_to, sources, dependencies in plans:
+            package_root = package_stage / edge_to
+            manifest = _stage_overlay_package(
+                package_root, sources, dependencies,
+                base_version=base_version, min_server=min_server,
+                server_features=server_features, client_patches=client_patches,
+            )
+            outer_name = f"worldflipper-overlay-{edge_from}-to-{edge_to}.zip"
+            _write_outer_overlay(package_root, candidate / outer_name, manifest)
+            stats["outerZips"].append(outer_name)
+
+        try:
+            _remove_overlay_work(work_dir)
+        except OSError as exc:
+            raise OverlayExportError(
+                "PATCH_OUTPUT_CLEANUP_FAILED", f"private work cleanup failed: {exc}",
+                "output", target_version=tail, relative_path=str(work_dir),
+            ) from exc
+        candidate_pin = _validate_overlay_candidate(candidate, stats["outerZips"], tail)
+        stats["packages"] = len(plans)
+        try:
+            _recheck_overlay_candidate(
+                candidate, candidate_pin, stats["outerZips"], tail,
+            )
+            os.replace(candidate, final_batch)
+        except OSError as exc:
+            raise OverlayExportError(
+                "PATCH_BATCH_PUBLISH_FAILED", f"atomic batch publication failed: {exc}",
+                "output", target_version=tail, relative_path=batch_name,
+            ) from exc
+        published = True
+    finally:
+        if work_dir.exists():
+            shutil.rmtree(work_dir, ignore_errors=True)
+        if not published and candidate.exists():
+            shutil.rmtree(candidate, ignore_errors=True)
+    return final_batch, stats, []
+
+
 # ---------------------------------------------------------------- CLI
 
 def _print_issue_groups(issues: list[Issue]) -> None:
@@ -1758,6 +3395,28 @@ def cmd_export_pack(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_export_overlay(args: argparse.Namespace) -> int:
+    try:
+        batch_dir, stats, _issues = export_patch_overlays(
+            Path(args.cdn_root),
+            asset_patch_for(Path(args.cdn_root)),
+            Path(args.out) if args.out else None,
+            from_version=args.from_ver,
+            base_version=args.base_version,
+            consolidate=args.consolidate,
+            min_server=args.min_server,
+            server_features=tuple(args.server_feature),
+            client_patches=tuple(args.client_patch),
+        )
+    except OverlayExportError as exc:
+        print(f"[ERR] {exc}", file=sys.stderr)
+        return 1
+    for key, value in stats.items():
+        print(f"{key}: {value}")
+    print(f"[OK] Patch Overlay batch: {batch_dir}")
+    return 0
+
+
 def cmd_verify_baseline(args: argparse.Namespace) -> int:
     raw = json.loads(Path(args.manifest).read_text(encoding="utf-8"))
     catalog_input = raw["catalogInput"]
@@ -1856,6 +3515,23 @@ def main(argv: list[str] | None = None) -> int:
     export.add_argument("--client-patch", action="append", default=[],
                         help="声明需要的客户端补丁,可重复(如 seris-pcode-v2)")
     export.set_defaults(func=cmd_export_pack)
+
+    overlay = subparsers.add_parser(
+        "export-overlay", help="导出 schema 1 Patch Overlay 外层 ZIP 批次"
+    )
+    overlay.add_argument("--from-ver", required=True,
+                         help="显式客户端升级起点版本")
+    overlay.add_argument("--base-version",
+                         help="可选内容依赖;不参与升级边计算")
+    overlay.add_argument("--consolidate", action="store_true",
+                         help="显式整合成 from-ver 到最终版本的一条真实边")
+    overlay.add_argument("--out", help="原子批次输出父目录(默认 <cdn>/../share)")
+    overlay.add_argument("--min-server", help="requires.json 作者元数据:最低服务端版本")
+    overlay.add_argument("--server-feature", action="append", default=[],
+                         help="requires.json 作者元数据:服务端功能,可重复")
+    overlay.add_argument("--client-patch", action="append", default=[],
+                         help="requires.json 作者元数据:客户端补丁,可重复")
+    overlay.set_defaults(func=cmd_export_overlay)
 
     verify = subparsers.add_parser("verify-baseline", help="金样验证移植保真度")
     verify.add_argument("--manifest", required=True)
