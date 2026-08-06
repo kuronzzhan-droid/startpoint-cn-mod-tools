@@ -4,6 +4,26 @@
 可视化 / 命令行修改角色词条、基础数值(HP/ATK)、觉醒加成、能力魂、队长技、技能能量、
 角色资料,并经服务端 CDN 增量下发到客户端生效。
 
+---
+
+## 只想玩到新角色/新武器/深渊连战塔?先看这里
+
+**本仓是工具链,不含内容**——这里没有服务端、没有增量包,clone 下来玩不到任何东西。
+内容按你的服务端架构二选一:
+
+| 你的服务端 | 怎么拿内容 |
+|---|---|
+| **想省事,完整验证过的路** | 直接部署 [kuronzzhan-droid/startpoint-cn](https://github.com/kuronzzhan-droid/startpoint-cn)(默认分支即发布分支)。两模式 + 15 把深渊武器 + 八位自制/改造角色的增量**随仓自带,clone 即得**,链尾 1.4.312 |
+| **已经在跑上游 `dev`**(不想 fork) | 装本仓 [Release `overlay-1.4.312`](https://github.com/kuronzzhan-droid/startpoint-cn-mod-tools/releases/tag/overlay-1.4.312) 的**两个**资产:`worldflipper-overlay-…zip`(客户端资源 + 激活表)解压到 `CDN_DIR/patches/1.4.312/`,`rogue-rush-mode-…zip`(700099 玩法模块)装进 `<server>/modes.d/`。装载缝已随 PR #19 合并进上游 `dev`,**不需要 fork** |
+
+两条路都还需要:**官方基础 CDN 自备**(完整到官方链尾 1.4.54),以及一只
+[五合一客户端基座 APK](https://github.com/kuronzzhan-droid/startpoint-cn/releases/tag/client-base-v2.0)
+重指向到你自己的服务器并重签(本仓 Release 也有同一份)。
+
+> ⚠️ dev 那条路的模式只验证到**服务端级**,客户端真机验收尚未完成;fork 那条路是完整验证过的。
+
+---
+
 ## ⚠️ 免责声明
 
 - 本工具仅用于**学习、研究、单机 / 私服环境**下对**你自己拥有的**游戏资源进行修改。
