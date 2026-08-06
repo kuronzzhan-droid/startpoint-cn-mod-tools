@@ -9,8 +9,8 @@
 
 规则(与服务端 cn-asset-graph.ts / wf_chain_squash 同一套):
   1. 重放顺序 = 客户端应用顺序:边按版本递增;边内按 root 序
-     (common<medium<android<patch)+ relativePath 序;同路径文件后写覆盖
-     先写,终态每个路径只保留最后一次出现的有效文件。
+     (common<medium<android<patch)+ 数值 seq + relativePath + source 序;
+     同路径文件后写覆盖先写,终态每个路径只保留最后一次出现的有效文件。
   2. 整合范围 [A,B] = 所选最早 from → 最新 to。选择来自 CDN 时,按客户端
      实际路径(findReleasePath)自动补齐未勾选但可见的归档(asset-patch/active
      平行边、active.json 锚定的 charpkg)——否则客户端走整合捷径会丢内容;
@@ -80,6 +80,8 @@ def _origin_of(archive: squash.VisibleArchive) -> str:
 
 def _archive_meta(archive: squash.VisibleArchive, frm: str, to: str) -> dict:
     match = squash.ARCHIVE_RE.fullmatch(archive.path.name)
+    if match is None:
+        raise ValueError(f"可见归档文件名不规范: {archive.path.name}")
     origin = _origin_of(archive)
     try:
         stat = archive.path.stat()
@@ -93,8 +95,8 @@ def _archive_meta(archive: squash.VisibleArchive, frm: str, to: str) -> dict:
         "root": archive.root,
         "from": frm,
         "to": to,
-        "seq": int(match.group(3)) if match else 0,
-        "tag": match.group(4) if match else "",
+        "seq": archive.seq,
+        "tag": match.group(4),
         "name": archive.path.name,
         "size": size,
         "mtime": mtime,
@@ -123,7 +125,7 @@ def scan_selectable(cdn_root: Path, repo_root: Path, base: str = DEFAULT_BASE) -
         for _pid, (archive, frm, to) in index.items()
     ]
     packs.sort(key=lambda p: (squash.vkey(p["from"]), squash.vkey(p["to"]),
-                              squash.ROOT_ORDER[p["root"]], p["name"]))
+                              squash.ROOT_ORDER[p["root"]], p["seq"], p["name"]))
     return {"base": base, "tail": tail, "path_edge_count": len(path_edges),
             "packs": packs, "issues": list(graph.issues)}
 
@@ -141,6 +143,11 @@ def _parse_upload(path: Path, root: str) -> tuple[squash.VisibleArchive, str, st
     if match is None:
         raise ValueError(
             f"上传包文件名不符合发布命名 pinball-<from>-<to>-<seq>-<tag>.zip: {path.name}")
+    seq = int(match.group(3))
+    if seq > squash.MAX_ARCHIVE_SEQ:
+        raise ValueError(
+            f"上传包 sequence 超过 {squash.MAX_ARCHIVE_SEQ}: {seq} ({path.name})"
+        )
     frm, to = match.group(1), match.group(2)
     if squash.vkey(to) <= squash.vkey(frm):
         raise ValueError(f"上传包版本边非递增: {path.name}")

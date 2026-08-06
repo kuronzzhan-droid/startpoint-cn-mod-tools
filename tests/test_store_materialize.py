@@ -107,6 +107,41 @@ class MaterializeCase(unittest.TestCase):
 
 
 class StoreMaterializeTest(MaterializeCase):
+    def test_full_archives_apply_sequences_numerically(self):
+        for seq in (1, 2, 10, 11):
+            self.fx.full("common", {COMMON_A: f"seq-{seq}".encode()}, seq=seq)
+
+        code, _summary, _stdout, _stderr = self.run_cli("--apply")
+
+        self.assertEqual(0, code)
+        self.assertEqual(
+            b"seq-11",
+            (self.fx.dest / "production" / "upload" / "aa" / ("1" * 38)).read_bytes(),
+        )
+
+    def test_full_archive_sequence_uses_the_shared_safe_integer_limit(self):
+        max_seq = 9_007_199_254_740_991
+        self.fx.full("common", {COMMON_A: b"max"}, seq=max_seq)
+        self.fx.full("common", {COMMON_A: b"overflow"}, seq=max_seq + 1)
+
+        code, summary, _stdout, stderr = self.run_cli()
+
+        self.assertEqual(2, code)
+        self.assertFalse(summary["ok"])
+        self.assertRegex(stderr, r"sequence.*9007199254740992")
+
+    def test_full_archive_rejects_noncanonical_leading_zero_sequence(self):
+        make_zip(
+            self.fx.cdn / "archive-common-full" / "pinball-1.4.0-01-invalid.zip",
+            {COMMON_A: b"invalid"},
+        )
+
+        code, summary, _stdout, stderr = self.run_cli()
+
+        self.assertEqual(2, code)
+        self.assertFalse(summary["ok"])
+        self.assertIn("noncanonical full archive", stderr)
+
     def test_default_dry_run_plans_full_archives_without_writing(self):
         self.fx.full("common", {COMMON_A: b"base", ".empty": b"0"})
         make_zip(
@@ -210,7 +245,7 @@ class StoreMaterializeTest(MaterializeCase):
             "1.4.0",
             "1.4.1",
             {COMMON_A: b"charpkg-a"},
-            tag="charpkg-hero",
+            tag="charpkg-fixture-r1-common",
         )
         self.fx.patch("1.4.0", "1.4.1", {COMMON_B: b"patch-b"})
         active = self.fx.cdn / "character-releases" / "active.json"
@@ -224,7 +259,8 @@ class StoreMaterializeTest(MaterializeCase):
                         {
                             "from_version": "1.4.0",
                             "version": "1.4.1",
-                            "release_id": "hero",
+                            "package_id": "fixture",
+                            "release_id": "r1",
                             "archives": [
                                 {
                                     "root": "common",

@@ -1363,6 +1363,105 @@ class ExportOverlayTest(unittest.TestCase):
                 ) if out.exists() else False)
 
 
+class MaterializeForeignRootTest(unittest.TestCase):
+    """外根包的显示路径不是它的物理位置。
+
+    `asset-patch/active/…` 是给报告和 catalog 看的展示路径,物理文件在 CDN 根之外。
+    以前物化直接把它拼到 cdn_root 上,于是第一个外根包就让 shutil.copy2 抛
+    FileNotFoundError——不是可读的错误,是整条命令的 traceback。真实链上 65 个外根包
+    全部命中,`export-overlay` 前的准备步骤因此完全走不通。
+    """
+
+    def _make(self, tmp: Path) -> tuple[Path, Path]:
+        cdn = tmp / "cn"
+        patch = tmp / "asset-patch-active"
+        (cdn / "archive-common-diff").mkdir(parents=True)
+        (cdn / "archive-medium-diff").mkdir(parents=True)
+        (cdn / "archive-android-diff").mkdir(parents=True)
+        (cdn / "archive-common-full").mkdir(parents=True)
+        patch.mkdir(parents=True)
+        with zipfile.ZipFile(
+            cdn / "archive-common-full" / "pinball-1.4.0-1-aaaaaaaa.zip", "w"
+        ) as bundle:
+            bundle.writestr("production/upload/aa/" + "1" * 38, b"BASE")
+        with zipfile.ZipFile(
+            patch / "pinball-1.4.0-1.4.1-1-foreign.zip", "w"
+        ) as bundle:
+            bundle.writestr("production/upload/bb/" + "2" * 38, b"FOREIGN")
+        return cdn, patch
+
+    def test_foreign_archive_is_materialized_from_its_real_root(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            cdn, patch = self._make(Path(tmp))
+
+            view_root, stats, issues = devcat.materialize_dev_view(
+                cdn, patch, Path(tmp) / "view",
+            )
+
+            self.assertEqual(0, stats["missing"])
+            self.assertEqual(
+                [], [i.line() for i in issues if i.code == "MATERIALIZE_SOURCE_MISSING"]
+            )
+            # 必须落在它自己的层目录里。用展示路径切目录会把外根包放进视图的
+            # asset-patch/ 下:文件在磁盘上,扫描器看不见,该边就成了"缺 common 层"。
+            self.assertFalse(
+                (view_root / "asset-patch").exists(),
+                "外根包不该在视图里重建出 asset-patch/ 目录",
+            )
+            diff_zips = sorted(
+                (view_root / "archive-common-diff").glob("*.zip")
+            )
+            self.assertEqual(1, len(diff_zips))
+            with zipfile.ZipFile(diff_zips[0]) as bundle:
+                self.assertEqual(
+                    [b"FOREIGN"],
+                    [bundle.read(i) for i in bundle.infolist()],
+                )
+            materialized = list(view_root.rglob("*.zip"))
+            self.assertEqual(2, len(materialized))
+            payloads = set()
+            for path in materialized:
+                with zipfile.ZipFile(path) as bundle:
+                    for info in bundle.infolist():
+                        payloads.add(bundle.read(info))
+            self.assertEqual({b"BASE", b"FOREIGN"}, payloads)
+
+    def test_unavailable_foreign_root_resolves_to_nothing_not_to_the_cdn(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            cdn, patch = self._make(Path(tmp))
+            scan = devcat.scan_chain(cdn, patch, digest_mode="skip")
+            foreign = [a for a in scan.archives if a.foreign_root]
+            self.assertTrue(foreign)
+
+            for archive in foreign:
+                # 没有外根时必须返回 None。回落到 cdn_root/<展示路径> 是原来的 bug:
+                # 那个路径永远不存在,而调用方以为拿到了有效路径。
+                self.assertIsNone(devcat.archive_source_path(archive, cdn, None))
+                self.assertIsNone(
+                    devcat.archive_source_root_relative(archive, cdn, None)
+                )
+                resolved = devcat.archive_source_path(archive, cdn, patch)
+                self.assertIsNotNone(resolved)
+                self.assertTrue(resolved.is_file())
+                self.assertFalse(
+                    str(resolved).startswith(str(cdn)),
+                    "外根包不该落在 CDN 根下",
+                )
+
+    def test_local_archive_still_resolves_under_the_cdn_root(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            cdn, patch = self._make(Path(tmp))
+            scan = devcat.scan_chain(cdn, patch, digest_mode="skip")
+            local = [a for a in scan.archives if not a.foreign_root]
+            self.assertTrue(local)
+
+            for archive in local:
+                self.assertEqual(
+                    cdn / archive.relative_path,
+                    devcat.archive_source_path(archive, cdn, patch),
+                )
+
+
 class MaterializeTest(unittest.TestCase):
     def test_view_is_scan_clean(self) -> None:
         """物化视图:旧名改合规、EntityLists 落位、自家扫描器全绿。"""

@@ -971,6 +971,32 @@ def _parse_transaction_claims(manifest: dict) -> dict[TableKey, TableClaim]:
     return result
 
 
+def _validate_character_speech_claim(
+    claims: Mapping[TableKey, TableClaim],
+    *,
+    label: str,
+) -> None:
+    character_key: TableKey = (
+        "common",
+        "master/character/character.orderedmap",
+    )
+    speech_key: TableKey = (
+        "common",
+        "master/character/character_speech.orderedmap",
+    )
+    character_claim = claims.get(character_key)
+    if character_claim is None:
+        return
+    speech_claim = claims.get(speech_key)
+    speech_keys = set(speech_claim.outer_keys) if speech_claim is not None else set()
+    missing = sorted(set(character_claim.outer_keys) - speech_keys)
+    if missing:
+        raise PackPreflightError(
+            f"{label} canonical character claims require matching "
+            f"character_speech outer keys: {', '.join(missing)}"
+        )
+
+
 def _validate_release_base(provider: ReleaseBaseProvider) -> ReleaseBaseState:
     try:
         state = provider.read_validated_base()
@@ -991,8 +1017,14 @@ def _validate_release_base(provider: ReleaseBaseProvider) -> ReleaseBaseState:
         expected = hashlib.sha256(state.active_raw).hexdigest()
         if state.active_sha256 != expected:
             raise PackPreflightError("active bytes do not match active SHA-256")
-        if not isinstance(state.current_release_id, str) or not state.current_release_id:
-            raise PackPreflightError("present active state requires a release ID")
+        release_id = state.current_release_id
+        if release_id is not None \
+                and (not isinstance(release_id, str) or not release_id):
+            raise PackPreflightError("present active state has an invalid release ID")
+        if release_id is None and state.active_package_manifest_sha256 is not None:
+            raise PackPreflightError(
+                "release-less active state requires an absent package-manifest hash"
+            )
     if (not isinstance(state.validated_chain_tail, str)
             or not state.validated_chain_tail):
         raise PackPreflightError("validated chain tail is required")
@@ -1348,13 +1380,27 @@ class _WindowsOwnedApi:
         if handle and not self.CloseHandle(wintypes.HANDLE(handle)):
             self._raise_last("CloseHandle")
 
-    def open_root(self, path: Path) -> int:
-        access = (
+    def root_access(self) -> int:
+        """Access mask for an owned parent-directory handle.
+
+        FILE_DELETE_CHILD is deliberately absent.  Nothing here deletes through
+        the parent: removal always reopens the child relative to this handle
+        with DELETE access and commits it with FileDispositionInfo, which is
+        governed by the child's own DACL.  Requesting it anyway made the whole
+        open fail with ERROR_ACCESS_DENIED on any directory granting only
+        Modify -- Modify carries DELETE but not FILE_DELETE_CHILD, which comes
+        with Full Control -- so a repository on a second drive could not be
+        published into at all.
+        """
+        return (
             self.FILE_LIST_DIRECTORY | self.FILE_ADD_FILE
-            | self.FILE_ADD_SUBDIRECTORY | self.FILE_DELETE_CHILD
+            | self.FILE_ADD_SUBDIRECTORY
             | self.FILE_READ_ATTRIBUTES | self.FILE_WRITE_ATTRIBUTES
             | self.FILE_TRAVERSE | self.SYNCHRONIZE
         )
+
+    def open_root(self, path: Path) -> int:
+        access = self.root_access()
         handle = self.CreateFileW(
             str(path), access, self.FILE_SHARE_READ | self.FILE_SHARE_WRITE,
             None, self.OPEN_EXISTING,
@@ -2032,6 +2078,7 @@ class PackTransaction:
         if errors:
             raise PackPreflightError("candidate manifest invalid: " + "; ".join(errors))
         candidate_claims = _parse_transaction_claims(self.manifest)
+        _validate_character_speech_claim(candidate_claims, label="candidate")
         installed_claims: dict[TableKey, TableClaim] = {}
         if self.installed_manifest is not None:
             if self.installed_package_dir is None:

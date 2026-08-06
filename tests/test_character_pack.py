@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import ctypes
 import dataclasses
 import hashlib
 import importlib
@@ -964,6 +965,48 @@ class _TransactionFixtureMixin:
 
 
 class TestPackPreflight(_TransactionFixtureMixin, unittest.TestCase):
+    def test_canonical_character_claim_requires_matching_speech_claim(self):
+        self._finish_setup()
+        logical_path = "master/character/character.orderedmap"
+        live_payload = {
+            "outer": {"official": {"value": logical_path}},
+            "inner": {},
+            "semantics": {},
+        }
+        candidate_payload = copy.deepcopy(live_payload)
+        candidate_payload["outer"]["129999"] = {
+            "owner": "seris",
+            "key": "129999",
+        }
+        live_bytes = json.dumps(
+            live_payload, ensure_ascii=False, separators=(",", ":")
+        ).encode("utf-8")
+        candidate_bytes = json.dumps(
+            candidate_payload, ensure_ascii=False, separators=(",", ":")
+        ).encode("utf-8")
+        self._write_live("common", logical_path, live_bytes)
+        add_file(
+            self.package_dir,
+            self.manifest,
+            "common",
+            logical_path,
+            candidate_bytes,
+        )
+        self.manifest["tables"].append({
+            "root": "common",
+            "logical_path": logical_path,
+            "codec_id": "fixture_json",
+            "outer_keys": ["129999"],
+            "inner_keys": [],
+            "semantic_claims": [],
+        })
+
+        with self.assertRaisesRegex(
+            self.pack.PackPreflightError,
+            "character_speech",
+        ):
+            self._tx().preflight()
+
     def test_production_preflight_rejects_rehashed_standard_png(self):
         self._finish_setup()
         manifest = copy.deepcopy(self.manifest)
@@ -1222,6 +1265,36 @@ class TestPackPreflight(_TransactionFixtureMixin, unittest.TestCase):
         )
         with self.assertRaises(self.pack.PackPreflightError):
             self._tx(provider=_FakeReleaseBaseProvider(empty_active)).preflight()
+
+    def test_zero_release_owner_anchor_is_a_valid_present_base(self):
+        self._finish_setup()
+        active_raw = json.dumps(
+            {
+                "schema_version": 1,
+                "base_version": "1.4.54",
+                "base_package_owners": [["other_pkg", "a" * 64]],
+                "releases": [],
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+        state = self.pack.ReleaseBaseState(
+            active_raw=active_raw,
+            active_sha256=hashlib.sha256(active_raw).hexdigest(),
+            current_release_id=None,
+            validated_chain_tail="1.4.54",
+            expected_from_version="1.4.54",
+            active_package_manifest_sha256=None,
+            package_owners=(("other_pkg", "a" * 64),),
+        )
+
+        report = self._tx(
+            provider=_FakeReleaseBaseProvider(state)
+        ).preflight()
+
+        self.assertTrue(report.can_prepare)
+        self.assertEqual((), report.conflicts)
 
     def test_provider_invariants_fail_closed(self):
         self._finish_setup()
@@ -1894,6 +1967,46 @@ class TestOwnedFilesystemPlatformContract(unittest.TestCase):
         self.assertFalse(
             self.pack._OwnedFilesystem.POSIX_EXACT_NAMED_STAGING_SUPPORTED
         )
+
+    @unittest.skipUnless(os.name == "nt", "Windows owned-handle access contract")
+    def test_owned_root_never_requests_delete_child(self):
+        # Modify grants DELETE on a child but not FILE_DELETE_CHILD on its
+        # parent; that bit comes with Full Control.  Requesting it made
+        # open_root fail with ERROR_ACCESS_DENIED on any ordinary repository
+        # directory, which took the whole publication transaction down --
+        # including its own rollback -- while every test passed because the
+        # temp directory the tests use does grant Full Control.
+        api = self.pack._WIN_OWNED_API
+        self.assertIsNotNone(api)
+        access = api.root_access()
+        self.assertFalse(access & api.FILE_DELETE_CHILD)
+        for required in (
+            api.FILE_LIST_DIRECTORY,
+            api.FILE_ADD_FILE,
+            api.FILE_ADD_SUBDIRECTORY,
+            api.FILE_READ_ATTRIBUTES,
+            api.FILE_WRITE_ATTRIBUTES,
+            api.FILE_TRAVERSE,
+            api.SYNCHRONIZE,
+        ):
+            self.assertTrue(access & required)
+
+    @unittest.skipUnless(os.name == "nt", "Windows owned-handle access contract")
+    def test_owned_root_open_passes_exactly_the_declared_access(self):
+        api = self.pack._WIN_OWNED_API
+        self.assertIsNotNone(api)
+        recorded: list[int] = []
+
+        def record(path, access, share, security, disposition, flags, template):
+            recorded.append(access)
+            return ctypes.c_void_p(-1).value
+
+        with tempfile.TemporaryDirectory() as td:
+            with mock.patch.object(api, "CreateFileW", side_effect=record):
+                with self.assertRaises(OSError):
+                    api.open_root(Path(td))
+
+        self.assertEqual([api.root_access()], recorded)
 
     def test_posix_cleanup_closes_authority_and_never_deletes_a_name(self):
         owned = mock.Mock()

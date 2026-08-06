@@ -5,11 +5,13 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import io
 import json
 import os
 import shutil
 import sys
 import uuid
+import zipfile
 import zlib
 from dataclasses import asdict, is_dataclass
 from pathlib import Path
@@ -57,6 +59,11 @@ def _parser() -> argparse.ArgumentParser:
     rebase.add_argument("--profile", default="cn")
     rebase.add_argument("--output", type=Path)
     rebase.add_argument("--git-head")
+
+    reanchor = sub.add_parser("reanchor")
+    reanchor.add_argument("--profile", default="cn")
+    reanchor.add_argument("--target-base")
+    reanchor.add_argument("--confirm")
 
     rollback = sub.add_parser("rollback")
     rollback.add_argument("--snapshot-dir", required=True, type=Path)
@@ -166,6 +173,56 @@ def _master_gate_stores(profile_id: str) -> tuple[Path, ...]:
     if profile.fallback is not None:
         candidates.append(profile.fallback)
     return tuple(path for path in candidates if path.is_dir())
+
+
+# APK 内置 bundle 是 CDN 之外的第二个资产来源:客户端
+# FileReader.resolveFiles(:246-282) 先判 bundleFiles.contains(hash),命中就从
+# getBundleRootDirectory() 读,根本不看 upload/。官方 supporter/knight/ranged 的
+# PF 演出特效就只存在于 bundle(store 里没有),而借用官方 PF 演出的自制包
+# (如基诺维"剑+辅助共存")会引用它们 —— 只查 CDN store 会把这类引用误报成缺失。
+# 这里只**新增**一个满足来源,不放宽任何真正缺失的判定。
+_BUNDLE_INDEX_CACHE: dict[str, frozenset[str]] = {}
+
+
+def _bundle_asset_tails() -> frozenset[str]:
+    """APK 内置 bundle 里的 `<xx>/<hash>` 集合;读不到时返回空集(=退回原行为)。"""
+    key = "cn"
+    cached = _BUNDLE_INDEX_CACHE.get(key)
+    if cached is not None:
+        return cached
+    tails: set[str] = set()
+    repo_root = Path(__file__).resolve().parent.parent
+    candidates = [repo_root / "弹国服" / "bundle.zip"]
+    env_apk = os.environ.get("WF_APK")
+    if env_apk:
+        candidates.append(Path(env_apk))
+    for source in candidates:
+        if not source.is_file():
+            continue
+        try:
+            with zipfile.ZipFile(source) as archive:
+                names = archive.namelist()
+                if "assets/bundle.zip" in names:      # 直接给 APK 时再剥一层
+                    with zipfile.ZipFile(
+                        io.BytesIO(archive.read("assets/bundle.zip"))
+                    ) as inner:
+                        names = inner.namelist()
+            for name in names:
+                if name.endswith("/"):
+                    continue
+                parts = name.split("/")
+                if len(parts) >= 2:
+                    tails.add(f"{parts[-2]}/{parts[-1]}")
+        except (OSError, zipfile.BadZipFile):
+            continue
+    result = frozenset(tails)
+    _BUNDLE_INDEX_CACHE[key] = result
+    return result
+
+
+def _bundle_has(logical: str) -> bool:
+    digest = core.sha1_path(logical)
+    return f"{digest[:2]}/{digest[2:]}" in _bundle_asset_tails()
 
 
 def _package_client_file(package_dir: Path, logical: str) -> Path:
@@ -307,7 +364,7 @@ def master_reference_report(
         package_condition_ids=flat_tables.get(requirements.UNIQUE_CONDITION_TABLE, {}),
         asset_exists=lambda logical: any(
             core.table_path(store, logical).exists() for store in stores
-        ),
+        ) or _bundle_has(logical),
         condition_id_exists=lambda cid: cid in store_condition_ids,
     )
     runtime_texture_checks: list[dict[str, Any]] = []
@@ -463,6 +520,26 @@ def run_command(
                 character_id=workspace.character_id,
                 code_name=workspace.code_name,
                 status=status.to_dict(),
+            )
+
+        if command == "reanchor":
+            if not hasattr(release_module, "reanchor_active_ledger"):
+                raise FlowError("release API 未提供 reanchor_active_ledger")
+            dry_run = args.confirm is None
+            if not dry_run and args.confirm != "REANCHOR_CHARACTER_LEDGER":
+                raise FlowError("重锚必须使用确认口令 REANCHOR_CHARACTER_LEDGER")
+            plan = release_module.reanchor_active_ledger(
+                args.profile, target_base=args.target_base, dry_run=dry_run,
+            )
+            return 0, _base_payload(
+                stage="reanchor",
+                workspace=None,
+                release_ready=False,
+                next_command=(
+                    "python mod-tools/wf_character_flow.py reanchor --confirm "
+                    "REANCHOR_CHARACTER_LEDGER" if dry_run else None
+                ),
+                plan=plan,
             )
 
         if command == "rollback":

@@ -19,7 +19,7 @@ class ServerAuthTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
             (root / ".env").write_text(
-                "CN_ADMIN_TOKEN=dotenv-token\nCN_LISTEN_HOST=192.168.0.130\n",
+                "CN_ADMIN_TOKEN=dotenv-token\nCN_LISTEN_HOST=192.0.2.10\n",
                 encoding="utf-8",
             )
             token = auth.load_admin_token(

@@ -59,7 +59,10 @@ class Fixture:
                  {"b.bin": b"B-patch"})
         make_zip(self.common / "pinball-1.4.55-1.4.56-1-charpkg-ghost.zip",
                  {"c.bin": b"C-hidden"})
-        anchored = self.common / "pinball-1.4.56-1.4.57-1-charpkg-hero.zip"
+        self.anchored_name = (
+            "pinball-1.4.56-1.4.57-1-charpkg-fixture-r1-common.zip"
+        )
+        anchored = self.common / self.anchored_name
         make_zip(anchored, {"d.bin": b"D1"})
         (self.cdn / "character-releases").mkdir(parents=True, exist_ok=True)
         (self.cdn / "character-releases" / "active.json").write_text(json.dumps({
@@ -69,6 +72,7 @@ class Fixture:
                 "from_version": "1.4.56",
                 "version": "1.4.57",
                 "release_id": "r1",
+                "package_id": "fixture",
                 "archives": [{
                     "root": "common",
                     "relative_path": "archive-common-diff/" + anchored.name,
@@ -99,17 +103,44 @@ class ScanTest(ConsolidateCase):
         self.assertNotIn("pinball-1.4.53-1.4.54-1-official.zip", names)   # 官方段在 base 前
         self.assertNotIn("pinball-1.4.55-1.4.56-1-charpkg-ghost.zip", names)  # 孤儿不可见
         self.assertIn("pinball-1.4.55-1.4.56-1-patchfix.zip", names)
-        self.assertIn("pinball-1.4.56-1.4.57-1-charpkg-hero.zip", names)  # anchored 可见
+        self.assertIn(self.fx.anchored_name, names)  # anchored 可见
         self.assertEqual(listing["base"], "1.4.54")
         self.assertEqual(listing["tail"], "1.4.57")
         by_name = {p["name"]: p for p in listing["packs"]}
         patch = by_name["pinball-1.4.55-1.4.56-1-patchfix.zip"]
         self.assertEqual((patch["origin"], patch["root"], patch["on_path"]),
                          ("patch", "patch", True))
-        hero = by_name["pinball-1.4.56-1.4.57-1-charpkg-hero.zip"]
+        hero = by_name[self.fx.anchored_name]
         self.assertEqual(hero["origin"], "anchored")
         # legacy 同名双 root 都在
         self.assertEqual(sum(1 for n in names if n == "pinball-1.4.54-1.4.55-1-mod1.zip"), 2)
+
+    def test_scan_sorts_sequences_numerically_before_name(self):
+        for seq in (1, 2, 9, 10, 11):
+            make_zip(
+                self.fx.common / f"pinball-1.4.54-1.4.55-{seq}-order{seq}.zip",
+                {"order.bin": str(seq).encode()},
+            )
+
+        listing = pc.scan_selectable(self.fx.cdn, self.fx.repo)
+        ordered = [
+            pack["seq"] for pack in listing["packs"]
+            if pack["name"].endswith(tuple(f"-order{seq}.zip" for seq in (1, 2, 9, 10, 11)))
+        ]
+
+        self.assertEqual(ordered, [1, 2, 9, 10, 11])
+
+    def test_upload_sequence_uses_the_shared_safe_integer_limit(self):
+        max_seq = 9_007_199_254_740_991
+        accepted = self.root / f"pinball-1.4.57-1.4.58-{max_seq}-max.zip"
+        rejected = self.root / f"pinball-1.4.57-1.4.58-{max_seq + 1}-overflow.zip"
+        make_zip(accepted, {"max.bin": b"max"})
+        make_zip(rejected, {"overflow.bin": b"overflow"})
+
+        archive, _frm, _to = pc._parse_upload(accepted, "common")
+        self.assertEqual(archive.seq, max_seq)
+        with self.assertRaisesRegex(ValueError, "sequence"):
+            pc._parse_upload(rejected, "common")
 
 
 class RangeConsolidateTest(ConsolidateCase):
@@ -146,7 +177,7 @@ class RangeConsolidateTest(ConsolidateCase):
         ids = ["legacy:archive-common-diff/pinball-1.4.54-1.4.55-1-mod1.zip",
                "legacy:archive-medium-diff/pinball-1.4.54-1.4.55-1-mod1.zip",
                "legacy:archive-common-diff/pinball-1.4.55-1.4.56-1-mod2.zip",
-               "anchored:archive-common-diff/pinball-1.4.56-1.4.57-1-charpkg-hero.zip"]
+               f"anchored:archive-common-diff/{self.fx.anchored_name}"]
         report = self.consolidate(ids=ids)
         auto = {m["id"] for m in report["auto_included"]}
         self.assertEqual(auto, {"patch:asset-patch/active/pinball-1.4.55-1.4.56-1-patchfix.zip"})

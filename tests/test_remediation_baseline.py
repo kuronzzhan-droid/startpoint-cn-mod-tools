@@ -117,7 +117,7 @@ class RemediationBaselineTests(unittest.TestCase):
             root = Path(td)
             (root / ".env").write_text(
                 "\ufeff# local config\n"
-                'CN_LISTEN_HOST="192.168.0.130"\n'
+                'CN_LISTEN_HOST="192.0.2.10"\n'
                 "CN_ADMIN_TOKEN=must-not-escape\n"
                 "CDN_PUBLIC_ROOT=D:/cdn # comment\n"
                 "UNRELATED=value\n",

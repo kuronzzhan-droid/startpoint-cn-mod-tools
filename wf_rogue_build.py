@@ -9,7 +9,8 @@
                                   c98 战场 = 连战塔素材池(wf_chain_build.build_pool)随机层,
                                   c9-13 view_condition 链住上一轮(§9.3 硬约束),
                                   c67 体力=0,c95 敌等级 80(塔场地×rush 已真机验证),
-                                  c86-94 修正 = 缓坡(hp 0.5×1.185^r / atk 0.35×1.13^r)
+                                  general boss HP 写入克隆 boss_level.c2；c86 恒 1
+                                  (standard 仅允许 ±10% 微调)，atk/tp 仍写 c89-94
   event_list[700099]              kind 11 入口
 
 服务端(静态 import,改后须重启服务端):
@@ -34,6 +35,7 @@
 重摇 boss 阵容 = 换 --seed 重跑(--write --publish),轮数不变时服务端 json 不变可不重启。
 """
 import argparse
+import copy
 import csv
 import hashlib
 import io
@@ -48,6 +50,7 @@ import subprocess
 import sys
 import zipfile
 import zlib
+from dataclasses import dataclass, replace
 from datetime import date
 from pathlib import Path
 
@@ -58,6 +61,9 @@ MOD_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, MOD_DIR)
 import wf_quest_lib as q          # noqa: E402
 import wf_chain_build as cb       # noqa: E402
+import wf_dsl                     # noqa: E402
+import wf_dsl_sig                 # noqa: E402
+import wf_rogue_bundle as rbb      # noqa: E402
 
 EVENT_ID = "700099"
 TOKEN_ID = "2370099"
@@ -80,9 +86,48 @@ ENDLESS_KEY = "99"          # 无尽 quest 内层键/id 尾号(避开 round 键�
 # 元素列),只能整族排除;后续再有 C8016 按服务端 [CRASH] 日志定位楼层加名单。
 C8016_BLOCKED_BOSS_PREFIXES = ("arch_evil",)
 
+# ---- 血量不可缩放黑名单(2026-08-03 玩家「八岐大蛇打不死」实锤)----
+# orochi_ex 的主要血量**不在 boss_level**,而是写死在自己的专用表:
+#   phase1_health_point(c24)=75,000,000 / phase3_health_point(c25)=120,000,000
+#   (列名由客户端 OrochiExValues:334-335 实锤)。
+# 关键在于**这两段相位血完全不吃 quest 的血量修正**:OrochiExSource:54-57 只把它们
+# 乘上单人 boss 战折扣 _loc14_,压根没碰 battle_hp_correction_value_boss(那个只作用于
+# EnemySourceBase:324 的中段血条);而 rush_event 的 SingleBattleIdKind index=20,
+# QuestIdBattleKindTools.isSinglePlayBossBattle 在 case 20 直接 return false
+# ⇒ 塔里连 0.55 的单人折扣都吃不到,相位血就是原封不动的 7500万 / 1.2亿。
+# 第19关实际血量结构 ≈ 7500万(相位1) + 235,207(中段,唯一吃修正) + 1.2亿(相位3)
+#   ≈ 1.95 亿,其中 **99.88% 与塔的任何倍率无关** ⇒ 归一化对它是**零效力**,
+#   不是"效力不够"。把 c86 压到下限 0.1 也只减掉 22 万。
+# 10 张专用表全扫过,只有 orochi_ex 这一只把血量写死在表里,其余(kraken/五元素球/
+# 指挥者/东亚奇廉)都老实走 boss_level,不受影响;普通八岐大蛇 orochi_all_head_*
+# 也走 boss_level,照常在池。
+# ⇒ 现阶段整只排除。**可修但需要新通道**:相位血是绝对值、不吃曲线,直接写目标值即可;
+#   客户端零代号硬编码(boss 种类由 zone 的 kind 列 c23/c25='4' 决定),克隆专用表条目安全,
+#   代价是要新写"克隆 orochi_ex 专用表 + 换 zone 代号"这条路。想恢复它就实现这条。
+# 注:玩家同时报的 U_1d93f4 图集崩**证据不支持记在它头上** —— 日志里唯一一次
+#   (logs/start-cn-detached.log:747)questId=700099020 是第20关,且发生在 2026-07-30,
+#   而含 orochi_ex 的这座塔 2026-08-02 才摇出来;第19关当天连打两次都没崩。
+HP_BLOCKED_BOSSES = ("orochi_ex",)
+# 练习木桩没有正常攻击行为；它们恰因超大代理 HP 排在候选榜首，绝不能让
+# PROXY_CURVE 的假绝对值把它们重排进塔。前缀覆盖普通/无色/炮台/攻击八个变体。
+HP_BLOCKED_BOSS_PREFIXES = ("practice_waraboss_tough",)
+
 
 def _c8016_safe(bosses: list[str]) -> bool:
     return not any(b.startswith(p) for p in C8016_BLOCKED_BOSS_PREFIXES for b in bosses)
+
+
+def _hp_scale_safe(bosses: list[str]) -> bool:
+    """血量级别与 boss_level 不符 → 归一化失效,排除出候选池。"""
+    return not any(
+        b in HP_BLOCKED_BOSSES
+        or any(str(b).startswith(prefix) for prefix in HP_BLOCKED_BOSS_PREFIXES)
+        for b in bosses)
+
+
+def _pool_safe(bosses: list[str]) -> bool:
+    """候选池 boss 级黑名单总闸(C8016 崩 + 血量级别错配)。"""
+    return _c8016_safe(bosses) and _hp_scale_safe(bosses)
 
 
 # ---- 楼层黑名单(2026-07-29 用户真机反馈:第7战抽到宝物域)----
@@ -111,6 +156,12 @@ STANDARD_BOSS = "master/battle/boss/standard_boss.orderedmap"
 GENERAL_ZAKO = "master/battle/zako/general_zako.orderedmap"
 FIELD_DATA_T = "master/battle/field_data.orderedmap"
 ZONE_T = "master/battle/zone.orderedmap"
+BOSS_LEVEL = "master/battle/boss/boss_level.orderedmap"
+GENERAL_BOSS_VARIABLE = "master/battle/boss/general_boss_variable.orderedmap"
+GENERAL_BOSS_STATE = "master/battle/boss/general_boss_state.orderedmap"
+ZAKO_LEVEL = "master/battle/zako/zako_level.orderedmap"
+OROCHI = "master/battle/boss/orochi.orderedmap"
+STANDARD_FUNNEL = "master/battle/boss/funnel/standard_funnel.orderedmap"
 
 # ---- 专用表 boss = 第四类合法来源(2026-07-29 八岐大蛇实验通过后放行)----
 # 少数官方大型 boss 不在 general/standard/zako 三表,而是各有一张专用表,
@@ -181,7 +232,8 @@ def check_field_chain(field_id: str, fd: dict, zone: dict,
                       level: int | None = None,
                       lv_ceil: dict | None = None,
                       lv_floor: dict | None = None,
-                      lv_gb: dict | None = None) -> dict:
+                      lv_gb: dict | None = None,
+                      validation_tables: dict | None = None) -> dict:
     """单 field 全链解析检查(表由调用方注入:store 现状或构建中的内存态)。
 
     返回 {"ok","field","zone","bosses","zakos","errors"};errors 空 = 全链可解析。
@@ -229,14 +281,38 @@ def check_field_chain(field_id: str, fd: dict, zone: dict,
             if code in ("", "(None)"):
                 continue
             out["bosses"].append(code)
-            if code not in enemies and code not in special_boss_levels():
+            if validation_tables is not None:
+                kind_text = wc[i - 1] if i else ""
+                try:
+                    kind = int(kind_text)
+                except (TypeError, ValueError):
+                    out["errors"].append(
+                        f"zone[{zkey}] wave {wk} c{i - 1} BossKind 非法:{kind_text}")
+                    continue
+                ref = rbb.BossRef(kind, code)
+                if level is None:
+                    table_name = rbb.KIND_TABLES.get(kind)
+                    table = validation_tables.get(table_name, {}) if table_name else {}
+                    if (table_name is None or kind == 5
+                            or not isinstance(table, dict) or code not in table):
+                        out["errors"].append(
+                            f"zone[{zkey}] wave {wk} kind={kind} c{i} boss 无精确来源:{code}")
+                else:
+                    result = rbb.validate_boss_ref(ref, level, validation_tables)
+                    if not result.ok:
+                        out["errors"].append(
+                            f"zone[{zkey}] wave {wk} kind={kind} c{i} boss {code} "
+                            f"在敌等级 {level} 下无法解析:"
+                            f"{result.reason or 'UNKNOWN'} {result.detail}".rstrip())
+            elif code not in enemies and code not in special_boss_levels():
                 out["errors"].append(
                     f"zone[{zkey}] wave {wk} c{i} boss 代号悬空:{code}"
                     "(不在 general_boss/standard_boss/general_zako,也无专用表)")
             elif level is not None and not boss_level_ok(code, level, lv_ceil,
                                                          lv_floor, lv_gb):
-                # 等级可行性判定统一走 boss_level_ok(单一事实源,避免两处规则分叉;
-                # 2026-07-29 关25 火废龙即因内联副本漏掉 gv 单档 100 规则而漏网)
+                # Legacy callers without the exact BossKind bundle retain the
+                # historical code-only gate.  Final build validation injects
+                # ``validation_tables`` and never consults the store cache.
                 out["errors"].append(
                     f"boss {code} 在敌等级 {level} 下无法解析"
                     "(standard 需 sb 键≥c95;general 需 gv 有 <100 的低档基准、"
@@ -308,15 +384,19 @@ def boss_funnel_ok(code: str, level: int) -> bool:
 
 def boss_level_ok(code: str, level: int,
                   lv_ceil: dict | None, lv_floor: dict | None,
-                  lv_gb: dict | None) -> bool:
+                  lv_gb: dict | None, *, funnel_ok_fn=None,
+                  special_levels: dict | None = None) -> bool:
     """单 boss 在指定敌等级下能否解析(规则同 check_field_chain 的等级段)。"""
     # 召唤物先判:本体三表全绿也可能被自己的 funnel 拖崩(关14 实锤)
-    if not boss_funnel_ok(code, level):
+    funnel_check = funnel_ok_fn if callable(funnel_ok_fn) else boss_funnel_ok
+    if not funnel_check(code, level):
         return False
     # 专用表 boss(orochi/kraken/*_sphere/…)优先判定:它们不在三表并集里,
     # 等级档在自己表内,取"≤敌等级的最大档"(general 同款下取整)。
     # 只有 100 档的 boss ⇒ 敌等级须 ≥100(water_sphere@90 崩 / orochi_ex@100 通)。
-    sp_entry = special_boss_levels().get(code)
+    special_index = (special_levels if special_levels is not None
+                     else special_boss_levels())
+    sp_entry = special_index.get(code)
     if isinstance(sp_entry, dict):
         sp_keys = [int(k) for k in sp_entry if str(k).isdigit()]
         return any(k <= level for k in sp_keys) if sp_keys else True
@@ -366,6 +446,7 @@ def boss_level_ok(code: str, level: int,
 #   **不在任何曲线表里** —— 是客户端内置默认,读不到;这些只能组内相对归一。
 CURVE_TABLES = {
     "hp": "master/battle/enemy/hp/hit_hp_correction_curve.orderedmap",
+    "hp_fix": "master/battle/enemy/hp/fix_hp_basic_curve.orderedmap",
     "atk": "master/battle/enemy/atk/atk_correction_curve.orderedmap",
 }
 _CURVES: dict | None = None
@@ -417,33 +498,51 @@ def growth_curves() -> dict:
 
 
 def curve_value(kind: str, name: str, level: int) -> float | None:
-    """曲线在指定等级的值;取 ≤level 的最大档(与客户端下取整一致)。查不到返回 None。"""
+    """曲线在指定等级的值:取**第一个 ≥level 的档**(上取整),查不到返回 None。
+
+    ⚠ 2026-08-04 修正:原实现取 ≤level 的最大档(下取整),方向是反的。
+    客户端权威实现 GeneralEnemySourceHelper.getSurjectivity:14-30 —— 遍历键,
+    `if(key >= level) return table.get(key)`,一个都不满足就
+    `throw "値 N に対応するキーが見つかりません"`(=进本崩 U_50fc52,正是
+    boss_level_ok 在防的那条)。所以「查不到」对应 throw,返回 None 交调用方处理。
+
+    两条独立反证:①`hit_hp_basic_normal` 最小键 9、`fix_hp_maou_org` 最小键 60,
+    下取整语义下 lv<9 / lv<60 会一个键都取不到,而这些曲线明明服务全等级;
+    ②方向反了会让归一化补偿虚高——hit_hp_boss 79档=17.247 / 89档=52.391 /
+    99档=67.702,lv80 层旧实现读 17.247 而客户端用 52.391(虚高 3.038×)、
+    lv90 层虚高 1.292×,正好把 hell 预设 0.9→4.0 的爬坡抵消掉,
+    实测三段中位 204M/147M/227M —— 难度曲线**根本没生效**。
+    """
     tbl = growth_curves().get(kind, {}).get(name)
     if not isinstance(tbl, dict):
         return None
     keys = sorted((int(k) for k in tbl if str(k).isdigit()))
-    usable = [k for k in keys if k <= level]
+    usable = [k for k in keys if k >= level]
     if not usable:
         return None
-    v = tbl.get(str(usable[-1]))
+    v = tbl.get(str(usable[0]))
     return float(v) if isinstance(v, (int, float)) else None
 
 
 _BASE_STATS: dict | None = None
 
 
-def boss_base_stats() -> dict:
+def boss_base_stats(boss_level: dict | None = None) -> dict:
     """boss 代号 → {hp, atk, hpc, atkc};hp/atk = 基数×倍率,hpc/atkc = 修正曲线名。
 
     只认 `boss_level` 里能解析的行(511/543);standard 系等没有条目的返回缺省,
     归一化时按"无数据不动"处理。"""
     global _BASE_STATS
-    if _BASE_STATS is None:
+    use_cache = boss_level is None
+    if not use_cache or _BASE_STATS is None:
         out: dict = {}
-        try:
-            bl = q.load_table("master/battle/boss/boss_level.orderedmap")
-        except Exception:
-            bl = {}
+        if boss_level is not None:
+            bl = boss_level
+        else:
+            try:
+                bl = q.load_table("master/battle/boss/boss_level.orderedmap")
+            except Exception:
+                bl = {}
         for code, leaf in bl.items():
             if isinstance(leaf, dict):
                 continue
@@ -451,15 +550,31 @@ def boss_base_stats() -> dict:
             if len(cs) < 13:
                 continue
             try:
-                out[code] = {"hp": float(cs[2]) * float(cs[3]), "hpc": cs[4],
+                if cs[0] == "0":
+                    hp = float(cs[2]) * float(cs[3])
+                    hpc = cs[4]
+                    hp_mode = "hit"
+                elif cs[0] == "1":
+                    # BossLevelValues: EnemyHpCurveKind.Fix(c1,c5,c6)。这里的
+                    # c5×c6 已是绝对固定血量，不能再乘 Hit 路径的 K。
+                    hp = float(cs[5]) * float(cs[6])
+                    hpc = cs[1]
+                    hp_mode = "fix"
+                else:
+                    continue
+                out[code] = {"hp": hp, "hpc": hpc, "hp_mode": hp_mode,
                              "atk": float(cs[8]) * float(cs[9]), "atkc": cs[10]}
             except ValueError:
                 continue
-        _BASE_STATS = out
-    return _BASE_STATS
+        if use_cache:
+            _BASE_STATS = out
+        else:
+            return out
+    return _BASE_STATS or {}
 
 
-def true_stat(code: str, kind: str, level: int = 100) -> tuple[float, str] | None:
+def true_stat(code: str, kind: str, level: int = 100,
+              boss_level: dict | None = None) -> tuple[float, str] | None:
     """(该 boss 在 level 级的真实数值, 归一化分组键)。
 
     曲线**已知**(hit_hp_boss / _non_element / _funnel、atk_single/multi/...)时
@@ -468,13 +583,26 @@ def true_stat(code: str, kind: str, level: int = 100) -> tuple[float, str] | Non
     `atk_correction_normal` 254 个;客户端内置默认,读不到)时返回裸基数,
     分组键取曲线名 —— 只能组内相对归一。
     """
-    s = boss_base_stats().get(code)
+    s = boss_base_stats(boss_level).get(code)
     if not s:
         return None
     base = s["hp"] if kind == "hp" else s["atk"]
     cname = s["hpc"] if kind == "hp" else s["atkc"]
     if base <= 0:
         return None
+    if kind == "hp" and s.get("hp_mode") == "fix":
+        mul = curve_value("hp_fix", cname, level)
+        # 客户端 bundled 表中这两条都只有 key100→1；下载表只列两个随等级
+        # 变化的例外。曲线 ID 本身钉死语义，不能把“下载表查不到”误当未知。
+        if mul is None and cname in {"fix_hp_always_multiple_one",
+                                     "fix_hp_basic_normal"}:
+            mul = 1.0
+        scale = GENERAL_HP_LEVEL_SCALE.get(int(level))
+        if mul is None or not scale:
+            return None
+        # 对外仍保持 true_stat×K=c86 前原生 HP 的既有公式；Fix 值先除 K
+        # 只是在统一坐标中表示，floor_native_hp 随即乘回，不会重复放大。
+        return base * mul / scale, "*"
     mul = curve_value(kind, cname, level)
     if mul:
         return base * mul, "*"
@@ -483,6 +611,205 @@ def true_stat(code: str, kind: str, level: int = 100) -> tuple[float, str] | Non
     # 血量、一个是裸基数),单位都不一样,残差 379× 纯属构造出来的,比假设更糟。
     proxy = curve_value(kind, PROXY_CURVE[kind], level)
     return (base * proxy, "*") if proxy else (base, cname)
+
+
+# `standard_boss` 的 master 行只有名字和资源路径；真正 HP 写在 enemy DSL。
+# CommonLogicAssetContainer.getEnemyDsl(path) 会追加 `.esdl`，打包逻辑名再追加
+# `.amf3.deflate`。TypePackerResource2 的稳定短键为：EnemyDsl.forms=`au`、
+# Form.terminationCondition=`d`、TerminationCondition.Health=`T1`。
+# StandardEnemySource.as:523-538 只累加 Health.params[0]，最终一次性乘单人折扣 0.55
+# 和 quest c86 后 floor。这里严格照消费点读，不做“全树搜数字”式猜测。
+STANDARD_BOSS_BATTLE_HP_SCALE = 0.55
+_STANDARD_HP_CACHE: dict[str, dict] = {}
+
+
+def standard_enemy_hp_base(tree: dict) -> dict:
+    """从已解析的 standard enemy DSL 返回可审计 HP 基数证据。
+
+    未知 union tag、缺字段、非有限值均 fail closed；T2=Defeat 是合法的非血量
+    termination condition，按客户端 switch case 1 忽略。
+    """
+    forms = tree.get("au") if isinstance(tree, dict) else None
+    if not isinstance(forms, list) or not forms:
+        raise ValueError("standard enemy DSL 缺少非空 forms(短键 au)")
+    terms: list[float] = []
+    for index, form in enumerate(forms):
+        term = form.get("d") if isinstance(form, dict) else None
+        if not isinstance(term, list) or not term or not isinstance(term[0], str):
+            raise ValueError(f"standard enemy form[{index}] terminationCondition(d) 非法")
+        tag = term[0]
+        if tag == "T2":                         # Defeat(index 1)，不贡献 HP
+            continue
+        if tag != "T1" or len(term) < 2:         # 未知构造必须响亮失败
+            raise ValueError(f"standard enemy form[{index}] 未知 termination tag:{tag!r}")
+        try:
+            value = float(term[1])
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"standard enemy form[{index}] Health 参数不是数值") from exc
+        if not math.isfinite(value) or value <= 0:
+            raise ValueError(f"standard enemy form[{index}] Health 参数非法:{value!r}")
+        terms.append(value)
+    if not terms:
+        raise ValueError("standard enemy DSL 没有 Health(T1) termination form")
+    return {"form_count": len(forms), "health_terms": tuple(terms),
+            "base_hp": math.fsum(terms)}
+
+
+def standard_boss_hp_evidence(code: str, level: int,
+                              standard_boss: dict | None = None) -> dict:
+    """解析一只 standard boss 在运行等级所选资源的 HP 基数。
+
+    等级选择照 GeneralEnemySourceHelper.getSurjectivity：首个 ``>= level`` 的档。
+    返回资源逻辑名、所选档和 forms 证据，供 dry-run 报告逐只回代。
+    """
+    table = standard_boss if standard_boss is not None else q.load_table(STANDARD_BOSS)
+    node = table.get(code)
+    if not isinstance(node, dict):
+        raise ValueError(f"{code} 不在 standard_boss 或节点不是等级表")
+    levels = sorted(int(k) for k in node if str(k).isdigit() and int(k) >= int(level))
+    if not levels:
+        raise ValueError(f"{code} standard_boss 无 >=lv{level} 的资源档")
+    selected = levels[0]
+    row = cells(node[str(selected)])
+    if len(row) < 2 or not row[1].strip():
+        raise ValueError(f"{code}@{selected} standard_boss 缺资源路径")
+    base_path = row[1].strip()
+    logical = (base_path if base_path.endswith(".esdl.amf3.deflate")
+               else base_path + ".esdl.amf3.deflate")
+    cached = _STANDARD_HP_CACHE.get(logical)
+    if cached is None:
+        raw = q.store_path(logical).read_bytes()
+        try:
+            unpacked = zlib.decompress(raw, -15)
+        except zlib.error as exc:
+            raise ValueError(f"{logical} 不是 raw-deflate enemy DSL") from exc
+        parsed = wf_dsl.parse_dsl(unpacked).get("tree")
+        cached = standard_enemy_hp_base(parsed)
+        _STANDARD_HP_CACHE[logical] = cached
+    return dict(cached, code=code, selected_level=selected, logical=logical)
+
+
+# 用户给定的 event_quest 真血量换算档；只接受已逆向确认的六个运行等级。
+# 真血量(general/special 且走 boss_level) = true_stat(...)[0] × K[level] × c86。
+GENERAL_HP_LEVEL_SCALE = {
+    79: 2250.0, 80: 2250.0,
+    89: 2362.5, 90: 2362.5,
+    99: 2475.0, 100: 2475.0,
+}
+
+
+def floor_native_hp(bosses, level: int, standard_boss: dict | None = None,
+                    boss_level: dict | None = None) -> dict:
+    """返回该层所有实际 boss 实例在 c86 前的 HP 及证据。
+
+    调用方必须传单人战实际槽(c24/28/32)；镜像消歧在 `_zone_pick` 完成。
+    此处不按 code 去重：跨 wave / 不同实体槽允许同代号真实出场两次，须逐只相加。
+    任一实例不可解析就把整层标成 unverifiable，绝不拿部分和冒充总血量。
+    """
+    table = standard_boss if standard_boss is not None else q.load_table(STANDARD_BOSS)
+    components: list[dict] = []
+    reasons: list[str] = []
+    for code in map(str, bosses):
+        if code in table:
+            try:
+                evidence = standard_boss_hp_evidence(str(code), int(level), table)
+                components.append({"code": str(code), "kind": "standard",
+                                   "evidence_kind": "absolute",
+                                   "native_hp": round(
+                                       float(evidence["base_hp"])
+                                       * STANDARD_BOSS_BATTLE_HP_SCALE, 6),
+                                   "evidence": evidence})
+            except (FileNotFoundError, KeyError, TypeError, ValueError, zlib.error) as exc:
+                components.append({"code": str(code), "kind": "standard",
+                                   "native_hp": None, "error": str(exc)})
+                reasons.append(f"{code}:{exc}")
+            continue
+        stat = true_stat(str(code), "hp", int(level), boss_level)
+        scale = GENERAL_HP_LEVEL_SCALE.get(int(level))
+        if stat is None or scale is None:
+            why = ("boss_level/曲线不可解析" if stat is None
+                   else f"lv{level} 的 K 未经确认")
+            components.append({"code": str(code), "kind": "unknown",
+                               "native_hp": None, "error": why})
+            reasons.append(f"{code}:{why}")
+            continue
+        stat_source = boss_base_stats(boss_level).get(str(code), {})
+        hp_curve_kind = str(stat_source.get("hp_mode") or "hit")
+        # Hit 的 correction 曲线查不到时，true_stat 会按既有 PROXY_CURVE 代理；
+        # 这只能用于同组相对排序，绝不能在报告里冒充绝对血量证据。
+        evidence_kind = "absolute"
+        if (hp_curve_kind == "hit"
+                and curve_value("hp", str(stat_source.get("hpc") or ""),
+                                int(level)) is None):
+            evidence_kind = "proxy"
+        components.append({"code": str(code), "kind": "general",
+                           "hp_curve_kind": hp_curve_kind,
+                           "evidence_kind": evidence_kind,
+                           # 数据层是十进制；消掉二进制浮点乘 K 后的
+                           # 58_939_649.99999999 之类伪差，便于审计逐项对账。
+                           "native_hp": round(float(stat[0]) * scale, 6),
+                           "true_stat": float(stat[0]), "k": scale})
+    verified = bool(components) and not reasons
+    total = (math.fsum(float(c["native_hp"]) for c in components)
+             if verified else None)
+    return {"native_hp": total, "components": components, "verified": verified,
+            "absolute_verified": (verified and all(
+                c.get("evidence_kind") == "absolute" for c in components)),
+            "reason": "; ".join(reasons) if reasons else None}
+
+
+def _true_hp_at_c86(native: dict, c86: float) -> float:
+    """用客户端各族的取整位置回代真 HP。"""
+    total = 0.0
+    for component in native.get("components") or []:
+        hp = float(component["native_hp"]) * float(c86)
+        total += (float(math.floor(hp))
+                  if (component.get("kind") == "standard"
+                      or component.get("hp_curve_kind") == "fix") else hp)
+    return total
+
+
+def solve_floor_hp_record(r: int, n: int, native: dict, *,
+                          base_duration_s: float, duration_s: float,
+                          curse_hp: float, raw_c86: float,
+                          family: str, target: float | None = None) -> dict:
+    """分别审计无诅咒基线与最终实战 HP，血量/时限诅咒绝不被反解抵消。
+
+    baseline_c86 只由几何目标和 quest 原始时限反解；落表 c86 再乘
+    curse_hp。最终时限只用于 realized_dps，不能回头缩放 c86。
+    """
+    if not native.get("verified") or native.get("native_hp") is None:
+        raise ValueError(f"第{r}战原生 HP 未验证:{native.get('reason') or 'unknown'}")
+    base_duration = float(base_duration_s)
+    duration = float(duration_s)
+    hp_mult = float(curse_hp)
+    if not all(math.isfinite(v) and v > 0
+               for v in (base_duration, duration, hp_mult)):
+        raise ValueError(
+            f"第{r}战 HP 审计输入非法:base={base_duration_s},"
+            f"time={duration_s},curse_hp={curse_hp}")
+    target = target_dps(r, n) if target is None else float(target)
+    if not math.isfinite(target) or target <= 0:
+        raise ValueError(f"第{r}战目标 DPS 非法:{target!r}")
+    baseline_c86 = float(fmt(solve_hp_correction(
+        target, base_duration, float(native["native_hp"]))))
+    # 任务 A 的乘法陷阱在这里封口：攻击组件降档后只要 curse_hp 不变，
+    # 最终 c86 / 真 HP / 实战 DPS 就逐项不变。
+    c86 = float(fmt(baseline_c86 * hp_mult))
+    baseline_true_hp = _true_hp_at_c86(native, baseline_c86)
+    true_hp = _true_hp_at_c86(native, c86)
+    raw = float(raw_c86)
+    if not math.isfinite(raw) or raw <= 0:
+        raise ValueError(f"第{r}战原始 c86 非法:{raw_c86}")
+    return {"r": r, "family": family, "verified": True,
+            "absolute_verified": bool(native.get("absolute_verified")), "native": native,
+            "base_duration_s": base_duration, "duration_s": duration,
+            "target_dps": target, "curse_hp": hp_mult,
+            "baseline_c86": baseline_c86, "c86": c86,
+            "baseline_true_hp": baseline_true_hp, "true_hp": true_hp,
+            "baseline_dps": baseline_true_hp / base_duration,
+            "realized_dps": true_hp / duration,
+            "raw_c86": raw, "family_scale": baseline_c86 / raw}
 
 
 # 未知曲线的代理:hp 用 boss 档(230 个 boss 在用,与 normal 同为 boss 侧修正),
@@ -512,13 +839,15 @@ COMPRESS_DEFAULT = {"hp": 1.0, "atk": 0.55}
 
 def stat_normalize(bosses, hp_med: dict, atk_med: dict,
                    lo: float, hi: float, level: int = 100,
-                   compress: dict | None = None) -> tuple[float, float]:
+                   compress: dict | None = None,
+                   hi_by_kind: dict | None = None) -> tuple[float, float]:
     """一层的 (hp 补偿, atk 补偿)。同曲线组中位数 ÷ 本层基数,夹在 [lo, hi]。
 
     一层多个 boss 时取**基数最大的那个**当代表(血最厚的决定这层的手感)。
     查不到基数(standard 系/专用表)返回 (1.0, 1.0) —— 无数据不瞎补。
     """
     compress = compress or COMPRESS_DEFAULT
+    hi_by_kind = hi_by_kind or {}
     fh = fa = 1.0
     for kind, med in (("hp", hp_med), ("atk", atk_med)):
         vals = [t for t in (true_stat(c, kind, level) for c in bosses) if t]
@@ -535,7 +864,7 @@ def stat_normalize(bosses, hp_med: dict, atk_med: dict,
         # 残余跨度 ≈ 原极差^(1-指数):atk 86^0.4 ≈ 6× 的区间,有别但不致命。
         k = compress[kind]
         f = (anchor / val) ** k if k else 1.0
-        f = min(hi, max(lo, f))
+        f = min(float(hi_by_kind.get(kind, hi)), max(lo, f))
         if kind == "hp":
             fh = f
         else:
@@ -561,23 +890,33 @@ def stat_anchor(bosses, med: dict, kind: str, level: int) -> tuple[float, float]
 
 def solve_atk(rec: dict, atk_base: float, atk_growth: float,
               scale: float = 1.0) -> float:
-    """一层写进 c89-91 的 atk 修正 —— 四道构建期硬闸依次夹。
+    """只计算曲线×攻击来源×攻击诅咒的真实乘积，不静默夹值。
 
-    rec = {r, ba, curse, st_mult, no_base, anchor, hard_cap?}。
-    纯函数:降档闸改完 curse 后原样重算即可,不留隐藏状态。"""
-    curve = atk_base * (atk_growth ** (rec["r"] - 1)) * rec["ba"] * scale
-    # ① 组合上限:曲线×来源补偿×攻击诅咒。单项不越界、乘起来越界的层靠这条压住
-    cap = NOBASE_ATK_CAP if rec["no_base"] else ATK_COMBO_CAP
-    val = min(curve * rec["curse"]["atk"], cap)
-    val *= rec["st_mult"]                       # 工坊阶段乘区(hell ×1.15)
-    # ② 真伤指数闸:原生 atk 高的 boss(青之女王≈中位 3 倍)col 合规≠每跳合规
-    if rec["anchor"]:
-        native, med = rec["anchor"]
-        val = min(val, TRUE_DMG_CAP * med / native)
-    # ③ 分位闸的逐层夹子(见 enforce_atk_band)
-    val = min(val, rec.get("hard_cap", float("inf")))
-    # ④ 全局兜底
-    return min(val, ATK_MULT_CEILING)
+    ``st_mult`` 只服务 HP/档位；攻击超标由 ``enforce_atk_band`` 显式降档。
+    """
+    factors = {
+        "atk_base": atk_base,
+        "atk_growth": atk_growth,
+        "scale": scale,
+        "ba": rec.get("ba"),
+        "curse.atk": (rec.get("curse") or {}).get("atk"),
+    }
+    for name, raw in factors.items():
+        try:
+            value = float(raw)
+        except (TypeError, ValueError) as exc:
+            raise RuntimeError(f"第{rec.get('r')}战攻击因子 {name} 非数值:{raw!r}") from exc
+        if not math.isfinite(value) or value <= 0:
+            raise RuntimeError(f"第{rec.get('r')}战攻击因子 {name} 必须为有限正数:{raw!r}")
+    try:
+        value = (float(atk_base) * (float(atk_growth) ** (int(rec["r"]) - 1))
+                 * float(rec["ba"]) * float(scale)
+                 * float(rec["curse"]["atk"]))
+    except (OverflowError, TypeError, ValueError) as exc:
+        raise RuntimeError(f"第{rec.get('r')}战攻击乘积不可计算") from exc
+    if not math.isfinite(value) or value <= 0:
+        raise RuntimeError(f"第{rec.get('r')}战攻击乘积必须为有限正数:{value!r}")
+    return value
 
 
 def band_stats(cols: list[float]) -> dict:
@@ -589,7 +928,7 @@ def band_stats(cols: list[float]) -> dict:
 
 
 def band_violation(cols: list[float]) -> tuple[str, float] | None:
-    """中后段 col 分布是否落进官方带 → (超标项, 实测值) 或 None。"""
+    """全塔 col 分布是否落进目标带 → (超标项, 实测值) 或 None。"""
     if not cols:
         return None
     got = band_stats(cols)
@@ -601,60 +940,77 @@ def band_violation(cols: list[float]) -> tuple[str, float] | None:
 
 def enforce_atk_band(recs: list[dict], atk_base: float, atk_growth: float,
                      n: int) -> tuple[float, list[str]]:
-    """全塔 col 分位硬闸 → (全局曲线缩放, 逐条降档日志)。
-
-    ⚠ 这是**对任意 seed 的保证**,不是对某个 roll 手调:烈狱档 40% 层起 3 诅咒,
-    重摇方差极大——交接文档对标时那一 roll 中位 1.46,下一 roll 就 2.91。
-    收敛手段按治本程度:
-      ① 最热层的攻击类诅咒降一档(2→1→0→摘除),desc 同步改,文案不骗人
-      ② max 超标且该层已无攻击诅咒 → 只夹这一层(单点离群不该拖累全塔)
-      ③ 中位/P90 超标且中后段已无攻击诅咒可降 → 说明**基础曲线本身太热**,
-         全塔等比缩放(几何收敛),并在日志里提示该回头调 DIFF_PRESETS 端点
-    """
+    """全塔攻击硬闸：先降攻击诅咒，再显式降低该层攻击来源 ``ba``。"""
+    if n <= 0:
+        raise RuntimeError(f"塔层数必须为正数:{n}")
     scale, log = 1.0, []
 
     def recalc() -> None:
         for rec in recs:
             rec["atk"] = solve_atk(rec, atk_base, atk_growth, scale)
 
-    def has_atk(rec: dict) -> bool:
-        return any(c.get("name") in ATK_CURSE_TIERS
-                   for c in rec["curse"].get("picks") or [])
+    def explicit_limit(rec: dict) -> float:
+        limit = BAND_TARGET["max"]
+        if rec.get("anchor"):
+            native, med = map(float, rec["anchor"])
+            if (not math.isfinite(native) or not math.isfinite(med)
+                    or native <= 0 or med <= 0):
+                raise RuntimeError(
+                    f"第{rec.get('r')}战真伤锚必须为有限正数:{rec.get('anchor')!r}")
+            limit = min(limit, TRUE_DMG_CAP * med / native)
+        if not math.isfinite(limit) or limit <= 0:
+            raise RuntimeError(f"第{rec.get('r')}战攻击上限非法:{limit!r}")
+        return limit
+
+    def downgrade(rec: dict, limit: float, reason: str) -> None:
+        if rec["atk"] <= limit + 1e-9:
+            return
+        note = downgrade_atk_curse(rec["curse"])
+        if note is None:
+            old_ba = float(rec["ba"])
+            rec["ba"] = old_ba * limit / rec["atk"]
+            if (not math.isfinite(float(rec["ba"])) or float(rec["ba"]) <= 0
+                    or not float(rec["ba"]) < old_ba):
+                raise RuntimeError(
+                    f"第{rec.get('r')}战攻击来源降档无进展:{old_ba!r}→{rec['ba']!r}")
+            note = (f"攻击来源×{old_ba:g}→×{rec['ba']:g}"
+                    f"（{reason}目标×{limit:g}）")
+        log.append(f"[分位闸] 第{rec['r']}战 {note}")
+        recalc()
 
     recalc()
     for _ in range(600):
-        late = [rec for rec in recs if rec["r"] / n > BAND_FROM]
-        bad = band_violation([rec["atk"] for rec in late])
-        if not bad:
-            break
-        key, got = bad
-        top = max(late, key=lambda rec: (rec["atk"], rec["r"]))
-        if key == "max":
-            note = downgrade_atk_curse(top["curse"]) if has_atk(top) else None
-            if note is None:
-                top["hard_cap"] = BAND_TARGET["max"]
-                note = f"无攻击诅咒可降 → 单层夹到 ×{BAND_TARGET['max']}"
-            log.append(f"[分位闸] max={got:.2f} → 第{top['r']}战 {note}")
-        else:
-            hot = max((rec for rec in late if has_atk(rec)),
+        hard = [rec for rec in recs
+                if rec["atk"] > explicit_limit(rec) + 1e-9]
+        if hard:
+            top = max(hard,
+                      key=lambda rec: (rec["atk"] / explicit_limit(rec), rec["r"]))
+            limit = explicit_limit(top)
+            reason = ("原生攻击尖峰" if limit < BAND_TARGET["max"] - 1e-12
+                      else "全塔硬上限")
+            downgrade(top, limit, reason)
+            continue
+        bad = band_violation([rec["atk"] for rec in recs])
+        if bad:
+            key, got = bad
+            limit = BAND_TARGET[key]
+            hot = max((rec for rec in recs if rec["atk"] > limit + 1e-9),
                       key=lambda rec: (rec["atk"], rec["r"]), default=None)
-            if hot is not None:
-                log.append(f"[分位闸] {key}={got:.2f} → 第{hot['r']}战 "
-                           f"{downgrade_atk_curse(hot['curse'])}")
-            else:
-                scale *= 0.95
-                log.append(f"[分位闸] {key}={got:.2f} 且中后段已无攻击诅咒可降 "
-                           f"→ 全塔曲线 ×{scale:.3f}(该调 DIFF_PRESETS atk 端点了)")
-        recalc()
+            if hot is None:
+                raise RuntimeError(f"攻击分位 {key}={got:g} 超标但找不到可降档楼层")
+            downgrade(hot, limit, f"{key}={got:g}")
+            continue
+        break
     else:
-        # 600 步还没收敛只可能是闸门写错了,宁可硬夹也不许把越界值发出去
-        for rec in recs:
-            if rec["r"] / n > BAND_FROM:
-                rec["hard_cap"] = min(rec.get("hard_cap", float("inf")),
-                                      BAND_TARGET["median"])
-        recalc()
-        log.append("[分位闸] ⚠ 未在 600 步内收敛,中后段全部硬夹到 "
-                   f"×{BAND_TARGET['median']}(闸门逻辑有 bug,去查)")
+        raise RuntimeError("攻击分位闸未在 600 步内收敛")
+    for rec in recs:
+        limit = explicit_limit(rec)
+        if rec["atk"] > limit + 1e-9:
+            raise RuntimeError(
+                f"第{rec['r']}战攻击×{rec['atk']:g}仍超过硬上限×{limit:g}")
+    bad = band_violation([rec["atk"] for rec in recs])
+    if bad:
+        raise RuntimeError(f"攻击分位闸后置复核失败:{bad[0]}={bad[1]:g}")
     return scale, log
 
 
@@ -691,7 +1047,8 @@ def validate_built_rows(rows: dict[str, list[str]], fd: dict, zone: dict,
                         enemies: set[str], zakos: set[str],
                         lv_ceil: dict | None = None,
                         lv_floor: dict | None = None,
-                        lv_gb: dict | None = None) -> list[dict]:
+                        lv_gb: dict | None = None,
+                        validation_tables: dict | None = None) -> list[dict]:
     """构建产物(round → quest 行)逐关链检查;写入前调用,悬空即拒绝产出。
 
     lv_ceil=standard_boss / lv_floor=gv / lv_gb=general_boss,按每行 c95 查等级覆盖。"""
@@ -700,7 +1057,8 @@ def validate_built_rows(rows: dict[str, list[str]], fd: dict, zone: dict,
         if len(row) > 98:
             level = int(row[95]) if len(row) > 95 and str(row[95]).isdigit() else None
             rep = check_field_chain(row[98], fd, zone, enemies, zakos, level=level,
-                                    lv_ceil=lv_ceil, lv_floor=lv_floor, lv_gb=lv_gb)
+                                    lv_ceil=lv_ceil, lv_floor=lv_floor, lv_gb=lv_gb,
+                                    validation_tables=validation_tables)
         else:
             rep = {"ok": False, "field": None, "zone": None, "bosses": [],
                    "zakos": [], "errors": ["quest 行不足 99 列(缺 c98 field)"]}
@@ -717,6 +1075,7 @@ def validate_event_chain(event_id: str, *, qt: dict | None = None,
                          lv_ceil: dict | None = None,
                          lv_floor: dict | None = None,
                          lv_gb: dict | None = None,
+                         validation_tables: dict | None = None,
                          quest_path: "Path | None" = None) -> list[dict]:
     """事件全部关卡的解析链报告(输入 event_id,输出每关状态)。
 
@@ -753,7 +1112,8 @@ def validate_event_chain(event_id: str, *, qt: dict | None = None,
         else:
             rows[rk] = cells(leaf)
     return validate_built_rows(rows, fd, zone, enemies, zakos,
-                               lv_ceil=lv_ceil, lv_floor=lv_floor, lv_gb=lv_gb)
+                               lv_ceil=lv_ceil, lv_floor=lv_floor, lv_gb=lv_gb,
+                               validation_tables=validation_tables)
 
 
 def print_chain_reports(reports: list[dict]) -> int:
@@ -779,24 +1139,64 @@ def print_chain_reports(reports: list[dict]) -> int:
 ZONE_BOSS_SLOTS = ((24, 26), (28, 30), (32, 34))
 
 
+def _legacy_active_boss_slots(zn) -> tuple[rbb.ActiveBossSlot, ...]:
+    """Adapt a bare zone node through the new active-slot parser.
+
+    Older callers do not carry a field/terrain identity.  For that legacy-only
+    boundary, each well-formed zone row is represented by a synthetic terrain
+    layer, then parsed by :func:`rbb.active_boss_slots`; production field reads
+    must use the real terrain path via ``_zone_pick``.  Missing BossKind is never
+    inferred from the mirror side: malformed legacy rows fail closed too.
+    """
+    if not isinstance(zn, dict):
+        return ()
+    normalized: dict[str, str] = {}
+    layers: list[dict] = []
+    for layer, leaf in zn.items():
+        if isinstance(leaf, dict) or not str(layer).isdigit():
+            continue
+        try:
+            row = cells(leaf)
+        except (TypeError, ValueError, csv.Error, StopIteration):
+            continue
+        if len(row) <= 34:
+            continue
+        normalized[str(layer)] = join(row, isinstance(leaf, (bytes, bytearray)))
+        layers.append({"type": "objectgroup", "name": str(layer), "objects": []})
+    if not normalized:
+        return ()
+    try:
+        return rbb.active_boss_slots(
+            "__legacy__",
+            {"__legacy__": "__legacy__,terrain/__legacy__,__legacy_zone__"},
+            {"__legacy_zone__": normalized},
+            terrain_loader=lambda _logical: {"layers": layers},
+        )
+    except rbb.TerrainGateError:
+        return ()
+
+
 def zone_boss_slots(zn) -> list[set[str]]:
     """zone 嵌套 dict → 每个**已占用** boss 槽的代号集合(单人/多人列合并)。
 
     返回长度 = 该 zone 实际会出场的 boss 实体数(跨波次累加)。
     """
     out: list[set[str]] = []
-    if not isinstance(zn, dict):
-        return out
-    for wrow in zn.values():
-        if isinstance(wrow, dict):
-            continue                    # 异形嵌套 zone,交给上层拒绝
-        wc = cells(wrow)
-        for a, b in ZONE_BOSS_SLOTS:
-            codes = {wc[i] for i in (a, b)
-                     if len(wc) > i and wc[i] not in ("", "(None)")}
-            if codes:
-                out.append(codes)
+    for slot in _legacy_active_boss_slots(zn):
+        codes = {ref.code for ref in (slot.single, slot.multi) if ref is not None}
+        if codes:
+            out.append(codes)
     return out
+
+
+def zone_single_bosses(zn) -> list[str]:
+    """从已解析/内存克隆 zone 读单人战实际 boss 实体列表。
+
+    这是 `_zone_pick` 的内存态版；Task C `--mix` 会在还没落盘时克隆
+    field/zone，继续读 store 旧表会把 donor 的未出场部分也算进 HP。
+    """
+    return [slot.single.code for slot in _legacy_active_boss_slots(zn)
+            if slot.single is not None]
 
 
 def apply_boss_swap(wc: list[str], old: str, new: str) -> list[str]:
@@ -824,11 +1224,15 @@ def swap_zone_bosses(zn: dict, bosses: list[str]) -> dict:
     bi = 0
     for wk, wrow in zn.items():
         wc = cells(wrow)
-        for i in (24, 26, 28, 30, 32, 34):
-            if len(wc) > i and wc[i] not in ("", "(None)"):
-                wc[i] = bosses[bi % len(bosses)]
-                if i in (24, 28, 32):
-                    bi += 1
+        for single_i, multi_i in ZONE_BOSS_SLOTS:
+            occupied = [i for i in (single_i, multi_i)
+                        if len(wc) > i and wc[i] not in ("", "(None)")]
+            if not occupied:
+                continue
+            code = bosses[bi % len(bosses)]
+            for i in occupied:
+                wc[i] = code
+            bi += 1
         out[wk] = join(wc, isinstance(wrow, (bytes, bytearray)))
     return out
 
@@ -909,18 +1313,216 @@ def phase_linked_bosses(zone_t: dict | None = None,
     return result
 
 
+# general_boss 的 subroutine_change2/3/4 = c45-51 / c52-58 / c59-65,
+# 每段的 kind 列 = c48 / c55 / c62(客户端 GeneralBossValues:866-916 实锤):
+#   "0"=Normal、"1"=Withstand(状态ID)、"2"=WithstandState —— 1/2 都是**转阶段无敌**。
+# ⚠ 只作诊断用,**不要拿它当门禁判据**(2026-08-03 已证伪):无敌的解除是
+# GeneralBossOrFunnel.exitUniqueState:496-513 —— boss 离开 invincible_end_state
+# 指名的那个 unique state 时清标志位,而该态的 termination_condition 是纯帧计数
+# (shark phase2_change=Time(120)、haniwa phase2_move1=Move(15)/phase3_neutral1=Time(10)),
+# 与伤害/韧性/眩晕完全解耦;官方 182 条 Withstand 相位条目里终止条件为无限的**零命中**。
+# 眩晕更不可能是解除前提:stunIfPossible 自带 `!isInvincible()` 前置(EnemyImpl:1070),
+# 那样会构成死锁。
+WITHSTAND_KIND_COLS = (48, 55, 62)
+
+
+def withstand_phase_boss(code: str, gb_t: dict | None = None) -> bool:
+    """该 boss 是否带「转阶段无敌」(Withstand / WithstandState)。**仅诊断用**,见上方注释。"""
+    gb = gb_t if gb_t is not None else _tbl(GENERAL_BOSS)
+    node = gb.get(code)
+    if node is None:
+        return False
+    leaf = node
+    while isinstance(leaf, dict):
+        leaf = leaf[next(iter(leaf))]
+    if not isinstance(leaf, str):
+        leaf = leaf.decode("utf-8", "replace")
+    c = cells(leaf)
+    return any(len(c) > i and c[i] in ("1", "2") for i in WITHSTAND_KIND_COLS)
+
+
+# ---- 「按 boss 代号的外部引用」集合(2026-08-03 玩家实锤的真凶)----
+# 法阵载体克隆改的是 **zone 里的 boss 代号**(shark → mod_rogue_boss10)。客户端里
+# boss 代号除了自己那三张表(general_boss/boss_level/general_boss_variable,都已随克隆复制),
+# 还被**别的实体反向按字符串引用**,这些引用克隆覆盖不到,改名即静默断链(不崩不报):
+#
+#   ① damage_share —— general_funnel 的 c32 = damage_share_target_boss_id
+#      (GeneralFunnelValues:808)。绑定判据是「随从的该列 == boss 的 generalEnemyWatchSelfId
+#      (就是 boss 代号)」(GeneralEnemy:1977-1990),绑上后打随从会**额外给 boss 压一条同额伤害**
+#      (ImpactCalculator:536/563)。绑不上只是把 damageShareTarget 留成 null(GeneralEnemy:3434)。
+#      → shark_blue/red/brown 的 c32 = 'shark';turretA~D 的 c32 = 'haniwa_great_wind'。
+#        shark 本体的 subroutine 1 只有一个 neutral 挂血态,战斗内容全在三条鳍上,
+#        断链后**打鳍完全白打**;旋风巨土俑四个炮台合计是本体血的 2.9 倍,官方杀法就是
+#        砸炮台带穿本体,断链后只能硬啃本体 ⇒ 玩家报的「血量下不去」。
+#   ② general_enemy_watch —— 表形状 [自身实体种类][selfCode][selfRoutine][对方实体种类][partnerCode]…,
+#      ⚠ 第一层是**实体种类**(1=general boss / 2=funnel / 3=breakable block),
+#      **不是** GeneralEnemyWatchKind 那个 9 值枚举(StateMatched/HpRatio/Winced/… 在叶子行的列里)。
+#      实测顶层只有 "1"/"2";"2" 的 84 个 self 键与 general_boss 交集为 0(全是 funnel_*),
+#      所以只取 "1" 两侧是完整的,不是拍脑袋。
+#      self 侧和 partner 侧**都按代号索引**(GeneralEnemyWatchTable:24-30、
+#      GeneralEnemyWatchTableTools.getSelfData/getPartnerValues,全 Maybe 容错、查不到静默返回 null)。
+#      partner 侧(别人 watch 我)克隆无解;self 侧(我 watch 别人)理论上可以补克隆该表,
+#      但要连发布清单一起改,先一并硬拦,后续想拿回落点再做。
+#   ③ next_state 的 test kind 15 = GeneralBossAlive(bossId)(GeneralBossStateValues:677-717)。
+#      全库只有 raijin/hujin 互引,已被「多 boss 槽/成对族」两条覆盖,这里一并纳入判据兜底。
+#
+# 判别力(本轮 7 个法阵载体实测):shark、haniwa_great_wind **2/2 命中**;
+# lich_wind_single、dark_matter_single、guardian_golem_another_light_single、
+# treant_single、security_armour_single **5/5 放过**(它们在全库只出现在被克隆的三张表里)。
+# 对比之下「带 Withstand 就禁」误杀 14 只无人引用的 boss —— 第4关的 dark_matter_single
+# 正是被克隆的 Withstand 载体且玩家零反馈,现成反证。
+GENERAL_FUNNEL = "master/battle/boss/funnel/general_funnel.orderedmap"
+ENEMY_WATCH = "master/battle/boss/general_enemy_watch.orderedmap"
+FUNNEL_DMGSHARE_COL = 32            # GeneralFunnelValues.as:808-809
+BOSS_ALIVE_TEST, BOSS_ALIVE_ID_COL = "15", 30   # GeneralBossStateValues.as:677-717
+_CODE_REFS: dict[str, frozenset[str]] | None = None
+
+
+def code_referenced_bosses(gb_t: dict | None = None) -> dict:
+    """按「能不能靠克隆补救」把代号引用分成两档,外加一个 degraded 失败标志。
+
+      hard —— **补不了**,克隆改名即断链:damage_share(别人指着我的代号)、
+              enemy_watch partner 侧(别人的 watch 行按我的代号索引)、
+              状态机 GeneralBossAlive(bossId)。这三类要改就得连别人的行一起克隆。
+      soft —— **能补**:enemy_watch 的 self 侧(我自己的观察表),整棵子树挂到新代号下即可
+              (make_caster_boss 已实现)。补齐后这类可以正常当法阵载体。
+      degraded —— 任一来源没扫成。**必须 fail-closed**:名单只会偏小 = 漏拦,
+              而漏拦的后果是线上 boss 打不死(实测 shark 与 haniwa_great_wind
+              只靠 ① damage_share 这一路才认得出来,①塌了它们立刻回到候选池)。
+              所以 degraded 时一律不发法阵,宁可这轮少几个落点。
+    """
+    global _CODE_REFS
+    if _CODE_REFS is not None and gb_t is None:
+        return _CODE_REFS
+    hard: set[str] = set()
+    soft: set[str] = set()
+    degraded = False
+
+    def _leaf(n):
+        while isinstance(n, dict):
+            n = n[next(iter(n))]
+        return n if isinstance(n, str) else n.decode("utf-8", "replace")
+
+    try:
+        gb = gb_t if gb_t is not None else _tbl(GENERAL_BOSS)
+    except Exception as e:      # 没有 store 的环境(CI / 上游 fork / 别人的克隆)
+        print(f"[WARN] general_boss 读不到({e});本轮不发深渊法阵")
+        return {"hard": frozenset(), "soft": frozenset(), "degraded": True}
+    # ① damage_share:general_funnel c32
+    try:
+        for v in _tbl(GENERAL_FUNNEL).values():
+            c = cells(_leaf(v))
+            if len(c) > FUNNEL_DMGSHARE_COL and c[FUNNEL_DMGSHARE_COL] not in ("", "(None)"):
+                hard.add(c[FUNNEL_DMGSHARE_COL])
+    except Exception as e:
+        print(f"[WARN] damage_share 扫描失败({e});本轮不发深渊法阵")
+        degraded = True
+    # ② general_enemy_watch:partner(实体种类=1)键 → hard;self 键 → soft
+    try:
+        ew = _tbl(ENEMY_WATCH)
+        soft |= set(ew.get("1", {}))
+
+        def _partner(node, depth=0):
+            if not isinstance(node, dict):
+                return
+            for k, v in node.items():
+                if depth == 3:
+                    if str(k) == "1" and isinstance(v, dict):
+                        hard.update(v.keys())
+                else:
+                    _partner(v, depth + 1)
+        _partner(ew)
+    except Exception as e:
+        print(f"[WARN] enemy_watch 扫描失败({e});本轮不发深渊法阵")
+        degraded = True
+    # ③ 状态机 next_state test kind 15 = GeneralBossAlive(bossId)
+    try:
+        def _scan_states(node):
+            if isinstance(node, dict):
+                for v in node.values():
+                    _scan_states(v)
+                return
+            c = cells(_leaf(node))
+            if len(c) > BOSS_ALIVE_ID_COL and c[29] == BOSS_ALIVE_TEST:
+                if c[BOSS_ALIVE_ID_COL] not in ("", "(None)"):
+                    hard.add(c[BOSS_ALIVE_ID_COL])
+        _scan_states(_tbl("master/battle/boss/general_boss_state.orderedmap"))
+    except Exception as e:
+        print(f"[WARN] BossAlive 扫描失败({e});本轮不发深渊法阵")
+        degraded = True
+    codes = set(gb)
+    result = {"hard": frozenset(hard & codes),
+              "soft": frozenset((soft - hard) & codes),
+              "degraded": degraded}
+    if gb_t is None:
+        _CODE_REFS = result
+    return result
+
+
+def identity_locked_boss_reason(
+        bosses, *, code_references: dict | None = None) -> str | None:
+    """Return why an identity-changing operation must not touch ``bosses``.
+
+    The authoritative identity-lock set is exactly
+    ``code_referenced_bosses()["hard"]``: these ids are referenced by another
+    runtime object and renaming them silently breaks damage sharing, partner
+    watches, or phase-alive checks.  A degraded scan is fail-closed because its
+    hard set is known to be incomplete.
+    """
+    codes = sorted({str(code) for code in bosses if str(code)})
+    if not codes:
+        return None
+    refs = (code_referenced_bosses() if code_references is None
+            else code_references)
+    if refs.get("degraded"):
+        return (f"identity-locked 判据扫描降级，拒绝改名/异地搬运:"
+                f"{','.join(codes)}")
+    hard = frozenset(map(str, refs.get("hard") or ()))
+    hits = sorted(set(codes) & hard)
+    if not hits:
+        return None
+    return (f"identity-locked boss {','.join(hits)} 被外部实体按代号引用"
+            "(damage_share/enemy_watch partner/BossAlive)，master id 必须保持不变")
+
+
+def identity_locked_mix_reason(
+        bosses, source_field: str, target_field: str, *,
+        code_references: dict | None = None) -> str | None:
+    """Reject relocating an identity-locked boss away from its native field."""
+    if str(source_field) == str(target_field):
+        return None
+    why = identity_locked_boss_reason(
+        bosses, code_references=code_references)
+    if why is None:
+        return None
+    return (f"{why}; 原生 field={source_field}，异地 terrain={target_field}"
+            " 不允许拼接")
+
+
 def caster_carrier_block(field_id: str, bosses: list[str],
                          fd_t: dict, zone_t: dict,
-                         phase_set: frozenset[str] | None = None) -> str | None:
+                         phase_set: frozenset[str] | None = None,
+                         gb_t: dict | None = None,
+                         refs: dict | None = None) -> str | None:
     """「深渊法阵」载体门禁:返回拒绝理由(None = 可以当载体)。
 
     法阵的施法载体 = 克隆该轮首只 general boss 并给它追加官方场程序
-    (make_caster_boss)。两种情况必须拒发:
+    (make_caster_boss)。三种情况必须拒发:
       ① 该层 zone 有 **多个 boss 实体** —— 只换得动一只,余下的仍指向原代号,
          成对 boss 从此各打各的;
       ② 该层 boss 属于官方**成对/分阶段族**(phase_linked_bosses)—— 即便这层
-         只摆了一只,它的阶段转场仍按代号找同伴,克隆即断链。
-    两条都是数据判据,不认名字(索拉斯/女王/机工神兵一视同仁)。
+         只摆了一只,它的阶段转场仍按代号找同伴,克隆即断链;
+      ③ 该层 boss **被外部实体按代号引用且补不回来**(code_referenced_bosses 的 hard:
+         damage_share / enemy_watch partner 侧 / GeneralBossAlive)—— ①②只认 zone 里
+         摆得出来的联动,这类"随从按字符串认爹"的引用整个漏在缝里。2026-08-03 玩家实锤:
+         shark(背鳍三兄弟)与 haniwa_great_wind(旋风巨土俑)"血量下不去",
+         正是它们的随从(三条鳍 / 四个炮台)靠 damage_share 把伤害转给本体,
+         克隆改名后转账链断掉、静默降级 ⇒ 打随从等于白打。
+    三条都是数据判据,不认名字(索拉斯/女王/机工神兵一视同仁)。
+
+    refs = code_referenced_bosses(...) 的结果。调用方应当**只算一次**再逐层传进来
+    (它要遍历 general_boss_state 4.4MB,每层重算会白烧十几秒)。省略则内部自己算。
+    refs["degraded"] 为真时一律拒发 —— 引用名单不完整,放行就是赌命。
     """
     frow = fd_t.get(field_id)
     if isinstance(frow, (str, bytes, bytearray)):
@@ -933,6 +1535,14 @@ def caster_carrier_block(field_id: str, bosses: list[str],
     hit = {b for b in bosses if b in linked}     # bosses 可能含单人/多人同码重复
     if hit:
         return f"{','.join(sorted(hit))} 属官方成对/分阶段族"
+    if refs is None:
+        refs = code_referenced_bosses(gb_t)
+    if refs.get("degraded"):
+        return "代号引用名单扫描降级(见上方 WARN),本轮一律不发法阵"
+    ref_hit = sorted({b for b in bosses if b in refs["hard"]})
+    if ref_hit:
+        return (f"{','.join(ref_hit)} 被外部实体按代号引用"
+                "(damage_share/enemy_watch partner/BossAlive),克隆改名即断链")
     return None
 
 
@@ -1084,22 +1694,617 @@ def _tbl(logical: str) -> dict:
     return _TBL_CACHE[logical]
 
 
+def boss_ref_validation_tables(*, standard_boss: dict | None = None,
+                               general_boss: dict | None = None,
+                               general_boss_variable: dict | None = None,
+                               special_tables: dict | None = None,
+                               funnel_ok=None) -> dict:
+    """Build the sole BossKind validation bundle consumed by ``wf_rogue_bundle``.
+
+    The model module must not import this builder.  We therefore inject the
+    already-proven level/funnel semantics as callbacks and return the *selected
+    numeric tier*, not a boolean.  Kinds 0/1/8 fail closed without this bundle.
+    Explicit empty dicts are honored for isolated tests; ``None`` loads the
+    configured store read-only.
+    """
+    sb = standard_boss if standard_boss is not None else _tbl(STANDARD_BOSS)
+    gb = general_boss if general_boss is not None else _tbl(GENERAL_BOSS)
+    gv_logical = "master/battle/boss/general_boss_variable.orderedmap"
+    gv = (general_boss_variable if general_boss_variable is not None
+          else _tbl(gv_logical))
+    tables: dict = {"standard_boss": sb, "general_boss": gb}
+    if special_tables is None:
+        for logical in SPECIAL_BOSS_TABLES:
+            name = Path(logical).name.removesuffix(".orderedmap")
+            tables[name] = _tbl(logical)
+    else:
+        for name, table in special_tables.items():
+            short = Path(str(name)).name.removesuffix(".orderedmap")
+            tables[short] = table
+
+    effective_funnel_ok = funnel_ok if funnel_ok is not None else boss_funnel_ok
+
+    def selected_level(ref: rbb.BossRef, enemy_level: int, _tables: dict):
+        if ref.kind == 0:
+            return select_surjective_level(sb.get(ref.code), enemy_level)
+        if ref.kind in (1, 8):
+            if not boss_level_ok(
+                    ref.code, enemy_level, {}, gv, gb,
+                    funnel_ok_fn=effective_funnel_ok,
+                    special_levels={}):
+                return None
+            return select_surjective_level(gb.get(ref.code), enemy_level)
+        return None
+
+    tables["__level_validator__"] = selected_level
+    tables["__funnel_ok__"] = effective_funnel_ok
+    return tables
+
+
+def validate_spawned_ref(
+        source_kind: str, code: str, enemy_level: int, *,
+        validation_tables: dict,
+        general_zako: dict,
+        general_funnel: dict,
+        standard_funnel: dict,
+        ) -> rbb.GateResult:
+    """Validate an action/state dependency against its exact client source.
+
+    The three minion tables and GeneralBoss use getSurjectivity, so a numeric
+    tier at or above the battle level must exist. SpawnAlterEgo constructs a
+    GeneralBossAlterEgoSource and GeneralBossAlive names a GeneralBoss; a
+    same-code StandardBoss or Zako row must never satisfy either dependency.
+    Same-layer membership for GeneralBossAlive is checked by the closure walker,
+    which owns the necessary layer context.
+    """
+
+    try:
+        level = int(enemy_level)
+    except (TypeError, ValueError):
+        return rbb.GateResult(False, "LEVEL",
+                              detail=f"invalid spawned-ref level:{enemy_level!r}")
+
+    table_by_kind = {
+        "Funnel": (general_funnel, "general_funnel"),
+        "StandardFunnel": (standard_funnel, "standard_funnel"),
+        "Zako": (general_zako, "general_zako"),
+    }
+    if source_kind in table_by_kind:
+        table, label = table_by_kind[source_kind]
+        node = table.get(code) if isinstance(table, dict) else None
+        selected = select_surjective_level(node, level)
+        if selected is None:
+            reason = "FUNNEL_LEVEL" if source_kind != "Zako" else "LEVEL"
+            return rbb.GateResult(
+                False, reason, source_table=label,
+                detail=f"{label} has no tier >= {level}:{code}")
+        return rbb.GateResult(
+            True, selected_level=selected, source_table=label)
+
+    if source_kind in ("AlterEgo", "GeneralBoss"):
+        return rbb.validate_boss_ref(
+            rbb.BossRef(1, code), level, validation_tables)
+    return rbb.GateResult(
+        False, "REFERENCE",
+        detail=f"unknown spawned reference kind:{source_kind}")
+
+
+def build_native_bundle_catalog(
+        enemy_level: int = 100, *,
+        fd: dict | None = None,
+        zone: dict | None = None,
+        sb: dict | None = None,
+        gb: dict | None = None,
+        gv: dict | None = None,
+        bl: dict | None = None,
+        gz: dict | None = None,
+        special_tables: dict | None = None,
+        general_boss_state: dict | None = None,
+        general_funnel: dict | None = None,
+        standard_funnel: dict | None = None,
+        general_enemy_watch: dict | None = None,
+        funnel_ok=None,
+        terrain_loader=None,
+        action_loader=None,
+        esdl_loader=None,
+        code_references: dict | None = None,
+        display_names: dict[str, str] | None = None,
+        metadata_of=None,
+        ) -> rbb.BundleCatalog:
+    """Build the read-only post-gate catalog from every official active field.
+
+    `cb.build_pool()` is deliberately absent: it may provide UI metadata later,
+    but never decides boss identity or eligibility.  Live `mod_rogue_*` clones
+    are provenance-filtered even when this API is called outside main's stale
+    purge path, so a previous dry-run/write cannot add extra family tickets.
+    """
+    level = int(enemy_level)
+    # A fully injected factory call is an isolated snapshot contract.  Optional
+    # Task3 tables/resources that were not supplied must make portability
+    # native-only; they must never fall through to the live store behind the
+    # caller's back (the existing factory test pins this boundary).
+    fully_injected = all(value is not None for value in (
+        fd, zone, sb, gb, gv, bl, gz, special_tables))
+    # The builder later purges stale ``mod_rogue_*`` rows in memory.  Keep this
+    # factory uncached and accept those sanitized tables explicitly; otherwise
+    # a same-process rebuild can silently reuse the pre-purge catalog.  The
+    # no-argument path remains a read-only audit helper against the live store.
+    fd = fd if fd is not None else q.load_table(FIELD_DATA_T)
+    zone = zone if zone is not None else q.load_table(ZONE_T)
+    sb = sb if sb is not None else q.load_table(STANDARD_BOSS)
+    gb = gb if gb is not None else q.load_table(GENERAL_BOSS)
+    gv = (gv if gv is not None else
+          q.load_table("master/battle/boss/general_boss_variable.orderedmap"))
+    bl = (bl if bl is not None else
+          q.load_table("master/battle/boss/boss_level.orderedmap"))
+    gz = gz if gz is not None else q.load_table(GENERAL_ZAKO)
+    boss_states = (general_boss_state if general_boss_state is not None else
+                   {} if fully_injected else
+                   q.load_table("master/battle/boss/general_boss_state.orderedmap"))
+    general_funnels = (general_funnel if general_funnel is not None else
+                       {} if fully_injected else q.load_table(GENERAL_FUNNEL))
+    standard_funnels = (standard_funnel if standard_funnel is not None else
+                        {} if fully_injected else q.load_table(
+                            "master/battle/boss/funnel/standard_funnel.orderedmap"))
+    if general_enemy_watch is not None:
+        enemy_watch = general_enemy_watch
+    elif fully_injected:
+        enemy_watch = None
+    else:
+        try:
+            enemy_watch = q.load_table(ENEMY_WATCH)
+        except Exception:
+            # ``code_referenced_bosses`` will mark the matching scan degraded;
+            # keep this snapshot missing so the special HP gate cannot pretend
+            # that a required self-watch subtree is cloneable.
+            enemy_watch = None
+    validation = boss_ref_validation_tables(
+        standard_boss=sb, general_boss=gb, general_boss_variable=gv,
+        special_tables=special_tables, funnel_ok=funnel_ok)
+    names = dict(display_names) if display_names is not None else wb.boss_names()
+
+    def selected_leaf(ref: rbb.BossRef, selected: int | None):
+        table_name = rbb.KIND_TABLES.get(ref.kind)
+        table = validation.get(table_name, {}) if table_name else {}
+        node = table.get(ref.code) if isinstance(table, dict) else None
+        if isinstance(node, dict):
+            if selected is not None and str(selected) in node:
+                return node[str(selected)]
+            for key in node:
+                if str(key).isdigit():
+                    return node[key]
+            return None
+        return node
+
+    def identity_of(ref: rbb.BossRef, selected: int | None) -> dict:
+        leaf = selected_leaf(ref, selected)
+        text = (leaf.decode("utf-8", "replace") if isinstance(leaf, bytes)
+                else leaf if isinstance(leaf, str) else "")
+        model = ""
+        roots: set[str] = set()
+        for line in text.splitlines() or (text,):
+            for value in cells(line) if line else ():
+                if value.startswith("battle/boss/") and "general_16dots" not in value:
+                    parts = value.split("/")
+                    if len(parts) > 2 and not model:
+                        model = parts[2]
+                elif value.startswith("battle/enemy/boss/"):
+                    parts = value.split("/")
+                    if len(parts) > 3 and not model:
+                        model = parts[3].split("$")[0]
+                    roots.add(value)
+                if value.startswith("battle/action"):
+                    roots.add(value)
+        return {
+            "display": names.get(ref.code) or "",
+            "model": model or ref.code,
+            "actions": tuple(sorted(roots)),
+        }
+
+    def reference_gate(_field_id: str, slots: tuple[rbb.ActiveBossSlot, ...],
+                       selected_levels: tuple[tuple[str, int, int], ...],
+                       _level: int):
+        # Task 2 proves the exact active single slot, its selected source leaf,
+        # standard ESDL path / general boss_level row, and active zako refs.
+        # External hard/soft code references and recursive action/spawn closure
+        # are deliberately not claimed here; the portability gate below owns
+        # that transitive proof without changing native eligibility.
+        selected = {(layer, slot): tier for layer, slot, tier in selected_levels}
+        for slot in slots:
+            ref = slot.single
+            if ref is None:
+                continue
+            result = rbb.validate_boss_ref(ref, _level, validation)
+            if not result.ok:
+                return rbb.GateResult(False, result.reason or "REFERENCE",
+                                      detail=result.detail)
+            if result.selected_level is not None:
+                if selected.get((slot.layer, slot.slot)) != result.selected_level:
+                    return rbb.GateResult(
+                        False, "REFERENCE",
+                        detail=f"slot {slot.layer}/{slot.slot} selected tier drift")
+            if ref.kind == 0:
+                leaf = selected_leaf(ref, result.selected_level)
+                if not isinstance(leaf, (str, bytes, bytearray)):
+                    return rbb.GateResult(False, "REFERENCE",
+                                          detail=f"standard source leaf missing:{ref.code}")
+                row = cells(leaf)
+                if len(row) < 2 or not row[1]:
+                    return rbb.GateResult(False, "REFERENCE",
+                                          detail=f"standard ESDL path missing:{ref.code}")
+                logical = (row[1] if row[1].endswith(".esdl.amf3.deflate")
+                           else row[1] + ".esdl.amf3.deflate")
+                if not q.store_path(logical).is_file():
+                    return rbb.GateResult(False, "REFERENCE",
+                                          detail=f"standard ESDL file missing:{logical}")
+            elif ref.code not in bl:
+                return rbb.GateResult(False, "REFERENCE",
+                                      detail=f"boss_level missing:{ref.code}")
+        return rbb.GateResult(True)
+
+    def hp_gate(slots: tuple[rbb.ActiveBossSlot, ...], _level: int):
+        refs = [slot.single for slot in slots if slot.single is not None]
+        if any(ref.kind not in (0, 1, 8) for ref in refs):
+            return rbb.GateResult(False, "SPECIAL_HP_CHANNEL_UNSUPPORTED")
+        # Preserve BossKind through HP dispatch.  ``floor_native_hp`` has a
+        # legacy code-membership branch; forcing the exact source prevents a
+        # future code that exists in both tables from turning kind 1 into a
+        # standard ESDL read (or kind 0 into boss_level math).
+        failures = []
+        for ref in refs:
+            if ref.kind == 0:
+                evidence = floor_native_hp(
+                    [ref.code], _level, standard_boss=sb, boss_level={})
+            else:  # kinds 1/8 are both verified GeneralBoss source paths
+                evidence = floor_native_hp(
+                    [ref.code], _level, standard_boss={}, boss_level=bl)
+            if not evidence.get("verified"):
+                failures.append(
+                    f"kind={ref.kind} code={ref.code}:"
+                    f"{evidence.get('reason') or 'unknown HP'}")
+        if failures:
+            return rbb.GateResult(False, "HP_UNVERIFIED", detail="; ".join(failures))
+        return rbb.GateResult(True)
+
+    def bundle_hp_gate(bundle: rbb.NativeBossBundle, _level: int):
+        expanded = expand_bundle_hp_members(bundle, _level, {
+            "orochi": validation.get("orochi", {}),
+            "general_boss": gb,
+            "general_boss_variable": gv,
+            "boss_level": bl,
+        })
+        if not expanded.ok:
+            return rbb.GateResult(
+                False, expanded.reason or "SPECIAL_HP_CHANNEL_UNSUPPORTED",
+                detail=expanded.detail)
+        ref_error = _orochi_clone_reference_error(
+            expanded, code_refs, enemy_watch)
+        if ref_error:
+            return rbb.GateResult(
+                False, "SPECIAL_HP_CHANNEL_UNSUPPORTED", detail=ref_error)
+        return rbb.GateResult(
+            True, selected_level=expanded.selected_parent_level,
+            source_table="orochi")
+
+    if code_references is not None:
+        code_refs = code_references
+    elif fully_injected:
+        code_refs = {"hard": frozenset(), "soft": frozenset(), "degraded": True}
+    else:
+        code_refs = code_referenced_bosses(gb)
+
+    def missing_resource(kind: str):
+        def load(logical: str):
+            raise FileNotFoundError(
+                f"{kind} loader not injected for isolated catalog:{logical}")
+        return load
+
+    effective_action_loader = (
+        action_loader if action_loader is not None else
+        missing_resource("action") if fully_injected else rbb.load_store_action)
+    effective_esdl_loader = (
+        esdl_loader if esdl_loader is not None else
+        missing_resource("ESDL") if fully_injected else rbb.load_store_esdl)
+
+    def spawned_ref_gate(source_kind: str, code: str, _level: int):
+        return validate_spawned_ref(
+            source_kind, code, _level,
+            validation_tables=validation,
+            general_zako=gz,
+            general_funnel=general_funnels,
+            standard_funnel=standard_funnels)
+
+    requirement_cache: dict[tuple, rbb.RequirementResult] = {}
+
+    def portability_gate(bundle: rbb.NativeBossBundle) -> rbb.RequirementResult:
+        active_codes = tuple(sorted(
+            slot.single.code for slot in bundle.slots if slot.single is not None))
+        if code_refs.get("degraded"):
+            return rbb.RequirementResult(
+                False, reason="ACTION_CLOSURE_UNAUDITED",
+                detail="external boss-code reference scan degraded")
+        hard = sorted(set(active_codes) & set(code_refs.get("hard", ())))
+        if hard:
+            return rbb.RequirementResult(
+                False, reason="ACTION_CLOSURE_UNAUDITED",
+                detail="external hard boss-code references:" + ",".join(hard))
+        key = (
+            tuple((slot.layer, slot.slot,
+                   None if slot.single is None else slot.single.kind,
+                   None if slot.single is None else slot.single.code)
+                  for slot in bundle.slots),
+            bundle.selected_levels,
+            bundle.active_layers,
+        )
+        if key not in requirement_cache:
+            requirement_cache[key] = rbb.boss_terrain_requirements(
+                bundle, level, {
+                    "general_boss": gb,
+                    "standard_boss": sb,
+                    "general_boss_state": boss_states,
+                    "action_loader": effective_action_loader,
+                    "esdl_loader": effective_esdl_loader,
+                    "spawned_ref_gate": spawned_ref_gate,
+                })
+        return requirement_cache[key]
+
+    metadata_provider = metadata_of
+    if metadata_provider is None:
+        thumbnails = field_thumbnail_map()
+        metadata_index: dict[str, set[tuple[str, str, str]]] = {}
+        field_levels: dict[str, int] = {}
+        field_ids = set(fd)
+
+        # Official floor rows are the strongest field-local BGM source:
+        # ``field,bgm,floor_thumbnail``.  They also cover tower/challenge
+        # quests whose quest row references a floor key instead of each field.
+        try:
+            floor_table = q.load_table("master/battle/floor.orderedmap")
+        except (FileNotFoundError, KeyError, TypeError, ValueError, zlib.error):
+            floor_table = {}
+        floor_bgm: dict[str, set[str]] = {}
+        floor_thumb: dict[str, set[str]] = {}
+        for node in floor_table.values():
+            if isinstance(node, dict):
+                continue
+            text = (node.decode("utf-8", "replace")
+                    if isinstance(node, (bytes, bytearray)) else str(node))
+            for line in text.splitlines():
+                values = cells(line)
+                if not values or values[0] not in field_ids:
+                    continue
+                field_id = values[0]
+                bgm = values[1] if len(values) > 1 else ""
+                thumbnail = values[2] if len(values) > 2 else ""
+                if bgm not in ("", "(None)"):
+                    floor_bgm.setdefault(field_id, set()).add(bgm)
+                if thumbnail not in ("", "(None)"):
+                    floor_thumb.setdefault(field_id, set()).add(thumbnail)
+                metadata_index.setdefault(field_id, set()).add(
+                    ("floor", "" if bgm == "(None)" else bgm,
+                     "" if thumbnail == "(None)" else thumbnail))
+
+        # Verified CN schemas where the BGM token is immediately after the
+        # field cell.  challenge_dungeon uses field+1 as a frame limit and
+        # skill_preview ends at the field, so neither is guessed here.
+        direct_bgm_categories = {
+            "boss_battle", "main", "ex", "practice", "advent", "raid",
+            "rush", "hard_multi", "expert_single", "ranking",
+            "score_attack", "solo_time_attack", "carnival", "story_event",
+            "world_story", "world_story_boss",
+        }
+        for category, _label, logical, _group, _icon in wb.QUEST_CATS:
+            try:
+                quest_table = wb._load(logical)
+            except (FileNotFoundError, KeyError, TypeError, ValueError, zlib.error):
+                continue
+            for _path, row in wb._leaves(quest_table):
+                if not isinstance(row, str):
+                    continue
+                values = cells(row)
+                referenced = [(index, value) for index, value in enumerate(values)
+                              if value in field_ids]
+                if not referenced:
+                    continue
+                quest_thumbnail = next(
+                    (value for value in values if "/thumbnail/" in value), "")
+                for index, field_id in referenced:
+                    source_level = quest_level_of(values, index)
+                    if source_level:
+                        field_levels[field_id] = max(
+                            field_levels.get(field_id, 0), int(source_level))
+                    direct_bgm = (values[index + 1]
+                                  if category in direct_bgm_categories
+                                  and index + 1 < len(values) else "")
+                    if direct_bgm in ("", "(None)"):
+                        direct_bgm = next(iter(sorted(floor_bgm.get(field_id, ()))), "")
+                    thumbnail = (quest_thumbnail
+                                 or thumbnails.get(field_id, "")
+                                 or next(iter(sorted(floor_thumb.get(field_id, ()))), ""))
+                    metadata_index.setdefault(field_id, set()).add(
+                        (category, direct_bgm, thumbnail))
+
+        def metadata_provider(field_id: str) -> dict:
+            aliases = tuple(sorted(
+                metadata_index.get(field_id, set()),
+                key=lambda alias: (alias[0] == "floor", alias)))
+            if aliases:
+                category, bgm, thumbnail = aliases[0]
+            else:
+                category, bgm, thumbnail = "official", "", thumbnails.get(field_id, "")
+            return {"category": category, "bgm": bgm, "thumbnail": thumbnail,
+                    "aliases": aliases, "level": field_levels.get(field_id, 0)}
+
+    return rbb.build_native_bundle_catalog(
+        fd, zone, terrain_loader or rbb.load_store_terrain,
+        enemy_level=level,
+        validation_tables=validation,
+        display_names=names,
+        identity_of=identity_of,
+        hp_gate=hp_gate,
+        bundle_hp_gate=bundle_hp_gate,
+        reference_gate=reference_gate,
+        zako_codes=set(gz),
+        portability_gate=portability_gate,
+        official_field=lambda field_id: not field_id.startswith("mod_rogue_"),
+        metadata_of=metadata_provider,
+        c8016_prefixes=C8016_BLOCKED_BOSS_PREFIXES,
+    )
+
+
+def choose_endless_native_bundle(rng, enemy_level: int = 100) \
+        -> rbb.NativeBossBundle:
+    """从正式构建器的 fresh post-gate catalog 选一个原生安全 bundle。"""
+    level = int(enemy_level)
+    if level <= 0:
+        raise ValueError(f"无尽层敌等级非法:{enemy_level!r}")
+    catalog = build_native_bundle_catalog(enemy_level=level)
+    gated = []
+    for bundles in catalog.bundles.values():
+        for bundle in bundles:
+            bosses = list(native_bundle_bosses(bundle))
+            requirements = bundle.terrain_requirements
+            if (bundle.portable and bundle.terrain_requirements is not None
+                    and set(requirements.action_roots).issubset(
+                        requirements.action_closure)
+                    and not field_blocked(bundle.source_field)
+                    and _pool_safe(bosses)):
+                gated.append(bundle)
+    safe_catalog = rbb.catalog_from_bundles(gated)
+    if not safe_catalog.family_ids:
+        raise RuntimeError(f"敌等级 {level} 没有通过完整门禁的原生 boss bundle")
+    selected = rbb.choose_family_variant_bundle(
+        safe_catalog, rng, policy=None).bundle
+    if selected.source_field not in safe_catalog.eligible_source_fields:
+        raise RuntimeError(
+            f"无尽层 selector 返回了非 post-gate 场地:{selected.source_field}")
+    return selected
+
+
+def native_bundle_bosses(bundle: rbb.NativeBossBundle) -> tuple[str, ...]:
+    """按 active slot 顺序返回单人侧实体代号，并保留真实重复实例。"""
+    return tuple(slot.single.code for slot in bundle.slots
+                 if slot.single is not None)
+
+
+def patch_quest_boss_fields(
+        row: list[str], *, field: str, bosses, thumbnail: str | None,
+        bgm: str | None, enemy_level: int, rng,
+        play_field: str | None = None,
+        field_elements: dict[str, int] | None = None,
+        boss_elements: dict[str, int | None] | None = None,
+        require_bgm: bool = False) -> tuple[int, str]:
+    """同步正式塔路径的 c5/c69/c95/c98/c99 boss 场地字段。"""
+    if len(row) <= 99:
+        raise ValueError(f"rush quest 行过短:{len(row)} < 100")
+    source_field = str(field)
+    target_field = str(play_field or source_field)
+    if not source_field or not target_field:
+        raise ValueError("无尽层 bundle 缺 field")
+    level = int(enemy_level)
+    if level <= 0:
+        raise ValueError(f"无尽层敌等级非法:{enemy_level!r}")
+    if require_bgm and bgm in (None, "", "(None)"):
+        raise ValueError(f"无尽层 bundle 缺 BGM:{source_field}")
+
+    fields = field_official_elem_map() if field_elements is None else field_elements
+    boss_map = boss_element_map() if boss_elements is None else boss_elements
+    official = fields.get(source_field)
+    fixed = next((boss_map[code] for code in bosses
+                  if boss_map.get(code) is not None), None)
+    if official is not None:
+        element, tag = int(official), "(官方)"
+    elif fixed is not None:
+        element, tag = int(fixed), ""
+    else:
+        element, tag = int(rng.randrange(6)), "(随机)"
+    if not 0 <= element < 6:
+        raise ValueError(f"无尽层推荐元素非法:{element}")
+
+    if thumbnail not in (None, "", "(None)"):
+        row[5] = str(thumbnail)
+    row[69] = str(element)
+    row[95] = str(level)
+    row[98] = target_field
+    if bgm not in (None, "", "(None)"):
+        row[99] = str(bgm)
+    return element, tag
+
+
+def endless_bundle_publish_logicals(bundle: rbb.NativeBossBundle) -> tuple[str, ...]:
+    """返回原生 bundle 与 quest 写回组成的 dependency-first 发布闭包。"""
+    logicals: list[str] = []
+
+    def add(logical: str | None) -> None:
+        if logical and logical not in logicals:
+            logicals.append(logical)
+
+    add(bundle.terrain_logical)
+    requirements = bundle.terrain_requirements
+    if requirements is not None:
+        for action in requirements.action_closure:
+            add(action if action.endswith(".action.dsl.amf3.deflate")
+                else action + ".action.dsl.amf3.deflate")
+
+    kinds = {slot.single.kind for slot in bundle.slots
+             if slot.single is not None}
+    for kind in sorted(kinds):
+        table_name = rbb.KIND_TABLES.get(kind)
+        add(rbb.TABLE_LOGICALS.get(table_name))
+    add(BOSS_LEVEL)
+    add(GENERAL_ZAKO)
+    add(ZAKO_LEVEL)
+
+    spawned_kinds = {
+        ref.source_kind
+        for layer in (() if requirements is None else requirements.layers)
+        for ref in layer.spawned_refs
+    }
+    has_funnels = bool(requirements and any(
+        layer.funnels for layer in requirements.layers))
+    if kinds & {1, 3, 8} or spawned_kinds & {"AlterEgo", "GeneralBoss"}:
+        add(GENERAL_BOSS)
+        add(GENERAL_BOSS_VARIABLE)
+        add(GENERAL_BOSS_STATE)
+        add(ENEMY_WATCH)
+    if has_funnels or "Funnel" in spawned_kinds:
+        add(GENERAL_FUNNEL)
+    if "StandardFunnel" in spawned_kinds:
+        add(STANDARD_FUNNEL)
+
+    add(ZONE_T)
+    add(FIELD_DATA_T)
+    add(Q_QUEST)
+    return tuple(logicals)
+
+
 def _zone_pick(fdid: str) -> tuple[list[str], list[str]]:
-    """field → (boss codes, zako codes),按 zone 波次列直读(不依赖名字表)。"""
+    """field → 单人战实际 (boss codes, zako codes)，只读 terrain 激活层。
+
+    boss 每实体槽是 `(single,multi)` 镜像对。塔是单人 event quest，客户端只读
+    c24/c28/c32；即使 c26/c30/c34 写了不同代号也不能当成第二只实体。
+    zone 中未被 terrain ``objectgroup.name`` 激活的 row 必须忽略；解析失败时
+    fail closed 返回空，不回退到扫描整个 zone。数据列号使用 0-based。
+    """
     fd = _tbl("master/battle/field_data.orderedmap")
     zone = _tbl("master/battle/zone.orderedmap")
     frow = fd.get(fdid)
     if not frow:
         return [], []
-    zn = zone.get(cb._cols(frow)[2])
-    bosses, zakos = [], []
+    try:
+        caps = rbb.load_terrain_layer_caps(fdid, fd, zone, rbb.load_store_terrain)
+        slots = rbb.active_boss_slots(fdid, fd, zone, rbb.load_store_terrain)
+    except (FileNotFoundError, rbb.TerrainGateError):
+        return [], []
+    fc = cells(frow)
+    zn = zone.get(fc[2])
+    bosses = [slot.single.code for slot in slots if slot.single is not None]
+    zakos: list[str] = []
     if isinstance(zn, dict):
-        for wrow in zn.values():
-            wc = cb._cols(wrow)
-            bosses += [wc[i + 1] for i in range(23, min(35, len(wc)), 2)
-                       if wc[i] not in ("(None)", "") and wc[i + 1] not in ("(None)", "")]
-            zakos += [wc[i] for i in range(2, min(22, len(wc)), 2)
-                      if wc[i] not in ("(None)", "")]
+        for cap in caps:
+            wc = cells(zn[cap.layer])
+            zakos.extend(wc[i] for i in range(2, min(22, len(wc)), 2)
+                         if wc[i] not in ("(None)", ""))
     return bosses, zakos
 
 
@@ -1419,6 +2624,58 @@ def load_special_bosses() -> tuple[set[str], tuple[str, ...]]:
         return set(), ()
 
 
+def load_high_threat_rules(
+        path: str | os.PathLike[str] = SPECIAL_BOSSES_PATH
+        ) -> tuple[tuple[str, ...], frozenset[str]]:
+    """读取作者维护的高威胁前缀/精确代号；配置错误必须响亮失败。"""
+    with open(path, encoding="utf-8") as handle:
+        data = json.load(handle)
+    if "high_threat" not in data:
+        raise ValueError(f"{path} 缺少 high_threat 键")
+    raw = data["high_threat"]
+    if not isinstance(raw, dict):
+        raise TypeError("high_threat 必须是对象")
+    for key in ("prefixes", "exact"):
+        if key not in raw:
+            raise ValueError(f"high_threat 缺少 {key} 键")
+        if not isinstance(raw[key], list):
+            raise TypeError(f"high_threat.{key} 必须是字符串数组")
+
+    def clean(key: str) -> tuple[str, ...]:
+        values: list[str] = []
+        for index, value in enumerate(raw[key]):
+            if not isinstance(value, str):
+                raise TypeError(f"high_threat.{key}[{index}] 必须是字符串")
+            value = value.strip()
+            if not value:
+                raise ValueError(f"high_threat.{key}[{index}] 不得为空字符串")
+            if value not in values:
+                values.append(value)
+        return tuple(values)
+
+    return clean("prefixes"), frozenset(clean("exact"))
+
+
+def is_high_threat_bosses(bosses, prefixes: tuple[str, ...],
+                          exact: frozenset[str]) -> bool:
+    """HP 重排完成、mod clone 改名前，对实际 boss 代号匹配高威胁规则。"""
+    return any(str(code) in exact
+               or any(str(code).startswith(prefix) for prefix in prefixes)
+               for code in bosses)
+
+
+def prefer_non_threat_candidates(candidates: list, r: int | None, n: int,
+                                 bosses_of, prefixes: tuple[str, ...],
+                                 exact: frozenset[str]) -> list:
+    """前 20% 楼层有普通合格项时回避高威胁；耗尽时保留原候选。"""
+    if r is None or n <= 0 or r / n > 0.2:
+        return candidates
+    ordinary = [candidate for candidate in candidates
+                if not is_high_threat_bosses(
+                    bosses_of(candidate), prefixes, exact)]
+    return ordinary or candidates
+
+
 # ---- 精选 boss 加权(2026-07-29 用户需求:高价值 boss 出场率太低)----
 # rogue_special_bosses.json 的 featured_bosses(前缀匹配,代号本身也是自己的前缀)
 # + featured_weight(默认 4)。抽取时命中的候选按权重重复进候选表 = 权重 ×N,
@@ -1500,12 +2757,12 @@ def save_boss_history(bosses: list[str]) -> None:
 # **官方 3393 行**:
 #   · lv100 的 atk_boss —— 中位 **1.0**、p90 1.215、**max 6.63**(全库唯一离群点,第二名 1.8)
 #   · **全库没有任何一行 atk 修正 > 10**
-#   · 官方**不靠 quest 修正抬难度**:各档中位数全是 1.0,难度压在 enemy_level 曲线上
-#   · 最接近的官方连战(rush):**hp 修正堆到 100×,atk 只在 0.2–1.95** —— 堆血不堆刀
+#   · 官方**不靠 quest HP 修正抬难度**；rush 110 个 c86 样本全是 1.0，
+#     真血量来自 boss_level / standard 战斗资源，而不是 quest c86
 # 旧值 atk 终点 18.0 配上玻璃深渊 ×3.0 与 PLAN_TIERS ×1.15,末层写进 c89-91 的倍率
 # 达 **62.1**,实测线上塔 atk 中位 8.92 / 最高 80.09,**比官方天花板高一个数量级**。
-# 新端点把典型值拉回官方带内;血量端点不动(hp 侧我们中位 4.41/max 66.5 本来就在官方
-# 带内,官方 lv100 max 133、官方 rush max 100)。
+# 新端点把典型攻击值拉回官方带内；旧 HP 端点现只保留难度同比缩放/热身代理，
+# general boss 的最终真血量由绝对 DPS 目标反解进 clone boss_level.c2。
 # ⚠ **hp 端点同样压回**(用户指定参照:无幻之宴 / 机工神兵菲诺梅那)。
 # 查官方原值 —— 这两个在 lv100 的修正是 **全 1.0**(菲诺梅那在降临讨伐甚至 0.7),
 # 难度完全来自 enemy_level=100 + 它们自带的数值。而我们这座塔给**同一场战斗**写的是
@@ -1522,33 +2779,21 @@ def save_boss_history(bosses: list[str]) -> None:
 # 出手 20 次、把中后段攻击诅咒**全部摘光**才进带;终点 1.7 时只出手 6 次(多为降档
 # 而非摘除),中后段仍有 6/20 层保留攻击诅咒 —— 闸门回到"兜底"而不是"主力"。
 # atk **起点不动**(0.8):玩家反馈「前10关都不算强」,前段本就不该再削。
-# hp 端点上调作难度补偿(用户 2026-07-30 授权「按官方 rush 把难度转向 hp/机制」):
-# 官方 rush **hp 堆到 100×、atk 只在 0.2-1.95**,我们 hp max 才 12 左右,空间很大。
+# 2026-08-05 真机裁定覆盖旧“放大 c86”方案：官方 rush c86 无 >1 先例，
+# general 血量主伸缩必须改写克隆 boss_level.c2，quest c86 固定 1.0。
 DIFF_PRESETS = {
     #            hp起  hp终   atk起 atk终  诅咒档
     "easy":     (0.3,  1.2,   0.3,  0.9,  "off"),
     "normal":   (0.5,  2.2,   0.5,  1.3,  "abyss"),
-    "hell":     (0.9,  4.0,   0.8,  1.7,  "hell"),
+    "hell":     (0.9,  4.0,   1.1,  1.1,  "hell"),
     "gradient": (0.5,  2.6,   0.6,  1.5,  None),
 }
 
-# ---- atk 落表值的**构建期硬闸**(2026-07-30 玩家「连战 boss 伤害过高」审计后落地)----
-# 审计实测(现役 249 塔):col 中位 2.91、中后段中位 4.03、20/30 层超官方全库第二名
-# 1.8;同 field 锚点(白虎/圣诞魔像/菲诺梅那)= 把官方原版战斗做成 4.7~6.8 倍每跳。
-# 上一轮只调 ceiling 的思路被证伪:ceiling 从未触发(最高 6.58 < 8.0),削不到中位。
-# 所以闸门分四层,从治本到兜底:
-#   ① 攻击类诅咒降档(ATK_CURSE_TIERS)—— 病灶:col>4 的层**全部**是攻击诅咒层
-#   ② 组合上限:曲线×来源补偿×攻击诅咒 的乘积封顶(单层不许"基础高 + 诅咒顶格"双叠)
-#   ③ 无基数层单独限幅 + 真伤指数闸(见 NOBASE_ATK_CAP / TRUE_DMG_CAP)
-#   ④ 全塔分位硬闸(见 BAND_TARGET)——保证**任意 seed** 合规,不是对某个 roll 手调
-# 写进 c89-91 的 atk 修正**硬上限**。官方全库最大 6.63(且是孤例,第二名 1.8)。
-ATK_MULT_CEILING = 6.6
-# 「曲线×来源补偿×归一化 × 攻击诅咒」的组合上限。单项都不越界、乘起来越界的层
-# (第26战 基础2.99×逆鳞2.2=6.58)靠这条压住。
-ATK_COMBO_CAP = 4.0
-# standard 表 boss 无 boss_level 基数 → stat_normalize 返回 1.0(归一化不生效),
-# 它们拿到的是**裸曲线值**,而原生数值不在审计视野内,真实伤害无上界保证。
-# 这类层单独限幅,并禁掉攻击类诅咒(见 abyss_curses 的 no_base 参数)。
+# ---- atk 落表值的**显式构建期硬闸**(2026-08-05 定档)----
+# solve_atk 只报告真实乘积；enforce_atk_band 先降攻击诅咒，再降低该层 ba，
+# 每次变更后完整重算并写日志。以下兼容常量统一表达最终 c89/c91 硬上限。
+ATK_MULT_CEILING = 1.5
+ATK_COMBO_CAP = 1.5
 NOBASE_ATK_CAP = 1.5
 # 真伤指数 = boss 原生 atk(该层等级)× 落表 col ÷ 同曲线组中位锚。
 # col 合规 ≠ 真伤合规:第6战青之女王 col 只有 1.90,但原生 atk ≈ 中位 3 倍,
@@ -1557,15 +2802,264 @@ TRUE_DMG_CAP = 4.0
 # 带 funnel 的层:炮台弹幕同吃 boss 列倍率(第18战巫妖 4.68/第29战深渊之云 4.81),
 # 玩家会把它算进"boss 伤害"。c90 相对 c91 降档。
 FUNNEL_ATK_SCALE = 0.6
-# 全塔 col 分位硬闸(中后段 = 进度 > BAND_FROM)。官方坐标系:lv100 档中位 1.0/
-# P90 1.2/max 6.63(孤例)。超标即逐层降档重算,直到任意 seed 都落进带内。
+# 报告仍保留前/中后段切片；实际分位硬闸与 max=1.5 覆盖全塔。
 BAND_FROM = 1 / 3
-BAND_TARGET = {"median": 2.0, "p90": 3.0, "max": 6.0}
+BAND_TARGET = {"median": 1.1, "p90": 1.35, "max": 1.5}
 # 敌等级爬坡三段(--enemy-level ramp,默认)。官方 enemy_level 分布:lv80 是主流
 # 难档(662 行 21.9%),lv100 只有 127 行(4.2%);atk_correction_curve 实解
 # lv79=1.898 / lv89=1.992 / lv99=2.505 / lv100=3.267 —— lv100 是曲线悬崖顶,
 # 全塔平坦 lv100 等于把 96% 官方内容不敢站的位置站满 30 层。
 LEVEL_RAMP = (80, 90, 100)
+
+# 任务 D（2026-08-05 真机裁定）：默认不是“逐层爬坡”，而是除第 1 战小怪
+# 热身外，全程都站在多人决战的单人目标带。旧 60 万→2500 万几何线只由
+# 显式 --ramp 恢复；不得再让首尾比门禁反过来判平坦模式违规。
+TARGET_DPS_FIRST = 25_000_000.0
+TARGET_DPS_LAST = 25_000_000.0
+TARGET_DPS_LAST_BAND = (21_940_625.0, 30_716_875.0)
+RAMP_TARGET_DPS_FIRST = 600_000.0
+RAMP_TARGET_DPS_LAST = 25_000_000.0
+WARMUP_TARGET_DPS = 600_000.0
+MAX_DPS_DOWN_JITTER = 0.15
+STANDARD_C86_LIMITS = (0.9, 1.1)
+
+# 30 层塔的深层硬锚。正式池经“只留最高 quest rank”后仅剩 eye + 妄羊3/4，
+# 不足 6 个安全 general_boss 领域载体；全库约束匹配证明最小扩池是再纳入：
+#   - score_event_shark（独立 score-event 来源，但放进塔后仍由 event_quest logic 驱动）；
+#   - 妄羊1/2 的低 quest-rank field（boss_level 在塔内 lv100 可完整解析）。
+# 六层均为已知曲线/绝对 HP 证据、代号互异，c86 解落在 3.90~7.07。c36=true
+# 只会禁属性免疫，不会禁普通 StartBuffField 领域；载体门禁仍在 main 内逐层复核。
+DEEP_HP_ANCHOR_FIELDS_30 = (
+    "score_event_shark",
+    "eye_dragon_multibattle",
+    "raid_alter_sheep_materia1",
+    "raid_alter_sheep_materia2",
+    "raid_alter_sheep_materia3",
+    "raid_alter_sheep_materia4",
+)
+
+# r16~24 的领域/血量联合锚。九层均经正式来源表、单人 zone、等级 ramp、
+# general/standard 原生 HP 解析链和 caster_carrier_block 逐项复核；所需 c86
+# 为 12.43~18.55，落在用户裁定的中段官方窗口 0.1~30。它们的实际 general_boss
+# c36=true，因此普通领域可挂、属性免疫会由现有 c36 门禁拒绝并重抽。
+MID_HP_ANCHOR_FIELDS_30 = (
+    "multi_normal_1_10_4",
+    "multi_normal_1_3_3",
+    "raid_yokai_emaki_middle_boss",
+    "multi_normal_1_6_4",
+    "yokai_emaki_01_big_boss_multi",
+    "big_boss_anv1_multi",
+    "advent_z_collabo",
+    "desert_bonds_big_boss_multi_ex",
+    "summer_2020_boss_multi",
+)
+
+# 早段动态重排的保底候选。它们不是固定排程：正常随机结果只要原生 HP 能让
+# 基线 c86 命中窗口就原样保留；只有异构池抽到过薄/过厚 boss 时，才与正式来源池
+# 一起参与候补。此清单保证 r2~15 至少存在一组已复算可行解，避免算法因某次池变动
+# 无候选而靠放宽窗口蒙混过关。
+EARLY_HP_FALLBACK_FIELDS_30 = (
+    "solo_time_attack_green1",
+    "halfanv3",
+    "anv3",
+    "haniwa_carnival_dark_direct",
+    "multi_normal_1_19_4",
+    "haniwa_carnival_dark",
+    "anv3_hell",
+    "advent_spirit_beast_thunder_4",
+    "mechanic_dragon_eater_multi_80",
+    "advent_r_collabo",
+    "advent_xm22",
+    "haniwa_carnival_dark_pf",
+    "advent_s_collabo1",
+    "steampunk_another",
+)
+
+
+def target_dps(r: int, n: int, *, ramp: bool = False) -> float:
+    """第 r 关 HP 预算；默认全程 2500 万，``ramp`` 才走旧几何线。"""
+    if n < 2 or not 1 <= r <= n:
+        raise ValueError(f"DPS 曲线轮次越界:r={r},n={n}")
+    if not ramp:
+        return TARGET_DPS_LAST
+    progress = (r - 1) / (n - 1)
+    return RAMP_TARGET_DPS_FIRST * (
+        (RAMP_TARGET_DPS_LAST / RAMP_TARGET_DPS_FIRST) ** progress)
+
+
+def configured_target_dps(r: int, n: int, hp_base: float, hp_growth: float,
+                          stage_multiplier: float = 1.0, *,
+                          ramp: bool = False) -> float:
+    """把旧 HP 难度端点映射到选定的 flat/ramp 绝对 DPS profile。
+
+    选中的 flat/ramp profile 是 hell 默认锚；`--difficulty` / `--hp-base` /
+    `--hp-growth` 仍通过“当前旧曲线 ÷ hell 旧曲线”等比缩放它。
+    工坊阶段乘区只乘基线目标；血量/时限诅咒仍在随后的
+    realized 层生效，不能被这个函数抵消。
+
+    来源 `bh` 与旧 HP normalize 不再二次乘入：它们原本是在原生
+    HP 不可见时的代理，现在已由 general/standard 真 HP 反解取代。
+    """
+    if n < 2 or not 1 <= r <= n:
+        raise ValueError(f"DPS 曲线轮次越界:r={r},n={n}")
+    vals = (float(hp_base), float(hp_growth), float(stage_multiplier))
+    if not all(math.isfinite(v) and v > 0 for v in vals):
+        raise ValueError(
+            f"HP 目标缩放必须为有限正数:base={hp_base},"
+            f"growth={hp_growth},stage={stage_multiplier}")
+    hell_base, hell_end = DIFF_PRESETS["hell"][:2]
+    hell_growth = (hell_end / hell_base) ** (1 / (n - 1))
+    configured = vals[0] * (vals[1] ** (r - 1))
+    canonical = hell_base * (hell_growth ** (r - 1))
+    return target_dps(r, n, ramp=ramp) * configured / canonical * vals[2]
+
+
+def deep_hp_anchor_field(r: int, n: int) -> str | None:
+    """返回 30 层成品塔 r25~30 的绝对 HP / 领域载体锚；其它塔高不强套。"""
+    if n != 30:
+        return None
+    first = 25
+    return DEEP_HP_ANCHOR_FIELDS_30[r - first] if first <= r <= 30 else None
+
+
+def mid_hp_anchor_field(r: int, n: int) -> str | None:
+    """返回 30 层成品塔 r16~24 的绝对 HP / 单领域载体锚。"""
+    if n != 30:
+        return None
+    first = 16
+    return MID_HP_ANCHOR_FIELDS_30[r - first] if first <= r <= 24 else None
+
+
+def hp_correction_limits(r: int, n: int) -> tuple[float, float]:
+    """最终 quest c86 窗口；中段放宽，深层重新收紧。"""
+    if not 1 <= r <= n:
+        raise ValueError(f"HP 修正窗口轮次越界:r={r},n={n}")
+    if n == 30 and 16 <= r <= 24:
+        return (0.1, 30.0)
+    return (0.1, 10.0)
+
+
+def solve_hp_correction(dps: float, duration_s: float, native_hp: float) -> float:
+    """由目标 DPS、实战时长和 c86 前原生 HP 反解 quest HP 修正。"""
+    vals = (float(dps), float(duration_s), float(native_hp))
+    if not all(math.isfinite(v) and v > 0 for v in vals):
+        raise ValueError(f"HP 修正输入必须为有限正数:dps={dps},time={duration_s},hp={native_hp}")
+    value = vals[0] * vals[1] / vals[2]
+    if not math.isfinite(value) or value <= 0:
+        raise ValueError(f"HP 修正解非法:{value}")
+    return value
+
+
+def hp_curve_errors(records: list[dict], n: int,
+                    last_band: tuple[float, float] = TARGET_DPS_LAST_BAND, *,
+                    ramp: bool = False) -> list[str]:
+    """flat/ramp 两套互斥 HP profile 门禁；返回空列表即通过。
+
+    `verified` 只影响报告覆盖率，不允许把不可验层静默当成 0；门禁仍读取它的
+    显式估算 DPS，使首尾/相邻趋势至少有可审计数字。
+    """
+    errors: list[str] = []
+    rows = sorted((rec for rec in records if rec.get("baseline_dps") is not None),
+                  key=lambda rec: int(rec["r"]))
+    if not rows:
+        return ["没有可审计的 DPS 记录"]
+    if not ramp:
+        by_round = {int(rec["r"]): rec for rec in rows}
+        warmup = by_round.get(1)
+        if warmup is not None and not warmup.get("warmup"):
+            errors.append("第1关未标记为唯一小怪热身豁免层")
+        missing = [r for r in range(2, n + 1) if r not in by_round]
+        if missing:
+            errors.append("缺少 boss 层 DPS 记录:" + ",".join(map(str, missing)))
+        lo, hi = map(float, last_band)
+        for r in range(2, n + 1):
+            rec = by_round.get(r)
+            if rec is None:
+                continue
+            dps = float(rec["baseline_dps"])
+            if not lo <= dps <= hi:
+                errors.append(f"第{r}关基线 DPS {dps:.0f} 未进全程目标带 {lo:.0f}~{hi:.0f}")
+        return errors
+    for prev, cur in zip(rows, rows[1:]):
+        if (float(cur["baseline_dps"]) + 1e-9
+                < float(prev["baseline_dps"]) * (1 - MAX_DPS_DOWN_JITTER)):
+            errors.append(
+                f"第{cur['r']}关基线 DPS 下跌超过15%:"
+                f"{prev['baseline_dps']:.0f}→{cur['baseline_dps']:.0f}")
+    first = next((rec for rec in rows if int(rec["r"]) == 1), None)
+    last = next((rec for rec in rows if int(rec["r"]) == n), None)
+    if first is None or last is None:
+        errors.append(f"首尾记录不完整:round1={first is not None},round{n}={last is not None}")
+        return errors
+    last_dps = float(last["baseline_dps"])
+    if not float(last_band[0]) <= last_dps <= float(last_band[1]):
+        errors.append(f"第{n}关 DPS {last_dps:.0f} 未进末层目标带")
+    ratio = last_dps / float(first["baseline_dps"])
+    if not 35.0 <= ratio <= 50.0:
+        errors.append(f"首尾 DPS 比 {ratio:.2f}× 不在 35~50×")
+    return errors
+
+
+def hp_short_time_errors(records: list[dict]) -> list[str]:
+    """任意层若短于 300 秒且实战需求超过 2000 万/s，直接拒绝。"""
+    errors: list[str] = []
+    for rec in records:
+        try:
+            duration = float(rec["duration_s"])
+            dps = float(rec["realized_dps"])
+        except (KeyError, TypeError, ValueError):
+            errors.append(f"第{rec.get('r', '?')}战短时限审计字段不完整")
+            continue
+        if duration < 300.0 and dps > 20_000_000.0:
+            errors.append(
+                f"第{rec['r']}战短时限与高血量同时命中:"
+                f"{duration:.0f}s/{dps:.0f} DPS")
+    return errors
+
+
+def hp_correction_errors(records: list[dict], n: int) -> list[str]:
+    """最终 c86 按 HP 主通道验收；只报错，不做静默 clamp。"""
+    errors: list[str] = []
+    for rec in records:
+        try:
+            r = int(rec["r"])
+            c86 = float(rec["c86"])
+        except (KeyError, TypeError, ValueError):
+            errors.append(f"第{rec.get('r', '?')}战 c86 审计字段不完整")
+            continue
+        family = str(rec.get("family") or "")
+        if family == "no-boss" and rec.get("warmup"):
+            continue
+        if family == "general":
+            if not math.isclose(c86, 1.0, rel_tol=0.0, abs_tol=1e-12):
+                errors.append(f"第{r}战 general 最终 c86={c86:g}（必须恒为 1）")
+            continue
+        if family in {"standard", "identity-locked"}:
+            lo, hi = STANDARD_C86_LIMITS
+            if not lo <= c86 <= hi:
+                errors.append(
+                    f"第{r}战 {family} 最终 c86={c86:g} "
+                    f"超出微调窗口 {lo:g}~{hi:g}")
+            continue
+        errors.append(f"第{r}战 HP 族/通道不可审计:{family or '(missing)'}")
+    return errors
+
+
+def native_hp_coverage_errors(floor_records: list[dict]) -> list[str]:
+    """A 路径覆盖门禁：有 boss 的层不得退成无证据代理。
+
+    纯小怪热身没有 boss 血条，不在用户给定的 29 层 boss 公式内；它是唯一允许
+    `verified=false` 的结构性例外。新 boss 类型一旦读不到，必须显式扩解析器或拒绝。
+    """
+    errors = []
+    for rec in floor_records:
+        bosses = list((rec.get("pick") or {}).get("bosses") or [])
+        native = rec.get("native_hp") or {}
+        if bosses and not native.get("verified"):
+            errors.append(
+                f"第{rec.get('r')}战 boss HP 无绝对证据:"
+                f"{','.join(map(str, bosses))} ({native.get('reason') or 'unknown'})")
+    return errors
 
 
 def difficulty_curve(diff: str, n: int) -> tuple[float, float, float, float]:
@@ -1751,6 +3245,499 @@ def pick_field_program(menu: list, rng):
     return menu[rng.randrange(len(menu))]
 
 
+def log(message: str) -> None:
+    """构建期审计日志。独立成函数,测试可截获“拒绝并重抽”而不吞输出。"""
+    print(message)
+
+
+# CreateCondition 的 AdditionalConditionKind 构造名。这里故意不用数字索引:
+# 未知构造名在 validates=false 时会静默下落成索引 0,不崩不报、效果却像不存在。
+DAMAGE_RESISTANCE_AC = {
+    0: "ACAbilityDamageResistance",
+    1: "ACDirectAttackDamageResistance",
+    2: "ACPowerFlipDamageResistance",
+    3: "ACSkillDamageResistance",
+}
+ELEMENT_DATA_CN = {1: "火", 2: "水", 3: "雷", 4: "风", 5: "光", 6: "暗"}
+ELEMENT_CURSE_SPECS = {
+    # 按随机排程强度排序；元素正抗性走 damage/(1+r)，不是伤害类型的 damage*(1-r)。
+    "元素滞钝": (1, 1.0),
+    "三相封界": (3, 9.0),
+    "元素禁壁": (1, 99.0),
+    "五相绝域": (5, 999.0),
+}
+MIXED_ELEMENT_CURSE_NAME = "混相禁域"
+ELEMENT_CURSE_NAMES = (*tuple(ELEMENT_CURSE_SPECS), MIXED_ELEMENT_CURSE_NAME)
+ELEMENT_RESISTANCE_STRENGTHS = (1.0, 9.0, 99.0, 999.0)
+ELEMENT_LOCK_THRESHOLD = 99.0
+STACKED_DAMAGE_STRENGTH = 0.01
+STACKED_DEBUFF_STRENGTH = 1.0
+STACKED_MAX_ACCUMULATION = 99
+STACKED_DURATION_FRAMES = 9_999_999
+STACKED_CURSE_NAMES = ("层叠龙鳞", "不屈龙心")
+STACKED_DAMAGE_AC_KIND = {name: kind for kind, name in DAMAGE_RESISTANCE_AC.items()}
+
+
+def element_immunity_requested(forced: dict | None) -> bool:
+    """工坊是否明确要求本层保留属性免疫载体。"""
+    names = list((forced or {}).get("curses") or [])
+    return any(name in ELEMENT_CURSE_NAMES for name in names)
+
+
+def hard_condition_carrier_requested(forced: dict | None) -> bool:
+    """工坊是否钉了必须通过 general_boss c109 才能落地的词条。"""
+    names = set(map(str, (forced or {}).get("curses") or []))
+    return bool(names & (set(ELEMENT_CURSE_NAMES)
+                         | set(DAMAGE_HARD_CURSE_NAMES)
+                         | set(STACKED_CURSE_NAMES)))
+
+
+def prefer_element_immunity_hp_candidates(ranked: list[tuple]) -> tuple[list[tuple], bool]:
+    """HP 重排先用可挂属性免疫的候选；耗尽时显式回退原候选。
+
+    每项最后一个元素是 metrics dict，其中 ``element_immunity_block=None``
+    表示实际 general_boss 档、c36 与载体引用门禁均通过。返回值第二项为
+    是否发生了“无合格载体，只能降级”的事实，调用方必须记录日志。
+    """
+    eligible = [item for item in ranked
+                if item and isinstance(item[-1], dict)
+                and item[-1].get("element_immunity_block") is None]
+    return (eligible, False) if eligible else (ranked, bool(ranked))
+
+
+DAMAGE_HARD_CURSE_NAMES = ("深渊壁垒", "绝对壁垒", "三重壁垒")
+PRE_ACTION_CURSE_NAMES = DAMAGE_HARD_CURSE_NAMES + STACKED_CURSE_NAMES
+HIGH_ONE_SHOT_CURSE_NAMES = (
+    "绝对壁垒", "三重壁垒",
+    *(name for name, (_count, strength) in ELEMENT_CURSE_SPECS.items()
+      if strength >= ELEMENT_LOCK_THRESHOLD),
+)
+IMMUNITY_DURATION_FRAMES = 999_999
+
+
+def stacked_resistance_layers_for_depth(r: int, n: int) -> int:
+    """官方式累计层排程：前20% 20层，中段50层，最后20% 90层。"""
+    if n <= 0 or not 1 <= r <= n:
+        raise ValueError(f"轮次越界:r={r},n={n}")
+    if r / n <= 0.2:
+        return 20
+    return 90 if r / n > 0.8 else 50
+
+
+def stacked_resistance_entry(name: str, constructor: str,
+                             strength: float, layers: int) -> dict:
+    """构造一条叠层词条；文案只由真实单层强度与层数推导。"""
+    strength = float(strength)
+    layers = int(layers)
+    if constructor not in (*STACKED_DAMAGE_AC_KIND, "ACToleranceOfDebuff"):
+        raise ValueError(f"叠层抗性不支持构造 {constructor}")
+    if not math.isfinite(strength) or strength <= 0:
+        raise ValueError(f"叠层抗性单层强度非法:{strength}")
+    if not 1 <= layers <= STACKED_MAX_ACCUMULATION:
+        raise ValueError(f"叠层抗性层数必须为1~{STACKED_MAX_ACCUMULATION}:{layers}")
+    if constructor == "ACToleranceOfDebuff":
+        # ConditionChangeCalculator: 普通减益命中率 = hitRate - debuffResistance；
+        # 随机数包含 0，所以 r=1 / hitRate=1 仍约十万分之一漏过；forceApply 始终绕过。
+        text = (f"减益耐性×{layers}层（普通减益几乎无法命中；"
+                "强制赋予除外）")
+    else:
+        kind = STACKED_DAMAGE_AC_KIND[constructor]
+        reduction = strength * layers
+        if reduction >= 1.0:
+            label = "完全免疫"
+        else:
+            label = f"减{reduction * 100:.6g}%"
+        text = f"{COND_KIND_CN[kind]}抗性×{layers}层（{label}）"
+    return {"name": str(name),
+            "stacked_resistance": [(constructor, strength, layers)],
+            "text": text}
+
+
+def _merged_stacked_resistance(picks: list[dict]) -> list[tuple[str, float, int]]:
+    """合并同构造/强度的层数；超过官方 99 层上限即拒绝。"""
+    layers_by_card: dict[tuple[str, float], int] = {}
+    order: list[tuple[str, float]] = []
+    for pick in picks:
+        for constructor, strength, layers in pick.get("stacked_resistance", []):
+            constructor = str(constructor)
+            strength = float(strength)
+            layers = int(layers)
+            # 复用公开构造器做完整参数校验；这里只取其规范化结果。
+            stacked_resistance_entry("_validate", constructor, strength, layers)
+            key = (constructor, strength)
+            if key not in layers_by_card:
+                order.append(key)
+            layers_by_card[key] = layers_by_card.get(key, 0) + layers
+            if layers_by_card[key] > STACKED_MAX_ACCUMULATION:
+                raise ValueError(
+                    f"{constructor} 同参数累计 {layers_by_card[key]} 层>"
+                    f"{STACKED_MAX_ACCUMULATION}，客户端会静默封顶")
+    return [(constructor, strength, layers_by_card[(constructor, strength)])
+            for constructor, strength in order]
+
+
+def _stacked_resistance_totals(picks: list[dict]) -> dict[str, float]:
+    """按客户端 strength×magnification 汇总叠层条件，不改变可见层 DSL。"""
+    totals: dict[str, float] = {}
+    for constructor, strength, layers in _merged_stacked_resistance(picks):
+        totals[constructor] = totals.get(constructor, 0.0) + strength * layers
+    return totals
+
+
+def _normalize_resistance_atom(atom, key: str) -> tuple[int, float, bool]:
+    """把旧二元耐性与新三元耐性统一为(target,value,cancelable)。
+
+    `CreateCondition.params[4]` 是整条命令共用的可驱散标记。属性
+    r>=99 与伤害类型 r>=1 是硬墙，即使调用者请求 true 也强制改为
+    false；旧二元调用始终按 false 兼容。
+    """
+    if key not in {"damage_resistance", "element_resistance"}:
+        raise ValueError(f"未知耐性通道:{key}")
+    if not isinstance(atom, (list, tuple)) or len(atom) not in (2, 3):
+        raise ValueError(f"{key} 耐性原子必须是二元/三元组:{atom!r}")
+    raw_target, raw_value = atom[:2]
+    if isinstance(raw_target, bool):
+        raise ValueError(f"{key} 目标不能是 bool:{raw_target!r}")
+    target, value = int(raw_target), float(raw_value)
+    if key == "damage_resistance" and target not in DAMAGE_RESISTANCE_AC:
+        raise ValueError(f"未知伤害类型 {target};只接受 0..3")
+    if key == "element_resistance" and target not in ELEMENT_DATA_CN:
+        raise ValueError(f"属性数据码 {target} 非法;只接受 1..6")
+    if not math.isfinite(value) or value <= 0:
+        raise ValueError(f"{key} 耐性强度必须是有限正数,收到 {value}")
+    cancelable = False
+    if len(atom) == 3:
+        cancelable = atom[2]
+        if not isinstance(cancelable, bool):
+            raise ValueError(f"{key} cancelable 必须是 bool:{cancelable!r}")
+    threshold = (ELEMENT_LOCK_THRESHOLD if key == "element_resistance" else 1.0)
+    if value >= threshold - 1e-12:
+        cancelable = False
+    return target, value, cancelable
+
+
+def _merged_resistance(picks: list[dict], key: str) -> list[tuple[int, float, bool]]:
+    """跨诅咒按(target,cancelable)合并，保留命令级可驱散语义。
+
+    属性轴与客户端一样累加 strength；伤害类型在同组内沿用取最强
+    策略以防同组自行叠出负伤害。不同可驱散组必须分开落树；客户端最终
+    依然会跨组累加，所以可解性由 `_resistance_totals_by_target` 再求和。
+    """
+    values: dict[tuple[int, bool], float] = {}
+    order: list[tuple[int, bool]] = []
+    for pick in picks:
+        for raw in pick.get(key, []):
+            target, value, cancelable = _normalize_resistance_atom(raw, key)
+            group = (target, cancelable)
+            if group not in values:
+                order.append(group)
+                values[group] = value
+            elif key == "element_resistance":
+                values[group] += value
+            elif abs(value) > abs(values[group]):
+                values[group] = value
+
+    # 多张软卡在同 true 组合并后也可能跨过硬墙阈值。最终程序不允许
+    # “高墙整体可驱散”，因此把该组迁入 false 后再合并。
+    threshold = ELEMENT_LOCK_THRESHOLD if key == "element_resistance" else 1.0
+    for group in list(order):
+        target, cancelable = group
+        if not cancelable or values[group] < threshold - 1e-12:
+            continue
+        hard_group = (target, False)
+        value = values.pop(group)
+        order.remove(group)
+        if hard_group not in values:
+            order.append(hard_group)
+            values[hard_group] = value
+        elif key == "element_resistance":
+            values[hard_group] += value
+        elif abs(value) > abs(values[hard_group]):
+            values[hard_group] = value
+    return [(target, values[(target, cancelable)], cancelable)
+            for target, cancelable in order]
+
+
+def _resistance_totals_by_target(picks: list[dict], key: str) -> dict[int, float]:
+    """按客户端消费语义跨 cancelable false/true 两组求和。"""
+    totals: dict[int, float] = {}
+    for target, value, _cancelable in _merged_resistance(picks, key):
+        totals[target] = totals.get(target, 0.0) + float(value)
+    return totals
+
+
+def immunity_axes(picks: list[dict]) -> tuple[set[str], set[int]]:
+    """返回跨诅咒合并后的(完全免疫伤害类型,高阻断属性)。
+
+    旧 c71 条目也纳入伤害轴,让迁移期/工坊旧计划同样过硬闸；新硬通道分别来自
+    damage_resistance / element_resistance。伤害类型 r=1 走 ``*(1-r)``，确为免疫；
+    元素 r>0 走 ``/(1+r)``，只把 r>=99（伤害至多 1%）视作封锁一条普通属性路。
+
+    FixedAttackCalculator / RatioAttackCalculator 的 elementResistanceRate 与
+    specificDamageResistance 均固定为 0，能绕过两轴；这些集合服务于 NormalAttack
+    常规输出路的设计门禁，不宣称战斗在机制上绝对无解。
+    """
+    damage_total = _resistance_totals_by_target(picks, "damage_resistance")
+    for constructor, value in _stacked_resistance_totals(picks).items():
+        kind = STACKED_DAMAGE_AC_KIND.get(constructor)
+        if kind is not None:
+            # 两种条件的 ID 不同，但 ConditionSlot 的四个 resistance getter 会把
+            # 它们相加；必须跨“一次性/叠层”后再判是否封死该伤害类型。
+            damage_total[kind] = damage_total.get(kind, 0.0) + float(value)
+    damage = {str(kind) for kind, value in damage_total.items()
+              if value >= 1.0 - 1e-12}
+    for kind, value in merge_conds(picks):
+        if kind not in {"0", "1", "2", "3"}:
+            continue
+        try:
+            if float(value) >= 1.0 - 1e-12:
+                damage.add(kind)
+        except (TypeError, ValueError):
+            pass
+    elements = {int(element) for element, value in
+                _resistance_totals_by_target(picks, "element_resistance").items()
+                if 1 <= int(element) <= 6
+                and float(value) >= ELEMENT_LOCK_THRESHOLD - 1e-12}
+    return damage, elements
+
+
+def _slv(value: int | float) -> list[dict]:
+    return [{"min": value, "max": value}]
+
+
+def resistance_label(value: float) -> str:
+    """按元素公式 ``damage/(1+r)`` 生成不夸大的玩家文案。"""
+    value = float(value)
+    if not math.isfinite(value) or value <= 0:
+        raise ValueError(f"属性耐性强度必须是有限正数,收到 {value}")
+    denominator = 1.0 + value
+    if math.isclose(denominator, 2.0, rel_tol=0.0, abs_tol=1e-12):
+        return "伤害减半"
+    nearest = round(denominator)
+    if (denominator <= 10.0
+            and math.isclose(denominator, nearest, rel_tol=0.0, abs_tol=1e-12)):
+        return f"伤害降至1/{nearest}"
+    percent = 100.0 / denominator
+    return f"伤害降至{percent:.6g}%"
+
+
+def element_strengths_for_depth(r: int, n: int) -> tuple[float, ...]:
+    """混相禁域的逐属性强度池：20%/50%/80% 三个深度分界。"""
+    if n <= 0 or not 1 <= r <= n:
+        raise ValueError(f"轮次越界:r={r},n={n}")
+    d = r / n
+    count = 1 if d <= 0.2 else (2 if d <= 0.5 else (3 if d <= 0.8 else 4))
+    return ELEMENT_RESISTANCE_STRENGTHS[:count]
+
+
+def _card_resistance_atoms(rng, key: str, pairs) -> list[tuple[int, float, bool]]:
+    """一张逻辑软卡只抽一次可驱散性，硬原子始终回落 false。"""
+    base = [_normalize_resistance_atom((target, value, False), key)
+            for target, value in pairs]
+    threshold = ELEMENT_LOCK_THRESHOLD if key == "element_resistance" else 1.0
+    has_soft = any(value < threshold - 1e-12 for _target, value, _ in base)
+    soft_cancelable = bool(has_soft and rng.randrange(4) == 0)
+    return [(target, value,
+             soft_cancelable if value < threshold - 1e-12 else False)
+            for target, value, _old in base]
+
+
+def mixed_element_entry(rng, strengths, forced=None,
+                        name: str = MIXED_ELEMENT_CURSE_NAME) -> dict:
+    """生成每个属性独立强度的混相卡。
+
+    forced 在任何 RNG 调用前完整校验，工坊钉选因此不消耗这张
+    卡自身的属性数/属性/强度/可驱散抽签。作者钉选样例明确落成
+    不可驱散；随机软卡才按 3:1 混入可驱散版。
+    """
+    try:
+        allowed = tuple(float(value) for value in strengths)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"混相强度池非法:{strengths!r}") from exc
+    if (not allowed or any(value not in ELEMENT_RESISTANCE_STRENGTHS
+                           for value in allowed)
+            or len(set(allowed)) != len(allowed)):
+        raise ValueError(f"混相强度池必须是 1/9/99/999 的非空唯一子集:{allowed}")
+
+    if forced is not None:
+        if not isinstance(forced, list) or not 1 <= len(forced) <= 5:
+            raise ValueError("工坊 element_mix 必须是 1~5 项列表")
+        parsed: list[tuple[int, float, bool]] = []
+        seen: set[int] = set()
+        for item in forced:
+            if not isinstance(item, dict) or set(item) != {"element", "strength"}:
+                raise ValueError(f"element_mix 每项必须只含 element/strength:{item!r}")
+            element, strength = item["element"], item["strength"]
+            if (isinstance(element, bool) or not isinstance(element, int)
+                    or element not in ELEMENT_DATA_CN):
+                raise ValueError(f"element_mix 属性必须是数据层 1..6:{element!r}")
+            if (isinstance(strength, bool)
+                    or not isinstance(strength, (int, float))
+                    or float(strength) not in ELEMENT_RESISTANCE_STRENGTHS):
+                raise ValueError(f"element_mix 强度只允许 1/9/99/999:{strength!r}")
+            if element in seen:
+                raise ValueError(f"element_mix 属性重复:{element}")
+            seen.add(element)
+            parsed.append((element, float(strength), False))
+        atoms = sorted(parsed)
+    else:
+        count = rng.randrange(5) + 1
+        elements = sorted(rng.sample(range(1, 7), count))
+        raw = [(element, allowed[rng.randrange(len(allowed))])
+               for element in elements]
+        atoms = _card_resistance_atoms(rng, "element_resistance", raw)
+    text = "·".join(ELEMENT_DATA_CN[element] + resistance_label(value)
+                    for element, value, _cancelable in atoms)
+    return {"name": str(name), "element_resistance": atoms, "text": text}
+
+
+def build_immunity_dsl_tree(
+        damage_resistance: list[tuple],
+        element_resistance: list[tuple],
+        stacked_resistance: list[tuple[str, float, int]] | None = None) -> list:
+    """耐性 action DSL 树(CreateCondition → 自身 conditionSlot)。
+
+    ⚠ 元素码必须写数据层 ToleranceOfElementTarget 的 1-based 编码:
+      1火/2水/3雷/4风/5光/6暗；客户端内部虽 remap 为 0=全属性、1..6=六属性,
+      这里绝不能写内部编码 0,也不接受 254=ALL / 255=OWNER。
+    """
+    damage = _merged_resistance(
+        [{"damage_resistance": damage_resistance}], "damage_resistance")
+    elements = _merged_resistance(
+        [{"element_resistance": element_resistance}], "element_resistance")
+    grouped: dict[bool, list] = {False: [], True: []}
+    for kind, value, cancelable in damage:
+        name = DAMAGE_RESISTANCE_AC[kind]
+        if name not in wf_dsl_sig.ENUMS["AdditionalConditionKind"]:
+            raise RuntimeError(f"DSL 签名表缺少构造 {name},拒绝静默下落")
+        grouped[cancelable].append(
+            [name, _slv(IMMUNITY_DURATION_FRAMES), _slv(value), _slv(1)])
+    for element, value, cancelable in elements:
+        name = "ACToleranceOfElement"
+        if name not in wf_dsl_sig.ENUMS["AdditionalConditionKind"]:
+            raise RuntimeError(f"DSL 签名表缺少构造 {name},拒绝静默下落")
+        grouped[cancelable].append(
+            [name, _slv(IMMUNITY_DURATION_FRAMES), element, _slv(value), _slv(1)])
+    if "CreateCondition" not in wf_dsl_sig.COMMANDS:
+        raise RuntimeError("DSL 签名表缺少 CreateCondition,拒绝静默下落")
+    if "GenericConditionHitEffect" not in wf_dsl_sig.ENUMS["ConditionHitEffect"]:
+        raise RuntimeError("DSL 签名表缺少 GenericConditionHitEffect")
+    commands: list[list] = []
+    # params[4] 是整条 CreateCondition 共用布尔；必须先 false 后 true
+    # 分成至多两条命令，不能把原子级语义塞进不存在的参数位。
+    for cancelable in (False, True):
+        acs = grouped[cancelable]
+        if not acs:
+            continue
+        commands.append(["Command", [
+            "CreateCondition", -17, acs, _slv(1), ["GenericConditionHitEffect"],
+            cancelable,
+            False, "", None, False,
+            3,                     # 目标种类必填 3
+            _slv(1), False,
+        ]])
+
+    stacked = [(str(constructor), float(strength), int(layers))
+               for constructor, strength, layers in (stacked_resistance or [])]
+    # 同参数卡超过 maxAccumulation 时客户端会静默封顶；产出前必须拒绝。
+    _stacked_resistance_totals([{"stacked_resistance": stacked}])
+    for constructor, strength, layers in stacked:
+        if constructor not in wf_dsl_sig.ENUMS["AdditionalConditionKind"]:
+            raise ValueError(f"DSL 签名表缺少叠层构造 {constructor},拒绝静默下落")
+        if constructor == "ACToleranceOfDebuff":
+            ac = [constructor, _slv(STACKED_DURATION_FRAMES),
+                  _slv(strength), _slv(STACKED_MAX_ACCUMULATION)]
+        else:
+            if constructor not in STACKED_DAMAGE_AC_KIND:
+                raise ValueError(f"叠层抗性不支持构造 {constructor}")
+            ac = [constructor, _slv(STACKED_DURATION_FRAMES),
+                  _slv(strength), _slv(STACKED_MAX_ACCUMULATION)]
+        # 终始之龙的层数不是写进 maxAccumulation，而是重复同 GID 条件：每次
+        # outer magnification=1，同 ID 重放后逐层累计，99 只是上限。
+        for _ in range(layers):
+            commands.append(["Command", [
+                "CreateCondition", -17, [copy.deepcopy(ac)], _slv(1), ["None"],
+                False,             # 官方素材同样不可驱散
+                True,              # 跳过同帧 hash 去重；否则重复命令只落第一层
+                "", None, False,
+                3, _slv(1), False,
+            ]])
+    if not commands:
+        raise ValueError("空免疫 DSL 没有可执行词条")
+    # general_boss c109/c111-160 引用的 3382 个可解析 enemy action 全部是 ActionDsl v1。
+    return ["ActionDsl", 1, ["None"], False, False, False, False, False, False,
+            False, 0, ["Block", commands]]
+
+
+def build_immunity_dsl_blob(tree: list) -> bytes:
+    """AMF3 + raw-deflate 往返自校验；构造名/参数树有任何漂移就拒绝产出。"""
+    raw = wf_dsl.encode_amf3(tree)
+    co = zlib.compressobj(9, zlib.DEFLATED, -15)
+    blob = co.compress(raw) + co.flush()
+    parsed = wf_dsl.parse_dsl(zlib.decompress(blob, -15))["tree"]
+    if parsed != tree:
+        raise RuntimeError("属性免疫 DSL build→parse 往返不等价")
+    return blob
+
+
+def immunity_program(
+        damage_resistance: list[tuple],
+        element_resistance: list[tuple],
+        stacked_resistance: list[tuple[str, float, int]] | None = None) -> tuple[str, list]:
+    """同一耐性参数签名复用同一 action 文件,避免每层重复锻造。"""
+    damage = sorted(_merged_resistance(
+        [{"damage_resistance": damage_resistance}], "damage_resistance"))
+    elements = sorted(_merged_resistance(
+        [{"element_resistance": element_resistance}], "element_resistance"))
+    stacked = sorted((str(k), float(v), int(n))
+                     for k, v, n in (stacked_resistance or []))
+    tree = build_immunity_dsl_tree(damage, elements, stacked)
+    signature = json.dumps([damage, elements, stacked],
+                           ensure_ascii=True, separators=(",", ":"))
+    tag = hashlib.sha1(signature.encode("ascii")).hexdigest()[:12]
+    return f"battle/action/enemy/action/mod_rogue/immunity_{tag}", tree
+
+
+def rewrite_boss_carrier_node(node, action_program: str | None = None,
+                              pre_action_program: str | None = None,
+                              action_programs=()):
+    """克隆 general_boss 节点并追加普通 action / c109 pre_action。
+
+    c109 不能覆盖官方已有 pre_action；c110=true 保证续战重跑。字段用 csv.reader/writer
+    处理,包含逗号的程序数组仍保持一格。多个领域共用**同一个** boss 克隆和 action
+    槽；按程序 ID 去重，避免双领域把同一程序重复执行。
+    """
+    programs = ([action_program] if action_program else []) + list(action_programs or ())
+    programs = list(dict.fromkeys(str(p) for p in programs if str(p)))
+    if not programs and not pre_action_program:
+        raise ValueError("载体克隆至少需要一个 action 程序")
+
+    def append(cell: str, program: str) -> str:
+        existing = [] if cell in ("", "(None)") else cell.split(",")
+        return ",".join(existing if program in existing else existing + [program])
+
+    def rewrite(value):
+        if isinstance(value, dict):
+            return {k: rewrite(v) for k, v in value.items()}
+        row = cells(value)
+        while len(row) < 162:
+            row.append("")
+        if pre_action_program:
+            row[109] = append(row[109], pre_action_program)
+            row[110] = "true"
+        if programs:
+            for i in range(111, 161):
+                if row[i] not in ("", "(None)"):
+                    for program in programs:
+                        row[i] = append(row[i], program)
+                    break
+            else:
+                row[111] = ",".join(programs)
+        return join(row, isinstance(value, (bytes, bytearray)))
+
+    return rewrite(node)
+
+
 def curse_conflict(picks: list[dict]) -> str | None:
     """这组诅咒能不能同层?返回冲突原因;None = 可以。
 
@@ -1765,6 +3752,10 @@ def curse_conflict(picks: list[dict]) -> str | None:
     #    「完全免疫 1.0 + 易伤」,漏掉了 0.3/0.4/0.5 三档抗性配易伤;全库两两普查:
     #      深渊壁垒+深渊逆鳞 **16/16 恒冲突**(壁垒盖全四系,逆鳞必然踩上)
     #      亡者不屈+深渊逆鳞 4/16、深渊逆鳞+绝对壁垒 4/16、深渊重甲+深渊逆鳞 4/16
+    try:
+        _stacked_resistance_totals(picks)
+    except (TypeError, ValueError) as exc:
+        return f"叠层抗性参数非法:{exc}"
     signs: dict[str, set] = {}
     for p in picks:
         for k, v in p.get("cond", []):
@@ -1775,6 +3766,18 @@ def curse_conflict(picks: list[dict]) -> str | None:
             except (TypeError, ValueError):
                 continue
             signs.setdefault(k, set()).add("+" if fv > 0 else "-")
+        for atom in p.get("damage_resistance", []):
+            try:
+                k, fv, _cancelable = _normalize_resistance_atom(
+                    atom, "damage_resistance")
+            except (TypeError, ValueError):
+                continue
+            signs.setdefault(str(k), set()).add("+" if fv > 0 else "-")
+        for constructor, strength, _layers in p.get("stacked_resistance", []):
+            kind = STACKED_DAMAGE_AC_KIND.get(str(constructor))
+            if kind is not None:
+                signs.setdefault(str(kind), set()).add(
+                    "+" if float(strength) > 0 else "-")
     bad = sorted(k for k, s in signs.items() if len(s) > 1)
     if bad:
         return f"kind {bad} 同时有抗性/免疫和易伤(自相矛盾)"
@@ -1782,9 +3785,76 @@ def curse_conflict(picks: list[dict]) -> str | None:
     merged = merge_conds(picks)
     if len(merged) > 5:
         return "条件槽超 5(超出的会被静默截断)"
-    immune = {k for k, v in merged if str(v) in ("1", "1.0")}
-    if immune >= {"0", "1", "2", "3"}:
-        return "四系伤害全免疫(无解层)"
+    damage_immune, element_immune = immunity_axes(picks)
+    if damage_immune >= {"0", "1", "2", "3"}:
+        return "四种伤害类型全免疫(无解层)"
+    affected_elements = {
+        int(element) for element, value in
+        _resistance_totals_by_target(picks, "element_resistance").items()
+        if float(value) > 0
+    }
+    if affected_elements >= {1, 2, 3, 4, 5, 6}:
+        # FixedAttackCalculator / RatioAttackCalculator 不吃属性耐性，因此这是
+        # NormalAttack 普通属性伤害必须留一条完全不受影响路径的产品闸，
+        # 不宣称机制上绝对无解。
+        return ("六属性均受正抗性影响，未留至少一个完全不受影响"
+                "的普通属性伤害出口（定值/比例伤害仍可绕过）")
+    if element_immune >= {1, 2, 3, 4, 5, 6}:
+        return (f"六属性均达高阻断阈值(r≥{fmt(ELEMENT_LOCK_THRESHOLD)};"
+                "普通属性伤害出口封死，定值/比例伤害仍可绕过)")
+    return None
+
+
+def curse_runtime_conflict(picks: list[dict], *, baseline_c86: float,
+                           c86_limits: tuple[float, float],
+                           baseline_dps: float,
+                           base_duration_s: float,
+                           hp_channel: str = "c86") -> str | None:
+    """组合落表前的数值硬闸；违规组合必须拒绝并重抽，不能截断。
+
+    standard/no-boss 的血量乘数走 c86；general 的血量诅咒折进 clone
+    boss_level.c2，c86 恒为 1。短时限始终按最终实战 DPS 跨诅咒合并后判。
+    """
+    base_c86 = float(baseline_c86)
+    base_dps = float(baseline_dps)
+    base_time = float(base_duration_s)
+    lo, hi = map(float, c86_limits)
+    if not all(math.isfinite(v) and v > 0
+               for v in (base_c86, base_dps, base_time, lo, hi)) or hi < lo:
+        raise ValueError(
+            f"诅咒数值门禁输入非法:c86={baseline_c86},limits={c86_limits},"
+            f"dps={baseline_dps},time={base_duration_s}")
+    hp_mult = math.prod(float(c.get("hp", 1.0)) for c in picks)
+    if hp_channel not in {"c86", "boss_level"}:
+        raise ValueError(f"未知 HP 通道:{hp_channel}")
+    final_c86 = (base_c86 if hp_channel == "boss_level"
+                 else float(fmt(base_c86 * hp_mult)))
+    if not lo <= final_c86 <= hi:
+        return (f"最终 c86={final_c86:g} 超出本层窗口 {lo:g}~{hi:g}"
+                f"(基线 {base_c86:g}×诅咒血量 {hp_mult:g})")
+    frames = [float(c["time"]) for c in picks if c.get("time") is not None]
+    duration = min(frames) / 60.0 if frames else base_time
+    realized_dps = base_dps * hp_mult * base_time / duration
+    if duration < 300.0 and realized_dps > 20_000_000.0:
+        return (f"短时限高血量无解:{duration:.0f}s/"
+                f"{realized_dps:.0f} DPS>20000000")
+    return None
+
+
+def high_threat_curse_conflict(picks: list[dict]) -> str | None:
+    """高威胁 boss 的统一降难门禁；独立于是否有 HP 基线参数。"""
+    if any(c.get("time") is not None for c in picks):
+        return "高威胁 boss 禁止时限诅咒"
+    high_elements = [(element, value) for element, value in
+                     _resistance_totals_by_target(
+                         picks, "element_resistance").items()
+                     if float(value) >= ELEMENT_LOCK_THRESHOLD - 1e-12]
+    if high_elements:
+        return ("高威胁 boss 禁止高档属性墙(r≥"
+                f"{fmt(ELEMENT_LOCK_THRESHOLD)}):{high_elements}")
+    hp_mult = math.prod(float(c.get("hp", 1.0)) for c in picks)
+    if not math.isfinite(hp_mult) or hp_mult > 1.5 + 1e-12:
+        return f"高威胁 boss 诅咒血量×{hp_mult:g} 超过基准 1.5 倍"
     return None
 
 
@@ -1850,9 +3920,9 @@ COMBO_RATE = 0.55        # 名额 ≥2 时走组合的概率,其余走独立随�
 # (2026-07-30 用户指定),低档按同比例下调保持单调阶梯——阶梯本身也是**降档闸**
 # 的台阶(超标层 tier 2→1→0→摘除,逐级重算,desc 跟着改,落表值与文案永不脱节)。
 ATK_CURSE_TIERS = {
-    "嗜血狂潮": (1.3, 1.5, 1.7),
-    "深渊逆鳞": (1.4, 1.6, 1.8),
-    "玻璃深渊": (2.0, 2.3, 2.6),
+    "嗜血狂潮": (1.05, 1.10, 1.15),
+    "深渊逆鳞": (1.10, 1.20, 1.30),
+    "玻璃深渊": (1.20, 1.30, 1.40),
 }
 
 
@@ -1871,11 +3941,42 @@ def atk_curse_entry(name: str, t: int, weak: int = 0) -> dict:
             "text": f"敌攻×{mult}·{COND_KIND_CN[weak]}易伤{int(w * 100)}%"}
 
 
-def _curse_pool(t: int, rng) -> list[dict]:
-    """t = 档位索引 0/1/2。每项:name + 效果键(cond/hp/atk/tp/fever/time/text)。"""
+def _curse_pool(t: int, rng, *, stack_layers: int = 50,
+                mixed_strengths=ELEMENT_RESISTANCE_STRENGTHS,
+                forced_element_mix=None) -> list[dict]:
+    """t = 档位索引 0/1/2。硬通道耐性键单列,不再占 quest c71-80。"""
     wall = rng.randrange(4)   # 绝对壁垒的免疫系随机
     wall_open = rng.randrange(4)                             # 三重壁垒放行的那一系
     wall3 = [k for k in range(4) if k != wall_open]           # 其余三系全免
+    # 属性诅咒族:1/3/1/5 属性四档；最强一档仍明确留下 1 个属性出口。
+    # 文案统一从 damage/(1+r) 反推，绝不能再把 r=1 写成“完全免疫”。
+    # 每条独立抽样,跨条目叠加后的出口由 curse_conflict 再做全组合硬闸。
+    element_sets = {name: sorted(rng.sample(range(1, 7), count))
+                    for name, (count, _strength) in ELEMENT_CURSE_SPECS.items()}
+    _stacked_constructors = tuple(DAMAGE_RESISTANCE_AC.values())
+    stacked_damage_constructor = _stacked_constructors[
+        rng.randrange(len(_stacked_constructors))]
+    stacked_damage = stacked_resistance_entry(
+        "层叠龙鳞", stacked_damage_constructor,
+        STACKED_DAMAGE_STRENGTH, stack_layers)
+    stacked_debuff = stacked_resistance_entry(
+        "不屈龙心", "ACToleranceOfDebuff",
+        STACKED_DEBUFF_STRENGTH, stack_layers)
+    mixed_element = mixed_element_entry(
+        rng, mixed_strengths, forced=forced_element_mix)
+
+    def element_entry(name: str) -> dict:
+        blocked = element_sets[name]
+        _count, strength = ELEMENT_CURSE_SPECS[name]
+        open_elements = [e for e in range(1, 7) if e not in blocked]
+        text = ("·".join(ELEMENT_DATA_CN[e] for e in blocked)
+                + "属性" + resistance_label(strength))
+        if len(open_elements) <= 3:
+            text += "(只留" + "·".join(ELEMENT_DATA_CN[e] for e in open_elements) + ")"
+        return {"name": name,
+                "element_resistance": _card_resistance_atoms(
+                    rng, "element_resistance", [(e, strength) for e in blocked]),
+                "text": text}
     # ⚠ 逆鳞的易伤系**绑定到三重壁垒放行的那一系**,不再独立随机:
     # 【单通道】= 三重壁垒 + 深渊逆鳞,承诺"只剩一系能打、而那一系还易伤"。
     # 独立随机时易伤经常落在已经免疫的系上(实测 1.4.241 第15战:三系免疫 + 能力易伤,
@@ -1894,7 +3995,10 @@ def _curse_pool(t: int, rng) -> list[dict]:
         {"name": "时之枷锁", "time": (21600, 14400, 10800)[t],
          "text": f"限时{(6, 4, 3)[t]}分"},
         atk_curse_entry("嗜血狂潮", t),
-        {"name": "深渊壁垒", "cond": [(str(k), fmt((0.2, 0.25, 0.3)[t])) for k in range(4)],
+        {"name": "深渊壁垒",
+         "damage_resistance": _card_resistance_atoms(
+             rng, "damage_resistance",
+             [(k, (0.2, 0.25, 0.3)[t]) for k in range(4)]),
          "text": f"全系耐性{int((0.2, 0.25, 0.3)[t] * 100)}%"},
         {"name": "亡者不屈", "cond": [("4", ""), ("0", fmt((0.3, 0.4, 0.5)[t]))],
          "text": f"减益免疫·能耐{int((0.3, 0.4, 0.5)[t] * 100)}%"},
@@ -1902,16 +4006,25 @@ def _curse_pool(t: int, rng) -> list[dict]:
          "text": f"敌血×{(1.6, 2.0, 2.5)[t]}"},
         atk_curse_entry("深渊逆鳞", t, weak),
         # 绝对壁垒:随机一系伤害极高耐性,炼狱=完全免疫(强度1.0=伤害×0),逼构筑切换
-        {"name": "绝对壁垒", "cond": [(str(wall), fmt((0.7, 0.85, 1.0)[t]))],
+        {"name": "绝对壁垒", "damage_resistance": _card_resistance_atoms(
+             rng, "damage_resistance", [(wall, (0.7, 0.85, 1.0)[t])]),
          "text": f"{COND_KIND_CN[wall]}{'完全免疫' if t == 2 else '耐性' + str(int((0.7, 0.85, 1.0)[t] * 100)) + '%'}"},
         # 三重壁垒(2026-07-29 用户需求「免疫可以不止一种,比如三种」):
         # 四系里随机去掉一系,剩下三系同时高耐性/炼狱档完全免疫 —— 只留一条输出路,
         # 逼队伍必须带对那一系。条件槽有 5 个,三条 cond 塞得下。
         {"name": "三重壁垒",
-         "cond": [(str(k), fmt((0.5, 0.7, 1.0)[t])) for k in wall3],
+         "damage_resistance": _card_resistance_atoms(
+             rng, "damage_resistance", [(k, (0.5, 0.7, 1.0)[t]) for k in wall3]),
          "text": ("·".join(COND_KIND_CN[k] for k in wall3)
-                  + ('三重免疫' if t == 2 else f"三重耐性{int((0.5, 0.7, 1.0)[t] * 100)}%")
-                  + f"(只剩{COND_KIND_CN[wall_open]}能打)")},
+                   + ('三重免疫' if t == 2 else f"三重耐性{int((0.5, 0.7, 1.0)[t] * 100)}%")
+                   + f"(只剩{COND_KIND_CN[wall_open]}能打)")},
+        element_entry("元素滞钝"),
+        element_entry("三相封界"),
+        element_entry("元素禁壁"),
+        element_entry("五相绝域"),
+        mixed_element,
+        stacked_damage,
+        stacked_debuff,
         # 玻璃深渊:攻击爆表但血量减半,速杀或被杀
         atk_curse_entry("玻璃深渊", t),
         # 深渊法阵:克隆 boss 追加官方场程序(领域/淹水/结界,详见 FIELD_MENU)。
@@ -1925,15 +4038,23 @@ def _curse_pool(t: int, rng) -> list[dict]:
 def apply_picks(out: dict, picks: list[dict], combo: str | None = None) -> dict:
     """把一组诅咒条目合成效果包。**降档闸改了 picks 之后重算走同一条路**,
     保证 hp/atk/conds/desc 永远与 picks 一致(不会出现"文案写×2.6、落表 1.4")。"""
-    out.update({"conds": [], "hp": 1.0, "atk": 1.0, "tp": None, "fever": None,
-                "time": None, "gimmick": False, "caster": None,
+    out.update({"conds": [], "damage_resistance": [], "element_resistance": [],
+                "stacked_resistance": [],
+                "hp": 1.0, "atk": 1.0, "tp": None, "fever": None,
+                "time": None, "gimmick": False, "caster": None, "casters": [],
                 "picks": picks, "combo": combo})
     names = []
+    caster_ids: set[str] = set()
     for c in picks:
         out["hp"] *= c.get("hp", 1.0)
         out["atk"] *= c.get("atk", 1.0)
         out["gimmick"] = out["gimmick"] or c.get("gimmick", False)
-        out["caster"] = out["caster"] or c.get("caster")
+        caster = c.get("caster")
+        if caster:
+            program = str(caster[1])
+            if program not in caster_ids:
+                caster_ids.add(program)
+                out["casters"].append(caster)
         if "tp" in c:
             out["tp"] = max(out["tp"] or 0, c["tp"])
         if "fever" in c:
@@ -1942,17 +4063,22 @@ def apply_picks(out: dict, picks: list[dict], combo: str | None = None) -> dict:
             out["time"] = min(out["time"] or 10 ** 9, c["time"])
         names.append(f"「{c['name']}」{c['text']}")
     out["conds"] = merge_conds(picks)[:5]
+    out["damage_resistance"] = _merged_resistance(picks, "damage_resistance")
+    out["element_resistance"] = _merged_resistance(picks, "element_resistance")
+    out["stacked_resistance"] = _merged_stacked_resistance(picks)
+    out["caster"] = out["casters"][0] if out["casters"] else None  # 旧调用方兼容视图
     out["desc"] = (f"【{combo}】" if combo else "") + " ".join(names)
     return out
 
 
 def downgrade_atk_curse(curse: dict) -> str | None:
-    """把该层的攻击类诅咒降一档;已在最低档则整条摘掉。返回变更说明,无可降 → None。
+    """把该层的攻击类诅咒降一档；最低档只摘攻击组件,HP 组件原样保留。
 
     分位硬闸的**唯一收敛手段**:每调用一次 atk 严格下降,最多 4 步(2→1→0→摘)
     就回到无攻击诅咒的裸曲线,故循环必然终止。"""
     picks = list(curse.get("picks") or [])
-    i = next((i for i, c in enumerate(picks) if c.get("name") in ATK_CURSE_TIERS), None)
+    i = next((i for i, c in enumerate(picks)
+              if c.get("name") in ATK_CURSE_TIERS and "atk_tier" in c), None)
     if i is None:
         return None
     c = picks[i]
@@ -1962,16 +4088,147 @@ def downgrade_atk_curse(curse: dict) -> str | None:
         note = f"「{c['name']}」×{c['atk']}→×{picks[i]['atk']}"
         combo = curse.get("combo")
     else:
-        picks.pop(i)
-        note = f"摘除「{c['name']}」"
+        hp_mult = float(c.get("hp", 1.0))
+        if abs(hp_mult - 1.0) > 1e-12:
+            # 攻击与血量是同一条诅咒的两个组件。分位闸只获准摘攻击；留下显式、
+            # 可重算的 HP 残响条目,避免 apply_picks 把 0.5/0.85 重置成 1.0。
+            pct = int(round(abs(1.0 - hp_mult) * 100))
+            direction = "-" if hp_mult < 1.0 else "+"
+            picks[i] = {"name": f"{c['name']}·残响", "hp": hp_mult,
+                        "text": f"敌血{direction}{pct}%（攻击增幅已摘）"}
+        else:
+            picks.pop(i)
+        note = f"摘除「{c['name']}」攻击组件"
         # 组合的承诺(【速攻】=敌攻爆表+限时)已经不成立,标签一并摘掉,别骗玩家
         combo = None
+    hp_before = float(curse.get("hp", 1.0))
     apply_picks(curse, picks, combo)
+    if not math.isclose(float(curse["hp"]), hp_before, rel_tol=0.0, abs_tol=1e-12):
+        raise AssertionError(f"降档误改血量乘数:{hp_before}→{curse['hp']}")
+    if t == 0:
+        # dry-run 的分位闸日志直接留下同 seed 的前后不变量证据，不只靠测试内断言。
+        note += f"（血量×{fmt(hp_before)}保持）"
     return note
 
 
+def is_deep_round(r: int, n: int) -> bool:
+    """最后 20%（30 层塔即第 25~30 战）。"""
+    if n <= 0 or not 1 <= r <= n:
+        raise ValueError(f"轮次越界:r={r},n={n}")
+    return r / n > 0.8
+
+
+def element_curse_names_for_depth(r: int, n: int,
+                                  tier: str = "hell") -> set[str]:
+    """属性耐性族随机候选：浅层低阻、深层高阻；显式钉选不走这道软筛选。
+
+    30 层 hell 对应 1~6 滞钝、7~15 滞钝/三相、16~24 三相/禁壁、
+    25~30 禁壁/五相。standard 最高滞钝，abyss 最高三相。
+    """
+    if n <= 0 or not 1 <= r <= n:
+        raise ValueError(f"轮次越界:r={r},n={n}")
+    d = r / n
+    stage = 0 if d <= 0.2 else (1 if d <= 0.5 else (2 if d <= 0.8 else 3))
+    cap = {"standard": 0, "abyss": 1, "hell": 3}.get(tier, 0)
+    stage = min(stage, cap)
+    return (
+        {"元素滞钝"},
+        {"元素滞钝", "三相封界"},
+        {"三相封界", "元素禁壁"},
+        {"元素禁壁", "五相绝域"},
+    )[stage] | {MIXED_ELEMENT_CURSE_NAME}
+
+
+def hell_curse_slots(r: int, n: int) -> int:
+    """烈狱诅咒名额：≤20% 1、≤50% 2、其余 3，最后 20% 4。"""
+    if is_deep_round(r, n):
+        return 4
+    d = r / n
+    return 1 if d <= 0.2 else (2 if d <= 0.5 else 3)
+
+
+def required_field_slots(r: int, n: int) -> int:
+    """领域保底：过半程 1 个，最后 20% 2 个。无载体时由调用方显式记欠配。"""
+    if is_deep_round(r, n):
+        return 2
+    return 1 if r / n > 0.5 else 0
+
+
+def _has_dragon_heart(picks: list[dict]) -> bool:
+    return any(str(constructor) == "ACToleranceOfDebuff"
+               for pick in picks
+               for constructor, _strength, _layers in
+               pick.get("stacked_resistance", []))
+
+
+def _safe_non_boon_fields(picks: list[dict], menu) -> list[tuple]:
+    used = {str(pick["caster"][1]) for pick in picks if pick.get("caster")}
+    unique: dict[str, tuple] = {}
+    for item in menu:
+        if not isinstance(item, (list, tuple)) or len(item) < 3:
+            continue
+        category = item[3] if len(item) > 3 else "领域"
+        program = str(item[1])
+        if (category == "加成" or category not in FIELD_RANDOM_CATS
+                or program in used):
+            continue
+        unique.setdefault(program, tuple(item))
+    return list(unique.values())
+
+
+def dragon_heart_companion_block(picks: list[dict], can_carry: bool,
+                                 menu) -> str | None:
+    """不屈龙心在 finalize 前的可实现性预检，供 redraw 路径记录原因。"""
+    if not _has_dragon_heart(picks):
+        return None
+    if not can_carry:
+        return "不屈龙心缺少 general_boss c109 载体"
+    fields = [pick for pick in picks if pick.get("caster")]
+    if any((pick["caster"][3] if len(pick["caster"]) > 3 else "领域") != "加成"
+           for pick in fields):
+        return None
+    if not _safe_non_boon_fields(picks, menu):
+        return "不屈龙心非加成可见领域候选耗尽"
+    return None
+
+
+def ensure_dragon_heart_companion(picks: list[dict], rng, can_carry: bool,
+                                  menu) -> list[dict]:
+    """为不屈龙心保底一个对普通队伍可见的非“加成”场机制。
+
+    已有非加成 field 时复用；只有加成 field 时原位替换一个；无 field
+    时追加恰好一个，不占普通诅咒名额。可行性问题必须在正常抽取时
+    由 `dragon_heart_companion_block` 转成 log+redraw；直接调用则响亮失败。
+    """
+    picks = list(picks)
+    why = dragon_heart_companion_block(picks, can_carry, menu)
+    if why:
+        raise RuntimeError(why)
+    if not _has_dragon_heart(picks):
+        return picks
+    fields = [(i, pick) for i, pick in enumerate(picks) if pick.get("caster")]
+    if any((pick["caster"][3] if len(pick["caster"]) > 3 else "领域") != "加成"
+           for _i, pick in fields):
+        return picks
+    candidates = _safe_non_boon_fields(picks, menu)
+    chosen = candidates[rng.randrange(len(candidates))]
+    companion = {"name": "深渊法阵", "caster": chosen,
+                 "text": f"{chosen[0]}·{chosen[2]}"}
+    if fields:
+        picks[fields[0][0]] = companion
+    else:
+        picks.append(companion)
+    return picks
+
+
 def abyss_curses(r: int, n: int, rng, tier: str, caps: dict | None = None,
-                 forced: dict | None = None, no_base: bool = False) -> dict:
+                 forced: dict | None = None, no_base: bool = False, *,
+                 baseline_c86: float | None = None,
+                  c86_limits: tuple[float, float] | None = None,
+                  baseline_dps: float | None = None,
+                  base_duration_s: float | None = None,
+                  hp_channel: str = "c86",
+                  high_threat: bool = False) -> dict:
     """轮次诅咒包:{conds,hp,atk,tp,fever,time,gimmick,caster,desc,picks,combo}。
 
     caps = 地形能力 {"spawn": 有SPAWNn锚点, "panel": 官方板子配对地形}——
@@ -1980,10 +4237,19 @@ def abyss_curses(r: int, n: int, rng, tier: str, caps: dict | None = None,
     no_base = 该层 boss 查不到基数(standard 表)→ 归一化不生效、真实伤害无上界
     保证,**禁掉攻击类诅咒**(2026-07-30 伤害审计:第15/18/26/29/30 战都是这种)。
     """
-    out = {"conds": [], "hp": 1.0, "atk": 1.0, "tp": None, "fever": None,
-           "time": None, "gimmick": False, "caster": None, "desc": "",
+    out = {"conds": [], "damage_resistance": [], "element_resistance": [],
+           "stacked_resistance": [],
+           "hp": 1.0, "atk": 1.0, "tp": None, "fever": None,
+           "time": None, "gimmick": False, "caster": None, "casters": [], "desc": "",
+           "field_requested": 0, "field_applied": 0, "field_deficit": 0,
+           "field_deficit_reason": None,
            "picks": [], "combo": None}
     has_forced = bool(forced and (forced.get("curses") or forced.get("field")))
+    forced_names = list((forced or {}).get("curses") or [])
+    has_element_mix = bool(forced is not None and "element_mix" in forced
+                           and forced.get("element_mix") is not None)
+    if has_element_mix and MIXED_ELEMENT_CURSE_NAME not in forced_names:
+        raise ValueError("element_mix 只能与工坊钉选「混相禁域」同时提供")
     if tier == "off" and not has_forced:
         return out
     t = CURSE_TIERS.index(tier) if tier in CURSE_TIERS else 1
@@ -1992,46 +4258,250 @@ def abyss_curses(r: int, n: int, rng, tier: str, caps: dict | None = None,
     # 30% 起 2 个,60% 起 3 个(3 是条件槽能装下的上限,见 curse_conflict)。
     # 其余档位维持原节奏:≤15% 白板 / ≤45% 1 个 / 其余 2 个。
     if tier == "hell":
-        # ⚠ 3 名额的门槛压在 40% 而不是 60%:名额只有 2 时,8 套组合里只有 4 套
-        # (双诅咒的)有资格,【单通道】这类会被过度抽中(实测 30 层里出了 7 次)。
-        count = 1 if d <= 0.15 else (2 if d <= 0.4 else 3)
+        count = hell_curse_slots(r, n)
     else:
         if d <= 0.15 and not has_forced:
             return out
         count = 1 if d <= 0.45 else 2
     caps = caps or {}
-    pool = _curse_pool(t, rng)
+    field_requested = required_field_slots(r, n) if tier == "hell" else 0
+    raw_pool = _curse_pool(
+        t, rng, stack_layers=stacked_resistance_layers_for_depth(r, n),
+        mixed_strengths=element_strengths_for_depth(r, n),
+        forced_element_mix=((forced or {}).get("element_mix")
+                            if has_element_mix else None))
+    safe_pool = list(raw_pool)
+    if is_deep_round(r, n):
+        # 深层血量锚已到多人决战量级；180/240 秒会把需求 DPS 再抬 3.75~5×。
+        # 随机、组合、工坊强制三条路共用同一份过滤，后面 finalize 还有最终断言。
+        safe_pool = [c for c in safe_pool if "time" not in c]
     if no_base:
         # 无基数层:归一化返回 1.0,裸曲线值 + 顶格攻击诅咒 = 第26战 6.58 的成因
-        pool = [c for c in pool if c["name"] not in ATK_CURSE_TIERS]
-    # 显式指定(工坊拖拽):按名取该档位数值,数量=指定数,跳过随机
+        safe_pool = [c for c in safe_pool if c["name"] not in ATK_CURSE_TIERS]
+    if not caps.get("element"):
+        if "c36" in str(caps.get("element_reason") or ""):
+            log(f"[curse] round={r} reject=属性免疫族 reason={caps['element_reason']}; redraw")
+        safe_pool = [c for c in safe_pool if c["name"] not in ELEMENT_CURSE_NAMES]
+    if not caps.get("boss"):
+        safe_pool = [c for c in safe_pool if c["name"] not in PRE_ACTION_CURSE_NAMES]
+    if high_threat:
+        # 时限/高档属性墙是单条即可判定的硬禁项；HP 上限必须等组合后按净乘数判，
+        # 不能在这里错杀 2.5×0.5=1.25 这类合法搭配。
+        safe_pool = [c for c in safe_pool
+                     if c.get("time") is None
+                     and not any(float(value) >= ELEMENT_LOCK_THRESHOLD - 1e-12
+                                 for value in _resistance_totals_by_target(
+                                     [c], "element_resistance").values())]
+    # 深度只是随机排程软约束。工坊钉选从 safe_pool 查名，仍必须通过载体/c36/
+    # 可解性硬闸；随机、组合与 redraw 补位只从按层过滤后的 pool 取。
+    allowed_elements = element_curse_names_for_depth(r, n, tier)
+    pool = [c for c in safe_pool
+            if c["name"] not in ELEMENT_CURSE_NAMES or c["name"] in allowed_elements]
+    if not is_deep_round(r, n):
+        # 一次性高 r 是硬墙；随机排程只在最后20%与可见叠层混用。
+        # 工坊钉选仍从 safe_pool 取，保留显式越档能力（高威胁硬闸除外）。
+        pool = [c for c in pool if c["name"] not in HIGH_ONE_SHOT_CURSE_NAMES]
+    runtime_args = (baseline_c86, c86_limits, baseline_dps, base_duration_s)
+    if any(v is not None for v in runtime_args) and not all(v is not None for v in runtime_args):
+        raise ValueError(f"第{r}战诅咒数值门禁参数必须成套提供")
+
+    def conflict(picks: list[dict]) -> str | None:
+        why = curse_conflict(picks)
+        if not why and high_threat:
+            why = high_threat_curse_conflict(picks)
+        if not why:
+            why = dragon_heart_companion_block(
+                picks, bool(caps.get("boss")), field_menu_all())
+        if why or baseline_c86 is None:
+            return why
+        return curse_runtime_conflict(
+            picks, baseline_c86=float(baseline_c86),
+            c86_limits=c86_limits, baseline_dps=float(baseline_dps),
+            base_duration_s=float(base_duration_s), hp_channel=hp_channel)
+
+    def pick_key(c: dict):
+        caster = c.get("caster")
+        return ("field", str(caster[1])) if caster else ("curse", c.get("name"))
+
+    def new_field_entries(current: list[dict], needed: int) -> list[dict]:
+        """从完整安全菜单抽互异程序；领域是重复类别，但同一 program 不可重复。"""
+        used = {str(c["caster"][1]) for c in current if c.get("caster")}
+        menu = [m for m in field_menu_all()
+                if (m[3] if len(m) > 3 else "领域") in FIELD_RANDOM_CATS
+                and str(m[1]) not in used]
+        unique = {}
+        for item in menu:
+            unique.setdefault(str(item[1]), item)
+        order = rng.sample(list(unique.values()), len(unique)) if unique else []
+        return [{"name": "深渊法阵", "caster": fm, "text": f"{fm[0]}·{fm[2]}"}
+                for fm in order[:needed]]
+
+    def refill_picks(current: list[dict], target_count: int,
+                      prefer_caster: bool = False) -> list[dict]:
+        """用完整冲突闸补满名额；耗尽时硬失败，绝不把 redraw 退化成少发。"""
+        current = list(current)
+        atk_used = any(c.get("atk", 1.0) > 1.0 for c in current)
+        if caps.get("boss") and field_requested:
+            present = len({str(c["caster"][1]) for c in current if c.get("caster")})
+            add = min(max(0, target_count - len(current)), max(0, field_requested - present))
+            for c in new_field_entries(current, add):
+                if conflict(current + [c]) is None:
+                    current.append(c)
+            present = len({str(c["caster"][1]) for c in current if c.get("caster")})
+            if present < min(field_requested, target_count):
+                raise RuntimeError(
+                    f"第{r}战领域候选耗尽:{present}/{min(field_requested, target_count)}")
+        order = rng.sample(pool, len(pool))
+        # 深渊法阵(场程序)出场加权(2026-07-29 用户「场地效果可以再多一点」):
+        # 平权时 1/12≈8%,这里 45% 概率把它提到队首 → 实际约四成楼层带场地效果。
+        if prefer_caster and caps.get("boss") and rng.random() < 0.45:
+            caster = next((c for c in order if c.get("caster")), None)
+            if caster is not None:
+                order.remove(caster)
+                order.insert(0, caster)
+        for c in order:
+            if len(current) >= target_count:
+                break
+            if c.get("gimmick") and not caps.get("panel"):
+                continue
+            if c.get("caster") and not caps.get("boss"):
+                continue
+            # 中后段保底已经填到目标数后，不再随机塞第 3 个领域；前段仍保留旧的
+            # 45% 随机法阵手感。去重按 program ID，不按统一显示名“深渊法阵”。
+            if c.get("caster") and field_requested and sum(
+                    bool(p.get("caster")) for p in current) >= field_requested:
+                continue
+            if any(pick_key(c) == pick_key(p) for p in current):
+                continue
+            is_atk = c.get("atk", 1.0) > 1.0
+            if is_atk and atk_used:
+                continue
+            why = conflict(current + [c])
+            if why:
+                log(f"[curse] round={r} reject=「{c['name']}」"
+                    f" with={','.join(p['name'] for p in current) or '(none)'}"
+                    f" reason={why}; redraw")
+                continue
+            current.append(c)
+            atk_used = atk_used or is_atk
+        if len(current) < target_count:
+            # “拒绝并重抽”不能退化成少发几条的静默截断；候选耗尽说明池/冲突规则坏了。
+            raise RuntimeError(
+                f"第{r}战诅咒重抽耗尽:{len(current)}/{target_count},拒绝落表")
+        return current
+
+    def finalize(picks: list[dict], combo_name: str | None = None) -> dict:
+        picks = ensure_dragon_heart_companion(
+            picks, rng, bool(caps.get("boss")), field_menu_all())
+        why = conflict(picks)
+        if why:
+            raise RuntimeError(f"第{r}战诅咒最终组合未过门禁:{why}")
+        result = apply_picks(out, picks, combo_name)
+        applied = len(result.get("casters") or [])
+        effective_field_requested = max(
+            field_requested, 1 if _has_dragon_heart(picks) else 0)
+        result["field_requested"] = effective_field_requested
+        result["field_applied"] = applied
+        result["field_deficit"] = max(0, effective_field_requested - applied)
+        if result["field_deficit"]:
+            result["field_deficit_reason"] = (caps.get("carrier_reason")
+                                               or caps.get("element_reason")
+                                               or "没有可用的 general_boss 领域载体")
+        if is_deep_round(r, n) and (result.get("time") is not None
+                                    or any("time" in c for c in picks)):
+            raise AssertionError(f"第{r}战深层仍残留时限诅咒")
+        if high_threat:
+            why = high_threat_curse_conflict(picks)
+            if why:
+                raise AssertionError(f"第{r}战高威胁最终组合越闸:{why}")
+        return result
+
+    # 显式指定(工坊拖拽):有效钉选优先；被门禁拒绝的名额随机补齐到原指定数量。
     if forced and (forced.get("curses") or forced.get("field")):
-        picks = [c for nm in (forced.get("curses") or [])
-                 for c in pool if c["name"] == nm and not c.get("caster")]
-        for nm in (forced.get("curses") or []):
+        forced_curses = list(forced.get("curses") or [])
+        # 深层的“第 4 个”是硬规格，不是工坊可绕过的下限。
+        # 即使计划误填 5+ 个，也只保留前四个可解条目再重抽；
+        # 领域另算 2 个硬通道，不占普通诅咒名额。
+        curse_target = (count if is_deep_round(r, n)
+                        else max(count, len(forced_curses)))
+        if is_deep_round(r, n) and len(forced_curses) > curse_target:
+            for nm in forced_curses[curse_target:]:
+                log(f"[curse] round={r} reject=工坊额外「{nm}」 "
+                    f"reason=深层普通诅咒固定 {curse_target} 个; redraw")
+            forced_curses = forced_curses[:curse_target]
+        field_target = (field_requested if caps.get("boss") else 0)
+        if not field_target and forced.get("field") and caps.get("boss"):
+            field_target = 1
+        # 领域不占“第4个诅咒”的名额；深层是 4 个普通诅咒 + 2 个领域。
+        target_count = curse_target + field_target
+        picks = [c for nm in forced_curses
+                 for c in safe_pool if c["name"] == nm and not c.get("caster")]
+        for nm in forced_curses:
+            if is_deep_round(r, n) and nm == "时之枷锁":
+                log(f"[curse] round={r} reject=「{nm}」 reason=深层禁时限; redraw")
             if no_base and nm in ATK_CURSE_TIERS:
                 print(f"[WARN] 工坊钉选第{r}战:剔除「{nm}」(该层 boss 无基数,"
                       "归一化不生效,攻击类诅咒会失控)")
+            if nm in ELEMENT_CURSE_NAMES and not caps.get("element"):
+                why = caps.get("element_reason") or "本层没有可用的 general_boss 硬通道载体"
+                log(f"[curse] round={r} reject=「{nm}」 reason={why}; redraw")
+            if nm in DAMAGE_HARD_CURSE_NAMES and not caps.get("boss"):
+                log(f"[curse] round={r} reject=「{nm}」 reason=本层没有可用的"
+                    " general_boss 硬通道载体; redraw")
+            if nm in STACKED_CURSE_NAMES and not caps.get("boss"):
+                log(f"[curse] round={r} reject=「{nm}」 reason=本层没有可用的"
+                    " general_boss c109 叠层载体; redraw")
+            if high_threat:
+                original = next((c for c in raw_pool if c["name"] == nm), None)
+                if original:
+                    # HP 只能在完整组合上判；这里仅解释为何单条硬禁项没进 safe_pool。
+                    threat_probe = dict(original)
+                    threat_probe.pop("hp", None)
+                    why = high_threat_curse_conflict([threat_probe])
+                    if why:
+                        log(f"[curse] round={r} reject=「{nm}」 reason={why}; redraw")
         if forced.get("field"):
             fm_forced = next((m for m in field_menu_all() if m[1] == forced["field"]), None)
             if fm_forced and caps.get("boss"):
                 picks.append({"name": "深渊法阵", "caster": fm_forced,
                               "text": f"{fm_forced[0]}·{fm_forced[2]}"})
+            else:
+                log(f"[curse] round={r} reject=工坊法阵「{forced['field']}」"
+                    " reason=本层没有可用的 general_boss 硬通道载体; redraw")
         # 钉选也要过冲突闸:手动钉出"四系全免疫"照样是无解层,发出去就卡死玩家
+        if high_threat:
+            # 净 HP 乘数与输入顺序无关，但逐条 kept 检查会看到中间态；先处理减血项，
+            # 让 [高墙,玻璃] 与 [玻璃,高墙] 都按最终 1.25 倍作同一裁定。
+            picks = [c for _i, c in sorted(
+                enumerate(picks),
+                key=lambda pair: (float(pair[1].get("hp", 1.0)) > 1.0, pair[0]))]
         kept: list[dict] = []
         for c in picks:
-            why = curse_conflict(kept + [c])
+            why = conflict(kept + [c])
             if why:
-                print(f"[WARN] 工坊钉选第{r}战:剔除「{c['name']}」({why})")
+                log(f"[curse] round={r} reject=「{c['name']}」 reason={why}; redraw")
                 continue
             kept.append(c)
-        return apply_picks(out, kept)
+        if caps.get("boss") and field_requested:
+            max_non_fields = curse_target
+            non_fields = [c for c in kept if not c.get("caster")]
+            if len(non_fields) > max_non_fields:
+                rejected_ids = {id(c) for c in non_fields[max_non_fields:]}
+                for c in kept:
+                    if id(c) in rejected_ids:
+                        log(f"[curse] round={r} reject=「{c['name']}」"
+                            " reason=领域保底需预留名额; redraw")
+                kept = [c for c in kept if id(c) not in rejected_ids]
+        # 被 c36/载体/跨诅咒冲突拒掉的名额必须真正换成别的诅咒；补不满就拒绝落表。
+        return finalize(refill_picks(kept, target_count))
     # 攻击类诅咒(嗜血/逆鳞/玻璃)每轮至多 1 个——双叠=一击秒杀墙,是恶心不是大胆
-    picks, atk_used = [], False
+    picks = []
     combo_name = None
     # ---- 先试组合(2026-07-29):名额 ≥2 时 55% 概率整套落地,剩余名额再独立随机补 ----
     if count >= 2 and rng.random() < COMBO_RATE:
         cands = [cb_ for cb_ in CURSE_COMBOS if len(cb_["curses"]) <= count]
+        if is_deep_round(r, n):
+            cands = [cb_ for cb_ in cands if "时之枷锁" not in cb_["curses"]]
         # 需要 boss 载体的组合(带深渊法阵)在 standard/专用表 boss 层落不上,先剔掉
         if not caps.get("boss"):
             cands = [cb_ for cb_ in cands if "深渊法阵" not in cb_["curses"]]
@@ -2051,35 +4521,15 @@ def abyss_curses(r: int, n: int, rng, tier: str, caps: dict | None = None,
                     c = next((x for x in pool if x["name"] == nm), None)
                     if c:
                         got.append(c)
-            if len(got) == len(cb_["curses"]) and not curse_conflict(got):
+            why = conflict(got) if len(got) == len(cb_["curses"]) else None
+            if len(got) == len(cb_["curses"]) and not why:
                 picks, combo_name = got, cb_["name"]
-                atk_used = any(c.get("atk", 1.0) > 1.0 for c in got)
                 break
-    order = rng.sample(pool, len(pool))
-    # 深渊法阵(场程序)出场加权(2026-07-29 用户「场地效果可以再多一点」):
-    # 平权时 1/12≈8%,这里 45% 概率把它提到队首 → 实际约四成楼层带场地效果。
-    if caps.get("boss") and rng.random() < 0.45:
-        caster = next((c for c in order if c.get("caster")), None)
-        if caster is not None:
-            order.remove(caster)
-            order.insert(0, caster)
-    for c in order:
-        if len(picks) >= count:
-            break
-        if c.get("gimmick") and not caps.get("panel"):
-            continue
-        if c.get("caster") and not caps.get("boss"):
-            continue
-        if any(c["name"] == p["name"] for p in picks):
-            continue                              # 组合已带了同名的,别重复
-        is_atk = c.get("atk", 1.0) > 1.0
-        if is_atk and atk_used:
-            continue
-        if curse_conflict(picks + [c]):
-            continue                              # 全免疫死锁 / 条件槽超 5
-        picks.append(c)
-        atk_used = atk_used or is_atk
-    return apply_picks(out, picks, combo_name)
+            if why:
+                log(f"[curse] round={r} reject=【{cb_['name']}】"
+                    f"({','.join(c['name'] for c in got)}) reason={why}; redraw")
+    total_count = count + (field_requested if caps.get("boss") else 0)
+    return finalize(refill_picks(picks, total_count, prefer_caster=True), combo_name)
 
 
 def _leaf_rows(node):
@@ -2278,6 +4728,623 @@ def fmt(v: float) -> str:
     return s or "0"
 
 
+def select_surjective_level(node: dict, enemy_level: int) -> int | None:
+    """客户端 getSurjectivity：返回第一个 ``>= enemy_level`` 的数字档。"""
+    if not isinstance(node, dict):
+        return None
+    try:
+        level = int(enemy_level)
+    except (TypeError, ValueError):
+        return None
+    keys = sorted(int(k) for k in node if str(k).isdigit())
+    return next((key for key in keys if key >= level), None)
+
+
+def clone_hit_boss_level_c2(source_leaf, scale: float):
+    """重建一条 Hit-HP boss_level 叶，只缩放 c2，绝不改原叶或 c3/c4。"""
+    as_bytes = isinstance(source_leaf, (bytes, bytearray))
+    source = bytes(source_leaf) if isinstance(source_leaf, bytearray) else source_leaf
+    if not isinstance(source, (str, bytes)):
+        raise ValueError(f"boss_level leaf 类型非法:{type(source_leaf).__name__}")
+    row = cells(source)
+    if len(row) < 13:
+        raise ValueError(f"boss_level 行列数={len(row)}(<13)")
+    if row[0] != "0":
+        raise ValueError("仅 Hit HP(kind=0) 可通过 boss_level.c2 伸缩；Fix HP 必须拒绝")
+    try:
+        old_c2 = float(row[2])
+        c3 = float(row[3])
+        factor = float(scale)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("boss_level c2/c3 或伸缩倍率不是数字") from exc
+    if not all(math.isfinite(v) and v > 0 for v in (old_c2, c3, factor)):
+        raise ValueError(f"boss_level c2/c3/倍率必须为有限正数:{old_c2},{c3},{factor}")
+    new_c2 = old_c2 * factor
+    if not math.isfinite(new_c2) or new_c2 <= 0:
+        raise ValueError(f"boss_level.c2 伸缩结果非法:{new_c2}")
+    row[2] = fmt(new_c2)
+    return join(row, as_bytes)
+
+
+@dataclass(frozen=True)
+class HpMember:
+    """One reachable HP-bearing entity occurrence in a native bundle."""
+
+    code: str
+    kind: int
+    role: str
+    ordinal: int
+    selected_level: int
+    raw_hp: float
+
+
+@dataclass(frozen=True)
+class HpExpansionResult:
+    ok: bool
+    members: tuple[HpMember, ...] = ()
+    total_hp: float | None = None
+    selected_parent_level: int | None = None
+    reason: str | None = None
+    detail: str = ""
+
+
+@dataclass(frozen=True)
+class OrochiCloneResult:
+    ok: bool
+    parent_code: str | None = None
+    head_codes: tuple[str, ...] = ()
+    clone_map: tuple[tuple[rbb.BossRef, rbb.BossRef], ...] = ()
+    bundle: rbb.NativeBossBundle | None = None
+    expanded: HpExpansionResult | None = None
+    touched_tables: tuple[str, ...] = ()
+    reason: str | None = None
+    detail: str = ""
+
+
+def _special_hp_failure(detail: str,
+                        selected_level: int | None = None) -> HpExpansionResult:
+    return HpExpansionResult(
+        False, selected_parent_level=selected_level,
+        reason="SPECIAL_HP_CHANNEL_UNSUPPORTED", detail=detail)
+
+
+def _orochi_parent_ref(bundle: rbb.NativeBossBundle) -> rbb.BossRef | None:
+    refs = [slot.single for slot in bundle.slots if slot.single is not None]
+    if len(refs) != 1:
+        return None
+    ref = refs[0]
+    if (ref.kind != 3
+            or (ref.code not in rbb.OROCHI_PARENT_VARIANTS
+                and not ref.code.startswith("mod_rogue_orochi"))):
+        return None
+    return ref
+
+
+def expand_bundle_hp_members(bundle: rbb.NativeBossBundle, enemy_level: int,
+                             tables: dict) -> HpExpansionResult:
+    """Expand an Orochi parent into one parent plus eight ordered head instances.
+
+    ``total_hp`` is the raw :func:`true_stat` sum before the event-level K/c86
+    multipliers.  The parent c24 list is occurrence-based: duplicate head codes
+    remain duplicate members and are never collapsed into a set.
+    """
+    parent_ref = _orochi_parent_ref(bundle)
+    if parent_ref is None:
+        return _special_hp_failure("bundle is not one proved kind=3 Orochi parent")
+    oro = tables.get("orochi")
+    gb = tables.get("general_boss")
+    gv = tables.get("general_boss_variable")
+    bl = tables.get("boss_level")
+    if not all(isinstance(table, dict) for table in (oro, gb, gv, bl)):
+        return _special_hp_failure("Orochi HP expansion is missing one of oro/gb/gv/bl")
+    parent_node = oro.get(parent_ref.code)
+    selected = select_surjective_level(parent_node, enemy_level)
+    if selected is None:
+        return _special_hp_failure(
+            f"{parent_ref.code} has no first tier >= lv{enemy_level}")
+    parent_leaf = parent_node.get(str(selected)) if isinstance(parent_node, dict) else None
+    if not isinstance(parent_leaf, (str, bytes, bytearray)):
+        return _special_hp_failure(
+            f"{parent_ref.code}@{selected} parent row is missing", selected)
+    try:
+        parent_row = cells(parent_leaf)
+    except (TypeError, ValueError, UnicodeError) as exc:
+        return _special_hp_failure(
+            f"{parent_ref.code}@{selected} parent row cannot be parsed:{exc}", selected)
+    if len(parent_row) < 25:
+        return _special_hp_failure(
+            f"{parent_ref.code}@{selected} parent row has {len(parent_row)} columns", selected)
+    heads = tuple(code.strip() for code in parent_row[24].split(",")
+                  if code.strip() and code.strip() != "(None)")
+    if len(heads) != 8:
+        return _special_hp_failure(
+            f"{parent_ref.code}@{selected} c24 has {len(heads)} heads instead of 8",
+            selected)
+
+    specs = ((parent_ref.code, 3, "parent", 0),) + tuple(
+        (code, 1, "head", ordinal)
+        for ordinal, code in enumerate(heads, start=1))
+    members: list[HpMember] = []
+    for code, kind, role, ordinal in specs:
+        leaf = bl.get(code)
+        if not isinstance(leaf, (str, bytes, bytearray)):
+            return _special_hp_failure(f"boss_level leaf missing:{code}", selected)
+        try:
+            hp_row = cells(leaf)
+        except (TypeError, ValueError, UnicodeError) as exc:
+            return _special_hp_failure(f"boss_level malformed:{code}:{exc}", selected)
+        if len(hp_row) < 13 or hp_row[0] != "0":
+            return _special_hp_failure(
+                f"boss_level is not finite positive Hit HP:{code}", selected)
+        try:
+            c2 = float(hp_row[2])
+            c3 = float(hp_row[3])
+        except (TypeError, ValueError) as exc:
+            return _special_hp_failure(f"boss_level malformed:{code}:{exc}", selected)
+        if not all(math.isfinite(value) and value > 0 for value in (c2, c3)):
+            return _special_hp_failure(
+                f"boss_level is not finite positive Hit HP:{code}", selected)
+        # ``true_stat`` intentionally proxies unknown curves for relative pool
+        # ranking.  Orochi cloning needs an absolute nine-member readback, so
+        # that fallback is forbidden here: an unknown/non-positive curve would
+        # turn a guessed value into the c2 scaling baseline.
+        curve_name = hp_row[4]
+        curve = curve_value("hp", curve_name, selected)
+        if curve is None or not math.isfinite(curve) or curve <= 0:
+            return _special_hp_failure(
+                f"unknown or invalid Hit HP curve:{code}:{curve_name}@{selected}",
+                selected)
+        if role == "head":
+            gb_node = gb.get(code)
+            gv_node = gv.get(code)
+            if not isinstance(gb_node, dict) or not isinstance(gv_node, dict):
+                return _special_hp_failure(f"head gb/gv dependency missing:{code}", selected)
+            # Heads are dependencies of the selected parent row.  Prove that
+            # exact tier directly; do not apply the ordinary standalone-general
+            # "gv must have a low tier" rule (multi_plus intentionally has [100]).
+            if (select_surjective_level(gb_node, selected) != selected
+                    or select_surjective_level(gv_node, selected) != selected):
+                return _special_hp_failure(
+                    f"head does not cover parent-selected tier {selected}:{code}", selected)
+        stat = true_stat(code, "hp", selected, bl)
+        raw_hp = float(stat[0]) if stat is not None else float("nan")
+        if not math.isfinite(raw_hp) or raw_hp <= 0:
+            return _special_hp_failure(f"raw HP cannot be proved:{code}", selected)
+        members.append(HpMember(
+            code=code, kind=kind, role=role, ordinal=ordinal,
+            selected_level=selected, raw_hp=raw_hp))
+    return HpExpansionResult(
+        True, members=tuple(members), total_hp=math.fsum(
+            member.raw_hp for member in members),
+        selected_parent_level=selected)
+
+
+def _clone_result_failure(detail: str) -> OrochiCloneResult:
+    return OrochiCloneResult(
+        False, reason="SPECIAL_HP_CHANNEL_UNSUPPORTED", detail=detail)
+
+
+def _orochi_clone_reference_error(
+        expanded: HpExpansionResult, code_refs: dict,
+        enemy_watch: dict | None) -> str | None:
+    """Return why an expanded nine-entity graph cannot survive code renaming.
+
+    ``hard`` references cannot be rewritten locally.  ``soft`` means the head
+    owns a ``general_enemy_watch`` self subtree, which is cloneable only when
+    the exact source row exists in the injected snapshot.  This helper is
+    shared by catalog eligibility and realization so a bundle cannot enter the
+    selector and then deterministically fail the same static precondition.
+    """
+    if code_refs.get("degraded"):
+        return "external boss-code reference scan degraded"
+    heads = tuple(member.code for member in expanded.members
+                  if member.role == "head")
+    hard = sorted(set(heads) & set(code_refs.get("hard", ())))
+    if hard:
+        return "head has uncloneable external code references:" + ",".join(hard)
+    soft = sorted(set(heads) & set(code_refs.get("soft", ())))
+    if soft:
+        ew_self = enemy_watch.get("1") if isinstance(enemy_watch, dict) else None
+        missing = [code for code in soft
+                   if not isinstance(ew_self, dict) or code not in ew_self]
+        if missing:
+            return "required general_enemy_watch self row missing:" + ",".join(missing)
+    return None
+
+
+def clone_orochi_parent_bundle(bundle: rbb.NativeBossBundle, round_no: int,
+                               scale: float, tables: dict) -> OrochiCloneResult:
+    """Clone an Orochi parent and all eight heads through an off-table overlay.
+
+    Expected validation failures return a structured result.  No caller-owned
+    table is mutated until the overlay has been re-expanded successfully.
+    """
+    parent_ref = _orochi_parent_ref(bundle)
+    if parent_ref is None:
+        return _clone_result_failure("bundle is not one proved Orochi parent")
+    try:
+        round_value = int(round_no)
+        factor = float(scale)
+    except (TypeError, ValueError) as exc:
+        return _clone_result_failure(f"round/scale is not numeric:{exc}")
+    if round_value <= 0 or not math.isfinite(factor) or factor <= 0:
+        return _clone_result_failure(
+            f"round and scale must be finite positive:{round_no},{scale}")
+    selected_values = {
+        int(tier) for layer, slot, tier in bundle.selected_levels
+        if any(item.layer == layer and item.slot == slot and item.single == parent_ref
+               for item in bundle.slots)
+    }
+    if len(selected_values) != 1:
+        return _clone_result_failure(
+            f"bundle has no unique selected parent tier:{sorted(selected_values)}")
+    selected_level = next(iter(selected_values))
+    source = expand_bundle_hp_members(bundle, selected_level, tables)
+    if not source.ok or source.total_hp is None:
+        return _clone_result_failure(source.detail or "source HP expansion failed")
+
+    required = ("orochi", "general_boss", "general_boss_variable", "boss_level")
+    if not all(isinstance(tables.get(name), dict) for name in required):
+        return _clone_result_failure("clone tables are missing or not mutable maps")
+    oro = tables["orochi"]
+    gb = tables["general_boss"]
+    gv = tables["general_boss_variable"]
+    bl = tables["boss_level"]
+    ew = tables.get("general_enemy_watch")
+    if ew is not None and not isinstance(ew, dict):
+        return _clone_result_failure("general_enemy_watch is not a map")
+
+    code_refs = tables.get("__code_references__")
+    if not isinstance(code_refs, dict):
+        code_refs = code_referenced_bosses(gb)
+    ref_error = _orochi_clone_reference_error(source, code_refs, ew)
+    if ref_error:
+        return _clone_result_failure(ref_error)
+    source_heads = tuple(member.code for member in source.members
+                         if member.role == "head")
+
+    parent_code = f"mod_rogue_orochi{round_value}"
+    head_codes = tuple(
+        f"{parent_code}_head{ordinal}" for ordinal in range(1, 9))
+    target_codes = (parent_code,) + head_codes
+    ew_self = ew.get("1", {}) if isinstance(ew, dict) else {}
+    for code in target_codes:
+        occupied = [name for name, table in (
+            ("orochi", oro), ("general_boss", gb),
+            ("general_boss_variable", gv), ("boss_level", bl))
+                    if code in table]
+        if isinstance(ew_self, dict) and code in ew_self:
+            occupied.append("general_enemy_watch")
+        if occupied:
+            return _clone_result_failure(
+                f"target key conflict:{code} in {','.join(occupied)}")
+
+    # Shallow-copy top-level maps and deep-copy only new dependency rows.  This
+    # is an off-table overlay: no nested source node is edited in place.
+    overlay = {
+        "orochi": dict(oro),
+        "general_boss": dict(gb),
+        "general_boss_variable": dict(gv),
+        "boss_level": dict(bl),
+    }
+    if isinstance(ew, dict):
+        overlay_ew = dict(ew)
+        overlay_ew["1"] = dict(ew_self) if isinstance(ew_self, dict) else {}
+        overlay["general_enemy_watch"] = overlay_ew
+
+    parent_node = oro[parent_ref.code]
+    parent_leaf = parent_node[str(selected_level)]
+    parent_row = cells(parent_leaf)
+    parent_row[24] = ",".join(head_codes)
+    overlay["orochi"][parent_code] = {
+        str(selected_level): join(
+            parent_row, isinstance(parent_leaf, (bytes, bytearray)))
+    }
+    try:
+        overlay["boss_level"][parent_code] = clone_hit_boss_level_c2(
+            bl[parent_ref.code], factor)
+        for source_code, target_code in zip(source_heads, head_codes):
+            overlay["general_boss"][target_code] = copy.deepcopy(gb[source_code])
+            overlay["general_boss_variable"][target_code] = copy.deepcopy(
+                gv[source_code])
+            overlay["boss_level"][target_code] = clone_hit_boss_level_c2(
+                bl[source_code], factor)
+            if ("general_enemy_watch" in overlay
+                    and isinstance(ew_self, dict) and source_code in ew_self):
+                overlay["general_enemy_watch"]["1"][target_code] = copy.deepcopy(
+                    ew_self[source_code])
+    except (KeyError, TypeError, ValueError) as exc:
+        return _clone_result_failure(f"dependency staging failed:{exc}")
+
+    cloned_slots = []
+    for slot in bundle.slots:
+        single = (rbb.BossRef(3, parent_code)
+                  if slot.single == parent_ref else slot.single)
+        multi = (rbb.BossRef(3, parent_code)
+                 if slot.multi == parent_ref else slot.multi)
+        cloned_slots.append(replace(slot, single=single, multi=multi))
+    cloned_selected = tuple(
+        (layer, slot, tier) for layer, slot, tier in bundle.selected_levels)
+    cloned_bundle = replace(
+        bundle, slots=tuple(cloned_slots), selected_levels=cloned_selected)
+    readback = expand_bundle_hp_members(cloned_bundle, selected_level, overlay)
+    expected_total = source.total_hp * factor
+    if (not readback.ok or readback.total_hp is None
+            or not math.isclose(readback.total_hp, expected_total,
+                                rel_tol=1e-9, abs_tol=1.0)):
+        return _clone_result_failure(
+            "overlay HP readback failed:"
+            f"{readback.detail or readback.total_hp} expected={expected_total}")
+
+    # Commit additions only after the complete nine-entity readback succeeds.
+    oro[parent_code] = overlay["orochi"][parent_code]
+    bl[parent_code] = overlay["boss_level"][parent_code]
+    for target_code in head_codes:
+        gb[target_code] = overlay["general_boss"][target_code]
+        gv[target_code] = overlay["general_boss_variable"][target_code]
+        bl[target_code] = overlay["boss_level"][target_code]
+        if (isinstance(ew, dict)
+                and target_code in overlay.get("general_enemy_watch", {}).get("1", {})):
+            ew.setdefault("1", {})[target_code] = \
+                overlay["general_enemy_watch"]["1"][target_code]
+
+    clone_map = ((parent_ref, rbb.BossRef(3, parent_code)),) + tuple(
+        (rbb.BossRef(1, source_code), rbb.BossRef(1, target_code))
+        for source_code, target_code in zip(source_heads, head_codes))
+    touched = ["orochi", "general_boss", "general_boss_variable", "boss_level"]
+    if isinstance(ew, dict) and any(
+            target_code in ew.get("1", {}) for target_code in head_codes):
+        touched.append("general_enemy_watch")
+    return OrochiCloneResult(
+        True, parent_code=parent_code, head_codes=head_codes,
+        clone_map=clone_map, bundle=cloned_bundle, expanded=readback,
+        touched_tables=tuple(touched))
+
+
+def purge_orochi_clones(tables: dict) -> tuple[str, ...]:
+    """Purge only the dedicated ``mod_rogue_orochi*`` clone namespace."""
+    touched: list[str] = []
+    for name in ("orochi", "general_boss", "general_boss_variable", "boss_level"):
+        table = tables.get(name)
+        if not isinstance(table, dict):
+            continue
+        keys = [key for key in table if str(key).startswith("mod_rogue_orochi")]
+        for key in keys:
+            table.pop(key, None)
+        if keys:
+            touched.append(name)
+    ew = tables.get("general_enemy_watch")
+    ew_self = ew.get("1") if isinstance(ew, dict) else None
+    if isinstance(ew_self, dict):
+        keys = [key for key in ew_self
+                if str(key).startswith("mod_rogue_orochi")]
+        for key in keys:
+            ew_self.pop(key, None)
+        if keys:
+            touched.append("general_enemy_watch")
+    return tuple(touched)
+
+
+def rogue_battle_write_plan(*, gimmick_dirty: bool, caster_dirty: bool,
+                            orochi_dirty: bool,
+                            enemy_watch_available: bool) -> tuple[str, ...]:
+    """Return dependency-first battle-table writes for a tower build."""
+    out: list[str] = []
+    if caster_dirty:
+        out.extend((GENERAL_ZAKO, ZAKO_LEVEL))
+    if caster_dirty or orochi_dirty:
+        out.extend((GENERAL_BOSS, BOSS_LEVEL, GENERAL_BOSS_VARIABLE))
+        if enemy_watch_available:
+            out.append(ENEMY_WATCH)
+    if orochi_dirty:
+        out.append(OROCHI)
+    if gimmick_dirty:
+        # field_data.c2 dereferences the zone key, so the dependency must be
+        # durable first if the later per-file save fails.  This is still not a
+        # cross-table transaction; it merely avoids the dangling direction.
+        out.extend((ZONE_T, FIELD_DATA_T))
+    return tuple(dict.fromkeys(out))
+
+
+def general_hp_scale_plan(bosses: list[str], native: dict,
+                          general_boss: dict, boss_level: dict,
+                          enemy_level: int, *, target_hp: float,
+                          curse_hp: float,
+                          code_references: dict | None = None) -> dict:
+    """为纯 general 层生成逐 code 的 baseline/final c2 叶与可复核 HP 证据。
+
+    当前 ``boss_level`` 数据形态是 ``code -> CSV leaf``，没有等级内层；等级
+    getSurjectivity 只发生在 ``general_boss``。这里把选中的 general 档记进计划，
+    克隆后必须再次选档并逐项相等，防止代码与 boss_level 叶错配。
+    """
+    components = list(native.get("components") or [])
+    if not native.get("verified") or not components:
+        raise ValueError(f"general HP 伸缩缺原生 HP 证据:{native.get('reason') or 'unknown'}")
+    if any(component.get("kind") != "general" for component in components):
+        raise ValueError("general/standard 混合族不能用单一 c86/c2 通道，必须换 boss")
+    ordered_codes = list(dict.fromkeys(map(str, bosses)))
+    identity_block = identity_locked_boss_reason(
+        ordered_codes, code_references=code_references)
+    if identity_block:
+        # Defense in depth: candidate selection should have routed this layer
+        # through same-id c86 already.  Keeping the check in the c2 plan means
+        # a future caller cannot silently reintroduce a pure HP rename clone.
+        raise ValueError(f"纯 HP clone 拒绝:{identity_block}")
+    component_codes = [str(component.get("code")) for component in components]
+    if not ordered_codes or set(component_codes) != set(ordered_codes):
+        raise ValueError(
+            f"general HP 实体与证据代号不一致:bosses={ordered_codes},components={component_codes}")
+    try:
+        wanted_hp = float(target_hp)
+        hp_mult = float(curse_hp)
+        native_hp = math.fsum(float(component["native_hp"]) for component in components)
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ValueError("general HP 伸缩输入含非数字") from exc
+    if not all(math.isfinite(v) and v > 0 for v in (wanted_hp, hp_mult, native_hp)):
+        raise ValueError(
+            f"general HP 伸缩输入必须为有限正数:target={target_hp},curse={curse_hp},native={native_hp}")
+    baseline_scale = wanted_hp / native_hp
+    final_scale = baseline_scale * hp_mult
+    selected_levels: dict[str, int] = {}
+    baseline_leaves: dict[str, str | bytes] = {}
+    final_leaves: dict[str, str | bytes] = {}
+    baseline_factors: dict[str, float] = {}
+    final_factors: dict[str, float] = {}
+    for code in ordered_codes:
+        selected = select_surjective_level(general_boss.get(code), int(enemy_level))
+        if selected is None:
+            raise ValueError(f"general_boss[{code}] 无 >=lv{enemy_level} 的运行档")
+        source_leaf = boss_level.get(code)
+        if source_leaf is None:
+            raise ValueError(f"boss_level[{code}] 缺失")
+        baseline_leaf = clone_hit_boss_level_c2(source_leaf, baseline_scale)
+        final_leaf = clone_hit_boss_level_c2(source_leaf, final_scale)
+        old_c2 = float(cells(source_leaf)[2])
+        selected_levels[code] = selected
+        baseline_leaves[code] = baseline_leaf
+        final_leaves[code] = final_leaf
+        baseline_factors[code] = float(cells(baseline_leaf)[2]) / old_c2
+        final_factors[code] = float(cells(final_leaf)[2]) / old_c2
+    baseline_true_hp = math.fsum(
+        float(component["native_hp"]) * baseline_factors[str(component["code"])]
+        for component in components)
+    true_hp = math.fsum(
+        float(component["native_hp"]) * final_factors[str(component["code"])]
+        for component in components)
+    return {
+        "family": "general", "c86": 1.0, "curse_hp": hp_mult,
+        "selected_levels": selected_levels,
+        "baseline_scale": baseline_scale, "final_scale": final_scale,
+        "baseline_factors": baseline_factors, "final_factors": final_factors,
+        "baseline_leaves": baseline_leaves, "final_leaves": final_leaves,
+        "baseline_true_hp": baseline_true_hp, "true_hp": true_hp,
+    }
+
+
+def floor_hp_scaling_strategy(bosses: list[str], native: dict,
+                              general_boss: dict, boss_level: dict,
+                              enemy_level: int, *, required_c86: float,
+                              deep: bool,
+                              code_references: dict | None = None) -> dict:
+    """选择该层 HP 主通道；不可实现的族组合直接抛错供调用方重抽。"""
+    components = list(native.get("components") or [])
+    if not native.get("verified") or not components:
+        raise ValueError(f"HP 主通道缺原生证据:{native.get('reason') or 'unknown'}")
+    families = {str(component.get("kind")) for component in components}
+    try:
+        needed = float(required_c86)
+        native_hp = float(native["native_hp"])
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ValueError("HP 主通道 required_c86/native_hp 非数字") from exc
+    if not all(math.isfinite(v) and v > 0 for v in (needed, native_hp)):
+        raise ValueError(f"HP 主通道输入非法:c86={required_c86},native={native_hp}")
+    if families == {"general"}:
+        identity_block = identity_locked_boss_reason(
+            bosses, code_references=code_references)
+        if identity_block:
+            lo, hi = STANDARD_C86_LIMITS
+            if not lo <= needed <= hi:
+                raise ValueError(
+                    f"{identity_block}; 保持原 id 仅可用 c86 微调窗口 "
+                    f"{lo:g}~{hi:g}，需要 {needed:g}，拒绝候选并重抽")
+            return {
+                "channel": "c86", "family": "identity-locked",
+                "baseline_c86": needed, "baseline_scale": 1.0,
+                "selected_levels": {},
+            }
+        plan = general_hp_scale_plan(
+            list(map(str, bosses)), native, general_boss, boss_level,
+            int(enemy_level), target_hp=native_hp * needed, curse_hp=1.0,
+            code_references=code_references)
+        return {
+            "channel": "boss_level", "family": "general",
+            "baseline_c86": 1.0,
+            "baseline_scale": plan["baseline_scale"],
+            "selected_levels": plan["selected_levels"],
+        }
+    if families == {"standard"}:
+        if deep:
+            raise ValueError("深层必须使用可伸缩 general boss，standard 不适用")
+        lo, hi = STANDARD_C86_LIMITS
+        if not lo <= needed <= hi:
+            raise ValueError(
+                f"standard 基线 c86={needed:g} 超出微调窗口 {lo:g}~{hi:g}")
+        return {"channel": "c86", "family": "standard",
+                "baseline_c86": needed, "baseline_scale": 1.0,
+                "selected_levels": {}}
+    raise ValueError(f"HP 主通道不支持混合/未知族:{sorted(families)}")
+
+
+GB_RESIST_ELEMENT_RESISTANCE_COL = 36
+_GB_BOOL_TRUE = {"true", "True", "TRUE"}
+_GB_BOOL_FALSE = {"false", "False", "FALSE"}
+
+
+def general_boss_element_immunity_block(general_boss: dict, code: str,
+                                        enemy_level: int | None = None,
+                                        general_boss_variable: dict | None = None) -> str | None:
+    """实际 general_boss 代号能否承载属性免疫；返回阻断原因或 None。
+
+    `resist_element_resistance` 已由 GeneralBossValues.as:725-754 钉死为 c36。
+    必须先按本层 enemy level 选中最终/克隆后的实际档,再检查该档的全部 leaf；
+    该档任一运行变体为真都会吞掉 ElementResistance。
+    客户端只接受六种大小写布尔字面量,缺行/短行/未知值一律 fail closed。
+    """
+    node = general_boss.get(code)
+    if node is None:
+        return f"actual boss {code} 不在 general_boss"
+    # GeneralBossSource.as:88 直接对 GeneralBossTable[code] 调 getSurjectivity(level):
+    # 取第一个 ≥敌等级的 general_boss 行。general_boss_variable 在 :96-99 另行解析,
+    # **不参与 values/c36 选行**。只看 gv 会把 gb[79]=false / gb[100]=true 的
+    # lv80/90 boss 错放；这里保留形参只为调用兼容,明确不使用。
+    _ = general_boss_variable
+    if isinstance(node, dict):
+        gb_levels = sorted(int(k) for k in node if str(k).isdigit())
+        if enemy_level is not None:
+            selected_level = select_surjective_level(node, int(enemy_level))
+        elif len(gb_levels) == 1:
+            selected_level = gb_levels[0]
+        else:
+            selected_level = None
+        if selected_level is None:
+            return (f"actual boss {code} 无 ≥lv{enemy_level} 的克隆后实际"
+                    " general_boss 行,fail closed")
+        node = node[str(selected_level)]
+        row_where = f"gb[{selected_level}]"
+    else:
+        row_where = "gb[leaf]"
+    seen = 0
+    for leaf in _leaf_rows(node):
+        row = cells(leaf)
+        if len(row) != 162:
+            return (f"actual boss {code} {row_where} 行列数={len(row)}"
+                    "(应为162),fail closed")
+        raw = row[GB_RESIST_ELEMENT_RESISTANCE_COL]
+        if raw in _GB_BOOL_TRUE:
+            return f"actual boss {code} {row_where} c36=true(resist_element_resistance)"
+        if raw not in _GB_BOOL_FALSE:
+            return (f"actual boss {code} {row_where} c36={raw!r}"
+                    " 非客户端合法布尔字面量,fail closed")
+        seen += 1
+    return None if seen else f"actual boss {code} {row_where} 没有可解析 leaf,fail closed"
+
+
+def assert_element_immunity_runtime_safe(quest_logical: str, enemy_level: int) -> None:
+    """防 autoHighLevel 将整族属性免疫静默吃掉。
+
+    EnemySourceBase params[13]=autoHighLevel 且 level>=80 时会把
+    resistElementResistance 强制置 true；isAutoHighLevelBoss() 仅在
+    ScoreAttackEventBattleQuestLogic override 为 true,普通 event_quest 基类恒 false。
+    当前 Rush 塔因此安全；未来若迁到 score_attack 且仍是 lv80/90/100,构建必须硬停。
+    """
+    path = str(quest_logical).replace("\\", "/").lower()
+    if enemy_level >= 80 and "score_attack" in path:
+        raise RuntimeError(
+            f"属性免疫拒绝用于 score_attack lv{enemy_level}:autoHighLevel 会静默抵消效果")
+    if "/quest/event/" not in path:
+        raise RuntimeError(f"属性免疫 quest logic 未确证为 event_quest:{quest_logical}")
+
+
 def patch_event_metadata(row: list[str]) -> list[str]:
     """只把深渊 Rush Event 的兑换代币改为深渊代币。"""
     row[10] = TOKEN_ID
@@ -2317,18 +5384,26 @@ def main() -> int:
                          "easy=全简单 / normal / hell=全炼狱 / gradient=从简单到难;"
                          "接管成长曲线(端点式,层数自适应)与诅咒档,"
                          "显式 --hp-*/--atk-*/--curse 可单项覆盖")
+    ap.add_argument("--ramp", action="store_true",
+                    help="显式恢复旧 DPS 几何爬坡(60万→2500万)。默认关闭，"
+                         "默认 HP profile 为除第1战热身外全程决战级；"
+                         "此开关与 --enemy-level ramp 的敌等级爬坡无关。")
     ap.add_argument("--no-normalize", dest="normalize", action="store_false",
-                    help="关闭怪物基础数值归一化(默认开)。开启时按 boss 基数相对"
-                         "同修正曲线组中位数反向补偿,拉平「有些副本数值显著低」")
+                    help="关闭旧基数归一(现主要影响 ATK)。Task C 的 boss HP"
+                         "已改为 general/standard 真 HP 直接反解，不再依赖旧 HP 代理。")
     ap.add_argument("--normalize-hp", type=float, default=1.0,
-                    help="血量归一**压缩指数**(1=完全拉平,0=不动;默认 1.0)")
+                    help="旧 HP 分组归一指数(仅保留 raw/诊断兼容)；Task C boss"
+                         "层由绝对 HP 目标取代，默认 1.0。")
     ap.add_argument("--normalize-atk", type=float, default=0.55,
                     help="伤害归一**压缩指数**(默认 0.55=只压一半,保留「高低有别」)。"
                          "残余跨度≈原极差^(1-指数);全池 atk 极差 86× → 约 6×")
     ap.add_argument("--normalize-min", type=float, default=0.1,
                     help="归一补偿下限(默认 0.1×)。实测线上塔层间真实血量极差:不归一 80× / 0.25–4 → 8× / **0.1–10 → 3×** / 0.05–20 → 2×")
-    ap.add_argument("--normalize-max", type=float, default=10.0,
-                    help="归一补偿上限(默认 10×)。窗口越大越平但倍率越极端;想完全拉平用 --normalize-min 0.05 --normalize-max 20")
+    ap.add_argument("--normalize-max", type=float, default=100.0,
+                    help="旧 HP raw 归一上限(任务 C 依规格放开到 100×)；"
+                         "仅保留选池诊断兼容，general 最终改缩 boss_level.c2。")
+    ap.add_argument("--normalize-atk-max", type=float, default=10.0,
+                    help="攻击归一补偿上限(默认仍为 10×，不随 HP 窗口放大)")
     ap.add_argument("--hp-base", type=float, default=None)
     ap.add_argument("--hp-growth", type=float, default=None)
     ap.add_argument("--atk-base", type=float, default=None)
@@ -2344,9 +5419,12 @@ def main() -> int:
                     help="深渊诅咒档位(默认随 --difficulty;无预设时 abyss;off=关闭)")
     ap.add_argument("--mix", action="store_true",
                     help="模块化拼接:塔楼层的地形与 boss 独立随机组合(克隆 zone 换 boss 槽,"
-                         "元素跟 boss 老家楼层走),领域/诅咒照常叠加")
+                         "元素跟 boss 老家楼层走),领域/诅咒照常叠加。"
+                         "若安全白名单+HP窗口令实际拼接为0层，构建明确失败。")
     ap.add_argument("--test-field", type=int, default=0, metavar="R",
                     help="强制第 R 轮附加「深渊法阵」(真机验证用)")
+    ap.add_argument("--dump-immunity-dsl", action="store_true",
+                    help="dry-run 同时打印本轮生成的属性/伤害耐性 DSL 树(构造自查)")
     ap.add_argument("--ignore-plan", action="store_true",
                     help="忽略连战工坊布局计划(rogue_layout_plan.json)")
     ap.add_argument("--write", action="store_true")
@@ -2358,6 +5436,12 @@ def main() -> int:
     ap.add_argument("--check-quest-path", metavar="FILE",
                     help="--check 用指定 quest 表文件(如 .bak 备份)代替 store 现状")
     args = ap.parse_args()
+
+    if args.normalize and (args.normalize_min <= 0
+                           or args.normalize_max < args.normalize_min
+                           or args.normalize_atk_max < args.normalize_min):
+        print("[ERR] normalize 窗口必须为正，且两个上限都不得小于 --normalize-min")
+        return 1
 
     if args.check:
         src_disp = args.check_quest_path or "store 现状"
@@ -2410,10 +5494,26 @@ def main() -> int:
     fd_t = q.load_table(FIELD_DATA_T)
     zone_t = q.load_table(ZONE_T)
     gz_t = q.load_table(GENERAL_ZAKO)
-    zl_t = q.load_table("master/battle/zako/zako_level.orderedmap")
+    zl_t = q.load_table(ZAKO_LEVEL)
     gb_t = q.load_table(GENERAL_BOSS)
-    bl_t = q.load_table("master/battle/boss/boss_level.orderedmap")
-    gv_t = q.load_table("master/battle/boss/general_boss_variable.orderedmap")
+    bl_t = q.load_table(BOSS_LEVEL)
+    gv_t = q.load_table(GENERAL_BOSS_VARIABLE)
+    oro_t = q.load_table(OROCHI)
+    # general_enemy_watch:法阵载体克隆要连它的 **self 侧**条目一起复制,否则
+    # 「我 watch 别人」那套联动(如旋风巨土俑「buff 炮台死光→换阶段」)随改名一起丢。
+    # 表的顶层键是**实体种类**(1=general boss / 2=funnel / 3=breakable block,
+    # 对应客户端 GeneralBossSource:92 / FunnelSource:86 / BreakableBlockSource:76),
+    # **不是** GeneralEnemyWatchKind 那个 9 值枚举——那个在叶子行的列里,与这层无关。
+    # 读不到 / 读出空表 → ew_t=None,degraded 生效,本轮一律不发法阵。
+    # ⚠ 空表必须当读不到:否则下面 save() 会把一张空表写回 store 并上链,
+    #   等于把官方 163 个 watch 条目整个抹掉。
+    try:
+        ew_t = q.load_table(ENEMY_WATCH) or None
+    except Exception as _e:
+        ew_t = None
+        print(f"[WARN] general_enemy_watch 读不到({_e})")
+    if ew_t is None:
+        print("[WARN] general_enemy_watch 不可用;本轮一律不发深渊法阵")
     sb_t = q.load_table(STANDARD_BOSS)      # 只读:门禁三表并集用
     stale = ([k for k in fd_t if str(k).startswith("mod_rogue_f")]
              + [k for k in zone_t if str(k).startswith("mod_rogue_z")])
@@ -2421,7 +5521,9 @@ def main() -> int:
                + [k for k in zl_t if str(k).startswith("mod_rogue_caster")]
                + [k for k in gb_t if str(k).startswith("mod_rogue_boss")]
                + [k for k in bl_t if str(k).startswith("mod_rogue_boss")]
-               + [k for k in gv_t if str(k).startswith("mod_rogue_boss")])
+               + [k for k in gv_t if str(k).startswith("mod_rogue_boss")]
+               + ([k for k in (ew_t or {}).get("1", {})
+                   if str(k).startswith("mod_rogue_boss")] if ew_t else []))
     for k in stale:
         fd_t.pop(k, None)
         zone_t.pop(k, None)
@@ -2431,8 +5533,20 @@ def main() -> int:
         gb_t.pop(k, None)
         bl_t.pop(k, None)
         gv_t.pop(k, None)
+        if ew_t is not None:
+            ew_t.get("1", {}).pop(k, None)
+    orochi_purged_tables = purge_orochi_clones({
+        "orochi": oro_t,
+        "general_boss": gb_t,
+        "general_boss_variable": gv_t,
+        "boss_level": bl_t,
+        "general_enemy_watch": ew_t,
+    })
     gim_dirty = bool(stale)
     caster_dirty = bool(stale_c)
+    # Task 5 will also set this after a successful per-round clone.  Purge-only
+    # runs are dirty too: otherwise old parent/head keys survive in store.
+    orochi_dirty = bool(orochi_purged_tables)
 
     def field_gate(field_id: str) -> dict:
         """引用完整性门禁 + 等级可行性(2026-07-28 改:只要该层存在可行等级即放行,
@@ -2450,7 +5564,11 @@ def main() -> int:
             report["level"] = level
         return report
 
-    tower_all = cb.build_pool()
+    # wf_chain_build 的通用池会把 single/multi 镜像六列全扫进 bosses；本塔是单人
+    # event quest，数值审计与重排都必须只携带 c24/28/32 的实际实体，否则 anv3
+    # 这类镜像代号不同的场地会被静默算成双 boss、HP 翻倍。
+    tower_all = [(field, line, _zone_pick(field)[0])
+                 for field, line, _legacy_bosses in cb.build_pool()]
     blocked = [e for e in tower_all if field_blocked(e[0])]
     if blocked:
         tower_all = [e for e in tower_all if not field_blocked(e[0])]
@@ -2465,9 +5583,11 @@ def main() -> int:
         for (fdk, _ln, _b), rep in dangling:
             print(f"    {fdk}: {rep['errors'][0]}")
     gated = [e for e, _rep in resolvable]
-    tower = [e for e in gated if _c8016_safe(e[2])]
+    tower = [e for e in gated if _pool_safe(e[2])]
     if len(tower) < len(gated):
-        print(f"[C8016] 塔素材池剔除 {len(gated) - len(tower)} 层(黑名单:{','.join(C8016_BLOCKED_BOSS_PREFIXES)})")
+        print(f"[黑名单] 塔素材池剔除 {len(gated) - len(tower)} 层"
+              f"(C8016:{','.join(C8016_BLOCKED_BOSS_PREFIXES)} / "
+              f"血量级别错配:{','.join(HP_BLOCKED_BOSSES)})")
     if len(tower) < args.rounds + 1:
         print(f"[ERR] 塔素材池只有 {len(tower)} 层 < {args.rounds}+1 轮")
         return 1
@@ -2478,6 +5598,14 @@ def main() -> int:
     if special_bosses[0] or special_bosses[1]:
         print(f"[原味] 特殊 boss 保护:精确 {len(special_bosses[0])} 个 + "
               f"前缀 {len(special_bosses[1])} 族(抽中即原场地原机制,不拆解)")
+    try:
+        high_threat_prefixes, high_threat_exact = load_high_threat_rules()
+    except (OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
+        print(f"[ERR] 高威胁 boss 名单不可用:{exc}")
+        return 1
+    if high_threat_prefixes or high_threat_exact:
+        print("[高威胁] 降难规则:prefixes=" + ",".join(high_threat_prefixes)
+              + " exact=" + ",".join(sorted(high_threat_exact)))
     _boss_names = wb.boss_names()
 
     def _model_and_progs(code: str) -> tuple[str, frozenset]:
@@ -2542,9 +5670,11 @@ def main() -> int:
     # 全塔去重**计数**(2026-07-29 从"用过就禁"改成"配额制"):普通 boss 配额 1
     # (等级/单多人变体同名同灭),元素变体系列按 SERIES_CAPS × 层数给多个名额。
     used_counts: dict[str, int] = {}
+    future_anchor_counts: dict[str, int] = {}
 
     def _quota_left(key: str) -> bool:
-        return used_counts.get(key, 0) < key_cap(key)
+        return (used_counts.get(key, 0) + future_anchor_counts.get(key, 0)
+                < key_cap(key))
 
     def unused_only(entries, bosses_of):
         kept = [e for e in entries
@@ -2625,9 +5755,9 @@ def main() -> int:
     }
     for label in src:
         gated_pool = gate_src(label, src[label])
-        kept = [e for e in gated_pool if _c8016_safe(e["bosses"])]
+        kept = [e for e in gated_pool if _pool_safe(e["bosses"])]
         if len(kept) < len(gated_pool):
-            print(f"[C8016] 来源池「{label}」剔除 {len(gated_pool) - len(kept)} 个场地")
+            print(f"[黑名单] 来源池「{label}」剔除 {len(gated_pool) - len(kept)} 个场地")
         top = collapse_grades(kept, grade_keys)   # 细粒度:六元素都要留在池里
         if len(top) < len(kept):
             print(f"[分级] 来源池「{label}」{len(kept)} → {len(top)}(同 boss 只留最高难度版本)")
@@ -2784,7 +5914,13 @@ def main() -> int:
     # 出生点能力 = terrain(Tiled) 二进制含 SPAWNn 标记(排除 FUNNEL_SPAWNn)。
     # 成对/分阶段 boss 名单(数据驱动,进程内算一次)+ 被门禁挡下的层的理由
     phase_linked = phase_linked_bosses(zone_t, fd_t)
+    # 代号引用名单只算一次(要遍历 general_boss_state 4.4MB);逐层重算 = 白烧十几秒。
+    code_refs = code_referenced_bosses(gb_t)
+    if ew_t is None and not code_refs["degraded"]:
+        # 表读得到才有 self 侧可补;读不到时上面的 WARN 已把 degraded 置真,这里兜底。
+        code_refs = dict(code_refs, degraded=True)
     caster_blocked: dict[str, str] = {}
+    clone_sources: dict[str, str] = {}
     panel_terrains: set[str] = set()
     for fk, fv in fd_t.items():
         if not isinstance(fv, (str, bytes, bytearray)):
@@ -2803,7 +5939,34 @@ def main() -> int:
                 panel_terrains.add(fc0[1])
                 break
 
-    def field_caps(field_id: str, bosses: list[str]) -> dict:
+    def carrier_status(field_id: str, bosses: list[str],
+                       enemy_level: int | None = None, *,
+                       record: bool = False) -> dict:
+        """无副作用计算硬通道/属性免疫资格；仅 ``record`` 时登记最终场地理由。"""
+        target = next((b for b in bosses if b in belem_map), None)
+        carrier = target is not None
+        carrier_why = None
+        if carrier:
+            # 成对/分阶段 boss 层禁发法阵(2026-07-30 玩家「打不死」实锤);
+            # 被外部按代号引用的 boss 同禁(2026-08-03 鲨鱼三兄弟/旋风巨土俑实锤)
+            why = caster_carrier_block(field_id, bosses, fd_t, zone_t,
+                                       phase_linked, gb_t, refs=code_refs)
+            if why:
+                if record:
+                    caster_blocked[field_id] = why
+                carrier = False
+                carrier_why = why
+        element_reason = carrier_why or (
+            general_boss_element_immunity_block(gb_t, target, enemy_level, gv_t)
+            if target else "没有 general_boss 实际代号")
+        return {"boss": carrier,
+                "element": carrier and element_reason is None,
+                "element_target": target,
+                "element_reason": element_reason,
+                "carrier_reason": (carrier_why or (
+                    "没有 general_boss 实际代号" if target is None else None))}
+
+    def field_caps(field_id: str, bosses: list[str], enemy_level: int | None = None) -> dict:
         """能力表:boss=有 general boss 可当法阵载体(2026-07-20 实证:zone-zako
         emitter 需地形 SPAWN 物件定位,95% 楼层没有,'*spawn-point*' 是"生成点"
         注册名而非地形标记查找——zako 祭坛路线弃);panel=官方板子配对地形。"""
@@ -2812,49 +5975,88 @@ def main() -> int:
         if isinstance(frow, (str, bytes, bytearray)):
             fc = cells(frow)
             panel = len(fc) > 2 and fc[1] in panel_terrains
-        carrier = any(b in belem_map for b in bosses)
-        if carrier:
-            # 成对/分阶段 boss 层禁发法阵(2026-07-30 玩家「打不死」实锤)
-            why = caster_carrier_block(field_id, bosses, fd_t, zone_t, phase_linked)
-            if why:
-                caster_blocked[field_id] = why
-                carrier = False
-        return {"boss": carrier, "panel": panel}
+        status = carrier_status(field_id, bosses, enemy_level, record=True)
+        status["panel"] = panel
+        return status
 
-    def make_caster_boss(r: int, boss_code: str, program: str):
-        """克隆 general boss 当法阵载体:第一条现役 action 列(c111-160,逗号数组)
-        追加官方场程序——boss 做那个动作时顺带施法,定位天然有效,全楼层通用。
-        附表(boss_level/general_boss_variable)按 code 同步克隆;routine 经
-        routine_id 引用原状态组,零克隆。"""
+    def make_caster_boss(r: int, boss_code: str, action_program: str | None = None,
+                         action_programs=(),
+                         pre_action_program: str | None = None,
+                         requires_element_resistance: bool = False,
+                         enemy_level: int | None = None,
+                         clone_code: str | None = None,
+                         boss_level_leaf=None,
+                         expected_selected_level: int | None = None):
+        """克隆 general boss 当 HP/硬效果载体。
+
+        法阵追加到第一条现役 action(c111-160)；耐性条件追加到 c109
+        pre_action 且 c110=true。两者可共用同一克隆,定位天然有效。
+        附表(boss_level/general_boss_variable/general_enemy_watch 的 self 侧)按 code
+        同步克隆;routine 经 routine_id 引用原状态组,零克隆。
+
+        ⚠ general_enemy_watch 的 self 条目**必须**跟着克隆(2026-08-03):客户端按
+        [实体种类=1][boss 代号][routine_id] 取自身观察数据(GeneralBossSource:92 →
+        GeneralEnemyWatchTableTools.getSelfData),查不到静默返回 null。routine_id 随行
+        克隆时没变,所以整棵子树原样挂到新代号下即可。partner 侧(别人 watch 我)按代号
+        索引、改不动,那类 boss 由 caster_carrier_block 硬拦,不走这里。"""
         nonlocal caster_dirty
         if boss_code not in gb_t:
             return None
-        code = f"mod_rogue_boss{r}"
+        identity_block = identity_locked_boss_reason(
+            [boss_code], code_references=code_refs)
+        if identity_block:
+            # Must precede every table mutation below.  Candidate/strategy
+            # gates normally make this unreachable; this last guard prevents a
+            # future direct caller from leaving a renamed half-clone behind.
+            raise RuntimeError(f"第{r}战 general boss clone 拒绝:{identity_block}")
+        code = clone_code or f"mod_rogue_boss{r}"
 
-        def rewrite(node):
-            if isinstance(node, dict):
-                return {k: rewrite(v) for k, v in node.items()}
-            row = cells(node)
-            for i in range(111, min(161, len(row))):
-                if row[i] not in ("", "(None)"):
-                    row[i] = row[i] + "," + program
-                    break
-            else:
-                while len(row) < 112:
-                    row.append("")
-                row[111] = program
-            return join(row, isinstance(node, (bytes, bytearray)))
-
-        gb_t[code] = rewrite(gb_t[boss_code])
-        if boss_code in bl_t:
+        if action_program or action_programs or pre_action_program:
+            gb_t[code] = rewrite_boss_carrier_node(
+                gb_t[boss_code], action_program=action_program,
+                action_programs=action_programs,
+                pre_action_program=pre_action_program)
+        else:
+            # 纯 HP clone 不追加 action，但仍必须拥有独立 general_boss 子树；
+            # 未来若再改 clone 行，不能反向污染官方源代号。
+            gb_t[code] = copy.deepcopy(gb_t[boss_code])
+        if boss_level_leaf is not None:
+            # boss_level 在当前表形态是 code→CSV leaf（没有等级内层）。只接受
+            # general_hp_scale_plan 已重建的 Hit 行；Fix/短行会在这里再次 fail closed。
+            check = cells(boss_level_leaf)
+            if len(check) < 13 or check[0] != "0":
+                raise RuntimeError(f"第{r}战 {boss_code} 的 clone boss_level 不是 Hit HP 行")
+            bl_t[code] = boss_level_leaf
+        elif boss_code in bl_t:
             bl_t[code] = bl_t[boss_code]
         if boss_code in gv_t:
             gv_t[code] = gv_t[boss_code]
+        if requires_element_resistance:
+            # 最终判据必须读“克隆后实际落表行”的 c36,不是原型名。预筛本应让它
+            # 永远为 false；若克隆逻辑未来改坏继承关系,在文案落表前硬停。
+            blocked = general_boss_element_immunity_block(gb_t, code, enemy_level, gv_t)
+            if blocked:
+                raise RuntimeError(f"第{r}战属性免疫载体复核失败:{blocked}")
+        if enemy_level is not None:
+            source_selected = select_surjective_level(gb_t.get(boss_code), enemy_level)
+            clone_selected = select_surjective_level(gb_t.get(code), enemy_level)
+            expected = (source_selected if expected_selected_level is None
+                        else int(expected_selected_level))
+            if source_selected != expected or clone_selected != expected:
+                raise RuntimeError(
+                    f"第{r}战 boss clone 选档漂移:{boss_code}@{source_selected} -> "
+                    f"{code}@{clone_selected}, expected={expected}")
+            if code not in bl_t:
+                raise RuntimeError(f"第{r}战 boss clone {code} 缺 boss_level 叶")
+        if ew_t is not None and boss_code in ew_t.get("1", {}):
+            ew_t.setdefault("1", {})[code] = ew_t["1"][boss_code]
+        clone_sources[code] = boss_code
         caster_dirty = True
         return code
 
     def gimmick_field(orig_field: str, r: int, panels: bool = False,
-                      boss_swap: tuple[str, str] | None = None):
+                      boss_swap: tuple[str, str] | None = None,
+                      boss_swaps=()):
         """克隆 orig_field 的 field+zone:按需注入机兵皮机关 / 把单人 boss 槽
         (c24/c28/c32)换成施法克隆 boss。返回新 field 键(失败 None)。"""
         nonlocal gim_dirty
@@ -2866,6 +6068,9 @@ def main() -> int:
         if not isinstance(zn, dict):
             return None
         zkey, fkey = f"mod_rogue_z{r}", f"mod_rogue_f{r}"
+        swaps = list(boss_swaps or ())
+        if boss_swap:
+            swaps.append(boss_swap)
         nz = {}
         for wk, wrow in zn.items():
             if isinstance(wrow, dict):
@@ -2875,8 +6080,8 @@ def main() -> int:
                 wc.append("")
             if panels:
                 wc[36], wc[37] = GIM_DASH, GIM_ROT
-            if boss_swap:
-                apply_boss_swap(wc, boss_swap[0], boss_swap[1])
+            for old_code, new_code in swaps:
+                apply_boss_swap(wc, old_code, new_code)
             nz[wk] = join(wc, isinstance(wrow, (bytes, bytearray)))
         zone_t[zkey] = nz
         nf = list(fc)
@@ -2909,6 +6114,9 @@ def main() -> int:
                 if hard:
                     pool_v = hard           # 过半程绝不回落到低档(简单 boss 禁入后段)
         pool_v = unused_only(pool_v, lambda e: e[2])
+        pool_v = prefer_non_threat_candidates(
+            pool_v, r, args.rounds, lambda e: e[2],
+            high_threat_prefixes, high_threat_exact)
         cand = prefer_fresh(pool_v, lambda e: e[2])
         cand = weight_featured(cand, lambda e: e[2])
         e = cand[rng.randrange(len(cand))]
@@ -2929,6 +6137,11 @@ def main() -> int:
         钉 boss 允许与其它关重复(用户显式指定),钉选不到返回 None 由外层报错。
         """
         nonlocal gim_dirty
+        # Identity-lock rejection occurs after resolving both source and target,
+        # but before any field/zone write.  Keep the pool snapshot so an
+        # explicit incompatible pin is a real transaction failure rather than
+        # a failure that quietly consumed one or two future candidates.
+        pool_before = list(tower)
         if pin_terrain:
             terrain = next((e for e in tower if e[0] == pin_terrain), None)
             if terrain is None:
@@ -2948,6 +6161,17 @@ def main() -> int:
                 donors = tower
             terrain = donors[rng.randrange(len(donors))]
             tower.remove(terrain)
+        _terrain_row = fd_t.get(terrain[0])
+        _terrain_cells = (cells(_terrain_row)
+                          if isinstance(_terrain_row, (str, bytes, bytearray)) else [])
+        _terrain_zone = (zone_t.get(_terrain_cells[2])
+                         if len(_terrain_cells) > 2 else None)
+        terrain_slot_count = len(zone_single_bosses(_terrain_zone))
+        if terrain_slot_count <= 0:
+            if terrain in tower_master and terrain not in tower:
+                tower.append(terrain)
+            print(f"[ERR] 第{r}战混搭地形 {terrain[0]} 没有单人 boss 实体槽")
+            return None
         if pin_boss:
             src_e = next((e for e in tower_master if pin_boss in e[2]), None)
             if src_e is None:                           # 塔池没有 → 搜全部来源池
@@ -2965,11 +6189,21 @@ def main() -> int:
                 tower.remove(src_e)
         else:
             cands = [e for e in tower
-                     if elem_map.get(e[0]) is not None
-                     or any(belem_map.get(b) is not None for b in e[2])]
+                     if len(e[2]) == terrain_slot_count
+                     and (elem_map.get(e[0]) is not None
+                          or any(belem_map.get(b) is not None for b in e[2]))]
             if not cands:
                 tower.append(terrain)
                 return None
+            # strict_transplant 的语义是“只有白名单 donor 真能拼”。旧实现却先在
+            # 全池随机，抽到非白名单就整场退回原味；30 层一次都没抽中安全 donor
+            # 时 --mix 最终必失败。先在同一实体槽数内优先安全 donor，不放宽名单。
+            strict, safe_set = load_transplant_policy()
+            portable = [e for e in cands
+                        if (not strict or all(b in safe_set for b in e[2]))
+                        and not any(is_special_boss(b, special_bosses) for b in e[2])]
+            if portable:
+                cands = portable
             if r >= 3:
                 zkeys = set(map(str, gz_t))
                 true_b = [e for e in cands
@@ -2984,11 +6218,34 @@ def main() -> int:
                 if hard:
                     cands = hard
             cands = unused_only(cands, lambda e: e[2])
+            cands = prefer_non_threat_candidates(
+                cands, r, args.rounds, lambda e: e[2],
+                high_threat_prefixes, high_threat_exact)
             cands = prefer_fresh(cands, lambda e: e[2])
             src_e = cands[rng.randrange(len(cands))]
             tower.remove(src_e)
         tf, tline, _tb = terrain
         sf, _sline, sbosses = src_e
+        identity_block = identity_locked_boss_reason(
+            sbosses, code_references=code_refs)
+        identity_move_block = identity_locked_mix_reason(
+            sbosses, sf, tf, code_references=code_refs)
+        if identity_block:
+            # Never synthesize mod_rogue_f/z for a hard-ref boss, even when the
+            # selected terrain happens to be its own: preserve the native
+            # field, zone, master id, actions, and funnel anchors as one unit.
+            tower[:] = pool_before
+            if identity_move_block and pin_terrain:
+                print(f"[ERR] 第{r}战钉选组合拒绝:{identity_move_block}; "
+                      "未创建 field/zone，塔池已回滚")
+                return None
+            if not pin_boss and src_e in tower:
+                tower.remove(src_e)
+            log(f"[身份锁] round={r} {identity_block}; 随机混搭回退原味 {sf}")
+            return {"field": sf, "bosses": list(sbosses),
+                    "thumb": thumb_map.get(sf, ""),
+                    "bgm": (cb._cols(_sline)[1] if _sline else None),
+                    "label": "原味·" + ",".join(sorted(set(sbosses)))}
         strict, safe_set = load_transplant_policy()
         unsafe = strict and not all(b in safe_set for b in sbosses)
         if (unsafe or any(is_special_boss(b, special_bosses) for b in sbosses))                 and not pin_terrain:
@@ -2998,10 +6255,22 @@ def main() -> int:
             return {"field": sf, "bosses": sbosses, "thumb": thumb_map.get(sf, ""),
                     "bgm": (cb._cols(_sline)[1] if _sline else None),
                     "label": "原味·" + ",".join(sorted(set(sbosses)))}
+        if len(sbosses) != terrain_slot_count:
+            if not pin_terrain and terrain not in tower:
+                tower.append(terrain)
+            if not pin_boss and src_e not in tower:
+                tower.append(src_e)
+            print(f"[ERR] 第{r}战混搭实体数不匹配:"
+                  f"地形{terrain_slot_count}槽 / donor {len(sbosses)}只")
+            return None
         frow = fd_t[tf]
         fc = cells(frow)
         zkey, fkey = f"mod_rogue_z{r}", f"mod_rogue_f{r}"
         zone_t[zkey] = swap_zone_bosses(zone_t[fc[2]], sbosses)
+        realized_bosses = zone_single_bosses(zone_t[zkey])
+        if realized_bosses != list(sbosses):
+            raise RuntimeError(
+                f"第{r}战混搭 boss 实体不一致:donor={sbosses},realized={realized_bosses}")
         nf = list(fc)
         nf[2] = zkey
         fd_t[fkey] = join(nf, isinstance(frow, (bytes, bytearray)))
@@ -3009,10 +6278,14 @@ def main() -> int:
         elem = elem_map.get(sf)
         if elem is None:
             elem = next((belem_map[b] for b in sbosses if belem_map.get(b) is not None), None)
-        return {"field": fkey, "bosses": sbosses, "thumb": thumb_map.get(tf, ""),
+        return {"field": fkey, "bosses": realized_bosses,
+                "thumb": thumb_map.get(tf, ""),
                 "bgm": (cb._cols(tline)[1] if tline else None),
                 "elem_override": elem, "boost_field": tf,
-                "label": f"拼·{','.join(sbosses)} @ {tf}"}
+                "label": f"拼·{','.join(sbosses)} @ {tf}",
+                # 供任务 C 重排时原地更换 donor，不丢失 --mix 语义。
+                "_mix_terrain_entry": terrain, "_mix_boss_entry": src_e,
+                "_mix_slot_count": terrain_slot_count}
 
     # ---- 楼层计划 v8(module 级 build_schedule):任意层数自适应 ----
     if args.rounds < 2:
@@ -3051,7 +6324,8 @@ def main() -> int:
     _hp_med, _atk_med = curve_medians(_all_codes)
     if args.normalize:
         print(f"[归一] 基数中位锚 hp={ {k: round(v) for k, v in _hp_med.items()} } "
-              f"clamp {args.normalize_min}–{args.normalize_max}×"
+              f"HP clamp {args.normalize_min}–{args.normalize_max}× / "
+              f"ATK clamp {args.normalize_min}–{args.normalize_atk_max}×"
               f"(standard 系无 boss_level 条目,不参与)")
 
     def tower_area_boost(field: str) -> tuple[float, float]:
@@ -3067,38 +6341,360 @@ def main() -> int:
 
     def patch_common(row: list[str], name: str, pick: dict) -> str:
         row[4] = name
-        thumb = pick.get("thumb") or ""
-        if thumb:
-            row[5] = thumb                               # 来源副本的正规预览图
         row[7] = START
         row[8] = END
         row[67] = "0"                                    # 体力
-        # c69 优先=官方源 quest 推荐元素(kit 色替只在官方配置下自洽,C8016 根因);
-        # 次选=固定元素 boss 查表;都查不到才随机。拼接层带 elem_override
-        # (= boss 老家楼层元素),优先级最高。
-        official = pick.get("elem_override")
-        if official is None:
-            official = elem_map.get(pick["field"])
-        fixed = next((belem_map[c] for c in pick["bosses"] if belem_map.get(c) is not None), None)
-        if official is not None:
-            elem, tag = official, "(官方)"
-        elif fixed is not None:
-            elem, tag = fixed, ""
-        else:
-            elem, tag = rng.randrange(6), "(随机)"
-        row[69] = str(elem)
-        # 楼层等级在循环里按爬坡档已经算好(pick["level"]);无尽档等走老路
-        row[95] = str(pick.get("level")
-                      or resolve_level(pick["bosses"], args.enemy_level, sb_t, gv_t,
-                                       gb_t, prefer_max=want_max)
-                      or args.enemy_level)
-        row[98] = pick.get("play_field") or pick["field"]   # 乱流机关=克隆场
-        if pick.get("bgm"):
-            row[99] = pick["bgm"]                        # 塔层带专属 BGM;来源副本保持模板
+        # 楼层等级在循环里按爬坡档已经算好(pick["level"]);无尽档等走老路。
+        level = (pick.get("level")
+                 or resolve_level(pick["bosses"], args.enemy_level, sb_t, gv_t,
+                                  gb_t, prefer_max=want_max)
+                 or args.enemy_level)
+        source_elements = dict(elem_map)
+        if pick.get("elem_override") is not None:
+            source_elements[pick["field"]] = int(pick["elem_override"])
+        elem, tag = patch_quest_boss_fields(
+            row,
+            field=pick["field"],
+            play_field=pick.get("play_field"),
+            bosses=pick["bosses"],
+            thumbnail=pick.get("thumb"),
+            bgm=pick.get("bgm"),
+            enemy_level=int(level),
+            rng=rng,
+            field_elements=source_elements,
+            boss_elements=belem_map,
+        )
         return f" 属性:{ELEM_CN[elem] if elem < 6 else '无'}{tag}"
+
+    _hp_fit_cache: dict[tuple[str, int, float], dict | None] = {}
+    _hp_fit_rejects: dict[tuple[str, int, float], str] = {}
+
+    def hp_pick_metrics(pick: dict, r: int, target: float) -> dict | None:
+        """按真实等级决定候选的 HP 主通道；不可缩放即不进候补。"""
+        field = str(pick["field"])
+        key = (field, r, round(float(target), 6))
+        if key in _hp_fit_cache:
+            return _hp_fit_cache[key]
+        bosses = list(pick.get("bosses") or _zone_pick(field)[0])
+        if not bosses:
+            _hp_fit_cache[key] = None
+            return None
+        level = int(resolve_level(bosses, want_level(r), sb_t, gv_t, gb_t,
+                                  prefer_max=want_max) or want_level(r))
+        native = floor_native_hp(bosses, level, sb_t)
+        if not native.get("verified") or native.get("native_hp") is None:
+            _hp_fit_cache[key] = None
+            return None
+        required_c86 = float(fmt(solve_hp_correction(
+            target, float(tmpl_rn[100]) / 60.0,
+            float(native["native_hp"]))))
+        try:
+            strategy = floor_hp_scaling_strategy(
+                bosses, native, gb_t, bl_t, level,
+                required_c86=required_c86,
+                deep=is_deep_round(r, args.rounds),
+                code_references=code_refs)
+        except ValueError as exc:
+            _hp_fit_rejects[key] = str(exc)
+            _hp_fit_cache[key] = None
+            return None
+        metrics = {
+            "level": level, "native": native,
+            "required_c86": required_c86,
+            "baseline_c86": float(strategy["baseline_c86"]),
+            "baseline_scale": float(strategy["baseline_scale"]),
+            "hp_channel": strategy["channel"],
+            "hp_family": strategy["family"],
+            "selected_levels": strategy["selected_levels"],
+        }
+        _hp_fit_cache[key] = metrics
+        return metrics
+
+    def hp_curve_fit_pick(current: dict, r: int, target: float,
+                          field_needed: int = 0, *,
+                          element_required: bool = False,
+                          carrier_required: bool = False,
+                          pinned_boss: str | None = None,
+                          pinned_terrain: bool = False) -> dict:
+        """数值/领域不合规时重排，并优先保住可挂属性免疫的实际载体。"""
+        current_metrics = hp_pick_metrics(current, r, target)
+        current_key = (str(current["field"]), r, round(float(target), 6))
+        current_hp_reject = _hp_fit_rejects.get(current_key)
+        if current_hp_reject and "identity-locked" in current_hp_reject:
+            log(f"[HP重排] round={r} reject="
+                f"{','.join(map(str, current.get('bosses') or []))} "
+                f"reason={current_hp_reject}")
+        def carrier_ok(pick: dict, *, preserve_mix: bool = True) -> bool:
+            bosses = list(pick.get("bosses") or [])
+            target = next((b for b in bosses if b in belem_map), None)
+            if target is None:
+                return False
+            # 候选扫描只读判据，不写 caster_blocked；真正选中后 field_caps()
+            # 会登记门禁理由。否则扫描几百个候选会把未使用场地污染进最终报告。
+            return caster_carrier_block(
+                (current["field"] if (preserve_mix
+                                      and current.get("_mix_terrain_entry"))
+                 else pick["field"]),
+                bosses, fd_t, zone_t, phase_linked, gb_t,
+                refs=code_refs) is None
+
+        def element_carrier_block(pick: dict, metrics: dict | None, *,
+                                  preserve_mix: bool = True) -> str | None:
+            if metrics is None:
+                return "没有可审计的 HP/等级证据"
+            bosses = list(pick.get("bosses") or [])
+            field_id = (current["field"] if (preserve_mix
+                                              and current.get("_mix_terrain_entry"))
+                        else pick["field"])
+            status = carrier_status(
+                field_id, bosses, int(metrics["level"]), record=False)
+            return None if status["element"] else str(status["element_reason"])
+
+        def acceptable(pick: dict, metrics: dict | None, *,
+                       preserve_mix: bool = True) -> bool:
+            if metrics is None:
+                return False
+            if ((field_needed or carrier_required)
+                    and not carrier_ok(pick, preserve_mix=preserve_mix)):
+                return False
+            if preserve_mix and current.get("_mix_terrain_entry"):
+                # HP 重排不得把混搭层偷换回原场地；候补 boss
+                # 也必须通过原有移植白名单，否则会把专用骨架塞进通用场地。
+                strict, safe_set = load_transplant_policy()
+                bosses = list(pick.get("bosses") or [])
+                # c86-window 内的 identity-locked general 仍是合格的原味
+                # 候选，但绝不能借 HP donor 重排进入已克隆的异地 zone。
+                # Whole-field fallback (preserve_mix=False) remains legal.
+                identity_block = identity_locked_boss_reason(
+                    bosses, code_references=code_refs)
+                if (identity_block
+                        or len(bosses) != int(current.get("_mix_slot_count") or 0)
+                        or (strict and not all(b in safe_set for b in bosses))
+                        or any(is_special_boss(b, special_bosses) for b in bosses)):
+                    return False
+            if (args.rounds == 30 and is_deep_round(r, args.rounds)
+                    and not metrics["native"].get("absolute_verified")):
+                return False
+            return True
+
+        current_ok = acceptable(current, current_metrics)
+        current_element_block = (element_carrier_block(current, current_metrics)
+                                 if element_required else None)
+        if current_ok:
+            if not element_required or current_element_block is None:
+                return current
+            if pinned_boss:
+                raise RuntimeError(
+                    f"第{r}战钉选 boss {pinned_boss} 与属性免疫冲突:"
+                    f"{current_element_block}; 显式 boss/诅咒均不允许静默改派")
+            log(f"[HP重排] round={r} 工坊属性免疫要求保留载体，"
+                f"当前 {current['field']} 不适用({current_element_block}); 搜索替代 boss")
+        elif pinned_boss:
+            # 显式 boss 是工坊硬约束；不能为满足平坦 HP 或领域槽而暗换成另一只。
+            # 若还同时钉了属性免疫，优先把真实载体阻断理由报给作者。
+            if current_hp_reject and "identity-locked" in current_hp_reject:
+                raise RuntimeError(
+                    f"第{r}战钉选 boss {pinned_boss} HP 无法实现:"
+                    f"{current_hp_reject}; 显式 pin 不允许暗换 boss")
+            why = (current_element_block
+                   or ("该 boss 没有 general_boss c109 条件载体"
+                       if carrier_required else "该 boss 无法满足本层 HP/领域硬闸"))
+            raise RuntimeError(
+                f"第{r}战钉选 boss {pinned_boss} 与属性免疫冲突:{why}; "
+                "显式 boss/诅咒均不允许静默改派")
+
+        registry: dict[str, dict] = {}
+
+        def add(field: str, label: str, thumb: str = "", bgm=None) -> None:
+            if field in registry:
+                return
+            bosses, _ = _zone_pick(field)
+            if not bosses or not _pool_safe(bosses):
+                return
+            rep = field_gate(field)
+            if not rep["ok"]:
+                return
+            disp = "、".join(dict.fromkeys(
+                str(_boss_names.get(b, b)).split("/")[0] for b in bosses))
+            registry[field] = {
+                "field": field, "bosses": bosses,
+                "thumb": thumb or thumb_map.get(field, ""), "bgm": bgm,
+                "label": f"HP重排·{label}·{disp or field}",
+            }
+
+        for source_label, entries in src.items():
+            for entry in entries:
+                add(str(entry["field"]), source_label,
+                    str(entry.get("thumb") or ""), None)
+        for field, line, _bosses in tower_master:
+            fc = cb._cols(line)
+            add(str(field), "塔", thumb_map.get(field, ""),
+                fc[1] if len(fc) > 1 else None)
+        if args.rounds == 30:
+            for field in (EARLY_HP_FALLBACK_FIELDS_30
+                          + MID_HP_ANCHOR_FIELDS_30
+                          + DEEP_HP_ANCHOR_FIELDS_30):
+                add(field, "血量保底")
+
+        zkeys = set(map(str, gz_t))
+        def collect_ranked(*, allow_quota_reuse: bool = False,
+                           preserve_mix: bool = True,
+                           element_only: bool = False) -> list[tuple]:
+            found: list[tuple] = []
+            for candidate in registry.values():
+                bosses = candidate["bosses"]
+                if r >= 3 and any(is_minion_boss(b, zkeys) for b in bosses):
+                    continue
+                if (not allow_quota_reuse
+                        and not all(_quota_left(k) for k in name_keys(bosses))):
+                    continue
+                metrics = hp_pick_metrics(candidate, r, target)
+                if not acceptable(candidate, metrics, preserve_mix=preserve_mix):
+                    continue
+                metrics = dict(metrics)
+                metrics["element_immunity_block"] = element_carrier_block(
+                    candidate, metrics, preserve_mix=preserve_mix)
+                scale = (float(metrics["baseline_scale"])
+                         if metrics["hp_channel"] == "boss_level"
+                         else float(metrics["baseline_c86"]))
+                # general c2 通道优先；其次绝对证据/新面孔/较小的伸缩幅度。
+                score = (
+                    0 if metrics["hp_channel"] == "boss_level" else 1,
+                    0 if metrics["native"].get("absolute_verified") else 1,
+                    1 if set(bosses) & recent_bosses else 0,
+                    abs(math.log(scale)),
+                    candidate["field"],
+                )
+                found.append((score, candidate, metrics))
+            if element_only:
+                preferred, downgraded = prefer_element_immunity_hp_candidates(found)
+                found = [] if downgraded else preferred
+            return prefer_non_threat_candidates(
+                found, r, args.rounds, lambda item: item[1]["bosses"],
+                high_threat_prefixes, high_threat_exact)
+
+        def collect_pipeline(*, element_only: bool) -> tuple[list[tuple], bool, str | None]:
+            """完整跑一次严格/mix/短塔配额管线；元素优先失败后才跑普通管线。"""
+            found = collect_ranked(element_only=element_only)
+            whole_field_fallback = False
+            quota_reuse_scope = None
+            if (not found and current.get("_mix_terrain_entry")
+                    and not pinned_terrain):
+                # 严格移植白名单没有 donor 时，完整尝试安全原场地；元素池与
+                # 普通池各自跑完这条链，不能看见一个不合格 donor 就提前降级。
+                found = collect_ranked(
+                    preserve_mix=False, element_only=element_only)
+                if not found:
+                    found = collect_ranked(
+                        allow_quota_reuse=True, preserve_mix=False,
+                        element_only=element_only)
+                whole_field_fallback = bool(found)
+            if not found and (args.rounds != 30 or args.mix):
+                # 任意塔高的旧行为是“池子枯竭才允许重复”。30 层成品塔
+                # 候选足够，仍严格保持配额；短塔不因固定锦标预留而无解。
+                found = collect_ranked(
+                    allow_quota_reuse=True, element_only=element_only)
+                if found:
+                    quota_reuse_scope = "混搭池" if args.mix else "短塔"
+            return found, whole_field_fallback, quota_reuse_scope
+
+        # HP 确需重排时，随机诅咒也优先获得可挂属性免疫的载体；工坊钉选则
+        # 额外让“HP 已合格但载体不合格”的当前 boss 进入同一条搜索链。
+        prefer_element = element_required or not carrier_required
+        ranked, mix_whole_field_fallback, quota_reuse_scope = collect_pipeline(
+            element_only=prefer_element)
+        if not ranked:
+            scope = ("工坊钉选属性免疫" if element_required else
+                     ("工坊钉选 c109 条件" if carrier_required else
+                      "随机属性免疫软约束"))
+            if current_ok and element_required:
+                # 用户规格明确要求软约束耗尽后回退原逻辑，但必须留痕；显式
+                # pinned_boss 的冲突已在上方硬失败，不会走到这里吞掉两份 pin。
+                why = current_element_block or "候选池没有实际 c109/c36 合格载体"
+                log(f"[HP重排] round={r} {scope}无合格载体候选，"
+                    f"已保留当前 boss；后续诅咒门禁将明确 redraw({why})")
+                return current
+            ranked, mix_whole_field_fallback, quota_reuse_scope = collect_pipeline(
+                element_only=False)
+            log(f"[HP重排] round={r} {scope}无合格载体候选，已降级为普通 HP 重排；"
+                "后续诅咒门禁将 redraw")
+        if not ranked:
+            got = ("无原生 HP 证据" if current_metrics is None
+                   else (f"boss_level×{current_metrics['baseline_scale']:g}"
+                         if current_metrics["hp_channel"] == "boss_level"
+                         else f"standard c86={current_metrics['baseline_c86']:g}"))
+            raise RuntimeError(
+                f"第{r}战当前候选{got}且正式池没有可伸缩 general / "
+                f"c86 {STANDARD_C86_LIMITS[0]:g}~{STANDARD_C86_LIMITS[1]:g} 的 standard 替代 boss")
+        if quota_reuse_scope:
+            log(f"[HP重排] round={r} 唯一配额候选耗尽，"
+                f"按旧池规则允许{quota_reuse_scope}重用")
+        ranked.sort(key=lambda item: item[0])
+        # 在同等优质的前八项中保留 seed 随机性；窗口、证据、去重仍是硬条件。
+        _score, chosen, chosen_metrics = ranked[rng.randrange(min(8, len(ranked)))]
+        old = ("无证据" if current_metrics is None
+               else (f"boss_level×{current_metrics['baseline_scale']:g}"
+                     if current_metrics["hp_channel"] == "boss_level"
+                     else f"c86={current_metrics['baseline_c86']:g}"))
+        new = (f"boss_level×{chosen_metrics['baseline_scale']:g}"
+               if chosen_metrics["hp_channel"] == "boss_level"
+               else f"c86={chosen_metrics['baseline_c86']:g}")
+        log(f"[HP重排] round={r} {current['field']}({old}) -> "
+            f"{chosen['field']}({new})")
+        if current.get("_mix_terrain_entry") and not mix_whole_field_fallback:
+            # 保留已选地形，只把混搭 zone 的 boss donor 换成可行候选。
+            # 原 donor 之前已从 tower 移除；现在没用上就必须归还，
+            # 否则一次重排会吞三个池条目并留下孤儿克隆。
+            frow = fd_t.get(current["field"])
+            fc = cells(frow) if isinstance(frow, (str, bytes, bytearray)) else []
+            if len(fc) <= 2 or not isinstance(zone_t.get(fc[2]), dict):
+                raise RuntimeError(f"第{r}战混搭 HP 重排找不到已克隆 zone")
+            zone_t[fc[2]] = swap_zone_bosses(zone_t[fc[2]], chosen["bosses"])
+            realized_bosses = zone_single_bosses(zone_t[fc[2]])
+            if realized_bosses != list(chosen["bosses"]):
+                raise RuntimeError(
+                    f"第{r}战混搭 HP 重排实体不一致:"
+                    f"donor={chosen['bosses']},realized={realized_bosses}")
+            old_donor = current.get("_mix_boss_entry")
+            if (isinstance(old_donor, tuple) and old_donor not in tower
+                    and old_donor[0] != chosen["field"]):
+                tower.append(old_donor)
+            current["bosses"] = realized_bosses
+            current["elem_override"] = (
+                elem_map.get(chosen["field"])
+                if elem_map.get(chosen["field"]) is not None else
+                next((belem_map.get(b) for b in chosen["bosses"]
+                      if belem_map.get(b) is not None), None))
+            current["label"] = (
+                f"拼·{','.join(chosen['bosses'])} @ {current.get('boost_field')}"
+                f"（HP重排:{chosen['field']}）")
+            current["_mix_boss_entry"] = next(
+                (e for e in tower if e[0] == chosen["field"]), None)
+            for entry in list(tower):
+                if entry[0] == chosen["field"]:
+                    tower.remove(entry)
+                    break
+            return current
+        if current.get("_mix_terrain_entry") and mix_whole_field_fallback:
+            frow = fd_t.pop(current["field"], None)
+            fc = cells(frow) if isinstance(frow, (str, bytes, bytearray)) else []
+            if len(fc) > 2:
+                zone_t.pop(fc[2], None)
+            for released in (current.get("_mix_terrain_entry"),
+                             current.get("_mix_boss_entry")):
+                if isinstance(released, tuple) and released not in tower:
+                    tower.append(released)
+            log(f"[HP重排] round={r} --mix 无兼容的安全 HP donor，"
+                f"撤销克隆并退回原场地 {chosen['field']}")
+        for entry in list(tower):
+            if entry[0] == chosen["field"]:
+                tower.remove(entry)
+                break
+        return chosen
 
     quest_rows: dict[str, list[str]] = {}
     forged_pubs: set[str] = set()
+    immunity_programs: dict[str, list] = {}
     plan = {} if args.ignore_plan else layout_plan()
     if plan.get("stages") or plan.get("floors"):
         print(f"[工坊] 布局计划生效:阶段 {len(plan.get('stages') or [])} 段,"
@@ -3115,17 +6711,46 @@ def main() -> int:
     # (1.4.238 实际发生过;seed 20260812+4 可复现)。
     # 修法:固定位的 boss 在循环**开始前**就登记配额,让随机锚位天然避开。
     for _fixed_field, _lab in ((PHENO_FIELD, "机工神兵"), (DRAGON_FIELD, "终始之龙")):
-        if _lab in schedule.values():
+        _live_fixed = [rr for rr, lab in schedule.items()
+                       if lab == _lab]
+        if _live_fixed:
             _fb, _ = _zone_pick(_fixed_field)
             for _k in name_keys(_fb):
                 used_counts[_k] = used_counts.get(_k, 0) + 1
+    # 中段/深层锚进入独立“未来预留”，防止浅层提前抽走；到映射轮次先释放，
+    # 只有实际选中才进入 used_counts。不能直接预加 used_counts，否则未采用/被 pin
+    # 绕开的锚会形成幽灵占用，实际锚还会被重复计数。
+    for _rr in range(1, args.rounds + 1):
+        _af = (mid_hp_anchor_field(_rr, args.rounds)
+               or deep_hp_anchor_field(_rr, args.rounds))
+        if _af:
+            _ab, _ = _zone_pick(_af)
+            for _k in name_keys(_ab):
+                future_anchor_counts[_k] = future_anchor_counts.get(_k, 0) + 1
 
     tower_bosses: list[str] = []
     floor_recs: list[dict] = []
+    mix_applied_rounds: list[int] = []
     for r in range(1, args.rounds + 1):
         label = schedule.get(r)
         forced = (((plan.get("floors") or {}).get(str(r))) or {}) if not args.ignore_plan else {}
         pin_t, pin_b = forced.get("terrain"), forced.get("boss")
+        mapped_anchor = (mid_hp_anchor_field(r, args.rounds)
+                         or deep_hp_anchor_field(r, args.rounds))
+        if mapped_anchor:
+            _mapped_bosses, _ = _zone_pick(mapped_anchor)
+            for _k in name_keys(_mapped_bosses):
+                left = future_anchor_counts.get(_k, 0) - 1
+                if left > 0:
+                    future_anchor_counts[_k] = left
+                else:
+                    future_anchor_counts.pop(_k, None)
+        st_tier, st_mult = plan_tier_for(plan, r, round_tier(r))
+        _target_dps = configured_target_dps(
+            r, args.rounds, hp_base, hp_growth, st_mult, ramp=args.ramp)
+        if r == 1 and not args.ramp:
+            _target_dps = WARMUP_TARGET_DPS
+        field_needed = required_field_slots(r, args.rounds) if st_tier == "hell" else 0
         if label and not (pin_t or pin_b):
             pick = PICKERS[label]()
         elif args.mix or pin_t or pin_b:
@@ -3136,14 +6761,36 @@ def main() -> int:
             pick = pick or tower_pick(r)
         else:
             pick = tower_pick(r)
-        tower_bosses += pick["bosses"]
-        for _k in name_keys(pick["bosses"]):
-            used_counts[_k] = used_counts.get(_k, 0) + 1
+        _element_required = element_immunity_requested(forced)
+        _carrier_required = hard_condition_carrier_requested(forced)
+        # 钉地形只锁地形，不锁 donor：仍走 HP/属性载体重排，并在混搭 zone 内
+        # 原地换 boss。钉 boss 则保持硬约束；与钉选属性免疫冲突时明确失败，
+        # 绝不能成功产出后把「元素禁壁」随机替换掉。
+        if r > 1 and (not pin_b or _element_required or _carrier_required):
+            try:
+                pick = hp_curve_fit_pick(
+                    pick, r, _target_dps, field_needed,
+                    element_required=_element_required,
+                    carrier_required=_carrier_required,
+                    pinned_boss=(str(pin_b) if pin_b else None),
+                    pinned_terrain=bool(pin_t))
+            except RuntimeError as exc:
+                print(f"[ERR] {exc}")
+                return 1
         if args.test_field == r and label is None:
             tries = 0
             while not field_caps(pick["field"], pick["bosses"])["boss"] and tower and tries < 30:
                 pick = tower_pick(r)
                 tries += 1
+        _high_threat = is_high_threat_bosses(
+            pick.get("bosses") or [], high_threat_prefixes, high_threat_exact)
+        pick["high_threat"] = _high_threat
+        if _high_threat:
+            log(f"[高威胁] round={r} bosses={','.join(pick.get('bosses') or [])} "
+                "禁时限/禁高档属性墙/诅咒HP≤1.5")
+        tower_bosses += pick["bosses"]
+        for _k in name_keys(pick["bosses"]):
+            used_counts[_k] = used_counts.get(_k, 0) + 1
         row = list(tmpl_r1 if r == 1 else tmpl_rn)
         row[0] = str(700099000 + r)
         row[1] = "1"
@@ -3162,18 +6809,102 @@ def main() -> int:
         # 该层有没有可归一的基数?standard 表 boss 查不到 → 归一化不生效,
         # 拿到的是裸曲线值,真实伤害无上界保证(2026-07-30 审计盲区实锤)
         _anchor = stat_anchor(pick["bosses"], _atk_med, "atk", _lv)
+        _hp_anchor = stat_anchor(pick["bosses"], _hp_med, "hp", _lv)
+        # HP 按族分治：general 必须是全层纯 Hit-HP general，主伸缩落 clone
+        # boss_level.c2；standard 只允许 c86±10% 微调；混族/Fix 一律重抽。
+        _native_hp = floor_native_hp(pick["bosses"], _lv, sb_t)
+        try:
+            _base_duration_s = float(row[100]) / 60.0
+        except (TypeError, ValueError):
+            print(f"[ERR] 第{r}战模板 c100 时限不可解析:{row[100]}")
+            return 1
+        if not math.isfinite(_base_duration_s) or _base_duration_s <= 0:
+            print(f"[ERR] 第{r}战模板时限非法:{_base_duration_s}s")
+            return 1
         # 基础数值归一:按 boss 基数相对同曲线组中位数反向补偿(2026-07-29 用户需求)
         if args.normalize:
             nh, na = stat_normalize(pick["bosses"], _hp_med, _atk_med,
                                     args.normalize_min, args.normalize_max, _lv,
-                                    {"hp": args.normalize_hp, "atk": args.normalize_atk})
+                                    {"hp": args.normalize_hp, "atk": args.normalize_atk},
+                                    {"atk": args.normalize_atk_max})
             bh, ba = bh * nh, ba * na
             pick["norm"] = (nh, na)
-        caps = field_caps(pick["field"], pick["bosses"])
-        st_tier, st_mult = plan_tier_for(plan, r, round_tier(r))
-        curse = abyss_curses(r, args.rounds, rng, st_tier, caps, forced,
-                             no_base=_anchor is None)
-        if args.test_field == r and not curse["caster"]:
+        caps = field_caps(pick["field"], pick["bosses"], _lv)
+        _runtime_kwargs = {}
+        _hp_strategy = None
+        if _native_hp.get("verified"):
+            _required_c86 = float(fmt(solve_hp_correction(
+                _target_dps, _base_duration_s,
+                float(_native_hp["native_hp"]))))
+            try:
+                _hp_strategy = floor_hp_scaling_strategy(
+                    pick["bosses"], _native_hp, gb_t, bl_t, _lv,
+                    required_c86=_required_c86,
+                    deep=is_deep_round(r, args.rounds),
+                    code_references=code_refs)
+            except ValueError as exc:
+                print(f"[ERR] 第{r}战 HP 主通道不可实现:{exc}")
+                return 1
+            _baseline_c86 = float(_hp_strategy["baseline_c86"])
+            _baseline_true_hp = (_target_dps * _base_duration_s
+                                 if _hp_strategy["channel"] == "boss_level"
+                                 else _true_hp_at_c86(_native_hp, _baseline_c86))
+            _runtime_kwargs = {
+                "baseline_c86": _baseline_c86,
+                "c86_limits": ((1.0, 1.0)
+                               if _hp_strategy["channel"] == "boss_level"
+                               else STANDARD_C86_LIMITS),
+                "baseline_dps": _baseline_true_hp / _base_duration_s,
+                "base_duration_s": _base_duration_s,
+                "hp_channel": _hp_strategy["channel"],
+            }
+        elif not pick["bosses"]:
+            # 第 1 战是唯一无 boss 血条的结构性例外，无法用相邻 boss 的反解比例
+            # 事后放大 c86；否则抽到高墙时可能在诅咒已定案后才越窗，失去重抽机会。
+            # 直接用它自己的旧曲线 c86 作透明代理，并在抽取阶段照常过最终窗口/时限闸。
+            _proxy_baseline_c86 = float(fmt(
+                hp_base * (hp_growth ** (r - 1)) * bh * st_mult))
+            _runtime_kwargs = {
+                "baseline_c86": _proxy_baseline_c86,
+                "c86_limits": hp_correction_limits(r, args.rounds),
+                "baseline_dps": _target_dps,
+                "base_duration_s": _base_duration_s,
+            }
+            _hp_strategy = {
+                "channel": "c86", "family": "no-boss",
+                "baseline_c86": _proxy_baseline_c86, "baseline_scale": 1.0,
+                "selected_levels": {},
+            }
+        _hp_family = (_hp_strategy["family"] if _hp_strategy else "unknown")
+        try:
+            curse = abyss_curses(
+                r, args.rounds, rng, st_tier, caps, forced,
+                no_base=_anchor is None, high_threat=_high_threat,
+                **_runtime_kwargs)
+        except (RuntimeError, ValueError) as exc:
+            print(f"[ERR] 第{r}战诅咒组合无法满足硬闸:{exc}")
+            return 1
+        if _high_threat:
+            _threat_why = high_threat_curse_conflict(curse.get("picks") or [])
+            if _threat_why:
+                print(f"[ERR] 第{r}战高威胁诅咒后置复核失败:{_threat_why}")
+                return 1
+        hard_damage = curse.get("damage_resistance") or []
+        hard_elements = curse.get("element_resistance") or []
+        hard_stacked = curse.get("stacked_resistance") or []
+        hard_program = None
+        if hard_damage or hard_elements or hard_stacked:
+            if hard_elements:
+                assert_element_immunity_runtime_safe(Q_QUEST, _lv)
+            hard_program, hard_tree = immunity_program(
+                hard_damage, hard_elements, hard_stacked)
+            build_immunity_dsl_blob(hard_tree)       # dry-run 也做 AMF3/raw-deflate 往返门禁
+            immunity_programs.setdefault(hard_program, hard_tree)
+            forged_pubs.add(hard_program + ".action.dsl.amf3.deflate")
+            if args.dump_immunity_dsl:
+                print(f"[DSL] 第{r}战 {hard_program}")
+                print(json.dumps(hard_tree, ensure_ascii=False, separators=(",", ":")))
+        if args.test_field == r and not curse["casters"]:
             if caps["boss"]:
                 _menu = field_menu_all()
                 fm = _menu[rng.randrange(len(_menu))]
@@ -3184,31 +6915,128 @@ def main() -> int:
                 why = caster_blocked.get(pick["field"])
                 print(f"[WARN] 第{r}战无 general boss 载体,--test-field 落不了法阵"
                       + (f"(门禁:{why})" if why else ""))
-        if curse["gimmick"] or curse["caster"]:
-            swap = None
-            if curse["caster"]:
-                fm_ = curse["caster"]
-                program = fm_[1]
+        # test-field 会在 abyss_curses.finalize 之后补条目，重新给领域覆盖率记账。
+        if curse.get("field_requested"):
+            curse["field_applied"] = len(curse.get("casters") or [])
+            curse["field_deficit"] = max(
+                0, int(curse["field_requested"]) - int(curse["field_applied"]))
+        if curse.get("field_deficit"):
+            why = curse.get("field_deficit_reason") or caps.get("carrier_reason") \
+                or "没有可用的 general_boss 领域载体"
+            curse["field_deficit_reason"] = why
+            log(f"[curse] round={r} field-underfill="
+                f"{curse['field_applied']}/{curse['field_requested']} reason={why}")
+            print(f"[ERR] 第{r}战领域保底欠配:"
+                  f"{curse['field_applied']}/{curse['field_requested']} ({why})")
+            return 1
+        _hp_plan = None
+        if _hp_strategy and _hp_strategy["channel"] == "boss_level":
+            try:
+                _hp_plan = general_hp_scale_plan(
+                    pick["bosses"], _native_hp, gb_t, bl_t, _lv,
+                    target_hp=_target_dps * _base_duration_s,
+                    curse_hp=float(curse["hp"]),
+                    code_references=code_refs)
+            except ValueError as exc:
+                print(f"[ERR] 第{r}战 boss_level.c2 伸缩计划失败:{exc}")
+                return 1
+        _final_native_hp = _native_hp
+        if curse["gimmick"] or curse["casters"] or hard_program or _hp_plan:
+            swaps: list[tuple[str, str]] = []
+            action_programs: list[str] = []
+            fields_tuned = False
+            for fm_ in list(curse.get("casters") or []):
+                action_program = str(fm_[1])
                 fcat = fm_[3] if len(fm_) > 3 else "领域"
                 tun = field_tuning()
-                factor = float(tun.get("per", {}).get(program)
+                factor = float(tun.get("per", {}).get(action_program)
                                or tun.get("global", {}).get(fcat, 1) or 1)
                 if abs(factor - 1.0) > 1e-9:
                     # 缩放标注挂在法阵条目自己的 text 上,降档闸重渲 desc 时不会丢
                     for _c in curse.get("picks") or []:
-                        if _c.get("caster") is fm_:
+                        if (_c.get("caster")
+                                and str(_c["caster"][1]) == str(fm_[1])):
                             _c["text"] += f"×{factor:g}"
-                    apply_picks(curse, curse.get("picks") or [], curse.get("combo"))
+                    fields_tuned = True
                     if args.write:
                         import wf_field_catalog as wfc
-                        program = wfc.forge(program, scale=factor)
-                if program.startswith("battle/action/enemy/action/mod_rogue/"):
-                    forged_pubs.add(program + ".action.dsl.amf3.deflate")
-                target = next((b for b in pick["bosses"] if b in belem_map), None)
-                clone = make_caster_boss(r, target, program) if target else None
-                swap = (target, clone) if clone else None
-            pick["play_field"] = gimmick_field(pick["field"], r,
-                                               panels=curse["gimmick"], boss_swap=swap)
+                        action_program = wfc.forge(action_program, scale=factor)
+                if action_program.startswith("battle/action/enemy/action/mod_rogue/"):
+                    forged_pubs.add(action_program + ".action.dsl.amf3.deflate")
+                if action_program not in action_programs:
+                    action_programs.append(action_program)
+            if fields_tuned:
+                apply_picks(curse, curse.get("picks") or [], curse.get("combo"))
+            target = caps.get("element_target") if (action_programs or hard_program) else None
+            carrier_clone = None
+            if _hp_plan:
+                source_codes = list(_hp_plan["final_leaves"])
+                if target in source_codes:
+                    source_codes.remove(target)
+                    source_codes.insert(0, target)
+                for index, source_code in enumerate(source_codes):
+                    clone_code = (f"mod_rogue_boss{r}" if index == 0
+                                  else f"mod_rogue_boss{r}_{index + 1}")
+                    is_carrier = source_code == target
+                    clone = make_caster_boss(
+                        r, source_code,
+                        action_programs=(action_programs if is_carrier else ()),
+                        pre_action_program=(hard_program if is_carrier else None),
+                        requires_element_resistance=(bool(hard_elements) and is_carrier),
+                        enemy_level=_lv, clone_code=clone_code,
+                        boss_level_leaf=_hp_plan["final_leaves"][source_code],
+                        expected_selected_level=_hp_plan["selected_levels"][source_code])
+                    if not clone:
+                        print(f"[ERR] 第{r}战 general HP clone 失败:{source_code}")
+                        return 1
+                    swaps.append((source_code, clone))
+                    if is_carrier:
+                        carrier_clone = clone
+            elif action_programs or hard_program:
+                carrier_clone = (make_caster_boss(
+                    r, target, action_programs=action_programs,
+                    pre_action_program=hard_program,
+                    requires_element_resistance=bool(hard_elements),
+                    enemy_level=_lv) if target else None)
+                if carrier_clone:
+                    swaps.append((target, carrier_clone))
+            play_field = gimmick_field(pick["field"], r,
+                                       panels=curse["gimmick"], boss_swaps=swaps)
+            if ((action_programs or hard_program) and not carrier_clone) or not play_field:
+                print(f"[ERR] 第{r}战硬通道载体/field 克隆失败,拒绝保留虚假诅咒文案")
+                return 1
+            pick["play_field"] = play_field
+            _play_row = fd_t.get(play_field)
+            _play_cells = (cells(_play_row)
+                           if isinstance(_play_row, (str, bytes, bytearray)) else [])
+            _play_zone = zone_t.get(_play_cells[2]) if len(_play_cells) > 2 else None
+            runtime_bosses = zone_single_bosses(_play_zone)
+            swap_map = dict(swaps)
+            expected_bosses = [swap_map.get(code, code) for code in pick["bosses"]]
+            if runtime_bosses != expected_bosses:
+                print(f"[ERR] 第{r}战最终 boss swap 不一致:"
+                      f"expected={expected_bosses},actual={runtime_bosses}")
+                return 1
+            pick["runtime_bosses"] = runtime_bosses
+            if hard_elements:
+                # 最终实际 code = field 成功换入的 clone；再读一次克隆后 c36。
+                actual_code = carrier_clone if play_field else target
+                blocked = general_boss_element_immunity_block(gb_t, actual_code, _lv, gv_t)
+                if blocked:
+                    print(f"[ERR] 第{r}战属性免疫最终载体复核失败:{blocked}")
+                    return 1
+            if _hp_plan:
+                _final_native_hp = floor_native_hp(runtime_bosses, _lv, sb_t, bl_t)
+                if not _final_native_hp.get("verified"):
+                    print(f"[ERR] 第{r}战最终 clone HP 不可审计:"
+                          f"{_final_native_hp.get('reason') or 'unknown'}")
+                    return 1
+                actual_hp = _true_hp_at_c86(_final_native_hp, 1.0)
+                if not math.isclose(actual_hp, float(_hp_plan["true_hp"]),
+                                    rel_tol=1e-9, abs_tol=1.0):
+                    print(f"[ERR] 第{r}战 clone c2 回读不一致:"
+                          f"plan={_hp_plan['true_hp']},actual={actual_hp}")
+                    return 1
         note = patch_common(row, f"{EVENT_NAME} 第{r}战", pick)
         quest_rows[str(r)] = row
         # ⚠ 数值列**不在这里落**:分位硬闸要看到全塔分布才能决定哪层降档,
@@ -3216,18 +7044,144 @@ def main() -> int:
         floor_recs.append({
             "r": r, "row": row, "pick": pick, "note": note, "bh": bh, "ba": ba,
             "curse": curse, "st_mult": st_mult, "no_base": _anchor is None,
-            "anchor": _anchor,
+            "anchor": _anchor, "hp_anchor": _hp_anchor,
+            "hp_family": _hp_family, "native_hp": _native_hp,
+            "final_native_hp": _final_native_hp,
+            "hp_strategy": _hp_strategy, "hp_plan": _hp_plan,
+            "target_dps": _target_dps,
+            "base_duration_s": _base_duration_s,
             "funnel": any(fc.startswith(b) for b in pick["bosses"]
                           for fc in funnel_levels()),
         })
+        if args.mix and pick.get("_mix_terrain_entry"):
+            mix_applied_rounds.append(r)
+
+    if args.mix:
+        if not mix_applied_rounds:
+            print("[ERR] --mix 实际拼接 0 层：严格 transplant_safe 白名单"
+                  "与当前 HP/c86 窗口无交集，拒绝以全部原场地冒充混搭成功")
+            return 1
+        print(f"[MIX] 实际拼接 {len(mix_applied_rounds)} 层:"
+              + ",".join(map(str, mix_applied_rounds)))
 
     # ---- 分位硬闸 + 数值列落表(2026-07-30)----
     curve_scale, band_log = enforce_atk_band(floor_recs, atk_base, atk_growth,
                                              args.rounds)
+
+    native_errors = native_hp_coverage_errors(floor_recs)
+    if native_errors:
+        for error in native_errors:
+            print(f"[ERR] {error}")
+        return 1
+
+    # ---- 任务 D：普通 general 真 HP 折进 clone boss_level.c2；quest c86 恒 1 ----
+    # identity-locked general 与 standard 都只允许同 id 的 c86 0.9~1.1 微调；
+    # 第1战无 boss 是唯一代理。
+    hp_audits: list[dict] = []
+    unresolved_hp: list[tuple[dict, float, float]] = []
+    for frec in floor_recs:
+        raw_c86 = float(fmt(hp_base * (hp_growth ** (frec["r"] - 1))
+                            * frec["bh"] * frec["st_mult"]))
+        frames = frec["curse"].get("time") or frec["row"][100]
+        try:
+            duration_s = float(frames) / 60.0
+        except (TypeError, ValueError):
+            print(f"[ERR] 第{frec['r']}战 c100 时限不可解析:{frames}")
+            return 1
+        if not math.isfinite(duration_s) or duration_s <= 0:
+            print(f"[ERR] 第{frec['r']}战时限非法:{duration_s}s")
+            return 1
+        if frec.get("hp_plan"):
+            plan = frec["hp_plan"]
+            final_native = frec["final_native_hp"]
+            baseline_true_hp = float(plan["baseline_true_hp"])
+            true_hp = _true_hp_at_c86(final_native, 1.0)
+            c2_evidence = {}
+            for code in plan["final_leaves"]:
+                c2_evidence[code] = {
+                    "source": float(cells(bl_t[code])[2]),
+                    "baseline": float(cells(plan["baseline_leaves"][code])[2]),
+                    "final": float(cells(plan["final_leaves"][code])[2]),
+                    "selected_general_level": plan["selected_levels"][code],
+                }
+            audit = {
+                "r": frec["r"], "family": "general", "verified": True,
+                "absolute_verified": bool(frec["native_hp"].get("absolute_verified")),
+                "native": frec["native_hp"], "final_native": final_native,
+                "base_duration_s": float(frec["base_duration_s"]),
+                "duration_s": duration_s,
+                "target_dps": float(frec["target_dps"]),
+                "curse_hp": float(frec["curse"]["hp"]),
+                "baseline_c86": 1.0, "c86": 1.0,
+                "baseline_true_hp": baseline_true_hp, "true_hp": true_hp,
+                "baseline_dps": baseline_true_hp / float(frec["base_duration_s"]),
+                "realized_dps": true_hp / duration_s,
+                "raw_c86": raw_c86,
+                "family_scale": float(plan["baseline_scale"]),
+                "boss_level_c2": c2_evidence,
+            }
+            frec["hp_audit"] = audit
+            hp_audits.append(audit)
+        elif frec["native_hp"].get("verified"):
+            audit = solve_floor_hp_record(
+                frec["r"], args.rounds, frec["native_hp"],
+                base_duration_s=frec["base_duration_s"],
+                duration_s=duration_s, curse_hp=frec["curse"]["hp"],
+                raw_c86=raw_c86,
+                family=frec["hp_family"], target=frec["target_dps"])
+            frec["hp_audit"] = audit
+            hp_audits.append(audit)
+        else:
+            unresolved_hp.append((frec, raw_c86, duration_s))
+
+    # 第 1 战固定为纯小怪房，没有 boss 血条；用户给定公式只覆盖 29 个 boss 层。
+    # 对这类层保留可见的旧曲线代理，并在抽诅咒时就用同一个值过窗口门禁；
+    # DPS 只记为目标估算、verified=false，报告不得冒充绝对血量验收。
+    for frec, raw_c86, duration_s in unresolved_hp:
+        baseline_c86 = raw_c86
+        curse_hp = float(frec["curse"]["hp"])
+        c86 = float(fmt(baseline_c86 * curse_hp))
+        target = float(frec["target_dps"])
+        baseline_true_hp = target * float(frec["base_duration_s"])
+        true_hp = baseline_true_hp * curse_hp
+        audit = {
+            "r": frec["r"], "family": frec["hp_family"], "verified": False,
+            "absolute_verified": False,
+            "native": frec["native_hp"],
+            "base_duration_s": float(frec["base_duration_s"]),
+            "duration_s": duration_s, "target_dps": target,
+            "curse_hp": curse_hp,
+            "baseline_c86": baseline_c86, "c86": c86,
+            "baseline_true_hp": baseline_true_hp, "true_hp": true_hp,
+            "baseline_dps": target, "realized_dps": true_hp / duration_s,
+            "raw_c86": raw_c86, "family_scale": 1.0,
+            "proxy_round": None, "warmup": frec["r"] == 1,
+        }
+        frec["hp_audit"] = audit
+        hp_audits.append(audit)
+
+    # 作者末层带是 hell 默认的验收锚；显式改 --hp-* /
+    # 其它难度时按同比缩放该带，不让“参数已生效”反被 hell 闸拒绝。
+    _canonical_hp = (args.difficulty == "hell"
+                     and args.hp_base is None and args.hp_growth is None)
+    _last_target = next(a["target_dps"] for a in hp_audits
+                        if a["r"] == args.rounds)
+    _last_target_scale = float(_last_target) / TARGET_DPS_LAST
+    _hp_last_band = (TARGET_DPS_LAST_BAND if _canonical_hp else
+                     tuple(v * _last_target_scale for v in TARGET_DPS_LAST_BAND))
+    hp_errors = hp_curve_errors(
+        hp_audits, args.rounds, _hp_last_band, ramp=args.ramp)
+    hp_errors += hp_short_time_errors(hp_audits)
+    hp_errors += hp_correction_errors(hp_audits, args.rounds)
+    if hp_errors:
+        for error in hp_errors:
+            print(f"[ERR] HP 曲线门禁:{error}")
+        return 1
+
     for frec in floor_recs:
         r, row, curse = frec["r"], frec["row"], frec["curse"]
-        hp = fmt(hp_base * (hp_growth ** (r - 1)) * frec["bh"] * curse["hp"]
-                 * frec["st_mult"])
+        audit = frec["hp_audit"]
+        hp = fmt(audit["c86"])
         atk = fmt(frec["atk"])
         row[86], row[87], row[88] = hp, hp, hp           # hp 小怪/炮台/boss(小怪房也吃曲线)
         row[89], row[91] = atk, atk                      # atk 小怪/boss
@@ -3245,14 +7199,33 @@ def main() -> int:
         row[3] = curse["desc"] if curse["desc"] else "(None)"
         pick = frec["pick"]
         eff = f" | {curse['desc']}" if curse["desc"] else ""
-        boost = (f" 补偿hp×{frec['bh']:.2f}/atk×{frec['ba']:.2f}"
-                 if (frec["bh"], frec["ba"]) != (1.0, 1.0) else "")
+        # boss 层的 HP 已由 boss_level.c2（general）或反解 c86（standard）
+        # 精确落表；旧 bh/HP normalize 只剩 raw 诊断量，不能再打印成“补偿”误导。
+        if audit["family"] == "no-boss":
+            boost = (f" 补偿hp×{frec['bh']:.2f}/atk×{frec['ba']:.2f}"
+                     if (frec["bh"], frec["ba"]) != (1.0, 1.0) else "")
+        else:
+            boost = (f" 补偿atk×{frec['ba']:.2f}"
+                     if frec["ba"] != 1.0 else "")
         if pick.get("norm") and pick["norm"] != (1.0, 1.0):
-            boost += f"(含归一 ×{pick['norm'][0]:.2f}/×{pick['norm'][1]:.2f})"
+            if audit["family"] == "no-boss":
+                boost += f"(含归一 ×{pick['norm'][0]:.2f}/×{pick['norm'][1]:.2f})"
+            else:
+                boost += (f"(HP归一raw×{pick['norm'][0]:.2f}未落表;"
+                          f"ATK归一×{pick['norm'][1]:.2f})")
         fdisp = pick["field"] + (f"→{pick['play_field']}" if pick.get("play_field") else "")
         fun = f" 炮台atk×{row[90]}" if frec["funnel"] else ""
+        hp_mark = ("绝对" if audit.get("absolute_verified") else
+                   ("代理" if audit["verified"] else "估算/无boss"))
         plan_lines.append(f"  第{r}战 [{pick['label']}] lv{pick.get('level')} "
                           f"field={fdisp} hp×{hp} atk×{atk}{fun}{boost}"
+                          f" 基线(c86={audit['baseline_c86']:g},"
+                          f"HP={audit['baseline_true_hp'] / 1e8:.2f}亿,"
+                          f"DPS={audit['baseline_dps']:,.0f}/s)"
+                          f" 实战(HP={audit['true_hp'] / 1e8:.2f}亿,"
+                          f"DPS={audit['realized_dps']:,.0f}/s,"
+                          f"{audit['duration_s']:.0f}s,血咒×{audit['curse_hp']:g})"
+                          f"[{hp_mark}]"
                           f"{frec['note']}{eff}")
     if band_log:
         plan_lines.append(f"  ---- 分位硬闸动作 {len(band_log)} 次 ----")
@@ -3261,6 +7234,7 @@ def main() -> int:
     _late = sorted(f["atk"] for f in floor_recs if f["r"] / args.rounds > BAND_FROM)
     _early = sorted(f["atk"] for f in floor_recs if f["r"] / args.rounds <= BAND_FROM)
     _hp = sorted(float(f["row"][88]) for f in floor_recs)
+    _true_hp = sorted(float(f["hp_audit"]["true_hp"]) for f in floor_recs)
     _tdi = [f["anchor"][0] * f["atk"] / f["anchor"][1]
             for f in floor_recs if f["anchor"]]
     _lv = {}
@@ -3272,13 +7246,94 @@ def main() -> int:
         f"/P90 {_bs['p90']:.2f}/max {_bs['max']:.2f}"
         f"(带 ≤{BAND_TARGET['median']}/≤{BAND_TARGET['p90']}/≤{BAND_TARGET['max']})"
         f" · 前段中位 {statistics.median(_early):.2f}"
-        f" · hp 中位 {statistics.median(_hp):.2f}/max {_hp[-1]:.2f}"
-        f"(官方 rush max 100)"
+        f" · hp col 中位 {statistics.median(_hp):.2f}/max {_hp[-1]:.2f}"
+        f" · 真HP中位 {statistics.median(_true_hp) / 1e8:.2f}亿"
         + (f" · 真伤指数 max {max(_tdi):.2f}(闸 {TRUE_DMG_CAP})" if _tdi else "")
         + (f" · 曲线缩放 ×{curve_scale:.3f}" if curve_scale != 1.0 else ""))
     plan_lines.append("  [数值带] 敌等级:"
                       + " ".join(f"lv{k}×{v}" for k, v in sorted(_lv.items(),
                                                                  key=lambda kv: kv[0] or 0)))
+    _verified_hp = [a for a in hp_audits if a["verified"]]
+    _absolute_hp = [a for a in _verified_hp if a.get("absolute_verified")]
+    _proxy_hp = [a for a in _verified_hp if not a.get("absolute_verified")]
+    _general_audits = [a for a in _verified_hp if a["family"] == "general"]
+    _identity_audits = [
+        a for a in _verified_hp if a["family"] == "identity-locked"]
+    _standard_audits = [a for a in _verified_hp if a["family"] == "standard"]
+    _general_scale = [a["family_scale"] for a in _general_audits]
+    _identity_c86 = [float(a["c86"]) for a in _identity_audits]
+    _standard_c86 = [float(a["c86"]) for a in _standard_audits]
+    _hp_first = next(a for a in hp_audits if a["r"] == 1)
+    _hp_last = next(a for a in hp_audits if a["r"] == args.rounds)
+    # “真 HP 占比”的分子分母都只用绝对证据；代理曲线层
+    # 另报覆盖率，不得混进分母把“估算”写成“真 HP”。
+    _std_hp = sum(a["true_hp"] for a in _absolute_hp
+                  if a["family"] == "standard")
+    _all_absolute_hp = sum(a["true_hp"] for a in _absolute_hp)
+    if args.ramp:
+        _hp_gate_summary = (
+            f"基线首尾 DPS {_hp_first['baseline_dps']:,.0f}→"
+            f"{_hp_last['baseline_dps']:,.0f} "
+            f"({_hp_last['baseline_dps'] / _hp_first['baseline_dps']:.2f}×) · "
+            f"第{args.rounds}战命中目标带 {_hp_last_band[0]:,.0f}~"
+            f"{_hp_last_band[1]:,.0f}/s")
+    else:
+        _hp_gate_summary = (
+            f"第1战热身 {_hp_first['baseline_dps']:,.0f}/s · "
+            f"boss层 2~{args.rounds} 全部命中 {_hp_last_band[0]:,.0f}~"
+            f"{_hp_last_band[1]:,.0f}/s")
+    plan_lines.append(
+        f"  [真HP门禁] 绝对 {len(_absolute_hp)} 层 / 代理 {len(_proxy_hp)} 层 / "
+        f"无boss估算 {len(hp_audits) - len(_verified_hp)} 层 · "
+        f"{_hp_gate_summary}")
+    _std_c86_summary = (
+        f"standard c86={min(_standard_c86):g}~{max(_standard_c86):g}"
+        f"（门禁 {STANDARD_C86_LIMITS[0]:g}~{STANDARD_C86_LIMITS[1]:g}）"
+        if _standard_c86 else "standard 0层")
+    _identity_c86_summary = (
+        f"identity-locked c86={min(_identity_c86):g}~{max(_identity_c86):g}"
+        f"（门禁 {STANDARD_C86_LIMITS[0]:g}~{STANDARD_C86_LIMITS[1]:g}）"
+        if _identity_c86 else "identity-locked 0层")
+    plan_lines.append(
+        f"  [实战诅咒] DPS "
+        f"{min(a['realized_dps'] for a in hp_audits):,.0f}~"
+        f"{max(a['realized_dps'] for a in hp_audits):,.0f}/s · "
+        f"短时限高血量 0 层 · general c86=1"
+        f"（boss_level.c2 主伸缩）· {_identity_c86_summary} · {_std_c86_summary}")
+    plan_lines.append(
+        f"  [按族分治] general {len(_general_audits)} 层 / "
+        f"identity-locked {len(_identity_audits)} 层 / "
+        f"standard {len(_standard_audits)} 层 · "
+        + (f"general boss_level.c2 基线伸缩中位 ×"
+           f"{statistics.median(_general_scale):.3f}"
+           if _general_scale else "general 无可验层")
+        + " · "
+        + (_identity_c86_summary if _identity_c86
+           else "identity-locked 无可验层")
+        + " · "
+        + (_std_c86_summary if _standard_c86 else "standard 无可验层")
+        + (f" · standard 绝对真HP占比 {_std_hp / _all_absolute_hp:.1%}"
+           if _all_absolute_hp else ""))
+    _field_requested = sum(int(f["curse"].get("field_requested") or 0)
+                           for f in floor_recs)
+    _field_total = sum(int(f["curse"].get("field_applied") or 0)
+                       for f in floor_recs)
+    _field_quota_applied = sum(
+        min(int(f["curse"].get("field_applied") or 0),
+            int(f["curse"].get("field_requested") or 0))
+        for f in floor_recs)
+    _field_deficit_floors = [f for f in floor_recs
+                             if f["curse"].get("field_deficit")]
+    _deep_time = [f["r"] for f in floor_recs
+                  if is_deep_round(f["r"], args.rounds)
+                  and f["curse"].get("time") is not None]
+    plan_lines.append(
+        f"  [领域/时限] 领域保底完成 {_field_quota_applied}/{_field_requested} 个"
+        f"（全塔实际 {_field_total} 个）· "
+        f"欠配 {len(_field_deficit_floors)} 层"
+        + ("(" + ",".join(str(f["r"]) for f in _field_deficit_floors) + ")"
+           if _field_deficit_floors else "")
+        + f" · 深层时限诅咒 {len(_deep_time)} 层")
 
     # 无尽档:folder 2 / round 0,修正曲线接管难度(quest 行修正=round-0 锚点)
     endless_pick = tower_pick()
@@ -3293,15 +7348,57 @@ def main() -> int:
     quest_rows[ENDLESS_KEY] = endless_row
     plan_lines.append(f"  无尽 [{endless_pick['label']}] field={endless_pick['field']}{rec}(曲线抄 700007 现值)")
 
-    print(f"seed={args.seed} rounds={args.rounds} "
+    _profile = "ramp" if args.ramp else "flat"
+    _target_summary = (
+        f"{_hp_first['target_dps']:,.0f}→{_hp_last['target_dps']:,.0f}"
+        if args.ramp else
+        f"boss层={_hp_last['target_dps']:,.0f};第1战热身={_hp_first['target_dps']:,.0f}")
+    print(f"seed={args.seed} rounds={args.rounds} profile={_profile} "
           f"difficulty={args.difficulty or '(旧默认)'} curse={args.curse or '(随难度)'} "
-          f"hp={fmt(hp_base)}×{fmt(hp_growth)}^r atk={fmt(atk_base)}×{fmt(atk_growth)}^r")
+          f"hp(raw)={fmt(hp_base)}×{fmt(hp_growth)}^r "
+          f"targetDPS={_target_summary} "
+          f"atk={fmt(atk_base)}×{fmt(atk_growth)}^r")
     print("\n".join(plan_lines))
 
     # ---- 硬门禁复核:构建产物(含克隆场/法阵 boss)全链可解析,任一悬空拒绝产出 ----
-    reports = validate_built_rows(quest_rows, fd_t, zone_t,
-                                  set(gb_t) | set(sb_t) | set(gz_t), set(gz_t),
-                                  lv_ceil=sb_t, lv_floor=gv_t, lv_gb=gb_t)
+    # The final chain must see this build's in-memory Orochi clones.  A cached
+    # store-wide code union can both miss a fresh parent and let the wrong
+    # constructor table satisfy a duplicate code, so inject every exact special
+    # table and validate the zone's (BossKind, code) pair.
+    final_special_tables: dict[str, dict] = {}
+    for logical in SPECIAL_BOSS_TABLES:
+        short = Path(logical).name.removesuffix(".orderedmap")
+        if logical == OROCHI:
+            final_special_tables[short] = oro_t
+            continue
+        try:
+            final_special_tables[short] = q.load_table(logical)
+        except Exception:
+            final_special_tables[short] = {}
+    identity_clone_errors = [
+        (clone, source, identity_locked_boss_reason(
+            [source], code_references=code_refs))
+        for clone, source in sorted(clone_sources.items())
+        if identity_locked_boss_reason(
+            [source], code_references=code_refs) is not None
+    ]
+    if identity_clone_errors:
+        for clone, source, why in identity_clone_errors:
+            print(f"[ERR] identity-locked source clone:{source}->{clone}: {why}")
+        print("[ERR] identity-locked source 被写成 mod_rogue_boss*,拒绝产出")
+        return 1
+    print("[门禁] identity-locked source clone 0"
+          f"（本轮审计 {len(clone_sources)} 个 mod_rogue_boss* 映射）")
+
+    final_validation = boss_ref_validation_tables(
+        standard_boss=sb_t, general_boss=gb_t,
+        general_boss_variable=gv_t,
+        special_tables=final_special_tables)
+    reports = validate_built_rows(
+        quest_rows, fd_t, zone_t,
+        set(gb_t) | set(sb_t) | set(gz_t), set(gz_t),
+        lv_ceil=sb_t, lv_floor=gv_t, lv_gb=gb_t,
+        validation_tables=final_validation)
     broken = [r for r in reports if not r["ok"]]
     if broken:
         for r in broken:
@@ -3311,7 +7408,8 @@ def main() -> int:
         return 1
     print(f"[门禁] {len(reports)} 关解析链复核通过(quest→field→zone→boss/zako 全可解析)")
     if caster_blocked:
-        print(f"[门禁] 成对/分阶段 boss 层已禁发深渊法阵({len(caster_blocked)} 个场地):")
+        print(f"[门禁] 成对/分阶段 · 被代号引用的 boss 层已禁发深渊法阵"
+              f"({len(caster_blocked)} 个场地):")
         for _f, _why in sorted(caster_blocked.items()):
             print(f"        {_f} — {_why}")
 
@@ -3326,6 +7424,50 @@ def main() -> int:
     def save(logical: str, tree: dict) -> None:
         q.save_table(logical, tree)
         written.append(logical)
+
+    # 先落未被任何表引用的 action 文件；全部成功后才写 general_boss/quest。
+    # 临时文件与目标同目录,os.replace 原子切换,避免中断留下半截 deflate。
+    for program, tree in sorted(immunity_programs.items()):
+        logical = program + ".action.dsl.amf3.deflate"
+        dst = q.store_path(logical)
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        blob = build_immunity_dsl_blob(tree)
+        tmp = dst.with_name(dst.name + ".tmp-wf-rogue-immunity")
+        tmp.write_bytes(blob)
+        os.replace(tmp, dst)
+    if immunity_programs:
+        print(f"[OK] 耐性 DSL 已写入 {len(immunity_programs)} 个 action")
+
+    # Dependency-first save order: head rows before Orochi parent, then the
+    # field/zone that references that parent, and only then quest rows.  Each
+    # save_table is still a per-file operation; this is reference-safe ordering,
+    # not a claim of cross-table disk transactionality.
+    battle_values = {
+        GENERAL_ZAKO: gz_t,
+        ZAKO_LEVEL: zl_t,
+        GENERAL_BOSS: gb_t,
+        BOSS_LEVEL: bl_t,
+        GENERAL_BOSS_VARIABLE: gv_t,
+        ENEMY_WATCH: ew_t,
+        OROCHI: oro_t,
+        FIELD_DATA_T: fd_t,
+        ZONE_T: zone_t,
+    }
+    battle_plan = rogue_battle_write_plan(
+        gimmick_dirty=gim_dirty, caster_dirty=caster_dirty,
+        orochi_dirty=orochi_dirty,
+        enemy_watch_available=ew_t is not None)
+    for logical in battle_plan:
+        tree = battle_values.get(logical)
+        if not isinstance(tree, dict):
+            raise RuntimeError(f"battle write plan 缺内存表:{logical}")
+        save(logical, tree)
+    if caster_dirty:
+        print("[OK] 法阵载体依赖已写入(zako + general boss 附表)")
+    if orochi_dirty:
+        print("[OK] 八岐父体整包已写入(head 依赖 → orochi parent)")
+    if gim_dirty:
+        print("[OK] 场地克隆已写入(field_data / zone)")
 
     ev[EVENT_ID] = join(ev_row, ev_bytes)
     save(Q_EVENT, ev)
@@ -3343,17 +7485,6 @@ def main() -> int:
     corr[EVENT_ID] = {"2": {ENDLESS_KEY: dict(src_curve)}}
     save(Q_CORR, corr)
     print("[OK] ②层五表已写入(rush_event / folder / quest / event_list / correction)")
-    if gim_dirty:
-        save(FIELD_DATA_T, fd_t)
-        save(ZONE_T, zone_t)
-        print("[OK] 场地克隆已写入(field_data / zone)")
-    if caster_dirty:
-        save(GENERAL_ZAKO, gz_t)
-        save("master/battle/zako/zako_level.orderedmap", zl_t)
-        save(GENERAL_BOSS, gb_t)
-        save("master/battle/boss/boss_level.orderedmap", bl_t)
-        save("master/battle/boss/general_boss_variable.orderedmap", gv_t)
-        print("[OK] 法阵载体已写入(general_boss / boss_level / boss_variable + zako 清理)")
 
     # 服务端 json
     quest_json_path = os.path.join(ROOT, "assets", "rush_event_quest.json")
@@ -3415,4 +7546,9 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    # 塔名/日文 boss 标签含 GBK 不可编码字符；构建器也可被人工直接调用，
+    # 不能只依赖服务端父进程的 `-X utf8`。
+    for _stream in (sys.stdout, sys.stderr):
+        if hasattr(_stream, "reconfigure"):
+            _stream.reconfigure(encoding="utf-8", errors="replace")
     sys.exit(main())

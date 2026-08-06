@@ -119,6 +119,10 @@ MAINLINE_ORBS = frozenset({
     "100011", "100012", "200001", "200002", "200003",
     "200004", "200005", "200006", "5090054",
 })
+# 「延续的黄金」100012 是用户的**开发版武器**(store 里 20 行整把重做,链上只有官方 8 行 ×4,
+# 从未发布过)。它必须能独立于其余 8 个宝珠保留 —— 用户 2026-07-30 拍板:只保这一把,其余回调。
+# 故从 weapon.orb 里单拆一个桶,归属仍是「每地址恰好一个 owner」,E1/E2 自检不受影响。
+GOLDEN_ORB_KEYS = frozenset({"100012"})
 WHITE_TIGER_ABILITY_KEYS = frozenset({"81", "85", "86"})
 WHITE_TIGER_LEADER_KEY = "3"
 WHITE_TIGER_CHARACTER_KEY = "10"
@@ -304,8 +308,15 @@ TOGGLES: tuple[ToggleSpec, ...] = (
                warn="关掉要同时改服务端 assets/character.json 与 cdndata 并钳存档,"
                     "只在 CLI 加 --allow-white-tiger 时可切",
                note="客户端 4★ 配服务端 5★ 会撞 characterExpCaps 越界"),
-    ToggleSpec("weapon.orb", "武器 · 主线宝珠/证章 ×4", "weapon", (SOUL,), 90, True,
+    ToggleSpec("weapon.orb", "武器 · 主线宝珠/证章 ×4(8 键,不含延续的黄金)", "weapon",
+               (SOUL,), 90, True,
                note="live 少行(负面副作用行被删),只能整键二选一"),
+    ToggleSpec("weapon.orb_golden", "武器 · 延续的黄金 100012(开发版,永不上传)", "weapon",
+               (SOUL,), 90, True,
+               warn="用户的开发版武器:store 里 20 行整把重做,链上只有官方 8 行 ×4。"
+                    "发布 ability_soul 前必须把该键换回链终态值,否则开发版会意外上线;"
+                    "不进任何一键预设",
+               note="与 other.equip_debug(equipment_status 99999/99999)成对,同属这把武器"),
     ToggleSpec("char.leader_pf", "角色 · 队长专属强化弹射", "character", (LEADER,), 80, True,
                off_equals_official=False,
                note="队长位=队伍 0 号位,不是主位三格;仅影响官方角色白虎"),
@@ -345,7 +356,7 @@ TOGGLES: tuple[ToggleSpec, ...] = (
 TOGGLE_BY_ID = {spec.id: spec for spec in TOGGLES}
 SCOPES = ("character", "weapon", "enemy", "other")
 # 谨慎项:永不进任何一键预设,必须单独勾
-PRESET_EXCLUDED = frozenset({"other.treasure_2001"})
+PRESET_EXCLUDED = frozenset({"other.treasure_2001", "weapon.orb_golden"})
 # 需要服务端/存档联动的项:预设不碰,显式切换还要额外的 CLI 开关
 GUARDED_TOGGLES = {
     "char.white_tiger": "--allow-white-tiger",
@@ -589,7 +600,7 @@ class Address:
 def _leaf_owner(logical: str, key: str) -> str | None:
     """key 级归属(优先级最高的几个桶)。"""
     if logical == SOUL and key in MAINLINE_ORBS:
-        return "weapon.orb"
+        return "weapon.orb_golden" if key in GOLDEN_ORB_KEYS else "weapon.orb"
     if logical == ABILITY and key in WHITE_TIGER_ABILITY_KEYS:
         return "char.white_tiger"
     if logical == CHARACTER and key == WHITE_TIGER_CHARACTER_KEY:

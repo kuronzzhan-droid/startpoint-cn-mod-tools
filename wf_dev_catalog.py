@@ -93,6 +93,11 @@ ARCHIVE_DIRECTORIES = (
     ("archive-android-diff", "diff", "platform"),
 )
 LAYER_ORDER = {"common": 0, "quality": 1, "platform": 2}
+# (kind, layer) -> 目录名。layer 是语义名(common/quality/platform),目录名用的是
+# 介质名(common/medium/android),两者不能互相当成对方用。
+ARCHIVE_DIRECTORY_BY_LAYER = {
+    (kind, layer): directory for directory, kind, layer in ARCHIVE_DIRECTORIES
+}
 ASSET_SIZE_KINDS = ("shortened", "fulfill")
 DIGEST_PLACEHOLDER = "0" * 64
 JS_MAX_SAFE_INTEGER = (1 << 53) - 1
@@ -381,6 +386,50 @@ def asset_patch_for(cdn_root: Path) -> Path | None:
     except OSError:
         pass
     return None
+
+
+FOREIGN_ROOT_PREFIX = "asset-patch/active/"
+
+
+def archive_source_root_relative(
+    archive: ArchiveInput,
+    cdn_root: Path,
+    asset_patch_active: Path | None,
+) -> tuple[Path, str] | None:
+    """Where an archive physically lives, as (root, path-relative-to-root).
+
+    Foreign archives keep an ``asset-patch/active/…`` display path so reports,
+    issues and catalogs stay readable, but they sit outside the CDN root.
+    Joining that display path onto ``cdn_root`` yields a path that simply does
+    not exist -- which is how materialization used to die with a bare
+    FileNotFoundError from ``shutil.copy2`` on the first foreign archive.
+    Returns None when the foreign root is unavailable; callers decide whether
+    that is fatal.
+    """
+    if not archive.foreign_root:
+        return cdn_root, archive.relative_path
+    if (
+        asset_patch_active is None
+        or not archive.relative_path.startswith(FOREIGN_ROOT_PREFIX)
+    ):
+        return None
+    return (
+        Path(asset_patch_active),
+        archive.relative_path.removeprefix(FOREIGN_ROOT_PREFIX),
+    )
+
+
+def archive_source_path(
+    archive: ArchiveInput,
+    cdn_root: Path,
+    asset_patch_active: Path | None,
+) -> Path | None:
+    """Absolute source path of an archive, honouring the foreign root."""
+    located = archive_source_root_relative(archive, cdn_root, asset_patch_active)
+    if located is None:
+        return None
+    root, relative = located
+    return root / relative
 
 
 def scan_chain(
@@ -1402,13 +1451,29 @@ def materialize_dev_view(
     out_parent = out_parent or (cdn_root.parent / "dev-view")
     view_root = out_parent / "cn"
     stats: dict = {
-        "linked": 0, "renamed": 0, "copied": 0,
+        "linked": 0, "renamed": 0, "copied": 0, "missing": 0,
         **{f"canonical_{key}": value for key, value in canonical_stats.items()},
     }
 
     for archive in archives:
-        source = cdn_root / archive.relative_path
-        directory, name = archive.relative_path.split("/", 1)
+        source = archive_source_path(archive, cdn_root, asset_patch_active)
+        if source is None or not source.is_file():
+            issues.append(Issue(
+                "MATERIALIZE_SOURCE_MISSING",
+                "archive source is unreachable; view omits it",
+                "materialize",
+                relative_path=archive.relative_path,
+            ))
+            stats["missing"] += 1
+            continue
+        # Derive the layer directory from the archive's own layer/kind rather
+        # than from its display path.  A foreign archive's display path starts
+        # with `asset-patch/active/`, so splitting it put the file in a bogus
+        # `asset-patch/` directory inside the view -- present on disk, invisible
+        # to the scanner, and the edge then looked like it was missing its
+        # common layer.
+        directory = ARCHIVE_DIRECTORY_BY_LAYER[(archive.kind, archive.layer)]
+        name = archive.relative_path.rsplit("/", 1)[1]
         if archive.kind == "full":
             legal = FULL_NAME_RE.fullmatch(name) is not None
         else:
@@ -2081,17 +2146,16 @@ def _overlay_source_location(
     cdn_root: Path,
     asset_patch_active: Path | None,
 ) -> tuple[Path, str]:
-    if not archive.foreign_root:
-        return cdn_root, archive.relative_path
-    prefix = "asset-patch/active/"
-    if asset_patch_active is None or not archive.relative_path.startswith(prefix):
+    root_relative = archive_source_root_relative(
+        archive, cdn_root, asset_patch_active
+    )
+    if root_relative is None:
         raise OverlayExportError(
             "PATCH_ARCHIVE_FILE_MISSING", "foreign archive source root is unavailable",
             "archive", target_version=archive.to_version,
             relative_path=archive.relative_path,
         )
-    source_relative = archive.relative_path.removeprefix(prefix)
-    return Path(asset_patch_active), source_relative
+    return root_relative
 
 
 def _pin_overlay_source(

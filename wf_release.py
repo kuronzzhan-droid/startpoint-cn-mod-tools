@@ -178,6 +178,9 @@ def _merge_claimed_rows(
     return keys, rows
 
 
+merge_claimed_rows = _merge_claimed_rows
+
+
 def _merge_claimed_table_bytes(
     claim: character_pack.TableClaim,
     candidate_raw: bytes,
@@ -280,12 +283,15 @@ def _merge_claimed_table_bytes(
                 if key not in candidate:
                     raise ReleaseError(f"candidate lacks claimed JSON row: {logical}:{key}")
                 live[key] = candidate[key]
-            return _canonical(live)
+            return _ordered_json(live)
     except ReleaseError:
         raise
     except Exception as exc:
         raise ReleaseError(f"cannot rebase claimed table {logical}: {exc}") from exc
     raise ReleaseError(f"unsupported runtime rebase codec: {claim.codec_id}")
+
+
+merge_claimed_table_bytes = _merge_claimed_table_bytes
 
 
 def release_payload_from_records(
@@ -451,6 +457,14 @@ def close_prepared_runtime_release(
 def _canonical(value: object) -> bytes:
     return json.dumps(
         value, ensure_ascii=False, sort_keys=True, separators=(",", ":"),
+        allow_nan=False,
+    ).encode("utf-8")
+
+
+def _ordered_json(value: object) -> bytes:
+    """Canonical whitespace without reordering an existing object's keys."""
+    return json.dumps(
+        value, ensure_ascii=False, sort_keys=False, separators=(",", ":"),
         allow_nan=False,
     ).encode("utf-8")
 
@@ -1466,9 +1480,11 @@ def _reachable_client_base(
     _raw, active = active_store.read_manifest()
     target = canonical_base
     if active is not None:
-        for release in active["releases"]:
+        releases = active["releases"]
+        for release in releases:
             add_edge(release["from_version"], release["version"])
-        target = active["releases"][-1]["version"]
+        if releases:
+            target = releases[-1]["version"]
 
     pending = [required_base]
     visited: set[str] = set()
@@ -1730,6 +1746,127 @@ def publish_package(
             ) from cleanup_exc
         raise
     return replace(result, snapshot_dir=prepared.snapshot.snapshot_dir)
+
+
+def _reanchor_locked(
+    cdn_root: Path,
+    repo_root: Path,
+    *,
+    target_base: str | None = None,
+    dry_run: bool = True,
+) -> dict:
+    import wf_release_guard
+
+    canonical_base = detect_canonical_base_version(cdn_root, repo_root)
+    store = ActiveReleaseStore(cdn_root, canonical_base_version=canonical_base)
+    raw, manifest = store.read_manifest()
+    if raw is None or manifest is None:
+        raise ReleaseError("no active.json ledger to re-anchor")
+    current = store.read_validated_base()
+    owners = derive_package_owners(
+        manifest["releases"],
+        base_package_owners=_validate_base_package_owners(manifest),
+    )
+
+    before = wf_release_guard.charpkg_strand_report(cdn_root, repo_root)
+    graph_tail = before["tail"]
+    target = target_base if target_base is not None else graph_tail
+    if VERSION_RE.fullmatch(target) is None:
+        raise ReleaseError(f"invalid re-anchor target: {target}")
+    if target != graph_tail:
+        raise ReleaseError(
+            f"re-anchor target {target} is not the visible graph tail {graph_tail}"
+        )
+    if _compare_version(target, current.validated_chain_tail) <= 0:
+        raise ReleaseError(
+            f"re-anchor target {target} does not advance the ledger tail "
+            f"{current.validated_chain_tail}"
+        )
+    if before["stranded_archives"]:
+        raise ReleaseError(
+            "refusing to re-anchor while charpkg history is already stranded: "
+            + ", ".join(before["stranded_edges"])
+        )
+
+    candidate = {
+        "base_package_owners": [list(pair) for pair in owners],
+        "base_version": target,
+        "releases": [],
+        "schema_version": 1,
+    }
+    candidate_raw = _canonical(candidate)
+    # 折叠前后的所有者集合必须逐字节相同,否则本次重锚会丢包历史。
+    replay = derive_package_owners(
+        [], base_package_owners=_validate_base_package_owners(candidate)
+    )
+    if replay != owners:
+        raise ReleaseError("re-anchor would change package ownership")
+
+    plan = {
+        "from_base_version": manifest["base_version"],
+        "from_ledger_tail": current.validated_chain_tail,
+        "to_base_version": target,
+        "graph_tail": graph_tail,
+        "dropped_releases": len(manifest["releases"]),
+        "package_owners": [list(pair) for pair in owners],
+        "active_sha256_before": _sha256(raw),
+        "active_sha256_after": _sha256(candidate_raw),
+    }
+    # 换账本后谁会变孤儿——用候选链边预演,不碰盘上的 active.json。
+    preview = wf_release_guard.charpkg_strand_report(
+        cdn_root, repo_root, chain_edges=set()
+    )
+    plan["would_strand"] = [
+        Path(item).name for item in preview["stranded_archives"]
+    ]
+    if dry_run:
+        plan["dry_run"] = True
+        plan["bridged_archives"] = []
+        return plan
+
+    bridged = wf_release_guard.ensure_charpkg_history_bridged(
+        cdn_root, repo_root, assume_lock_held=True, chain_edges=set(),
+    )
+    _atomic_write(store.active_path, candidate_raw)
+    after = wf_release_guard.charpkg_strand_report(cdn_root, repo_root)
+    if after["stranded_archives"]:
+        raise CommittedReleaseError(
+            "ledger re-anchored but charpkg history is stranded: "
+            + ", ".join(after["stranded_edges"])
+        )
+    plan["dry_run"] = False
+    plan["bridged_archives"] = [
+        Path(item).name for item in bridged["bridged_archives"]
+    ]
+    plan["stranded_after"] = after["stranded_archives"]
+    return plan
+
+
+def reanchor_active_ledger(
+    profile_id: str,
+    *,
+    target_base: str | None = None,
+    dry_run: bool = True,
+) -> dict:
+    """把角色发布账本重锚到当前可见链尾,不丢任何包的所有权。
+
+    `wf_publish` 走的是 legacy 发布线,它推进全局链尾却不写 active.json。链尾一旦
+    跑到账本前面(本次:账本 1.4.275 / 链尾 1.4.277),角色包算出的下一条边会和已
+    存在的 legacy 边重合——服务端 `addArchive` 按 (from,to) 归并且不去重,两个
+    互不相干的发布会被塞进同一个版本步里一起下发。
+
+    重锚 = 把当前推导出的 package owner 全部折进 `base_package_owners`,`base_version`
+    抬到链尾,`releases` 清空。`derive_package_owners` 对折叠前后返回同一个所有者
+    集合,所以历史包的升级资格分毫不动(2026-07-18 事故丢的正是这份历史)。
+
+    被账本丢下的 charpkg 边会变成孤儿,故**先补 charbridge 副本再换账本**:桥是
+    纯增量的可见边,提前建好不会留下任何搁浅窗口。
+    """
+    repo_root, _live_roots, cdn_root = _repo_paths(profile_id)
+    with _release_lock(cdn_root / ".character-release.lock"):
+        return _reanchor_locked(
+            cdn_root, repo_root, target_base=target_base, dry_run=dry_run
+        )
 
 
 def main(argv: list[str] | None = None) -> int:

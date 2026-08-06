@@ -49,6 +49,7 @@ from urllib.parse import parse_qs, urlparse
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import wf_mod_tool as core  # noqa: E402
 import wf_describe  # noqa: E402  行级中文描述器(逆向布局+枚举直译)
+import wf_client_legality  # noqa: E402  客户端 parseAt* 硬规则(纯函数,不碰 store)
 import wf_assets  # noqa: E402    角色资产(立绘/图标/语音)编解码与清单
 import wf_character_requirements as char_requirements  # noqa: E402  统一 37 项资源契约
 import wf_dsl  # noqa: E402       技能 ActionDsl 数值编辑
@@ -1497,54 +1498,8 @@ def composer_describe(kind: str, row: list) -> dict:
 
 
 def _client_legality_problems(kind: str, row: list[str]) -> list[str]:
-    """客户端 AbilityValues.parseAt* 硬规则(违者 C7050/7101 打开角色页即崩,2026-07-13 实锤):
-    枚举列无空串分支,前置1-3/触发/内容 kind 必须数字;instant_precontent 哨兵 '(None)';
-    during_accumulation_trigger 哨兵 '(None)';even_if_owner_dead 必须 true/false。"""
-    lay = wf_describe.layout(kind)
-    B = {k: int(v) for k, v in lay["blocks"].items()}
-    tcol = B["precondition1"] - 1
-
-    def cell(i):
-        return (row[i] if i < len(row) else "").strip()
-
-    def is_num(v):
-        return bool(v) and v.lstrip("-").isdigit()
-
-    probs = []
-    tmode = cell(tcol)
-    if tmode not in ("0", "1", "2"):
-        return [f"c{tcol} 触发模式={tmode!r},须为 0(瞬发)/1(持续)/2(开幕)"]
-    for p in ("precondition1", "precondition2", "precondition3"):
-        v = cell(B[p])
-        if not is_num(v):
-            probs.append(f"c{B[p]} {p}.kind={v!r} 须为数字(无条件填 0;空串=客户端C7050)")
-    if tmode == "0":
-        for name, label in (("instant_trigger", "瞬发触发kind"),
-                            ("instant_delay", "延迟"), ("instant_content", "瞬发效果kind")):
-            v = cell(B[name])
-            if not is_num(v):
-                probs.append(f"c{B[name]} {label}={v!r} 须为数字(空串=客户端C7050)")
-        v = cell(B["instant_precontent"])
-        if v != "(None)" and not is_num(v):
-            probs.append(f"c{B['instant_precontent']} instant_precontent={v!r} 须为 '(None)' 或数字")
-    elif tmode == "1":
-        v = cell(B["during_accumulation_trigger"])
-        if v != "(None)" and not is_num(v):
-            probs.append(f"c{B['during_accumulation_trigger']} 累积触发={v!r} 须为 '(None)' 或数字")
-        v = cell(B["during_trigger"])
-        if not is_num(v):
-            probs.append(f"c{B['during_trigger']} 持续触发kind={v!r} 须为数字")
-        v = cell(B["even_if_owner_dead"])
-        if v.lower() not in ("true", "false"):
-            probs.append(f"c{B['even_if_owner_dead']} even_if_owner_dead={v!r} 须为 true/false(否则C7101)")
-        v = cell(B["during_content"])
-        if not is_num(v):
-            probs.append(f"c{B['during_content']} 持续效果kind={v!r} 须为数字")
-    else:
-        v = cell(B["opening"])
-        if not is_num(v):
-            probs.append(f"c{B['opening']} 开幕kind={v!r} 须为数字")
-    return probs
+    """客户端 parseAt* 硬规则校验;实现已搬到 wf_client_legality(不依赖数据包)。"""
+    return wf_client_legality.client_legality_problems(kind, row)
 
 
 def composer_apply(dst_key: str, mode, row: list, adapt_sid: bool, dry_run: bool,
@@ -7629,10 +7584,14 @@ ROGUE_TABLES_LOGICAL = ",".join([
     "master/quest/event/event_list.orderedmap",
     "master/quest/event/rush_event_battle_quest_correction.orderedmap",
 ])
-# 构建会往这七张 battle 表写 mod_rogue_* 克隆(法阵载体/克隆场)。历史事故
+# 构建会往这八张 battle 表写 mod_rogue_* 克隆(法阵载体/克隆场)。历史事故
 # (C8601 key=mod_rogue_f9):GUI 随机走 build --write 不发布,发布按钮又只发
 # ②五表,克隆永远上不了链 → quest 引用在客户端侧断裂。发布按钮必须把
 # store 与链不一致的 battle 表一并带上。
+# ⚠ 这份清单是 GUI 独有的硬编码,与 wf_rogue_build 里 written→pub_items 那条
+# **是两条路**:GUI 默认流程(随机生成只 --write 不发布 → 再点「📤 发布」)只走这里。
+# 所以 build 那边新加任何一张会被写的表,**必须同步加到这里**,否则就是
+# 「store 有、链上没有」的静默漂移 —— 2026-08-03 补 general_enemy_watch 时踩到。
 ROGUE_BATTLE_LOGICALS = [
     "master/battle/field_data.orderedmap",
     "master/battle/zone.orderedmap",
@@ -7641,6 +7600,11 @@ ROGUE_BATTLE_LOGICALS = [
     "master/battle/boss/general_boss.orderedmap",
     "master/battle/boss/boss_level.orderedmap",
     "master/battle/boss/general_boss_variable.orderedmap",
+    # 法阵载体克隆要连自身观察表的 self 条目一起复制(见 wf_rogue_build.make_caster_boss),
+    # 漏发这张 = 客户端 getSelfData 查不到 → 自身观察联动静默失效。
+    "master/battle/boss/general_enemy_watch.orderedmap",
+    # 八岐父体与八头按 round 整包克隆；parent 本身仍由 BossKind=3 从专表读取。
+    "master/battle/boss/orochi.orderedmap",
 ]
 
 
@@ -7672,7 +7636,8 @@ def rogue_publish() -> dict:
             r["log"] += "\n[ERR] 发布自检未通过(链上仍缺/旧字节):\n" \
                         + "\n".join(f"  {l}: {w}" for l, w in left)
         else:
-            r["log"] += ("\n[OK] 发布自检:②五表 + battle 七表 + 锻造 DSL "
+            r["log"] += (f"\n[OK] 发布自检:②五表 + battle {len(ROGUE_BATTLE_LOGICALS)}表"
+                         " + 锻造 DSL "
                          f"{len(forged)} 个,全部在 CDN 链上且字节一致")
     return r
 

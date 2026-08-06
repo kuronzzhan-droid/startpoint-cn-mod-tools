@@ -1,0 +1,1225 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""Fail-closed end-to-end validator for the abyss equipment release."""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import importlib.util
+import json
+import os
+import sys
+import tempfile
+import zipfile
+import zlib
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Callable
+
+import wf_assets
+import wf_describe
+import wf_mod_tool as core
+import wf_quest_lib as q
+import wf_rogue_build as rogue_build
+import wf_rogue_rewards as rewards
+import wf_rogue_shop as shop
+
+
+ROOT = Path(__file__).resolve().parents[1]
+ASSETS_DIR = ROOT / "assets"
+
+
+def _strict_json_load(text: str) -> Any:
+    """JSON input is release evidence: duplicates and NaN are not benign."""
+    def reject_constant(value: str) -> Any:
+        raise ValueError(f"non-standard JSON constant {value}")
+
+    def reject_duplicates(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError(f"duplicate JSON key {key!r}")
+            result[key] = value
+        return result
+
+    return json.loads(text, parse_constant=reject_constant, object_pairs_hook=reject_duplicates)
+
+
+def _load_task7_builder():
+    module_name = "abyss_task8_release_builder"
+    existing = sys.modules.get(module_name)
+    if existing is not None:
+        return existing
+    # client-patch 属服务端仓工作区;独立布局用 WF_CLIENT_PATCH_DIR/WF_SERVER_DIR 定位
+    client_patch = (
+        Path(os.environ["WF_CLIENT_PATCH_DIR"])
+        if os.environ.get("WF_CLIENT_PATCH_DIR")
+        else (
+            Path(os.environ["WF_SERVER_DIR"]) if os.environ.get("WF_SERVER_DIR")
+            else ROOT
+        ) / "client-patch"
+    )
+    path = client_patch / "abyss-mode-equipment" / "build_apk.py"
+    spec = importlib.util.spec_from_file_location(module_name, path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"cannot load Task 7 APK builder: {path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+apk_builder = _load_task7_builder()
+
+
+@dataclass(frozen=True)
+class ReleaseEntry:
+    logical: str
+    relative: str
+    sha256: str
+    size: int
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "logical": self.logical,
+            "relative": self.relative,
+            "sha256": self.sha256,
+            "size": self.size,
+        }
+
+
+@dataclass(frozen=True)
+class ReleaseSnapshot:
+    store: str
+    entries: tuple[ReleaseEntry, ...]
+    profile_id: str = "cn"
+
+    def logicals(self) -> list[str]:
+        return [entry.logical for entry in self.entries]
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "schema_version": 1,
+            "profile_id": self.profile_id,
+            "store": self.store,
+            "entries": [entry.to_dict() for entry in self.entries],
+        }
+
+    def write(self, path: Path) -> None:
+        Path(path).write_text(
+            json.dumps(self.to_dict(), ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
+
+@dataclass(frozen=True)
+class ValidationResult:
+    errors: tuple[str, ...]
+    descriptions: tuple[str, ...]
+    snapshot: ReleaseSnapshot | None = None
+
+
+class RogueValidationError(RuntimeError):
+    """The offline bundle's roguelike content is incomplete or inconsistent."""
+
+
+@dataclass(frozen=True, slots=True)
+class RogueDataReport:
+    event_id: int
+    round_count: int
+    token_id: int
+    weapon_ids: tuple[int, ...]
+    missing_logicals: tuple[str, ...]
+    ready: bool
+
+
+def release_logicals() -> list[str]:
+    """Return the complete explicit release allowlist in deterministic order."""
+    return [
+        rewards.ITEM_T,
+        rewards.EQUIP_T,
+        rewards.EQUIP_STATUS_T,
+        rewards.SOUL_T,
+        rewards.RUSH_EVENT_T,
+        shop.SHOP_T,
+        *[
+            f"{rewards.IMAGE_PREFIX}/{spec.image_slug}.png"
+            for spec in rewards.WEAPONS
+        ],
+    ]
+
+
+def offline_release_logicals() -> tuple[str, ...]:
+    """Every client-store logical consumed by the offline-only rogue gate."""
+
+    return (*release_logicals(), rogue_build.Q_QUEST)
+
+
+def _validate_release_data(
+    store: Path,
+    assets_dir: Path,
+    *,
+    access_hook: Callable[[str], None] | None = None,
+) -> ValidationResult:
+    """Validate every store/server roguelike invariant, without APK tooling."""
+    store = Path(store)
+    assets_dir = Path(assets_dir)
+    errors: list[str] = []
+    release_entries: list[ReleaseEntry] = []
+
+    tables = {
+        logical: (
+            _load_table(store, logical, errors, release_entries)
+            if access_hook is None
+            else _load_table(
+                store,
+                logical,
+                errors,
+                release_entries,
+                access_hook=access_hook,
+            )
+        )
+        for logical in release_logicals()[:6]
+    }
+    json_values: dict[str, Any] = {}
+    for name, root_type in (
+        ("equipment_max_level", dict),
+        ("equipment_element", dict),
+        ("equipment_lookup", dict),
+        ("equipment_ids", list),
+        ("item_ids", list),
+        ("event_item_shop", dict),
+        ("event_item_shop_id_map", dict),
+    ):
+        value = _load_json(assets_dir, name, errors)
+        if value is not None and not isinstance(value, root_type):
+            expected = "object" if root_type is dict else "array"
+            errors.append(
+                f"assets.{name}.invalid: expected JSON {expected}, "
+                f"got {type(value).__name__}"
+            )
+            value = None
+        json_values[name] = value
+
+    _validate_item(tables.get(rewards.ITEM_T), errors)
+    descriptions = _validate_weapons(
+        tables.get(rewards.EQUIP_T),
+        tables.get(rewards.EQUIP_STATUS_T),
+        tables.get(rewards.SOUL_T),
+        errors,
+    )
+    _validate_rush(tables.get(rewards.RUSH_EVENT_T), errors)
+    _validate_mirrors(json_values, errors)
+    _validate_shop(
+        tables.get(shop.SHOP_T),
+        json_values.get("event_item_shop"),
+        json_values.get("event_item_shop_id_map"),
+        errors,
+    )
+    if access_hook is None:
+        _validate_pngs(store, assets_dir, errors, release_entries)
+    else:
+        _validate_pngs(
+            store,
+            assets_dir,
+            errors,
+            release_entries,
+            access_hook=access_hook,
+        )
+
+    expected_logicals = release_logicals()
+    actual_logicals = [entry.logical for entry in release_entries]
+    if actual_logicals != expected_logicals:
+        errors.append(
+            "release.snapshot.allowlist: "
+            f"expected={expected_logicals!r}, actual={actual_logicals!r}"
+        )
+    snapshot = None
+    if not errors:
+        snapshot = ReleaseSnapshot(
+            store=str(store.resolve()),
+            entries=tuple(release_entries),
+        )
+
+    return ValidationResult(
+        errors=tuple(errors),
+        descriptions=tuple(descriptions),
+        snapshot=snapshot,
+    )
+
+
+def validate_release_data_only(
+    store: Path,
+    assets_dir: Path,
+    *,
+    access_hook: Callable[[str], None] | None = None,
+) -> RogueDataReport:
+    """Run the strict offline-only data gate without APK tooling.
+
+    The historical ``validate_release`` scope remains table/icon/shop plus its
+    client report.  This offline API layers the exact 1..15/99 client/server
+    round mapping on top of those unchanged predicates.
+    """
+    result = (
+        _validate_release_data(store, assets_dir)
+        if access_hook is None
+        else _validate_release_data(store, assets_dir, access_hook=access_hook)
+    )
+    errors = list(result.errors)
+    round_count = (
+        _validate_offline_rounds(Path(store), Path(assets_dir), errors)
+        if access_hook is None
+        else _validate_offline_rounds(
+            Path(store),
+            Path(assets_dir),
+            errors,
+            access_hook=access_hook,
+        )
+    )
+    if errors:
+        raise RogueValidationError(
+            "rogue release data validation failed: " + "; ".join(errors)
+        )
+    return RogueDataReport(
+        event_id=int(rewards.EVENT_ID),
+        round_count=round_count,
+        token_id=int(rewards.TOKEN_ID),
+        weapon_ids=tuple(int(spec.id) for spec in rewards.WEAPONS),
+        missing_logicals=(),
+        ready=True,
+    )
+
+
+def _parse_quest_node_strict(raw: bytes, label: str) -> object:
+    """Parse a quest tree while rejecting duplicate keys at every map level."""
+    if not raw:
+        return ""
+    parsed = q._try_parse_map(raw)
+    if parsed is not None:
+        keys, chunks = parsed
+        if len(set(keys)) != len(keys):
+            raise ValueError(f"duplicate quest-map key in {label}")
+        return {
+            key: _parse_quest_node_strict(chunk, f"{label}/{key}")
+            for key, chunk in zip(keys, chunks)
+        }
+    try:
+        return zlib.decompress(raw).decode("utf-8")
+    except (UnicodeDecodeError, zlib.error) as exc:
+        raise ValueError(f"unreadable quest-map leaf in {label}") from exc
+
+
+def _validate_offline_rounds(
+    store: Path,
+    assets_dir: Path,
+    errors: list[str],
+    *,
+    access_hook: Callable[[str], None] | None = None,
+) -> int:
+    """Validate the 15 normal rounds in both client and server representations."""
+    path = store / q.hashed_rel(rogue_build.Q_QUEST)
+    rounds: list[int] = []
+    try:
+        if access_hook is not None:
+            access_hook(rogue_build.Q_QUEST)
+        client = _parse_quest_node_strict(path.read_bytes(), rogue_build.Q_QUEST)
+        event = client.get(rewards.EVENT_ID) if isinstance(client, dict) else None
+        if not isinstance(event, dict):
+            raise ValueError("event map is absent")
+        expected_round_keys = {str(value) for value in range(1, 16)} | {"99"}
+        if set(event) != expected_round_keys:
+            rounds = sorted(int(key) for key in event if isinstance(key, str) and key in expected_round_keys and key != "99")
+            errors.append(f"rush_event_quest[{rewards.EVENT_ID}].rounds: expected=1..15 actual={rounds}")
+        else:
+            rounds = list(range(1, 16))
+        for round_number in range(1, 16):
+            rows = _leaf_rows(event[str(round_number)], f"rush_event_quest[{round_number}]", errors)
+            expected_id = str(700099000 + round_number)
+            if (
+                rows is None or len(rows) != 1 or len(rows[0]) < 3
+                or rows[0][0] != expected_id
+                or rows[0][1] != "1"
+                or rows[0][2] != str(round_number)
+            ):
+                errors.append(f"rush_event_quest[{round_number}].mapping")
+        rows99 = _leaf_rows(event["99"], "rush_event_quest[99]", errors)
+        if (
+            rows99 is None or len(rows99) != 1 or len(rows99[0]) < 3
+            or rows99[0][0] != "700099099"
+            or rows99[0][1] != "2"
+            or rows99[0][2] != "0"
+        ):
+            errors.append("rush_event_quest[99].mapping")
+    except Exception as exc:
+        errors.append(f"rush_event_quest[{rewards.EVENT_ID}].invalid: {type(exc).__name__}: {exc}")
+    server_path = assets_dir / "rush_event_quest.json"
+    try:
+        server = _strict_json_load(server_path.read_text(encoding="utf-8"))
+        if not isinstance(server, dict):
+            raise ValueError("root is not object")
+        expected_keys = {str(700099000 + value) for value in range(1, 16)}
+        event_keys = {
+            key for key in server
+            if isinstance(key, str) and key.startswith("700099") and key[6:].isdigit()
+        }
+        allowed_keys = expected_keys | {"700099099"}
+        actual_keys = event_keys & expected_keys
+        if actual_keys != expected_keys:
+            errors.append("assets.rush_event_quest.rounds: expected exactly 15 event rounds")
+        extras = sorted(event_keys - allowed_keys)
+        if extras:
+            errors.append(f"assets.rush_event_quest.extra_rounds: {extras}")
+        for round_number in range(1, 16):
+            row = server.get(str(700099000 + round_number))
+            if (
+                not isinstance(row, dict)
+                or type(row.get("rushEventId")) is not int
+                or type(row.get("rushEventFolderId")) is not int
+                or type(row.get("rushEventRound")) is not int
+                or row.get("rushEventId") != 700099
+                or row.get("rushEventFolderId") != 1
+                or row.get("rushEventRound") != round_number
+            ):
+                errors.append(f"assets.rush_event_quest[{round_number}].mapping")
+        row99 = server.get("700099099")
+        if (
+            not isinstance(row99, dict)
+            or type(row99.get("rushEventId")) is not int
+            or type(row99.get("rushEventFolderId")) is not int
+            or type(row99.get("rushEventRound")) is not int
+            or row99.get("rushEventId") != 700099
+            or row99.get("rushEventFolderId") != 2
+            or row99.get("rushEventRound") != 0
+        ):
+            errors.append("assets.rush_event_quest[99].mapping")
+    except Exception as exc:
+        errors.append(f"assets.rush_event_quest.invalid: {type(exc).__name__}: {exc}")
+    return len(rounds)
+
+
+def validate_rogue_data(store: Path, assets_dir: Path) -> RogueDataReport:
+    report = validate_release_data_only(store, assets_dir)
+    if report.event_id != 700099 or report.round_count != 15:
+        raise RogueValidationError("rush event 700099 must have exactly 15 rounds")
+    if report.token_id != 2370099 or report.weapon_ids != tuple(range(8000101, 8000116)):
+        raise RogueValidationError("rogue token or weapon set mismatch")
+    if report.missing_logicals or not report.ready:
+        raise RogueValidationError("rogue shop/mirror/reward/icon content is incomplete")
+    return report
+
+
+def validate_release(
+    store: Path,
+    assets_dir: Path,
+    report_path: Path,
+    *,
+    ffdec: Path,
+    java: Path,
+) -> ValidationResult:
+    """Validate a materialized release without changing it."""
+    result = _validate_release_data(store, assets_dir)
+    errors = list(result.errors)
+    _validate_client_verification(Path(report_path), Path(ffdec), Path(java), errors)
+    snapshot = result.snapshot if not errors else None
+    return ValidationResult(tuple(errors), result.descriptions, snapshot)
+
+
+def require_release_ready(
+    store: Path,
+    assets_dir: Path,
+    report_path: Path,
+    *,
+    ffdec: Path,
+    java: Path,
+) -> ReleaseSnapshot:
+    """Raise when ``validate_release`` reports any release blocker."""
+    result = validate_release(
+        store,
+        assets_dir,
+        report_path,
+        ffdec=ffdec,
+        java=java,
+    )
+    _print_result(result)
+    if result.errors:
+        raise RuntimeError(
+            f"abyss release validation failed with {len(result.errors)} error(s)"
+        )
+    if result.snapshot is None:
+        raise RuntimeError("abyss release validation did not produce a snapshot")
+    return result.snapshot
+
+
+def _print_result(result: ValidationResult) -> None:
+    for description in result.descriptions:
+        print(f"[ABILITY] {description}")
+    for error in result.errors:
+        print(f"[ERR] {error}", file=sys.stderr)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        description="Validate the complete abyss equipment release gate"
+    )
+    parser.add_argument("--client-verification", required=True)
+    parser.add_argument("--ffdec", required=True, type=Path)
+    parser.add_argument("--java", required=True, type=Path)
+    args = parser.parse_args()
+    try:
+        profile = rewards.require_cn_profile()
+    except (OSError, KeyError, TypeError, ValueError, RuntimeError) as exc:
+        print(f"[ERR] CN profile validation failed: {exc}", file=sys.stderr)
+        return 1
+    result = validate_release(
+        profile.store,
+        ASSETS_DIR,
+        Path(args.client_verification),
+        ffdec=args.ffdec,
+        java=args.java,
+    )
+    _print_result(result)
+    if result.errors:
+        print(
+            f"[ERR] abyss release validation failed: {len(result.errors)} error(s)",
+            file=sys.stderr,
+        )
+        return 1
+    print("[OK] abyss release validation passed")
+    return 0
+
+
+def _load_table(
+    store: Path,
+    logical: str,
+    errors: list[str],
+    release_entries: list[ReleaseEntry],
+    *,
+    access_hook: Callable[[str], None] | None = None,
+) -> dict[str, object] | None:
+    path = store / q.hashed_rel(logical)
+    if access_hook is not None:
+        access_hook(logical)
+    if not path.is_file():
+        errors.append(f"table.{logical}.missing: {path}")
+        return None
+    try:
+        raw = path.read_bytes()
+        release_entries.append(
+            ReleaseEntry(
+                logical=logical,
+                relative=q.hashed_rel(logical),
+                sha256=hashlib.sha256(raw).hexdigest(),
+                size=len(raw),
+            )
+        )
+        table = q.parse_node(raw)
+    except Exception as exc:
+        errors.append(
+            f"table.{logical}.invalid: {type(exc).__name__}: {exc}"
+        )
+        return None
+    if not isinstance(table, dict):
+        errors.append(f"table.{logical}.invalid: root is not a map")
+        return None
+    return table
+
+
+def _load_json(
+    assets_dir: Path, stem: str, errors: list[str],
+) -> Any | None:
+    path = assets_dir / f"{stem}.json"
+    if not path.is_file():
+        errors.append(f"assets.{stem}.missing: {path}")
+        return None
+    try:
+        return _strict_json_load(path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        errors.append(
+            f"assets.{stem}.invalid: {type(exc).__name__}: {exc}"
+        )
+        return None
+
+
+def _leaf_rows(value: object, label: str, errors: list[str]) -> list[list[str]] | None:
+    if not isinstance(value, (bytes, str)):
+        errors.append(f"{label}.invalid: expected CSV leaf, got {type(value).__name__}")
+        return None
+    try:
+        text = value.decode("utf-8") if isinstance(value, bytes) else value
+        rows = core.read_csv_lines(text)
+    except Exception as exc:
+        errors.append(f"{label}.invalid: {type(exc).__name__}: {exc}")
+        return None
+    if not rows:
+        errors.append(f"{label}.invalid: empty CSV leaf")
+        return None
+    return rows
+
+
+def _validate_item(table: object, errors: list[str]) -> None:
+    if not isinstance(table, dict):
+        return
+    leaf = table.get(rewards.TOKEN_ID)
+    if leaf is None:
+        errors.append(f"item[{rewards.TOKEN_ID}].missing")
+    else:
+        rows = _leaf_rows(leaf, f"item[{rewards.TOKEN_ID}]", errors)
+        if rows is None or len(rows) != 1 or len(rows[0]) <= 5:
+            if rows is not None:
+                errors.append(f"item[{rewards.TOKEN_ID}].schema")
+        else:
+            row = rows[0]
+            expected = {
+                0: ("string_id", "rogue_event_item_99"),
+                1: ("id", rewards.TOKEN_ID),
+                2: ("name", "深渊代币"),
+                5: ("description", rewards.TOKEN_DESCRIPTION),
+            }
+            for column, (name, value) in expected.items():
+                if row[column] != value:
+                    errors.append(
+                        f"item[{rewards.TOKEN_ID}].{name}: "
+                        f"expected={value!r}, actual={row[column]!r}"
+                    )
+            template = table.get(rewards.TOKEN_TEMPLATE)
+            if template is None:
+                errors.append(
+                    f"item[{rewards.TOKEN_ID}].template_missing: "
+                    f"{rewards.TOKEN_TEMPLATE}"
+                )
+            else:
+                try:
+                    expected_leaf = rewards.build_token_leaf(template)
+                    expected_rows = _leaf_rows(
+                        expected_leaf,
+                        f"item[{rewards.TOKEN_ID}].expected",
+                        errors,
+                    )
+                except Exception as exc:
+                    errors.append(
+                        f"item[{rewards.TOKEN_ID}].expected.invalid: "
+                        f"{type(exc).__name__}: {exc}"
+                    )
+                else:
+                    if expected_rows is not None and rows != expected_rows:
+                        errors.append(f"item[{rewards.TOKEN_ID}].canonical_row")
+
+    for spec in rewards.WEAPONS:
+        label = f"item[{spec.id}]"
+        soul_item_leaf = table.get(spec.id)
+        if soul_item_leaf is None:
+            errors.append(f"{label}.missing")
+            continue
+        donor_leaf = table.get(spec.donor)
+        if donor_leaf is None:
+            errors.append(f"{label}.donor_missing: {spec.donor}")
+            continue
+        rows = _leaf_rows(soul_item_leaf, label, errors)
+        if rows is None:
+            continue
+        try:
+            expected_leaf = rewards.build_ability_soul_item_leaf(donor_leaf, spec)
+            expected_rows = _leaf_rows(expected_leaf, f"{label}.expected", errors)
+        except Exception as exc:
+            errors.append(
+                f"{label}.expected.invalid: {type(exc).__name__}: {exc}"
+            )
+            continue
+        if expected_rows is not None and rows != expected_rows:
+            errors.append(f"{label}.canonical_row")
+
+
+def _validate_weapons(
+    equipment: object,
+    status: object,
+    ability_soul: object,
+    errors: list[str],
+) -> list[str]:
+    equipment_map = equipment if isinstance(equipment, dict) else {}
+    status_map = status if isinstance(status, dict) else {}
+    soul_map = ability_soul if isinstance(ability_soul, dict) else {}
+    descriptions: list[str] = []
+
+    for spec in rewards.WEAPONS:
+        equipment_leaf = equipment_map.get(spec.id)
+        equipment_rows: list[list[str]] | None = None
+        if equipment_leaf is None:
+            errors.append(f"equipment[{spec.id}].missing")
+        else:
+            equipment_rows = _leaf_rows(
+                equipment_leaf, f"equipment[{spec.id}]", errors
+            )
+        if equipment_rows is not None:
+            if len(equipment_rows) != 1 or len(equipment_rows[0]) < 12:
+                errors.append(f"equipment[{spec.id}].schema")
+            else:
+                expected_row: list[str] | None = None
+                donor_leaf = equipment_map.get(spec.donor)
+                if donor_leaf is None:
+                    errors.append(f"equipment[{spec.id}].donor_missing: {spec.donor}")
+                else:
+                    try:
+                        expected_leaf = rewards.build_equipment_leaf(donor_leaf, spec)
+                        expected_rows = _leaf_rows(
+                            expected_leaf,
+                            f"equipment[{spec.id}].expected",
+                            errors,
+                        )
+                        if expected_rows is not None and len(expected_rows) == 1:
+                            expected_row = expected_rows[0]
+                    except Exception as exc:
+                        errors.append(
+                            f"equipment[{spec.id}].expected.invalid: "
+                            f"{type(exc).__name__}: {exc}"
+                        )
+                if expected_row is not None:
+                    actual_row = equipment_rows[0]
+                    fields = {
+                        0: "string_id",
+                        1: "name",
+                        6: "image_path",
+                        7: "description",
+                        8: "max_level",
+                        9: "ability_enabled",
+                        10: "ability_column",
+                        11: "rarity",
+                    }
+                    for column, name in fields.items():
+                        if actual_row[column] != expected_row[column]:
+                            errors.append(
+                                f"equipment[{spec.id}].{name}: "
+                                f"expected={expected_row[column]!r}, "
+                                f"actual={actual_row[column]!r}"
+                            )
+                    if actual_row != expected_row:
+                        errors.append(f"equipment[{spec.id}].canonical_row")
+
+        actual_status = status_map.get(spec.id)
+        if actual_status is None:
+            errors.append(f"equipment_status[{spec.id}].missing")
+        elif spec.donor not in status_map:
+            errors.append(f"equipment_status[{spec.id}].donor_missing: {spec.donor}")
+        else:
+            try:
+                expected_status = rewards.build_equipment_status(status_map, spec)
+                if actual_status != expected_status:
+                    errors.append(f"equipment_status[{spec.id}].donor_map")
+            except Exception as exc:
+                errors.append(
+                    f"equipment_status[{spec.id}].invalid: "
+                    f"{type(exc).__name__}: {exc}"
+                )
+
+        actual_soul = soul_map.get(spec.id)
+        actual_soul_rows: list[list[str]] | None = None
+        if actual_soul is None:
+            errors.append(f"ability_soul[{spec.id}].missing")
+        else:
+            actual_soul_rows = _leaf_rows(
+                actual_soul, f"ability_soul[{spec.id}]", errors
+            )
+        if actual_soul_rows is not None:
+            try:
+                expected_soul = rewards.build_soul_leaf(soul_map, spec)
+                expected_rows = _leaf_rows(
+                    expected_soul, f"ability_soul[{spec.id}].expected", errors
+                )
+                if expected_rows is not None and actual_soul_rows != expected_rows:
+                    errors.append(f"ability_soul[{spec.id}].canonical_rows")
+            except Exception as exc:
+                errors.append(
+                    f"ability_soul[{spec.id}].templates: "
+                    f"{type(exc).__name__}: {exc}"
+                )
+
+        rendered: list[str] = []
+        if actual_soul_rows is not None:
+            try:
+                rendered = wf_describe.describe_rows(
+                    actual_soul_rows, "ability_soul"
+                )
+            except Exception as exc:
+                errors.append(
+                    f"ability_soul[{spec.id}].description.invalid: "
+                    f"{type(exc).__name__}: {exc}"
+                )
+            if not rendered or any(
+                not isinstance(value, str) or not value.strip()
+                for value in rendered
+            ):
+                errors.append(f"ability_soul[{spec.id}].description.empty")
+        description_text = " | ".join(
+            value.strip()
+            for value in rendered
+            if isinstance(value, str) and value.strip()
+        )
+        if not description_text:
+            description_text = "<unavailable>"
+        descriptions.append(f"{spec.id} {spec.name}: {description_text}")
+
+    return descriptions
+
+
+def _validate_rush(table: object, errors: list[str]) -> None:
+    if not isinstance(table, dict):
+        return
+    leaf = table.get(rewards.EVENT_ID)
+    if leaf is None:
+        errors.append(f"rush_event[{rewards.EVENT_ID}].missing")
+        return
+    rows = _leaf_rows(leaf, f"rush_event[{rewards.EVENT_ID}]", errors)
+    if rows is None or len(rows) != 1 or len(rows[0]) <= 10:
+        if rows is not None:
+            errors.append(f"rush_event[{rewards.EVENT_ID}].schema")
+        return
+    if rows[0][10] != rewards.TOKEN_ID:
+        errors.append(
+            f"rush_event[{rewards.EVENT_ID}].token: "
+            f"expected={rewards.TOKEN_ID}, actual={rows[0][10]!r}"
+        )
+    template = table.get(rogue_build.TEMPLATE_EVENT)
+    if template is None:
+        errors.append(
+            f"rush_event[{rewards.EVENT_ID}].template_missing: "
+            f"{rogue_build.TEMPLATE_EVENT}"
+        )
+        return
+    try:
+        expected_leaf = rogue_build.build_event_metadata_leaf(template, leaf)
+        expected_rows = _leaf_rows(
+            expected_leaf,
+            f"rush_event[{rewards.EVENT_ID}].expected",
+            errors,
+        )
+    except Exception as exc:
+        errors.append(
+            f"rush_event[{rewards.EVENT_ID}].expected.invalid: "
+            f"{type(exc).__name__}: {exc}"
+        )
+        return
+    if expected_rows is not None and rows != expected_rows:
+        errors.append(f"rush_event[{rewards.EVENT_ID}].canonical_row")
+
+
+def _validate_mirrors(values: dict[str, Any], errors: list[str]) -> None:
+    max_level = values.get("equipment_max_level")
+    element = values.get("equipment_element")
+    lookup = values.get("equipment_lookup")
+    equipment_ids = values.get("equipment_ids")
+    item_ids = values.get("item_ids")
+
+    canonical: rewards.ServerMirrors | None = None
+    if all(
+        isinstance(value, expected_type)
+        for value, expected_type in (
+            (max_level, dict),
+            (element, dict),
+            (lookup, dict),
+            (equipment_ids, list),
+            (item_ids, list),
+        )
+    ):
+        owned = {spec.id for spec in rewards.WEAPONS}
+        base_max_level = {
+            key: value for key, value in max_level.items() if key not in owned
+        }
+        base_element = {
+            key: value for key, value in element.items() if key not in owned
+        }
+        base_lookup = {
+            key: value for key, value in lookup.items() if key not in owned
+        }
+        try:
+            base_equipment_ids = [
+                value for value in equipment_ids if str(value) not in owned
+            ]
+            base_item_ids = [
+                value for value in item_ids if str(value) != rewards.TOKEN_ID
+            ]
+            canonical = rewards.apply_server_mirrors(
+                rewards.ServerMirrors(
+                    equipment_max_level=base_max_level,
+                    equipment_element=base_element,
+                    equipment_lookup=base_lookup,
+                    equipment_ids=base_equipment_ids,
+                    item_ids=base_item_ids,
+                )
+            )
+        except Exception as exc:
+            errors.append(
+                f"assets.mirrors.canonical.invalid: {type(exc).__name__}: {exc}"
+            )
+
+    for spec in rewards.WEAPONS:
+        if isinstance(max_level, dict):
+            if spec.id not in max_level:
+                errors.append(f"assets.equipment_max_level[{spec.id}].missing")
+            elif spec.donor not in max_level:
+                errors.append(
+                    f"assets.equipment_max_level[{spec.id}].donor_missing: "
+                    f"{spec.donor}"
+                )
+            elif not _strict_equal(max_level[spec.id], max_level[spec.donor]):
+                errors.append(
+                    f"assets.equipment_max_level[{spec.id}].value: "
+                    f"expected donor {max_level[spec.donor]!r}, "
+                    f"actual={max_level[spec.id]!r}"
+                )
+        if isinstance(element, dict):
+            if not _strict_equal(element.get(spec.id), spec.element):
+                errors.append(
+                    f"assets.equipment_element[{spec.id}].value: "
+                    f"expected={spec.element}, actual={element.get(spec.id)!r}"
+                )
+        if isinstance(lookup, dict):
+            actual = lookup.get(spec.id)
+            donor = lookup.get(spec.donor)
+            if not isinstance(actual, dict):
+                errors.append(f"assets.equipment_lookup[{spec.id}].missing")
+            else:
+                if actual.get("name") != spec.name:
+                    errors.append(f"assets.equipment_lookup[{spec.id}].name")
+                if actual.get("rarity") != "5":
+                    errors.append(f"assets.equipment_lookup[{spec.id}].rarity")
+                if not isinstance(donor, dict) or "category" not in donor:
+                    errors.append(
+                        f"assets.equipment_lookup[{spec.id}].donor_category_missing"
+                    )
+                elif actual.get("category") != donor["category"]:
+                    errors.append(f"assets.equipment_lookup[{spec.id}].category")
+        if canonical is not None:
+            for name, actual_map, expected_map in (
+                (
+                    "equipment_max_level",
+                    max_level,
+                    canonical.equipment_max_level,
+                ),
+                ("equipment_element", element, canonical.equipment_element),
+                ("equipment_lookup", lookup, canonical.equipment_lookup),
+            ):
+                if not _strict_equal(actual_map.get(spec.id), expected_map[spec.id]):
+                    errors.append(f"assets.{name}[{spec.id}].record")
+
+    _validate_id_list(
+        equipment_ids,
+        [int(spec.id) for spec in rewards.WEAPONS],
+        "assets.equipment_ids",
+        errors,
+    )
+    if canonical is not None:
+        if not _strict_equal(equipment_ids, canonical.equipment_ids):
+            errors.append("assets.equipment_ids.canonical")
+        if not _strict_equal(item_ids, canonical.item_ids):
+            errors.append("assets.item_ids.canonical")
+    _validate_id_list(
+        item_ids,
+        [int(rewards.TOKEN_ID)],
+        "assets.item_ids",
+        errors,
+    )
+
+
+def _validate_id_list(
+    value: object, required: list[int], label: str, errors: list[str],
+) -> None:
+    if value is None:
+        return
+    if not isinstance(value, list) or any(
+        not isinstance(entry, int) or isinstance(entry, bool) for entry in value
+    ):
+        errors.append(f"{label}.invalid: expected integer array")
+        return
+    if value != sorted(set(value)):
+        errors.append(f"{label}.ordering: expected sorted unique integers")
+    missing = sorted(set(required).difference(value))
+    if missing:
+        errors.append(f"{label}.missing: {missing}")
+
+
+def _strict_equal(actual: object, expected: object) -> bool:
+    """Compare JSON-like values without Python's bool/int equivalence."""
+    if type(actual) is not type(expected):
+        return False
+    if isinstance(expected, dict):
+        return actual.keys() == expected.keys() and all(
+            _strict_equal(actual[key], value) for key, value in expected.items()
+        )
+    if isinstance(expected, list):
+        return len(actual) == len(expected) and all(
+            _strict_equal(actual_value, expected_value)
+            for actual_value, expected_value in zip(actual, expected)
+        )
+    return actual == expected
+
+
+def _validate_shop(
+    client: object, server: object, id_map: object, errors: list[str],
+) -> None:
+    if isinstance(client, dict):
+        reserved_order = tuple(
+            key for key in client if key in shop.RESERVED_SHOP_IDS
+        )
+        if reserved_order != shop.RESERVED_SHOP_IDS:
+            errors.append(
+                f"shop.client.ordering: actual={reserved_order!r}"
+            )
+        for shop_id in shop.RESERVED_SHOP_IDS:
+            if shop_id not in client:
+                errors.append(f"shop.client[{shop_id}].missing")
+    if isinstance(client, dict) and isinstance(server, dict) and isinstance(id_map, dict):
+        try:
+            for problem in shop.validate_shop(client, server, id_map):
+                errors.append(f"shop.contract: {problem}")
+        except Exception as exc:
+            errors.append(
+                f"shop.contract.invalid: {type(exc).__name__}: {exc}"
+            )
+
+    if isinstance(client, dict):
+        base_client = {
+            key: value
+            for key, value in client.items()
+            if key not in shop.RESERVED_SHOP_IDS
+        }
+        try:
+            canonical_client = shop.build_client_shop(base_client, rewards.WEAPONS)
+        except Exception as exc:
+            errors.append(
+                f"shop.client.canonical.invalid: {type(exc).__name__}: {exc}"
+            )
+        else:
+            for shop_id in shop.RESERVED_SHOP_IDS:
+                if not _strict_equal(client.get(shop_id), canonical_client[shop_id]):
+                    errors.append(f"shop.client[{shop_id}].canonical_row")
+
+    expected_products = shop._expected_products(rewards.WEAPONS)
+    target_products: dict[str, Any] = {}
+    if isinstance(server, dict):
+        events = server.get(shop.EVENT_TYPE)
+        candidate = events.get(shop.EVENT_ID) if isinstance(events, dict) else None
+        if isinstance(candidate, dict):
+            target_products = candidate
+    for shop_id in shop.RESERVED_SHOP_IDS:
+        actual = target_products.get(shop_id)
+        expected = expected_products[shop_id]
+        if not isinstance(actual, dict):
+            errors.append(f"shop.server[{shop_id}].nesting")
+            continue
+        if not _strict_equal(actual, expected):
+            errors.append(f"shop.server[{shop_id}].record")
+        if not _strict_equal(actual.get("costs"), expected["costs"]):
+            errors.append(f"shop.server[{shop_id}].cost")
+        if not _strict_equal(actual.get("stock"), expected["stock"]):
+            errors.append(f"shop.server[{shop_id}].stock")
+        if not _strict_equal(actual.get("rewards"), expected["rewards"]):
+            errors.append(f"shop.server[{shop_id}].reward")
+        for name in ("availableFrom", "availableUntil"):
+            if not _strict_equal(actual.get(name), expected[name]):
+                errors.append(f"shop.server[{shop_id}].{name}")
+
+    expected_map = {
+        "eventType": int(shop.EVENT_TYPE),
+        "eventId": int(shop.EVENT_ID),
+    }
+    if isinstance(id_map, dict):
+        for shop_id in shop.RESERVED_SHOP_IDS:
+            if not _strict_equal(id_map.get(shop_id), expected_map):
+                errors.append(f"shop.id_map[{shop_id}].value")
+
+
+def _validate_pngs(
+    store: Path,
+    assets_dir: Path,
+    errors: list[str],
+    release_entries: list[ReleaseEntry],
+    *,
+    access_hook: Callable[[str], None] | None = None,
+) -> None:
+    source_dir = assets_dir.parent / "mod-tools" / "assets" / "abyss-equipment"
+    try:
+        rewards.validate_source_assets(source_dir, rewards.WEAPONS)
+    except Exception as exc:
+        errors.append(
+            f"png.sources.invalid: {type(exc).__name__}: {exc}"
+        )
+
+    for spec in rewards.WEAPONS:
+        logical = f"{rewards.IMAGE_PREFIX}/{spec.image_slug}.png"
+        source = source_dir / f"{spec.image_slug}.png"
+        destination = store / q.hashed_rel(logical)
+        if access_hook is not None:
+            access_hook(logical)
+        if not destination.is_file():
+            errors.append(f"png.store[{logical}].missing: {destination}")
+            continue
+        try:
+            stored = destination.read_bytes()
+            release_entries.append(
+                ReleaseEntry(
+                    logical=logical,
+                    relative=q.hashed_rel(logical),
+                    sha256=hashlib.sha256(stored).hexdigest(),
+                    size=len(stored),
+                )
+            )
+        except OSError as exc:
+            errors.append(
+                f"png.store[{logical}].invalid: {type(exc).__name__}: {exc}"
+            )
+            continue
+        try:
+            source_bytes = source.read_bytes()
+            expected_stored = wf_assets.png_encode(source_bytes)
+        except Exception:
+            expected_stored = None
+        if expected_stored is not None and stored != expected_stored:
+            errors.append(f"png.store[{logical}].bytes")
+
+
+def _validate_client_verification(
+    report_path: Path,
+    ffdec: Path,
+    java: Path,
+    errors: list[str],
+) -> None:
+    if not report_path.is_file():
+        errors.append(
+            f"client_verification.report.missing: {report_path.resolve()}"
+        )
+        return
+    try:
+        data = _strict_json_load(report_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        errors.append(
+            f"client_verification.report.invalid: "
+            f"{type(exc).__name__}: {exc}"
+        )
+        return
+    if not isinstance(data, dict):
+        errors.append("client_verification.report.invalid: root is not an object")
+        return
+
+    if type(data.get("schema_version")) is not int:
+        errors.append(
+            "client_verification.report.invalid: schema_version must be integer 1"
+        )
+
+    try:
+        apk_builder.validate_verification_report(data)
+    except Exception as exc:
+        errors.append(
+            f"client_verification.report.invalid: "
+            f"{type(exc).__name__}: {exc}"
+        )
+
+    artifacts = data.get("artifacts")
+    if not isinstance(artifacts, dict):
+        return
+    try:
+        report_mtime = report_path.stat().st_mtime_ns
+    except OSError:
+        report_mtime = None
+
+    artifact_paths: dict[str, Path] = {}
+    for name in apk_builder.REPORT_ARTIFACTS:
+        record = artifacts.get(name)
+        if not isinstance(record, dict) or not isinstance(record.get("path"), str):
+            continue
+        path = Path(record["path"])
+        artifact_paths[name] = path
+        try:
+            artifact_mtime = path.stat().st_mtime_ns
+        except Exception:
+            artifact_mtime = None
+        if (
+            report_mtime is not None
+            and artifact_mtime is not None
+            and artifact_mtime > report_mtime
+        ):
+            errors.append(
+                f"client_verification.report.stale[{name}]: "
+                f"artifact mtime {artifact_mtime} > report mtime {report_mtime}"
+            )
+
+    reexported = artifact_paths.get("reexported_as")
+    if reexported is None or not reexported.is_file():
+        errors.append("client_verification.reexport.missing")
+    else:
+        try:
+            reexported_text = reexported.read_text(encoding="utf-8-sig")
+            apk_builder.abyss_patch.verify_text(
+                reexported_text, require_markers=False
+            )
+        except Exception as exc:
+            errors.append(
+                f"client_verification.reexport.semantic: "
+                f"{type(exc).__name__}: {exc}"
+            )
+
+    signed_apk = artifact_paths.get("signed_apk")
+    if signed_apk is None or not signed_apk.is_file():
+        errors.append("client_verification.apk.missing")
+        return
+    try:
+        with zipfile.ZipFile(signed_apk, "r") as archive:
+            matches = [
+                member
+                for member in archive.infolist()
+                if member.filename == apk_builder.TARGET_SWF_MEMBER
+            ]
+            if len(matches) != 1:
+                errors.append(
+                    "client_verification.apk.target_swf: "
+                    f"expected=1, actual={len(matches)}"
+                )
+                return
+            embedded_bytes = archive.read(matches[0])
+            embedded_digest = hashlib.sha256(embedded_bytes).hexdigest()
+    except Exception as exc:
+        errors.append(
+            f"client_verification.apk.invalid: "
+            f"{type(exc).__name__}: {exc}"
+        )
+        return
+    injected = artifacts.get("injected_swf")
+    expected_digest = injected.get("sha256") if isinstance(injected, dict) else None
+    if embedded_digest != expected_digest:
+        errors.append(
+            "client_verification.apk.embedded_swf: "
+            f"expected={expected_digest!r}, actual={embedded_digest!r}"
+        )
+
+    if reexported is None or not reexported.is_file():
+        return
+    try:
+        with tempfile.TemporaryDirectory(prefix="wf-abyss-release-proof-") as temp:
+            proof_root = Path(temp)
+            embedded_swf = proof_root / "apk-embedded.swf"
+            embedded_swf.write_bytes(embedded_bytes)
+            fresh_export = apk_builder.export_verified_class(
+                embedded_swf,
+                proof_root / "export",
+                ffdec,
+                java,
+            )
+            fresh_digest = hashlib.sha256(fresh_export.read_bytes()).hexdigest()
+        reported_reexport = artifacts.get("reexported_as")
+        reported_digest = (
+            reported_reexport.get("sha256")
+            if isinstance(reported_reexport, dict)
+            else None
+        )
+        if fresh_digest != reported_digest:
+            errors.append(
+                "client_verification.reexport.binding: fresh APK-SWF export "
+                f"sha256={fresh_digest!r} != report sha256={reported_digest!r}"
+            )
+    except Exception as exc:
+        errors.append(
+            "client_verification.reexport.binding: "
+            f"{type(exc).__name__}: {exc}"
+        )
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -136,6 +136,35 @@ class TestAtomicCharacterRelease(unittest.TestCase):
 
             self.assertEqual("1.4.133", detected)
 
+    def test_reachable_client_base_accepts_reanchored_zero_release_owner_anchor(self):
+        module = self._module()
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            repo = root / "repo"
+            cdn = root / "cdn"
+            common = cdn / module.ROOT_DIRS["common"]
+            common.mkdir(parents=True)
+            (
+                common / "pinball-1.4.53-1.4.54-1-legacy.zip"
+            ).write_bytes(b"legacy")
+            active = cdn / "character-releases" / "active.json"
+            active.parent.mkdir(parents=True)
+            active.write_bytes(module._canonical({
+                "schema_version": 1,
+                "base_version": "1.4.54",
+                "base_package_owners": [["seris", "a" * 64]],
+                "releases": [],
+            }))
+
+            tail = module._reachable_client_base(
+                "1.4.53",
+                repo_root=repo,
+                cdn_root=cdn,
+                canonical_base="1.4.54",
+            )
+
+            self.assertEqual("1.4.54", tail)
+
     def test_new_transaction_supplies_validated_installed_package_for_upgrade(self):
         module = self._module()
         with tempfile.TemporaryDirectory() as td:
@@ -632,6 +661,18 @@ class TestAtomicCharacterRelease(unittest.TestCase):
             core_path.parent.mkdir(parents=True, exist_ok=True)
             core_path.write_bytes(live_table)
 
+            speech_logical = "master/character/character_speech.orderedmap"
+            speech_live = core.build_orderedmap(core.OrderedMap(
+                speech_logical, ["1"], [b"old-speech"], Path("<memory>")
+            ))
+            speech_candidate = core.build_orderedmap(core.OrderedMap(
+                speech_logical, ["1", "129999"],
+                [b"stale-speech", b"seris-speech"], Path("<memory>"),
+            ))
+            speech_path = core.table_path(live["common"], speech_logical)
+            speech_path.parent.mkdir(parents=True, exist_ok=True)
+            speech_path.write_bytes(speech_live)
+
             roots = {name: [] for name in ("common", "medium", "android", "server")}
 
             def add(root_name: str, logical_path: str, raw: bytes) -> None:
@@ -645,6 +686,7 @@ class TestAtomicCharacterRelease(unittest.TestCase):
                 })
 
             add("common", logical, candidate_table)
+            add("common", speech_logical, speech_candidate)
             add(
                 "medium",
                 "character/seris_dragon_king/ui/square_0.png",
@@ -671,6 +713,10 @@ class TestAtomicCharacterRelease(unittest.TestCase):
             tables = [{
                 "root": "common", "logical_path": logical, "codec_id": "flat",
                 "outer_keys": ["129999"], "inner_keys": [], "semantic_claims": [],
+            }, {
+                "root": "common", "logical_path": speech_logical,
+                "codec_id": "flat", "outer_keys": ["129999"],
+                "inner_keys": [], "semantic_claims": [],
             }]
             tables.extend({
                 "root": "server", "logical_path": server_path,
@@ -760,10 +806,140 @@ class TestAtomicCharacterRelease(unittest.TestCase):
                 available_capabilities=("dual_form_v1",),
             )
             self.assertTrue(prepared.preflight.can_prepare)
-            self.assertEqual(7, len(prepared.payload.files))
+            self.assertEqual(8, len(prepared.payload.files))
             self.assertEqual(3, len(prepared.payload.provisional_archives))
             self.assertEqual(before_facts, {path: path.read_bytes() for path in before_facts})
             module.close_prepared_runtime_release(prepared, discard_staging=True)
+
+
+class TestReanchorActiveLedger(unittest.TestCase):
+    """账本重锚:抬到可见链尾、所有权零丢失、先补桥再换账本。"""
+
+    def _module(self):
+        return importlib.import_module("wf_release")
+
+    def _build(self, root: Path):
+        """1.4.0 -> .. -> 1.4.2 是 charpkg 链,1.4.2 -> 1.4.4 是 legacy 链尾。"""
+        module = self._module()
+        cdn = root / "cdn"
+        repo = root / "repo"
+        archives: dict[str, dict] = {}
+        for from_version, version, index in (("1.4.0", "1.4.1", 0), ("1.4.1", "1.4.2", 1)):
+            record = []
+            for name, directory in module.ROOT_DIRS.items():
+                filename = (
+                    f"pinball-{from_version}-{version}-1-charpkg-oldpkg-"
+                    f"rel{index}-{name}.zip"
+                )
+                path = cdn / directory / filename
+                path.parent.mkdir(parents=True, exist_ok=True)
+                raw = _zip("payload.bin", filename.encode())
+                path.write_bytes(raw)
+                record.append({
+                    "root": name,
+                    "relative_path": f"{directory}/{filename}",
+                    "size": len(raw),
+                    "sha256": hashlib.sha256(raw).hexdigest(),
+                })
+            archives[version] = {
+                "release_id": f"rel{index}",
+                "package_id": "oldpkg",
+                "from_version": from_version,
+                "version": version,
+                "package_manifest_sha256": str(index) * 64,
+                "archives": record,
+            }
+        # legacy 线把全局链尾推到 1.4.4,但从不写 active.json
+        for from_version, version in (("1.4.2", "1.4.3"), ("1.4.3", "1.4.4")):
+            for directory in module.ROOT_DIRS.values():
+                path = cdn / directory / f"pinball-{from_version}-{version}-1-08020943.zip"
+                path.write_bytes(_zip("legacy.bin", b"legacy"))
+        active = cdn / "character-releases" / "active.json"
+        active.parent.mkdir(parents=True, exist_ok=True)
+        active.write_bytes(module._canonical({
+            "base_package_owners": [["basepkg", "a" * 64]],
+            "base_version": "1.4.0",
+            "releases": [archives["1.4.1"], archives["1.4.2"]],
+            "schema_version": 1,
+        }))
+        return module, cdn, repo, active
+
+    def test_dry_run_reports_the_plan_without_touching_disk(self):
+        with tempfile.TemporaryDirectory() as td:
+            module, cdn, repo, active = self._build(Path(td))
+            before = active.read_bytes()
+
+            plan = module._reanchor_locked(cdn, repo, dry_run=True)
+
+            self.assertTrue(plan["dry_run"])
+            self.assertEqual("1.4.2", plan["from_ledger_tail"])
+            self.assertEqual("1.4.4", plan["to_base_version"])
+            self.assertEqual(2, plan["dropped_releases"])
+            self.assertEqual(6, len(plan["would_strand"]))
+            self.assertEqual([], plan["bridged_archives"])
+            self.assertEqual(before, active.read_bytes())
+            self.assertEqual(
+                [], sorted(cdn.rglob("*-charbridge-*")),
+            )
+
+    def test_reanchor_preserves_every_package_owner(self):
+        with tempfile.TemporaryDirectory() as td:
+            module, cdn, repo, active = self._build(Path(td))
+            payload = json.loads(active.read_bytes())
+            expected = module.derive_package_owners(
+                payload["releases"],
+                base_package_owners=module._validate_base_package_owners(payload),
+            )
+
+            module._reanchor_locked(cdn, repo, dry_run=False)
+
+            after = json.loads(active.read_bytes())
+            self.assertEqual("1.4.4", after["base_version"])
+            self.assertEqual([], after["releases"])
+            self.assertEqual(
+                expected,
+                module.derive_package_owners(
+                    after["releases"],
+                    base_package_owners=module._validate_base_package_owners(after),
+                ),
+            )
+            self.assertIn(["oldpkg", "1" * 64], after["base_package_owners"])
+            self.assertIn(["basepkg", "a" * 64], after["base_package_owners"])
+
+    def test_reanchor_bridges_dropped_history_so_nothing_is_stranded(self):
+        guard = importlib.import_module("wf_release_guard")
+        with tempfile.TemporaryDirectory() as td:
+            module, cdn, repo, _active = self._build(Path(td))
+
+            plan = module._reanchor_locked(cdn, repo, dry_run=False)
+
+            self.assertFalse(plan["dry_run"])
+            self.assertEqual(6, len(plan["bridged_archives"]))
+            self.assertEqual([], plan["stranded_after"])
+            report = guard.charpkg_strand_report(cdn, repo)
+            self.assertEqual([], report["stranded_archives"])
+            self.assertEqual("1.4.4", report["tail"])
+
+    def test_reanchor_refuses_a_target_that_is_not_the_graph_tail(self):
+        with tempfile.TemporaryDirectory() as td:
+            module, cdn, repo, active = self._build(Path(td))
+            before = active.read_bytes()
+
+            with self.assertRaisesRegex(module.ReleaseError, "graph tail"):
+                module._reanchor_locked(cdn, repo, target_base="1.4.3", dry_run=False)
+
+            self.assertEqual(before, active.read_bytes())
+
+    def test_reanchor_refuses_when_the_ledger_already_holds_the_tail(self):
+        with tempfile.TemporaryDirectory() as td:
+            module, cdn, repo, active = self._build(Path(td))
+            module._reanchor_locked(cdn, repo, dry_run=False)
+            before = active.read_bytes()
+
+            with self.assertRaisesRegex(module.ReleaseError, "does not advance"):
+                module._reanchor_locked(cdn, repo, dry_run=False)
+
+            self.assertEqual(before, active.read_bytes())
 
 
 class TestDerivePackageOwners(unittest.TestCase):

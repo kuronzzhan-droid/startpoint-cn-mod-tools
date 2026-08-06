@@ -45,7 +45,7 @@ import sys
 import time
 import zipfile
 from dataclasses import dataclass, field
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import wf_release  # noqa: E402
@@ -55,6 +55,7 @@ DEFAULT_BASE = "1.4.54"
 CHARPKG_MARK = "-charpkg-"
 # 与服务端 cn-asset-graph.ts ARCHIVE_RE 完全一致(seq 无前导零)
 ARCHIVE_RE = re.compile(r"^pinball-(\d+\.\d+\.\d+)-(\d+\.\d+\.\d+)-([1-9]\d*)-(.+)\.zip$")
+MAX_ARCHIVE_SEQ = (1 << 53) - 1
 TAG_RE = re.compile(r"^[a-z0-9]+$")
 ROOT_ORDER = {"common": 0, "medium": 1, "android": 2, "patch": 3}
 # patch 根没有独立归档目录,合集时并入 common
@@ -66,6 +67,15 @@ def vkey(version: str) -> tuple[int, ...]:
     return tuple(int(part) for part in version.split("."))
 
 
+def _archive_match(name: str) -> re.Match[str]:
+    match = ARCHIVE_RE.fullmatch(name)
+    if match is None:
+        raise ValueError(f"noncanonical archive filename: {name}")
+    if int(match.group(3)) > MAX_ARCHIVE_SEQ:
+        raise ValueError(f"archive sequence exceeds {MAX_ARCHIVE_SEQ}: {match.group(3)}")
+    return match
+
+
 @dataclass(frozen=True)
 class VisibleArchive:
     root: str          # common | medium | android | patch
@@ -73,9 +83,13 @@ class VisibleArchive:
     relative: str      # 服务端 relativePath(排序键,posix 斜杠)
     source: str        # legacy:<root> | asset-patch:active | character:<id>
 
-    def order_key(self) -> tuple[int, str, str]:
-        # 复刻服务端 archiveOrder:root 序 → relativePath → source
-        return (ROOT_ORDER[self.root], self.relative, self.source)
+    @property
+    def seq(self) -> int:
+        return int(_archive_match(self.path.name).group(3))
+
+    def order_key(self) -> tuple[int, int, str, str]:
+        # 复刻服务端 archiveOrder:root 序 → 数值 seq → relativePath → source
+        return (ROOT_ORDER[self.root], self.seq, self.relative, self.source)
 
 
 @dataclass
@@ -113,9 +127,10 @@ def _scan_zip_dir(graph: VisibleGraph, directory: Path, root: str, rel_prefix: s
     for name in sorted(p.name for p in directory.iterdir() if p.name.endswith(".zip")):
         if hide_charpkg and CHARPKG_MARK in name:
             continue
-        match = ARCHIVE_RE.fullmatch(name)
-        if match is None:
-            graph.issues.append(f"invalid archive filename: {directory / name}")
+        try:
+            match = _archive_match(name)
+        except ValueError as error:
+            graph.issues.append(f"invalid archive filename: {directory / name}: {error}")
             continue
         path = directory / name
         if not path.is_file() or path.stat().st_size <= 0:
@@ -133,23 +148,55 @@ def _add_anchored_edges(graph: VisibleGraph, cdn_root: Path) -> None:
     except (OSError, ValueError):
         return
     releases = payload.get("releases") if isinstance(payload, dict) else None
-    for release in releases if isinstance(releases, list) else ():
+    for release_index, release in enumerate(releases if isinstance(releases, list) else ()):
+        release_label = f"anchored release[{release_index}]"
         if not isinstance(release, dict):
+            graph.issues.append(f"{release_label} invalid: release is not an object")
             continue
         frm, to = release.get("from_version"), release.get("version")
         if not (isinstance(frm, str) and isinstance(to, str)
                 and wf_release.VERSION_RE.fullmatch(frm) and wf_release.VERSION_RE.fullmatch(to)):
+            graph.issues.append(f"{release_label} invalid: release edge is invalid")
             continue
-        rid = release.get("release_id", "?")
-        for archive in release.get("archives", []) if isinstance(release.get("archives"), list) else ():
+        rid, package_id = release.get("release_id"), release.get("package_id")
+        if not (isinstance(rid, str) and wf_release.TOKEN_RE.fullmatch(rid)
+                and isinstance(package_id, str) and wf_release.TOKEN_RE.fullmatch(package_id)):
+            graph.issues.append(f"{release_label} invalid: release/package id is invalid")
+            continue
+        archives = release.get("archives")
+        if not isinstance(archives, list):
+            graph.issues.append(f"{release_label} invalid: archives is not a list")
+            continue
+        for archive_index, archive in enumerate(archives):
+            archive_label = f"anchored archive invalid {release_label} archives[{archive_index}]"
             if not isinstance(archive, dict):
+                graph.issues.append(f"{archive_label}: archive is not an object")
                 continue
             relative = archive.get("relative_path")
             root = archive.get("root")
-            if not isinstance(relative, str) or root not in wf_release.ROOT_DIRS:
+            if (not isinstance(relative, str)
+                    or not isinstance(root, str)
+                    or root not in wf_release.ROOT_DIRS):
+                graph.issues.append(f"{archive_label}: root/relative path is invalid")
                 continue
-            relative = relative.replace("\\", "/")
-            path = cdn_root / relative
+            relative_path = PurePosixPath(relative)
+            if (not wf_release._safe_relative(relative)
+                    or relative_path.as_posix() != relative
+                    or relative_path.parts[0] != wf_release.ROOT_DIRS[root]):
+                graph.issues.append(f"{archive_label}: relative path is unsafe or wrong-root")
+                continue
+            expected_name = (
+                f"pinball-{frm}-{to}-1-charpkg-{package_id}-{rid}-{root}.zip"
+            )
+            if relative_path.name != expected_name:
+                graph.issues.append(f"{archive_label}: noncanonical basename {relative_path.name}")
+                continue
+            try:
+                _archive_match(relative_path.name)
+            except ValueError as error:
+                graph.issues.append(f"{archive_label}: {error}")
+                continue
+            path = cdn_root.joinpath(*relative_path.parts)
             if not path.is_file() or path.stat().st_size <= 0:
                 graph.issues.append(f"anchored archive missing: {path}")
                 continue

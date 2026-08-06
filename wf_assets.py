@@ -231,6 +231,12 @@ _VOICE_FIXED = (
     "battle/skill_2.mp3", "battle/skill_3.mp3", "battle/skill_ready.mp3",
     "battle/win_0.mp3", "battle/win_1.mp3",
     "login/login_0.mp3", "login/login_1.mp3", "login/login_2.mp3",
+    # home 语音靠 character_speech 表注册,官方一律用罗马音专属名,所以四路发现
+    # (dump/词表/采集/路径清单)都收录不到自制角色的 home_N 命名。缺了它们,
+    # char_asset_manifest 会同时"丢掉活文件 + 带上已不被表引用的旧孤儿",
+    # 表现为经 GUI 导出/克隆/推设备一次,home 语音就没声了。
+    # 这里按序号补齐(不存在的会被 locate 过滤掉);自制先例:杰拉德 0-5、基诺维 0-4。
+    *(f"home/home_{i}.mp3" for i in range(10)),
 )
 _VOICE_CATS = ("ally", "battle", "home", "login")
 

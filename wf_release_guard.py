@@ -156,17 +156,27 @@ def _versions_reaching(edges: set[tuple[str, str]], target: str) -> set[str]:
     return visited
 
 
-def charpkg_strand_report(cdn_root: Path, repo_root: Path) -> dict:
+def charpkg_strand_report(
+    cdn_root: Path,
+    repo_root: Path,
+    *,
+    chain_edges: Iterable[tuple[str, str]] | None = None,
+) -> dict:
     """孤儿 charpkg 历史的可达性报告(只读)。
 
     一条孤儿归档被判定为搁浅(stranded),当且仅当:
     - 它的任一端点无法沿可见边走到 tail(停在该版本的客户端会被告知"已最新");或
     - 该边在合并图里可见,但所在根目录没有可见副本(其它根已桥接/有 legacy 重切,
       这个根的客户端会缺这段资源)。
+
+    `chain_edges` 传入时用它代替盘上 active.json 的链边,用于在**重锚落盘之前**
+    评估「换成这本账本会搁浅谁」,从而先补桥再换账本,不留搁浅窗口。
     """
     cdn_root = Path(cdn_root)
     repo_root = Path(repo_root)
-    chain_edges = _active_chain_edges(cdn_root)
+    chain_edges = (
+        _active_chain_edges(cdn_root) if chain_edges is None else set(chain_edges)
+    )
     merged, by_root = _visible_edges(cdn_root, repo_root, chain_edges)
     orphans = _orphan_charpkg_archives(cdn_root, chain_edges)
     tail = _graph_tail(merged)
@@ -305,13 +315,18 @@ def _create_bridge_atomic(source: Path, target: Path) -> BridgeReceipt | None:
         temp_path.unlink(missing_ok=True)
 
 
-def _ensure_charpkg_history_bridged(cdn_root: Path, repo_root: Path) -> dict:
+def _ensure_charpkg_history_bridged(
+    cdn_root: Path,
+    repo_root: Path,
+    chain_edges: Iterable[tuple[str, str]] | None = None,
+) -> dict:
     """重锚硬门禁:搁浅的孤儿 charpkg 归档自动补 charbridge 副本,补不齐则拒绝。
 
     charbridge 副本优先硬链接(零空间成本),文件系统不支持时退化为普通复制。
     幂等:已存在的副本不会重建。
     """
-    report = charpkg_strand_report(cdn_root, repo_root)
+    chain_edges = None if chain_edges is None else set(chain_edges)
+    report = charpkg_strand_report(cdn_root, repo_root, chain_edges=chain_edges)
     if not report["stranded_archives"]:
         report["bridged_archives"] = []
         report["bridge_receipts"] = []
@@ -330,7 +345,7 @@ def _ensure_charpkg_history_bridged(cdn_root: Path, repo_root: Path) -> dict:
             if receipt is not None:
                 bridged.append(str(target))
                 receipts.append(receipt)
-        report = charpkg_strand_report(cdn_root, repo_root)
+        report = charpkg_strand_report(cdn_root, repo_root, chain_edges=chain_edges)
         report["bridged_archives"] = bridged
         report["bridge_receipts"] = receipts
         if report["stranded_archives"]:
@@ -355,10 +370,11 @@ def ensure_charpkg_history_bridged(
     repo_root: Path,
     *,
     assume_lock_held: bool = False,
+    chain_edges: Iterable[tuple[str, str]] | None = None,
 ) -> dict:
     """Run the strand repair under the shared character-release lock."""
     cdn_root = Path(cdn_root)
     if assume_lock_held:
-        return _ensure_charpkg_history_bridged(cdn_root, repo_root)
+        return _ensure_charpkg_history_bridged(cdn_root, repo_root, chain_edges)
     with wf_release._release_lock(cdn_root / ".character-release.lock"):
-        return _ensure_charpkg_history_bridged(cdn_root, repo_root)
+        return _ensure_charpkg_history_bridged(cdn_root, repo_root, chain_edges)

@@ -430,6 +430,11 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="WF mod diff 发布器")
     ap.add_argument("--tables", help="逗号分隔的表别名/逻辑路径(默认用 pending 列表)")
     ap.add_argument(
+        "--allow-key-deletion",
+        action="store_true",
+        help="放行「线上已有的键会消失」的发布(默认硬阻断;删角色/删词条时才用)",
+    )
+    ap.add_argument(
         "--snapshot",
         type=Path,
         help="校验器生成的严格发布快照(必须与 --tables 同时使用)",
@@ -492,6 +497,30 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  [跳过] {relative} (本地不存在)")
         for entry in prepared:
             print(f"  {entry.archive_name}  ({len(entry.payload)} B)")
+
+        # 键不许消失闸门:投递单位是整个文件,本地这份比线上少键 = 发布即删角色。
+        # 历史事故 1.4.278(顶掉基诺维)与杰拉德包(删三个 PF 键)都是漏了这一步。
+        print("键闸门     :")
+        try:
+            import wf_publish_guard
+
+            guard_problems = wf_publish_guard.check(
+                [(entry.archive_name, entry.payload) for entry in prepared]
+            )
+        except Exception as exc:  # 闸门自身出错不该卡住发布,但必须喊出来
+            print(f"  [警告] 闸门未能运行({exc!r}),本次发布未经键检查")
+            guard_problems = []
+        if guard_problems:
+            print("  [阻断] 这次发布会删掉线上已有的键:")
+            for problem in guard_problems:
+                print("    !! " + problem)
+            if not args.allow_key_deletion:
+                raise ValueError(
+                    "发布被键闸门阻断(线上已有的键会消失)。"
+                    "确认这就是你要的效果,再加 --allow-key-deletion 重跑。"
+                )
+            print("  [放行] --allow-key-deletion 已指定,明知故犯继续发布。")
+
         if args.list:
             return 0
 

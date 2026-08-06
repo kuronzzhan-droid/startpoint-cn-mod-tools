@@ -68,7 +68,8 @@ class Fixture:
         make_zip(self.common / "pinball-1.4.55-1.4.56-1-charpkg-ghost.zip",
                  {"c.bin": b"C-hidden"})
         # anchored charpkg:文件名隐藏但 active.json 锚定 → 可见
-        anchored = self.common / "pinball-1.4.56-1.4.57-1-charpkg-hero.zip"
+        self.anchored_name = "pinball-1.4.56-1.4.57-1-charpkg-fixture-r1-common.zip"
+        anchored = self.common / self.anchored_name
         make_zip(anchored, {"d.bin": b"D1"})
         (self.cdn / "character-releases").mkdir(parents=True, exist_ok=True)
         (self.cdn / "character-releases" / "active.json").write_text(json.dumps({
@@ -78,6 +79,7 @@ class Fixture:
                 "from_version": "1.4.56",
                 "version": "1.4.57",
                 "release_id": "r1",
+                "package_id": "fixture",
                 "archives": [{
                     "root": "common",
                     "relative_path": "archive-common-diff/" + anchored.name,
@@ -93,6 +95,133 @@ class Fixture:
 
 
 class GraphSemanticsTest(SquashCase):
+    def test_sequence_accepts_max_safe_integer_and_rejects_the_next_value(self):
+        frm, to = "1.4.107", "1.4.217"
+        max_seq = 9_007_199_254_740_991
+        make_zip(
+            self.fx.common / f"pinball-{frm}-{to}-{max_seq}-max.zip",
+            {"max.bin": b"max"},
+        )
+        make_zip(
+            self.fx.common / f"pinball-{frm}-{to}-{max_seq + 1}-overflow.zip",
+            {"overflow.bin": b"overflow"},
+        )
+
+        graph = squash.build_visible_graph(self.fx.cdn, self.fx.repo)
+
+        self.assertEqual(
+            [archive.seq for archive in graph.edges[(frm, to)]],
+            [max_seq],
+        )
+        self.assertRegex("\n".join(graph.issues), r"sequence.*9007199254740992")
+
+    def test_invalid_anchored_archives_are_reported_and_skipped(self):
+        frm, to = "1.4.107", "1.4.108"
+        canonical = f"pinball-{frm}-{to}-1-charpkg-fixture-r1-common.zip"
+        invalid_relatives = [
+            f"archive-common-diff/pinball-{frm}-{to}-01-charpkg-fixture-r1-common.zip",
+            f"archive-common-diff/pinball-{frm}-{to}-9-charpkg-fixture-r1-common.zip",
+            f"archive-common-diff/pinball-1.4.106-{to}-1-charpkg-fixture-r1-common.zip",
+            f"archive-common-diff/pinball-{frm}-{to}-1-charpkg-fixture-r1-medium.zip",
+            f"archive-medium-diff/{canonical}",
+            f"archive-common-diff/../archive-medium-diff/{canonical}",
+            f"archive-common-diff\\{canonical}",
+        ]
+        for relative in invalid_relatives:
+            make_zip(
+                self.fx.cdn / relative.replace("\\", "/"),
+                {"invalid.bin": relative.encode()},
+            )
+        (self.fx.cdn / "character-releases" / "active.json").write_text(
+            json.dumps({
+                "schema_version": 1,
+                "base_version": frm,
+                "releases": [{
+                    "from_version": frm,
+                    "version": to,
+                    "release_id": "r1",
+                    "package_id": "fixture",
+                    "archives": [
+                        {"root": "common", "relative_path": relative}
+                        for relative in invalid_relatives
+                    ],
+                }],
+            }),
+            encoding="utf-8",
+        )
+
+        graph = squash.build_visible_graph(self.fx.cdn, self.fx.repo)
+
+        self.assertNotIn((frm, to), graph.edges)
+        issues = "\n".join(graph.issues)
+        self.assertGreaterEqual(
+            issues.count("anchored archive invalid"),
+            len(invalid_relatives),
+        )
+
+    def test_replay_uses_root_numeric_sequence_and_stable_fallbacks(self):
+        frm, to = "1.4.106", "1.4.107"
+        for seq in (1, 2, 9, 10, 11):
+            make_zip(
+                self.fx.common / f"pinball-{frm}-{to}-{seq}-numeric.zip",
+                {"shared-sequence.bin": f"seq-{seq}".encode()},
+            )
+        make_zip(
+            self.fx.common / f"pinball-{frm}-{to}-9-relative-a.zip",
+            {"relative-tie.bin": b"relative-a"},
+        )
+        make_zip(
+            self.fx.common / f"pinball-{frm}-{to}-9-relative-z.zip",
+            {"relative-tie.bin": b"relative-z"},
+        )
+        make_zip(
+            self.fx.common / f"pinball-{frm}-{to}-11-root-common.zip",
+            {"root-tie.bin": b"common-seq-11"},
+        )
+        make_zip(
+            self.fx.medium / f"pinball-{frm}-{to}-1-root-medium.zip",
+            {"root-tie.bin": b"medium-seq-1"},
+        )
+
+        graph = squash.build_visible_graph(self.fx.cdn, self.fx.repo)
+        ordered = sorted(graph.edges[(frm, to)], key=squash.VisibleArchive.order_key)
+        self.assertEqual(
+            [archive.seq for archive in ordered if archive.path.name.endswith("-numeric.zip")],
+            [1, 2, 9, 10, 11],
+        )
+        final, _ = squash.replay(graph, [(frm, to)])
+        self.assertEqual(
+            read_zip(final["shared-sequence.bin"].zip_path)["shared-sequence.bin"],
+            b"seq-11",
+        )
+        self.assertEqual(
+            read_zip(final["relative-tie.bin"].zip_path)["relative-tie.bin"],
+            b"relative-z",
+        )
+        self.assertEqual(
+            read_zip(final["root-tie.bin"].zip_path)["root-tie.bin"],
+            b"medium-seq-1",
+        )
+
+        tied = [
+            squash.VisibleArchive(
+                "common",
+                Path("pinball-1.4.107-1.4.108-9-source.zip"),
+                "archive-common-diff/pinball-1.4.107-1.4.108-9-source.zip",
+                "legacy:z",
+            ),
+            squash.VisibleArchive(
+                "common",
+                Path("pinball-1.4.107-1.4.108-9-source.zip"),
+                "archive-common-diff/pinball-1.4.107-1.4.108-9-source.zip",
+                "character:a",
+            ),
+        ]
+        self.assertEqual(
+            [archive.source for archive in sorted(tied, key=squash.VisibleArchive.order_key)],
+            ["character:a", "legacy:z"],
+        )
+
     def test_replay_matches_server_visibility_rules(self):
         graph = squash.build_visible_graph(self.fx.cdn, self.fx.repo)
         tail, path_edges = squash.find_path(graph, "1.4.54")
@@ -106,6 +235,9 @@ class GraphSemanticsTest(SquashCase):
         )
         self.assertNotIn("c.bin", final)       # 隐藏孤儿 charpkg 不可见
         self.assertNotIn("official.bin", final)  # 官方段在 base 之前
+        anchored = graph.edges[("1.4.56", "1.4.57")]
+        self.assertEqual([(archive.seq, archive.source) for archive in anchored],
+                         [(1, "character:r1")])
 
     def test_bridge_versions_exclude_official_and_tail(self):
         graph = squash.build_visible_graph(self.fx.cdn, self.fx.repo)
@@ -187,7 +319,7 @@ class RetireTest(SquashCase):
         remaining = sorted(p.name for p in self.fx.common.iterdir())
         self.assertIn("pinball-1.4.53-1.4.54-1-official.zip", remaining)   # 官方段不动
         self.assertIn("pinball-1.4.55-1.4.56-1-charpkg-ghost.zip", remaining)  # charpkg 不动
-        self.assertIn("pinball-1.4.56-1.4.57-1-charpkg-hero.zip", remaining)
+        self.assertIn(self.fx.anchored_name, remaining)
         self.assertIn("pinball-1.4.54-1.4.57-1-squashtest.zip", remaining)
         self.assertNotIn("pinball-1.4.54-1.4.55-1-mod1.zip", remaining)
         self.assertNotIn("pinball-1.4.55-1.4.56-1-mod2.zip", remaining)

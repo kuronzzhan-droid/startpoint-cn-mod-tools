@@ -38,6 +38,7 @@ ROOT_DIRECTORIES = {
     "android": "android_upload",
 }
 VERSION_RE = re.compile(r"^\d+\.\d+\.\d+$")
+FULL_ARCHIVE_RE = re.compile(r"^pinball-1\.4\.0-([1-9]\d*)-(.+)\.zip$")
 # JSON 里最多列几条够不到的边(全量可能上百条,样例足够定位)
 SAMPLE_LIMIT = 5
 
@@ -115,6 +116,21 @@ def _ensure_empty_destination(destination: Path) -> None:
         raise MaterializeError(f"destination must be nonexistent or empty: {destination}")
 
 
+def _full_archive_order(archive_path: Path) -> tuple[int, str]:
+    if archive_path.is_symlink() or not archive_path.is_file():
+        raise MaterializeError(f"unsafe full archive path: {archive_path}")
+    match = FULL_ARCHIVE_RE.fullmatch(archive_path.name)
+    if match is None:
+        raise MaterializeError(f"noncanonical full archive filename: {archive_path.name}")
+    sequence = int(match.group(1))
+    if sequence > wf_chain_squash.MAX_ARCHIVE_SEQ:
+        raise MaterializeError(
+            "full archive sequence exceeds "
+            f"{wf_chain_squash.MAX_ARCHIVE_SEQ}: {archive_path.name}: {match.group(1)}"
+        )
+    return sequence, archive_path.name
+
+
 def _scan_full_archives(cdn_root: Path) -> tuple[dict[tuple[str, str], PlannedEntry], int]:
     entries: dict[tuple[str, str], PlannedEntry] = {}
     rejected = 0
@@ -122,7 +138,8 @@ def _scan_full_archives(cdn_root: Path) -> tuple[dict[tuple[str, str], PlannedEn
         directory = cdn_root / f"archive-{archive_root}-full"
         if not directory.is_dir():
             raise MaterializeError(f"full archive directory is missing: {directory}")
-        for archive_path in sorted(directory.glob("*.zip"), key=lambda path: path.name):
+        archive_paths = [path for path in directory.iterdir() if path.name.endswith(".zip")]
+        for archive_path in sorted(archive_paths, key=_full_archive_order):
             try:
                 with zipfile.ZipFile(archive_path) as archive:
                     for info in archive.infolist():
@@ -328,6 +345,9 @@ def _build_plan(
     return MaterializePlan(
         tail, entries, rejected + diff_rejected, edge_count, health
     )
+
+
+build_read_only_plan = _build_plan
 
 
 def _write_plan(plan: MaterializePlan, destination: Path, workers: int) -> None:
