@@ -7313,7 +7313,10 @@ def rogue_drops_save(body: dict, dry_run: bool) -> dict:
     shutil.copy(path, path + time.strftime(".bak-wfmod-rogue-%Y%m%d-%H%M%S"))
     events[ROGUE_EVENT_ID] = cfg
     data["enabled"] = new_enabled
-    with open(path, "w", encoding="utf-8") as fh:
+    # newline="\n":Windows 文本模式默认写 CRLF,git 的 text=auto 会把差异归一化
+    # 掉(status 干净、diff 空),但发布回执的 _server_evidence 哈希原始字节 ⇒
+    # 写过一次之后 verify:local-release 报 "server terminal evidence mismatch"。
+    with open(path, "w", encoding="utf-8", newline="\n") as fh:
         json.dump(data, fh, ensure_ascii=False, indent=1)
     try:
         _server_call("/api/mod-admin/reload_assets", post=True)
@@ -7725,16 +7728,37 @@ def _rogue_auto_state() -> dict:
             **_ROGUE_AUTO_RT, "next_due": nxt}
 
 
-def _rogue_auto_run() -> dict:
-    """整局重开一次(wf_rogue_reroll):重摇+发布,按配置清进度/重启游戏。"""
+def _rogue_auto_run(body: dict | None = None) -> dict:
+    """整局重开一次(wf_rogue_reroll):重摇+发布,按配置清进度/重启游戏。
+
+    body = 前端「🔄 一键重开」按钮实际发来的参数。以前这个 handler 是
+    `Thread(target=_rogue_auto_run)` **完全不接请求体**,前端算好的
+    rounds/difficulty/mix/seed 五个字段全被吞掉,一律退回 rogue_auto.json
+    的默认值(rounds=15)——前端确认框写着「重摇 30 层」,实际发的是 15 层。
+    """
+    body = body or {}
     with _ROGUE_AUTO_LOCK:
         if _ROGUE_AUTO_RT["running"]:
             return {"ok": False, "log": "已在执行中"}
         _ROGUE_AUTO_RT["running"] = True
     try:
-        args = ["--apply", "--rounds", str(_ROGUE_AUTO.get("rounds", 15)),
-                "--enemy-level", str(_ROGUE_AUTO.get("enemy_level", 80)),
-                "--curse", str(_ROGUE_AUTO.get("curse", "abyss"))]
+        def _pick(key: str, default):
+            v = body.get(key)
+            return default if v in (None, "") else v
+        args = ["--apply",
+                "--rounds", str(int(float(_pick(
+                    "rounds", _ROGUE_AUTO.get("rounds", 30))))),
+                "--enemy-level", str(_pick(
+                    "enemy_level", _ROGUE_AUTO.get("enemy_level", 80))),
+                "--curse", str(_pick(
+                    "curse", _ROGUE_AUTO.get("curse", "abyss")))]
+        if str(body.get("difficulty", "")).strip() in (
+                "easy", "normal", "hell", "gradient"):
+            args += ["--difficulty", str(body["difficulty"]).strip()]
+        if body.get("mix"):
+            args.append("--mix")
+        if str(body.get("seed", "")).strip():
+            args += ["--seed", str(int(float(body["seed"])))]
         if not _ROGUE_AUTO.get("clear_progress", True):
             args.append("--keep-progress")
         if not _ROGUE_AUTO.get("restart_game"):
@@ -8609,7 +8633,10 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(_rogue_auto_state())
                 return
             if path == "/rogue/auto/run":
-                threading.Thread(target=_rogue_auto_run, daemon=True).start()
+                # 必须把 body 传下去:前端「🔄 一键重开」算好的
+                # rounds/difficulty/mix/seed 以前全被这里吞掉。
+                threading.Thread(target=_rogue_auto_run, args=(body,),
+                                 daemon=True).start()
                 self._json({"ok": True,
                             "log": "已在后台执行整局重开(重摇+发布,约半分钟),稍后点「刷新」看新阵容/状态"})
                 return

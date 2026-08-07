@@ -311,12 +311,14 @@ TOGGLES: tuple[ToggleSpec, ...] = (
     ToggleSpec("weapon.orb", "武器 · 主线宝珠/证章 ×4(8 键,不含延续的黄金)", "weapon",
                (SOUL,), 90, True,
                note="live 少行(负面副作用行被删),只能整键二选一"),
-    ToggleSpec("weapon.orb_golden", "武器 · 延续的黄金 100012(开发版,永不上传)", "weapon",
+    ToggleSpec("weapon.orb_golden", "武器 · 延续的黄金 100012(作者自用,已上线)", "weapon",
                (SOUL,), 90, True,
-               warn="用户的开发版武器:store 里 20 行整把重做,链上只有官方 8 行 ×4。"
-                    "发布 ability_soul 前必须把该键换回链终态值,否则开发版会意外上线;"
-                    "不进任何一键预设",
-               note="与 other.equip_debug(equipment_status 99999/99999)成对,同属这把武器"),
+               warn="注意:这是作者**有意**的自用武器,不是事故,别再「修」回官方值。"
+                    "store 里 20 行整把重做,自 1.4.307 起已在链上;"
+                    "2026-08-07 作者明确要求保持现状(理由:角色/武器已按现状验过,"
+                    "回退等于改掉已验证的东西)。不进任何一键预设",
+               note="与 other.equip_debug(equipment_status 99999/99999)成对,同属这把武器;"
+                    "两项要一起开一起关,只动一半会让卡面数值与词条对不上"),
     ToggleSpec("char.leader_pf", "角色 · 队长专属强化弹射", "character", (LEADER,), 80, True,
                off_equals_official=False,
                note="队长位=队伍 0 号位,不是主位三格;仅影响官方角色白虎"),
@@ -346,9 +348,13 @@ TOGGLES: tuple[ToggleSpec, ...] = (
                     "否则商品可见但购买必失败;只在 CLI 加 --allow-shop 时可切",
                note="默认保持现状(缺失)。建议择机关掉本项把官方商品补回来——"
                     "这不是有意的增强,是 wf_rogue_shop 的 EVENT_ID 与官方键撞号的副产物"),
-    ToggleSpec("other.equip_debug", "装备 · 官方装备 100012 调试数值", "other",
-               (EQUIP_STATUS,), 50, False,
-               note="99999/99999,像调试残留,从未发布过"),
+    ToggleSpec("other.equip_debug", "装备 · 延续的黄金 100012 数值 99999/99999", "other",
+               (EQUIP_STATUS,), 50, True,
+               warn="注意:作者**有意**要的数值,不是调试残留。2026-08-07 作者明确要求"
+                    "「这个武器的数值加到 99999」,当天发布为 1.4.317(链上 205,39 → "
+                    "99999,99999)。default 从此为 True:留 False 的话谁跑一次套件"
+                    "没显式指定就会把它写回 205,39,下次发布静默回退。不进任何一键预设",
+               note="与 weapon.orb_golden 成对,同属延续的黄金这把武器"),
     ToggleSpec("weapon.soul", "武器 · 官方魂珠词条增强", "weapon", (SOUL,), 10, True),
     ToggleSpec("char.tuning", "角色 · 统一增强(数值/手感/门槛)", "character",
                (ABILITY, LEADER), 10, True, subs=("power", "feel", "gate")),
@@ -356,7 +362,11 @@ TOGGLES: tuple[ToggleSpec, ...] = (
 TOGGLE_BY_ID = {spec.id: spec for spec in TOGGLES}
 SCOPES = ("character", "weapon", "enemy", "other")
 # 谨慎项:永不进任何一键预设,必须单独勾
-PRESET_EXCLUDED = frozenset({"other.treasure_2001", "weapon.orb_golden"})
+# orb_golden 与 equip_debug 是同一把武器(延续的黄金)的词条面与数值面,**必须成对**:
+# 只把 equip_debug 放进预设的话,一次 `preset official` 就会把卡面 99999 打回 205,39,
+# 而词条还是 20 行的开发版,两边对不上。两项都排除掉,要动就显式动。
+PRESET_EXCLUDED = frozenset({"other.treasure_2001", "weapon.orb_golden",
+                             "other.equip_debug"})
 # 需要服务端/存档联动的项:预设不碰,显式切换还要额外的 CLI 开关
 GUARDED_TOGGLES = {
     "char.white_tiger": "--allow-white-tiger",

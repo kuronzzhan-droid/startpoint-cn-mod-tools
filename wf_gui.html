@@ -873,7 +873,7 @@ td.ldesc{color:var(--okfg);font-size:11px;white-space:normal;max-width:250px;lin
             <div class="tbt">深渊连战·一键重开 <span class="tbava"></span></div>
             <div class="hint">狂热激战式爬塔(700099)整局重开:<b>随机重摇全部楼层</b>(小怪房/领主战/机兵/降临讨伐/女帝/无幻之宴/塔层/终始之龙)+ <b>boss 属性</b> + <b>场地效果</b>(敌抗/敌弱/免疫)→ <b>清爬塔进度</b>(只清 700099 的 rush 进度与无尽纪录,武器/角色/道具/官方激战不动)→ 发布 CDN → 自动重启游戏。种子留空 = 每次随机;日志里会打出种子,填回可复现同一座塔。改「轮数」后须重启服务端。</div>
             <div class="row">
-              <label>轮数</label><input data-a="rounds" type="number" placeholder="15" style="width:64px" title="爬塔总轮数;与线上不同时服务端 json 变化,须重启 start-cn.bat">
+              <label>轮数</label><input data-a="rounds" type="number" value="30" style="width:64px" title="爬塔总轮数;与线上不同时服务端 json 变化,须重启 start-cn.bat。这里必须是 value 不是 placeholder——留空会被前端丢弃,回落到 CLI 默认值">
               <label>敌等级</label><input data-a="enemy-level" type="number" placeholder="80" style="width:64px">
               <label>种子</label><input data-a="seed" type="number" placeholder="随机" style="width:110px" title="留空=每次随机;填数字可复现同一座塔">
               <label>只清存档</label><input data-a="player" type="number" placeholder="全部" style="width:64px" title="只清指定 player_id 的进度;留空=全部存档">

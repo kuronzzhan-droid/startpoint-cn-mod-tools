@@ -99,7 +99,11 @@ def build_command(args, seed: int) -> list[str]:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="深渊连战一键重开(重摇+清进度+发布+重启游戏)")
-    ap.add_argument("--rounds", type=int, default=15, help="爬塔轮数(与线上不同须重启服务端)")
+    ap.add_argument("--rounds", type=int, default=30,
+                    help="爬塔轮数(与线上不同须重启服务端)。默认 30 = 线上部署轮数,"
+                         "与 rushEvent.ts 重摇钩子的 `cfg.rounds ?? 30` 对齐;"
+                         "2026-08-07 前是 15,GUI 两个入口都不显式传值,"
+                         "于是每次一键重开都把 30 层塔换成 15 层")
     ap.add_argument("--seed", type=int, help="留空=每次随机;填数字可复现同一座塔")
     ap.add_argument("--enemy-level", default="ramp",
                     help="敌等级:ramp=按深度爬坡(**默认**,前1/3 lv80→中段 lv90→"

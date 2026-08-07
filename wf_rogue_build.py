@@ -213,6 +213,73 @@ def special_boss_levels() -> dict:
     return _SPECIAL_LV
 
 
+_SPECIAL_KIND: dict | None = None
+
+
+def special_boss_kinds() -> dict:
+    """专用表 boss 代号 → BossKind(rbb.KIND_TABLES 反查)。进程内缓存。
+
+    general/standard(kind 0/1/8)不进这张表——它们要读构建中的内存态,
+    由 zone_boss_kind_fixer 直接查 gb_t/sb_t。"""
+    global _SPECIAL_KIND
+    if _SPECIAL_KIND is None:
+        out: dict = {}
+        for kind, name in rbb.KIND_TABLES.items():
+            if kind in (0, 1, 8):
+                continue
+            logical = rbb.TABLE_LOGICALS.get(name)
+            if not logical:
+                continue
+            try:
+                tbl = q.load_table(logical)
+            except Exception:
+                continue
+            for code in tbl:
+                out.setdefault(str(code), kind)
+        _SPECIAL_KIND = out
+    return _SPECIAL_KIND
+
+
+def zone_boss_kind_fixer(gb_t, sb_t):
+    """生成 boss 代号换列时同步校正 BossKind 列的回调。
+
+    zone 每个 boss 槽是 4 列(单人 kind/code + 多人 kind/code,见
+    rbb.SLOT_COLUMNS),客户端先读 kind 决定用哪个构造子、再拿 code 去
+    **那张表**查行。`--mix` 拼接层把 donor 的 boss 代号换进地形老家的
+    zone 行时,历史上只换 code 列、不动 kind 列:一只 general boss 因此
+    会坐进 kraken/orochi/*_sphere 的槽里,客户端按 kind 去专表找它必然落空。
+
+    86e27250 新增的 KIND_CODE_MISMATCH 门禁把这条暴露成硬失败——实测
+    `--rounds 30 --mix` 八个种子有三个直接 `[ERR] 解析链断裂,拒绝产出`
+    (kraken / orochi / water_sphere 各一),而 reroll 收到非零退出码就
+    `中止(进度未动)`,表现为「一键重开点了没反应，要点好久才成一次」。
+
+    返回 None = 现有 kind 已经自洽,别动(kind 8 ConcertedBoss 也走
+    general_boss 表,不能无脑压成 1)。"""
+    special = special_boss_kinds()
+
+    def kind_of(code: str, current_kind) -> int | None:
+        code = str(code)
+        try:
+            cur = int(str(current_kind).strip())
+        except (TypeError, ValueError):
+            cur = None
+        if cur is not None:
+            if cur in (1, 8) and code in gb_t:
+                return None
+            if cur == 0 and code in sb_t:
+                return None
+            if special.get(code) == cur:
+                return None
+        if code in gb_t:
+            return 1
+        if code in sb_t:
+            return 0
+        return special.get(code)
+
+    return kind_of
+
+
 # ---- 引用完整性门禁(2026-07-26 关13 water_sphere 真机崩溃根因)----
 # 完整解析链:quest 行 c98 → field_data[键] c2 → zone[键] 各 wave 行敌方代号列。
 # 客户端 ZoneSourceValues.resolveGeneralBosssAction → GeneralEnemySourceHelper.
@@ -1199,26 +1266,48 @@ def zone_single_bosses(zn) -> list[str]:
             if slot.single is not None]
 
 
-def apply_boss_swap(wc: list[str], old: str, new: str) -> list[str]:
+def _sync_boss_kind(wc: list[str], code_index: int, code: str, kind_of) -> None:
+    """把 code_index 这一列的 BossKind 列(恒为左邻列)校正到与 code 相符。
+
+    rbb.SLOT_COLUMNS 每槽 4 列 = (单人kind, 单人code, 多人kind, 多人code),
+    所以 kind 列 = code 列 − 1。kind_of 返回 None 表示现值已自洽。"""
+    if kind_of is None:
+        return
+    k = code_index - 1
+    if k < 0 or k >= len(wc):
+        return
+    want = kind_of(code, wc[k])
+    if want is not None and str(want) != str(wc[k]):
+        wc[k] = str(want)
+
+
+def apply_boss_swap(wc: list[str], old: str, new: str, kind_of=None) -> list[str]:
     """把 zone wave 行里的 boss 代号 old 换成 new——**单人 + 多人两列都换**。
 
     客户端 ZoneSourceValues.get_bossN() 按 isSingleBattle 二选一读
     (single→c24/28/32,multi→c26/30/34),只换半边的话另一种战斗模式仍指向
     原 boss:法阵载体克隆静默失效,成对 boss 变成「克隆 + 原体」各打各的。
     2026-07-30 修(swap_zone_bosses 六列全换,gimmick_field 这条路漏了三列)。
+    2026-08-07 增 kind_of:代号列换了,BossKind 列必须跟着换,见
+    zone_boss_kind_fixer。
     """
     for a, b in ZONE_BOSS_SLOTS:
         for i in (a, b):
             if len(wc) > i and wc[i] == old:
                 wc[i] = new
+                _sync_boss_kind(wc, i, new, kind_of)
     return wc
 
 
-def swap_zone_bosses(zn: dict, bosses: list[str]) -> dict:
+def swap_zone_bosses(zn: dict, bosses: list[str], kind_of=None) -> dict:
     """zone 嵌套 dict 的 boss 槽(单人 c24/28/32 + 多人 c26/30/34)按序循环换成 bosses。
 
     zako 槽(c2-20)与其余列原样保留——zako 出生锚点属于地形,跨地形移植会静默失败,
     boss 槽则全 boss 场地形通用(gimmick_field boss_swap 同机制,已真机验证)。
+
+    kind_of(见 zone_boss_kind_fixer)负责同步 BossKind 列:`--mix` 把 donor
+    的 boss 换进地形老家的 zone,而地形老家可能是 kraken/orochi/*_sphere 的
+    场子,kind 列不跟着改就会让客户端拿 general 代号去专表里查。
     """
     out = {}
     bi = 0
@@ -1232,6 +1321,7 @@ def swap_zone_bosses(zn: dict, bosses: list[str]) -> dict:
             code = bosses[bi % len(bosses)]
             for i in occupied:
                 wc[i] = code
+                _sync_boss_kind(wc, i, code, kind_of)
             bi += 1
         out[wk] = join(wc, isinstance(wrow, (bytes, bytearray)))
     return out
@@ -3041,6 +3131,11 @@ def hp_correction_errors(records: list[dict], n: int) -> list[str]:
                     f"第{r}战 {family} 最终 c86={c86:g} "
                     f"超出微调窗口 {lo:g}~{hi:g}")
             continue
+        if family == "unknown":
+            # 非破坏性血量带:该层的血量按不动(读不出 HP 通道),走 86e27250 之前
+            # 的老路——原生血量 × 曲线 c86,不参与 c86 主通道审计。
+            # 这些层已经在 [WARN] 里逐条列名,并计入 [真HP门禁] 的「无boss估算」。
+            continue
         errors.append(f"第{r}战 HP 族/通道不可审计:{family or '(missing)'}")
     return errors
 
@@ -4278,6 +4373,10 @@ def abyss_curses(r: int, n: int, rng, tier: str, caps: dict | None = None,
     if no_base:
         # 无基数层:归一化返回 1.0,裸曲线值 + 顶格攻击诅咒 = 第26战 6.58 的成因
         safe_pool = [c for c in safe_pool if c["name"] not in ATK_CURSE_TIERS]
+        # 同理禁时限诅咒:血量既然按不下来(菲诺梅那这类多人 raid 原生就是 259 亿),
+        # 再套「时之枷锁 限时3分」需求 DPS 直接冲到 1.4 亿/s = 不可通关。
+        # 与上面深层的过滤同一条理由,只是触发条件从「深层」扩到「按不动血量」。
+        safe_pool = [c for c in safe_pool if "time" not in c]
     if not caps.get("element"):
         if "c36" in str(caps.get("element_reason") or ""):
             log(f"[curse] round={r} reject=属性免疫族 reason={caps['element_reason']}; redraw")
@@ -5515,6 +5614,9 @@ def main() -> int:
     if ew_t is None:
         print("[WARN] general_enemy_watch 不可用;本轮一律不发深渊法阵")
     sb_t = q.load_table(STANDARD_BOSS)      # 只读:门禁三表并集用
+    # 换 boss 代号时同步校正 zone 的 BossKind 列(gb_t 含构建中的克隆,必须
+    # 在 gb_t/sb_t 都就位之后再建)。
+    kind_fixer = zone_boss_kind_fixer(gb_t, sb_t)
     stale = ([k for k in fd_t if str(k).startswith("mod_rogue_f")]
              + [k for k in zone_t if str(k).startswith("mod_rogue_z")])
     stale_c = ([k for k in gz_t if str(k).startswith("mod_rogue_caster")]
@@ -5652,11 +5754,30 @@ def main() -> int:
 
     def name_keys(bosses) -> set[str]:
         """**全塔去重**用系列键。系列有**配额**(见 SERIES_CAPS/series_cap),
-        普通 boss 配额恒 1。"""
-        return {_series_key(str(b)) for b in bosses}
+        普通 boss 配额恒 1。
+
+        系列成员额外再挂一个**变体键**(配额恒 1)。系列配额 >1 的本意是
+        「同塔可以来两只**不同**的元素变体」(雷龟 + 暗凤、苍机兵 + 闪机兵),
+        但光有系列键拦不住**同一只**来两遍:`discarded_dragon_dark_tower`
+        (塔层版)与 `discarded_dragon_dark`(降临版)是两个代号、同一个模型,
+        各占系列名额 1 个 ⇒ 一座塔出两次暗荒龙伊尔昂斯拉,零配额告警。
+        (1.4.316 真机实测:第12战 + 第14战。)
+
+        变体键取 `_model_and_progs` 的模型族;模型读不到时它回退成显示名,
+        而显示名本来就逐元素不同(闪机兵/苍机兵),两种情况都能把元素分开。
+        **只给系列成员挂**——非系列 boss 的 `_family` 配额本来就是 1,再挂一层
+        会把八岐大蛇各头(靠攻击程序签名共存)压成一个,那是刻意要保留的。"""
+        out: set[str] = set()
+        for boss in bosses:
+            code = str(boss)
+            out.add(_series_key(code))
+            model, _progs = _model_and_progs(code)
+            if boss_series_of(code, model):
+                out.add(f"变体:{model}")
+        return out
 
     def key_cap(key: str) -> int:
-        """该去重键在本塔的出场配额:系列按层数缩放,其余恒 1。"""
+        """该去重键在本塔的出场配额:系列按层数缩放,其余(含变体键)恒 1。"""
         return series_cap(key[3:], args.rounds) if key.startswith("系列:") else 1
 
     def grade_keys(bosses) -> set[str]:
@@ -6081,7 +6202,7 @@ def main() -> int:
             if panels:
                 wc[36], wc[37] = GIM_DASH, GIM_ROT
             for old_code, new_code in swaps:
-                apply_boss_swap(wc, old_code, new_code)
+                apply_boss_swap(wc, old_code, new_code, kind_of=kind_fixer)
             nz[wk] = join(wc, isinstance(wrow, (bytes, bytearray)))
         zone_t[zkey] = nz
         nf = list(fc)
@@ -6202,7 +6323,20 @@ def main() -> int:
             portable = [e for e in cands
                         if (not strict or all(b in safe_set for b in e[2]))
                         and not any(is_special_boss(b, special_bosses) for b in e[2])]
-            if portable:
+            # ⚠ 无条件收窄到白名单会让拼接层塌缩。rogue_special_bosses.json 的
+            # transplant_safe 去掉杂鱼后**只剩 3 个去重键**(treant /
+            # owl_single_tower / hermit_crab_another_light_single),配额一被吃光,
+            # 下面 unused_only 的 `return kept or entries` 就把它们原样放回 =>
+            # 30 层塔的拼接层恒定是「树妖×4 + 猫头鹰 + 寄居蟹」,16 个种子无一例外。
+            # 改成**配额优先**:白名单里还有没出过的就用白名单;白名单全用完了才
+            # 放开回全池——此时非白名单 donor 会走下面的「原味保护」分支,改用它
+            # 自己的老家场地、不做跨地形移植,2026-07-28 那三次崩溃的防线不动。
+            portable_fresh = [e for e in portable
+                              if all(_quota_left(k) for k in name_keys(e[2]))]
+            if portable_fresh:
+                cands = portable_fresh
+            elif portable and not any(
+                    all(_quota_left(k) for k in name_keys(e[2])) for e in cands):
                 cands = portable
             if r >= 3:
                 zkeys = set(map(str, gz_t))
@@ -6266,7 +6400,8 @@ def main() -> int:
         frow = fd_t[tf]
         fc = cells(frow)
         zkey, fkey = f"mod_rogue_z{r}", f"mod_rogue_f{r}"
-        zone_t[zkey] = swap_zone_bosses(zone_t[fc[2]], sbosses)
+        zone_t[zkey] = swap_zone_bosses(zone_t[fc[2]], sbosses,
+                                        kind_of=kind_fixer)
         realized_bosses = zone_single_bosses(zone_t[zkey])
         if realized_bosses != list(sbosses):
             raise RuntimeError(
@@ -6450,13 +6585,41 @@ def main() -> int:
                 field_id, bosses, int(metrics["level"]), record=False)
             return None if status["element"] else str(status["element_reason"])
 
-        def acceptable(pick: dict, metrics: dict | None, *,
-                       preserve_mix: bool = True) -> bool:
+        def reject_reason(pick: dict, metrics: dict | None, *,
+                          preserve_mix: bool = True) -> str | None:
+            """候选不合格的**原因**;None=合格。
+
+            区分原因是为了让「只有血量带不达标」这一类不再触发换 boss,
+            见下方 HP_BAND_ONLY 处的说明。"""
             if metrics is None:
-                return False
+                # 必须把「血量按不动」与「这层压根解析不了」分开。
+                # hp_pick_metrics 里 `resolve_level(...) or want_level(r)` 会把
+                # None 吞成想要的等级,于是不可解析的层看起来只是「无 HP 证据」。
+                # 但它落表就是引用悬空(clone 在该敌等级下找不到 boss_level 档位,
+                # 进本必崩),这是硬错误不是带宽偏好——必须继续重排。
+                # 实例:--ramp 把第28战钉死 lv100 时的 discarded_dragon_thunder_tower
+                # (gb/gv 都只有 80 档)。
+                #
+                # ⚠ 判据必须用门禁同款的 select_surjective_level(客户端
+                # getSurjectivity = **上取整**),不能用 resolve_level/boss_level_ok
+                # ——后两者走**下取整**,2026-08-05 修正取档方向后就与门禁不一致了:
+                # 上例 boss_level_ok(code,100)=True 而门禁返回 None。这个矛盾一直
+                # 存在,只是以前「不合格就换掉整层」把它盖住了。
+                bosses = list(pick.get("bosses") or [])
+                if bosses:
+                    lv = int(resolve_level(bosses, want_level(r), sb_t, gv_t,
+                                           gb_t, prefer_max=want_max)
+                             or want_level(r))
+                    for code in bosses:
+                        node = (sb_t.get(code) if code in sb_t
+                                else gb_t.get(code) if code in gb_t else None)
+                        if node is not None and select_surjective_level(
+                                node, lv) is None:
+                            return "level"
+                return "hp-no-evidence"
             if ((field_needed or carrier_required)
                     and not carrier_ok(pick, preserve_mix=preserve_mix)):
-                return False
+                return "carrier"
             if preserve_mix and current.get("_mix_terrain_entry"):
                 # HP 重排不得把混搭层偷换回原场地；候补 boss
                 # 也必须通过原有移植白名单，否则会把专用骨架塞进通用场地。
@@ -6471,13 +6634,40 @@ def main() -> int:
                         or len(bosses) != int(current.get("_mix_slot_count") or 0)
                         or (strict and not all(b in safe_set for b in bosses))
                         or any(is_special_boss(b, special_bosses) for b in bosses)):
-                    return False
+                    return "transplant"
             if (args.rounds == 30 and is_deep_round(r, args.rounds)
                     and not metrics["native"].get("absolute_verified")):
-                return False
-            return True
+                return "hp-deep-unverified"
+            return None
 
-        current_ok = acceptable(current, current_metrics)
+        def acceptable(pick: dict, metrics: dict | None, *,
+                       preserve_mix: bool = True) -> bool:
+            return reject_reason(
+                pick, metrics, preserve_mix=preserve_mix) is None
+
+        # 只靠“换一只 boss”才能满足的血量带原因。缩放解决不了它们:
+        # 这些 boss 压根没有可审计的 HP 通道(无 boss_level 基数/读不出 c86),
+        # 或深层要求的绝对证据缺失。
+        #
+        # 2026-08-05 的 86e27250 对这两类一律整层替换,实测 30 层塔 20 层被换掉,
+        # 连策展锚位(机兵/女帝歼灭者/土俑嘉年华/五元素球/东亚奇廉CEO)与
+        # 三个守门固定位(终始之龙/无幻之宴/机工神兵菲诺梅那)都被扔进了塔池,
+        # 且替换目标高度集中(白虎×3/异质魔晶羊×3/伊尔昂斯拉×3)。
+        #
+        # 作者的原始要求(6d7dec0)是**压低敌方攻击**,从未要求按血量换 boss。
+        # 故改为非破坏性:能缩放的照常缩放进带内,缩放不了的原样保留。
+        # 带宽因此只在做得到的层生效,[真HP门禁] 会如实计入“无boss估算 N 层”。
+        HP_BAND_ONLY = ("hp-no-evidence", "hp-deep-unverified")
+
+        current_reason = reject_reason(current, current_metrics)
+        current_ok = current_reason is None
+        if (not current_ok and current_reason in HP_BAND_ONLY
+                and not element_required):
+            log(f"[HP重排] round={r} 保留当前层("
+                f"{','.join(map(str, current.get('bosses') or [])) or current['field']}"
+                f"):{current_reason},血量带无法靠缩放实现;"
+                "按非破坏性策略不换 boss")
+            return current
         current_element_block = (element_carrier_block(current, current_metrics)
                                  if element_required else None)
         if current_ok:
@@ -6649,7 +6839,8 @@ def main() -> int:
             fc = cells(frow) if isinstance(frow, (str, bytes, bytearray)) else []
             if len(fc) <= 2 or not isinstance(zone_t.get(fc[2]), dict):
                 raise RuntimeError(f"第{r}战混搭 HP 重排找不到已克隆 zone")
-            zone_t[fc[2]] = swap_zone_bosses(zone_t[fc[2]], chosen["bosses"])
+            zone_t[fc[2]] = swap_zone_bosses(zone_t[fc[2]], chosen["bosses"],
+                                             kind_of=kind_fixer)
             realized_bosses = zone_single_bosses(zone_t[fc[2]])
             if realized_bosses != list(chosen["bosses"]):
                 raise RuntimeError(
@@ -6843,21 +7034,34 @@ def main() -> int:
                     deep=is_deep_round(r, args.rounds),
                     code_references=code_refs)
             except ValueError as exc:
-                print(f"[ERR] 第{r}战 HP 主通道不可实现:{exc}")
-                return 1
-            _baseline_c86 = float(_hp_strategy["baseline_c86"])
-            _baseline_true_hp = (_target_dps * _base_duration_s
-                                 if _hp_strategy["channel"] == "boss_level"
-                                 else _true_hp_at_c86(_native_hp, _baseline_c86))
-            _runtime_kwargs = {
-                "baseline_c86": _baseline_c86,
-                "c86_limits": ((1.0, 1.0)
-                               if _hp_strategy["channel"] == "boss_level"
-                               else STANDARD_C86_LIMITS),
-                "baseline_dps": _baseline_true_hp / _base_duration_s,
-                "base_duration_s": _base_duration_s,
-                "hp_channel": _hp_strategy["channel"],
-            }
+                # 非破坏性血量带的第二半:hp_curve_fit_pick 已经决定「缩放不了
+                # 就保留这一层」,这里就不能再因为算不出缩放而整座塔拒绝产出。
+                # 退回该 boss 的原生血量(= 官方值,86e27250 之前一直如此),
+                # 该层不进带内,[真HP门禁] 会如实计入「无boss估算」。
+                # 典型触发者正是被策展进来的锚位:土俑嘉年华的 haniwa_great_*_pf
+                # 是 identity-locked(被 damage_share/enemy_watch 按代号引用),
+                # master id 不能动、c86 只有 0.9~1.1 的微调窗口。
+                print(f"[WARN] 第{r}战 HP 主通道不可实现,退回原生血量:{exc}")
+                _hp_strategy = None
+                _runtime_kwargs = {}
+                _native_hp = dict(_native_hp)
+                _native_hp["verified"] = False
+                _native_hp["absolute_verified"] = False
+            if _hp_strategy is not None:
+                _baseline_c86 = float(_hp_strategy["baseline_c86"])
+                _baseline_true_hp = (
+                    _target_dps * _base_duration_s
+                    if _hp_strategy["channel"] == "boss_level"
+                    else _true_hp_at_c86(_native_hp, _baseline_c86))
+                _runtime_kwargs = {
+                    "baseline_c86": _baseline_c86,
+                    "c86_limits": ((1.0, 1.0)
+                                   if _hp_strategy["channel"] == "boss_level"
+                                   else STANDARD_C86_LIMITS),
+                    "baseline_dps": _baseline_true_hp / _base_duration_s,
+                    "base_duration_s": _base_duration_s,
+                    "hp_channel": _hp_strategy["channel"],
+                }
         elif not pick["bosses"]:
             # 第 1 战是唯一无 boss 血条的结构性例外，无法用相邻 boss 的反解比例
             # 事后放大 c86；否则抽到高墙时可能在诅咒已定案后才越窗，失去重抽机会。
@@ -6879,7 +7083,11 @@ def main() -> int:
         try:
             curse = abyss_curses(
                 r, args.rounds, rng, st_tier, caps, forced,
-                no_base=_anchor is None, high_threat=_high_threat,
+                # _hp_strategy is None = 这层的血量按不动(读不出通道,或
+                # identity-locked 只剩 0.9~1.1 微调窗口),等价于「无基数层」:
+                # 攻击诅咒与时限诅咒都必须禁掉,否则真实伤害/需求 DPS 无上界。
+                no_base=(_anchor is None or _hp_strategy is None),
+                high_threat=_high_threat,
                 **_runtime_kwargs)
         except (RuntimeError, ValueError) as exc:
             print(f"[ERR] 第{r}战诅咒组合无法满足硬闸:{exc}")
@@ -6926,9 +7134,12 @@ def main() -> int:
             curse["field_deficit_reason"] = why
             log(f"[curse] round={r} field-underfill="
                 f"{curse['field_applied']}/{curse['field_requested']} reason={why}")
-            print(f"[ERR] 第{r}战领域保底欠配:"
+            # 非破坏性策略下这不再是致命错误。法阵载体必须是 general 系 boss
+            # (见「深渊连战-随机方案-当前.md」第九节:抽到 standard/专用表 boss
+            # 时法阵**静默落不上,不是崩溃**)。既然我们不再为了凑载体把策展
+            # 锚位换掉,就得允许这些层欠配——[领域/时限] 行会如实报「欠配 N 层」。
+            print(f"[WARN] 第{r}战领域保底欠配:"
                   f"{curse['field_applied']}/{curse['field_requested']} ({why})")
-            return 1
         _hp_plan = None
         if _hp_strategy and _hp_strategy["channel"] == "boss_level":
             try:
@@ -7068,11 +7279,18 @@ def main() -> int:
     curve_scale, band_log = enforce_atk_band(floor_recs, atk_base, atk_growth,
                                              args.rounds)
 
+    # 非破坏性血量带:有 boss 却读不出绝对 HP 证据的层不再拒绝产出——那等于
+    # 强制把这些 boss 从塔里赶走。命中这条的恰恰是策展锚位本身
+    # (菲诺梅那 steampunk_another / 土俑 haniwa_great_*_pf / 精灵兽 spirit_beast_* /
+    # 女王 variant_empress_* / hero_big_boss_80_multi ...)。
+    # 这些层用官方原生血量,不进需求带;下面 [真HP门禁] 的「无boss估算 N 层」
+    # 就是它们的账。解析器读不到新 boss 类型的**质量信号仍然保留**,只是降级成告警。
     native_errors = native_hp_coverage_errors(floor_recs)
     if native_errors:
         for error in native_errors:
-            print(f"[ERR] {error}")
-        return 1
+            print(f"[WARN] {error}")
+        print(f"[WARN] 共 {len(native_errors)} 层用原生血量(不进需求带);"
+              "如需把某只 boss 纳入带内,给它补 HP 解析器而不是把它换掉")
 
     # ---- 任务 D：普通 general 真 HP 折进 clone boss_level.c2；quest c86 恒 1 ----
     # identity-locked general 与 standard 都只允许同 id 的 c86 0.9~1.1 微调；
@@ -7505,7 +7723,12 @@ def main() -> int:
     # 清掉多余轮(rounds 缩小时;99=无尽键不在范围内,rounds 上限 98)
     for r in range(args.rounds + 1, 99):
         quest_json.pop(str(700099000 + r), None)
-    with open(quest_json_path, "w", encoding="utf-8") as fh:
+    # newline="\n" 是必须的:Windows 上文本模式默认吐 CRLF,而仓库 .gitattributes
+    # 是全 LF。git 的 text=auto 归一化会把差异藏起来(status 显示干净),但发布回执
+    # 的 _server_evidence 哈希的是**原始字节** ⇒ 跑过一次重摇之后
+    # `npm run verify:local-release` 就红,报 "server terminal evidence mismatch",
+    # 而 git diff 又看不出任何改动。2026-08-07 实测 7 个服务端 json 全中招。
+    with open(quest_json_path, "w", encoding="utf-8", newline="\n") as fh:
         json.dump(quest_json, fh, ensure_ascii=False, indent=1)
 
     folder_json_path = os.path.join(ROOT, "assets", "rush_event_quest_folder.json")
@@ -7514,7 +7737,7 @@ def main() -> int:
     # 保留自定义通关奖励(2026-07-28 起服务端 json 的 700099 奖励由用户定制,
     # 重摇只在条目缺失时才从模板补种)
     folder_json.setdefault(EVENT_ID, {"1": folder_json[TEMPLATE_EVENT]["1"]})
-    with open(folder_json_path, "w", encoding="utf-8") as fh:
+    with open(folder_json_path, "w", encoding="utf-8", newline="\n") as fh:
         json.dump(folder_json, fh, ensure_ascii=False, indent=1)
     print("[OK] 服务端 json 已写入(rush_event_quest / rush_event_quest_folder)——静态 import,须重启服务端")
     save_boss_history(tower_bosses)

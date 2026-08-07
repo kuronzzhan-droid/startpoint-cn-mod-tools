@@ -2717,11 +2717,15 @@ class TaskCDryRunCase(unittest.TestCase):
                 "boss层 2~30 全部命中 21,940,625~30,716,875/s",
                 "general c86=1",
                 "boss_level.c2",
-                # 身份锁热修在 HP 重排引入"拒绝候选并重抽"，该 seed 的抽取序列
-                # 随之变化：现版本不再出现无领域的浅层不屈龙心，伴生规则无需补位
-                # （规则本身由 ensure_dragon_heart_companion 专项用例覆盖），
-                # 保底计数回到 21。
-                "领域保底完成 21/21",
+                # ⚠ 这里曾断言 "领域保底完成 21/21"。那个 100% 覆盖率只有靠
+                # 「载体不合格就把整层的 boss 换掉」才达得到,而那正是 2026-08-05
+                # 起把机兵/女帝歼灭者/土俑嘉年华/五元素球连同终始之龙、无幻之宴、
+                # 菲诺梅那三个守门固定位一起扫出塔外的机制(30 层里 20 层被换)。
+                # 作者从未要求过按血量/载体换 boss(原始需求 6d7dec0 是压低敌方攻击)。
+                # 现在的契约:法阵载体只挂得上 general 系 boss,挂不上就欠配——
+                # 这与「深渊连战-随机方案-当前.md」第九节写的「静默落不上,不是崩溃」
+                # 一致。所以只断言这行存在,覆盖率交给下面的策展位断言。
+                "领域保底完成 ",
                 "深层时限诅咒 0 层",
                 "identity-locked source clone 0",
                 "31 关解析链复核通过",
@@ -2746,6 +2750,21 @@ class TaskCDryRunCase(unittest.TestCase):
         for line in boss_lines:
             self.assertNotIn("补偿hp×", line,
                              "general HP 已走 boss_level.c2，不得再把 raw bh 冒充落表补偿")
+
+        # 策展位不得被 HP 重排扫掉(2026-08-07 回归)。build_schedule 排的锚位与
+        # 三个守门固定位必须原样出现在成品塔里；它们大多没有可审计的 HP 通道,
+        # 一旦「血量按不动就换 boss」复活,这一组断言会立刻红。
+        labels = re.findall(r"第\s*(\d+)战 \[([^\]]*)\]", out)
+        by_round = {int(r): label for r, label in labels}
+        for round_no, expected in ((15, "机工神兵"), (29, "无幻之宴"),
+                                   (30, "终始之龙")):
+            self.assertTrue(
+                by_round.get(round_no, "").startswith(expected),
+                f"第{round_no}战守门固定位被换掉了:{by_round.get(round_no)!r}")
+        for source in ("机兵", "女帝歼灭者", "土俑嘉年华", "元素试炼"):
+            self.assertTrue(
+                any(label.startswith(source) for label in by_round.values()),
+                f"策展来源「{source}」整类没出现在成品塔里")
 
     def test_explicit_ramp_keeps_the_old_geometric_profile(self):
         result = self.run_build(
