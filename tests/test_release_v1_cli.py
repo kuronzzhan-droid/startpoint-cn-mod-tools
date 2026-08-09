@@ -187,6 +187,133 @@ class ReleaseCliTests(unittest.TestCase):
                     failure.stderr,
                 )
 
+    def test_closed_real_stdout_pipe_returns_clean_io_error_without_exit_120(self) -> None:
+        process = subprocess.Popen(
+            [
+                sys.executable,
+                "-m",
+                "wf_release_v1",
+                "verify",
+                "--release",
+                str(self.valid_release),
+                "--json",
+            ],
+            cwd=Path(__file__).resolve().parents[1],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        self.assertIsNotNone(process.stdout)
+        self.assertIsNotNone(process.stderr)
+        process.stdout.close()  # type: ignore[union-attr]
+        stderr = process.stderr.read()  # type: ignore[union-attr]
+        process.stderr.close()  # type: ignore[union-attr]
+        return_code = process.wait(timeout=30)
+
+        self.assertEqual(30, return_code)
+        value = json.loads(stderr.decode("utf-8"))
+        self.assertEqual(
+            {"code": "WFREL_CLI_IO", "message": "本地执行失败"},
+            value,
+        )
+        self.assertEqual(canonical_json_bytes(value), stderr)
+        self.assertNotIn(b"Traceback", stderr)
+        self.assertNotIn(str(self.root).encode("utf-8"), stderr)
+
+    def test_injected_binary_and_text_output_failures_map_to_io(self) -> None:
+        from wf_release_v1 import cli
+
+        class ScriptedBuffer:
+            def __init__(self, failure: str) -> None:
+                self.failure = failure
+
+            def write(self, raw: bytes):
+                if self.failure == "write-oserror":
+                    raise OSError("private path")
+                if self.failure == "write-none":
+                    return None
+                if self.failure == "write-short":
+                    return len(raw) - 1
+                return len(raw)
+
+            def flush(self) -> None:
+                if self.failure == "flush-oserror":
+                    raise OSError("private path")
+
+        class BinaryStream:
+            def __init__(self, failure: str) -> None:
+                self.buffer = ScriptedBuffer(failure)
+
+        class TextStream:
+            def __init__(self, failure: str) -> None:
+                self.failure = failure
+
+            def write(self, value: str):
+                if self.failure == "write-oserror":
+                    raise OSError("private path")
+                if self.failure == "write-none":
+                    return None
+                if self.failure == "write-short":
+                    return len(value) - 1
+                return len(value)
+
+            def flush(self) -> None:
+                if self.failure == "flush-oserror":
+                    raise OSError("private path")
+
+        for stream_kind in (BinaryStream, TextStream):
+            for failure in (
+                "write-none",
+                "write-short",
+                "write-oserror",
+                "flush-oserror",
+            ):
+                with self.subTest(stream=stream_kind.__name__, failure=failure):
+                    stderr = io.StringIO()
+                    with patch.object(cli.sys, "stdout", stream_kind(failure)):
+                        with redirect_stderr(stderr):
+                            exit_code = cli.main(
+                                [
+                                    "verify",
+                                    "--release",
+                                    str(self.valid_release),
+                                    "--json",
+                                ]
+                            )
+                    self.assertEqual(30, exit_code)
+                    value = json.loads(stderr.getvalue())
+                    self.assertEqual(
+                        {"code": "WFREL_CLI_IO", "message": "本地执行失败"},
+                        value,
+                    )
+                    self.assertNotIn("private", stderr.getvalue())
+                    self.assertNotIn("Traceback", stderr.getvalue())
+
+    def test_stderr_write_failure_is_suppressed_and_returns_io_exit(self) -> None:
+        from wf_release_v1 import cli
+
+        class FailingStderr:
+            def write(self, value: str) -> int:
+                del value
+                raise OSError("private stderr path")
+
+            def flush(self) -> None:
+                raise OSError("private stderr path")
+
+        stdout = io.StringIO()
+        with patch.object(cli, "verify_release", side_effect=RuntimeError("private")):
+            with patch.object(cli.sys, "stderr", FailingStderr()):
+                with redirect_stdout(stdout):
+                    exit_code = cli.main(
+                        [
+                            "verify",
+                            "--release",
+                            str(self.valid_release),
+                            "--json",
+                        ]
+                    )
+        self.assertEqual(30, exit_code)
+        self.assertEqual("", stdout.getvalue())
+
     def test_verify_and_inspect_emit_only_verified_report_json(self) -> None:
         expected_keys = {"components", "fileCount", "payloadBytes", "releaseId"}
         reports: list[dict[str, object]] = []

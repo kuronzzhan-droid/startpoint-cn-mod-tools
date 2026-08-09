@@ -49,10 +49,22 @@ def _write_json(stream: object, value: dict[str, object]) -> None:
     raw = canonical_json_bytes(value)
     binary = getattr(stream, "buffer", None)
     if binary is not None and callable(getattr(binary, "write", None)):
-        binary.write(raw)
-        binary.flush()
+        written = binary.write(raw)
+        if type(written) is not int or written != len(raw):
+            raise OSError("binary output write was incomplete")
+        flush = getattr(binary, "flush", None)
+        if not callable(flush):
+            raise OSError("binary output cannot be flushed")
+        flush()
         return
-    stream.write(raw.decode("utf-8"))  # type: ignore[attr-defined]
+    text = raw.decode("utf-8")
+    written = stream.write(text)  # type: ignore[attr-defined]
+    if type(written) is not int or written != len(text):
+        raise OSError("text output write was incomplete")
+    flush = getattr(stream, "flush", None)
+    if not callable(flush):
+        raise OSError("text output cannot be flushed")
+    flush()
 
 
 def _write_error(code: str, message: str) -> None:
@@ -64,6 +76,51 @@ def _configure_stdio() -> None:
         reconfigure = getattr(stream, "reconfigure", None)
         if callable(reconfigure):
             reconfigure(encoding="utf-8", errors="strict", newline="\n")
+
+
+def _quarantine_standard_stream(stream: object, name: str) -> None:
+    current = getattr(sys, name, None)
+    original = getattr(sys, f"__{name}__", None)
+    if stream is not current or stream is not original:
+        return
+    null_descriptor = -1
+    try:
+        descriptor = stream.fileno()  # type: ignore[attr-defined]
+        null_descriptor = os.open(os.devnull, os.O_WRONLY)
+        os.dup2(null_descriptor, descriptor)
+        try:
+            stream.flush()  # type: ignore[attr-defined]
+        except Exception:
+            pass
+        return
+    except Exception:
+        try:
+            replacement = open(
+                os.devnull,
+                "w",
+                encoding="utf-8",
+                errors="strict",
+                newline="\n",
+            )
+            setattr(sys, name, replacement)
+        except Exception:
+            pass
+    finally:
+        if null_descriptor >= 0:
+            try:
+                os.close(null_descriptor)
+            except OSError:
+                pass
+
+
+def _return_error(code: str, message: str, exit_code: int) -> int:
+    stream = sys.stderr
+    try:
+        _write_error(code, message)
+    except Exception:
+        _quarantine_standard_stream(stream, "stderr")
+        return 30
+    return exit_code
 
 
 class _ArgumentParser(argparse.ArgumentParser):
@@ -228,21 +285,27 @@ def _release_exit(error: ReleaseError) -> tuple[int, str]:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    output_stream: object | None = None
     try:
         _configure_stdio()
         arguments = _parser().parse_args(argv)
         result = arguments.handler(arguments)
+        output_stream = sys.stdout
+        _write_json(output_stream, result)
     except ReleaseError as error:
+        if output_stream is not None:
+            _quarantine_standard_stream(output_stream, "stdout")
+            return _return_error("WFREL_CLI_IO", "本地执行失败", 30)
         exit_code, message = _release_exit(error)
-        _write_error(error.code, message)
-        return exit_code
+        return _return_error(error.code, message, exit_code)
     except KeyboardInterrupt:
-        _write_error("WFREL_CLI_IO", "本地执行失败")
-        return 30
+        if output_stream is not None:
+            _quarantine_standard_stream(output_stream, "stdout")
+        return _return_error("WFREL_CLI_IO", "本地执行失败", 30)
     except Exception:
-        _write_error("WFREL_CLI_IO", "本地执行失败")
-        return 30
-    _write_json(sys.stdout, result)
+        if output_stream is not None:
+            _quarantine_standard_stream(output_stream, "stdout")
+        return _return_error("WFREL_CLI_IO", "本地执行失败", 30)
     return 0
 
 
