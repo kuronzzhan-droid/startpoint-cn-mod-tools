@@ -45,6 +45,20 @@ _IO_PREFIXES: Final = (
 )
 
 
+def _flush_stream(stream: object) -> None:
+    flush = getattr(stream, "flush", None)
+    if not callable(flush):
+        raise OSError("output cannot be flushed")
+    flush()
+
+
+def _write_text(stream: object, text: str) -> None:
+    written = stream.write(text)  # type: ignore[attr-defined]
+    if type(written) is not int or written != len(text):
+        raise OSError("text output write was incomplete")
+    _flush_stream(stream)
+
+
 def _write_json(stream: object, value: dict[str, object]) -> None:
     raw = canonical_json_bytes(value)
     binary = getattr(stream, "buffer", None)
@@ -52,19 +66,9 @@ def _write_json(stream: object, value: dict[str, object]) -> None:
         written = binary.write(raw)
         if type(written) is not int or written != len(raw):
             raise OSError("binary output write was incomplete")
-        flush = getattr(binary, "flush", None)
-        if not callable(flush):
-            raise OSError("binary output cannot be flushed")
-        flush()
+        _flush_stream(binary)
         return
-    text = raw.decode("utf-8")
-    written = stream.write(text)  # type: ignore[attr-defined]
-    if type(written) is not int or written != len(text):
-        raise OSError("text output write was incomplete")
-    flush = getattr(stream, "flush", None)
-    if not callable(flush):
-        raise OSError("text output cannot be flushed")
-    flush()
+    _write_text(stream, raw.decode("utf-8"))
 
 
 def _write_error(code: str, message: str) -> None:
@@ -123,9 +127,31 @@ def _return_error(code: str, message: str, exit_code: int) -> int:
     return exit_code
 
 
+class _ParseOutputContext:
+    def __init__(self) -> None:
+        self.stream: object | None = None
+
+
 class _ArgumentParser(argparse.ArgumentParser):
+    def __init__(
+        self,
+        *args: object,
+        output_context: _ParseOutputContext | None = None,
+        **kwargs: object,
+    ) -> None:
+        self._output_context = output_context or _ParseOutputContext()
+        super().__init__(*args, **kwargs)  # type: ignore[arg-type]
+
+    def _print_message(self, message: str, file: object | None = None) -> None:
+        if not message:
+            return
+        stream = file if file is not None else sys.stderr
+        self._output_context.stream = stream
+        _write_text(stream, message)
+
     def error(self, message: str) -> None:
         del message
+        self._output_context.stream = sys.stderr
         _write_error("WFREL_CLI_ARGUMENTS", "命令参数无效")
         raise SystemExit(2)
 
@@ -237,11 +263,14 @@ def _run_verify(arguments: argparse.Namespace) -> dict[str, object]:
     return _report_wire(verify_release(Path(arguments.release)))
 
 
-def _parser() -> _ArgumentParser:
-    parser = _ArgumentParser(prog="wf-release")
+def _parser(output_context: _ParseOutputContext | None = None) -> _ArgumentParser:
+    context = output_context or _ParseOutputContext()
+    parser = _ArgumentParser(prog="wf-release", output_context=context)
     commands = parser.add_subparsers(dest="command", required=True)
 
-    build = commands.add_parser("build", help="构建不可变发行物")
+    build = commands.add_parser(
+        "build", help="构建不可变发行物", output_context=context
+    )
     build.add_argument("--workspace", required=True)
     build.add_argument("--overlay", action="append", required=True)
     build.add_argument("--requirements", required=True)
@@ -254,7 +283,9 @@ def _parser() -> _ArgumentParser:
         ("verify", "独立校验发行物"),
         ("inspect", "输出已完整校验的发行物摘要"),
     ):
-        command = commands.add_parser(name, help=help_text)
+        command = commands.add_parser(
+            name, help=help_text, output_context=context
+        )
         command.add_argument("--release", required=True)
         command.add_argument("--json", action="store_true", required=True)
         command.set_defaults(handler=_run_verify)
@@ -284,25 +315,51 @@ def _release_exit(error: ReleaseError) -> tuple[int, str]:
     return 30, "本地执行失败"
 
 
+def _quarantine_parse_output(context: _ParseOutputContext) -> None:
+    stream = context.stream
+    if stream is sys.stdout:
+        _quarantine_standard_stream(stream, "stdout")
+    elif stream is sys.stderr:
+        _quarantine_standard_stream(stream, "stderr")
+
+
 def main(argv: Sequence[str] | None = None) -> int:
+    parse_output = _ParseOutputContext()
     output_stream: object | None = None
     try:
         _configure_stdio()
-        arguments = _parser().parse_args(argv)
+        parser = _parser(parse_output)
+        try:
+            arguments = parser.parse_args(argv)
+        except SystemExit:
+            if parse_output.stream is not None:
+                try:
+                    _flush_stream(parse_output.stream)
+                except Exception:
+                    _quarantine_parse_output(parse_output)
+                    return _return_error("WFREL_CLI_IO", "本地执行失败", 30)
+            raise
         result = arguments.handler(arguments)
         output_stream = sys.stdout
         _write_json(output_stream, result)
     except ReleaseError as error:
+        if parse_output.stream is not None:
+            _quarantine_parse_output(parse_output)
+            return _return_error("WFREL_CLI_IO", "本地执行失败", 30)
         if output_stream is not None:
             _quarantine_standard_stream(output_stream, "stdout")
             return _return_error("WFREL_CLI_IO", "本地执行失败", 30)
         exit_code, message = _release_exit(error)
         return _return_error(error.code, message, exit_code)
     except KeyboardInterrupt:
+        if parse_output.stream is not None:
+            _quarantine_parse_output(parse_output)
         if output_stream is not None:
             _quarantine_standard_stream(output_stream, "stdout")
         return _return_error("WFREL_CLI_IO", "本地执行失败", 30)
     except Exception:
+        if parse_output.stream is not None:
+            _quarantine_parse_output(parse_output)
         if output_stream is not None:
             _quarantine_standard_stream(output_stream, "stdout")
         return _return_error("WFREL_CLI_IO", "本地执行失败", 30)

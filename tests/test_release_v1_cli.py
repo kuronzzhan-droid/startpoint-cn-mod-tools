@@ -151,15 +151,27 @@ class ReleaseCliTests(unittest.TestCase):
         unicode_release = self.case_root / "候选发行.zip"
         unicode_release.write_bytes(self.valid_release.read_bytes())
         for encoding in (None, "gbk", "utf-16", "cp1252"):
-            with self.subTest(encoding=encoding, stream="help"):
-                help_result = self._run_with_encoding(encoding, "--help")
-                self.assertEqual(0, help_result.returncode)
-                self.assertEqual(b"", help_result.stderr)
-                self.assertNotIn(b"\xff\xfe", help_result.stdout)
-                self.assertNotIn(b"\xfe\xff", help_result.stdout)
-                self.assertNotIn(b"\r\n", help_result.stdout)
-                help_text = help_result.stdout.decode("utf-8")
-                self.assertIn("构建不可变发行物", help_text)
+            for help_arguments in (
+                ("--help",),
+                ("build", "--help"),
+                ("verify", "--help"),
+                ("inspect", "--help"),
+            ):
+                with self.subTest(
+                    encoding=encoding,
+                    stream="help",
+                    arguments=help_arguments,
+                ):
+                    help_result = self._run_with_encoding(
+                        encoding, *help_arguments
+                    )
+                    self.assertEqual(0, help_result.returncode)
+                    self.assertEqual(b"", help_result.stderr)
+                    self.assertNotIn(b"\xff\xfe", help_result.stdout)
+                    self.assertNotIn(b"\xfe\xff", help_result.stdout)
+                    self.assertNotIn(b"\r\n", help_result.stdout)
+                    help_text = help_result.stdout.decode("utf-8")
+                    self.assertIn("usage:", help_text)
 
             with self.subTest(encoding=encoding, stream="success"):
                 success = self._run_with_encoding(
@@ -218,6 +230,115 @@ class ReleaseCliTests(unittest.TestCase):
         self.assertEqual(canonical_json_bytes(value), stderr)
         self.assertNotIn(b"Traceback", stderr)
         self.assertNotIn(str(self.root).encode("utf-8"), stderr)
+
+    def test_closed_real_stdout_pipe_is_safe_for_every_help_command(self) -> None:
+        for arguments in (
+            ("--help",),
+            ("build", "--help"),
+            ("verify", "--help"),
+            ("inspect", "--help"),
+        ):
+            with self.subTest(arguments=arguments):
+                process = subprocess.Popen(
+                    [sys.executable, "-m", "wf_release_v1", *arguments],
+                    cwd=Path(__file__).resolve().parents[1],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+                self.assertIsNotNone(process.stdout)
+                self.assertIsNotNone(process.stderr)
+                process.stdout.close()  # type: ignore[union-attr]
+                stderr = process.stderr.read()  # type: ignore[union-attr]
+                process.stderr.close()  # type: ignore[union-attr]
+                return_code = process.wait(timeout=30)
+
+                self.assertEqual(30, return_code)
+                value = json.loads(stderr.decode("utf-8"))
+                self.assertEqual(
+                    {"code": "WFREL_CLI_IO", "message": "本地执行失败"},
+                    value,
+                )
+                self.assertEqual(canonical_json_bytes(value), stderr)
+                self.assertNotIn(b"Traceback", stderr)
+                self.assertNotIn(b"Exception ignored", stderr)
+
+    def test_closed_real_stderr_pipe_on_argument_error_returns_30(self) -> None:
+        process = subprocess.Popen(
+            [sys.executable, "-m", "wf_release_v1"],
+            cwd=Path(__file__).resolve().parents[1],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        self.assertIsNotNone(process.stdout)
+        self.assertIsNotNone(process.stderr)
+        process.stderr.close()  # type: ignore[union-attr]
+        stdout = process.stdout.read()  # type: ignore[union-attr]
+        process.stdout.close()  # type: ignore[union-attr]
+        return_code = process.wait(timeout=30)
+
+        self.assertEqual(30, return_code)
+        self.assertEqual(b"", stdout)
+        self.assertNotIn(b"Traceback", stdout)
+        self.assertNotEqual(120, return_code)
+
+    def test_parse_output_failures_return_30_but_healthy_systemexit_propagates(self) -> None:
+        from wf_release_v1 import cli
+
+        class HelpStream:
+            def __init__(self, failure: str) -> None:
+                self.failure = failure
+                self.flushes = 0
+
+            def write(self, value: str) -> int:
+                if self.failure == "write-oserror":
+                    raise OSError("private help path")
+                return len(value)
+
+            def flush(self) -> None:
+                self.flushes += 1
+                if self.failure == "flush-oserror" and self.flushes == 1:
+                    raise OSError("private help path")
+                if self.failure == "exit-flush-oserror" and self.flushes == 2:
+                    raise OSError("private help path")
+
+        for failure in ("write-oserror", "flush-oserror", "exit-flush-oserror"):
+            with self.subTest(failure=failure):
+                stdout = HelpStream(failure)
+                stderr = io.StringIO()
+                with patch.object(cli.sys, "stdout", stdout):
+                    with redirect_stderr(stderr):
+                        exit_code = cli.main(["--help"])
+                self.assertEqual(30, exit_code)
+                value = json.loads(stderr.getvalue())
+                self.assertEqual(
+                    {"code": "WFREL_CLI_IO", "message": "本地执行失败"},
+                    value,
+                )
+                self.assertNotIn("private", stderr.getvalue())
+                self.assertNotIn("Traceback", stderr.getvalue())
+
+        healthy_stdout = io.StringIO()
+        healthy_stderr = io.StringIO()
+        with patch.object(cli.sys, "stdout", healthy_stdout):
+            with patch.object(cli.sys, "stderr", healthy_stderr):
+                with self.assertRaises(SystemExit) as help_exit:
+                    cli.main(["--help"])
+        self.assertEqual(0, help_exit.exception.code)
+        self.assertIn("构建不可变发行物", healthy_stdout.getvalue())
+        self.assertEqual("", healthy_stderr.getvalue())
+
+        argument_stdout = io.StringIO()
+        argument_stderr = io.StringIO()
+        with patch.object(cli.sys, "stdout", argument_stdout):
+            with patch.object(cli.sys, "stderr", argument_stderr):
+                with self.assertRaises(SystemExit) as argument_exit:
+                    cli.main([])
+        self.assertEqual(2, argument_exit.exception.code)
+        self.assertEqual("", argument_stdout.getvalue())
+        self.assertEqual(
+            {"code": "WFREL_CLI_ARGUMENTS", "message": "命令参数无效"},
+            json.loads(argument_stderr.getvalue()),
+        )
 
     def test_injected_binary_and_text_output_failures_map_to_io(self) -> None:
         from wf_release_v1 import cli
