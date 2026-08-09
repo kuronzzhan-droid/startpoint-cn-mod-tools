@@ -46,7 +46,9 @@ Patch Overlay 必须由既有 Overlay 生产流程提前生成。Producer：
 
 第一条纵切只有 `content` 组件：
 
-- 不包含 `server/`；角色 workspace 的 server roots 只参与三层 seal 复核；
+- 不包含 `server/`；server roots 的 bytes 不进入 server payload，但其声明同时参与三层 seal
+  与 `ownership.paths` 源语义投影。Archive 内没有 workspace package manifest，Verifier
+  不能从发行物重新证明 workspace 来源，也不能证明 logical path 到 Overlay inner bytes 的映射；
 - 不包含 `modes/`，也不要求 Mode；
 - 服务端运行表仍由目标服务端已有的 Content Sync 从 Overlay 生成；
 - 尚不存在 `install`、`rollback`、`probe` 或平台套壳安装命令。
@@ -192,10 +194,16 @@ python -X utf8 -m tests.test_release_v1_performance --benchmark --runs 5 > wf-re
 ```
 
 输出是单个机器可读 JSON object，保留每次运行及 `median`，分别记录 cold build、相同输入的
-第二次 build、一个 Overlay 文件变化后的 build、verify 的 `wallTimeSeconds`、
+第二次 build、一个 manifest 已声明 workspace 文件变化并更新 claim、重新封印后的 build、
+verify 的 `wallTimeSeconds`、
 `peakTracemallocBytes`、`bytesRead` 和 `hashCount`。其中 build 的读/hash 仅指 Producer 外层
 Overlay 权威复制，verify 的读/hash 仅指 Release payload 权威 SHA；metadata 与 Overlay
 结构读取在 `metricScope` 中明确排除，不能把这些数字冒充总物理 I/O。
+
+顶层 `environment` 固定记录 Python implementation/version、OS/architecture，以及临时目录的
+存储身份：Windows 为 volume kind、drive 和 device ID，POSIX 为 filesystem kind 和 device ID；
+不调用外部命令，也不输出临时目录绝对路径。只有 `environment` 中所有字段和值完全一致时，
+两份结果才允许直接做性能回退比较；任一字段不同都必须建立新基线，不能套用旧基线的比例。
 
 后续变更必须在同一机器、同一 Python/文件系统条件下与该分支基线比较。5 次中位数出现超过
 20% 的非预期回退时停止合并并调查；这是人工比较规则，不把随机 wall time 写成 CI 断言，

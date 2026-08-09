@@ -12,6 +12,7 @@ import io
 import json
 import os
 from pathlib import Path
+import platform
 import statistics
 import sys
 import tempfile
@@ -34,7 +35,6 @@ from wf_release_v1.schema import parse_requirements
 _SPARSE_SENTINEL_BYTES = 1024 * 1024 * 1024
 _PHASES = ("coldBuild", "repeatBuild", "singleFileChangeBuild", "verify")
 _OVERLAY_FIXTURE_BYTES: tuple[bytes, bytes] | None = None
-
 
 def _make_sparse_file(path: Path, size: int) -> None:
     """Create a logical large file without writing or allocating its contents."""
@@ -59,7 +59,6 @@ def _make_sparse_file(path: Path, size: int) -> None:
                 raise ctypes.WinError()
         stream.truncate(size)
 
-
 def _fixed_overlay_bytes() -> tuple[bytes, bytes]:
     """Generate once so all five manual samples use byte-identical sources."""
     global _OVERLAY_FIXTURE_BYTES
@@ -79,7 +78,6 @@ def _fixed_overlay_bytes() -> tuple[bytes, bytes]:
             _OVERLAY_FIXTURE_BYTES = (first.read_bytes(), second.read_bytes())
     return _OVERLAY_FIXTURE_BYTES
 
-
 def _same_path(candidate: object, target: Path) -> bool:
     if isinstance(candidate, int):
         return False
@@ -89,7 +87,6 @@ def _same_path(candidate: object, target: Path) -> bool:
         )
     except TypeError:
         return False
-
 
 class _ReaderProbe:
     def __init__(self, stream, evidence: dict[str, int]) -> None:
@@ -114,7 +111,6 @@ class _ReaderProbe:
     def __getattr__(self, name: str):
         return getattr(self._stream, name)
 
-
 class _DigestProbe:
     def __init__(self, digest, evidence: dict[str, int], initial: bytes) -> None:
         self._digest = digest
@@ -128,7 +124,6 @@ class _DigestProbe:
 
     def hexdigest(self) -> str:
         return self._digest.hexdigest()
-
 
 class _OsProxy:
     def __init__(self, active: list[str | None], readers: dict[str, dict[str, int]]) -> None:
@@ -150,7 +145,6 @@ class _OsProxy:
     def __getattr__(self, name: str):
         return getattr(os, name)
 
-
 def _measure(action):
     gc.collect()
     tracemalloc.start()
@@ -162,7 +156,6 @@ def _measure(action):
     finally:
         tracemalloc.stop()
     return result, wall_time, peak
-
 
 def _guard_sparse_sentinel(stack: ExitStack, sentinel: Path) -> None:
     """Fail immediately if any common open/read path reaches the 1 GiB sentinel."""
@@ -195,7 +188,6 @@ def _guard_sparse_sentinel(stack: ExitStack, sentinel: Path) -> None:
     stack.enter_context(patch.object(io, "open", io_open))
     stack.enter_context(patch.object(Path, "open", path_open))
     stack.enter_context(patch.object(os, "open", os_open))
-
 
 def _measure_build(request, sentinel: Path):
     """Measure the authoritative Producer copy/hash seam, not Task 4 ZIP inspection."""
@@ -256,7 +248,6 @@ def _measure_build(request, sentinel: Path):
         "hashCount": len(expected),
     }
 
-
 def _measure_verify(release: Path):
     """Count the release payload SHA pass; metadata/Overlay structural reads are separate."""
     import wf_release_v1.verifier as verifier
@@ -305,7 +296,6 @@ def _measure_verify(release: Path):
         **evidence,
     }
 
-
 def _request(workspace: Path, overlays: tuple[Path, ...], output: Path):
     from wf_release_v1.producer import BuildRequest
 
@@ -317,7 +307,6 @@ def _request(workspace: Path, overlays: tuple[Path, ...], output: Path):
         output=output,
         requirements=parse_requirements(requirements_wire()),
     )
-
 
 def _exercise_fixed_fixture() -> dict[str, dict[str, float | int]]:
     import wf_release_v1.producer as producer
@@ -432,6 +421,20 @@ def _exercise_fixed_fixture() -> dict[str, dict[str, float | int]]:
             "verify": verify_metrics,
         }
 
+def _benchmark_environment() -> dict[str, object]:
+    temporary = Path(tempfile.gettempdir())
+    storage = {"kind": "windows-volume" if os.name == "nt" else "posix-filesystem",
+               "deviceId": str(temporary.stat().st_dev)}
+    if os.name == "nt":
+        storage["drive"] = temporary.drive.upper()
+    return {
+        "python": {
+            "implementation": platform.python_implementation(),
+            "version": platform.python_version(),
+        },
+        "platform": {"os": platform.system(), "architecture": platform.machine()},
+        "temporaryStorage": storage,
+    }
 
 def collect_benchmark(runs: int) -> dict[str, object]:
     if type(runs) is not int or runs < 1:
@@ -446,6 +449,7 @@ def collect_benchmark(runs: int) -> dict[str, object]:
             median[phase][metric] = int(value) if all(type(item) is int for item in values) else value
     return {
         "schemaVersion": 1,
+        "environment": _benchmark_environment(),
         "runs": samples,
         "median": median,
         "metricScope": {
@@ -453,7 +457,6 @@ def collect_benchmark(runs: int) -> dict[str, object]:
             "verify": "release payload full-SHA only; metadata and component Overlay reads excluded",
         },
     }
-
 
 class ReleasePerformanceTests(unittest.TestCase):
     def test_fixed_fixture_locks_io_hash_and_repeatability_contracts(self) -> None:
@@ -466,6 +469,24 @@ class ReleasePerformanceTests(unittest.TestCase):
                 self.assertGreater(evidence[phase]["bytesRead"], 0)
                 self.assertGreater(evidence[phase]["hashCount"], 0)
 
+    def test_benchmark_identifies_the_comparison_environment(self) -> None:
+        environment = collect_benchmark(1)["environment"]
+        self.assertEqual({"python", "platform", "temporaryStorage"}, set(environment))
+        self.assertEqual(
+            {"implementation", "version"}, set(environment["python"])  # type: ignore[arg-type]
+        )
+        self.assertEqual({"os", "architecture"}, set(environment["platform"]))  # type: ignore[arg-type]
+        self.assertEqual({"implementation": platform.python_implementation(),
+                          "version": platform.python_version()}, environment["python"])
+        self.assertEqual(
+            {"os": platform.system(), "architecture": platform.machine()},
+            environment["platform"],
+        )
+        storage = environment["temporaryStorage"]  # type: ignore[index]
+        expected = {"kind", "deviceId", "drive"} if os.name == "nt" else {"kind", "deviceId"}
+        self.assertEqual(expected, set(storage))
+        self.assertRegex(environment["python"]["version"], r"^[0-9]+\.[0-9]+\.[0-9]+$")  # type: ignore[index]
+        self.assertTrue(all(storage[key] for key in expected))
 
 def _main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="生成 wf-release-v1 同机性能基线 JSON")
@@ -474,7 +495,6 @@ def _main(argv: list[str] | None = None) -> int:
     arguments = parser.parse_args(argv)
     sys.stdout.buffer.write(canonical_json_bytes(collect_benchmark(arguments.runs)))
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(_main())
