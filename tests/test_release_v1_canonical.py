@@ -18,6 +18,18 @@ from wf_release_v1.canonical import (
 from wf_release_v1.errors import ReleaseError
 
 
+def _nested_strings(value: object):
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, dict):
+        for key, item in value.items():
+            yield from _nested_strings(key)
+            yield from _nested_strings(item)
+    elif isinstance(value, (list, tuple)):
+        for item in value:
+            yield from _nested_strings(item)
+
+
 class StrictJsonTests(unittest.TestCase):
     def assert_release_error(self, code: str, operation) -> None:
         with self.assertRaises(ReleaseError) as raised:
@@ -99,7 +111,7 @@ class RelativePathTests(unittest.TestCase):
                 with self.assertRaises(ReleaseError) as raised:
                     normalize_relative_path(value)
                 self.assertEqual("WFREL_PATH_INVALID", raised.exception.code)
-                self.assertNotIn("C:\\", str(raised.exception.details))
+                self.assertEqual({"field": "relativePath"}, raised.exception.details)
 
     def test_rejects_ascii_control_characters(self) -> None:
         for value in (
@@ -113,7 +125,29 @@ class RelativePathTests(unittest.TestCase):
                 with self.assertRaises(ReleaseError) as raised:
                     normalize_relative_path(value)
                 self.assertEqual("WFREL_PATH_INVALID", raised.exception.code)
-                self.assertNotIn("C:\\", str(raised.exception.details))
+                self.assertEqual({"field": "relativePath"}, raised.exception.details)
+
+    def test_redacts_untrusted_invalid_paths_from_errors(self) -> None:
+        rejected = (
+            r"C:\Users\Alice\secret.json",
+            "C:/Users/Alice/secret.json",
+            r"\\server\share\secret.json",
+            "/Users/Alice/secret.json",
+            "C:secret.json",
+        )
+        for value in rejected:
+            with self.subTest(value=repr(value)):
+                with self.assertRaises(ReleaseError) as raised:
+                    normalize_relative_path(value)
+                error = raised.exception
+                self.assertEqual("WFREL_PATH_INVALID", error.code)
+                self.assertEqual({"field": "relativePath"}, error.details)
+
+                rendered = [str(error), *_nested_strings(error.details)]
+                forbidden = (value, "Alice", "secret", "Users", "server", "share")
+                for text in rendered:
+                    for fragment in forbidden:
+                        self.assertNotIn(fragment, text)
 
 
 class StableFileCopyTests(unittest.TestCase):

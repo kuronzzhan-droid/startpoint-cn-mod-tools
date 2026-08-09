@@ -114,7 +114,7 @@ def _contains_non_scalar_unicode(value: object) -> bool:
 
 def normalize_relative_path(value: str) -> str:
     """Accept only an already-canonical POSIX relative path."""
-    details = {"relativePath": value} if isinstance(value, str) else {}
+    details = {"field": "relativePath"}
     if not isinstance(value, str):
         raise ReleaseError("WFREL_PATH_INVALID", "relative path must be a string", details)
     if (
