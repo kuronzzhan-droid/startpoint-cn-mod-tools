@@ -80,8 +80,8 @@ class CharacterOwnershipProjectionTests(unittest.TestCase):
 
         ownership = project_character_ownership(
             workspace_manifest=manifest,
-            declared_server_paths=[*server, *server],
-            declared_overlay_paths=[*reversed(overlay), *overlay],
+            declared_server_paths=server,
+            declared_overlay_paths=list(reversed(overlay)),
         )
 
         self.assertEqual(
@@ -104,6 +104,24 @@ class CharacterOwnershipProjectionTests(unittest.TestCase):
             ownership.to_wire(),
         )
         self.assertFalse(any("*" in path for path in ownership.paths))
+
+    def test_rejects_duplicate_paths_within_each_payload_channel(self) -> None:
+        manifest = package_manifest()
+        server, overlay = declared_paths(manifest)
+
+        for channel, declared_server, declared_overlay in (
+            ("server", [*server, server[0]], overlay),
+            ("overlay", server, [*overlay, overlay[0]]),
+        ):
+            with self.subTest(channel=channel):
+                with self.assertRaises(ReleaseError) as raised:
+                    project_character_ownership(
+                        workspace_manifest=manifest,
+                        declared_server_paths=declared_server,
+                        declared_overlay_paths=declared_overlay,
+                    )
+
+                self.assertEqual("WFREL_OWNERSHIP_INVALID", raised.exception.code)
 
     def test_rejects_manual_identity_or_ownership_fields(self) -> None:
         for field, value in (
@@ -193,15 +211,18 @@ class CharacterOwnershipProjectionTests(unittest.TestCase):
                     )
                 self.assertEqual("WFREL_OWNERSHIP_INVALID", raised.exception.code)
 
-    def test_fails_closed_when_declared_payload_does_not_cover_manifest_paths(self) -> None:
+    def test_fails_closed_when_payload_partitions_do_not_exactly_match_manifest(self) -> None:
         manifest = package_manifest()
         server, overlay = declared_paths(manifest)
 
-        for missing_kind, declared_server, declared_overlay in (
+        for mismatch, declared_server, declared_overlay in (
             ("server", [], overlay),
             ("overlay", server, overlay[1:]),
+            ("extra-server", [*server, "unowned/server.json"], overlay),
+            ("extra-overlay", server, [*overlay, "unowned/client.bin"]),
+            ("swapped-channels", [overlay[0]], [server[0], *overlay[1:]]),
         ):
-            with self.subTest(missing_kind=missing_kind):
+            with self.subTest(mismatch=mismatch):
                 with self.assertRaises(ReleaseError) as raised:
                     project_character_ownership(
                         workspace_manifest=manifest,
@@ -210,6 +231,23 @@ class CharacterOwnershipProjectionTests(unittest.TestCase):
                     )
 
                 self.assertEqual("WFREL_OWNERSHIP_COVERAGE", raised.exception.code)
+
+    def test_rejects_a_logical_path_declared_under_multiple_manifest_roots(self) -> None:
+        manifest = package_manifest()
+        roots = manifest["roots"]
+        assert isinstance(roots, dict)
+        duplicate = copy.deepcopy(roots["common"][0])
+        roots["medium"].append(duplicate)
+        server, overlay = declared_paths(manifest)
+
+        with self.assertRaises(ReleaseError) as raised:
+            project_character_ownership(
+                workspace_manifest=manifest,
+                declared_server_paths=server,
+                declared_overlay_paths=list(dict.fromkeys(overlay)),
+            )
+
+        self.assertEqual("WFREL_OWNERSHIP_INVALID", raised.exception.code)
 
     def test_rejects_noncanonical_declared_payload_paths(self) -> None:
         manifest = package_manifest()

@@ -77,9 +77,10 @@ def _utf8_sorted_unique(values: Sequence[str]) -> tuple[str, ...]:
 def _declared_payload_paths(value: object, label: str) -> tuple[str, ...]:
     if isinstance(value, (str, bytes)) or not isinstance(value, Sequence):
         raise _invalid(label, "declared payload paths must be an array")
-    return _utf8_sorted_unique(
-        [_canonical_logical_path(item, f"{label}[]") for item in value]
-    )
+    paths = [_canonical_logical_path(item, f"{label}[]") for item in value]
+    if len(set(paths)) != len(paths):
+        raise _invalid(label, "declared payload paths must be unique")
+    return _utf8_sorted_unique(paths)
 
 
 def _manifest_paths(manifest: Mapping[str, object]) -> tuple[tuple[str, ...], dict[str, set[str]]]:
@@ -88,6 +89,7 @@ def _manifest_paths(manifest: Mapping[str, object]) -> tuple[tuple[str, ...], di
     )
     paths: list[str] = []
     paths_by_root: dict[str, set[str]] = {root: set() for root in _ROOT_NAMES}
+    seen_paths: set[str] = set()
     for root in _ROOT_NAMES:
         entries = roots[root]
         if not isinstance(entries, list):
@@ -104,8 +106,9 @@ def _manifest_paths(manifest: Mapping[str, object]) -> tuple[tuple[str, ...], di
                 raise _invalid(f"{label}.sha256", "value must be a lowercase SHA-256")
             if type(size) is not int or size < 0:
                 raise _invalid(f"{label}.size", "value must be a non-negative integer")
-            if logical_path in paths_by_root[root]:
+            if logical_path in seen_paths:
                 raise _invalid(f"{label}.logical_path", "logical path is duplicated")
+            seen_paths.add(logical_path)
             paths_by_root[root].add(logical_path)
             paths.append(logical_path)
     if not paths:
@@ -182,18 +185,28 @@ def project_character_ownership(
 
     paths, paths_by_root = _manifest_paths(manifest)
     records = _manifest_records(manifest, paths_by_root)
-    declared_paths = frozenset(
-        (
-            *_declared_payload_paths(declared_server_paths, "declared_server_paths"),
-            *_declared_payload_paths(declared_overlay_paths, "declared_overlay_paths"),
-        )
+    declared_server = frozenset(
+        _declared_payload_paths(declared_server_paths, "declared_server_paths")
     )
-    missing_count = len(set(paths) - declared_paths)
-    if missing_count:
+    declared_overlay = frozenset(
+        _declared_payload_paths(declared_overlay_paths, "declared_overlay_paths")
+    )
+    expected_server = frozenset(paths_by_root["server"])
+    expected_overlay = frozenset(
+        path
+        for root in ("common", "medium", "android")
+        for path in paths_by_root[root]
+    )
+    if declared_server != expected_server or declared_overlay != expected_overlay:
         raise ReleaseError(
             "WFREL_OWNERSHIP_COVERAGE",
-            "declared payload does not cover every projected ownership path",
-            {"missingCount": missing_count},
+            "declared payload paths do not exactly match projected ownership partitions",
+            {
+                "missingServerCount": len(expected_server - declared_server),
+                "extraServerCount": len(declared_server - expected_server),
+                "missingOverlayCount": len(expected_overlay - declared_overlay),
+                "extraOverlayCount": len(declared_overlay - expected_overlay),
+            },
         )
 
     return OwnershipManifest(
