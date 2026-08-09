@@ -23,10 +23,7 @@ import unittest
 from unittest.mock import patch
 import zipfile
 
-from tests.release_v1_fixtures import (
-    make_patch_overlay,
-    make_sealed_character_workspace,
-)
+from tests.release_v1_fixtures import make_patch_overlay, make_sealed_character_workspace
 from tests.release_v1_schema_support import requirements_wire
 from wf_release_v1.canonical import canonical_json_bytes
 from wf_release_v1.schema import parse_requirements
@@ -423,18 +420,18 @@ def _exercise_fixed_fixture() -> dict[str, dict[str, float | int]]:
 
 def _benchmark_environment() -> dict[str, object]:
     temporary = Path(tempfile.gettempdir())
-    storage = {"kind": "windows-volume" if os.name == "nt" else "posix-filesystem",
-               "deviceId": str(temporary.stat().st_dev)}
+    storage = {"kind": "windows-volume" if os.name == "nt" else "posix-filesystem", "deviceId": str(temporary.stat().st_dev)}
     if os.name == "nt":
         storage["drive"] = temporary.drive.upper()
-    return {
-        "python": {
-            "implementation": platform.python_implementation(),
-            "version": platform.python_version(),
-        },
+    environment = {
+        "python": {"implementation": platform.python_implementation(),
+                   "version": platform.python_version()},
         "platform": {"os": platform.system(), "architecture": platform.machine()},
         "temporaryStorage": storage,
     }
+    if any(not isinstance(value, str) or not value.strip() for group in environment.values() for value in group.values()):
+        raise ValueError("benchmark environment field is empty")
+    return environment
 
 def collect_benchmark(runs: int) -> dict[str, object]:
     if type(runs) is not int or runs < 1:
@@ -464,29 +461,32 @@ class ReleasePerformanceTests(unittest.TestCase):
         self.assertEqual(set(_PHASES), set(evidence))
         for phase in _PHASES:
             with self.subTest(phase=phase):
-                self.assertGreater(evidence[phase]["wallTimeSeconds"], 0)
-                self.assertGreater(evidence[phase]["peakTracemallocBytes"], 0)
-                self.assertGreater(evidence[phase]["bytesRead"], 0)
-                self.assertGreater(evidence[phase]["hashCount"], 0)
+                for metric in ("wallTimeSeconds", "peakTracemallocBytes", "bytesRead", "hashCount"):
+                    self.assertGreater(evidence[phase][metric], 0)
 
     def test_benchmark_identifies_the_comparison_environment(self) -> None:
         environment = collect_benchmark(1)["environment"]
-        self.assertEqual({"python", "platform", "temporaryStorage"}, set(environment))
-        self.assertEqual(
-            {"implementation", "version"}, set(environment["python"])  # type: ignore[arg-type]
-        )
-        self.assertEqual({"os", "architecture"}, set(environment["platform"]))  # type: ignore[arg-type]
-        self.assertEqual({"implementation": platform.python_implementation(),
-                          "version": platform.python_version()}, environment["python"])
-        self.assertEqual(
-            {"os": platform.system(), "architecture": platform.machine()},
-            environment["platform"],
-        )
-        storage = environment["temporaryStorage"]  # type: ignore[index]
-        expected = {"kind", "deviceId", "drive"} if os.name == "nt" else {"kind", "deviceId"}
-        self.assertEqual(expected, set(storage))
+        temporary = Path(tempfile.gettempdir())
+        storage = {"kind": "windows-volume" if os.name == "nt" else "posix-filesystem", "deviceId": str(temporary.stat().st_dev)}
+        if os.name == "nt":
+            storage["drive"] = temporary.drive.upper()
+        self.assertEqual({
+            "python": {"implementation": platform.python_implementation(), "version": platform.python_version()},
+            "platform": {"os": platform.system(), "architecture": platform.machine()},
+            "temporaryStorage": storage,
+        }, environment)
         self.assertRegex(environment["python"]["version"], r"^[0-9]+\.[0-9]+\.[0-9]+$")  # type: ignore[index]
-        self.assertTrue(all(storage[key] for key in expected))
+        self.assertTrue(all(isinstance(value, str) and value.strip()
+                            for group in environment.values() for value in group.values()))
+
+    def test_benchmark_rejects_empty_environment_identity(self) -> None:
+        for probe in ("python_implementation", "python_version", "system", "machine"):
+            with self.subTest(probe=probe), patch.object(platform, probe, return_value=""), \
+                    self.assertRaisesRegex(ValueError, r"benchmark environment field is empty"):
+                _benchmark_environment()
+        with patch.object(Path, "stat", return_value=SimpleNamespace(st_dev="")), \
+                self.assertRaisesRegex(ValueError, r"benchmark environment field is empty"):
+            _benchmark_environment()
 
 def _main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="生成 wf-release-v1 同机性能基线 JSON")
