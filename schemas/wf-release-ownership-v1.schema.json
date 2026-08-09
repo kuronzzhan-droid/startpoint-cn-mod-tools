@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://startpoint-cn.local/schemas/wf-release-ownership-v1.schema.json",
+  "title": "World Flipper release ownership v1",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "ownershipKey": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9._-]*:[^\\s:]+$"
+    },
+    "logicalPath": {
+      "type": "string",
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*\\u0000)(?!.*//)(?!.*(?:^|/)(?:\\.|\\.\\.)(?:/|$))[^/]+(?:/[^/]+)*$"
+    }
+  },
+  "required": ["schemaVersion", "entities", "records", "paths"],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "entities": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/ownershipKey"}
+    },
+    "records": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/ownershipKey"}
+    },
+    "paths": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/logicalPath"}
+    }
+  }
+}
