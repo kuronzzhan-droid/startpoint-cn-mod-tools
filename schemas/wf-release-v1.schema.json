@@ -2,6 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://startpoint-cn.local/schemas/wf-release-v1.schema.json",
   "title": "World Flipper release manifest v1",
+  "$comment": "Structural preflight only. The wf_release_v1 strict parser and verifier are authoritative for strict Python integer types, UTF-8 byte ordering, NFC paths, property-level uniqueness, component/file closure, releaseId verification, and self-replacement. Installers and receivers MUST NOT rely on this schema alone.",
   "type": "object",
   "additionalProperties": false,
   "$defs": {

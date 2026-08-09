@@ -9,6 +9,27 @@ from pathlib import Path
 import re
 import unittest
 
+from tests.release_v1_schema_support import (
+    CAPABILITY_PATTERN,
+    DOTTED_VERSION_PATTERN,
+    Draft202012Subset,
+    HEX_A,
+    HEX_B,
+    HEX_C,
+    HEX_D,
+    HEX_E,
+    PAYLOAD_PATH_PATTERN,
+    RELEASE_ID_E,
+    RELEASE_ID_PATTERN,
+    SHA256_PATTERN,
+    SchemaDefinitionError,
+    ownership_wire,
+    release_wire,
+    release_without_id,
+    replace_at_path,
+    requirements_wire,
+)
+
 from wf_release_v1.errors import ReleaseError
 from wf_release_v1.schema import (
     compute_release_id,
@@ -20,84 +41,6 @@ from wf_release_v1.schema import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
-HEX_A = "a" * 64
-HEX_B = "b" * 64
-HEX_C = "c" * 64
-HEX_D = "d" * 64
-HEX_E = "e" * 64
-RELEASE_ID_E = f"sha256:{HEX_E}"
-
-SHA256_PATTERN = r"^[0-9a-f]{64}$"
-RELEASE_ID_PATTERN = r"^sha256:[0-9a-f]{64}$"
-DOTTED_VERSION_PATTERN = r"^(?:0|[1-9][0-9]*)(?:\.(?:0|[1-9][0-9]*))+$"
-CAPABILITY_PATTERN = r"^[a-z0-9][a-z0-9._-]*@[1-9][0-9]*$"
-PAYLOAD_PATH_PATTERN = (
-    r"^(?!.*\\)(?!.*\u0000)(?!.*//)(?!.*(?:^|/)(?:\.|\.\.)(?:/|$))"
-    r"(?:content|server|modes)/[^/]+(?:/[^/]+)*$"
-)
-
-
-def release_without_id() -> dict[str, object]:
-    return {
-        "schemaVersion": 1,
-        "name": "seris-dragon-king",
-        "version": "1.0.0",
-        "producer": {"name": "wf-mod-tools", "version": "1"},
-        "replaces": [],
-        "sourceEvidence": {
-            "kind": "character-workspace-v1",
-            "workspaceInputSha256": HEX_A,
-        },
-        "components": [{"kind": "content", "root": "content"}],
-        "expectedState": {
-            "cdnTargetVersion": "1.4.54",
-            "contentDigest": None,
-            "modeDigest": None,
-        },
-        "metadataSha256": {"requires": HEX_B, "ownership": HEX_C},
-        "files": [
-            {
-                "path": "content/worldflipper-overlay-1.4.53-to-1.4.54.zip",
-                "size": 123,
-                "sha256": HEX_D,
-            }
-        ],
-    }
-
-
-def release_wire(*, computed_id: bool = False) -> dict[str, object]:
-    value = release_without_id()
-    value["releaseId"] = compute_release_id(value) if computed_id else RELEASE_ID_E
-    return value
-
-
-def requirements_wire() -> dict[str, object]:
-    return {
-        "schemaVersion": 1,
-        "runtimeApi": 1,
-        "serverCapabilities": ["content.sync@1", "mode.release-contract@1"],
-        "clientVersions": ["1.4.54", "1.4.55"],
-        "resourceBaselines": ["1.4.53", "1.4.54"],
-        "contentDigests": [f"sha256:{HEX_A}", f"sha256:{HEX_B}"],
-        "patchOverlaySchema": 1,
-        "clientPatchProfile": True,
-    }
-
-
-def ownership_wire() -> dict[str, object]:
-    return {
-        "schemaVersion": 1,
-        "entities": ["character:310099"],
-        "records": ["characters:310099", "skills:310099"],
-        "paths": ["assets/character/310099/**", "content/character/310099.atf"],
-    }
-
-
-def replace_at_path(value: dict[str, object], path: tuple[object, ...], replacement: object) -> None:
-    cursor: object = value
-    for part in path[:-1]:
-        cursor = cursor[part]  # type: ignore[index]
-    cursor[path[-1]] = replacement  # type: ignore[index]
 
 
 class ManifestHappyPathTests(unittest.TestCase):
@@ -475,6 +418,216 @@ class JsonSchemaLockTests(unittest.TestCase):
 
     def assert_required(self, node: dict[str, object], *keys: str) -> None:
         self.assertEqual(set(keys), set(node["required"]))
+
+    def assert_structural_rejection(self, evaluator, parser, value: object) -> None:
+        self.assertFalse(evaluator.accepts(value))
+        with self.assertRaises(ReleaseError):
+            parser(value)
+
+    def assert_parser_only_rejection(self, evaluator, parser, value: object) -> None:
+        self.assertTrue(evaluator.accepts(value))
+        with self.assertRaises(ReleaseError):
+            parser(value)
+
+    def test_evaluator_executes_every_used_keyword_and_fails_closed(self) -> None:
+        schemas = (
+            self.load_schema("wf-release-v1.schema.json"),
+            self.load_schema("wf-release-requires-v1.schema.json"),
+            self.load_schema("wf-release-ownership-v1.schema.json"),
+        )
+        evaluators = tuple(Draft202012Subset(schema) for schema in schemas)
+        used = set().union(*(evaluator.used_keywords for evaluator in evaluators))
+        self.assertEqual(Draft202012Subset.KEYWORDS, used)
+
+        with self.assertRaises(SchemaDefinitionError):
+            Draft202012Subset({"type": "string", "silentlyIgnored": True})
+        with self.assertRaises(SchemaDefinitionError):
+            Draft202012Subset({"$ref": "#/$defs/missing", "$defs": {}})
+
+    def test_schema_and_parser_reject_the_same_structural_fixtures(self) -> None:
+        release_schema = Draft202012Subset(
+            self.load_schema("wf-release-v1.schema.json")
+        )
+        requirements_schema = Draft202012Subset(
+            self.load_schema("wf-release-requires-v1.schema.json")
+        )
+        ownership_schema = Draft202012Subset(
+            self.load_schema("wf-release-ownership-v1.schema.json")
+        )
+        self.assertTrue(release_schema.accepts(release_wire()))
+        self.assertTrue(requirements_schema.accepts(requirements_wire()))
+        self.assertTrue(ownership_schema.accepts(ownership_wire()))
+
+        release_cases = []
+        missing = release_wire()
+        del missing["version"]
+        release_cases.append(missing)
+        unknown = release_wire()
+        unknown["unknown"] = None
+        release_cases.append(unknown)
+        nested_unknown = release_wire()
+        nested_unknown["producer"]["unknown"] = None  # type: ignore[index]
+        release_cases.append(nested_unknown)
+        empty_producer_name = release_wire()
+        empty_producer_name["producer"]["name"] = ""  # type: ignore[index]
+        release_cases.append(empty_producer_name)
+        for path, replacement in (
+            (("schemaVersion",), "1"),
+            (("schemaVersion",), 2),
+            (("name",), "Bad Name"),
+            (("components",), []),
+            (("expectedState", "contentDigest"), HEX_A),
+            (("files", 0, "size"), -1),
+            (("files", 0, "sha256"), f"sha256:{HEX_D}"),
+            (("releaseId",), HEX_E),
+        ):
+            value = release_wire()
+            replace_at_path(value, path, replacement)
+            release_cases.append(value)
+        duplicate_component = release_wire()
+        duplicate_component["components"].append(  # type: ignore[union-attr]
+            {"kind": "content", "root": "content"}
+        )
+        release_cases.append(duplicate_component)
+        missing_file_key = release_wire()
+        del missing_file_key["files"][0]["size"]  # type: ignore[index]
+        release_cases.append(missing_file_key)
+        for value in release_cases:
+            with self.subTest(manifest="release", value=value):
+                self.assert_structural_rejection(
+                    release_schema, parse_release_manifest, value
+                )
+
+        requirement_cases = []
+        for key in (
+            "serverCapabilities",
+            "clientVersions",
+            "resourceBaselines",
+            "contentDigests",
+        ):
+            empty = requirements_wire()
+            empty[key] = []
+            requirement_cases.append(empty)
+        for key, replacement in (
+            ("runtimeApi", 0),
+            ("serverCapabilities", ["unversioned"]),
+            ("clientPatchProfile", 1),
+        ):
+            value = requirements_wire()
+            value[key] = replacement
+            requirement_cases.append(value)
+        duplicate_digest = requirements_wire()
+        duplicate_digest["contentDigests"] = [f"sha256:{HEX_A}"] * 2
+        requirement_cases.append(duplicate_digest)
+        for value in requirement_cases:
+            with self.subTest(manifest="requires", value=value):
+                self.assert_structural_rejection(
+                    requirements_schema, parse_requirements, value
+                )
+
+        ownership_cases = []
+        for key in ("entities", "records", "paths"):
+            empty = ownership_wire()
+            empty[key] = []
+            ownership_cases.append(empty)
+        invalid_path = ownership_wire()
+        invalid_path["paths"] = ["../escape"]
+        ownership_cases.append(invalid_path)
+        duplicate_path = ownership_wire()
+        duplicate_path["paths"] = ["assets/same", "assets/same"]
+        ownership_cases.append(duplicate_path)
+        for value in ownership_cases:
+            with self.subTest(manifest="ownership", value=value):
+                self.assert_structural_rejection(
+                    ownership_schema, parse_ownership, value
+                )
+
+    def test_parser_remains_authoritative_for_non_schema_semantics(self) -> None:
+        release_document = self.load_schema("wf-release-v1.schema.json")
+        requirements_document = self.load_schema(
+            "wf-release-requires-v1.schema.json"
+        )
+        ownership_document = self.load_schema("wf-release-ownership-v1.schema.json")
+        evaluators = (
+            Draft202012Subset(release_document),
+            Draft202012Subset(requirements_document),
+            Draft202012Subset(ownership_document),
+        )
+        for schema in (release_document, requirements_document, ownership_document):
+            comment = schema.get("$comment")
+            self.assertIsInstance(comment, str)
+            self.assertIn("authoritative", comment)
+            self.assertIn("MUST NOT", comment)
+
+        release_semantic_cases = []
+        float_size = release_wire()
+        float_size["files"][0]["size"] = 123.0  # type: ignore[index]
+        release_semantic_cases.append(float_size)
+        unsorted_files = release_wire()
+        unsorted_files["files"].append(  # type: ignore[union-attr]
+            {"path": "content/a.zip", "size": 1, "sha256": HEX_A}
+        )
+        release_semantic_cases.append(unsorted_files)
+        decomposed_path = release_wire()
+        decomposed_path["files"][0]["path"] = "content/e\u0301.zip"  # type: ignore[index]
+        release_semantic_cases.append(decomposed_path)
+        empty_component = release_wire()
+        empty_component["components"].append(  # type: ignore[union-attr]
+            {"kind": "server", "root": "server"}
+        )
+        release_semantic_cases.append(empty_component)
+        undeclared_component = release_wire()
+        undeclared_component["files"][0]["path"] = "server/data.json"  # type: ignore[index]
+        release_semantic_cases.append(undeclared_component)
+        duplicate_path = release_wire()
+        duplicate_path["files"].append(  # type: ignore[union-attr]
+            {
+                "path": duplicate_path["files"][0]["path"],  # type: ignore[index]
+                "size": 124,
+                "sha256": HEX_A,
+            }
+        )
+        release_semantic_cases.append(duplicate_path)
+        self_replacement = release_wire()
+        self_replacement["replaces"] = [RELEASE_ID_E]
+        release_semantic_cases.append(self_replacement)
+        for value in release_semantic_cases:
+            with self.subTest(manifest="release", value=value):
+                self.assert_parser_only_rejection(
+                    evaluators[0], parse_release_manifest, value
+                )
+
+        float_runtime = requirements_wire()
+        float_runtime["runtimeApi"] = 1.0
+        unsorted_requirements = requirements_wire()
+        unsorted_requirements["serverCapabilities"] = list(
+            reversed(unsorted_requirements["serverCapabilities"])  # type: ignore[arg-type]
+        )
+        for value in (float_runtime, unsorted_requirements):
+            with self.subTest(manifest="requires", value=value):
+                self.assert_parser_only_rejection(
+                    evaluators[1], parse_requirements, value
+                )
+
+        float_version = ownership_wire()
+        float_version["schemaVersion"] = 1.0
+        decomposed_ownership_path = ownership_wire()
+        decomposed_ownership_path["paths"] = ["assets/e\u0301/**"]
+        unsorted_ownership = ownership_wire()
+        unsorted_ownership["paths"] = list(
+            reversed(unsorted_ownership["paths"])  # type: ignore[arg-type]
+        )
+        for value in (float_version, decomposed_ownership_path, unsorted_ownership):
+            with self.subTest(manifest="ownership", value=value):
+                self.assert_parser_only_rejection(
+                    evaluators[2], parse_ownership, value
+                )
+
+        mismatched = release_wire()
+        self.assertTrue(evaluators[0].accepts(mismatched))
+        parsed = parse_release_manifest(mismatched)
+        with self.assertRaises(ReleaseError):
+            verify_release_id(parsed)
 
     def test_json_schemas_lock_exact_shapes_versions_patterns_and_fixtures(self) -> None:
         release_schema = self.load_schema("wf-release-v1.schema.json")
