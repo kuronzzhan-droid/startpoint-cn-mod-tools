@@ -61,6 +61,17 @@ class StrictJsonTests(unittest.TestCase):
             canonical_json_bytes(value),
         )
 
+    def test_rejects_lone_surrogates_before_canonical_round_trip(self) -> None:
+        raw = b'"\\ud800"'
+        self.assert_release_error(
+            "WFREL_JSON_VALUE",
+            lambda: load_json_strict_bytes(raw, label="manifest"),
+        )
+        self.assert_release_error(
+            "WFREL_JSON_VALUE",
+            lambda: canonical_json_bytes("\ud800"),
+        )
+
 
 class RelativePathTests(unittest.TestCase):
     def test_accepts_only_already_canonical_posix_relative_paths(self) -> None:
@@ -105,6 +116,94 @@ class StableFileCopyTests(unittest.TestCase):
             self.assertEqual(payload, destination.read_bytes())
             self.assertEqual(len(payload), identity.size)
             self.assertEqual(hashlib.sha256(payload).hexdigest(), identity.sha256)
+
+    def test_rejects_opened_source_replacement_even_when_path_is_restored(self) -> None:
+        """Exercise an actual rename race without mocks or fake file handles."""
+        original = b"original source bytes"
+        replacement = b"replacement source bytes"
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "source.bin"
+            alternate = root / "alternate.bin"
+            parked = root / "parked.bin"
+            destination = root / "destination.bin"
+            source.write_bytes(original)
+            alternate.write_bytes(replacement)
+            did_replace = False
+
+            class ReplacingPath(type(Path())):
+                def open(self, *args, **kwargs):
+                    nonlocal did_replace
+                    if not did_replace:
+                        did_replace = True
+                        os.replace(source, parked)
+                        os.replace(alternate, source)
+                        if os.name == "nt":
+                            import ctypes
+                            import msvcrt
+
+                            kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+                            kernel32.CreateFileW.restype = ctypes.c_void_p
+                            handle = kernel32.CreateFileW(
+                                str(self),
+                                0x80000000,
+                                0x00000007,
+                                None,
+                                3,
+                                0x00000080,
+                                None,
+                            )
+                            if handle == ctypes.c_void_p(-1).value:
+                                raise ctypes.WinError(ctypes.get_last_error())
+                            descriptor = msvcrt.open_osfhandle(
+                                handle, os.O_RDONLY | os.O_BINARY
+                            )
+                            opened = os.fdopen(descriptor, "rb")
+                        else:
+                            opened = super().open(*args, **kwargs)
+                        os.replace(source, alternate)
+                        os.replace(parked, source)
+                        return opened
+                    return super().open(*args, **kwargs)
+
+            with self.assertRaises(ReleaseError) as raised:
+                stream_copy_and_hash_stable_file(ReplacingPath(source), destination)
+
+            self.assertTrue(did_replace)
+            self.assertEqual("WFREL_HASH_SOURCE_CHANGED", raised.exception.code)
+            self.assertEqual(original, source.read_bytes())
+            self.assertFalse(destination.exists())
+
+    def test_rejects_same_file_destination_before_any_write(self) -> None:
+        payload = b"must not be truncated"
+        with tempfile.TemporaryDirectory() as temporary:
+            source = Path(temporary) / "source.bin"
+            source.write_bytes(payload)
+
+            with self.assertRaises(ReleaseError) as raised:
+                stream_copy_and_hash_stable_file(source, source)
+
+            self.assertEqual("WFREL_HASH_SOURCE_CHANGED", raised.exception.code)
+            self.assertEqual(payload, source.read_bytes())
+
+    def test_rejects_hardlink_destination_before_any_write(self) -> None:
+        payload = b"hardlink must not be truncated"
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "source.bin"
+            destination = root / "source-alias.bin"
+            source.write_bytes(payload)
+            try:
+                os.link(source, destination)
+            except OSError as error:
+                self.skipTest(f"hardlink unavailable: {error}")
+
+            with self.assertRaises(ReleaseError) as raised:
+                stream_copy_and_hash_stable_file(source, destination)
+
+            self.assertEqual("WFREL_HASH_SOURCE_CHANGED", raised.exception.code)
+            self.assertEqual(payload, source.read_bytes())
+            self.assertEqual(payload, destination.read_bytes())
 
     def test_rejects_a_symlink_source_without_leaking_its_absolute_path(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
