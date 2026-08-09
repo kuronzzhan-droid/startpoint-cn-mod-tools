@@ -305,6 +305,43 @@ class VerifierTests(unittest.TestCase):
         changed = members[:-1] + [(ROOT + directory + "/" + basename.upper(), payload)] + members[-1:]
         self._rejects(_classic_store(changed))
 
+    def test_rejects_windows_superscript_and_console_device_payload_names(self) -> None:
+        members = _members(self.valid_raw)
+        original_name, payload = members[0]
+        for basename in ("COM¹.zip", "com².ZIP", "COM³.data.zip", "CONIN$.zip", "conout$.ZIP"):
+            with self.subTest(basename=basename):
+                replacement_name = ROOT + "content/" + basename
+                changed = [
+                    (replacement_name, payload) if name == original_name else (name, raw)
+                    for name, raw in members
+                ]
+                def bind(value: dict[str, object]) -> None:
+                    item = value["files"][0]  # type: ignore[index]
+                    item["path"] = "content/" + basename
+                    item["size"] = len(payload)
+                    item["sha256"] = hashlib.sha256(payload).hexdigest()
+                rebound = _replace_release(changed, bind)
+                rebound = sorted(rebound[:-1], key=lambda item: item[0].encode("utf-8")) + rebound[-1:]
+                self._rejects(_classic_store(rebound))
+
+    def test_accepts_normal_nfc_unicode_payload_name(self) -> None:
+        members = _members(self.valid_raw)
+        original_name, payload = members[0]
+        replacement_name = ROOT + "content/角色-overlay.zip"
+        changed = [
+            (replacement_name, payload) if name == original_name else (name, raw)
+            for name, raw in members
+        ]
+        def bind(value: dict[str, object]) -> None:
+            item = value["files"][0]  # type: ignore[index]
+            item["path"] = "content/角色-overlay.zip"
+            item["size"] = len(payload)
+            item["sha256"] = hashlib.sha256(payload).hexdigest()
+        rebound = _replace_release(changed, bind)
+        rebound = sorted(rebound[:-1], key=lambda item: item[0].encode("utf-8")) + rebound[-1:]
+        report = self._verify(_classic_store(rebound))
+        self.assertEqual(("content",), report.components)
+
     def test_enforces_raw_and_metadata_limits_without_large_allocations(self) -> None:
         import wf_release_v1.verifier as verifier
         import wf_release_v1.verifier_zip as verifier_zip

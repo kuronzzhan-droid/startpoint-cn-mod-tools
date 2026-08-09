@@ -658,15 +658,28 @@ with tempfile.TemporaryDirectory() as temporary:
     def test_rejects_nonportable_overlay_member_names_before_staging(self) -> None:
         from wf_release_v1.producer import build_character_release
 
-        nonportable = make_patch_overlay(
-            self.root / "sources" / "CON.zip",
-            from_version="1.4.54",
-            target_version="1.4.55",
+        device_names = (
+            "CON.zip", "com1.ZIP", "LPT9.data.zip",
+            "COM¹.zip", "com².ZIP", "COM³.data.zip",
+            "LPT¹.zip", "lpt².ZIP", "LPT³.data.zip",
+            "CONIN$.zip", "conout$.ZIP",
         )
-        with self.assertRaises(ReleaseError):
-            build_character_release(
-                self._request(self.output_dir / "release.zip", overlays=(nonportable,))
-            )
+        for index, device_name in enumerate(device_names):
+            with self.subTest(device_name=device_name):
+                nonportable = make_patch_overlay(
+                    self.root / "sources" / device_name,
+                    from_version="1.4.54",
+                    target_version="1.4.55",
+                )
+                with self.assertRaises(ReleaseError) as raised:
+                    build_character_release(
+                        self._request(
+                            self.output_dir / f"release-{index}.zip",
+                            overlays=(nonportable,),
+                        )
+                    )
+                self.assertEqual("WFREL_BUILD_PATH_INVALID", raised.exception.code)
+                self.assertNotIn(str(self.root), str(raised.exception.details))
         self.assertEqual(set(), self._all_files(self.output_dir))
 
     def test_accepts_nfc_unicode_overlay_filename_with_raw_utf8_flags(self) -> None:

@@ -27,9 +27,11 @@ MAX_CENTRAL_BYTES: Final = 256 * 1024 * 1024
 _REPARSE_POINT: Final = 0x0400
 _WINDOWS_FORBIDDEN: Final = frozenset('<>:"\\|?*')
 _WINDOWS_DEVICES: Final = frozenset(
-    {"CON", "PRN", "AUX", "NUL"}
+    {"CON", "PRN", "AUX", "NUL", "CONIN$", "CONOUT$"}
     | {f"COM{index}" for index in range(1, 10)}
     | {f"LPT{index}" for index in range(1, 10)}
+    | {f"COM{index}" for index in "¹²³"}
+    | {f"LPT{index}" for index in "¹²³"}
 )
 
 
