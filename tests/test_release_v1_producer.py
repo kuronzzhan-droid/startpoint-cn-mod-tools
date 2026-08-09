@@ -10,6 +10,7 @@ import shutil
 import stat
 import struct
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -422,18 +423,23 @@ class ProducerTests(unittest.TestCase):
 
         self.assertFalse(output.exists())
 
-    def test_post_link_identity_failure_removes_only_the_owned_output(self) -> None:
+    def test_publish_link_is_the_last_commit_step_without_path_rollback(self) -> None:
         import wf_release_v1.release_archive as release_archive
         from wf_release_v1.producer import build_character_release
 
         output = self.output_dir / "release.zip"
+        marker = self.root / "USER_MARKER"
+        marker.write_bytes(b"user")
+        moved = self.root / "published-before-takeover.zip"
         real_verify = release_archive.verify_parent
-        calls = 0
+        real_lstat = release_archive.os.lstat
+        verify_calls = 0
+        output_lstats = 0
 
         def fail_after_link(parent):
-            nonlocal calls
-            calls += 1
-            if calls == 2:
+            nonlocal verify_calls
+            verify_calls += 1
+            if verify_calls == 2:
                 raise ReleaseError(
                     "WFREL_BUILD_OUTPUT_CHANGED",
                     "injected parent drift",
@@ -441,14 +447,35 @@ class ProducerTests(unittest.TestCase):
                 )
             return real_verify(parent)
 
-        with patch.object(release_archive, "verify_parent", fail_after_link):
-            with self.assertRaises(ReleaseError):
-                build_character_release(self._request(output))
+        def replace_after_rollback_lstat(path):
+            nonlocal output_lstats
+            metadata = real_lstat(path)
+            if Path(path) == output:
+                output_lstats += 1
+                if output_lstats == 2:
+                    output.rename(moved)
+                    marker.rename(output)
+            return metadata
 
-        self.assertFalse(output.exists())
-        self.assertFalse(
-            any(path.name.startswith(".wfrel-") for path in self._all_files(self.output_dir))
-        )
+        with (
+            patch.object(release_archive, "verify_parent", fail_after_link),
+            patch.object(release_archive.os, "lstat", replace_after_rollback_lstat),
+        ):
+            caught = None
+            receipt = None
+            try:
+                receipt = build_character_release(self._request(output))
+            except ReleaseError as error:
+                caught = error
+
+        self.assertTrue(marker.exists(), "path rollback deleted USER_MARKER")
+        self.assertIsNone(caught)
+        self.assertIsNotNone(receipt)
+        self.assertEqual(output, receipt.output)
+        with zipfile.ZipFile(output) as bundle:
+            self.assertIn("wf-release-v1/release-manifest.json", bundle.namelist())
+        self.assertEqual(b"user", marker.read_bytes())
+        self.assertFalse(moved.exists())
 
     def test_staged_archive_replacement_after_readback_is_rejected(self) -> None:
         import wf_release_v1.producer as producer
@@ -497,6 +524,32 @@ class ProducerTests(unittest.TestCase):
 
         self.assertFalse(output.exists())
 
+    def test_readback_rejects_hidden_bytes_between_locals_and_central_directory(self) -> None:
+        import wf_release_v1.producer as producer
+
+        output = self.output_dir / "release.zip"
+        real_flags = producer.force_utf8_flags
+
+        def insert_hidden_gap(stream):
+            real_flags(stream)
+            stream.seek(0)
+            raw = bytearray(stream.read())
+            eocd = len(raw) - 22
+            central_at = struct.unpack_from("<I", raw, eocd + 16)[0]
+            gap = b"PK\x06\x06" + b"\x00" * 25
+            raw[central_at:central_at] = gap
+            struct.pack_into("<I", raw, eocd + len(gap) + 16, central_at + len(gap))
+            stream.seek(0)
+            stream.write(raw)
+            stream.truncate()
+            stream.flush()
+
+        with patch.object(producer, "force_utf8_flags", insert_hidden_gap):
+            with self.assertRaises(ReleaseError):
+                producer.build_character_release(self._request(output))
+
+        self.assertFalse(output.exists())
+
     def test_classic_zip_limit_fails_closed_without_output(self) -> None:
         import wf_release_v1.release_archive as release_archive
         from wf_release_v1.producer import build_character_release
@@ -527,6 +580,58 @@ class ProducerTests(unittest.TestCase):
         flags = opened.call_args.args[1]
         self.assertTrue(flags & 0x400000)
         self.assertFalse(flags & os.O_EXCL)
+
+    @unittest.skipUnless(
+        os.name == "posix" and sys.platform.startswith("linux"),
+        "Linux /proc fd publication gate",
+    )
+    def test_linux_ordinary_user_procfd_fallback_links_real_open_file(self) -> None:
+        script = r'''import ctypes
+import errno
+import os
+from pathlib import Path
+import tempfile
+from wf_release_v1.release_archive import _posix_link_handle, capture_parent
+
+with tempfile.TemporaryDirectory() as temporary:
+    root = Path(temporary)
+    source_path = root / "source.bin"
+    output = root / "release.zip"
+    with source_path.open("w+b") as source:
+        source.write(b"sealed-archive")
+        source.flush()
+        parent_fd = os.open(root, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            libc = ctypes.CDLL(None, use_errno=True)
+            linkat = libc.linkat
+            linkat.argtypes = (
+                ctypes.c_int, ctypes.c_char_p, ctypes.c_int,
+                ctypes.c_char_p, ctypes.c_int,
+            )
+            linkat.restype = ctypes.c_int
+            ctypes.set_errno(0)
+            result = linkat(source.fileno(), b"", parent_fd, b"probe", 0x1000)
+            if result == 0:
+                (root / "probe").unlink()
+                raise SystemExit(77)
+            if ctypes.get_errno() != errno.EPERM:
+                raise SystemExit(f"unexpected AT_EMPTY_PATH errno: {ctypes.get_errno()}")
+        finally:
+            os.close(parent_fd)
+        _posix_link_handle(source, output, capture_parent(root))
+    if output.read_bytes() != b"sealed-archive":
+        raise SystemExit("procfd fallback published wrong bytes")
+'''
+        result = subprocess.run(
+            [sys.executable, "-X", "utf8", "-c", script],
+            cwd=Path(__file__).resolve().parents[1],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode == 77:
+            self.skipTest("process has AT_EMPTY_PATH capability; ordinary-user gate unavailable")
+        self.assertEqual(0, result.returncode, result.stderr or result.stdout)
 
     @unittest.skipUnless(os.name == "nt", "junctions are Windows-specific")
     def test_rejects_reparse_points_in_output_parent_chain(self) -> None:

@@ -417,8 +417,7 @@ def build_character_release(request: BuildRequest) -> BuildReceipt:
         readback = reopen_for_readback(archive)
         if readback.release_id != release.release_id:
             raise _error("WFREL_ARCHIVE_INVALID", "readback identity changed", label="archive")
-        publish_new(archive, archive_path, output, parent, readback)
-        return BuildReceipt(
+        receipt = BuildReceipt(
             output=output,
             release_id=readback.release_id,
             archive_sha256=readback.archive_sha256,
@@ -426,6 +425,8 @@ def build_character_release(request: BuildRequest) -> BuildReceipt:
             bytes_read=bytes_read,
             hash_count=len(source.overlay_files),
         )
+        publish_new(archive, archive_path, output, parent, readback)
+        return receipt
     except ReleaseError:
         raise
     except (OSError, ValueError, TypeError) as error:

@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import ctypes
 from dataclasses import dataclass
+import errno
 import hashlib
 import os
 from pathlib import Path
 import stat
 import struct
+import sys
 from typing import BinaryIO, Final
 import zipfile
 
@@ -193,6 +195,7 @@ def _raw_header_check(stream: BinaryIO, infos: list[zipfile.ZipInfo], size: int)
     ):
         raise ValueError("classic ZIP end record is invalid")
     cursor = central_at
+    expected_local_at = 0
     for info in infos:
         central = struct.unpack(
             "<IHHHHHHIIIHHHHHII", _read_exact_at(stream, cursor, 46)
@@ -266,9 +269,13 @@ def _raw_header_check(stream: BinaryIO, infos: list[zipfile.ZipInfo], size: int)
             raise ValueError("local and central ZIP headers disagree")
         if raw_name.decode("utf-8", errors="strict") != info.filename:
             raise ValueError("ZIP member name is not exact UTF-8")
+        local_end = local_at + 30 + local_name_length + local_extra_length + compressed
+        if local_at != expected_local_at or local_end > central_at:
+            raise ValueError("local ZIP members are not contiguous in central order")
+        expected_local_at = local_end
         cursor += 46 + name_length
-    if cursor != central_at + central_size:
-        raise ValueError("central ZIP directory size is invalid")
+    if cursor != central_at + central_size or expected_local_at != central_at:
+        raise ValueError("ZIP local and central regions are not exact")
 
 
 def _hash_stream(stream: BinaryIO) -> str:
@@ -375,6 +382,8 @@ def reopen_for_readback(staging: BinaryIO) -> ArchiveReadback:
 
 
 def _posix_link_handle(staging: BinaryIO, output: Path, parent: ParentState) -> None:
+    if not sys.platform.startswith("linux"):
+        raise OSError("descriptor publication is supported only on Linux")
     flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | getattr(os, "O_CLOEXEC", 0)
     parent_descriptor = os.open(output.parent, flags)
     try:
@@ -394,25 +403,34 @@ def _posix_link_handle(staging: BinaryIO, output: Path, parent: ParentState) -> 
             ctypes.c_int,
         )
         linkat.restype = ctypes.c_int
+        ctypes.set_errno(0)
         if linkat(
             staging.fileno(),
             b"",
             parent_descriptor,
             os.fsencode(output.name),
             0x1000,
+        ) == 0:
+            return
+        error = ctypes.get_errno()
+        if error != errno.EPERM:
+            raise OSError(error, "linkat failed")
+        ctypes.set_errno(0)
+        if linkat(
+            -100,
+            os.fsencode(f"/proc/self/fd/{staging.fileno()}"),
+            parent_descriptor,
+            os.fsencode(output.name),
+            0x400,
         ) != 0:
-            raise OSError(ctypes.get_errno(), "linkat failed")
+            raise OSError(ctypes.get_errno(), "procfd linkat failed")
     finally:
-        os.close(parent_descriptor)
-
-
-def _remove_owned_output(output: Path, expected: tuple[int, int, int, int]) -> None:
-    try:
-        metadata = os.lstat(output)
-        if _identity(metadata) == expected and stat.S_ISREG(metadata.st_mode):
-            output.unlink()
-    except OSError:
-        pass
+        try:
+            os.close(parent_descriptor)
+        except OSError:
+            # The hard-link syscall is the commit point. A later directory-fd
+            # close failure cannot safely turn the committed output into failure.
+            pass
 
 
 def publish_new(
@@ -422,7 +440,6 @@ def publish_new(
     parent: ParentState,
     readback: ArchiveReadback,
 ) -> None:
-    verify_parent(parent)
     try:
         before = os.fstat(staging.fileno())
         if (
@@ -436,17 +453,11 @@ def publish_new(
                 or _identity(os.lstat(staging_path)) != readback.archive_identity
             ):
                 raise OSError("staging path is not the readback archive")
+            verify_parent(parent)
             os.link(staging_path, output)
         else:
             _posix_link_handle(staging, output, parent)
-        published = os.lstat(output)
-        if _identity(published) != readback.archive_identity:
-            raise OSError("published identity changed")
-        verify_parent(parent)
-        if _identity(os.fstat(staging.fileno())) != readback.archive_identity:
-            raise OSError("published handle identity changed")
     except (OSError, ReleaseError) as error:
-        _remove_owned_output(output, readback.archive_identity)
         raise _error(
             "WFREL_BUILD_OUTPUT_CHANGED",
             "output could not be published as the readback archive",
