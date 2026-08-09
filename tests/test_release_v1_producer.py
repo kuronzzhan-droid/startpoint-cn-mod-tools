@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 import hashlib
 import json
 import os
@@ -281,6 +282,24 @@ class ProducerTests(unittest.TestCase):
         with self.assertRaises(ReleaseError) as raised:
             build_character_release(request)
         self.assertEqual("WFREL_BUILD_LIMIT", raised.exception.code)
+        self.assertFalse(output.exists())
+
+    def test_public_build_rejects_unsupported_overlay_requirement_before_output(self) -> None:
+        from wf_release_v1.producer import build_character_release
+
+        wire = requirements_wire()
+        wire["patchOverlaySchema"] = 2
+        output = self.output_dir / "unsupported-requirement.zip"
+        request = replace(
+            self._request(output),
+            workspace=self.output_dir / "missing-workspace",
+            requirements=parse_requirements(wire),
+        )
+
+        with self.assertRaises(ReleaseError) as raised:
+            build_character_release(request)
+        self.assertEqual("WFREL_REQUIRE_UNSUPPORTED", raised.exception.code)
+        self.assertEqual({"field": "patchOverlaySchema"}, raised.exception.details)
         self.assertFalse(output.exists())
 
     def test_rejects_existing_nested_or_source_overlapping_output_without_changes(self) -> None:

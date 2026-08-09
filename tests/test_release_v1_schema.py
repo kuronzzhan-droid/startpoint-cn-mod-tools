@@ -43,6 +43,37 @@ from wf_release_v1.schema import (
 ROOT = Path(__file__).resolve().parents[1]
 
 
+class PublicApiTests(unittest.TestCase):
+    def test_package_exports_only_the_stable_v1_contract(self) -> None:
+        import wf_release_v1
+        from wf_release_v1 import (
+            BuildReceipt,
+            BuildRequest,
+            FileIdentity,
+            ReleaseError as PublicReleaseError,
+            SCHEMA_VERSION,
+            VerificationReport,
+            build_character_release,
+            verify_release,
+        )
+
+        self.assertEqual(1, SCHEMA_VERSION)
+        self.assertCountEqual(
+            {
+                "BuildReceipt",
+                "BuildRequest",
+                "FileIdentity",
+                "ReleaseError",
+                "SCHEMA_VERSION",
+                "VerificationReport",
+                "build_character_release",
+                "verify_release",
+            },
+            wf_release_v1.__all__,
+        )
+        self.assertIs(PublicReleaseError, ReleaseError)
+
+
 class ManifestHappyPathTests(unittest.TestCase):
     def test_parses_each_exact_wire_shape_into_frozen_detached_values(self) -> None:
         release_input = release_wire()

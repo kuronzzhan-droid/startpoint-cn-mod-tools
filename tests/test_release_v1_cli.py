@@ -721,6 +721,36 @@ class ReleaseCliTests(unittest.TestCase):
         self.assertEqual("WFREL_REQUIRE_LIMIT", json.loads(stderr.getvalue())["code"])
         build.assert_not_called()
 
+    def test_build_rejects_unsupported_overlay_requirement_as_incompatible(self) -> None:
+        requirements = requirements_wire()
+        requirements["patchOverlaySchema"] = 2
+        requirements_path = self.case_root / "unsupported-requirements.json"
+        requirements_path.write_bytes(canonical_json_bytes(requirements))
+        output = self.case_root / "unsupported.zip"
+
+        result = self._run(
+            "build",
+            "--workspace",
+            str(self.workspace),
+            "--overlay",
+            str(self.overlay),
+            "--requirements",
+            str(requirements_path),
+            "--name",
+            "seris-dragon-king",
+            "--version",
+            "1.0.0",
+            "--output",
+            str(output),
+        )
+
+        self._assert_safe_error(
+            result,
+            exit_code=20,
+            machine_code="WFREL_REQUIRE_UNSUPPORTED",
+        )
+        self.assertFalse(output.exists())
+
     def test_format_and_source_incompatibility_exit_codes_are_distinct(self) -> None:
         malformed = self.case_root / "malformed.zip"
         malformed.write_bytes(b"not a zip")

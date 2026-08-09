@@ -414,6 +414,24 @@ class VerifierTests(unittest.TestCase):
         changed = _replace_release(members, lambda value: value["expectedState"].__setitem__("cdnTargetVersion", "1.4.99"))  # type: ignore[index]
         self._rejects(_classic_store(changed), "WFREL_COMPONENT_INVALID")
 
+    def test_independently_rejects_unsupported_overlay_requirement(self) -> None:
+        members = _members(self.valid_raw)
+        requirements = json.loads(dict(members)[REQUIRES])
+        requirements["patchOverlaySchema"] = 2
+        replacement = canonical_json_bytes(requirements)
+        changed = [
+            (name, replacement if name == REQUIRES else raw)
+            for name, raw in members
+        ]
+        changed = _replace_release(
+            changed,
+            lambda value: value["metadataSha256"].__setitem__(  # type: ignore[index]
+                "requires", hashlib.sha256(replacement).hexdigest()
+            ),
+        )
+
+        self._rejects(_classic_store(changed), "WFREL_COMPONENT_INVALID")
+
     def test_independently_rejects_overlay_member_order_requirements_and_inner_crc(self) -> None:
         members = _members(self.valid_raw)
         payload_name, payload = members[0]

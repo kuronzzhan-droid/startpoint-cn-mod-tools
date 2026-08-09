@@ -95,6 +95,10 @@ ownership 表示“源 manifest 的语义所有权”。它不证明这些逻辑
 预检；严格 Python parser/verifier 才是排序、NFC、跨字段闭包、Python int 与 releaseId 的
 权威门禁。接收端不得只跑 JSON Schema 就接受发行物。
 
+第一条纵切的 Producer 与 Verifier 只支持 `patchOverlaySchema=1`。更大的正整数在通用
+`requires.json` 格式中仍然合法，但当前构建能力会在创建输出前以
+`WFREL_REQUIRE_UNSUPPORTED` 拒绝；这不会收窄 parser 对未来 schema 值的表达能力。
+
 ## 5. CLI
 
 以下命令均在工具仓库根目录运行。示例中的输出文件必须尚不存在。

@@ -404,6 +404,12 @@ def build_character_release(request: BuildRequest) -> BuildReceipt:
     """Build one immutable content-only release without touching live state."""
     if type(request) is not BuildRequest or type(request.requirements) is not ReleaseRequirements:
         raise _error("WFREL_BUILD_REQUEST_INVALID", "build request is invalid", label="request")
+    if request.requirements.patch_overlay_schema != 1:
+        raise _error(
+            "WFREL_REQUIRE_UNSUPPORTED",
+            "patch Overlay schema is unsupported by this producer",
+            field="patchOverlaySchema",
+        )
     output, parent = _validate_output(request)
     source = inspect_character_source(
         workspace=Path(request.workspace),
