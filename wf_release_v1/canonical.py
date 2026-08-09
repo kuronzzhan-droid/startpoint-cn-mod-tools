@@ -119,7 +119,7 @@ def normalize_relative_path(value: str) -> str:
         raise ReleaseError("WFREL_PATH_INVALID", "relative path must be a string", details)
     if (
         not value
-        or "\x00" in value
+        or any(ord(character) <= 0x1F or ord(character) == 0x7F for character in value)
         or "\\" in value
         or value.startswith("/")
         or (len(value) >= 2 and value[0].isalpha() and value[1] == ":")

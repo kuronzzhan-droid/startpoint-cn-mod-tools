@@ -101,6 +101,20 @@ class RelativePathTests(unittest.TestCase):
                 self.assertEqual("WFREL_PATH_INVALID", raised.exception.code)
                 self.assertNotIn("C:\\", str(raised.exception.details))
 
+    def test_rejects_ascii_control_characters(self) -> None:
+        for value in (
+            "line\nfeed.json",
+            "carriage\r\nreturn.json",
+            "tab\tcharacter.json",
+            "control\x01character.json",
+            "delete\x7fcharacter.json",
+        ):
+            with self.subTest(value=repr(value)):
+                with self.assertRaises(ReleaseError) as raised:
+                    normalize_relative_path(value)
+                self.assertEqual("WFREL_PATH_INVALID", raised.exception.code)
+                self.assertNotIn("C:\\", str(raised.exception.details))
+
 
 class StableFileCopyTests(unittest.TestCase):
     def test_copies_and_hashes_a_regular_file(self) -> None:
