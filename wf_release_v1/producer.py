@@ -5,12 +5,13 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 import hashlib
+import io
 import os
 from pathlib import Path, PurePosixPath
-import shutil
 import stat
 import tempfile
-from typing import Final
+from typing import BinaryIO, Final
+import unicodedata
 
 from .canonical import FileIdentity, canonical_json_bytes
 from .character_source import CharacterReleaseSource, SourceFile, inspect_character_source
@@ -44,6 +45,7 @@ from .schema import (
 
 _ROOT: Final = "wf-release-v1"
 _REPARSE_POINT: Final = 0x0400
+_WINDOWS_FORBIDDEN: Final = frozenset('<>:"\\|?*')
 _WINDOWS_DEVICES: Final = frozenset(
     {"CON", "PRN", "AUX", "NUL"}
     | {f"COM{index}" for index in range(1, 10)}
@@ -70,6 +72,13 @@ class BuildReceipt:
     file_count: int
     bytes_read: int
     hash_count: int
+
+
+@dataclass
+class _StagedMember:
+    path: str
+    stream: BinaryIO
+    size: int
 
 
 def _error(code: str, message: str, **details: object) -> ReleaseError:
@@ -117,27 +126,33 @@ def _validate_output(request: BuildRequest) -> tuple[Path, ParentState]:
             label="output",
         ) from error
     else:
-        raise _error(
-            "WFREL_BUILD_OUTPUT_EXISTS",
-            "output already exists",
-            label="output",
-        )
+        raise _error("WFREL_BUILD_OUTPUT_EXISTS", "output already exists", label="output")
     return output, capture_parent(output.parent)
 
 
 def _portable_member(path: str) -> str:
-    if not path.isascii() or "\\" in path or path.startswith("/"):
+    if unicodedata.normalize("NFC", path) != path or path.startswith("/"):
         raise _error(
             "WFREL_BUILD_PATH_INVALID",
-            "release member path is not portable ASCII",
+            "release member path is not portable NFC",
             label="member",
         )
+    try:
+        path.encode("utf-8", errors="strict")
+    except UnicodeEncodeError as error:
+        raise _error(
+            "WFREL_BUILD_PATH_INVALID",
+            "release member path is not valid Unicode",
+            label="member",
+        ) from error
     parts = PurePosixPath(path).parts
     if not parts or any(
         not part
         or part in {".", ".."}
         or part.endswith((" ", "."))
         or part.split(".", 1)[0].upper() in _WINDOWS_DEVICES
+        or any(ord(character) < 32 or ord(character) == 127 for character in part)
+        or any(character in _WINDOWS_FORBIDDEN for character in part)
         for part in parts
     ):
         raise _error(
@@ -185,9 +200,10 @@ def _stable_source_identity(source: SourceFile) -> None:
         )
 
 
-def _copy_pinned_source(source: SourceFile, destination: Path) -> FileIdentity:
+def _copy_pinned_source(source: SourceFile) -> tuple[FileIdentity, BinaryIO]:
     """Copy/hash from one descriptor bound to the Task 4 inspection identity."""
-    source_descriptor = destination_descriptor = -1
+    source_descriptor = -1
+    staging: BinaryIO | None = None
     digest = hashlib.sha256()
     bytes_read = 0
     try:
@@ -205,28 +221,23 @@ def _copy_pinned_source(source: SourceFile, destination: Path) -> FileIdentity:
         opened = os.fstat(source_descriptor)
         if _snapshot(opened) != source._identity or not stat.S_ISREG(opened.st_mode):
             raise OSError("opened source is not the inspected file")
-        destination_descriptor = os.open(
-            destination,
-            os.O_WRONLY
-            | os.O_CREAT
-            | os.O_EXCL
-            | getattr(os, "O_BINARY", 0)
-            | getattr(os, "O_NOFOLLOW", 0),
-            0o600,
-        )
+        staging = tempfile.TemporaryFile(mode="w+b")
         with os.fdopen(source_descriptor, "rb", closefd=True) as reader:
             source_descriptor = -1
-            with os.fdopen(destination_descriptor, "wb", closefd=True) as writer:
-                destination_descriptor = -1
-                while chunk := reader.read(1024 * 1024):
-                    digest.update(chunk)
-                    writer.write(chunk)
-                    bytes_read += len(chunk)
+            while chunk := reader.read(1024 * 1024):
+                digest.update(chunk)
+                staging.write(chunk)
+                bytes_read += len(chunk)
             opened_after = os.fstat(reader.fileno())
         after = os.lstat(source.path)
         if _snapshot(opened_after) != source._identity or _snapshot(after) != source._identity:
             raise OSError("source changed during copy")
+        staging.flush()
+        staging.seek(0)
+        return FileIdentity(bytes_read, digest.hexdigest()), staging
     except OSError as error:
+        if staging is not None:
+            staging.close()
         raise _error(
             "WFREL_BUILD_SOURCE_CHANGED",
             "an inspected source changed while being copied",
@@ -235,31 +246,18 @@ def _copy_pinned_source(source: SourceFile, destination: Path) -> FileIdentity:
     finally:
         if source_descriptor >= 0:
             os.close(source_descriptor)
-        if destination_descriptor >= 0:
-            os.close(destination_descriptor)
-    return FileIdentity(bytes_read, digest.hexdigest())
 
 
-def _write_new(path: Path, raw: bytes) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    try:
-        with path.open("xb") as stream:
-            stream.write(raw)
-    except OSError as error:
-        raise _error(
-            "WFREL_BUILD_IO",
-            "private staging metadata could not be written",
-            label=path.name,
-        ) from error
-
-
-def _copy_payloads(source: CharacterReleaseSource, staging_root: Path) -> tuple[tuple[ReleaseFile, ...], int]:
+def _copy_payloads(
+    source: CharacterReleaseSource,
+    members: dict[str, _StagedMember],
+) -> tuple[tuple[ReleaseFile, ...], int]:
     files: list[ReleaseFile] = []
     bytes_read = 0
     seen: set[str] = set()
     for item in source.overlay_files:
         member = _portable_member(f"content/{item.relative_path}")
-        folded = member.casefold()
+        folded = unicodedata.normalize("NFC", member).casefold()
         if folded in seen:
             raise _error(
                 "WFREL_BUILD_PATH_INVALID",
@@ -268,26 +266,30 @@ def _copy_payloads(source: CharacterReleaseSource, staging_root: Path) -> tuple[
             )
         seen.add(folded)
         _stable_source_identity(item)
-        destination = staging_root / member
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        identity = _copy_pinned_source(item, destination)
+        identity, stream = _copy_pinned_source(item)
         _stable_source_identity(item)
         if identity.size != item.size:
+            stream.close()
             raise _error(
                 "WFREL_BUILD_SOURCE_CHANGED",
                 "an inspected source size changed",
                 label="overlay",
             )
+        members[member] = _StagedMember(member, stream, identity.size)
         files.append(ReleaseFile(member, identity.size, identity.sha256))
         bytes_read += identity.size
     return tuple(sorted(files, key=lambda value: value.path.encode("utf-8"))), bytes_read
+
+
+def _memory_member(path: str, raw: bytes) -> _StagedMember:
+    return _StagedMember(path, io.BytesIO(raw), len(raw))
 
 
 def _build_metadata(
     request: BuildRequest,
     source: CharacterReleaseSource,
     files: tuple[ReleaseFile, ...],
-    staging_root: Path,
+    members: dict[str, _StagedMember],
 ) -> ReleaseManifest:
     requirements = parse_requirements(request.requirements.to_wire())
     manifest = source.package_manifest
@@ -299,9 +301,8 @@ def _build_metadata(
     ownership = parse_ownership(ownership.to_wire())
     requires_raw = canonical_json_bytes(requirements.to_wire())
     ownership_raw = canonical_json_bytes(ownership.to_wire())
-    _write_new(staging_root / "requires.json", requires_raw)
-    _write_new(staging_root / "ownership.json", ownership_raw)
-
+    members["requires.json"] = _memory_member("requires.json", requires_raw)
+    members["ownership.json"] = _memory_member("ownership.json", ownership_raw)
     body = ReleaseManifest(
         schema_version=1,
         name=request.name,
@@ -322,47 +323,72 @@ def _build_metadata(
     )
     wire = body.to_wire()
     del wire["releaseId"]
-    release_id = compute_release_id(wire)
-    release = parse_release_manifest({**wire, "releaseId": release_id})
+    release = parse_release_manifest({**wire, "releaseId": compute_release_id(wire)})
     verify_release_id(release)
-    _write_new(staging_root / "release-manifest.json", canonical_json_bytes(release.to_wire()))
+    release_raw = canonical_json_bytes(release.to_wire())
+    members["release-manifest.json"] = _memory_member(
+        "release-manifest.json", release_raw
+    )
     return release
 
 
-def _stage_members(staging_root: Path) -> tuple[tuple[str, Path], ...]:
-    members = tuple(
-        sorted(
-            (
-                (_portable_member(f"{_ROOT}/{path.relative_to(staging_root).as_posix()}"), path)
-                for path in staging_root.rglob("*")
-                if path.is_file()
-            ),
-            key=lambda item: item[0].encode("utf-8"),
-        )
-    )
-    names = [name for name, _ in members]
-    if len(names) != len(set(name.casefold() for name in names)):
+def _ordered_members(members: Mapping[str, _StagedMember]) -> tuple[_StagedMember, ...]:
+    names = tuple(members)
+    if len(names) != len({unicodedata.normalize("NFC", name).casefold() for name in names}):
         raise _error(
             "WFREL_BUILD_PATH_INVALID",
             "release member paths conflict portably",
             label="member",
         )
-    return members
+    manifest = "release-manifest.json"
+    if manifest not in members:
+        raise _error("WFREL_ARCHIVE_INVALID", "release manifest is missing", label="archive")
+    ordered = sorted(
+        (name for name in names if name != manifest),
+        key=lambda name: name.encode("utf-8"),
+    )
+    ordered.append(manifest)
+    return tuple(members[name] for name in ordered)
 
 
-def _cleanup_stage(path: Path, identity: tuple[int, int] | None) -> None:
-    if identity is None:
-        return
+def _archive_temp(parent: Path) -> tuple[BinaryIO, Path | None]:
+    if os.name == "nt":
+        stream = tempfile.NamedTemporaryFile(
+            mode="w+b",
+            prefix=".wfrel-archive-",
+            suffix=".zip",
+            dir=parent,
+            delete=True,
+        )
+        return stream, Path(stream.name)
+    anonymous = getattr(os, "O_TMPFILE", 0)
+    if not anonymous:
+        raise _error(
+            "WFREL_BUILD_IO",
+            "safe anonymous archive staging is unavailable",
+            label="archive",
+        )
+    descriptor = -1
     try:
-        metadata = os.lstat(path)
-        if (
-            (metadata.st_dev, metadata.st_ino) == identity
-            and stat.S_ISDIR(metadata.st_mode)
-            and not _is_reparse(metadata)
-        ):
-            shutil.rmtree(path)
-    except OSError:
-        pass
+        # Do not add O_EXCL: with O_TMPFILE it would make the inode
+        # intentionally unlinkable through linkat(AT_EMPTY_PATH).
+        descriptor = os.open(
+            parent,
+            os.O_RDWR | anonymous | getattr(os, "O_CLOEXEC", 0),
+            0o600,
+        )
+        stream = os.fdopen(descriptor, "w+b", closefd=True)
+        descriptor = -1
+        return stream, None
+    except OSError as error:
+        raise _error(
+            "WFREL_BUILD_IO",
+            "safe anonymous archive staging is unavailable",
+            label="archive",
+        ) from error
+    finally:
+        if descriptor >= 0:
+            os.close(descriptor)
 
 
 def build_character_release(request: BuildRequest) -> BuildReceipt:
@@ -375,32 +401,23 @@ def build_character_release(request: BuildRequest) -> BuildReceipt:
         overlay_archives=request.overlay_archives,
     )
     verify_parent(parent)
-    stage = Path(tempfile.mkdtemp(prefix=".wfrel-stage-", dir=output.parent))
-    stage_stat = os.lstat(stage)
-    stage_identity: tuple[int, int] | None = (stage_stat.st_dev, stage_stat.st_ino)
-    archive: tempfile._TemporaryFileWrapper[bytes] | None = None
+    members: dict[str, _StagedMember] = {}
+    archive: BinaryIO | None = None
     try:
-        staging_root = stage / _ROOT
-        staging_root.mkdir()
-        files, bytes_read = _copy_payloads(source, staging_root)
-        release = _build_metadata(request, source, files, staging_root)
-        members = _stage_members(staging_root)
+        files, bytes_read = _copy_payloads(source, members)
+        release = _build_metadata(request, source, files, members)
+        ordered = _ordered_members(members)
         verify_parent(parent)
-        archive = tempfile.NamedTemporaryFile(
-            mode="w+b",
-            prefix=".wfrel-archive-",
-            suffix=".zip",
-            dir=output.parent,
-            delete=True,
+        archive, archive_path = _archive_temp(output.parent)
+        write_archive(
+            archive,
+            tuple((f"{_ROOT}/{item.path}", item.stream, item.size) for item in ordered),
         )
-        archive_path = Path(archive.name)
-        write_archive(archive, members)
         force_utf8_flags(archive)
-        archive.flush()
-        readback = reopen_for_readback(archive_path, output.parent)
+        readback = reopen_for_readback(archive)
         if readback.release_id != release.release_id:
             raise _error("WFREL_ARCHIVE_INVALID", "readback identity changed", label="archive")
-        publish_new(archive_path, output, parent)
+        publish_new(archive, archive_path, output, parent, readback)
         return BuildReceipt(
             output=output,
             release_id=readback.release_id,
@@ -419,4 +436,8 @@ def build_character_release(request: BuildRequest) -> BuildReceipt:
                 archive.close()
             except OSError:
                 pass
-        _cleanup_stage(stage, stage_identity)
+        for item in members.values():
+            try:
+                item.stream.close()
+            except OSError:
+                pass

@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import shutil
 import stat
+import struct
 import subprocess
 import tempfile
 import unittest
@@ -96,8 +97,8 @@ class ProducerTests(unittest.TestCase):
             expected = [
                 "wf-release-v1/content/worldflipper-overlay-1.4.54-to-1.4.55.zip",
                 "wf-release-v1/ownership.json",
-                "wf-release-v1/release-manifest.json",
                 "wf-release-v1/requires.json",
+                "wf-release-v1/release-manifest.json",
             ]
             self.assertEqual(expected, names)
             self.assertEqual(source_bytes, bundle.read(expected[0]))
@@ -149,14 +150,22 @@ class ProducerTests(unittest.TestCase):
         raw = output.read_bytes()
         with zipfile.ZipFile(output) as bundle:
             infos = bundle.infolist()
+            names = [info.filename for info in infos]
             self.assertEqual(
-                sorted((info.filename for info in infos), key=lambda item: item.encode("utf-8")),
-                [info.filename for info in infos],
+                sorted(names[:-1], key=lambda item: item.encode("utf-8")),
+                names[:-1],
             )
+            self.assertEqual("wf-release-v1/release-manifest.json", names[-1])
             self.assertEqual(len(infos), len({info.filename for info in infos}))
             self.assertEqual(b"", bundle.comment)
             for info in infos:
                 with self.subTest(member=info.filename):
+                    local = struct.unpack_from("<IHHHHHIIIHH", raw, info.header_offset)
+                    local_name_at = info.header_offset + 30
+                    local_name = raw[local_name_at:local_name_at + local[9]]
+                    local_extra = raw[
+                        local_name_at + local[9]:local_name_at + local[9] + local[10]
+                    ]
                     self.assertEqual(FIXED_TIME, info.date_time)
                     self.assertEqual(zipfile.ZIP_STORED, info.compress_type)
                     self.assertEqual(3, info.create_system)
@@ -167,6 +176,42 @@ class ProducerTests(unittest.TestCase):
                     self.assertEqual(info.file_size, info.compress_size)
                     self.assertEqual(info.CRC, zipfile.crc32(bundle.read(info)))
                     self.assertTrue(info.filename.isascii())
+                    self.assertEqual(0x04034B50, local[0])
+                    self.assertEqual(0x800, local[2])
+                    self.assertEqual(zipfile.ZIP_STORED, local[3])
+                    self.assertEqual((0, 33), (local[4], local[5]))
+                    self.assertEqual(
+                        (info.CRC, info.compress_size, info.file_size),
+                        (local[6], local[7], local[8]),
+                    )
+                    self.assertEqual(info.filename.encode("utf-8"), local_name)
+                    self.assertEqual(b"", local_extra)
+            cursor = bundle.start_dir
+            for info in infos:
+                central = struct.unpack_from("<IHHHHHHIIIHHHHHII", raw, cursor)
+                central_name_at = cursor + 46
+                central_name = raw[central_name_at:central_name_at + central[10]]
+                central_extra = raw[
+                    central_name_at + central[10]:
+                    central_name_at + central[10] + central[11]
+                ]
+                with self.subTest(central_member=info.filename):
+                    self.assertEqual(0x02014B50, central[0])
+                    self.assertEqual((3 << 8) | 20, central[1])
+                    self.assertEqual(20, central[2])
+                    self.assertEqual(0x800, central[3])
+                    self.assertEqual(zipfile.ZIP_STORED, central[4])
+                    self.assertEqual((0, 33), (central[5], central[6]))
+                    self.assertEqual(
+                        (info.CRC, info.compress_size, info.file_size),
+                        (central[7], central[8], central[9]),
+                    )
+                    self.assertEqual(info.filename.encode("utf-8"), central_name)
+                    self.assertEqual(b"", central_extra)
+                    self.assertEqual(0, central[12])
+                    self.assertEqual(FIXED_MODE << 16, central[15])
+                    self.assertEqual(info.header_offset, central[16])
+                cursor += 46 + central[10] + central[11] + central[12]
             self.assertNotIn(b"PK\x06\x06", raw)
             self.assertNotIn(b"PK\x06\x07", raw)
             self.assertNotIn(b"\x01\x00", b"".join(info.extra for info in infos))
@@ -245,9 +290,14 @@ class ProducerTests(unittest.TestCase):
             with self.assertRaises(ReleaseError) as raised:
                 producer.build_character_release(self._request(self.output_dir / "release.zip"))
 
-        self.assertIn(raised.exception.code, {"WFREL_HASH_SOURCE_CHANGED", "WFREL_BUILD_SOURCE_CHANGED"})
+        self.assertIn(
+            raised.exception.code,
+            {"WFREL_HASH_SOURCE_CHANGED", "WFREL_BUILD_SOURCE_CHANGED"},
+        )
         self.assertFalse((self.output_dir / "release.zip").exists())
-        self.assertFalse(any(path.name.startswith(".wfrel-") for path in self._all_files(self.output_dir)))
+        self.assertFalse(
+            any(path.name.startswith(".wfrel-") for path in self._all_files(self.output_dir))
+        )
 
     def test_output_race_is_no_clobber_and_cleans_only_private_staging(self) -> None:
         import wf_release_v1.producer as producer
@@ -257,9 +307,9 @@ class ProducerTests(unittest.TestCase):
         marker.write_bytes(b"user")
         real_publish = producer.publish_new
 
-        def racing_publish(staging, destination, parent):
+        def racing_publish(staging, staging_path, destination, parent, readback):
             Path(destination).write_bytes(b"racer")
-            return real_publish(staging, destination, parent)
+            return real_publish(staging, staging_path, destination, parent, readback)
 
         with patch.object(producer, "publish_new", racing_publish):
             with self.assertRaises(ReleaseError):
@@ -267,7 +317,9 @@ class ProducerTests(unittest.TestCase):
 
         self.assertEqual(b"racer", output.read_bytes())
         self.assertEqual(b"user", marker.read_bytes())
-        self.assertFalse(any(path.name.startswith(".wfrel-") for path in self._all_files(self.output_dir)))
+        self.assertFalse(
+            any(path.name.startswith(".wfrel-") for path in self._all_files(self.output_dir))
+        )
 
     def test_readback_failure_never_publishes_or_leaks_staging(self) -> None:
         import wf_release_v1.producer as producer
@@ -276,13 +328,99 @@ class ProducerTests(unittest.TestCase):
         with patch.object(
             producer,
             "reopen_for_readback",
-            side_effect=ReleaseError("WFREL_ARCHIVE_INVALID", "readback failed", {"label": "archive"}),
+            side_effect=ReleaseError(
+                "WFREL_ARCHIVE_INVALID", "readback failed", {"label": "archive"}
+            ),
         ):
             with self.assertRaises(ReleaseError):
                 producer.build_character_release(self._request(output))
 
         self.assertFalse(output.exists())
-        self.assertFalse(any(path.name.startswith(".wfrel-") for path in self._all_files(self.output_dir)))
+        self.assertFalse(
+            any(path.name.startswith(".wfrel-") for path in self._all_files(self.output_dir))
+        )
+
+    def test_cleanup_path_takeover_never_deletes_user_directory(self) -> None:
+        import wf_release_v1.producer as producer
+
+        output = self.output_dir / "release.zip"
+        user_directory = self.root / "user-directory"
+        user_directory.mkdir()
+        marker = user_directory / "USER_MARKER"
+        marker.write_bytes(b"keep")
+        recursive_cleanup_called = False
+
+        def reject_recursive_cleanup(path):
+            nonlocal recursive_cleanup_called
+            recursive_cleanup_called = True
+            raise AssertionError(f"unsafe recursive cleanup attempted: {path}")
+
+        with (
+            patch.object(shutil, "rmtree", reject_recursive_cleanup),
+            patch.object(
+                producer,
+                "reopen_for_readback",
+                side_effect=ReleaseError(
+                    "WFREL_ARCHIVE_INVALID",
+                    "injected failure",
+                    {"label": "archive"},
+                ),
+            ),
+        ):
+            with self.assertRaises(ReleaseError):
+                producer.build_character_release(self._request(output))
+
+        self.assertFalse(recursive_cleanup_called)
+        self.assertEqual(b"keep", marker.read_bytes())
+        self.assertFalse(output.exists())
+
+    def test_readback_rejects_tampered_raw_header_fields(self) -> None:
+        import wf_release_v1.producer as producer
+
+        real_flags = producer.force_utf8_flags
+        mutations = (
+            ("local-flags", 6, b"\x00\x00"),
+            ("local-method", 8, b"\x08\x00"),
+            ("local-time", 10, b"\x01\x00"),
+            ("local-crc", 14, b"\x00\x00\x00\x00"),
+            ("local-extra", 28, b"\x01\x00"),
+            ("local-name", 30, b"x"),
+        )
+        for label, offset, replacement in mutations:
+            with self.subTest(mutation=label):
+                output = self.output_dir / f"{label}.zip"
+
+                def tamper_after_writer(stream):
+                    real_flags(stream)
+                    stream.seek(offset)
+                    stream.write(replacement)
+                    stream.flush()
+
+                with patch.object(producer, "force_utf8_flags", tamper_after_writer):
+                    with self.assertRaises(ReleaseError):
+                        producer.build_character_release(self._request(output))
+                self.assertFalse(output.exists())
+
+    def test_readback_rejects_noncanonical_release_manifest_bytes(self) -> None:
+        import wf_release_v1.producer as producer
+
+        output = self.output_dir / "release.zip"
+        real_metadata = producer._build_metadata
+
+        def rewrite_manifest(request, source, files, members):
+            release = real_metadata(request, source, files, members)
+            value = release.to_wire()
+            raw = (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+            members["release-manifest.json"] = producer._memory_member(
+                "release-manifest.json", raw
+            )
+            return release
+
+        with patch.object(producer, "_build_metadata", rewrite_manifest):
+            with self.assertRaises(ReleaseError):
+                producer.build_character_release(self._request(output))
+
+        self.assertFalse(output.exists())
 
     def test_post_link_identity_failure_removes_only_the_owned_output(self) -> None:
         import wf_release_v1.release_archive as release_archive
@@ -308,7 +446,9 @@ class ProducerTests(unittest.TestCase):
                 build_character_release(self._request(output))
 
         self.assertFalse(output.exists())
-        self.assertFalse(any(path.name.startswith(".wfrel-") for path in self._all_files(self.output_dir)))
+        self.assertFalse(
+            any(path.name.startswith(".wfrel-") for path in self._all_files(self.output_dir))
+        )
 
     def test_staged_archive_replacement_after_readback_is_rejected(self) -> None:
         import wf_release_v1.producer as producer
@@ -316,13 +456,16 @@ class ProducerTests(unittest.TestCase):
         output = self.output_dir / "release.zip"
         real_publish = producer.publish_new
 
-        def replace_then_publish(staging, destination, parent):
-            moved = staging.with_suffix(".original")
-            staging.rename(moved)
-            raw = bytearray(moved.read_bytes())
-            raw[len(raw) // 2] ^= 1
-            staging.write_bytes(raw)
-            return real_publish(staging, destination, parent)
+        def replace_then_publish(staging, staging_path, destination, parent, readback):
+            staging.seek(0, os.SEEK_END)
+            middle = staging.tell() // 2
+            staging.seek(middle)
+            original = staging.read(1)
+            self.assertTrue(original)
+            staging.seek(middle)
+            staging.write(bytes((original[0] ^ 1,)))
+            staging.flush()
+            return real_publish(staging, staging_path, destination, parent, readback)
 
         with patch.object(producer, "publish_new", replace_then_publish):
             with self.assertRaises(ReleaseError):
@@ -336,12 +479,16 @@ class ProducerTests(unittest.TestCase):
         output = self.output_dir / "release.zip"
         real_metadata = producer._build_metadata
 
-        def mutate_after_manifest(request, source, files, staging_root):
-            release = real_metadata(request, source, files, staging_root)
-            payload = next((staging_root / "content").iterdir())
-            raw = bytearray(payload.read_bytes())
+        def mutate_after_manifest(request, source, files, members):
+            release = real_metadata(request, source, files, members)
+            payload = next(item for name, item in members.items() if name.startswith("content/"))
+            payload.stream.seek(0)
+            raw = bytearray(payload.stream.read())
             raw[len(raw) // 2] ^= 1
-            payload.write_bytes(raw)
+            payload.stream.seek(0)
+            payload.stream.write(raw)
+            payload.stream.truncate()
+            payload.stream.seek(0)
             return release
 
         with patch.object(producer, "_build_metadata", mutate_after_manifest):
@@ -361,6 +508,25 @@ class ProducerTests(unittest.TestCase):
 
         self.assertEqual("WFREL_BUILD_LIMIT", raised.exception.code)
         self.assertFalse(output.exists())
+
+    def test_posix_archive_inode_is_linkable_without_o_excl(self) -> None:
+        import wf_release_v1.producer as producer
+
+        fake_stream = object()
+        with (
+            patch.object(producer.os, "name", "posix"),
+            patch.object(producer.os, "O_TMPFILE", 0x400000, create=True),
+            patch.object(producer.os, "open", return_value=71) as opened,
+            patch.object(producer.os, "fdopen", return_value=fake_stream),
+        ):
+            stream, path = producer._archive_temp(self.output_dir)
+
+        self.assertIs(fake_stream, stream)
+        self.assertIsNone(path)
+        opened.assert_called_once()
+        flags = opened.call_args.args[1]
+        self.assertTrue(flags & 0x400000)
+        self.assertFalse(flags & os.O_EXCL)
 
     @unittest.skipUnless(os.name == "nt", "junctions are Windows-specific")
     def test_rejects_reparse_points_in_output_parent_chain(self) -> None:
@@ -397,6 +563,33 @@ class ProducerTests(unittest.TestCase):
                 self._request(self.output_dir / "release.zip", overlays=(nonportable,))
             )
         self.assertEqual(set(), self._all_files(self.output_dir))
+
+    def test_accepts_nfc_unicode_overlay_filename_with_raw_utf8_flags(self) -> None:
+        from wf_release_v1.producer import build_character_release
+
+        overlay = make_patch_overlay(
+            self.root / "sources" / "角色-overlay-1.4.54-to-1.4.55.zip",
+            from_version="1.4.54",
+            target_version="1.4.55",
+        )
+        output = self.output_dir / "unicode-release.zip"
+        build_character_release(self._request(output, overlays=(overlay,)))
+
+        raw = output.read_bytes()
+        with zipfile.ZipFile(output) as bundle:
+            info = bundle.getinfo(f"wf-release-v1/content/{overlay.name}")
+            self.assertTrue(info.flag_bits & 0x800)
+            self.assertEqual(0x800, struct.unpack_from("<H", raw, info.header_offset + 6)[0])
+            cursor = bundle.start_dir
+            central_flags = None
+            for candidate in bundle.infolist():
+                header = struct.unpack_from("<IHHHHHHIIIHHHHHII", raw, cursor)
+                if candidate.filename == info.filename:
+                    central_flags = header[3]
+                    break
+                cursor += 46 + header[10] + header[11] + header[12]
+            self.assertEqual(0x800, central_flags)
+            self.assertEqual(overlay.read_bytes(), bundle.read(info))
 
     def test_rejects_portable_casefold_collisions_between_content_members(self) -> None:
         from wf_release_v1.producer import build_character_release

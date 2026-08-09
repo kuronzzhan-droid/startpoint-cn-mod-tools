@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
+import ctypes
 from dataclasses import dataclass
 import hashlib
 import os
 from pathlib import Path
 import stat
 import struct
-import secrets
 from typing import BinaryIO, Final
 import zipfile
 
@@ -28,6 +28,9 @@ _ROOT: Final = "wf-release-v1"
 _REPARSE_POINT: Final = 0x0400
 _UINT16_MAX: Final = (1 << 16) - 1
 _UINT32_MAX: Final = (1 << 32) - 1
+_UTF8_FLAG: Final = 0x800
+_DOS_TIME: Final = 0
+_DOS_DATE: Final = 33
 
 
 @dataclass(frozen=True)
@@ -40,10 +43,15 @@ class ArchiveReadback:
     release_id: str
     archive_sha256: str
     file_count: int
+    archive_identity: tuple[int, int, int, int]
 
 
 def _error(code: str, message: str, **details: object) -> ReleaseError:
     return ReleaseError(code, message, details)
+
+
+def _identity(value: os.stat_result) -> tuple[int, int, int, int]:
+    return value.st_dev, value.st_ino, value.st_size, value.st_mtime_ns
 
 
 def _is_reparse(value: os.stat_result) -> bool:
@@ -98,25 +106,29 @@ def _copy_stream(reader: BinaryIO, writer: BinaryIO) -> None:
         writer.write(chunk)
 
 
-def write_archive(stream: BinaryIO, members: tuple[tuple[str, Path], ...]) -> None:
+def write_archive(
+    stream: BinaryIO,
+    members: tuple[tuple[str, BinaryIO, int], ...],
+) -> None:
     if not members or len(members) >= _UINT16_MAX:
         raise _error("WFREL_BUILD_LIMIT", "classic ZIP member limit exceeded", label="archive")
     try:
         with zipfile.ZipFile(stream, "w", allowZip64=False) as bundle:
             bundle.comment = b""
-            for name, path in members:
-                size = path.stat().st_size
-                if size > _UINT32_MAX:
+            for name, source, expected_size in members:
+                if expected_size > _UINT32_MAX:
                     raise zipfile.LargeZipFile("classic member limit")
+                source.seek(0, os.SEEK_END)
+                if source.tell() != expected_size:
+                    raise OSError("staged member size changed")
+                source.seek(0)
                 info = zipfile.ZipInfo(name, FIXED_TIME)
                 info.compress_type = zipfile.ZIP_STORED
                 info.create_system = 3
                 info.external_attr = FIXED_MODE << 16
                 info.extra = b""
-                with path.open("rb") as reader, bundle.open(
-                    info, "w", force_zip64=False
-                ) as writer:
-                    _copy_stream(reader, writer)
+                with bundle.open(info, "w", force_zip64=False) as writer:
+                    _copy_stream(source, writer)
     except (OSError, zipfile.LargeZipFile) as error:
         raise _error(
             "WFREL_BUILD_LIMIT",
@@ -126,7 +138,7 @@ def write_archive(stream: BinaryIO, members: tuple[tuple[str, Path], ...]) -> No
 
 
 def force_utf8_flags(stream: BinaryIO) -> None:
-    """Set the UTF-8 bit for ASCII names in both classic ZIP headers."""
+    """Set the UTF-8 bit in both copies of every classic ZIP header."""
     stream.flush()
     with zipfile.ZipFile(stream, "r") as bundle:
         infos = bundle.infolist()
@@ -136,7 +148,7 @@ def force_utf8_flags(stream: BinaryIO) -> None:
         if stream.read(4) != b"PK\x03\x04":
             raise _error("WFREL_ARCHIVE_INVALID", "local ZIP header is invalid", label="archive")
         stream.seek(info.header_offset + 6)
-        flags = struct.unpack("<H", stream.read(2))[0] | 0x800
+        flags = struct.unpack("<H", stream.read(2))[0] | _UTF8_FLAG
         stream.seek(info.header_offset + 6)
         stream.write(struct.pack("<H", flags))
     cursor = central
@@ -146,7 +158,7 @@ def force_utf8_flags(stream: BinaryIO) -> None:
         if len(header) != 46 or header[:4] != b"PK\x01\x02":
             raise _error("WFREL_ARCHIVE_INVALID", "central ZIP header is invalid", label="archive")
         name_length, extra_length, comment_length = struct.unpack_from("<HHH", header, 28)
-        flags = struct.unpack_from("<H", header, 8)[0] | 0x800
+        flags = struct.unpack_from("<H", header, 8)[0] | _UTF8_FLAG
         stream.seek(cursor + 8)
         stream.write(struct.pack("<H", flags))
         cursor += 46 + name_length + extra_length + comment_length
@@ -154,38 +166,136 @@ def force_utf8_flags(stream: BinaryIO) -> None:
     os.fsync(stream.fileno())
 
 
-def _sha256_path(path: Path) -> str:
+def _read_exact_at(stream: BinaryIO, offset: int, size: int) -> bytes:
+    stream.seek(offset)
+    raw = stream.read(size)
+    if len(raw) != size:
+        raise ValueError("archive structure is truncated")
+    return raw
+
+
+def _raw_header_check(stream: BinaryIO, infos: list[zipfile.ZipInfo], size: int) -> None:
+    if size < 22:
+        raise ValueError("archive is truncated")
+    eocd = struct.unpack("<IHHHHIIH", _read_exact_at(stream, size - 22, 22))
+    signature, disk, central_disk, disk_count, count, central_size, central_at, comment = eocd
+    if (
+        signature != 0x06054B50
+        or disk != 0
+        or central_disk != 0
+        or disk_count != count
+        or count != len(infos)
+        or count == _UINT16_MAX
+        or central_size == _UINT32_MAX
+        or central_at == _UINT32_MAX
+        or comment != 0
+        or central_at + central_size != size - 22
+    ):
+        raise ValueError("classic ZIP end record is invalid")
+    cursor = central_at
+    for info in infos:
+        central = struct.unpack(
+            "<IHHHHHHIIIHHHHHII", _read_exact_at(stream, cursor, 46)
+        )
+        (
+            central_signature,
+            made_by,
+            extract,
+            flags,
+            method,
+            dos_time,
+            dos_date,
+            crc,
+            compressed,
+            uncompressed,
+            name_length,
+            extra_length,
+            comment_length,
+            disk_start,
+            internal_attr,
+            external_attr,
+            local_at,
+        ) = central
+        raw_name = _read_exact_at(stream, cursor + 46, name_length)
+        local = struct.unpack("<IHHHHHIIIHH", _read_exact_at(stream, local_at, 30))
+        (
+            local_signature,
+            local_extract,
+            local_flags,
+            local_method,
+            local_time,
+            local_date,
+            local_crc,
+            local_compressed,
+            local_uncompressed,
+            local_name_length,
+            local_extra_length,
+        ) = local
+        local_name = _read_exact_at(stream, local_at + 30, local_name_length)
+        expected_name = info.filename.encode("utf-8")
+        if (
+            central_signature != 0x02014B50
+            or local_signature != 0x04034B50
+            or made_by != (3 << 8) | 20
+            or extract != 20
+            or local_extract != extract
+            or flags != _UTF8_FLAG
+            or local_flags != flags
+            or method != zipfile.ZIP_STORED
+            or local_method != method
+            or dos_time != _DOS_TIME
+            or local_time != dos_time
+            or dos_date != _DOS_DATE
+            or local_date != dos_date
+            or crc != info.CRC
+            or local_crc != crc
+            or compressed != info.compress_size
+            or uncompressed != info.file_size
+            or local_compressed != compressed
+            or local_uncompressed != uncompressed
+            or raw_name != expected_name
+            or local_name != raw_name
+            or extra_length != 0
+            or local_extra_length != 0
+            or comment_length != 0
+            or disk_start != 0
+            or internal_attr != 0
+            or external_attr != FIXED_MODE << 16
+            or local_at == _UINT32_MAX
+        ):
+            raise ValueError("local and central ZIP headers disagree")
+        if raw_name.decode("utf-8", errors="strict") != info.filename:
+            raise ValueError("ZIP member name is not exact UTF-8")
+        cursor += 46 + name_length
+    if cursor != central_at + central_size:
+        raise ValueError("central ZIP directory size is invalid")
+
+
+def _hash_stream(stream: BinaryIO) -> str:
     digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        while chunk := stream.read(1024 * 1024):
-            digest.update(chunk)
+    stream.seek(0)
+    while chunk := stream.read(1024 * 1024):
+        digest.update(chunk)
     return digest.hexdigest()
 
 
-def readback_archive(path: Path) -> ArchiveReadback:
+def readback_archive(stream: BinaryIO) -> ArchiveReadback:
     try:
-        with zipfile.ZipFile(path, "r", allowZip64=False) as bundle:
+        before = os.fstat(stream.fileno())
+        if not stat.S_ISREG(before.st_mode) or _is_reparse(before):
+            raise ValueError("archive handle is not regular")
+        with zipfile.ZipFile(stream, "r", allowZip64=False) as bundle:
             infos = bundle.infolist()
             names = [info.filename for info in infos]
             if (
                 not infos
-                or names != sorted(names, key=lambda item: item.encode("utf-8"))
+                or names[:-1] != sorted(names[:-1], key=lambda item: item.encode("utf-8"))
+                or names[-1] != f"{_ROOT}/release-manifest.json"
                 or len(names) != len(set(names))
                 or bundle.comment
             ):
-                raise ValueError("member set is not canonical")
-            for info in infos:
-                if (
-                    info.date_time != FIXED_TIME
-                    or info.compress_type != zipfile.ZIP_STORED
-                    or info.create_system != 3
-                    or info.external_attr >> 16 != FIXED_MODE
-                    or info.extra
-                    or not info.flag_bits & 0x800
-                    or info.is_dir()
-                    or info.file_size != info.compress_size
-                ):
-                    raise ValueError("member metadata is not canonical")
+                raise ValueError("member order or set is not canonical")
+            _raw_header_check(stream, infos, before.st_size)
             release_raw = bundle.read(f"{_ROOT}/release-manifest.json")
             requires_raw = bundle.read(f"{_ROOT}/requires.json")
             ownership_raw = bundle.read(f"{_ROOT}/ownership.json")
@@ -200,14 +310,15 @@ def readback_archive(path: Path) -> ArchiveReadback:
             )
             verify_release_id(release)
             if (
-                requires_raw != canonical_json_bytes(requirements.to_wire())
+                release_raw != canonical_json_bytes(release.to_wire())
+                or requires_raw != canonical_json_bytes(requirements.to_wire())
                 or ownership_raw != canonical_json_bytes(ownership.to_wire())
                 or hashlib.sha256(requires_raw).hexdigest()
                 != release.metadata_sha256.requires
                 or hashlib.sha256(ownership_raw).hexdigest()
                 != release.metadata_sha256.ownership
             ):
-                raise ValueError("metadata bytes are not bound")
+                raise ValueError("metadata bytes are not canonically bound")
             metadata = {
                 f"{_ROOT}/release-manifest.json",
                 f"{_ROOT}/requires.json",
@@ -220,7 +331,20 @@ def readback_archive(path: Path) -> ArchiveReadback:
                 raw = bundle.read(f"{_ROOT}/{item.path}")
                 if len(raw) != item.size or hashlib.sha256(raw).hexdigest() != item.sha256:
                     raise ValueError("payload digest mismatch")
-    except (OSError, ValueError, KeyError, zipfile.BadZipFile, zipfile.LargeZipFile, ReleaseError) as error:
+        archive_sha256 = _hash_stream(stream)
+        after = os.fstat(stream.fileno())
+        if _identity(after) != _identity(before):
+            raise ValueError("archive identity changed during readback")
+    except (
+        OSError,
+        ValueError,
+        KeyError,
+        UnicodeError,
+        struct.error,
+        zipfile.BadZipFile,
+        zipfile.LargeZipFile,
+        ReleaseError,
+    ) as error:
         if isinstance(error, ReleaseError) and error.code == "WFREL_ARCHIVE_INVALID":
             raise
         raise _error(
@@ -228,50 +352,103 @@ def readback_archive(path: Path) -> ArchiveReadback:
             "independent archive readback failed",
             label="archive",
         ) from error
-    return ArchiveReadback(release.release_id, _sha256_path(path), len(release.files))
+    return ArchiveReadback(
+        release.release_id,
+        archive_sha256,
+        len(release.files),
+        _identity(after),
+    )
 
 
-def reopen_for_readback(staging: Path, parent: Path) -> ArchiveReadback:
-    path = parent / f".wfrel-readback-{secrets.token_hex(16)}.zip"
+def reopen_for_readback(staging: BinaryIO) -> ArchiveReadback:
     try:
-        os.link(staging, path)
-        return readback_archive(path)
+        staging.flush()
+        os.fsync(staging.fileno())
+        with os.fdopen(os.dup(staging.fileno()), "rb", closefd=True) as reader:
+            return readback_archive(reader)
     except OSError as error:
         raise _error(
             "WFREL_ARCHIVE_INVALID",
             "temporary archive could not be reopened",
             label="archive",
         ) from error
-    finally:
+
+
+def _posix_link_handle(staging: BinaryIO, output: Path, parent: ParentState) -> None:
+    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | getattr(os, "O_CLOEXEC", 0)
+    parent_descriptor = os.open(output.parent, flags)
+    try:
+        metadata = os.fstat(parent_descriptor)
+        if (metadata.st_dev, metadata.st_ino) != parent.components[-1][1]:
+            raise OSError("output parent identity changed")
+        libc = ctypes.CDLL(None, use_errno=True)
         try:
-            if path.exists() and os.path.samefile(staging, path):
-                path.unlink()
-        except OSError:
-            pass
+            linkat = libc.linkat
+        except AttributeError as error:
+            raise OSError("descriptor publication is unavailable") from error
+        linkat.argtypes = (
+            ctypes.c_int,
+            ctypes.c_char_p,
+            ctypes.c_int,
+            ctypes.c_char_p,
+            ctypes.c_int,
+        )
+        linkat.restype = ctypes.c_int
+        if linkat(
+            staging.fileno(),
+            b"",
+            parent_descriptor,
+            os.fsencode(output.name),
+            0x1000,
+        ) != 0:
+            raise OSError(ctypes.get_errno(), "linkat failed")
+    finally:
+        os.close(parent_descriptor)
 
 
-def publish_new(staging: Path, output: Path, parent: ParentState) -> None:
+def _remove_owned_output(output: Path, expected: tuple[int, int, int, int]) -> None:
+    try:
+        metadata = os.lstat(output)
+        if _identity(metadata) == expected and stat.S_ISREG(metadata.st_mode):
+            output.unlink()
+    except OSError:
+        pass
+
+
+def publish_new(
+    staging: BinaryIO,
+    staging_path: Path | None,
+    output: Path,
+    parent: ParentState,
+    readback: ArchiveReadback,
+) -> None:
     verify_parent(parent)
     try:
-        os.link(staging, output)
-    except OSError as error:
-        raise _error(
-            "WFREL_BUILD_OUTPUT_EXISTS",
-            "output could not be published without replacement",
-            label="output",
-        ) from error
-    try:
-        verify_parent(parent)
-        if not os.path.samefile(staging, output):
+        before = os.fstat(staging.fileno())
+        if (
+            _identity(before) != readback.archive_identity
+            or _hash_stream(staging) != readback.archive_sha256
+        ):
+            raise OSError("readback archive changed before publish")
+        if os.name == "nt":
+            if (
+                staging_path is None
+                or _identity(os.lstat(staging_path)) != readback.archive_identity
+            ):
+                raise OSError("staging path is not the readback archive")
+            os.link(staging_path, output)
+        else:
+            _posix_link_handle(staging, output, parent)
+        published = os.lstat(output)
+        if _identity(published) != readback.archive_identity:
             raise OSError("published identity changed")
+        verify_parent(parent)
+        if _identity(os.fstat(staging.fileno())) != readback.archive_identity:
+            raise OSError("published handle identity changed")
     except (OSError, ReleaseError) as error:
-        try:
-            if output.exists() and os.path.samefile(staging, output):
-                output.unlink()
-        except OSError:
-            pass
+        _remove_owned_output(output, readback.archive_identity)
         raise _error(
             "WFREL_BUILD_OUTPUT_CHANGED",
-            "published output identity could not be confirmed",
+            "output could not be published as the readback archive",
             label="output",
         ) from error
