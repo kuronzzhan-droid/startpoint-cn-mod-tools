@@ -16,6 +16,7 @@ import zipfile
 import wf_character_workspace
 from wf_release_v1.errors import ReleaseError
 from tests.release_v1_fixtures import (
+    corrupt_zip_member_crc,
     make_patch_overlay,
     make_sealed_character_workspace,
     replace_first_inner_zip,
@@ -253,6 +254,23 @@ class CharacterSourceTests(unittest.TestCase):
                         overlay_archives=[overlay],
                     )
                 self.assertEqual("WFREL_OVERLAY_INVALID", raised.exception.code)
+
+    def test_rejects_outer_readme_with_invalid_crc(self) -> None:
+        overlay = self._overlay("1.4.54", "1.4.55", folder="readme-crc")
+        corrupt_zip_member_crc(overlay, "README.md")
+        with zipfile.ZipFile(overlay) as bundle:
+            with self.assertRaises(zipfile.BadZipFile):
+                bundle.read("README.md")
+
+        from wf_release_v1.character_source import inspect_character_source
+
+        with self.assertRaises(ReleaseError) as raised:
+            inspect_character_source(
+                workspace=self.workspace,
+                overlay_archives=[overlay],
+            )
+
+        self.assertEqual("WFREL_OVERLAY_INVALID", raised.exception.code)
 
     def test_rejects_outer_zip_bomb_ratio_before_reading_payload(self) -> None:
         overlay = make_patch_overlay(

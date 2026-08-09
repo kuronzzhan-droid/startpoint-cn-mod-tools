@@ -206,6 +206,34 @@ def rewrite_outer_member_raw_name(path: Path, member_name: str, raw_name: str) -
     path.write_bytes(_stored_zip_members(ordered))
 
 
+def corrupt_zip_member_crc(path: Path, member_name: str) -> None:
+    """Corrupt one member CRC in both its local and central ZIP headers."""
+    with zipfile.ZipFile(path) as bundle:
+        info = bundle.getinfo(member_name)
+        central_offset = bundle.start_dir
+    raw = bytearray(path.read_bytes())
+    bad_crc = info.CRC ^ 0xFFFFFFFF
+    if raw[info.header_offset : info.header_offset + 4] != b"PK\x03\x04":
+        raise AssertionError("local ZIP header not found")
+    struct.pack_into("<I", raw, info.header_offset + 14, bad_crc)
+
+    cursor = central_offset
+    central_found = False
+    while raw[cursor : cursor + 4] == b"PK\x01\x02":
+        name_length, extra_length, comment_length = struct.unpack_from(
+            "<HHH", raw, cursor + 28
+        )
+        local_offset = struct.unpack_from("<I", raw, cursor + 42)[0]
+        if local_offset == info.header_offset:
+            struct.pack_into("<I", raw, cursor + 16, bad_crc)
+            central_found = True
+            break
+        cursor += 46 + name_length + extra_length + comment_length
+    if not central_found:
+        raise AssertionError("central ZIP header not found")
+    path.write_bytes(raw)
+
+
 def replace_first_inner_zip(path: Path, names: list[str]) -> None:
     """Replace the first manifest payload with an inner ZIP using exact names."""
     inner_raw = _stored_zip_bytes(names)

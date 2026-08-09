@@ -380,6 +380,7 @@ def _inspect_overlay(path: Path) -> SourceFile:
                         "Overlay metadata exceeds the size limit",
                         archiveName=archive_name,
                     )
+                bundle.read(infos["README.md"])
                 requires = _read_json_member(
                     bundle, infos, "requires.json", archive_name=archive_name
                 )
