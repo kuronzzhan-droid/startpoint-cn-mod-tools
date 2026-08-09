@@ -191,9 +191,27 @@ def _read_json_member(
 def _validate_inner_zip(raw: bytes, *, archive_name: str) -> None:
     try:
         with zipfile.ZipFile(io.BytesIO(raw)) as inner:
-            names = inner.namelist()
-            _validate_zip_limits(inner.infolist(), archive_name=archive_name)
-            if len(names) != len(set(names)) or inner.testzip() is not None:
+            infos = inner.infolist()
+            _validate_zip_limits(infos, archive_name=archive_name)
+            normalized_names: set[str] = set()
+            for info in infos:
+                try:
+                    original = normalize_relative_path(info.orig_filename)
+                    normalized = normalize_relative_path(info.filename)
+                except ReleaseError as error:
+                    raise _error(
+                        "WFREL_OVERLAY_INVALID",
+                        "inner ZIP member path is invalid",
+                        archiveName=archive_name,
+                    ) from error
+                if original != normalized or normalized in normalized_names:
+                    raise _error(
+                        "WFREL_OVERLAY_INVALID",
+                        "inner ZIP member path is duplicated",
+                        archiveName=archive_name,
+                    )
+                normalized_names.add(normalized)
+            if inner.testzip() is not None:
                 raise zipfile.BadZipFile("inner ZIP member contract failed")
     except ReleaseError:
         raise

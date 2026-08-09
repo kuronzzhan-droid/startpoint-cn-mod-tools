@@ -6,8 +6,10 @@ import hashlib
 import io
 import json
 from pathlib import Path
+import struct
 import warnings
 import zipfile
+import zlib
 
 import wf_character_workspace
 
@@ -118,6 +120,96 @@ def _inner_zip_bytes(label: str) -> bytes:
     with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as bundle:
         bundle.writestr(f"production/{label}.txt", label.encode("ascii"))
     return output.getvalue()
+
+
+def _stored_zip_bytes(names: list[str]) -> bytes:
+    """Build exact-name ZIP members without platform path sanitization."""
+    locals_: list[bytes] = []
+    centrals: list[bytes] = []
+    offset = 0
+    for index, name in enumerate(names):
+        raw = f"payload-{index}".encode("ascii")
+        encoded_name = name.encode("utf-8")
+        flags = 0x0800
+        checksum = zlib.crc32(raw) & 0xFFFFFFFF
+        local = struct.pack(
+            "<IHHHHHIIIHH",
+            0x04034B50,
+            20,
+            flags,
+            0,
+            0,
+            0,
+            checksum,
+            len(raw),
+            len(raw),
+            len(encoded_name),
+            0,
+        ) + encoded_name + raw
+        central = struct.pack(
+            "<IHHHHHHIIIHHHHHII",
+            0x02014B50,
+            20,
+            20,
+            flags,
+            0,
+            0,
+            0,
+            checksum,
+            len(raw),
+            len(raw),
+            len(encoded_name),
+            0,
+            0,
+            0,
+            0,
+            0,
+            offset,
+        ) + encoded_name
+        locals_.append(local)
+        centrals.append(central)
+        offset += len(local)
+
+    local_bytes = b"".join(locals_)
+    central_bytes = b"".join(centrals)
+    end = struct.pack(
+        "<IHHHHIIH",
+        0x06054B50,
+        0,
+        0,
+        len(names),
+        len(names),
+        len(central_bytes),
+        len(local_bytes),
+        0,
+    )
+    return local_bytes + central_bytes + end
+
+
+def replace_first_inner_zip(path: Path, names: list[str]) -> None:
+    """Replace the first manifest payload with an inner ZIP using exact names."""
+    inner_raw = _stored_zip_bytes(names)
+
+    with zipfile.ZipFile(path) as bundle:
+        ordered = [(item.filename, bundle.read(item)) for item in bundle.infolist()]
+    manifest = json.loads(dict(ordered)["patch-manifest.json"])
+    target = manifest["archives"][0]
+    target["bytes"] = len(inner_raw)
+    target["sha256"] = _sha256(inner_raw)
+    ordered = [
+        (
+            name,
+            inner_raw
+            if name == target["relativePath"]
+            else json.dumps(manifest, separators=(",", ":")).encode("utf-8") + b"\n"
+            if name == "patch-manifest.json"
+            else raw,
+        )
+        for name, raw in ordered
+    ]
+    with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as bundle:
+        for name, raw in ordered:
+            bundle.writestr(name, raw)
 
 
 def make_patch_overlay(

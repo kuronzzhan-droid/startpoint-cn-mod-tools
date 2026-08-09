@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 import copy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import os
 from pathlib import Path
 import stat
@@ -24,12 +24,34 @@ from .patch_overlay_source import SourceFile, inspect_patch_overlay_chain
 _REPARSE_POINT = 0x0400
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, init=False)
 class CharacterReleaseSource:
     workspace_input_sha256: str
-    package_manifest: Mapping[str, object]
+    _package_manifest: dict[str, object] = field(repr=False)
     overlay_files: tuple[SourceFile, ...]
     cdn_target_version: str
+
+    def __init__(
+        self,
+        *,
+        workspace_input_sha256: str,
+        package_manifest: Mapping[str, object],
+        overlay_files: tuple[SourceFile, ...],
+        cdn_target_version: str,
+    ) -> None:
+        object.__setattr__(self, "workspace_input_sha256", workspace_input_sha256)
+        object.__setattr__(
+            self,
+            "_package_manifest",
+            copy.deepcopy(dict(package_manifest)),
+        )
+        object.__setattr__(self, "overlay_files", overlay_files)
+        object.__setattr__(self, "cdn_target_version", cdn_target_version)
+
+    @property
+    def package_manifest(self) -> dict[str, object]:
+        """Return a caller-owned copy of the authenticated package manifest."""
+        return copy.deepcopy(self._package_manifest)
 
 
 @dataclass(frozen=True)

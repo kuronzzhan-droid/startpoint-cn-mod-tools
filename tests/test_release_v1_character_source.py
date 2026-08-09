@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import io
 import json
@@ -17,6 +18,7 @@ from wf_release_v1.errors import ReleaseError
 from tests.release_v1_fixtures import (
     make_patch_overlay,
     make_sealed_character_workspace,
+    replace_first_inner_zip,
     rewrite_overlay,
 )
 
@@ -85,6 +87,35 @@ class CharacterSourceTests(unittest.TestCase):
         )
         self.assertEqual((overlay.name,), tuple(item.relative_path for item in source.overlay_files))
         self.assertFalse(hasattr(source, "server_files"))
+
+    def test_package_manifest_reads_are_deep_caller_isolated(self) -> None:
+        overlay = self._overlay("1.4.54", "1.4.55")
+
+        from wf_release_v1.character_source import inspect_character_source
+
+        source = inspect_character_source(
+            workspace=self.workspace,
+            overlay_archives=[overlay],
+        )
+        original = copy.deepcopy(source.package_manifest)
+        exposed = source.package_manifest
+        exposed["caller_only"] = True
+        exposed["character_id"] = 1
+        exposed["code_name"] = "changed"
+        exposed["package_id"] = "changed"
+        exposed["roots"]["server"][0]["logical_path"] = "changed.json"
+        exposed["roots"]["server"].append({"logical_path": "added.json"})
+
+        self.assertEqual(original, source.package_manifest)
+        self.assertIsNot(exposed, source.package_manifest)
+        self.assertIsNot(exposed["roots"], source.package_manifest["roots"])
+        twin = inspect_character_source(
+            workspace=self.workspace,
+            overlay_archives=[overlay],
+        )
+        self.assertEqual(source, twin)
+        with self.assertRaises(TypeError):
+            hash(source)
 
     def test_rejects_workspace_that_is_not_the_same_sealed_production_identity(self) -> None:
         manifest_path = self.workspace / "package" / "manifest.json"
@@ -242,6 +273,31 @@ class CharacterSourceTests(unittest.TestCase):
             inspect_character_source(workspace=self.workspace, overlay_archives=[overlay])
 
         self.assertEqual("WFREL_OVERLAY_LIMIT", raised.exception.code)
+
+    def test_rejects_noncanonical_duplicate_or_conflicting_inner_paths(self) -> None:
+        from wf_release_v1.character_source import inspect_character_source
+
+        cases = {
+            "parent": ["../escape.txt"],
+            "absolute": ["/absolute.txt"],
+            "backslash": [r"production\backslash.txt"],
+            "drive": ["C:/drive.txt"],
+            "unc": [r"\\server\share.txt"],
+            "empty": [""],
+            "directory": ["production/"],
+            "duplicate": ["production/same.txt", "production/same.txt"],
+            "normalized-conflict": ["production/é.txt", "production/e\u0301.txt"],
+        }
+        for label, names in cases.items():
+            with self.subTest(label=label):
+                overlay = self._overlay("1.4.54", "1.4.55", folder=label)
+                replace_first_inner_zip(overlay, names)
+                with self.assertRaises(ReleaseError) as raised:
+                    inspect_character_source(
+                        workspace=self.workspace,
+                        overlay_archives=[overlay],
+                    )
+                self.assertEqual("WFREL_OVERLAY_INVALID", raised.exception.code)
 
     def test_rejects_bool_schema_and_oversized_patch_manifest(self) -> None:
         from wf_release_v1.character_source import inspect_character_source
