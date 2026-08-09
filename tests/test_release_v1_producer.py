@@ -20,7 +20,7 @@ from tests.release_v1_fixtures import (
     make_patch_overlay,
     make_sealed_character_workspace,
 )
-from tests.release_v1_schema_support import requirements_wire
+from tests.release_v1_schema_support import ownership_wire, release_wire, requirements_wire
 from wf_release_v1.canonical import canonical_json_bytes, load_json_strict_bytes
 from wf_release_v1.errors import ReleaseError
 from wf_release_v1.schema import (
@@ -241,6 +241,47 @@ class ProducerTests(unittest.TestCase):
 
         self.assertNotEqual(first.release_id, second.release_id)
         self.assertNotEqual(first.archive_sha256, second.archive_sha256)
+
+    def test_each_canonical_metadata_member_has_the_verifier_limit(self) -> None:
+        from wf_release_v1 import producer
+
+        fixtures = {
+            "requires.json": canonical_json_bytes(requirements_wire()),
+            "ownership.json": canonical_json_bytes(ownership_wire()),
+            "release-manifest.json": canonical_json_bytes(
+                release_wire(computed_id=True)
+            ),
+        }
+        with patch.object(producer, "_MAX_METADATA_BYTES", 8, create=True):
+            for name, raw in fixtures.items():
+                with self.subTest(name=name):
+                    with self.assertRaises(ReleaseError) as raised:
+                        producer._memory_member(name, raw)
+                    self.assertEqual("WFREL_BUILD_LIMIT", raised.exception.code)
+
+    def test_public_build_rejects_oversized_canonical_requirements_before_publish(self) -> None:
+        from wf_release_v1.producer import BuildRequest, build_character_release
+
+        wire = requirements_wire()
+        wire["serverCapabilities"] = [
+            f"cap{index:05d}{'x' * 55}@1" for index in range(18000)
+        ]
+        requirements = parse_requirements(wire)
+        self.assertGreater(len(canonical_json_bytes(requirements.to_wire())), 1024 * 1024)
+        output = self.output_dir / "oversized-metadata.zip"
+        request = BuildRequest(
+            name="seris-dragon-king",
+            version="1.0.0",
+            workspace=self.workspace,
+            overlay_archives=(self.overlay,),
+            output=output,
+            requirements=requirements,
+        )
+
+        with self.assertRaises(ReleaseError) as raised:
+            build_character_release(request)
+        self.assertEqual("WFREL_BUILD_LIMIT", raised.exception.code)
+        self.assertFalse(output.exists())
 
     def test_rejects_existing_nested_or_source_overlapping_output_without_changes(self) -> None:
         from wf_release_v1.producer import build_character_release

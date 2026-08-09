@@ -17,6 +17,7 @@ from .verifier import VerificationReport, verify_release
 
 
 _REPARSE_POINT: Final = 0x0400
+_MAX_REQUIREMENTS_BYTES: Final = 1024 * 1024
 _FORMAT_PREFIXES: Final = (
     "WFREL_ARCHIVE_",
     "WFREL_BUILD_LIMIT",
@@ -45,12 +46,24 @@ _IO_PREFIXES: Final = (
 
 
 def _write_json(stream: object, value: dict[str, object]) -> None:
-    raw = canonical_json_bytes(value).decode("utf-8")
-    stream.write(raw)  # type: ignore[attr-defined]
+    raw = canonical_json_bytes(value)
+    binary = getattr(stream, "buffer", None)
+    if binary is not None and callable(getattr(binary, "write", None)):
+        binary.write(raw)
+        binary.flush()
+        return
+    stream.write(raw.decode("utf-8"))  # type: ignore[attr-defined]
 
 
 def _write_error(code: str, message: str) -> None:
     _write_json(sys.stderr, {"code": code, "message": message})
+
+
+def _configure_stdio() -> None:
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if callable(reconfigure):
+            reconfigure(encoding="utf-8", errors="strict", newline="\n")
 
 
 class _ArgumentParser(argparse.ArgumentParser):
@@ -88,11 +101,13 @@ def _read_stable_file(path: Path, *, label: str) -> bytes:
             os.O_RDONLY | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0),
         )
         opened = os.fstat(descriptor)
-        if _is_reparse(opened) or _snapshot(opened) != before:
+        opened_snapshot = _snapshot(opened)
+        if _is_reparse(opened) or opened_snapshot != before:
             raise OSError("input identity changed before open")
+        expected_size = opened.st_size
         with os.fdopen(descriptor, "rb", closefd=True) as stream:
             descriptor = -1
-            raw = stream.read()
+            raw = stream.read(_MAX_REQUIREMENTS_BYTES + 1)
             after_open = os.fstat(stream.fileno())
         after_path = os.lstat(path)
         if (
@@ -101,6 +116,14 @@ def _read_stable_file(path: Path, *, label: str) -> bytes:
             or _is_reparse(after_path)
         ):
             raise OSError("input identity changed while reading")
+        if expected_size > _MAX_REQUIREMENTS_BYTES or len(raw) > _MAX_REQUIREMENTS_BYTES:
+            raise ReleaseError(
+                "WFREL_REQUIRE_LIMIT",
+                "requirements metadata exceeds the supported limit",
+                {"label": label},
+            )
+        if len(raw) != expected_size:
+            raise OSError("input length does not match its stable identity")
         return raw
     except OSError as error:
         raise ReleaseError(
@@ -206,6 +229,7 @@ def _release_exit(error: ReleaseError) -> tuple[int, str]:
 
 def main(argv: Sequence[str] | None = None) -> int:
     try:
+        _configure_stdio()
         arguments = _parser().parse_args(argv)
         result = arguments.handler(arguments)
     except ReleaseError as error:

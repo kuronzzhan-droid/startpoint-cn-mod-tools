@@ -44,6 +44,7 @@ from .schema import (
 
 
 _ROOT: Final = "wf-release-v1"
+_MAX_METADATA_BYTES: Final = 1024 * 1024
 _REPARSE_POINT: Final = 0x0400
 _WINDOWS_FORBIDDEN: Final = frozenset('<>:"\\|?*')
 _WINDOWS_DEVICES: Final = frozenset(
@@ -284,6 +285,12 @@ def _copy_payloads(
 
 
 def _memory_member(path: str, raw: bytes) -> _StagedMember:
+    if len(raw) > _MAX_METADATA_BYTES:
+        raise _error(
+            "WFREL_BUILD_LIMIT",
+            "release metadata exceeds the supported limit",
+            label=path,
+        )
     return _StagedMember(path, io.BytesIO(raw), len(raw))
 
 

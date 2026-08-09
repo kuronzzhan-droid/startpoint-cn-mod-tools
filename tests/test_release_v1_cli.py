@@ -5,6 +5,7 @@ from __future__ import annotations
 from contextlib import redirect_stderr, redirect_stdout
 import io
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
@@ -71,6 +72,24 @@ class ReleaseCliTests(unittest.TestCase):
             check=False,
         )
 
+    @staticmethod
+    def _run_with_encoding(
+        encoding: str | None, *arguments: str
+    ) -> subprocess.CompletedProcess[bytes]:
+        environment = os.environ.copy()
+        if encoding is None:
+            environment.pop("PYTHONIOENCODING", None)
+        else:
+            environment["PYTHONIOENCODING"] = encoding
+        return subprocess.run(
+            [sys.executable, "-m", "wf_release_v1", *arguments],
+            cwd=Path(__file__).resolve().parents[1],
+            env=environment,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+
     def _json_line(self, raw: bytes) -> dict[str, object]:
         self.assertTrue(raw.endswith(b"\n"))
         self.assertEqual(1, raw.count(b"\n"))
@@ -127,6 +146,46 @@ class ReleaseCliTests(unittest.TestCase):
                     machine_code="WFREL_CLI_ARGUMENTS",
                 )
                 self.assertNotIn(b"usage:", result.stderr)
+
+    def test_real_stdio_is_utf8_lf_under_hostile_default_encodings(self) -> None:
+        unicode_release = self.case_root / "候选发行.zip"
+        unicode_release.write_bytes(self.valid_release.read_bytes())
+        for encoding in (None, "gbk", "utf-16", "cp1252"):
+            with self.subTest(encoding=encoding, stream="help"):
+                help_result = self._run_with_encoding(encoding, "--help")
+                self.assertEqual(0, help_result.returncode)
+                self.assertEqual(b"", help_result.stderr)
+                self.assertNotIn(b"\xff\xfe", help_result.stdout)
+                self.assertNotIn(b"\xfe\xff", help_result.stdout)
+                self.assertNotIn(b"\r\n", help_result.stdout)
+                help_text = help_result.stdout.decode("utf-8")
+                self.assertIn("构建不可变发行物", help_text)
+
+            with self.subTest(encoding=encoding, stream="success"):
+                success = self._run_with_encoding(
+                    encoding,
+                    "verify",
+                    "--release",
+                    str(unicode_release),
+                    "--json",
+                )
+                self.assertEqual(0, success.returncode)
+                self.assertEqual(b"", success.stderr)
+                success_value = json.loads(success.stdout.decode("utf-8"))
+                self.assertEqual(
+                    canonical_json_bytes(success_value),
+                    success.stdout,
+                )
+
+            with self.subTest(encoding=encoding, stream="error"):
+                failure = self._run_with_encoding(encoding)
+                self.assertEqual(2, failure.returncode)
+                self.assertEqual(b"", failure.stdout)
+                failure_value = json.loads(failure.stderr.decode("utf-8"))
+                self.assertEqual(
+                    canonical_json_bytes(failure_value),
+                    failure.stderr,
+                )
 
     def test_verify_and_inspect_emit_only_verified_report_json(self) -> None:
         expected_keys = {"components", "fileCount", "payloadBytes", "releaseId"}
@@ -320,26 +379,99 @@ class ReleaseCliTests(unittest.TestCase):
         from wf_release_v1 import cli
 
         actual_fstat = cli.os.fstat
-        calls = 0
+        for drift in ("mtime", "growth"):
+            with self.subTest(drift=drift):
+                calls = 0
 
-        def drifting_fstat(descriptor: int):
-            nonlocal calls
-            current = actual_fstat(descriptor)
-            calls += 1
-            if calls != 2:
-                return current
-            return SimpleNamespace(
-                st_dev=current.st_dev,
-                st_ino=current.st_ino,
-                st_size=current.st_size,
-                st_mtime_ns=current.st_mtime_ns + 1,
-                st_mode=current.st_mode,
-                st_file_attributes=getattr(current, "st_file_attributes", 0),
-            )
+                def drifting_fstat(descriptor: int):
+                    nonlocal calls
+                    current = actual_fstat(descriptor)
+                    calls += 1
+                    if calls != 2:
+                        return current
+                    return SimpleNamespace(
+                        st_dev=current.st_dev,
+                        st_ino=current.st_ino,
+                        st_size=current.st_size + (1 if drift == "growth" else 0),
+                        st_mtime_ns=current.st_mtime_ns + 1,
+                        st_mode=current.st_mode,
+                        st_file_attributes=getattr(current, "st_file_attributes", 0),
+                    )
 
-        with patch.object(cli.os, "fstat", side_effect=drifting_fstat):
-            with self.assertRaisesRegex(ReleaseError, "WFREL_CLI_IO"):
+                with patch.object(cli.os, "fstat", side_effect=drifting_fstat):
+                    with self.assertRaisesRegex(ReleaseError, "WFREL_CLI_IO"):
+                        cli._load_requirements(self.requirements)
+
+    def test_requirements_reader_is_bounded_and_rejects_short_reads(self) -> None:
+        from wf_release_v1 import cli
+
+        oversized = self.case_root / "oversized-requirements.json"
+        oversized.write_bytes(b"x" * (1024 * 1024 + 1))
+        with self.assertRaises(ReleaseError) as too_large:
+            cli._load_requirements(oversized)
+        self.assertEqual("WFREL_REQUIRE_LIMIT", too_large.exception.code)
+
+        actual_fdopen = cli.os.fdopen
+
+        class ShortReader:
+            def __init__(self, stream):
+                self._stream = stream
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, traceback):
+                self._stream.close()
+
+            def read(self, size: int) -> bytes:
+                raw = self._stream.read(size)
+                return raw[:-1]
+
+            def fileno(self) -> int:
+                return self._stream.fileno()
+
+        def short_fdopen(descriptor: int, *args, **kwargs):
+            return ShortReader(actual_fdopen(descriptor, *args, **kwargs))
+
+        with patch.object(cli.os, "fdopen", side_effect=short_fdopen):
+            with self.assertRaises(ReleaseError) as short:
                 cli._load_requirements(self.requirements)
+        self.assertEqual("WFREL_CLI_IO", short.exception.code)
+
+    def test_oversized_requirements_never_reach_the_producer(self) -> None:
+        from wf_release_v1 import cli
+
+        oversized = self.case_root / "oversized-requirements.json"
+        oversized.write_bytes(b"x" * (1024 * 1024 + 1))
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        with patch.object(
+            cli,
+            "build_character_release",
+            side_effect=AssertionError("producer must not run"),
+        ) as build:
+            with redirect_stdout(stdout), redirect_stderr(stderr):
+                exit_code = cli.main(
+                    [
+                        "build",
+                        "--workspace",
+                        str(self.workspace),
+                        "--overlay",
+                        str(self.overlay),
+                        "--requirements",
+                        str(oversized),
+                        "--name",
+                        "seris-dragon-king",
+                        "--version",
+                        "1.0.0",
+                        "--output",
+                        str(self.case_root / "never.zip"),
+                    ]
+                )
+        self.assertEqual(20, exit_code)
+        self.assertEqual("", stdout.getvalue())
+        self.assertEqual("WFREL_REQUIRE_LIMIT", json.loads(stderr.getvalue())["code"])
+        build.assert_not_called()
 
     def test_format_and_source_incompatibility_exit_codes_are_distinct(self) -> None:
         malformed = self.case_root / "malformed.zip"
