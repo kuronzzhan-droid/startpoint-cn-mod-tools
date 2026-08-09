@@ -122,13 +122,12 @@ def _inner_zip_bytes(label: str) -> bytes:
     return output.getvalue()
 
 
-def _stored_zip_bytes(names: list[str]) -> bytes:
+def _stored_zip_members(members: list[tuple[str, bytes]]) -> bytes:
     """Build exact-name ZIP members without platform path sanitization."""
     locals_: list[bytes] = []
     centrals: list[bytes] = []
     offset = 0
-    for index, name in enumerate(names):
-        raw = f"payload-{index}".encode("ascii")
+    for name, raw in members:
         encoded_name = name.encode("utf-8")
         flags = 0x0800
         checksum = zlib.crc32(raw) & 0xFFFFFFFF
@@ -177,13 +176,34 @@ def _stored_zip_bytes(names: list[str]) -> bytes:
         0x06054B50,
         0,
         0,
-        len(names),
-        len(names),
+        len(members),
+        len(members),
         len(central_bytes),
         len(local_bytes),
         0,
     )
     return local_bytes + central_bytes + end
+
+
+def _stored_zip_bytes(names: list[str]) -> bytes:
+    return _stored_zip_members(
+        [(name, f"payload-{index}".encode("ascii")) for index, name in enumerate(names)]
+    )
+
+
+def rewrite_outer_member_raw_name(path: Path, member_name: str, raw_name: str) -> None:
+    """Rewrite one outer member with an exact adversarial central-directory name."""
+    with zipfile.ZipFile(path) as bundle:
+        ordered = [
+            (
+                raw_name if item.filename == member_name else item.filename,
+                bundle.read(item),
+            )
+            for item in bundle.infolist()
+        ]
+    if sum(name == raw_name for name, _ in ordered) != 1:
+        raise AssertionError(f"member not found: {member_name}")
+    path.write_bytes(_stored_zip_members(ordered))
 
 
 def replace_first_inner_zip(path: Path, names: list[str]) -> None:

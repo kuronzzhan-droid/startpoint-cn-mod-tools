@@ -337,24 +337,34 @@ def _inspect_overlay(path: Path) -> SourceFile:
             descriptor = -1
             with zipfile.ZipFile(stream) as bundle:
                 infos_list = bundle.infolist()
-                names = [info.filename for info in infos_list]
-                if len(names) != len(set(names)) or not names or names[-1] != "patch-manifest.json":
-                    raise _error(
-                        "WFREL_OVERLAY_INVALID",
-                        "outer Overlay ZIP members are duplicated or incomplete",
-                        archiveName=archive_name,
-                    )
-                _validate_zip_limits(infos_list, archive_name=archive_name)
-                for name in names:
+                names: list[str] = []
+                seen_names: set[str] = set()
+                for info in infos_list:
                     try:
-                        normalize_relative_path(name)
+                        original = normalize_relative_path(info.orig_filename)
+                        normalized = normalize_relative_path(info.filename)
                     except ReleaseError as error:
                         raise _error(
                             "WFREL_OVERLAY_INVALID",
                             "outer Overlay ZIP member path is invalid",
                             archiveName=archive_name,
                         ) from error
-                infos = {info.filename: info for info in infos_list}
+                    if original != normalized or normalized in seen_names:
+                        raise _error(
+                            "WFREL_OVERLAY_INVALID",
+                            "outer Overlay ZIP members are duplicated or noncanonical",
+                            archiveName=archive_name,
+                        )
+                    names.append(normalized)
+                    seen_names.add(normalized)
+                if not names or names[-1] != "patch-manifest.json":
+                    raise _error(
+                        "WFREL_OVERLAY_INVALID",
+                        "outer Overlay ZIP members are incomplete",
+                        archiveName=archive_name,
+                    )
+                _validate_zip_limits(infos_list, archive_name=archive_name)
+                infos = dict(zip(names, infos_list, strict=True))
                 if not _METADATA_MEMBERS.issubset(infos):
                     raise _error(
                         "WFREL_OVERLAY_INVALID",

@@ -19,6 +19,7 @@ from tests.release_v1_fixtures import (
     make_patch_overlay,
     make_sealed_character_workspace,
     replace_first_inner_zip,
+    rewrite_outer_member_raw_name,
     rewrite_overlay,
 )
 
@@ -224,6 +225,32 @@ class CharacterSourceTests(unittest.TestCase):
                     inspect_character_source(
                         workspace=self.workspace,
                         overlay_archives=[path],
+                    )
+                self.assertEqual("WFREL_OVERLAY_INVALID", raised.exception.code)
+
+    def test_rejects_nul_truncated_outer_metadata_manifest_and_payload_names(self) -> None:
+        from wf_release_v1.character_source import inspect_character_source
+
+        for label in ("readme", "manifest", "payload"):
+            with self.subTest(label=label):
+                overlay = self._overlay("1.4.54", "1.4.55", folder=f"nul-{label}")
+                with zipfile.ZipFile(overlay) as bundle:
+                    manifest = json.loads(bundle.read("patch-manifest.json"))
+                member = {
+                    "readme": "README.md",
+                    "manifest": "patch-manifest.json",
+                    "payload": manifest["archives"][0]["relativePath"],
+                }[label]
+                rewrite_outer_member_raw_name(overlay, member, f"{member}\x00evil")
+                with zipfile.ZipFile(overlay) as bundle:
+                    info = next(item for item in bundle.infolist() if item.filename == member)
+                    self.assertEqual(member, info.filename)
+                    self.assertEqual(f"{member}\x00evil", info.orig_filename)
+
+                with self.assertRaises(ReleaseError) as raised:
+                    inspect_character_source(
+                        workspace=self.workspace,
+                        overlay_archives=[overlay],
                     )
                 self.assertEqual("WFREL_OVERLAY_INVALID", raised.exception.code)
 
