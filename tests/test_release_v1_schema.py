@@ -419,6 +419,16 @@ class JsonSchemaLockTests(unittest.TestCase):
     def assert_required(self, node: dict[str, object], *keys: str) -> None:
         self.assertEqual(set(keys), set(node["required"]))
 
+    def schema_patterns(self, node: object):
+        if isinstance(node, dict):
+            if "pattern" in node:
+                yield node["pattern"]
+            for child in node.values():
+                yield from self.schema_patterns(child)
+        elif isinstance(node, list):
+            for child in node:
+                yield from self.schema_patterns(child)
+
     def assert_structural_rejection(self, evaluator, parser, value: object) -> None:
         self.assertFalse(evaluator.accepts(value))
         with self.assertRaises(ReleaseError):
@@ -629,6 +639,61 @@ class JsonSchemaLockTests(unittest.TestCase):
         with self.assertRaises(ReleaseError):
             verify_release_id(parsed)
 
+    def test_schema_search_patterns_reject_trailing_control_characters(self) -> None:
+        cases = (
+            (
+                Draft202012Subset(self.load_schema("wf-release-v1.schema.json")),
+                parse_release_manifest,
+                release_wire,
+                (
+                    ("name",),
+                    ("version",),
+                    ("sourceEvidence", "workspaceInputSha256"),
+                    ("expectedState", "cdnTargetVersion"),
+                    ("files", 0, "path"),
+                    ("releaseId",),
+                ),
+            ),
+            (
+                Draft202012Subset(
+                    self.load_schema("wf-release-requires-v1.schema.json")
+                ),
+                parse_requirements,
+                requirements_wire,
+                (
+                    ("serverCapabilities", 0),
+                    ("clientVersions", 0),
+                    ("contentDigests", 0),
+                ),
+            ),
+            (
+                Draft202012Subset(
+                    self.load_schema("wf-release-ownership-v1.schema.json")
+                ),
+                parse_ownership,
+                ownership_wire,
+                (("entities", 0), ("paths", 0)),
+            ),
+        )
+        for evaluator, parser, fixture, paths in cases:
+            for path in paths:
+                is_path = path[-1] == "path" or path[0] == "paths"
+                terminators = (
+                    ("\n", "\r\n", "\t", "\x01", "\x7f")
+                    if is_path
+                    else ("\n", "\r\n")
+                )
+                for terminator in terminators:
+                    value = fixture()
+                    current: object = value
+                    for part in path:
+                        current = current[part]  # type: ignore[index]
+                    replace_at_path(value, path, f"{current}{terminator}")
+                    with self.subTest(
+                        parser=parser.__name__, path=path, terminator=repr(terminator)
+                    ):
+                        self.assert_structural_rejection(evaluator, parser, value)
+
     def test_json_schemas_lock_exact_shapes_versions_patterns_and_fixtures(self) -> None:
         release_schema = self.load_schema("wf-release-v1.schema.json")
         requirements_schema = self.load_schema("wf-release-requires-v1.schema.json")
@@ -678,6 +743,8 @@ class JsonSchemaLockTests(unittest.TestCase):
 
         for schema in (release_schema, requirements_schema, ownership_schema):
             self.assertEqual("https://json-schema.org/draft/2020-12/schema", schema["$schema"])
+            for pattern in self.schema_patterns(schema):
+                self.assertNotIn("$", pattern)
 
         for pattern, accepted, rejected in (
             (SHA256_PATTERN, HEX_A, f"sha256:{HEX_A}"),
@@ -686,8 +753,9 @@ class JsonSchemaLockTests(unittest.TestCase):
             (CAPABILITY_PATTERN, "mode.release-contract@1", "mode.release-contract"),
             (PAYLOAD_PATH_PATTERN, "content/file.zip", "release-manifest.json"),
         ):
-            self.assertIsNotNone(re.fullmatch(pattern, accepted))
-            self.assertIsNone(re.fullmatch(pattern, rejected))
+            self.assertNotIn("$", pattern)
+            self.assertIsNotNone(re.search(pattern, accepted))
+            self.assertIsNone(re.search(pattern, rejected))
 
         self.assertEqual(release_wire(), parse_release_manifest(release_wire()).to_wire())
         self.assertEqual(

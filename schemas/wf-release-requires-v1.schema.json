@@ -8,15 +8,15 @@
   "$defs": {
     "capability": {
       "type": "string",
-      "pattern": "^[a-z0-9][a-z0-9._-]*@[1-9][0-9]*$"
+      "pattern": "^[a-z0-9][a-z0-9._-]*@[1-9][0-9]*(?![\\s\\S])"
     },
     "dottedVersion": {
       "type": "string",
-      "pattern": "^(?:0|[1-9][0-9]*)(?:\\.(?:0|[1-9][0-9]*))+$"
+      "pattern": "^(?:0|[1-9][0-9]*)(?:\\.(?:0|[1-9][0-9]*))+(?![\\s\\S])"
     },
     "releaseId": {
       "type": "string",
-      "pattern": "^sha256:[0-9a-f]{64}$"
+      "pattern": "^sha256:[0-9a-f]{64}(?![\\s\\S])"
     }
   },
   "required": [

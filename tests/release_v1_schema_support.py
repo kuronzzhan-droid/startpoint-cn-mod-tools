@@ -15,13 +15,16 @@ HEX_D = "d" * 64
 HEX_E = "e" * 64
 RELEASE_ID_E = f"sha256:{HEX_E}"
 
-SHA256_PATTERN = r"^[0-9a-f]{64}$"
-RELEASE_ID_PATTERN = r"^sha256:[0-9a-f]{64}$"
-DOTTED_VERSION_PATTERN = r"^(?:0|[1-9][0-9]*)(?:\.(?:0|[1-9][0-9]*))+$"
-CAPABILITY_PATTERN = r"^[a-z0-9][a-z0-9._-]*@[1-9][0-9]*$"
+SHA256_PATTERN = r"^[0-9a-f]{64}(?![\s\S])"
+RELEASE_ID_PATTERN = r"^sha256:[0-9a-f]{64}(?![\s\S])"
+DOTTED_VERSION_PATTERN = (
+    r"^(?:0|[1-9][0-9]*)(?:\.(?:0|[1-9][0-9]*))+(?![\s\S])"
+)
+CAPABILITY_PATTERN = r"^[a-z0-9][a-z0-9._-]*@[1-9][0-9]*(?![\s\S])"
 PAYLOAD_PATH_PATTERN = (
-    r"^(?!.*\\)(?!.*\u0000)(?!.*//)(?!.*(?:^|/)(?:\.|\.\.)(?:/|$))"
-    r"(?:content|server|modes)/[^/]+(?:/[^/]+)*$"
+    r"^(?!.*\\)(?!.*[\u0000-\u001F\u007F])(?!.*//)"
+    r"(?!.*(?:^|/)(?:\.|\.\.)(?:/|(?![\s\S])))"
+    r"(?:content|server|modes)/[^/]+(?:/[^/]+)*(?![\s\S])"
 )
 
 
