@@ -205,6 +205,43 @@ class StableFileCopyTests(unittest.TestCase):
             self.assertEqual(payload, source.read_bytes())
             self.assertEqual(payload, destination.read_bytes())
 
+    def test_rejects_destination_replacement_before_open_without_writes(self) -> None:
+        source_payload = b"source payload"
+        destination_payload = b"original destination"
+        victim_payload = b"unrelated victim"
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "source.bin"
+            destination = root / "destination.bin"
+            parked_destination = root / "parked-destination.bin"
+            victim = root / "victim.bin"
+            source.write_bytes(source_payload)
+            destination.write_bytes(destination_payload)
+            victim.write_bytes(victim_payload)
+            did_replace = False
+
+            class ReplacingDestination(type(Path())):
+                def lstat(self):
+                    nonlocal did_replace
+                    snapshot = super().lstat()
+                    if not did_replace:
+                        did_replace = True
+                        os.replace(destination, parked_destination)
+                        os.link(victim, destination)
+                    return snapshot
+
+            with self.assertRaises(ReleaseError) as raised:
+                stream_copy_and_hash_stable_file(
+                    source, ReplacingDestination(destination)
+                )
+
+            self.assertTrue(did_replace)
+            self.assertEqual("WFREL_HASH_SOURCE_CHANGED", raised.exception.code)
+            self.assertEqual(source_payload, source.read_bytes())
+            self.assertEqual(destination_payload, parked_destination.read_bytes())
+            self.assertEqual(victim_payload, victim.read_bytes())
+            self.assertEqual(victim_payload, destination.read_bytes())
+
     def test_rejects_a_symlink_source_without_leaking_its_absolute_path(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

@@ -201,7 +201,9 @@ def _open_destination_for_copy(
     if destination_snapshot is not None and destination_snapshot[5]:
         raise _reject_source_change(source, "destination must not be a reparse point")
 
-    flags = os.O_WRONLY | os.O_CREAT
+    flags = os.O_WRONLY
+    if destination_snapshot is None:
+        flags |= os.O_CREAT | os.O_EXCL
     if hasattr(os, "O_BINARY"):
         flags |= os.O_BINARY
     try:
@@ -210,8 +212,18 @@ def _open_destination_for_copy(
         raise _reject_source_change(source, "destination file could not be opened") from error
     try:
         opened_destination = _snapshot_from_stat(os.fstat(descriptor))
-        if not opened_destination[4] or _same_file(source_snapshot, opened_destination):
+        if not opened_destination[4] or opened_destination[5]:
+            raise _reject_source_change(source, "destination must be a regular file")
+        if _same_file(source_snapshot, opened_destination):
             raise _reject_source_change(source, "source and destination refer to the same file")
+        if (
+            destination_snapshot is not None
+            and opened_destination != destination_snapshot
+        ):
+            raise _reject_source_change(source, "destination changed before it was opened")
+        opened_path = _source_snapshot(destination)
+        if opened_path != opened_destination:
+            raise _reject_source_change(source, "destination changed before it was opened")
         os.ftruncate(descriptor, 0)
         return os.fdopen(descriptor, "wb")
     except BaseException:
