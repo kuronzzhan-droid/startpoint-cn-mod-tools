@@ -11,7 +11,11 @@ from typing import Final, Sequence
 
 from .canonical import canonical_json_bytes, load_json_strict_bytes
 from .errors import ReleaseError
-from ._local_cli import run_install as _run_install, run_probe as _run_probe
+from ._local_cli import (
+    run_install as _run_install,
+    run_probe as _run_probe,
+    run_rollback as _run_rollback,
+)
 from .producer import BuildReceipt, BuildRequest, build_character_release
 from .schema import ReleaseRequirements, parse_requirements
 from .verifier import VerificationReport, verify_release
@@ -309,6 +313,20 @@ def _parser(output_context: _ParseOutputContext | None = None) -> _ArgumentParse
     install.add_argument("--release", required=True)
     install.add_argument("--confirm", required=True, choices=("INSTALL_WF_RELEASE",))
     install.set_defaults(handler=_run_install)
+
+    rollback = commands.add_parser(
+        "rollback", help="恢复失败事务或显式回到 previous 状态", output_context=context
+    )
+    rollback.add_argument("--target", required=True)
+    rollback_mode = rollback.add_mutually_exclusive_group(required=True)
+    rollback_mode.add_argument("--operation")
+    rollback_mode.add_argument("--to-release", dest="to_release")
+    rollback.add_argument(
+        "--confirm",
+        required=True,
+        choices=("RECOVER_FAILED_INSTALL", "I_UNDERSTAND_DATA_DOWNGRADE_RISK"),
+    )
+    rollback.set_defaults(handler=_run_rollback)
     return parser
 
 
@@ -324,6 +342,8 @@ def _caused_by_os_error(error: BaseException) -> bool:
 
 
 def _release_exit(error: ReleaseError) -> tuple[int, str]:
+    if error.code == "WFREL_CLI_ARGUMENTS":
+        return 2, "命令参数无效"
     if error.code.startswith(_TRANSACTION_PREFIXES):
         return 40, "安装事务未提交或恢复失败"
     if _caused_by_os_error(error):

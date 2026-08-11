@@ -13,6 +13,7 @@ from unittest import mock
 from tests.test_release_v1_compatibility import _target
 from wf_release_v1 import cli
 from wf_release_v1.transaction import InstallResult
+from wf_release_v1.rollback import RollbackResult
 
 
 RELEASE_ID = "sha256:" + "a" * 64
@@ -124,6 +125,64 @@ class LocalInstallCliTests(unittest.TestCase):
                 )
                 self.assertEqual((40, "stderr"), (code, stream))
                 self.assertEqual("WFREL_RECOVERY_FAILED", value["code"])
+
+    def test_rollback_routes_operation_retry_and_explicit_previous_release(self) -> None:
+        import wf_release_v1._local_cli as local_cli
+
+        launch = SimpleNamespace(executable=Path("C:/managed/runtime/node.exe"))
+        target = SimpleNamespace(
+            state_root=Path("C:/managed/state"), launch_spec=mock.Mock(return_value=launch),
+        )
+        adapter = object()
+        recovered = RollbackResult("recovery-op", "recovered", RELEASE_ID, None, False)
+        with (
+            mock.patch.object(local_cli.ManagedTarget, "load", return_value=target),
+            mock.patch.object(local_cli, "WindowsPlatformAdapter", return_value=adapter),
+            mock.patch.object(local_cli, "recover_failed_operation", return_value=recovered) as retry,
+        ):
+            code, value, stream = self._run(
+                "rollback", "--target", "target.json", "--operation", "failed-op",
+                "--confirm", "RECOVER_FAILED_INSTALL",
+            )
+        self.assertEqual((0, "stdout"), (code, stream))
+        self.assertEqual("recovery-op", value["operationId"])
+        self.assertFalse(value["dataCompatibilityGuaranteed"])
+        retry.assert_called_once_with(target, adapter, "failed-op")
+
+        previous = RollbackResult("rollback-op", "succeeded", RELEASE_ID, None, False)
+        with (
+            mock.patch.object(local_cli.ManagedTarget, "load", return_value=target),
+            mock.patch.object(local_cli, "WindowsPlatformAdapter", return_value=adapter),
+            mock.patch.object(local_cli, "rollback_to_previous", return_value=previous) as rollback,
+        ):
+            code, value, stream = self._run(
+                "rollback", "--target", "target.json", "--to-release", RELEASE_ID,
+                "--confirm", "I_UNDERSTAND_DATA_DOWNGRADE_RISK",
+            )
+        self.assertEqual((0, "stdout"), (code, stream))
+        self.assertEqual("succeeded", value["outcome"])
+        rollback.assert_called_once_with(target, adapter, RELEASE_ID)
+
+    def test_rollback_rejects_ambiguous_mode_and_wrong_confirmation_before_io(self) -> None:
+        import wf_release_v1._local_cli as local_cli
+
+        cases = (
+            (
+                "--operation", "op", "--to-release", RELEASE_ID,
+                "--confirm", "RECOVER_FAILED_INSTALL",
+            ),
+            ("--operation", "op", "--confirm", "I_UNDERSTAND_DATA_DOWNGRADE_RISK"),
+            ("--to-release", RELEASE_ID, "--confirm", "RECOVER_FAILED_INSTALL"),
+        )
+        for suffix in cases:
+            with self.subTest(suffix=suffix), mock.patch.object(
+                local_cli.ManagedTarget, "load", side_effect=AssertionError("target was read")
+            ):
+                code, value, stream = self._run(
+                    "rollback", "--target", "target.json", *suffix,
+                )
+            self.assertEqual((2, "stderr"), (code, stream))
+            self.assertEqual("WFREL_CLI_ARGUMENTS", value["code"])
 
 
 if __name__ == "__main__":
