@@ -1,11 +1,12 @@
 # wf-release-v1 本地发行物
 
-`wf-release-v1` 是一个纯本地、content-only 的发行物格式。它把已经封印的角色
+`wf-release-v1` 是一个纯本地发行物格式。它把已经封印的角色
 production workspace 与调用者显式提供的 Patch Overlay 外层 ZIP 绑定成不可变、可分享、
 可独立校验的 Release ZIP。
 
-当前实现只覆盖 Producer、Verifier 与只读 CLI。它不会安装发行物，也不会替代现有角色制作、
-Overlay 生成或客户端验证流程。
+当前实现覆盖角色 Producer、独立 Verifier、本机受管 TargetProbe、Installer 与显式恢复/回退 CLI。
+角色 Producer 仍只生成 Content Overlay Release；Verifier/Installer 还可接收经过严格静态验证的
+`content+modes` 组合 Release。它不会替代现有角色制作、Overlay 生成、服务端契约或客户端验证流程。
 
 ## 1. 输入门禁
 
@@ -44,14 +45,15 @@ Patch Overlay 必须由既有 Overlay 生产流程提前生成。Producer：
     `-- release-manifest.json
 ```
 
-第一条纵切只有 `content` 组件：
+角色 Producer 输出只有 `content` 组件：
 
 - 不包含 `server/`；server roots 的 bytes 不进入 server payload，但其声明同时参与三层 seal
   与 `ownership.paths` 源语义投影。Archive 内没有 workspace package manifest，Verifier
   不能从发行物重新证明 workspace 来源，也不能证明 logical path 到 Overlay inner bytes 的映射；
-- 不包含 `modes/`，也不要求 Mode；
+- Producer 不自行生成 `modes/`；组合 Release 的 Mode 组件由独立来源封印，包含精确 allowlist、
+  required 清单和模块私有资源，且必须要求 `mode.release-contract@1`；
 - 服务端运行表仍由目标服务端已有的 Content Sync 从 Overlay 生成；
-- 尚不存在 `install`、`rollback`、`probe` 或平台套壳安装命令。
+- 本机安装、恢复和平台生命周期见 `docs/wf-release-v1-local-install.md`。
 
 外层 Release ZIP 使用确定性的 STORE：固定成员顺序、1980-01-01 时间、Unix regular
 0644 权限、UTF-8 名称、无 comment/extra。相同输入写到两个不同且不存在的输出路径时，
@@ -75,8 +77,9 @@ ownership 表示“源 manifest 的语义所有权”。它不证明这些逻辑
 不能把 ownership 当作 Overlay inner mapping。
 
 发行物不可变。替代旧发行物时，调用方必须在 `replaces` 中精确列出旧 `releaseId`；不支持
-按名称、模糊版本或“最新版”替代，也不允许新发行物替代自身。当前 CLI 尚未开放
-`--replaces` 参数；默认生成空数组，替代工作流留给后续 installer 计划。
+按名称、模糊版本或“最新版”替代，也不允许新发行物替代自身。当前 Producer 的 `produce`
+子命令尚未开放 `--replaces` 参数，默认生成空数组；Installer 会严格消费 Release 中已经封印的
+`replaces`，但不会在安装时临时改写它。
 
 ## 4. requirements 边界
 
@@ -151,6 +154,12 @@ python -X utf8 -m wf_release_v1 inspect `
 
 `inspect` 不是宽松读取器；它先执行完整 Verifier，再输出同样的已验证摘要。
 
+### 本机受管目标
+
+`probe`、`install` 与 `rollback` 的 target 格式、确认词、恢复语义和数据降级边界见
+`docs/wf-release-v1-local-install.md`。这些命令只作用于调用者显式提供的本机 `target.json`，不上传、
+不远程连接，也不访问当前仓库之外未声明的 live store/CDN/assets。
+
 ## 6. 错误与退出码
 
 失败时 stdout 为空，stderr 只有一行 UTF-8 JSON，包含稳定 `code` 和中文 `message`；默认不
@@ -169,7 +178,7 @@ python -X utf8 -m wf_release_v1 inspect `
 ## 7. 证据边界
 
 `verify` 通过只证明：收到的发行 ZIP 结构、metadata、payload identity、内嵌 Overlay 和当前
-content-only 约束一致。它不证明：
+组件接收约束一致。它不证明：
 
 - 发行物已经安装或激活；
 - receiver/Content Sync 已经接受并切换；
@@ -212,3 +221,13 @@ Overlay 权威复制，verify 的读/hash 仅指 Release payload 权威 SHA；me
 后续变更必须在同一机器、同一 Python/文件系统条件下与该分支基线比较。5 次中位数出现超过
 20% 的非预期回退时停止合并并调查；这是人工比较规则，不把随机 wall time 写成 CI 断言，
 也不得通过跳过完整 SHA-256 来换取更好数字。
+
+Installer 使用独立的临时目标基线：
+
+```powershell
+python -X utf8 -m unittest tests.test_release_v1_install_performance -v
+cmd /d /c "python -X utf8 -m tests.test_release_v1_install_performance --benchmark --runs 5 > %TEMP%\wf-release-v1-install-benchmark.json"
+```
+
+该基线记录成功安装和验收前恢复两条链，并用未声明稀疏 sentinel 证明 component root 不被全量扫描；
+阶段耗时互相嵌套，不能相加冒充总耗时。
