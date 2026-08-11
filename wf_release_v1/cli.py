@@ -11,6 +11,7 @@ from typing import Final, Sequence
 
 from .canonical import canonical_json_bytes, load_json_strict_bytes
 from .errors import ReleaseError
+from ._local_cli import run_install as _run_install, run_probe as _run_probe
 from .producer import BuildReceipt, BuildRequest, build_character_release
 from .schema import ReleaseRequirements, parse_requirements
 from .verifier import VerificationReport, verify_release
@@ -42,6 +43,10 @@ _IO_PREFIXES: Final = (
     "WFREL_BUILD_IO",
     "WFREL_BUILD_OUTPUT_",
     "WFREL_CLI_IO",
+)
+_TRANSACTION_PREFIXES: Final = (
+    "WFREL_RECOVERY_",
+    "WFREL_TRANSACTION_",
 )
 
 
@@ -289,6 +294,21 @@ def _parser(output_context: _ParseOutputContext | None = None) -> _ArgumentParse
         command.add_argument("--release", required=True)
         command.add_argument("--json", action="store_true", required=True)
         command.set_defaults(handler=_run_verify)
+
+    probe = commands.add_parser(
+        "probe", help="读取受管目标事实", output_context=context
+    )
+    probe.add_argument("--target", required=True)
+    probe.add_argument("--json", action="store_true", required=True)
+    probe.set_defaults(handler=_run_probe)
+
+    install = commands.add_parser(
+        "install", help="安装已验证的本地发行物", output_context=context
+    )
+    install.add_argument("--target", required=True)
+    install.add_argument("--release", required=True)
+    install.add_argument("--confirm", required=True, choices=("INSTALL_WF_RELEASE",))
+    install.set_defaults(handler=_run_install)
     return parser
 
 
@@ -304,6 +324,8 @@ def _caused_by_os_error(error: BaseException) -> bool:
 
 
 def _release_exit(error: ReleaseError) -> tuple[int, str]:
+    if error.code.startswith(_TRANSACTION_PREFIXES):
+        return 40, "安装事务未提交或恢复失败"
     if _caused_by_os_error(error):
         return 30, "本地文件操作失败"
     if error.code.startswith(_IO_PREFIXES):
