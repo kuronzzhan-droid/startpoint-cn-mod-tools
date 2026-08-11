@@ -31,7 +31,7 @@ def _payload(root: Path) -> dict[str, object]:
             "server": str(root / "components" / "server"),
             "modes": str(root / "components" / "modes"),
         },
-        "serverUrl": "http://127.0.0.1:8001/api/server/capabilities",
+        "serverUrl": "http://127.0.0.1:8001",
     }
 
 
@@ -66,7 +66,10 @@ class ManagedTargetTests(unittest.TestCase):
             self.assertIsInstance(probe, TargetProbe)
             self.assertEqual(root / "server-bundle" / "server-manifest.json", probe.server_manifest)
             self.assertEqual(root / "runtime-pack" / "runtime-pack-manifest.json", probe.runtime_manifest)
-            self.assertEqual(target.server_url, probe.capabilities_url)
+            self.assertEqual("http://127.0.0.1:8001", target.server_url)
+            self.assertEqual("http://127.0.0.1:8001/api/server/capabilities", target.capabilities_url)
+            self.assertEqual("http://127.0.0.1:8001/healthz", target.health_url)
+            self.assertEqual(target.capabilities_url, probe.capabilities_url)
             self.assertEqual(2.5, probe.timeout_seconds)
             self.assertEqual(before, target_path.read_bytes())
             self.assertEqual({"target.json"}, {path.name for path in root.iterdir()})
@@ -94,6 +97,45 @@ class ManagedTargetTests(unittest.TestCase):
                 cwd=root / "server-bundle",
             ), launch)
             read.assert_called_once_with()
+
+    def test_server_url_is_one_canonical_loopback_base_origin(self) -> None:
+        with TemporaryDirectory(prefix="wfrel-target-") as temporary:
+            root = Path(temporary)
+            for accepted in (
+                "http://127.0.0.1:8001",
+                "http://localhost:8001",
+                "http://[::1]:8001",
+                "http://[::ffff:127.0.0.1]:8001",
+            ):
+                with self.subTest(accepted=accepted):
+                    payload = _payload(root); payload["serverUrl"] = accepted
+                    target = ManagedTarget.load(_write_target(root, payload))
+                    self.assertEqual(accepted + "/api/server/capabilities", target.capabilities_url)
+                    self.assertEqual(accepted + "/healthz", target.health_url)
+
+            for rejected in (
+                "https://127.0.0.1:8001",
+                "http://127.0.0.1",
+                "http://127.0.0.1:0",
+                "http://127.0.0.1:65536",
+                "http://127.0.0.1:8001/",
+                "http://127.0.0.1:8001/api/server/capabilities",
+                "http://user@127.0.0.1:8001",
+                "http://127.0.0.1:8001?query=1",
+                "http://127.0.0.1:8001#fragment",
+                "http://0.0.0.0:8001",
+                "http://192.0.2.1:8001",
+                "http://[::ffff:192.0.2.1]:8001",
+                "http://[::ffff:7f00:1]:8001",
+                "http://[0:0:0:0:0:0:0:1]:8001",
+                "http://example.invalid:8001",
+                "HTTP://LOCALHOST:8001",
+            ):
+                with self.subTest(rejected=rejected):
+                    payload = _payload(root); payload["serverUrl"] = rejected
+                    with self.assertRaises(ReleaseError) as raised:
+                        ManagedTarget.load(_write_target(root, payload))
+                    self.assertEqual("WFREL_REQUIRE_TARGET", raised.exception.code)
 
     def test_rejects_non_exact_or_ambiguous_target_documents(self) -> None:
         with TemporaryDirectory(prefix="wfrel-target-") as temporary:
@@ -198,7 +240,7 @@ class ManagedTargetTests(unittest.TestCase):
                     server_bundle=Path.home(), runtime_pack=root / "runtime",
                     data_root=root / "data", state_root=root / "state",
                     component_roots=ComponentRoots(root / "content", root / "server-root", root / "modes"),
-                    server_url="http://127.0.0.1:8001/api/server/capabilities",
+                    server_url="http://127.0.0.1:8001",
                 )
             self.assertEqual("WFREL_REQUIRE_TARGET", raised.exception.code)
 

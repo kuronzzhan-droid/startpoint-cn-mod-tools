@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import ipaddress
 import os
 from pathlib import Path
 import re
 import stat
 from typing import Final
 import unicodedata
+from urllib.parse import urlsplit
 
 from .canonical import load_json_strict_bytes
 from .errors import ReleaseError
@@ -126,6 +128,45 @@ def _validate_root_separation(state_root: Path, roots: ComponentRoots) -> None:
         raise _invalid("state and component roots must not overlap")
 
 
+def _base_origin(value: object) -> str:
+    if not isinstance(value, str) or not value or not value.isascii():
+        raise _invalid("serverUrl must be a canonical loopback base origin")
+    parsed = urlsplit(value)
+    try:
+        port = parsed.port
+    except ValueError:
+        raise _invalid("serverUrl port is invalid") from None
+    hostname = parsed.hostname
+    if (
+        parsed.scheme != "http"
+        or hostname is None
+        or port is None
+        or not 0 < port <= 65535
+        or parsed.username is not None
+        or parsed.password is not None
+        or parsed.path
+        or parsed.query
+        or parsed.fragment
+    ):
+        raise _invalid("serverUrl must be a canonical loopback base origin")
+    if hostname != "localhost":
+        try:
+            address = ipaddress.ip_address(hostname)
+        except ValueError:
+            raise _invalid("serverUrl host must be loopback") from None
+        effective = (
+            address.ipv4_mapped
+            if isinstance(address, ipaddress.IPv6Address) and address.ipv4_mapped is not None
+            else address
+        )
+        if hostname != address.compressed or not effective.is_loopback:
+            raise _invalid("serverUrl host must be loopback")
+    rendered_host = f"[{hostname}]" if ":" in hostname else hostname
+    if value != f"http://{rendered_host}:{port}":
+        raise _invalid("serverUrl must be a canonical loopback base origin")
+    return value
+
+
 @dataclass(frozen=True)
 class ComponentRoots:
     content: Path
@@ -164,8 +205,8 @@ class ManagedTarget:
             if not isinstance(value, Path) or _absolute_path(os.fspath(value), label) != value:
                 raise _invalid(f"{label} must be an absolute canonical path")
         _validate_root_separation(self.state_root, self.component_roots)
-        if not isinstance(self.server_url, str) or not self.server_url:
-            raise _invalid("serverUrl must be a string")
+        if _base_origin(self.server_url) != self.server_url:
+            raise _invalid("serverUrl must be a canonical loopback base origin")
 
     @classmethod
     def load(cls, source: Path) -> ManagedTarget:
@@ -187,14 +228,22 @@ class ManagedTarget:
             data_root=_absolute_path(item["dataRoot"], "dataRoot"),
             state_root=state_root,
             component_roots=roots,
-            server_url=item["serverUrl"],
+            server_url=_base_origin(item["serverUrl"]),
         )
+
+    @property
+    def capabilities_url(self) -> str:
+        return self.server_url + "/api/server/capabilities"
+
+    @property
+    def health_url(self) -> str:
+        return self.server_url + "/healthz"
 
     def target_probe(self, *, timeout_seconds: float = 5.0) -> TargetProbe:
         return TargetProbe(
             server_manifest=self.server_bundle / "server-manifest.json",
             runtime_manifest=self.runtime_pack / "runtime-pack-manifest.json",
-            capabilities_url=self.server_url,
+            capabilities_url=self.capabilities_url,
             timeout_seconds=timeout_seconds,
         )
 
