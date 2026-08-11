@@ -890,7 +890,7 @@ td.ldesc{color:var(--okfg);font-size:11px;white-space:normal;max-width:250px;lin
             <div class="tbt">全量解密导出 <span class="tbava"></span></div>
             <div class="hint">解密下载包+bundle 全部哈希文件,按逻辑路径建目录树:表→CSV · 图→PNG · 音→MP3 · AMF3→JSON。默认跳过已存在文件 = <b>可断点续跑</b>。</div>
             <div class="row">
-              <label>输出目录</label><input data-a="out" placeholder="D:\WF\wf-decrypted(默认)" style="flex:1;min-width:200px">
+              <label>输出目录</label><input data-a="out" placeholder="请选择输出目录" style="flex:1;min-width:200px">
             </div>
             <div class="row">
               <label>limit</label><input data-a="limit" type="number" placeholder="0=全部" style="width:90px" title="只处理前 N 个文件,小样验证用">
@@ -929,7 +929,7 @@ td.ldesc{color:var(--okfg);font-size:11px;white-space:normal;max-width:250px;lin
             <div class="tbt">CDN 直解数据包 <span class="tbava"></span></div>
             <div class="hint">从本机 <code>.cdn/cn</code> 重放官方全量包与增量链,物化成一棵全新 store 树。<b>目标目录必须不存在或为空,绝不选择或写入现役 store。</b>默认只预览,不会创建约 10 GB 数据;勾「应用」才写盘。verify 会额外全量读取并核验落盘文件,耗时更长。</div>
             <div class="row">
-              <label><b>目标目录(必填)</b></label><input data-a="dest" required placeholder="D:\WF\wf-materialized-store(必须不存在或为空)" style="flex:1;min-width:280px">
+              <label><b>目标目录(必填)</b></label><input data-a="dest" required placeholder="请选择不存在或为空的目标目录" style="flex:1;min-width:280px">
             </div>
             <div class="row">
               <label title="只重放官方全量包与旧官方增量链,不叠加角色包或本地资产补丁"><input type="checkbox" data-a="official-only"> 仅官方链</label>

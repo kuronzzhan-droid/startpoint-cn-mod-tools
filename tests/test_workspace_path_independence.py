@@ -22,8 +22,9 @@ ROOT = Path(__file__).resolve().parents[1]
 class WorkspacePathIndependenceTests(unittest.TestCase):
     def test_production_sources_do_not_embed_the_maintainers_wf_drive(self) -> None:
         files = (
+            "API.md",
             "wf_assets.py", "wf_decrypt_all.py", "wf_export_assets.py", "wf_extract_paths.py",
-            "wf_gui.py",
+            "wf_gui.html", "wf_gui.py",
             "wf_recover_pathlist.py", "wf_rogue_save.py", "wf_voice.py",
         )
         for name in files:

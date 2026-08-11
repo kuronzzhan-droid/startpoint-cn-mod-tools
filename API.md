@@ -48,7 +48,7 @@
 | `/weapon_ability` | `?wid=ID` | `{weapon, columns[], lines[], desc, line_descs[], info, soul}`;**soul=同键 ability_soul 的完整行数据**(武器页一并编辑);无强化词条时 `{no_enh:true, soul}` |
 | `/search_abilities` | `?q=关键字` | 搜四表行级中文描述/归属/键/string_id → `{query, count, results:[{key, kind, owner, slot, desc, sid, lines, shared_count, shared:[{key,owner,slot}]}]}`;shared_count>1=共用词条,=1=专属;键前缀 L:/W:/S:;上限150 |
 | `/history` | — | `{entries:[{ts, table, keys[], summary, backup, version}](最新在前), changelog_md}` |
-| `/char_assets` | `?character=ID` | 角色资产清单 `{code_name, assets:[{logical, kind, req, text, exists, root, size, dims}]}`:立绘×2/cut-in×2/图标合集/像素图×2/**语音全量三分类**(ally/battle/home,来自 D:\WF\角色语音 datamine,text=台词)/配套数据×7(atlas/frame/timeline) |
+| `/char_assets` | `?character=ID` | 角色资产清单 `{code_name, assets:[{logical, kind, req, text, exists, root, size, dims}]}`:立绘×2/cut-in×2/图标合集/像素图×2/**语音全量三分类**(ally/battle/home,来自配置的语音 datamine 目录,text=台词)/配套数据×7(atlas/frame/timeline) |
 | `/char_snapshots` | `?character=ID` | 单角色快照列表 `[{file, id, code_name, ts, note, size, assets}]` |
 | `/asset` | `?logical=路径` | **二进制**响应(自动解混淆:PNG 魔数/MP3 帧头),Content-Type 按扩展名 |
 | `/skill_dsl` | `?character=&level=` | 技能效果 DSL 数值树 `{program_path, numbers:[{offset, len, type, value, ctx}], note}` |
