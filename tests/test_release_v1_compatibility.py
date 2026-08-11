@@ -152,6 +152,53 @@ class RequirementCompatibilityTests(unittest.TestCase):
         )
         self.assertFalse(report.compatible)
 
+    def test_each_requirement_is_bound_to_its_own_target_fact(self) -> None:
+        cases = (
+            ("runtime api", _target(runtime_api=2), _active(), "WFREL_REQUIRE_RUNTIME_API"),
+            (
+                "server capability",
+                _target(capabilities=("content.sync@1",)),
+                _active(),
+                "WFREL_REQUIRE_SERVER_CAPABILITY",
+            ),
+            (
+                "client version",
+                _target(),
+                _active(client_version="1.4.99"),
+                "WFREL_REQUIRE_CLIENT_VERSION",
+            ),
+            (
+                "resource baseline",
+                _target(),
+                _active(resource_baseline="1.4.99"),
+                "WFREL_REQUIRE_RESOURCE_BASELINE",
+            ),
+            (
+                "content digest",
+                _target(content_digest=f"sha256:{HEX_C}"),
+                _active(),
+                "WFREL_REQUIRE_CONTENT_DIGEST",
+            ),
+            (
+                "patch overlay schema",
+                _target(patch_overlay_schema=2),
+                _active(),
+                "WFREL_REQUIRE_PATCH_OVERLAY_SCHEMA",
+            ),
+            (
+                "client patch profile",
+                _target(),
+                _active(client_patch_profile=False),
+                "WFREL_REQUIRE_CLIENT_PATCH_PROFILE",
+            ),
+        )
+        release = _verified()
+        for label, target, active, expected in cases:
+            with self.subTest(label=label):
+                report = evaluate_requirements(release, target, active)
+                self.assertEqual((expected,), report.codes)
+                self.assertFalse(report.compatible)
+
     def test_false_client_patch_requirement_does_not_forbid_a_patched_client(self) -> None:
         release = _verified(requirement_changes={"clientPatchProfile": False})
         report = evaluate_requirements(release, _target(), _active())
@@ -214,6 +261,74 @@ class OwnershipCompatibilityTests(unittest.TestCase):
             _active(ActiveRelease(OLD_A, release.ownership)),
         )
         self.assertEqual(("WFREL_OWNERSHIP_CONFLICT",), report.codes)
+        self.assertFalse(report.compatible)
+
+    def test_distinct_characters_may_share_source_table_paths(self) -> None:
+        old = _ownership(
+            entities=("character:129999",),
+            records=("action_skill:129999", "character:129999"),
+            paths=(
+                "character.json",
+                "character/seris_dragon_king/ui/square_0.png",
+                "master/character/character.orderedmap",
+                "master/skill/action_skill.orderedmap",
+            ),
+        )
+        new = _ownership(
+            entities=("character:139999",),
+            records=("action_skill:139999", "character:139999"),
+            paths=(
+                "character.json",
+                "character/stella_moon_witch/ui/square_0.png",
+                "master/character/character.orderedmap",
+                "master/skill/action_skill.orderedmap",
+            ),
+        )
+        report = evaluate_requirements(
+            _verified(ownership=new),
+            _target(),
+            _active(ActiveRelease(OLD_A, old)),
+        )
+        self.assertEqual((True, ()), (report.compatible, report.codes))
+
+    def test_each_exclusive_claim_namespace_blocks_shared_ownership(self) -> None:
+        cases = (
+            (
+                "entity",
+                _ownership(
+                    entities=("character:310099",),
+                    records=("characters:old",),
+                    paths=("sources/old",),
+                ),
+                _ownership(
+                    entities=("character:310099",),
+                    records=("characters:new",),
+                    paths=("sources/new",),
+                ),
+            ),
+            (
+                "record",
+                _ownership(
+                    entities=("character:310098",),
+                    records=("characters:310099",),
+                    paths=("sources/old",),
+                ),
+                _ownership(
+                    entities=("character:310100",),
+                    records=("characters:310099",),
+                    paths=("sources/new",),
+                ),
+            ),
+        )
+        for label, old, new in cases:
+            with self.subTest(label=label):
+                report = evaluate_requirements(
+                    _verified(ownership=new),
+                    _target(),
+                    _active(ActiveRelease(OLD_A, old)),
+                )
+                self.assertEqual(("WFREL_OWNERSHIP_CONFLICT",), report.codes)
+                self.assertFalse(report.compatible)
 
     def test_exact_release_id_replacement_preserves_all_old_claims(self) -> None:
         old = _ownership()
@@ -250,6 +365,7 @@ class OwnershipCompatibilityTests(unittest.TestCase):
                     _active(known_release_ids=known),
                 )
                 self.assertEqual((expected,), report.codes)
+                self.assertFalse(report.compatible)
 
     def test_partial_replacement_cannot_drop_uncovered_ownership(self) -> None:
         old = _ownership(records=("characters:310099", "skills:310099"))
@@ -260,6 +376,7 @@ class OwnershipCompatibilityTests(unittest.TestCase):
             _active(ActiveRelease(OLD_A, old)),
         )
         self.assertEqual(("WFREL_OWNERSHIP_REPLACES_PARTIAL",), report.codes)
+        self.assertFalse(report.compatible)
 
     def test_every_colliding_owner_must_be_replaced_exactly(self) -> None:
         first = _ownership()
@@ -279,6 +396,7 @@ class OwnershipCompatibilityTests(unittest.TestCase):
             _verified(replaces=(OLD_A,), ownership=combined), _target(), active
         )
         self.assertEqual(("WFREL_OWNERSHIP_CONFLICT",), incomplete.codes)
+        self.assertFalse(incomplete.compatible)
 
         exact = evaluate_requirements(
             _verified(replaces=(OLD_A, OLD_B), ownership=combined), _target(), active
@@ -297,6 +415,7 @@ class OwnershipCompatibilityTests(unittest.TestCase):
             _active(ActiveRelease(OLD_A, unrelated)),
         )
         self.assertEqual(("WFREL_OWNERSHIP_REPLACES_PARTIAL",), report.codes)
+        self.assertFalse(report.compatible)
 
 
 if __name__ == "__main__":

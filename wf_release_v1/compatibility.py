@@ -47,13 +47,12 @@ def _report(codes: list[str] | tuple[str, ...]) -> CompatibilityReport:
     return CompatibilityReport(not frozen, frozen)
 
 
-def _claims(ownership: OwnershipManifest) -> frozenset[tuple[str, str]]:
+def _exclusive_claims(ownership: OwnershipManifest) -> frozenset[tuple[str, str]]:
+    """Return install-exclusive keys; paths remain sealed-source evidence."""
     return frozenset(
         (("entity", value) for value in ownership.entities),
     ) | frozenset(
         (("record", value) for value in ownership.records),
-    ) | frozenset(
-        (("path", value) for value in ownership.paths),
     )
 
 
@@ -88,7 +87,7 @@ def _ownership_codes(
     active_by_id = {item.release_id: item for item in active.releases}
     known_ids = set(active.known_release_ids) | set(active_by_id)
     replacements = set(release.manifest.replaces)
-    new_claims = _claims(release.ownership)
+    new_claims = _exclusive_claims(release.ownership)
     codes: list[str] = []
 
     if any(release_id not in known_ids for release_id in replacements):
@@ -102,12 +101,12 @@ def _ownership_codes(
     colliding_owners = {
         item.release_id
         for item in active.releases
-        if _claims(item.ownership) & new_claims
+        if _exclusive_claims(item.ownership) & new_claims
     }
     if colliding_owners - replacements:
         codes.append("WFREL_OWNERSHIP_CONFLICT")
     if any(
-        not _claims(active_by_id[release_id].ownership).issubset(new_claims)
+        not _exclusive_claims(active_by_id[release_id].ownership).issubset(new_claims)
         for release_id in replacements & set(active_by_id)
     ):
         codes.append("WFREL_OWNERSHIP_REPLACES_PARTIAL")
