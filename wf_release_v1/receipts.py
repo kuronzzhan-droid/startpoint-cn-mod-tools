@@ -191,6 +191,7 @@ def _atomic_write(
     rollback = parent / f".{destination.name}.{token}.rollback"
     temp_identity: tuple[int, int, int, int, bool, bool] | None = None
     rollback_identity: tuple[int, int, int, int, bool, bool] | None = None
+    preserve_rollback = False
     try:
         try:
             existing = _snapshot(destination)
@@ -231,7 +232,11 @@ def _atomic_write(
             else:
                 if _snapshot(rollback) != rollback_identity:
                     raise _state_invalid("state rollback identity changed")
-                os.replace(rollback, destination)
+                try:
+                    os.replace(rollback, destination)
+                except OSError:
+                    preserve_rollback = True
+                    raise
                 if _snapshot(destination) != rollback_identity:
                     raise _state_invalid("state destination could not be restored")
             _sync_directory(parent)
@@ -246,7 +251,8 @@ def _atomic_write(
     finally:
         for path, identity in ((temp, temp_identity), (rollback, rollback_identity)):
             try:
-                if identity is not None and _snapshot(path) == identity:
+                disposable = path != rollback or not preserve_rollback
+                if identity is not None and disposable and _snapshot(path) == identity:
                     path.unlink()
             except (FileNotFoundError, OSError):
                 pass

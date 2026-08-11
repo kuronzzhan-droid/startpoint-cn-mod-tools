@@ -438,10 +438,10 @@ class ActiveStatePersistenceTests(unittest.TestCase):
             self.assertEqual(old_active, active_path.read_bytes())
 
     def test_active_replace_failure_keeps_old_active_as_commit_point(self) -> None:
-        empty = _state()
-        first = _state(RELEASE_A)
+        empty, first = _state(), _state(RELEASE_A)
         second = _state(RELEASE_A, RELEASE_B)
-        for mode, code in (("failure", "WFREL_STATE_IO"), ("drift", "WFREL_STATE_INVALID")):
+        cases = (("failure", "WFREL_STATE_IO"), ("drift", "WFREL_STATE_INVALID"), ("restore-failure", "WFREL_STATE_IO"))
+        for mode, code in cases:
             with self.subTest(mode=mode), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
                 commit_active_state(root, previous=empty, active=first)
@@ -457,14 +457,19 @@ class ActiveStatePersistenceTests(unittest.TestCase):
                     if calls == 2:
                         source.unlink()
                         source.write_bytes(b"not the synchronized active state")
+                    if calls == 3 and mode == "restore-failure":
+                        raise OSError("injected active restore failure")
                     real_replace(source, target)
 
                 with mock.patch("wf_release_v1.receipts.os.replace", side_effect=fail_active):
                     with self.assertRaises(ReleaseError) as caught:
                         commit_active_state(root, previous=first, active=second)
                 self.assertEqual(code, caught.exception.code)
-                self.assertEqual(old_active, (root / "active.json").read_bytes())
-                self.assertEqual(first, load_active_state(root))
+                if mode == "restore-failure":
+                    self.assertEqual([old_active], [item.read_bytes() for item in root.glob("*.rollback")])
+                else:
+                    self.assertEqual(old_active, (root / "active.json").read_bytes())
+                    self.assertEqual(first, load_active_state(root))
 
     def test_symlink_state_root_and_active_leaf_are_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
