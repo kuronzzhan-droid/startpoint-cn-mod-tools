@@ -101,7 +101,7 @@ def _absolute_path(value: object, label: str) -> Path:
     if not path.is_absolute() or str(path.anchor).startswith("\\\\"):
         raise _invalid(f"{label} must be an absolute local path")
     canonical = Path(os.path.abspath(path))
-    if path != canonical or canonical.parent == canonical:
+    if path != canonical:
         raise _invalid(f"{label} must be an absolute canonical path")
     if canonical == Path(os.path.abspath(Path.home())) or canonical == _TOOL_ROOT:
         raise _invalid(f"{label} uses a protected root")

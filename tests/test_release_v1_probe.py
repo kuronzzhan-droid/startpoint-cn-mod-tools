@@ -55,14 +55,15 @@ def _identity(value: dict[str, object], field: str) -> str:
     body = dict(value)
     del body[field]
     return f"sha256:{hashlib.sha256(canonical_json_bytes(body)).hexdigest()}"
-def _server_manifest() -> dict[str, object]:
+def _server_manifest(*, entry: str = "out/cn-server.js",
+                     prepare_entry: str = "out/content/sync/entry.js") -> dict[str, object]:
     value: dict[str, object] = {
         "schemaVersion": 3,
         "name": "starpoint-cn",
         "serverVersion": "1.0.1",
         "bundleId": f"sha256:{HEX_A}",
-        "entry": "out/cn-server.js",
-        "startup": {"localPrepareEntry": "out/content/sync/entry.js"},
+        "entry": entry,
+        "startup": {"localPrepareEntry": prepare_entry},
         "requires": {"runtimeApi": 1, "node": ">=20.12.0", "dependencyLock": f"sha256:{HEX_B}",
                      "minDataSchema": 0, "targetDataSchema": 15},
         "admin": {"path": "web/dist", "required": True},
@@ -73,14 +74,14 @@ def _server_manifest() -> dict[str, object]:
     }
     value["bundleId"] = _identity(value, "bundleId")
     return value
-def _runtime_manifest() -> dict[str, object]:
+def _runtime_manifest(*, entry: str = "node/bin/node") -> dict[str, object]:
     value: dict[str, object] = {
         "schemaVersion": 1,
         "runtimeId": f"sha256:{HEX_C}",
         "runtimeApi": 1,
         "node": {"version": "20.12.2", "abi": "115", "platform": "win32", "arch": "x64"},
         "dependencyLock": f"sha256:{HEX_B}",
-        "entry": "node/bin/node",
+        "entry": entry,
         "executables": ["node/bin/node"],
         "files": _manifest_files(RUNTIME_FILES),
     }
@@ -379,20 +380,20 @@ class TargetProbeTests(unittest.TestCase):
             live, server_manifest=server_manifest).code)
     def test_rejects_manifest_identity_and_declared_file_drift(self) -> None:
         cases: list[tuple[str, dict[str, object], dict[str, object]]] = []
-        bad_bundle = _server_manifest()
-        bad_bundle["bundleId"] = f"sha256:{HEX_A}"
+        bad_bundle = _server_manifest(); bad_bundle["bundleId"] = f"sha256:{HEX_A}"
         cases.append(("bundle-identity", bad_bundle, _runtime_manifest()))
-        bad_runtime = _runtime_manifest()
-        bad_runtime["runtimeId"] = f"sha256:{HEX_A}"
+        bad_runtime = _runtime_manifest(); bad_runtime["runtimeId"] = f"sha256:{HEX_A}"
         cases.append(("runtime-identity", _server_manifest(), bad_runtime))
-        bad_server_schema = _server_manifest()
-        bad_server_schema["schemaVersion"] = 4
+        bad_server_schema = _server_manifest(); bad_server_schema["schemaVersion"] = 4
         bad_server_schema["bundleId"] = _identity(bad_server_schema, "bundleId")
         cases.append(("server-schema", bad_server_schema, _runtime_manifest()))
         bad_runtime_schema = _runtime_manifest()
         bad_runtime_schema["schemaVersion"] = 2
         bad_runtime_schema["runtimeId"] = _identity(bad_runtime_schema, "runtimeId")
         cases.append(("runtime-schema", _server_manifest(), bad_runtime_schema))
+        cases.append(("server-entry", _server_manifest(entry="out/evil.js"), _runtime_manifest()))
+        cases.append(("prepare-entry", _server_manifest(prepare_entry="out/evil.js"), _runtime_manifest()))
+        cases.append(("runtime-entry", _server_manifest(), _runtime_manifest(entry="node/bin/evil.exe")))
         bad_file = _server_manifest()
         server_files = bad_file["files"]
         assert isinstance(server_files, list) and isinstance(server_files[0], dict)

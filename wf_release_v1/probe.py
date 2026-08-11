@@ -322,10 +322,11 @@ def _parse_server_manifest(value: object, root: Path) -> ServerBundleFacts:
     item = _exact_object(value, frozenset({"schemaVersion", "name", "serverVersion", "bundleId",
         "entry", "startup", "requires", "admin", "assets", "ports", "files"}), "serverManifest")
     _constant(item["schemaVersion"], 3, "serverManifest.schemaVersion")
-    if item["name"] != "starpoint-cn" or item["entry"] != _SERVER_ENTRY:
+    if item["name"] != "starpoint-cn" or (entry := _string(item["entry"], "serverManifest.entry")) != _SERVER_ENTRY:
         raise _schema("serverManifest", "server manifest identity is invalid")
     startup = _exact_object(item["startup"], frozenset({"localPrepareEntry"}), "serverManifest.startup")
-    if startup["localPrepareEntry"] != _LOCAL_PREPARE_ENTRY:
+    if (prepare_entry := _string(startup["localPrepareEntry"],
+                                 "serverManifest.startup.localPrepareEntry")) != _LOCAL_PREPARE_ENTRY:
         raise _schema("serverManifest.startup", "server startup entry is invalid")
     requires = _exact_object(item["requires"], frozenset({"runtimeApi", "node", "dependencyLock",
         "minDataSchema", "targetDataSchema"}), "serverManifest.requires")
@@ -359,7 +360,7 @@ def _parse_server_manifest(value: object, root: Path) -> ServerBundleFacts:
         runtime_api=_constant(requires["runtimeApi"], 1, "serverManifest.requires.runtimeApi"),
         node_requirement=node_requirement,
         dependency_lock=_string(requires["dependencyLock"], "serverManifest.requires.dependencyLock", _DIGEST),
-        entry=_SERVER_ENTRY, local_prepare_entry=_LOCAL_PREPARE_ENTRY,
+        entry=entry, local_prepare_entry=prepare_entry,
     )
 
 def _parse_runtime_manifest(value: object, root: Path) -> RuntimeFacts:
@@ -367,7 +368,7 @@ def _parse_runtime_manifest(value: object, root: Path) -> RuntimeFacts:
         "dependencyLock", "entry", "executables", "files"}), "runtimeManifest")
     _constant(item["schemaVersion"], 1, "runtimeManifest.schemaVersion")
     node = _exact_object(item["node"], frozenset({"version", "abi", "platform", "arch"}), "runtimeManifest.node")
-    if item["entry"] != _RUNTIME_ENTRY:
+    if (entry := _string(item["entry"], "runtimeManifest.entry")) != _RUNTIME_ENTRY:
         raise _schema("runtimeManifest", "runtime manifest layout is invalid")
     executables = _string_array(item["executables"], "runtimeManifest.executables", sorted_values=True, allow_empty=False)
     if _RUNTIME_ENTRY not in executables:
@@ -382,7 +383,7 @@ def _parse_runtime_manifest(value: object, root: Path) -> RuntimeFacts:
         node_abi=_string(node["abi"], "runtimeManifest.node.abi", _ABI),
         platform=_string(node["platform"], "runtimeManifest.node.platform", _PLATFORM),
         arch=_string(node["arch"], "runtimeManifest.node.arch", _ARCH),
-        dependency_lock=_string(item["dependencyLock"], "runtimeManifest.dependencyLock", _DIGEST), entry=_RUNTIME_ENTRY,
+        dependency_lock=_string(item["dependencyLock"], "runtimeManifest.dependencyLock", _DIGEST), entry=entry,
     )
 
 def _parse_capabilities(value: object) -> tuple[

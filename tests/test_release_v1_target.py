@@ -144,6 +144,10 @@ class ManagedTargetTests(unittest.TestCase):
                 ("tool-root", "stateRoot", str(tool_root)),
                 ("home-root", "stateRoot", str(Path.home())),
             )
+            expected_messages = {
+                "drive-root": "stateRoot must be an absolute canonical path",
+                "home-root": "stateRoot uses a protected root",
+            }
             for label, key, value in cases:
                 with self.subTest(label=label):
                     payload = _payload(root)
@@ -156,6 +160,8 @@ class ManagedTargetTests(unittest.TestCase):
                     with self.assertRaises(ReleaseError) as raised:
                         ManagedTarget.load(_write_target(root, payload))
                     self.assertEqual("WFREL_REQUIRE_TARGET", raised.exception.code)
+                    if label in expected_messages:
+                        self.assertEqual(expected_messages[label], raised.exception.message)
 
     def test_rejects_every_state_and_component_root_overlap(self) -> None:
         with TemporaryDirectory(prefix="wfrel-target-") as temporary:
@@ -189,8 +195,8 @@ class ManagedTargetTests(unittest.TestCase):
             root = Path(temporary)
             with self.assertRaises(ReleaseError) as raised:
                 ManagedTarget(
-                    server_bundle=root / "server", runtime_pack=root / "runtime",
-                    data_root=root / "data", state_root=Path.home(),
+                    server_bundle=Path.home(), runtime_pack=root / "runtime",
+                    data_root=root / "data", state_root=root / "state",
                     component_roots=ComponentRoots(root / "content", root / "server-root", root / "modes"),
                     server_url="http://127.0.0.1:8001/api/server/capabilities",
                 )
