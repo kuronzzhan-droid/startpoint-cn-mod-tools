@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 import hashlib
 import os
 from pathlib import Path, PurePosixPath
@@ -19,6 +19,11 @@ from .compatibility import VerifiedRelease
 from .errors import ReleaseError
 from .receipts import _sync_directory
 from .target import ManagedTarget
+from .mode_candidates import (
+    ModeCandidate,
+    materialize_mode_candidate,
+    verify_mode_candidate,
+)
 from .verifier import _exact_set, _metadata, verify_release
 from .verifier_overlay import verify_overlay_chain
 from .verifier_zip import ROOT, copy_hash_member, open_release, parse_classic_store
@@ -52,6 +57,7 @@ class CandidateSet:
     # FileIdentity intentionally stays host-path-free.  This aligned path tuple
     # is necessary for verify_candidates() to detect rename/extra-file attacks.
     relative_paths: tuple[str, ...]
+    mode_candidate: ModeCandidate | None = None
 
 
 def _error(code: str, message: str, **details: object) -> ReleaseError:
@@ -220,7 +226,7 @@ def load_verified_release(obj: StoredObject, target: ManagedTarget) -> VerifiedR
         report = verify_release(obj.archive)
     except ReleaseError as error:
         raise _translate_verifier(error) from error
-    if report.release_id != obj.release_id or report.components != ("content",):
+    if report.release_id != obj.release_id:
         raise _error("WFREL_OBJECT_CORRUPT", "stored object facts disagree", label="object")
     with open_release(obj.archive) as (stream, archive_size):
         members = parse_classic_store(stream, archive_size)
@@ -229,6 +235,8 @@ def load_verified_release(obj: StoredObject, target: ManagedTarget) -> VerifiedR
         _exact_set(release, by_name)
     if release.release_id != obj.release_id:
         raise _error("WFREL_OBJECT_CORRUPT", "stored manifest identity disagrees", label="object")
+    if report.components != tuple(component.kind for component in release.components):
+        raise _error("WFREL_OBJECT_CORRUPT", "stored component facts disagree", label="object")
     return VerifiedRelease(release, requirements, ownership)
 
 
@@ -280,9 +288,9 @@ def _scan_candidate(root: Path) -> tuple[tuple[str, ...], tuple[str, ...]]:
     )
 
 
-def verify_candidates(candidates: CandidateSet) -> None:
+def _verify_content_candidate(candidates: CandidateSet) -> None:
     """Re-read every exact candidate path and revalidate the Overlay chain."""
-    if not isinstance(candidates, CandidateSet) or candidates.server_root is not None or candidates.modes_root is not None:
+    if not isinstance(candidates, CandidateSet) or candidates.server_root is not None:
         raise _candidate_invalid("candidate component set is unsupported")
     _release_directory(candidates.release_id)
     root = candidates.content_root
@@ -321,6 +329,17 @@ def verify_candidates(candidates: CandidateSet) -> None:
     _same_directory(root, before, candidate=True)
 
 
+def verify_candidates(candidates: CandidateSet) -> None:
+    """Re-read every exact candidate path and component-specific contract."""
+    _verify_content_candidate(candidates)
+    if (candidates.modes_root is None) != (candidates.mode_candidate is None):
+        raise _candidate_invalid("Mode candidate reference is inconsistent")
+    if candidates.mode_candidate is not None:
+        if candidates.mode_candidate.root != candidates.modes_root:
+            raise _candidate_invalid("Mode candidate root is inconsistent")
+        verify_mode_candidate(candidates.mode_candidate)
+
+
 def _write_member(stream, member, destination: Path, expected: FileIdentity) -> FileIdentity:
     flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0)
     try:
@@ -339,33 +358,24 @@ def _write_member(stream, member, destination: Path, expected: FileIdentity) -> 
     return actual
 
 
-def materialize_candidates(
+def _materialize_content_candidate(
     obj: StoredObject,
     target: ManagedTarget,
     operation_id: str,
+    release,
 ) -> CandidateSet:
-    """Materialize one content-only candidate below its same-volume component root."""
-    if not isinstance(operation_id, str) or _OPERATION_ID.fullmatch(operation_id) is None:
-        raise _candidate_invalid("operation identity is invalid")
-    if not isinstance(obj, StoredObject) or not isinstance(target, ManagedTarget):
-        raise _candidate_invalid("materialization input is invalid")
-    release = _read_object_manifest(obj, target)
-    if tuple(component.kind for component in release.components) != ("content",):
-        raise _error(
-            "WFREL_INSTALL_UNSUPPORTED_COMPONENT",
-            "Release component has no installed receiver schema",
-            label="components",
-        )
+    """Materialize the content member of one already-validated Release."""
     component_root = target.component_roots.content
     root_identity = _directory_identity(component_root, candidate=True)
     _same_directory(component_root, root_identity, candidate=True)
     release_name = _release_directory(obj.release_id)
     final_root = component_root / release_name
+    content_files = tuple(item for item in release.files if item.path.startswith("content/"))
     expected_paths = tuple(
         f"patches/{release.expected_state.cdn_target_version}/{PurePosixPath(item.path).name}"
-        for item in release.files
+        for item in content_files
     )
-    expected_identities = tuple(FileIdentity(item.size, item.sha256) for item in release.files)
+    expected_identities = tuple(FileIdentity(item.size, item.sha256) for item in content_files)
     existing = CandidateSet(
         obj.release_id, final_root, None, None, expected_identities, expected_paths
     )
@@ -388,7 +398,7 @@ def materialize_candidates(
                 item.name: item for item in parse_classic_store(stream, archive_size)
             }
             for item, relative, expected in zip(
-                release.files, expected_paths, expected_identities, strict=True
+                content_files, expected_paths, expected_identities, strict=True
             ):
                 member = by_name.get(f"{ROOT}{item.path}")
                 if member is None:
@@ -414,3 +424,36 @@ def materialize_candidates(
         _sync_directory(component_root)
         verify_candidates(existing)
         return existing
+
+
+def materialize_candidates(
+    obj: StoredObject,
+    target: ManagedTarget,
+    operation_id: str,
+) -> CandidateSet:
+    """Materialize exact content and optional Mode candidates."""
+    if not isinstance(operation_id, str) or _OPERATION_ID.fullmatch(operation_id) is None:
+        raise _candidate_invalid("operation identity is invalid")
+    if not isinstance(obj, StoredObject) or not isinstance(target, ManagedTarget):
+        raise _candidate_invalid("materialization input is invalid")
+    release = _read_object_manifest(obj, target)
+    kinds = tuple(component.kind for component in release.components)
+    if kinds not in (("content",), ("content", "modes")):
+        raise _error(
+            "WFREL_INSTALL_UNSUPPORTED_COMPONENT",
+            "Release component has no installed receiver schema",
+            label="components",
+        )
+    candidates = _materialize_content_candidate(obj, target, operation_id, release)
+    if kinds == ("content",):
+        return candidates
+    mode = materialize_mode_candidate(
+        obj.archive,
+        release,
+        obj.release_id,
+        target.component_roots.modes,
+        operation_id,
+    )
+    combined = replace(candidates, modes_root=mode.root, mode_candidate=mode)
+    verify_candidates(combined)
+    return combined

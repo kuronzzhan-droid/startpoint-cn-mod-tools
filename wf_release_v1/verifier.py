@@ -21,6 +21,7 @@ from .schema import (
     verify_release_id,
 )
 from .verifier_overlay import verify_overlay_chain
+from .verifier_modes import verify_mode_component
 from .verifier_zip import (
     ROOT,
     ZipMember,
@@ -134,22 +135,26 @@ def _components(
     staged: dict[str, Path],
 ) -> None:
     kinds = tuple(component.kind for component in release.components)
-    if kinds != ("content",):
+    if kinds not in (("content",), ("content", "modes")):
         raise _error(
             "WFREL_COMPONENT_UNSUPPORTED",
             "component receiver schema is unavailable in this vertical slice",
             label="components",
         )
+    has_modes = kinds == ("content", "modes")
     if (
         release.expected_state.content_digest is not None
-        or release.expected_state.mode_digest is not None
+        or (release.expected_state.mode_digest is not None) != has_modes
         or requirements.patch_overlay_schema != 1
     ):
         raise _error("WFREL_COMPONENT_INVALID", "content-only component contract is invalid", label="content")
     content = [item for item in release.files if item.path.startswith("content/")]
     if (
         not content
-        or len(content) != len(release.files)
+        or len(content) != len(release.files) - (
+            sum(1 for item in release.files if item.path.startswith("modes/"))
+            if has_modes else 0
+        )
         or any("/" in item.path.removeprefix("content/") for item in content)
     ):
         raise _error("WFREL_COMPONENT_INVALID", "content must contain explicit Overlay ZIPs", label="content")
@@ -157,6 +162,8 @@ def _components(
     target = verify_overlay_chain(tuple(paths))
     if target != release.expected_state.cdn_target_version:
         raise _error("WFREL_COMPONENT_INVALID", "Overlay target disagrees with expected state", label="content")
+    if has_modes:
+        verify_mode_component(release, requirements, staged)
 
 
 def verify_release(path: Path) -> VerificationReport:
