@@ -14,7 +14,7 @@ _RELEASE_ID: Final = re.compile(r"sha256:[0-9a-f]{64}")
 _OPERATION_ID: Final = re.compile(r"[0-9]{8}T[0-9]{6}\.[0-9]{6}Z-[0-9a-f]{32}")
 _ERROR_CODE: Final = re.compile(r"WFREL_[A-Z0-9_]+")
 _PHASE_ORDER: Final = (
-    "CREATED", "VERIFIED", "PROBED", "STOPPED", "MATERIALIZED", "SWITCHED",
+    "CREATED", "VERIFIED", "BASE_STARTED", "PROBED", "STOPPED", "MATERIALIZED", "SWITCHED",
     "STARTED", "HEALTH_READY", "CAPABILITIES_ACCEPTED", "COMMITTED",
 )
 _PHASES: Final = frozenset(_PHASE_ORDER)

@@ -153,6 +153,27 @@ class OperationIdAndReceiptTests(unittest.TestCase):
             self.assertEqual("WFREL_RECEIPT_CONFLICT", caught.exception.code)
             self.assertEqual(RELEASE_A, _read_json(root / "receipts" / f"{OPERATION_ID}.json")["releaseId"])  # type: ignore[index]
 
+    def test_baseline_bootstrap_is_an_explicit_monotonic_phase(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_phase_receipt(root, _receipt(phase="VERIFIED"))
+            write_phase_receipt(root, _receipt(
+                phase="BASE_STARTED", updated_at=UPDATED,
+            ))
+            path = root / "receipts" / f"{OPERATION_ID}.json"
+            self.assertEqual("BASE_STARTED", _read_json(path)["phase"])  # type: ignore[index]
+
+            with self.assertRaises(ReleaseError) as caught:
+                write_phase_receipt(root, _receipt(
+                    phase="VERIFIED", updated_at=UPDATED + timedelta(seconds=1),
+                ))
+            self.assertEqual("WFREL_RECEIPT_CONFLICT", caught.exception.code)
+
+            write_phase_receipt(root, _receipt(
+                phase="PROBED", updated_at=UPDATED + timedelta(seconds=1),
+            ))
+            self.assertEqual("PROBED", _read_json(path)["phase"])  # type: ignore[index]
+
     def test_receipt_atomic_faults_preserve_complete_old_bytes(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
