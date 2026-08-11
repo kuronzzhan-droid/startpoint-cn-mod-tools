@@ -189,6 +189,41 @@ class AssetPolicyTests(unittest.TestCase):
             self.assertTrue(refs.is_referenced(pathlist))
             self.assertTrue(refs.is_referenced(active))
 
+    def test_reference_index_accepts_a_tool_root_outside_the_server_checkout(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td).resolve()
+            server_root = root / "server"
+            server_root.mkdir()
+            tool_root = root / "detached-tools"
+            tool_work = tool_root / "work"
+            tool_work.mkdir(parents=True)
+
+            pending = tool_work / "sync_pending.json"
+            pending.write_text("[]", encoding="utf-8")
+            changelog = tool_work / "changelog.jsonl"
+            changelog.write_text("", encoding="utf-8")
+            pathlist = tool_root / "WF_PATHLIST_recovered.csv"
+            pathlist.write_text("path\n", encoding="utf-8")
+            profiles = tool_root / "profiles.json"
+            profiles.write_text(
+                json.dumps({"profiles": {"cn": {"store": "external-store"}}}),
+                encoding="utf-8",
+            )
+
+            refs = policy_module.ReferenceIndex.from_project(
+                server_root,
+                tool_root=tool_root,
+            )
+
+            self.assertTrue(refs.is_referenced(pending))
+            self.assertTrue(refs.is_referenced(changelog))
+            self.assertTrue(refs.is_referenced(pathlist))
+            self.assertTrue(refs.is_referenced(tool_work / "char_snapshots" / "future.json"))
+            self.assertTrue(refs.is_referenced(server_root / "external-store" / "future.bin"))
+            self.assertFalse(
+                refs.is_referenced(server_root / "mod-tools" / "work" / "sync_pending.json")
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

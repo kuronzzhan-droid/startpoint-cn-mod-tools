@@ -25,6 +25,11 @@ from pathlib import Path, PurePosixPath
 from typing import Callable, Iterator, Literal, Mapping
 
 import wf_character_pack as character_pack
+from wf_release_paths import (
+    ReleasePathError,
+    ReleasePaths as _RepoPaths,
+    resolve_release_paths,
+)
 
 
 RootName = Literal["common", "medium", "android", "server"]
@@ -1306,25 +1311,17 @@ class AtomicReleasePublisher:
                 raise ReleaseError(detail) from exc
 
 
-def _repo_paths(profile_id: str) -> tuple[Path, character_pack.LiveRoots, Path]:
-    if profile_id != "cn":
-        raise ReleaseError("character release is CN-only")
-    import wf_mod_tool as core
+def _resolve_repo_paths(profile_id: str) -> _RepoPaths:
+    try:
+        return resolve_release_paths(profile_id, module_file=Path(__file__))
+    except ReleasePathError as exc:
+        raise ReleaseError(str(exc)) from exc
 
-    repo_root = Path(__file__).resolve().parent.parent
-    profile = core.resolve_profile("cn")
-    if profile is None or profile.id != "cn" or not Path(profile.store).is_dir():
-        raise ReleaseError("active CN profile/store is unavailable")
-    store = Path(profile.store).resolve()
-    cdn_root = Path(os.environ.get("WF_CDN_DIR", repo_root / ".cdn" / "cn")).resolve()
-    live_roots = character_pack.LiveRoots(
-        common=store,
-        medium=store.parent / "medium_upload",
-        android=store.parent / "android_upload",
-        server=repo_root / "assets",
-        protected=(cdn_root,),
-    )
-    return repo_root, live_roots, cdn_root
+
+def _repo_paths(profile_id: str) -> tuple[Path, character_pack.LiveRoots, Path]:
+    """Legacy tuple view retained for callers outside this module."""
+    paths = _resolve_repo_paths(profile_id)
+    return paths.tool_root, paths.live_roots, paths.cdn_root
 
 
 def _current_git_head(repo_root: Path) -> str:
@@ -1350,12 +1347,12 @@ def rebase_package(
     generator_git_head: str | None = None,
 ) -> RuntimeRebaseResult:
     """Rebase declared runtime-table rows without touching live roots."""
-    repo_root, live_roots, _cdn_root = _repo_paths(profile_id)
-    git_head = generator_git_head or _current_git_head(repo_root)
+    paths = _resolve_repo_paths(profile_id)
+    git_head = generator_git_head or _current_git_head(paths.tool_root)
     return rebase_runtime_package(
         Path(package_dir),
         Path(output_dir),
-        live_roots=live_roots,
+        live_roots=paths.live_roots,
         generator_git_head=git_head,
     )
 
@@ -1615,35 +1612,37 @@ def preflight_package(
     package_dir = Path(package_dir)
     manifest = character_pack.load_manifest(package_dir / "manifest.json")
     mode = _validate_qa_contract(manifest)
-    repo_root, live_roots, cdn_root = _repo_paths(profile_id)
-    canonical_base = detect_canonical_base_version(cdn_root, repo_root)
+    paths = _resolve_repo_paths(profile_id)
+    canonical_base = detect_canonical_base_version(paths.cdn_root, paths.server_root)
     import wf_release_guard
 
-    charpkg_strand = wf_release_guard.charpkg_strand_report(cdn_root, repo_root)
+    charpkg_strand = wf_release_guard.charpkg_strand_report(
+        paths.cdn_root, paths.server_root
+    )
     if mode == "production":
         status = _production_workspace_status(package_dir)
         tail = _reachable_client_base(
             manifest["requires_client_base"],
-            repo_root=repo_root,
-            cdn_root=cdn_root,
+            repo_root=paths.server_root,
+            cdn_root=paths.cdn_root,
             canonical_base=canonical_base,
         )
         _manifest, transaction = _new_production_transaction(
             package_dir,
-            live_roots,
-            cdn_root,
+            paths.live_roots,
+            paths.cdn_root,
             canonical_base,
             installed_package_dir=installed_package_dir,
         )
     else:
         status = None
         tail = ActiveReleaseStore(
-            cdn_root, canonical_base_version=canonical_base
+            paths.cdn_root, canonical_base_version=canonical_base
         ).read_validated_base().validated_chain_tail
         _manifest, transaction = _new_transaction(
             package_dir,
-            live_roots,
-            cdn_root,
+            paths.live_roots,
+            paths.cdn_root,
             canonical_base,
             installed_package_dir=installed_package_dir,
         )
@@ -1670,29 +1669,29 @@ def publish_package(
     package_dir = Path(package_dir)
     manifest = character_pack.load_manifest(package_dir / "manifest.json")
     mode = _validate_qa_contract(manifest, confirmation=confirmation)
-    repo_root, live_roots, cdn_root = _repo_paths(profile_id)
-    if _server_running(repo_root):
+    paths = _resolve_repo_paths(profile_id)
+    if _server_running(paths.server_root):
         raise ReleaseError("CN server must be stopped before character publication")
-    canonical_base = detect_canonical_base_version(cdn_root, repo_root)
+    canonical_base = detect_canonical_base_version(paths.cdn_root, paths.server_root)
     # 重锚防孤儿门禁:被 active.json 丢弃的 charpkg 历史必须仍可达 tail,
     # 缺口自动补 charbridge 副本,补不齐则拒绝发布(2026-07-18 链重锚事故)
     import wf_release_guard
 
-    staging_root = repo_root / "work" / "character_releases" / "staging"
-    snapshot_root = repo_root / "work" / "character_releases" / "snapshots"
+    staging_root = paths.tool_root / "work" / "character_releases" / "staging"
+    snapshot_root = paths.tool_root / "work" / "character_releases" / "snapshots"
     if mode == "production":
         _production_workspace_status(package_dir)
         _reachable_client_base(
             manifest["requires_client_base"],
-            repo_root=repo_root,
-            cdn_root=cdn_root,
+            repo_root=paths.server_root,
+            cdn_root=paths.cdn_root,
             canonical_base=canonical_base,
         )
         prepared = _prepare_production_release(
             package_dir,
             installed_package_dir=installed_package_dir,
-            live_roots=live_roots,
-            cdn_root=cdn_root,
+            live_roots=paths.live_roots,
+            cdn_root=paths.cdn_root,
             canonical_base_version=canonical_base,
             staging_root=staging_root,
             snapshot_root=snapshot_root,
@@ -1701,8 +1700,8 @@ def publish_package(
         prepared = prepare_runtime_release(
             package_dir,
             installed_package_dir=installed_package_dir,
-            live_roots=live_roots,
-            cdn_root=cdn_root,
+            live_roots=paths.live_roots,
+            cdn_root=paths.cdn_root,
             canonical_base_version=canonical_base,
             staging_root=staging_root,
             snapshot_root=snapshot_root,
@@ -1710,21 +1709,21 @@ def publish_package(
 
     def prepare_live_guard() -> Callable[[], None] | None:
         report = wf_release_guard.ensure_charpkg_history_bridged(
-            cdn_root, repo_root, assume_lock_held=True
+            paths.cdn_root, paths.server_root, assume_lock_held=True
         )
         receipts = tuple(report["bridge_receipts"])
         if not receipts:
             return None
         return lambda: wf_release_guard.rollback_charpkg_bridges(
-            receipts, cdn_root, assume_lock_held=True
+            receipts, paths.cdn_root, assume_lock_held=True
         )
 
     try:
         result = AtomicReleasePublisher(
-            cdn_root, canonical_base_version=canonical_base
+            paths.cdn_root, canonical_base_version=canonical_base
         ).publish(
             prepared.payload,
-            server_running=lambda: _server_running(repo_root),
+            server_running=lambda: _server_running(paths.server_root),
             prepare_live_guard=prepare_live_guard,
         )
     except Exception as exc:
@@ -1862,10 +1861,13 @@ def reanchor_active_ledger(
     被账本丢下的 charpkg 边会变成孤儿,故**先补 charbridge 副本再换账本**:桥是
     纯增量的可见边,提前建好不会留下任何搁浅窗口。
     """
-    repo_root, _live_roots, cdn_root = _repo_paths(profile_id)
-    with _release_lock(cdn_root / ".character-release.lock"):
+    paths = _resolve_repo_paths(profile_id)
+    with _release_lock(paths.cdn_root / ".character-release.lock"):
         return _reanchor_locked(
-            cdn_root, repo_root, target_base=target_base, dry_run=dry_run
+            paths.cdn_root,
+            paths.server_root,
+            target_base=target_base,
+            dry_run=dry_run,
         )
 
 

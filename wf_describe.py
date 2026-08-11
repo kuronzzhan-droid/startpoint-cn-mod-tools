@@ -389,8 +389,7 @@ if __name__ == "__main__":
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
     sys.path.insert(0, str(HERE))
     import wf_mod_tool as core
-    prof = core.resolve_profile()
-    store = prof.store
+    store = core.require_active_store()
     ab = core.load_table("master/ability/ability.orderedmap", store, store)
     for key in ("1110011", "1110013", "1110016"):
         rows = core.read_csv_lines(ab.text_rows()[key])

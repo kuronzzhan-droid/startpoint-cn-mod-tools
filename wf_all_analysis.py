@@ -79,8 +79,7 @@ def fam_terms_hit(name: str, fam: str) -> bool:
 
 
 def load_shared():
-    prof = core.resolve_profile()
-    store = prof.store
+    store = core.require_active_store()
     ch = json.loads((ROOT / "assets/cdndata/character.json").read_text(encoding="utf-8"))
     tx = json.loads((ROOT / "assets/cdndata/character_text.json").read_text(encoding="utf-8"))
     ab = core.load_table(core.ABILITY_LOGICAL, store)

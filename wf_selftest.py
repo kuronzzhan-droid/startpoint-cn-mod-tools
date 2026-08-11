@@ -64,16 +64,15 @@ def check(name: str, fn, warn_only: bool = False):
 
 def _resolve_selftest_store(core) -> Path:
     """Resolve the self-test store with the same env-first fallback as the GUI."""
-    env = os.environ.get("WF_TARGET_STORE")
-    if env:
-        store = Path(env)
-        if store.exists():
-            return store
-        raise ValueError(f"WF_TARGET_STORE 不存在: {env}")
+    store = core.env_target_store()
+    if store is not None:
+        return store
 
     profile = core.resolve_profile()
     if profile is not None:
-        return profile.store
+        resolved = core.resolve_active_store(profile=profile)
+        if resolved is not None:
+            return resolved
 
     raise ValueError(
         "未找到可用的数据包 store。请先运行 "

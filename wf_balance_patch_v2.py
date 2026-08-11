@@ -281,8 +281,7 @@ def main() -> None:
     if args.apply and MARKER.exists() and not args.force:
         sys.exit(f"v2 已应用过(marker: {MARKER})。确需重跑加 --force。")
 
-    prof = core.resolve_profile()
-    store = prof.store
+    store = core.require_active_store()
     ts = time.strftime("%Y%m%d-%H%M%S")
     suffix = f".bak-wfmod-balv2-{ts}"
     report: dict = {"ts": ts, "dry_run": dry, "sections": {}}

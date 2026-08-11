@@ -17,6 +17,7 @@ WF 单机版 · 本地网页修改器 (GUI)
   WF_TARGET_STORE  目标 upload 目录(默认按 profiles.json / 项目根目录查找)
   WF_CDNDATA       服务端 assets/cdndata 目录(①层;独立部署必配,默认取仓库根布局)
   WF_CDN_DIR       服务端 .cdn/cn 目录(发布目标;独立部署必配,默认取仓库根布局)
+  WF_APK           内置 base 资产来源 APK 或 bundle.zip 的绝对路径
   WF_ADB           adb.exe 完整路径
   WF_ADB_PORT      模拟器 adb 端口(默认 16384 = MuMu 12)
   WF_PKG           游戏包名(默认 com.leiting.wf,雷霆国服)
@@ -56,9 +57,14 @@ import wf_dsl  # noqa: E402       技能 ActionDsl 数值编辑
 import wf_atf  # noqa: E402       skill_cutin ATF(ETC1)纹理重编码(战斗真机只读 ATF 不读 PNG)
 import wf_boss  # noqa: E402      Boss 数值 + 副本列表(Boss·副本页)
 import wf_server_auth  # noqa: E402  服务端管理 API 地址与 Bearer 认证
+import wf_database_paths  # noqa: E402  独立部署时的存档数据库路径
+import wf_apk_paths  # noqa: E402  独立部署时的 APK/bundle 资产来源
 
 ROOT = Path(__file__).resolve().parent.parent
-_PROFILE = core.resolve_profile(os.environ.get("WF_PROFILE"))
+try:
+    _PROFILE = core.resolve_profile(os.environ.get("WF_PROFILE"))
+except ValueError as error:
+    raise SystemExit(str(error)) from None
 # ①层 cdndata:独立部署时用 WF_CDNDATA 指向服务端 assets/cdndata
 _ENV_CDNDATA = os.environ.get("WF_CDNDATA")
 CDNDATA = (Path(_ENV_CDNDATA) if _ENV_CDNDATA
@@ -83,15 +89,10 @@ ELEMENTS_DISPLAY = {**ELEMENTS, "6": "通用"}
 
 
 def resolve_store() -> Path:
-    env = os.environ.get("WF_TARGET_STORE")
-    if env:
-        p = Path(env)
-        if p.exists():
-            return p
-        raise SystemExit(f"WF_TARGET_STORE 不存在: {env}")
-    if _PROFILE:
-        return _PROFILE.store
-    store = core.find_world_upload(ROOT)
+    try:
+        store = core.resolve_active_store(ROOT, profile=_PROFILE)
+    except ValueError as error:
+        raise SystemExit(str(error)) from None
     if store:
         return store
     raise SystemExit("未找到 WorldFlipper/dummy/.../upload,请设置 WF_TARGET_STORE 或配置 mod-tools/profiles.json")
@@ -2322,7 +2323,18 @@ def _char_json_paths() -> tuple[Path, Path]:
 # 已拥有角色的 突破段/exp 超出新星级上限 → 客户端查看角色即 C2275 崩溃
 # (CharacterLevelLogic.as:94 校验)。上限镜像自 src/routes/api/character.ts
 # (characterMaxOverLimits) + src/lib/character.ts(characterExpCaps,index=突破段)。
-SAVE_DB = ROOT / ".database" / "wdfp_data.db"
+
+
+def _resolve_save_database() -> Path:
+    if "WF_DATABASE_DIR" in os.environ:
+        return wf_database_paths.resolve_database_path(os.environ, server_root=ROOT)
+    return wf_database_paths.resolve_database_path(
+        os.environ,
+        server_root=core.resolve_server_dir(),
+    )
+
+
+SAVE_DB = _resolve_save_database()
 MAX_OVER_LIMITS = {1: 12, 2: 10, 3: 8, 4: 6, 5: 4}
 CHARACTER_EXP_CAPS = {
     1: [11416, 15820, 21477, 28538, 37241, 49481, 66600, 91180, 125223, 170928, 216633, 262338, 308043],
@@ -2363,7 +2375,7 @@ def _clamp_save_for_rarity(cid: str, rarity: int, apply: bool) -> str:
         finally:
             con.close()
     except Exception as exc:
-        return f"⚠ 存档校正失败(可手动查 .database/wdfp_data.db): {exc}"
+        return f"⚠ 存档校正失败(可手动查 {SAVE_DB}): {exc}"
 
 
 def get_char_fields(cid: str) -> dict:
@@ -3538,9 +3550,9 @@ def _dsl_store_path(pp: str) -> Path:
 
 def _find_apk() -> Path | None:
     """内置 base 资产来源 APK:WF_APK 环境变量 > 仓库 弹国服/*.apk 取最新。"""
-    envp = os.environ.get("WF_APK")
-    if envp and Path(envp).exists():
-        return Path(envp)
+    configured = wf_apk_paths.resolve_explicit_apk(os.environ)
+    if configured is not None:
+        return configured
     cands = sorted((ROOT / "弹国服").glob("*.apk"),
                    key=lambda p: p.stat().st_mtime, reverse=True)
     return cands[0] if cands else None

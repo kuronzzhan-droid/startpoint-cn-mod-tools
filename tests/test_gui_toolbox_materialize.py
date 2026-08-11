@@ -87,6 +87,35 @@ class GuiToolboxMaterializeTests(unittest.TestCase):
             ended=0.0,
             cmd="",
         )
+
+    def test_invalid_explicit_apk_does_not_fall_back_to_the_legacy_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            legacy_dir = root / "弹国服"
+            legacy_dir.mkdir()
+            (legacy_dir / "legacy.apk").write_bytes(b"legacy")
+            directory = root / "not-an-apk-file"
+            directory.mkdir()
+            (root / "relative.apk").write_bytes(b"relative")
+
+            previous = Path.cwd()
+            try:
+                os.chdir(root)
+                for value in (
+                    "",
+                    "   ",
+                    "relative.apk",
+                    str(root / "missing.apk"),
+                    str(directory),
+                ):
+                    with self.subTest(value=value), mock.patch.object(
+                        self.gui, "ROOT", root
+                    ), mock.patch.dict(
+                        self.gui.os.environ, {"WF_APK": value}, clear=False
+                    ), self.assertRaisesRegex(ValueError, "WF_APK"):
+                        self.gui._find_apk()
+            finally:
+                os.chdir(previous)
         self.gui._TB_PROC = None
 
     def _run_without_starting_process(self, args: dict[str, object]) -> dict:

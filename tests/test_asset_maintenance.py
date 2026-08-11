@@ -9,6 +9,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -133,6 +134,44 @@ class AssetMaintenanceCliTests(unittest.TestCase):
             code, restored, _ = run_cli("restore", "--manifest", str(manifest))
             self.assertEqual(0, code, restored)
             self.assertTrue((root / "work" / "__pycache__" / "cache.pyc").is_file())
+
+    def test_plan_passes_the_detached_tool_root_to_reference_collection(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td).resolve()
+            policy, graph, run_dir = self._fixture(root)
+            code, scanned, _ = run_cli(
+                "scan",
+                "--repo-root",
+                str(root),
+                "--policy",
+                str(policy),
+                "--run-dir",
+                str(run_dir),
+            )
+            self.assertEqual(0, code, scanned)
+
+            original = maintenance.ReferenceIndex.from_project
+            with mock.patch.object(
+                maintenance.ReferenceIndex,
+                "from_project",
+                wraps=original,
+            ) as from_project:
+                code, planned, _ = run_cli(
+                    "plan",
+                    "--scan",
+                    str(scanned["artifact"]),
+                    "--cdn-graph",
+                    str(graph),
+                    "--policy",
+                    str(policy),
+                )
+
+            self.assertEqual(0, code, planned)
+            from_project.assert_called_once_with(
+                root,
+                graph,
+                tool_root=maintenance.TOOL_ROOT,
+            )
 
     def test_scan_records_but_does_not_descend_into_protected_roots(self) -> None:
         with tempfile.TemporaryDirectory() as td:

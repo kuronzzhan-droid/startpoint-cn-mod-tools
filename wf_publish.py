@@ -35,12 +35,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import wf_mod_tool as core  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
-# CDN 发布根:WF_CDN_DIR 显式优先(原样使用);否则走 core 四级解析链
-# (profile.cdn_dir > 服务端识别 > 嵌套遗留 <repo>/.cdn/cn),见 T2 两仓独立。
-CDN_ROOT = (
-    Path(os.environ["WF_CDN_DIR"]) if os.environ.get("WF_CDN_DIR")
-    else core.resolve_cdn_root_lax()
-)
+# CDN 发布根统一走 core 四级解析链；显式坏配置不得被 publisher 绕过。
+CDN_ROOT = core.resolve_cdn_root_lax()
 CDN_DIFF = CDN_ROOT / "archive-common-diff"
 WORK = Path(__file__).resolve().parent / "work"
 PENDING = WORK / "sync_pending.json"

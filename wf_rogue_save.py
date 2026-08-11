@@ -35,13 +35,51 @@ import subprocess
 import sys
 import tempfile
 import urllib.request
+from collections.abc import Mapping
 from pathlib import Path
 
 import wf_server_auth
+import wf_database_paths
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DB_PATH = os.path.join(ROOT, ".database", "wdfp_data.db")
-MUMU = r"D:\WF\MuMuPlayer\nx_main\MuMuManager.exe"
+_LEGACY_MUMU_MANAGER = Path(r"D:\WF\MuMuPlayer\nx_main\MuMuManager.exe")
+
+
+def _explicit_path(environment: Mapping[str, str], key: str) -> Path | None:
+    raw = environment.get(key)
+    if raw is None:
+        return None
+    if not raw.strip():
+        raise ValueError(f"{key} must be a non-empty path")
+    candidate = Path(raw).expanduser()
+    if not candidate.is_absolute():
+        raise ValueError(f"{key} must be an absolute path: {raw}")
+    return candidate.resolve()
+
+
+def resolve_database_path(
+        environment: Mapping[str, str] = os.environ,
+        *, server_root: Path | str = ROOT) -> Path:
+    return wf_database_paths.resolve_database_path(
+        environment,
+        server_root=server_root,
+    )
+
+
+def resolve_mumu_manager(
+        environment: Mapping[str, str] = os.environ,
+        *, legacy_path: Path | str = _LEGACY_MUMU_MANAGER) -> Path:
+    """Prefer an explicit MuMuManager executable and retain the old fallback."""
+    configured = _explicit_path(environment, "WF_MUMU_MANAGER")
+    if configured is None:
+        return Path(legacy_path)
+    if not configured.is_file():
+        raise ValueError(f"WF_MUMU_MANAGER is not an existing file: {configured}")
+    return configured
+
+
+DB_PATH = os.fspath(resolve_database_path())
+MUMU = os.fspath(resolve_mumu_manager())
 WF_PACKAGE = "com.leiting.wf"
 WF_ACTIVITY = "com.leiting.wf/com.leiting.sdk.activity.PrivacyActivity"
 RUSH_QUEST_LOGICAL = "master/quest/event/rush_event_quest.orderedmap"

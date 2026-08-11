@@ -6,10 +6,12 @@ import contextlib
 import hashlib
 import io
 import json
+import os
 import shutil
 import sys
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -98,6 +100,58 @@ class CdnReleaseModule(FakeReleaseModule):
 
 
 class TestCharacterFlow(unittest.TestCase):
+    def test_master_gate_uses_target_store_before_profile_store(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            env_store = root / "env-store"
+            profile_store = root / "profile-store"
+            fallback = root / "fallback"
+            for directory in (env_store, profile_store, fallback):
+                directory.mkdir()
+            profile = flow.core.VersionProfile(
+                id="cn", label="CN", store=profile_store, fallback=fallback
+            )
+            with patch.object(
+                flow.core, "resolve_profile", return_value=profile
+            ), patch.dict(
+                os.environ, {"WF_TARGET_STORE": str(env_store)}, clear=False
+            ):
+                stores = flow._master_gate_stores("cn")
+
+        self.assertEqual((env_store.resolve(), fallback), stores)
+
+    def test_explicit_apk_wins_over_the_legacy_embedded_bundle(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            tool_dir = root / "mod-tools"
+            legacy_dir = root / "弹国服"
+            tool_dir.mkdir()
+            legacy_dir.mkdir()
+            legacy_bundle = legacy_dir / "bundle.zip"
+            explicit_apk = root / "configured.apk"
+            with zipfile.ZipFile(legacy_bundle, "w") as archive:
+                archive.writestr("legacy/aa/old", b"old")
+            with zipfile.ZipFile(explicit_apk, "w") as archive:
+                archive.writestr("configured/bb/new", b"new")
+
+            flow._BUNDLE_INDEX_CACHE.clear()
+            try:
+                with patch.object(
+                    flow, "__file__", str(tool_dir / "wf_character_flow.py")
+                ), patch.dict(os.environ, {}, clear=False):
+                    os.environ.pop("WF_APK", None)
+                    self.assertEqual(
+                        frozenset({"aa/old"}),
+                        flow._bundle_asset_tails(),
+                    )
+                    os.environ["WF_APK"] = str(explicit_apk)
+                    tails = flow._bundle_asset_tails()
+            finally:
+                flow._BUNDLE_INDEX_CACHE.clear()
+
+            self.assertIn("bb/new", tails)
+            self.assertNotIn("aa/old", tails)
+
     def test_preflight_auto_seals_complete_production_workspace(self):
         with tempfile.TemporaryDirectory() as tmp:
             workspace = workspace_module.init_workspace(
@@ -415,7 +469,14 @@ class TestReleaseQaContract(unittest.TestCase):
             )
             expected = SimpleNamespace(output_dir=base / "out")
             with patch.object(
-                wf_release, "_repo_paths", return_value=(base, roots, base / "cdn")
+                wf_release,
+                "_resolve_repo_paths",
+                return_value=wf_release._RepoPaths(
+                    tool_root=base,
+                    server_root=base,
+                    live_roots=roots,
+                    cdn_root=base / "cdn",
+                ),
             ), patch.object(
                 wf_release, "_current_git_head", return_value="a" * 40
             ), patch.object(

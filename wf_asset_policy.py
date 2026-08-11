@@ -218,15 +218,18 @@ class ReferenceIndex:
         cls,
         repo_root: Path,
         cdn_graph_json: Path | None = None,
+        *,
+        tool_root: Path | None = None,
     ) -> "ReferenceIndex":
         root = Path(os.path.abspath(repo_root))
+        tools = Path(os.path.abspath(tool_root)) if tool_root is not None else root / "mod-tools"
         index = cls()
 
         def add_if_exists(path: Path, reason: str) -> None:
             if path.exists() or path.is_symlink():
                 index.add_path(path, reason)
 
-        profiles_path = root / "mod-tools" / "profiles.json"
+        profiles_path = tools / "profiles.json"
         add_if_exists(profiles_path, "mod-tool profile configuration")
         if profiles_path.is_file():
             try:
@@ -301,20 +304,23 @@ class ReferenceIndex:
             "work/ai_canary",
             "work/asset_exports",
             "work/remediation",
-            "mod-tools/work/char_snapshots",
-            "mod-tools/work/char_gen",
         ):
             index.add_root(root / Path(relative), "fixed live runtime or generator root")
+        for relative in ("work/char_snapshots", "work/char_gen"):
+            index.add_root(tools / Path(relative), "fixed tool runtime or generator root")
 
         for relative in (
             "assets/asset-patch/manifest.json",
-            "mod-tools/work/changelog.jsonl",
-            "mod-tools/work/changelog.md",
-            "mod-tools/work/sync_pending.json",
-            "mod-tools/work/rogue_auto.json",
             "弹国服/wf_restore_package.py",
         ):
             add_if_exists(root / Path(relative), "fixed runtime evidence")
+        for relative in (
+            "work/changelog.jsonl",
+            "work/changelog.md",
+            "work/sync_pending.json",
+            "work/rogue_auto.json",
+        ):
+            add_if_exists(tools / Path(relative), "fixed tool runtime evidence")
 
         assets_root = root / "assets"
         if assets_root.is_dir():
@@ -329,7 +335,7 @@ class ReferenceIndex:
                 }:
                     index.add_root(child, "active server asset root")
 
-        changelog = root / "mod-tools" / "work" / "changelog.jsonl"
+        changelog = tools / "work" / "changelog.jsonl"
         if changelog.is_file():
             try:
                 with changelog.open(encoding="utf-8-sig") as stream:
@@ -349,7 +355,7 @@ class ReferenceIndex:
             except (OSError, UnicodeError, json.JSONDecodeError):
                 pass
 
-        search_roots = [root, root / "mod-tools", root / "弹国服"]
+        search_roots = [root, tools, root / "弹国服"]
         protected_names = {
             "harvestedpaths.csv",
             "pathlist.csv",

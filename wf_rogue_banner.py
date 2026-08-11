@@ -21,8 +21,9 @@ import json
 import os
 import sys
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(ROOT, "mod-tools"))
+TOOL_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(TOOL_DIR)
+sys.path.insert(0, TOOL_DIR)
 import wf_assets as wa            # noqa: E402
 import wf_mod_tool as core        # noqa: E402
 import wf_quest_lib as q          # noqa: E402
@@ -35,7 +36,7 @@ MAIN_LOGICAL = "quest/event/banner/rush_event/mod_rogue_gauntlet_banner_001.png"
 BOSS_LOGICAL = "quest/event/bossbattle_banner/rush_event/mod_rogue_gauntlet_bossbattle_banner_001.png"
 MAIN_SIZE = (1000, 184)
 BOSS_SIZE = (377, 199)
-PENDING = os.path.join(ROOT, "mod-tools", "work", "sync_pending.json")
+PENDING = os.path.join(TOOL_DIR, "work", "sync_pending.json")
 
 
 def fit_png(src: str, size: tuple[int, int]) -> bytes:
@@ -80,7 +81,7 @@ def main() -> int:
     ap.add_argument("--publish", action="store_true")
     args = ap.parse_args()
 
-    store = core.resolve_profile(None).store
+    store = core.require_active_store()
 
     for src in [args.main] + ([args.boss] if args.boss else []):
         if not os.path.exists(src):

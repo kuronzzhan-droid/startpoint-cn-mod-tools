@@ -45,6 +45,9 @@ from wf_asset_quarantine import (
 from wf_remediation_baseline import atomic_json
 
 
+TOOL_ROOT = Path(__file__).resolve().parent
+
+
 class MaintenanceError(RuntimeError):
     pass
 
@@ -698,7 +701,7 @@ def plan_assets(
     ):
         raise MaintenanceError("one or more CDN supported bases are unreachable")
 
-    references = ReferenceIndex.from_project(repo, graph_file)
+    references = ReferenceIndex.from_project(repo, graph_file, tool_root=TOOL_ROOT)
     evidence_dir = scan_file.parent / "evidence"
     print("[asset-plan] proving archive relationships", file=sys.stderr, flush=True)
     exact_duplicates, archive_report = _archive_proofs(repo, evidence_dir)

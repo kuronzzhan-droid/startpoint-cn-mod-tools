@@ -396,15 +396,21 @@ class TestCharacterRollback(unittest.TestCase):
         module = self._module()
         with tempfile.TemporaryDirectory() as tmp:
             fixture = RollbackFixture(module, Path(tmp))
+            server_root = fixture.root / "external-server"
+            server_root.mkdir()
+            paths = wf_release._RepoPaths(
+                tool_root=fixture.repo,
+                server_root=server_root,
+                live_roots=fixture.live_roots,
+                cdn_root=fixture.cdn,
+            )
             with mock.patch.object(
-                wf_release,
-                "_repo_paths",
-                return_value=(fixture.repo, fixture.live_roots, fixture.cdn),
+                wf_release, "_resolve_repo_paths", return_value=paths
             ), mock.patch.object(
                 wf_release, "_server_running", return_value=False
-            ), mock.patch.object(
+            ) as server_running, mock.patch.object(
                 wf_release, "detect_canonical_base_version", return_value="1.4.54"
-            ):
+            ) as detect_base:
                 with self.assertRaisesRegex(wf_release.ReleaseError, "ROLLBACK_CHARACTER_PACKAGE"):
                     module.publish_snapshot_rollback(
                         fixture.snapshot_dir, "cn", "yes", fixture.installed
@@ -424,6 +430,12 @@ class TestCharacterRollback(unittest.TestCase):
                     fixture.installed,
                 )
 
+            self.assertTrue(server_running.call_args_list)
+            self.assertTrue(all(
+                call.args[0] == server_root
+                for call in server_running.call_args_list
+            ))
+            detect_base.assert_called_once_with(fixture.cdn, server_root)
             self.assertEqual("1.4.56", result.version)
             for root_name, path in fixture.live_paths.items():
                 self.assertEqual(fixture.original[root_name], path.read_bytes())

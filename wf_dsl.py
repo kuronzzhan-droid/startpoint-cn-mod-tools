@@ -352,8 +352,8 @@ if __name__ == "__main__":
     import io, sys
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    prof = core.resolve_profile()
-    fp, data = load_dsl_file(prof.store, "battle/action/skill/action/rare5/fire_dragon$fire_dragon_1")
+    store = core.require_active_store()
+    fp, data = load_dsl_file(store, "battle/action/skill/action/rare5/fire_dragon$fire_dragon_1")
     r = parse_dsl(data)
     print("数值叶子:", len(r["numbers"]))
     for n in r["numbers"][:20]:

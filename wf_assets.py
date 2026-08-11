@@ -30,7 +30,24 @@ from wf_character_requirements import (
 HERE = Path(__file__).resolve().parent
 # 全角色语音 datamine(537 角色,ally/battle/home 三分类 + voiceLines.json 台词文本)。
 # 实测游戏路径 = character/<code>/voice/<分类>/<名>.mp3,与 dump 一一对应(fire_dragon 18/18)。
-VOICE_DUMP = Path(os.environ.get("WF_VOICE_DUMP", r"D:\WF\角色语音"))
+VOICE_DUMP = Path(r"D:\WF\角色语音")
+
+
+def resolve_voice_dump() -> Path:
+    """Resolve the current voice dump root without freezing process config at import."""
+    raw = os.environ.get("WF_VOICE_DUMP")
+    if raw is None:
+        return VOICE_DUMP.resolve()
+    configured = raw.strip().strip('"').strip()
+    if not configured:
+        raise ValueError("WF_VOICE_DUMP must be a non-empty path")
+    candidate = Path(configured).expanduser()
+    if not candidate.is_absolute():
+        raise ValueError(f"WF_VOICE_DUMP must be an absolute path: {configured}")
+    candidate = candidate.resolve()
+    if not candidate.is_dir():
+        raise ValueError(f"WF_VOICE_DUMP is not an existing directory: {candidate}")
+    return candidate
 
 PNG_REAL = bytes([137, 80, 78, 71, 13, 10, 26, 10])
 PNG_FAKE = bytes([137, 112, 110, 103, 13, 10, 26, 10])
@@ -243,7 +260,7 @@ _VOICE_CATS = ("ally", "battle", "home", "login")
 
 def dump_voices(code_name: str) -> list[tuple[str, str, str]]:
     """语音 dump 目录 → [(分类, 文件名, 台词文本)]。目录不存在返回空。"""
-    d = VOICE_DUMP / code_name
+    d = resolve_voice_dump() / code_name
     if not d.exists():
         return []
     lines: dict = {}
@@ -286,7 +303,7 @@ def _pathlist_char_index() -> dict[str, list[str]]:
     return idx
 
 
-_voice_vocab_cache: list[str] | None = None
+_voice_vocab_cache: tuple[Path, list[str]] | None = None
 
 
 def _voice_vocab() -> list[str]:
@@ -294,11 +311,12 @@ def _voice_vocab() -> list[str]:
     某角色不在 dump 里(新角色/未解包)时,用词表对 store 逐条探测兜底——
     home 语音多为角色专属罗马音名,命中率低但探测便宜(sha1+stat),不漏才是重点。"""
     global _voice_vocab_cache
-    if _voice_vocab_cache is not None:
-        return _voice_vocab_cache
+    voice_dump = resolve_voice_dump()
+    if _voice_vocab_cache is not None and _voice_vocab_cache[0] == voice_dump:
+        return _voice_vocab_cache[1]
     vocab: set[str] = set(_VOICE_FIXED)
     try:
-        for char_dir in VOICE_DUMP.iterdir():
+        for char_dir in voice_dump.iterdir():
             for cat in _VOICE_CATS:
                 cd = char_dir / cat
                 if cd.is_dir():
@@ -307,8 +325,9 @@ def _voice_vocab() -> list[str]:
                             vocab.add(f"{cat}/{f}")
     except Exception:
         pass
-    _voice_vocab_cache = sorted(vocab)
-    return _voice_vocab_cache
+    result = sorted(vocab)
+    _voice_vocab_cache = (voice_dump, result)
+    return result
 
 
 _harvest_voice_cache: dict[str, list[str]] | None = None

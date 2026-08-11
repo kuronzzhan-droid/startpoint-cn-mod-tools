@@ -47,6 +47,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import wf_chain_squash as squash  # noqa: E402
+import wf_mod_tool as core  # noqa: E402
 import wf_quest_lib as quest  # noqa: E402
 import wf_release  # noqa: E402
 
@@ -61,10 +62,10 @@ def _resolve_dirs(cdn: str | None = None, repo_root: str | None = None) -> tuple
     root = Path(repo_root).resolve() if repo_root else Path(__file__).resolve().parent.parent
     if cdn:
         cdn_root = Path(cdn).resolve()
-    elif os.environ.get("WF_CDN_DIR"):
-        cdn_root = Path(os.environ["WF_CDN_DIR"]).resolve()
     else:
-        cdn_root = root / ".cdn" / "cn"
+        cdn_root = core.resolve_cdn_root_lax(
+            legacy_root=root / ".cdn" / "cn"
+        )
     return cdn_root, root
 
 

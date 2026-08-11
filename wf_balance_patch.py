@@ -147,10 +147,7 @@ def main() -> None:
     if args.apply and MARKER.exists() and not args.force:
         sys.exit(f"已应用过(marker: {MARKER})。数值/能量/boss 会叠加,确需重跑加 --force。")
 
-    prof = core.resolve_profile()
-    if not prof:
-        sys.exit("profiles.json 未配置 active 档案")
-    store = prof.store
+    store = core.require_active_store()
     ts = time.strftime("%Y%m%d-%H%M%S")
     suffix = f".bak-wfmod-balance-{ts}"
     report: dict = {"ts": ts, "dry_run": dry, "sections": {}}

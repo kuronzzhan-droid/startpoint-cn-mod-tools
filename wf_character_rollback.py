@@ -607,36 +607,38 @@ def publish_snapshot_rollback(
         raise wf_release.ReleaseError(
             "rollback requires ROLLBACK_CHARACTER_PACKAGE"
         )
-    repo_root, live_roots, cdn_root = wf_release._repo_paths(profile_id)
-    if wf_release._server_running(repo_root):
+    paths = wf_release._resolve_repo_paths(profile_id)
+    if wf_release._server_running(paths.server_root):
         raise wf_release.ReleaseError("CN server must be stopped before character rollback")
     if installed_package_dir is None:
         raise wf_release.ReleaseError("installed package is required for snapshot rollback")
     expected_snapshot_root = _absolute(
-        Path(repo_root) / "work" / "character_releases" / "snapshots"
+        paths.tool_root / "work" / "character_releases" / "snapshots"
     )
     snapshot = _absolute(Path(snapshot_dir))
     if snapshot.parent != expected_snapshot_root:
         raise wf_release.ReleaseError("snapshot directory is outside the configured snapshot root")
-    canonical_base = wf_release.detect_canonical_base_version(cdn_root, repo_root)
+    canonical_base = wf_release.detect_canonical_base_version(
+        paths.cdn_root, paths.server_root
+    )
     store = wf_release.ActiveReleaseStore(
-        cdn_root, canonical_base_version=canonical_base
+        paths.cdn_root, canonical_base_version=canonical_base
     )
     _validate_installed_binding(
-        Path(installed_package_dir), snapshot, live_roots, store
+        Path(installed_package_dir), snapshot, paths.live_roots, store
     )
-    staging_root = Path(repo_root) / "work" / "character_releases" / "rollback-staging"
+    staging_root = paths.tool_root / "work" / "character_releases" / "rollback-staging"
     payload = prepare_snapshot_rollback(
-        snapshot, live_roots, store, staging_root
+        snapshot, paths.live_roots, store, staging_root
     )
     owned = payload.provisional_archives[0].path.parent
     result: wf_release.ReleaseResult | None = None
     try:
         result = wf_release.AtomicReleasePublisher(
-            cdn_root, canonical_base_version=canonical_base
+            paths.cdn_root, canonical_base_version=canonical_base
         ).publish(
             payload,
-            server_running=lambda: wf_release._server_running(repo_root),
+            server_running=lambda: wf_release._server_running(paths.server_root),
         )
     finally:
         try:

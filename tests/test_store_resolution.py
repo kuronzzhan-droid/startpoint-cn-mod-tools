@@ -142,6 +142,62 @@ class QuestLibTableIoTests(EnvIsolatedCase):
 
 
 class CoreResolveTargetStoreTests(EnvIsolatedCase):
+    def test_flat_tool_checkout_anchors_relative_profile_paths_locally(self):
+        tool_dir = self.root / "wf-mod-tools"
+        store = tool_dir / "store"
+        store.mkdir(parents=True)
+        profiles = {
+            "active": "cn",
+            "profiles": {"cn": {"store": "store"}},
+        }
+        with mock.patch.object(
+            core, "__file__", str(tool_dir / "wf_mod_tool.py")
+        ), mock.patch.object(core, "load_profiles", return_value=profiles):
+            profile = core.resolve_profile()
+
+        self.assertIsNotNone(profile)
+        self.assertEqual(store.resolve(), profile.store)
+
+    def test_explicit_environment_store_requires_an_absolute_existing_directory(self):
+        file_path = self.root / "not-a-directory"
+        file_path.write_bytes(b"")
+        invalid_values = (
+            ("", "non-empty"),
+            (".", "absolute"),
+            (str(self.root / "missing"), "existing directory"),
+            (str(file_path), "existing directory"),
+        )
+        for value, message in invalid_values:
+            with self.subTest(value=value):
+                os.environ["WF_TARGET_STORE"] = value
+                with self.assertRaisesRegex(ValueError, message):
+                    core.env_target_store()
+
+    def test_profile_store_requires_an_absolute_existing_directory(self):
+        file_path = self.root / "not-a-directory"
+        file_path.write_bytes(b"")
+        invalid_values = (
+            Path("relative-store"),
+            self.root / "missing",
+            file_path,
+        )
+        for value in invalid_values:
+            profile = core.VersionProfile(id="cn", label="CN", store=value)
+            with self.subTest(value=value), self.assertRaisesRegex(
+                ValueError, "profile store"
+            ):
+                core.resolve_active_store(self.root, profile=profile)
+
+    def test_profile_configuration_rejects_a_blank_store(self):
+        profiles = {
+            "active": "cn",
+            "profiles": {"cn": {"label": "CN", "store": ""}},
+        }
+        with mock.patch.object(core, "load_profiles", return_value=profiles), self.assertRaisesRegex(
+            ValueError, "profile store.*non-empty"
+        ):
+            core.resolve_profile()
+
     def test_supplied_profile_is_not_re_resolved(self):
         store = self.make_dir("profile-store")
         profile = core.VersionProfile(id="cn", label="CN", store=store)

@@ -43,16 +43,13 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import wf_mod_tool as core  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
-CDN_ROOT = (
-    Path(os.environ["WF_CDN_DIR"])
-    if os.environ.get("WF_CDN_DIR")
-    else ROOT / ".cdn" / "cn"
-)
+CDN_ROOT = core.resolve_cdn_root_lax()
 # asset-patch 是 main 时代的服务端仓内机制;独立布局下按 WF_SERVER_DIR 定位
-_SERVER_DIR = (
-    Path(os.environ["WF_SERVER_DIR"]) if os.environ.get("WF_SERVER_DIR") else ROOT
-)
+_SERVER_DIR = core.resolve_server_dir()
 ASSET_PATCH_ACTIVE = _SERVER_DIR / "assets" / "asset-patch" / "active"
 
 OFFICIAL_TARGET = "1.4.54"
@@ -1039,7 +1036,7 @@ def canonicalize_archives(
 def backfill_entity_rows(
     archives: list[ArchiveInput],
     cdn_root: Path,
-    repo_root: Path = ROOT,
+    asset_patch_active: Path | None = ASSET_PATCH_ACTIVE,
 ) -> tuple[dict[str, tuple[str, str, int, str, str]], list[Issue]]:
     """从超出官方目标(1.4.54)的 diff 包读出内部文件行:path→(path,ver,size,hash,tag)。"""
     issues: list[Issue] = []
@@ -1055,11 +1052,14 @@ def backfill_entity_rows(
         ),
     )
     for archive in mod_archives:
-        absolute = (
-            repo_root / "assets" / "asset-patch" / "active" / Path(archive.relative_path).name
-            if archive.foreign_root
-            else cdn_root / archive.relative_path
-        )
+        absolute = archive_source_path(archive, cdn_root, asset_patch_active)
+        if absolute is None:
+            issues.append(Issue(
+                "DEV_ENTITY_ROW_SKIPPED",
+                "foreign archive source root is unavailable",
+                "scanner", relative_path=archive.relative_path,
+            ))
+            continue
         try:
             with zipfile.ZipFile(absolute) as bundle:
                 for info in bundle.infolist():
@@ -1144,7 +1144,9 @@ def emit_dev_catalog(
     canonical_stats: dict = {}
     if canonicalize:
         archives, canonical_stats = canonicalize_archives(archives)
-    mod_rows, row_issues = backfill_entity_rows(archives, cdn_root)
+    mod_rows, row_issues = backfill_entity_rows(
+        archives, cdn_root, asset_patch_active
+    )
     merged_rows = merge_entity_rows(scan.entity_rows, mod_rows)
     installed_bytes = entity_rows_installed_bytes(merged_rows)
     catalog, catalog_issues = build_catalog(
@@ -1444,7 +1446,9 @@ def materialize_dev_view(
 
     scan = scan_chain(cdn_root, asset_patch_active, digest_mode=digest_mode)
     archives, canonical_stats = canonicalize_archives(scan.archives)
-    mod_rows, row_issues = backfill_entity_rows(archives, cdn_root)
+    mod_rows, row_issues = backfill_entity_rows(
+        archives, cdn_root, asset_patch_active
+    )
     merged_rows = merge_entity_rows(scan.entity_rows, mod_rows)
     issues = scan.issues + row_issues
 

@@ -119,6 +119,33 @@ class VoiceTests(unittest.TestCase):
             ):
                 self.assertEqual(expected.resolve(), wf_voice.find_ffmpeg())
 
+    def test_find_ffmpeg_uses_path_when_not_explicitly_configured(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            expected = Path(td) / "ffmpeg.exe"
+            expected.write_bytes(b"")
+            with mock.patch.dict(os.environ, {}, clear=True), mock.patch.object(
+                wf_voice.shutil, "which", return_value=str(expected)
+            ):
+                self.assertEqual(expected.resolve(), wf_voice.find_ffmpeg())
+
+    def test_find_ffmpeg_rejects_invalid_explicit_configuration(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            invalid_values = (
+                "",
+                "ffmpeg.exe",
+                str(Path(td) / "missing-ffmpeg.exe"),
+                str(Path(td)),
+            )
+            for value in invalid_values:
+                with self.subTest(value=value), mock.patch.dict(
+                    os.environ, {"WF_FFMPEG": value}, clear=True
+                ), mock.patch.object(
+                    wf_voice.shutil,
+                    "which",
+                    side_effect=AssertionError("explicit configuration fell back to PATH"),
+                ), self.assertRaisesRegex(ValueError, "WF_FFMPEG"):
+                    wf_voice.find_ffmpeg()
+
     def test_transcode_uses_strict_cbr_flags_and_atomic_output(self) -> None:
         captured = []
 

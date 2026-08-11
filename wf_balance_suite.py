@@ -253,14 +253,14 @@ def main() -> None:
         #   ability/status/action_skill = 今晚 v1 应用前的备份(含用户自己的历史手改,正确基线)
         #   leader/soul/wab            = 首次套件运行时的备份(套件动它们之前的状态)
         # 不能取"最老备份"——GUI 时代的更旧备份会回滚用户手改甚至行错位(161093 乱码案例)
-        prof0 = core.resolve_profile()
+        baseline_store = core.require_active_store()
         PIN = {core.ABILITY_LOGICAL: ".bak-wfmod-balance-20260709-003745",
                core.STATUS_LOGICAL: ".bak-wfmod-balance-20260709-003745",
                "master/skill/action_skill.orderedmap": ".bak-wfmod-balance-20260709-003745",
                LEADER: None, SOUL: None, WAB: None}   # None = 最早 .bak-wfmod-suite-*
         restored = 0
         for lg, pin in PIN.items():
-            p = core.table_path(prof0.store, lg)
+            p = core.table_path(baseline_store, lg)
             if pin:
                 bak = p.with_name(p.name + pin)
                 if not bak.exists():
@@ -279,8 +279,7 @@ def main() -> None:
     if (ROOT / "logs" / "balance_patch_v2_applied.json").exists():
         sys.exit("检测到 v2 已单独应用;总包与 v2 不能叠加,请先还原 v2 备份。")
 
-    prof = core.resolve_profile()
-    store = prof.store
+    store = core.require_active_store()
     ts = time.strftime("%Y%m%d-%H%M%S")
     suffix = f".bak-wfmod-suite-{ts}"
     rep: dict = {"ts": ts, "dry": dry, "layers": {}}

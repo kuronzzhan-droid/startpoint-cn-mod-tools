@@ -21,7 +21,7 @@ import os
 import subprocess
 import sys
 import tempfile
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from types import MappingProxyType
 
@@ -1124,8 +1124,8 @@ def require_cn_profile() -> core.VersionProfile:
     if active.fallback is not None or cn_profile.fallback is not None:
         raise ValueError("CN profile 必须设置 fallback=null")
 
-    active_store = active.store.resolve()
-    cn_store = cn_profile.store.resolve()
+    active_store = core.require_active_store(profile=active).resolve()
+    cn_store = core.require_active_store(profile=cn_profile).resolve()
     if not active_store.exists() or not cn_store.exists():
         raise ValueError(
             f"CN store 不存在: active={active_store}, explicit={cn_store}"
@@ -1142,7 +1142,7 @@ def require_cn_profile() -> core.VersionProfile:
             f"profile={active_store}"
         )
     print(f"[PROFILE] active=cn store={active_store}")
-    return active
+    return replace(active, store=active_store)
 
 
 def _assert_readback_rows(
