@@ -128,6 +128,12 @@ class VoiceTests(unittest.TestCase):
             ):
                 self.assertEqual(expected.resolve(), wf_voice.find_ffmpeg())
 
+    def test_find_ffmpeg_returns_none_without_explicit_or_path_tool(self) -> None:
+        with mock.patch.dict(os.environ, {}, clear=True), mock.patch.object(
+            wf_voice.shutil, "which", return_value=None
+        ):
+            self.assertIsNone(wf_voice.find_ffmpeg())
+
     def test_find_ffmpeg_rejects_invalid_explicit_configuration(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             invalid_values = (

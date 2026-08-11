@@ -59,6 +59,7 @@ import wf_boss  # noqa: E402      Boss 数值 + 副本列表(Boss·副本页)
 import wf_server_auth  # noqa: E402  服务端管理 API 地址与 Bearer 认证
 import wf_database_paths  # noqa: E402  独立部署时的存档数据库路径
 import wf_apk_paths  # noqa: E402  独立部署时的 APK/bundle 资产来源
+import wf_device_paths  # noqa: E402  可选 adb 的独立路径解析
 
 ROOT = Path(__file__).resolve().parent.parent
 try:
@@ -5087,27 +5088,8 @@ def rollback_and_publish(name: str) -> dict:
 
 # ---------------------------------------------------------------- adb sync
 
-ADB_CANDIDATES = [
-    r"D:\WF\MuMuPlayer\nx_main\adb.exe",
-    r"C:\Program Files\Netease\MuMuPlayer-12.0\shell\adb.exe",
-    r"C:\Program Files\Netease\MuMu Player 12\shell\adb.exe",
-    r"C:\Program Files (x86)\Netease\MuMuPlayer-12.0\shell\adb.exe",
-    r"D:\Program Files\Netease\MuMuPlayer-12.0\shell\adb.exe",
-    r"C:\Program Files\Netease\MuMuPlayerGlobal-12.0\shell\adb.exe",
-]
-
-
 def find_adb() -> str | None:
-    env = os.environ.get("WF_ADB")
-    if env and Path(env).exists():
-        return env
-    which = shutil.which("adb")
-    if which:
-        return which
-    for cand in ADB_CANDIDATES:
-        if Path(cand).exists():
-            return cand
-    return None
+    return wf_device_paths.find_adb()
 
 
 def adb_run(adb: str, *args: str, timeout: int = 600) -> tuple[int, str]:

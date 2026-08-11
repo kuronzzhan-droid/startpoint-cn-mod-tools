@@ -15,7 +15,7 @@ r"""
 来源(按贡献):
   1. .pathlist   —— 提取工具留下的无扩展名逻辑路径清单(含 voice/words、故事表情等)。
   2. ordermap    —— 解密所有 .orderedmap 主表,提取单元格里的路径引用。
-  3. voiceLines  —— D:\WF\角色语音\<code>\voiceLines.json 键 = character/<code>/voice/<key>.mp3。
+  3. voiceLines  —— 显式 `--voice` 根下的 <code>/voiceLines.json。
   4. 同族交叉    —— 把某 key 的 (tail,ext) 套到同族所有 key。
   5. bundle 索引 —— bundle_<amf|encrypt|copy|compress|png|atf>.filelist(哈希命名的索引文件)直接命名。
 
@@ -73,30 +73,28 @@ def scan_stores(root: Path, stores: list[str], present: dict, loc2file: dict) ->
                         loc2file[(name, loc)] = fp
 
 
-def main() -> None:
+def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--base", help="下载包 production 目录(不填自动查找)")
-    ap.add_argument("--bundle", default=r"D:\WF\wf-bundle\production",
+    ap.add_argument("--base", required=True, help="下载包 production 目录")
+    ap.add_argument("--bundle",
                     help="bundle 包 production 目录(APK bundle.zip 解出);不存在则跳过")
-    ap.add_argument("--pathlist", default=r"D:\WF\wf-extracted\wf-extracted\.pathlist")
-    ap.add_argument("--voice", default=r"D:\WF\角色语音")
-    ap.add_argument("--out", default=str(Path(__file__).resolve().parent))
-    args = ap.parse_args()
+    ap.add_argument("--pathlist", required=True, help="必需的 .pathlist 文件")
+    ap.add_argument("--voice", help="可选 voiceLines 根目录")
+    ap.add_argument("--out", required=True, help="显式输出目录")
+    return ap
 
-    if args.base:
-        base = Path(args.base)
-    else:
-        up = core.find_world_upload(Path(__file__).resolve().parent.parent)
-        if not up:
-            print("未找到 production,请用 --base 指定"); sys.exit(1)
-        base = up.parent
+
+def main(argv=None) -> None:
+    args = build_parser().parse_args(argv)
+
+    base = Path(args.base)
     out = Path(args.out)
 
     present: dict[str, set] = {}
     loc2file: dict = {}
     scan_stores(base, DL_STORES, present, loc2file)
-    bundle_root = Path(args.bundle)
-    have_bundle = bundle_root.exists()
+    bundle_root = Path(args.bundle) if args.bundle else None
+    have_bundle = bool(bundle_root and bundle_root.exists())
     if have_bundle:
         scan_stores(bundle_root, BUNDLE_STORES, present, loc2file)
     allhash = set()
@@ -168,8 +166,8 @@ def main() -> None:
     print(f"[2] ordermap cells : {len(found)}/{len(allhash)} = {len(found)*100//len(allhash)}%  (cells {len(cell_paths)})")
 
     # ---- 3. voiceLines.json ----
-    vd = Path(args.voice)
-    if vd.exists():
+    vd = Path(args.voice) if args.voice else None
+    if vd and vd.exists():
         for cd in vd.iterdir():
             vf = cd / "voiceLines.json"
             if not vf.exists():

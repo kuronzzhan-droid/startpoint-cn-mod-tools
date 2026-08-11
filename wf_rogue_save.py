@@ -30,6 +30,7 @@ import io
 import json
 import os
 import random
+import shutil
 import sqlite3
 import subprocess
 import sys
@@ -40,9 +41,9 @@ from pathlib import Path
 
 import wf_server_auth
 import wf_database_paths
+import wf_device_paths
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-_LEGACY_MUMU_MANAGER = Path(r"D:\WF\MuMuPlayer\nx_main\MuMuManager.exe")
 
 
 def _explicit_path(environment: Mapping[str, str], key: str) -> Path | None:
@@ -68,18 +69,12 @@ def resolve_database_path(
 
 def resolve_mumu_manager(
         environment: Mapping[str, str] = os.environ,
-        *, legacy_path: Path | str = _LEGACY_MUMU_MANAGER) -> Path:
-    """Prefer an explicit MuMuManager executable and retain the old fallback."""
-    configured = _explicit_path(environment, "WF_MUMU_MANAGER")
-    if configured is None:
-        return Path(legacy_path)
-    if not configured.is_file():
-        raise ValueError(f"WF_MUMU_MANAGER is not an existing file: {configured}")
-    return configured
+        *, finder=shutil.which) -> Path | None:
+    """Resolve optional MuMuManager without assuming a maintainer workspace."""
+    return wf_device_paths.find_mumu_manager(environment, finder=finder)
 
 
 DB_PATH = os.fspath(resolve_database_path())
-MUMU = os.fspath(resolve_mumu_manager())
 WF_PACKAGE = "com.leiting.wf"
 WF_ACTIVITY = "com.leiting.wf/com.leiting.sdk.activity.PrivacyActivity"
 RUSH_QUEST_LOGICAL = "master/quest/event/rush_event_quest.orderedmap"
@@ -119,7 +114,12 @@ def load_soul_ids() -> list[int]:
 
 
 def mumu_sh(cmd: str) -> None:
-    subprocess.run([MUMU, "sh", "-v", "1", "-c", cmd], capture_output=True)
+    manager = resolve_mumu_manager()
+    if manager is None:
+        raise RuntimeError(
+            "MuMuManager was not found; set WF_MUMU_MANAGER to an absolute executable path"
+        )
+    subprocess.run([os.fspath(manager), "sh", "-v", "1", "-c", cmd], capture_output=True)
 
 
 def _publish_command(logicals: tuple[str, ...], *, list_only: bool = False) \

@@ -11,7 +11,7 @@ r"""
 
 例:
   python mod-tools/wf_extract_paths.py 弹国服/wf_M358262.apk
-  python mod-tools/wf_extract_paths.py wf-2.1.125.swf --store D:\WF\...\upload
+python wf_extract_paths.py wf-2.1.125.swf --store <production/upload>
 """
 from __future__ import annotations
 import argparse

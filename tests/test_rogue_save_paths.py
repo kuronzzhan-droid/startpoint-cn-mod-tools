@@ -66,16 +66,12 @@ class RogueSavePathTests(unittest.TestCase):
                 manager.resolve(),
                 rogue_save.resolve_mumu_manager(
                     {"WF_MUMU_MANAGER": str(manager)},
-                    legacy_path=root / "missing-legacy.exe",
+                    finder=lambda _name: None,
                 ),
             )
 
-    def test_mumu_manager_defaults_to_legacy_path_only_when_unset(self) -> None:
-        legacy = Path("X:/legacy/MuMuManager.exe")
-        self.assertEqual(
-            legacy,
-            rogue_save.resolve_mumu_manager({}, legacy_path=legacy),
-        )
+    def test_mumu_manager_is_optional_when_unset_and_not_on_path(self) -> None:
+        self.assertIsNone(rogue_save.resolve_mumu_manager({}, finder=lambda _name: None))
 
     def test_explicit_mumu_manager_rejects_blank_missing_and_directory_values(self) -> None:
         with tempfile.TemporaryDirectory() as td:
@@ -88,7 +84,7 @@ class RogueSavePathTests(unittest.TestCase):
                 ):
                     rogue_save.resolve_mumu_manager(
                         {"WF_MUMU_MANAGER": value},
-                        legacy_path=root / "legacy.exe",
+                        finder=lambda _name: None,
                     )
 
     def test_explicit_paths_must_not_depend_on_the_process_working_directory(self) -> None:
@@ -109,7 +105,7 @@ class RogueSavePathTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "WF_MUMU_MANAGER.*absolute"):
                     rogue_save.resolve_mumu_manager(
                         {"WF_MUMU_MANAGER": relative_manager.name},
-                        legacy_path=root / "legacy.exe",
+                        finder=lambda _name: None,
                     )
             finally:
                 os.chdir(previous)
@@ -117,7 +113,7 @@ class RogueSavePathTests(unittest.TestCase):
     def test_mumu_shell_uses_the_resolved_manager_without_starting_a_real_process(self) -> None:
         manager = Path("X:/configured/MuMuManager.exe")
         with (
-            mock.patch.object(rogue_save, "MUMU", str(manager)),
+            mock.patch.object(rogue_save, "resolve_mumu_manager", return_value=manager),
             mock.patch.object(rogue_save.subprocess, "run") as run,
         ):
             rogue_save.mumu_sh("echo ready")
@@ -146,7 +142,8 @@ class RogueSavePathTests(unittest.TestCase):
                     "-X",
                     "utf8",
                     "-c",
-                    "import json, wf_rogue_save as r; print(json.dumps([r.DB_PATH, r.MUMU]))",
+                    "import json, os, wf_rogue_save as r; "
+                    "print(json.dumps([r.DB_PATH, os.fspath(r.resolve_mumu_manager())]))",
                 ],
                 cwd=MOD_TOOLS,
                 env=environment,

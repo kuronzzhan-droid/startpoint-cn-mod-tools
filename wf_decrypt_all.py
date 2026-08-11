@@ -21,10 +21,9 @@ WF 数据包 完全解密 —— **单文件、零依赖(仅标准库)**。
 
 用法:
   python wf_decrypt_all.py --base <download production> --bundle <bundle production> \
-      --pathlist <.pathlist> --voice <角色语音目录(可选)> --out D:\WF\wf-decrypted --workers 16
-  # --base 不填会自动在脚本上层目录里找 WorldFlipper/dummy/download/production
+      --pathlist <.pathlist> --voice <角色语音目录(可选)> --out <输出目录> --workers 16
   # --only-bundle 只做 bundle ; --limit N 小样验证 ; --no-skip 不跳过已存在
-所有参数都有默认值,可直接 `python wf_decrypt_all.py` 运行。
+输入与输出目录必须由命令行显式给出,不猜测维护者工作区。
 """
 from __future__ import annotations
 import argparse, csv, hashlib, io, json, os, re, struct, sys, zlib, collections
@@ -420,7 +419,8 @@ def scan_stores(root: Path, stores, present, loc2file):
 
 
 # ==================== 路径复原 ====================
-def recover(present, loc2file, pathlist_path: Path, voice_dir: Path, have_bundle: bool):
+def recover(present, loc2file, pathlist_path: Path, voice_dir: Path | None,
+            have_bundle: bool):
     allhash = set()
     for s in present.values():
         allhash |= s
@@ -582,36 +582,43 @@ def enrich_from_decoded(out: Path, found: dict, allhash: set):
 
 
 # ==================== 主流程 ====================
-def main():
-    here = Path(__file__).resolve().parent
+def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--base", help="下载包 production 目录(不填自动找)")
-    ap.add_argument("--bundle", default=r"D:\WF\wf-bundle\production")
-    ap.add_argument("--pathlist", default=r"D:\WF\wf-extracted\wf-extracted\.pathlist")
-    ap.add_argument("--voice", default=r"D:\WF\角色语音")
-    ap.add_argument("--out", default=r"D:\WF\wf-decrypted")
+    ap.add_argument("--base", help="下载包 production 目录")
+    ap.add_argument("--bundle", help="可选 bundle production 目录")
+    ap.add_argument("--pathlist", required=True, help="必需的 .pathlist 文件")
+    ap.add_argument("--voice", help="可选 voiceLines 根目录")
+    ap.add_argument("--out", required=True, help="显式输出目录")
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--only-bundle", action="store_true")
     ap.add_argument("--no-skip", action="store_true")
-    args = ap.parse_args()
+    return ap
+
+
+def main(argv=None):
+    ap = build_parser()
+    args = ap.parse_args(argv)
+    if not args.only_bundle and not args.base:
+        ap.error("--base is required unless --only-bundle is used")
+    if args.only_bundle and not args.bundle:
+        ap.error("--bundle is required with --only-bundle")
 
     out = Path(args.out); out.mkdir(parents=True, exist_ok=True)
     present, loc2file = {}, {}
     if not args.only_bundle:
-        base = Path(args.base) if args.base else find_production(here.parent)
-        if not base:
-            print("找不到 download production,请用 --base 指定"); sys.exit(1)
+        base = Path(args.base)
         scan_stores(base, DL_STORES, present, loc2file)
-    bundle_root = Path(args.bundle)
-    have_bundle = bundle_root.exists()
+    bundle_root = Path(args.bundle) if args.bundle else None
+    have_bundle = bool(bundle_root and bundle_root.exists())
     if have_bundle:
         scan_stores(bundle_root, BUNDLE_STORES, present, loc2file)
     total = sum(len(v) for v in present.values())
     print("stores:", {k: len(v) for k, v in present.items()}, "total", total)
 
     # ---- 复原 ----
-    found, allhash = recover(present, loc2file, Path(args.pathlist), Path(args.voice), have_bundle)
+    voice_dir = Path(args.voice) if args.voice else None
+    found, allhash = recover(present, loc2file, Path(args.pathlist), voice_dir, have_bundle)
     print(f"复原 {len(found)}/{len(allhash)} = {len(found)*100/len(allhash):.1f}%")
 
     # ---- 解密导出 ----

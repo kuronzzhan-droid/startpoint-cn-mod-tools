@@ -19,7 +19,7 @@ WF 数据包**完全解密导出器** —— 按客户端逻辑解密/解码 **�
 输出目录树保留逻辑路径,内容后缀按解码结果(x.timeline.amf3.deflate -> x.timeline.json)。
 
 用法:
-  python mod-tools/wf_export_assets.py --out D:\WF\wf-decrypted --workers 16
+  python wf_export_assets.py --base <download production> --out <输出目录> --workers 16
   python mod-tools/wf_export_assets.py --limit 300           # 小样验证
   python mod-tools/wf_export_assets.py --only-bundle         # 只导 bundle 包
 """
@@ -192,16 +192,25 @@ def collect(root: Path, stores):
     return files
 
 
-def main() -> None:
+def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--base", help="下载包 production 目录(不填自动查找)")
-    ap.add_argument("--bundle", default=r"D:\WF\wf-bundle\production")
-    ap.add_argument("--out", default=r"D:\WF\wf-decrypted")
+    ap.add_argument("--base", help="下载包 production 目录")
+    ap.add_argument("--bundle", help="可选 bundle production 目录")
+    ap.add_argument("--out", required=True, help="显式输出目录")
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--only-bundle", action="store_true")
     ap.add_argument("--no-skip", action="store_true", help="不跳过已存在文件(默认跳过=可续跑)")
-    args = ap.parse_args()
+    return ap
+
+
+def main(argv=None) -> None:
+    ap = build_parser()
+    args = ap.parse_args(argv)
+    if not args.only_bundle and not args.base:
+        ap.error("--base is required unless --only-bundle is used")
+    if args.only_bundle and not args.bundle:
+        ap.error("--bundle is required with --only-bundle")
 
     mod_dir = Path(__file__).resolve().parent
     out = Path(args.out); out.mkdir(parents=True, exist_ok=True)
@@ -210,10 +219,10 @@ def main() -> None:
 
     files = []
     if not args.only_bundle:
-        base = Path(args.base) if args.base else core.find_world_upload(mod_dir.parent).parent
+        base = Path(args.base)
         files += collect(base, DL_STORES)
-    bundle_root = Path(args.bundle)
-    if bundle_root.exists():
+    bundle_root = Path(args.bundle) if args.bundle else None
+    if bundle_root and bundle_root.exists():
         files += collect(bundle_root, BUNDLE_STORES)
     if args.limit:
         files = files[:args.limit]

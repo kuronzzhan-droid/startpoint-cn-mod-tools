@@ -38,11 +38,12 @@ class VoiceDumpPathTests(unittest.TestCase):
         ):
             self.assertEqual(Path(td).resolve(), wf_assets.resolve_voice_dump())
 
-    def test_resolve_voice_dump_preserves_legacy_default_when_unset(self) -> None:
-        with tempfile.TemporaryDirectory() as td, mock.patch.object(
-            wf_assets, "VOICE_DUMP", Path(td)
-        ), mock.patch.dict(os.environ, {}, clear=True):
-            self.assertEqual(Path(td).resolve(), wf_assets.resolve_voice_dump())
+    def test_resolve_voice_dump_defaults_to_checkout_local_directory_when_unset(self) -> None:
+        with mock.patch.dict(os.environ, {}, clear=True):
+            self.assertEqual(
+                (Path(wf_assets.__file__).resolve().parent / "voice-dump").resolve(),
+                wf_assets.resolve_voice_dump(),
+            )
 
     def test_resolve_voice_dump_rejects_invalid_explicit_configuration(self) -> None:
         with tempfile.TemporaryDirectory() as td:

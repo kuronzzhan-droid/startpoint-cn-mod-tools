@@ -30,7 +30,7 @@ from wf_character_requirements import (
 HERE = Path(__file__).resolve().parent
 # 全角色语音 datamine(537 角色,ally/battle/home 三分类 + voiceLines.json 台词文本)。
 # 实测游戏路径 = character/<code>/voice/<分类>/<名>.mp3,与 dump 一一对应(fire_dragon 18/18)。
-VOICE_DUMP = Path(r"D:\WF\角色语音")
+VOICE_DUMP = HERE / "voice-dump"
 
 
 def resolve_voice_dump() -> Path:

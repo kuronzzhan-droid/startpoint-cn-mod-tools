@@ -6,7 +6,7 @@ import os
 import re
 import shutil
 import subprocess
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path, PureWindowsPath
 from typing import Any
@@ -47,14 +47,25 @@ Runner = Callable[[list[str]], Any]
 _CRC_RE = re.compile(r"^[0-9A-Fa-f]{8}$")
 
 
-def find_7zip() -> Path | None:
-    candidates = [
-        Path(r"C:\Program Files\7-Zip\7z.exe"),
-        Path(r"C:\Program Files (x86)\7-Zip\7z.exe"),
-    ]
-    located = shutil.which("7z") or shutil.which("7z.exe")
+def find_7zip(environment: Mapping[str, str] = os.environ,
+              *, finder: Callable[[str], str | None] = shutil.which) -> Path | None:
+    raw = environment.get("WF_7ZIP")
+    if raw is not None:
+        configured = raw.strip().strip('"').strip()
+        if not configured:
+            raise ArchiveError("WF_7ZIP must be a non-empty path")
+        explicit = Path(configured).expanduser()
+        if not explicit.is_absolute() or not explicit.is_file():
+            raise ArchiveError("WF_7ZIP must be an existing absolute file")
+        return explicit.resolve()
+    candidates: list[Path] = []
+    located = finder("7z") or finder("7z.exe")
     if located:
         candidates.append(Path(located))
+    for key in ("ProgramFiles", "ProgramFiles(x86)"):
+        root = environment.get(key)
+        if root and Path(root).is_absolute():
+            candidates.append(Path(root) / "7-Zip" / "7z.exe")
     for candidate in candidates:
         if candidate.is_file():
             return candidate.resolve()
