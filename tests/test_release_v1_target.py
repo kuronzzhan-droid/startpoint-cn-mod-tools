@@ -12,7 +12,12 @@ from unittest.mock import patch
 from wf_release_v1.canonical import canonical_json_bytes
 from wf_release_v1.errors import ReleaseError
 from wf_release_v1.probe import RuntimeFacts, ServerBundleFacts, TargetProbe
-from wf_release_v1.target import ComponentRoots, LaunchSpec, ManagedTarget
+from wf_release_v1.target import (
+    ComponentRoots,
+    LaunchSpec,
+    ManagedTarget,
+    TargetCompatibility,
+)
 
 
 HEX_A = "a" * 64
@@ -26,10 +31,17 @@ def _payload(root: Path) -> dict[str, object]:
         "runtimePack": str(root / "runtime-pack"),
         "dataRoot": str(root / "data"),
         "stateRoot": str(root / "state"),
+        "cdnRoot": str(root / "active" / "cdn"),
+        "modesRoot": str(root / "active" / "modes"),
         "componentRoots": {
             "content": str(root / "components" / "content"),
             "server": str(root / "components" / "server"),
             "modes": str(root / "components" / "modes"),
+        },
+        "compatibility": {
+            "clientVersion": "1.4.54",
+            "resourceBaseline": "1.4.54",
+            "clientPatchProfile": False,
         },
         "serverUrl": "http://127.0.0.1:8001",
     }
@@ -53,13 +65,24 @@ class ManagedTargetTests(unittest.TestCase):
             self.assertEqual(root / "runtime-pack", target.runtime_pack)
             self.assertEqual(root / "data", target.data_root)
             self.assertEqual(root / "state", target.state_root)
+            self.assertEqual(root / "active" / "cdn", target.cdn_root)
+            self.assertEqual(root / "active" / "modes", target.modes_root)
             self.assertEqual(ComponentRoots(
                 content=root / "components" / "content",
                 server=root / "components" / "server",
                 modes=root / "components" / "modes",
             ), target.component_roots)
+            self.assertEqual(TargetCompatibility(
+                client_version="1.4.54",
+                resource_baseline="1.4.54",
+                client_patch_profile=False,
+            ), target.compatibility)
             self.assertEqual(
-                {"server_bundle", "runtime_pack", "data_root", "state_root", "component_roots", "server_url"},
+                {
+                    "server_bundle", "runtime_pack", "data_root", "state_root",
+                    "cdn_root", "modes_root", "component_roots", "compatibility",
+                    "server_url",
+                },
                 {field.name for field in fields(target)},
             )
             probe = target.target_probe(timeout_seconds=2.5)
@@ -155,6 +178,20 @@ class ManagedTargetTests(unittest.TestCase):
             assert isinstance(component_extra["componentRoots"], dict)
             component_extra["componentRoots"]["other"] = str(root / "other")
             cases.append(("component-extra", component_extra))
+            compatibility_extra = _payload(root)
+            assert isinstance(compatibility_extra["compatibility"], dict)
+            compatibility_extra["compatibility"]["other"] = True
+            cases.append(("compatibility-extra", compatibility_extra))
+            for label, key, value in (
+                ("bad-client-version", "clientVersion", "latest"),
+                ("bad-resource-baseline", "resourceBaseline", "01.4"),
+                ("bad-client-patch-profile", "clientPatchProfile", 0),
+            ):
+                payload = _payload(root)
+                compatibility = payload["compatibility"]
+                assert isinstance(compatibility, dict)
+                compatibility[key] = value
+                cases.append((label, payload))
             for label, payload in cases:
                 with self.subTest(label=label):
                     with self.assertRaises(ReleaseError) as raised:
@@ -177,6 +214,8 @@ class ManagedTargetTests(unittest.TestCase):
                 ("relative-runtime", "runtimePack", "relative/runtime"),
                 ("relative-data", "dataRoot", "relative/data"),
                 ("relative-state", "stateRoot", "relative/state"),
+                ("relative-cdn", "cdnRoot", "relative/cdn"),
+                ("relative-active-modes", "modesRoot", "relative/modes"),
                 ("relative-content", "componentRoots.content", "relative/content"),
                 ("relative-server", "componentRoots.server", "relative/server-root"),
                 ("relative-modes", "componentRoots.modes", "relative/modes"),
@@ -205,7 +244,7 @@ class ManagedTargetTests(unittest.TestCase):
                     if label in expected_messages:
                         self.assertEqual(expected_messages[label], raised.exception.message)
 
-    def test_rejects_every_state_and_component_root_overlap(self) -> None:
+    def test_rejects_every_managed_root_overlap(self) -> None:
         with TemporaryDirectory(prefix="wfrel-target-") as temporary:
             root = Path(temporary)
             cases = (
@@ -217,16 +256,27 @@ class ManagedTargetTests(unittest.TestCase):
                 ("server-inside-content", "content", "server", "child"),
                 ("modes-equals-content", "content", "modes", "same"),
                 ("modes-equals-server", "modes", "server", "same"),
+                ("cdn-equals-state", "stateRoot", "cdnRoot", "same"),
+                ("active-modes-inside-cdn", "cdnRoot", "modesRoot", "child"),
+                ("candidate-content-inside-cdn", "cdnRoot", "content", "child"),
+                ("data-inside-active-modes", "modesRoot", "dataRoot", "child"),
             )
             for label, parent_key, child_key, relation in cases:
                 with self.subTest(label=label):
                     payload = _payload(root)
                     components = payload["componentRoots"]
                     assert isinstance(components, dict)
-                    paths = {"stateRoot": payload["stateRoot"], **components}
+                    paths = {
+                        "dataRoot": payload["dataRoot"],
+                        "stateRoot": payload["stateRoot"],
+                        "cdnRoot": payload["cdnRoot"],
+                        "modesRoot": payload["modesRoot"],
+                        **components,
+                    }
                     parent = Path(paths[parent_key])
                     value = parent if relation == "same" else parent / "nested"
-                    if child_key == "stateRoot": payload[child_key] = str(value)
+                    if child_key in {"dataRoot", "stateRoot", "cdnRoot", "modesRoot"}:
+                        payload[child_key] = str(value)
                     else: components[child_key] = str(value)
                     with self.assertRaises(ReleaseError) as raised:
                         ManagedTarget.load(_write_target(root, payload))
@@ -239,7 +289,9 @@ class ManagedTargetTests(unittest.TestCase):
                 ManagedTarget(
                     server_bundle=Path.home(), runtime_pack=root / "runtime",
                     data_root=root / "data", state_root=root / "state",
+                    cdn_root=root / "cdn", modes_root=root / "active-modes",
                     component_roots=ComponentRoots(root / "content", root / "server-root", root / "modes"),
+                    compatibility=TargetCompatibility("1.4.54", "1.4.54", False),
                     server_url="http://127.0.0.1:8001",
                 )
             self.assertEqual("WFREL_REQUIRE_TARGET", raised.exception.code)

@@ -18,7 +18,7 @@ from tests.test_release_v1_verifier import _classic_store, _members, _replace_re
 from wf_release_v1.errors import ReleaseError
 from wf_release_v1.producer import BuildRequest, build_character_release
 from wf_release_v1.schema import parse_requirements
-from wf_release_v1.target import ComponentRoots, ManagedTarget
+from wf_release_v1.target import ComponentRoots, ManagedTarget, TargetCompatibility
 
 
 OPERATION_ID = "20260812T010203.000000Z-0123456789abcdef0123456789abcdef"
@@ -88,7 +88,8 @@ class MaterializeTests(unittest.TestCase):
             name: self.root / name
             for name in (
                 "server-bundle", "runtime-pack", "data", "state",
-                "content-components", "server-components", "mode-components",
+                "active-cdn", "active-modes", "content-components",
+                "server-components", "mode-components",
             )
         }
         for path in paths.values():
@@ -98,9 +99,12 @@ class MaterializeTests(unittest.TestCase):
             runtime_pack=paths["runtime-pack"],
             data_root=paths["data"],
             state_root=paths["state"],
+            cdn_root=paths["active-cdn"],
+            modes_root=paths["active-modes"],
             component_roots=ComponentRoots(
                 paths["content-components"], paths["server-components"], paths["mode-components"]
             ),
+            compatibility=TargetCompatibility("1.4.54", "1.4.54", False),
             server_url="http://127.0.0.1:8001",
         )
         self.source = self.root / "shared-name-must-not-be-authority.zip"
@@ -153,7 +157,7 @@ class MaterializeTests(unittest.TestCase):
     def test_content_candidate_contains_only_declared_overlay_and_never_scans_cn(self) -> None:
         import wf_release_v1.materialize as materialize_module
 
-        sentinel = self.target.component_roots.content / "cn" / "ten-gigabyte-sentinel.bin"
+        sentinel = self.target.cdn_root / "cn" / "ten-gigabyte-sentinel.bin"
         sentinel.parent.mkdir()
         sentinel.write_bytes(b"official-baseline-must-not-be-read")
         stored = self._import()

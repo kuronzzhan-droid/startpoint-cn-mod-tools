@@ -21,9 +21,14 @@ _MAX_TARGET_BYTES: Final = 64 * 1024
 _REPARSE_POINT_ATTRIBUTE: Final = 0x0400
 _TARGET_KEYS: Final = frozenset({
     "schemaVersion", "managedBy", "serverBundle", "runtimePack", "dataRoot",
-    "stateRoot", "componentRoots", "serverUrl",
+    "stateRoot", "cdnRoot", "modesRoot", "componentRoots", "compatibility",
+    "serverUrl",
 })
 _COMPONENT_KEYS: Final = frozenset({"content", "server", "modes"})
+_COMPATIBILITY_KEYS: Final = frozenset({
+    "clientVersion", "resourceBaseline", "clientPatchProfile",
+})
+_DOTTED_VERSION: Final = re.compile(r"(?:0|[1-9][0-9]*)(?:\.(?:0|[1-9][0-9]*))+")
 _TOOL_ROOT: Final = Path(__file__).resolve().parent.parent
 
 
@@ -122,10 +127,25 @@ def _paths_overlap(first: Path, second: Path) -> bool:
     return common == left or common == right
 
 
-def _validate_root_separation(state_root: Path, roots: ComponentRoots) -> None:
-    protected = (state_root, roots.content, roots.server, roots.modes)
+def _validate_root_separation(
+    data_root: Path,
+    state_root: Path,
+    cdn_root: Path,
+    modes_root: Path,
+    roots: ComponentRoots,
+) -> None:
+    protected = (
+        data_root, state_root, cdn_root, modes_root,
+        roots.content, roots.server, roots.modes,
+    )
     if any(_paths_overlap(left, right) for index, left in enumerate(protected) for right in protected[index + 1:]):
-        raise _invalid("state and component roots must not overlap")
+        raise _invalid("managed roots must not overlap")
+
+
+def _version(value: object, label: str) -> str:
+    if not isinstance(value, str) or _DOTTED_VERSION.fullmatch(value) is None:
+        raise _invalid(f"{label} must be a canonical dotted version")
+    return value
 
 
 def _base_origin(value: object) -> str:
@@ -175,6 +195,19 @@ class ComponentRoots:
 
 
 @dataclass(frozen=True)
+class TargetCompatibility:
+    client_version: str
+    resource_baseline: str
+    client_patch_profile: bool
+
+    def __post_init__(self) -> None:
+        _version(self.client_version, "compatibility.clientVersion")
+        _version(self.resource_baseline, "compatibility.resourceBaseline")
+        if type(self.client_patch_profile) is not bool:
+            raise _invalid("compatibility.clientPatchProfile must be a boolean")
+
+
+@dataclass(frozen=True)
 class LaunchSpec:
     executable: Path
     prepare_entry: Path
@@ -188,15 +221,21 @@ class ManagedTarget:
     runtime_pack: Path
     data_root: Path
     state_root: Path
+    cdn_root: Path
+    modes_root: Path
     component_roots: ComponentRoots
+    compatibility: TargetCompatibility
     server_url: str
 
     def __post_init__(self) -> None:
         if not isinstance(self.component_roots, ComponentRoots):
             raise _invalid("componentRoots is invalid")
+        if not isinstance(self.compatibility, TargetCompatibility):
+            raise _invalid("compatibility is invalid")
         paths = (
             ("serverBundle", self.server_bundle), ("runtimePack", self.runtime_pack),
             ("dataRoot", self.data_root), ("stateRoot", self.state_root),
+            ("cdnRoot", self.cdn_root), ("modesRoot", self.modes_root),
             ("componentRoots.content", self.component_roots.content),
             ("componentRoots.server", self.component_roots.server),
             ("componentRoots.modes", self.component_roots.modes),
@@ -204,7 +243,13 @@ class ManagedTarget:
         for label, value in paths:
             if not isinstance(value, Path) or _absolute_path(os.fspath(value), label) != value:
                 raise _invalid(f"{label} must be an absolute canonical path")
-        _validate_root_separation(self.state_root, self.component_roots)
+        _validate_root_separation(
+            self.data_root,
+            self.state_root,
+            self.cdn_root,
+            self.modes_root,
+            self.component_roots,
+        )
         if _base_origin(self.server_url) != self.server_url:
             raise _invalid("serverUrl must be a canonical loopback base origin")
 
@@ -221,13 +266,28 @@ class ManagedTarget:
             server=_absolute_path(components["server"], "componentRoots.server"),
             modes=_absolute_path(components["modes"], "componentRoots.modes"),
         )
+        compatibility_item = _exact_object(
+            item["compatibility"], _COMPATIBILITY_KEYS, "compatibility"
+        )
+        compatibility = TargetCompatibility(
+            client_version=_version(
+                compatibility_item["clientVersion"], "compatibility.clientVersion"
+            ),
+            resource_baseline=_version(
+                compatibility_item["resourceBaseline"], "compatibility.resourceBaseline"
+            ),
+            client_patch_profile=compatibility_item["clientPatchProfile"],  # type: ignore[arg-type]
+        )
         state_root = _absolute_path(item["stateRoot"], "stateRoot")
         return cls(
             server_bundle=_absolute_path(item["serverBundle"], "serverBundle"),
             runtime_pack=_absolute_path(item["runtimePack"], "runtimePack"),
             data_root=_absolute_path(item["dataRoot"], "dataRoot"),
             state_root=state_root,
+            cdn_root=_absolute_path(item["cdnRoot"], "cdnRoot"),
+            modes_root=_absolute_path(item["modesRoot"], "modesRoot"),
             component_roots=roots,
+            compatibility=compatibility,
             server_url=_base_origin(item["serverUrl"]),
         )
 
