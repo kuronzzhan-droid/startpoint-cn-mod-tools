@@ -212,6 +212,70 @@ class OperationIdAndReceiptTests(unittest.TestCase):
             self.assertEqual(old, path.read_bytes())
             self.assertEqual([], list((root / "receipts").glob(".*.tmp")))
 
+    def test_receipt_rejects_temp_and_lock_identity_changes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "receipts" / f"{OPERATION_ID}.json"
+            write_phase_receipt(root, _receipt())
+            old = path.read_bytes()
+            updated = _receipt(phase="VERIFIED", updated_at=UPDATED)
+            real_same_root = receipts_module._same_root
+            root_checks = 0
+
+            def replace_payload_temp(checked_root: Path, expected: tuple[int, int]) -> None:
+                nonlocal root_checks
+                root_checks += 1
+                real_same_root(checked_root, expected)
+                if root_checks == 3:
+                    temp = next((root / "receipts").glob(".*.tmp"))
+                    temp.unlink()
+                    temp.write_bytes(b"not the synchronized receipt")
+
+            with mock.patch("wf_release_v1.receipts._same_root", side_effect=replace_payload_temp):
+                with self.assertRaises(ReleaseError) as caught:
+                    write_phase_receipt(root, updated)
+            self.assertEqual("WFREL_STATE_INVALID", caught.exception.code)
+            self.assertEqual(old, path.read_bytes())
+            self.assertEqual(
+                [b"not the synchronized receipt"],
+                [item.read_bytes() for item in (root / "receipts").glob(".*.tmp")],
+            )
+
+            real_atomic = receipts_module._atomic_write
+
+            def replace_lock(*args: object) -> None:
+                real_atomic(*args)  # type: ignore[arg-type]
+                lock = root / ".wf-release-v1.lock"
+                lock.unlink()
+                lock.write_bytes(b"unknown lock owner")
+
+            with mock.patch("wf_release_v1.receipts._atomic_write", side_effect=replace_lock):
+                with self.assertRaises(ReleaseError) as caught:
+                    write_phase_receipt(root, updated)
+            self.assertEqual("WFREL_STATE_INVALID", caught.exception.code)
+            self.assertEqual(b"unknown lock owner", (root / ".wf-release-v1.lock").read_bytes())
+
+    def test_receipt_rejects_oversized_or_regressive_updates(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with self.assertRaises(ReleaseError) as caught:
+                write_phase_receipt(root, _receipt(error_code="WFREL_" + "A" * (256 * 1024)))
+            self.assertEqual("WFREL_RECEIPT_INVALID", caught.exception.code)
+            self.assertEqual([], list(root.iterdir()))
+
+            write_phase_receipt(root, _receipt())
+            completed = _receipt(phase="VERIFIED", outcome="succeeded", updated_at=UPDATED)
+            write_phase_receipt(root, completed)
+            path = root / "receipts" / f"{OPERATION_ID}.json"
+            old = path.read_bytes()
+            with self.assertRaises(ReleaseError) as caught:
+                write_phase_receipt(
+                    root,
+                    _receipt(updated_at=UPDATED + timedelta(seconds=1)),
+                )
+            self.assertEqual("WFREL_RECEIPT_CONFLICT", caught.exception.code)
+            self.assertEqual(old, path.read_bytes())
+
     def test_existing_lock_is_never_guessed_stale_or_deleted(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -266,6 +330,15 @@ class ActiveStatePersistenceTests(unittest.TestCase):
                 _state(RELEASE_A),
                 releases=(ActiveRelease(RELEASE_A, object()),),  # type: ignore[arg-type]
             ),
+            replace(
+                _state(RELEASE_A),
+                releases=(
+                    ActiveRelease(
+                        RELEASE_A,
+                        OwnershipManifest(1, 7, (), ()),  # type: ignore[arg-type]
+                    ),
+                ),
+            ),
             replace(_state(), known_release_ids=[]),  # type: ignore[arg-type]
         )
         for state in malformed:
@@ -275,6 +348,27 @@ class ActiveStatePersistenceTests(unittest.TestCase):
                     commit_active_state(root, previous=_state(), active=state)
                 self.assertEqual("WFREL_STATE_INVALID", caught.exception.code)
                 self.assertEqual([], list(root.iterdir()))
+
+    def test_commit_rejects_state_larger_than_the_reader_limit(self) -> None:
+        ownership = OwnershipManifest(
+            1,
+            ("character:310099",),
+            ("character:310099",),
+            ("character/" + "a" * (256 * 1024),),
+        )
+        oversized = ActiveState(
+            "1.4.54",
+            "1.4.54",
+            False,
+            (ActiveRelease(RELEASE_A, ownership),),
+            (RELEASE_A,),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with self.assertRaises(ReleaseError) as caught:
+                commit_active_state(root, previous=_state(), active=oversized)
+            self.assertEqual("WFREL_STATE_INVALID", caught.exception.code)
+            self.assertEqual([], list(root.iterdir()))
 
     def test_commit_and_load_preserve_exact_previous_and_active_state(self) -> None:
         empty = _state()

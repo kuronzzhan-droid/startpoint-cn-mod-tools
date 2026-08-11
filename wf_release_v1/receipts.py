@@ -17,7 +17,6 @@ from .compatibility import ActiveRelease, ActiveState
 from .errors import ReleaseError
 from .schema import OwnershipManifest, parse_ownership
 
-
 _MAX_DOCUMENT_BYTES: Final = 256 * 1024
 _LOCK_NAME: Final = ".wf-release-v1.lock"
 _REPARSE_POINT_ATTRIBUTE: Final = 0x0400
@@ -25,13 +24,10 @@ _RELEASE_ID: Final = re.compile(r"sha256:[0-9a-f]{64}")
 _OPERATION_ID: Final = re.compile(r"[0-9]{8}T[0-9]{6}\.[0-9]{6}Z-[0-9a-f]{32}")
 _ERROR_CODE: Final = re.compile(r"WFREL_[A-Z0-9_]+")
 _SAFE_TEXT: Final = re.compile(r"[A-Za-z0-9][A-Za-z0-9._+:-]{0,127}")
-_PHASES: Final = frozenset({
-    "CREATED", "VERIFIED", "PROBED", "STOPPED", "MATERIALIZED", "SWITCHED",
-    "STARTED", "HEALTH_READY", "CAPABILITIES_ACCEPTED", "COMMITTED",
-})
-_OUTCOMES: Final = frozenset({
-    "in_progress", "succeeded", "failed", "recovered", "recovery_failed",
-})
+_PHASE_ORDER: Final = ("CREATED", "VERIFIED", "PROBED", "STOPPED", "MATERIALIZED",
+                       "SWITCHED", "STARTED", "HEALTH_READY", "CAPABILITIES_ACCEPTED", "COMMITTED")
+_PHASES: Final = frozenset(_PHASE_ORDER)
+_OUTCOMES: Final = frozenset({"in_progress", "succeeded", "failed", "recovered", "recovery_failed"})
 _RECOVERY_OUTCOMES: Final = frozenset({None, "recovered", "failed"})
 _STATE_KEYS: Final = frozenset({
     "schemaVersion", "clientVersion", "resourceBaseline", "clientPatchProfile",
@@ -42,7 +38,6 @@ _RECEIPT_KEYS: Final = frozenset({
     "updatedAt", "beforeReleaseIds", "candidateReleaseIds", "errorCode",
     "recoveryOutcome",
 })
-
 
 def _invalid(message: str) -> ReleaseError:
     return ReleaseError("WFREL_RECEIPT_INVALID", message)
@@ -69,7 +64,6 @@ def _wire_time(value: datetime) -> str:
         raise _invalid("receipt time must be timezone-aware")
     return value.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
-
 def _parse_wire_time(value: object) -> datetime:
     if not isinstance(value, str):
         raise _invalid("receipt time is invalid")
@@ -81,14 +75,12 @@ def _parse_wire_time(value: object) -> datetime:
         raise _invalid("receipt time is not canonical")
     return parsed.replace(tzinfo=timezone.utc)
 
-
 def new_operation_id(now: datetime, nonce: bytes) -> str:
     """Derive one deterministic, path-safe operation identity."""
     if not isinstance(nonce, bytes) or len(nonce) != 16:
         raise _invalid("operation nonce must contain exactly 16 bytes")
     timestamp = _wire_time(now).replace("-", "").replace(":", "")
     return f"{timestamp}-{nonce.hex()}"
-
 
 @dataclass(frozen=True)
 class OperationReceipt:
@@ -139,7 +131,6 @@ class OperationReceipt:
             "recoveryOutcome": self.recovery_outcome,
         }
 
-
 def _receipt_from_wire(value: object) -> OperationReceipt:
     if not isinstance(value, dict) or set(value) != _RECEIPT_KEYS:
         raise _invalid("receipt keys do not match the contract")
@@ -161,7 +152,6 @@ def _receipt_from_wire(value: object) -> OperationReceipt:
         recovery_outcome=value["recoveryOutcome"],  # type: ignore[arg-type]
     )
 
-
 def _snapshot(path: Path) -> tuple[int, int, int, int, bool, bool]:
     return _stat_identity(path.lstat())
 
@@ -170,7 +160,6 @@ def _stat_identity(item: os.stat_result) -> tuple[int, int, int, int, bool, bool
         item.st_dev, item.st_ino, item.st_size, item.st_mtime_ns, stat.S_ISREG(item.st_mode),
         bool(getattr(item, "st_file_attributes", 0) & _REPARSE_POINT_ATTRIBUTE),
     )
-
 
 def _directory_snapshot(path: Path) -> tuple[int, int]:
     item = path.lstat()
@@ -192,7 +181,6 @@ def _root_snapshot(root: Path) -> tuple[int, int]:
         return _directory_snapshot(root)
     except (FileNotFoundError, OSError):
         raise _state_invalid("state root is unavailable") from None
-
 
 def _same_root(root: Path, expected: tuple[int, int]) -> None:
     try:
@@ -216,7 +204,6 @@ def _ensure_child_directory(root: Path, expected: tuple[int, int], name: str) ->
     except (FileNotFoundError, OSError, ReleaseError):
         raise _state_invalid("state child must be a non-reparse directory") from None
     return child
-
 
 def _sync_directory(path: Path) -> None:
     if os.name != "nt":
@@ -247,7 +234,6 @@ def _sync_directory(path: Path) -> None:
     finally:
         kernel32.CloseHandle(handle)
 
-
 def _write_exact(writer: BinaryIO, raw: bytes) -> None:
     if writer.write(raw) != len(raw):
         raise OSError("state write was incomplete")
@@ -256,7 +242,6 @@ def _open_exclusive(path: Path) -> int:
     flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0)
     flags |= getattr(os, "O_NOFOLLOW", 0)
     return os.open(path, flags, 0o600)
-
 
 @contextmanager
 def _state_lock(root: Path) -> Iterator[tuple[int, int]]:
@@ -296,13 +281,19 @@ def _state_lock(root: Path) -> Iterator[tuple[int, int]]:
         raise
     finally:
         try:
-            if lock_snapshot is not None and _snapshot(lock_path) == lock_snapshot:
+            current = _snapshot(lock_path)
+            if lock_snapshot is None or current != lock_snapshot:
+                if not active_error:
+                    raise _state_invalid("state lock identity changed during the operation")
+            else:
                 lock_path.unlink()
                 _sync_directory(root)
+        except ReleaseError:
+            if not active_error:
+                raise
         except OSError:
             if not active_error:
                 raise ReleaseError("WFREL_STATE_IO", "state lock could not be released") from None
-
 
 def _atomic_write(
     root: Path,
@@ -312,6 +303,7 @@ def _atomic_write(
     raw: bytes,
 ) -> None:
     temp = parent / f".{destination.name}.{secrets.token_hex(16)}.tmp"
+    temp_identity: tuple[int, int, int, int, bool, bool] | None = None
     try:
         try:
             existing = _snapshot(destination)
@@ -321,13 +313,20 @@ def _atomic_write(
             raise _state_invalid("state destination must be a regular file")
         descriptor = _open_exclusive(temp)
         with os.fdopen(descriptor, "wb", buffering=0) as writer:
-            _write_exact(writer, raw)
-            writer.flush()
-            os.fsync(writer.fileno())
+            try:
+                _write_exact(writer, raw)
+                writer.flush()
+                os.fsync(writer.fileno())
+            except OSError:
+                temp_identity = _stat_identity(os.fstat(writer.fileno()))
+                raise
+            temp_identity = _stat_identity(os.fstat(writer.fileno()))
         _same_root(root, expected_root)
+        if temp_identity[2] != len(raw) or _snapshot(temp) != temp_identity:
+            raise _state_invalid("state temporary file identity changed")
         _directory_snapshot(parent)
         os.replace(temp, destination)
-        if not _snapshot(destination)[4] or _snapshot(destination)[5]:
+        if _snapshot(destination) != temp_identity:
             raise _state_invalid("state destination identity is invalid")
         _sync_directory(parent)
     except ReleaseError:
@@ -336,11 +335,10 @@ def _atomic_write(
         raise ReleaseError("WFREL_STATE_IO", "state document could not be committed") from None
     finally:
         try:
-            if temp.exists() and not temp.is_symlink():
+            if temp_identity is not None and _snapshot(temp) == temp_identity:
                 temp.unlink()
-        except OSError:
+        except (FileNotFoundError, OSError):
             pass
-
 
 def _read_canonical(path: Path, *, kind: str) -> object:
     try:
@@ -370,7 +368,6 @@ def _read_canonical(path: Path, *, kind: str) -> object:
     except (FileNotFoundError, OSError):
         raise _state_invalid(f"{kind} document is unavailable") from None
 
-
 def _state_to_wire(state: ActiveState) -> dict[str, object]:
     if not isinstance(state, ActiveState):
         raise _state_invalid("active state type is invalid")
@@ -392,11 +389,11 @@ def _state_to_wire(state: ActiveState) -> dict[str, object]:
         raise _state_invalid("active releases must be known")
     releases: list[dict[str, object]] = []
     for item in state.releases:
-        ownership = item.ownership.to_wire()
         try:
+            ownership = item.ownership.to_wire()
             if parse_ownership(ownership) != item.ownership:
                 raise ValueError
-        except (ReleaseError, ValueError):
+        except (AttributeError, ReleaseError, TypeError, ValueError):
             raise _state_invalid("active ownership is invalid") from None
         releases.append({"releaseId": item.release_id, "ownership": ownership})
     return {
@@ -405,7 +402,6 @@ def _state_to_wire(state: ActiveState) -> dict[str, object]:
         "clientPatchProfile": state.client_patch_profile, "releases": releases,
         "knownReleaseIds": list(known_ids),
     }
-
 
 def _state_from_wire(value: object) -> ActiveState:
     if not isinstance(value, dict) or set(value) != _STATE_KEYS:
@@ -438,12 +434,10 @@ def _state_from_wire(value: object) -> ActiveState:
         raise _state_invalid("active state values are invalid")
     return state
 
-
 def load_active_state(root: Path) -> ActiveState:
     """Load one strict canonical active state without guessing defaults."""
     _root_snapshot(root)
     return _state_from_wire(_read_canonical(root / "active.json", kind="active state"))
-
 
 def _validate_receipt_update(old: OperationReceipt, new: OperationReceipt) -> None:
     if (
@@ -453,15 +447,20 @@ def _validate_receipt_update(old: OperationReceipt, new: OperationReceipt) -> No
         or old.before_release_ids != new.before_release_ids
         or old.candidate_release_ids != new.candidate_release_ids
         or new.updated_at < old.updated_at
+        or _PHASE_ORDER.index(new.phase) < _PHASE_ORDER.index(old.phase)
+        or (old.outcome != "in_progress" and new.outcome == "in_progress")
+        or (old.outcome in {"succeeded", "recovered", "recovery_failed"} and new.outcome != old.outcome)
+        or (old.outcome == "failed" and new.outcome not in {"failed", "recovered", "recovery_failed"})
     ):
         raise ReleaseError("WFREL_RECEIPT_CONFLICT", "operation identity was reused")
-
 
 def write_phase_receipt(root: Path, receipt: OperationReceipt) -> None:
     """Atomically create or advance one operation receipt."""
     if not isinstance(receipt, OperationReceipt):
         raise _invalid("receipt type is invalid")
     raw = canonical_json_bytes(receipt.to_wire())
+    if len(raw) > _MAX_DOCUMENT_BYTES:
+        raise _invalid("receipt document exceeds its size limit")
     with _state_lock(root) as expected:
         receipts = _ensure_child_directory(root, expected, "receipts")
         destination = receipts / f"{receipt.operation_id}.json"
@@ -469,7 +468,6 @@ def write_phase_receipt(root: Path, receipt: OperationReceipt) -> None:
             old = _receipt_from_wire(_read_canonical(destination, kind="operation receipt"))
             _validate_receipt_update(old, receipt)
         _atomic_write(root, expected, receipts, destination, raw)
-
 
 def commit_active_state(
     root: Path,
@@ -480,6 +478,8 @@ def commit_active_state(
     """Persist previous first and make active.json the final commit point."""
     previous_raw = canonical_json_bytes(_state_to_wire(previous))
     active_raw = canonical_json_bytes(_state_to_wire(active))
+    if max(len(previous_raw), len(active_raw)) > _MAX_DOCUMENT_BYTES:
+        raise _state_invalid("active state exceeds its size limit")
     with _state_lock(root) as expected:
         active_path = root / "active.json"
         previous_path = root / "previous.json"
@@ -493,7 +493,6 @@ def commit_active_state(
             _state_from_wire(_read_canonical(previous_path, kind="previous state"))
         _atomic_write(root, expected, root, previous_path, previous_raw)
         _atomic_write(root, expected, root, active_path, active_raw)
-
 
 __all__ = ["OperationReceipt", "commit_active_state", "load_active_state",
            "new_operation_id", "write_phase_receipt"]
