@@ -7,6 +7,7 @@ import hashlib
 import os
 from pathlib import Path, PurePosixPath
 import stat
+import re
 from typing import Final
 
 from ._receipt_contract import _OPERATION_ID
@@ -21,6 +22,8 @@ from .probe import TargetFacts
 
 _MAX_POINTER_BYTES: Final = 256 * 1024
 _REPARSE_POINT: Final = 0x0400
+_DOTTED_VERSION: Final = re.compile(r"(?:0|[1-9][0-9]*)(?:\.(?:0|[1-9][0-9]*))+")
+_RELEASE_ID: Final = re.compile(r"sha256:[0-9a-f]{64}")
 
 
 def _error(message: str, *, code: str = "WFREL_TRANSACTION_FAILED") -> ReleaseError:
@@ -237,6 +240,56 @@ def load_baseline_facts(switch: ContentSwitch) -> TargetFacts:
     return target_facts_from_wire(load_json_strict_bytes(raw, label="baselineTargetFacts"))
 
 
+def load_content_switch(
+    target: ManagedTarget,
+    operation_id: str,
+    release_id: str,
+) -> ContentSwitch:
+    """Reconstruct one retained content switch without directory discovery."""
+    if (
+        not isinstance(target, ManagedTarget)
+        or not isinstance(operation_id, str)
+        or _OPERATION_ID.fullmatch(operation_id) is None
+        or not isinstance(release_id, str)
+        or _RELEASE_ID.fullmatch(release_id) is None
+    ):
+        raise _error("retained content switch identity is invalid")
+    staging_root = target.state_root / "staging" / operation_id
+    _directory(staging_root)
+    raw_version = _stable_file(staging_root / "content-target-version.txt")
+    try:
+        version = raw_version.decode("ascii").removesuffix("\n")
+    except UnicodeDecodeError:
+        raise _error("retained content target version is invalid") from None
+    if raw_version != version.encode("ascii") + b"\n" or _DOTTED_VERSION.fullmatch(version) is None:
+        raise _error("retained content target version is invalid")
+    release_root = target.component_roots.content / release_id.replace(":", "-", 1)
+    candidate_parent = release_root / "patches"
+    active_parent = target.cdn_root / "patches"
+    candidate_version = candidate_parent / version
+    active_version = active_parent / version
+    candidate_exists = candidate_version.exists() or candidate_version.is_symlink()
+    active_exists = active_version.exists() or active_version.is_symlink()
+    if candidate_exists == active_exists:
+        raise _error("retained content switch has an ambiguous component state")
+    if candidate_exists:
+        _directory(candidate_version)
+    else:
+        _directory(active_version)
+    pointer = target.data_root / "state" / "content" / "current.json"
+    return ContentSwitch(
+        operation_id,
+        version,
+        candidate_version,
+        active_version,
+        staging_root,
+        pointer,
+        _directory(candidate_parent),
+        _directory(active_parent),
+        _directory(pointer.parent),
+    )
+
+
 def apply_content_switch(switch: ContentSwitch) -> None:
     """Perform only the atomic same-volume directory rename."""
     if not isinstance(switch, ContentSwitch):
@@ -267,8 +320,12 @@ def restore_content_switch(switch: ContentSwitch) -> None:
     """Restore the candidate directory and exact previous current pointer."""
     if not isinstance(switch, ContentSwitch):
         raise _error("content switch is invalid")
-    if switch.candidate_version_root.exists() or switch.candidate_version_root.is_symlink():
-        raise _error("candidate recovery destination is occupied")
+    candidate_exists = (
+        switch.candidate_version_root.exists() or switch.candidate_version_root.is_symlink()
+    )
+    active_exists = switch.active_version_root.exists() or switch.active_version_root.is_symlink()
+    if candidate_exists == active_exists:
+        raise _error("content recovery state is ambiguous")
     if (
         _directory(switch.candidate_version_root.parent)
         != switch.candidate_parent_identity
@@ -276,13 +333,16 @@ def restore_content_switch(switch: ContentSwitch) -> None:
         != switch.active_parent_identity
     ):
         raise _error("content recovery parent changed")
-    _directory(switch.active_version_root)
-    try:
-        os.rename(switch.active_version_root, switch.candidate_version_root)
-    except OSError:
-        raise _error("content component could not be restored") from None
-    _sync_directory(switch.candidate_version_root.parent)
-    _sync_directory(switch.active_version_root.parent)
+    if active_exists:
+        _directory(switch.active_version_root)
+        try:
+            os.rename(switch.active_version_root, switch.candidate_version_root)
+        except OSError:
+            raise _error("content component could not be restored") from None
+        _sync_directory(switch.candidate_version_root.parent)
+        _sync_directory(switch.active_version_root.parent)
+    else:
+        _directory(switch.candidate_version_root)
 
     saved = switch.staging_root / "content-current.json"
     digest = switch.staging_root / "content-current.sha256"

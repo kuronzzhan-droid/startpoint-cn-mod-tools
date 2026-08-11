@@ -12,6 +12,7 @@ import stat
 from typing import BinaryIO, Final, Iterator
 
 from ._receipt_contract import (
+    _OPERATION_ID,
     OperationReceipt,
     invalid_receipt as _invalid,
     invalid_state as _state_invalid,
@@ -357,6 +358,52 @@ def load_active_state(root: Path) -> ActiveState:
     _root_snapshot(root)
     return _state_from_wire(_read_canonical(root / "active.json", kind="active state"))
 
+def load_previous_state(root: Path) -> ActiveState:
+    """Load the exact previous commit point without falling back to active."""
+    _root_snapshot(root)
+    return _state_from_wire(_read_canonical(root / "previous.json", kind="previous state"))
+
+def load_operation_receipt(root: Path, operation_id: str) -> OperationReceipt:
+    """Load one exact operation receipt by its canonical identity."""
+    if not isinstance(operation_id, str) or _OPERATION_ID.fullmatch(operation_id) is None:
+        raise _invalid("operation identity is invalid")
+    _root_snapshot(root)
+    return _receipt_from_wire(_read_canonical(
+        root / "receipts" / f"{operation_id}.json", kind="operation receipt"
+    ))
+
+def list_operation_receipts(root: Path) -> tuple[OperationReceipt, ...]:
+    """Read the complete strict receipt directory in canonical identity order."""
+    _root_snapshot(root)
+    directory = root / "receipts"
+    _directory_snapshot(directory)
+    try:
+        entries = tuple(os.scandir(directory))
+    except OSError:
+        raise _invalid("operation receipt directory is unavailable") from None
+    operation_ids: list[str] = []
+    for entry in entries:
+        name = entry.name
+        operation_id = name.removesuffix(".json")
+        try:
+            item = entry.stat(follow_symlinks=False)
+        except OSError:
+            raise _invalid("operation receipt is unavailable") from None
+        if (
+            name != f"{operation_id}.json"
+            or _OPERATION_ID.fullmatch(operation_id) is None
+            or not stat.S_ISREG(item.st_mode)
+            or bool(getattr(item, "st_file_attributes", 0) & _REPARSE_POINT_ATTRIBUTE)
+        ):
+            raise _invalid("operation receipt directory contains an invalid member")
+        operation_ids.append(operation_id)
+    if len(operation_ids) != len(set(operation_ids)):
+        raise _invalid("operation receipt identities are not unique")
+    return tuple(
+        load_operation_receipt(root, operation_id)
+        for operation_id in sorted(operation_ids)
+    )
+
 def write_phase_receipt(root: Path, receipt: OperationReceipt) -> None:
     """Atomically create or advance one operation receipt."""
     if not isinstance(receipt, OperationReceipt):
@@ -397,5 +444,8 @@ def commit_active_state(
         _atomic_write(root, expected, root, previous_path, previous_raw)
         _atomic_write(root, expected, root, active_path, active_raw)
 
-__all__ = ["OperationReceipt", "commit_active_state", "load_active_state",
-           "new_operation_id", "write_phase_receipt"]
+__all__ = [
+    "OperationReceipt", "commit_active_state", "list_operation_receipts",
+    "load_active_state", "load_operation_receipt", "load_previous_state",
+    "new_operation_id", "write_phase_receipt",
+]
