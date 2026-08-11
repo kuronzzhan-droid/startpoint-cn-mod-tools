@@ -219,27 +219,20 @@ class OperationIdAndReceiptTests(unittest.TestCase):
             write_phase_receipt(root, _receipt())
             old = path.read_bytes()
             updated = _receipt(phase="VERIFIED", updated_at=UPDATED)
-            real_same_root = receipts_module._same_root
-            root_checks = 0
+            real_replace = os.replace
 
-            def replace_payload_temp(checked_root: Path, expected: tuple[int, int]) -> None:
-                nonlocal root_checks
-                root_checks += 1
-                real_same_root(checked_root, expected)
-                if root_checks == 3:
-                    temp = next((root / "receipts").glob(".*.tmp"))
-                    temp.unlink()
-                    temp.write_bytes(b"not the synchronized receipt")
+            def replace_payload_temp(source: Path, destination: Path) -> None:
+                if source.suffix == ".tmp":
+                    source.unlink()
+                    source.write_bytes(b"not the synchronized receipt")
+                real_replace(source, destination)
 
-            with mock.patch("wf_release_v1.receipts._same_root", side_effect=replace_payload_temp):
+            with mock.patch("wf_release_v1.receipts.os.replace", side_effect=replace_payload_temp):
                 with self.assertRaises(ReleaseError) as caught:
                     write_phase_receipt(root, updated)
             self.assertEqual("WFREL_STATE_INVALID", caught.exception.code)
             self.assertEqual(old, path.read_bytes())
-            self.assertEqual(
-                [b"not the synchronized receipt"],
-                [item.read_bytes() for item in (root / "receipts").glob(".*.tmp")],
-            )
+            self.assertEqual([], list((root / "receipts").glob(".*")))
 
             real_atomic = receipts_module._atomic_write
 
@@ -448,26 +441,30 @@ class ActiveStatePersistenceTests(unittest.TestCase):
         empty = _state()
         first = _state(RELEASE_A)
         second = _state(RELEASE_A, RELEASE_B)
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            commit_active_state(root, previous=empty, active=first)
-            old_active = (root / "active.json").read_bytes()
-            real_replace = os.replace
-            calls = 0
+        for mode, code in (("failure", "WFREL_STATE_IO"), ("drift", "WFREL_STATE_INVALID")):
+            with self.subTest(mode=mode), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                commit_active_state(root, previous=empty, active=first)
+                old_active = (root / "active.json").read_bytes()
+                real_replace = os.replace
+                calls = 0
 
-            def fail_active(source: object, target: object) -> None:
-                nonlocal calls
-                calls += 1
-                if calls == 2:
-                    raise OSError("injected active replace failure")
-                real_replace(source, target)
+                def fail_active(source: Path, target: Path) -> None:
+                    nonlocal calls
+                    calls += 1
+                    if calls == 2 and mode == "failure":
+                        raise OSError("injected active replace failure")
+                    if calls == 2:
+                        source.unlink()
+                        source.write_bytes(b"not the synchronized active state")
+                    real_replace(source, target)
 
-            with mock.patch("wf_release_v1.receipts.os.replace", side_effect=fail_active):
-                with self.assertRaises(ReleaseError) as caught:
-                    commit_active_state(root, previous=first, active=second)
-            self.assertEqual("WFREL_STATE_IO", caught.exception.code)
-            self.assertEqual(old_active, (root / "active.json").read_bytes())
-            self.assertEqual(first, load_active_state(root))
+                with mock.patch("wf_release_v1.receipts.os.replace", side_effect=fail_active):
+                    with self.assertRaises(ReleaseError) as caught:
+                        commit_active_state(root, previous=first, active=second)
+                self.assertEqual(code, caught.exception.code)
+                self.assertEqual(old_active, (root / "active.json").read_bytes())
+                self.assertEqual(first, load_active_state(root))
 
     def test_symlink_state_root_and_active_leaf_are_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

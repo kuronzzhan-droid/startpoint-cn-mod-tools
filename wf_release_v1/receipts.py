@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
-from dataclasses import dataclass
 from datetime import datetime, timezone
 import os
 from pathlib import Path
@@ -12,6 +11,17 @@ import secrets
 import stat
 from typing import BinaryIO, Final, Iterator
 
+from ._receipt_contract import (
+    OperationReceipt,
+    invalid_receipt as _invalid,
+    invalid_state as _state_invalid,
+    new_operation_id,
+    receipt_from_wire as _receipt_from_wire,
+    validate_receipt_update as _validate_receipt_update,
+    validate_release_id as _validate_release_id,
+    validate_release_ids as _validate_release_ids,
+    _wire_time,
+)
 from .canonical import canonical_json_bytes, load_json_strict_bytes
 from .compatibility import ActiveRelease, ActiveState
 from .errors import ReleaseError
@@ -20,137 +30,11 @@ from .schema import OwnershipManifest, parse_ownership
 _MAX_DOCUMENT_BYTES: Final = 256 * 1024
 _LOCK_NAME: Final = ".wf-release-v1.lock"
 _REPARSE_POINT_ATTRIBUTE: Final = 0x0400
-_RELEASE_ID: Final = re.compile(r"sha256:[0-9a-f]{64}")
-_OPERATION_ID: Final = re.compile(r"[0-9]{8}T[0-9]{6}\.[0-9]{6}Z-[0-9a-f]{32}")
-_ERROR_CODE: Final = re.compile(r"WFREL_[A-Z0-9_]+")
 _SAFE_TEXT: Final = re.compile(r"[A-Za-z0-9][A-Za-z0-9._+:-]{0,127}")
-_PHASE_ORDER: Final = ("CREATED", "VERIFIED", "PROBED", "STOPPED", "MATERIALIZED",
-                       "SWITCHED", "STARTED", "HEALTH_READY", "CAPABILITIES_ACCEPTED", "COMMITTED")
-_PHASES: Final = frozenset(_PHASE_ORDER)
-_OUTCOMES: Final = frozenset({"in_progress", "succeeded", "failed", "recovered", "recovery_failed"})
-_RECOVERY_OUTCOMES: Final = frozenset({None, "recovered", "failed"})
 _STATE_KEYS: Final = frozenset({
     "schemaVersion", "clientVersion", "resourceBaseline", "clientPatchProfile",
     "releases", "knownReleaseIds",
 })
-_RECEIPT_KEYS: Final = frozenset({
-    "schemaVersion", "operationId", "releaseId", "phase", "outcome", "startedAt",
-    "updatedAt", "beforeReleaseIds", "candidateReleaseIds", "errorCode",
-    "recoveryOutcome",
-})
-
-def _invalid(message: str) -> ReleaseError:
-    return ReleaseError("WFREL_RECEIPT_INVALID", message)
-
-def _state_invalid(message: str) -> ReleaseError:
-    return ReleaseError("WFREL_STATE_INVALID", message)
-
-def _validate_release_id(value: object, *, state: bool = False) -> str:
-    if not isinstance(value, str) or _RELEASE_ID.fullmatch(value) is None:
-        raise (_state_invalid("release identity is invalid") if state else _invalid("release identity is invalid"))
-    return value
-
-def _validate_release_ids(value: object, *, state: bool = False) -> tuple[str, ...]:
-    error = _state_invalid if state else _invalid
-    if not isinstance(value, tuple):
-        raise error("release identities must be a tuple")
-    parsed = tuple(_validate_release_id(item, state=state) for item in value)
-    if tuple(sorted(set(parsed))) != parsed:
-        raise error("release identities must be unique and canonically ordered")
-    return parsed
-
-def _wire_time(value: datetime) -> str:
-    if not isinstance(value, datetime) or value.tzinfo is None or value.utcoffset() is None:
-        raise _invalid("receipt time must be timezone-aware")
-    return value.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-
-def _parse_wire_time(value: object) -> datetime:
-    if not isinstance(value, str):
-        raise _invalid("receipt time is invalid")
-    try:
-        parsed = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%fZ")
-    except ValueError:
-        raise _invalid("receipt time is invalid") from None
-    if _wire_time(parsed.replace(tzinfo=timezone.utc)) != value:
-        raise _invalid("receipt time is not canonical")
-    return parsed.replace(tzinfo=timezone.utc)
-
-def new_operation_id(now: datetime, nonce: bytes) -> str:
-    """Derive one deterministic, path-safe operation identity."""
-    if not isinstance(nonce, bytes) or len(nonce) != 16:
-        raise _invalid("operation nonce must contain exactly 16 bytes")
-    timestamp = _wire_time(now).replace("-", "").replace(":", "")
-    return f"{timestamp}-{nonce.hex()}"
-
-@dataclass(frozen=True)
-class OperationReceipt:
-    schema_version: int
-    operation_id: str
-    release_id: str
-    phase: str
-    outcome: str
-    started_at: datetime
-    updated_at: datetime
-    before_release_ids: tuple[str, ...]
-    candidate_release_ids: tuple[str, ...]
-    error_code: str | None
-    recovery_outcome: str | None
-
-    def __post_init__(self) -> None:
-        if type(self.schema_version) is not int or self.schema_version != 1:
-            raise _invalid("receipt schema version is not supported")
-        if not isinstance(self.operation_id, str) or _OPERATION_ID.fullmatch(self.operation_id) is None:
-            raise _invalid("operation identity is invalid")
-        _validate_release_id(self.release_id)
-        if not isinstance(self.phase, str) or self.phase not in _PHASES:
-            raise _invalid("receipt phase is invalid")
-        if not isinstance(self.outcome, str) or self.outcome not in _OUTCOMES:
-            raise _invalid("receipt outcome is invalid")
-        started = _wire_time(self.started_at)
-        updated = _wire_time(self.updated_at)
-        if updated < started:
-            raise _invalid("receipt update precedes its start")
-        _validate_release_ids(self.before_release_ids)
-        _validate_release_ids(self.candidate_release_ids)
-        if self.error_code is not None and (
-            not isinstance(self.error_code, str)
-            or _ERROR_CODE.fullmatch(self.error_code) is None
-        ):
-            raise _invalid("receipt error code is invalid")
-        if self.recovery_outcome is not None and not (
-            isinstance(self.recovery_outcome, str) and self.recovery_outcome in _RECOVERY_OUTCOMES):
-            raise _invalid("receipt recovery outcome is invalid")
-
-    def to_wire(self) -> dict[str, object]:
-        return {
-            "schemaVersion": self.schema_version, "operationId": self.operation_id,
-            "releaseId": self.release_id, "phase": self.phase, "outcome": self.outcome,
-            "startedAt": _wire_time(self.started_at), "updatedAt": _wire_time(self.updated_at),
-            "beforeReleaseIds": list(self.before_release_ids),
-            "candidateReleaseIds": list(self.candidate_release_ids), "errorCode": self.error_code,
-            "recoveryOutcome": self.recovery_outcome,
-        }
-
-def _receipt_from_wire(value: object) -> OperationReceipt:
-    if not isinstance(value, dict) or set(value) != _RECEIPT_KEYS:
-        raise _invalid("receipt keys do not match the contract")
-    before = value["beforeReleaseIds"]
-    candidates = value["candidateReleaseIds"]
-    if not isinstance(before, list) or not isinstance(candidates, list):
-        raise _invalid("receipt release identities are invalid")
-    return OperationReceipt(
-        schema_version=value["schemaVersion"],  # type: ignore[arg-type]
-        operation_id=value["operationId"],  # type: ignore[arg-type]
-        release_id=value["releaseId"],  # type: ignore[arg-type]
-        phase=value["phase"],  # type: ignore[arg-type]
-        outcome=value["outcome"],  # type: ignore[arg-type]
-        started_at=_parse_wire_time(value["startedAt"]),
-        updated_at=_parse_wire_time(value["updatedAt"]),
-        before_release_ids=tuple(before),  # type: ignore[arg-type]
-        candidate_release_ids=tuple(candidates),  # type: ignore[arg-type]
-        error_code=value["errorCode"],  # type: ignore[arg-type]
-        recovery_outcome=value["recoveryOutcome"],  # type: ignore[arg-type]
-    )
 
 def _snapshot(path: Path) -> tuple[int, int, int, int, bool, bool]:
     return _stat_identity(path.lstat())
@@ -302,8 +186,11 @@ def _atomic_write(
     destination: Path,
     raw: bytes,
 ) -> None:
-    temp = parent / f".{destination.name}.{secrets.token_hex(16)}.tmp"
+    token = secrets.token_hex(16)
+    temp = parent / f".{destination.name}.{token}.tmp"
+    rollback = parent / f".{destination.name}.{token}.rollback"
     temp_identity: tuple[int, int, int, int, bool, bool] | None = None
+    rollback_identity: tuple[int, int, int, int, bool, bool] | None = None
     try:
         try:
             existing = _snapshot(destination)
@@ -324,21 +211,45 @@ def _atomic_write(
         _same_root(root, expected_root)
         if temp_identity[2] != len(raw) or _snapshot(temp) != temp_identity:
             raise _state_invalid("state temporary file identity changed")
+        if existing is not None:
+            os.link(destination, rollback, follow_symlinks=False)
+            rollback_identity = _snapshot(rollback)
+            if rollback_identity != existing or _snapshot(destination) != existing:
+                raise _state_invalid("state destination changed before commit")
         _directory_snapshot(parent)
         os.replace(temp, destination)
-        if _snapshot(destination) != temp_identity:
+        try:
+            committed = _snapshot(destination)
+        except FileNotFoundError:
+            committed = None
+        if committed != temp_identity:
+            if rollback_identity is None:
+                try:
+                    destination.unlink()
+                except FileNotFoundError:
+                    pass
+            else:
+                if _snapshot(rollback) != rollback_identity:
+                    raise _state_invalid("state rollback identity changed")
+                os.replace(rollback, destination)
+                if _snapshot(destination) != rollback_identity:
+                    raise _state_invalid("state destination could not be restored")
+            _sync_directory(parent)
             raise _state_invalid("state destination identity is invalid")
+        if rollback_identity is not None:
+            rollback.unlink()
         _sync_directory(parent)
     except ReleaseError:
         raise
     except OSError:
         raise ReleaseError("WFREL_STATE_IO", "state document could not be committed") from None
     finally:
-        try:
-            if temp_identity is not None and _snapshot(temp) == temp_identity:
-                temp.unlink()
-        except (FileNotFoundError, OSError):
-            pass
+        for path, identity in ((temp, temp_identity), (rollback, rollback_identity)):
+            try:
+                if identity is not None and _snapshot(path) == identity:
+                    path.unlink()
+            except (FileNotFoundError, OSError):
+                pass
 
 def _read_canonical(path: Path, *, kind: str) -> object:
     try:
@@ -438,21 +349,6 @@ def load_active_state(root: Path) -> ActiveState:
     """Load one strict canonical active state without guessing defaults."""
     _root_snapshot(root)
     return _state_from_wire(_read_canonical(root / "active.json", kind="active state"))
-
-def _validate_receipt_update(old: OperationReceipt, new: OperationReceipt) -> None:
-    if (
-        old.operation_id != new.operation_id
-        or old.release_id != new.release_id
-        or old.started_at != new.started_at
-        or old.before_release_ids != new.before_release_ids
-        or old.candidate_release_ids != new.candidate_release_ids
-        or new.updated_at < old.updated_at
-        or _PHASE_ORDER.index(new.phase) < _PHASE_ORDER.index(old.phase)
-        or (old.outcome != "in_progress" and new.outcome == "in_progress")
-        or (old.outcome in {"succeeded", "recovered", "recovery_failed"} and new.outcome != old.outcome)
-        or (old.outcome == "failed" and new.outcome not in {"failed", "recovered", "recovery_failed"})
-    ):
-        raise ReleaseError("WFREL_RECEIPT_CONFLICT", "operation identity was reused")
 
 def write_phase_receipt(root: Path, receipt: OperationReceipt) -> None:
     """Atomically create or advance one operation receipt."""
