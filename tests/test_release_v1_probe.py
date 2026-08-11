@@ -1,5 +1,4 @@
 """Focused contracts for the read-only wf-release-v1 TargetProbe."""
-
 from __future__ import annotations
 
 from contextlib import contextmanager
@@ -208,11 +207,12 @@ class TargetProbeTests(unittest.TestCase):
             server_path, runtime_path = self._write_target(root)
             before = {path.name: path.read_bytes() for path in (server_path, runtime_path)}
             with _capabilities_server(_capabilities()) as url:
-                facts = TargetProbe(
-                    server_manifest=server_path,
-                    runtime_manifest=runtime_path,
-                    capabilities_url=url,
-                ).run()
+                probe = TargetProbe(server_path, runtime_path, url)
+                server, runtime = probe.manifest_facts()
+                facts = probe.run()
+            self.assertEqual("out/cn-server.js", server.entry)
+            self.assertEqual("out/content/sync/entry.js", server.local_prepare_entry)
+            self.assertEqual("node/bin/node", runtime.entry)
             self.assertEqual(_server_manifest()["bundleId"], facts.bundle_id)
             self.assertEqual("1.0.1", facts.server_version)
             self.assertEqual(_runtime_manifest()["runtimeId"], facts.runtime_id)

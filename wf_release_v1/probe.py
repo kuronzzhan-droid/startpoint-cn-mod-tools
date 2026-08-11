@@ -1,5 +1,4 @@
 """Read-only discovery of one verified local wf-release-v1 target."""
-
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -21,27 +20,26 @@ from urllib.request import HTTPHandler, HTTPRedirectHandler, ProxyHandler, Reque
 from .canonical import canonical_json_bytes, load_json_strict_bytes, normalize_relative_path
 from .errors import ReleaseError
 
-_MAX_MANIFEST_BYTES: Final = 16 * 1024 * 1024
-_MAX_HTTP_BYTES: Final = 256 * 1024
+_MAX_MANIFEST_BYTES: Final = 16 * 1024 * 1024; _MAX_HTTP_BYTES: Final = 256 * 1024
 _REPARSE_POINT_ATTRIBUTE: Final = 0x0400
 _DIGEST: Final = re.compile(r"sha256:[0-9a-f]{64}")
 _SEMVER: Final = re.compile(r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)")
 _DOTTED_VERSION: Final = re.compile(r"(?:0|[1-9][0-9]*)(?:\.(?:0|[1-9][0-9]*))+")
 _CAPABILITY: Final = re.compile(r"[a-z0-9][a-z0-9._-]*@[1-9][0-9]*")
-_PLATFORM: Final = re.compile(r"[a-z][a-z0-9-]*")
-_ARCH: Final = re.compile(r"[a-z0-9_-]+")
+_PLATFORM: Final = re.compile(r"[a-z][a-z0-9-]*"); _ARCH: Final = re.compile(r"[a-z0-9_-]+")
 _ABI: Final = re.compile(r"[0-9]+")
+_SERVER_ENTRY, _LOCAL_PREPARE_ENTRY, _RUNTIME_ENTRY = "out/cn-server.js", "out/content/sync/entry.js", "node/bin/node"
 @dataclass(frozen=True)
 class ServerBundleFacts:
     version: str; bundle_id: str
     runtime_api: int; node_requirement: str
-    dependency_lock: str
+    dependency_lock: str; entry: str; local_prepare_entry: str
 @dataclass(frozen=True)
 class RuntimeFacts:
     runtime_id: str; runtime_api: int
     node_version: str; node_abi: str
     platform: str; arch: str
-    dependency_lock: str
+    dependency_lock: str; entry: str
 @dataclass(frozen=True)
 class ContentFacts:
     content_digest: str; cdn_target_version: str
@@ -324,10 +322,10 @@ def _parse_server_manifest(value: object, root: Path) -> ServerBundleFacts:
     item = _exact_object(value, frozenset({"schemaVersion", "name", "serverVersion", "bundleId",
         "entry", "startup", "requires", "admin", "assets", "ports", "files"}), "serverManifest")
     _constant(item["schemaVersion"], 3, "serverManifest.schemaVersion")
-    if item["name"] != "starpoint-cn" or item["entry"] != "out/cn-server.js":
+    if item["name"] != "starpoint-cn" or item["entry"] != _SERVER_ENTRY:
         raise _schema("serverManifest", "server manifest identity is invalid")
     startup = _exact_object(item["startup"], frozenset({"localPrepareEntry"}), "serverManifest.startup")
-    if startup["localPrepareEntry"] != "out/content/sync/entry.js":
+    if startup["localPrepareEntry"] != _LOCAL_PREPARE_ENTRY:
         raise _schema("serverManifest.startup", "server startup entry is invalid")
     requires = _exact_object(item["requires"], frozenset({"runtimeApi", "node", "dependencyLock",
         "minDataSchema", "targetDataSchema"}), "serverManifest.requires")
@@ -342,7 +340,7 @@ def _parse_server_manifest(value: object, root: Path) -> ServerBundleFacts:
         if port > 65535:
             raise _schema(f"serverManifest.ports.{name}", "server port is invalid")
     files = _declared_files(item["files"], root, "serverManifest.files", ("out", "assets", "web/dist", "LICENSE", "NOTICE"))
-    if not {"out/cn-server.js", "out/content/sync/entry.js", "web/dist/index.html"}.issubset(files):
+    if not {_SERVER_ENTRY, _LOCAL_PREPARE_ENTRY, "web/dist/index.html"}.issubset(files):
         raise _schema("serverManifest.files", "server manifest omits a required entry")
     if item["bundleId"] is None:
         raise _incompatible("serverManifest.bundleId", "managed target requires an embedded server bundle identity")
@@ -361,6 +359,7 @@ def _parse_server_manifest(value: object, root: Path) -> ServerBundleFacts:
         runtime_api=_constant(requires["runtimeApi"], 1, "serverManifest.requires.runtimeApi"),
         node_requirement=node_requirement,
         dependency_lock=_string(requires["dependencyLock"], "serverManifest.requires.dependencyLock", _DIGEST),
+        entry=_SERVER_ENTRY, local_prepare_entry=_LOCAL_PREPARE_ENTRY,
     )
 
 def _parse_runtime_manifest(value: object, root: Path) -> RuntimeFacts:
@@ -368,10 +367,10 @@ def _parse_runtime_manifest(value: object, root: Path) -> RuntimeFacts:
         "dependencyLock", "entry", "executables", "files"}), "runtimeManifest")
     _constant(item["schemaVersion"], 1, "runtimeManifest.schemaVersion")
     node = _exact_object(item["node"], frozenset({"version", "abi", "platform", "arch"}), "runtimeManifest.node")
-    if item["entry"] != "node/bin/node":
+    if item["entry"] != _RUNTIME_ENTRY:
         raise _schema("runtimeManifest", "runtime manifest layout is invalid")
     executables = _string_array(item["executables"], "runtimeManifest.executables", sorted_values=True, allow_empty=False)
-    if "node/bin/node" not in executables:
+    if _RUNTIME_ENTRY not in executables:
         raise _schema("runtimeManifest.executables", "runtime entry is not executable")
     _declared_files(item["files"], root, "runtimeManifest.files", ("node", "node_modules"))
     if item["runtimeId"] != _manifest_identity(item, "runtimeId"):
@@ -383,7 +382,7 @@ def _parse_runtime_manifest(value: object, root: Path) -> RuntimeFacts:
         node_abi=_string(node["abi"], "runtimeManifest.node.abi", _ABI),
         platform=_string(node["platform"], "runtimeManifest.node.platform", _PLATFORM),
         arch=_string(node["arch"], "runtimeManifest.node.arch", _ARCH),
-        dependency_lock=_string(item["dependencyLock"], "runtimeManifest.dependencyLock", _DIGEST),
+        dependency_lock=_string(item["dependencyLock"], "runtimeManifest.dependencyLock", _DIGEST), entry=_RUNTIME_ENTRY,
     )
 
 def _parse_capabilities(value: object) -> tuple[
@@ -460,11 +459,12 @@ class TargetProbe:
     capabilities_url: str
     timeout_seconds: float = 5.0
 
+    def manifest_facts(self) -> tuple[ServerBundleFacts, RuntimeFacts]:
+        paths = Path(self.server_manifest), Path(self.runtime_manifest)
+        return (_parse_server_manifest(_read_manifest(paths[0], "serverManifest"), paths[0].parent), _parse_runtime_manifest(_read_manifest(paths[1], "runtimeManifest"), paths[1].parent))
+
     def run(self) -> TargetFacts:
-        server_path = Path(self.server_manifest)
-        runtime_path = Path(self.runtime_manifest)
-        server = _parse_server_manifest(_read_manifest(server_path, "serverManifest"), server_path.parent)
-        runtime = _parse_runtime_manifest(_read_manifest(runtime_path, "runtimeManifest"), runtime_path.parent)
+        server, runtime = self.manifest_facts()
         live = _parse_capabilities(_read_capabilities(self.capabilities_url, self.timeout_seconds))
         (
             live_version, live_bundle_id, live_runtime_api, live_node, live_abi,
