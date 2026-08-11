@@ -236,6 +236,7 @@ def _atomic_write(
                     os.replace(rollback, destination)
                 except OSError:
                     preserve_rollback = True
+                    _sync_directory(parent)
                     raise
                 if _snapshot(destination) != rollback_identity:
                     raise _state_invalid("state destination could not be restored")
