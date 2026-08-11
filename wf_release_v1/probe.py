@@ -4,20 +4,22 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import hashlib
+from http.client import HTTPConnection, HTTPException
 import ipaddress
 import os
 from pathlib import Path
 import re
 import socket
 import stat
+import threading
+import time
 from typing import Final
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
-from urllib.request import HTTPRedirectHandler, ProxyHandler, Request, build_opener
+from urllib.request import HTTPHandler, HTTPRedirectHandler, ProxyHandler, Request, build_opener
 
 from .canonical import canonical_json_bytes, load_json_strict_bytes, normalize_relative_path
 from .errors import ReleaseError
-
 
 _MAX_MANIFEST_BYTES: Final = 16 * 1024 * 1024
 _MAX_HTTP_BYTES: Final = 256 * 1024
@@ -29,60 +31,41 @@ _CAPABILITY: Final = re.compile(r"[a-z0-9][a-z0-9._-]*@[1-9][0-9]*")
 _PLATFORM: Final = re.compile(r"[a-z][a-z0-9-]*")
 _ARCH: Final = re.compile(r"[a-z0-9_-]+")
 _ABI: Final = re.compile(r"[0-9]+")
-
 @dataclass(frozen=True)
 class ServerBundleFacts:
     version: str; bundle_id: str
     runtime_api: int; node_requirement: str
     dependency_lock: str
-
 @dataclass(frozen=True)
 class RuntimeFacts:
     runtime_id: str; runtime_api: int
     node_version: str; node_abi: str
     platform: str; arch: str
     dependency_lock: str
-
 @dataclass(frozen=True)
 class ContentFacts:
     content_digest: str; cdn_target_version: str
-
 @dataclass(frozen=True)
 class ModeFacts:
     server_capabilities: tuple[str, ...]; mode_digest: str
-
 @dataclass(frozen=True)
 class FeatureFacts:
     patch_overlay_schema: int
-
 @dataclass(frozen=True)
 class TargetFacts:
-    bundle_id: str
-    server_version: str
-    runtime_id: str
-    runtime_api: int
-    dependency_lock: str
-    node_version: str
-    node_abi: str
-    platform: str
-    arch: str
-    capabilities: tuple[str, ...]
-    content_digest: str
-    cdn_target_version: str
-    mode_digest: str
-    patch_overlay_schema: int
-
+    bundle_id: str; server_version: str; runtime_id: str
+    runtime_api: int; dependency_lock: str
+    node_version: str; node_abi: str; platform: str; arch: str
+    capabilities: tuple[str, ...]; content_digest: str; cdn_target_version: str
+    mode_digest: str; patch_overlay_schema: int
 def _schema(label: str, message: str) -> ReleaseError:
     return ReleaseError("WFREL_SCHEMA_INVALID", message, {"label": label})
-
 def _incompatible(label: str, message: str) -> ReleaseError:
     return ReleaseError("WFREL_REQUIRE_TARGET", message, {"label": label})
-
 def _exact_object(value: object, keys: frozenset[str], label: str) -> dict[str, object]:
     if not isinstance(value, dict) or set(value) != keys:
         raise _schema(label, "target object keys do not match the contract")
     return value
-
 def _string(value: object, label: str, pattern: re.Pattern[str] | None = None) -> str:
     if (
         not isinstance(value, str)
@@ -93,31 +76,20 @@ def _string(value: object, label: str, pattern: re.Pattern[str] | None = None) -
     ):
         raise _schema(label, "target string is invalid")
     return value
-
 def _integer(value: object, label: str, *, minimum: int = 0) -> int:
     if type(value) is not int or value < minimum:
         raise _schema(label, "target integer is invalid")
     return value
-
 def _constant(value: object, expected: int, label: str) -> int:
     parsed = _integer(value, label)
     if parsed != expected:
         raise _schema(label, "target contract version is unsupported")
     return parsed
-
 def _boolean(value: object, label: str) -> bool:
     if type(value) is not bool:
         raise _schema(label, "target boolean is invalid")
     return value
-
-def _string_array(
-    value: object,
-    label: str,
-    *,
-    pattern: re.Pattern[str] | None = None,
-    sorted_values: bool = False,
-    allow_empty: bool = True,
-) -> tuple[str, ...]:
+def _string_array(value: object, label: str, *, pattern: re.Pattern[str] | None = None, sorted_values: bool = False, allow_empty: bool = True) -> tuple[str, ...]:
     if not isinstance(value, list) or (not allow_empty and not value):
         raise _schema(label, "target array is invalid")
     parsed = tuple(_string(item, f"{label}[]", pattern) for item in value)
@@ -126,23 +98,12 @@ def _string_array(
     if sorted_values and parsed != tuple(sorted(parsed)):
         raise _schema(label, "target array values are not in canonical order")
     return parsed
-
-
 def _version_key(value: str) -> tuple[int, ...]:
     return tuple(int(part) for part in value.split("."))
-
-
 def _snapshot(value: os.stat_result) -> tuple[int, int, int, int, int, int]:
-    return (
-        value.st_dev,
-        value.st_ino,
-        value.st_size,
-        value.st_mtime_ns,
-        stat.S_IFMT(value.st_mode),
-        getattr(value, "st_file_attributes", 0) & _REPARSE_POINT_ATTRIBUTE,
-    )
-
-
+    return (value.st_dev, value.st_ino, value.st_size, value.st_mtime_ns,
+            stat.S_IFMT(value.st_mode),
+            getattr(value, "st_file_attributes", 0) & _REPARSE_POINT_ATTRIBUTE)
 def _read_manifest(path: Path, label: str) -> object:
     try:
         before_stat = path.lstat()
@@ -173,20 +134,12 @@ def _read_manifest(path: Path, label: str) -> object:
     if canonical_json_bytes(value) != raw:
         raise _schema(label, "target manifest is not canonical JSON")
     return value
-
-
 def _manifest_identity(value: dict[str, object], field: str) -> str:
     body = dict(value)
     del body[field]
     return f"sha256:{hashlib.sha256(canonical_json_bytes(body)).hexdigest()}"
-
-
-def _declared_files(
-    value: object,
-    root: Path,
-    label: str,
-    allowed: tuple[str, ...],
-) -> tuple[str, ...]:
+def _declared_files(value: object, root: Path, label: str,
+                    allowed: tuple[str, ...]) -> tuple[str, ...]:
     if not isinstance(value, list) or not value:
         raise _schema(label, "manifest files must be a non-empty array")
     paths: list[str] = []
@@ -226,26 +179,61 @@ def _declared_files(
         raise _schema(label, "manifest files must be unique and canonically ordered")
     manifest_name = "server-manifest.json" if label.startswith("server") else "runtime-pack-manifest.json"
     actual: set[str] = set()
+    pending = [root]
     try:
-        for candidate in root.rglob("*"):
-            metadata = candidate.lstat()
-            if _snapshot(metadata)[-1] or not (stat.S_ISDIR(metadata.st_mode) or stat.S_ISREG(metadata.st_mode)):
-                raise OSError("target tree contains a reparse point or special file")
-            if stat.S_ISREG(metadata.st_mode):
-                actual.add(candidate.relative_to(root).as_posix())
+        while pending:
+            with os.scandir(pending.pop()) as entries:
+                for entry in entries:
+                    candidate = Path(entry.path)
+                    metadata = entry.stat(follow_symlinks=False)
+                    if _snapshot(metadata)[-1] or not (stat.S_ISDIR(metadata.st_mode) or stat.S_ISREG(metadata.st_mode)):
+                        raise OSError("target tree contains a reparse point or special file")
+                    if stat.S_ISDIR(metadata.st_mode):
+                        pending.append(candidate)
+                    else:
+                        actual.add(candidate.relative_to(root).as_posix())
     except OSError as error:
         raise _schema(label, "target file collection is unavailable") from error
     if actual != set(paths) | {manifest_name}:
         raise _schema(label, "target file collection does not match the manifest")
     return tuple(paths)
-
-
 class _NoRedirect(HTTPRedirectHandler):
     def redirect_request(self, request, file_pointer, code, message, headers, new_url):
         del request, file_pointer, code, message, headers, new_url
         return None
-
-
+class _PinnedHTTPConnection(HTTPConnection):
+    def __init__(self, host: str, *, pinned_host: str, **kwargs) -> None:
+        super().__init__(host, **kwargs)
+        self._pinned_host = pinned_host
+        self._connected_socket: socket.socket | None = None
+    def connect(self) -> None:
+        original_host = self.host
+        try:
+            self.host = self._pinned_host
+            super().connect()
+            self._connected_socket = self.sock
+        finally:
+            self.host = original_host
+    def abort(self) -> None:
+        if self._connected_socket is not None:
+            try:
+                self._connected_socket.shutdown(socket.SHUT_RDWR)
+            except OSError:
+                pass
+        self.close()
+class _PinnedHTTPHandler(HTTPHandler):
+    def __init__(self, pinned_host: str) -> None:
+        super().__init__()
+        self._pinned_host = pinned_host
+        self._connection: _PinnedHTTPConnection | None = None
+    def http_open(self, request):
+        def connection(host: str, **kwargs) -> HTTPConnection:
+            self._connection = _PinnedHTTPConnection(host, pinned_host=self._pinned_host, **kwargs)
+            return self._connection
+        return self.do_open(connection, request)
+    def close(self) -> None:
+        if self._connection is not None:
+            self._connection.abort()
 def _read_capabilities(url: str, timeout_seconds: float) -> object:
     parsed = urlsplit(url)
     try:
@@ -264,9 +252,23 @@ def _read_capabilities(url: str, timeout_seconds: float) -> object:
         raise _schema("capabilitiesUrl", "capabilities URL must be the local v1 endpoint")
     if not isinstance(timeout_seconds, (int, float)) or isinstance(timeout_seconds, bool) or not 0 < timeout_seconds <= 30:
         raise _schema("timeoutSeconds", "probe timeout is invalid")
+    deadline = time.monotonic() + float(timeout_seconds)
     request = Request(url, headers={"Accept": "application/json"}, method="GET")
     try:
-        addresses = socket.getaddrinfo(parsed.hostname, port or 80, type=socket.SOCK_STREAM)
+        addresses: list[tuple] = []
+        resolution_error: list[OSError] = []
+        def resolve() -> None:
+            try:
+                addresses.extend(socket.getaddrinfo(parsed.hostname, port or 80, type=socket.SOCK_STREAM))
+            except OSError as error:
+                resolution_error.append(error)
+        resolver = threading.Thread(target=resolve, daemon=True)
+        resolver.start()
+        resolver.join(max(0.0, deadline - time.monotonic()))
+        if resolver.is_alive():
+            raise TimeoutError("capabilities hostname resolution timed out")
+        if resolution_error:
+            raise resolution_error[0]
         for address in addresses:
             ip = ipaddress.ip_address(address[4][0].split("%", 1)[0])
             effective = ip.ipv4_mapped if isinstance(ip, ipaddress.IPv6Address) and ip.ipv4_mapped else ip
@@ -274,45 +276,63 @@ def _read_capabilities(url: str, timeout_seconds: float) -> object:
                 raise _schema("capabilitiesUrl", "capabilities hostname does not resolve only to loopback")
         if not addresses:
             raise OSError("capabilities hostname has no addresses")
-        with build_opener(ProxyHandler({}), _NoRedirect()).open(request, timeout=float(timeout_seconds)) as response:
-            if response.status != 200:
-                raise _incompatible("capabilities", "target capabilities request failed")
-            content_type = response.headers.get_content_type()
-            if content_type != "application/json":
-                raise _schema("capabilities", "target capabilities content type is invalid")
-            raw = response.read(_MAX_HTTP_BYTES + 1)
-            declared = response.headers.get("Content-Length")
-            if declared is not None and (not declared.isdecimal() or int(declared) != len(raw)):
-                raise _schema("capabilities", "target capabilities body is truncated")
+        pinned_host = addresses[0][4][0].split("%", 1)[0]
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise TimeoutError("capabilities timeout elapsed during resolution")
+        handler = _PinnedHTTPHandler(pinned_host)
+        timer = threading.Timer(remaining, handler.close)
+        timer.daemon = True
+        timer.start()
+        try:
+            with build_opener(ProxyHandler({}), handler, _NoRedirect()).open(request, timeout=remaining) as response:
+                if response.status != 200:
+                    raise _incompatible("capabilities", "target capabilities request failed")
+                if response.headers.get_content_type() != "application/json":
+                    raise _schema("capabilities", "target capabilities content type is invalid")
+                chunks: list[bytes] = []
+                size = 0
+                while size <= _MAX_HTTP_BYTES:
+                    if time.monotonic() >= deadline:
+                        raise TimeoutError("capabilities timeout elapsed while reading")
+                    chunk = response.read1(min(64 * 1024, _MAX_HTTP_BYTES + 1 - size))
+                    if not chunk:
+                        break
+                    chunks.append(chunk)
+                    size += len(chunk)
+                raw = b"".join(chunks)
+                declared = response.headers.get("Content-Length")
+                if declared is not None and (not declared.isdecimal() or int(declared) != len(raw)):
+                    raise _schema("capabilities", "target capabilities body is truncated")
+        finally:
+            timer.cancel()
+            handler.close()
     except ReleaseError:
         raise
     except HTTPError as error:
         error.close()
         raise _incompatible("capabilities", "target capabilities are unavailable") from error
-    except (URLError, OSError, TimeoutError, socket.gaierror) as error:
+    except (HTTPException, URLError, OSError, TimeoutError, socket.gaierror) as error:
         raise _incompatible("capabilities", "target capabilities are unavailable") from error
     if len(raw) > _MAX_HTTP_BYTES:
         raise _schema("capabilities", "target capabilities exceed the size limit")
-    return load_json_strict_bytes(raw, label="capabilities")
-
-
+    try:
+        return load_json_strict_bytes(raw, label="capabilities")
+    except ReleaseError as error:
+        raise ReleaseError(error.code, error.message, error.details) from None
 def _parse_server_manifest(value: object, root: Path) -> ServerBundleFacts:
-    item = _exact_object(value, frozenset({
-        "schemaVersion", "name", "serverVersion", "bundleId", "entry", "startup",
-        "requires", "admin", "assets", "ports", "files",
-    }), "serverManifest")
+    item = _exact_object(value, frozenset({"schemaVersion", "name", "serverVersion", "bundleId",
+        "entry", "startup", "requires", "admin", "assets", "ports", "files"}), "serverManifest")
     _constant(item["schemaVersion"], 3, "serverManifest.schemaVersion")
     if item["name"] != "starpoint-cn" or item["entry"] != "out/cn-server.js":
         raise _schema("serverManifest", "server manifest identity is invalid")
     startup = _exact_object(item["startup"], frozenset({"localPrepareEntry"}), "serverManifest.startup")
     if startup["localPrepareEntry"] != "out/content/sync/entry.js":
         raise _schema("serverManifest.startup", "server startup entry is invalid")
-    requires = _exact_object(item["requires"], frozenset({
-        "runtimeApi", "node", "dependencyLock", "minDataSchema", "targetDataSchema",
-    }), "serverManifest.requires")
-    assets = _exact_object(item["assets"], frozenset({
-        "supportedModes", "minClientAssetVersion",
-    }), "serverManifest.assets")
+    requires = _exact_object(item["requires"], frozenset({"runtimeApi", "node", "dependencyLock",
+        "minDataSchema", "targetDataSchema"}), "serverManifest.requires")
+    assets = _exact_object(item["assets"], frozenset({"supportedModes", "minClientAssetVersion"}),
+                           "serverManifest.assets")
     admin = _exact_object(item["admin"], frozenset({"path", "required"}), "serverManifest.admin")
     ports = _exact_object(item["ports"], frozenset({"http", "tcp"}), "serverManifest.ports")
     if admin != {"path": "web/dist", "required": True}:
@@ -324,6 +344,8 @@ def _parse_server_manifest(value: object, root: Path) -> ServerBundleFacts:
     files = _declared_files(item["files"], root, "serverManifest.files", ("out", "assets", "web/dist", "LICENSE", "NOTICE"))
     if not {"out/cn-server.js", "out/content/sync/entry.js", "web/dist/index.html"}.issubset(files):
         raise _schema("serverManifest.files", "server manifest omits a required entry")
+    if item["bundleId"] is None:
+        raise _incompatible("serverManifest.bundleId", "managed target requires an embedded server bundle identity")
     if item["bundleId"] != _manifest_identity(item, "bundleId"):
         raise _schema("serverManifest.bundleId", "server bundle identity does not match")
     node_requirement = _string(requires["node"], "serverManifest.requires.node")
@@ -341,12 +363,9 @@ def _parse_server_manifest(value: object, root: Path) -> ServerBundleFacts:
         dependency_lock=_string(requires["dependencyLock"], "serverManifest.requires.dependencyLock", _DIGEST),
     )
 
-
 def _parse_runtime_manifest(value: object, root: Path) -> RuntimeFacts:
-    item = _exact_object(value, frozenset({
-        "schemaVersion", "runtimeId", "runtimeApi", "node", "dependencyLock",
-        "entry", "executables", "files",
-    }), "runtimeManifest")
+    item = _exact_object(value, frozenset({"schemaVersion", "runtimeId", "runtimeApi", "node",
+        "dependencyLock", "entry", "executables", "files"}), "runtimeManifest")
     _constant(item["schemaVersion"], 1, "runtimeManifest.schemaVersion")
     node = _exact_object(item["node"], frozenset({"version", "abi", "platform", "arch"}), "runtimeManifest.node")
     if item["entry"] != "node/bin/node":
@@ -367,25 +386,18 @@ def _parse_runtime_manifest(value: object, root: Path) -> RuntimeFacts:
         dependency_lock=_string(item["dependencyLock"], "runtimeManifest.dependencyLock", _DIGEST),
     )
 
-
 def _parse_capabilities(value: object) -> tuple[
-    str, str, int, str, str, str, str, tuple[str, ...], ContentFacts, ModeFacts, FeatureFacts
-]:
-    item = _exact_object(value, frozenset({
-        "contractVersion", "serverCapabilities", "serverBundle", "runtime",
-        "content", "modes", "features",
-    }), "capabilities")
+        str, str, int, str, str, str, str, tuple[str, ...], ContentFacts, ModeFacts, FeatureFacts]:
+    item = _exact_object(value, frozenset({"contractVersion", "serverCapabilities", "serverBundle",
+        "runtime", "content", "modes", "features"}), "capabilities")
     _constant(item["contractVersion"], 1, "capabilities.contractVersion")
     server_bundle = _exact_object(item["serverBundle"], frozenset({"version", "bundleId"}), "capabilities.serverBundle")
     runtime = _exact_object(item["runtime"], frozenset({"api", "node", "nodeAbi", "platform", "arch"}), "capabilities.runtime")
-    content = _exact_object(item["content"], frozenset({
-        "source", "assetVersion", "generatorVersion", "releaseDigest", "contentDigest",
-        "cdnTargetVersion", "patchVersions",
-    }), "capabilities.content")
+    content = _exact_object(item["content"], frozenset({"source", "assetVersion", "generatorVersion",
+        "releaseDigest", "contentDigest", "cdnTargetVersion", "patchVersions"}), "capabilities.content")
     modes = _exact_object(item["modes"], frozenset({"api", "serverCapabilities", "loaded", "modeDigest"}), "capabilities.modes")
-    features = _exact_object(item["features"], frozenset({
-        "patchOverlaySchema", "modeChangesRequireRestart", "activeContentManagement",
-    }), "capabilities.features")
+    features = _exact_object(item["features"], frozenset({"patchOverlaySchema",
+        "modeChangesRequireRestart", "activeContentManagement"}), "capabilities.features")
     general = _string_array(item["serverCapabilities"], "capabilities.serverCapabilities", pattern=_CAPABILITY, sorted_values=True, allow_empty=False)
     _string(content["assetVersion"], "capabilities.content.assetVersion", _DOTTED_VERSION)
     _integer(content["generatorVersion"], "capabilities.content.generatorVersion", minimum=1)
@@ -435,13 +447,11 @@ def _parse_capabilities(value: object) -> tuple[
         ),
     )
 
-
 def _node_tuple(value: str) -> tuple[int, int, int]:
     match = _SEMVER.fullmatch(value)
     if match is None:
         raise _schema("nodeVersion", "Node version is invalid")
     return tuple(int(part) for part in match.groups())
-
 
 @dataclass(frozen=True)
 class TargetProbe:
@@ -463,13 +473,10 @@ class TargetProbe:
         comparisons = (
             (server.version, live_version, "serverBundle.version"),
             (server.bundle_id, live_bundle_id, "serverBundle.bundleId"),
-            (server.runtime_api, runtime.runtime_api, "runtime.runtimeApi"),
-            (runtime.runtime_api, live_runtime_api, "runtime.api"),
+            (server.runtime_api, runtime.runtime_api, "runtime.runtimeApi"), (runtime.runtime_api, live_runtime_api, "runtime.api"),
             (server.dependency_lock, runtime.dependency_lock, "runtime.dependencyLock"),
-            (runtime.node_version, live_node, "runtime.node"),
-            (runtime.node_abi, live_abi, "runtime.nodeAbi"),
-            (runtime.platform, live_platform, "runtime.platform"),
-            (runtime.arch, live_arch, "runtime.arch"),
+            (runtime.node_version, live_node, "runtime.node"), (runtime.node_abi, live_abi, "runtime.nodeAbi"),
+            (runtime.platform, live_platform, "runtime.platform"), (runtime.arch, live_arch, "runtime.arch"),
         )
         for expected, actual, label in comparisons:
             if expected != actual:
@@ -482,18 +489,11 @@ class TargetProbe:
         if "content.sync@1" not in server_capabilities:
             raise _schema("capabilities.serverCapabilities", "general capabilities omit Content Sync")
         return TargetFacts(
-            bundle_id=server.bundle_id,
-            server_version=server.version,
-            runtime_id=runtime.runtime_id,
-            runtime_api=runtime.runtime_api,
-            dependency_lock=runtime.dependency_lock,
-            node_version=runtime.node_version,
-            node_abi=runtime.node_abi,
-            platform=runtime.platform,
-            arch=runtime.arch,
+            bundle_id=server.bundle_id, server_version=server.version, runtime_id=runtime.runtime_id,
+            runtime_api=runtime.runtime_api, dependency_lock=runtime.dependency_lock,
+            node_version=runtime.node_version, node_abi=runtime.node_abi,
+            platform=runtime.platform, arch=runtime.arch,
             capabilities=server_capabilities,
-            content_digest=content.content_digest,
-            cdn_target_version=content.cdn_target_version,
-            mode_digest=modes.mode_digest,
-            patch_overlay_schema=features.patch_overlay_schema,
+            content_digest=content.content_digest, cdn_target_version=content.cdn_target_version,
+            mode_digest=modes.mode_digest, patch_overlay_schema=features.patch_overlay_schema,
         )
