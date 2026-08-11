@@ -3,24 +3,17 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import hashlib
-from http.client import HTTPConnection, HTTPException
-import ipaddress
 import os
 from pathlib import Path
 import re
-import socket
 import stat
-import threading
-import time
 from typing import Final
-from urllib.error import HTTPError, URLError
-from urllib.parse import urlsplit
-from urllib.request import HTTPHandler, HTTPRedirectHandler, ProxyHandler, Request, build_opener
 
+from ._loopback_http import read_loopback_json
 from .canonical import canonical_json_bytes, load_json_strict_bytes, normalize_relative_path
 from .errors import ReleaseError
 
-_MAX_MANIFEST_BYTES: Final = 16 * 1024 * 1024; _MAX_HTTP_BYTES: Final = 256 * 1024
+_MAX_MANIFEST_BYTES: Final = 16 * 1024 * 1024
 _REPARSE_POINT_ATTRIBUTE: Final = 0x0400
 _DIGEST: Final = re.compile(r"sha256:[0-9a-f]{64}")
 _SEMVER: Final = re.compile(r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)")
@@ -195,129 +188,13 @@ def _declared_files(value: object, root: Path, label: str,
     if actual != set(paths) | {manifest_name}:
         raise _schema(label, "target file collection does not match the manifest")
     return tuple(paths)
-class _NoRedirect(HTTPRedirectHandler):
-    def redirect_request(self, request, file_pointer, code, message, headers, new_url):
-        del request, file_pointer, code, message, headers, new_url
-        return None
-class _PinnedHTTPConnection(HTTPConnection):
-    def __init__(self, host: str, *, pinned_host: str, **kwargs) -> None:
-        super().__init__(host, **kwargs)
-        self._pinned_host = pinned_host
-        self._connected_socket: socket.socket | None = None
-    def connect(self) -> None:
-        original_host = self.host
-        try:
-            self.host = self._pinned_host
-            super().connect()
-            self._connected_socket = self.sock
-        finally:
-            self.host = original_host
-    def abort(self) -> None:
-        if self._connected_socket is not None:
-            try:
-                self._connected_socket.shutdown(socket.SHUT_RDWR)
-            except OSError:
-                pass
-        self.close()
-class _PinnedHTTPHandler(HTTPHandler):
-    def __init__(self, pinned_host: str) -> None:
-        super().__init__()
-        self._pinned_host = pinned_host
-        self._connection: _PinnedHTTPConnection | None = None
-    def http_open(self, request):
-        def connection(host: str, **kwargs) -> HTTPConnection:
-            self._connection = _PinnedHTTPConnection(host, pinned_host=self._pinned_host, **kwargs)
-            return self._connection
-        return self.do_open(connection, request)
-    def close(self) -> None:
-        if self._connection is not None:
-            self._connection.abort()
 def _read_capabilities(url: str, timeout_seconds: float) -> object:
-    parsed = urlsplit(url)
-    try:
-        port = parsed.port
-    except ValueError as error:
-        raise _schema("capabilitiesUrl", "capabilities URL port is invalid") from error
-    if (
-        parsed.scheme != "http"
-        or parsed.hostname is None
-        or parsed.username is not None
-        or parsed.password is not None
-        or parsed.query
-        or parsed.fragment
-        or parsed.path != "/api/server/capabilities"
-    ):
-        raise _schema("capabilitiesUrl", "capabilities URL must be the local v1 endpoint")
-    if not isinstance(timeout_seconds, (int, float)) or isinstance(timeout_seconds, bool) or not 0 < timeout_seconds <= 30:
-        raise _schema("timeoutSeconds", "probe timeout is invalid")
-    deadline = time.monotonic() + float(timeout_seconds)
-    request = Request(url, headers={"Accept": "application/json"}, method="GET")
-    try:
-        addresses: list[tuple] = []
-        resolution_error: list[OSError] = []
-        def resolve() -> None:
-            try:
-                addresses.extend(socket.getaddrinfo(parsed.hostname, port or 80, type=socket.SOCK_STREAM))
-            except OSError as error:
-                resolution_error.append(error)
-        resolver = threading.Thread(target=resolve, daemon=True)
-        resolver.start()
-        resolver.join(max(0.0, deadline - time.monotonic()))
-        if resolver.is_alive():
-            raise TimeoutError("capabilities hostname resolution timed out")
-        if resolution_error:
-            raise resolution_error[0]
-        for address in addresses:
-            ip = ipaddress.ip_address(address[4][0].split("%", 1)[0])
-            effective = ip.ipv4_mapped if isinstance(ip, ipaddress.IPv6Address) and ip.ipv4_mapped else ip
-            if not effective.is_loopback:
-                raise _schema("capabilitiesUrl", "capabilities hostname does not resolve only to loopback")
-        if not addresses:
-            raise OSError("capabilities hostname has no addresses")
-        pinned_host = addresses[0][4][0].split("%", 1)[0]
-        remaining = deadline - time.monotonic()
-        if remaining <= 0:
-            raise TimeoutError("capabilities timeout elapsed during resolution")
-        handler = _PinnedHTTPHandler(pinned_host)
-        timer = threading.Timer(remaining, handler.close)
-        timer.daemon = True
-        timer.start()
-        try:
-            with build_opener(ProxyHandler({}), handler, _NoRedirect()).open(request, timeout=remaining) as response:
-                if response.status != 200:
-                    raise _incompatible("capabilities", "target capabilities request failed")
-                if response.headers.get_content_type() != "application/json":
-                    raise _schema("capabilities", "target capabilities content type is invalid")
-                chunks: list[bytes] = []
-                size = 0
-                while size <= _MAX_HTTP_BYTES:
-                    if time.monotonic() >= deadline:
-                        raise TimeoutError("capabilities timeout elapsed while reading")
-                    chunk = response.read1(min(64 * 1024, _MAX_HTTP_BYTES + 1 - size))
-                    if not chunk:
-                        break
-                    chunks.append(chunk)
-                    size += len(chunk)
-                raw = b"".join(chunks)
-                declared = response.headers.get("Content-Length")
-                if declared is not None and (not declared.isdecimal() or int(declared) != len(raw)):
-                    raise _schema("capabilities", "target capabilities body is truncated")
-        finally:
-            timer.cancel()
-            handler.close()
-    except ReleaseError:
-        raise
-    except HTTPError as error:
-        error.close()
-        raise _incompatible("capabilities", "target capabilities are unavailable") from error
-    except (HTTPException, URLError, OSError, TimeoutError, socket.gaierror) as error:
-        raise _incompatible("capabilities", "target capabilities are unavailable") from error
-    if len(raw) > _MAX_HTTP_BYTES:
-        raise _schema("capabilities", "target capabilities exceed the size limit")
-    try:
-        return load_json_strict_bytes(raw, label="capabilities")
-    except ReleaseError as error:
-        raise ReleaseError(error.code, error.message, error.details) from None
+    return read_loopback_json(
+        url,
+        timeout_seconds,
+        expected_path="/api/server/capabilities",
+        label="capabilities",
+    )
 def _parse_server_manifest(value: object, root: Path) -> ServerBundleFacts:
     item = _exact_object(value, frozenset({"schemaVersion", "name", "serverVersion", "bundleId",
         "entry", "startup", "requires", "admin", "assets", "ports", "files"}), "serverManifest")

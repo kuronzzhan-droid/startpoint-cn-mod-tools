@@ -456,7 +456,7 @@ class TargetProbeTests(unittest.TestCase):
                     host = "127.0.0.1" if original_lookups == 1 else "192.0.2.1"
                 return real_getaddrinfo(host, *args, **kwargs)
             with _capabilities_server(_capabilities()) as url, patch(
-                "wf_release_v1.probe.socket.getaddrinfo", side_effect=rebinding_getaddrinfo
+                "wf_release_v1._loopback_http.socket.getaddrinfo", side_effect=rebinding_getaddrinfo
             ):
                 facts = TargetProbe(
                     server_path, runtime_path, url.replace("127.0.0.1", "probe.invalid"), 0.2
@@ -467,7 +467,7 @@ class TargetProbeTests(unittest.TestCase):
                 time.sleep(0.2)
                 return real_getaddrinfo("127.0.0.1", *args[1:], **kwargs)
             started = time.monotonic()
-            with patch("wf_release_v1.probe.socket.getaddrinfo", side_effect=slow_resolution), self.assertRaises(ReleaseError):
+            with patch("wf_release_v1._loopback_http.socket.getaddrinfo", side_effect=slow_resolution), self.assertRaises(ReleaseError):
                 TargetProbe(server_path, runtime_path, url, 0.03).run()
             self.assertLess(time.monotonic() - started, 0.15)
     def test_normalizes_malformed_http_responses(self) -> None:
