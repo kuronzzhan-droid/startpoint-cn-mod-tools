@@ -17,6 +17,12 @@ from ._transaction_content import (
     save_baseline_facts,
     sync_content_switch,
 )
+from ._transaction_modes import (
+    ModeSwitch,
+    apply_mode_switch,
+    prepare_mode_switch,
+    restore_mode_switch,
+)
 from .compatibility import (
     ActiveRelease,
     ActiveState,
@@ -112,6 +118,27 @@ def _same_target(before: TargetFacts, recovered: TargetFacts) -> None:
         )
 
 
+def _restore_components(
+    content: ContentSwitch,
+    mode: ModeSwitch | None,
+    *,
+    mode_applied: bool,
+) -> None:
+    failure: ReleaseError | None = None
+    if mode is not None and mode_applied:
+        try:
+            restore_mode_switch(mode)
+        except ReleaseError as error:
+            failure = error
+    try:
+        restore_content_switch(content)
+    except ReleaseError as error:
+        if failure is None:
+            failure = error
+    if failure is not None:
+        raise failure
+
+
 def install_release(
     release: Path,
     target: ManagedTarget,
@@ -169,7 +196,9 @@ def install_release(
     baseline_process = initial_process
     before_facts: TargetFacts | None = None
     switch: ContentSwitch | None = None
+    mode_switch: ModeSwitch | None = None
     switched = False
+    mode_switched = False
     committed = False
     phase = "CREATED"
 
@@ -212,9 +241,14 @@ def install_release(
         advance(phase)
 
         switch = prepare_content_switch(candidates, target, operation_id)
+        if candidates.modes_root is not None:
+            mode_switch = prepare_mode_switch(candidates, target, operation_id)
         save_baseline_facts(switch, before_facts)
         apply_content_switch(switch)
         switched = True
+        if mode_switch is not None:
+            apply_mode_switch(mode_switch)
+            mode_switched = True
         sync_content_switch(switch)
         phase = "SWITCHED"
         advance(phase)
@@ -262,7 +296,11 @@ def install_release(
                 current = platform.current_process()
                 if current is not None:
                     platform.stop_owned(current, health_timeout)
-                restore_content_switch(switch)
+                _restore_components(
+                    switch,
+                    mode_switch,
+                    mode_applied=mode_switched,
+                )
                 recovered_process = platform.start_server(launch, environment, operation_id)
                 wait_health_ready(target.health_url, health_timeout)
                 recovered = target.target_probe(timeout_seconds=health_timeout).run()

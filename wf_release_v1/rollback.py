@@ -13,6 +13,7 @@ from ._transaction_content import (
     load_content_switch,
     restore_content_switch,
 )
+from ._transaction_modes import load_mode_switch, restore_mode_switch
 from .compatibility import ActiveState
 from .errors import ReleaseError
 from .platform import LaunchEnvironment, PlatformAdapter
@@ -25,6 +26,7 @@ from .receipts import (
     write_phase_receipt,
 )
 from .target import ManagedTarget
+from .verifier import verify_release
 
 
 @dataclass(frozen=True)
@@ -92,7 +94,29 @@ def _recover_runtime(
 ) -> None:
     switch = load_content_switch(target, source_operation_id, release_id)
     baseline = load_baseline_facts(switch)
-    restore_content_switch(switch)
+    mode_switch = load_mode_switch(target, source_operation_id, release_id)
+    archive = (
+        target.state_root
+        / "objects"
+        / release_id.replace(":", "-", 1)
+        / "release.wf-release.zip"
+    )
+    mode_expected = "modes" in verify_release(archive).components
+    if mode_expected != (mode_switch is not None):
+        raise _error("WFREL_STATE_CONFLICT", "retained Mode recovery facts disagree")
+    failure: ReleaseError | None = None
+    if mode_switch is not None:
+        try:
+            restore_mode_switch(mode_switch)
+        except ReleaseError as error:
+            failure = error
+    try:
+        restore_content_switch(switch)
+    except ReleaseError as error:
+        if failure is None:
+            failure = error
+    if failure is not None:
+        raise failure
     launch = target.launch_spec()
     process = platform.start_server(launch, _environment(target), runtime_operation_id)
     wait_health_ready(target.health_url, health_timeout)

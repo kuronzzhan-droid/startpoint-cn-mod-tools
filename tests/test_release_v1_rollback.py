@@ -140,6 +140,11 @@ class RollbackTests(unittest.TestCase):
             mock.patch.object(rollback, "wait_health_ready"),
             mock.patch.object(ManagedTarget, "launch_spec", return_value=self.launch),
             mock.patch.object(ManagedTarget, "target_probe", return_value=probe),
+            mock.patch.object(
+                rollback,
+                "verify_release",
+                return_value=SimpleNamespace(components=("content",)),
+            ),
         )
 
     def test_retries_only_a_recovery_failed_operation_and_records_a_new_audit_receipt(self) -> None:
@@ -148,7 +153,7 @@ class RollbackTests(unittest.TestCase):
         commit_active_state(self.target.state_root, previous=_active(), active=current)
         platform = FakePlatform()
         patches = self._patch_runtime()
-        with patches[0], patches[1], patches[2], patches[3]:
+        with patches[0], patches[1], patches[2], patches[3], patches[4]:
             result = recover_failed_operation(
                 self.target, platform, ORIGINAL_OPERATION, health_timeout=2.0
             )
@@ -179,7 +184,7 @@ class RollbackTests(unittest.TestCase):
         self._receipt(outcome="succeeded", phase="COMMITTED")
         platform = FakePlatform()
         patches = self._patch_runtime()
-        with patches[0], patches[1], patches[2], patches[3]:
+        with patches[0], patches[1], patches[2], patches[3], patches[4]:
             result = rollback_to_previous(
                 self.target, platform, OLD_ID, health_timeout=2.0
             )
@@ -230,7 +235,7 @@ class RollbackTests(unittest.TestCase):
         platform = FakePlatform()
         patches = self._patch_runtime()
         with (
-            patches[0], patches[1], patches[2], patches[3],
+            patches[0], patches[1], patches[2], patches[3], patches[4],
             mock.patch.object(
                 rollback,
                 "write_phase_receipt",
@@ -256,7 +261,7 @@ class RollbackTests(unittest.TestCase):
         platform = FakePlatform()
         error = ReleaseError("WFREL_REQUIRE_TARGET", "injected recovery rejection")
         patches = self._patch_runtime(error)
-        with patches[0], patches[1], patches[2], patches[3]:
+        with patches[0], patches[1], patches[2], patches[3], patches[4]:
             result = recover_failed_operation(
                 self.target, platform, ORIGINAL_OPERATION, health_timeout=2.0
             )

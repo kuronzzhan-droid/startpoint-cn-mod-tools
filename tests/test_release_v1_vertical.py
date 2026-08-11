@@ -4,12 +4,20 @@ from __future__ import annotations
 
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
+import hashlib
 from pathlib import Path
 import tempfile
 import threading
 import unittest
 
 from tests.release_v1_fixtures import make_patch_overlay, make_sealed_character_workspace
+from tests.release_v1_mode_fixture import (
+    MODE_CAPABILITY,
+    MODE_FILE,
+    MODE_NAME,
+    make_character_mode_release,
+    mode_payloads,
+)
 from tests.release_v1_schema_support import requirements_wire
 from tests.test_release_v1_probe import (
     GENERAL_CAPABILITIES,
@@ -35,13 +43,26 @@ SHA_C = "c" * 64
 SHA_D = "d" * 64
 
 
-def _capabilities(target_version: str, *, content_digest: str) -> dict[str, object]:
+EMPTY_MODE_DIGEST = "sha256:" + hashlib.sha256(canonical_json_bytes([])).hexdigest()
+
+
+def _capabilities(
+    target_version: str,
+    *,
+    content_digest: str,
+    loaded_modes: list[dict[str, object]] | None = None,
+    mode_digest: str = EMPTY_MODE_DIGEST,
+    mode_contract: bool = True,
+) -> dict[str, object]:
     patch_versions = ["1.4.54"]
     if target_version != "1.4.54":
         patch_versions.append(target_version)
     return {
         "contractVersion": 1,
-        "serverCapabilities": list(GENERAL_CAPABILITIES),
+        "serverCapabilities": [
+            item for item in GENERAL_CAPABILITIES
+            if mode_contract or item != "mode.release-contract@1"
+        ],
         "serverBundle": {
             "version": "1.0.1",
             "bundleId": _server_manifest()["bundleId"],
@@ -64,9 +85,12 @@ def _capabilities(target_version: str, *, content_digest: str) -> dict[str, obje
         },
         "modes": {
             "api": 1,
-            "serverCapabilities": list(MODE_CAPABILITIES),
-            "loaded": [],
-            "modeDigest": f"sha256:{SHA_D}",
+            "serverCapabilities": [
+                item for item in MODE_CAPABILITIES
+                if mode_contract or item != "mode.release-contract@1"
+            ],
+            "loaded": loaded_modes or [],
+            "modeDigest": mode_digest,
         },
         "features": {
             "patchOverlaySchema": 1,
@@ -124,11 +148,15 @@ class _VerticalPlatform:
         contract: _LiveContract,
         *,
         wrong_candidate: bool = False,
+        wrong_mode: bool = False,
+        mode_contract: bool = True,
         fail_start_number: int | None = None,
     ) -> None:
         self.target = target
         self.contract = contract
         self.wrong_candidate = wrong_candidate
+        self.wrong_mode = wrong_mode
+        self.mode_contract = mode_contract
         self.fail_start_number = fail_start_number
         self.current: ManagedProcess | None = None
         self.start_count = 0
@@ -169,7 +197,31 @@ class _VerticalPlatform:
         else:
             version = "1.4.54"
             digest = f"sha256:{SHA_A}"
-        self.contract.value = _capabilities(version, content_digest=digest)
+        loaded_modes: list[dict[str, object]] = []
+        mode_digest = EMPTY_MODE_DIGEST
+        module = environment.modes_root / MODE_FILE
+        if module.is_file():
+            module_digest = hashlib.sha256(module.read_bytes()).hexdigest()
+            loaded_modes = [{
+                "name": MODE_NAME,
+                "capabilities": [MODE_CAPABILITY],
+                "sha256": module_digest,
+            }]
+            mode_digest = "sha256:" + hashlib.sha256(canonical_json_bytes([{
+                "capabilities": [MODE_CAPABILITY],
+                "fileName": MODE_FILE,
+                "name": MODE_NAME,
+                "sha256": module_digest,
+            }])).hexdigest()
+            if self.wrong_mode:
+                mode_digest = f"sha256:{SHA_D}"
+        self.contract.value = _capabilities(
+            version,
+            content_digest=digest,
+            loaded_modes=loaded_modes,
+            mode_digest=mode_digest,
+            mode_contract=self.mode_contract,
+        )
         self.contract.running = True
         self.current = ManagedProcess(
             1000 + self.start_count,
@@ -205,6 +257,10 @@ class CharacterInstallVerticalTests(unittest.TestCase):
             output=cls.release,
             requirements=parse_requirements(requirements_wire()),
         ))
+        cls.mode_release = make_character_mode_release(
+            cls.release,
+            root / "seris-mode-release.wf-release.zip",
+        )
 
     def setUp(self) -> None:
         temporary = tempfile.TemporaryDirectory(prefix="wfrel-vertical-target-")
@@ -335,6 +391,54 @@ class CharacterInstallVerticalTests(unittest.TestCase):
             receipt.outcome,
             receipt.recovery_outcome,
         ))
+
+    def test_combined_mode_release_is_accepted_only_after_restart(self) -> None:
+        platform = _VerticalPlatform(self.target, self.contract)
+        _payloads, expected_mode_digest = mode_payloads()
+
+        result = install_release(self.mode_release, self.target, platform, health_timeout=2)
+
+        self.assertEqual("succeeded", result.outcome)
+        self.assertTrue((self.target.modes_root / MODE_FILE).is_file())
+        facts = self.target.target_probe(timeout_seconds=2).run()
+        self.assertEqual(expected_mode_digest, facts.mode_digest)
+        self.assertEqual("1.4.55", facts.cdn_target_version)
+        self.assertEqual(2, platform.start_count)
+
+    def test_missing_mode_server_contract_stops_before_active_roots_change(self) -> None:
+        platform = _VerticalPlatform(
+            self.target,
+            self.contract,
+            mode_contract=False,
+        )
+        original_pointer = self._pointer().read_bytes()
+
+        result = install_release(self.mode_release, self.target, platform, health_timeout=2)
+
+        self.assertEqual("failed", result.outcome)
+        self.assertEqual("WFREL_REQUIRE_SERVER_CAPABILITY", result.error_code)
+        self.assertEqual(original_pointer, self._pointer().read_bytes())
+        self.assertFalse((self.target.cdn_root / "patches" / "1.4.55").exists())
+        self.assertEqual([], list(self.target.modes_root.iterdir()))
+        self.assertNotIn("prepare", platform.events)
+
+    def test_wrong_mode_digest_restores_content_and_mode_roots(self) -> None:
+        platform = _VerticalPlatform(
+            self.target,
+            self.contract,
+            wrong_mode=True,
+        )
+
+        result = install_release(self.mode_release, self.target, platform, health_timeout=2)
+
+        self.assertEqual("recovered", result.outcome)
+        self.assertEqual("WFREL_REQUIRE_EXPECTED_MODE_STATE", result.error_code)
+        self.assertEqual(self.baseline_pointer, self._pointer().read_bytes())
+        self.assertFalse((self.target.cdn_root / "patches" / "1.4.55").exists())
+        self.assertEqual([], list(self.target.modes_root.iterdir()))
+        candidates = tuple(self.target.component_roots.modes.rglob(MODE_FILE))
+        self.assertEqual(1, len(candidates))
+        self.assertEqual(EMPTY_MODE_DIGEST, self.target.target_probe(timeout_seconds=2).run().mode_digest)
 
 
 if __name__ == "__main__":

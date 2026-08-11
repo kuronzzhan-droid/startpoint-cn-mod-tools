@@ -173,7 +173,6 @@ def prepare_content_switch(
         or _OPERATION_ID.fullmatch(operation_id) is None
         or candidates.content_root is None
         or candidates.server_root is not None
-        or candidates.modes_root is not None
     ):
         raise _error("content switch input is invalid")
     version = _target_version(candidates)
