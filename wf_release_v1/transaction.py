@@ -14,6 +14,7 @@ from ._transaction_content import (
     apply_content_switch,
     prepare_content_switch,
     restore_content_switch,
+    save_baseline_facts,
     sync_content_switch,
 )
 from .compatibility import (
@@ -211,6 +212,7 @@ def install_release(
         advance(phase)
 
         switch = prepare_content_switch(candidates, target, operation_id)
+        save_baseline_facts(switch, before_facts)
         apply_content_switch(switch)
         switched = True
         sync_content_switch(switch)

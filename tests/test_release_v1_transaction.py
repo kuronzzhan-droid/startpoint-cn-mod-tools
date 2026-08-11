@@ -12,6 +12,7 @@ from unittest import mock
 
 from tests.test_release_v1_compatibility import _active, _target, _verified
 from wf_release_v1._platform_state import ManagedProcess
+from wf_release_v1._target_facts import target_facts_from_wire, target_facts_to_wire
 from wf_release_v1.canonical import FileIdentity
 from wf_release_v1.compatibility import ActiveRelease
 from wf_release_v1.errors import ReleaseError
@@ -212,6 +213,12 @@ class TransactionTests(unittest.TestCase):
         self.assertEqual(b"overlay", (
             self.target.cdn_root / "patches" / "1.4.54" / "overlay.zip"
         ).read_bytes())
+        staging = self.target.state_root / "staging" / OPERATION_ID
+        self.assertEqual(b"1.4.54\n", (staging / "content-target-version.txt").read_bytes())
+        witness = json.loads((staging / "baseline-target-facts.json").read_text(encoding="utf-8"))
+        self.assertEqual(self.before.content_digest, witness["contentDigest"])
+        self.assertEqual(self.before.cdn_target_version, witness["cdnTargetVersion"])
+        self.assertNotIn(str(self.target.data_root), repr(witness))
         self.assertIn("start", platform.events)
         self.assertIn("stop", platform.events)
 
@@ -250,6 +257,21 @@ class TransactionTests(unittest.TestCase):
             install_release(self.release, self.target, FakePlatform(), health_timeout=0)
         self.assertEqual("WFREL_SCHEMA_INVALID", caught.exception.code)
         self.assertFalse((self.target.state_root / "receipts").exists())
+
+    def test_persisted_baseline_facts_have_one_strict_path_free_shape(self) -> None:
+        wire = target_facts_to_wire(self.before)
+        self.assertEqual(self.before, target_facts_from_wire(wire))
+        attacks: list[dict[str, object]] = []
+        missing = dict(wire); del missing["contentDigest"]; attacks.append(missing)
+        extra = dict(wire); extra["dataRoot"] = str(self.target.data_root); attacks.append(extra)
+        duplicate = dict(wire); duplicate["capabilities"] = [
+            *wire["capabilities"], wire["capabilities"][0],  # type: ignore[index]
+        ]; attacks.append(duplicate)
+        wrong_type = dict(wire); wrong_type["runtimeApi"] = True; attacks.append(wrong_type)
+        for value in attacks:
+            with self.subTest(keys=tuple(value)), self.assertRaises(ReleaseError) as caught:
+                target_facts_from_wire(value)
+            self.assertEqual("WFREL_STATE_INVALID", caught.exception.code)
 
     def test_initial_running_process_without_active_state_fails_before_probe(self) -> None:
         platform = FakePlatform(_process())

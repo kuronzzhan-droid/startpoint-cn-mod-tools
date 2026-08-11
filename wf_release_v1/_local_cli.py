@@ -7,28 +7,9 @@ from pathlib import Path
 
 from .errors import ReleaseError
 from .platform import WindowsPlatformAdapter
-from .probe import TargetFacts
+from ._target_facts import target_facts_to_wire
 from .target import ManagedTarget
 from .transaction import InstallResult, install_release
-
-
-def _facts_wire(facts: TargetFacts) -> dict[str, object]:
-    return {
-        "arch": facts.arch,
-        "bundleId": facts.bundle_id,
-        "capabilities": list(facts.capabilities),
-        "cdnTargetVersion": facts.cdn_target_version,
-        "contentDigest": facts.content_digest,
-        "dependencyLock": facts.dependency_lock,
-        "modeDigest": facts.mode_digest,
-        "nodeAbi": facts.node_abi,
-        "nodeVersion": facts.node_version,
-        "patchOverlaySchema": facts.patch_overlay_schema,
-        "platform": facts.platform,
-        "runtimeApi": facts.runtime_api,
-        "runtimeId": facts.runtime_id,
-        "serverVersion": facts.server_version,
-    }
 
 
 def _result_wire(result: InstallResult) -> dict[str, object]:
@@ -43,7 +24,7 @@ def _result_wire(result: InstallResult) -> dict[str, object]:
 
 def run_probe(arguments: argparse.Namespace) -> dict[str, object]:
     target = ManagedTarget.load(Path(arguments.target))
-    return _facts_wire(target.target_probe().run())
+    return target_facts_to_wire(target.target_probe().run())
 
 
 def run_install(arguments: argparse.Namespace) -> dict[str, object]:

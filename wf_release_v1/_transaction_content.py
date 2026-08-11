@@ -10,10 +10,13 @@ import stat
 from typing import Final
 
 from ._receipt_contract import _OPERATION_ID
+from ._target_facts import target_facts_from_wire, target_facts_to_wire
+from .canonical import canonical_json_bytes, load_json_strict_bytes
 from .errors import ReleaseError
 from .materialize import CandidateSet
 from .receipts import _sync_directory, _write_exact
 from .target import ManagedTarget
+from .probe import TargetFacts
 
 
 _MAX_POINTER_BYTES: Final = 256 * 1024
@@ -200,6 +203,10 @@ def prepare_content_switch(
         )
     else:
         _exclusive_file(operation_staging / "content-current.absent", b"absent\n")
+    _exclusive_file(
+        operation_staging / "content-target-version.txt",
+        version.encode("ascii") + b"\n",
+    )
     _sync_directory(operation_staging)
     _sync_directory(staging)
     return ContentSwitch(
@@ -213,6 +220,21 @@ def prepare_content_switch(
         active_parent_identity,
         pointer_parent_identity,
     )
+
+
+def save_baseline_facts(switch: ContentSwitch, facts: TargetFacts) -> None:
+    if not isinstance(switch, ContentSwitch):
+        raise _error("content switch is invalid")
+    raw = canonical_json_bytes(target_facts_to_wire(facts))
+    _exclusive_file(switch.staging_root / "baseline-target-facts.json", raw)
+    _sync_directory(switch.staging_root)
+
+
+def load_baseline_facts(switch: ContentSwitch) -> TargetFacts:
+    if not isinstance(switch, ContentSwitch):
+        raise _error("content switch is invalid")
+    raw = _stable_file(switch.staging_root / "baseline-target-facts.json")
+    return target_facts_from_wire(load_json_strict_bytes(raw, label="baselineTargetFacts"))
 
 
 def apply_content_switch(switch: ContentSwitch) -> None:
