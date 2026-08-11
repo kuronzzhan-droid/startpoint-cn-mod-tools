@@ -15,6 +15,7 @@ from typing import Final
 
 from ._receipt_contract import _OPERATION_ID
 from .canonical import FileIdentity, normalize_relative_path, stream_copy_and_hash_stable_file
+from .compatibility import VerifiedRelease
 from .errors import ReleaseError
 from .receipts import _sync_directory
 from .target import ManagedTarget
@@ -206,7 +207,10 @@ def import_verified_object(release: Path, target: ManagedTarget) -> StoredObject
         return _object_at(destination, report.release_id, copied)
 
 
-def _read_object_manifest(obj: StoredObject, target: ManagedTarget):
+def load_verified_release(obj: StoredObject, target: ManagedTarget) -> VerifiedRelease:
+    """Re-verify one retained object and return its detached contract facts."""
+    if not isinstance(obj, StoredObject) or not isinstance(target, ManagedTarget):
+        raise _error("WFREL_OBJECT_CORRUPT", "stored object reference is invalid", label="object")
     expected_archive = (
         target.state_root / "objects" / _release_directory(obj.release_id) / _ARCHIVE_NAME
     )
@@ -221,11 +225,15 @@ def _read_object_manifest(obj: StoredObject, target: ManagedTarget):
     with open_release(obj.archive) as (stream, archive_size):
         members = parse_classic_store(stream, archive_size)
         by_name = {item.name: item for item in members}
-        release, _requirements, _ownership, _raw = _metadata(stream, by_name)
+        release, requirements, ownership, _raw = _metadata(stream, by_name)
         _exact_set(release, by_name)
     if release.release_id != obj.release_id:
         raise _error("WFREL_OBJECT_CORRUPT", "stored manifest identity disagrees", label="object")
-    return release
+    return VerifiedRelease(release, requirements, ownership)
+
+
+def _read_object_manifest(obj: StoredObject, target: ManagedTarget):
+    return load_verified_release(obj, target).manifest
 
 
 def _portable_candidate_part(value: str) -> None:

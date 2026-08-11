@@ -128,6 +128,19 @@ class MaterializeTests(unittest.TestCase):
         self.assertEqual(stored, second)
         self.assertEqual((before.st_ino, before.st_mtime_ns), (second.archive.stat().st_ino, second.archive.stat().st_mtime_ns))
 
+    def test_stored_object_exposes_all_detached_verified_metadata(self) -> None:
+        from wf_release_v1.materialize import load_verified_release
+
+        stored = self._import()
+        verified = load_verified_release(stored, self.target)
+
+        self.assertEqual(stored.release_id, verified.manifest.release_id)
+        self.assertEqual(("content",), tuple(item.kind for item in verified.manifest.components))
+        self.assertEqual(1, verified.requirements.patch_overlay_schema)
+        self.assertEqual(("character:129999",), verified.ownership.entities)
+        self.assertNotIn(str(self.source), repr(verified))
+        self.assertNotIn(str(self.target.state_root), repr(verified))
+
     def test_existing_object_with_different_bytes_is_corruption_and_is_not_overwritten(self) -> None:
         stored = self._import()
         stored.archive.write_bytes(b"corrupt-existing-object")
