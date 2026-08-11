@@ -97,6 +97,16 @@ python wf_selftest.py
 python wf_gui.py
 ```
 
+只想检查本地 PNG 序列或角色包里的像素动画时，不需要配置 store/CDN/server：
+
+```bash
+python wf_preview_2d.py <序列帧目录或角色包目录> --open
+```
+
+该入口严格只读并固定绑定本机回环地址；支持逐帧、拖动、循环/单次、速度、整数缩放、
+透明背景、原点与裁剪框。格式和“帧墙并非游戏内最终特效”的证据边界见
+[2D 序列帧只读预览](docs/2D序列帧只读预览.md)。
+
 ### 开始修改后
 
 ```bash

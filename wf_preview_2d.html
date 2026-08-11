@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>WF 2D 序列帧只读预览</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; background:#111827; color:#e5e7eb; }
+    body { margin:0; padding:20px; }
+    main { max-width:1120px; margin:auto; }
+    h1 { font-size:22px; margin:0 0 8px; }
+    .note { color:#fbbf24; margin:0 0 18px; line-height:1.55; }
+    .bar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; padding:12px;
+      background:#1f2937; border:1px solid #374151; border-radius:10px; }
+    label { display:flex; gap:6px; align-items:center; font-size:13px; }
+    button, select, input { background:#111827; color:#e5e7eb; border:1px solid #4b5563;
+      border-radius:6px; padding:6px 9px; }
+    button:hover { border-color:#60a5fa; }
+    input[type=range] { width:min(360px, 55vw); }
+    input[type=number] { width:68px; }
+    #stageWrap { margin-top:14px; overflow:auto; min-height:320px; padding:18px;
+      border:1px solid #374151; border-radius:10px; background:#0b1020; }
+    #stageWrap.checker { background-color:#111827; background-image:linear-gradient(45deg,#263044 25%,transparent 25%),
+      linear-gradient(-45deg,#263044 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#263044 75%),
+      linear-gradient(-45deg,transparent 75%,#263044 75%); background-size:20px 20px;
+      background-position:0 0,0 10px,10px -10px,-10px 0; }
+    canvas { image-rendering:pixelated; border:1px solid #64748b; display:block; margin:auto; }
+    #status { margin-top:10px; color:#93c5fd; font:13px ui-monospace,monospace; white-space:pre-wrap; }
+    .error { color:#fca5a5 !important; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>WF 2D 序列帧只读预览</h1>
+  <p class="note" id="note">逐帧 PNG / sprite-sheet + atlas/timeline。战斗特效仅能作为帧墙查看；未复刻 parts 骨架矩阵补间，不代表游戏内最终表现。</p>
+  <div class="bar">
+    <label>序列 <select id="sequence"></select></label>
+    <button id="play">⏸ 暂停</button>
+    <button id="previous">◀ 上一帧</button>
+    <button id="next">下一帧 ▶</button>
+    <label>进度 <input id="scrub" type="range" min="0" max="0" value="0"></label>
+    <label>结束行为 <select id="ending"><option value="source">按源数据</option><option value="loop">循环</option><option value="once">单次</option></select></label>
+    <label>速度 <select id="speed"><option value="0.25">0.25x</option><option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option><option value="4">4x</option></select></label>
+    <label>整数缩放 <select id="scale"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></label>
+    <label><input id="transparent" type="checkbox" checked>透明背景</label>
+    <label><input id="origin" type="checkbox" checked>显示原点</label>
+    <label><input id="crop" type="checkbox">显示裁剪框</label>
+    <label>原点 X <input id="originX" type="number"></label>
+    <label>Y <input id="originY" type="number"></label>
+  </div>
+  <div id="stageWrap" class="checker"><canvas id="stage"></canvas></div>
+  <div id="status">正在读取本地只读清单…</div>
+</main>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const state = {manifest:null, sequence:null, index:0, playing:true, speed:1, accumulator:0, last:0, images:new Map()};
+function endingKind(){ const chosen=$('ending').value; return chosen==='source' ? state.sequence.kind : chosen; }
+function setSequence(index){
+  state.sequence=state.manifest.sequences[index]; state.index=0; state.playing=true;
+  $('play').textContent='⏸ 暂停'; $('scrub').max=String(state.sequence.frames.length-1); $('scrub').value='0'; draw();
+}
+function nextFrame(direction){
+  const last=state.sequence.frames.length-1; let index=state.index+direction; const ending=endingKind();
+  if(index>last){ if(ending==='loop') index=0; else { index=last; state.playing=false; $('play').textContent='▶ 播放'; } }
+  if(index<0) index=ending==='loop'?last:0;
+  state.index=index; $('scrub').value=String(index); draw();
+}
+async function imageFor(token){
+  if(state.images.has(token)) return state.images.get(token);
+  const image=new Image(); image.src='/asset/'+encodeURIComponent(token);
+  const promise=new Promise((resolve,reject)=>{image.onload=()=>resolve(image); image.onerror=()=>reject(new Error('PNG 读取失败'));});
+  state.images.set(token,promise); return promise;
+}
+async function draw(){
+  const manifest=state.manifest, sequence=state.sequence, frame=sequence.frames[state.index];
+  const canvas=$('stage'), context=canvas.getContext('2d');
+  const width=manifest.canvas.width, height=manifest.canvas.height;
+  canvas.width=width; canvas.height=height; context.imageSmoothingEnabled=false; context.clearRect(0,0,width,height);
+  try {
+    const image=await imageFor(frame.asset), s=frame.source, d=frame.destination;
+    if(!frame.rotated) context.drawImage(image,s.x,s.y,s.w,s.h,d.x,d.y,d.w,d.h);
+    else {
+      context.save(); context.translate(d.x+d.w/2,d.y+d.h/2); context.rotate(-Math.PI/2);
+      context.drawImage(image,s.x,s.y,s.h,s.w,-d.h/2,-d.w/2,d.h,d.w); context.restore();
+    }
+    if($('crop').checked){ context.strokeStyle='#fb923c'; context.lineWidth=1; context.strokeRect(d.x+.5,d.y+.5,d.w-1,d.h-1); }
+    if($('origin').checked){
+      const ox=Number($('originX').value), oy=Number($('originY').value); context.strokeStyle='#22d3ee';
+      context.beginPath(); context.moveTo(ox-5,oy+.5); context.lineTo(ox+5,oy+.5); context.moveTo(ox+.5,oy-5); context.lineTo(ox+.5,oy+5); context.stroke();
+    }
+    canvas.style.width=(width*Number($('scale').value))+'px'; canvas.style.height=(height*Number($('scale').value))+'px';
+    $('status').className=''; $('status').textContent=`${manifest.mode} · ${sequence.name} [${sequence.kind}] · 帧 ${state.index+1}/${sequence.frames.length} · 源编号 ${frame.frameNumber}${frame.atlasName?' · '+frame.atlasName:''}`;
+  } catch(error){ $('status').className='error'; $('status').textContent=String(error); }
+}
+function tick(now){
+  if(!state.last) state.last=now; const elapsed=Math.min(250,now-state.last); state.last=now;
+  if(state.playing&&state.sequence){ state.accumulator+=elapsed*state.speed*state.sequence.frameRate/1000; while(state.accumulator>=1){state.accumulator-=1;nextFrame(1);if(!state.playing)break;} }
+  requestAnimationFrame(tick);
+}
+async function start(){
+  const response=await fetch('/manifest.json',{cache:'no-store'}); if(!response.ok) throw new Error('清单读取失败');
+  state.manifest=await response.json(); $('note').textContent=state.manifest.renderingNote;
+  state.manifest.sequences.forEach((sequence,index)=>{const option=document.createElement('option');option.value=String(index);option.textContent=`${sequence.name} [${sequence.kind}] (${sequence.frames.length} 帧)`;$('sequence').appendChild(option);});
+  $('originX').value=String(state.manifest.canvas.originX); $('originY').value=String(state.manifest.canvas.originY); setSequence(0); requestAnimationFrame(tick);
+}
+$('sequence').onchange=()=>setSequence(Number($('sequence').value));
+$('play').onclick=()=>{state.playing=!state.playing;$('play').textContent=state.playing?'⏸ 暂停':'▶ 播放';};
+$('previous').onclick=()=>{state.playing=false;$('play').textContent='▶ 播放';nextFrame(-1);};
+$('next').onclick=()=>{state.playing=false;$('play').textContent='▶ 播放';nextFrame(1);};
+$('scrub').oninput=()=>{state.playing=false;$('play').textContent='▶ 播放';state.index=Number($('scrub').value);draw();};
+$('speed').onchange=()=>state.speed=Number($('speed').value);
+for(const id of ['scale','origin','crop','originX','originY']) $(id).onchange=draw;
+$('transparent').onchange=()=>{$('stageWrap').classList.toggle('checker',$('transparent').checked);};
+start().catch(error=>{$('status').className='error';$('status').textContent=String(error);});
+</script>
+</body>
+</html>
