@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 from .probe import TargetFacts
 from .schema import OwnershipManifest, ReleaseManifest, ReleaseRequirements
+from .verifier_overlay import VerifiedOverlayChain
 
 
 @dataclass(frozen=True)
@@ -15,6 +16,7 @@ class VerifiedRelease:
     manifest: ReleaseManifest
     requirements: ReleaseRequirements
     ownership: OwnershipManifest
+    overlay: VerifiedOverlayChain | None = None
 
 
 @dataclass(frozen=True)
@@ -111,6 +113,18 @@ def _ownership_codes(
     ):
         codes.append("WFREL_OWNERSHIP_REPLACES_PARTIAL")
     return codes
+
+
+def evaluate_ownership(
+    release: VerifiedRelease,
+    active: ActiveState,
+) -> CompatibilityReport:
+    """Evaluate only the shared exact ownership replacement contract."""
+    if not isinstance(release, VerifiedRelease) or not isinstance(active, ActiveState):
+        raise TypeError("ownership compatibility input is invalid")
+    if any(item.release_id == release.manifest.release_id for item in active.releases):
+        return CompatibilityReport(True, ("WFREL_OWNERSHIP_NOOP",))
+    return _report(_ownership_codes(release, active))
 
 
 def evaluate_requirements(

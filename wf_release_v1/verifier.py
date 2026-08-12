@@ -21,7 +21,7 @@ from .schema import (
     parse_requirements,
     verify_release_id,
 )
-from .verifier_overlay import verify_overlay_chain
+from .verifier_overlay import VerifiedOverlayChain, inspect_overlay_chain
 from .verifier_modes import verify_mode_component
 from .verifier_zip import (
     ROOT,
@@ -134,7 +134,7 @@ def _components(
     release: ReleaseManifest,
     requirements: ReleaseRequirements,
     staged: dict[str, Path],
-) -> None:
+) -> VerifiedOverlayChain:
     kinds = tuple(component.kind for component in release.components)
     if kinds not in (("content",), ("content", "modes")):
         raise _error(
@@ -160,11 +160,12 @@ def _components(
     ):
         raise _error("WFREL_COMPONENT_INVALID", "content must contain explicit Overlay ZIPs", label="content")
     paths = [staged[item.path] for item in content]
-    target = verify_overlay_chain(tuple(paths))
-    if target != release.expected_state.cdn_target_version:
+    overlay = inspect_overlay_chain(tuple(paths))
+    if overlay.target_version != release.expected_state.cdn_target_version:
         raise _error("WFREL_COMPONENT_INVALID", "Overlay target disagrees with expected state", label="content")
     if has_modes:
         verify_mode_component(release, requirements, staged)
+    return overlay
 
 
 def verify_release_contract(path: Path) -> tuple[VerificationReport, VerifiedRelease]:
@@ -180,7 +181,7 @@ def verify_release_contract(path: Path) -> tuple[VerificationReport, VerifiedRel
                 stream, release, by_name, Path(temporary)
             )
             verify_release_id(release)
-            _components(release, requirements, staged)
+            overlay = _components(release, requirements, staged)
             _ownership(ownership)
         report = VerificationReport(
             release_id=release.release_id,
@@ -188,7 +189,7 @@ def verify_release_contract(path: Path) -> tuple[VerificationReport, VerifiedRel
             file_count=len(release.files),
             payload_bytes=payload_bytes,
         )
-        return report, VerifiedRelease(release, requirements, ownership)
+        return report, VerifiedRelease(release, requirements, ownership, overlay)
 
 
 def verify_release(path: Path) -> VerificationReport:

@@ -36,10 +36,40 @@ _LAYERS: Final = ("common", "medium", "android")
 
 
 @dataclass(frozen=True)
-class _Edge:
-    path: Path
+class VerifiedOverlayArchive:
+    relative_path: str
+    layer: str
+    order: int
+    size: int
+    sha256: str
+
+
+@dataclass(frozen=True)
+class VerifiedOverlayEdge:
     from_version: str
     target_version: str
+    archives: tuple[VerifiedOverlayArchive, ...]
+
+
+@dataclass(frozen=True)
+class VerifiedOverlayChain:
+    from_version: str
+    target_version: str
+    edges: tuple[VerifiedOverlayEdge, ...]
+
+
+@dataclass(frozen=True)
+class _Edge:
+    path: Path
+    facts: VerifiedOverlayEdge
+
+    @property
+    def from_version(self) -> str:
+        return self.facts.from_version
+
+    @property
+    def target_version(self) -> str:
+        return self.facts.target_version
 
 
 def _error(code: str, message: str, **details: object) -> ReleaseError:
@@ -219,7 +249,7 @@ def _manifest_edge(
     manifest: object,
     *,
     archive_name: str,
-) -> tuple[str, str]:
+) -> VerifiedOverlayEdge:
     if not isinstance(manifest, Mapping):
         raise _error("WFREL_OVERLAY_INVALID", "patch manifest must be an object")
     required = {"schema", "targetVersion", "compatibleClient", "archives"}
@@ -236,6 +266,7 @@ def _manifest_edge(
         raise _error("WFREL_OVERLAY_INVALID", "patch manifest archives must be nonempty")
     declared: set[str] = set()
     layers: dict[str, list[int]] = {layer: [] for layer in _LAYERS}
+    archives: list[VerifiedOverlayArchive] = []
     edge_from: str | None = None
     for index, value in enumerate(entries):
         if not isinstance(value, Mapping) or set(value) != _ARCHIVE_KEYS:
@@ -264,6 +295,13 @@ def _manifest_edge(
             raise _error("WFREL_OVERLAY_INVALID", "archive path is duplicated")
         declared.add(relative_path)
         layers[layer].append(order)
+        archives.append(VerifiedOverlayArchive(
+            relative_path=relative_path,
+            layer=layer,
+            order=order,
+            size=size,
+            sha256=digest,
+        ))
         info = infos.get(relative_path)
         if info is None or info.file_size != size:
             raise _error("WFREL_OVERLAY_INVALID", "archive size does not match manifest")
@@ -284,7 +322,11 @@ def _manifest_edge(
         raise _error("WFREL_OVERLAY_INVALID", "Overlay member set does not match manifest")
     if edge_from is None or not isinstance(target, str):
         raise _error("WFREL_OVERLAY_INVALID", "Overlay edge is incomplete")
-    return edge_from, target
+    ordered = tuple(sorted(
+        archives,
+        key=lambda item: (_LAYERS.index(item.layer), item.order, item.relative_path),
+    ))
+    return VerifiedOverlayEdge(edge_from, target, ordered)
 
 
 def _verify_overlay(path: Path) -> _Edge:
@@ -311,16 +353,16 @@ def _verify_overlay(path: Path) -> _Edge:
                 raise _error("WFREL_OVERLAY_INVALID", "Overlay requirements must be an object", archiveName=archive_name)
             manifest_raw = _read_small(bundle, infos["patch-manifest.json"], archive_name=archive_name)
             manifest = load_json_strict_bytes(manifest_raw, label="patch-manifest.json")
-            edge_from, target = _manifest_edge(bundle, infos, manifest, archive_name=archive_name)
+            facts = _manifest_edge(bundle, infos, manifest, archive_name=archive_name)
     except ReleaseError:
         raise
     except (OSError, RuntimeError, zipfile.BadZipFile, zipfile.LargeZipFile) as error:
         raise _error("WFREL_OVERLAY_INVALID", "outer Overlay ZIP is unreadable", archiveName=archive_name) from error
-    return _Edge(path, edge_from, target)
+    return _Edge(path, facts)
 
 
-def verify_overlay_chain(paths: Sequence[Path]) -> str:
-    """Independently verify explicit private Overlay copies and return the chain tail."""
+def inspect_overlay_chain(paths: Sequence[Path]) -> VerifiedOverlayChain:
+    """Verify explicit private Overlay copies and return detached chain facts."""
     if not paths:
         raise _error("WFREL_OVERLAY_INVALID", "at least one Overlay is required")
     edges = [_verify_overlay(Path(path)) for path in paths]
@@ -342,11 +384,28 @@ def verify_overlay_chain(paths: Sequence[Path]) -> str:
     if len(heads) != 1 or len(tails) != 1:
         raise _error("WFREL_OVERLAY_GRAPH", "Patch Overlay graph has no unique head and tail")
     current = next(iter(heads))
+    head = current
     visited: set[tuple[str, str]] = set()
+    ordered: list[VerifiedOverlayEdge] = []
     while current in outgoing:
         edge = outgoing[current]
         visited.add((edge.from_version, edge.target_version))
+        ordered.append(edge.facts)
         current = edge.target_version
     if len(visited) != len(edges) or current not in tails:
         raise _error("WFREL_OVERLAY_GRAPH", "Patch Overlay graph is disconnected")
-    return current
+    return VerifiedOverlayChain(head, current, tuple(ordered))
+
+
+def verify_overlay_chain(paths: Sequence[Path]) -> str:
+    """Independently verify explicit private Overlay copies and return the chain tail."""
+    return inspect_overlay_chain(paths).target_version
+
+
+__all__ = [
+    "VerifiedOverlayArchive",
+    "VerifiedOverlayChain",
+    "VerifiedOverlayEdge",
+    "inspect_overlay_chain",
+    "verify_overlay_chain",
+]
