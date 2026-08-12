@@ -79,7 +79,12 @@ class WorkspaceStatus:
 
 
 def _absolute(path: Path) -> Path:
-    return Path(os.path.abspath(os.fspath(path)))
+    absolute = os.path.abspath(os.fspath(path))
+    if os.name != "nt" or absolute.startswith("\\\\?\\"):
+        return Path(absolute)
+    if absolute.startswith("\\\\"):
+        return Path("\\\\?\\UNC\\" + absolute[2:])
+    return Path("\\\\?\\" + absolute)
 
 
 def _is_within(path: Path, root: Path) -> bool:

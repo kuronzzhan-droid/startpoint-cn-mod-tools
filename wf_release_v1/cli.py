@@ -18,6 +18,7 @@ from ._local_cli import (
 )
 from .legacy_share import inspect_legacy_share
 from .legacy_import import import_legacy_share
+from .legacy_character import adopt_legacy_character
 from .producer import BuildReceipt, BuildRequest, build_character_release
 from .schema import ReleaseRequirements, parse_requirements
 from .verifier import VerificationReport, verify_release
@@ -41,6 +42,7 @@ _FORMAT_PREFIXES: Final = (
 _INCOMPATIBLE_PREFIXES: Final = (
     "WFREL_BUILD_SOURCE_",
     "WFREL_CHARACTER_SOURCE_",
+    "WFREL_CHARACTER_ADOPTION_",
     "WFREL_COMPONENT_",
     "WFREL_OVERLAY_GRAPH",
     "WFREL_OWNERSHIP_",
@@ -287,6 +289,12 @@ def _run_import_share(arguments: argparse.Namespace) -> dict[str, object]:
     ).to_wire()
 
 
+def _run_adopt_character(arguments: argparse.Namespace) -> dict[str, object]:
+    return adopt_legacy_character(
+        Path(arguments.imported), Path(arguments.config), Path(arguments.output)
+    ).to_wire()
+
+
 def _parser(output_context: _ParseOutputContext | None = None) -> _ArgumentParser:
     context = output_context or _ParseOutputContext()
     parser = _ArgumentParser(prog="wf-release", output_context=context)
@@ -329,6 +337,15 @@ def _parser(output_context: _ParseOutputContext | None = None) -> _ArgumentParse
     import_share.add_argument("--mapping")
     import_share.add_argument("--json", action="store_true", required=True)
     import_share.set_defaults(handler=_run_import_share)
+
+    adopt = commands.add_parser(
+        "adopt-character", help="把完整旧包转换为封印角色工作区", output_context=context
+    )
+    adopt.add_argument("--imported", required=True)
+    adopt.add_argument("--config", required=True)
+    adopt.add_argument("--output", required=True)
+    adopt.add_argument("--json", action="store_true", required=True)
+    adopt.set_defaults(handler=_run_adopt_character)
 
     probe = commands.add_parser(
         "probe", help="读取受管目标事实", output_context=context
