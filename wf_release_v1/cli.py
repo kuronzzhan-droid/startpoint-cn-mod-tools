@@ -17,6 +17,7 @@ from ._local_cli import (
     run_rollback as _run_rollback,
 )
 from .legacy_share import inspect_legacy_share
+from .legacy_import import import_legacy_share
 from .producer import BuildReceipt, BuildRequest, build_character_release
 from .schema import ReleaseRequirements, parse_requirements
 from .verifier import VerificationReport, verify_release
@@ -279,6 +280,13 @@ def _run_inspect_share(arguments: argparse.Namespace) -> dict[str, object]:
     return inspect_legacy_share(Path(arguments.share)).to_wire()
 
 
+def _run_import_share(arguments: argparse.Namespace) -> dict[str, object]:
+    mapping = Path(arguments.mapping) if arguments.mapping is not None else None
+    return import_legacy_share(
+        Path(arguments.share), Path(arguments.output), mapping=mapping
+    ).to_wire()
+
+
 def _parser(output_context: _ParseOutputContext | None = None) -> _ArgumentParser:
     context = output_context or _ParseOutputContext()
     parser = _ArgumentParser(prog="wf-release", output_context=context)
@@ -312,6 +320,15 @@ def _parser(output_context: _ParseOutputContext | None = None) -> _ArgumentParse
     share.add_argument("--share", required=True)
     share.add_argument("--json", action="store_true", required=True)
     share.set_defaults(handler=_run_inspect_share)
+
+    import_share = commands.add_parser(
+        "import-share", help="隔离导入已验证的旧 wfshare", output_context=context
+    )
+    import_share.add_argument("--share", required=True)
+    import_share.add_argument("--output", required=True)
+    import_share.add_argument("--mapping")
+    import_share.add_argument("--json", action="store_true", required=True)
+    import_share.set_defaults(handler=_run_import_share)
 
     probe = commands.add_parser(
         "probe", help="读取受管目标事实", output_context=context

@@ -183,6 +183,34 @@ requirements 与受管 server-data 迁移证明，因此当前结果固定是 `m
 显式转换使用。`full` 且带个人增强的包会另给 `full-variant-includes-enhancements` 警告，不能在
 未审查增强差异时伪装成纯角色内容。
 
+### 旧分享包隔离导入
+
+```powershell
+python -X utf8 -m wf_release_v1 import-share `
+  --share D:\path\to\wfshare-example.zip `
+  --output D:\isolated\wfshare-example-import `
+  --json
+```
+
+`import-share` 只接受一个尚不存在的显式绝对输出目录。它先稳定复制输入，再让同一检查器在同一
+已打开快照上完成验证与提取，最后原子提交工作区。工作区保留原始 `source.wfshare.zip`、逐个内层
+归档、规范 `legacy-import.json`、元数据副本、最终哈希 payload 和隔离的 `quarantine/`；包内脚本
+只作为不可执行字节复制，绝不会被导入器调用。任何失败都不留下半套输出，也不会写入 live CDN、
+服务端仓库或受管目标。
+
+旧 CDN payload 只有 SHA-1 存储路径，不能据此反推出逻辑资源名。没有额外证据时它们进入
+`opaque/<root>/`，结果明确为 `mappingStatus=opaque`、`clientPayloadEditable=false`。调用者可提供
+严格映射文件：
+
+```json
+{"legacyPathMapVersion":1,"paths":[{"logicalPath":"character/example/ui/full_shot.png","root":"common"}]}
+```
+
+映射的存储路径由工具使用国服固定散列规则重新计算；声明不存在、重复、不可移植或跨 root 的条目
+一律失败关闭。已证明的文件进入 `roots/<root>/<logicalPath>`，未证明文件继续留在 `opaque/`。
+只有最终 payload 全部有明确映射时 `clientPayloadEditable=true`；这仍不解除 requirements、sealed
+workspace、server-data migration 或脚本复核 blocker，也不是安装/发布证明。
+
 ## 6. 错误与退出码
 
 失败时 stdout 为空，stderr 只有一行 UTF-8 JSON，包含稳定 `code` 和中文 `message`；默认不
