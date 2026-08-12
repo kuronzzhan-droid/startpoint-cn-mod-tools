@@ -19,6 +19,7 @@ from ._local_cli import (
 from .legacy_share import inspect_legacy_share
 from .legacy_import import import_legacy_share
 from .legacy_character import adopt_legacy_character
+from .overlay_builder import build_character_overlay
 from .producer import BuildReceipt, BuildRequest, build_character_release
 from .schema import ReleaseRequirements, parse_requirements
 from .verifier import VerificationReport, verify_release
@@ -35,6 +36,7 @@ _FORMAT_PREFIXES: Final = (
     "WFREL_JSON_",
     "WFREL_OVERLAY_INVALID",
     "WFREL_OVERLAY_LIMIT",
+    "WFREL_OVERLAY_BUILD_",
     "WFREL_PATH_",
     "WFREL_SCHEMA_",
     "WFREL_SHARE_INVALID",
@@ -295,6 +297,15 @@ def _run_adopt_character(arguments: argparse.Namespace) -> dict[str, object]:
     ).to_wire()
 
 
+def _run_build_overlay(arguments: argparse.Namespace) -> dict[str, object]:
+    return build_character_overlay(
+        Path(arguments.workspace),
+        arguments.from_version,
+        arguments.target_version,
+        Path(arguments.output),
+    ).to_wire()
+
+
 def _parser(output_context: _ParseOutputContext | None = None) -> _ArgumentParser:
     context = output_context or _ParseOutputContext()
     parser = _ArgumentParser(prog="wf-release", output_context=context)
@@ -346,6 +357,16 @@ def _parser(output_context: _ParseOutputContext | None = None) -> _ArgumentParse
     adopt.add_argument("--output", required=True)
     adopt.add_argument("--json", action="store_true", required=True)
     adopt.set_defaults(handler=_run_adopt_character)
+
+    overlay = commands.add_parser(
+        "build-overlay", help="从密封角色工作区生成 Patch Overlay", output_context=context
+    )
+    overlay.add_argument("--workspace", required=True)
+    overlay.add_argument("--from-version", required=True)
+    overlay.add_argument("--target-version", required=True)
+    overlay.add_argument("--output", required=True)
+    overlay.add_argument("--json", action="store_true", required=True)
+    overlay.set_defaults(handler=_run_build_overlay)
 
     probe = commands.add_parser(
         "probe", help="读取受管目标事实", output_context=context
