@@ -1,6 +1,6 @@
 # WF 独立发行工作台
 
-`wf_release_ui.py` 是独立于旧 `wf_gui.py` 的 loopback 工作台。它把已经完成的严格 CLI 能力按七个阶段
+`wf_release_ui.py` 是独立于旧 `wf_gui.py` 的 loopback 工作台。它把已经完成的严格 CLI 能力按十个阶段
 串起来，不重新实现分享包、角色工作区、Overlay、TargetProbe 或兼容性 parser。
 
 ## 启动
@@ -13,18 +13,25 @@ python -X utf8 wf_release_ui.py --port 8767
 服务固定绑定 `127.0.0.1`，端口默认为系统分配。页面持有每次进程启动时生成的随机会话 token；
 准备操作只接受带 token 的 strict JSON POST。API 返回不回显输入绝对路径。
 
-## 七个阶段
+## 十个阶段
 
 1. **检查分享包**：验证旧 `wfshare` 方言、ZIP、分片、report/requires、脚本与 server-data 风险；
 2. **隔离导入**：只写一个明确的新目录，脚本进入 quarantine，绝不执行；
 3. **采纳角色**：完整路径映射 + 显式表 claim + 四张角色服务端表 → production 37/37 sealed workspace；
-4. **2D 预览**：普通 PNG、pixelart atlas/timeline 或 sealed workspace；
-5. **生成 Overlay**：从 sealed workspace 客户端 roots 构建确定性 Patch Overlay；
-6. **捕获 requirements**：把角色 capabilities 与当前 TargetProbe 事实绑定；
-7. **安装计划**：完整验证 Release，预览版本、content digest、ownership、no-op 与 retained previous 回退。
+4. **创建编辑副本**：保持原封印 workspace 不变，以递增包版本创建隔离副本；
+5. **重新封印**：对编辑后的已声明文件重做 37/37、所有权和 seal；
+6. **2D 预览**：普通 PNG、pixelart atlas/timeline 或 sealed workspace；
+7. **生成 Overlay**：从 sealed workspace 客户端 roots 构建确定性 Patch Overlay；
+8. **捕获 requirements**：把角色 capabilities 与当前 TargetProbe 事实绑定；
+9. **目标能力检查**：只读区分 `modern`、`transition`、`legacy` 并列出阻断码；
+10. **安装计划**：完整验证 Release，按目标能力预览版本、ownership、no-op 与恢复边界。
 
 页面**没有** `install`、`rollback`、`publish`、store materialize 或设备按钮。安装和恢复继续保留在带精确
 确认词的 CLI；真实发布仍需单独授权。这样浏览器工作流不会把“预览/准备”误变成 live 写入。
+
+目标能力级别不是用户开关。`modern` 必须由严格 capabilities、Server Bundle 与 Runtime 三方一致证明；
+`transition` 必须是 capabilities 精确 404、旧 CDN 三层闭包有效且工具持有运行进程；其余旧服归为
+`legacy`，只允许检查、导入、编辑、预览和导出。工作台不会把缺失证据自动降级成更宽松的写权限。
 
 ## 导入其他人的包后能编辑到什么程度
 

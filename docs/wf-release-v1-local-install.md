@@ -1,6 +1,6 @@
 # wf-release-v1 本地受管安装与恢复
 
-本文只描述 `wf-release-v1` v1 的本机受管目标。它不是在线发布器，不会上传 CDN、连接远程主机、
+本文描述 `wf-release-v1` 的本机受管现代目标与旧服渐进兼容。它不是在线发布器，不会上传 CDN、连接远程主机、
 修改源码仓库或清理旧发行物。
 
 ## 1. 安全模型
@@ -64,8 +64,14 @@ python -X utf8 -m wf_release_v1 probe `
   --json
 ```
 
-成功输出唯一一行严格 JSON `TargetFacts`。它由 Server Bundle manifest、Runtime Pack manifest 与
-运行中 capabilities 三方交叉验证得到。输出不含绝对路径、环境变量或进程命令行。
+成功输出唯一一行 `probeVersion=2` 的严格 JSON，并给出：
+
+- `modern`：`targetProtocol=capabilities-v1`，保留原有 14 个 `TargetFacts` 顶层字段；
+- `transition`：capabilities 精确 404、三层旧 CDN 闭包有效且工具持有运行进程，可自动安装 content-only；
+- `legacy`：旧服本地事实或进程所有权不足，只能 preparation-only。
+
+输出不含绝对路径、环境变量或进程命令行。401/403/5xx、重定向、超时、坏 JSON、错误 MIME 或不受支持的
+现代 contract 都不会被当成旧服；只有 capabilities 精确 404 才进入旧服本地事实检查。
 
 ### 只读捕获 requirements
 
@@ -92,10 +98,11 @@ python -X utf8 -m wf_release_v1 plan-install `
   --json
 ```
 
-该命令完整验证 Release，读取 TargetProbe 与本机 active/previous 状态，再输出兼容性错误码、当前/
-期望 CDN 版本、no-op、ownership 冲突和 retained previous 回退可用性。成功或不兼容都不创建
+该命令完整验证 Release，再按探测到的目标能力读取 modern TargetProbe 或 legacy 三层 CDN、本机
+active/previous 状态，输出兼容性错误码、版本、no-op、ownership 冲突和恢复边界。成功或不兼容都不创建
 operation receipt、不物化 candidate、不停服、不切换指针；响应固定包含 `"writesLive":false`。
-只有 `compatible=true` 才允许进入下一节的显式安装确认。
+modern 只有 `compatible=true` 才允许进入下一节；transition 只有 `installable=true` 才允许进入旧服安装。
+纯 legacy 会保留 `previewOnly=true` 与阻断码，不能自动写入。
 
 ## 4. 安装
 
@@ -121,6 +128,23 @@ prepare、启动、`/healthz` ready、capabilities expected state、最后提交
 命令成功只说明临时受管目标达到了服务端 expected state，不证明客户端已经下载资源、显示角色、
 进入战斗或执行玩法。
 
+### transition 旧服的 content-only 安装
+
+```powershell
+python -X utf8 -m wf_release_v1 install-legacy `
+  --target D:\wf-target\target.json `
+  --release D:\releases\rolf-1.0.0.wf-release.zip `
+  --confirm INSTALL_LEGACY_RELEASE
+```
+
+该入口只接受 `transition`，且 Release 必须只有 Content/Patch Overlay、唯一要求 `content.sync@1`、没有
+Mode、server-data 或数据库迁移。工具先证明旧服进程所有权，再停服，把三层归档写入同卷私有 staging，
+逐项 no-clobber 提交和 readback，重启同一 LaunchSpec，并验证旧只读健康 JSON、capabilities 仍精确 404、
+进程身份和链尾。任一步失败都恢复本次新增文件和原运行状态；恢复失败则保持停止并保留证据。
+
+纯 `legacy` 没有自动安装入口：分享包检查、隔离导入、角色采纳、编辑、重新封印、2D 预览和 Overlay/部署包
+导出仍可闭环，部署到旧服务端必须人工执行其既有流程。工具不会执行包内脚本或替用户合并 server-data。
+
 ## 5. recovery_failed
 
 如果自动恢复本身失败，安装结果是 `recovery_failed`，服务保持停止，operation staging、candidate、
@@ -136,7 +160,8 @@ python -X utf8 -m wf_release_v1 rollback `
 ```
 
 该操作只恢复原 operation 留存的 baseline，不更改 active commit point；marker、Release 对象与组件
-类型不一致时失败关闭。
+类型不一致时失败关闭。当前 `rollback` 是 modern Content/Mode 恢复器；传入 legacy operation receipt 会以
+`WFREL_TARGET_PROTOCOL` 拒绝，不会把旧 CDN 文件误交给 modern 指针恢复逻辑。
 
 ## 6. 成功安装后的显式回退
 
@@ -161,6 +186,8 @@ active/previous。`dataCompatibilityGuaranteed` 固定为 `false`：服务端或
 - 不在真实服运行时直接替换 active CDN/Mode；所有变更先停服并由 phase receipt 记录。
 - `probe` 通过不等于 `install` 通过；`install` 通过不等于客户端/设备/玩法验收通过。
 - 任何 `WFREL_RECOVERY_FAILED` 先保持停止并保存证据，不要反复盲重试。
+- 新 operation receipt 使用 schema v2 并写明 `targetProtocol=capabilities-v1|legacy`；历史 v1 receipt 只按
+  隐式 `capabilities-v1` 读取，更新或恢复时协议不可切换。
 
 ## 8. 验证与性能证据
 

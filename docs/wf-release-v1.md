@@ -106,7 +106,7 @@ ownership 表示“源 manifest 的语义所有权”。它不证明这些逻辑
 
 以下命令均在工具仓库根目录运行。示例中的输出文件必须尚不存在。
 
-需要图形化串联时可运行 `python -X utf8 wf_release_ui.py --open`。独立工作台的七阶段、导入编辑
+需要图形化串联时可运行 `python -X utf8 wf_release_ui.py --open`。独立工作台的十阶段、导入编辑
 边界、CDN 冲突策略与剩余 UX 缺口见 `docs/wf-release-v1-workbench.md`；它不提供 live 安装、回退
 或发布入口。
 
@@ -160,7 +160,8 @@ python -X utf8 -m wf_release_v1 inspect `
 
 ### 本机受管目标
 
-`probe`、`install` 与 `rollback` 的 target 格式、确认词、恢复语义和数据降级边界见
+`probe`、`plan-install`、`install`、`install-legacy` 与 `rollback` 的 target 格式、确认词、恢复语义和
+数据降级边界见
 `docs/wf-release-v1-local-install.md`。这些命令只作用于调用者显式提供的本机 `target.json`，不上传、
 不远程连接，也不访问当前仓库之外未声明的 live store/CDN/assets。
 
