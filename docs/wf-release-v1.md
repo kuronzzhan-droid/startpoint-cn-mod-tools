@@ -211,6 +211,52 @@ python -X utf8 -m wf_release_v1 import-share `
 只有最终 payload 全部有明确映射时 `clientPayloadEditable=true`；这仍不解除 requirements、sealed
 workspace、server-data migration 或脚本复核 blocker，也不是安装/发布证明。
 
+### 已映射旧角色采纳
+
+旧包只有在 `import-share` 得到 `mappingStatus=complete` 后，才允许进入角色工作区。采纳配置必须
+逐项声明客户端表 codec、outer/inner keys、四张服务端角色表的隔离输入和角色身份；工具不会根据
+文件名猜表、不会执行 `quarantine/` 中的脚本，也不会把服务端行混进 Content Overlay：
+
+```powershell
+python -X utf8 -m wf_release_v1 adopt-character `
+  --imported D:\isolated\rolf-import `
+  --config D:\isolated\rolf-import\legacy-character-adoption.json `
+  --output D:\isolated\rolf-character-workspace `
+  --json
+```
+
+结构预检 Schema 为 `schemas/wf-release-legacy-character-adoption-v1.schema.json`；罗尔夫的真实 20 表
+声明范例为 `docs/examples/legacy-character-adoption.rolf.json`。Schema 只用于编辑器提示和结构预检，
+`wf_release_v1.legacy_character` 的严格 parser、表字节回读、37/37 与 seal 才是权威门禁。
+
+罗尔夫范例同时保留 `superFever`、特殊强化弹射三档、unique condition 180000 和四张服务端表的
+迁移声明。后两者只是语义和隔离证据：生成 sealed workspace 不等于服务端仓库已合并这些行。
+
+### 从封印角色生成标准 Patch Overlay
+
+```powershell
+python -X utf8 -m wf_release_v1 build-overlay `
+  --workspace D:\isolated\rolf-character-workspace `
+  --from-version 1.4.324 `
+  --target-version 1.4.347 `
+  --output D:\isolated\rolf-1.4.324-to-1.4.347.patch-overlay.zip `
+  --json
+```
+
+该命令从 sealed workspace 的客户端 roots 生成确定性 classic STORE 内外层 ZIP，并使用国服固定
+散列路径重建 `production/<hash>`。它不会读取当前 CDN、不会覆盖已存在输出，也不会把四张
+server rows 或隔离脚本塞进 Overlay。输出仍须交给 `build` 与独立 Verifier 形成最终 Release。
+
+### 可复用配置边界
+
+- `legacy-character-adoption.rolf.json`：角色/表/技能声明模板，可复制后逐键替换；
+- `wf-release-target.windows.json`：宿主本地受管目标模板，绝不能打进分享包；
+- `capture-requirements`：从当前目标事实生成严格 requirements，不是手写“兼容所有版本”；
+- `plan-install`：只读给出兼容性、冲突、no-op 与 retained previous 回退可用性。
+
+这些模板不会复制角色资产，也不会把一个角色的 ID、技能树或服务端行自动套给另一个角色。
+模板是显式声明的起点，不是绕过映射、表闭包、seal、TargetProbe 或真机验收的快捷方式。
+
 ## 6. 错误与退出码
 
 失败时 stdout 为空，stderr 只有一行 UTF-8 JSON，包含稳定 `code` 和中文 `message`；默认不

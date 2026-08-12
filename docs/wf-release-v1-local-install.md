@@ -47,6 +47,11 @@ wire shape，可以用于本机审计，但仍应按运维状态文件保护。
 }
 ```
 
+可复制的 Windows 起始模板在 `docs/examples/wf-release-target.windows.json`，结构预检 Schema 在
+`schemas/wf-release-target-v1.schema.json`。复制后必须把每个路径改成目标机自己的新隔离目录；
+Schema 不验证路径互斥、protected root、reparse、ADS 或回环地址的全部语义，`ManagedTarget.load`
+仍是唯一权威 parser。模板和生成后的 `target.json` 都不得进入 Release、receipt 或分享包。
+
 Server Bundle 与 Runtime Pack 必须先按各自 manifest 封装并通过 TargetProbe。初次安装前目标服务必须
 停止；如果本地没有 `active.json`，安装器可以启动声明的 baseline 做第一次探测，但不会接管已经在
 运行却没有受管状态的进程。
@@ -61,6 +66,36 @@ python -X utf8 -m wf_release_v1 probe `
 
 成功输出唯一一行严格 JSON `TargetFacts`。它由 Server Bundle manifest、Runtime Pack manifest 与
 运行中 capabilities 三方交叉验证得到。输出不含绝对路径、环境变量或进程命令行。
+
+### 只读捕获 requirements
+
+服务端、Runtime Pack 和角色 workspace 都已准备好后，用当前目标事实生成单目标 requirements：
+
+```powershell
+python -X utf8 -m wf_release_v1 capture-requirements `
+  --target D:\wf-target\target.json `
+  --workspace D:\isolated\rolf-character-workspace `
+  --output D:\isolated\rolf-requires.json `
+  --json
+```
+
+输出采用 no-clobber，只写调用者给出的新文件；不写目标目录。它把 workspace 的 required
+capabilities 与 TargetProbe 的 runtimeApi、服务端 capabilities、contentDigest、Overlay schema
+以及 `target.json` 的客户端版本/资源基线绑定。服务端缺少角色所需 capability 时失败关闭。
+
+### 安装前只读预览
+
+```powershell
+python -X utf8 -m wf_release_v1 plan-install `
+  --target D:\wf-target\target.json `
+  --release D:\releases\rolf-1.0.0.wf-release.zip `
+  --json
+```
+
+该命令完整验证 Release，读取 TargetProbe 与本机 active/previous 状态，再输出兼容性错误码、当前/
+期望 CDN 版本、no-op、ownership 冲突和 retained previous 回退可用性。成功或不兼容都不创建
+operation receipt、不物化 candidate、不停服、不切换指针；响应固定包含 `"writesLive":false`。
+只有 `compatible=true` 才允许进入下一节的显式安装确认。
 
 ## 4. 安装
 

@@ -1,0 +1,41 @@
+{
+  "clientTables": [
+    {"codecId":"flat","innerKeys":[],"logicalPath":"master/ability/ability.orderedmap","outerKeys":["1799991","1799992","1799993","1799994","1799995","1799996"],"root":"common","semanticClaims":[]},
+    {"codecId":"flat","innerKeys":[],"logicalPath":"master/ability/leader_ability.orderedmap","outerKeys":["179999"],"root":"common","semanticClaims":[]},
+    {"codecId":"flat","innerKeys":[],"logicalPath":"master/character/character.orderedmap","outerKeys":["179999"],"root":"common","semanticClaims":[]},
+    {"codecId":"raw_outer","innerKeys":[],"logicalPath":"master/character/character_gacha_sound.orderedmap","outerKeys":["179999"],"root":"common","semanticClaims":[]},
+    {"codecId":"flat","innerKeys":[],"logicalPath":"master/character/character_speech.orderedmap","outerKeys":["179999"],"root":"common","semanticClaims":[]},
+    {"codecId":"raw_outer","innerKeys":[],"logicalPath":"master/character/character_status.orderedmap","outerKeys":["179999"],"root":"common","semanticClaims":[]},
+    {"codecId":"flat","innerKeys":[],"logicalPath":"master/character/character_text.orderedmap","outerKeys":["179999"],"root":"common","semanticClaims":[]},
+    {"codecId":"raw_outer","innerKeys":[],"logicalPath":"master/character/full_shot_image_attribute.orderedmap","outerKeys":["179999"],"root":"common","semanticClaims":[]},
+    {"codecId":"flat","innerKeys":[],"logicalPath":"master/character/unique_condition.orderedmap","outerKeys":["179999","180000"],"root":"common","semanticClaims":[]},
+    {"codecId":"flat","innerKeys":[],"logicalPath":"master/equipment_enhancement/equipment_flipper_skin/flipper_skin.orderedmap","outerKeys":["100012"],"root":"common","semanticClaims":[]},
+    {"codecId":"raw_outer","innerKeys":[],"logicalPath":"master/generated/character_image.orderedmap","outerKeys":["179999"],"root":"common","semanticClaims":[]},
+    {"codecId":"raw_outer","innerKeys":[],"logicalPath":"master/generated/mana_board.orderedmap","outerKeys":["179999"],"root":"common","semanticClaims":[]},
+    {"codecId":"flat","innerKeys":[],"logicalPath":"master/generated/trimmed_image.orderedmap","outerKeys":["character/black_wolf_knight_wt26/ui/full_shot_1440_1920_0","character/black_wolf_knight_wt26/ui/full_shot_1440_1920_1","character/black_wolf_knight_wt26/ui/skill_cutin_0","character/black_wolf_knight_wt26/ui/skill_cutin_1"],"root":"common","semanticClaims":[]},
+    {"codecId":"flat","innerKeys":[],"logicalPath":"master/mana_board/mana_board2_open_condition.orderedmap","outerKeys":["179999"],"root":"common","semanticClaims":[]},
+    {"codecId":"raw_outer","innerKeys":[],"logicalPath":"master/mana_board/mana_node.orderedmap","outerKeys":["179999"],"root":"common","semanticClaims":[]},
+    {"codecId":"action_nested","innerKeys":[{"outer_key":"black_wolf_knight_wt26","keys":["1","2"]}],"logicalPath":"master/skill/action_skill.orderedmap","outerKeys":["black_wolf_knight_wt26"],"root":"common","semanticClaims":[]},
+    {"codecId":"flat","innerKeys":[],"logicalPath":"master/skill/power_flip_action.orderedmap","outerKeys":["black_wolf_knight_wt26_pf"],"root":"common","semanticClaims":[]},
+    {"codecId":"flat","innerKeys":[],"logicalPath":"master/skill_preview/skill_preview_character.orderedmap","outerKeys":["179999"],"root":"common","semanticClaims":[]},
+    {"codecId":"flat","innerKeys":[],"logicalPath":"master/stance_detail/character_stance_detail.orderedmap","outerKeys":["179999"],"root":"common","semanticClaims":[]},
+    {"codecId":"flat","innerKeys":[],"logicalPath":"master/string/custom_ability_string.orderedmap","outerKeys":["ability_skill_wt26_snowmelt","ability_skill_black_wolf_knight_wt26_superfever","superfever_desc_wt26"],"root":"common","semanticClaims":[]}
+  ],
+  "codeName": "black_wolf_knight_wt26",
+  "legacyCharacterAdoptionVersion": 1,
+  "packageId": "black-wolf-knight-wt26-rolf",
+  "packageVersion": "1.0.0",
+  "requiredCapabilities": ["content.sync@1"],
+  "requiresClientBase": "1.4.324",
+  "serverRows": {
+    "path": "quarantine/server-data/rolf_179999_rows.json",
+    "sha256": "4ba6fd4f8f8d0592650e04e98cd1fb69db4a92d4eba59c5e8fea26b39f7afb37"
+  },
+  "skills": {
+    "specialPowerFlip": {"levels":[1,2,3],"tableKey":"black_wolf_knight_wt26_pf"},
+    "superFever": {"abilityIds":[1799993],"conditionIds":[180000],"durationFrames":360}
+  },
+  "targetCharacterId": 179999,
+  "templateCharacterId": 149999,
+  "uniqueCondition": {"ids":[179999,180000]}
+}

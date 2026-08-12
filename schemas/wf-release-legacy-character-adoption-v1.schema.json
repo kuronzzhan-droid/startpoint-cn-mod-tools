@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://startpoint-cn.local/schemas/wf-release-legacy-character-adoption-v1.schema.json",
+  "$comment": "Structural preflight only. wf_release_v1.legacy_character remains authoritative and MUST NOT be replaced by this schema.",
+  "title": "wf-release-v1 legacy character adoption configuration v1",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "nonEmpty": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}(?![\\s\\S])"
+    },
+    "root": {
+      "oneOf": [
+        {"const": "common"},
+        {"const": "medium"},
+        {"const": "android"}
+      ]
+    },
+    "codec": {
+      "oneOf": [
+        {"const": "flat"},
+        {"const": "raw_outer"},
+        {"const": "action_nested"},
+        {"const": "switched_nested"}
+      ]
+    },
+    "innerClaim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["outer_key", "keys"],
+      "properties": {
+        "outer_key": {"$ref": "#/$defs/nonEmpty"},
+        "keys": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/nonEmpty"}
+        }
+      }
+    },
+    "clientTable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "codecId",
+        "innerKeys",
+        "logicalPath",
+        "outerKeys",
+        "root",
+        "semanticClaims"
+      ],
+      "properties": {
+        "codecId": {"$ref": "#/$defs/codec"},
+        "innerKeys": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/innerClaim"}
+        },
+        "logicalPath": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*//)(?!.*(?:^|/)(?:\\.|\\.\\.)(?:/|(?![\\s\\S])))[^/]+(?:/[^/]+)*(?![\\s\\S])"
+        },
+        "outerKeys": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/nonEmpty"}
+        },
+        "root": {"$ref": "#/$defs/root"},
+        "semanticClaims": {
+          "type": "array",
+          "items": {}
+        }
+      }
+    }
+  },
+  "required": [
+    "clientTables",
+    "codeName",
+    "legacyCharacterAdoptionVersion",
+    "packageId",
+    "packageVersion",
+    "requiredCapabilities",
+    "requiresClientBase",
+    "serverRows",
+    "skills",
+    "targetCharacterId",
+    "templateCharacterId",
+    "uniqueCondition"
+  ],
+  "properties": {
+    "clientTables": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/clientTable"}
+    },
+    "codeName": {"$ref": "#/$defs/nonEmpty"},
+    "legacyCharacterAdoptionVersion": {"type": "integer", "const": 1},
+    "packageId": {"$ref": "#/$defs/nonEmpty"},
+    "packageVersion": {"$ref": "#/$defs/nonEmpty"},
+    "requiredCapabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9._-]*@[1-9][0-9]*(?![\\s\\S])"
+      }
+    },
+    "requiresClientBase": {"$ref": "#/$defs/nonEmpty"},
+    "serverRows": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^quarantine/server-data/[^/]+(?:/[^/]+)*(?![\\s\\S])"
+        },
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "skills": {"type": "object"},
+    "targetCharacterId": {"type": "integer", "minimum": 1},
+    "templateCharacterId": {"type": "integer", "minimum": 1},
+    "uniqueCondition": {"type": "object"}
+  }
+}

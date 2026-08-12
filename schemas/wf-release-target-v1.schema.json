@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://startpoint-cn.local/schemas/wf-release-target-v1.schema.json",
+  "$comment": "Structural preflight only. ManagedTarget.load remains authoritative and MUST NOT be replaced by this schema.",
+  "title": "wf-release-v1 host-local managed target v1",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "hostPath": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dottedVersion": {
+      "type": "string",
+      "pattern": "^(?:0|[1-9][0-9]*)(?:\\.(?:0|[1-9][0-9]*))+(?![\\s\\S])"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "managedBy",
+    "serverBundle",
+    "runtimePack",
+    "dataRoot",
+    "stateRoot",
+    "cdnRoot",
+    "modesRoot",
+    "componentRoots",
+    "compatibility",
+    "serverUrl"
+  ],
+  "properties": {
+    "schemaVersion": {"type": "integer", "const": 1},
+    "managedBy": {"const": "wf-release-v1"},
+    "serverBundle": {"$ref": "#/$defs/hostPath"},
+    "runtimePack": {"$ref": "#/$defs/hostPath"},
+    "dataRoot": {"$ref": "#/$defs/hostPath"},
+    "stateRoot": {"$ref": "#/$defs/hostPath"},
+    "cdnRoot": {"$ref": "#/$defs/hostPath"},
+    "modesRoot": {"$ref": "#/$defs/hostPath"},
+    "componentRoots": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["content", "server", "modes"],
+      "properties": {
+        "content": {"$ref": "#/$defs/hostPath"},
+        "server": {"$ref": "#/$defs/hostPath"},
+        "modes": {"$ref": "#/$defs/hostPath"}
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["clientVersion", "resourceBaseline", "clientPatchProfile"],
+      "properties": {
+        "clientVersion": {"$ref": "#/$defs/dottedVersion"},
+        "resourceBaseline": {"$ref": "#/$defs/dottedVersion"},
+        "clientPatchProfile": {"type": "boolean"}
+      }
+    },
+    "serverUrl": {
+      "type": "string",
+      "pattern": "^http://(?:localhost|127(?:\\.[0-9]{1,3}){3}|\\[::1\\]):[1-9][0-9]{0,4}(?![\\s\\S])"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "managedBy": "wf-release-v1",
+  "serverBundle": "D:\\wf-target\\server-bundle",
+  "runtimePack": "D:\\wf-target\\runtime-pack",
+  "dataRoot": "D:\\wf-target\\data",
+  "stateRoot": "D:\\wf-target\\state",
+  "cdnRoot": "D:\\wf-target\\cdn",
+  "modesRoot": "D:\\wf-target\\modes-active",
+  "componentRoots": {
+    "content": "D:\\wf-target\\candidates-content",
+    "server": "D:\\wf-target\\candidates-server",
+    "modes": "D:\\wf-target\\candidates-modes"
+  },
+  "compatibility": {
+    "clientVersion": "1.4.324",
+    "resourceBaseline": "1.4.324",
+    "clientPatchProfile": true
+  },
+  "serverUrl": "http://127.0.0.1:8001"
+}
