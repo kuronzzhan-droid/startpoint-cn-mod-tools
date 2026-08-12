@@ -236,6 +236,39 @@ python -X utf8 -m wf_release_v1 adopt-character `
 罗尔夫范例同时保留 `superFever`、特殊强化弹射三档、unique condition 180000 和四张服务端表的
 迁移声明。后两者只是语义和隔离证据：生成 sealed workspace 不等于服务端仓库已合并这些行。
 
+### 从封印角色创建编辑副本
+
+正式 Release 和原封印工作区保持不可变。需要二次调整时，先以显式递增的包版本创建全新目录：
+
+```powershell
+python -X utf8 -m wf_release_v1 checkout-character `
+  --workspace D:\isolated\rolf-character-workspace `
+  --output D:\isolated\rolf-character-edit-1.1.0 `
+  --package-version 1.1.0 `
+  --json
+```
+
+`checkout-character` 只接受通过 37/37、三层一致和 seal 的角色工作区；它逐项验证已声明文件和表/键
+所有权，再复制到尚不存在的绝对输出目录。源工作区不变，编辑副本的 `releaseReady` 由内容校验
+推导为 `false`，不是用户可切换的状态位。
+
+当前最小闭环允许修改已有声明文件，不允许静默新增、删除或改名。完成表行、图片、声音或 DSL
+调整后，运行：
+
+```powershell
+python -X utf8 -m wf_release_v1 seal-character `
+  --workspace D:\isolated\rolf-character-edit-1.1.0 `
+  --json
+```
+
+工具会再次解析 flat/raw/nested 表键和四张服务端角色行，拒绝所有权漂移，刷新现有文件的 size 与
+SHA-256，再绑定新的 workspace digest。失败会恢复原 manifest，不会写 live CDN、store、服务端
+仓库或设备。需要增加/删除文件时仍回到完整角色创作/manifest 审核流程，不能借重新封印绕过声明。
+
+本机工作台也提供“创建角色编辑副本”和“验证并重新封印”两个相同边界的准备动作。这里不引入
+项目数据库、手工编辑/分享开关或最近项目同步；一个工作区文件夹就是一个项目，状态始终由校验
+结果得出。
+
 ### 从封印角色生成标准 Patch Overlay
 
 ```powershell
@@ -271,7 +304,7 @@ server rows 或隔离脚本塞进 Overlay。输出仍须交给 `build` 与独立
 | 0 | 成功 | — |
 | 2 | CLI 参数错误 | `WFREL_CLI_ARGUMENTS` |
 | 10 | schema、路径、ZIP 或摘要格式错误 | `WFREL_SCHEMA_*`、`WFREL_PATH_*`、`WFREL_HASH_*`、`WFREL_ARCHIVE_*` |
-| 20 | 发布源、组件或依赖不兼容 | `WFREL_CHARACTER_SOURCE_*`、`WFREL_OVERLAY_GRAPH`、`WFREL_REQUIRE_*`、`WFREL_OWNERSHIP_*`、`WFREL_COMPONENT_*` |
+| 20 | 发布源、组件或依赖不兼容 | `WFREL_CHARACTER_SOURCE_*`、`WFREL_CHARACTER_EDIT_*`、`WFREL_OVERLAY_GRAPH`、`WFREL_REQUIRE_*`、`WFREL_OWNERSHIP_*`、`WFREL_COMPONENT_*` |
 | 30 | 本地 I/O、输出或未分类执行失败 | `WFREL_BUILD_IO`、`WFREL_BUILD_OUTPUT_*`、`WFREL_CLI_IO` |
 
 调用者应同时判断退出码和 `code`，不要解析中文提示文本。

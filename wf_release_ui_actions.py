@@ -8,6 +8,10 @@ from typing import Callable, Final, Mapping
 
 from wf_preview_2d_core import PreviewBundle, load_preview
 from wf_release_v1.legacy_character import adopt_legacy_character
+from wf_release_v1.character_edit import (
+    checkout_character_workspace,
+    seal_edited_character_workspace,
+)
 from wf_release_v1.legacy_import import import_legacy_share
 from wf_release_v1.legacy_share import inspect_legacy_share
 from wf_release_v1.overlay_builder import build_character_overlay
@@ -86,6 +90,20 @@ def _adopt(value: Mapping[str, object]) -> ActionResult:
     return ActionResult(receipt.to_wire())
 
 
+def _checkout_character(value: Mapping[str, object]) -> ActionResult:
+    receipt = checkout_character_workspace(
+        _path(value["workspace"], "workspace"),
+        _path(value["output"], "output"),
+        _text(value["packageVersion"], "packageVersion"),
+    )
+    return ActionResult(receipt.to_wire())
+
+
+def _seal_character(value: Mapping[str, object]) -> ActionResult:
+    receipt = seal_edited_character_workspace(_path(value["workspace"], "workspace"))
+    return ActionResult(receipt.to_wire())
+
+
 def _preview(value: Mapping[str, object]) -> ActionResult:
     variant = _text(value.get("variant", "auto"), "variant")
     if variant not in ("auto", "normal", "special"):
@@ -139,6 +157,14 @@ ACTIONS: Final[dict[str, _Action]] = {
     ),
     "adopt-character": _Action(
         frozenset({"imported", "config", "output"}), frozenset(), _adopt
+    ),
+    "checkout-character": _Action(
+        frozenset({"workspace", "output", "packageVersion"}),
+        frozenset(),
+        _checkout_character,
+    ),
+    "seal-character": _Action(
+        frozenset({"workspace"}), frozenset(), _seal_character
     ),
     "preview": _Action(frozenset({"source"}), frozenset({"variant"}), _preview),
     "build-overlay": _Action(

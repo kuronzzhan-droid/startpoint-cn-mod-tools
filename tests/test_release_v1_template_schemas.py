@@ -115,6 +115,8 @@ class ReleaseTemplateSchemaTests(unittest.TestCase):
         )
         for token in (
             "adopt-character",
+            "checkout-character",
+            "seal-character",
             "build-overlay",
             "legacy-character-adoption.rolf.json",
             "wf-release-legacy-character-adoption-v1.schema.json",

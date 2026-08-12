@@ -19,6 +19,7 @@ from ._local_cli import (
 from .legacy_share import inspect_legacy_share
 from .legacy_import import import_legacy_share
 from .legacy_character import adopt_legacy_character
+from .character_edit import checkout_character_workspace, seal_edited_character_workspace
 from .overlay_builder import build_character_overlay
 from .planning import capture_target_requirements, plan_install
 from .producer import BuildReceipt, BuildRequest, build_character_release
@@ -44,6 +45,7 @@ _FORMAT_PREFIXES: Final = (
 )
 _INCOMPATIBLE_PREFIXES: Final = (
     "WFREL_BUILD_SOURCE_",
+    "WFREL_CHARACTER_EDIT_",
     "WFREL_CHARACTER_SOURCE_",
     "WFREL_CHARACTER_ADOPTION_",
     "WFREL_COMPONENT_",
@@ -298,6 +300,18 @@ def _run_adopt_character(arguments: argparse.Namespace) -> dict[str, object]:
     ).to_wire()
 
 
+def _run_checkout_character(arguments: argparse.Namespace) -> dict[str, object]:
+    return checkout_character_workspace(
+        Path(arguments.workspace),
+        Path(arguments.output),
+        arguments.package_version,
+    ).to_wire()
+
+
+def _run_seal_character(arguments: argparse.Namespace) -> dict[str, object]:
+    return seal_edited_character_workspace(Path(arguments.workspace)).to_wire()
+
+
 def _run_build_overlay(arguments: argparse.Namespace) -> dict[str, object]:
     return build_character_overlay(
         Path(arguments.workspace),
@@ -376,6 +390,22 @@ def _parser(output_context: _ParseOutputContext | None = None) -> _ArgumentParse
     adopt.add_argument("--output", required=True)
     adopt.add_argument("--json", action="store_true", required=True)
     adopt.set_defaults(handler=_run_adopt_character)
+
+    checkout = commands.add_parser(
+        "checkout-character", help="从封印角色工作区创建隔离编辑副本", output_context=context
+    )
+    checkout.add_argument("--workspace", required=True)
+    checkout.add_argument("--output", required=True)
+    checkout.add_argument("--package-version", required=True)
+    checkout.add_argument("--json", action="store_true", required=True)
+    checkout.set_defaults(handler=_run_checkout_character)
+
+    seal_character = commands.add_parser(
+        "seal-character", help="验证并重新封印角色编辑副本", output_context=context
+    )
+    seal_character.add_argument("--workspace", required=True)
+    seal_character.add_argument("--json", action="store_true", required=True)
+    seal_character.set_defaults(handler=_run_seal_character)
 
     overlay = commands.add_parser(
         "build-overlay", help="从密封角色工作区生成 Patch Overlay", output_context=context
