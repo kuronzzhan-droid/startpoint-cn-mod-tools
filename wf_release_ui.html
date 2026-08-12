@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>WF 独立发行工作台</title>
+  <style>
+    :root{color-scheme:dark;font-family:system-ui,sans-serif;background:#0b1020;color:#e5e7eb}
+    body{margin:0;padding:24px}main{max-width:1240px;margin:auto}h1{margin:0 0 8px;font-size:26px}
+    .lead{color:#93c5fd;line-height:1.6}.warning{background:#451a03;border:1px solid #f59e0b;padding:12px;border-radius:10px;line-height:1.55}
+    .flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px;margin:18px 0}
+    section{background:#111827;border:1px solid #374151;border-radius:12px;padding:16px}h2{font-size:17px;margin:0 0 6px}
+    .kind{color:#9ca3af;font-size:12px;margin-bottom:10px}.field{display:grid;gap:4px;margin:9px 0}
+    label{font-size:12px;color:#cbd5e1}input,select,button{font:inherit;background:#0b1020;color:#e5e7eb;border:1px solid #4b5563;border-radius:7px;padding:8px}
+    input{width:calc(100% - 18px)}button{cursor:pointer;background:#1d4ed8;border-color:#3b82f6;font-weight:600}button:hover{background:#2563eb}
+    pre{background:#030712;border:1px solid #374151;border-radius:10px;padding:14px;min-height:90px;white-space:pre-wrap;word-break:break-word;color:#bfdbfe}
+    .ok{color:#86efac}.err{color:#fca5a5}.preview{display:none;margin:10px 0;color:#93c5fd}.preview.show{display:inline-block}
+    footer{color:#9ca3af;font-size:13px;line-height:1.5}
+  </style>
+</head>
+<body>
+<main>
+  <h1>WF 独立发行工作台</h1>
+  <p class="lead">旧分享包 → 隔离工作区 → 封印角色 → 2D 预览 → Patch Overlay → requirements → 安装计划。</p>
+  <p class="warning"><strong>安全边界：</strong>本页面不提供安装、回滚或发布按钮，不写 live CDN、store、服务端仓库或设备。导入、采纳、Overlay 和 requirements 只写你明确填写的全新输出；包内脚本永不执行。服务端角色行必须另走审核过的迁移/PR。</p>
+  <div class="flow">
+    <section data-action="inspect-share">
+      <h2>1. 检查他人分享包</h2><div class="kind">只读 · 不解包到输出</div>
+      <div class="field"><label>分享包绝对路径</label><input data-key="share" placeholder="D:\incoming\example.zip"></div>
+      <button>检查结构与风险</button>
+    </section>
+    <section data-action="import-share">
+      <h2>2. 隔离导入</h2><div class="kind">准备写 · 输出必须不存在</div>
+      <div class="field"><label>分享包</label><input data-key="share"></div>
+      <div class="field"><label>隔离输出目录</label><input data-key="output"></div>
+      <div class="field"><label>路径映射 JSON（可空）</label><input data-key="mapping" data-optional="true"></div>
+      <button>导入到隔离区</button>
+    </section>
+    <section data-action="adopt-character">
+      <h2>3. 采纳为封印角色</h2><div class="kind">准备写 · 37/37 与四表闭包</div>
+      <div class="field"><label>隔离导入目录</label><input data-key="imported"></div>
+      <div class="field"><label>采纳配置 JSON</label><input data-key="config"></div>
+      <div class="field"><label>角色工作区输出</label><input data-key="output"></div>
+      <button>生成封印角色</button>
+    </section>
+    <section data-action="preview">
+      <h2>4. 2D 序列帧预览</h2><div class="kind">只读 · 不代表真机战斗演出</div>
+      <div class="field"><label>封印 workspace / package / PNG 帧目录</label><input data-key="source"></div>
+      <div class="field"><label>像素组</label><select data-key="variant"><option>auto</option><option>normal</option><option>special</option></select></div>
+      <button>载入只读预览</button><a class="preview" href="/preview/" target="_blank" rel="noreferrer">打开预览页 ↗</a>
+    </section>
+    <section data-action="build-overlay">
+      <h2>5. 生成 Patch Overlay</h2><div class="kind">准备写 · 不读取当前 CDN</div>
+      <div class="field"><label>封印角色 workspace</label><input data-key="workspace"></div>
+      <div class="field"><label>起点版本</label><input data-key="fromVersion" placeholder="1.4.324"></div>
+      <div class="field"><label>目标版本</label><input data-key="targetVersion" placeholder="1.4.347"></div>
+      <div class="field"><label>新 Overlay ZIP 输出</label><input data-key="output"></div>
+      <button>生成标准 Overlay</button>
+    </section>
+    <section data-action="capture-requirements">
+      <h2>6. 捕获 requirements</h2><div class="kind">目标只读 · 只写新 requirements 文件</div>
+      <div class="field"><label>target.json</label><input data-key="target"></div>
+      <div class="field"><label>封印 workspace</label><input data-key="workspace"></div>
+      <div class="field"><label>新 requirements 输出</label><input data-key="output"></div>
+      <button>从目标事实捕获</button>
+    </section>
+    <section data-action="plan-install">
+      <h2>7. 兼容性与恢复预览</h2><div class="kind">只读 · writesLive=false</div>
+      <div class="field"><label>target.json</label><input data-key="target"></div>
+      <div class="field"><label>Release ZIP</label><input data-key="release"></div>
+      <button>生成安装计划</button>
+    </section>
+  </div>
+  <h2>本次结果</h2><pre id="result">尚未运行操作。</pre>
+  <footer>浏览器路径字段只发给本机 127.0.0.1；API 响应不回显绝对路径。关闭本进程即关闭工作台。</footer>
+</main>
+<script>
+"use strict";
+const sessionToken="__WF_RELEASE_UI_TOKEN__", output=document.getElementById("result");
+for(const card of document.querySelectorAll("section[data-action]")){
+  card.querySelector("button").onclick=async()=>{
+    const action=card.dataset.action, payload={};
+    for(const field of card.querySelectorAll("[data-key]")){
+      const value=field.value.trim(); if(value||field.dataset.optional!=="true") payload[field.dataset.key]=value;
+    }
+    output.className="";output.textContent="正在执行本地操作…";
+    try{
+      const response=await fetch("/api/action/"+encodeURIComponent(action),{method:"POST",headers:{"Content-Type":"application/json","X-WF-Release-UI-Token":sessionToken},body:JSON.stringify(payload)});
+      const body=await response.json(); if(!response.ok||!body.ok) throw new Error(`${body.code||"WFREL_UI"}: ${body.message||"操作失败"}`);
+      output.className="ok";output.textContent=JSON.stringify(body.result,null,2);
+      const link=card.querySelector(".preview");if(link)link.classList.add("show");
+    }catch(error){output.className="err";output.textContent=String(error);}
+  };
+}
+</script>
+</body>
+</html>

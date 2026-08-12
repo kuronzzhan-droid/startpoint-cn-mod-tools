@@ -106,6 +106,10 @@ ownership 表示“源 manifest 的语义所有权”。它不证明这些逻辑
 
 以下命令均在工具仓库根目录运行。示例中的输出文件必须尚不存在。
 
+需要图形化串联时可运行 `python -X utf8 wf_release_ui.py --open`。独立工作台的七阶段、导入编辑
+边界、CDN 冲突策略与剩余 UX 缺口见 `docs/wf-release-v1-workbench.md`；它不提供 live 安装、回退
+或发布入口。
+
 ### 构建
 
 ```powershell

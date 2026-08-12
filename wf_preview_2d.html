@@ -68,7 +68,7 @@ function nextFrame(direction){
 }
 async function imageFor(token){
   if(state.images.has(token)) return state.images.get(token);
-  const image=new Image(); image.src='/asset/'+encodeURIComponent(token);
+  const image=new Image(); image.src='asset/'+encodeURIComponent(token);
   const promise=new Promise((resolve,reject)=>{image.onload=()=>resolve(image); image.onerror=()=>reject(new Error('PNG 读取失败'));});
   state.images.set(token,promise); return promise;
 }
@@ -99,7 +99,7 @@ function tick(now){
   requestAnimationFrame(tick);
 }
 async function start(){
-  const response=await fetch('/manifest.json',{cache:'no-store'}); if(!response.ok) throw new Error('清单读取失败');
+  const response=await fetch('manifest.json',{cache:'no-store'}); if(!response.ok) throw new Error('清单读取失败');
   state.manifest=await response.json(); $('note').textContent=state.manifest.renderingNote;
   state.manifest.sequences.forEach((sequence,index)=>{const option=document.createElement('option');option.value=String(index);option.textContent=`${sequence.name} [${sequence.kind}] (${sequence.frames.length} 帧)`;$('sequence').appendChild(option);});
   $('originX').value=String(state.manifest.canvas.originX); $('originY').value=String(state.manifest.canvas.originY); setSequence(0); requestAnimationFrame(tick);
