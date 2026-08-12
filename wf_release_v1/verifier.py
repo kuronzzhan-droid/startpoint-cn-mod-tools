@@ -10,6 +10,7 @@ import tempfile
 from typing import BinaryIO, Final
 
 from .canonical import canonical_json_bytes, load_json_strict_bytes
+from .compatibility import VerifiedRelease
 from .errors import ReleaseError
 from .schema import (
     OwnershipManifest,
@@ -166,8 +167,8 @@ def _components(
         verify_mode_component(release, requirements, staged)
 
 
-def verify_release(path: Path) -> VerificationReport:
-    """Verify one archive in the required fixed validation order."""
+def verify_release_contract(path: Path) -> tuple[VerificationReport, VerifiedRelease]:
+    """Verify one archive and return the exact immutable contract values."""
     with open_release(Path(path)) as (stream, archive_size):
         members = parse_classic_store(stream, archive_size)
         by_name = {item.name: item for item in members}
@@ -181,9 +182,18 @@ def verify_release(path: Path) -> VerificationReport:
             verify_release_id(release)
             _components(release, requirements, staged)
             _ownership(ownership)
-        return VerificationReport(
+        report = VerificationReport(
             release_id=release.release_id,
             components=tuple(component.kind for component in release.components),
             file_count=len(release.files),
             payload_bytes=payload_bytes,
         )
+        return report, VerifiedRelease(release, requirements, ownership)
+
+
+def verify_release(path: Path) -> VerificationReport:
+    """Verify one archive in the required fixed validation order."""
+    return verify_release_contract(path)[0]
+
+
+__all__ = ["VerificationReport", "verify_release", "verify_release_contract"]

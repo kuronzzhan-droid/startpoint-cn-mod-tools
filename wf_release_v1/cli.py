@@ -20,6 +20,7 @@ from .legacy_share import inspect_legacy_share
 from .legacy_import import import_legacy_share
 from .legacy_character import adopt_legacy_character
 from .overlay_builder import build_character_overlay
+from .planning import capture_target_requirements, plan_install
 from .producer import BuildReceipt, BuildRequest, build_character_release
 from .schema import ReleaseRequirements, parse_requirements
 from .verifier import VerificationReport, verify_release
@@ -306,6 +307,24 @@ def _run_build_overlay(arguments: argparse.Namespace) -> dict[str, object]:
     ).to_wire()
 
 
+def _run_capture_requirements(arguments: argparse.Namespace) -> dict[str, object]:
+    from .target import ManagedTarget
+
+    return capture_target_requirements(
+        ManagedTarget.load(Path(arguments.target)),
+        Path(arguments.workspace),
+        Path(arguments.output),
+    ).to_wire()
+
+
+def _run_plan_install(arguments: argparse.Namespace) -> dict[str, object]:
+    from .target import ManagedTarget
+
+    return plan_install(
+        Path(arguments.release), ManagedTarget.load(Path(arguments.target))
+    ).to_wire()
+
+
 def _parser(output_context: _ParseOutputContext | None = None) -> _ArgumentParser:
     context = output_context or _ParseOutputContext()
     parser = _ArgumentParser(prog="wf-release", output_context=context)
@@ -367,6 +386,23 @@ def _parser(output_context: _ParseOutputContext | None = None) -> _ArgumentParse
     overlay.add_argument("--output", required=True)
     overlay.add_argument("--json", action="store_true", required=True)
     overlay.set_defaults(handler=_run_build_overlay)
+
+    capture = commands.add_parser(
+        "capture-requirements", help="从当前目标只读捕获发行要求", output_context=context
+    )
+    capture.add_argument("--target", required=True)
+    capture.add_argument("--workspace", required=True)
+    capture.add_argument("--output", required=True)
+    capture.add_argument("--json", action="store_true", required=True)
+    capture.set_defaults(handler=_run_capture_requirements)
+
+    plan = commands.add_parser(
+        "plan-install", help="只读预览兼容性、冲突与回退", output_context=context
+    )
+    plan.add_argument("--target", required=True)
+    plan.add_argument("--release", required=True)
+    plan.add_argument("--json", action="store_true", required=True)
+    plan.set_defaults(handler=_run_plan_install)
 
     probe = commands.add_parser(
         "probe", help="读取受管目标事实", output_context=context
