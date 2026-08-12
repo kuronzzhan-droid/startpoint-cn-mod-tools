@@ -54,8 +54,13 @@ previous 为准。
 
 `docs/examples/legacy-character-adoption.rolf.json` 已覆盖 20 张客户端表、超级 Fever、三档特殊强化
 弹射、unique condition 180000 与四张角色服务端表。客户端部分可生成 sealed workspace、2D 预览和
-Patch Overlay；四张服务端行仍需独立审核的 migration/PR。Content-only Release 不会偷偷携带或执行
-`apply_rolf_rows.py`。
+Patch Overlay。当前服务端 Content Sync 已能从这些权威 orderedmap 动态生成 `character.json`、
+`cdndata/character.json`、`cdndata/character_text.json` 和 `mana_node.json`；不需要再为罗尔夫提交静态
+四表行，也不得执行隔离区里的 `apply_rolf_rows.py`。服务端仍须合并 capabilities/Content Sync 契约栈，
+具体依赖和 PR 边界见 `docs/wf-release-v1-server-integration.md`。
+
+动态转换回读还确认旧脚本里的 `character.json[179999]` 已过时：当前 converter 按契约输出空 `name`
+和六个技能位，而不是旧脚本的中文名与三个技能位。静态合并旧行会制造第二权威并覆盖正确派生结果。
 
 2D 预览能复现罗尔夫常规像素动画的 9 个序列/428 个 timeline 帧，也能切换 special 组；超级
 Fever 仪表、三档光柱与融雪剑的 `parts` 骨架/矩阵/补间仍只能作为素材和数据证据，不是真机演出证明。
