@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 import hashlib
 import json
 from pathlib import Path
@@ -11,7 +12,7 @@ import unittest
 from unittest import mock
 
 from tests.release_v1_fixtures import make_patch_overlay
-from tests.test_release_v1_legacy_compatibility import _verified
+from tests.test_release_v1_legacy_compatibility import _ownership, _verified
 from wf_release_v1._platform_state import ManagedProcess
 from wf_release_v1.canonical import FileIdentity
 from wf_release_v1.errors import ReleaseError
@@ -23,6 +24,8 @@ from wf_release_v1.verifier_overlay import inspect_overlay_chain
 
 
 OPERATION_ID = "20260813T010203.000000Z-0123456789abcdef0123456789abcdef"
+SECOND_OPERATION_ID = "20260813T020304.000000Z-11111111111111111111111111111111"
+ROLLBACK_OPERATION_ID = "20260813T030405.000000Z-22222222222222222222222222222222"
 SHA = "a" * 64
 
 
@@ -54,11 +57,11 @@ class FakePlatform:
 
     def start_server(self, launch: LaunchSpec, environment, operation_id: str) -> ManagedProcess:
         del launch, environment
-        if operation_id != OPERATION_ID:
-            raise AssertionError("operation identity drifted")
         self.events.append("start")
         self.next_pid += 1
-        self.current = _process(self.next_pid)
+        self.current = ManagedProcess(
+            self.next_pid, self.next_pid * 100, SHA, operation_id
+        )
         return self.current
 
     def wait_exited(self, process: ManagedProcess, timeout: float) -> bool:
@@ -149,6 +152,7 @@ class LegacyTransactionTests(unittest.TestCase):
         link_failure_after: int | None = None,
         recovery_failure: bool = False,
         late_conflict: bool = False,
+        operation_id: str = OPERATION_ID,
     ):
         import wf_release_v1.legacy_transaction as transaction
 
@@ -191,7 +195,7 @@ class LegacyTransactionTests(unittest.TestCase):
             return self.candidates
 
         with (
-            mock.patch.object(transaction, "new_operation_id", return_value=OPERATION_ID),
+            mock.patch.object(transaction, "new_operation_id", return_value=operation_id),
             mock.patch.object(
                 transaction,
                 "verify_release_contract",
@@ -276,6 +280,96 @@ class LegacyTransactionTests(unittest.TestCase):
             set(self._archive_bytes().values()),
         )
         self.assertIsNone(platform.current)
+
+    def test_two_releases_install_in_order_and_second_rolls_back_to_first(self) -> None:
+        platform = FakePlatform()
+        first = self._run(platform)
+        self.assertEqual("succeeded", first.outcome)
+        first_archives = self._archive_bytes()
+        self.assertEqual(3, len(first_archives))
+
+        second_outer = make_patch_overlay(
+            self.root / "source-overlay-2.zip",
+            from_version="1.4.55",
+            target_version="1.4.56",
+        )
+        second_overlay = inspect_overlay_chain((second_outer,))
+        self.verified = _verified(
+            overlay=second_overlay,
+            ownership=_ownership(entity="character:310100"),
+        )
+        second_raw = second_outer.read_bytes()
+        second_file = replace(
+            self.verified.manifest.files[0],
+            path="content/overlay.zip",
+            size=len(second_raw),
+            sha256=hashlib.sha256(second_raw).hexdigest(),
+        )
+        self.verified = type(self.verified)(
+            replace(self.verified.manifest, files=(second_file,)),
+            self.verified.requirements,
+            self.verified.ownership,
+            self.verified.overlay,
+        )
+        self.release_id = self.verified.manifest.release_id
+        candidate_root = (
+            self.target.component_roots.content / self.release_id.replace(":", "-")
+        )
+        candidate_path = candidate_root / "patches" / "1.4.56" / "overlay.zip"
+        candidate_path.parent.mkdir(parents=True)
+        candidate_path.write_bytes(second_outer.read_bytes())
+        raw = candidate_path.read_bytes()
+        self.candidates = CandidateSet(
+            self.release_id,
+            candidate_root,
+            None,
+            None,
+            (FileIdentity(len(raw), hashlib.sha256(raw).hexdigest()),),
+            ("patches/1.4.56/overlay.zip",),
+        )
+        self.stored = StoredObject(
+            self.release_id,
+            self.root / "stored-2.zip",
+            FileIdentity(1, SHA),
+        )
+        self.release = self.root / "release-2.zip"
+        self.release.write_bytes(b"verified-second-by-test-double")
+        second = self._run(platform, operation_id=SECOND_OPERATION_ID)
+        self.assertEqual("succeeded", second.outcome)
+        self.assertEqual(6, len(self._archive_bytes()))
+
+        retained = (
+            self.target.state_root / "objects" / self.release_id.replace(":", "-")
+        )
+        retained.mkdir(parents=True, exist_ok=True)
+        (retained / "release.wf-release.zip").write_bytes(b"retained-second")
+        from wf_release_v1.legacy_rollback import rollback_legacy_to_previous
+        import wf_release_v1.legacy_rollback as rollback
+
+        with (
+            mock.patch.object(
+                rollback, "new_operation_id", return_value=ROLLBACK_OPERATION_ID
+            ),
+            mock.patch.object(
+                rollback,
+                "verify_release_contract",
+                return_value=(SimpleNamespace(release_id=self.release_id), self.verified),
+            ),
+            mock.patch.object(ManagedTarget, "launch_spec", return_value=self.launch),
+            mock.patch.object(rollback, "wait_legacy_ready"),
+        ):
+            rolled = rollback_legacy_to_previous(
+                self.target, platform, first.release_id, health_timeout=2
+            )
+
+        self.assertEqual(("succeeded", first.release_id), (
+            rolled.outcome, rolled.to_release_id,
+        ), (rolled, platform.events, self._archive_bytes()))
+        self.assertEqual(first_archives, self._archive_bytes())
+        self.assertEqual((first.release_id,), tuple(
+            item.release_id for item in load_active_state(self.target.state_root).releases
+        ))
+        self.assertIsNotNone(platform.current)
 
 
 if __name__ == "__main__":

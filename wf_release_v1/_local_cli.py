@@ -7,6 +7,7 @@ from pathlib import Path
 
 from .errors import ReleaseError
 from .legacy_transaction import install_legacy_release
+from .legacy_rollback import rollback_legacy_to_previous
 from .platform import WindowsPlatformAdapter
 from .rollback import (
     RollbackResult,
@@ -42,6 +43,15 @@ def _rollback_wire(result: RollbackResult) -> dict[str, object]:
 def _platform(target: ManagedTarget) -> WindowsPlatformAdapter:
     launch = target.launch_spec()
     return WindowsPlatformAdapter(target.state_root, launch.executable)
+
+
+def _legacy_not_committed(result: InstallResult | RollbackResult, action: str) -> ReleaseError:
+    details = {"operationErrorCode": result.error_code} if result.error_code else None
+    return ReleaseError(
+        "WFREL_TRANSACTION_NOT_COMMITTED",
+        f"legacy {action} did not commit",
+        details,
+    )
 
 
 def run_probe(arguments: argparse.Namespace) -> dict[str, object]:
@@ -88,16 +98,24 @@ def run_legacy_install(arguments: argparse.Namespace) -> dict[str, object]:
         )
     result = install_legacy_release(Path(arguments.release), target, platform)
     if result.outcome in {"recovered", "recovery_failed"}:
-        raise ReleaseError(
-            result.error_code or "WFREL_RECOVERY_FAILED",
-            "legacy install did not commit and recovery handling was required",
-        )
+        raise _legacy_not_committed(result, "install")
     if result.outcome == "failed":
         raise ReleaseError(
             result.error_code or "WFREL_TRANSACTION_FAILED",
             "legacy install failed before commit",
         )
     return _result_wire(result)
+
+
+def run_legacy_rollback(arguments: argparse.Namespace) -> dict[str, object]:
+    target = ManagedTarget.load(Path(arguments.target))
+    platform = _platform(target)
+    result = rollback_legacy_to_previous(
+        target, platform, arguments.to_release
+    )
+    if result.outcome in {"recovered", "recovery_failed", "failed"}:
+        raise _legacy_not_committed(result, "rollback")
+    return _rollback_wire(result)
 
 
 def run_rollback(arguments: argparse.Namespace) -> dict[str, object]:
@@ -127,5 +145,6 @@ def run_rollback(arguments: argparse.Namespace) -> dict[str, object]:
 
 
 __all__ = [
-    "run_install", "run_legacy_install", "run_plan", "run_probe", "run_rollback",
+    "run_install", "run_legacy_install", "run_legacy_rollback", "run_plan",
+    "run_probe", "run_rollback",
 ]

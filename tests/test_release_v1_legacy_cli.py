@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 from contextlib import redirect_stderr, redirect_stdout
 import io
 import json
@@ -151,6 +152,110 @@ class LegacyCliTests(unittest.TestCase):
                     "--confirm", confirmation,
                 )
             self.assertEqual((20, "stderr", "WFREL_TARGET_PROTOCOL"), (
+                code, stream, wire["code"],
+            ))
+
+    def test_compatibility_adapter_has_no_second_wire_schema_parser(self) -> None:
+        import wf_release_v1
+
+        root = Path(wf_release_v1.__file__).parent
+        modules = (
+            "target_protocol.py",
+            "target_capability.py",
+            "target_planning.py",
+            "legacy_compatibility.py",
+            "legacy_transaction.py",
+            "legacy_rollback.py",
+        )
+        forbidden = {
+            "json", "zipfile", "load_json_strict_bytes", "parse_ownership",
+            "parse_release_manifest", "parse_requirements",
+        }
+        found: set[str] = set()
+        for name in modules:
+            tree = ast.parse((root / name).read_text("utf-8"), filename=name)
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+                    found.update(alias.name.split(".", 1)[0] for alias in node.names)
+                elif isinstance(node, ast.ImportFrom):
+                    found.update(alias.name for alias in node.names)
+                elif isinstance(node, ast.Name):
+                    found.add(node.id)
+        self.assertEqual(set(), forbidden & found)
+
+    def test_legacy_rollback_has_its_own_confirmation_and_route(self) -> None:
+        import wf_release_v1._local_cli as local_cli
+        from wf_release_v1.rollback import RollbackResult
+
+        target = SimpleNamespace(
+            state_root=Path("C:/state"),
+            launch_spec=lambda: SimpleNamespace(executable=Path("C:/node.exe")),
+        )
+        result = RollbackResult("rollback-op", "succeeded", RELEASE_ID, None, False)
+        with (
+            mock.patch.object(local_cli.ManagedTarget, "load", return_value=target),
+            mock.patch.object(local_cli, "WindowsPlatformAdapter", return_value=object()),
+            mock.patch.object(
+                local_cli, "rollback_legacy_to_previous", return_value=result
+            ) as rollback,
+        ):
+            code, wire, stream = self._run(
+                "rollback-legacy", "--target", "target.json",
+                "--to-release", RELEASE_ID,
+                "--confirm", "ROLLBACK_LEGACY_RELEASE",
+            )
+        self.assertEqual((0, "stdout", "succeeded"), (code, stream, wire["outcome"]))
+        rollback.assert_called_once_with(target, mock.ANY, RELEASE_ID)
+
+        with mock.patch.object(
+            local_cli.ManagedTarget, "load", side_effect=AssertionError("target read")
+        ):
+            code, wire, stream = self._run(
+                "rollback-legacy", "--target", "target.json",
+                "--to-release", RELEASE_ID,
+                "--confirm", "I_UNDERSTAND_DATA_DOWNGRADE_RISK",
+            )
+        self.assertEqual((2, "stderr", "WFREL_CLI_ARGUMENTS"), (
+            code, stream, wire["code"],
+        ))
+
+    def test_legacy_non_commit_outcomes_use_transaction_exit_family(self) -> None:
+        import wf_release_v1._local_cli as local_cli
+        from wf_release_v1.rollback import RollbackResult
+
+        target = SimpleNamespace(
+            state_root=Path("C:/state"),
+            launch_spec=lambda: SimpleNamespace(executable=Path("C:/node.exe")),
+        )
+        cases = (
+            (
+                "install-legacy",
+                ("--release", "release.zip", "--confirm", "INSTALL_LEGACY_RELEASE"),
+                "install_legacy_release",
+                InstallResult(RELEASE_ID, "install-op", "recovered", "WFREL_REQUIRE_TARGET", ()),
+            ),
+            (
+                "rollback-legacy",
+                ("--to-release", RELEASE_ID, "--confirm", "ROLLBACK_LEGACY_RELEASE"),
+                "rollback_legacy_to_previous",
+                RollbackResult("rollback-op", "recovered", RELEASE_ID, "WFREL_REQUIRE_TARGET", False),
+            ),
+        )
+        for command, extra, function, result in cases:
+            with (
+                self.subTest(command=command),
+                mock.patch.object(local_cli.ManagedTarget, "load", return_value=target),
+                mock.patch.object(local_cli, "WindowsPlatformAdapter", return_value=object()),
+                mock.patch.object(
+                    local_cli, "inspect_target_capability",
+                    return_value=SimpleNamespace(level="transition"),
+                ),
+                mock.patch.object(local_cli, function, return_value=result),
+            ):
+                code, wire, stream = self._run(
+                    command, "--target", "target.json", *extra,
+                )
+            self.assertEqual((40, "stderr", "WFREL_TRANSACTION_NOT_COMMITTED"), (
                 code, stream, wire["code"],
             ))
 

@@ -46,6 +46,16 @@ def add_target_commands(commands, context, handlers: Mapping[str, object]) -> No
     legacy.add_argument("--confirm", required=True, choices=("INSTALL_LEGACY_RELEASE",))
     legacy.set_defaults(handler=handlers["legacy"])
 
+    legacy_rollback = commands.add_parser(
+        "rollback-legacy", help="回到 transition 旧服的前一条 CDN 链尾", output_context=context
+    )
+    legacy_rollback.add_argument("--target", required=True)
+    legacy_rollback.add_argument("--to-release", dest="to_release", required=True)
+    legacy_rollback.add_argument(
+        "--confirm", required=True, choices=("ROLLBACK_LEGACY_RELEASE",)
+    )
+    legacy_rollback.set_defaults(handler=handlers["legacy_rollback"])
+
     rollback = commands.add_parser(
         "rollback", help="恢复失败事务或显式回到 previous 状态", output_context=context
     )

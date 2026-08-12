@@ -5,17 +5,18 @@ from __future__ import annotations
 import argparse
 import os
 from pathlib import Path
-import stat
 import sys
-from typing import Final, Sequence
+from typing import Sequence
 
 from .canonical import canonical_json_bytes, load_json_strict_bytes
 from ._cli_errors import release_exit as _release_exit
+from ._cli_files import read_stable_metadata
 from ._cli_target_commands import add_target_commands
 from .errors import ReleaseError
 from ._local_cli import (
     run_install as _run_install,
     run_legacy_install as _run_legacy_install,
+    run_legacy_rollback as _run_legacy_rollback,
     run_plan as _run_target_plan,
     run_probe as _run_probe,
     run_rollback as _run_rollback,
@@ -31,8 +32,6 @@ from .schema import ReleaseRequirements, parse_requirements
 from .verifier import VerificationReport, verify_release
 
 
-_REPARSE_POINT: Final = 0x0400
-_MAX_REQUIREMENTS_BYTES: Final = 1024 * 1024
 def _flush_stream(stream: object) -> None:
     flush = getattr(stream, "flush", None)
     if not callable(flush):
@@ -144,71 +143,8 @@ class _ArgumentParser(argparse.ArgumentParser):
         raise SystemExit(2)
 
 
-def _snapshot(value: os.stat_result) -> tuple[int, int, int, int, int]:
-    return (
-        value.st_dev,
-        value.st_ino,
-        value.st_size,
-        value.st_mtime_ns,
-        value.st_mode,
-    )
-
-
-def _is_reparse(value: os.stat_result) -> bool:
-    return stat.S_ISLNK(value.st_mode) or bool(
-        getattr(value, "st_file_attributes", 0) & _REPARSE_POINT
-    )
-
-
-def _read_stable_file(path: Path, *, label: str) -> bytes:
-    descriptor = -1
-    try:
-        before_stat = os.lstat(path)
-        if _is_reparse(before_stat) or not stat.S_ISREG(before_stat.st_mode):
-            raise OSError("input is not a regular file")
-        before = _snapshot(before_stat)
-        descriptor = os.open(
-            path,
-            os.O_RDONLY | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0),
-        )
-        opened = os.fstat(descriptor)
-        opened_snapshot = _snapshot(opened)
-        if _is_reparse(opened) or opened_snapshot != before:
-            raise OSError("input identity changed before open")
-        expected_size = opened.st_size
-        with os.fdopen(descriptor, "rb", closefd=True) as stream:
-            descriptor = -1
-            raw = stream.read(_MAX_REQUIREMENTS_BYTES + 1)
-            after_open = os.fstat(stream.fileno())
-        after_path = os.lstat(path)
-        if (
-            _snapshot(after_open) != before
-            or _snapshot(after_path) != before
-            or _is_reparse(after_path)
-        ):
-            raise OSError("input identity changed while reading")
-        if expected_size > _MAX_REQUIREMENTS_BYTES or len(raw) > _MAX_REQUIREMENTS_BYTES:
-            raise ReleaseError(
-                "WFREL_REQUIRE_LIMIT",
-                "requirements metadata exceeds the supported limit",
-                {"label": label},
-            )
-        if len(raw) != expected_size:
-            raise OSError("input length does not match its stable identity")
-        return raw
-    except OSError as error:
-        raise ReleaseError(
-            "WFREL_CLI_IO",
-            "local input is unavailable or changed while being read",
-            {"label": label},
-        ) from error
-    finally:
-        if descriptor >= 0:
-            os.close(descriptor)
-
-
 def _load_requirements(path: Path) -> ReleaseRequirements:
-    raw = _read_stable_file(path, label="requirements")
+    raw = read_stable_metadata(path, label="requirements")
     value = load_json_strict_bytes(raw, label="requirements")
     return parse_requirements(value)
 
@@ -385,6 +321,7 @@ def _parser(output_context: _ParseOutputContext | None = None) -> _ArgumentParse
         "capture": _run_capture_requirements,
         "install": _run_install,
         "legacy": _run_legacy_install,
+        "legacy_rollback": _run_legacy_rollback,
         "plan": _run_plan_install,
         "probe": _run_probe,
         "rollback": _run_rollback,
