@@ -341,9 +341,31 @@ class TargetProbe:
         paths = Path(self.server_manifest), Path(self.runtime_manifest)
         return (_parse_server_manifest(_read_manifest(paths[0], "serverManifest"), paths[0].parent), _parse_runtime_manifest(_read_manifest(paths[1], "runtimeManifest"), paths[1].parent))
 
+    def _live_capabilities(self):
+        live = _parse_capabilities(
+            _read_capabilities(self.capabilities_url, self.timeout_seconds)
+        )
+        server_capabilities = live[7]
+        modes = live[9]
+        if not set(modes.server_capabilities).issubset(server_capabilities):
+            raise _schema(
+                "capabilities.serverCapabilities",
+                "general capabilities omit Mode capabilities",
+            )
+        if "content.sync@1" not in server_capabilities:
+            raise _schema(
+                "capabilities.serverCapabilities",
+                "general capabilities omit Content Sync",
+            )
+        return live
+
+    def validate_live_capabilities(self) -> None:
+        """Validate the live v1 contract without reading local bundle manifests."""
+        self._live_capabilities()
+
     def run(self) -> TargetFacts:
         server, runtime = self.manifest_facts()
-        live = _parse_capabilities(_read_capabilities(self.capabilities_url, self.timeout_seconds))
+        live = self._live_capabilities()
         (
             live_version, live_bundle_id, live_runtime_api, live_node, live_abi,
             live_platform, live_arch, server_capabilities, content, modes, features,
@@ -362,10 +384,6 @@ class TargetProbe:
         required_node = server.node_requirement.removeprefix(">=")
         if _node_tuple(runtime.node_version) < _node_tuple(required_node):
             raise _incompatible("runtime.node", "Runtime Pack does not meet the server requirement")
-        if not set(modes.server_capabilities).issubset(server_capabilities):
-            raise _schema("capabilities.serverCapabilities", "general capabilities omit Mode capabilities")
-        if "content.sync@1" not in server_capabilities:
-            raise _schema("capabilities.serverCapabilities", "general capabilities omit Content Sync")
         return TargetFacts(
             bundle_id=server.bundle_id, server_version=server.version, runtime_id=runtime.runtime_id,
             runtime_api=runtime.runtime_api, dependency_lock=runtime.dependency_lock,

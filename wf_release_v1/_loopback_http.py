@@ -23,10 +23,17 @@ def _schema(label: str, message: str) -> ReleaseError:
     return ReleaseError("WFREL_SCHEMA_INVALID", message, {"label": label})
 
 
-def _unavailable(label: str, message: str, *, retryable: bool) -> ReleaseError:
-    return ReleaseError(
-        "WFREL_REQUIRE_TARGET", message, {"label": label, "retryable": retryable}
-    )
+def _unavailable(
+    label: str,
+    message: str,
+    *,
+    retryable: bool,
+    status: int | None = None,
+) -> ReleaseError:
+    details: dict[str, object] = {"label": label, "retryable": retryable}
+    if status is not None:
+        details["status"] = status
+    return ReleaseError("WFREL_REQUIRE_TARGET", message, details)
 
 
 class _NoRedirect(HTTPRedirectHandler):
@@ -163,7 +170,12 @@ def read_loopback_json(
                 request, timeout=remaining
             ) as response:
                 if response.status != 200:
-                    raise _unavailable(label, "target endpoint request failed", retryable=False)
+                    raise _unavailable(
+                        label,
+                        "target endpoint request failed",
+                        retryable=False,
+                        status=response.status,
+                    )
                 if response.headers.get_content_type() != "application/json":
                     raise _schema(label, "target endpoint content type is invalid")
                 chunks: list[bytes] = []
@@ -189,9 +201,13 @@ def read_loopback_json(
         raise
     except HTTPError as error:
         retryable = error.code in retry_statuses
+        status = error.code
         error.close()
         raise _unavailable(
-            label, "target endpoint is unavailable", retryable=retryable
+            label,
+            "target endpoint is unavailable",
+            retryable=retryable,
+            status=status,
         ) from error
     except (HTTPException, URLError, OSError, TimeoutError, socket.gaierror) as error:
         raise _unavailable(
