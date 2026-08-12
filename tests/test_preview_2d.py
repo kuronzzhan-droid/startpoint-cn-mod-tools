@@ -99,6 +99,31 @@ class Preview2DTests(unittest.TestCase):
             ])
             self.assertEqual(frames[0]["destination"], {"x": 1, "y": 0, "w": 2, "h": 3})
 
+    def test_rotated_atlas_bounds_use_the_stored_rectangle(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="wf-preview-rotated-") as raw:
+            root = Path(raw)
+            (root / "sprite_sheet.png").write_bytes(_png(4, 6))
+            (root / "sprite_sheet.atlas.json").write_text(json.dumps([
+                {"n": "hero/pixelart0001", "x": 2, "y": 0, "w": 2, "h": 4,
+                 "fw": 8, "fh": 8, "r": True},
+            ]), encoding="utf-8")
+            (root / "pixelart.timeline.json").write_text(json.dumps({"sequences": [
+                {"name": "idle", "kind": "loop", "begin": 1, "end": 1},
+            ]}), encoding="utf-8")
+
+            bundle = load_preview(root)
+
+            frame = bundle.manifest["sequences"][0]["frames"][0]
+            self.assertEqual(frame["source"], {"x": 2, "y": 0, "w": 2, "h": 4})
+            self.assertTrue(frame["rotated"])
+            html = (Path(__file__).resolve().parents[1] / "wf_preview_2d.html").read_text(
+                encoding="utf-8"
+            )
+            self.assertIn(
+                "drawImage(image,s.x,s.y,s.w,s.h,-d.h/2,-d.w/2,d.h,d.w)",
+                html,
+            )
+
     def test_sealed_character_layout_discovers_declared_nested_pixelart(self) -> None:
         with tempfile.TemporaryDirectory(prefix="wf-preview-sealed-") as raw:
             workspace = Path(raw)

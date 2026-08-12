@@ -62,7 +62,8 @@ Patch Overlay。当前服务端 Content Sync 已能从这些权威 orderedmap �
 动态转换回读还确认旧脚本里的 `character.json[179999]` 已过时：当前 converter 按契约输出空 `name`
 和六个技能位，而不是旧脚本的中文名与三个技能位。静态合并旧行会制造第二权威并覆盖正确派生结果。
 
-2D 预览能复现罗尔夫常规像素动画的 9 个序列/428 个 timeline 帧，也能切换 special 组；超级
+2D 预览能复现罗尔夫常规像素动画的 9 个序列/428 个 timeline 帧，也能切换 special 的 2 个序列/
+168 个 timeline 帧；超级
 Fever 仪表、三档光柱与融雪剑的 `parts` 骨架/矩阵/补间仍只能作为素材和数据证据，不是真机演出证明。
 
 ## 当前 UI/UX 仍需补强

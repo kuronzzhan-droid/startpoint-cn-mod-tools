@@ -311,8 +311,10 @@ def _sheet_preview(root: Path, variant: str) -> PreviewBundle:
         rotated = raw.get("r", False)
         if not isinstance(rotated, bool):
             raise PreviewError("atlas rotation flag must be boolean")
-        stored_width, stored_height = (height, width) if rotated else (width, height)
-        if x + stored_width > sheet_width or y + stored_height > sheet_height:
+        # Atlas w/h describe the rectangle as stored in the sheet.  ``r`` tells
+        # the renderer how to rotate that crop; swapping the bounds here rejects
+        # legitimate edge-packed frames such as Rolf special0132.
+        if x + width > sheet_width or y + height > sheet_height:
             raise PreviewError(f"atlas frame is outside sprite sheet: {name}")
         fx = _integer(raw.get("fx", 0), "atlas fx", minimum=-MAX_DIMENSION,
                       maximum=MAX_DIMENSION)
