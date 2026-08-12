@@ -47,7 +47,6 @@ def parse_path_map(raw: bytes) -> tuple[LegacyPath, ...]:
     if not isinstance(items, list) or not items:
         raise error("legacy path map must contain paths")
     result: list[LegacyPath] = []
-    logicals: set[str] = set()
     members: set[str] = set()
     for index, item in enumerate(items):
         entry = _mapping(item, f"legacy path map paths[{index}]")
@@ -61,9 +60,8 @@ def parse_path_map(raw: bytes) -> tuple[LegacyPath, ...]:
             raise error("legacy path map logical path is invalid")
         logical = _portable_name(logical)
         member = _hashed_member(root, logical)
-        if logical in logicals or member in members:
+        if member in members:
             raise error("legacy path map entry is duplicated")
-        logicals.add(logical)
         members.add(member)
         result.append(LegacyPath(root, logical, member))
     result.sort(key=lambda item: (item.root.encode("utf-8"), item.logical_path.encode("utf-8")))

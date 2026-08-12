@@ -14,6 +14,7 @@ from zipfile import ZIP_STORED, ZipFile, ZipInfo
 
 from wf_release_v1.canonical import canonical_json_bytes
 from wf_release_v1.errors import ReleaseError
+from wf_release_v1._legacy_mapping import parse_path_map
 from wf_release_v1.legacy_import import import_legacy_share
 
 
@@ -196,13 +197,29 @@ class LegacyImportCase(unittest.TestCase):
         self.assertEqual(caught.exception.code, "WFREL_SHARE_INVALID")
         self.assertFalse(output.exists())
 
-    def test_duplicate_or_ambiguous_mapping_is_rejected(self) -> None:
+    def test_same_logical_path_can_be_mapped_in_distinct_cdn_roots(self) -> None:
+        raw = canonical_json_bytes({
+            "legacyPathMapVersion": 1,
+            "paths": [
+                {"logicalPath": self.logical, "root": "common"},
+                {"logicalPath": self.logical, "root": "android"},
+            ],
+        })
+
+        parsed = parse_path_map(raw)
+
+        self.assertEqual(
+            [(item.root, item.logical_path) for item in parsed],
+            [("android", self.logical), ("common", self.logical)],
+        )
+
+    def test_duplicate_mapping_in_the_same_root_is_rejected(self) -> None:
         mapping = self.root / "path-map.json"
         mapping.write_bytes(canonical_json_bytes({
             "legacyPathMapVersion": 1,
             "paths": [
                 {"logicalPath": self.logical, "root": "common"},
-                {"logicalPath": self.logical, "root": "medium"},
+                {"logicalPath": self.logical, "root": "common"},
             ],
         }))
         with self.assertRaisesRegex(ReleaseError, "duplicated"):
