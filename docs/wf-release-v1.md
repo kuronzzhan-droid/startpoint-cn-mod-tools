@@ -160,6 +160,24 @@ python -X utf8 -m wf_release_v1 inspect `
 `docs/wf-release-v1-local-install.md`。这些命令只作用于调用者显式提供的本机 `target.json`，不上传、
 不远程连接，也不访问当前仓库之外未声明的 live store/CDN/assets。
 
+### 旧分享包只读预检
+
+```powershell
+python -X utf8 -m wf_release_v1 inspect-share `
+  --share D:\path\to\wfshare-example.zip `
+  --json
+```
+
+`inspect-share` 面向旧 `wfshare` v2 分享 ZIP。它固定做单根目录、路径、重复成员、ZIP、
+`requires.json` / `report.json`、CDN 边、归档 size/SHA-256/成员数和服务端数据分类检查，输出不含
+源文件绝对路径的迁移计划。包内 `.py` / `.ps1` / `.bat` 等文件只被计数并标为人工复核阻断项，
+绝不执行；命令也不解包到调用者目录、不写 CDN、服务端仓库或受管目标。
+
+该命令不是宽松安装入口。旧包仍缺少 `wf-release-v1` 的 sealed character workspace、严格
+requirements 与受管 server-data 迁移证明，因此当前结果固定是 `migrationStatus=blocked`，供后续
+显式转换使用。`full` 且带个人增强的包会另给 `full-variant-includes-enhancements` 警告，不能在
+未审查增强差异时伪装成纯角色内容。
+
 ## 6. 错误与退出码
 
 失败时 stdout 为空，stderr 只有一行 UTF-8 JSON，包含稳定 `code` 和中文 `message`；默认不

@@ -221,6 +221,7 @@ mod-tools/
 - **[角色包工作流.md](docs/角色包工作流.md)** — 自制新角色从工作区到发布的完整流程(manifest/preflight/发布/回滚)。
 - **[新角色制作心得.md](docs/新角色制作心得.md)** — 双新角色(赛瑞斯/史黛拉)上线全程沉淀:先例原则、解析器 schema、崩溃图鉴、发布链路坑。
 - **[分享包收方指南.md](docs/分享包收方指南.md)** — 面向**收方服主**(不装任何工具):分享包结构、full / content-only 变体选择、链尾衔接前提、main / dev 两种服务端的落地步骤、`requires.json` 字段速查、常见问题。
+- **[wf-release-v1.md](docs/wf-release-v1.md)** / **[wf-release-v1-local-install.md](docs/wf-release-v1-local-install.md)** — 新的不可变发行物、受管安装/恢复，以及旧 `wfshare` 的只读迁移预检；旧包脚本不会被执行，也不能绕过 Release 门禁直接安装。
 - **[去增强变体.md](docs/去增强变体.md)** — 面向发包方:content-only 变体的设计与操作(官方基准=官方 CDN 归档、纠缠表按行重建、官方资产 drop-list),配套 `wf_enhancement_policy.py` / `wf_share_variant.py`。
 - **[增强开关.md](docs/增强开关.md)** — 自服运维:分类关闭/恢复个人增强的逐格取值模型、两条锁行护栏、自检等式与回滚,配套 `wf_enhancement_switch.py`。
 - [角色生成器方案.md](docs/角色生成器方案.md) / [角色生成器-Codex任务书.md](docs/角色生成器-Codex任务书.md) — 角色生成器设计与任务书。

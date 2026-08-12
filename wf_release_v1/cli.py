@@ -16,6 +16,7 @@ from ._local_cli import (
     run_probe as _run_probe,
     run_rollback as _run_rollback,
 )
+from .legacy_share import inspect_legacy_share
 from .producer import BuildReceipt, BuildRequest, build_character_release
 from .schema import ReleaseRequirements, parse_requirements
 from .verifier import VerificationReport, verify_release
@@ -34,6 +35,7 @@ _FORMAT_PREFIXES: Final = (
     "WFREL_OVERLAY_LIMIT",
     "WFREL_PATH_",
     "WFREL_SCHEMA_",
+    "WFREL_SHARE_INVALID",
 )
 _INCOMPATIBLE_PREFIXES: Final = (
     "WFREL_BUILD_SOURCE_",
@@ -47,6 +49,7 @@ _IO_PREFIXES: Final = (
     "WFREL_BUILD_IO",
     "WFREL_BUILD_OUTPUT_",
     "WFREL_CLI_IO",
+    "WFREL_SHARE_IO",
 )
 _TRANSACTION_PREFIXES: Final = (
     "WFREL_RECOVERY_",
@@ -272,6 +275,10 @@ def _run_verify(arguments: argparse.Namespace) -> dict[str, object]:
     return _report_wire(verify_release(Path(arguments.release)))
 
 
+def _run_inspect_share(arguments: argparse.Namespace) -> dict[str, object]:
+    return inspect_legacy_share(Path(arguments.share)).to_wire()
+
+
 def _parser(output_context: _ParseOutputContext | None = None) -> _ArgumentParser:
     context = output_context or _ParseOutputContext()
     parser = _ArgumentParser(prog="wf-release", output_context=context)
@@ -298,6 +305,13 @@ def _parser(output_context: _ParseOutputContext | None = None) -> _ArgumentParse
         command.add_argument("--release", required=True)
         command.add_argument("--json", action="store_true", required=True)
         command.set_defaults(handler=_run_verify)
+
+    share = commands.add_parser(
+        "inspect-share", help="只读检查旧 wfshare 并输出迁移计划", output_context=context
+    )
+    share.add_argument("--share", required=True)
+    share.add_argument("--json", action="store_true", required=True)
+    share.set_defaults(handler=_run_inspect_share)
 
     probe = commands.add_parser(
         "probe", help="读取受管目标事实", output_context=context
