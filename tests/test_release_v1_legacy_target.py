@@ -148,6 +148,20 @@ class LegacyTargetTests(unittest.TestCase):
         self.assertEqual(("WFREL_LEGACY_PROCESS_NOT_OWNED",), facts.preview_only_reasons)
         self.assertTrue(all(layer.archives == () for layer in facts.layers))
 
+    def test_layer_specific_content_tags_still_describe_one_version_edge(self) -> None:
+        for layer, tag in zip(LAYERS, ("common-a1", "medium-b2", "android-c3"), strict=True):
+            _write_archive(
+                self.fixture.cn
+                / f"archive-{layer}-diff"
+                / _archive_name("1.4.54", "1.4.55", tag=tag)
+            )
+        facts = inspect_legacy_target(self.fixture.target, FakePlatform(None))
+        self.assertEqual("1.4.55", facts.chain_tail)
+        self.assertEqual(
+            ("common-a1", "medium-b2", "android-c3"),
+            tuple(layer.archives[0].tag for layer in facts.layers),
+        )
+
     def test_rejects_missing_misaligned_or_extra_layer_entries(self) -> None:
         cases: list[tuple[str, Callable[[LegacyTargetFixture], object]]] = [
             (

@@ -225,9 +225,9 @@ def _inspect_layer(
     return LegacyLayerFacts(layer, ordered, _layer_digest(layer, ordered))
 
 
-def _descriptor(layer: LegacyLayerFacts) -> tuple[tuple[str, str, int, str], ...]:
+def _descriptor(layer: LegacyLayerFacts) -> tuple[tuple[str, str, int], ...]:
     return tuple(
-        (item.from_version, item.target_version, item.sequence, item.tag)
+        (item.from_version, item.target_version, item.sequence)
         for item in layer.archives
     )
 
@@ -241,13 +241,13 @@ def _chain_tail(
         raise _invalid("legacy CDN layers do not describe the same archive set")
     if not descriptors[0]:
         return baseline
-    by_edge: dict[tuple[str, str], list[tuple[int, str]]] = {}
-    for start, end, sequence, tag in descriptors[0]:
+    by_edge: dict[tuple[str, str], list[int]] = {}
+    for start, end, sequence in descriptors[0]:
         if _version(start) >= _version(end):
             raise _invalid("legacy CDN versions must increase")
-        by_edge.setdefault((start, end), []).append((sequence, tag))
+        by_edge.setdefault((start, end), []).append(sequence)
     for parts in by_edge.values():
-        sequences = sorted(sequence for sequence, _tag in parts)
+        sequences = sorted(parts)
         if sequences != list(range(1, len(parts) + 1)):
             raise _invalid("legacy CDN edge parts are not contiguous")
     outgoing: dict[str, str] = {}
