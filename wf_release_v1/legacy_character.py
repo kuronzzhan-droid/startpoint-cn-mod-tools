@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from dataclasses import dataclass
 import hashlib
 import json
@@ -10,7 +11,7 @@ from pathlib import Path
 import shutil
 import stat
 import tempfile
-from typing import Final, Mapping
+from typing import Final, Iterator, Mapping
 
 import wf_character_pack
 import wf_character_workspace
@@ -315,6 +316,19 @@ def _copy_payloads(package: Path, payloads: Mapping[str, bytes]) -> dict[str, li
     return roots
 
 
+@contextmanager
+def _owned_staging(parent: Path) -> Iterator[Path]:
+    raw = Path(tempfile.mkdtemp(prefix=".legacy-character-", dir=parent))
+    # Workspace paths use the Windows extended-path namespace so both writes
+    # and failure cleanup can reach original CDN resource names beyond MAX_PATH.
+    staging = wf_character_workspace._absolute(raw)  # type: ignore[attr-defined]
+    try:
+        yield staging
+    finally:
+        if staging.exists():
+            shutil.rmtree(staging)
+
+
 def adopt_legacy_character(imported: Path, config_path: Path, output: Path) -> LegacyCharacterReceipt:
     """Create one sealed workspace without executing or installing imported bytes."""
     imported = Path(imported).resolve()
@@ -335,8 +349,7 @@ def adopt_legacy_character(imported: Path, config_path: Path, output: Path) -> L
     all_payloads = dict(client_payloads)
     all_payloads.update({f"server\0{logical}": raw for logical, raw in server_payloads.items()})
 
-    with tempfile.TemporaryDirectory(prefix=".legacy-character-", dir=parent) as temporary:
-        temporary_root = Path(temporary)
+    with _owned_staging(parent) as temporary_root:
         workspace = wf_character_workspace.init_workspace(
             temporary_root, template_id, character_id, code_name, package_id
         )

@@ -211,6 +211,15 @@ class LegacyCharacterAdoptionTests(unittest.TestCase):
             adopt_legacy_character(self.imported, self.config, self.root / "bad-claim")
         self.assertFalse((self.root / "bad-claim").exists())
 
+        self._write_config(canonical_json_bytes(self.server_rows))
+        config = json.loads(self.config.read_bytes())
+        config["uniqueCondition"] = []
+        self.config.write_bytes(canonical_json_bytes(config))
+        with self.assertRaisesRegex(ReleaseError, "uniqueCondition"):
+            adopt_legacy_character(self.imported, self.config, self.root / "bad-late-config")
+        self.assertFalse((self.root / "bad-late-config").exists())
+        self.assertEqual([], list(self.root.glob(".legacy-character-*")))
+
     def test_rejects_server_rows_for_another_character_and_source_drift(self) -> None:
         from wf_release_v1.legacy_character import adopt_legacy_character
 
