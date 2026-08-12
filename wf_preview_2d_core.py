@@ -11,6 +11,7 @@ import re
 import stat
 import struct
 from typing import Any
+import unicodedata
 import zlib
 
 from wf_mod_tool import AMF3Reader
@@ -22,6 +23,7 @@ MAX_FRAMES = 4096
 MAX_DIMENSION = 16384
 MAX_FRAME_NUMBER = 2_147_483_647
 _PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+_STORED_PNG_SIGNATURE = b"\x89png\r\n\x1a\n"
 _REPARSE_POINT = 0x400
 _NUMBERED_STEM = re.compile(r"^(.*?)(\d+)$")
 _FRAME_NUMBER = re.compile(r"(\d+)$")
@@ -59,6 +61,8 @@ class PreviewBundle:
         data, identity = _read_stable(ref.path, MAX_PNG_BYTES)
         if identity != ref.identity:
             raise PreviewError("preview asset changed after preview load")
+        if data.startswith(_STORED_PNG_SIGNATURE):
+            return _PNG_SIGNATURE + data[len(_PNG_SIGNATURE):]
         return data
 
 
@@ -123,7 +127,11 @@ def _read_stable(path: Path, limit: int) -> tuple[bytes, FileIdentity]:
 
 def _png(path: Path) -> tuple[int, int, FileIdentity]:
     data, identity = _read_stable(path, MAX_PNG_BYTES)
-    if len(data) < 24 or data[:8] != _PNG_SIGNATURE or data[12:16] != b"IHDR":
+    if (
+        len(data) < 24
+        or data[:8] not in (_PNG_SIGNATURE, _STORED_PNG_SIGNATURE)
+        or data[12:16] != b"IHDR"
+    ):
         raise PreviewError(f"invalid PNG header: {path.name}")
     width, height = struct.unpack(">II", data[16:24])
     if not (0 < width <= MAX_DIMENSION and 0 < height <= MAX_DIMENSION):
@@ -381,10 +389,66 @@ def _manifest(mode: str, width: int, height: int, sequences: list[dict[str, Any]
     }
 
 
+def _logical_path(value: object) -> str:
+    if (
+        not isinstance(value, str)
+        or not value
+        or value.startswith("/")
+        or "\\" in value
+        or unicodedata.normalize("NFC", value) != value
+        or any(ord(character) <= 0x1F or ord(character) == 0x7F for character in value)
+    ):
+        raise PreviewError("character manifest contains an invalid logical path")
+    parts = value.split("/")
+    if any(part in ("", ".", "..") or ":" in part for part in parts):
+        raise PreviewError("character manifest contains an invalid logical path")
+    return value
+
+
+def _declared_package_pixelart(source: Path) -> tuple[Path, str] | None:
+    package = source
+    nested = source / "package"
+    if nested.exists():
+        package = _directory(nested)
+    manifest_path = package / "manifest.json"
+    if not manifest_path.exists():
+        return None
+    manifest = _tree(manifest_path)
+    roots = manifest.get("roots") if isinstance(manifest, dict) else None
+    common = roots.get("common") if isinstance(roots, dict) else None
+    if not isinstance(common, list):
+        raise PreviewError("character manifest common root must be an array")
+    candidates: set[str] = set()
+    for offset, raw in enumerate(common):
+        if not isinstance(raw, dict):
+            raise PreviewError(f"character manifest common entry {offset} must be an object")
+        logical = _logical_path(raw.get("logical_path"))
+        parts = logical.split("/")
+        if len(parts) >= 2 and parts[-1] in (
+            "sprite_sheet.png", "special_sprite_sheet.png",
+        ) and parts[-2] == "pixelart":
+            candidates.add("/".join(parts[:-1]))
+    if not candidates:
+        raise PreviewError("character manifest declares no pixelart sprite sheet")
+    if len(candidates) != 1:
+        raise PreviewError("character manifest has ambiguous pixelart roots")
+    logical_root = next(iter(candidates))
+    pixelart = package / "roots" / "common" / Path(logical_root)
+    return _directory(pixelart), logical_root
+
+
 def load_preview(source: str | Path, *, variant: str = "auto") -> PreviewBundle:
     root = _directory(Path(source))
-    pixelart = root / "pixelart"
-    if pixelart.exists():
-        root = _directory(pixelart)
+    declared = _declared_package_pixelart(root)
+    logical_root: str | None = None
+    if declared is not None:
+        root, logical_root = declared
+    else:
+        pixelart = root / "pixelart"
+        if pixelart.exists():
+            root = _directory(pixelart)
     has_sheet = (root / "sprite_sheet.png").exists() or (root / "special_sprite_sheet.png").exists()
-    return _sheet_preview(root, variant) if has_sheet else _sequence_preview(root)
+    bundle = _sheet_preview(root, variant) if has_sheet else _sequence_preview(root)
+    if logical_root is None:
+        return bundle
+    return PreviewBundle({**bundle.manifest, "sourceLogicalRoot": logical_root}, bundle.assets)

@@ -99,6 +99,75 @@ class Preview2DTests(unittest.TestCase):
             ])
             self.assertEqual(frames[0]["destination"], {"x": 1, "y": 0, "w": 2, "h": 3})
 
+    def test_sealed_character_layout_discovers_declared_nested_pixelart(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="wf-preview-sealed-") as raw:
+            workspace = Path(raw)
+            package = workspace / "package"
+            root = package / "roots/common/character/rolf/pixelart"
+            root.mkdir(parents=True)
+            (root / "sprite_sheet.png").write_bytes(_png(8, 4))
+            (root / "sprite_sheet.atlas.json").write_text(json.dumps([
+                {"n": "rolf/pixelart0001", "x": 0, "y": 0, "w": 2, "h": 3,
+                 "fw": 4, "fh": 4},
+            ]), encoding="utf-8")
+            (root / "pixelart.timeline.json").write_text(json.dumps({"sequences": [
+                {"name": "idle", "kind": "loop", "begin": 1, "end": 1},
+            ]}), encoding="utf-8")
+            paths = [
+                "character/rolf/pixelart/pixelart.timeline.json",
+                "character/rolf/pixelart/sprite_sheet.atlas.json",
+                "character/rolf/pixelart/sprite_sheet.png",
+            ]
+            (package / "manifest.json").write_text(json.dumps({
+                "roots": {
+                    "common": [
+                        {"logical_path": path, "sha256": "0" * 64, "size": 1}
+                        for path in paths
+                    ],
+                    "medium": [], "android": [], "server": [],
+                },
+            }), encoding="utf-8")
+            before = _snapshot(workspace)
+
+            from_workspace = load_preview(workspace)
+            from_package = load_preview(package)
+
+            self.assertEqual("sprite-sheet", from_workspace.manifest["mode"])
+            self.assertEqual(from_workspace.manifest, from_package.manifest)
+            self.assertEqual(
+                "character/rolf/pixelart",
+                from_workspace.manifest["sourceLogicalRoot"],
+            )
+            self.assertNotIn(str(workspace), json.dumps(from_workspace.manifest))
+            self.assertEqual(before, _snapshot(workspace))
+
+            second = package / "roots/common/character/other/pixelart"
+            second.mkdir(parents=True)
+            manifest = json.loads((package / "manifest.json").read_text("utf-8"))
+            manifest["roots"]["common"].append({
+                "logical_path": "character/other/pixelart/sprite_sheet.png",
+                "sha256": "0" * 64,
+                "size": 1,
+            })
+            (package / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+            with self.assertRaisesRegex(PreviewError, "ambiguous"):
+                load_preview(package)
+
+    def test_world_flipper_stored_png_signature_is_normalized_in_memory(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="wf-preview-stored-png-") as raw:
+            root = Path(raw)
+            standard = _png(3, 2)
+            stored = b"\x89png\r\n\x1a\n" + standard[8:]
+            path = root / "idle_1.png"
+            path.write_bytes(stored)
+            before = _snapshot(root)
+
+            bundle = load_preview(root)
+            token = bundle.manifest["sequences"][0]["frames"][0]["asset"]
+
+            self.assertEqual(standard, bundle.read_asset(token))
+            self.assertEqual(before, _snapshot(root))
+
     def test_amf3_deflate_metadata_is_supported_and_trailing_plaintext_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory(prefix="wf-preview-amf-") as raw:
             root = Path(raw)
