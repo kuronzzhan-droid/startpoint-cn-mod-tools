@@ -189,7 +189,7 @@ class LegacyShareAdversarialCase(unittest.TestCase):
 
     def test_catalog_export_dialect_without_report_is_accepted(self) -> None:
         raw = _inner_archive()
-        archive_name = "archive-common-diff/pinball-1.4.324-1.4.347-1-catalog.zip"
+        archive_name = "archive-common-diff/pinball-1.4.324-1.4.347-1-catalog+safe.zip"
         requires = {
             "schemaVersion": 2,
             "pack": {"variant": "full", "since": "1.4.324", "tail": "1.4.347", "edges": 1},
@@ -216,6 +216,52 @@ class LegacyShareAdversarialCase(unittest.TestCase):
         plan = legacy_share.inspect_legacy_share(self.share).to_wire()
         self.assertEqual(plan["sourceDialect"], "catalog-export")
         self.assertEqual((plan["fromVersion"], plan["targetVersion"]), ("1.4.324", "1.4.347"))
+
+    def test_content_only_detailed_summary_closure_is_enforced(self) -> None:
+        def mismatched_reverted(requires: dict[str, object]) -> None:
+            requires["enhancementDetail"]["revertedRows"] = 999
+
+        def mismatched_report_reverted(report: dict[str, object]) -> None:
+            report["summary"]["revertedRows"] = 999
+
+        def missing_dropped_logical(requires: dict[str, object]) -> None:
+            requires["enhancementDetail"]["droppedEntries"] = []
+
+        def missing_report_dropped_logical(report: dict[str, object]) -> None:
+            report["summary"]["droppedLogicals"] = []
+
+        def table_without_rebuild_count(report: dict[str, object]) -> None:
+            summary = report["summary"]
+            summary["kept"] = summary["kept"] + 1
+            summary["rebuilt"] = 0
+
+        def nested_total_below_table_detail(report: dict[str, object]) -> None:
+            report["summary"]["rebuiltTables"][0]["nestedExtended"] = 1
+
+        def empty_unrecognized_rows(report: dict[str, object]) -> None:
+            report["summary"]["unrecognizedAdditions"] = {
+                "master/example.orderedmap": []
+            }
+
+        cases = (
+            (mismatched_reverted, mismatched_report_reverted),
+            (missing_dropped_logical, missing_report_dropped_logical),
+            (None, table_without_rebuild_count),
+            (None, nested_total_below_table_detail),
+            (None, empty_unrecognized_rows),
+        )
+        names = tuple(f"production/upload/{index:02x}/{'b' * 37}{index:x}" for index in range(6))
+        for requires_mutator, report_mutator in cases:
+            with self.subTest(report_mutator=report_mutator.__name__):
+                _write_variant(
+                    self.share,
+                    variant="content-only",
+                    inner_raw=_inner_archive(names=names),
+                    requires_mutator=requires_mutator,
+                    report_mutator=report_mutator,
+                )
+                with self.assertRaises(ReleaseError):
+                    legacy_share.inspect_legacy_share(self.share)
 
     def test_strict_metadata_rejects_semantically_impossible_documents(self) -> None:
         mutations = {
@@ -268,6 +314,20 @@ class LegacyShareAdversarialCase(unittest.TestCase):
         with self.assertRaises(ReleaseError):
             legacy_share.inspect_legacy_share(self.share)
 
+    def test_all_directory_entries_share_the_same_portable_root(self) -> None:
+        _write_variant(self.share)
+        with zipfile.ZipFile(self.share, "a") as bundle:
+            bundle.writestr(zipfile.ZipInfo("other-root/"), b"")
+        with self.assertRaises(ReleaseError):
+            legacy_share.inspect_legacy_share(self.share)
+
+    def test_windows_superscript_device_aliases_are_rejected(self) -> None:
+        for name in ("COM¹.txt", "COM².txt", "COM³.txt", "LPT¹.txt", "LPT².txt", "LPT³.txt"):
+            with self.subTest(name=name):
+                _write_variant(self.share, server_members=((f"server-data/{name}", b"x"),))
+                with self.assertRaises(ReleaseError):
+                    legacy_share.inspect_legacy_share(self.share)
+
     def test_crc_compression_ratio_and_unsupported_method_are_rejected(self) -> None:
         _write_variant(self.share, server_members=(("server-data/apply.py", b"print('no')\n"),))
         corrupt_zip_member_crc(self.share, "wfshare-fixture/server-data/apply.py")
@@ -309,6 +369,11 @@ class LegacyShareAdversarialCase(unittest.TestCase):
 
     def test_server_script_classification_and_absence_proof_remain_blocking(self) -> None:
         _write_variant(self.share, server_members=(("server-data/apply.vbs", b"WScript.Quit\n"),))
+        plan = legacy_share.inspect_legacy_share(self.share).to_wire()
+        self.assertEqual(plan["serverDataScripts"], 1)
+        self.assertIn("server-data-script-review-required", plan["blockers"])
+
+        _write_variant(self.share, server_members=(("server-assets/mode.mjs", b"export {};\n"),))
         plan = legacy_share.inspect_legacy_share(self.share).to_wire()
         self.assertEqual(plan["serverDataScripts"], 1)
         self.assertIn("server-data-script-review-required", plan["blockers"])

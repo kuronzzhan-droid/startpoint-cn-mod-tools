@@ -17,7 +17,7 @@ ARCHIVE_PATTERN: Final = re.compile(
     r"archive-(common|medium|android)-diff/"
     r"pinball-((?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*))-"
     r"((?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*))-"
-    r"([1-9][0-9]*)-([A-Za-z0-9][A-Za-z0-9._-]*)\.zip"
+    r"([1-9][0-9]*)-([^/]+)\.zip"
 )
 _SHA256: Final = re.compile(r"[0-9a-f]{64}")
 _DETAIL_KEYS: Final = {
@@ -225,22 +225,45 @@ def _parse_summary(summary_value: object, *, variant: str, report_entries: int) 
         return
     if entries != kept + dropped + rebuilt or report_entries != kept + rebuilt:
         raise error("content-only report summary arithmetic is invalid")
-    for field in ("revertedRows", "restoredRows", "nestedExtendedRows"):
-        _integer(summary[field], label=f"report.summary.{field}")
-    _strings(summary["droppedLogicals"], label="report.summary.droppedLogicals")
+    reverted_rows = _integer(summary["revertedRows"], label="report.summary.revertedRows")
+    restored_rows = _integer(summary["restoredRows"], label="report.summary.restoredRows")
+    nested_rows = _integer(
+        summary["nestedExtendedRows"], label="report.summary.nestedExtendedRows"
+    )
+    dropped_logicals = _strings(
+        summary["droppedLogicals"], label="report.summary.droppedLogicals"
+    )
     tables = summary["rebuiltTables"]
     if not isinstance(tables, list):
         raise error("report.summary.rebuiltTables must be an array")
+    table_logicals: list[str] = []
+    table_totals = {"reverted": 0, "restored": 0, "nestedExtended": 0}
     for index, value in enumerate(tables):
         item = _mapping(value, label=f"rebuiltTables[{index}]")
         _exact(item, {"logical", "reverted", "restored", "nestedExtended", "kept"}, label="rebuilt table")
-        _string(item["logical"], label="rebuilt table logical")
+        table_logicals.append(_string(item["logical"], label="rebuilt table logical"))
         for field in ("reverted", "restored", "nestedExtended", "kept"):
-            _integer(item[field], label=f"rebuilt table {field}")
+            count = _integer(item[field], label=f"rebuilt table {field}")
+            if field in table_totals:
+                table_totals[field] += count
+    if len(set(table_logicals)) != len(table_logicals):
+        raise error("report.summary.rebuiltTables contains duplicate logicals")
+    # The producer may count rebuilt non-table assets without a rebuiltTables row,
+    # and may count nested additions in unchanged tables.  The remaining totals
+    # are exact projections of the detailed table rows.
+    if (
+        len(tables) > rebuilt
+        or len(dropped_logicals) != dropped
+        or table_totals["reverted"] != reverted_rows
+        or table_totals["restored"] != restored_rows
+        or table_totals["nestedExtended"] > nested_rows
+    ):
+        raise error("content-only report detail totals are inconsistent")
     additions = _mapping(summary["unrecognizedAdditions"], label="unrecognizedAdditions")
     for key, value in additions.items():
         _string(key, label="unrecognizedAdditions key")
-        _strings(value, label="unrecognizedAdditions rows")
+        if not _strings(value, label="unrecognizedAdditions rows"):
+            raise error("unrecognizedAdditions rows must not be empty")
 
 
 def _parse_variant(pack: Mapping[str, object], report_value: object) -> ShareMetadata:
@@ -272,6 +295,8 @@ def _parse_variant(pack: Mapping[str, object], report_value: object) -> ShareMet
     report = _mapping(report_value, label="report.json")
     _exact(report, {"variant", "tag", "pack", "entries", "summary", "outputs"}, label="report.json")
     tag = _string(report["tag"], label="report.tag")
+    if not tag.isalnum() or not tag.islower():
+        raise error("variant report tag is invalid")
     if report["variant"] != variant or any(item.tag != tag for item in archives):
         raise error("report variant or tag does not match requirements")
     expected_pack = f"wfshare-{from_version}-to-{target_version}-{variant}"

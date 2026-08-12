@@ -28,6 +28,8 @@ _WINDOWS_DEVICES: Final = frozenset(
     {"CON", "PRN", "AUX", "NUL", "CONIN$", "CONOUT$"}
     | {f"COM{index}" for index in range(1, 10)}
     | {f"LPT{index}" for index in range(1, 10)}
+    | {f"COM{index}" for index in "¹²³"}
+    | {f"LPT{index}" for index in "¹²³"}
 )
 _READ_ERRORS: Final = (
     OSError,
@@ -197,12 +199,12 @@ def validate_infos(
 
 
 def outer_files(bundle: zipfile.ZipFile) -> tuple[str, dict[str, zipfile.ZipInfo]]:
-    members = validate_infos(bundle.infolist(), allow_directories=True)
-    roots: set[str] = set()
+    infos = bundle.infolist()
+    members = validate_infos(infos, allow_directories=True)
+    roots = {safe_name(info).partition("/")[0] for info in infos}
     files: dict[str, zipfile.ZipInfo] = {}
     for name, info in members:
         root, separator, relative = name.partition("/")
-        roots.add(root)
         if not separator or not relative:
             raise error("legacy share files must be under one root directory")
         files[relative] = info

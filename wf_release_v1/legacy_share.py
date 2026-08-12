@@ -44,6 +44,7 @@ _SCRIPT_SUFFIXES: Final = frozenset(
         ".hta",
         ".jar",
         ".js",
+        ".mjs",
         ".msi",
         ".ps1",
         ".psm1",
