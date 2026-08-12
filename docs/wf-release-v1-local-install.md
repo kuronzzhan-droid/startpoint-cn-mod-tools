@@ -142,6 +142,22 @@ Mode、server-data 或数据库迁移。工具先证明旧服进程所有权，�
 逐项 no-clobber 提交和 readback，重启同一 LaunchSpec，并验证旧只读健康 JSON、capabilities 仍精确 404、
 进程身份和链尾。任一步失败都恢复本次新增文件和原运行状态；恢复失败则保持停止并保留证据。
 
+已成功提交至少两条 Release 后，可以把 transition 目标精确回到 `previous.json` 记录的前一条链尾：
+
+```powershell
+python -X utf8 -m wf_release_v1 rollback-legacy `
+  --target D:\wf-target\target.json `
+  --to-release sha256:<previous-release-id> `
+  --confirm ROLLBACK_LEGACY_RELEASE
+```
+
+该命令只接受与上一笔已提交 legacy install receipt 对应的 retained Release。它在停服后逐项证明当前三层
+归档仍与该 Release 完全一致，只删除这笔安装拥有的归档；更早的链边和无关文件不会被枚举删除。重启后链尾
+必须精确回到 Overlay 的 `fromVersion`，才会提交 previous active state 和 schema-v2 legacy receipt。删除、启动、
+readiness 或 readback 任一失败都会恢复已删除的精确字节和原运行状态；恢复本身失败则保持服务停止并保留
+staging/receipt 证据。`rollback-legacy` 不回滚数据库、server-data、存档或客户端状态，
+`dataCompatibilityGuaranteed` 固定为 `false`。
+
 纯 `legacy` 没有自动安装入口：分享包检查、隔离导入、角色采纳、编辑、重新封印、2D 预览和 Overlay/部署包
 导出仍可闭环，部署到旧服务端必须人工执行其既有流程。工具不会执行包内脚本或替用户合并 server-data。
 
@@ -194,6 +210,7 @@ active/previous。`dataCompatibilityGuaranteed` 固定为 `false`：服务端或
 ```powershell
 python -X utf8 -m unittest tests.test_release_v1_vertical -v
 python -X utf8 -m unittest tests.test_release_v1_mode_switch -v
+python -X utf8 -m unittest tests.test_release_v1_legacy_transaction tests.test_release_v1_legacy_rollback -v
 python -X utf8 -m unittest tests.test_release_v1_install_performance -v
 cmd /d /c "python -X utf8 -m tests.test_release_v1_install_performance --benchmark --runs 5 > %TEMP%\wf-release-v1-install-benchmark.json"
 ```
