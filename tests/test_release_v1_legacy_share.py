@@ -26,11 +26,19 @@ def _member(name: str, raw: bytes) -> tuple[ZipInfo, bytes]:
     return info, raw
 
 
-def _inner_archive() -> bytes:
+def _inner_archive(
+    *,
+    prefix: str = "production/upload",
+    names: tuple[str, ...] | None = None,
+    payload: bytes = b"payload",
+) -> bytes:
     output = BytesIO()
     with ZipFile(output, "w", compression=ZIP_STORED) as bundle:
-        for index in range(7):
-            info, raw = _member(f"production/upload/{index:02x}/{'a' * 40}{index}", b"payload")
+        actual_names = names or tuple(
+            f"{prefix}/{index:02x}/{'a' * 37}{index:x}" for index in range(7)
+        )
+        for name in actual_names:
+            info, raw = _member(name, payload)
             bundle.writestr(info, raw)
     return output.getvalue()
 
@@ -64,7 +72,15 @@ class LegacyShareCase(unittest.TestCase):
                 "archives": [archive_name],
             },
             "enhancement": True,
-            "enhancementDetail": {"note": "contains local balancing"},
+            "enhancementDetail": {
+                "officialBaseline": None,
+                "revertedRows": 0,
+                "restoredRows": 0,
+                "revertedTables": [],
+                "droppedEntries": [],
+                "note": "contains local balancing",
+                "serverSideEnhancements": [],
+            },
             "requires": {
                 "serverRestart": True,
                 "restartReasons": ["character table"],
@@ -108,6 +124,7 @@ class LegacyShareCase(unittest.TestCase):
         self._write_share()
         plan = inspect_legacy_share(self.share).to_wire()
         self.assertEqual(plan["sourceFormat"], "wfshare-v2")
+        self.assertEqual(plan["sourceDialect"], "variant-report")
         self.assertEqual(plan["variant"], "full")
         self.assertEqual(plan["fromVersion"], "1.4.324")
         self.assertEqual(plan["targetVersion"], "1.4.347")

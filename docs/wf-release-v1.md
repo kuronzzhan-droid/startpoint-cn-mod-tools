@@ -168,9 +168,14 @@ python -X utf8 -m wf_release_v1 inspect-share `
   --json
 ```
 
-`inspect-share` 面向旧 `wfshare` v2 分享 ZIP。它固定做单根目录、路径、重复成员、ZIP、
-`requires.json` / `report.json`、CDN 边、归档 size/SHA-256/成员数和服务端数据分类检查，输出不含
-源文件绝对路径的迁移计划。包内 `.py` / `.ps1` / `.bat` 等文件只被计数并标为人工复核阻断项，
+`inspect-share` 面向旧 `wfshare` v2 分享 ZIP，明确支持 `wf_share_variant` 的
+`variant-report` 方言和早期 `wf_dev_catalog export-pack` 的 `catalog-export` 方言。它先把输入复制到
+私有不可变快照，再固定做中央目录/压缩比/CRC、原始路径与 Windows 可移植别名、单根目录、
+CDN 层与连续分片、严格 `requires.json` / `report.json` 算术、归档 size/SHA-256/成员数和服务端
+数据分类检查；输出是不含源文件绝对路径的迁移计划。旧 catalog 方言没有归档报告，检查器会从
+实际字节计算摘要并显式给出 `catalog-export-has-no-archive-report` 警告。
+
+包内 `.py` / `.ps1` / `.bat` / `.vbs` 或未知 `server-data` 可执行形态只被计数并标为人工复核阻断项，
 绝不执行；命令也不解包到调用者目录、不写 CDN、服务端仓库或受管目标。
 
 该命令不是宽松安装入口。旧包仍缺少 `wf-release-v1` 的 sealed character workspace、严格
