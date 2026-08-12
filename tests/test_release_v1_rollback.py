@@ -20,6 +20,7 @@ from wf_release_v1.receipts import (
     OperationReceipt,
     commit_active_state,
     load_active_state,
+    load_operation_receipt,
     write_phase_receipt,
 )
 from wf_release_v1.rollback import (
@@ -123,12 +124,19 @@ class RollbackTests(unittest.TestCase):
             canonical_json_bytes(target_facts_to_wire(self.baseline))
         )
 
-    def _receipt(self, *, outcome: str, phase: str = "HEALTH_READY") -> None:
+    def _receipt(
+        self,
+        *,
+        outcome: str,
+        phase: str = "HEALTH_READY",
+        target_protocol: str = "capabilities-v1",
+    ) -> None:
         write_phase_receipt(self.target.state_root, OperationReceipt(
-            1, ORIGINAL_OPERATION, RELEASE_ID, phase, outcome, NOW, NOW,
+            2, ORIGINAL_OPERATION, RELEASE_ID, phase, outcome, NOW, NOW,
             (OLD_ID,), (RELEASE_ID,),
             "WFREL_RECOVERY_FAILED" if outcome == "recovery_failed" else None,
             "failed" if outcome == "recovery_failed" else None,
+            target_protocol,
         ))
 
     def _patch_runtime(self, facts: object | None = None):
@@ -168,6 +176,10 @@ class RollbackTests(unittest.TestCase):
         self.assertTrue((
             self.target.state_root / "receipts" / f"{ROLLBACK_OPERATION}.json"
         ).is_file())
+        audit = load_operation_receipt(self.target.state_root, ROLLBACK_OPERATION)
+        self.assertEqual((2, "capabilities-v1"), (
+            audit.schema_version, audit.target_protocol,
+        ))
         self.assertEqual(current, load_active_state(self.target.state_root))
 
     def test_manual_rollback_accepts_only_the_exact_previous_release_set(self) -> None:
@@ -197,6 +209,10 @@ class RollbackTests(unittest.TestCase):
         self.assertEqual((RELEASE_ID, OLD_ID), rolled.known_release_ids)
         self.assertTrue((self.candidate_version / "overlay.zip").is_file())
         self.assertFalse(self.active_version.exists())
+        audit = load_operation_receipt(self.target.state_root, ROLLBACK_OPERATION)
+        self.assertEqual((2, "capabilities-v1"), (
+            audit.schema_version, audit.target_protocol,
+        ))
 
     def test_running_service_and_nonmatching_receipt_fail_before_switch(self) -> None:
         self._receipt(outcome="recovery_failed")
@@ -209,6 +225,36 @@ class RollbackTests(unittest.TestCase):
             )
         self.assertEqual("WFREL_PROCESS_RUNNING", running.exception.code)
         self.assertTrue(self.active_version.is_dir())
+
+    def test_modern_recovery_and_rollback_reject_legacy_receipts_before_switch(self) -> None:
+        self._receipt(outcome="recovery_failed", target_protocol="legacy")
+        empty = _active()
+        commit_active_state(self.target.state_root, previous=empty, active=empty)
+        platform = FakePlatform()
+        with self.assertRaises(ReleaseError) as recovery:
+            recover_failed_operation(
+                self.target, platform, ORIGINAL_OPERATION, health_timeout=2.0
+            )
+        self.assertEqual("WFREL_TARGET_PROTOCOL", recovery.exception.code)
+        self.assertTrue(self.active_version.is_dir())
+        self.assertEqual([], platform.events)
+
+        self.setUp()
+        old_ownership = _ownership(entities=("character:310099",), records=("characters:310099",))
+        new_ownership = _ownership(entities=("character:310100",), records=("characters:310100",))
+        previous = _active(ActiveRelease(OLD_ID, old_ownership))
+        current = _active(
+            ActiveRelease(RELEASE_ID, new_ownership), ActiveRelease(OLD_ID, old_ownership)
+        )
+        commit_active_state(self.target.state_root, previous=_active(), active=previous)
+        commit_active_state(self.target.state_root, previous=previous, active=current)
+        self._receipt(outcome="succeeded", phase="COMMITTED", target_protocol="legacy")
+        platform = FakePlatform()
+        with self.assertRaises(ReleaseError) as rollback:
+            rollback_to_previous(self.target, platform, OLD_ID, health_timeout=2.0)
+        self.assertEqual("WFREL_TARGET_PROTOCOL", rollback.exception.code)
+        self.assertTrue(self.active_version.is_dir())
+        self.assertEqual([], platform.events)
 
         self.setUp()
         self._receipt(outcome="succeeded", phase="COMMITTED")

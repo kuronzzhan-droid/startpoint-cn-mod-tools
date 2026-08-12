@@ -159,7 +159,7 @@ def install_release(
     started_at = datetime.now(timezone.utc)
     operation_id = new_operation_id(started_at, secrets.token_bytes(16))
     receipt = OperationReceipt(
-        schema_version=1,
+        schema_version=2,
         operation_id=operation_id,
         release_id=report.release_id,
         phase="CREATED",
@@ -170,6 +170,7 @@ def install_release(
         candidate_release_ids=(report.release_id,),
         error_code=None,
         recovery_outcome=None,
+        target_protocol="capabilities-v1",
     )
 
     def advance(

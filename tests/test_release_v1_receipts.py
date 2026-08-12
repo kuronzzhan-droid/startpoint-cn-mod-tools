@@ -124,7 +124,7 @@ class OperationIdAndReceiptTests(unittest.TestCase):
 
     def test_receipt_rejects_bad_shape_time_ids_and_operation_reuse(self) -> None:
         invalid_changes = (
-            {"schema_version": 2},
+            {"schema_version": 3},
             {"release_id": "release-a"},
             {"phase": "created"},
             {"outcome": "warning"},

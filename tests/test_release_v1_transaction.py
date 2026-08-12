@@ -201,6 +201,8 @@ class TransactionTests(unittest.TestCase):
         ), result)
         self.assertEqual("succeeded", self._receipt()["outcome"])
         self.assertEqual("COMMITTED", self._receipt()["phase"])
+        self.assertEqual(2, self._receipt()["schemaVersion"])
+        self.assertEqual("capabilities-v1", self._receipt()["targetProtocol"])
         self.assertEqual([
             "CREATED", "VERIFIED", "BASE_STARTED", "PROBED", "STOPPED",
             "MATERIALIZED", "SWITCHED", "STARTED", "HEALTH_READY",

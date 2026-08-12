@@ -22,11 +22,13 @@ _OUTCOMES: Final = frozenset({
     "in_progress", "succeeded", "failed", "recovered", "recovery_failed",
 })
 _RECOVERY_OUTCOMES: Final = frozenset({None, "recovered", "failed"})
-_RECEIPT_KEYS: Final = frozenset({
+_TARGET_PROTOCOLS: Final = frozenset({"capabilities-v1", "legacy"})
+_RECEIPT_V1_KEYS: Final = frozenset({
     "schemaVersion", "operationId", "releaseId", "phase", "outcome", "startedAt",
     "updatedAt", "beforeReleaseIds", "candidateReleaseIds", "errorCode",
     "recoveryOutcome",
 })
+_RECEIPT_V2_KEYS: Final = _RECEIPT_V1_KEYS | {"targetProtocol"}
 
 
 def invalid_receipt(message: str) -> ReleaseError:
@@ -93,10 +95,18 @@ class OperationReceipt:
     candidate_release_ids: tuple[str, ...]
     error_code: str | None
     recovery_outcome: str | None
+    target_protocol: str = "capabilities-v1"
 
     def __post_init__(self) -> None:
-        if type(self.schema_version) is not int or self.schema_version != 1:
+        if type(self.schema_version) is not int or self.schema_version not in (1, 2):
             raise invalid_receipt("receipt schema version is not supported")
+        if (
+            not isinstance(self.target_protocol, str)
+            or self.target_protocol not in _TARGET_PROTOCOLS
+            or self.schema_version == 1
+            and self.target_protocol != "capabilities-v1"
+        ):
+            raise invalid_receipt("receipt target protocol is invalid")
         if not isinstance(self.operation_id, str) or _OPERATION_ID.fullmatch(self.operation_id) is None:
             raise invalid_receipt("operation identity is invalid")
         validate_release_id(self.release_id)
@@ -122,7 +132,7 @@ class OperationReceipt:
             raise invalid_receipt("receipt recovery outcome is invalid")
 
     def to_wire(self) -> dict[str, object]:
-        return {
+        value: dict[str, object] = {
             "schemaVersion": self.schema_version, "operationId": self.operation_id,
             "releaseId": self.release_id, "phase": self.phase, "outcome": self.outcome,
             "startedAt": _wire_time(self.started_at), "updatedAt": _wire_time(self.updated_at),
@@ -130,11 +140,22 @@ class OperationReceipt:
             "candidateReleaseIds": list(self.candidate_release_ids), "errorCode": self.error_code,
             "recoveryOutcome": self.recovery_outcome,
         }
+        if self.schema_version == 2:
+            value["targetProtocol"] = self.target_protocol
+        return value
 
 
 def receipt_from_wire(value: object) -> OperationReceipt:
-    if not isinstance(value, dict) or set(value) != _RECEIPT_KEYS:
+    if not isinstance(value, dict) or set(value) not in (
+        _RECEIPT_V1_KEYS, _RECEIPT_V2_KEYS,
+    ):
         raise invalid_receipt("receipt keys do not match the contract")
+    version = value.get("schemaVersion")
+    if (
+        set(value) == _RECEIPT_V1_KEYS and version != 1
+        or set(value) == _RECEIPT_V2_KEYS and version != 2
+    ):
+        raise invalid_receipt("receipt schema does not match its keys")
     before = value["beforeReleaseIds"]
     candidates = value["candidateReleaseIds"]
     if not isinstance(before, list) or not isinstance(candidates, list):
@@ -151,6 +172,7 @@ def receipt_from_wire(value: object) -> OperationReceipt:
         candidate_release_ids=tuple(candidates),  # type: ignore[arg-type]
         error_code=value["errorCode"],  # type: ignore[arg-type]
         recovery_outcome=value["recoveryOutcome"],  # type: ignore[arg-type]
+        target_protocol=value.get("targetProtocol", "capabilities-v1"),  # type: ignore[arg-type]
     )
 
 
@@ -161,6 +183,7 @@ def validate_receipt_update(old: OperationReceipt, new: OperationReceipt) -> Non
         or old.started_at != new.started_at
         or old.before_release_ids != new.before_release_ids
         or old.candidate_release_ids != new.candidate_release_ids
+        or old.target_protocol != new.target_protocol
         or new.updated_at < old.updated_at
         or _PHASE_ORDER.index(new.phase) < _PHASE_ORDER.index(old.phase)
         or (old.outcome != "in_progress" and new.outcome == "in_progress")

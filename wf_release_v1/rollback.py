@@ -55,6 +55,14 @@ def _stopped(platform: PlatformAdapter) -> None:
         raise _error("WFREL_PROCESS_RUNNING", "manual recovery requires a stopped target")
 
 
+def _require_modern_receipt(receipt: OperationReceipt) -> None:
+    if receipt.target_protocol != "capabilities-v1":
+        raise _error(
+            "WFREL_TARGET_PROTOCOL",
+            "modern recovery cannot consume a legacy operation receipt",
+        )
+
+
 def _final_receipt(
     target: ManagedTarget,
     *,
@@ -69,7 +77,7 @@ def _final_receipt(
 ) -> None:
     now = datetime.now(timezone.utc)
     write_phase_receipt(target.state_root, OperationReceipt(
-        1,
+        2,
         operation_id,
         release_id,
         phase,
@@ -80,6 +88,7 @@ def _final_receipt(
         candidate_release_ids,
         error_code,
         recovery_outcome,
+        "capabilities-v1",
     ))
 
 
@@ -146,6 +155,7 @@ def recover_failed_operation(
     if not isinstance(target, ManagedTarget):
         raise _error("WFREL_STATE_CONFLICT", "managed target is invalid")
     original = load_operation_receipt(target.state_root, operation_id)
+    _require_modern_receipt(original)
     if original.outcome != "recovery_failed" or original.recovery_outcome != "failed":
         raise _error("WFREL_STATE_CONFLICT", "operation is not recoverable")
     active = load_active_state(target.state_root)
@@ -235,6 +245,7 @@ def rollback_to_previous(
     if to_release_id not in _release_ids(previous) or current == previous:
         raise _error("WFREL_STATE_CONFLICT", "requested release is not the previous state")
     install = _install_receipt_for_previous(target, current, previous)
+    _require_modern_receipt(install)
     _stopped(platform)
     rollback_id = new_operation_id(datetime.now(timezone.utc), secrets.token_bytes(16))
     try:

@@ -220,6 +220,7 @@ class LegacyTransactionTests(unittest.TestCase):
             (self.target.state_root / "receipts" / f"{OPERATION_ID}.json").read_text("utf-8")
         )
         self.assertEqual(("COMMITTED", "succeeded"), (receipt["phase"], receipt["outcome"]))
+        self.assertEqual((2, "legacy"), (receipt["schemaVersion"], receipt["targetProtocol"]))
         self.assertFalse((self.target.state_root / "staging" / OPERATION_ID).exists())
 
     def test_mid_commit_failure_restores_exact_empty_layers_and_running_state(self) -> None:

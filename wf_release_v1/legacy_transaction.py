@@ -101,7 +101,7 @@ def install_legacy_release(
     started_at = datetime.now(timezone.utc)
     operation_id = new_operation_id(started_at, secrets.token_bytes(16))
     receipt = OperationReceipt(
-        1,
+        2,
         operation_id,
         report.release_id,
         "CREATED",
@@ -112,6 +112,7 @@ def install_legacy_release(
         (report.release_id,),
         None,
         None,
+        "legacy",
     )
 
     def advance(
