@@ -15,8 +15,11 @@ from wf_release_v1.character_edit import (
 from wf_release_v1.legacy_import import import_legacy_share
 from wf_release_v1.legacy_share import inspect_legacy_share
 from wf_release_v1.overlay_builder import build_character_overlay
-from wf_release_v1.planning import capture_target_requirements, plan_install
+from wf_release_v1.planning import capture_target_requirements
+from wf_release_v1.platform import WindowsPlatformAdapter
 from wf_release_v1.target import ManagedTarget
+from wf_release_v1.target_capability import inspect_target_capability
+from wf_release_v1.target_planning import plan_target_install
 
 
 class UIActionError(ValueError):
@@ -146,8 +149,24 @@ def _capture(value: Mapping[str, object]) -> ActionResult:
 
 def _plan(value: Mapping[str, object]) -> ActionResult:
     target = ManagedTarget.load(_path(value["target"], "target"))
-    result = plan_install(_path(value["release"], "release"), target)
+    result = plan_target_install(
+        _path(value["release"], "release"),
+        target,
+        lambda: _platform(target),
+    )
     return ActionResult(result.to_wire())
+
+
+def _inspect_target(value: Mapping[str, object]) -> ActionResult:
+    target = ManagedTarget.load(_path(value["target"], "target"))
+    return ActionResult(
+        inspect_target_capability(target, lambda: _platform(target)).to_wire()
+    )
+
+
+def _platform(target: ManagedTarget) -> WindowsPlatformAdapter:
+    launch = target.launch_spec()
+    return WindowsPlatformAdapter(target.state_root, launch.executable)
 
 
 ACTIONS: Final[dict[str, _Action]] = {
@@ -174,6 +193,9 @@ ACTIONS: Final[dict[str, _Action]] = {
     ),
     "capture-requirements": _Action(
         frozenset({"target", "workspace", "output"}), frozenset(), _capture
+    ),
+    "inspect-target": _Action(
+        frozenset({"target"}), frozenset(), _inspect_target
     ),
     "plan-install": _Action(
         frozenset({"target", "release"}), frozenset(), _plan

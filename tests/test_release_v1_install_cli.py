@@ -12,6 +12,7 @@ from unittest import mock
 
 from tests.test_release_v1_compatibility import _target
 from wf_release_v1 import cli
+from wf_release_v1._target_facts import target_facts_to_wire
 from wf_release_v1.transaction import InstallResult
 from wf_release_v1.rollback import RollbackResult
 
@@ -38,9 +39,22 @@ class LocalInstallCliTests(unittest.TestCase):
 
         facts = _target()
         target = SimpleNamespace(
-            target_probe=mock.Mock(return_value=SimpleNamespace(run=mock.Mock(return_value=facts)))
+            state_root=Path("C:/managed/state"),
+            launch_spec=mock.Mock(return_value=SimpleNamespace(
+                executable=Path("C:/managed/runtime/node.exe")
+            )),
         )
-        with mock.patch.object(local_cli.ManagedTarget, "load", return_value=target) as load:
+        wire = {
+            **target_facts_to_wire(facts),
+            "blockers": [], "installable": True, "level": "modern",
+            "probeVersion": 2, "targetProtocol": "capabilities-v1", "writesLive": False,
+        }
+        capability = SimpleNamespace(to_wire=mock.Mock(return_value=wire))
+        with (
+            mock.patch.object(local_cli.ManagedTarget, "load", return_value=target) as load,
+            mock.patch.object(local_cli, "WindowsPlatformAdapter", return_value=object()),
+            mock.patch.object(local_cli, "inspect_target_capability", return_value=capability),
+        ):
             code, value, stream = self._run(
                 "probe", "--target", "host-target.json", "--json"
             )
@@ -48,7 +62,8 @@ class LocalInstallCliTests(unittest.TestCase):
         self.assertEqual({
             "arch", "bundleId", "capabilities", "cdnTargetVersion", "contentDigest",
             "dependencyLock", "modeDigest", "nodeAbi", "nodeVersion", "patchOverlaySchema",
-            "platform", "runtimeApi", "runtimeId", "serverVersion",
+            "platform", "runtimeApi", "runtimeId", "serverVersion", "blockers",
+            "installable", "level", "probeVersion", "targetProtocol", "writesLive",
         }, set(value))
         self.assertEqual(list(facts.capabilities), value["capabilities"])
         self.assertNotIn("modes", value)
@@ -84,6 +99,10 @@ class LocalInstallCliTests(unittest.TestCase):
         with (
             mock.patch.object(local_cli.ManagedTarget, "load", return_value=target),
             mock.patch.object(local_cli, "WindowsPlatformAdapter", return_value=adapter) as create,
+            mock.patch.object(
+                local_cli, "inspect_target_capability",
+                return_value=SimpleNamespace(level="modern"),
+            ),
             mock.patch.object(local_cli, "install_release", return_value=result) as install,
         ):
             code, value, stream = self._run(
@@ -115,6 +134,10 @@ class LocalInstallCliTests(unittest.TestCase):
                 self.subTest(outcome=outcome),
                 mock.patch.object(local_cli.ManagedTarget, "load", return_value=target),
                 mock.patch.object(local_cli, "WindowsPlatformAdapter", return_value=object()),
+                mock.patch.object(
+                    local_cli, "inspect_target_capability",
+                    return_value=SimpleNamespace(level="modern"),
+                ),
                 mock.patch.object(local_cli, "install_release", return_value=InstallResult(
                     RELEASE_ID, "operation-1", outcome, "WFREL_RECOVERY_FAILED", (),
                 )),

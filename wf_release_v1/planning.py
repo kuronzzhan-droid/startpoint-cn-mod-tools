@@ -13,8 +13,9 @@ from typing import Mapping
 import wf_character_workspace
 
 from .canonical import canonical_json_bytes, load_json_strict_bytes
-from .compatibility import ActiveState, evaluate_requirements
+from .compatibility import ActiveState, VerifiedRelease, evaluate_requirements
 from .errors import ReleaseError
+from .probe import TargetFacts
 from .receipts import load_active_state, load_previous_state
 from .release_archive import capture_parent, verify_parent
 from .schema import parse_requirements
@@ -206,13 +207,15 @@ def _active_state(target: ManagedTarget) -> ActiveState:
     )
 
 
-def plan_install(release: Path, target: ManagedTarget) -> InstallPlan:
-    """Verify and compare one release without materializing or switching anything."""
+def plan_verified_install(
+    verified: VerifiedRelease,
+    target: ManagedTarget,
+    facts: TargetFacts,
+) -> InstallPlan:
+    """Compare already verified modern facts without rereading the Release."""
     if not isinstance(target, ManagedTarget):
         raise _fail("WFREL_REQUIRE_TARGET", "managed target is invalid")
-    _report, verified = verify_release_contract(Path(release))
     active = _active_state(target)
-    facts = target.target_probe().run()
     report = evaluate_requirements(verified, facts, active)
     previous_path = target.state_root / "previous.json"
     rollback_ids: tuple[str, ...] = ()
@@ -232,6 +235,15 @@ def plan_install(release: Path, target: ManagedTarget) -> InstallPlan:
     )
 
 
+def plan_install(release: Path, target: ManagedTarget) -> InstallPlan:
+    """Verify and compare one release without materializing or switching anything."""
+    if not isinstance(target, ManagedTarget):
+        raise _fail("WFREL_REQUIRE_TARGET", "managed target is invalid")
+    _report, verified = verify_release_contract(Path(release))
+    return plan_verified_install(verified, target, target.target_probe().run())
+
+
 __all__ = [
     "InstallPlan", "RequirementsCaptureReceipt", "capture_target_requirements", "plan_install",
+    "plan_verified_install",
 ]

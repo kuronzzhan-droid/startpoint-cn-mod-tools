@@ -6,14 +6,16 @@ import argparse
 from pathlib import Path
 
 from .errors import ReleaseError
+from .legacy_transaction import install_legacy_release
 from .platform import WindowsPlatformAdapter
 from .rollback import (
     RollbackResult,
     recover_failed_operation,
     rollback_to_previous,
 )
-from ._target_facts import target_facts_to_wire
 from .target import ManagedTarget
+from .target_capability import inspect_target_capability
+from .target_planning import plan_target_install
 from .transaction import InstallResult, install_release
 
 
@@ -37,15 +39,31 @@ def _rollback_wire(result: RollbackResult) -> dict[str, object]:
     }
 
 
+def _platform(target: ManagedTarget) -> WindowsPlatformAdapter:
+    launch = target.launch_spec()
+    return WindowsPlatformAdapter(target.state_root, launch.executable)
+
+
 def run_probe(arguments: argparse.Namespace) -> dict[str, object]:
     target = ManagedTarget.load(Path(arguments.target))
-    return target_facts_to_wire(target.target_probe().run())
+    return inspect_target_capability(target, lambda: _platform(target)).to_wire()
+
+
+def run_plan(arguments: argparse.Namespace) -> dict[str, object]:
+    target = ManagedTarget.load(Path(arguments.target))
+    return plan_target_install(
+        Path(arguments.release), target, lambda: _platform(target)
+    ).to_wire()
 
 
 def run_install(arguments: argparse.Namespace) -> dict[str, object]:
     target = ManagedTarget.load(Path(arguments.target))
-    launch = target.launch_spec()
-    platform = WindowsPlatformAdapter(target.state_root, launch.executable)
+    platform = _platform(target)
+    capability = inspect_target_capability(target, platform)
+    if capability.level != "modern":
+        raise ReleaseError(
+            "WFREL_TARGET_PROTOCOL", "modern install requires a capabilities-v1 target"
+        )
     result = install_release(Path(arguments.release), target, platform)
     if result.outcome in {"recovered", "recovery_failed"}:
         raise ReleaseError(
@@ -56,6 +74,28 @@ def run_install(arguments: argparse.Namespace) -> dict[str, object]:
         raise ReleaseError(
             result.error_code or "WFREL_TRANSACTION_FAILED",
             "install failed before commit",
+        )
+    return _result_wire(result)
+
+
+def run_legacy_install(arguments: argparse.Namespace) -> dict[str, object]:
+    target = ManagedTarget.load(Path(arguments.target))
+    platform = _platform(target)
+    capability = inspect_target_capability(target, platform)
+    if capability.level != "transition":
+        raise ReleaseError(
+            "WFREL_TARGET_PROTOCOL", "legacy automatic install requires a transition target"
+        )
+    result = install_legacy_release(Path(arguments.release), target, platform)
+    if result.outcome in {"recovered", "recovery_failed"}:
+        raise ReleaseError(
+            result.error_code or "WFREL_RECOVERY_FAILED",
+            "legacy install did not commit and recovery handling was required",
+        )
+    if result.outcome == "failed":
+        raise ReleaseError(
+            result.error_code or "WFREL_TRANSACTION_FAILED",
+            "legacy install failed before commit",
         )
     return _result_wire(result)
 
@@ -86,4 +126,6 @@ def run_rollback(arguments: argparse.Namespace) -> dict[str, object]:
     return _rollback_wire(result)
 
 
-__all__ = ["run_install", "run_probe", "run_rollback"]
+__all__ = [
+    "run_install", "run_legacy_install", "run_plan", "run_probe", "run_rollback",
+]

@@ -37,7 +37,7 @@ class ReleaseUIActionTests(unittest.TestCase):
             {
                 "inspect-share", "import-share", "adopt-character", "preview",
                 "checkout-character", "seal-character", "build-overlay",
-                "capture-requirements", "plan-install",
+                "capture-requirements", "inspect-target", "plan-install",
             },
             set(ACTIONS),
         )
@@ -95,8 +95,10 @@ class ReleaseUIActionTests(unittest.TestCase):
             patch("wf_release_ui_actions.seal_edited_character_workspace", return_value=receipt),
             patch("wf_release_ui_actions.build_character_overlay", return_value=receipt),
             patch("wf_release_ui_actions.capture_target_requirements", return_value=receipt),
-            patch("wf_release_ui_actions.plan_install", return_value=receipt),
+            patch("wf_release_ui_actions.inspect_target_capability", return_value=receipt),
+            patch("wf_release_ui_actions.plan_target_install", return_value=receipt),
             patch("wf_release_ui_actions.ManagedTarget.load", return_value=target),
+            patch("wf_release_ui_actions.WindowsPlatformAdapter", return_value=object()),
             patch("wf_release_ui_actions.load_preview", return_value=preview),
         )
         entered = [item.start() for item in patches]
@@ -121,12 +123,15 @@ class ReleaseUIActionTests(unittest.TestCase):
             "target": root, "workspace": root, "output": root,
         }).wire["writesLive"])
         self.assertFalse(run_action(
+            "inspect-target", {"target": root}
+        ).wire["writesLive"])
+        self.assertFalse(run_action(
             "plan-install", {"target": root, "release": root}
         ).wire["writesLive"])
         preview_result = run_action("preview", {"source": root, "variant": "auto"})
         self.assertIs(preview, preview_result.preview)
         self.assertEqual(2, preview_result.wire["frameCount"])
-        self.assertEqual(9, len(entered))
+        self.assertEqual(11, len(entered))
 
 
 class ReleaseUIServerTests(unittest.TestCase):
@@ -162,7 +167,7 @@ class ReleaseUIServerTests(unittest.TestCase):
         for action in (
             "inspect-share", "import-share", "adopt-character", "preview",
             "checkout-character", "seal-character", "build-overlay",
-            "capture-requirements", "plan-install",
+            "capture-requirements", "inspect-target", "plan-install",
         ):
             self.assertIn(f'data-action="{action}"', html)
         self.assertNotIn('data-action="install"', html)

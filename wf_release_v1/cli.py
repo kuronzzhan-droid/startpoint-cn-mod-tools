@@ -10,9 +10,13 @@ import sys
 from typing import Final, Sequence
 
 from .canonical import canonical_json_bytes, load_json_strict_bytes
+from ._cli_errors import release_exit as _release_exit
+from ._cli_target_commands import add_target_commands
 from .errors import ReleaseError
 from ._local_cli import (
     run_install as _run_install,
+    run_legacy_install as _run_legacy_install,
+    run_plan as _run_target_plan,
     run_probe as _run_probe,
     run_rollback as _run_rollback,
 )
@@ -21,7 +25,7 @@ from .legacy_import import import_legacy_share
 from .legacy_character import adopt_legacy_character
 from .character_edit import checkout_character_workspace, seal_edited_character_workspace
 from .overlay_builder import build_character_overlay
-from .planning import capture_target_requirements, plan_install
+from .planning import capture_target_requirements
 from .producer import BuildReceipt, BuildRequest, build_character_release
 from .schema import ReleaseRequirements, parse_requirements
 from .verifier import VerificationReport, verify_release
@@ -29,42 +33,6 @@ from .verifier import VerificationReport, verify_release
 
 _REPARSE_POINT: Final = 0x0400
 _MAX_REQUIREMENTS_BYTES: Final = 1024 * 1024
-_FORMAT_PREFIXES: Final = (
-    "WFREL_ARCHIVE_",
-    "WFREL_BUILD_LIMIT",
-    "WFREL_BUILD_PATH_",
-    "WFREL_BUILD_REQUEST_",
-    "WFREL_HASH_",
-    "WFREL_JSON_",
-    "WFREL_OVERLAY_INVALID",
-    "WFREL_OVERLAY_LIMIT",
-    "WFREL_OVERLAY_BUILD_",
-    "WFREL_PATH_",
-    "WFREL_SCHEMA_",
-    "WFREL_SHARE_INVALID",
-)
-_INCOMPATIBLE_PREFIXES: Final = (
-    "WFREL_BUILD_SOURCE_",
-    "WFREL_CHARACTER_EDIT_",
-    "WFREL_CHARACTER_SOURCE_",
-    "WFREL_CHARACTER_ADOPTION_",
-    "WFREL_COMPONENT_",
-    "WFREL_OVERLAY_GRAPH",
-    "WFREL_OWNERSHIP_",
-    "WFREL_REQUIRE_",
-)
-_IO_PREFIXES: Final = (
-    "WFREL_BUILD_IO",
-    "WFREL_BUILD_OUTPUT_",
-    "WFREL_CLI_IO",
-    "WFREL_SHARE_IO",
-)
-_TRANSACTION_PREFIXES: Final = (
-    "WFREL_RECOVERY_",
-    "WFREL_TRANSACTION_",
-)
-
-
 def _flush_stream(stream: object) -> None:
     flush = getattr(stream, "flush", None)
     if not callable(flush):
@@ -332,11 +300,7 @@ def _run_capture_requirements(arguments: argparse.Namespace) -> dict[str, object
 
 
 def _run_plan_install(arguments: argparse.Namespace) -> dict[str, object]:
-    from .target import ManagedTarget
-
-    return plan_install(
-        Path(arguments.release), ManagedTarget.load(Path(arguments.target))
-    ).to_wire()
+    return _run_target_plan(arguments)
 
 
 def _parser(output_context: _ParseOutputContext | None = None) -> _ArgumentParser:
@@ -417,79 +381,15 @@ def _parser(output_context: _ParseOutputContext | None = None) -> _ArgumentParse
     overlay.add_argument("--json", action="store_true", required=True)
     overlay.set_defaults(handler=_run_build_overlay)
 
-    capture = commands.add_parser(
-        "capture-requirements", help="从当前目标只读捕获发行要求", output_context=context
-    )
-    capture.add_argument("--target", required=True)
-    capture.add_argument("--workspace", required=True)
-    capture.add_argument("--output", required=True)
-    capture.add_argument("--json", action="store_true", required=True)
-    capture.set_defaults(handler=_run_capture_requirements)
-
-    plan = commands.add_parser(
-        "plan-install", help="只读预览兼容性、冲突与回退", output_context=context
-    )
-    plan.add_argument("--target", required=True)
-    plan.add_argument("--release", required=True)
-    plan.add_argument("--json", action="store_true", required=True)
-    plan.set_defaults(handler=_run_plan_install)
-
-    probe = commands.add_parser(
-        "probe", help="读取受管目标事实", output_context=context
-    )
-    probe.add_argument("--target", required=True)
-    probe.add_argument("--json", action="store_true", required=True)
-    probe.set_defaults(handler=_run_probe)
-
-    install = commands.add_parser(
-        "install", help="安装已验证的本地发行物", output_context=context
-    )
-    install.add_argument("--target", required=True)
-    install.add_argument("--release", required=True)
-    install.add_argument("--confirm", required=True, choices=("INSTALL_WF_RELEASE",))
-    install.set_defaults(handler=_run_install)
-
-    rollback = commands.add_parser(
-        "rollback", help="恢复失败事务或显式回到 previous 状态", output_context=context
-    )
-    rollback.add_argument("--target", required=True)
-    rollback_mode = rollback.add_mutually_exclusive_group(required=True)
-    rollback_mode.add_argument("--operation")
-    rollback_mode.add_argument("--to-release", dest="to_release")
-    rollback.add_argument(
-        "--confirm",
-        required=True,
-        choices=("RECOVER_FAILED_INSTALL", "I_UNDERSTAND_DATA_DOWNGRADE_RISK"),
-    )
-    rollback.set_defaults(handler=_run_rollback)
+    add_target_commands(commands, context, {
+        "capture": _run_capture_requirements,
+        "install": _run_install,
+        "legacy": _run_legacy_install,
+        "plan": _run_plan_install,
+        "probe": _run_probe,
+        "rollback": _run_rollback,
+    })
     return parser
-
-
-def _caused_by_os_error(error: BaseException) -> bool:
-    current: BaseException | None = error
-    seen: set[int] = set()
-    while current is not None and id(current) not in seen:
-        if isinstance(current, OSError):
-            return True
-        seen.add(id(current))
-        current = current.__cause__ or current.__context__
-    return False
-
-
-def _release_exit(error: ReleaseError) -> tuple[int, str]:
-    if error.code == "WFREL_CLI_ARGUMENTS":
-        return 2, "命令参数无效"
-    if error.code.startswith(_TRANSACTION_PREFIXES):
-        return 40, "安装事务未提交或恢复失败"
-    if _caused_by_os_error(error):
-        return 30, "本地文件操作失败"
-    if error.code.startswith(_IO_PREFIXES):
-        return 30, "本地文件操作失败"
-    if error.code.startswith(_INCOMPATIBLE_PREFIXES):
-        return 20, "发布源或依赖要求不兼容"
-    if error.code.startswith(_FORMAT_PREFIXES):
-        return 10, "发行物格式、路径或摘要无效"
-    return 30, "本地执行失败"
 
 
 def _quarantine_parse_output(context: _ParseOutputContext) -> None:
