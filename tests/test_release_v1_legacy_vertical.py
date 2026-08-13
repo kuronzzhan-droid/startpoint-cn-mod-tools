@@ -5,6 +5,7 @@ from __future__ import annotations
 from io import BytesIO
 import json
 from pathlib import Path
+import shutil
 import tempfile
 import unittest
 from zipfile import ZIP_STORED, ZipFile
@@ -134,13 +135,18 @@ def _share(
 
 class LegacyVerticalTests(unittest.TestCase):
     def test_import_adopt_edit_seal_release_and_read_only_plan(self) -> None:
-        # Keep the Windows fixture below MAX_PATH while preserving the real,
-        # intentionally long action member name exercised by this flow.
-        temporary = tempfile.TemporaryDirectory(
-            prefix=".wv-", dir=Path(__file__).resolve().parents[1]
-        )
-        self.addCleanup(temporary.cleanup)
-        root = Path(temporary.name)
+        raw_root = Path(tempfile.mkdtemp(
+            prefix=".wv-long-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-",
+            dir=Path(__file__).resolve().parents[1],
+        ))
+
+        def cleanup() -> None:
+            extended_root = wf_character_workspace._absolute(raw_root)
+            if extended_root.exists():
+                shutil.rmtree(extended_root)
+
+        self.addCleanup(cleanup)
+        root = raw_root
         required: dict[str, bytes] = {}
         for item in wf_character_workspace.char_asset_requirements(CODE_NAME):
             if item.category == "required":
@@ -149,6 +155,10 @@ class LegacyVerticalTests(unittest.TestCase):
             "battle/action/skill/action/ability_skill/"
             "ability_skill_black_wolf_knight_wt26_superfever$"
             "ability_skill_black_wolf_knight_wt26_superfever.action.dsl.amf3.deflate"
+        )
+        self.assertGreater(
+            len(str(root / "imported" / "roots" / "common" / Path(action))),
+            260,
         )
         payloads = {
             "android": {
@@ -207,7 +217,9 @@ class LegacyVerticalTests(unittest.TestCase):
 
         edited = root / "edited"
         checkout_character_workspace(adopted, edited, "1.0.1")
-        action_path = edited / "package" / "roots" / "common" / Path(action)
+        action_path = wf_character_workspace._absolute(
+            edited / "package" / "roots" / "common" / Path(action)
+        )
         action_path.write_bytes(action_path.read_bytes() + b"-edited")
         sealed = seal_edited_character_workspace(edited)
         self.assertTrue(sealed.release_ready)

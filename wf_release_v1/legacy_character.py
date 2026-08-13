@@ -331,7 +331,7 @@ def _owned_staging(parent: Path) -> Iterator[Path]:
 
 def adopt_legacy_character(imported: Path, config_path: Path, output: Path) -> LegacyCharacterReceipt:
     """Create one sealed workspace without executing or installing imported bytes."""
-    imported = Path(imported).resolve()
+    imported = wf_character_workspace._absolute(Path(imported)).resolve()  # type: ignore[attr-defined]
     destination = Path(output)
     if not destination.is_absolute() or destination.exists():
         raise _fail("legacy character output must be a new absolute path")
