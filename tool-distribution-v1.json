@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "toolVersion": "1.0.1",
+  "toolVersion": "1.1.0",
   "archiveRoot": "wf-mod-tools",
   "files": [
     "API.md",
