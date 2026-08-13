@@ -217,6 +217,15 @@ def plan_verified_install(
         raise _fail("WFREL_REQUIRE_TARGET", "managed target is invalid")
     active = _active_state(target)
     report = evaluate_requirements(verified, facts, active)
+    no_op = report.codes == ("WFREL_OWNERSHIP_NOOP",)
+    expected_version = verified.manifest.expected_state.cdn_target_version
+    active_version = target.cdn_root / "patches" / expected_version
+    version_occupied = not no_op and (
+        active_version.exists() or active_version.is_symlink()
+    )
+    codes = report.codes + (
+        ("WFREL_STATE_VERSION_CONFLICT",) if version_occupied else ()
+    )
     previous_path = target.state_root / "previous.json"
     rollback_ids: tuple[str, ...] = ()
     if previous_path.exists() or previous_path.is_symlink():
@@ -224,11 +233,11 @@ def plan_verified_install(
         rollback_ids = tuple(item.release_id for item in previous.releases)
     return InstallPlan(
         tuple(item.release_id for item in active.releases),
-        report.codes,
-        report.compatible,
+        codes,
+        report.compatible and not version_occupied,
         facts.cdn_target_version,
-        verified.manifest.expected_state.cdn_target_version,
-        report.codes == ("WFREL_OWNERSHIP_NOOP",),
+        expected_version,
+        no_op,
         verified.manifest.release_id,
         bool(rollback_ids),
         rollback_ids,
