@@ -5,6 +5,7 @@ from io import BytesIO
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -12,6 +13,7 @@ import unittest
 from unittest import mock
 from zipfile import ZIP_STORED, ZipFile, ZipInfo
 
+import wf_character_workspace
 from wf_release_v1.canonical import canonical_json_bytes
 from wf_release_v1.errors import ReleaseError
 from wf_release_v1._legacy_mapping import parse_path_map
@@ -153,6 +155,36 @@ class LegacyImportCase(unittest.TestCase):
         inventory = (output / "legacy-import.json").read_bytes()
         self.assertEqual(inventory, canonical_json_bytes(json.loads(inventory)))
         self.assertNotIn(str(self.root), inventory.decode("utf-8"))
+
+    @unittest.skipUnless(os.name == "nt", "Windows extended-path behavior")
+    def test_import_writes_mapped_member_beyond_windows_max_path(self) -> None:
+        logical = (
+            "long-segment-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/"
+            "battle/action/skill/action/ability_skill/"
+            "ability_skill_black_wolf_knight_wt26_superfever$"
+            "ability_skill_black_wolf_knight_wt26_superfever.action.dsl.amf3.deflate"
+        )
+        output = self.root / "workspace"
+        mapped = output / "roots" / "common" / Path(logical)
+        self.assertGreater(len(os.fspath(mapped)), 260)
+        share = self.root / "long-path-share.zip"
+        _write_share(
+            share,
+            {f"production/upload/{_hashed(logical)}": b"mapped"},
+        )
+        mapping = self._mapping(("common", logical))
+
+        try:
+            receipt = import_legacy_share(share, output, mapping=mapping)
+            self.assertEqual(receipt.mapping_status, "complete")
+            self.assertEqual(
+                wf_character_workspace._absolute(mapped).read_bytes(),
+                b"mapped",
+            )
+        finally:
+            extended_output = wf_character_workspace._absolute(output)
+            if extended_output.exists():
+                shutil.rmtree(extended_output)
 
     def test_explicit_mapping_materializes_only_proven_logical_paths(self) -> None:
         output = self.root / "workspace"

@@ -2,15 +2,19 @@
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from dataclasses import dataclass
 import hashlib
 import json
 import os
 from pathlib import Path, PurePosixPath
+import shutil
 import stat
 import tempfile
-from typing import BinaryIO, Final
+from typing import BinaryIO, Final, Iterator
 from zipfile import BadZipFile, LargeZipFile, ZipFile
+
+import wf_character_workspace
 
 from ._legacy_mapping import LegacyPath, parse_path_map, path_map_bytes
 from ._legacy_zip import central_preflight, copy_member, error, outer_files, validate_infos
@@ -31,6 +35,17 @@ _PREFIXES: Final = {
     "medium": "production/medium_upload/",
     "android": "production/android_upload/",
 }
+
+
+@contextmanager
+def _owned_staging(parent: Path) -> Iterator[Path]:
+    raw = Path(tempfile.mkdtemp(prefix=".legacy-import-", dir=parent))
+    temporary = wf_character_workspace._absolute(raw)  # type: ignore[attr-defined]
+    try:
+        yield temporary / "workspace"
+    finally:
+        if temporary.exists():
+            shutil.rmtree(temporary)
 
 
 @dataclass(frozen=True)
@@ -324,9 +339,7 @@ def import_legacy_share(
     parent_identity = _directory_identity(parent)
     if destination.exists():
         raise ReleaseError("WFREL_SHARE_IO", "legacy import output already exists")
-    prefix = ".legacy-import-"
-    with tempfile.TemporaryDirectory(prefix=prefix, dir=parent) as temporary:
-        staging = Path(temporary) / "workspace"
+    with _owned_staging(parent) as staging:
         staging.mkdir()
         copied = staging / "source.wfshare.zip"
         try:
@@ -390,7 +403,7 @@ def import_legacy_share(
         if destination.exists():
             raise ReleaseError("WFREL_SHARE_IO", "legacy import output appeared during commit")
         try:
-            os.rename(staging, destination)
+            os.rename(staging, wf_character_workspace._absolute(destination))  # type: ignore[attr-defined]
         except OSError as exc:
             raise ReleaseError("WFREL_SHARE_IO", "legacy import workspace could not be committed") from exc
         _sync_directory(parent)
