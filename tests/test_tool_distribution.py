@@ -157,6 +157,28 @@ class ToolDistributionTests(unittest.TestCase):
         with self.assertRaisesRegex(DistributionError, "case-insensitive path alias"):
             build_tool_distribution(self.source, self.root / "alias.zip", self.config)
 
+    def test_logical_home_segments_are_not_mistaken_for_local_absolute_paths(self) -> None:
+        paths = self.source / "paths.txt"
+        paths.write_text("character/hero/voice/home/greeting.mp3\n", encoding="utf-8")
+        self._write_config(
+            files=[
+                "README.md",
+                "paths.txt",
+                "tool-distribution-v1.json",
+                "wf_demo.py",
+            ],
+            trees=["docs"],
+        )
+        self._git("add", "paths.txt", "tool-distribution-v1.json")
+        self._git("commit", "-qm", "add logical path list")
+        build_tool_distribution(self.source, self.root / "logical-paths.zip", self.config)
+
+        paths.write_text("/home/alice/private.txt\n", encoding="utf-8")
+        self._git("add", "paths.txt")
+        self._git("commit", "-qm", "add local path")
+        with self.assertRaisesRegex(DistributionError, "local absolute path"):
+            build_tool_distribution(self.source, self.root / "local-path.zip", self.config)
+
 
 if __name__ == "__main__":
     unittest.main()

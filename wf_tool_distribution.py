@@ -81,7 +81,8 @@ _WINDOWS_DEVICES = {
     "prn",
 }
 _LOCAL_PATH = re.compile(
-    rb"(?:[A-Za-z]:[\\/](?:Users|WF)[\\/]|/(?:home|Users)/)[^\x00\r\n\t ]+"
+    rb"(?:[A-Za-z]:[\\/](?:Users|WF)[\\/]|"
+    rb"(?<![A-Za-z0-9_.-])/(?:home|Users)/)[^\x00\r\n\t ]+"
 )
 _PRIVATE_IPV4 = re.compile(
     rb"(?<![0-9])(?:10(?:\.[0-9]{1,3}){3}|192\.168(?:\.[0-9]{1,3}){2}|"
