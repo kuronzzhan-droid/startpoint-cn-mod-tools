@@ -14,6 +14,7 @@ from ._cli_files import read_stable_metadata
 from ._cli_target_commands import add_target_commands
 from .errors import ReleaseError
 from ._local_cli import (
+    run_bootstrap as _run_bootstrap,
     run_install as _run_install,
     run_legacy_install as _run_legacy_install,
     run_legacy_rollback as _run_legacy_rollback,
@@ -318,6 +319,7 @@ def _parser(output_context: _ParseOutputContext | None = None) -> _ArgumentParse
     overlay.set_defaults(handler=_run_build_overlay)
 
     add_target_commands(commands, context, {
+        "bootstrap": _run_bootstrap,
         "capture": _run_capture_requirements,
         "install": _run_install,
         "legacy": _run_legacy_install,

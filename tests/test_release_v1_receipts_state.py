@@ -234,6 +234,28 @@ class ActiveStatePersistenceTests(unittest.TestCase):
             self.assertEqual("WFREL_STATE_INVALID", caught.exception.code)
             self.assertEqual(old_active, active_path.read_bytes())
 
+    def test_initial_commit_rejects_a_retained_previous_without_active(self) -> None:
+        empty = _state()
+        first = _state(RELEASE_A)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "previous.json").write_bytes(canonical_json_bytes({
+                "schemaVersion": 1,
+                "clientVersion": empty.client_version,
+                "resourceBaseline": empty.resource_baseline,
+                "clientPatchProfile": empty.client_patch_profile,
+                "releases": [],
+                "knownReleaseIds": [],
+            }))
+            before = (root / "previous.json").read_bytes()
+
+            with self.assertRaises(ReleaseError) as caught:
+                commit_active_state(root, previous=empty, active=first)
+
+            self.assertEqual("WFREL_STATE_CONFLICT", caught.exception.code)
+            self.assertEqual(before, (root / "previous.json").read_bytes())
+            self.assertFalse((root / "active.json").exists())
+
     def test_active_replace_failure_keeps_old_active_as_commit_point(self) -> None:
         empty, first = _state(), _state(RELEASE_A)
         second = _state(RELEASE_A, RELEASE_B)

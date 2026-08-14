@@ -53,8 +53,26 @@ Schema 不验证路径互斥、protected root、reparse、ADS 或回环地址的
 仍是唯一权威 parser。模板和生成后的 `target.json` 都不得进入 Release、receipt 或分享包。
 
 Server Bundle 与 Runtime Pack 必须先按各自 manifest 封装并通过 TargetProbe。初次安装前目标服务必须
-停止；如果本地没有 `active.json`，安装器可以启动声明的 baseline 做第一次探测，但不会接管已经在
-运行却没有受管状态的进程。
+停止；本地没有 `active.json` 时必须先执行下方显式 bootstrap。工具不会接管已经在运行却没有受管
+状态的进程。
+
+### 首次受管 baseline bootstrap
+
+```powershell
+python -X utf8 -m wf_release_v1 bootstrap `
+  --target D:\wf-target\target.json `
+  --confirm BOOTSTRAP_WF_TARGET
+```
+
+该命令只接受没有 `active.json`、没有 `previous.json`、也没有受管进程记录的停止目标。固定顺序是
+`Content Sync prepare -> 启动 Server Bundle -> /healthz ready -> capabilities 与本地 Bundle/Runtime
+一致 -> live cdnTargetVersion 与 target.resourceBaseline 一致 -> 提交空 active/previous`。它不会先探测
+一个尚未启动的 HTTP 服务，也不会按端口或进程名接管陌生进程。
+
+bootstrap 会写 Data Volume 的 Content 状态，服务启动还可能迁移数据库 schema；因此执行前必须完成
+项目专用的停服一致性备份。health、capabilities、版本校验或 state commit 失败时，只停止本事务启动且
+身份仍匹配的进程，不回滚数据库或 Data Volume。若停止失败则返回 `WFREL_RECOVERY_FAILED` 并保留现场；
+不得删除半状态后盲目重试。
 
 ## 3. 只读探针
 

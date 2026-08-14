@@ -437,8 +437,14 @@ def commit_active_state(
             current = _state_from_wire(_read_canonical(active_path, kind="active state"))
             if current != previous:
                 raise ReleaseError("WFREL_STATE_CONFLICT", "active state changed before commit")
-        elif previous.releases or previous.known_release_ids:
-            raise ReleaseError("WFREL_STATE_CONFLICT", "initial active state is unavailable")
+        else:
+            if previous_path.exists() or previous_path.is_symlink():
+                raise ReleaseError(
+                    "WFREL_STATE_CONFLICT",
+                    "previous state exists without an active commit point",
+                )
+            if previous.releases or previous.known_release_ids:
+                raise ReleaseError("WFREL_STATE_CONFLICT", "initial active state is unavailable")
         if previous_path.exists() or previous_path.is_symlink():
             _state_from_wire(_read_canonical(previous_path, kind="previous state"))
         _atomic_write(root, expected, root, previous_path, previous_raw)

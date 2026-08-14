@@ -6,6 +6,8 @@ import argparse
 from pathlib import Path
 
 from .errors import ReleaseError
+from .bootstrap import BootstrapResult, bootstrap_target
+from ._target_facts import target_facts_to_wire
 from .legacy_transaction import install_legacy_release
 from .legacy_rollback import rollback_legacy_to_previous
 from .platform import WindowsPlatformAdapter
@@ -27,6 +29,14 @@ def _result_wire(result: InstallResult) -> dict[str, object]:
         "outcome": result.outcome,
         "releaseId": result.release_id,
         "warnings": list(result.warnings),
+    }
+
+
+def _bootstrap_wire(result: BootstrapResult) -> dict[str, object]:
+    return {
+        **target_facts_to_wire(result.target_facts),
+        "outcome": result.outcome,
+        "targetProtocol": "capabilities-v1",
     }
 
 
@@ -57,6 +67,12 @@ def _legacy_not_committed(result: InstallResult | RollbackResult, action: str) -
 def run_probe(arguments: argparse.Namespace) -> dict[str, object]:
     target = ManagedTarget.load(Path(arguments.target))
     return inspect_target_capability(target, lambda: _platform(target)).to_wire()
+
+
+def run_bootstrap(arguments: argparse.Namespace) -> dict[str, object]:
+    target = ManagedTarget.load(Path(arguments.target))
+    platform = _platform(target)
+    return _bootstrap_wire(bootstrap_target(target, platform))
 
 
 def run_plan(arguments: argparse.Namespace) -> dict[str, object]:
@@ -145,6 +161,6 @@ def run_rollback(arguments: argparse.Namespace) -> dict[str, object]:
 
 
 __all__ = [
-    "run_install", "run_legacy_install", "run_legacy_rollback", "run_plan",
+    "run_bootstrap", "run_install", "run_legacy_install", "run_legacy_rollback", "run_plan",
     "run_probe", "run_rollback",
 ]
