@@ -92,9 +92,17 @@ class ActionSkillCompileTests(unittest.TestCase):
         self.assertEqual(-18, effect[3])
         self.assertEqual(["ForesideOfCharacter"], effect[4])
         self.assertEqual(["PlayOnlyFirstSequence"], effect[5])
+        self.assertEqual(["AB"], effect[6])
+        self.assertEqual((0, 0, -1.5707963267948966), tuple(effect[7:10]))
+        self.assertIs(effect[10], True)
+        self.assertIs(effect[11], False)
         self.assertEqual([{"min": 6.5, "max": 6.5}], effect[12][1])
 
         self.assertEqual(-18, hit_area[2])
+        self.assertEqual(["AB"], hit_area[3])
+        self.assertEqual((0, 0, 0.0), tuple(hit_area[4:7]))
+        self.assertIs(hit_area[7], True)
+        self.assertIs(hit_area[8], False)
         self.assertEqual(
             [
                 "Sector",

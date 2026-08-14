@@ -82,7 +82,7 @@ def build_summer_thunder_dragon_skill_tree() -> list:
             ["AB"],
             0,
             0,
-            0.0,
+            -math.pi / 2,
             True,
             False,
             ["Some", _fixed(6.5)],
