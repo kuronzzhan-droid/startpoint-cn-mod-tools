@@ -39,7 +39,17 @@ def _error(code: str, message: str) -> ReleaseError:
 
 
 def _environment(target: ManagedTarget) -> LaunchEnvironment:
-    return LaunchEnvironment(target.data_root, target.cdn_root, target.modes_root)
+    return LaunchEnvironment(
+        target.data_root,
+        target.cdn_root,
+        target.modes_root,
+        listen_host=target.http_bind_host,
+        listen_port=target.server_port,
+        public_host=target.public_host,
+        session_host=target.session_bind_host,
+        session_port=target.session_port,
+        session_public_host=target.session_public_host,
+    )
 
 
 def _same_legacy_target(before: LegacyTargetFacts, recovered: LegacyTargetFacts) -> None:

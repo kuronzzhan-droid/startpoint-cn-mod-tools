@@ -47,7 +47,17 @@ def _release_ids(state: ActiveState) -> tuple[str, ...]:
 
 
 def _environment(target: ManagedTarget) -> LaunchEnvironment:
-    return LaunchEnvironment(target.data_root, target.cdn_root, target.modes_root)
+    return LaunchEnvironment(
+        target.data_root,
+        target.cdn_root,
+        target.modes_root,
+        listen_host=target.http_bind_host,
+        listen_port=target.server_port,
+        public_host=target.public_host,
+        session_host=target.session_bind_host,
+        session_port=target.session_port,
+        session_public_host=target.session_public_host,
+    )
 
 
 def _stopped(platform: PlatformAdapter) -> None:
@@ -127,8 +137,15 @@ def _recover_runtime(
     if failure is not None:
         raise failure
     launch = target.launch_spec()
-    process = platform.start_server(launch, _environment(target), runtime_operation_id)
-    wait_health_ready(target.health_url, health_timeout)
+    environment = _environment(target)
+    process = platform.start_server(launch, environment, runtime_operation_id)
+    wait_health_ready(
+        target.health_url,
+        health_timeout,
+        expected_operation_id=process.operation_id,
+        expected_pid=process.pid,
+        expected_bindings=environment.health_bindings(),
+    )
     recovered = target.target_probe(timeout_seconds=health_timeout).run()
     if recovered != baseline or platform.current_process() != process:
         raise _error("WFREL_RECOVERY_FAILED", "recovered target disagrees with its witness")

@@ -103,6 +103,7 @@ def _capabilities(
 class _LiveContract:
     def __init__(self) -> None:
         self.running = False
+        self.managed_launch: dict[str, object] | None = None
         self.value = _capabilities("1.4.54", content_digest=f"sha256:{SHA_A}")
         owner = self
 
@@ -112,7 +113,12 @@ class _LiveContract:
                     self.send_error(503)
                     return
                 if self.path == "/healthz":
-                    raw = canonical_json_bytes({"contractVersion": 1, "status": "ready"})
+                    raw = canonical_json_bytes({
+                        "contractVersion": 1,
+                        "status": "ready",
+                        "managedLaunch": owner.managed_launch,
+                        "services": {"http": True, "tcp": True},
+                    })
                 elif self.path == "/api/server/capabilities":
                     raw = canonical_json_bytes(owner.value)
                 else:
@@ -173,6 +179,7 @@ class _VerticalPlatform:
             raise AssertionError("attempted to stop an unowned process")
         self.current = None
         self.contract.running = False
+        self.contract.managed_launch = None
         return False
 
     def prepare_content(self, launch, environment) -> None:
@@ -185,7 +192,7 @@ class _VerticalPlatform:
         pointer.write_bytes(canonical_json_bytes({"targetVersion": "1.4.55"}))
 
     def start_server(self, launch, environment, operation_id: str) -> ManagedProcess:
-        del launch, operation_id
+        del launch
         self.events.append("start")
         self.start_count += 1
         if self.start_count == self.fail_start_number:
@@ -227,8 +234,13 @@ class _VerticalPlatform:
             1000 + self.start_count,
             2000 + self.start_count,
             SHA_A,
-            "20260812T010203.000000Z-0123456789abcdef0123456789abcdef",
+            operation_id,
         )
+        self.contract.managed_launch = {
+            "operationId": self.current.operation_id,
+            "pid": self.current.pid,
+            **environment.health_bindings(),
+        }
         return self.current
 
     def wait_exited(self, process: ManagedProcess, timeout: float) -> bool:
@@ -317,6 +329,7 @@ class CharacterInstallVerticalTests(unittest.TestCase):
                 "resourceBaseline": "1.4.53",
                 "clientPatchProfile": True,
             },
+            "network": {"publicHost": "127.0.0.1"},
             "serverUrl": self.contract.base_url,
         }))
         self.target = ManagedTarget.load(target_path)

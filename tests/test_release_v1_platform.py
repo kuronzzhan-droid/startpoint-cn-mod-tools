@@ -44,7 +44,18 @@ class LaunchEnvironmentTests(unittest.TestCase):
                 path.write_bytes(b"fixture")
 
             launch = LaunchSpec(executable, prepare_entry, server_entry, server)
-            environment = LaunchEnvironment(data, cdn, modes, binding)
+            environment = LaunchEnvironment(
+                data,
+                cdn,
+                modes,
+                binding,
+                listen_host="0.0.0.0",
+                listen_port=8123,
+                public_host="192.168.0.130",
+                session_host="0.0.0.0",
+                session_port=8003,
+                session_public_host="192.168.0.130",
+            )
             base = {
                 "SECRET_TOKEN": "inherited-only",
                 "EMBEDDED_RUNTIME": "0",
@@ -58,6 +69,15 @@ class LaunchEnvironmentTests(unittest.TestCase):
                 "CONTENT_STORE_DIR": "forbidden",
                 "CONTENT_STATE_DIR": "forbidden",
                 "CONTENT_RUNTIME_DIR": "forbidden",
+                "CN_LISTEN_HOST": "127.0.0.1",
+                "CN_LISTEN_PORT": "9001",
+                "CN_PUBLIC_HOST": "127.0.0.1",
+                "SESSION_HOST": "127.0.0.1",
+                "SESSION_PORT": "9003",
+                "SESSION_PUBLIC_HOST": "127.0.0.1",
+                "CDN_BASE_URL": "http://127.0.0.1:9001/patch/cn",
+                "MULTI_MODE": "client",
+                "WF_RELEASE_OPERATION_ID": "stale-operation",
             }
 
             actual = build_child_environment(launch, environment, base)
@@ -70,12 +90,49 @@ class LaunchEnvironmentTests(unittest.TestCase):
             self.assertEqual(os.fspath(modes), actual["MODES_DIR"])
             self.assertEqual(os.fspath(runtime / "node_modules"), actual["NODE_PATH"])
             self.assertEqual(os.fspath(binding), actual["BETTER_SQLITE3_NATIVE_BINDING"])
+            self.assertEqual("0.0.0.0", actual["CN_LISTEN_HOST"])
+            self.assertEqual("8123", actual["CN_LISTEN_PORT"])
+            self.assertEqual("192.168.0.130", actual["CN_PUBLIC_HOST"])
+            self.assertEqual("0.0.0.0", actual["SESSION_HOST"])
+            self.assertEqual("8003", actual["SESSION_PORT"])
+            self.assertEqual("192.168.0.130", actual["SESSION_PUBLIC_HOST"])
+            self.assertEqual(
+                "http://192.168.0.130:8123/patch/cn",
+                actual["CDN_BASE_URL"],
+            )
+            self.assertEqual("embedded", actual["MULTI_MODE"])
+            self.assertNotIn("WF_RELEASE_OPERATION_ID", actual)
             for forbidden in (
                 "WDFP_DATABASE_DIR", "CONTENT_DIR", "CONTENT_STORE_DIR",
                 "CONTENT_STATE_DIR", "CONTENT_RUNTIME_DIR",
             ):
                 self.assertNotIn(forbidden, actual)
             self.assertEqual(base["SECRET_TOKEN"], "inherited-only")
+
+    def test_environment_rejects_unsafe_or_ambiguous_network_bindings(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            data, cdn, modes = root / "data", root / "cdn", root / "modes"
+            for path in (data, cdn, modes):
+                path.mkdir()
+            invalid = (
+                {"listen_host": "127.0.0.1"},
+                {"listen_host": "example.invalid"},
+                {"listen_host": "192.0.2.1"},
+                {"listen_port": 0},
+                {"listen_port": True},
+                {"public_host": "0.0.0.0"},
+                {"public_host": "192.0.2.1"},
+                {"session_host": "127.0.0.1"},
+                {"session_port": 65536},
+                {"session_port": 8001},
+                {"session_public_host": "0.0.0.0"},
+                {"session_public_host": "10.0.0.2"},
+            )
+            for values in invalid:
+                with self.subTest(values=values), self.assertRaises(ReleaseError) as caught:
+                    LaunchEnvironment(data, cdn, modes, **values)
+                self.assertEqual("WFREL_PLATFORM_INVALID", caught.exception.code)
 
     def test_environment_rejects_invalid_roots_and_does_not_guess_a_binding(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -294,6 +351,7 @@ class WindowsPlatformAdapterTests(unittest.TestCase):
         spawn = next(call for call in self.backend.calls if call[0] == "spawn")
         self.assertEqual((os.fspath(self.executable), os.fspath(self.server_entry)), spawn[1])
         self.assertEqual(self.server, spawn[2])
+        self.assertEqual(OPERATION_ID, spawn[3]["WF_RELEASE_OPERATION_ID"])
 
     def test_pid_reuse_identity_drift_and_foreign_process_fail_before_signal(self) -> None:
         process = self._start()

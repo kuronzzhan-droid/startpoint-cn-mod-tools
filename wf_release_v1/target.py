@@ -22,14 +22,20 @@ _REPARSE_POINT_ATTRIBUTE: Final = 0x0400
 _TARGET_KEYS: Final = frozenset({
     "schemaVersion", "managedBy", "serverBundle", "runtimePack", "dataRoot",
     "stateRoot", "cdnRoot", "modesRoot", "componentRoots", "compatibility",
-    "serverUrl",
+    "network", "serverUrl",
 })
 _COMPONENT_KEYS: Final = frozenset({"content", "server", "modes"})
 _COMPATIBILITY_KEYS: Final = frozenset({
     "clientVersion", "resourceBaseline", "clientPatchProfile",
 })
+_NETWORK_KEYS: Final = frozenset({"publicHost"})
 _DOTTED_VERSION: Final = re.compile(r"(?:0|[1-9][0-9]*)(?:\.(?:0|[1-9][0-9]*))+")
 _TOOL_ROOT: Final = Path(__file__).resolve().parent.parent
+_RFC1918: Final = (
+    ipaddress.ip_network("10.0.0.0/8"),
+    ipaddress.ip_network("172.16.0.0/12"),
+    ipaddress.ip_network("192.168.0.0/16"),
+)
 
 
 def _invalid(message: str) -> ReleaseError:
@@ -169,21 +175,29 @@ def _base_origin(value: object) -> str:
         or parsed.fragment
     ):
         raise _invalid("serverUrl must be a canonical loopback base origin")
-    if hostname != "localhost":
-        try:
-            address = ipaddress.ip_address(hostname)
-        except ValueError:
-            raise _invalid("serverUrl host must be loopback") from None
-        effective = (
-            address.ipv4_mapped
-            if isinstance(address, ipaddress.IPv6Address) and address.ipv4_mapped is not None
-            else address
-        )
-        if hostname != address.compressed or not effective.is_loopback:
-            raise _invalid("serverUrl host must be loopback")
-    rendered_host = f"[{hostname}]" if ":" in hostname else hostname
-    if value != f"http://{rendered_host}:{port}":
+    if hostname != "127.0.0.1":
+        raise _invalid("serverUrl host must be the managed loopback address")
+    if value != f"http://127.0.0.1:{port}":
         raise _invalid("serverUrl must be a canonical loopback base origin")
+    return value
+
+
+def _public_host(value: object) -> str:
+    if not isinstance(value, str) or not value or not value.isascii():
+        raise _invalid("network.publicHost must be a canonical local IPv4 address")
+    try:
+        address = ipaddress.ip_address(value)
+    except ValueError:
+        raise _invalid("network.publicHost must be a canonical local IPv4 address") from None
+    private = isinstance(address, ipaddress.IPv4Address) and any(
+        address in network for network in _RFC1918
+    )
+    if (
+        not isinstance(address, ipaddress.IPv4Address)
+        or value != address.compressed
+        or not (address.is_loopback or private)
+    ):
+        raise _invalid("network.publicHost must be loopback or RFC1918 IPv4")
     return value
 
 
@@ -208,6 +222,14 @@ class TargetCompatibility:
 
 
 @dataclass(frozen=True)
+class TargetNetwork:
+    public_host: str
+
+    def __post_init__(self) -> None:
+        _public_host(self.public_host)
+
+
+@dataclass(frozen=True)
 class LaunchSpec:
     executable: Path
     prepare_entry: Path
@@ -226,12 +248,15 @@ class ManagedTarget:
     component_roots: ComponentRoots
     compatibility: TargetCompatibility
     server_url: str
+    network: TargetNetwork = TargetNetwork("127.0.0.1")
 
     def __post_init__(self) -> None:
         if not isinstance(self.component_roots, ComponentRoots):
             raise _invalid("componentRoots is invalid")
         if not isinstance(self.compatibility, TargetCompatibility):
             raise _invalid("compatibility is invalid")
+        if not isinstance(self.network, TargetNetwork):
+            raise _invalid("network is invalid")
         paths = (
             ("serverBundle", self.server_bundle), ("runtimePack", self.runtime_pack),
             ("dataRoot", self.data_root), ("stateRoot", self.state_root),
@@ -252,6 +277,8 @@ class ManagedTarget:
         )
         if _base_origin(self.server_url) != self.server_url:
             raise _invalid("serverUrl must be a canonical loopback base origin")
+        if self.server_port == self.session_port:
+            raise _invalid("serverUrl port conflicts with the fixed session port")
 
     @classmethod
     def load(cls, source: Path) -> ManagedTarget:
@@ -278,6 +305,8 @@ class ManagedTarget:
             ),
             client_patch_profile=compatibility_item["clientPatchProfile"],  # type: ignore[arg-type]
         )
+        network_item = _exact_object(item["network"], _NETWORK_KEYS, "network")
+        network = TargetNetwork(_public_host(network_item["publicHost"]))
         state_root = _absolute_path(item["stateRoot"], "stateRoot")
         return cls(
             server_bundle=_absolute_path(item["serverBundle"], "serverBundle"),
@@ -289,6 +318,7 @@ class ManagedTarget:
             component_roots=roots,
             compatibility=compatibility,
             server_url=_base_origin(item["serverUrl"]),
+            network=network,
         )
 
     @property
@@ -298,6 +328,44 @@ class ManagedTarget:
     @property
     def health_url(self) -> str:
         return self.server_url + "/healthz"
+
+    @property
+    def server_host(self) -> str:
+        host = urlsplit(self.server_url).hostname
+        if host is None:  # pragma: no cover - guarded by the constructor
+            raise _invalid("serverUrl host is unavailable")
+        return "127.0.0.1" if host == "localhost" else host
+
+    @property
+    def server_port(self) -> int:
+        port = urlsplit(self.server_url).port
+        if port is None:  # pragma: no cover - guarded by the constructor
+            raise _invalid("serverUrl port is unavailable")
+        return port
+
+    @property
+    def session_bind_host(self) -> str:
+        return "0.0.0.0"
+
+    @property
+    def session_port(self) -> int:
+        return 8003
+
+    @property
+    def session_public_host(self) -> str:
+        return self.network.public_host
+
+    @property
+    def http_bind_host(self) -> str:
+        return "0.0.0.0"
+
+    @property
+    def public_host(self) -> str:
+        return self.network.public_host
+
+    @property
+    def cdn_base_url(self) -> str:
+        return f"http://{self.public_host}:{self.server_port}/patch/cn"
 
     def target_probe(self, *, timeout_seconds: float = 5.0) -> TargetProbe:
         return TargetProbe(
