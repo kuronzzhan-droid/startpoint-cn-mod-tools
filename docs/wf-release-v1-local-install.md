@@ -8,6 +8,9 @@
 - 所有操作都由宿主本地 `target.json` 指向；Release ZIP 和 receipt 不携带宿主绝对路径。
 - `serverUrl` 必须是本地回环 base origin；探针固定访问 `/healthz` 与
   `/api/server/capabilities`，不接受重定向、代理、用户信息或远程地址。
+- `network.publicHost` 必须是本机网卡实际持有的规范 IPv4 回环/RFC1918 地址。受管服务固定把 HTTP
+  绑定到 `0.0.0.0:<serverUrl端口>`、TCP 绑定到 `0.0.0.0:8003`，并把该公开地址分别注入
+  `CN_PUBLIC_HOST`、`SESSION_PUBLIC_HOST` 和 `CDN_BASE_URL`；控制探针仍只走回环地址。
 - 受管服务进程用 PID、创建时间、可执行文件路径和 SHA-256 四项共同识别；陌生进程不会按端口或
   进程名终止。
 - v1 只安装已经独立验证的 Content Overlay，以及可选的静态 Mode 组件；不执行 Release 中的
@@ -43,6 +46,9 @@ wire shape，可以用于本机审计，但仍应按运维状态文件保护。
     "resourceBaseline": "1.4.53",
     "clientPatchProfile": true
   },
+  "network": {
+    "publicHost": "192.168.0.130"
+  },
   "serverUrl": "http://127.0.0.1:8001"
 }
 ```
@@ -54,7 +60,8 @@ Schema 不验证路径互斥、protected root、reparse、ADS 或回环地址的
 
 Server Bundle 与 Runtime Pack 必须先按各自 manifest 封装并通过 TargetProbe。初次安装前目标服务必须
 停止；本地没有 `active.json` 时必须先执行下方显式 bootstrap。工具不会接管已经在运行却没有受管
-状态的进程。
+状态的进程。bootstrap 在任何 Content prepare 前，先持有 operation reservation、证明 publicHost
+属于本机接口，并证明 HTTP wildcard 端口与 TCP 8003 都没有监听者。
 
 ### 首次受管 baseline bootstrap
 
@@ -66,8 +73,9 @@ python -X utf8 -m wf_release_v1 bootstrap `
 
 该命令只接受没有 `active.json`、没有 `previous.json`、也没有受管进程记录的停止目标。固定顺序是
 `Content Sync prepare -> 启动 Server Bundle -> /healthz ready -> capabilities 与本地 Bundle/Runtime
-一致 -> live cdnTargetVersion 与 target.resourceBaseline 一致 -> 提交空 active/previous`。它不会先探测
-一个尚未启动的 HTTP 服务，也不会按端口或进程名接管陌生进程。
+一致 -> live cdnTargetVersion 与 target.resourceBaseline 一致 -> 提交空 active/previous`。健康响应
+必须精确回显本操作 ID、PID、HTTP/TCP 监听和公开地址、CDN URL，并报告 HTTP/TCP 都 ready；工具不会
+按端口或进程名接管陌生进程。
 
 bootstrap 会写 Data Volume 的 Content 状态，服务启动还可能迁移数据库 schema；因此执行前必须完成
 项目专用的停服一致性备份。health、capabilities、版本校验或 state commit 失败时，只停止本事务启动且

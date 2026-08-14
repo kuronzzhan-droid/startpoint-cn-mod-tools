@@ -20,6 +20,7 @@ from wf_release_v1.materialize import CandidateSet, StoredObject
 from wf_release_v1.receipts import (
     commit_active_state,
     load_active_state,
+    operation_reservation,
     write_phase_receipt as persist_phase_receipt,
 )
 from wf_release_v1.target import (
@@ -223,6 +224,16 @@ class TransactionTests(unittest.TestCase):
         self.assertNotIn(str(self.target.data_root), repr(witness))
         self.assertIn("start", platform.events)
         self.assertIn("stop", platform.events)
+
+    def test_concurrent_reservation_blocks_install_before_prepare_or_start(self) -> None:
+        platform = FakePlatform()
+        with operation_reservation(self.target.state_root, OPERATION_ID):
+            with self.assertRaises(ReleaseError) as caught:
+                self._run(platform, [self.before, self.after])
+        self.assertEqual("WFREL_STATE_LOCKED", caught.exception.code)
+        self.assertNotIn("prepare", platform.events)
+        self.assertNotIn("start", platform.events)
+        self.assertEqual([], self.phases)
 
     def test_same_active_release_is_explicit_noop_without_process_or_candidate_io(self) -> None:
         previous = _active()

@@ -8,6 +8,7 @@ from pathlib import Path
 import secrets
 
 from ._loopback_http import _timeout as _validated_health_timeout, wait_health_ready
+from ._platform_state import ManagedProcess
 from ._receipt_contract import OperationReceipt, new_operation_id
 from ._transaction_content import (
     ContentSwitch,
@@ -40,7 +41,12 @@ from .materialize import (
 )
 from .platform import LaunchEnvironment, PlatformAdapter
 from .probe import TargetFacts
-from .receipts import commit_active_state, load_active_state, write_phase_receipt
+from .receipts import (
+    commit_active_state,
+    load_active_state,
+    operation_reservation,
+    write_phase_receipt,
+)
 from .target import ManagedTarget
 from .verifier import verify_release
 
@@ -82,6 +88,27 @@ def _environment(target: ManagedTarget) -> LaunchEnvironment:
         data_root=target.data_root,
         cdn_root=target.cdn_root,
         modes_root=target.modes_root,
+        listen_host=target.http_bind_host,
+        listen_port=target.server_port,
+        public_host=target.public_host,
+        session_host=target.session_bind_host,
+        session_port=target.session_port,
+        session_public_host=target.session_public_host,
+    )
+
+
+def _wait_owned_health(
+    target: ManagedTarget,
+    environment: LaunchEnvironment,
+    process: ManagedProcess,
+    timeout: float,
+) -> None:
+    wait_health_ready(
+        target.health_url,
+        timeout,
+        expected_operation_id=process.operation_id,
+        expected_pid=process.pid,
+        expected_bindings=environment.health_bindings(),
     )
 
 
@@ -146,10 +173,32 @@ def install_release(
     *,
     health_timeout: float = 30.0,
 ) -> InstallResult:
-    """Verify, switch, double-accept and commit one content-only Release."""
+    """Reserve, verify, switch, double-accept and commit one content-only Release."""
     if not isinstance(release, Path) or not isinstance(target, ManagedTarget):
         raise _transaction_error("WFREL_TRANSACTION_FAILED", "install input is invalid")
     health_timeout = _validated_health_timeout(health_timeout)
+    operation_id = new_operation_id(
+        datetime.now(timezone.utc),
+        secrets.token_bytes(16),
+    )
+    with operation_reservation(target.state_root, operation_id):
+        return _install_release_reserved(
+            release,
+            target,
+            platform,
+            operation_id=operation_id,
+            health_timeout=health_timeout,
+        )
+
+
+def _install_release_reserved(
+    release: Path,
+    target: ManagedTarget,
+    platform: PlatformAdapter,
+    *,
+    operation_id: str,
+    health_timeout: float,
+) -> InstallResult:
     report = verify_release(release)
     previous, active_exists = _active_state(target)
     initial_process = platform.current_process()
@@ -157,7 +206,6 @@ def install_release(
         return InstallResult(report.release_id, None, "noop", None, ())
 
     started_at = datetime.now(timezone.utc)
-    operation_id = new_operation_id(started_at, secrets.token_bytes(16))
     receipt = OperationReceipt(
         schema_version=2,
         operation_id=operation_id,
@@ -224,7 +272,7 @@ def install_release(
             baseline_process = platform.start_server(launch, environment, operation_id)
             phase = "BASE_STARTED"
             advance(phase)
-            wait_health_ready(target.health_url, health_timeout)
+            _wait_owned_health(target, environment, baseline_process, health_timeout)
 
         before_facts = target.target_probe(timeout_seconds=health_timeout).run()
         phase = "PROBED"
@@ -255,14 +303,19 @@ def install_release(
         advance(phase)
 
         platform.prepare_content(launch, environment)
-        platform.start_server(launch, environment, operation_id)
+        switched_process = platform.start_server(launch, environment, operation_id)
         phase = "STARTED"
         advance(phase)
-        wait_health_ready(target.health_url, health_timeout)
+        _wait_owned_health(target, environment, switched_process, health_timeout)
         phase = "HEALTH_READY"
         advance(phase)
         accepted = target.target_probe(timeout_seconds=health_timeout).run()
         _gate(evaluate_expected_state(verified, accepted))
+        if platform.current_process() != switched_process:
+            raise _transaction_error(
+                "WFREL_PROCESS_IDENTITY",
+                "accepted process identity changed before commit",
+            )
         phase = "CAPABILITIES_ACCEPTED"
         advance(phase)
 
@@ -303,7 +356,7 @@ def install_release(
                     mode_applied=mode_switched,
                 )
                 recovered_process = platform.start_server(launch, environment, operation_id)
-                wait_health_ready(target.health_url, health_timeout)
+                _wait_owned_health(target, environment, recovered_process, health_timeout)
                 recovered = target.target_probe(timeout_seconds=health_timeout).run()
                 _same_target(before_facts, recovered)
                 if platform.current_process() != recovered_process:
@@ -355,7 +408,7 @@ def install_release(
                 and environment is not None
             ):
                 recovered_process = platform.start_server(launch, environment, operation_id)
-                wait_health_ready(target.health_url, health_timeout)
+                _wait_owned_health(target, environment, recovered_process, health_timeout)
                 _same_target(
                     before_facts,
                     target.target_probe(timeout_seconds=health_timeout).run(),

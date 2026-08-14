@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import tempfile
+import threading
 from types import SimpleNamespace
 import unittest
 from unittest import mock
@@ -17,6 +18,7 @@ from wf_release_v1.target import (
     LaunchSpec,
     ManagedTarget,
     TargetCompatibility,
+    TargetNetwork,
 )
 
 
@@ -82,6 +84,7 @@ class BootstrapTargetTests(unittest.TestCase):
             ),
             compatibility=TargetCompatibility("1.4.54", "1.4.346", True),
             server_url="http://127.0.0.1:8001",
+            network=TargetNetwork("192.168.0.130"),
         )
         self.launch = LaunchSpec(
             roots["runtime"] / "node/bin/node",
@@ -94,18 +97,54 @@ class BootstrapTargetTests(unittest.TestCase):
     def _run(self, platform: FakePlatform, facts: object | None = None):
         import wf_release_v1.bootstrap as bootstrap
 
+        side_effect = facts if isinstance(facts, BaseException) or callable(facts) else None
         probe = SimpleNamespace(run=mock.Mock(
-            side_effect=facts if isinstance(facts, BaseException) else None,
-            return_value=self.facts if facts is None else facts,
+            side_effect=side_effect,
+            return_value=self.facts if facts is None or callable(facts) else facts,
         ))
         events = platform.events
 
-        def wait_ready(url: str, timeout: float) -> None:
+        def require_local(host: str, *, label: str) -> None:
+            self.assertEqual(("192.168.0.130", "network.publicHost"), (host, label))
+            events.append("public-address")
+
+        def require_tcp_unbound(host: str, port: int, *, label: str) -> None:
+            self.assertIn(
+                (host, port, label),
+                (("0.0.0.0", 8001, "http"), ("0.0.0.0", 8003, "session")),
+            )
+            events.append(f"{label}-endpoint")
+
+        def wait_ready(url: str, timeout: float, **identity: object) -> None:
             self.assertEqual(self.target.health_url, url)
+            self.assertEqual(
+                {
+                    "expected_operation_id": OPERATION_ID,
+                    "expected_pid": 201,
+                    "expected_bindings": {
+                        "http": {
+                            "host": "0.0.0.0", "port": 8001,
+                            "publicHost": "192.168.0.130",
+                        },
+                        "session": {
+                            "host": "0.0.0.0", "port": 8003,
+                            "publicHost": "192.168.0.130",
+                        },
+                        "cdnBaseUrl": "http://192.168.0.130:8001/patch/cn",
+                    },
+                },
+                identity,
+            )
             events.append("health")
 
         with (
             mock.patch.object(bootstrap, "new_operation_id", return_value=OPERATION_ID),
+            mock.patch.object(bootstrap, "require_local_address", side_effect=require_local),
+            mock.patch.object(
+                bootstrap,
+                "require_tcp_endpoint_unbound",
+                side_effect=require_tcp_unbound,
+            ),
             mock.patch.object(bootstrap, "wait_health_ready", side_effect=wait_ready),
             mock.patch.object(ManagedTarget, "launch_spec", return_value=self.launch),
             mock.patch.object(ManagedTarget, "target_probe", return_value=probe),
@@ -122,7 +161,10 @@ class BootstrapTargetTests(unittest.TestCase):
         self.assertEqual("succeeded", result.outcome)
         self.assertEqual(self.facts, result.target_facts)
         self.assertEqual(
-            ["current", "prepare", "start", "health", "current"],
+            [
+                "current", "public-address", "http-endpoint", "session-endpoint", "prepare",
+                "start", "health", "current",
+            ],
             platform.events,
         )
         active = load_active_state(self.target.state_root)
@@ -142,7 +184,10 @@ class BootstrapTargetTests(unittest.TestCase):
 
         self.assertIs(failure, caught.exception)
         self.assertEqual(
-            ["current", "prepare", "start", "health", "stop"],
+            [
+                "current", "public-address", "http-endpoint", "session-endpoint", "prepare",
+                "start", "health", "current", "stop",
+            ],
             platform.events,
         )
         self.assertIsNone(platform.current)
@@ -188,6 +233,91 @@ class BootstrapTargetTests(unittest.TestCase):
             bootstrap.bootstrap_target(self.target, platform)
         self.assertEqual("WFREL_STATE_CONFLICT", caught.exception.code)
         self.assertEqual(["current"], platform.events)
+
+    def test_foreign_listener_fails_before_prepare(self) -> None:
+        import wf_release_v1.bootstrap as bootstrap
+
+        platform = FakePlatform()
+        with (
+            mock.patch.object(bootstrap, "require_local_address"),
+            mock.patch.object(
+                bootstrap,
+                "require_tcp_endpoint_unbound",
+                side_effect=ReleaseError("WFREL_PROCESS_RUNNING", "endpoint occupied"),
+            ),
+        ):
+            with self.assertRaises(ReleaseError) as caught:
+                bootstrap.bootstrap_target(self.target, platform)
+        self.assertEqual("WFREL_PROCESS_RUNNING", caught.exception.code)
+        self.assertEqual(["current"], platform.events)
+
+    def test_concurrent_second_bootstrap_never_reaches_prepare(self) -> None:
+        import wf_release_v1.bootstrap as bootstrap
+
+        prepared = threading.Event()
+        release_prepare = threading.Event()
+
+        class BlockingPlatform(FakePlatform):
+            def prepare_content(self, launch: LaunchSpec, environment) -> None:
+                super().prepare_content(launch, environment)
+                prepared.set()
+                self.assert_release(release_prepare.wait(2.0))
+
+            @staticmethod
+            def assert_release(released: bool) -> None:
+                if not released:
+                    raise AssertionError("test did not release bootstrap prepare")
+
+        platform = BlockingPlatform()
+        probe = SimpleNamespace(run=mock.Mock(return_value=self.facts))
+        first_error: list[BaseException] = []
+
+        def first() -> None:
+            try:
+                bootstrap.bootstrap_target(self.target, platform, health_timeout=2.0)
+            except BaseException as error:  # pragma: no cover - diagnostic capture
+                first_error.append(error)
+
+        with (
+            mock.patch.object(bootstrap, "new_operation_id", return_value=OPERATION_ID),
+            mock.patch.object(bootstrap, "require_local_address"),
+            mock.patch.object(bootstrap, "require_tcp_endpoint_unbound"),
+            mock.patch.object(bootstrap, "wait_health_ready"),
+            mock.patch.object(ManagedTarget, "launch_spec", return_value=self.launch),
+            mock.patch.object(ManagedTarget, "target_probe", return_value=probe),
+        ):
+            worker = threading.Thread(target=first)
+            worker.start()
+            self.assertTrue(prepared.wait(2.0))
+            with self.assertRaises(ReleaseError) as caught:
+                bootstrap.bootstrap_target(self.target, platform, health_timeout=2.0)
+            self.assertEqual("WFREL_STATE_LOCKED", caught.exception.code)
+            self.assertEqual(1, platform.events.count("prepare"))
+            release_prepare.set()
+            worker.join(timeout=2.0)
+
+        self.assertFalse(worker.is_alive())
+        self.assertEqual([], first_error)
+
+    def test_failed_bootstrap_does_not_stop_an_already_exited_or_drifted_process(self) -> None:
+        for drifted in (False, True):
+            with self.subTest(drifted=drifted):
+                platform = FakePlatform()
+
+                def fail_probe() -> None:
+                    platform.current = (
+                        ManagedProcess(999, 1000, SHA, OPERATION_ID)
+                        if drifted else None
+                    )
+                    raise ReleaseError("WFREL_REQUIRE_TARGET", "probe failed")
+
+                with self.assertRaises(ReleaseError) as caught:
+                    self._run(platform, fail_probe)
+                self.assertEqual(
+                    "WFREL_RECOVERY_FAILED" if drifted else "WFREL_REQUIRE_TARGET",
+                    caught.exception.code,
+                )
+                self.assertNotIn("stop", platform.events)
 
 
 if __name__ == "__main__":
