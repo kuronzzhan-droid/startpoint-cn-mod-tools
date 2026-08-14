@@ -18,7 +18,7 @@ from wf_release_v1.canonical import FileIdentity
 from wf_release_v1.errors import ReleaseError
 from wf_release_v1.legacy_transaction import install_legacy_release
 from wf_release_v1.materialize import CandidateSet, StoredObject
-from wf_release_v1.receipts import load_active_state
+from wf_release_v1.receipts import load_active_state, operation_reservation
 from wf_release_v1.target import ComponentRoots, LaunchSpec, ManagedTarget, TargetCompatibility
 from wf_release_v1.verifier_overlay import inspect_overlay_chain
 
@@ -210,6 +210,14 @@ class LegacyTransactionTests(unittest.TestCase):
             mock.patch.object(transaction, "restore_legacy_switch", side_effect=restore),
         ):
             return install_legacy_release(self.release, self.target, platform)
+
+    def test_legacy_install_respects_operation_reservation(self) -> None:
+        platform = FakePlatform()
+        with operation_reservation(self.target.state_root, OPERATION_ID):
+            with self.assertRaises(ReleaseError) as caught:
+                self._run(platform)
+        self.assertEqual("WFREL_STATE_LOCKED", caught.exception.code)
+        self.assertEqual([], platform.events)
 
     def test_installs_three_layers_commits_state_and_restarts_owned_server(self) -> None:
         platform = FakePlatform()

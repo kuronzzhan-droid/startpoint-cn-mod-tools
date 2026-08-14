@@ -13,6 +13,8 @@
   `CN_PUBLIC_HOST`、`SESSION_PUBLIC_HOST` 和 `CDN_BASE_URL`；控制探针仍只走回环地址。
 - 受管服务进程用 PID、创建时间、可执行文件路径和 SHA-256 四项共同识别；陌生进程不会按端口或
   进程名终止。
+- `bootstrap`、modern/legacy 安装、modern 恢复/回退与 legacy 回退共享同一个 nofollow 原子 operation
+  reservation；任一变更事务存续期间，第二个变更入口必须在读取可变目标状态或停服前失败关闭。
 - v1 只安装已经独立验证的 Content Overlay，以及可选的静态 Mode 组件；不执行 Release 中的
   脚本来决定安装路径。
 - 安装没有 purge、远程 shell、在线下载或隐式“最新版”选择。

@@ -28,7 +28,7 @@ from .materialize import (
     verify_candidates,
 )
 from .platform import LaunchEnvironment, PlatformAdapter
-from .receipts import commit_active_state, write_phase_receipt
+from .receipts import commit_active_state, operation_reservation, write_phase_receipt
 from .target import ManagedTarget
 from .transaction import InstallResult, _active_state, _next_active
 from .verifier import verify_release_contract
@@ -89,6 +89,28 @@ def install_legacy_release(
     if not isinstance(release, Path) or not isinstance(target, ManagedTarget):
         raise _error("WFREL_LEGACY_PLAN_INVALID", "legacy install input is invalid")
     timeout = _validated_timeout(health_timeout)
+    started_at = datetime.now(timezone.utc)
+    operation_id = new_operation_id(started_at, secrets.token_bytes(16))
+    with operation_reservation(target.state_root, operation_id):
+        return _install_legacy_release_reserved(
+            release,
+            target,
+            platform,
+            timeout=timeout,
+            operation_id=operation_id,
+            started_at=started_at,
+        )
+
+
+def _install_legacy_release_reserved(
+    release: Path,
+    target: ManagedTarget,
+    platform: PlatformAdapter,
+    *,
+    timeout: float,
+    operation_id: str,
+    started_at: datetime,
+) -> InstallResult:
     report, verified = verify_release_contract(release)
     previous, _active_exists = _active_state(target)
 
@@ -108,8 +130,6 @@ def install_legacy_release(
     launch = target.launch_spec()
     environment = _environment(target)
 
-    started_at = datetime.now(timezone.utc)
-    operation_id = new_operation_id(started_at, secrets.token_bytes(16))
     receipt = OperationReceipt(
         2,
         operation_id,
