@@ -157,6 +157,7 @@ class TransactionTests(unittest.TestCase):
         *,
         materialize: object | None = None,
         receipt_failure_phase: str | None = None,
+        capability_level: str = "modern",
     ) -> InstallResult:
         import wf_release_v1.transaction as transaction
 
@@ -171,8 +172,22 @@ class TransactionTests(unittest.TestCase):
                 raise ReleaseError("WFREL_STATE_IO", "injected receipt failure")
             persist_phase_receipt(root, receipt)
 
+        def inspect_capability(target: ManagedTarget, reader: object) -> object:
+            self.assertIs(self.target, target)
+            self.assertIs(platform, reader)
+            self.assertTrue(
+                (self.target.state_root / ".wf-release-v1.operation").is_file(),
+                "modern capability inspection must happen inside the operation reservation",
+            )
+            return SimpleNamespace(level=capability_level)
+
         with (
             mock.patch.object(transaction, "new_operation_id", return_value=OPERATION_ID),
+            mock.patch.object(
+                transaction,
+                "inspect_target_capability",
+                side_effect=inspect_capability,
+            ),
             mock.patch.object(transaction, "verify_release", return_value=SimpleNamespace(
                 release_id=self.release_id,
             )),
@@ -190,7 +205,13 @@ class TransactionTests(unittest.TestCase):
             mock.patch.object(ManagedTarget, "target_probe", return_value=probe),
             mock.patch.object(ManagedTarget, "launch_spec", return_value=self.launch),
         ):
-            return install_release(self.release, self.target, platform, health_timeout=2.0)
+            return install_release(
+                self.release,
+                self.target,
+                platform,
+                health_timeout=2.0,
+                enforce_target_protocol=True,
+            )
 
     def test_first_install_records_bootstrap_and_commits_only_after_double_acceptance(self) -> None:
         platform = FakePlatform()
@@ -234,6 +255,17 @@ class TransactionTests(unittest.TestCase):
         self.assertNotIn("prepare", platform.events)
         self.assertNotIn("start", platform.events)
         self.assertEqual([], self.phases)
+
+    def test_wrong_protocol_is_rejected_inside_reservation_before_transaction_io(self) -> None:
+        platform = FakePlatform()
+
+        with self.assertRaises(ReleaseError) as caught:
+            self._run(platform, [], capability_level="transition")
+
+        self.assertEqual("WFREL_TARGET_PROTOCOL", caught.exception.code)
+        self.assertEqual([], platform.events)
+        self.assertEqual([], self.phases)
+        self.assertFalse((self.target.state_root / "receipts").exists())
 
     def test_same_active_release_is_explicit_noop_without_process_or_candidate_io(self) -> None:
         previous = _active()

@@ -48,6 +48,7 @@ from .receipts import (
     write_phase_receipt,
 )
 from .target import ManagedTarget
+from .target_capability import inspect_target_capability
 from .verifier import verify_release
 
 
@@ -172,16 +173,26 @@ def install_release(
     platform: PlatformAdapter,
     *,
     health_timeout: float = 30.0,
+    enforce_target_protocol: bool = False,
 ) -> InstallResult:
     """Reserve, verify, switch, double-accept and commit one content-only Release."""
     if not isinstance(release, Path) or not isinstance(target, ManagedTarget):
         raise _transaction_error("WFREL_TRANSACTION_FAILED", "install input is invalid")
+    if type(enforce_target_protocol) is not bool:
+        raise _transaction_error("WFREL_TRANSACTION_FAILED", "protocol gate is invalid")
     health_timeout = _validated_health_timeout(health_timeout)
     operation_id = new_operation_id(
         datetime.now(timezone.utc),
         secrets.token_bytes(16),
     )
     with operation_reservation(target.state_root, operation_id):
+        if enforce_target_protocol:
+            capability = inspect_target_capability(target, platform)
+            if capability.level != "modern":
+                raise _transaction_error(
+                    "WFREL_TARGET_PROTOCOL",
+                    "modern install requires a capabilities-v1 target",
+                )
         return _install_release_reserved(
             release,
             target,

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from pathlib import Path
 import tempfile
 import threading
@@ -233,6 +234,49 @@ class BootstrapTargetTests(unittest.TestCase):
             bootstrap.bootstrap_target(self.target, platform)
         self.assertEqual("WFREL_STATE_CONFLICT", caught.exception.code)
         self.assertEqual(["current"], platform.events)
+
+    def test_state_is_not_observed_before_the_bootstrap_reservation(self) -> None:
+        import wf_release_v1.bootstrap as bootstrap
+
+        reserved = False
+        actual_exists = Path.exists
+        guarded = {
+            self.target.state_root / "active.json",
+            self.target.state_root / "previous.json",
+        }
+
+        @contextmanager
+        def reservation(_root: Path, _operation_id: str):
+            nonlocal reserved
+            reserved = True
+            try:
+                yield
+            finally:
+                reserved = False
+
+        def exists(path: Path) -> bool:
+            if path in guarded and not reserved:
+                raise AssertionError("bootstrap observed mutable state before reservation")
+            return actual_exists(path)
+
+        with (
+            mock.patch.object(bootstrap, "operation_reservation", side_effect=reservation),
+            mock.patch.object(Path, "exists", side_effect=exists, autospec=True),
+            mock.patch.object(bootstrap, "require_local_address"),
+            mock.patch.object(bootstrap, "require_tcp_endpoint_unbound"),
+            mock.patch.object(bootstrap, "wait_health_ready"),
+            mock.patch.object(ManagedTarget, "launch_spec", return_value=self.launch),
+            mock.patch.object(
+                ManagedTarget,
+                "target_probe",
+                return_value=SimpleNamespace(run=mock.Mock(return_value=self.facts)),
+            ),
+        ):
+            result = bootstrap.bootstrap_target(
+                self.target, FakePlatform(), health_timeout=2.0
+            )
+
+        self.assertEqual("succeeded", result.outcome)
 
     def test_foreign_listener_fails_before_prepare(self) -> None:
         import wf_release_v1.bootstrap as bootstrap

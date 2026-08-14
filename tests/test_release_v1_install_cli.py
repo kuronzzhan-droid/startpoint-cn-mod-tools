@@ -167,7 +167,9 @@ class LocalInstallCliTests(unittest.TestCase):
             "warnings": [],
         }, value)
         create.assert_called_once_with(target.state_root, launch.executable)
-        install.assert_called_once_with(Path("release.zip"), target, adapter)
+        install.assert_called_once_with(
+            Path("release.zip"), target, adapter, enforce_target_protocol=True
+        )
 
     def test_recovered_and_recovery_failed_installs_use_transaction_exit_family(self) -> None:
         import wf_release_v1._local_cli as local_cli

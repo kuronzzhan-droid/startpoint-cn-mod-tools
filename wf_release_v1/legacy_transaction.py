@@ -30,6 +30,7 @@ from .materialize import (
 from .platform import LaunchEnvironment, PlatformAdapter
 from .receipts import commit_active_state, operation_reservation, write_phase_receipt
 from .target import ManagedTarget
+from .target_capability import inspect_target_capability
 from .transaction import InstallResult, _active_state, _next_active
 from .verifier import verify_release_contract
 
@@ -84,14 +85,24 @@ def install_legacy_release(
     platform: PlatformAdapter,
     *,
     health_timeout: float = 30.0,
+    enforce_target_protocol: bool = False,
 ) -> InstallResult:
     """Install one verified content-only Release into a transition legacy target."""
     if not isinstance(release, Path) or not isinstance(target, ManagedTarget):
         raise _error("WFREL_LEGACY_PLAN_INVALID", "legacy install input is invalid")
+    if type(enforce_target_protocol) is not bool:
+        raise _error("WFREL_LEGACY_PLAN_INVALID", "protocol gate is invalid")
     timeout = _validated_timeout(health_timeout)
     started_at = datetime.now(timezone.utc)
     operation_id = new_operation_id(started_at, secrets.token_bytes(16))
     with operation_reservation(target.state_root, operation_id):
+        if enforce_target_protocol:
+            capability = inspect_target_capability(target, platform)
+            if capability.level != "transition":
+                raise _error(
+                    "WFREL_TARGET_PROTOCOL",
+                    "legacy automatic install requires a transition target",
+                )
         return _install_legacy_release_reserved(
             release,
             target,

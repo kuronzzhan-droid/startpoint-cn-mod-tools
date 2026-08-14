@@ -85,12 +85,9 @@ def run_plan(arguments: argparse.Namespace) -> dict[str, object]:
 def run_install(arguments: argparse.Namespace) -> dict[str, object]:
     target = ManagedTarget.load(Path(arguments.target))
     platform = _platform(target)
-    capability = inspect_target_capability(target, platform)
-    if capability.level != "modern":
-        raise ReleaseError(
-            "WFREL_TARGET_PROTOCOL", "modern install requires a capabilities-v1 target"
-        )
-    result = install_release(Path(arguments.release), target, platform)
+    result = install_release(
+        Path(arguments.release), target, platform, enforce_target_protocol=True
+    )
     if result.outcome in {"recovered", "recovery_failed"}:
         raise ReleaseError(
             result.error_code or "WFREL_RECOVERY_FAILED",
@@ -107,12 +104,9 @@ def run_install(arguments: argparse.Namespace) -> dict[str, object]:
 def run_legacy_install(arguments: argparse.Namespace) -> dict[str, object]:
     target = ManagedTarget.load(Path(arguments.target))
     platform = _platform(target)
-    capability = inspect_target_capability(target, platform)
-    if capability.level != "transition":
-        raise ReleaseError(
-            "WFREL_TARGET_PROTOCOL", "legacy automatic install requires a transition target"
-        )
-    result = install_legacy_release(Path(arguments.release), target, platform)
+    result = install_legacy_release(
+        Path(arguments.release), target, platform, enforce_target_protocol=True
+    )
     if result.outcome in {"recovered", "recovery_failed"}:
         raise _legacy_not_committed(result, "install")
     if result.outcome == "failed":

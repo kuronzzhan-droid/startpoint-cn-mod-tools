@@ -56,13 +56,6 @@ def bootstrap_target(
 
     active_path = target.state_root / "active.json"
     previous_path = target.state_root / "previous.json"
-    if (
-        active_path.exists()
-        or active_path.is_symlink()
-        or previous_path.exists()
-        or previous_path.is_symlink()
-    ):
-        raise _state_conflict("managed target state already exists")
     operation_id = new_operation_id(
         datetime.now(timezone.utc),
         secrets.token_bytes(16),
@@ -74,7 +67,7 @@ def bootstrap_target(
             or previous_path.exists()
             or previous_path.is_symlink()
         ):
-            raise _state_conflict("managed target state changed before bootstrap")
+            raise _state_conflict("managed target state already exists")
         if platform.current_process() is not None:
             raise _state_conflict("managed process exists without active target state")
 
