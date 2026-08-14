@@ -228,6 +228,7 @@ class _FakeBackend:
         self.next_stdout = b""
         self.next_stderr = b""
         self.spawn_error: OSError | None = None
+        self.open_exited_handles = False
         self.processes: dict[int, SimpleNamespace] = {}
         self.calls: list[tuple[object, ...]] = []
         self._handle_serial = 0
@@ -261,7 +262,7 @@ class _FakeBackend:
     def open_process(self, pid: int) -> object | None:
         self.calls.append(("open", pid))
         state = self.processes.get(pid)
-        if state is None or not state.running:
+        if state is None or (not state.running and not self.open_exited_handles):
             return None
         return self._new_handle(pid, "open")
 
@@ -269,6 +270,8 @@ class _FakeBackend:
         pid = handle[1]  # type: ignore[index]
         self.calls.append(("identity", handle))
         state = self.processes[pid]
+        if not state.running:
+            raise OSError("exited process image is unavailable")
         return ProcessIdentity(state.creation_time, state.executable)
 
     def wait(self, handle: object, timeout: float) -> bool:
@@ -372,6 +375,17 @@ class WindowsPlatformAdapterTests(unittest.TestCase):
             "admin-token-must-stay-process-only",
             spawn[3]["CN_ADMIN_TOKEN"],
         )
+
+    def test_current_process_clears_an_exact_record_when_win32_opens_a_signaled_handle(self) -> None:
+        process = self._start()
+        self.backend.open_exited_handles = True
+        self.backend.processes[process.pid].running = False
+        self.backend.calls.clear()
+
+        self.assertIsNone(self.adapter.current_process())
+        self.assertFalse((self.state / "process.json").exists())
+        relevant = [call[0] for call in self.backend.calls if call[0] in {"wait", "identity"}]
+        self.assertEqual(["wait"], relevant)
 
     def test_pid_reuse_identity_drift_and_foreign_process_fail_before_signal(self) -> None:
         process = self._start()

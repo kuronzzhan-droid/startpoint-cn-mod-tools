@@ -444,6 +444,16 @@ class WindowsPlatformAdapter:
             self._finish_capture(process.pid)
             return None
         try:
+            try:
+                exited = self._backend.wait(handle, 0.0)
+            except OSError:
+                raise _process_error(
+                    "WFREL_PROCESS_IDENTITY", "managed process identity is unavailable"
+                ) from None
+            if exited:
+                self._state.clear(process)
+                self._finish_capture(process.pid)
+                return None
             self._verify_handle(handle, process)
             return process
         finally:
