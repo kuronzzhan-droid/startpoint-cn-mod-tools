@@ -142,6 +142,8 @@ class OperationIdAndReceiptTests(unittest.TestCase):
             self.assertEqual(expected, _read_json(path))
             self.assertEqual(canonical_json_bytes(expected), path.read_bytes())
             self.assertNotIn(directory.encode("utf-8"), path.read_bytes())
+            self.assertNotIn(b"CN_ADMIN_TOKEN", path.read_bytes())
+            self.assertNotIn(b"admin-token-must-stay-process-only", path.read_bytes())
 
             updated = _receipt(phase="VERIFIED", updated_at=UPDATED)
             write_phase_receipt(root, updated)

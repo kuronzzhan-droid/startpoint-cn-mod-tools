@@ -58,6 +58,7 @@ class LaunchEnvironmentTests(unittest.TestCase):
             )
             base = {
                 "SECRET_TOKEN": "inherited-only",
+                "CN_ADMIN_TOKEN": "admin-token-must-stay-process-only",
                 "EMBEDDED_RUNTIME": "0",
                 "DATA_DIR": "stale-data",
                 "CDN_DIR": "stale-cdn",
@@ -83,6 +84,10 @@ class LaunchEnvironmentTests(unittest.TestCase):
             actual = build_child_environment(launch, environment, base)
 
             self.assertEqual("inherited-only", actual["SECRET_TOKEN"])
+            self.assertEqual(
+                "admin-token-must-stay-process-only",
+                actual["CN_ADMIN_TOKEN"],
+            )
             self.assertEqual("1", actual["EMBEDDED_RUNTIME"])
             self.assertEqual("local", actual["ASSET_MODE"])
             self.assertEqual(os.fspath(data), actual["DATA_DIR"])
@@ -320,7 +325,10 @@ class WindowsPlatformAdapterTests(unittest.TestCase):
             self.state,
             self.executable,
             backend=self.backend,
-            base_environment={"SECRET_TOKEN": "inherited"},
+            base_environment={
+                "SECRET_TOKEN": "inherited",
+                "CN_ADMIN_TOKEN": "admin-token-must-stay-process-only",
+            },
             capture_limit=32,
             startup_grace_seconds=0.0,
             prepare_timeout_seconds=1.0,
@@ -345,13 +353,25 @@ class WindowsPlatformAdapterTests(unittest.TestCase):
             },
             json.loads(raw),
         )
-        for private in (self.root, self.executable, self.server_entry, "SECRET_TOKEN", "inherited"):
+        for private in (
+            self.root,
+            self.executable,
+            self.server_entry,
+            "SECRET_TOKEN",
+            "inherited",
+            "CN_ADMIN_TOKEN",
+            "admin-token-must-stay-process-only",
+        ):
             self.assertNotIn(os.fspath(private).encode("utf-8"), raw)
         self.assertEqual(process, self.adapter.current_process())
         spawn = next(call for call in self.backend.calls if call[0] == "spawn")
         self.assertEqual((os.fspath(self.executable), os.fspath(self.server_entry)), spawn[1])
         self.assertEqual(self.server, spawn[2])
         self.assertEqual(OPERATION_ID, spawn[3]["WF_RELEASE_OPERATION_ID"])
+        self.assertEqual(
+            "admin-token-must-stay-process-only",
+            spawn[3]["CN_ADMIN_TOKEN"],
+        )
 
     def test_pid_reuse_identity_drift_and_foreign_process_fail_before_signal(self) -> None:
         process = self._start()
