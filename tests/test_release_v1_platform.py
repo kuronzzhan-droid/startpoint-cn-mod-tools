@@ -229,6 +229,7 @@ class _FakeBackend:
         self.next_stderr = b""
         self.spawn_error: OSError | None = None
         self.open_exited_handles = False
+        self.before_wait = None
         self.processes: dict[int, SimpleNamespace] = {}
         self.calls: list[tuple[object, ...]] = []
         self._handle_serial = 0
@@ -264,7 +265,9 @@ class _FakeBackend:
         state = self.processes.get(pid)
         if state is None or (not state.running and not self.open_exited_handles):
             return None
-        return self._new_handle(pid, "open")
+        handle = self._new_handle(pid, "open")
+        self.calls.append(("opened", pid, handle))
+        return handle
 
     def identity(self, handle: object) -> ProcessIdentity:
         pid = handle[1]  # type: ignore[index]
@@ -277,6 +280,8 @@ class _FakeBackend:
     def wait(self, handle: object, timeout: float) -> bool:
         pid = handle[1]  # type: ignore[index]
         self.calls.append(("wait", handle, timeout))
+        if self.before_wait is not None:
+            self.before_wait(handle, timeout)
         return not self.processes[pid].running
 
     def exit_code(self, handle: object) -> int:
@@ -377,6 +382,8 @@ class WindowsPlatformAdapterTests(unittest.TestCase):
         )
 
     def test_current_process_clears_an_exact_record_when_win32_opens_a_signaled_handle(self) -> None:
+        self.backend.next_stdout = b"done"
+        self.backend.next_stderr = b"fail"
         process = self._start()
         self.backend.open_exited_handles = True
         self.backend.processes[process.pid].running = False
@@ -384,8 +391,55 @@ class WindowsPlatformAdapterTests(unittest.TestCase):
 
         self.assertIsNone(self.adapter.current_process())
         self.assertFalse((self.state / "process.json").exists())
-        relevant = [call[0] for call in self.backend.calls if call[0] in {"wait", "identity"}]
-        self.assertEqual(["wait"], relevant)
+        opened = next(call for call in self.backend.calls if call[0] == "opened")
+        waited = next(call for call in self.backend.calls if call[0] == "wait")
+        closed = next(call for call in self.backend.calls if call[0] == "close")
+        self.assertEqual(opened[1], process.pid)
+        self.assertEqual(opened[2], waited[1])
+        self.assertEqual(opened[2], closed[1])
+        self.assertEqual(0.0, waited[2])
+        self.assertFalse(any(call[0] == "identity" for call in self.backend.calls))
+        self.assertEqual(CaptureStats(4, 4, False, False), self.adapter.last_capture_stats)
+
+    def test_signaled_handle_cleanup_preserves_a_drifted_process_record(self) -> None:
+        process = self._start()
+        self.backend.open_exited_handles = True
+        self.backend.processes[process.pid].running = False
+        replacement = {
+            "schemaVersion": 1,
+            "operationId": process.operation_id,
+            "pid": process.pid,
+            "creationTime": process.creation_time,
+            "executableSha256": "f" * 64,
+        }
+
+        def drift_state(_handle: object, timeout: float) -> None:
+            self.assertEqual(0.0, timeout)
+            (self.state / "process.json").write_text(
+                json.dumps(replacement), encoding="utf-8"
+            )
+
+        self.backend.before_wait = drift_state
+        with self.assertRaises(ReleaseError) as caught:
+            self.adapter.current_process()
+        self.assertEqual("WFREL_PROCESS_IDENTITY", caught.exception.code)
+        self.assertEqual(replacement, json.loads((self.state / "process.json").read_bytes()))
+
+    def test_live_process_revalidates_the_runtime_executable_sha(self) -> None:
+        self._start()
+        self.executable.write_bytes(b"changed-runtime-image")
+        before = len(self.backend.calls)
+
+        with self.assertRaises(ReleaseError) as caught:
+            self.adapter.current_process()
+        self.assertEqual("WFREL_PROCESS_IDENTITY", caught.exception.code)
+        self.assertTrue((self.state / "process.json").exists())
+        self.assertFalse(
+            any(
+                call[0] in {"break", "terminate"}
+                for call in self.backend.calls[before:]
+            )
+        )
 
     def test_pid_reuse_identity_drift_and_foreign_process_fail_before_signal(self) -> None:
         process = self._start()
