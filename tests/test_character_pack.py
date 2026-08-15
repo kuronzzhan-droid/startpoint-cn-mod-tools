@@ -1619,7 +1619,7 @@ class TestPackPreflight(_TransactionFixtureMixin, unittest.TestCase):
         with self.assertRaises(self.pack.PackPreflightError):
             self._tx(manifest=extra).preflight()
 
-    def test_server_json_tables_require_explicit_claims_and_exact_four_files(self):
+    def test_server_json_tables_require_base_files_and_explicit_extension_claims(self):
         self._finish_setup()
         missing_claim = copy.deepcopy(self.manifest)
         missing_claim["tables"] = [
@@ -1628,7 +1628,7 @@ class TestPackPreflight(_TransactionFixtureMixin, unittest.TestCase):
                     and item["logical_path"] == self.SERVER_PATHS[0])
         ]
         with self.assertRaisesRegex(
-            self.pack.PackPreflightError, "server tables must claim exactly"
+            self.pack.PackPreflightError, "server tables must claim every server root"
         ):
             self._tx(manifest=missing_claim).preflight()
 
@@ -1638,9 +1638,57 @@ class TestPackPreflight(_TransactionFixtureMixin, unittest.TestCase):
             if item["logical_path"] != self.SERVER_PATHS[0]
         ]
         with self.assertRaisesRegex(
-            self.pack.PackPreflightError, "server root must contain exactly"
+            self.pack.PackPreflightError, "server root is missing required character tables"
         ):
             self._tx(manifest=missing_file).preflight()
+
+        extended = copy.deepcopy(self.manifest)
+        extension_path = "gacha.json"
+        extension_raw = (
+            b'{"outer":{"990001":{"id":990001}},'
+            b'"inner":{},"semantics":{}}'
+        )
+        add_file(
+            self.package_dir, extended, "server", extension_path, extension_raw
+        )
+        server_codec = next(
+            item["codec_id"] for item in extended["tables"]
+            if item["root"] == "server"
+        )
+        extended["tables"].append({
+            "root": "server",
+            "logical_path": extension_path,
+            "codec_id": server_codec,
+            "outer_keys": ["990001"],
+            "inner_keys": [],
+            "semantic_claims": [],
+        })
+        report = self._tx(manifest=extended).preflight()
+        self.assertFalse(report.conflicts)
+
+        unclaimed = copy.deepcopy(extended)
+        unclaimed["tables"] = [
+            item for item in unclaimed["tables"]
+            if not (
+                item["root"] == "server"
+                and item["logical_path"] == extension_path
+            )
+        ]
+        with self.assertRaisesRegex(
+            self.pack.PackPreflightError, "server tables must claim every server root"
+        ):
+            self._tx(manifest=unclaimed).preflight()
+
+        wrong_codec = copy.deepcopy(extended)
+        next(
+            item for item in wrong_codec["tables"]
+            if item["root"] == "server"
+            and item["logical_path"] == extension_path
+        )["codec_id"] = "flat"
+        with self.assertRaisesRegex(
+            self.pack.PackPreflightError, "server tables must use the character server codec"
+        ):
+            self._tx(manifest=wrong_codec).preflight()
 
     def test_server_json_codec_rejects_malformed_and_duplicate_object_keys(self):
         self._finish_setup()

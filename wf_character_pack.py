@@ -2100,19 +2100,43 @@ class PackTransaction:
             server_paths = tuple(
                 entry["logical_path"] for entry in manifest["roots"]["server"]
             )
-            expected = set(SERVER_LOGICAL_PATHS)
-            if set(server_paths) != expected or len(server_paths) != len(expected):
+            actual = set(server_paths)
+            required = set(SERVER_LOGICAL_PATHS)
+            missing = sorted(required - actual)
+            if missing:
                 raise PackPreflightError(
-                    f"{label} server root must contain exactly "
-                    + ", ".join(SERVER_LOGICAL_PATHS)
+                    f"{label} server root is missing required character tables: "
+                    + ", ".join(missing)
+                )
+            if len(actual) != len(server_paths):
+                raise PackPreflightError(
+                    f"{label} server root contains duplicate logical paths"
                 )
             server_claims = {
                 logical_path for root, logical_path in claims if root == "server"
             }
-            if server_claims != expected:
+            if server_claims != actual:
                 raise PackPreflightError(
-                    f"{label} server tables must claim exactly "
-                    + ", ".join(SERVER_LOGICAL_PATHS)
+                    f"{label} server tables must claim every server root exactly"
+                )
+            required_codecs = {
+                claims[("server", logical_path)].codec_id
+                for logical_path in required
+            }
+            if len(required_codecs) != 1:
+                raise PackPreflightError(
+                    f"{label} required character server tables must share one codec"
+                )
+            server_codec = next(iter(required_codecs))
+            wrong_codecs = sorted(
+                logical_path for logical_path in server_claims
+                if claims[("server", logical_path)].codec_id != server_codec
+            )
+            if wrong_codecs:
+                raise PackPreflightError(
+                    f"{label} server tables must use the character server codec "
+                    f"{server_codec}: "
+                    + ", ".join(wrong_codecs)
                 )
 
         validate_server_contract(self.manifest, candidate_claims, "candidate")
