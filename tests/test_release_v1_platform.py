@@ -244,7 +244,7 @@ class _FakeBackend:
         cwd: Path,
         environment: dict[str, str],
         *,
-        capture_output: bool,
+        capture_output: bool = True,
     ) -> object:
         self.calls.append(("spawn", command, cwd, dict(environment), capture_output))
         if self.spawn_error is not None:

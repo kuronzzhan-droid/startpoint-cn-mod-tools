@@ -60,7 +60,7 @@ class WindowsBackend:
         cwd: Path,
         environment: dict[str, str],
         *,
-        capture_output: bool,
+        capture_output: bool = True,
     ) -> object:
         startup = subprocess.STARTUPINFO()
         startup.dwFlags |= subprocess.STARTF_USESHOWWINDOW
