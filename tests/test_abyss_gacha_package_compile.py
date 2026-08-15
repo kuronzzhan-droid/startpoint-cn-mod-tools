@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import copy
+import dataclasses
 import hashlib
 import json
 import unittest
@@ -12,10 +13,15 @@ import unittest
 import wf_abyss_gacha_package_compile as module
 import wf_abyss_gacha_package_contract as contract
 import wf_abyss_ticket_compile as tickets
+import wf_abyss_gacha_contract as gacha_contract
 import wf_mod_tool as core
 import wf_rogue_shop as shop
 from tests.summer_thunder_package_fixtures import complete_image
-from tests.test_abyss_gacha_compile import _sources as gacha_sources
+from tests.test_abyss_gacha_compile import (
+    _decode_flat,
+    _flat,
+    _sources as gacha_sources,
+)
 from tests.test_abyss_gacha_package_components import flat_bytes
 from tests.test_abyss_ticket_compile import (
     _base_item_assets,
@@ -33,8 +39,25 @@ def source_package() -> contract.SealedSourcePackage:
         "release_ready": True,
         "workspace_input_sha256": "a" * 64,
     })
+    common, server = gacha_sources()
+    roots = {root: dict(files) for root, files in image.roots.items()}
+    roots["common"][gacha_contract.CHARACTER_MASTER_LOGICAL] = common[
+        gacha_contract.CHARACTER_MASTER_LOGICAL
+    ]
+    roots["server"]["character.json"] = server["character.json"]
+    for root, logical in (
+        ("common", gacha_contract.CHARACTER_MASTER_LOGICAL),
+        ("server", "character.json"),
+    ):
+        raw = roots[root][logical]
+        entry = next(
+            item for item in manifest["roots"][root]
+            if item["logical_path"] == logical
+        )
+        entry["sha256"] = hashlib.sha256(raw).hexdigest()
+        entry["size"] = len(raw)
     return contract.SealedSourcePackage(
-        roots=image.roots,
+        roots=roots,
         manifest=manifest,
         workspace_input_sha256="a" * 64,
         source_locks_sha256="b" * 64,
@@ -47,6 +70,10 @@ def source_package() -> contract.SealedSourcePackage:
             "writes_live": False,
         },
     )
+
+
+def source_package_with_character_rows() -> contract.SealedSourcePackage:
+    return source_package()
 
 
 def compile_sources() -> module.AdditionSources:
@@ -91,7 +118,7 @@ def compile_sources() -> module.AdditionSources:
 class CombinedCompileTests(unittest.TestCase):
     def test_compiles_provisional_exact_21_payload_16_claim_addition(self):
         sources = compile_sources()
-        additions = module.compile_additions(sources)
+        additions = module.compile_additions(source_package(), sources)
 
         self.assertEqual(21, sum(len(files) for files in additions.roots.values()))
         self.assertEqual(
@@ -124,8 +151,9 @@ class CombinedCompileTests(unittest.TestCase):
         common_before = dict(sources.gacha_common)
         server_before = dict(sources.gacha_server)
 
-        first = module.compile_additions(sources)
-        second = module.compile_additions(sources)
+        source = source_package()
+        first = module.compile_additions(source, sources)
+        second = module.compile_additions(source, sources)
 
         self.assertEqual(first, second)
         self.assertEqual(common_before, sources.gacha_common)
@@ -155,9 +183,42 @@ class CombinedCompileTests(unittest.TestCase):
         module.compile_ticket_component = drifted
         try:
             with self.assertRaisesRegex(contract.PackageAssemblyError, "payload set"):
-                module.compile_additions(sources)
+                module.compile_additions(source_package(), sources)
         finally:
             module.compile_ticket_component = original
+
+    def test_merges_old_package_character_claims_into_validation_sources_only(self):
+        source = source_package_with_character_rows()
+        sources = compile_sources()
+        common = dict(sources.gacha_common)
+        rows = _decode_flat(
+            common[gacha_contract.CHARACTER_MASTER_LOGICAL],
+            gacha_contract.CHARACTER_MASTER_LOGICAL,
+        )
+        rows.pop("139998")
+        common[gacha_contract.CHARACTER_MASTER_LOGICAL] = _flat(
+            gacha_contract.CHARACTER_MASTER_LOGICAL,
+            {key: value.decode() for key, value in rows.items()},
+        )
+        server = dict(sources.gacha_server)
+        characters = json.loads(server["character.json"])
+        characters.pop("139998")
+        server["character.json"] = json.dumps(
+            characters, separators=(",", ":")
+        ).encode()
+        missing = dataclasses.replace(
+            sources, gacha_common=common, gacha_server=server
+        )
+
+        additions = module.compile_additions(source, missing)
+
+        report = additions.component_reports["gacha"]
+        self.assertTrue(report["source_package_character_overlay"])
+        self.assertNotIn(
+            gacha_contract.CHARACTER_MASTER_LOGICAL,
+            additions.roots["common"],
+        )
+        self.assertNotIn("character.json", additions.roots["server"])
 
 
 if __name__ == "__main__":

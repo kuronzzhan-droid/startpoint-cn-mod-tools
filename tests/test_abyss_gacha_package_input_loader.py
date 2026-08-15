@@ -15,7 +15,7 @@ import wf_abyss_gacha_package_sources as module
 import wf_abyss_ticket_compile as tickets
 import wf_mod_tool as core
 import wf_rogue_shop as shop
-from tests.test_abyss_gacha_package_compile import compile_sources
+from tests.test_abyss_gacha_package_compile import compile_sources, source_package
 
 
 class AdditionSourceLoaderTests(unittest.TestCase):
@@ -87,7 +87,7 @@ class AdditionSourceLoaderTests(unittest.TestCase):
             sources = module.load_addition_sources(store, server)
             self.assertIn(collision, sources.existing_common_paths)
             with self.assertRaisesRegex(ValueError, "collision"):
-                package_compile.compile_additions(sources)
+                package_compile.compile_additions(source_package(), sources)
 
             (server / "rogue_event.json").unlink()
             with self.assertRaisesRegex(

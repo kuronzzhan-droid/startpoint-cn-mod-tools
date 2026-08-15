@@ -13,6 +13,8 @@ import wf_abyss_gacha_banner_compile as banner_compile
 import wf_abyss_gacha_compile as gacha_compile
 import wf_abyss_gacha_contract as gacha_contract
 import wf_abyss_gacha_package_contract as contract
+import wf_character_pack as character_pack
+import wf_release
 from wf_abyss_gacha_package_components import (
     ComponentResult,
     compile_drop_component,
@@ -55,10 +57,58 @@ def _canonical(value: object) -> bytes:
         ) from exc
 
 
-def _gacha_component(sources: AdditionSources) -> ComponentResult:
+def _source_claim(
+    source: contract.SealedSourcePackage, root: str, logical: str
+) -> character_pack.TableClaim:
+    matches = [
+        item for item in source.manifest["tables"]
+        if item.get("root") == root and item.get("logical_path") == logical
+    ]
+    if len(matches) != 1:
+        raise contract.PackageAssemblyError(
+            f"source package character claim is not exact: {root}:{logical}"
+        )
+    item = matches[0]
+    return character_pack.TableClaim(
+        root=root,
+        logical_path=logical,
+        codec_id=item["codec_id"],
+        outer_keys=tuple(item["outer_keys"]),
+        inner_keys=tuple(
+            (entry["outer_key"], tuple(entry["keys"]))
+            for entry in item.get("inner_keys", [])
+        ),
+    )
+
+
+def _gacha_component(
+    source: contract.SealedSourcePackage, sources: AdditionSources
+) -> ComponentResult:
+    common_logical = gacha_contract.CHARACTER_MASTER_LOGICAL
+    common_claim = _source_claim(source, "common", common_logical)
+    server_claim = _source_claim(source, "server", "character.json")
+    try:
+        merged_common_character = wf_release.merge_claimed_table_bytes(
+            common_claim,
+            source.roots["common"][common_logical],
+            sources.gacha_common[common_logical],
+        )
+        merged_server_character = wf_release.merge_claimed_table_bytes(
+            server_claim,
+            source.roots["server"]["character.json"],
+            sources.gacha_server["character.json"],
+        )
+    except (KeyError, wf_release.ReleaseError) as exc:
+        raise contract.PackageAssemblyError(
+            "cannot merge source-package character closure"
+        ) from exc
+    gacha_common = dict(sources.gacha_common)
+    gacha_server = dict(sources.gacha_server)
+    gacha_common[common_logical] = merged_common_character
+    gacha_server["character.json"] = merged_server_character
     result = gacha_compile.compile_abyss_limited_gacha(
-        sources.gacha_common,
-        sources.gacha_server,
+        gacha_common,
+        gacha_server,
         existing_common_paths=sources.existing_common_paths,
     )
     if (
@@ -89,6 +139,18 @@ def _gacha_component(sources: AdditionSources) -> ComponentResult:
         "existing_common_paths": _sha(_canonical(sorted(
             str(path) for path in sources.existing_common_paths
         ))),
+        f"source_package:common:{common_logical}": _sha(
+            source.roots["common"][common_logical]
+        ),
+        "source_package:server:character.json": _sha(
+            source.roots["server"]["character.json"]
+        ),
+        f"merged_validation:common:{common_logical}": _sha(
+            merged_common_character
+        ),
+        "merged_validation:server:character.json": _sha(
+            merged_server_character
+        ),
     }
     report = dict(result["report"])
     report.update({
@@ -98,6 +160,7 @@ def _gacha_component(sources: AdditionSources) -> ComponentResult:
             gacha_contract.TOP_BANNER_LOGICAL,
         ],
         "package_manifest_eligible": True,
+        "source_package_character_overlay": True,
     })
     return ComponentResult(
         roots, tuple(result["table_claims"]), inputs, report
@@ -208,13 +271,18 @@ def _merge_components(
     )
 
 
-def compile_additions(sources: AdditionSources) -> contract.AdditionBundle:
+def compile_additions(
+    source: contract.SealedSourcePackage, sources: AdditionSources
+) -> contract.AdditionBundle:
     """Compile and close all 21 new payloads without filesystem writes."""
 
+    if not isinstance(source, contract.SealedSourcePackage):
+        raise TypeError("source must be SealedSourcePackage")
     if not isinstance(sources, AdditionSources):
         raise TypeError("sources must be AdditionSources")
+    contract._validate_source(source)
     components = {
-        "gacha": _gacha_component(sources),
+        "gacha": _gacha_component(source, sources),
         "tickets": compile_ticket_component(
             item_raw=sources.item_raw,
             ticket_type_raw=sources.ticket_type_raw,
@@ -244,7 +312,7 @@ def compile_package_image(
 ) -> contract.PackageImage:
     """Compile and audit the complete 104-payload image in memory."""
 
-    additions = compile_additions(sources)
+    additions = compile_additions(source, sources)
     if additions.acceptance.get("drop_source_sync_closed") is not True:
         raise contract.PackageAssemblyError(
             "drop source sync closure is pending; package image is fail-closed"
