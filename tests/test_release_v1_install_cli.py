@@ -13,9 +13,11 @@ from unittest import mock
 from tests.test_release_v1_compatibility import _target
 from wf_release_v1 import cli
 from wf_release_v1._target_facts import target_facts_to_wire
+from wf_release_v1.errors import ReleaseError
 from wf_release_v1.transaction import InstallResult
 from wf_release_v1.bootstrap import BootstrapResult
 from wf_release_v1.rollback import RollbackResult
+from wf_release_v1.resume import ResumeResult
 
 
 RELEASE_ID = "sha256:" + "a" * 64
@@ -101,6 +103,82 @@ class LocalInstallCliTests(unittest.TestCase):
                 )
                 self.assertEqual((2, "stderr"), (code, stream))
                 self.assertEqual("WFREL_CLI_ARGUMENTS", value["code"])
+
+    def test_resume_requires_exact_confirmation_before_target_io(self) -> None:
+        import wf_release_v1._local_cli as local_cli
+
+        for confirmation in ("", "resume_wf_target", "RESUME_WF_TARGET "):
+            with self.subTest(confirmation=confirmation), mock.patch.object(
+                local_cli.ManagedTarget,
+                "load",
+                side_effect=AssertionError("target was read"),
+            ):
+                code, value, stream = self._run(
+                    "resume", "--target", "target.json", "--confirm", confirmation,
+                )
+                self.assertEqual((2, "stderr"), (code, stream))
+                self.assertEqual("WFREL_CLI_ARGUMENTS", value["code"])
+
+    def test_resume_valid_confirmation_reaches_target_handler(self) -> None:
+        import wf_release_v1._local_cli as local_cli
+
+        with mock.patch.object(
+            local_cli.ManagedTarget,
+            "load",
+            side_effect=ReleaseError("WFREL_REQUIRE_TARGET", "target unavailable"),
+        ) as load:
+            code, value, stream = self._run(
+                "resume", "--target", "target.json", "--confirm", "RESUME_WF_TARGET",
+            )
+
+        self.assertEqual((20, "stderr"), (code, stream))
+        self.assertEqual("WFREL_REQUIRE_TARGET", value["code"])
+        load.assert_called_once_with(Path("target.json"))
+
+    def test_resume_success_emits_only_path_free_target_facts(self) -> None:
+        import wf_release_v1._local_cli as local_cli
+
+        facts = _target(cdn_target_version="1.4.346")
+        operation_id = "20260815T020304.000000Z-0123456789abcdef0123456789abcdef"
+        secret = "admin-token-must-stay-process-only"
+        launch = SimpleNamespace(executable=Path("C:/managed/runtime/node.exe"))
+        target = SimpleNamespace(
+            state_root=Path("C:/managed/state"),
+            data_root=Path("C:/private/data"),
+            cn_admin_token=secret,
+            launch_spec=mock.Mock(return_value=launch),
+        )
+        adapter = object()
+        result = ResumeResult("noop", operation_id, facts)
+
+        with (
+            mock.patch.object(local_cli.ManagedTarget, "load", return_value=target) as load,
+            mock.patch.object(
+                local_cli, "WindowsPlatformAdapter", return_value=adapter,
+            ) as create,
+            mock.patch.object(local_cli, "resume_target", return_value=result) as resume,
+        ):
+            code, value, stream = self._run(
+                "resume", "--target", "C:/private/target.json",
+                "--confirm", "RESUME_WF_TARGET",
+            )
+
+        self.assertEqual((0, "stdout"), (code, stream))
+        self.assertEqual({
+            "arch", "bundleId", "capabilities", "cdnTargetVersion", "contentDigest",
+            "dependencyLock", "modeDigest", "nodeAbi", "nodeVersion", "operationId",
+            "outcome", "patchOverlaySchema", "platform", "runtimeApi", "runtimeId",
+            "serverVersion", "targetProtocol",
+        }, set(value))
+        self.assertEqual("noop", value["outcome"])
+        self.assertEqual(operation_id, value["operationId"])
+        self.assertEqual("capabilities-v1", value["targetProtocol"])
+        raw = json.dumps(value, sort_keys=True)
+        self.assertNotIn("C:/private", raw)
+        self.assertNotIn(secret, raw)
+        load.assert_called_once_with(Path("C:/private/target.json"))
+        create.assert_called_once_with(target.state_root, launch.executable)
+        resume.assert_called_once_with(target, adapter)
 
     def test_bootstrap_constructs_adapter_without_a_preflight_live_probe(self) -> None:
         import wf_release_v1._local_cli as local_cli

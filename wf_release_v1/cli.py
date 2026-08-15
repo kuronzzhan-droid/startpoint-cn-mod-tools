@@ -20,6 +20,7 @@ from ._local_cli import (
     run_legacy_rollback as _run_legacy_rollback,
     run_plan as _run_target_plan,
     run_probe as _run_probe,
+    run_resume as _run_resume,
     run_rollback as _run_rollback,
 )
 from .legacy_share import inspect_legacy_share
@@ -328,6 +329,7 @@ def _parser(output_context: _ParseOutputContext | None = None) -> _ArgumentParse
         "legacy_rollback": _run_legacy_rollback,
         "plan": _run_plan_install,
         "probe": _run_probe,
+        "resume": _run_resume,
         "rollback": _run_rollback,
     })
     return parser

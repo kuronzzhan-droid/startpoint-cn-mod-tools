@@ -84,6 +84,31 @@ bootstrap 会写 Data Volume 的 Content 状态，服务启动还可能迁移数
 身份仍匹配的进程，不回滚数据库或 Data Volume。若停止失败则返回 `WFREL_RECOVERY_FAILED` 并保留现场；
 不得删除半状态后盲目重试。
 
+### 恢复已受管但停止的服务
+
+已存在合法 `active.json` 与 `previous.json`、但受管服务停止时，先显式恢复服务，再执行
+`capture-requirements` 或 `plan-install`：
+
+```powershell
+python -X utf8 -m wf_release_v1 resume `
+  --target D:\wf-target\target.json `
+  --confirm RESUME_WF_TARGET
+```
+
+`resume` 从读取 active/previous、进程或网络开始全程持有 operation reservation。若受管进程已经运行，
+命令只按 process state 精确验证 `/healthz` 的操作 ID、PID、HTTP/TCP bindings 和 modern capabilities，
+随后返回 `outcome=noop`，不会重启。若服务停止，则先证明 publicHost 属于本机且 `target.serverUrl`
+对应的 HTTP 端口与 target session 端口均未被占用，再按 target 的 launch/environment 启动；它不会运行
+Content prepare，也不会改写 active、previous 或 Content。`CN_ADMIN_TOKEN` 只继承到子进程环境，不进入
+state 或输出。
+
+成功输出为不含路径的单行 JSON，包括 `outcome`、本次 `operationId`、`targetProtocol=capabilities-v1`
+与完整 `TargetFacts` 顶层字段。启动后验证失败只会停止本次启动且身份仍精确匹配的进程；进程已退出视为
+已停止，process state 缺失或身份漂移则返回 `WFREL_RECOVERY_FAILED` 且不终止无法证明归属的进程。
+若 running-noop 验证完成后 reservation 释放失败，命令保留原 state/lock 错误且不停止既有进程；若本次
+启动已验收后才发生该失败，则返回 `WFREL_RECOVERY_FAILED` 并保留进程与现场，不在失去 reservation
+所有权后盲目停服。
+
 ## 3. 只读探针
 
 ```powershell

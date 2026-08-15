@@ -16,6 +16,7 @@ from .rollback import (
     recover_failed_operation,
     rollback_to_previous,
 )
+from .resume import resume_target
 from .target import ManagedTarget
 from .target_capability import inspect_target_capability
 from .target_planning import plan_target_install
@@ -73,6 +74,11 @@ def run_bootstrap(arguments: argparse.Namespace) -> dict[str, object]:
     target = ManagedTarget.load(Path(arguments.target))
     platform = _platform(target)
     return _bootstrap_wire(bootstrap_target(target, platform))
+
+
+def run_resume(arguments: argparse.Namespace) -> dict[str, object]:
+    target = ManagedTarget.load(Path(arguments.target))
+    return resume_target(target, _platform(target)).to_wire()
 
 
 def run_plan(arguments: argparse.Namespace) -> dict[str, object]:
@@ -156,5 +162,5 @@ def run_rollback(arguments: argparse.Namespace) -> dict[str, object]:
 
 __all__ = [
     "run_bootstrap", "run_install", "run_legacy_install", "run_legacy_rollback", "run_plan",
-    "run_probe", "run_rollback",
+    "run_probe", "run_resume", "run_rollback",
 ]
