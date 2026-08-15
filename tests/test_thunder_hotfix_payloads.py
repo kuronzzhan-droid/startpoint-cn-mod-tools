@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Pure payload-level regression tests for the thunder-dragon 1.1.1 hotfix."""
+"""Pure payload-level regression tests for the thunder-dragon 1.1.2 hotfix."""
 
 from __future__ import annotations
 
@@ -16,6 +16,7 @@ import wf_mod_tool as core
 import tests.test_pixelart_normal_compile as normal_fixture
 from tests.test_abyss_gacha_compile import _decode_flat, _sources
 from wf_abyss_gacha_compile import compile_abyss_limited_gacha
+import wf_abyss_gacha_contract as gacha_contract
 from wf_abyss_gacha_contract import GACHA_KEY, GACHA_MASTER_LOGICAL, START_DATE
 from wf_flatomo_compile import compile_travelling_wave_effect
 from wf_pixelart_normal_compile import compile_full_normal
@@ -27,12 +28,12 @@ TARGET = normal_fixture.TARGET
 
 try:
     from wf_thunder_hotfix_payloads import (
-        repair_gacha_schedule,
+        repair_gacha_contract,
         repair_normal_and_special,
         repair_travelling_wave_effect,
     )
 except ImportError:
-    repair_gacha_schedule = None
+    repair_gacha_contract = None
     repair_normal_and_special = None
     repair_travelling_wave_effect = None
 
@@ -52,10 +53,99 @@ def _json(value: object) -> bytes:
     ).encode("utf-8")
 
 
+def _raw_deflate(raw: bytes) -> bytes:
+    compressor = zlib.compressobj(level=9, wbits=-15)
+    return compressor.compress(raw) + compressor.flush()
+
+
+_OLD_RICH_TEXT = b"""<!DOCTYPE html/>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <title>\xe6\xb7\xb1\xe6\xb8\x8a\xe9\x99\x90\xe5\xae\x9a\xe6\x89\xad\xe8\x9b\x8b\xe6\xb3\xa8\xe6\x84\x8f\xe4\xba\x8b\xe9\xa1\xb9</title>
+  <link rel="stylesheet" type="text/css" href="style.css"/>
+</head>
+<body class="body" style_id="1">
+  <div class="container">
+    <p>\xe3\x83\xbb\xe6\x9c\xac\xe6\x89\xad\xe8\x9b\x8b\xe4\xbb\x85\xe5\x8f\xaf\xe4\xbd\xbf\xe7\x94\xa8\xe6\xb7\xb1\xe6\xb8\x8a\xe5\x8d\x95\xe6\x8a\xbd\xe5\x88\xb8\xe6\x88\x96\xe6\xb7\xb1\xe6\xb8\x8a\xe5\x8d\x81\xe8\xbf\x9e\xe5\x88\xb8\xe3\x80\x82</p><br/>
+    <p>\xe3\x83\xbb\xe6\x9c\xac\xe6\x89\xad\xe8\x9b\x8b\xe4\xb8\x8d\xe6\x8e\xa5\xe5\x8f\x97\xe6\x98\x9f\xe5\xaf\xbc\xe7\x9f\xb3\xef\xbc\x8c\xe4\xb9\x9f\xe4\xb8\x8d\xe6\x8e\xa5\xe5\x8f\x97\xe9\x80\x9a\xe7\x94\xa8\xe8\xa7\x92\xe8\x89\xb2\xe6\x89\xad\xe8\x9b\x8b\xe5\x88\xb8\xe3\x80\x82</p><br/>
+    <p>\xe3\x83\xbb\xe5\x8d\xa1\xe6\xb1\xa0\xe4\xbb\x85\xe5\x8c\x85\xe5\x90\xab\xe6\x8c\x87\xe5\xae\x9a\xe7\x9a\x848\xe5\x90\x8d\xe9\x99\x90\xe5\xae\x9a\xe2\x98\x855\xe8\xa7\x92\xe8\x89\xb2\xef\xbc\x8c\xe6\xaf\x8f\xe5\x90\x8d\xe8\xa7\x92\xe8\x89\xb2\xe7\x9a\x84\xe8\x8e\xb7\xe5\xbe\x97\xe6\xa6\x82\xe7\x8e\x87\xe5\x9d\x87\xe4\xb8\xba12.5%\xe3\x80\x82</p><br/>
+    <p>\xe3\x83\xbb\xe4\xbd\xbf\xe7\x94\xa81\xe5\xbc\xa0\xe6\xb7\xb1\xe6\xb8\x8a\xe5\x8d\x95\xe6\x8a\xbd\xe5\x88\xb8\xe5\x8f\xaf\xe6\x8a\xbd\xe5\x8f\x961\xe6\xac\xa1\xef\xbc\x9b\xe4\xbd\xbf\xe7\x94\xa81\xe5\xbc\xa0\xe6\xb7\xb1\xe6\xb8\x8a\xe5\x8d\x81\xe8\xbf\x9e\xe5\x88\xb8\xe5\x8f\xaf\xe8\xbf\x9e\xe7\xbb\xad\xe6\x8a\xbd\xe5\x8f\x9610\xe6\xac\xa1\xe3\x80\x82</p><br/>
+    <p>\xe3\x83\xbb\xe9\x87\x8d\xe5\xa4\x8d\xe8\x8e\xb7\xe5\xbe\x97\xe5\xb7\xb2\xe6\x9c\x89\xe8\xa7\x92\xe8\x89\xb2\xe6\x97\xb6\xef\xbc\x8c\xe6\x8c\x89\xe6\xb8\xb8\xe6\x88\x8f\xe7\x8e\xb0\xe6\x9c\x89\xe8\xa7\x92\xe8\x89\xb2\xe9\x87\x8d\xe5\xa4\x8d\xe8\x8e\xb7\xe5\xbe\x97\xe8\xa7\x84\xe5\x88\x99\xe5\xa4\x84\xe7\x90\x86\xe3\x80\x82</p>
+  </div>
+</body>
+</html>
+"""
+
+
+def _old_contract_fixture(compiled: dict[str, bytes], old_date: str) -> dict[str, bytes]:
+    broken = dict(compiled)
+    rows = _decode_flat(broken[GACHA_MASTER_LOGICAL], GACHA_MASTER_LOGICAL)
+    row = core.read_csv_lines(rows[GACHA_KEY].decode("utf-8"))[0]
+    row[10] = "5"
+    row[29] = old_date
+    rows[GACHA_KEY] = core.write_csv_lines([row]).encode("utf-8")
+    broken[GACHA_MASTER_LOGICAL] = core.build_orderedmap(core.OrderedMap(
+        GACHA_MASTER_LOGICAL, list(rows), list(rows.values()), Path("<fixture>"),
+    ))
+
+    old_pool = {
+        "1": [{
+            "id": value, "rank": 5, "odds": 100,
+            "isRateUp": True, "isLimited": True, "isExchangeable": False,
+            "rarity": 125.0, "trialReadingForced": False,
+        } for value in gacha_contract.CHARACTER_IDS],
+        "2": [], "3": [],
+    }
+    runtime = json.loads(broken["gacha.json"])
+    runtime[GACHA_KEY].update({
+        "guaranteeRarity": 5,
+        "rankRates": {"normal": [1000, 0, 0], "multiGuarantee": [1000, 0]},
+        "startDate": old_date,
+        "pool": old_pool,
+    })
+    broken["gacha.json"] = _json(runtime)
+    cdndata = json.loads(broken["cdndata/gacha.json"])
+    cdndata[GACHA_KEY][0][10] = "5"
+    cdndata[GACHA_KEY][0][29] = old_date
+    broken["cdndata/gacha.json"] = _json(cdndata)
+    broken[gacha_contract.RARITY_ODDS_LOGICAL] = (
+        __import__("wf_abyss_gacha_compile")._new_nested(
+            gacha_contract.RARITY_ODDS_LOGICAL,
+            gacha_contract.RARITY_ODDS_ID,
+            {"0": "5,100", "1": "4,0", "2": "3,0"},
+        )
+    )
+    broken[gacha_contract.CHARACTER_3_ODDS_LOGICAL] = (
+        __import__("wf_abyss_gacha_compile")._new_nested(
+            gacha_contract.CHARACTER_3_ODDS_LOGICAL,
+            gacha_contract.CHARACTER_3_ODDS_ID, {},
+        )
+    )
+    broken[gacha_contract.CHARACTER_4_ODDS_LOGICAL] = (
+        __import__("wf_abyss_gacha_compile")._new_nested(
+            gacha_contract.CHARACTER_4_ODDS_LOGICAL,
+            gacha_contract.CHARACTER_4_ODDS_ID, {},
+        )
+    )
+    old_five = {
+        str(index): f"{value},5,100,true,true,false,false"
+        for index, value in enumerate(gacha_contract.CHARACTER_IDS)
+    }
+    broken[gacha_contract.CHARACTER_5_ODDS_LOGICAL] = (
+        __import__("wf_abyss_gacha_compile")._new_nested(
+            gacha_contract.CHARACTER_5_ODDS_LOGICAL,
+            gacha_contract.CHARACTER_5_ODDS_ID, old_five,
+        )
+    )
+    broken[gacha_contract.RICH_TEXT_BODY_LOGICAL] = _raw_deflate(_OLD_RICH_TEXT)
+    return broken
+
+
 class ThunderHotfixPayloadTests(unittest.TestCase):
     def _require_module(self):
         if any(value is None for value in (
-            repair_gacha_schedule,
+            repair_gacha_contract,
             repair_normal_and_special,
             repair_travelling_wave_effect,
         )):
@@ -166,44 +256,28 @@ class ThunderHotfixPayloadTests(unittest.TestCase):
         self.assertEqual(1, report["root_identity_transform"])
         self.assertFalse(report["writes_live"])
 
-    def test_repairs_all_three_schedule_mirrors_and_nothing_else(self):
+    def test_repairs_standard_pool_exchange_and_schedule_in_eight_payloads(self):
         self._require_module()
         common, server = _sources()
         compiled = compile_abyss_limited_gacha(
             common, server, existing_common_paths=set(common)
         )["files"]
-        broken = dict(compiled)
         old_date = "2026-08-15 00:00:00"
-
-        rows = _decode_flat(broken[GACHA_MASTER_LOGICAL], GACHA_MASTER_LOGICAL)
-        row = core.read_csv_lines(rows[GACHA_KEY].decode("utf-8"))[0]
-        row[29] = old_date
-        rows[GACHA_KEY] = core.write_csv_lines([row]).encode("utf-8")
-        broken[GACHA_MASTER_LOGICAL] = core.build_orderedmap(core.OrderedMap(
-            GACHA_MASTER_LOGICAL,
-            list(rows),
-            list(rows.values()),
-            Path("<fixture>"),
-        ))
-
-        runtime = json.loads(broken["gacha.json"])
-        runtime[GACHA_KEY]["startDate"] = old_date
-        broken["gacha.json"] = _json(runtime)
-        cdndata = json.loads(broken["cdndata/gacha.json"])
-        cdndata[GACHA_KEY][0][29] = old_date
-        broken["cdndata/gacha.json"] = _json(cdndata)
-
-        repaired, report = repair_gacha_schedule(
+        broken = _old_contract_fixture(compiled, old_date)
+        repaired, report = repair_gacha_contract(
             broken, expected_start_date=old_date
         )
         self.assertEqual(compiled, repaired)
         self.assertEqual(START_DATE, report["start_date"])
-        self.assertEqual(3, report["changed_payload_count"])
+        self.assertEqual(8, report["changed_payload_count"])
+        self.assertEqual([50, 250, 700], report["rank_rates"])
+        self.assertEqual(250, report["exchange_required_points"])
+        self.assertEqual(8, report["exchangeable_limited_count"])
         self.assertFalse(report["writes_live"])
 
         already_fixed = dict(compiled)
-        with self.assertRaisesRegex(ValueError, "source start date drift"):
-            repair_gacha_schedule(
+        with self.assertRaisesRegex(ValueError, "source gacha contract drift"):
+            repair_gacha_contract(
                 already_fixed, expected_start_date=old_date
             )
 

@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Sealed-source and whole-image tests for thunder-dragon hotfix 1.1.1."""
+"""Sealed-source and whole-image tests for thunder-dragon hotfix 1.1.2."""
 
 from __future__ import annotations
 
 import copy
 import hashlib
+import json
 import unittest
+import zlib
 from pathlib import Path
 
 try:
@@ -44,17 +46,18 @@ class ThunderHotfixPackageTests(unittest.TestCase):
             source, donor, generator_git_head="a" * 40
         )
 
-    def test_builds_full_111_replacement_with_only_six_changed_payloads(self):
+    def test_builds_full_112_replacement_with_eleven_changed_payloads(self):
         source, image = self._compile()
         audit = package.audit_hotfix_package(image)
-        self.assertEqual("1.1.1", image.manifest["package_version"])
+        self.assertEqual("1.1.2", image.manifest["package_version"])
         self.assertEqual("1.4.348", image.manifest["requires_client_base"])
         self.assertEqual(105, audit["payload_count"])
         self.assertEqual(39, audit["table_claim_count"])
         self.assertEqual({
             "common": 67, "medium": 25, "android": 2, "server": 11,
         }, audit["root_counts"])
-        self.assertEqual(6, audit["changed_payload_count"])
+        self.assertEqual(11, audit["changed_payload_count"])
+        self.assertEqual(94, audit["unchanged_payload_count"])
         self.assertEqual(
             list(package.CHANGED_PAYLOADS), audit["changed_payloads"]
         )
@@ -67,6 +70,43 @@ class ThunderHotfixPackageTests(unittest.TestCase):
             for logical, raw in source.roots[root].items():
                 if (root, logical) not in package.CHANGED_PAYLOADS:
                     self.assertEqual(raw, image.roots[root][logical])
+
+        runtime = json.loads(image.roots["server"]["gacha.json"])["990001"]
+        self.assertEqual([50, 250, 700], runtime["rankRates"]["normal"])
+        self.assertEqual(4, runtime["guaranteeRarity"])
+        self.assertTrue(runtime["pool"]["2"])
+        self.assertTrue(runtime["pool"]["3"])
+        limited = [item for item in runtime["pool"]["1"] if item["id"] in {
+            129999, 139998, 139999, 149998, 149999, 169998, 169999, 179999,
+        }]
+        self.assertEqual(8, len(limited))
+        self.assertTrue(all(item["isExchangeable"] for item in limited))
+        self.assertTrue(all(item["isRateUp"] for item in limited))
+        standard = [item for item in runtime["pool"]["1"] if item not in limited]
+        self.assertTrue(standard)
+        self.assertTrue(all(not item["isExchangeable"] for item in standard))
+        five_weight = sum(item["odds"] for item in runtime["pool"]["1"])
+        self.assertTrue(all(
+            abs(0.005 - 0.05 * item["odds"] / five_weight) < 1e-12
+            for item in limited
+        ))
+        self.assertAlmostEqual(
+            0.01,
+            0.05 * sum(item["odds"] for item in standard) / five_weight,
+        )
+        self.assertTrue(all(
+            not item["isExchangeable"] and not item["isRateUp"]
+            for rank in ("2", "3") for item in runtime["pool"][rank]
+        ))
+        note = zlib.decompress(
+            image.roots["common"][
+                "rich_text/cnmod_abyss_limited_gacha_note.html.deflate"
+            ],
+            -15,
+        ).decode("utf-8")
+        self.assertIn("★5角色总出现概率为5%", note)
+        self.assertIn("单人出现概率均为0.5%", note)
+        self.assertIn("累计250点", note)
 
     def test_rejects_source_payload_and_donor_drift(self):
         self._require_modules()

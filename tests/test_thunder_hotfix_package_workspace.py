@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Fresh-workspace and fixed CLI tests for thunder hotfix 1.1.1."""
+"""Fresh-workspace and fixed CLI tests for thunder hotfix 1.1.2."""
 
 from __future__ import annotations
 

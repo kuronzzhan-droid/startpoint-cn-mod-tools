@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Compile and audit the complete thunder-dragon 1.1.1 replacement image."""
+"""Compile and audit the complete thunder-dragon 1.1.2 replacement image."""
 
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ from typing import Any, Mapping
 
 import wf_abyss_gacha_package_audit as abyss_audit
 import wf_abyss_gacha_package_contract as abyss_contract
+import wf_abyss_gacha_contract as gacha_contract
 import wf_character_pack as character_pack
 import wf_summer_thunder_package_contract as thunder
 from wf_summer_thunder_package_sources import (
@@ -23,19 +24,20 @@ from wf_thunder_hotfix_package_sources import (
     SealedHotfixSource,
 )
 from wf_thunder_hotfix_payloads import (
-    repair_gacha_schedule,
+    repair_gacha_contract,
     repair_normal_and_special,
     repair_travelling_wave_effect,
 )
+from wf_thunder_hotfix_gacha import GACHA_REPAIR_PATHS
 
 
 PACKAGE_ID = thunder.PACKAGE_ID
 CHARACTER_ID = thunder.CHARACTER_ID
 CODE_NAME = thunder.CODE_NAME
 ROOT_NAMES = thunder.ROOT_NAMES
-PACKAGE_VERSION = "1.1.1"
+PACKAGE_VERSION = "1.1.2"
 REQUIRES_CLIENT_BASE = "1.4.348"
-CONFIRMATION = "ASSEMBLE_CNMOD_THUNDER_DRAGON_ABYSS_GACHA_1_1_1"
+CONFIRMATION = "ASSEMBLE_CNMOD_THUNDER_DRAGON_ABYSS_GACHA_1_1_2"
 SOURCE_START_DATE = "2026-08-15 00:00:00"
 
 _PIXEL_PREFIX = f"character/{CODE_NAME}/pixelart"
@@ -47,9 +49,14 @@ CHANGED_PAYLOADS = (
     ("common", f"{_PIXEL_PREFIX}/sprite_sheet.atlas.amf3.deflate"),
     ("common", f"{_PIXEL_PREFIX}/special_sprite_sheet.atlas.amf3.deflate"),
     ("common", _EFFECT_PARTS),
-    ("common", "master/gacha/gacha.orderedmap"),
-    ("server", "cdndata/gacha.json"),
-    ("server", "gacha.json"),
+    *(
+        (
+            "server" if logical in {"cdndata/gacha.json", "gacha.json"}
+            else "common",
+            logical,
+        )
+        for logical in GACHA_REPAIR_PATHS
+    ),
 )
 CURRENT_SHARED_ASSET_BASELINE = (
     {
@@ -75,8 +82,12 @@ _ACCEPTANCE = {
     "special_alias_regenerated": True,
     "effect_single_anchor_fixed": True,
     "gacha_schedule_game_clock_compatible": True,
-    "unchanged_payload_count": 99,
-    "changed_payload_count": 6,
+    "gacha_standard_rank_rates": [50, 250, 700],
+    "gacha_limited_rate_each": 0.005,
+    "gacha_exchange_required_points": 250,
+    "gacha_exchangeable_limited_count": 8,
+    "unchanged_payload_count": 94,
+    "changed_payload_count": 11,
     "package_manifest_eligible": True,
     "writes_live": False,
 }
@@ -203,7 +214,7 @@ def compile_hotfix_package(
     *,
     generator_git_head: str,
 ) -> PackageImage:
-    """Compile the full replacement image while changing exactly six payloads."""
+    """Compile the full replacement image while changing exactly eleven payloads."""
 
     _validate_source(source)
     _validate_donor(donor)
@@ -242,20 +253,19 @@ def compile_hotfix_package(
             **source.roots["common"],
             **source.roots["server"],
         }
-        repaired_gacha, gacha_report = repair_gacha_schedule(
+        repaired_gacha, gacha_report = repair_gacha_contract(
             all_source, expected_start_date=SOURCE_START_DATE
         )
     except (KeyError, TypeError, ValueError) as exc:
         raise PackageAssemblyError(f"hotfix payload compilation failed: {exc}") from exc
 
-    candidates = {
+    candidates: dict[tuple[str, str], bytes] = {
         ("common", CHANGED_PAYLOADS[0][1]): repaired_normal[CHANGED_PAYLOADS[0][1]],
         ("common", CHANGED_PAYLOADS[1][1]): repaired_special[CHANGED_PAYLOADS[1][1]],
         ("common", CHANGED_PAYLOADS[2][1]): repaired_effect[CHANGED_PAYLOADS[2][1]],
-        ("common", CHANGED_PAYLOADS[3][1]): repaired_gacha[CHANGED_PAYLOADS[3][1]],
-        ("server", CHANGED_PAYLOADS[4][1]): repaired_gacha[CHANGED_PAYLOADS[4][1]],
-        ("server", CHANGED_PAYLOADS[5][1]): repaired_gacha[CHANGED_PAYLOADS[5][1]],
     }
+    for root, logical in CHANGED_PAYLOADS[3:]:
+        candidates[(root, logical)] = repaired_gacha[logical]
     if tuple(candidates) != CHANGED_PAYLOADS:
         raise PackageAssemblyError("hotfix changed payload set/order drift")
     roots = {root: dict(source.roots[root]) for root in ROOT_NAMES}
@@ -301,6 +311,8 @@ def compile_hotfix_package(
             "special_v3_sha256": dict(_SPECIAL_OUTPUT_SHA256),
             "effect_v1_sha256": dict(_EFFECT_OUTPUT_SHA256),
             "source_start_date": SOURCE_START_DATE,
+            "standard_pool_donor_id": gacha_contract.STANDARD_POOL_DONOR_ID,
+            "exchange_required_points": 250,
             "shared_asset_baseline": [
                 dict(item) for item in CURRENT_SHARED_ASSET_BASELINE
             ],

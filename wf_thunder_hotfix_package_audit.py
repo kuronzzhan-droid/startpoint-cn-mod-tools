@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Independent full-image audit for the thunder-dragon 1.1.1 hotfix."""
+"""Independent full-image audit for the thunder-dragon 1.1.2 hotfix."""
 
 from __future__ import annotations
 
@@ -27,6 +27,8 @@ def _repair_evidence(locks: Mapping[str, Any]) -> None:
         "special_v3_sha256": dict(_SPECIAL_OUTPUT_SHA256),
         "effect_v1_sha256": dict(_EFFECT_OUTPUT_SHA256),
         "source_start_date": contract.SOURCE_START_DATE,
+        "standard_pool_donor_id": "700004",
+        "exchange_required_points": 250,
         "shared_asset_baseline": [
             dict(item) for item in contract.CURRENT_SHARED_ASSET_BASELINE
         ],
@@ -51,17 +53,21 @@ def _repair_evidence(locks: Mapping[str, Any]) -> None:
         or effect.get("root_identity_transform") != 1
         or effect.get("child_anchor_layers") != 10
         or not isinstance(gacha, Mapping)
-        or gacha.get("status") != "repaired_game_clock_schedule"
+        or gacha.get("status") != "repaired_standard_pool_exchange_contract"
         or gacha.get("writes_live") is not False
         or gacha.get("source_start_date") != contract.SOURCE_START_DATE
         or gacha.get("start_date") != "2020-12-31 12:00:00"
-        or gacha.get("changed_payload_count") != 3
+        or gacha.get("rank_rates") != [50, 250, 700]
+        or gacha.get("guarantee_rarity") != 4
+        or gacha.get("exchange_required_points") != 250
+        or gacha.get("exchangeable_limited_count") != 8
+        or gacha.get("changed_payload_count") != 8
     ):
         raise contract.PackageAssemblyError("hotfix repair report semantic drift")
 
 
 def audit_hotfix_package(image: contract.PackageImage) -> dict[str, Any]:
-    """Recompute the full image, evidence, and exact six-change contract."""
+    """Recompute the full image, evidence, and exact eleven-change contract."""
 
     if not isinstance(image, contract.PackageImage) or set(image.roots) != set(
         contract.ROOT_NAMES
@@ -168,7 +174,7 @@ def audit_hotfix_package(image: contract.PackageImage) -> dict[str, Any]:
         "root_counts": root_report["root_counts"],
         "changed_payload_count": len(contract.CHANGED_PAYLOADS),
         "changed_payloads": list(contract.CHANGED_PAYLOADS),
-        "unchanged_payload_count": 99,
+        "unchanged_payload_count": 94,
         "accepted_asset_replacements": [
             dict(item) for item in contract.CURRENT_SHARED_ASSET_BASELINE
         ],

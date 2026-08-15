@@ -1,22 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Pure six-payload repair compiler for the thunder-dragon 1.1.1 hotfix."""
+"""Pure payload repairs for the thunder-dragon 1.1.2 hotfix."""
 
 from __future__ import annotations
 
 import copy
 import hashlib
-import json
 import zlib
 from collections.abc import Mapping
-from pathlib import Path
 
 import wf_dsl
-import wf_mod_tool as core
-from wf_abyss_gacha_compile import _strict_json_object
-from wf_abyss_gacha_contract import GACHA_KEY, GACHA_MASTER_LOGICAL, START_DATE
 from wf_pixelart_normal_compile import _BASE_TICK_SLOT
 from wf_pixelart_special_compat_compile import compile_special_compatibility
+from wf_thunder_hotfix_gacha import repair_gacha_contract
 
 
 _BASE_TICKS = tuple(_BASE_TICK_SLOT)
@@ -26,7 +22,6 @@ _EFFECT_ROOT = (
     "fan_lightning"
 )
 _EFFECT_PARTS = f"{_EFFECT_ROOT}/fan_lightning_wave.parts.amf3.deflate"
-_GACHA_SERVER = ("gacha.json", "cdndata/gacha.json")
 
 
 def _sha(raw: bytes) -> str:
@@ -243,87 +238,8 @@ def repair_travelling_wave_effect(
     }
 
 
-def _canonical_json(value: object) -> bytes:
-    return json.dumps(
-        value, ensure_ascii=False, allow_nan=False, separators=(",", ":")
-    ).encode("utf-8")
-
-
-def repair_gacha_schedule(
-    files: Mapping[str, bytes],
-    *,
-    expected_start_date: str,
-) -> tuple[dict[str, bytes], dict[str, object]]:
-    """Replace the pool start date in its client and two runtime mirrors."""
-
-    if not isinstance(expected_start_date, str) or not expected_start_date:
-        raise ValueError("expected source start date is required")
-    repaired = dict(files)
-    required = {GACHA_MASTER_LOGICAL, *_GACHA_SERVER}
-    if not required.issubset(repaired) or any(
-        not isinstance(logical, str) or not isinstance(raw, bytes)
-        for logical, raw in repaired.items()
-    ):
-        raise ValueError("gacha hotfix input payload set is invalid")
-    try:
-        keys, values = core._strict_orderedmap_rows(  # type: ignore[attr-defined]
-            repaired[GACHA_MASTER_LOGICAL],
-            label=GACHA_MASTER_LOGICAL,
-            compressed_rows=True,
-        )
-        rows = dict(zip(keys, values))
-        row = core.read_csv_lines(rows[GACHA_KEY].decode("utf-8"))[0]
-        runtime = _strict_json_object(repaired["gacha.json"], "gacha.json")
-        cdndata = _strict_json_object(
-            repaired["cdndata/gacha.json"], "cdndata/gacha.json"
-        )
-        runtime_row = runtime[GACHA_KEY]
-        cdndata_row = cdndata[GACHA_KEY][0]
-    except (KeyError, IndexError, TypeError, UnicodeDecodeError) as exc:
-        raise ValueError("gacha schedule mirror contract is invalid") from exc
-    if (
-        len(row) != 47
-        or not isinstance(runtime_row, dict)
-        or not isinstance(cdndata_row, list)
-        or len(cdndata_row) != 47
-        or row[29] != expected_start_date
-        or runtime_row.get("startDate") != expected_start_date
-        or cdndata_row[29] != expected_start_date
-    ):
-        raise ValueError("gacha source start date drift")
-    row[29] = START_DATE
-    runtime_row["startDate"] = START_DATE
-    cdndata_row[29] = START_DATE
-    rows[GACHA_KEY] = core.write_csv_lines([row]).encode("utf-8")
-    repaired[GACHA_MASTER_LOGICAL] = core.build_orderedmap(core.OrderedMap(
-        GACHA_MASTER_LOGICAL,
-        list(rows),
-        list(rows.values()),
-        Path("<memory>"),
-    ))
-    repaired["gacha.json"] = _canonical_json(runtime)
-    repaired["cdndata/gacha.json"] = _canonical_json(cdndata)
-    changed = sorted(
-        logical for logical in repaired if repaired[logical] != files[logical]
-    )
-    if changed != sorted(required):
-        raise ValueError(f"gacha schedule changed unexpected payloads: {changed}")
-    return repaired, {
-        "schema_version": 1,
-        "status": "repaired_game_clock_schedule",
-        "writes_live": False,
-        "source_start_date": expected_start_date,
-        "start_date": START_DATE,
-        "changed_payload_count": len(changed),
-        "changed_paths": changed,
-        "output_sha256": {
-            logical: _sha(repaired[logical]) for logical in changed
-        },
-    }
-
-
 __all__ = [
     "repair_normal_and_special",
     "repair_travelling_wave_effect",
-    "repair_gacha_schedule",
+    "repair_gacha_contract",
 ]
