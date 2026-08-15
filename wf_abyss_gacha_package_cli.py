@@ -109,6 +109,10 @@ def _provisional_report(plan: AssemblyPlan, output: Path) -> dict:
     }
     acceptance = plan.additions.acceptance
     drop_report = plan.additions.component_reports["drop"]
+    accepted_asset_replacements = contract._accepted_asset_replacements(
+        plan.additions.input_sha256,
+        plan.additions.component_reports,
+    )
     return {
         "status": "provisional_fail_closed",
         "integrity_ready": True,
@@ -124,6 +128,7 @@ def _provisional_report(plan: AssemblyPlan, output: Path) -> dict:
         "new_payload_exact_count": sum(addition_counts.values()),
         "old_payloads_byte_exact": True,
         "new_paths_exact": True,
+        "accepted_asset_replacements": accepted_asset_replacements,
         "all_references_closed": acceptance["all_references_closed"],
         "eight_character_closure": acceptance["eight_character_closure"],
         "ticket_contract_closed": acceptance["ticket_contract_closed"],

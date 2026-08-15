@@ -202,6 +202,7 @@ def audit_package_image(image: contract.PackageImage) -> dict[str, Any]:
         "new_payload_exact_count": len(new_pairs),
         "old_payloads_byte_exact": True,
         "new_paths_exact": True,
+        "accepted_asset_replacements": expected_replacements,
         "all_references_closed": True,
         "eight_character_closure": True,
         "ticket_contract_closed": True,

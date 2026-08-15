@@ -116,6 +116,10 @@ class AbyssGachaPackageContractTests(unittest.TestCase):
         self.assertEqual(83, audit["old_payload_exact_count"])
         self.assertEqual(22, audit["new_payload_exact_count"])
         self.assertTrue(audit["old_payloads_byte_exact"])
+        self.assertEqual(
+            image.manifest["snapshot"]["accepted_asset_replacements"],
+            audit["accepted_asset_replacements"],
+        )
         self.assertEqual("1.1.0", image.manifest["package_version"])
         self.assertEqual("1.4.347", image.manifest["requires_client_base"])
         self.assertEqual(

@@ -113,6 +113,13 @@ class PackageCliTests(unittest.TestCase):
                 self.assertFalse(report["apply_ready"])
                 self.assertFalse(report["drop_source_sync_closed"])
                 self.assertFalse(report["writes_live"])
+                self.assertEqual(
+                    [contract.ITEM_SHEET_LOGICAL, contract.ITEM_ATLAS_LOGICAL],
+                    [
+                        item["logical_path"]
+                        for item in report["accepted_asset_replacements"]
+                    ],
+                )
                 self.assertFalse(target.exists())
                 with self.assertRaisesRegex(
                     contract.PackageAssemblyError, "drop source sync"
