@@ -116,9 +116,10 @@ def _payloads(
 
 
 def _ownership(release: ReleaseManifest, ownership: OwnershipManifest) -> None:
+    replacements = release.source_evidence.accepted_asset_replacements
     expected_asset_claims = {
         f"asset:{item.root}/{item.logical_path}"
-        for item in release.source_evidence.accepted_asset_replacements
+        for item in replacements
     }
     actual_asset_claims = {
         item for item in ownership.records if item.startswith("asset:")
@@ -127,7 +128,13 @@ def _ownership(release: ReleaseManifest, ownership: OwnershipManifest) -> None:
         len(ownership.entities) != 1
         or _CHARACTER_ENTITY.fullmatch(ownership.entities[0]) is None
         or any("*" in value or "?" in value for value in ownership.paths)
-        or actual_asset_claims != expected_asset_claims
+        or (
+            release.source_evidence.kind == "character-workspace-v2"
+            and (
+                actual_asset_claims != expected_asset_claims
+                or any(item.logical_path not in ownership.paths for item in replacements)
+            )
+        )
     ):
         raise _error(
             "WFREL_OWNERSHIP_INVALID",
