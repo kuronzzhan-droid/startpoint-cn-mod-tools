@@ -54,6 +54,7 @@ class AbyssGachaPackageContractTests(unittest.TestCase):
                 "ticket_contract_closed": True,
                 "shop_contract_closed": True,
                 "drop_contract_closed": True,
+                "drop_source_sync_closed": True,
                 "art_contract_closed": True,
                 "unresolved_art_payloads": [],
                 "package_manifest_eligible": True,

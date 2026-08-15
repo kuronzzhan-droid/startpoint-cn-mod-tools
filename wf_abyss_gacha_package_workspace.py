@@ -60,6 +60,13 @@ def _fresh_target(workspace: Path) -> tuple[Path, Path]:
     return parent, candidate
 
 
+def inspect_fresh_target(workspace: Path) -> Path:
+    """Validate the fixed absent output path without creating anything."""
+
+    _parent, target = _fresh_target(workspace)
+    return target
+
+
 def _workspace_json() -> bytes:
     return (
         json.dumps({
@@ -266,5 +273,5 @@ def execute_fresh_workspace(
 
 __all__ = [
     "WORKSPACE_NAME", "LOCK_NAME", "STAGING_NAME", "execute_fresh_workspace",
-    "write_fresh_workspace",
+    "write_fresh_workspace", "inspect_fresh_target",
 ]
