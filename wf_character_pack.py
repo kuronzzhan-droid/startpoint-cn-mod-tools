@@ -441,7 +441,7 @@ def canonical_manifest_bytes(manifest: dict) -> bytes:
     ).encode("utf-8")
 
 
-def _path_problem(logical_path: str) -> str | None:
+def logical_path_problem(logical_path: str) -> str | None:
     windows_path = PureWindowsPath(logical_path)
     if logical_path.startswith("/") or windows_path.is_absolute() or windows_path.drive:
         return "must be relative"
@@ -464,9 +464,17 @@ def _path_problem(logical_path: str) -> str | None:
     return None
 
 
-def _windows_logical_path_key(logical_path: str) -> PureWindowsPath:
+def windows_logical_path_key(logical_path: str) -> PureWindowsPath:
     """Return the portable case-insensitive identity used by Win32 roots."""
     return PureWindowsPath(logical_path)
+
+
+def _path_problem(logical_path: str) -> str | None:
+    return logical_path_problem(logical_path)
+
+
+def _windows_logical_path_key(logical_path: str) -> PureWindowsPath:
+    return windows_logical_path_key(logical_path)
 
 
 def _sha256_file(path: Path) -> str:

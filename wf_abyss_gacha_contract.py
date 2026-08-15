@@ -45,6 +45,41 @@ TOP_BANNER_LOGICAL = f"dynamic/gacha_banner/{CODE_NAME}"
 START_DATE = "2026-08-15 00:00:00"
 END_DATE = "2199-12-31 23:59:59"
 
+OFFICIAL_57_CLIENT_ROW = (
+    "fukubukuro_gacha_ny2021", "2021年福袋扭蛋", "97",
+    "dynamic/gacha_list_banner/fukubukuro_gacha_ny2021", "2",
+    "", "", "", "", "1", "4", "normal_rarity", "rich_text/gacha_note", "0",
+    "new_character_pickup_28_character_3",
+    "new_character_pickup_28_character_4",
+    "new_character_pickup_28_character_5",
+    "normal", "normal_guarantee", "false", "false", "false",
+    "", "", "", "", "", "20065", "20064",
+    "2020-12-31 12:00:00", "2023-12-31 11:59:59", "(None)", "false",
+    "116", "117", "169", "170", "(None)", "false", "(None)", "(None)",
+    "(None)", "(None)", "false", "false", "(None)", "false",
+)
+OFFICIAL_57_RUNTIME_NONPOOL = {
+    "type": 0,
+    "paymentType": 0,
+    "pageKind": 2,
+    "singleCost": 150,
+    "multiCost": 1500,
+    "discountCost": 50,
+    "onceTicketItemId": 20065,
+    "tenTicketItemId": 20064,
+    "wildcardTicketAvailable": False,
+    "rarityOddsId": "normal_rarity",
+    "guaranteeRarity": 4,
+    "rankRates": {"normal": [50, 250, 700], "multiGuarantee": [50, 950]},
+    "movieName": "normal",
+    "guaranteeMovieName": "normal_guarantee",
+    "toUseOddsUpAsTrialReading": False,
+    "canBeStartDashExchange": False,
+    "startDate": "2020-12-31 12:00:00",
+    "endDate": "2023-12-31 11:59:59",
+    "name": "2021年福袋扭蛋",
+}
+
 COMMON_OUTPUT_PATHS = (
     GACHA_MASTER_LOGICAL,
     FEATURE_LOGICAL,

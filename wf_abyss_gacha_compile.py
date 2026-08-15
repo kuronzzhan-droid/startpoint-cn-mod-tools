@@ -11,10 +11,11 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Collection, Mapping
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 import wf_abyss_gacha_contract as contract
 import wf_mod_tool as core
+from wf_character_pack import logical_path_problem, windows_logical_path_key
 
 
 COMMON_SOURCE_PATHS = (
@@ -137,6 +138,24 @@ def _require_exact_sources(
             raise TypeError(f"{label} source must be bytes: {logical}")
 
 
+def _existing_common_path_keys(paths: Collection[str]) -> set[PureWindowsPath]:
+    if isinstance(paths, (str, bytes)) or not isinstance(paths, Collection):
+        raise TypeError("existing_common_paths must be a collection of logical paths")
+    result = set()
+    for index, logical in enumerate(paths):
+        if not isinstance(logical, str) or not logical:
+            raise TypeError(
+                f"existing_common_paths[{index}] logical path must be a non-empty string"
+            )
+        problem = logical_path_problem(logical)
+        if problem:
+            raise ValueError(
+                f"existing_common_paths[{index}] logical path {logical!r}: {problem}"
+            )
+        result.add(windows_logical_path_key(logical))
+    return result
+
+
 def _one_csv(raw: bytes, label: str, width: int | None = None) -> list[str]:
     try:
         text = raw.decode("utf-8")
@@ -157,26 +176,18 @@ def _validate_official_57(common: Mapping[str, bytes], server: Mapping[str, byte
         row = _one_csv(master["57"], "official gacha 57", 47)
     except KeyError as exc:
         raise ValueError("official gacha 57 drift: client row is missing") from exc
-    locked = {
-        4: "2", 9: "1", 10: "4", 11: "normal_rarity",
-        17: "normal", 18: "normal_guarantee", 20: "false",
-        27: "20065", 28: "20064",
-    }
-    if any(row[index] != value for index, value in locked.items()):
+    if row != list(contract.OFFICIAL_57_CLIENT_ROW):
         raise ValueError("official gacha 57 drift: ticket-only template fields changed")
 
     cdn = _strict_json_object(server["cdndata/gacha.json"], "cdndata/gacha.json")
     if cdn.get("57") != [row]:
         raise ValueError("official gacha 57 drift: client/server master mirrors differ")
     runtime = _strict_json_object(server["gacha.json"], "gacha.json").get("57")
-    if not isinstance(runtime, dict) or any((
-        runtime.get("pageKind") != 2,
-        runtime.get("onceTicketItemId") != 20065,
-        runtime.get("tenTicketItemId") != 20064,
-        runtime.get("wildcardTicketAvailable") is not False,
-        runtime.get("movieName") != "normal",
-        runtime.get("guaranteeMovieName") != "normal_guarantee",
-    )):
+    runtime_nonpool = (
+        {key: value for key, value in runtime.items() if key != "pool"}
+        if isinstance(runtime, dict) else None
+    )
+    if runtime_nonpool != contract.OFFICIAL_57_RUNTIME_NONPOOL:
         raise ValueError("official gacha 57 drift: runtime ticket contract changed")
 
     feature = _decode_raw(common[contract.FEATURE_LOGICAL], contract.FEATURE_LOGICAL)
@@ -297,8 +308,11 @@ def compile_abyss_limited_gacha(
     """Compile eleven isolated payloads and ten key-level ownership claims."""
     _require_exact_sources(common_sources, COMMON_SOURCE_PATHS, "common")
     _require_exact_sources(server_sources, SERVER_SOURCE_PATHS, "server")
-    occupied = set(existing_common_paths)
-    collisions = sorted(set(contract.NEW_COMMON_PATHS) & occupied)
+    occupied = _existing_common_path_keys(existing_common_paths)
+    collisions = sorted(
+        logical for logical in contract.NEW_COMMON_PATHS
+        if windows_logical_path_key(logical) in occupied
+    )
     if collisions:
         raise ValueError(f"new common logical path collision: {collisions}")
     _validate_official_57(common_sources, server_sources)

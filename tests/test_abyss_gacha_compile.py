@@ -17,6 +17,42 @@ except ImportError:
 
 
 IDS = (129999, 139998, 139999, 149998, 149999, 169998, 169999, 179999)
+EXPECTED_CLAIMS = {
+    ("common", "master/gacha/gacha.orderedmap", "flat", ("990001",)),
+    (
+        "common", "master/gacha/gacha_feature_content.orderedmap",
+        "raw_outer", ("990001",),
+    ),
+    (
+        "common", "master/gacha_odds/cnmod_abyss_limited_gacha_rarity.orderedmap",
+        "raw_outer", ("cnmod_abyss_limited_gacha_rarity",),
+    ),
+    (
+        "common",
+        "master/gacha_odds/cnmod_abyss_limited_gacha_character_3.orderedmap",
+        "raw_outer", ("cnmod_abyss_limited_gacha_character_3",),
+    ),
+    (
+        "common",
+        "master/gacha_odds/cnmod_abyss_limited_gacha_character_4.orderedmap",
+        "raw_outer", ("cnmod_abyss_limited_gacha_character_4",),
+    ),
+    (
+        "common",
+        "master/gacha_odds/cnmod_abyss_limited_gacha_character_5.orderedmap",
+        "raw_outer", ("cnmod_abyss_limited_gacha_character_5",),
+    ),
+    (
+        "common", "master/rich_text/rich_text_html.orderedmap", "flat",
+        ("rich_text/cnmod_abyss_limited_gacha_note",),
+    ),
+    ("server", "gacha.json", "json_object", ("990001",)),
+    ("server", "cdndata/gacha.json", "json_object", ("990001",)),
+    (
+        "server", "cdndata/gacha_feature_content.json", "json_object",
+        ("990001",),
+    ),
+}
 OFFICIAL_57 = [
     "fukubukuro_gacha_ny2021", "2021年福袋扭蛋", "97",
     "dynamic/gacha_list_banner/fukubukuro_gacha_ny2021", "2", "", "", "", "",
@@ -243,6 +279,16 @@ class AbyssGachaCompileTests(unittest.TestCase):
 
         claims = {(item["root"], item["logical_path"]): item for item in result["table_claims"]}
         self.assertEqual(10, len(claims))
+        self.assertEqual(
+            EXPECTED_CLAIMS,
+            {
+                (
+                    item["root"], item["logical_path"], item["codec_id"],
+                    tuple(item["outer_keys"]),
+                )
+                for item in result["table_claims"]
+            },
+        )
         for (root, logical), item in claims.items():
             claim = TableClaim(root, logical, item["codec_id"], tuple(item["outer_keys"]))
             codec = JsonObjectCodec() if root == "server" else DEFAULT_CODECS[item["codec_id"]]
@@ -303,6 +349,95 @@ class AbyssGachaCompileTests(unittest.TestCase):
         collision["gacha.json"] = _json(runtime)
         with self.assertRaisesRegex(ValueError, "target key collision"):
             compile_abyss_limited_gacha(common, collision, existing_common_paths=set(common))
+
+    def test_rejects_drift_in_every_official_57_client_cell(self):
+        self._require_module()
+        accepted = []
+        for index in range(len(OFFICIAL_57)):
+            common, server = _sources()
+            rows = _decode_flat(
+                common[contract.GACHA_MASTER_LOGICAL], contract.GACHA_MASTER_LOGICAL
+            )
+            row = core.read_csv_lines(rows["57"].decode())[0]
+            row[index] = f"{row[index]}__drift"
+            rows["57"] = core.write_csv_lines([row]).encode()
+            common[contract.GACHA_MASTER_LOGICAL] = _flat(
+                contract.GACHA_MASTER_LOGICAL,
+                {key: value.decode() for key, value in rows.items()},
+            )
+            cdndata = json.loads(server["cdndata/gacha.json"])
+            cdndata["57"] = [row]
+            server["cdndata/gacha.json"] = _json(cdndata)
+            try:
+                compile_abyss_limited_gacha(
+                    common, server, existing_common_paths=set(common)
+                )
+            except ValueError as exc:
+                self.assertIn("official gacha 57 drift", str(exc))
+            else:
+                accepted.append(index)
+        self.assertEqual([], accepted, f"client drift accepted at cells {accepted}")
+
+    def test_rejects_drift_in_every_official_57_runtime_nonpool_field(self):
+        self._require_module()
+        accepted = []
+        runtime_contract = _official_runtime_57()
+        for field in sorted(set(runtime_contract) - {"pool"}):
+            common, server = _sources()
+            gachas = json.loads(server["gacha.json"])
+            value = gachas["57"][field]
+            if isinstance(value, bool):
+                replacement = not value
+            elif isinstance(value, int):
+                replacement = value + 1
+            elif isinstance(value, str):
+                replacement = f"{value}__drift"
+            elif isinstance(value, dict):
+                replacement = copy.deepcopy(value)
+                replacement["normal"][0] += 1
+            else:
+                self.fail(f"unhandled runtime fixture type for {field}: {type(value)}")
+            gachas["57"][field] = replacement
+            server["gacha.json"] = _json(gachas)
+            try:
+                compile_abyss_limited_gacha(
+                    common, server, existing_common_paths=set(common)
+                )
+            except ValueError as exc:
+                self.assertIn("official gacha 57 drift", str(exc))
+            else:
+                accepted.append(field)
+        self.assertEqual([], accepted, f"runtime drift accepted in fields {accepted}")
+
+    def test_rejects_malformed_or_aliased_existing_common_path_inventory(self):
+        self._require_module()
+        common, server = _sources()
+        for inventory in (
+            contract.CHARACTER_5_ODDS_LOGICAL,
+            contract.CHARACTER_5_ODDS_LOGICAL.encode(),
+        ):
+            with self.subTest(kind=type(inventory).__name__):
+                with self.assertRaisesRegex(TypeError, "collection of logical paths"):
+                    compile_abyss_limited_gacha(
+                        common, server, existing_common_paths=inventory
+                    )
+
+        invalid_inventories = (
+            [""], [" "], ["master//gacha/table"], ["master/./gacha/table"],
+            ["master/../gacha/table"], [r"master\gacha\table"], [123],
+        )
+        for inventory in invalid_inventories:
+            with self.subTest(inventory=inventory):
+                with self.assertRaisesRegex((TypeError, ValueError), "logical path"):
+                    compile_abyss_limited_gacha(
+                        common, server, existing_common_paths=inventory
+                    )
+
+        with self.assertRaisesRegex(ValueError, "new common logical path collision"):
+            compile_abyss_limited_gacha(
+                common, server,
+                existing_common_paths=[contract.CHARACTER_5_ODDS_LOGICAL.upper()],
+            )
 
     def test_output_is_deterministic_readback_verified_and_never_live(self):
         self._require_module()
