@@ -187,6 +187,7 @@ class TransactionTests(unittest.TestCase):
         capability_requires_started: bool = False,
         capability_replacement: ManagedProcess | None = None,
         baseline_error: ReleaseError | None = None,
+        baseline_recheck_error: ReleaseError | None = None,
         baseline_disk_digest: str | None = None,
         verified=None,
     ) -> InstallResult:
@@ -235,6 +236,8 @@ class TransactionTests(unittest.TestCase):
             self.baseline_facts.append(facts)
             if baseline_error is not None:
                 raise baseline_error
+            if len(self.baseline_facts) > 1 and baseline_recheck_error is not None:
+                raise baseline_recheck_error
             disk_digest = (
                 baseline_disk_digest
                 if baseline_disk_digest is not None
@@ -459,7 +462,7 @@ class TransactionTests(unittest.TestCase):
         )
 
         self.assertEqual("succeeded", result.outcome)
-        self.assertEqual([early], self.baseline_facts)
+        self.assertEqual([early, early], self.baseline_facts)
         self.assertNotIn("BASE_STARTED", self.phases)
         self.assertEqual(1, platform.events.count("start"))
 
@@ -517,6 +520,36 @@ class TransactionTests(unittest.TestCase):
         self.assertEqual("failed", result.outcome)
         self.assertEqual("WFREL_ASSET_BASELINE_UNAVAILABLE", result.error_code)
         self.assertEqual([early], self.baseline_facts)
+        self.assertNotIn("stop", platform.events)
+        self.assertNotIn("start", platform.events)
+        self.assertNotIn("prepare", platform.events)
+        self.assertNotIn("MATERIALIZED", self.phases)
+        self.assertEqual(_process(), platform.current)
+        self.assertEqual("failed", self._receipt()["outcome"])
+        self.assertEqual("VERIFIED", self._receipt()["phase"])
+
+    def test_disk_drift_after_initial_baseline_fails_before_stop(self) -> None:
+        accepted = self._accepted_verified()
+        runtime = _target(
+            cdn_target_version="1.4.53",
+            release_digest=RELEASE_A,
+        )
+        platform = FakePlatform(_process())
+
+        result = self._run(
+            platform,
+            [runtime, runtime],
+            verified=accepted,
+            baseline_disk_digest=RELEASE_A,
+            baseline_recheck_error=ReleaseError(
+                "WFREL_ASSET_BASELINE_MISMATCH",
+                "disk archive changed after initial baseline verification",
+            ),
+        )
+
+        self.assertEqual("failed", result.outcome)
+        self.assertEqual("WFREL_ASSET_BASELINE_MISMATCH", result.error_code)
+        self.assertEqual([runtime, runtime], self.baseline_facts)
         self.assertNotIn("stop", platform.events)
         self.assertNotIn("start", platform.events)
         self.assertNotIn("prepare", platform.events)

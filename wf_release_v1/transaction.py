@@ -331,6 +331,17 @@ def _install_release_reserved(
                 "WFREL_ASSET_BASELINE_UNAVAILABLE",
                 "live Content Snapshot authority changed after asset baseline verification",
             )
+        if asset_baseline is not None:
+            rechecked_baseline = verify_asset_replacement_baseline(
+                preverified,
+                target,
+                before_facts,
+            )
+            if rechecked_baseline != asset_baseline:
+                raise _transaction_error(
+                    "WFREL_ASSET_BASELINE_UNAVAILABLE",
+                    "disk asset baseline authority changed before target stop",
+                )
         phase = "PROBED"
         advance(phase)
         _gate(evaluate_requirements(verified, before_facts, previous))
