@@ -349,6 +349,8 @@ def _archive_sources(
     asset_version: str,
     catalog: Mapping[str, object],
     by_path: Mapping[str, Mapping[str, object]],
+    release_generator_version: int,
+    release_table_count: int,
 ) -> dict[str, tuple[str, str | None]]:
     item = _exact(summary, frozenset({
         "archiveSources", "assetVersion", "counts", "entityListsRelativePath",
@@ -356,13 +358,30 @@ def _archive_sources(
     }), "summary")
     if item["schemaVersion"] != 1 or _version(item["assetVersion"], "summary.assetVersion") != asset_version:
         raise _unavailable("Summary identity is invalid", label="summary")
-    _integer(item["generatorVersion"], "summary.generatorVersion", positive=True)
+    generator_version = _integer(
+        item["generatorVersion"], "summary.generatorVersion", positive=True
+    )
+    if generator_version != release_generator_version:
+        raise _unavailable(
+            "Summary generator disagrees with release manifest",
+            label="summary.generatorVersion",
+        )
     _digest(item["patchSourceDigest"], "summary.patchSourceDigest")
     if item["entityListsRelativePath"] != catalog["entityListsRelativePath"]:
         raise _unavailable("Summary entity-list path disagrees", label="summary.entityListsRelativePath")
     counts = _exact(item["counts"], frozenset({"archives", "ignoredPaths", "tables"}), "summary.counts")
     for key in counts:
         _integer(counts[key], f"summary.counts.{key}")
+    if counts["archives"] != len(by_path):
+        raise _unavailable(
+            "Summary archive count disagrees with catalog",
+            label="summary.counts.archives",
+        )
+    if counts["tables"] != release_table_count:
+        raise _unavailable(
+            "Summary table count disagrees with release manifest",
+            label="summary.counts.tables",
+        )
     sources = _exact(item["archiveSources"], frozenset({"archives", "schemaVersion"}), "summary.archiveSources")
     if sources["schemaVersion"] != 1 or not isinstance(sources["archives"], list):
         raise _unavailable("Archive-source manifest is invalid", label="summary.archiveSources")
@@ -423,11 +442,23 @@ def load_snapshot_authority(
     catalog_value, catalog_snapshot = _object(store_root, catalog_ref, label="catalog object")
     summary_value, summary_snapshot = _object(store_root, summary_ref, label="summary object")
     catalog, scoped, by_path = _catalog(catalog_value, asset_version)
+    release_tables = _release["tables"]
+    if not isinstance(release_tables, Mapping):
+        raise _unavailable(
+            "Content release tables are invalid",
+            label="release.tables",
+        )
     sources = _archive_sources(
         summary_value,
         asset_version=asset_version,
         catalog=catalog,
         by_path=by_path,
+        release_generator_version=_integer(
+            _release["generatorVersion"],
+            "release.generatorVersion",
+            positive=True,
+        ),
+        release_table_count=len(release_tables),
     )
     selected = _selected_edges(catalog, scoped)
     archives: list[ArchiveDescriptor] = []

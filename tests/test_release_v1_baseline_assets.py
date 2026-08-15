@@ -376,7 +376,32 @@ class BaselineAssetTests(unittest.TestCase):
                 asset_version="1.4.54",
                 catalog=parsed_catalog,
                 by_path=by_path,
+                release_generator_version=3,
+                release_table_count=1,
             )
+
+        summary_mutations = {
+            "generator": lambda value: value.__setitem__("generatorVersion", 4),
+            "archive count": lambda value: value["counts"].__setitem__(  # type: ignore[union-attr]
+                "archives", 4
+            ),
+            "table count": lambda value: value["counts"].__setitem__(  # type: ignore[union-attr]
+                "tables", 2
+            ),
+        }
+        for label, mutate in summary_mutations.items():
+            with self.subTest(summary_cross_binding=label):
+                changed = copy.deepcopy(summary)
+                mutate(changed)
+                with self.assertRaises(ReleaseError):
+                    _archive_sources(
+                        changed,
+                        asset_version="1.4.54",
+                        catalog=parsed_catalog,
+                        by_path=by_path,
+                        release_generator_version=3,
+                        release_table_count=1,
+                    )
 
         duplicate = self.snapshot.target.cdn_root / "cn" / "duplicate.zip"
         with warnings.catch_warnings():
