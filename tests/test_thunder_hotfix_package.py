@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Sealed-source and whole-image tests for thunder-dragon hotfix 1.1.4."""
+"""Sealed-source and whole-image tests for thunder-dragon hotfix 1.1.5."""
 
 from __future__ import annotations
 
@@ -54,11 +54,11 @@ class ThunderHotfixPackageTests(unittest.TestCase):
             source, donor, generator_git_head="a" * 40
         )
 
-    def test_builds_full_114_replacement_with_banners_and_twelve_characters(self):
+    def test_builds_full_115_replacement_with_banners_and_twelve_characters(self):
         source, image = self._compile()
         audit = package.audit_hotfix_package(image)
-        self.assertEqual("1.1.4", image.manifest["package_version"])
-        self.assertEqual("1.4.350", image.manifest["requires_client_base"])
+        self.assertEqual("1.1.5", image.manifest["package_version"])
+        self.assertEqual("1.4.351", image.manifest["requires_client_base"])
         self.assertEqual(107, audit["payload_count"])
         self.assertEqual(39, audit["table_claim_count"])
         self.assertEqual({

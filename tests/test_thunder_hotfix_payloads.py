@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Pure payload-level regression tests for the thunder-dragon 1.1.4 hotfix."""
+"""Pure payload-level regression tests for the thunder-dragon 1.1.5 hotfix."""
 
 from __future__ import annotations
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Compile and audit the complete thunder-dragon 1.1.4 replacement image."""
+"""Compile and audit the complete thunder-dragon 1.1.5 replacement image."""
 
 from __future__ import annotations
 
@@ -40,9 +40,9 @@ PACKAGE_ID = thunder.PACKAGE_ID
 CHARACTER_ID = thunder.CHARACTER_ID
 CODE_NAME = thunder.CODE_NAME
 ROOT_NAMES = thunder.ROOT_NAMES
-PACKAGE_VERSION = "1.1.4"
-REQUIRES_CLIENT_BASE = "1.4.350"
-CONFIRMATION = "ASSEMBLE_CNMOD_THUNDER_DRAGON_ABYSS_GACHA_1_1_4"
+PACKAGE_VERSION = "1.1.5"
+REQUIRES_CLIENT_BASE = "1.4.351"
+CONFIRMATION = "ASSEMBLE_CNMOD_THUNDER_DRAGON_ABYSS_GACHA_1_1_5"
 SOURCE_START_DATE = "2026-08-15 00:00:00"
 
 _PIXEL_PREFIX = f"character/{CODE_NAME}/pixelart"

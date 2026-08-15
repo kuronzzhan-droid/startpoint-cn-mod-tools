@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Fresh-workspace and fixed CLI tests for thunder hotfix 1.1.4."""
+"""Fresh-workspace and fixed CLI tests for thunder hotfix 1.1.5."""
 
 from __future__ import annotations
 
@@ -16,6 +16,9 @@ from wf_summer_thunder_package_contract import PackageImage
 
 
 class ThunderHotfixWorkspaceTests(unittest.TestCase):
+    def test_uses_a_fresh_115_workspace_name(self):
+        self.assertEqual("cnmod_thunder_dragon_hotfix_1_1_5", workspace.WORKSPACE_NAME)
+
     def _image(self) -> PackageImage:
         roots = {root: {} for root in package.ROOT_NAMES}
         source_locks = {
