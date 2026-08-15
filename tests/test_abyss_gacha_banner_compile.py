@@ -23,15 +23,19 @@ class AbyssGachaBannerCompileTests(unittest.TestCase):
 
         self.assertEqual(
             {
-                contract.LIST_BANNER_LOGICAL,
+                contract.LIST_BANNER_PAYLOAD_LOGICAL,
                 contract.TOP_BANNER_PAYLOAD_LOGICAL,
             },
             set(result.files),
         )
         self.assertFalse(contract.LIST_BANNER_LOGICAL.endswith(".png"))
+        self.assertEqual(
+            f"{contract.LIST_BANNER_LOGICAL}.png",
+            contract.LIST_BANNER_PAYLOAD_LOGICAL,
+        )
         self.assertTrue(contract.TOP_BANNER_PAYLOAD_LOGICAL.endswith(".png"))
         expected_sizes = {
-            contract.LIST_BANNER_LOGICAL: (510, 180),
+            contract.LIST_BANNER_PAYLOAD_LOGICAL: (510, 180),
             contract.TOP_BANNER_PAYLOAD_LOGICAL: (1440, 1789),
         }
         for logical, payload in result.files.items():

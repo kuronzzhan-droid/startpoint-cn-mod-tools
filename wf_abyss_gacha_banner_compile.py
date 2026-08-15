@@ -37,7 +37,7 @@ LOCKED_BANNERS = (
     BannerSpec(
         "abyss_limited_gacha_list_banner.png",
         "6ea44d6d7902145236b31c19be5aea7434b9b4d6a07c76e7efe96d490fa5e533",
-        contract.LIST_BANNER_LOGICAL,
+        contract.LIST_BANNER_PAYLOAD_LOGICAL,
         (510, 180),
     ),
     BannerSpec(

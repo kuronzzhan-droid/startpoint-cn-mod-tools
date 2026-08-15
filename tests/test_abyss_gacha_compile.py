@@ -256,6 +256,7 @@ class AbyssGachaCompileTests(unittest.TestCase):
         self.assertEqual(["999013", "999014"], row[27:29])
         self.assertEqual("normal", row[17])
         self.assertEqual("normal_guarantee", row[18])
+        self.assertEqual("true", row[44])
         start = datetime.strptime(row[29], "%Y-%m-%d %H:%M:%S")
         self.assertLessEqual(start, datetime(2024, 8, 14, 12, 0, 0))
 
@@ -617,7 +618,7 @@ class AbyssGachaCompileTests(unittest.TestCase):
         self.assertEqual("static_kind_1_top_banner", report["feature_contract"])
         self.assertEqual(
             [
-                contract.LIST_BANNER_LOGICAL,
+                contract.LIST_BANNER_PAYLOAD_LOGICAL,
                 contract.TOP_BANNER_PAYLOAD_LOGICAL,
             ],
             report["unresolved_art_payloads"],

@@ -44,6 +44,7 @@ CHARACTER_5_ODDS_LOGICAL = (
 RICH_TEXT_ID = f"rich_text/{CODE_NAME}_note"
 RICH_TEXT_BODY_LOGICAL = f"{RICH_TEXT_ID}.html.deflate"
 LIST_BANNER_LOGICAL = f"dynamic/gacha_list_banner/{CODE_NAME}"
+LIST_BANNER_PAYLOAD_LOGICAL = f"{LIST_BANNER_LOGICAL}.png"
 TOP_BANNER_LOGICAL = f"dynamic/gacha_banner/{CODE_NAME}"
 TOP_BANNER_PAYLOAD_LOGICAL = f"{TOP_BANNER_LOGICAL}.png"
 
@@ -120,7 +121,7 @@ def build_gacha_master_row() -> list[str]:
         "", "", "", "", "", str(SINGLE_TICKET_ID), str(TEN_TICKET_ID),
         START_DATE, END_DATE, "(None)", "false", "116", "117", "169", "170",
         "(None)", "false", "(None)", "(None)", "(None)", "(None)",
-        "false", "false", "(None)", "false",
+        "false", "true", "(None)", "false",
     ]
 
 

@@ -504,7 +504,7 @@ def compile_abyss_limited_gacha(
             "start_date": contract.START_DATE,
             "end_date": contract.END_DATE,
             "unresolved_art_payloads": [
-                contract.LIST_BANNER_LOGICAL,
+                contract.LIST_BANNER_PAYLOAD_LOGICAL,
                 contract.TOP_BANNER_PAYLOAD_LOGICAL,
             ],
             "feature_contract": "static_kind_1_top_banner",
