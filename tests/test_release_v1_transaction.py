@@ -410,18 +410,39 @@ class TransactionTests(unittest.TestCase):
 
     def test_persisted_baseline_facts_have_one_strict_path_free_shape(self) -> None:
         wire = target_facts_to_wire(self.before)
+        self.assertIn("releaseDigest", wire)
+        self.assertIsNone(wire["releaseDigest"])
         self.assertEqual(self.before, target_facts_from_wire(wire))
         attacks: list[dict[str, object]] = []
+        missing_release = dict(wire)
+        del missing_release["releaseDigest"]
+        attacks.append(missing_release)
         missing = dict(wire); del missing["contentDigest"]; attacks.append(missing)
         extra = dict(wire); extra["dataRoot"] = str(self.target.data_root); attacks.append(extra)
         duplicate = dict(wire); duplicate["capabilities"] = [
             *wire["capabilities"], wire["capabilities"][0],  # type: ignore[index]
         ]; attacks.append(duplicate)
+        malformed_release = dict(wire)
+        malformed_release["releaseDigest"] = f"sha256:{SHA[:-1]}"
+        attacks.append(malformed_release)
         wrong_type = dict(wire); wrong_type["runtimeApi"] = True; attacks.append(wrong_type)
         for value in attacks:
             with self.subTest(keys=tuple(value)), self.assertRaises(ReleaseError) as caught:
                 target_facts_from_wire(value)
             self.assertEqual("WFREL_STATE_INVALID", caught.exception.code)
+
+    def test_persisted_release_digest_round_trips_when_content_is_managed(self) -> None:
+        wire = target_facts_to_wire(self.before)
+        release_digest = f"sha256:{SHA}"
+        wire["releaseDigest"] = release_digest
+
+        try:
+            facts = target_facts_from_wire(wire)
+        except ReleaseError as error:
+            self.fail(f"releaseDigest was rejected: {error.code}")
+
+        self.assertEqual(release_digest, facts.release_digest)
+        self.assertEqual(wire, target_facts_to_wire(facts))
 
     def test_initial_running_process_without_active_state_fails_before_probe(self) -> None:
         (self.target.state_root / "active.json").unlink()

@@ -36,6 +36,7 @@ class RuntimeFacts:
 @dataclass(frozen=True)
 class ContentFacts:
     content_digest: str; cdn_target_version: str
+    release_digest: str | None = None
 @dataclass(frozen=True)
 class ModeFacts:
     server_capabilities: tuple[str, ...]; mode_digest: str
@@ -49,6 +50,7 @@ class TargetFacts:
     node_version: str; node_abi: str; platform: str; arch: str
     capabilities: tuple[str, ...]; content_digest: str; cdn_target_version: str
     mode_digest: str; patch_overlay_schema: int
+    release_digest: str | None = None
 def _schema(label: str, message: str) -> ReleaseError:
     return ReleaseError("WFREL_SCHEMA_INVALID", message, {"label": label})
 def _incompatible(label: str, message: str) -> ReleaseError:
@@ -290,9 +292,10 @@ def _parse_capabilities(value: object) -> tuple[
         _string(entry["name"], "capabilities.modes.loaded[].name")
         _string_array(entry["capabilities"], "capabilities.modes.loaded[].capabilities", pattern=_CAPABILITY)
         _string(entry["sha256"], "capabilities.modes.loaded[].sha256", re.compile(r"[0-9a-f]{64}"))
-    release_digest = content["releaseDigest"]
-    if release_digest is not None:
-        release_digest = _string(release_digest, "capabilities.content.releaseDigest", _DIGEST)
+    raw_release_digest = content["releaseDigest"]
+    release_digest = None if raw_release_digest is None else _string(
+        raw_release_digest, "capabilities.content.releaseDigest", _DIGEST
+    )
     source = _string(content["source"], "capabilities.content.source")
     if source not in {"bundled", "release"}:
         raise _schema("capabilities.content.source", "content source is unsupported")
@@ -314,6 +317,7 @@ def _parse_capabilities(value: object) -> tuple[
         ContentFacts(
             content_digest=_string(content["contentDigest"], "capabilities.content.contentDigest", _DIGEST),
             cdn_target_version=_string(content["cdnTargetVersion"], "capabilities.content.cdnTargetVersion", _DOTTED_VERSION),
+            release_digest=release_digest,
         ),
         ModeFacts(
             server_capabilities=_string_array(modes["serverCapabilities"], "capabilities.modes.serverCapabilities", pattern=_CAPABILITY),
@@ -392,4 +396,5 @@ class TargetProbe:
             capabilities=server_capabilities,
             content_digest=content.content_digest, cdn_target_version=content.cdn_target_version,
             mode_digest=modes.mode_digest, patch_overlay_schema=features.patch_overlay_schema,
+            release_digest=content.release_digest,
         )

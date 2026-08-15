@@ -65,10 +65,11 @@ class LocalInstallCliTests(unittest.TestCase):
         self.assertEqual({
             "arch", "bundleId", "capabilities", "cdnTargetVersion", "contentDigest",
             "dependencyLock", "modeDigest", "nodeAbi", "nodeVersion", "patchOverlaySchema",
-            "platform", "runtimeApi", "runtimeId", "serverVersion", "blockers",
+            "platform", "releaseDigest", "runtimeApi", "runtimeId", "serverVersion", "blockers",
             "installable", "level", "probeVersion", "targetProtocol", "writesLive",
         }, set(value))
         self.assertEqual(list(facts.capabilities), value["capabilities"])
+        self.assertIsNone(value["releaseDigest"])
         self.assertNotIn("modes", value)
         self.assertNotIn("features", value)
         load.assert_called_once_with(Path("host-target.json"))
@@ -168,11 +169,12 @@ class LocalInstallCliTests(unittest.TestCase):
             "arch", "bundleId", "capabilities", "cdnTargetVersion", "contentDigest",
             "dependencyLock", "modeDigest", "nodeAbi", "nodeVersion", "operationId",
             "outcome", "patchOverlaySchema", "platform", "runtimeApi", "runtimeId",
-            "serverVersion", "targetProtocol",
+            "releaseDigest", "serverVersion", "targetProtocol",
         }, set(value))
         self.assertEqual("noop", value["outcome"])
         self.assertEqual(operation_id, value["operationId"])
         self.assertEqual("capabilities-v1", value["targetProtocol"])
+        self.assertIsNone(value["releaseDigest"])
         raw = json.dumps(value, sort_keys=True)
         self.assertNotIn("C:/private", raw)
         self.assertNotIn(secret, raw)
