@@ -36,13 +36,13 @@ class BannerCompilation:
 LOCKED_BANNERS = (
     BannerSpec(
         "abyss_limited_gacha_list_banner.png",
-        "6ea44d6d7902145236b31c19be5aea7434b9b4d6a07c76e7efe96d490fa5e533",
+        "c27900816e3e0b896407f2ff6158c8b3f390c3a6c3bb49264956571e56d4d7db",
         contract.LIST_BANNER_PAYLOAD_LOGICAL,
         (510, 180),
     ),
     BannerSpec(
         "abyss_limited_gacha_top_banner_portrait.png",
-        "c72c4aad19f6cbec7f32b13a603e1e151f672db0ef3609b6cea8c1edb8f85f06",
+        "07dd71a8579c64c216bbfeb4679505dd2590049dda43c528f13e3f5c9ba9b596",
         contract.TOP_BANNER_PAYLOAD_LOGICAL,
         (1440, 1789),
     ),
