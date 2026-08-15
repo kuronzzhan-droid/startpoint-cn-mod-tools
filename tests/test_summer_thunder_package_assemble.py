@@ -7,6 +7,7 @@ from __future__ import annotations
 import hashlib
 import unittest
 
+import wf_character_pack as character_pack
 import wf_character_requirements as requirements
 import wf_summer_thunder_package_assemble as module
 from tests.summer_thunder_package_fixtures import (
@@ -110,6 +111,40 @@ class ManifestContractTests(unittest.TestCase):
         payload = roots["medium"][entry["logical_path"]]
         self.assertEqual(len(payload), entry["size"])
         self.assertEqual(hashlib.sha256(payload).hexdigest(), entry["sha256"])
+
+    def test_manifest_builder_accepts_only_explicit_server_extensions(self):
+        roots = required_roots()
+        extension = "gacha.json"
+        roots["server"][extension] = b'{"990001":{}}'
+        with self.assertRaisesRegex(module.PackageAssemblyError, "root channel"):
+            module.build_manifest(
+                roots=roots,
+                table_claims=[],
+                package_version="1.1.0",
+                requires_client_base="1.4.347",
+                required_capabilities=("content.sync@1",),
+                generator_git_head="b" * 40,
+                source_locks_sha256="c" * 64,
+            )
+
+        manifest = module.build_manifest(
+            roots=roots,
+            table_claims=[],
+            package_version="1.1.0",
+            requires_client_base="1.4.347",
+            required_capabilities=("content.sync@1",),
+            generator_git_head="b" * 40,
+            source_locks_sha256="c" * 64,
+            server_logicals=(*character_pack.SERVER_LOGICAL_PATHS, extension),
+        )
+
+        self.assertEqual(
+            extension,
+            next(
+                entry["logical_path"] for entry in manifest["roots"]["server"]
+                if entry["logical_path"] == extension
+            ),
+        )
 
 
 if __name__ == "__main__":

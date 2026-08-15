@@ -80,11 +80,15 @@ def logical_segments(logical_path: str) -> tuple[str, ...]:
     return segments
 
 
-def expected_client_root(logical_path: str) -> str:
+def expected_client_root(
+    logical_path: str,
+    *,
+    server_logicals: Sequence[str] = character_pack.SERVER_LOGICAL_PATHS,
+) -> str:
     """Return the one permitted package root for a logical path."""
 
     segments = logical_segments(logical_path)
-    if logical_path in character_pack.SERVER_LOGICAL_PATHS:
+    if logical_path in frozenset(server_logicals):
         return "server"
     if logical_path.endswith(".atf.deflate"):
         return "android"
@@ -99,7 +103,11 @@ def expected_client_root(logical_path: str) -> str:
     return "common"
 
 
-def all_logicals(roots: Mapping[str, Mapping[str, bytes]]) -> dict[str, str]:
+def all_logicals(
+    roots: Mapping[str, Mapping[str, bytes]],
+    *,
+    server_logicals: Sequence[str] = character_pack.SERVER_LOGICAL_PATHS,
+) -> dict[str, str]:
     seen: dict[str, str] = {}
     if set(roots) != set(ROOT_NAMES):
         raise PackageAssemblyError(
@@ -125,7 +133,9 @@ def all_logicals(roots: Mapping[str, Mapping[str, bytes]]) -> dict[str, str]:
                 raise PackageAssemblyError(
                     f"duplicate logical path {logical_path!r} in {previous} and {root_name}"
                 )
-            expected = expected_client_root(logical_path)
+            expected = expected_client_root(
+                logical_path, server_logicals=server_logicals
+            )
             if root_name != expected:
                 raise PackageAssemblyError(
                     f"root channel mismatch for {logical_path}: "
@@ -137,10 +147,12 @@ def all_logicals(roots: Mapping[str, Mapping[str, bytes]]) -> dict[str, str]:
 
 def validate_root_contract(
     roots: Mapping[str, Mapping[str, bytes]],
+    *,
+    server_logicals: Sequence[str] = character_pack.SERVER_LOGICAL_PATHS,
 ) -> dict[str, Any]:
     """Validate roots and the exact canonical 37-item required-asset gate."""
 
-    seen = all_logicals(roots)
+    seen = all_logicals(roots, server_logicals=server_logicals)
     required = tuple(
         item.logical_path
         for item in requirements.char_asset_requirements(CODE_NAME)
@@ -328,10 +340,11 @@ def build_manifest(
     required_capabilities: Sequence[str],
     generator_git_head: str,
     source_locks_sha256: str,
+    server_logicals: Sequence[str] = character_pack.SERVER_LOGICAL_PATHS,
 ) -> dict[str, Any]:
     """Build the deterministic, unsealed production manifest input."""
 
-    gate = validate_root_contract(roots)
+    gate = validate_root_contract(roots, server_logicals=server_logicals)
     entries: dict[str, list[dict[str, Any]]] = {}
     for root_name in ROOT_NAMES:
         entries[root_name] = [
