@@ -1,4 +1,5 @@
 import copy
+from datetime import datetime
 import json
 import unittest
 import zlib
@@ -201,9 +202,12 @@ class AbyssGachaCompileTests(unittest.TestCase):
         self.assertEqual(["999013", "999014"], row[27:29])
         self.assertEqual("normal", row[17])
         self.assertEqual("normal_guarantee", row[18])
+        start = datetime.strptime(row[29], "%Y-%m-%d %H:%M:%S")
+        self.assertLessEqual(start, datetime(2024, 8, 14, 12, 0, 0))
 
         runtime = json.loads(result["files"]["gacha.json"])[contract.GACHA_KEY]
         self.assertEqual(2, runtime["pageKind"])
+        self.assertEqual(row[29], runtime["startDate"])
         self.assertEqual(999013, runtime["onceTicketItemId"])
         self.assertEqual(999014, runtime["tenTicketItemId"])
         self.assertFalse(runtime["wildcardTicketAvailable"])
