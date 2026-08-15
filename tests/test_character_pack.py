@@ -148,6 +148,16 @@ class TestManifestContract(unittest.TestCase):
             "character/seris/Expression/asset.bin",
             "character/seris/expressions/asset.bin",
             "character/seris/EXPRESSIONS/asset.bin",
+            "character/seris/icon.png.",
+            "character/seris/icon.png ",
+            "character/seris/icon.png:metadata",
+            "character/seris/invalid?.png",
+            "character/seris/CON",
+            "character/seris/con.png",
+            "character/seris/COM1.dat",
+            "character/seris/lpt9",
+            "character/seris/CONIN$",
+            "character/seris/conout$.json",
         )
         with tempfile.TemporaryDirectory() as td:
             package_dir = Path(td)
@@ -175,6 +185,9 @@ class TestManifestContract(unittest.TestCase):
                 "metadata/wordsmith/asset.bin",
                 "metadata/login_bonus/asset.bin",
                 "metadata/expressionist/asset.bin",
+                "metadata/console/asset.bin",
+                "metadata/com10.bin",
+                "metadata/nulled.bin",
             )
             for logical_path in allowed_paths:
                 self.assertIsNotNone(
@@ -456,6 +469,35 @@ class TestManifestContract(unittest.TestCase):
 
             duplicate_errors = [error for error in errors if "duplicate logical_path" in error]
             self.assertGreaterEqual(len(duplicate_errors), 2, errors)
+
+    def test_rejects_windows_equivalent_paths_in_every_root(self):
+        pack = self._module()
+        with tempfile.TemporaryDirectory() as td:
+            package_dir = Path(td)
+            for root in ROOTS:
+                with self.subTest(root=root):
+                    manifest = base_manifest()
+                    add_file(
+                        package_dir,
+                        manifest,
+                        root,
+                        "extension/gacha.json",
+                        b"same",
+                    )
+                    add_file(
+                        package_dir,
+                        manifest,
+                        root,
+                        "extension/GACHA.json",
+                        b"same",
+                    )
+
+                    errors = pack.validate_manifest(manifest, package_dir)
+
+                    self.assertTrue(
+                        any("duplicate logical_path" in error for error in errors),
+                        errors,
+                    )
 
     def test_rejects_root_level_and_nested_links_outside_package_before_hashing(self):
         pack = self._module()
@@ -1689,6 +1731,39 @@ class TestPackPreflight(_TransactionFixtureMixin, unittest.TestCase):
             self.pack.PackPreflightError, "server tables must use the character server codec"
         ):
             self._tx(manifest=wrong_codec).preflight()
+
+    def test_server_extensions_reject_windows_equivalent_paths_before_preflight(self):
+        self._finish_setup()
+        manifest = copy.deepcopy(self.manifest)
+        extension_raw = (
+            b'{"outer":{"990001":{"id":990001}},'
+            b'"inner":{},"semantics":{}}'
+        )
+        server_codec = next(
+            item["codec_id"] for item in manifest["tables"]
+            if item["root"] == "server"
+        )
+        for logical_path in ("gacha.json", "GACHA.json"):
+            add_file(
+                self.package_dir,
+                manifest,
+                "server",
+                logical_path,
+                extension_raw,
+            )
+            manifest["tables"].append({
+                "root": "server",
+                "logical_path": logical_path,
+                "codec_id": server_codec,
+                "outer_keys": ["990001"],
+                "inner_keys": [],
+                "semantic_claims": [],
+            })
+
+        with self.assertRaisesRegex(
+            self.pack.PackPreflightError, "duplicate logical_path"
+        ):
+            self._tx(manifest=manifest).preflight()
 
     def test_server_json_codec_rejects_malformed_and_duplicate_object_keys(self):
         self._finish_setup()

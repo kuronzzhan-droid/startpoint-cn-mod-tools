@@ -54,6 +54,11 @@ FORBIDDEN_ASSET_SEGMENTS = frozenset({
     "story", "words", "login", "expression", "expressions",
 })
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+WINDOWS_DEVICE_NAME_RE = re.compile(
+    r"^(?:con|prn|aux|nul|com[1-9]|lpt[1-9]|conin\$|conout\$)(?:\.|$)",
+    re.IGNORECASE,
+)
+WINDOWS_FORBIDDEN_PATH_CHARS = frozenset('<>:"|?*')
 FILESYSTEM_ERRORS = (OSError, RuntimeError, ValueError)
 SERVER_LOGICAL_PATHS = (
     "cdndata/character.json",
@@ -447,7 +452,21 @@ def _path_problem(logical_path: str) -> str | None:
         return "must not contain '..' segments"
     if any(segment in ("", ".") for segment in segments):
         return "must not contain empty or '.' segments"
+    if any(segment.endswith((".", " ")) for segment in segments):
+        return "must not contain segments ending in a dot or space"
+    if any(
+        ord(character) < 32 or character in WINDOWS_FORBIDDEN_PATH_CHARS
+        for segment in segments for character in segment
+    ):
+        return "must not contain Win32-forbidden characters"
+    if any(WINDOWS_DEVICE_NAME_RE.match(segment) for segment in segments):
+        return "must not contain reserved Windows device names"
     return None
+
+
+def _windows_logical_path_key(logical_path: str) -> PureWindowsPath:
+    """Return the portable case-insensitive identity used by Win32 roots."""
+    return PureWindowsPath(logical_path)
 
 
 def _sha256_file(path: Path) -> str:
@@ -665,7 +684,7 @@ def validate_manifest(
     for root in sorted(set(roots) - set(ROOT_NAMES)):
         errors.append(f"roots: unexpected root {root}")
 
-    seen_paths: dict[str, str] = {}
+    seen_paths: dict[PureWindowsPath, str] = {}
     declared_common_paths: set[str] = set()
     qa = manifest.get("qa")
     production_package = (
@@ -723,14 +742,15 @@ def validate_manifest(
                     errors.append(f"{prefix}.logical_path: {problem}")
                 else:
                     path_valid = True
-                    previous = seen_paths.get(logical_path)
+                    path_key = _windows_logical_path_key(logical_path)
+                    previous = seen_paths.get(path_key)
                     if previous is not None:
                         errors.append(
                             f"{prefix}.logical_path: duplicate logical_path {logical_path!r}; "
                             f"first declared at {previous}"
                         )
                     else:
-                        seen_paths[logical_path] = prefix
+                        seen_paths[path_key] = prefix
                         if root == "common":
                             declared_common_paths.add(logical_path)
                 forbidden = sorted(
