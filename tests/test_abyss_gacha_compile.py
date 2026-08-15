@@ -91,8 +91,8 @@ def _json(value):
     return json.dumps(value, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
 
 
-def _character_row(character_id):
-    row = [f"custom_{character_id}", "1", "5"] + [""] * 34
+def _character_row(character_id, rarity=5):
+    row = [f"custom_{character_id}", "1", str(rarity)] + [""] * 34
     row[17] = str(character_id)
     return core.write_csv_lines([row])
 
@@ -112,9 +112,45 @@ def _official_runtime_57():
     }
 
 
+def _standard_donor_runtime():
+    def item(character_id, rank, odds, *, limited=False):
+        return {
+            "id": character_id,
+            "rank": rank,
+            "odds": odds,
+            "isRateUp": True,
+            "isLimited": limited,
+            "isExchangeable": True,
+            "rarity": 500.0,
+            "trialReadingForced": True,
+        }
+
+    return {
+        "rankRates": {"normal": [50, 250, 700], "multiGuarantee": [50, 950]},
+        "pool": {
+            "1": [
+                item(111001, 5, 9),
+                item(111002, 5, 7),
+                item(111003, 5, 5, limited=True),
+            ],
+            "2": [item(211001, 4, 31), item(221001, 4, 29)],
+            "3": [item(311001, 3, 17), item(321001, 3, 13)],
+        },
+    }
+
+
 def _sources():
     character_rows = {"1": _character_row(1)}
     character_rows.update({str(value): _character_row(value) for value in IDS})
+    character_rows.update({
+        "111001": _character_row(111001, 5),
+        "111002": _character_row(111002, 5),
+        "111003": _character_row(111003, 5),
+        "211001": _character_row(211001, 4),
+        "221001": _character_row(221001, 4),
+        "311001": _character_row(311001, 3),
+        "321001": _character_row(321001, 3),
+    })
     common = {
         "master/character/character.orderedmap": _flat(
             "master/character/character.orderedmap", character_rows
@@ -139,11 +175,21 @@ def _sources():
     }
     server_character = {"1": {"name": "legacy", "rarity": 1}}
     server_character.update({str(value): {"name": str(value), "rarity": 5} for value in IDS})
+    server_character.update({
+        "111001": {"name": "111001", "rarity": 5},
+        "111002": {"name": "111002", "rarity": 5},
+        "111003": {"name": "111003", "rarity": 5},
+        "211001": {"name": "211001", "rarity": 4},
+        "221001": {"name": "221001", "rarity": 4},
+        "311001": {"name": "311001", "rarity": 3},
+        "321001": {"name": "321001", "rarity": 3},
+    })
     server = {
         "character.json": _json(server_character),
         "gacha.json": _json({
             "1": {"pool": {"1": [{"id": 111001}], "2": [], "3": []}},
             "57": _official_runtime_57(),
+            "700004": _standard_donor_runtime(),
         }),
         "cdndata/gacha.json": _json({"1": [["legacy"]], "57": [OFFICIAL_57]}),
         "cdndata/gacha_feature_content.json": _json({
@@ -186,7 +232,7 @@ class AbyssGachaCompileTests(unittest.TestCase):
             common, server, existing_common_paths=set(common)
         )
 
-    def test_contract_is_pure_eight_five_star_equal_ticket_only_pool(self):
+    def test_contract_is_standard_rate_pool_with_eight_limited_rate_up_characters(self):
         _, _, result = self._compile()
         self.assertEqual(990001, contract.GACHA_ID)
         self.assertEqual("cnmod_abyss_limited_gacha", contract.CODE_NAME)
@@ -197,7 +243,7 @@ class AbyssGachaCompileTests(unittest.TestCase):
         self.assertEqual(47, len(row))
         self.assertEqual("2", row[4])
         self.assertEqual(["", "", ""], row[5:8])
-        self.assertEqual("5", row[10])
+        self.assertEqual("4", row[10])
         self.assertEqual("false", row[20])
         self.assertEqual(["999013", "999014"], row[27:29])
         self.assertEqual("normal", row[17])
@@ -211,18 +257,35 @@ class AbyssGachaCompileTests(unittest.TestCase):
         self.assertEqual(999013, runtime["onceTicketItemId"])
         self.assertEqual(999014, runtime["tenTicketItemId"])
         self.assertFalse(runtime["wildcardTicketAvailable"])
-        self.assertEqual([1000, 0, 0], runtime["rankRates"]["normal"])
-        self.assertEqual([1000, 0], runtime["rankRates"]["multiGuarantee"])
-        self.assertEqual([], runtime["pool"]["2"])
-        self.assertEqual([], runtime["pool"]["3"])
+        self.assertEqual(4, runtime["guaranteeRarity"])
+        self.assertEqual([50, 250, 700], runtime["rankRates"]["normal"])
+        self.assertEqual([50, 950], runtime["rankRates"]["multiGuarantee"])
+        self.assertEqual(
+            [211001, 221001], [entry["id"] for entry in runtime["pool"]["2"]]
+        )
+        self.assertEqual(
+            [311001, 321001], [entry["id"] for entry in runtime["pool"]["3"]]
+        )
         pool = runtime["pool"]["1"]
-        self.assertEqual(list(IDS), [entry["id"] for entry in pool])
-        for entry in pool:
+        self.assertEqual([*IDS, 111001, 111002], [entry["id"] for entry in pool])
+        self.assertNotIn(111003, [entry["id"] for entry in pool])
+        limited = pool[:len(IDS)]
+        standard = pool[len(IDS):]
+        total_weight = sum(entry["odds"] for entry in pool)
+        for entry in limited:
             self.assertEqual(5, entry["rank"])
-            self.assertEqual(100, entry["odds"])
-            self.assertEqual(125.0, entry["rarity"])
+            self.assertAlmostEqual(0.005, 0.05 * entry["odds"] / total_weight)
+            self.assertEqual(100.0, entry["rarity"])
             self.assertTrue(entry["isRateUp"])
             self.assertTrue(entry["isLimited"])
+            self.assertTrue(entry["isExchangeable"])
+        self.assertAlmostEqual(
+            0.01,
+            0.05 * sum(entry["odds"] for entry in standard) / total_weight,
+        )
+        for entry in standard:
+            self.assertFalse(entry["isRateUp"])
+            self.assertFalse(entry["isLimited"])
             self.assertFalse(entry["isExchangeable"])
 
     def test_odds_feature_and_rich_text_read_back_exactly(self):
@@ -230,17 +293,38 @@ class AbyssGachaCompileTests(unittest.TestCase):
         rarity = _decode_nested(
             result["files"][contract.RARITY_ODDS_LOGICAL], contract.RARITY_ODDS_LOGICAL
         )[contract.RARITY_ODDS_ID]
-        self.assertEqual([b"5,100", b"4,0", b"3,0"], list(rarity.values()))
-        for logical, odds_id in (
-            (contract.CHARACTER_3_ODDS_LOGICAL, contract.CHARACTER_3_ODDS_ID),
-            (contract.CHARACTER_4_ODDS_LOGICAL, contract.CHARACTER_4_ODDS_ID),
-        ):
-            self.assertEqual({}, _decode_nested(result["files"][logical], logical)[odds_id])
+        self.assertEqual([b"5,50", b"4,250", b"3,700"], list(rarity.values()))
+        three = _decode_nested(
+            result["files"][contract.CHARACTER_3_ODDS_LOGICAL],
+            contract.CHARACTER_3_ODDS_LOGICAL,
+        )[contract.CHARACTER_3_ODDS_ID]
+        four = _decode_nested(
+            result["files"][contract.CHARACTER_4_ODDS_LOGICAL],
+            contract.CHARACTER_4_ODDS_LOGICAL,
+        )[contract.CHARACTER_4_ODDS_ID]
+        self.assertEqual(
+            [
+                b"311001,3,17,false,false,false,false",
+                b"321001,3,13,false,false,false,false",
+            ],
+            list(three.values()),
+        )
+        self.assertEqual(
+            [
+                b"211001,4,31,false,false,false,false",
+                b"221001,4,29,false,false,false,false",
+            ],
+            list(four.values()),
+        )
         five = _decode_nested(
             result["files"][contract.CHARACTER_5_ODDS_LOGICAL], contract.CHARACTER_5_ODDS_LOGICAL
         )[contract.CHARACTER_5_ODDS_ID]
         self.assertEqual(
-            [f"{value},5,100,true,true,false,false".encode() for value in IDS],
+            [
+                *[f"{value},5,2,true,true,true,false".encode() for value in IDS],
+                b"111001,5,2,false,false,false,false",
+                b"111002,5,2,false,false,false,false",
+            ],
             list(five.values()),
         )
         feature = _decode_nested(
@@ -261,6 +345,55 @@ class AbyssGachaCompileTests(unittest.TestCase):
         self.assertIn("深渊十连券", note)
         self.assertIn("不接受星导石", note)
         self.assertIn("通用角色扭蛋券", note)
+        self.assertIn("★5角色总出现概率为5%", note)
+        self.assertIn("8名深渊限定角色的单人出现概率均为0.5%", note)
+        self.assertIn("其余1%由常驻★5角色均分", note)
+        self.assertIn("每次抽取累计1点兑换点数", note)
+        self.assertIn("250点", note)
+
+    def test_rejects_missing_or_malformed_standard_pool_donor(self):
+        self._require_module()
+        common, server = _sources()
+        missing = dict(server)
+        gachas = json.loads(missing["gacha.json"])
+        gachas.pop("700004")
+        missing["gacha.json"] = _json(gachas)
+        with self.assertRaisesRegex(ValueError, "standard pool donor"):
+            compile_abyss_limited_gacha(common, missing, existing_common_paths=set(common))
+
+        malformed = dict(server)
+        gachas = json.loads(malformed["gacha.json"])
+        gachas["700004"]["pool"]["2"][0]["rank"] = 5
+        malformed["gacha.json"] = _json(gachas)
+        with self.assertRaisesRegex(ValueError, "standard pool donor"):
+            compile_abyss_limited_gacha(common, malformed, existing_common_paths=set(common))
+
+    def test_rejects_standard_pool_character_reference_missing_from_client_or_server(self):
+        self._require_module()
+        common, server = _sources()
+        missing_client = dict(common)
+        rows = _decode_flat(
+            missing_client[contract.CHARACTER_MASTER_LOGICAL],
+            contract.CHARACTER_MASTER_LOGICAL,
+        )
+        rows.pop("221001")
+        missing_client[contract.CHARACTER_MASTER_LOGICAL] = _flat(
+            contract.CHARACTER_MASTER_LOGICAL,
+            {key: value.decode() for key, value in rows.items()},
+        )
+        with self.assertRaisesRegex(ValueError, "gacha pool character closure"):
+            compile_abyss_limited_gacha(
+                missing_client, server, existing_common_paths=set(missing_client)
+            )
+
+        missing_server = dict(server)
+        characters = json.loads(missing_server["character.json"])
+        characters.pop("311001")
+        missing_server["character.json"] = _json(characters)
+        with self.assertRaisesRegex(ValueError, "gacha pool character closure"):
+            compile_abyss_limited_gacha(
+                common, missing_server, existing_common_paths=set(common)
+            )
 
     def test_compiler_preserves_nonowned_rows_and_emits_exact_claims(self):
         common, server, result = self._compile()

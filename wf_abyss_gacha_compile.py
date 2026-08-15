@@ -219,7 +219,9 @@ def _validate_official_57(common: Mapping[str, bytes], server: Mapping[str, byte
 
 
 def _validate_character_closure(
-    common: Mapping[str, bytes], server: Mapping[str, bytes]
+    common: Mapping[str, bytes],
+    server: Mapping[str, bytes],
+    runtime_pool: Mapping[str, list[dict[str, object]]],
 ) -> None:
     client = _decode_flat(
         common[contract.CHARACTER_MASTER_LOGICAL], contract.CHARACTER_MASTER_LOGICAL
@@ -254,6 +256,32 @@ def _validate_character_closure(
         raise ValueError(
             "server five-star closure failed: "
             f"missing={missing_server}, wrong={wrong_server + invalid_server}"
+        )
+
+    expected_ranks = {
+        str(entry["id"]): int(entry["rank"])
+        for entries in runtime_pool.values()
+        for entry in entries
+    }
+    pool_client_problems = []
+    pool_server_problems = []
+    for key, rank in expected_ranks.items():
+        raw = client.get(key)
+        if raw is None:
+            pool_client_problems.append(f"{key}:missing")
+        else:
+            row = _one_csv(raw, f"client gacha pool character {key}")
+            if len(row) < 18 or row[2] != str(rank) or row[17] != key:
+                pool_client_problems.append(f"{key}:rank-or-identity")
+        value = characters.get(key)
+        if not isinstance(value, dict):
+            pool_server_problems.append(f"{key}:missing-or-invalid")
+        elif value.get("rarity") != rank:
+            pool_server_problems.append(f"{key}:rank")
+    if pool_client_problems or pool_server_problems:
+        raise ValueError(
+            "gacha pool character closure failed: "
+            f"client={pool_client_problems}, server={pool_server_problems}"
         )
 
 
@@ -316,12 +344,15 @@ def compile_abyss_limited_gacha(
     if collisions:
         raise ValueError(f"new common logical path collision: {collisions}")
     _validate_official_57(common_sources, server_sources)
-    _validate_character_closure(common_sources, server_sources)
 
     server_decoded = {
         path: _strict_json_object(server_sources[path], path)
         for path in SERVER_SOURCE_PATHS
     }
+    runtime_pool = contract.build_runtime_pool(
+        server_decoded["gacha.json"].get(contract.STANDARD_POOL_DONOR_ID)
+    )
+    _validate_character_closure(common_sources, server_sources, runtime_pool)
     for path in contract.SERVER_OUTPUT_PATHS:
         if contract.GACHA_KEY in server_decoded[path]:
             raise ValueError(f"target key collision in {path}: {contract.GACHA_KEY}")
@@ -351,15 +382,15 @@ def compile_abyss_limited_gacha(
         ),
         contract.CHARACTER_3_ODDS_LOGICAL: _new_nested(
             contract.CHARACTER_3_ODDS_LOGICAL, contract.CHARACTER_3_ODDS_ID,
-            contract.build_character_odds_rows(3),
+            contract.build_character_odds_rows(3, runtime_pool),
         ),
         contract.CHARACTER_4_ODDS_LOGICAL: _new_nested(
             contract.CHARACTER_4_ODDS_LOGICAL, contract.CHARACTER_4_ODDS_ID,
-            contract.build_character_odds_rows(4),
+            contract.build_character_odds_rows(4, runtime_pool),
         ),
         contract.CHARACTER_5_ODDS_LOGICAL: _new_nested(
             contract.CHARACTER_5_ODDS_LOGICAL, contract.CHARACTER_5_ODDS_ID,
-            contract.build_character_odds_rows(5),
+            contract.build_character_odds_rows(5, runtime_pool),
         ),
         contract.RICH_TEXT_MASTER_LOGICAL: _add_flat(
             common_sources[contract.RICH_TEXT_MASTER_LOGICAL],
@@ -368,7 +399,9 @@ def compile_abyss_limited_gacha(
         contract.RICH_TEXT_BODY_LOGICAL: contract.build_rich_text_body(),
     }
 
-    server_decoded["gacha.json"][contract.GACHA_KEY] = contract.build_server_runtime()
+    server_decoded["gacha.json"][contract.GACHA_KEY] = contract.build_server_runtime(
+        runtime_pool
+    )
     server_decoded["cdndata/gacha.json"][contract.GACHA_KEY] = [master_row]
     server_decoded["cdndata/gacha_feature_content.json"][contract.GACHA_KEY] = {
         "1": [feature_cells]
@@ -410,7 +443,7 @@ def compile_abyss_limited_gacha(
     all_leaks = _find_character_pool_leaks(readback_server["gacha.json"])
     expected_locations = sorted((value, contract.GACHA_KEY) for value in contract.CHARACTER_IDS)
     if sorted(all_leaks) != expected_locations:
-        raise AssertionError("eight-character exclusive pool readback mismatch")
+        raise AssertionError("eight-character pickup pool readback mismatch")
     runtime = readback_server["gacha.json"][contract.GACHA_KEY]
     if (
         runtime["pageKind"] != 2
@@ -440,6 +473,9 @@ def compile_abyss_limited_gacha(
             "nonowned_client_changes": 0,
             "nonowned_server_changes": 0,
             "eight_character_closure": True,
+            "standard_pool_contract": True,
+            "rank_rates": runtime["rankRates"],
+            "limited_character_rate_percent": 0.5,
             "ticket_only_contract": True,
             "execution_contract": {
                 "single": {

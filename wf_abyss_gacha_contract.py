@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import zlib
 
+import wf_abyss_gacha_pool as pool_contract
+
 
 GACHA_ID = 990001
 GACHA_KEY = str(GACHA_ID)
@@ -16,6 +18,7 @@ CHARACTER_IDS = (
 )
 SINGLE_TICKET_ID = 999013
 TEN_TICKET_ID = 999014
+STANDARD_POOL_DONOR_ID = "700004"
 
 GACHA_MASTER_LOGICAL = "master/gacha/gacha.orderedmap"
 FEATURE_LOGICAL = "master/gacha/gacha_feature_content.orderedmap"
@@ -108,7 +111,7 @@ def build_gacha_master_row() -> list[str]:
     """Return the exact 47-column client row, based on official gacha 57."""
     return [
         CODE_NAME, TITLE, "100", LIST_BANNER_LOGICAL, "2", "", "", "", "",
-        "1", "5", RARITY_ODDS_ID, RICH_TEXT_ID, "0",
+        "1", "4", RARITY_ODDS_ID, RICH_TEXT_ID, "0",
         CHARACTER_3_ODDS_ID, CHARACTER_4_ODDS_ID, CHARACTER_5_ODDS_ID,
         "normal", "normal_guarantee", "false", "false", "false",
         "", "", "", "", "", str(SINGLE_TICKET_ID), str(TEN_TICKET_ID),
@@ -127,34 +130,22 @@ def build_feature_cells() -> list[str]:
 
 
 def build_rarity_odds_rows() -> dict[str, str]:
-    return {"0": "5,100", "1": "4,0", "2": "3,0"}
+    return {"0": "5,50", "1": "4,250", "2": "3,700"}
 
 
-def build_character_odds_rows(rarity: int) -> dict[str, str]:
-    if rarity in (3, 4):
-        return {}
-    if rarity != 5:
-        raise ValueError(f"unsupported abyss gacha rarity: {rarity}")
-    return {
-        str(index): f"{character_id},5,100,true,true,false,false"
-        for index, character_id in enumerate(CHARACTER_IDS)
-    }
+def build_runtime_pool(donor_runtime: object) -> dict[str, list[dict[str, object]]]:
+    return pool_contract.build_pickup_pool(donor_runtime, CHARACTER_IDS)
 
 
-def build_server_runtime() -> dict:
-    pool = [
-        {
-            "id": character_id,
-            "rank": 5,
-            "odds": 100,
-            "isRateUp": True,
-            "isLimited": True,
-            "isExchangeable": False,
-            "rarity": 125.0,
-            "trialReadingForced": False,
-        }
-        for character_id in CHARACTER_IDS
-    ]
+def build_character_odds_rows(
+    rarity: int, runtime_pool: dict[str, list[dict[str, object]]]
+) -> dict[str, str]:
+    return pool_contract.build_character_rows(runtime_pool, rarity)
+
+
+def build_server_runtime(
+    runtime_pool: dict[str, list[dict[str, object]]]
+) -> dict:
     return {
         "type": 0,
         "paymentType": 0,
@@ -166,8 +157,8 @@ def build_server_runtime() -> dict:
         "tenTicketItemId": TEN_TICKET_ID,
         "wildcardTicketAvailable": False,
         "rarityOddsId": RARITY_ODDS_ID,
-        "guaranteeRarity": 5,
-        "rankRates": {"normal": [1000, 0, 0], "multiGuarantee": [1000, 0]},
+        "guaranteeRarity": 4,
+        "rankRates": pool_contract.STANDARD_RANK_RATES,
         "movieName": "normal",
         "guaranteeMovieName": "normal_guarantee",
         "toUseOddsUpAsTrialReading": False,
@@ -175,7 +166,7 @@ def build_server_runtime() -> dict:
         "startDate": START_DATE,
         "endDate": END_DATE,
         "name": TITLE,
-        "pool": {"1": pool, "2": [], "3": []},
+        "pool": runtime_pool,
     }
 
 
@@ -191,8 +182,10 @@ def build_rich_text_body() -> bytes:
   <div class="container">
     <p>・本扭蛋仅可使用深渊单抽券或深渊十连券。</p><br/>
     <p>・本扭蛋不接受星导石，也不接受通用角色扭蛋券。</p><br/>
-    <p>・卡池仅包含指定的8名限定★5角色，每名角色的获得概率均为12.5%。</p><br/>
+    <p>・★5角色总出现概率为5%，★4角色为25%，★3角色为70%。</p><br/>
+    <p>・8名深渊限定角色的单人出现概率均为0.5%，合计4%；其余1%由常驻★5角色均分。</p><br/>
     <p>・使用1张深渊单抽券可抽取1次；使用1张深渊十连券可连续抽取10次。</p><br/>
+    <p>・每次抽取累计1点兑换点数；累计250点后，可从8名深渊限定角色中选择1名兑换。</p><br/>
     <p>・重复获得已有角色时，按游戏现有角色重复获得规则处理。</p>
   </div>
 </body>
