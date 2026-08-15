@@ -113,8 +113,8 @@ NEW_COMMON_PATHS = (
 def build_gacha_master_row() -> list[str]:
     """Return the exact 47-column client row, based on official gacha 57."""
     return [
-        CODE_NAME, TITLE, "100", LIST_BANNER_LOGICAL, "0",
-        "150", "1500", "50", "",
+        CODE_NAME, TITLE, "100", LIST_BANNER_LOGICAL, "2",
+        "", "", "", "",
         "1", "4", RARITY_ODDS_ID, RICH_TEXT_ID, "0",
         CHARACTER_3_ODDS_ID, CHARACTER_4_ODDS_ID, CHARACTER_5_ODDS_ID,
         "normal", "normal_guarantee", "false", "false", "false",
@@ -157,7 +157,7 @@ def build_server_runtime(
     return {
         "type": 0,
         "paymentType": 0,
-        "pageKind": 0,
+        "pageKind": 2,
         "singleCost": 150,
         "multiCost": 1500,
         "discountCost": 50,
@@ -188,8 +188,8 @@ def build_rich_text_body() -> bytes:
 </head>
 <body class="body" style_id="1">
   <div class="container">
-    <p>・本扭蛋长期开放，可使用深渊单抽券、深渊十连券或星导石抽取。</p><br/>
-    <p>・每日1次付费星导石优惠、单抽和十连均按页面显示执行。</p><br/>
+    <p>・本扭蛋长期开放，仅可使用深渊单抽券或深渊十连券抽取。</p><br/>
+    <p>・本扭蛋不接受星导石或付费星导石抽取。</p><br/>
     <p>・本扭蛋不接受通用角色扭蛋券。</p><br/>
     <p>・★5角色总出现概率为5%，★4角色为25%，★3角色为70%。</p><br/>
     <p>・8名深渊限定角色的单人出现概率均为0.5%，合计4%；其余1%由普通★5角色均分。</p><br/>

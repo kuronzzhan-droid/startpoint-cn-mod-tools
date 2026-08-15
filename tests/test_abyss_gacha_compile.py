@@ -240,7 +240,7 @@ class AbyssGachaCompileTests(unittest.TestCase):
             common, server, existing_common_paths=set(common)
         )
 
-    def test_contract_is_standard_rate_pool_with_eight_limited_rate_up_characters(self):
+    def test_contract_is_ticket_only_standard_rate_pool_with_eight_limited_rate_up_characters(self):
         _, _, result = self._compile()
         self.assertEqual(990001, contract.GACHA_ID)
         self.assertEqual("cnmod_abyss_limited_gacha", contract.CODE_NAME)
@@ -249,8 +249,8 @@ class AbyssGachaCompileTests(unittest.TestCase):
             result["files"][contract.GACHA_MASTER_LOGICAL], contract.GACHA_MASTER_LOGICAL
         )[contract.GACHA_KEY].decode("utf-8"))[0]
         self.assertEqual(47, len(row))
-        self.assertEqual("0", row[4])
-        self.assertEqual(["150", "1500", "50"], row[5:8])
+        self.assertEqual("2", row[4])
+        self.assertEqual(["", "", ""], row[5:8])
         self.assertEqual("4", row[10])
         self.assertEqual("false", row[20])
         self.assertEqual(["999013", "999014"], row[27:29])
@@ -261,7 +261,7 @@ class AbyssGachaCompileTests(unittest.TestCase):
         self.assertLessEqual(start, datetime(2024, 8, 14, 12, 0, 0))
 
         runtime = json.loads(result["files"]["gacha.json"])[contract.GACHA_KEY]
-        self.assertEqual(0, runtime["pageKind"])
+        self.assertEqual(2, runtime["pageKind"])
         self.assertEqual(row[29], runtime["startDate"])
         self.assertEqual(999013, runtime["onceTicketItemId"])
         self.assertEqual(999014, runtime["tenTicketItemId"])
@@ -362,7 +362,9 @@ class AbyssGachaCompileTests(unittest.TestCase):
         note = zlib.decompress(result["files"][contract.RICH_TEXT_BODY_LOGICAL], -15).decode()
         self.assertIn("深渊单抽券", note)
         self.assertIn("深渊十连券", note)
-        self.assertIn("每日1次付费星导石", note)
+        self.assertIn("仅可使用深渊单抽券或深渊十连券", note)
+        self.assertIn("不接受星导石或付费星导石抽取", note)
+        self.assertNotIn("每日1次付费星导石", note)
         self.assertIn("通用角色扭蛋券", note)
         self.assertIn("★5角色总出现概率为5%", note)
         self.assertIn("8名深渊限定角色的单人出现概率均为0.5%", note)

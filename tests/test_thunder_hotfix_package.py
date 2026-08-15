@@ -82,7 +82,7 @@ class ThunderHotfixPackageTests(unittest.TestCase):
                     self.assertEqual(raw, image.roots[root][logical])
 
         runtime = json.loads(image.roots["server"]["gacha.json"])["990001"]
-        self.assertEqual(0, runtime["pageKind"])
+        self.assertEqual(2, runtime["pageKind"])
         self.assertEqual([50, 250, 700], runtime["rankRates"]["normal"])
         self.assertEqual(4, runtime["guaranteeRarity"])
         master = core.read_orderedmap_file_from_bytes(

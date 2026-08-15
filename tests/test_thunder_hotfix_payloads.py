@@ -284,7 +284,7 @@ class ThunderHotfixPayloadTests(unittest.TestCase):
         )
         self.assertEqual(8, report["exchangeable_limited_count"])
         self.assertEqual(4, report["exchangeable_standard_count"])
-        self.assertEqual(0, report["page_kind"])
+        self.assertEqual(2, report["page_kind"])
         self.assertEqual({"single": 3, "ten": 4}, report["ticket_exec_types"])
         self.assertFalse(report["writes_live"])
 

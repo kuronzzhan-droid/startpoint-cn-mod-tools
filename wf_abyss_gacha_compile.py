@@ -446,12 +446,12 @@ def compile_abyss_limited_gacha(
         raise AssertionError("eight-character pickup pool readback mismatch")
     runtime = readback_server["gacha.json"][contract.GACHA_KEY]
     if (
-        runtime["pageKind"] != 0
+        runtime["pageKind"] != 2
         or runtime["onceTicketItemId"] != contract.SINGLE_TICKET_ID
         or runtime["tenTicketItemId"] != contract.TEN_TICKET_ID
         or runtime["wildcardTicketAvailable"] is not False
     ):
-        raise AssertionError("normal-page runtime readback mismatch")
+        raise AssertionError("ticket-only runtime readback mismatch")
     note = contract.build_rich_text_body()
     if files[contract.RICH_TEXT_BODY_LOGICAL] != note:
         raise AssertionError("rich-text body readback mismatch")

@@ -104,7 +104,7 @@ _ACCEPTANCE = {
     "gacha_exchange_required_points": {"limited": 250, "standard": 250},
     "gacha_exchangeable_limited_count": 8,
     "gacha_exchangeable_standard_count": 4,
-    "gacha_always_visible_normal_page": True,
+    "gacha_ticket_only_payment": True,
     "gacha_exchange_button_enabled": True,
     "gacha_ticket_exec_types": {"single": 3, "ten": 4},
     "gacha_portrait_banner": {

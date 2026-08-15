@@ -81,7 +81,7 @@ def _repair_evidence(locks: Mapping[str, Any]) -> None:
         or character.get("skill_description_extra_multiplier_mentions") != 0
         or character.get("writes_live") is not False
         or not isinstance(gacha, Mapping)
-        or gacha.get("status") != "repaired_standard_pool_exchange_contract"
+        or gacha.get("status") != "repaired_ticket_only_pool_exchange_contract"
         or gacha.get("writes_live") is not False
         or gacha.get("source_start_date") != contract.SOURCE_START_DATE
         or gacha.get("start_date") != "2020-12-31 12:00:00"
@@ -91,7 +91,7 @@ def _repair_evidence(locks: Mapping[str, Any]) -> None:
         != {"limited": 250, "standard": 250}
         or gacha.get("exchangeable_limited_count") != 8
         or gacha.get("exchangeable_standard_count") != 4
-        or gacha.get("page_kind") != 0
+        or gacha.get("page_kind") != 2
         or gacha.get("ticket_exec_types") != {"single": 3, "ten": 4}
         or gacha.get("changed_payload_count") != 8
         or not isinstance(banner, Mapping)

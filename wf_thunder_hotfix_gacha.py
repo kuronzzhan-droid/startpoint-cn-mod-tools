@@ -253,7 +253,7 @@ def repair_gacha_contract(
         raise AssertionError("gacha repaired payload readback drift")
     return repaired, {
         "schema_version": 1,
-        "status": "repaired_standard_pool_exchange_contract",
+        "status": "repaired_ticket_only_pool_exchange_contract",
         "writes_live": False,
         "source_start_date": expected_start_date,
         "start_date": contract.START_DATE,
