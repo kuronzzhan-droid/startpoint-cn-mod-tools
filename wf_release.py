@@ -328,6 +328,47 @@ def _merge_claimed_table_bytes(
                     live.append(value)
                     live_values.add(value)
             return _ordered_json(live)
+
+        if claim.codec_id == "json_event_shop_products":
+            candidate, candidate_rows = _validated_nested_json(
+                claim, candidate_raw, "candidate"
+            )
+            live, _live_rows = _validated_nested_json(
+                claim, live_raw, "live"
+            )
+            for key in claim.outer_keys:
+                record_raw = candidate_rows.get(key)
+                if record_raw is None:
+                    raise ReleaseError(
+                        f"candidate lacks claimed event-shop product: {logical}:{key}"
+                    )
+                record = json.loads(record_raw)
+                for events in live.values():
+                    for products in events.values():
+                        products.pop(key, None)
+                event_type = record["event_type"]
+                event_id = record["event_id"]
+                events = live.setdefault(event_type, {})
+                products = events.setdefault(event_id, {})
+                products[key] = record["product"]
+            return _ordered_json(live)
+
+        if claim.codec_id == "json_rogue_events":
+            candidate, candidate_rows = _validated_nested_json(
+                claim, candidate_raw, "candidate"
+            )
+            live, _live_rows = _validated_nested_json(
+                claim, live_raw, "live"
+            )
+            candidate_events = candidate["events"]
+            live_events = live["events"]
+            for key in claim.outer_keys:
+                if key not in candidate_rows:
+                    raise ReleaseError(
+                        f"candidate lacks claimed rogue event: {logical}:{key}"
+                    )
+                live_events[key] = candidate_events[key]
+            return _ordered_json(live)
     except ReleaseError:
         raise
     except Exception as exc:
@@ -715,6 +756,18 @@ def _strict_positive_integer_array(raw: bytes, label: str) -> list[int]:
             raise ReleaseError(f"{label}[{index}]: duplicate integer {item}")
         seen.add(item)
     return value
+
+
+def _validated_nested_json(
+    claim: character_pack.TableClaim, raw: bytes, label: str
+) -> tuple[dict, dict[str, bytes]]:
+    codec = character_pack.DEFAULT_CODECS[claim.codec_id]
+    try:
+        image = codec.inspect(raw, claim, claim.semantic_claims)
+    except character_pack.PackPreflightError as exc:
+        raise ReleaseError(f"{label}:{claim.logical_path}: {exc}") from exc
+    value = _strict_object(raw, f"{label}:{claim.logical_path}")
+    return value, dict(image.outer_rows)
 
 
 def rebase_runtime_package(

@@ -70,7 +70,12 @@ SERVER_LOGICAL_PATHS = (
     "character.json",
     "mana_node.json",
 )
-SERVER_EXTENSION_CODEC_IDS = frozenset({"json_object", "json_integer_set"})
+SERVER_EXTENSION_CODEC_IDS = frozenset({
+    "json_object",
+    "json_integer_set",
+    "json_event_shop_products",
+    "json_rogue_events",
+})
 CLIENT_ROOTS: tuple[RootName, ...] = ("common", "medium", "android")
 ARCHIVE_PREFIXES = {
     "common": "production/upload/",
@@ -436,12 +441,103 @@ class JsonIntegerSetCodec:
         return TableImage(tuple(rows))
 
 
+class JsonEventShopProductsCodec:
+    """Expose globally unique product IDs below event-type/event-ID maps."""
+
+    def inspect(
+        self,
+        raw: bytes,
+        claim: TableClaim,
+        semantic_claims: tuple[SemanticClaim, ...],
+    ) -> TableImage:
+        del claim, semantic_claims
+        value = _strict_json_object_bytes(raw, "JSON event shop")
+        seen: set[str] = set()
+        rows: list[tuple[str, bytes]] = []
+        for event_type, events in value.items():
+            _require_canonical_integer_key(
+                event_type, "JSON event shop event type", allow_zero=True
+            )
+            if not isinstance(events, dict):
+                raise PackPreflightError(
+                    f"JSON event shop[{event_type}] must be an object"
+                )
+            for event_id, products in events.items():
+                _require_canonical_integer_key(
+                    event_id,
+                    f"JSON event shop[{event_type}] event ID",
+                    allow_zero=True,
+                )
+                if not isinstance(products, dict):
+                    raise PackPreflightError(
+                        f"JSON event shop[{event_type}][{event_id}] must be an object"
+                    )
+                for product_id, product in products.items():
+                    _require_canonical_integer_key(
+                        product_id,
+                        f"JSON event shop[{event_type}][{event_id}] product ID",
+                    )
+                    if product_id in seen:
+                        raise PackPreflightError(
+                            f"JSON event shop product ID is ambiguous: {product_id}"
+                        )
+                    if not isinstance(product, dict):
+                        raise PackPreflightError(
+                            f"JSON event shop product {product_id} must be an object"
+                        )
+                    seen.add(product_id)
+                    rows.append((product_id, _canonical_json_bytes({
+                        "event_id": event_id,
+                        "event_type": event_type,
+                        "product": product,
+                    })))
+        return TableImage(tuple(rows))
+
+
+class JsonRogueEventsCodec:
+    """Expose event IDs below ``events`` while binding every root sibling."""
+
+    def inspect(
+        self,
+        raw: bytes,
+        claim: TableClaim,
+        semantic_claims: tuple[SemanticClaim, ...],
+    ) -> TableImage:
+        del claim, semantic_claims
+        value = _strict_json_object_bytes(raw, "JSON rogue events")
+        events = value.get("events")
+        if not isinstance(events, dict):
+            raise PackPreflightError("JSON rogue events.events must be an object")
+        rows: list[tuple[str, bytes]] = []
+        for event_id, event in events.items():
+            _require_canonical_integer_key(
+                event_id, "JSON rogue events event ID"
+            )
+            if not isinstance(event, dict):
+                raise PackPreflightError(
+                    f"JSON rogue events.events[{event_id}] must be an object"
+                )
+            rows.append((event_id, _canonical_json_bytes(event)))
+        root_siblings = {
+            key: item for key, item in value.items() if key != "events"
+        }
+        sibling_digest = hashlib.sha256(
+            _canonical_json_bytes(root_siblings)
+        ).hexdigest()
+        return TableImage(
+            tuple(rows),
+            semantic_values=(("json_rogue_root_sha256", sibling_digest),),
+        )
+
+
 DEFAULT_CODECS: dict[str, TableCodec] = {
     "flat": _FlatCodec(compressed_rows=True),
     "raw_outer": _FlatCodec(compressed_rows=False),
     "action_nested": _NestedCodec(),
     "switched_nested": _NestedCodec(),
     "json_integer_set": JsonIntegerSetCodec(),
+    "json_event_shop_products": JsonEventShopProductsCodec(),
+    "json_rogue_events": JsonRogueEventsCodec(),
 }
 
 
@@ -456,6 +552,32 @@ def _reject_duplicate_object_keys(pairs: list[tuple[str, object]]) -> dict:
             raise ValueError(f"duplicate JSON object key {key!r}")
         result[key] = value
     return result
+
+
+def _strict_json_object_bytes(raw: bytes, label: str) -> dict:
+    try:
+        value = json.loads(
+            raw.decode("utf-8"),
+            parse_constant=_reject_json_constant,
+            object_pairs_hook=_reject_duplicate_object_keys,
+        )
+    except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
+        raise PackPreflightError(f"{label} is invalid: {exc}") from exc
+    if not isinstance(value, dict):
+        raise PackPreflightError(f"{label} must be an object")
+    return value
+
+
+def _require_canonical_integer_key(
+    value: object, label: str, *, allow_zero: bool = False
+) -> str:
+    if not isinstance(value, str) or not value.isascii() or not value.isdigit():
+        raise PackPreflightError(f"{label} must be a canonical integer string")
+    number = int(value)
+    minimum = 0 if allow_zero else 1
+    if number < minimum or str(number) != value:
+        raise PackPreflightError(f"{label} must be a canonical integer string")
+    return value
 
 
 def load_manifest(path: Path) -> dict:

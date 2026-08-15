@@ -1922,6 +1922,29 @@ class TestPackPreflight(_TransactionFixtureMixin, unittest.TestCase):
 
         self.assertFalse(report.conflicts)
 
+    def test_nested_server_extension_occupied_product_requires_prior_ownership(self):
+        self._finish_setup()
+        extended = copy.deepcopy(self.manifest)
+        logical_path = "event_item_shop.json"
+        candidate = b'{"11":{"700099":{"9700116":{"ticket":"single"}}}}'
+        add_file(self.package_dir, extended, "server", logical_path, candidate)
+        (self.server / logical_path).write_bytes(candidate)
+        extended["tables"].append({
+            "root": "server",
+            "logical_path": logical_path,
+            "codec_id": "json_event_shop_products",
+            "outer_keys": ["9700116"],
+            "inner_keys": [],
+            "semantic_claims": [],
+        })
+
+        report = self._tx(manifest=extended).preflight()
+
+        self.assertIn(
+            ("outer_key", f"{logical_path}:9700116"),
+            {(item["kind"], item["claim"]) for item in report.conflicts},
+        )
+
     def test_server_json_codec_rejects_malformed_and_duplicate_object_keys(self):
         self._finish_setup()
         logical_path = self.SERVER_PATHS[0]
@@ -2074,16 +2097,29 @@ class TestPackPreflight(_TransactionFixtureMixin, unittest.TestCase):
             image.outer_rows,
         )
 
+    def test_nested_server_codecs_are_controlled_builtins(self):
+        self._finish_setup()
+        self.assertTrue({
+            "json_event_shop_products",
+            "json_rogue_events",
+        }.issubset(self.pack.DEFAULT_CODECS))
+
     def test_codec_registry_cannot_override_a_validated_builtin_codec(self):
         self._finish_setup()
 
-        with self.assertRaisesRegex(
-            self.pack.PackPreflightError, "cannot override built-in codec"
+        for codec_id in (
+            "json_integer_set",
+            "json_event_shop_products",
+            "json_rogue_events",
         ):
-            self._tx(codec_registry={
-                "fixture_json": _JsonFixtureCodec(self.pack),
-                "json_integer_set": _JsonFixtureCodec(self.pack),
-            })
+            with self.subTest(codec_id=codec_id):
+                with self.assertRaisesRegex(
+                    self.pack.PackPreflightError, "cannot override built-in codec"
+                ):
+                    self._tx(codec_registry={
+                        "fixture_json": _JsonFixtureCodec(self.pack),
+                        codec_id: _JsonFixtureCodec(self.pack),
+                    })
 
     def test_same_package_id_does_not_own_a_newly_claimed_occupied_key(self):
         installed, installed_dir = self._installed_copy()
