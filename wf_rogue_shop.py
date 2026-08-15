@@ -360,10 +360,10 @@ def validate_shop(client: dict, shop: dict, id_map: dict) -> list[str]:
 
     if EVENT_ID in client:
         problems.append(f"客户端旧键 {EVENT_ID} 未移除")
-    reserved_order = tuple(key for key in client if key in RESERVED_SHOP_IDS)
-    if reserved_order != RESERVED_SHOP_IDS:
+    owned_order = tuple(key for key in client if key in OWNED_SHOP_IDS)
+    if owned_order != OWNED_SHOP_IDS:
         problems.append(
-            "客户端保留商店键必须组成 9700101..9700115 的升序块"
+            "客户端保留商店键必须组成 9700101..9700117 的升序块"
         )
     expected_products = _expected_products(WEAPONS)
     expected_map = {"eventType": int(EVENT_TYPE), "eventId": int(EVENT_ID)}

@@ -405,6 +405,21 @@ class TestValidation(unittest.TestCase):
     def test_generated_shop_has_no_validation_problems(self):
         self.assertEqual([], shop.validate_shop(self.client, self.server, self.id_map))
 
+    def test_ticket_products_must_follow_the_owned_shop_order(self):
+        bad_client = {}
+        for key, value in self.client.items():
+            if key == TICKET_SHOP_IDS[0]:
+                bad_client[TICKET_SHOP_IDS[1]] = self.client[TICKET_SHOP_IDS[1]]
+                bad_client[TICKET_SHOP_IDS[0]] = value
+            elif key != TICKET_SHOP_IDS[1]:
+                bad_client[key] = value
+
+        problems = shop.validate_shop(bad_client, self.server, self.id_map)
+
+        self.assertTrue(
+            any("9700101..9700117" in problem for problem in problems), problems
+        )
+
     def test_bad_schema_and_wrong_total_cost_are_reported(self):
         bad_client = copy.deepcopy(self.client)
         row = core.read_csv_lines(bad_client[SHOP_IDS[0]])[0][:-1]
