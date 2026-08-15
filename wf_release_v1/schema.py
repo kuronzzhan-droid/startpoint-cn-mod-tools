@@ -8,6 +8,8 @@ import hashlib
 import re
 from typing import Final
 
+from wf_character_pack import logical_path_problem, windows_logical_path_key
+
 from .canonical import canonical_json_bytes, normalize_relative_path
 from .errors import ReleaseError
 
@@ -24,7 +26,10 @@ _NAME_PATTERN: Final = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 _CAPABILITY_PATTERN: Final = re.compile(r"[a-z0-9][a-z0-9._-]*@[1-9][0-9]*")
 _OWNERSHIP_KEY_PATTERN: Final = re.compile(r"[a-z][a-z0-9._-]*:[^\s:]+")
 _COMPONENT_KINDS: Final = frozenset({"content", "server", "modes"})
-
+_ASSET_ROOTS: Final = frozenset({"common", "medium", "android"})
+_ASSET_REPLACEMENT_KEYS: Final = frozenset(
+    {"root", "logicalPath", "beforeSha256", "beforeSize"}
+)
 _RELEASE_KEYS: Final = frozenset(
     {
         "schemaVersion",
@@ -138,15 +143,37 @@ class ProducerIdentity:
 
 
 @dataclass(frozen=True)
-class SourceEvidence:
-    kind: str
-    workspace_input_sha256: str
+class AssetReplacement:
+    root: str
+    logical_path: str
+    before_sha256: str
+    before_size: int
 
     def to_wire(self) -> dict[str, object]:
         return {
+            "root": self.root,
+            "logicalPath": self.logical_path,
+            "beforeSha256": self.before_sha256,
+            "beforeSize": self.before_size,
+        }
+
+
+@dataclass(frozen=True)
+class SourceEvidence:
+    kind: str
+    workspace_input_sha256: str
+    accepted_asset_replacements: tuple[AssetReplacement, ...] = ()
+
+    def to_wire(self) -> dict[str, object]:
+        value: dict[str, object] = {
             "kind": self.kind,
             "workspaceInputSha256": self.workspace_input_sha256,
         }
+        if self.kind == "character-workspace-v2":
+            value["acceptedAssetReplacements"] = [
+                item.to_wire() for item in self.accepted_asset_replacements
+            ]
+        return value
 
 
 @dataclass(frozen=True)
@@ -259,20 +286,86 @@ def _parse_producer(value: object) -> ProducerIdentity:
     )
 
 
+def _portable_asset_path(value: object, label: str) -> str:
+    raw = _string(value, label)
+    try:
+        path = normalize_relative_path(raw)
+    except ReleaseError as error:
+        raise _invalid(label, "asset path is not canonical") from error
+    if logical_path_problem(path) is not None:
+        raise _invalid(label, "asset path is not portable")
+    folded = path.casefold()
+    if folded.startswith("master/") or folded.endswith((".orderedmap", ".json")):
+        raise _invalid(label, "table paths cannot be accepted asset replacements")
+    return path
+
+
+def parse_asset_replacements(value: object) -> tuple[AssetReplacement, ...]:
+    label = "sourceEvidence.acceptedAssetReplacements"
+    if not isinstance(value, list) or not value:
+        raise _invalid(label, "accepted asset replacements must be a non-empty array")
+    parsed: list[AssetReplacement] = []
+    windows_seen: set[tuple[str, str]] = set()
+    for index, raw in enumerate(value):
+        item_label = f"{label}[{index}]"
+        item = _exact_object(raw, _ASSET_REPLACEMENT_KEYS, item_label)
+        root = _string(item["root"], f"{item_label}.root")
+        if root not in _ASSET_ROOTS:
+            raise _invalid(f"{item_label}.root", "asset root is not supported")
+        logical_path = _portable_asset_path(
+            item["logicalPath"], f"{item_label}.logicalPath"
+        )
+        alias = (root, windows_logical_path_key(logical_path))
+        if alias in windows_seen:
+            raise _invalid(label, "asset paths contain a Windows-equivalent duplicate")
+        windows_seen.add(alias)
+        parsed.append(AssetReplacement(
+            root=root,
+            logical_path=logical_path,
+            before_sha256=_sha256(
+                item["beforeSha256"], f"{item_label}.beforeSha256"
+            ),
+            before_size=_integer(
+                item["beforeSize"], f"{item_label}.beforeSize", minimum=0
+            ),
+        ))
+    ordered = tuple(sorted(
+        parsed,
+        key=lambda item: (item.root.encode("utf-8"), item.logical_path.encode("utf-8")),
+    ))
+    if tuple(parsed) != ordered:
+        raise _invalid(label, "accepted asset replacements are not canonically ordered")
+    return ordered
+
+
 def _parse_source_evidence(value: object) -> SourceEvidence:
-    item = _exact_object(
-        value,
-        frozenset({"kind", "workspaceInputSha256"}),
-        "sourceEvidence",
-    )
-    kind = _string(item["kind"], "sourceEvidence.kind")
-    if kind != "character-workspace-v1":
+    if not isinstance(value, Mapping):
+        raise _invalid("sourceEvidence", "source evidence must be an object")
+    kind = _string(value.get("kind"), "sourceEvidence.kind")
+    if kind == "character-workspace-v1":
+        item = _exact_object(
+            value,
+            frozenset({"kind", "workspaceInputSha256"}),
+            "sourceEvidence",
+        )
+        replacements: tuple[AssetReplacement, ...] = ()
+    elif kind == "character-workspace-v2":
+        item = _exact_object(
+            value,
+            frozenset({
+                "kind", "workspaceInputSha256", "acceptedAssetReplacements"
+            }),
+            "sourceEvidence",
+        )
+        replacements = parse_asset_replacements(item["acceptedAssetReplacements"])
+    else:
         raise _invalid("sourceEvidence.kind", "source evidence kind is not supported")
     return SourceEvidence(
         kind=kind,
         workspace_input_sha256=_sha256(
             item["workspaceInputSha256"], "sourceEvidence.workspaceInputSha256"
         ),
+        accepted_asset_replacements=replacements,
     )
 
 

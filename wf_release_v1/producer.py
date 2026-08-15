@@ -29,6 +29,7 @@ from .release_archive import (
 from .schema import (
     ExpectedState,
     MetadataSha256,
+    OwnershipManifest,
     ProducerIdentity,
     ReleaseComponent,
     ReleaseFile,
@@ -307,6 +308,20 @@ def _build_metadata(
         declared_server_paths=_manifest_paths(manifest, ("server",)),
         declared_overlay_paths=_manifest_paths(manifest, ("common", "medium", "android")),
     )
+    if source.accepted_asset_replacements:
+        asset_claims = tuple(
+            f"asset:{item.root}/{item.logical_path}"
+            for item in source.accepted_asset_replacements
+        )
+        ownership = OwnershipManifest(
+            schema_version=ownership.schema_version,
+            entities=ownership.entities,
+            records=tuple(sorted(
+                {*ownership.records, *asset_claims},
+                key=lambda item: item.encode("utf-8"),
+            )),
+            paths=ownership.paths,
+        )
     ownership = parse_ownership(ownership.to_wire())
     requires_raw = canonical_json_bytes(requirements.to_wire())
     ownership_raw = canonical_json_bytes(ownership.to_wire())
@@ -319,7 +334,13 @@ def _build_metadata(
         producer=ProducerIdentity("wf-mod-tools", "1"),
         replaces=request.replaces,
         source_evidence=SourceEvidence(
-            "character-workspace-v1", source.workspace_input_sha256
+            (
+                "character-workspace-v2"
+                if source.accepted_asset_replacements
+                else "character-workspace-v1"
+            ),
+            source.workspace_input_sha256,
+            source.accepted_asset_replacements,
         ),
         components=(ReleaseComponent("content", "content"),),
         expected_state=ExpectedState(source.cdn_target_version, None, None),
