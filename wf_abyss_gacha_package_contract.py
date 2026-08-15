@@ -31,6 +31,7 @@ SHOP_CLIENT_LOGICAL = "master/shop/event_item_shop.orderedmap"
 SHOP_SERVER_LOGICAL = "event_item_shop.json"
 SHOP_ID_MAP_LOGICAL = "event_item_shop_id_map.json"
 ROGUE_EVENT_LOGICAL = "rogue_event.json"
+ROGUE_EVENT_CLIENT_LOGICAL = "master/quest/event/cnmod_rogue_event.orderedmap"
 
 NEW_PATHS: tuple[tuple[str, str], ...] = (
     *(("common", logical) for logical in gacha.COMMON_OUTPUT_PATHS),
@@ -38,6 +39,7 @@ NEW_PATHS: tuple[tuple[str, str], ...] = (
     ("common", ITEM_SHEET_LOGICAL),
     ("common", ITEM_ATLAS_LOGICAL),
     ("common", SHOP_CLIENT_LOGICAL),
+    ("common", ROGUE_EVENT_CLIENT_LOGICAL),
     ("common", gacha.LIST_BANNER_LOGICAL),
     ("common", gacha.TOP_BANNER_LOGICAL),
     *(("server", logical) for logical in gacha.SERVER_OUTPUT_PATHS),
@@ -49,12 +51,14 @@ NEW_PATHS: tuple[tuple[str, str], ...] = (
 SERVER_LOGICALS = tuple(character_pack.SERVER_LOGICAL_PATHS) + tuple(
     logical for root, logical in NEW_PATHS if root == "server"
 )
+SOURCE_ROOT_COUNTS = {"common": 52, "medium": 25, "android": 2, "server": 4}
 EXPECTED_ROOT_COUNTS = {
-    "common": 66,
-    "medium": 25,
-    "android": 2,
-    "server": 11,
+    root: SOURCE_ROOT_COUNTS[root] + sum(
+        item_root == root for item_root, _logical in NEW_PATHS
+    )
+    for root in ROOT_NAMES
 }
+EXPECTED_PAYLOAD_COUNT = sum(EXPECTED_ROOT_COUNTS.values())
 _HASH_RE = re.compile(r"^[0-9a-f]{64}$")
 _ACCEPTANCE = {
     "all_references_closed": True,
@@ -125,6 +129,7 @@ def expected_new_claims() -> list[dict[str, Any]]:
             "9700116", "9700117",
         ),
         _claim("server", SHOP_ID_MAP_LOGICAL, "json_object", "9700116", "9700117"),
+        _claim("common", ROGUE_EVENT_CLIENT_LOGICAL, "flat", "700099"),
         _claim("server", ROGUE_EVENT_LOGICAL, "json_rogue_events", "700099"),
     ))
     return claims
@@ -282,7 +287,7 @@ def build_package_image(
     *,
     generator_git_head: str,
 ) -> PackageImage:
-    """Build and self-audit the complete 104-file image without filesystem writes."""
+    """Build and self-audit the complete derived image without filesystem writes."""
 
     _validate_source(source)
     _validate_additions(source, additions)
@@ -343,11 +348,13 @@ def build_package_image(
         "source_workspace_input_sha256": source.workspace_input_sha256,
     })
     contract_report = {
-        "payload_count": 104,
-        "table_claim_count": 38,
+        "payload_count": sum(len(files) for files in roots.values()),
+        "table_claim_count": len(manifest["tables"]),
         "root_counts": dict(EXPECTED_ROOT_COUNTS),
-        "old_payload_exact_count": 83,
-        "new_payload_exact_count": 21,
+        "old_payload_exact_count": sum(len(files) for files in source.roots.values()),
+        "new_payload_exact_count": sum(
+            len(files) for files in additions.roots.values()
+        ),
         "old_payloads_byte_exact": True,
     }
     source_report = {
@@ -374,7 +381,8 @@ def audit_package_image(image: PackageImage) -> dict[str, Any]:
 __all__ = [
     "PACKAGE_ID", "CHARACTER_ID", "CODE_NAME", "ROOT_NAMES",
     "PACKAGE_VERSION", "REQUIRES_CLIENT_BASE", "CONFIRMATION", "NEW_PATHS",
-    "SERVER_LOGICALS", "EXPECTED_ROOT_COUNTS", "PackageAssemblyError",
+    "SERVER_LOGICALS", "SOURCE_ROOT_COUNTS", "EXPECTED_ROOT_COUNTS",
+    "EXPECTED_PAYLOAD_COUNT", "ROGUE_EVENT_CLIENT_LOGICAL", "PackageAssemblyError",
     "PackageImage", "SealedSourcePackage", "AdditionBundle",
     "expected_new_claims", "source_lock_evidence_bytes", "build_package_image",
     "audit_package_image",

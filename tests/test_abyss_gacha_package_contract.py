@@ -61,7 +61,7 @@ class AbyssGachaPackageContractTests(unittest.TestCase):
             },
         )
 
-    def test_builds_exact_104_payload_38_claim_replacement_without_touching_old_bytes(self):
+    def test_builds_exact_derived_payload_and_claim_replacement_without_touching_old_bytes(self):
         source = self._source()
         image = module.build_package_image(
             source,
@@ -70,14 +70,14 @@ class AbyssGachaPackageContractTests(unittest.TestCase):
         )
 
         audit = module.audit_package_image(image)
-        self.assertEqual(104, audit["payload_count"])
-        self.assertEqual(38, audit["table_claim_count"])
+        self.assertEqual(105, audit["payload_count"])
+        self.assertEqual(39, audit["table_claim_count"])
         self.assertEqual(
-            {"common": 66, "medium": 25, "android": 2, "server": 11},
+            {"common": 67, "medium": 25, "android": 2, "server": 11},
             audit["root_counts"],
         )
         self.assertEqual(83, audit["old_payload_exact_count"])
-        self.assertEqual(21, audit["new_payload_exact_count"])
+        self.assertEqual(22, audit["new_payload_exact_count"])
         self.assertTrue(audit["old_payloads_byte_exact"])
         self.assertEqual("1.1.0", image.manifest["package_version"])
         self.assertEqual("1.4.347", image.manifest["requires_client_base"])

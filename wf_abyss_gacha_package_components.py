@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 import wf_abyss_gacha_package_contract as contract
+import wf_abyss_gacha_drop_source as drop_source
 import wf_abyss_ticket_compile as tickets
 import wf_abyss_ticket_drop as ticket_drop
 import wf_character_pack as character_pack
@@ -303,21 +304,27 @@ def compile_drop_component(
     rogue_after = ticket_drop.build_final_ticket_drop(rogue_before, quests)
     ticket_drop.validate_final_ticket_drop(rogue_after, quests)
     payload = _json_bytes(rogue_after)
+    client_payload = drop_source.build_drop_source(rogue_after)
+    drop_source.validate_drop_mirror(client_payload, rogue_after)
     after_image = _inspect(payload, claim)
     _unchanged_rows(before_image, after_image, owned, contract.ROGUE_EVENT_LOGICAL)
     if set(dict(after_image.outer_rows)) != set(dict(before_image.outer_rows)):
         raise ValueError("drop compiler changed the event ID set")
 
     roots = _empty_roots()
+    roots["common"][drop_source.LOGICAL_PATH] = client_payload
     roots["server"][contract.ROGUE_EVENT_LOGICAL] = payload
     inputs = {
         contract.ROGUE_EVENT_LOGICAL: _sha(rogue_event_raw),
         "rush_event_quest.json": _sha(rush_event_quest_raw),
     }
-    return ComponentResult(roots, (claim,), inputs, {
-        "payload_count": 1,
-        "table_claim_count": 1,
+    client_claim = _claim_for(drop_source.LOGICAL_PATH)
+    _inspect(client_payload, client_claim)
+    return ComponentResult(roots, (client_claim, claim), inputs, {
+        "payload_count": 2,
+        "table_claim_count": 2,
         "drop_contract_closed": True,
+        "client_server_drop_mirror_exact": True,
         "validation_only_sha256": {
             "rush_event_quest.json": _sha(rush_event_quest_raw),
         },

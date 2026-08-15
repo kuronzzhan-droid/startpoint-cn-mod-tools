@@ -90,7 +90,7 @@ def audit_package_image(image: contract.PackageImage) -> dict[str, Any]:
     )
     if (
         root_report["root_counts"] != contract.EXPECTED_ROOT_COUNTS
-        or root_report["payload_count"] != 104
+        or root_report["payload_count"] != contract.EXPECTED_PAYLOAD_COUNT
     ):
         raise contract.PackageAssemblyError("replacement payload/root count drift")
 
@@ -145,7 +145,8 @@ def audit_package_image(image: contract.PackageImage) -> dict[str, Any]:
                 )
             old_roots[root][logical] = raw
     tables = manifest.get("tables")
-    if not isinstance(tables, list) or len(tables) != 38:
+    expected_claim_count = 22 + len(contract.expected_new_claims())
+    if not isinstance(tables, list) or len(tables) != expected_claim_count:
         raise contract.PackageAssemblyError(
             "replacement table claim count drift"
         )

@@ -116,13 +116,13 @@ def compile_sources() -> module.AdditionSources:
 
 
 class CombinedCompileTests(unittest.TestCase):
-    def test_compiles_provisional_exact_21_payload_16_claim_addition(self):
+    def test_compiles_provisional_exact_derived_payload_and_claim_addition(self):
         sources = compile_sources()
         additions = module.compile_additions(source_package(), sources)
 
-        self.assertEqual(21, sum(len(files) for files in additions.roots.values()))
+        self.assertEqual(22, sum(len(files) for files in additions.roots.values()))
         self.assertEqual(
-            {"common": 14, "medium": 0, "android": 0, "server": 7},
+            {"common": 15, "medium": 0, "android": 0, "server": 7},
             {root: len(files) for root, files in additions.roots.items()},
         )
         self.assertEqual(contract.expected_new_claims(), list(additions.table_claims))

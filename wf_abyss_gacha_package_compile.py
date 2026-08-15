@@ -310,7 +310,7 @@ def compile_package_image(
     *,
     generator_git_head: str,
 ) -> contract.PackageImage:
-    """Compile and audit the complete 104-payload image in memory."""
+    """Compile and audit the complete derived package image in memory."""
 
     additions = compile_additions(source, sources)
     if additions.acceptance.get("drop_source_sync_closed") is not True:

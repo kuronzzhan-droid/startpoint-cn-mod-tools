@@ -158,12 +158,26 @@ class PackageComponentTests(unittest.TestCase):
         )
 
         self.assertEqual({"rogue_event.json"}, set(result.roots["server"]))
+        self.assertEqual(
+            {"master/quest/event/cnmod_rogue_event.orderedmap"},
+            set(result.roots["common"]),
+        )
         self.assertNotIn("rush_event_quest.json", result.roots["server"])
-        self.assertEqual(1, result.report["table_claim_count"])
+        self.assertEqual(2, result.report["payload_count"])
+        self.assertEqual(2, result.report["table_claim_count"])
         after = json.loads(result.roots["server"]["rogue_event.json"])
         self.assertEqual(rogue["events"]["700007"], after["events"]["700007"])
         self.assertEqual(999014, after["events"]["700099"]["folder_clear_chance"][0]["id"])
         self.assertEqual(0.05, after["events"]["700099"]["folder_clear_chance"][0]["chance"])
+        client = core.read_orderedmap_file_from_bytes(
+            result.roots["common"][
+                "master/quest/event/cnmod_rogue_event.orderedmap"
+            ]
+        )
+        self.assertEqual({
+            "700099": "1,0,999014,1,0.05\n1,0,11003,1,0.5"
+        }, client)
+        self.assertTrue(result.report["client_server_drop_mirror_exact"])
         self.assertTrue(result.report["drop_contract_closed"])
         self.assertEqual(
             hashlib.sha256(json.dumps(quests, separators=(",", ":")).encode()).hexdigest(),
