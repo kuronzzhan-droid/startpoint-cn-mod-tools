@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """Pure compiler for a complete original normal character sprite set.
 
-The template contributes only the validated frame/timeline contract.  No
-template texture pixels or atlas geometry are copied into the result.
+The template contributes the validated frame/timeline contract and the base
+movement cels' pivot geometry.  No template texture pixels are copied.
 """
 from __future__ import annotations
 
@@ -90,7 +90,7 @@ _BASE_TICK_SLOT = {
     14: "base_0014",
     20: "base_0008",
     26: "base_0026",
-    32: "base_0026",
+    32: "base_0002",
     38: "base_0038",
     44: "base_0002",
     50: "base_0050",
@@ -244,9 +244,19 @@ def compile_full_normal(
 
     sheet, packed = _pack_slots(images)
     tick_slots = {tick: _slot_for_tick(tick) for tick in _OUTPUT_TICKS}
+    template_by_tick = {
+        int(str(entry["n"]).rsplit("pixelart", 1)[1]): entry
+        for entry in template_atlas
+    }
     atlas = []
     for tick in _OUTPUT_TICKS:
-        geometry = packed[tick_slots[tick]]
+        geometry = dict(packed[tick_slots[tick]])
+        if tick in _BASE_TICK_SLOT:
+            donor = template_by_tick[tick]
+            if (geometry["w"], geometry["h"]) != (donor["w"], donor["h"]):
+                raise ValueError(f"base donor crop geometry drift at tick {tick}")
+            for key in ("fx", "fy", "fw", "fh"):
+                geometry[key] = donor[key]
         atlas.append({"n": f"{target}/pixelart{tick:04d}", **geometry})
     if len(atlas) != 134 or len({entry["n"] for entry in atlas}) != 134:
         raise ValueError("compiled full normal atlas must contain 134 unique records")
@@ -275,6 +285,7 @@ def compile_full_normal(
         "template_texture_pixels_copied": False,
         "official_passthrough_actions": [],
         "official_passthrough_atlas_records": 0,
+        "official_anchor_records": len(_BASE_TICK_SLOT),
         "sequence_count": 9,
         "timeline_ticks": 428,
         "atlas_records": len(atlas),

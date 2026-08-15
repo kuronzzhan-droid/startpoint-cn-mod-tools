@@ -51,11 +51,12 @@ def _stored_png(image):
 def _template_files():
     sheet = Image.new("RGBA", (190, 58), (0, 0, 0, 0))
     sheet.putpixel((0, 0), (255, 0, 0, 255))
-    atlas = [
-        {
+    atlas = []
+    for tick in TEMPLATE_TICKS:
+        entry = {
             "n": f"{SOURCE}/pixelart{tick:04d}",
-            "w": 1,
-            "h": 1,
+            "w": 3,
+            "h": 3,
             "x": 0,
             "y": 0,
             "fx": -128,
@@ -63,8 +64,10 @@ def _template_files():
             "fw": 256,
             "fh": 256,
         }
-        for tick in TEMPLATE_TICKS
-    ]
+        if tick in {2, 8, 14, 20, 26, 32, 38, 44, 50}:
+            entry["fx"] = -120
+            entry["fy"] = -112 + (tick % 2)
+        atlas.append(entry)
     frame = {
         "name": f"{SOURCE}/pixelart",
         "x": -128,
@@ -158,6 +161,12 @@ class FullNormalPixelArtCompileTests(unittest.TestCase):
         self.assertEqual(sorted((*TEMPLATE_TICKS, 51, 111)), ticks)
 
         by_tick = {int(entry["n"].rsplit("pixelart", 1)[1]): entry for entry in atlas}
+        template_atlas = wf_dsl.parse_dsl(
+            zlib.decompress(template[f"{SOURCE}/sprite_sheet.atlas.amf3.deflate"], -15)
+        )["tree"]
+        template_by_tick = {
+            int(entry["n"].rsplit("pixelart", 1)[1]): entry for entry in template_atlas
+        }
         for tick, expected_base in expected_bases.items():
             entry = by_tick[tick]
             rebuilt = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
@@ -171,11 +180,18 @@ class FullNormalPixelArtCompileTests(unittest.TestCase):
             )
             rebuilt.alpha_composite(crop, (-entry["fx"], -entry["fy"]))
             expected = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
+            donor = template_by_tick[tick]
             expected.alpha_composite(
-                expected_base,
-                ((256 - expected_base.width) // 2, (256 - expected_base.height) // 2),
+                expected_base.crop(expected_base.getchannel("A").getbbox()),
+                (-donor["fx"], -donor["fy"]),
             )
             self.assertEqual(expected.tobytes(), rebuilt.tobytes(), f"tick {tick}")
+
+        self.assertEqual(9, report["official_anchor_records"])
+        self.assertEqual("base_0002", report["atlas_tick_slots"]["32"])
+        for tick in (2, 8, 14, 20, 26, 32, 38, 44, 50):
+            self.assertEqual(template_by_tick[tick]["fx"], by_tick[tick]["fx"])
+            self.assertEqual(template_by_tick[tick]["fy"], by_tick[tick]["fy"])
 
         frame = wf_dsl.parse_dsl(
             zlib.decompress(files[f"{TARGET}/pixelart.frame.amf3.deflate"], -15)
