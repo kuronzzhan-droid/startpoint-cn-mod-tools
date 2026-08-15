@@ -106,7 +106,7 @@ def _validate_parts(parts: Any, names: list[str]) -> None:
         for start in range(0, 110, 10)
     ]
     wave_segments = [
-        {"s": index, "i": index, "l": [{"m": 255}]} for index in range(10)
+        {"s": index, "i": index, "l": [{"m": 4351}]} for index in range(10)
     ]
     if not isinstance(parts, dict) or parts.get("i") != [
         {"s": False, "p": name} for name in names
@@ -120,10 +120,14 @@ def _validate_parts(parts: Any, names: list[str]) -> None:
         or parts.get("o") != [] or parts.get("c") != [] or parts.get("s") != 1
         or parts.get("t") != [
             {"a": 4096, "b": 0, "c": 0, "d": 4096,
+             "x": 0, "y": 0},
+            {"a": 4096, "b": 0, "c": 0, "d": 4096,
              "x": -32768, "y": -131072}
         ]
     ):
-        raise PackageAssemblyError("Flatomo m255/blend0/origin/timing structure drift")
+        raise PackageAssemblyError(
+            "Flatomo transform/blend/origin/timing structure drift"
+        )
 
 
 def build_flatomo_gate(effect_files: Mapping[str, bytes]) -> dict[str, Any]:

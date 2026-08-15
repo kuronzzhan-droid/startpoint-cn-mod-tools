@@ -86,6 +86,22 @@ class ExactSkillFollowGateTests(unittest.TestCase):
         with self.assertRaisesRegex(PackageAssemblyError, "HitArea rotation"):
             module.build_skill_follow_gate(action, _effect_files())
 
+    def test_double_applied_flatomo_anchor_is_rejected(self):
+        action = action_compile.compile_summer_thunder_dragon_action_skills()
+        effect = _effect_files()
+        parts_logical = next(
+            logical for logical in effect if logical.endswith(".parts.amf3.deflate")
+        )
+        parts = wf_dsl.parse_dsl(
+            zlib.decompress(effect[parts_logical], -15)
+        )["tree"]
+        parts["t"] = [parts["t"][1]]
+        for segment in parts["g"][1]["s"]:
+            segment["l"] = [{"m": 255}]
+        effect[parts_logical] = _encode_tree(parts)
+        with self.assertRaisesRegex(PackageAssemblyError, "transform"):
+            module.build_skill_follow_gate(action, effect)
+
     def test_every_tracking_geometry_and_flatomo_boundary_is_fail_closed(self):
         action = action_compile.compile_summer_thunder_dragon_action_skills()
         effect = _effect_files()
