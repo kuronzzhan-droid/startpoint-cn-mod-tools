@@ -67,7 +67,10 @@ class FakePlatform:
     def stop_owned(self, process: ManagedProcess, timeout: float) -> bool:
         self.events.append("stop")
         if process != self.current:
-            raise AssertionError("transaction stopped an unowned process")
+            raise ReleaseError(
+                "WFREL_PROCESS_IDENTITY",
+                "transaction tried to stop an unowned process",
+            )
         self.current = None
         return False
 
@@ -119,6 +122,8 @@ class TransactionTests(unittest.TestCase):
             compatibility=TargetCompatibility("1.4.54", "1.4.53", True),
             server_url="http://127.0.0.1:8001",
         )
+        empty = _active()
+        commit_active_state(self.target.state_root, previous=empty, active=empty)
         self.release = self.root / "release.zip"
         self.release.write_bytes(b"fixture")
         self.verified = _verified()
@@ -158,11 +163,14 @@ class TransactionTests(unittest.TestCase):
         materialize: object | None = None,
         receipt_failure_phase: str | None = None,
         capability_level: str = "modern",
+        capability_requires_started: bool = False,
+        capability_replacement: ManagedProcess | None = None,
     ) -> InstallResult:
         import wf_release_v1.transaction as transaction
 
         probe = FakeProbe(probes)
         receipt_failed = False
+        health_ready = False
 
         def record_receipt(root: Path, receipt) -> None:
             nonlocal receipt_failed
@@ -175,11 +183,27 @@ class TransactionTests(unittest.TestCase):
         def inspect_capability(target: ManagedTarget, reader: object) -> object:
             self.assertIs(self.target, target)
             self.assertIs(platform, reader)
+            platform.events.append("capability")
             self.assertTrue(
                 (self.target.state_root / ".wf-release-v1.operation").is_file(),
                 "modern capability inspection must happen inside the operation reservation",
             )
+            if capability_requires_started:
+                self.assertIsNotNone(
+                    platform.current,
+                    "a stopped managed target must start before protocol inspection",
+                )
+                self.assertTrue(
+                    health_ready,
+                    "a stopped managed target must become healthy before protocol inspection",
+                )
+            if capability_replacement is not None:
+                platform.current = capability_replacement
             return SimpleNamespace(level=capability_level)
+
+        def record_health(*args: object, **kwargs: object) -> None:
+            nonlocal health_ready
+            health_ready = True
 
         with (
             mock.patch.object(transaction, "new_operation_id", return_value=OPERATION_ID),
@@ -200,7 +224,11 @@ class TransactionTests(unittest.TestCase):
                 side_effect=materialize if isinstance(materialize, BaseException) else None,
             ),
             mock.patch.object(transaction, "verify_candidates"),
-            mock.patch.object(transaction, "wait_health_ready"),
+            mock.patch.object(
+                transaction,
+                "wait_health_ready",
+                side_effect=record_health,
+            ),
             mock.patch.object(transaction, "write_phase_receipt", side_effect=record_receipt),
             mock.patch.object(ManagedTarget, "target_probe", return_value=probe),
             mock.patch.object(ManagedTarget, "launch_spec", return_value=self.launch),
@@ -213,7 +241,7 @@ class TransactionTests(unittest.TestCase):
                 enforce_target_protocol=True,
             )
 
-    def test_first_install_records_bootstrap_and_commits_only_after_double_acceptance(self) -> None:
+    def test_bootstrapped_empty_state_commits_first_release_after_double_acceptance(self) -> None:
         platform = FakePlatform()
         result = self._run(platform, [self.before, self.after])
 
@@ -246,6 +274,34 @@ class TransactionTests(unittest.TestCase):
         self.assertIn("start", platform.events)
         self.assertIn("stop", platform.events)
 
+    def test_stopped_managed_target_starts_before_protocol_inspection(self) -> None:
+        platform = FakePlatform()
+
+        result = self._run(
+            platform,
+            [self.before, self.after],
+            capability_requires_started=True,
+        )
+
+        self.assertEqual("succeeded", result.outcome)
+        self.assertLess(
+            platform.events.index("start"),
+            platform.events.index("capability"),
+        )
+
+    def test_stopped_target_without_bootstrap_state_is_rejected_before_start(self) -> None:
+        (self.target.state_root / "active.json").unlink()
+        (self.target.state_root / "previous.json").unlink()
+        platform = FakePlatform()
+
+        with self.assertRaises(ReleaseError) as caught:
+            self._run(platform, [])
+
+        self.assertEqual("WFREL_STATE_CONFLICT", caught.exception.code)
+        self.assertEqual([], platform.events)
+        self.assertEqual([], self.phases)
+        self.assertFalse((self.target.state_root / "receipts").exists())
+
     def test_concurrent_reservation_blocks_install_before_prepare_or_start(self) -> None:
         platform = FakePlatform()
         with operation_reservation(self.target.state_root, OPERATION_ID):
@@ -257,21 +313,70 @@ class TransactionTests(unittest.TestCase):
         self.assertEqual([], self.phases)
 
     def test_wrong_protocol_is_rejected_inside_reservation_before_transaction_io(self) -> None:
-        platform = FakePlatform()
+        platform = FakePlatform(_process())
 
         with self.assertRaises(ReleaseError) as caught:
             self._run(platform, [], capability_level="transition")
 
         self.assertEqual("WFREL_TARGET_PROTOCOL", caught.exception.code)
-        self.assertEqual([], platform.events)
+        self.assertEqual(["current", "capability"], platform.events)
         self.assertEqual([], self.phases)
         self.assertFalse((self.target.state_root / "receipts").exists())
+
+    def test_stopped_wrong_protocol_cleans_started_baseline(self) -> None:
+        platform = FakePlatform()
+
+        result = self._run(
+            platform,
+            [],
+            capability_level="transition",
+            capability_requires_started=True,
+        )
+
+        self.assertEqual("failed", result.outcome)
+        self.assertEqual("WFREL_TARGET_PROTOCOL", result.error_code)
+        self.assertEqual(
+            ["current", "start", "capability", "stop"],
+            platform.events,
+        )
+        self.assertNotIn("MATERIALIZED", self.phases)
+        self.assertIsNone(platform.current)
+
+    def test_stopped_protocol_failure_never_stops_replacement_process(self) -> None:
+        platform = FakePlatform()
+        replacement = _process(999)
+
+        result = self._run(
+            platform,
+            [],
+            capability_level="transition",
+            capability_requires_started=True,
+            capability_replacement=replacement,
+        )
+
+        self.assertEqual("recovery_failed", result.outcome)
+        self.assertEqual("WFREL_RECOVERY_FAILED", result.error_code)
+        self.assertEqual(replacement, platform.current)
+        self.assertNotIn("MATERIALIZED", self.phases)
 
     def test_same_active_release_is_explicit_noop_without_process_or_candidate_io(self) -> None:
         previous = _active()
         active = _active(ActiveRelease(self.release_id, self.verified.ownership))
         commit_active_state(self.target.state_root, previous=previous, active=active)
         platform = FakePlatform(_process())
+
+        result = self._run(platform, [])
+
+        self.assertEqual("noop", result.outcome)
+        self.assertIsNone(result.operation_id)
+        self.assertEqual(["current", "capability"], platform.events)
+        self.assertFalse((self.target.state_root / "receipts").exists())
+
+    def test_stopped_same_active_release_is_noop_without_start_or_receipt(self) -> None:
+        previous = _active()
+        active = _active(ActiveRelease(self.release_id, self.verified.ownership))
+        commit_active_state(self.target.state_root, previous=previous, active=active)
+        platform = FakePlatform()
 
         result = self._run(platform, [])
 
@@ -319,14 +424,17 @@ class TransactionTests(unittest.TestCase):
             self.assertEqual("WFREL_STATE_INVALID", caught.exception.code)
 
     def test_initial_running_process_without_active_state_fails_before_probe(self) -> None:
+        (self.target.state_root / "active.json").unlink()
+        (self.target.state_root / "previous.json").unlink()
         platform = FakePlatform(_process())
-        result = self._run(platform, [])
 
-        self.assertEqual("failed", result.outcome)
-        self.assertEqual("WFREL_STATE_CONFLICT", result.error_code)
-        self.assertEqual("VERIFIED", self._receipt()["phase"])
+        with self.assertRaises(ReleaseError) as caught:
+            self._run(platform, [])
+
+        self.assertEqual("WFREL_STATE_CONFLICT", caught.exception.code)
+        self.assertFalse((self.target.state_root / "receipts").exists())
         self.assertIsNotNone(platform.current)
-        self.assertNotIn("stop", platform.events)
+        self.assertEqual([], platform.events)
 
     def test_pre_switch_failure_restores_a_previously_running_service(self) -> None:
         previous = _active()
@@ -360,7 +468,7 @@ class TransactionTests(unittest.TestCase):
         self.assertIsNotNone(platform.current)
         self.assertEqual("recovered", self._receipt()["outcome"])
         self.assertEqual("recovered", self._receipt()["recoveryOutcome"])
-        self.assertFalse((self.target.state_root / "active.json").exists())
+        self.assertEqual((), load_active_state(self.target.state_root).releases)
 
     def test_prepare_failure_after_switch_uses_the_same_recovery_path(self) -> None:
         platform = FakePlatform()
@@ -447,7 +555,10 @@ class TransactionTests(unittest.TestCase):
                 )
                 self.assertEqual("recovered", result.outcome)
                 self.assertEqual("WFREL_STATE_IO", result.error_code)
-                self.assertFalse((self.target.state_root / "active.json").exists())
+                self.assertEqual(
+                    (),
+                    load_active_state(self.target.state_root).releases,
+                )
                 self.assertEqual(b'{"baseline":true}\n', self.pointer.read_bytes())
 
     def test_recovery_failure_stays_stopped_and_retains_evidence(self) -> None:

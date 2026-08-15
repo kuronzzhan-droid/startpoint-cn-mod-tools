@@ -186,19 +186,32 @@ def install_release(
         secrets.token_bytes(16),
     )
     with operation_reservation(target.state_root, operation_id):
-        if enforce_target_protocol:
+        previous, active_exists = _active_state(target)
+        if not active_exists:
+            raise _transaction_error(
+                "WFREL_STATE_CONFLICT",
+                "managed target must be bootstrapped before install",
+            )
+        initial_process = platform.current_process()
+        protocol_checked = False
+        if enforce_target_protocol and initial_process is not None:
             capability = inspect_target_capability(target, platform)
             if capability.level != "modern":
                 raise _transaction_error(
                     "WFREL_TARGET_PROTOCOL",
                     "modern install requires a capabilities-v1 target",
                 )
+            protocol_checked = True
         return _install_release_reserved(
             release,
             target,
             platform,
             operation_id=operation_id,
             health_timeout=health_timeout,
+            previous=previous,
+            enforce_target_protocol=enforce_target_protocol,
+            initial_process=initial_process,
+            protocol_checked=protocol_checked,
         )
 
 
@@ -209,10 +222,12 @@ def _install_release_reserved(
     *,
     operation_id: str,
     health_timeout: float,
+    previous: ActiveState,
+    enforce_target_protocol: bool,
+    initial_process: ManagedProcess | None,
+    protocol_checked: bool,
 ) -> InstallResult:
     report = verify_release(release)
-    previous, active_exists = _active_state(target)
-    initial_process = platform.current_process()
     if any(item.release_id == report.release_id for item in previous.releases):
         return InstallResult(report.release_id, None, "noop", None, ())
 
@@ -274,16 +289,19 @@ def _install_release_reserved(
         launch = target.launch_spec()
         environment = _environment(target)
 
-        if not active_exists and initial_process is not None:
-            raise _transaction_error(
-                "WFREL_STATE_CONFLICT",
-                "initial managed process has no active state",
-            )
         if baseline_process is None:
             baseline_process = platform.start_server(launch, environment, operation_id)
             phase = "BASE_STARTED"
             advance(phase)
             _wait_owned_health(target, environment, baseline_process, health_timeout)
+
+        if enforce_target_protocol and not protocol_checked:
+            capability = inspect_target_capability(target, platform)
+            if capability.level != "modern":
+                raise _transaction_error(
+                    "WFREL_TARGET_PROTOCOL",
+                    "modern install requires a capabilities-v1 target",
+                )
 
         before_facts = target.target_probe(timeout_seconds=health_timeout).run()
         phase = "PROBED"
@@ -408,26 +426,42 @@ def _install_release_reserved(
                 )
 
         try:
-            current = platform.current_process()
             if initial_process is None:
-                if current is not None:
-                    platform.stop_owned(current, health_timeout)
-            elif (
-                current is None
-                and before_facts is not None
-                and launch is not None
-                and environment is not None
-            ):
-                recovered_process = platform.start_server(launch, environment, operation_id)
-                _wait_owned_health(target, environment, recovered_process, health_timeout)
-                _same_target(
-                    before_facts,
-                    target.target_probe(timeout_seconds=health_timeout).run(),
-                )
-                if platform.current_process() != recovered_process:
+                if baseline_process is not None:
+                    platform.stop_owned(baseline_process, health_timeout)
+                elif platform.current_process() is not None:
                     raise _transaction_error(
-                        "WFREL_RECOVERY_FAILED", "baseline process identity changed"
+                        "WFREL_PROCESS_IDENTITY",
+                        "managed process identity changed during failed install",
                     )
+            else:
+                current = platform.current_process()
+                if current is not None and current != initial_process:
+                    raise _transaction_error(
+                        "WFREL_PROCESS_IDENTITY",
+                        "managed process identity changed during failed install",
+                    )
+                if (
+                    current is None
+                    and before_facts is not None
+                    and launch is not None
+                    and environment is not None
+                ):
+                    recovered_process = platform.start_server(
+                        launch, environment, operation_id
+                    )
+                    _wait_owned_health(
+                        target, environment, recovered_process, health_timeout
+                    )
+                    _same_target(
+                        before_facts,
+                        target.target_probe(timeout_seconds=health_timeout).run(),
+                    )
+                    if platform.current_process() != recovered_process:
+                        raise _transaction_error(
+                            "WFREL_RECOVERY_FAILED",
+                            "baseline process identity changed",
+                        )
             advance(phase, outcome="failed", error_code=error.code)
             return InstallResult(report.release_id, operation_id, "failed", error.code, ())
         except ReleaseError:

@@ -29,9 +29,14 @@ from tests.test_release_v1_probe import (
 )
 from wf_release_v1._platform_state import ManagedProcess
 from wf_release_v1.canonical import canonical_json_bytes
+from wf_release_v1.compatibility import ActiveState
 from wf_release_v1.errors import ReleaseError
 from wf_release_v1.producer import BuildRequest, build_character_release
-from wf_release_v1.receipts import load_active_state, load_operation_receipt
+from wf_release_v1.receipts import (
+    commit_active_state,
+    load_active_state,
+    load_operation_receipt,
+)
 from wf_release_v1.schema import parse_requirements
 from wf_release_v1.target import ManagedTarget
 from wf_release_v1.transaction import install_release
@@ -333,9 +338,30 @@ class CharacterInstallVerticalTests(unittest.TestCase):
             "serverUrl": self.contract.base_url,
         }))
         self.target = ManagedTarget.load(target_path)
+        empty = ActiveState(
+            client_version=self.target.compatibility.client_version,
+            resource_baseline=self.target.compatibility.resource_baseline,
+            client_patch_profile=self.target.compatibility.client_patch_profile,
+            releases=(),
+            known_release_ids=(),
+        )
+        commit_active_state(self.target.state_root, previous=empty, active=empty)
 
     def _pointer(self) -> Path:
         return self.roots["data"] / "state" / "content" / "current.json"
+
+    def test_stopped_target_without_bootstrap_state_cannot_install(self) -> None:
+        (self.target.state_root / "active.json").unlink()
+        (self.target.state_root / "previous.json").unlink()
+        platform = _VerticalPlatform(self.target, self.contract)
+
+        with self.assertRaises(ReleaseError) as caught:
+            install_release(self.release, self.target, platform, health_timeout=2)
+
+        self.assertEqual("WFREL_STATE_CONFLICT", caught.exception.code)
+        self.assertEqual([], platform.events)
+        self.assertFalse(self.contract.running)
+        self.assertFalse((self.target.state_root / "receipts").exists())
 
     def test_build_verify_install_accept_and_repeat_as_noop(self) -> None:
         platform = _VerticalPlatform(self.target, self.contract)
@@ -380,7 +406,7 @@ class CharacterInstallVerticalTests(unittest.TestCase):
         self.assertTrue(any(self.target.component_roots.content.rglob("1.4.55")))
         self.assertEqual("1.4.54", self.target.target_probe(timeout_seconds=2).run().cdn_target_version)
         self.assertIsNotNone(platform.current_process())
-        self.assertFalse((self.target.state_root / "active.json").exists())
+        self.assertEqual((), load_active_state(self.target.state_root).releases)
         receipt = load_operation_receipt(self.target.state_root, result.operation_id)
         self.assertEqual(("recovered", "recovered"), (receipt.outcome, receipt.recovery_outcome))
 
@@ -398,7 +424,7 @@ class CharacterInstallVerticalTests(unittest.TestCase):
         self.assertIsNone(platform.current_process())
         self.assertFalse(self.contract.running)
         self.assertEqual(self.baseline_pointer, self._pointer().read_bytes())
-        self.assertFalse((self.target.state_root / "active.json").exists())
+        self.assertEqual((), load_active_state(self.target.state_root).releases)
         receipt = load_operation_receipt(self.target.state_root, result.operation_id)
         self.assertEqual(("recovery_failed", "failed"), (
             receipt.outcome,
