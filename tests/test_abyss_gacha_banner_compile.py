@@ -22,13 +22,17 @@ class AbyssGachaBannerCompileTests(unittest.TestCase):
         result = module.compile_locked_banners()
 
         self.assertEqual(
-            {contract.LIST_BANNER_LOGICAL, contract.TOP_BANNER_LOGICAL},
+            {
+                contract.LIST_BANNER_LOGICAL,
+                contract.TOP_BANNER_PAYLOAD_LOGICAL,
+            },
             set(result.files),
         )
-        self.assertTrue(all(not logical.endswith(".png") for logical in result.files))
+        self.assertFalse(contract.LIST_BANNER_LOGICAL.endswith(".png"))
+        self.assertTrue(contract.TOP_BANNER_PAYLOAD_LOGICAL.endswith(".png"))
         expected_sizes = {
             contract.LIST_BANNER_LOGICAL: (510, 180),
-            contract.TOP_BANNER_LOGICAL: (1440, 624),
+            contract.TOP_BANNER_PAYLOAD_LOGICAL: (1440, 1789),
         }
         for logical, payload in result.files.items():
             self.assertTrue(payload.startswith(wf_assets.PNG_FAKE))

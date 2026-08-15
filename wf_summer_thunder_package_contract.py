@@ -93,6 +93,13 @@ def expected_client_root(
     if logical_path.endswith(".atf.deflate"):
         return "android"
     if (
+        len(segments) == 3
+        and segments[0] == "dynamic"
+        and segments[1] == "gacha_banner"
+        and logical_path.endswith(".png")
+    ):
+        return "medium"
+    if (
         len(segments) >= 3
         and segments[0] == "character"
         and segments[1] == CODE_NAME

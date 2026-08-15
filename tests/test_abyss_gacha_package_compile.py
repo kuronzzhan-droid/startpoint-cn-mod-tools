@@ -122,7 +122,7 @@ class CombinedCompileTests(unittest.TestCase):
 
         self.assertEqual(22, sum(len(files) for files in additions.roots.values()))
         self.assertEqual(
-            {"common": 15, "medium": 0, "android": 0, "server": 7},
+            {"common": 14, "medium": 1, "android": 0, "server": 7},
             {root: len(files) for root, files in additions.roots.items()},
         )
         self.assertEqual(contract.expected_new_claims(), list(additions.table_claims))

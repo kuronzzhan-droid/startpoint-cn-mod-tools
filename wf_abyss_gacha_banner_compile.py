@@ -41,10 +41,10 @@ LOCKED_BANNERS = (
         (510, 180),
     ),
     BannerSpec(
-        "abyss_limited_gacha_top_banner.png",
-        "4ac743beb36658e93fd159c73b13ccbc2ef3f8a42bf63a372a53823f584e4e69",
-        contract.TOP_BANNER_LOGICAL,
-        (1440, 624),
+        "abyss_limited_gacha_top_banner_portrait.png",
+        "c72c4aad19f6cbec7f32b13a603e1e151f672db0ef3609b6cea8c1edb8f85f06",
+        contract.TOP_BANNER_PAYLOAD_LOGICAL,
+        (1440, 1789),
     ),
 )
 
@@ -76,9 +76,8 @@ def compile_banners(
         not specs
         or len(names) != len(set(names))
         or len(logicals) != len(set(logicals))
-        or any(logical.endswith(".png") for logical in logicals)
     ):
-        raise ValueError("banner specs must have unique names and extensionless logicals")
+        raise ValueError("banner specs must have unique source names and logical paths")
 
     files: dict[str, bytes] = {}
     source_hashes: dict[str, str] = {}

@@ -116,7 +116,7 @@ class AbyssGachaPackageContractTests(unittest.TestCase):
         self.assertEqual(105, audit["payload_count"])
         self.assertEqual(39, audit["table_claim_count"])
         self.assertEqual(
-            {"common": 67, "medium": 25, "android": 2, "server": 11},
+            {"common": 66, "medium": 26, "android": 2, "server": 11},
             audit["root_counts"],
         )
         self.assertEqual(83, audit["old_payload_exact_count"])

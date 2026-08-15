@@ -18,6 +18,16 @@ from tests.summer_thunder_package_fixtures import (
 
 
 class ManifestContractTests(unittest.TestCase):
+    def test_static_gacha_page_png_uses_medium_root(self):
+        self.assertEqual(
+            "medium",
+            module.expected_client_root("dynamic/gacha_banner/example.png"),
+        )
+        self.assertEqual(
+            "common",
+            module.expected_client_root("dynamic/gacha_list_banner/example"),
+        )
+
     def test_exact_37_required_assets_and_root_channels(self):
         roots = required_roots()
         report = module.validate_root_contract(roots)

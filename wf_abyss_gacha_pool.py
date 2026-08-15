@@ -62,6 +62,7 @@ def _normal_entry(
     *,
     odds: int | None = None,
     rarity: float | None = None,
+    exchangeable: bool = False,
 ) -> dict[str, object]:
     return {
         "id": source["id"],
@@ -69,7 +70,7 @@ def _normal_entry(
         "odds": source["odds"] if odds is None else odds,
         "isRateUp": False,
         "isLimited": False,
-        "isExchangeable": False,
+        "isExchangeable": exchangeable,
         "rarity": source["rarity"] if rarity is None else rarity,
         "trialReadingForced": False,
     }
@@ -78,6 +79,7 @@ def _normal_entry(
 def build_pickup_pool(
     donor_runtime: object,
     limited_character_ids: Sequence[int],
+    standard_exchange_character_ids: Sequence[int] = (),
 ) -> dict[str, list[dict[str, object]]]:
     """Return 5/4/3 pools with eight 0.5% pickups and a 1% standard ★5 tail."""
     if (
@@ -95,6 +97,19 @@ def build_pickup_pool(
                 for value in limited_character_ids)
     ):
         raise ValueError("limited character IDs must be eight unique positive integers")
+    if (
+        isinstance(standard_exchange_character_ids, (str, bytes))
+        or len(set(standard_exchange_character_ids))
+        != len(standard_exchange_character_ids)
+        or any(
+            isinstance(value, bool) or not isinstance(value, int) or value <= 0
+            for value in standard_exchange_character_ids
+        )
+        or set(standard_exchange_character_ids) & set(limited_character_ids)
+    ):
+        raise ValueError(
+            "standard exchange character IDs must be unique positive non-pickup integers"
+        )
 
     donor: dict[str, list[dict[str, object]]] = {}
     seen_ids: set[int] = set()
@@ -110,10 +125,39 @@ def build_pickup_pool(
                 raise _fail(f"duplicate character ID {character_id}")
             if character_id in limited_character_ids:
                 raise _fail(f"already contains custom character {character_id}")
+            if (
+                character_id in standard_exchange_character_ids
+                and bucket != "1"
+            ):
+                raise _fail(
+                    f"standard exchange character {character_id} is not five-star"
+                )
             seen_ids.add(character_id)
             donor[bucket].append(entry)
 
-    standard_five = [entry for entry in donor["1"] if entry["isLimited"] is False]
+    exchange_ids = tuple(standard_exchange_character_ids)
+    exchange_id_set = set(exchange_ids)
+    donor_exchange = {
+        int(entry["id"]): entry
+        for entry in donor["1"]
+        if int(entry["id"]) in exchange_id_set
+    }
+    if any(entry["isLimited"] is not False for entry in donor_exchange.values()):
+        raise _fail("standard exchange character is limited in donor")
+    standard_five = [
+        entry for entry in donor["1"]
+        if entry["isLimited"] is False and int(entry["id"]) not in exchange_id_set
+    ]
+    standard_five.extend({
+        "id": character_id,
+        "rank": 5,
+        "odds": 1,
+        "isRateUp": False,
+        "isLimited": False,
+        "isExchangeable": True,
+        "rarity": 1.0,
+        "trialReadingForced": False,
+    } for character_id in exchange_ids)
     if not standard_five:
         raise _fail("contains no standard five-star characters")
 
@@ -136,7 +180,12 @@ def build_pickup_pool(
     ]
     standard_rarity = 200.0 / standard_count
     five.extend(
-        _normal_entry(entry, odds=2, rarity=standard_rarity)
+        _normal_entry(
+            entry,
+            odds=2,
+            rarity=standard_rarity,
+            exchangeable=int(entry["id"]) in exchange_id_set,
+        )
         for entry in standard_five
     )
     return {

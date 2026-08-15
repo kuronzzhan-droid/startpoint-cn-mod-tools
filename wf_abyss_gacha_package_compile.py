@@ -116,11 +116,11 @@ def _gacha_component(
         result["report"].get("payload_count") != 11
         or result["report"].get("table_claim_count") != 10
         or result["report"].get("eight_character_closure") is not True
-        or result["report"].get("ticket_only_contract") is not True
+        or result["report"].get("normal_page_contract") is not True
         or result["report"].get("writes_live") is not False
         or result["report"].get("unresolved_art_payloads") != [
             gacha_contract.LIST_BANNER_LOGICAL,
-            gacha_contract.TOP_BANNER_LOGICAL,
+            gacha_contract.TOP_BANNER_PAYLOAD_LOGICAL,
         ]
     ):
         raise contract.PackageAssemblyError("gacha component report is not eligible")
@@ -158,7 +158,7 @@ def _gacha_component(
         "unresolved_art_payloads": [],
         "art_payloads_bound_by_banner_component": [
             gacha_contract.LIST_BANNER_LOGICAL,
-            gacha_contract.TOP_BANNER_LOGICAL,
+            gacha_contract.TOP_BANNER_PAYLOAD_LOGICAL,
         ],
         "package_manifest_eligible": True,
         "source_package_character_overlay": True,
@@ -173,7 +173,7 @@ def _banner_component() -> ComponentResult:
     if (
         set(result.files) != {
             gacha_contract.LIST_BANNER_LOGICAL,
-            gacha_contract.TOP_BANNER_LOGICAL,
+            gacha_contract.TOP_BANNER_PAYLOAD_LOGICAL,
         }
         or result.report.get("payload_count") != 2
         or result.report.get("package_manifest_eligible") is not True
@@ -181,7 +181,12 @@ def _banner_component() -> ComponentResult:
     ):
         raise contract.PackageAssemblyError("banner component report is not eligible")
     roots = {root: {} for root in contract.ROOT_NAMES}
-    roots["common"].update(result.files)
+    roots["common"][gacha_contract.LIST_BANNER_LOGICAL] = result.files[
+        gacha_contract.LIST_BANNER_LOGICAL
+    ]
+    roots["medium"][gacha_contract.TOP_BANNER_PAYLOAD_LOGICAL] = result.files[
+        gacha_contract.TOP_BANNER_PAYLOAD_LOGICAL
+    ]
     source_hashes = result.report.get("source_sha256")
     if not isinstance(source_hashes, Mapping):
         raise contract.PackageAssemblyError("banner source hashes are absent")

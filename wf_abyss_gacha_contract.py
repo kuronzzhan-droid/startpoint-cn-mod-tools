@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Immutable product contract for the custom abyss ticket-only gacha."""
+"""Immutable product contract for the always-visible custom abyss gacha."""
 from __future__ import annotations
 
 import zlib
@@ -16,6 +16,7 @@ CHARACTER_IDS = (
     129999, 139998, 139999, 149998,
     149999, 169998, 169999, 179999,
 )
+STANDARD_EXCHANGE_CHARACTER_IDS = (141129, 161141, 123001, 131182)
 SINGLE_TICKET_ID = 999013
 TEN_TICKET_ID = 999014
 STANDARD_POOL_DONOR_ID = "700004"
@@ -44,6 +45,7 @@ RICH_TEXT_ID = f"rich_text/{CODE_NAME}_note"
 RICH_TEXT_BODY_LOGICAL = f"{RICH_TEXT_ID}.html.deflate"
 LIST_BANNER_LOGICAL = f"dynamic/gacha_list_banner/{CODE_NAME}"
 TOP_BANNER_LOGICAL = f"dynamic/gacha_banner/{CODE_NAME}"
+TOP_BANNER_PAYLOAD_LOGICAL = f"{TOP_BANNER_LOGICAL}.png"
 
 START_DATE = "2020-12-31 12:00:00"
 END_DATE = "2199-12-31 23:59:59"
@@ -110,7 +112,8 @@ NEW_COMMON_PATHS = (
 def build_gacha_master_row() -> list[str]:
     """Return the exact 47-column client row, based on official gacha 57."""
     return [
-        CODE_NAME, TITLE, "100", LIST_BANNER_LOGICAL, "2", "", "", "", "",
+        CODE_NAME, TITLE, "100", LIST_BANNER_LOGICAL, "0",
+        "150", "1500", "50", "",
         "1", "4", RARITY_ODDS_ID, RICH_TEXT_ID, "0",
         CHARACTER_3_ODDS_ID, CHARACTER_4_ODDS_ID, CHARACTER_5_ODDS_ID,
         "normal", "normal_guarantee", "false", "false", "false",
@@ -134,7 +137,11 @@ def build_rarity_odds_rows() -> dict[str, str]:
 
 
 def build_runtime_pool(donor_runtime: object) -> dict[str, list[dict[str, object]]]:
-    return pool_contract.build_pickup_pool(donor_runtime, CHARACTER_IDS)
+    return pool_contract.build_pickup_pool(
+        donor_runtime,
+        CHARACTER_IDS,
+        STANDARD_EXCHANGE_CHARACTER_IDS,
+    )
 
 
 def build_character_odds_rows(
@@ -149,7 +156,7 @@ def build_server_runtime(
     return {
         "type": 0,
         "paymentType": 0,
-        "pageKind": 2,
+        "pageKind": 0,
         "singleCost": 150,
         "multiCost": 1500,
         "discountCost": 50,
@@ -180,12 +187,14 @@ def build_rich_text_body() -> bytes:
 </head>
 <body class="body" style_id="1">
   <div class="container">
-    <p>・本扭蛋仅可使用深渊单抽券或深渊十连券。</p><br/>
-    <p>・本扭蛋不接受星导石，也不接受通用角色扭蛋券。</p><br/>
+    <p>・本扭蛋长期开放，可使用深渊单抽券、深渊十连券或星导石抽取。</p><br/>
+    <p>・每日1次付费星导石优惠、单抽和十连均按页面显示执行。</p><br/>
+    <p>・本扭蛋不接受通用角色扭蛋券。</p><br/>
     <p>・★5角色总出现概率为5%，★4角色为25%，★3角色为70%。</p><br/>
-    <p>・8名深渊限定角色的单人出现概率均为0.5%，合计4%；其余1%由常驻★5角色均分。</p><br/>
+    <p>・8名深渊限定角色的单人出现概率均为0.5%，合计4%；其余1%由普通★5角色均分。</p><br/>
     <p>・使用1张深渊单抽券可抽取1次；使用1张深渊十连券可连续抽取10次。</p><br/>
-    <p>・每次抽取累计1点兑换点数；累计250点后，可从8名深渊限定角色中选择1名兑换。</p><br/>
+    <p>・每次抽取累计1点兑换点数；8名深渊限定角色各需250点兑换。</p><br/>
+    <p>・141129、161141、123001、131182四名普通★5角色各需50点兑换。</p><br/>
     <p>・重复获得已有角色时，按游戏现有角色重复获得规则处理。</p>
   </div>
 </body>

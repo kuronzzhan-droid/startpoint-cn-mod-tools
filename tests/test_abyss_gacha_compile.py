@@ -18,6 +18,7 @@ except ImportError:
 
 
 IDS = (129999, 139998, 139999, 149998, 149999, 169998, 169999, 179999)
+STANDARD_EXCHANGE_IDS = (141129, 161141, 123001, 131182)
 EXPECTED_CLAIMS = {
     ("common", "master/gacha/gacha.orderedmap", "flat", ("990001",)),
     (
@@ -143,6 +144,9 @@ def _sources():
     character_rows = {"1": _character_row(1)}
     character_rows.update({str(value): _character_row(value) for value in IDS})
     character_rows.update({
+        str(value): _character_row(value) for value in STANDARD_EXCHANGE_IDS
+    })
+    character_rows.update({
         "111001": _character_row(111001, 5),
         "111002": _character_row(111002, 5),
         "111003": _character_row(111003, 5),
@@ -175,6 +179,10 @@ def _sources():
     }
     server_character = {"1": {"name": "legacy", "rarity": 1}}
     server_character.update({str(value): {"name": str(value), "rarity": 5} for value in IDS})
+    server_character.update({
+        str(value): {"name": str(value), "rarity": 5}
+        for value in STANDARD_EXCHANGE_IDS
+    })
     server_character.update({
         "111001": {"name": "111001", "rarity": 5},
         "111002": {"name": "111002", "rarity": 5},
@@ -241,8 +249,8 @@ class AbyssGachaCompileTests(unittest.TestCase):
             result["files"][contract.GACHA_MASTER_LOGICAL], contract.GACHA_MASTER_LOGICAL
         )[contract.GACHA_KEY].decode("utf-8"))[0]
         self.assertEqual(47, len(row))
-        self.assertEqual("2", row[4])
-        self.assertEqual(["", "", ""], row[5:8])
+        self.assertEqual("0", row[4])
+        self.assertEqual(["150", "1500", "50"], row[5:8])
         self.assertEqual("4", row[10])
         self.assertEqual("false", row[20])
         self.assertEqual(["999013", "999014"], row[27:29])
@@ -252,7 +260,7 @@ class AbyssGachaCompileTests(unittest.TestCase):
         self.assertLessEqual(start, datetime(2024, 8, 14, 12, 0, 0))
 
         runtime = json.loads(result["files"]["gacha.json"])[contract.GACHA_KEY]
-        self.assertEqual(2, runtime["pageKind"])
+        self.assertEqual(0, runtime["pageKind"])
         self.assertEqual(row[29], runtime["startDate"])
         self.assertEqual(999013, runtime["onceTicketItemId"])
         self.assertEqual(999014, runtime["tenTicketItemId"])
@@ -267,7 +275,10 @@ class AbyssGachaCompileTests(unittest.TestCase):
             [311001, 321001], [entry["id"] for entry in runtime["pool"]["3"]]
         )
         pool = runtime["pool"]["1"]
-        self.assertEqual([*IDS, 111001, 111002], [entry["id"] for entry in pool])
+        self.assertEqual(
+            [*IDS, 111001, 111002, *STANDARD_EXCHANGE_IDS],
+            [entry["id"] for entry in pool],
+        )
         self.assertNotIn(111003, [entry["id"] for entry in pool])
         limited = pool[:len(IDS)]
         standard = pool[len(IDS):]
@@ -286,7 +297,10 @@ class AbyssGachaCompileTests(unittest.TestCase):
         for entry in standard:
             self.assertFalse(entry["isRateUp"])
             self.assertFalse(entry["isLimited"])
-            self.assertFalse(entry["isExchangeable"])
+            self.assertEqual(
+                entry["id"] in STANDARD_EXCHANGE_IDS,
+                entry["isExchangeable"],
+            )
 
     def test_odds_feature_and_rich_text_read_back_exactly(self):
         _, _, result = self._compile()
@@ -321,9 +335,13 @@ class AbyssGachaCompileTests(unittest.TestCase):
         )[contract.CHARACTER_5_ODDS_ID]
         self.assertEqual(
             [
-                *[f"{value},5,2,true,true,true,false".encode() for value in IDS],
+                *[f"{value},5,6,true,true,true,false".encode() for value in IDS],
                 b"111001,5,2,false,false,false,false",
                 b"111002,5,2,false,false,false,false",
+                *[
+                    f"{value},5,2,false,false,true,false".encode()
+                    for value in STANDARD_EXCHANGE_IDS
+                ],
             ],
             list(five.values()),
         )
@@ -343,13 +361,14 @@ class AbyssGachaCompileTests(unittest.TestCase):
         note = zlib.decompress(result["files"][contract.RICH_TEXT_BODY_LOGICAL], -15).decode()
         self.assertIn("深渊单抽券", note)
         self.assertIn("深渊十连券", note)
-        self.assertIn("不接受星导石", note)
+        self.assertIn("每日1次付费星导石", note)
         self.assertIn("通用角色扭蛋券", note)
         self.assertIn("★5角色总出现概率为5%", note)
         self.assertIn("8名深渊限定角色的单人出现概率均为0.5%", note)
-        self.assertIn("其余1%由常驻★5角色均分", note)
+        self.assertIn("其余1%由普通★5角色均分", note)
         self.assertIn("每次抽取累计1点兑换点数", note)
         self.assertIn("250点", note)
+        self.assertIn("50点", note)
 
     def test_rejects_missing_or_malformed_standard_pool_donor(self):
         self._require_module()
@@ -592,21 +611,24 @@ class AbyssGachaCompileTests(unittest.TestCase):
         self.assertEqual(0, report["nonowned_client_changes"])
         self.assertEqual(0, report["nonowned_server_changes"])
         self.assertTrue(report["eight_character_closure"])
-        self.assertTrue(report["ticket_only_contract"])
+        self.assertTrue(report["normal_page_contract"])
         self.assertTrue(report["global_ball_animation_unchanged"])
         self.assertEqual("static_kind_1_top_banner", report["feature_contract"])
         self.assertEqual(
-            [contract.LIST_BANNER_LOGICAL, contract.TOP_BANNER_LOGICAL],
+            [
+                contract.LIST_BANNER_LOGICAL,
+                contract.TOP_BANNER_PAYLOAD_LOGICAL,
+            ],
             report["unresolved_art_payloads"],
         )
         self.assertTrue(report["table_claims_eligible"])
         self.assertFalse(report["package_manifest_eligible"])
         self.assertEqual(
-            {"exec_type": 10, "ticket_id": 999013, "pulls_per_ticket": 1},
+            {"exec_type": 3, "ticket_id": 999013, "pulls_per_ticket": 1},
             report["execution_contract"]["single"],
         )
         self.assertEqual(
-            {"exec_type": 9, "ticket_id": 999014, "pulls_per_ticket": 10},
+            {"exec_type": 4, "ticket_id": 999014, "pulls_per_ticket": 10},
             report["execution_contract"]["ten"],
         )
 

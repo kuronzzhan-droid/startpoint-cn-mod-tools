@@ -446,12 +446,12 @@ def compile_abyss_limited_gacha(
         raise AssertionError("eight-character pickup pool readback mismatch")
     runtime = readback_server["gacha.json"][contract.GACHA_KEY]
     if (
-        runtime["pageKind"] != 2
+        runtime["pageKind"] != 0
         or runtime["onceTicketItemId"] != contract.SINGLE_TICKET_ID
         or runtime["tenTicketItemId"] != contract.TEN_TICKET_ID
         or runtime["wildcardTicketAvailable"] is not False
     ):
-        raise AssertionError("ticket-only runtime readback mismatch")
+        raise AssertionError("normal-page runtime readback mismatch")
     note = contract.build_rich_text_body()
     if files[contract.RICH_TEXT_BODY_LOGICAL] != note:
         raise AssertionError("rich-text body readback mismatch")
@@ -466,6 +466,9 @@ def compile_abyss_limited_gacha(
             "gacha_id": contract.GACHA_ID,
             "code_name": contract.CODE_NAME,
             "character_ids": list(contract.CHARACTER_IDS),
+            "standard_exchange_character_ids": list(
+                contract.STANDARD_EXCHANGE_CHARACTER_IDS
+            ),
             "single_ticket_id": contract.SINGLE_TICKET_ID,
             "ten_ticket_id": contract.TEN_TICKET_ID,
             "payload_count": len(files),
@@ -476,15 +479,19 @@ def compile_abyss_limited_gacha(
             "standard_pool_contract": True,
             "rank_rates": runtime["rankRates"],
             "limited_character_rate_percent": 0.5,
-            "ticket_only_contract": True,
+            "normal_page_contract": True,
+            "exchange_points": {
+                "limited": 250,
+                "standard": 50,
+            },
             "execution_contract": {
                 "single": {
-                    "exec_type": 10,
+                    "exec_type": 3,
                     "ticket_id": contract.SINGLE_TICKET_ID,
                     "pulls_per_ticket": 1,
                 },
                 "ten": {
-                    "exec_type": 9,
+                    "exec_type": 4,
                     "ticket_id": contract.TEN_TICKET_ID,
                     "pulls_per_ticket": 10,
                 },
@@ -498,7 +505,7 @@ def compile_abyss_limited_gacha(
             "end_date": contract.END_DATE,
             "unresolved_art_payloads": [
                 contract.LIST_BANNER_LOGICAL,
-                contract.TOP_BANNER_LOGICAL,
+                contract.TOP_BANNER_PAYLOAD_LOGICAL,
             ],
             "feature_contract": "static_kind_1_top_banner",
             "output_sha256": {
