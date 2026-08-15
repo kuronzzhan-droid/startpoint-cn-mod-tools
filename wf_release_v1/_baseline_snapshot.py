@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import deque
 from collections.abc import Mapping
 from dataclasses import dataclass
 import hashlib
@@ -317,30 +318,75 @@ def _selected_edges(
     full = next(edge for edge in scoped if edge["fromVersion"] is None)
     target = str(catalog["targetVersion"])
     diffs = tuple(edge for edge in scoped if edge["fromVersion"] is not None)
-    paths: list[tuple[Mapping[str, object], ...]] = []
-    cycle = False
-
-    def visit(version: str, seen: frozenset[str], path: tuple[Mapping[str, object], ...]) -> None:
-        nonlocal cycle
-        if version == target:
-            paths.append(path)
-            return
-        for edge in diffs:
-            if edge["fromVersion"] != version:
-                continue
-            next_version = str(edge["toVersion"])
-            if next_version in seen:
-                cycle = True
-                continue
-            visit(next_version, seen | {next_version}, (*path, edge))
-            if len(paths) > 1:
-                return
-
     start = str(full["toVersion"])
-    visit(start, frozenset({start}), ())
-    if cycle or len(paths) != 1:
+    adjacency: dict[str, list[tuple[Mapping[str, object], str]]] = {}
+    for edge in diffs:
+        adjacency.setdefault(str(edge["fromVersion"]), []).append(
+            (edge, str(edge["toVersion"]))
+        )
+
+    reachable = {start}
+    pending = [start]
+    while pending:
+        version = pending.pop()
+        if version == target:
+            continue
+        for _edge, next_version in adjacency.get(version, ()):
+            if next_version not in reachable:
+                reachable.add(next_version)
+                pending.append(next_version)
+
+    indegree = {version: 0 for version in reachable}
+    for version in reachable:
+        if version == target:
+            continue
+        for _edge, next_version in adjacency.get(version, ()):
+            indegree[next_version] += 1
+    ready = deque(
+        version for version, count in indegree.items() if count == 0
+    )
+    ordered: list[str] = []
+    while ready:
+        version = ready.popleft()
+        ordered.append(version)
+        if version == target:
+            continue
+        for _edge, next_version in adjacency.get(version, ()):
+            indegree[next_version] -= 1
+            if indegree[next_version] == 0:
+                ready.append(next_version)
+    if len(ordered) != len(reachable):
         raise _unavailable("Catalog does not have one unique fulfill path", label="catalog.edges")
-    return (full, *paths[0])
+
+    path_counts: dict[str, int] = {}
+    for version in reversed(ordered):
+        if version == target:
+            path_counts[version] = 1
+            continue
+        count = sum(
+            path_counts.get(next_version, 0)
+            for _edge, next_version in adjacency.get(version, ())
+        )
+        path_counts[version] = min(count, 2)
+    if path_counts.get(start) != 1:
+        raise _unavailable("Catalog does not have one unique fulfill path", label="catalog.edges")
+
+    selected: list[Mapping[str, object]] = []
+    version = start
+    while version != target:
+        choices = tuple(
+            (edge, next_version)
+            for edge, next_version in adjacency.get(version, ())
+            if path_counts.get(next_version, 0)
+        )
+        if len(choices) != 1:
+            raise _unavailable(
+                "Catalog does not have one unique fulfill path",
+                label="catalog.edges",
+            )
+        edge, version = choices[0]
+        selected.append(edge)
+    return (full, *selected)
 
 
 def _archive_sources(

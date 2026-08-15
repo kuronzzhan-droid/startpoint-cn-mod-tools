@@ -427,6 +427,59 @@ class BaselineAssetTests(unittest.TestCase):
             duplicate_member.exception.code,
         )
 
+    def test_selected_edges_handles_a_long_valid_chain_without_recursion(self) -> None:
+        from wf_release_v1._baseline_snapshot import _selected_edges
+
+        full = {"fromVersion": None, "toVersion": "1.0.0"}
+        diffs = tuple(
+            {
+                "fromVersion": f"1.0.{index}",
+                "toVersion": f"1.0.{index + 1}",
+            }
+            for index in range(1100)
+        )
+
+        selected = _selected_edges(
+            {"targetVersion": "1.0.1100"},
+            (full, *diffs),
+        )
+
+        self.assertEqual(1101, len(selected))
+        self.assertIs(full, selected[0])
+        self.assertIs(diffs[-1], selected[-1])
+
+    def test_selected_edges_rejects_ambiguous_and_cyclic_graphs_closed(self) -> None:
+        from wf_release_v1._baseline_snapshot import _selected_edges
+        from wf_release_v1.errors import ReleaseError
+
+        full = {"fromVersion": None, "toVersion": "1.0.0"}
+        bad_graphs = {
+            "ambiguous": (
+                {"targetVersion": "1.0.2"},
+                (
+                    full,
+                    {"fromVersion": "1.0.0", "toVersion": "1.0.1"},
+                    {"fromVersion": "1.0.0", "toVersion": "1.0.2"},
+                    {"fromVersion": "1.0.1", "toVersion": "1.0.2"},
+                ),
+            ),
+            "cycle": (
+                {"targetVersion": "1.0.9"},
+                (
+                    full,
+                    {"fromVersion": "1.0.0", "toVersion": "1.0.1"},
+                    {"fromVersion": "1.0.1", "toVersion": "1.0.0"},
+                ),
+            ),
+        }
+        for label, (catalog, scoped) in bad_graphs.items():
+            with self.subTest(graph=label), self.assertRaises(ReleaseError) as caught:
+                _selected_edges(catalog, scoped)
+            self.assertEqual(
+                "WFREL_ASSET_BASELINE_UNAVAILABLE",
+                caught.exception.code,
+            )
+
     def test_plan_rechecks_authoritative_snapshot_after_prior_success_without_writes(self) -> None:
         from wf_release_v1.planning import plan_verified_install
 
