@@ -116,7 +116,7 @@ def compile_sources() -> module.AdditionSources:
 
 
 class CombinedCompileTests(unittest.TestCase):
-    def test_compiles_provisional_exact_derived_payload_and_claim_addition(self):
+    def test_compiles_eligible_exact_derived_payload_and_claim_addition(self):
         sources = compile_sources()
         additions = module.compile_additions(source_package(), sources)
 
@@ -130,20 +130,35 @@ class CombinedCompileTests(unittest.TestCase):
             {"gacha", "tickets", "shop", "drop", "banners"},
             set(additions.component_reports),
         )
-        self.assertFalse(additions.acceptance["all_references_closed"])
-        self.assertFalse(additions.acceptance["drop_source_sync_closed"])
-        self.assertFalse(additions.acceptance["drop_contract_closed"])
-        self.assertFalse(additions.acceptance["package_manifest_eligible"])
+        self.assertTrue(additions.acceptance["all_references_closed"])
+        self.assertTrue(additions.acceptance["drop_source_sync_closed"])
+        self.assertTrue(additions.acceptance["drop_contract_closed"])
+        self.assertTrue(additions.acceptance["package_manifest_eligible"])
         self.assertEqual([], additions.acceptance["unresolved_art_payloads"])
         self.assertFalse(additions.acceptance["writes_live"])
+        self.assertEqual(
+            contract.DROP_RUNTIME_SOURCE_SYNC,
+            additions.component_reports["drop"]["runtime_source_sync"],
+        )
 
-    def test_package_image_is_fail_closed_until_drop_sync_source_is_defined(self):
-        with self.assertRaisesRegex(
-            contract.PackageAssemblyError, "drop source sync closure is pending"
-        ):
-            module.compile_package_image(
-                source_package(), compile_sources(), generator_git_head="c" * 40
-            )
+    def test_package_image_closes_after_exact_reviewed_runtime_source_sync(self):
+        image = module.compile_package_image(
+            source_package(), compile_sources(), generator_git_head="c" * 40
+        )
+
+        audit = contract.audit_package_image(image)
+        self.assertTrue(audit["apply_ready"])
+        self.assertTrue(audit["drop_source_sync_closed"])
+        self.assertEqual(
+            contract.DROP_RUNTIME_SOURCE_SYNC,
+            audit["drop_runtime_source_sync"],
+        )
+        self.assertEqual(
+            contract.DROP_RUNTIME_SOURCE_SYNC,
+            image.source_report["source_locks"]["component_reports"]["drop"][
+                "runtime_source_sync"
+            ],
+        )
 
     def test_is_deterministic_does_not_mutate_inputs_and_hash_binds_every_source(self):
         source = source_package()

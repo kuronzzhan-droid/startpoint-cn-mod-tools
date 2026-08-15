@@ -131,6 +131,15 @@ def audit_package_image(image: contract.PackageImage) -> dict[str, Any]:
         raise contract.PackageAssemblyError(
             "accepted asset replacement manifest binding drift"
         )
+    drop_report = component_reports.get("drop")
+    if (
+        not isinstance(drop_report, Mapping)
+        or drop_report.get("runtime_source_sync")
+        != contract.DROP_RUNTIME_SOURCE_SYNC
+    ):
+        raise contract.PackageAssemblyError(
+            "drop runtime source sync evidence drift"
+        )
     source_record = locks.get("source_package")
     if not isinstance(source_record, Mapping):
         raise contract.PackageAssemblyError(
@@ -208,6 +217,8 @@ def audit_package_image(image: contract.PackageImage) -> dict[str, Any]:
         "ticket_contract_closed": True,
         "shop_contract_closed": True,
         "drop_contract_closed": True,
+        "drop_source_sync_closed": True,
+        "drop_runtime_source_sync": dict(contract.DROP_RUNTIME_SOURCE_SYNC),
         "art_contract_closed": True,
         "writes_live": False,
     }

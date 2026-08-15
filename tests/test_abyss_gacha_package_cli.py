@@ -93,7 +93,7 @@ class PackageCliTests(unittest.TestCase):
                 with self.assertRaisesRegex(contract.PackageAssemblyError, "changed"):
                     module._compile_fixed_plan(root)
 
-    def test_pending_drop_runtime_returns_evidenced_dry_run_and_blocks_apply(self):
+    def test_reviewed_drop_runtime_returns_eligible_read_only_dry_run(self):
         with tempfile.TemporaryDirectory() as temporary_name:
             root = Path(temporary_name)
             target = root / "work" / "character_packs" / workspace.WORKSPACE_NAME
@@ -110,8 +110,8 @@ class PackageCliTests(unittest.TestCase):
                 report = module.run(module.parse_args([]))
                 self.assertEqual(105, report["payload_count"])
                 self.assertEqual(39, report["table_claim_count"])
-                self.assertFalse(report["apply_ready"])
-                self.assertFalse(report["drop_source_sync_closed"])
+                self.assertTrue(report["apply_ready"])
+                self.assertTrue(report["drop_source_sync_closed"])
                 self.assertFalse(report["writes_live"])
                 self.assertEqual(
                     [contract.ITEM_SHEET_LOGICAL, contract.ITEM_ATLAS_LOGICAL],
@@ -121,12 +121,6 @@ class PackageCliTests(unittest.TestCase):
                     ],
                 )
                 self.assertFalse(target.exists())
-                with self.assertRaisesRegex(
-                    contract.PackageAssemblyError, "drop source sync"
-                ):
-                    module.run(module.parse_args([
-                        "--apply", "--confirm", contract.CONFIRMATION,
-                    ]))
 
     def test_eligible_apply_uses_only_fixed_fresh_workspace(self):
         with tempfile.TemporaryDirectory() as temporary_name:

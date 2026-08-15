@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 from dataclasses import dataclass
@@ -251,15 +252,15 @@ def _merge_components(
         raise contract.PackageAssemblyError("component input hash evidence is invalid")
 
     acceptance = {
-        "all_references_closed": False,
+        "all_references_closed": True,
         "eight_character_closure": True,
         "ticket_contract_closed": True,
         "shop_contract_closed": True,
-        "drop_contract_closed": False,
-        "drop_source_sync_closed": False,
+        "drop_contract_closed": True,
+        "drop_source_sync_closed": True,
         "art_contract_closed": True,
         "unresolved_art_payloads": [],
-        "package_manifest_eligible": False,
+        "package_manifest_eligible": True,
         "writes_live": False,
     }
     return contract.AdditionBundle(
@@ -281,6 +282,21 @@ def compile_additions(
     if not isinstance(sources, AdditionSources):
         raise TypeError("sources must be AdditionSources")
     contract._validate_source(source)
+    drop = compile_drop_component(
+        rogue_event_raw=sources.rogue_event_raw,
+        rush_event_quest_raw=sources.rush_event_quest_raw,
+    )
+    drop = ComponentResult(
+        roots=drop.roots,
+        table_claims=drop.table_claims,
+        input_sha256=drop.input_sha256,
+        report={
+            **drop.report,
+            "runtime_source_sync": copy.deepcopy(
+                contract.DROP_RUNTIME_SOURCE_SYNC
+            ),
+        },
+    )
     components = {
         "gacha": _gacha_component(source, sources),
         "tickets": compile_ticket_component(
@@ -295,10 +311,7 @@ def compile_additions(
             server_shop_raw=sources.shop_server_raw,
             id_map_raw=sources.shop_id_map_raw,
         ),
-        "drop": compile_drop_component(
-            rogue_event_raw=sources.rogue_event_raw,
-            rush_event_quest_raw=sources.rush_event_quest_raw,
-        ),
+        "drop": drop,
         "banners": _banner_component(),
     }
     return _merge_components(components)

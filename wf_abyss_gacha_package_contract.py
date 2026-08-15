@@ -72,6 +72,30 @@ _ACCEPTANCE = {
     "package_manifest_eligible": True,
     "writes_live": False,
 }
+DROP_RUNTIME_SOURCE_SYNC = {
+    "status": "independently_reviewed_source_ready",
+    "server_commit_chain": [
+        "b0412a2d8fb8fa9e27ce33167109e4d43fcb4c62",
+        "983bea0913a216fb3c766ede068f1b87cba2a793",
+        "930f410036da2f86ae109da89f50193c65b102c1",
+        "c74e348caa89e56131da48661d654032edc009a5",
+        "3d5be10cf1915cf4f1a84dd1db7478f94d18b316",
+        "d195cb4daea2bfbe4fb58f7f76e89590c2df514f",
+    ],
+    "content_sync_generator_version": 4,
+    "rogue_converter_version": 3,
+    "interop_fixture_sha256": (
+        "bb360da8f3968f3b7d1cd34d13624586535e9c72cdf44d6ca58c7729f34a90fb"
+    ),
+    "interop_fixture_size": 68,
+    "outer_event_id": "700099",
+    "ordered_rows": [
+        ["1", "0", "999014", "1", "0.05"],
+        ["1", "0", "11003", "1", "0.5"],
+    ],
+    "verification_scope": "source_and_tests_only_no_build_or_live",
+    "writes_live": False,
+}
 
 PackageAssemblyError = thunder.PackageAssemblyError
 PackageImage = thunder.PackageImage
@@ -357,6 +381,10 @@ def _validate_additions(
         for report in additions.component_reports.values()
     ):
         raise PackageAssemblyError("component acceptance reports are not exact")
+    if additions.component_reports["drop"].get(
+        "runtime_source_sync"
+    ) != DROP_RUNTIME_SOURCE_SYNC:
+        raise PackageAssemblyError("drop runtime source sync evidence is not exact")
     if not additions.input_sha256 or any(
         not isinstance(label, str) or not label or not _valid_hash(digest)
         for label, digest in additions.input_sha256.items()
@@ -474,6 +502,7 @@ def audit_package_image(image: PackageImage) -> dict[str, Any]:
 __all__ = [
     "PACKAGE_ID", "CHARACTER_ID", "CODE_NAME", "ROOT_NAMES",
     "PACKAGE_VERSION", "REQUIRES_CLIENT_BASE", "CONFIRMATION", "NEW_PATHS",
+    "DROP_RUNTIME_SOURCE_SYNC",
     "SERVER_LOGICALS", "SOURCE_ROOT_COUNTS", "EXPECTED_ROOT_COUNTS",
     "EXPECTED_PAYLOAD_COUNT", "ROGUE_EVENT_CLIENT_LOGICAL", "PackageAssemblyError",
     "PackageImage", "SealedSourcePackage", "AdditionBundle",

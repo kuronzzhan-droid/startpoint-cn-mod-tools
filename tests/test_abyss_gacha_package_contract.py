@@ -80,9 +80,15 @@ class AbyssGachaPackageContractTests(unittest.TestCase):
             component_reports={
                 **{
                     name: {"writes_live": False}
-                    for name in ("gacha", "shop", "drop", "banners")
+                    for name in ("gacha", "shop", "banners")
                 },
                 "tickets": ticket_report,
+                "drop": {
+                    "writes_live": False,
+                    "runtime_source_sync": copy.deepcopy(
+                        module.DROP_RUNTIME_SOURCE_SYNC
+                    ),
+                },
             },
             acceptance={
                 "all_references_closed": True,
@@ -185,6 +191,27 @@ class AbyssGachaPackageContractTests(unittest.TestCase):
                         ),
                         generator_git_head="c" * 40,
                     )
+
+    def test_rejects_unreviewed_drop_runtime_source_sync_evidence(self):
+        source = self._source()
+        bundle = self._bundle()
+        reports = copy.deepcopy(bundle.component_reports)
+        reports["drop"]["runtime_source_sync"]["converter_version"] = 2
+
+        with self.assertRaisesRegex(
+            module.PackageAssemblyError, "runtime source sync"
+        ):
+            module.build_package_image(
+                source,
+                module.AdditionBundle(
+                    roots=bundle.roots,
+                    table_claims=bundle.table_claims,
+                    input_sha256=bundle.input_sha256,
+                    component_reports=reports,
+                    acceptance=bundle.acceptance,
+                ),
+                generator_git_head="c" * 40,
+            )
 
     def test_requires_the_exact_new_path_and_claim_sets(self):
         source = self._source()
