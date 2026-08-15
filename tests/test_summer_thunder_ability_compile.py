@@ -29,7 +29,7 @@ class SummerThunderAbilityCompileTests(unittest.TestCase):
         self.assertEqual(5, len(leaders["139998"]))
         self.assertTrue(all(len(row) == 124 for row in leaders["139998"]))
         self.assertEqual(set(ABILITY_IDS), set(abilities))
-        self.assertEqual([4, 2, 3, 1, 1, 1], [len(abilities[key]) for key in ABILITY_IDS])
+        self.assertEqual([4, 2, 3, 1, 2, 1], [len(abilities[key]) for key in ABILITY_IDS])
         self.assertTrue(
             all(len(row) == 126 for rows in abilities.values() for row in rows)
         )
@@ -89,7 +89,7 @@ class SummerThunderAbilityCompileTests(unittest.TestCase):
         self.assertEqual(("144", "0", "100000", "100000", "(None)", "0"),
                          (paralysis[25], paralysis[26], paralysis[28],
                           paralysis[29], paralysis[32], paralysis[33]))
-        self.assertEqual(("455", "0", "30000000", "30000000", "0", "false"),
+        self.assertEqual(("455", "0", "18000000", "18000000", "0", "false"),
                          (paralysis[45], paralysis[46], paralysis[55],
                           paralysis[56], paralysis[65], paralysis[70]))
 
@@ -137,7 +137,7 @@ class SummerThunderAbilityCompileTests(unittest.TestCase):
         self.assertEqual(("23", "5", "Yellow", "211", "0", "25000", "25000"),
                          (self_gauge[27], self_gauge[28], self_gauge[29],
                           self_gauge[47], self_gauge[48], self_gauge[51], self_gauge[52]))
-        self.assertEqual(("23", "0", "211", "1", "(None)", "15000", "15000"),
+        self.assertEqual(("23", "0", "211", "1", "(None)", "25000", "25000"),
                          (allies_gauge[27], allies_gauge[28], allies_gauge[47],
                           allies_gauge[48], allies_gauge[49], allies_gauge[51],
                           allies_gauge[52]))
@@ -148,11 +148,14 @@ class SummerThunderAbilityCompileTests(unittest.TestCase):
                          (all_enemy[27], all_enemy[28], all_enemy[29], all_enemy[47],
                           all_enemy[48], all_enemy[51], all_enemy[52], all_enemy[69]))
 
-        self.assertEqual(("211", "0", "50000", "50000"),
-                         tuple(abilities["1399984"][0][index] for index in (47, 48, 51, 52)))
+        self.assertEqual(("211", "0", "100000", "100000"),
+                          tuple(abilities["1399984"][0][index] for index in (47, 48, 51, 52)))
+        attack, ability_damage = abilities["1399985"]
+        self.assertEqual(("32", "5", "Yellow", "90000", "90000"),
+                         tuple(attack[index] for index in (47, 48, 49, 51, 52)))
         self.assertEqual(("388", "5", "Yellow", "90000", "90000"),
-                         tuple(abilities["1399985"][0][index] for index in (47, 48, 49, 51, 52)))
-        self.assertEqual(("35", "0", "10000", "10000"),
+                         tuple(ability_damage[index] for index in (47, 48, 49, 51, 52)))
+        self.assertEqual(("35", "0", "15000", "15000"),
                          tuple(abilities["1399986"][0][index] for index in (47, 48, 51, 52)))
 
         cooldowns = [
@@ -167,14 +170,14 @@ class SummerThunderAbilityCompileTests(unittest.TestCase):
                 self.assertTrue(all(row[index] == "" for index in (82, 83, 84, 120, 121, 122)))
                 self.assertTrue(all(row[index] == "" for index in (70, 71)))
 
-    def test_unique_condition_is_single_stack_510_frame_with_icon_reference(self):
+    def test_unique_condition_is_single_stack_600_frame_with_icon_reference(self):
         unique = build_summer_thunder_ability_rows()["unique_condition"]["139998"]
         self.assertEqual(
             [
                 "unique_cnmod_thunder_dragon_ascendant_amp",
                 "雷电增幅",
                 "battle/common/unique_condition/unique_cnmod_thunder_dragon_ascendant_amp",
-                "510",
+                "600",
                 "1",
                 "(None)", "(None)", "(None)", "(None)",
                 "false", "false", "0", "0", "true", "(None)",

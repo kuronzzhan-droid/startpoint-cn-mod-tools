@@ -215,6 +215,10 @@ class ActionSkillCompileTests(unittest.TestCase):
             ),
         }
         self.assertEqual(["1", "2"], [key for key, _ in patched])
+        expected_description = (
+            "向前方释放由中心扩散的黄蓝雷波，对扇形范围内的敌人造成雷属性伤害"
+            "（合计55倍／55段），并赋予自身「雷电增幅」效果（10秒）。"
+        )
         for key, columns in patched:
             self.assertEqual(24, len(columns))
             self.assertEqual("dynamic/skill/atk_front", columns[2])
@@ -222,8 +226,8 @@ class ActionSkillCompileTests(unittest.TestCase):
             self.assertEqual("600", columns[4])
             self.assertEqual("600", columns[5])
             self.assertEqual(expected_program_paths[key], columns[7])
-            self.assertIn("55", columns[1])
-            self.assertIn("8.5", columns[1])
+            self.assertEqual(expected_description, columns[1])
+            self.assertNotIn("额外乘区", columns[1])
         self.assertEqual(CODE_NAME, "cnmod_thunder_dragon_ascendant")
 
 

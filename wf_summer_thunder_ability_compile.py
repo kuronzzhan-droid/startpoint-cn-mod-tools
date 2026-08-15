@@ -156,8 +156,8 @@ def _build_leader_rows() -> dict[str, list[list[str]]]:
         33: 0,
         45: 455,
         46: 0,
-        55: 30000000,
-        56: 30000000,
+        55: 18000000,
+        56: 18000000,
         65: 0,
         70: False,
     })
@@ -277,8 +277,8 @@ def _build_a3_rows() -> list[list[str]]:
             47: 211,
             48: 1,
             49: "(None)",
-            51: 15000,
-            52: 15000,
+            51: 25000,
+            52: 25000,
         },
     )
     all_enemy = _ability(
@@ -314,21 +314,30 @@ def _build_ability_rows() -> dict[str, list[list[str]]]:
             unisonable=True,
             category="action_skill",
             trigger_kind=0,
-            values={47: 211, 48: 0, 51: 50000, 52: 50000},
+            values={47: 211, 48: 0, 51: 100000, 52: 100000},
         )],
-        "1399985": [_ability(
-            5,
-            unisonable=True,
-            category="attack_yellow",
-            trigger_kind=0,
-            values={47: 388, 48: 5, 49: "Yellow", 51: 90000, 52: 90000},
-        )],
+        "1399985": [
+            _ability(
+                5,
+                unisonable=True,
+                category="attack_yellow",
+                trigger_kind=0,
+                values={47: 32, 48: 5, 49: "Yellow", 51: 90000, 52: 90000},
+            ),
+            _ability(
+                5,
+                unisonable=True,
+                category="attack_yellow",
+                trigger_kind=0,
+                values={47: 388, 48: 5, 49: "Yellow", 51: 90000, 52: 90000},
+            ),
+        ],
         "1399986": [_ability(
             6,
             unisonable=True,
             category="action_skill",
             trigger_kind=0,
-            values={47: 35, 48: 0, 51: 10000, 52: 10000},
+            values={47: 35, 48: 0, 51: 15000, 52: 15000},
         )],
     }
 
@@ -338,7 +347,7 @@ def _build_unique_condition_rows() -> dict[str, list[str]]:
         UNIQUE_STRING_ID,
         "雷电增幅",
         UNIQUE_ICON_PATH,
-        "510",
+        "600",
         "1",
         "(None)",
         "(None)",

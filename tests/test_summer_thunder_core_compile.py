@@ -48,8 +48,7 @@ EXPECTED_CHARACTER_ROW = [
 
 SKILL_DESCRIPTION = (
     "向前方释放由中心扩散的黄蓝雷波，对扇形范围内的敌人造成雷属性伤害"
-    "（合计55倍／55段），并赋予自身「雷电增幅」效果（8.5秒）。"
-    "「雷电增幅」：自身造成的能力伤害与直接攻击伤害的额外乘区+30%。"
+    "（合计55倍／55段），并赋予自身「雷电增幅」效果（10秒）。"
 )
 
 EXPECTED_CHARACTER_TEXT_ROW = [
@@ -198,8 +197,8 @@ class SummerThunderCoreCompileTests(unittest.TestCase):
         self.assertEqual("碧海雷潮＋", text[6])
         self.assertEqual(text[5], text[7])
         self.assertIn("55倍／55段", text[5])
-        self.assertIn("8.5秒", text[5])
-        self.assertIn("额外乘区+30%", text[5])
+        self.assertIn("10秒", text[5])
+        self.assertNotIn("额外乘区", text[5])
 
     def test_awake_status_is_an_owned_target_delete_not_a_zero_placeholder(self):
         self._require_module()
