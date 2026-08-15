@@ -238,8 +238,15 @@ class _FakeBackend:
         self._handle_serial += 1
         return source, pid, self._handle_serial
 
-    def spawn(self, command: tuple[str, ...], cwd: Path, environment: dict[str, str]) -> object:
-        self.calls.append(("spawn", command, cwd, dict(environment)))
+    def spawn(
+        self,
+        command: tuple[str, ...],
+        cwd: Path,
+        environment: dict[str, str],
+        *,
+        capture_output: bool,
+    ) -> object:
+        self.calls.append(("spawn", command, cwd, dict(environment), capture_output))
         if self.spawn_error is not None:
             raise self.spawn_error
         pid = self.next_pid
@@ -255,8 +262,8 @@ class _FakeBackend:
         return SimpleNamespace(
             pid=pid,
             handle=self._new_handle(pid, "spawn"),
-            stdout=BytesIO(self.next_stdout),
-            stderr=BytesIO(self.next_stderr),
+            stdout=BytesIO(self.next_stdout) if capture_output else None,
+            stderr=BytesIO(self.next_stderr) if capture_output else None,
             owner=object(),
         )
 
@@ -376,6 +383,7 @@ class WindowsPlatformAdapterTests(unittest.TestCase):
         self.assertEqual((os.fspath(self.executable), os.fspath(self.server_entry)), spawn[1])
         self.assertEqual(self.server, spawn[2])
         self.assertEqual(OPERATION_ID, spawn[3]["WF_RELEASE_OPERATION_ID"])
+        self.assertFalse(spawn[4])
         self.assertEqual(
             "admin-token-must-stay-process-only",
             spawn[3]["CN_ADMIN_TOKEN"],
@@ -399,7 +407,7 @@ class WindowsPlatformAdapterTests(unittest.TestCase):
         self.assertEqual(opened[2], closed[1])
         self.assertEqual(0.0, waited[2])
         self.assertFalse(any(call[0] == "identity" for call in self.backend.calls))
-        self.assertEqual(CaptureStats(4, 4, False, False), self.adapter.last_capture_stats)
+        self.assertEqual(CaptureStats(0, 0, False, False), self.adapter.last_capture_stats)
 
     def test_signaled_handle_cleanup_preserves_a_drifted_process_record(self) -> None:
         process = self._start()
@@ -484,13 +492,16 @@ class WindowsPlatformAdapterTests(unittest.TestCase):
                     self.assertEqual(identity_handle, terminate[0][1])
                 self.assertFalse((self.state / "process.json").exists())
 
-    def test_server_output_is_bounded_and_released_after_owned_stop(self) -> None:
+    def test_long_lived_server_does_not_depend_on_parent_owned_output_pipes(self) -> None:
         self.backend.next_stdout = b"o" * 100
         self.backend.next_stderr = b"e" * 100
         process = self._start()
+        spawn = next(call for call in self.backend.calls if call[0] == "spawn")
+        self.assertFalse(spawn[4])
+        self.assertNotIn(process.pid, self.adapter._captures)
         self.backend.processes[process.pid].graceful = True
         self.assertFalse(self.adapter.stop_owned(process, 0.1))
-        self.assertEqual(CaptureStats(32, 32, True, True), self.adapter.last_capture_stats)
+        self.assertEqual(CaptureStats(0, 0, False, False), self.adapter.last_capture_stats)
 
     def test_prepare_and_start_failures_are_stable_bounded_and_leave_no_process_state(self) -> None:
         self.backend.next_running = False
@@ -500,6 +511,7 @@ class WindowsPlatformAdapterTests(unittest.TestCase):
         self.assertEqual(CaptureStats(32, 32, True, True), self.adapter.last_capture_stats)
         prepare_spawn = next(call for call in self.backend.calls if call[0] == "spawn")
         self.assertEqual((os.fspath(self.executable), os.fspath(self.prepare_entry)), prepare_spawn[1])
+        self.assertTrue(prepare_spawn[4])
 
         self.backend.next_exit_code = 7
         with self.assertRaises(ReleaseError) as caught:

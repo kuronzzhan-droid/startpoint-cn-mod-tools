@@ -342,7 +342,14 @@ class _Capture:
 
 
 class _ProcessBackend(Protocol):
-    def spawn(self, command: tuple[str, ...], cwd: Path, environment: dict[str, str]) -> object: ...
+    def spawn(
+        self,
+        command: tuple[str, ...],
+        cwd: Path,
+        environment: dict[str, str],
+        *,
+        capture_output: bool,
+    ) -> object: ...
     def open_process(self, pid: int) -> object | None: ...
     def identity(self, handle: object) -> ProcessIdentity: ...
     def wait(self, handle: object, timeout: float) -> bool: ...
@@ -465,6 +472,8 @@ class WindowsPlatformAdapter:
         launch: LaunchSpec,
         environment: LaunchEnvironment,
         operation_id: str | None = None,
+        *,
+        capture_output: bool,
     ) -> object:
         child_environment = build_child_environment(
             launch,
@@ -473,18 +482,25 @@ class WindowsPlatformAdapter:
             operation_id=operation_id,
         )
         try:
-            spawned = self._backend.spawn(command, launch.cwd, child_environment)
+            spawned = self._backend.spawn(
+                command,
+                launch.cwd,
+                child_environment,
+                capture_output=capture_output,
+            )
         except (OSError, ValueError):
             raise _process_error("WFREL_PROCESS_START", "managed process could not be started") from None
-        capture = _Capture(spawned.stdout, spawned.stderr, self._capture_limit)
-        capture.start()
-        self._captures[spawned.pid] = capture
+        if capture_output:
+            capture = _Capture(spawned.stdout, spawned.stderr, self._capture_limit)
+            capture.start()
+            self._captures[spawned.pid] = capture
         return spawned
 
     def prepare_content(self, launch: LaunchSpec, environment: LaunchEnvironment) -> None:
         self._validate_launch(launch)
         spawned = self._spawn(
             (os.fspath(launch.executable), os.fspath(launch.prepare_entry)), launch, environment,
+            capture_output=True,
         )
         try:
             if not self._backend.wait(spawned.handle, self._prepare_timeout):
@@ -514,6 +530,7 @@ class WindowsPlatformAdapter:
             launch,
             environment,
             operation_id,
+            capture_output=False,
         )
         committed = False
         try:
