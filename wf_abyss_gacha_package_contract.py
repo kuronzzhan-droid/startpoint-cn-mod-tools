@@ -40,7 +40,7 @@ NEW_PATHS: tuple[tuple[str, str], ...] = (
     ("common", ITEM_ATLAS_LOGICAL),
     ("common", SHOP_CLIENT_LOGICAL),
     ("common", ROGUE_EVENT_CLIENT_LOGICAL),
-    ("common", gacha.LIST_BANNER_LOGICAL),
+    ("common", gacha.LIST_BANNER_PAYLOAD_LOGICAL),
     ("medium", gacha.TOP_BANNER_PAYLOAD_LOGICAL),
     *(("server", logical) for logical in gacha.SERVER_OUTPUT_PATHS),
     ("server", ITEM_IDS_LOGICAL),

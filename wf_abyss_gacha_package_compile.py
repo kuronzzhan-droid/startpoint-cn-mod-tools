@@ -119,7 +119,7 @@ def _gacha_component(
         or result["report"].get("normal_page_contract") is not True
         or result["report"].get("writes_live") is not False
         or result["report"].get("unresolved_art_payloads") != [
-            gacha_contract.LIST_BANNER_LOGICAL,
+            gacha_contract.LIST_BANNER_PAYLOAD_LOGICAL,
             gacha_contract.TOP_BANNER_PAYLOAD_LOGICAL,
         ]
     ):
@@ -157,7 +157,7 @@ def _gacha_component(
     report.update({
         "unresolved_art_payloads": [],
         "art_payloads_bound_by_banner_component": [
-            gacha_contract.LIST_BANNER_LOGICAL,
+            gacha_contract.LIST_BANNER_PAYLOAD_LOGICAL,
             gacha_contract.TOP_BANNER_PAYLOAD_LOGICAL,
         ],
         "package_manifest_eligible": True,
@@ -172,7 +172,7 @@ def _banner_component() -> ComponentResult:
     result = banner_compile.compile_locked_banners()
     if (
         set(result.files) != {
-            gacha_contract.LIST_BANNER_LOGICAL,
+            gacha_contract.LIST_BANNER_PAYLOAD_LOGICAL,
             gacha_contract.TOP_BANNER_PAYLOAD_LOGICAL,
         }
         or result.report.get("payload_count") != 2
@@ -181,8 +181,8 @@ def _banner_component() -> ComponentResult:
     ):
         raise contract.PackageAssemblyError("banner component report is not eligible")
     roots = {root: {} for root in contract.ROOT_NAMES}
-    roots["common"][gacha_contract.LIST_BANNER_LOGICAL] = result.files[
-        gacha_contract.LIST_BANNER_LOGICAL
+    roots["common"][gacha_contract.LIST_BANNER_PAYLOAD_LOGICAL] = result.files[
+        gacha_contract.LIST_BANNER_PAYLOAD_LOGICAL
     ]
     roots["medium"][gacha_contract.TOP_BANNER_PAYLOAD_LOGICAL] = result.files[
         gacha_contract.TOP_BANNER_PAYLOAD_LOGICAL
