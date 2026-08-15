@@ -12,13 +12,11 @@ from typing import Any, Mapping
 import wf_abyss_gacha_package_audit as abyss_audit
 import wf_abyss_gacha_package_contract as abyss_contract
 import wf_character_pack as character_pack
-from wf_pixelart_compile import SUMMER_THUNDER_TEMPLATE_SHA256
 import wf_summer_thunder_package_contract as thunder
 from wf_summer_thunder_package_sources import (
     _EFFECT_OUTPUT_SHA256,
     _NORMAL_OUTPUT_SHA256,
     _SPECIAL_OUTPUT_SHA256,
-    LOCKED_NORMAL_V3,
 )
 from wf_thunder_hotfix_package_sources import (
     LockedDonorTemplate,
@@ -351,167 +349,9 @@ def compile_hotfix_package(
 
 
 def audit_hotfix_package(image: PackageImage) -> dict[str, Any]:
-    """Recompute the full image, evidence, and exact six-change contract."""
+    from wf_thunder_hotfix_package_audit import audit_hotfix_package as audit
 
-    if not isinstance(image, PackageImage) or set(image.roots) != set(ROOT_NAMES):
-        raise PackageAssemblyError("hotfix package image type/roots are invalid")
-    manifest = image.manifest
-    identity = {
-        "schema_version": 1,
-        "package_id": PACKAGE_ID,
-        "character_id": CHARACTER_ID,
-        "code_name": CODE_NAME,
-        "package_version": PACKAGE_VERSION,
-        "requires_client_base": REQUIRES_CLIENT_BASE,
-        "required_capabilities": ["content.sync@1"],
-        "skills": {},
-        "unique_condition": {},
-    }
-    if any(manifest.get(key) != value for key, value in identity.items()):
-        raise PackageAssemblyError("hotfix manifest identity drift")
-    if manifest.get("roots") != _manifest_entries(image.roots):
-        raise PackageAssemblyError("hotfix manifest payload binding drift")
-    root_report = thunder.validate_root_contract(
-        image.roots, server_logicals=abyss_contract.SERVER_LOGICALS
-    )
-    if (
-        root_report["root_counts"] != _EXPECTED_COUNTS
-        or root_report["payload_count"] != 105
-        or len(manifest.get("tables", [])) != 39
-    ):
-        raise PackageAssemblyError("hotfix inventory/count drift")
-    report = image.source_report
-    locks = report.get("source_locks") if isinstance(report, Mapping) else None
-    if (
-        report.get("schema_version") != 1
-        or report.get("status") != "compiled_in_memory_ready"
-        or report.get("writes_live") is not False
-        or report.get("formal_workspace_written") is not False
-        or report.get("acceptance") != _ACCEPTANCE
-        or not isinstance(locks, Mapping)
-    ):
-        raise PackageAssemblyError("hotfix source report drift")
-    evidence_sha = _sha(source_lock_evidence_bytes(locks))
-    snapshot = manifest.get("snapshot")
-    if (
-        report.get("source_locks_sha256") != evidence_sha
-        or not isinstance(snapshot, Mapping)
-        or snapshot.get("source_locks_sha256") != evidence_sha
-        or snapshot.get("accepted_asset_replacements")
-        != [dict(item) for item in CURRENT_SHARED_ASSET_BASELINE]
-    ):
-        raise PackageAssemblyError("hotfix evidence/snapshot binding drift")
-    source_record = locks.get("source_package")
-    changes = locks.get("changed_payloads")
-    if not isinstance(source_record, Mapping) or not isinstance(changes, list):
-        raise PackageAssemblyError("hotfix source/change evidence is missing")
-    source_hashes = source_record.get("payload_sha256")
-    source_sizes = source_record.get("payload_size")
-    if (
-        not isinstance(source_hashes, Mapping)
-        or set(source_hashes) != set(ROOT_NAMES)
-        or not isinstance(source_sizes, Mapping)
-        or set(source_sizes) != set(ROOT_NAMES)
-    ):
-        raise PackageAssemblyError("hotfix source payload evidence drift")
-    if _sha(_canonical(manifest["tables"])) != source_record.get(
-        "table_claims_sha256"
-    ):
-        raise PackageAssemblyError("hotfix table claims changed")
-    repair_inputs = locks.get("repair_inputs")
-    if not isinstance(repair_inputs, Mapping) or repair_inputs != {
-        "donor_report_sha256": LOCKED_NORMAL_V3.report_sha256,
-        "donor_template_sha256": dict(sorted(SUMMER_THUNDER_TEMPLATE_SHA256.items())),
-        "normal_v3_sha256": dict(_NORMAL_OUTPUT_SHA256),
-        "special_v3_sha256": dict(_SPECIAL_OUTPUT_SHA256),
-        "effect_v1_sha256": dict(_EFFECT_OUTPUT_SHA256),
-        "source_start_date": SOURCE_START_DATE,
-        "shared_asset_baseline": [
-            dict(item) for item in CURRENT_SHARED_ASSET_BASELINE
-        ],
-    }:
-        raise PackageAssemblyError("hotfix repair input identity drift")
-    repair_reports = locks.get("repair_reports")
-    if not isinstance(repair_reports, Mapping) or set(repair_reports) != {
-        "pixel", "effect", "gacha"
-    }:
-        raise PackageAssemblyError("hotfix repair reports are missing")
-    pixel_report = repair_reports["pixel"]
-    effect_report = repair_reports["effect"]
-    gacha_report = repair_reports["gacha"]
-    if (
-        not isinstance(pixel_report, Mapping)
-        or pixel_report.get("status") != "repaired_official_dragon_pivots"
-        or pixel_report.get("writes_live") is not False
-        or pixel_report.get("official_anchor_records") != 9
-        or pixel_report.get("tick_32_source") != "base_0002"
-        or not isinstance(effect_report, Mapping)
-        or effect_report.get("status") != "repaired_single_anchor_application"
-        or effect_report.get("writes_live") is not False
-        or effect_report.get("root_identity_transform") != 1
-        or effect_report.get("child_anchor_layers") != 10
-        or not isinstance(gacha_report, Mapping)
-        or gacha_report.get("status") != "repaired_game_clock_schedule"
-        or gacha_report.get("writes_live") is not False
-        or gacha_report.get("source_start_date") != SOURCE_START_DATE
-        or gacha_report.get("start_date") != "2020-12-31 12:00:00"
-        or gacha_report.get("changed_payload_count") != 3
-    ):
-        raise PackageAssemblyError("hotfix repair report semantic drift")
-    change_by_path = {}
-    for record in changes:
-        if not isinstance(record, Mapping):
-            raise PackageAssemblyError("hotfix change record is invalid")
-        key = (record.get("root"), record.get("logical_path"))
-        if key in change_by_path:
-            raise PackageAssemblyError("hotfix duplicate change record")
-        change_by_path[key] = record
-    if tuple(change_by_path) != CHANGED_PAYLOADS:
-        raise PackageAssemblyError("hotfix changed payload evidence is not exact")
-    for root in ROOT_NAMES:
-        root_hashes = source_hashes.get(root)
-        root_sizes = source_sizes.get(root)
-        if (
-            not isinstance(root_hashes, Mapping)
-            or set(root_hashes) != set(image.roots[root])
-            or not isinstance(root_sizes, Mapping)
-            or set(root_sizes) != set(image.roots[root])
-        ):
-            raise PackageAssemblyError("hotfix source payload path set drift")
-        for logical, raw in image.roots[root].items():
-            key = (root, logical)
-            if key in change_by_path:
-                record = change_by_path[key]
-                if (
-                    record.get("before_sha256") != root_hashes[logical]
-                    or record.get("before_size") != root_sizes[logical]
-                    or record.get("after_sha256") != _sha(raw)
-                    or record.get("after_size") != len(raw)
-                    or record.get("before_sha256") == record.get("after_sha256")
-                ):
-                    raise PackageAssemblyError(
-                        f"hotfix changed payload binding drift: {root}:{logical}"
-                    )
-            elif _sha(raw) != root_hashes[logical]:
-                raise PackageAssemblyError(
-                    f"hotfix unexpected change outside allowlist: {root}:{logical}"
-                )
-    if locks.get("acceptance") != _ACCEPTANCE:
-        raise PackageAssemblyError("hotfix acceptance drift")
-    return {
-        "integrity_ready": True,
-        "apply_ready": True,
-        "payload_count": root_report["payload_count"],
-        "table_claim_count": len(manifest["tables"]),
-        "root_counts": root_report["root_counts"],
-        "changed_payload_count": len(CHANGED_PAYLOADS),
-        "changed_payloads": list(CHANGED_PAYLOADS),
-        "unchanged_payload_count": 99,
-        "accepted_asset_replacements": [
-            dict(item) for item in CURRENT_SHARED_ASSET_BASELINE
-        ],
-        "writes_live": False,
-    }
+    return audit(image)
 
 
 __all__ = [
