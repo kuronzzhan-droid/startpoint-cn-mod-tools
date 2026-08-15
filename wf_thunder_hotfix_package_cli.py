@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Fixed-input, dry-run-default assembler for thunder hotfix 1.1.2."""
+"""Fixed-input, dry-run-default assembler for thunder hotfix 1.1.3."""
 
 from __future__ import annotations
 
@@ -22,8 +22,8 @@ TOOL_ROOT = Path(__file__).resolve().parent
 def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "雷龙 1.1.2 完整替换热修包；默认只读 dry-run，"
-            "修像素/技能锚点，并恢复普通概率池与250点限定兑换。"
+            "雷龙 1.1.3 完整替换热修包；默认只读 dry-run，"
+            "修卡池抽取、竖版主图，并配置八名250点与四名50点兑换。"
         )
     )
     parser.add_argument(

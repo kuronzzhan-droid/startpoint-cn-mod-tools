@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Independent full-image audit for the thunder-dragon 1.1.2 hotfix."""
+"""Independent full-image audit for the thunder-dragon 1.1.3 hotfix."""
 
 from __future__ import annotations
 
@@ -8,6 +8,8 @@ from collections.abc import Mapping
 from typing import Any
 
 import wf_abyss_gacha_package_contract as abyss_contract
+import wf_abyss_gacha_banner_compile as banner_compile
+import wf_abyss_gacha_contract as gacha_contract
 from wf_pixelart_compile import SUMMER_THUNDER_TEMPLATE_SHA256
 import wf_summer_thunder_package_contract as thunder
 from wf_summer_thunder_package_sources import (
@@ -28,7 +30,12 @@ def _repair_evidence(locks: Mapping[str, Any]) -> None:
         "effect_v1_sha256": dict(_EFFECT_OUTPUT_SHA256),
         "source_start_date": contract.SOURCE_START_DATE,
         "standard_pool_donor_id": "700004",
-        "exchange_required_points": 250,
+        "exchange_required_points": {"limited": 250, "standard": 50},
+        "portrait_banner_source_sha256": next(
+            spec.source_sha256 for spec in banner_compile.LOCKED_BANNERS
+            if spec.logical_path == gacha_contract.TOP_BANNER_PAYLOAD_LOGICAL
+        ),
+        "portrait_banner_dimensions": [1440, 1789],
         "shared_asset_baseline": [
             dict(item) for item in contract.CURRENT_SHARED_ASSET_BASELINE
         ],
@@ -37,10 +44,13 @@ def _repair_evidence(locks: Mapping[str, Any]) -> None:
         raise contract.PackageAssemblyError("hotfix repair input identity drift")
     reports = locks.get("repair_reports")
     if not isinstance(reports, Mapping) or set(reports) != {
-        "pixel", "effect", "gacha"
+        "pixel", "effect", "gacha", "banner"
     }:
         raise contract.PackageAssemblyError("hotfix repair reports are missing")
-    pixel, effect, gacha = reports["pixel"], reports["effect"], reports["gacha"]
+    pixel = reports["pixel"]
+    effect = reports["effect"]
+    gacha = reports["gacha"]
+    banner = reports["banner"]
     if (
         not isinstance(pixel, Mapping)
         or pixel.get("status") != "repaired_official_dragon_pivots"
@@ -59,15 +69,28 @@ def _repair_evidence(locks: Mapping[str, Any]) -> None:
         or gacha.get("start_date") != "2020-12-31 12:00:00"
         or gacha.get("rank_rates") != [50, 250, 700]
         or gacha.get("guarantee_rarity") != 4
-        or gacha.get("exchange_required_points") != 250
+        or gacha.get("exchange_required_points")
+        != {"limited": 250, "standard": 50}
         or gacha.get("exchangeable_limited_count") != 8
+        or gacha.get("exchangeable_standard_count") != 4
+        or gacha.get("page_kind") != 0
+        or gacha.get("ticket_exec_types") != {"single": 3, "ten": 4}
         or gacha.get("changed_payload_count") != 8
+        or not isinstance(banner, Mapping)
+        or banner.get("status") != "compiled_wf_storage_banners"
+        or banner.get("package_manifest_eligible") is not True
+        or banner.get("writes_live") is not False
+        or banner.get("payload_count") != 2
+        or banner.get("logical_paths") != sorted({
+            gacha_contract.LIST_BANNER_LOGICAL,
+            gacha_contract.TOP_BANNER_PAYLOAD_LOGICAL,
+        })
     ):
         raise contract.PackageAssemblyError("hotfix repair report semantic drift")
 
 
 def audit_hotfix_package(image: contract.PackageImage) -> dict[str, Any]:
-    """Recompute the full image, evidence, and exact eleven-change contract."""
+    """Recompute the full image, evidence, eleven changes, and one addition."""
 
     if not isinstance(image, contract.PackageImage) or set(image.roots) != set(
         contract.ROOT_NAMES
@@ -91,7 +114,7 @@ def audit_hotfix_package(image: contract.PackageImage) -> dict[str, Any]:
     )
     if (
         root_report["root_counts"] != contract._EXPECTED_COUNTS
-        or root_report["payload_count"] != 105
+        or root_report["payload_count"] != 106
         or len(manifest.get("tables", [])) != 39
     ):
         raise contract.PackageAssemblyError("hotfix inventory/count drift")
@@ -118,7 +141,12 @@ def audit_hotfix_package(image: contract.PackageImage) -> dict[str, Any]:
         raise contract.PackageAssemblyError("hotfix evidence/snapshot binding drift")
     source = locks.get("source_package")
     changes = locks.get("changed_payloads")
-    if not isinstance(source, Mapping) or not isinstance(changes, list):
+    additions = locks.get("added_payloads")
+    if (
+        not isinstance(source, Mapping)
+        or not isinstance(changes, list)
+        or not isinstance(additions, list)
+    ):
         raise contract.PackageAssemblyError("hotfix source/change evidence is missing")
     hashes, sizes = source.get("payload_sha256"), source.get("payload_size")
     if (
@@ -139,18 +167,42 @@ def audit_hotfix_package(image: contract.PackageImage) -> dict[str, Any]:
         by_path[key] = record
     if tuple(by_path) != contract.CHANGED_PAYLOADS:
         raise contract.PackageAssemblyError("hotfix changed payload evidence is not exact")
+    added_by_path = {}
+    for record in additions:
+        if not isinstance(record, Mapping):
+            raise contract.PackageAssemblyError("hotfix addition record is invalid")
+        key = (record.get("root"), record.get("logical_path"))
+        if key in added_by_path or key in by_path:
+            raise contract.PackageAssemblyError("hotfix duplicate addition record")
+        added_by_path[key] = record
+    if tuple(added_by_path) != contract.ADDED_PAYLOADS:
+        raise contract.PackageAssemblyError("hotfix added payload evidence is not exact")
     for root in contract.ROOT_NAMES:
         root_hashes, root_sizes = hashes.get(root), sizes.get(root)
+        expected_target_paths = set(root_hashes or ()) | {
+            logical for added_root, logical in contract.ADDED_PAYLOADS
+            if added_root == root
+        }
         if (
             not isinstance(root_hashes, Mapping)
-            or set(root_hashes) != set(image.roots[root])
+            or set(image.roots[root]) != expected_target_paths
             or not isinstance(root_sizes, Mapping)
-            or set(root_sizes) != set(image.roots[root])
+            or set(root_sizes) != set(root_hashes)
         ):
             raise contract.PackageAssemblyError("hotfix source payload path set drift")
         for logical, raw in image.roots[root].items():
             record = by_path.get((root, logical))
-            if record is None:
+            addition = added_by_path.get((root, logical))
+            if addition is not None:
+                if (
+                    logical in root_hashes
+                    or addition.get("after_sha256") != contract._sha(raw)
+                    or addition.get("after_size") != len(raw)
+                ):
+                    raise contract.PackageAssemblyError(
+                        f"hotfix added payload binding drift: {root}:{logical}"
+                    )
+            elif record is None:
                 if contract._sha(raw) != root_hashes[logical]:
                     raise contract.PackageAssemblyError(
                         f"hotfix unexpected change outside allowlist: {root}:{logical}"
@@ -174,6 +226,8 @@ def audit_hotfix_package(image: contract.PackageImage) -> dict[str, Any]:
         "root_counts": root_report["root_counts"],
         "changed_payload_count": len(contract.CHANGED_PAYLOADS),
         "changed_payloads": list(contract.CHANGED_PAYLOADS),
+        "added_payload_count": len(contract.ADDED_PAYLOADS),
+        "added_payloads": list(contract.ADDED_PAYLOADS),
         "unchanged_payload_count": 94,
         "accepted_asset_replacements": [
             dict(item) for item in contract.CURRENT_SHARED_ASSET_BASELINE

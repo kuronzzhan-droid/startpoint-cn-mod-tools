@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Fail-closed gacha contract repair for thunder hotfix 1.1.2."""
+"""Fail-closed gacha contract repair for thunder hotfix 1.1.3."""
 
 from __future__ import annotations
 
@@ -59,18 +59,43 @@ def _old_pool() -> dict[str, list[dict[str, object]]]:
 
 
 def _old_master_row(expected_start_date: str) -> list[str]:
-    row = contract.build_gacha_master_row()
-    row[10] = "5"
-    row[29] = expected_start_date
-    return row
+    return [
+        contract.CODE_NAME, contract.TITLE, "100", contract.LIST_BANNER_LOGICAL,
+        "2", "", "", "", "", "1", "5", contract.RARITY_ODDS_ID,
+        contract.RICH_TEXT_ID, "0", contract.CHARACTER_3_ODDS_ID,
+        contract.CHARACTER_4_ODDS_ID, contract.CHARACTER_5_ODDS_ID,
+        "normal", "normal_guarantee", "false", "false", "false",
+        "", "", "", "", "", str(contract.SINGLE_TICKET_ID),
+        str(contract.TEN_TICKET_ID), expected_start_date, contract.END_DATE,
+        "(None)", "false", "116", "117", "169", "170", "(None)",
+        "false", "(None)", "(None)", "(None)", "(None)", "false",
+        "false", "(None)", "false",
+    ]
 
 
 def _old_runtime(expected_start_date: str) -> dict[str, object]:
-    runtime = contract.build_server_runtime(_old_pool())
-    runtime["guaranteeRarity"] = 5
-    runtime["rankRates"] = _OLD_RANK_RATES
-    runtime["startDate"] = expected_start_date
-    return runtime
+    return {
+        "type": 0,
+        "paymentType": 0,
+        "pageKind": 2,
+        "singleCost": 150,
+        "multiCost": 1500,
+        "discountCost": 50,
+        "onceTicketItemId": contract.SINGLE_TICKET_ID,
+        "tenTicketItemId": contract.TEN_TICKET_ID,
+        "wildcardTicketAvailable": False,
+        "rarityOddsId": contract.RARITY_ODDS_ID,
+        "guaranteeRarity": 5,
+        "rankRates": _OLD_RANK_RATES,
+        "movieName": "normal",
+        "guaranteeMovieName": "normal_guarantee",
+        "toUseOddsUpAsTrialReading": False,
+        "canBeStartDashExchange": False,
+        "startDate": expected_start_date,
+        "endDate": contract.END_DATE,
+        "name": contract.TITLE,
+        "pool": _old_pool(),
+    }
 
 
 def _old_character_five_rows() -> dict[str, str]:
@@ -234,8 +259,13 @@ def repair_gacha_contract(
         "start_date": contract.START_DATE,
         "rank_rates": list(desired_runtime["rankRates"]["normal"]),
         "guarantee_rarity": desired_runtime["guaranteeRarity"],
-        "exchange_required_points": 250,
+        "exchange_required_points": {"limited": 250, "standard": 50},
         "exchangeable_limited_count": len(contract.CHARACTER_IDS),
+        "exchangeable_standard_count": len(
+            contract.STANDARD_EXCHANGE_CHARACTER_IDS
+        ),
+        "page_kind": desired_runtime["pageKind"],
+        "ticket_exec_types": {"single": 3, "ten": 4},
         "changed_payload_count": len(changed),
         "changed_paths": list(changed),
         "output_sha256": {

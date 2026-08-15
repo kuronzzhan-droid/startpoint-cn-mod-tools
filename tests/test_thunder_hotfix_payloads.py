@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Pure payload-level regression tests for the thunder-dragon 1.1.2 hotfix."""
+"""Pure payload-level regression tests for the thunder-dragon 1.1.3 hotfix."""
 
 from __future__ import annotations
 
@@ -82,6 +82,8 @@ def _old_contract_fixture(compiled: dict[str, bytes], old_date: str) -> dict[str
     broken = dict(compiled)
     rows = _decode_flat(broken[GACHA_MASTER_LOGICAL], GACHA_MASTER_LOGICAL)
     row = core.read_csv_lines(rows[GACHA_KEY].decode("utf-8"))[0]
+    row[4] = "2"
+    row[5:9] = ["", "", "", ""]
     row[10] = "5"
     row[29] = old_date
     rows[GACHA_KEY] = core.write_csv_lines([row]).encode("utf-8")
@@ -99,6 +101,7 @@ def _old_contract_fixture(compiled: dict[str, bytes], old_date: str) -> dict[str
     }
     runtime = json.loads(broken["gacha.json"])
     runtime[GACHA_KEY].update({
+        "pageKind": 2,
         "guaranteeRarity": 5,
         "rankRates": {"normal": [1000, 0, 0], "multiGuarantee": [1000, 0]},
         "startDate": old_date,
@@ -106,6 +109,8 @@ def _old_contract_fixture(compiled: dict[str, bytes], old_date: str) -> dict[str
     })
     broken["gacha.json"] = _json(runtime)
     cdndata = json.loads(broken["cdndata/gacha.json"])
+    cdndata[GACHA_KEY][0][4] = "2"
+    cdndata[GACHA_KEY][0][5:9] = ["", "", "", ""]
     cdndata[GACHA_KEY][0][10] = "5"
     cdndata[GACHA_KEY][0][29] = old_date
     broken["cdndata/gacha.json"] = _json(cdndata)
@@ -271,8 +276,14 @@ class ThunderHotfixPayloadTests(unittest.TestCase):
         self.assertEqual(START_DATE, report["start_date"])
         self.assertEqual(8, report["changed_payload_count"])
         self.assertEqual([50, 250, 700], report["rank_rates"])
-        self.assertEqual(250, report["exchange_required_points"])
+        self.assertEqual(
+            {"limited": 250, "standard": 50},
+            report["exchange_required_points"],
+        )
         self.assertEqual(8, report["exchangeable_limited_count"])
+        self.assertEqual(4, report["exchangeable_standard_count"])
+        self.assertEqual(0, report["page_kind"])
+        self.assertEqual({"single": 3, "ten": 4}, report["ticket_exec_types"])
         self.assertFalse(report["writes_live"])
 
         already_fixed = dict(compiled)

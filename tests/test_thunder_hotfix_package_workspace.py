@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Fresh-workspace and fixed CLI tests for thunder hotfix 1.1.2."""
+"""Fresh-workspace and fixed CLI tests for thunder hotfix 1.1.3."""
 
 from __future__ import annotations
 
@@ -24,6 +24,7 @@ class ThunderHotfixWorkspaceTests(unittest.TestCase):
             "repair_inputs": {},
             "repair_reports": {},
             "changed_payloads": [],
+            "added_payloads": [],
             "acceptance": {},
             "writes_live": False,
             "formal_workspace_written": False,
@@ -36,7 +37,7 @@ class ThunderHotfixWorkspaceTests(unittest.TestCase):
 
     def test_default_execution_is_read_only_and_apply_is_exactly_confirmed(self):
         image = self._image()
-        audit = {"apply_ready": True, "payload_count": 105}
+        audit = {"apply_ready": True, "payload_count": 106}
         with tempfile.TemporaryDirectory() as temporary_name:
             target = Path(temporary_name) / workspace.WORKSPACE_NAME
             with mock.patch.object(package, "audit_hotfix_package", return_value=audit):

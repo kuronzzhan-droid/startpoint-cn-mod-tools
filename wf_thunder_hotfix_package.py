@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Compile and audit the complete thunder-dragon 1.1.2 replacement image."""
+"""Compile and audit the complete thunder-dragon 1.1.3 replacement image."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ import re
 from typing import Any, Mapping
 
 import wf_abyss_gacha_package_audit as abyss_audit
+import wf_abyss_gacha_banner_compile as banner_compile
 import wf_abyss_gacha_package_contract as abyss_contract
 import wf_abyss_gacha_contract as gacha_contract
 import wf_character_pack as character_pack
@@ -35,9 +36,9 @@ PACKAGE_ID = thunder.PACKAGE_ID
 CHARACTER_ID = thunder.CHARACTER_ID
 CODE_NAME = thunder.CODE_NAME
 ROOT_NAMES = thunder.ROOT_NAMES
-PACKAGE_VERSION = "1.1.2"
-REQUIRES_CLIENT_BASE = "1.4.348"
-CONFIRMATION = "ASSEMBLE_CNMOD_THUNDER_DRAGON_ABYSS_GACHA_1_1_2"
+PACKAGE_VERSION = "1.1.3"
+REQUIRES_CLIENT_BASE = "1.4.349"
+CONFIRMATION = "ASSEMBLE_CNMOD_THUNDER_DRAGON_ABYSS_GACHA_1_1_3"
 SOURCE_START_DATE = "2026-08-15 00:00:00"
 
 _PIXEL_PREFIX = f"character/{CODE_NAME}/pixelart"
@@ -58,6 +59,9 @@ CHANGED_PAYLOADS = (
         for logical in GACHA_REPAIR_PATHS
     ),
 )
+ADDED_PAYLOADS = (
+    ("medium", gacha_contract.TOP_BANNER_PAYLOAD_LOGICAL),
+)
 CURRENT_SHARED_ASSET_BASELINE = (
     {
         "root": "common",
@@ -76,7 +80,8 @@ CURRENT_SHARED_ASSET_BASELINE = (
         "before_size": 739512,
     },
 )
-_EXPECTED_COUNTS = {"common": 67, "medium": 25, "android": 2, "server": 11}
+_SOURCE_COUNTS = {"common": 67, "medium": 25, "android": 2, "server": 11}
+_EXPECTED_COUNTS = {"common": 67, "medium": 26, "android": 2, "server": 11}
 _ACCEPTANCE = {
     "pixel_anchor_fixed": True,
     "special_alias_regenerated": True,
@@ -84,10 +89,19 @@ _ACCEPTANCE = {
     "gacha_schedule_game_clock_compatible": True,
     "gacha_standard_rank_rates": [50, 250, 700],
     "gacha_limited_rate_each": 0.005,
-    "gacha_exchange_required_points": 250,
+    "gacha_exchange_required_points": {"limited": 250, "standard": 50},
     "gacha_exchangeable_limited_count": 8,
+    "gacha_exchangeable_standard_count": 4,
+    "gacha_always_visible_normal_page": True,
+    "gacha_ticket_exec_types": {"single": 3, "ten": 4},
+    "gacha_portrait_banner": {
+        "logical_path": gacha_contract.TOP_BANNER_PAYLOAD_LOGICAL,
+        "width": 1440,
+        "height": 1789,
+    },
     "unchanged_payload_count": 94,
     "changed_payload_count": 11,
+    "added_payload_count": 1,
     "package_manifest_eligible": True,
     "writes_live": False,
 }
@@ -116,7 +130,7 @@ def _canonical(value: object) -> bytes:
 def source_lock_evidence_bytes(source_locks: Mapping[str, Any]) -> bytes:
     expected = {
         "schema_version", "source_package", "repair_inputs", "repair_reports",
-        "changed_payloads", "acceptance", "writes_live",
+        "changed_payloads", "added_payloads", "acceptance", "writes_live",
         "formal_workspace_written",
     }
     if (
@@ -171,7 +185,7 @@ def _validate_source(source: SealedHotfixSource) -> None:
     if any(source.manifest.get(key) != value for key, value in identity.items()):
         raise PackageAssemblyError("hotfix source package identity drift")
     if (
-        {root: len(source.roots[root]) for root in ROOT_NAMES} != _EXPECTED_COUNTS
+        {root: len(source.roots[root]) for root in ROOT_NAMES} != _SOURCE_COUNTS
         or len(source.manifest.get("tables", [])) != 39
     ):
         raise PackageAssemblyError("hotfix source inventory drift")
@@ -194,7 +208,7 @@ def _validate_source(source: SealedHotfixSource) -> None:
             or _sha(raw) != replacement["before_sha256"]
         ):
             raise PackageAssemblyError(
-                "hotfix source shared asset does not match current 1.4.348 baseline"
+                "hotfix source shared asset does not match current 1.4.349 baseline"
             )
 
 
@@ -214,7 +228,7 @@ def compile_hotfix_package(
     *,
     generator_git_head: str,
 ) -> PackageImage:
-    """Compile the full replacement image while changing exactly eleven payloads."""
+    """Compile the full replacement image with eleven changes and one new banner."""
 
     _validate_source(source)
     _validate_donor(donor)
@@ -256,6 +270,7 @@ def compile_hotfix_package(
         repaired_gacha, gacha_report = repair_gacha_contract(
             all_source, expected_start_date=SOURCE_START_DATE
         )
+        banner_result = banner_compile.compile_locked_banners()
     except (KeyError, TypeError, ValueError) as exc:
         raise PackageAssemblyError(f"hotfix payload compilation failed: {exc}") from exc
 
@@ -283,6 +298,24 @@ def compile_hotfix_package(
             "before_size": len(before),
             "after_sha256": _sha(after),
             "after_size": len(after),
+        })
+    added_records = []
+    for root, logical in ADDED_PAYLOADS:
+        if logical in roots[root]:
+            raise PackageAssemblyError(
+                f"hotfix added payload already exists: {root}:{logical}"
+            )
+        raw = banner_result.files.get(logical)
+        if not isinstance(raw, bytes):
+            raise PackageAssemblyError(
+                f"hotfix added banner is missing: {root}:{logical}"
+            )
+        roots[root][logical] = raw
+        added_records.append({
+            "root": root,
+            "logical_path": logical,
+            "after_sha256": _sha(raw),
+            "after_size": len(raw),
         })
 
     source_locks = {
@@ -312,7 +345,12 @@ def compile_hotfix_package(
             "effect_v1_sha256": dict(_EFFECT_OUTPUT_SHA256),
             "source_start_date": SOURCE_START_DATE,
             "standard_pool_donor_id": gacha_contract.STANDARD_POOL_DONOR_ID,
-            "exchange_required_points": 250,
+            "exchange_required_points": {"limited": 250, "standard": 50},
+            "portrait_banner_source_sha256": next(
+                spec.source_sha256 for spec in banner_compile.LOCKED_BANNERS
+                if spec.logical_path == gacha_contract.TOP_BANNER_PAYLOAD_LOGICAL
+            ),
+            "portrait_banner_dimensions": [1440, 1789],
             "shared_asset_baseline": [
                 dict(item) for item in CURRENT_SHARED_ASSET_BASELINE
             ],
@@ -321,8 +359,10 @@ def compile_hotfix_package(
             "pixel": pixel_report,
             "effect": effect_report,
             "gacha": gacha_report,
+            "banner": dict(banner_result.report),
         },
         "changed_payloads": change_records,
+        "added_payloads": added_records,
         "acceptance": dict(_ACCEPTANCE),
         "writes_live": False,
         "formal_workspace_written": False,
@@ -369,7 +409,7 @@ def audit_hotfix_package(image: PackageImage) -> dict[str, Any]:
 __all__ = [
     "PACKAGE_ID", "CHARACTER_ID", "CODE_NAME", "ROOT_NAMES",
     "PACKAGE_VERSION", "REQUIRES_CLIENT_BASE", "CONFIRMATION",
-    "CHANGED_PAYLOADS", "CURRENT_SHARED_ASSET_BASELINE",
+    "CHANGED_PAYLOADS", "ADDED_PAYLOADS", "CURRENT_SHARED_ASSET_BASELINE",
     "PackageAssemblyError", "PackageImage", "source_lock_evidence_bytes",
     "compile_hotfix_package", "audit_hotfix_package",
 ]
