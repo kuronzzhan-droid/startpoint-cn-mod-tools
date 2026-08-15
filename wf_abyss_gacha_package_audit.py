@@ -116,6 +116,21 @@ def audit_package_image(image: contract.PackageImage) -> dict[str, Any]:
         or report.get("source_locks_sha256") != evidence_sha
     ):
         raise contract.PackageAssemblyError("source-lock manifest binding drift")
+    input_sha256 = locks.get("input_sha256")
+    component_reports = locks.get("component_reports")
+    if not isinstance(input_sha256, Mapping) or not isinstance(
+        component_reports, Mapping
+    ):
+        raise contract.PackageAssemblyError(
+            "ticket shared asset source-lock evidence is missing"
+        )
+    expected_replacements = contract._accepted_asset_replacements(
+        input_sha256, component_reports
+    )
+    if snapshot.get("accepted_asset_replacements") != expected_replacements:
+        raise contract.PackageAssemblyError(
+            "accepted asset replacement manifest binding drift"
+        )
     source_record = locks.get("source_package")
     if not isinstance(source_record, Mapping):
         raise contract.PackageAssemblyError(

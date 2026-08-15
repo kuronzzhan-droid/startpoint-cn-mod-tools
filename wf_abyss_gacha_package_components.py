@@ -5,16 +5,22 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import json
+import zlib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping, Sequence
+
+from PIL import Image, UnidentifiedImageError
 
 import wf_abyss_gacha_package_contract as contract
 import wf_abyss_gacha_drop_source as drop_source
 import wf_abyss_ticket_compile as tickets
 import wf_abyss_ticket_drop as ticket_drop
+import wf_assets
 import wf_character_pack as character_pack
+import wf_dsl
 import wf_mod_tool as core
 import wf_rogue_shop as shop
 
@@ -158,6 +164,86 @@ def _empty_roots() -> dict[str, dict[str, bytes]]:
     return {root: {} for root in contract.ROOT_NAMES}
 
 
+def _decode_item_sheet(raw: bytes, label: str) -> Image.Image:
+    try:
+        decoded = wf_assets.png_decode(raw)
+        with Image.open(io.BytesIO(decoded)) as image:
+            image.load()
+            return image.convert("RGBA")
+    except (TypeError, ValueError, OSError, UnidentifiedImageError) as exc:
+        raise ValueError(f"{label} is not a storage-ready item sheet") from exc
+
+
+def _decode_item_atlas(raw: bytes, label: str) -> list[dict[str, object]]:
+    try:
+        tree = wf_dsl.parse_dsl(zlib.decompress(raw, -15))["tree"]
+    except (TypeError, ValueError, zlib.error, EOFError) as exc:
+        raise ValueError(f"{label} is not a raw-deflate AMF3 item atlas") from exc
+    if not isinstance(tree, list) or not all(isinstance(item, dict) for item in tree):
+        raise ValueError(f"{label} item atlas root must be an object array")
+    return tree
+
+
+def _shared_asset_evidence(
+    sheet_before_raw: bytes,
+    atlas_before_raw: bytes,
+    sheet_after_raw: bytes,
+    atlas_after_raw: bytes,
+) -> tuple[dict[str, dict[str, object]], dict[str, object]]:
+    sheet_before = _decode_item_sheet(sheet_before_raw, "before")
+    sheet_after = _decode_item_sheet(sheet_after_raw, "after")
+    expected_dimensions = (sheet_before.width, sheet_before.height + 22)
+    if sheet_after.size != expected_dimensions:
+        raise ValueError("shared item sheet did not append exactly one 22px row")
+    prefix = sheet_after.crop((0, 0, sheet_before.width, sheet_before.height))
+    before_pixels_sha = _sha(sheet_before.tobytes())
+    after_prefix_sha = _sha(prefix.tobytes())
+    if before_pixels_sha != after_prefix_sha:
+        raise ValueError("shared item sheet changed existing prefix pixels")
+
+    atlas_before = _decode_item_atlas(atlas_before_raw, "before")
+    atlas_after = _decode_item_atlas(atlas_after_raw, "after")
+    if (
+        len(atlas_after) != len(atlas_before) + len(tickets.TICKETS)
+        or atlas_after[:len(atlas_before)] != atlas_before
+        or [entry.get("n") for entry in atlas_after[len(atlas_before):]]
+        != [spec.icon_name for spec in tickets.TICKETS]
+    ):
+        raise ValueError("shared item atlas changed existing prefix entries")
+    before_entries_sha = _sha(_canonical_json_bytes(atlas_before))
+    after_prefix_entries_sha = _sha(
+        _canonical_json_bytes(atlas_after[:len(atlas_before)])
+    )
+    if before_entries_sha != after_prefix_entries_sha:
+        raise ValueError("shared item atlas prefix hash drifted")
+
+    replacements = {
+        tickets.ITEM_SHEET_LOGICAL: {
+            "before_sha256": _sha(sheet_before_raw),
+            "before_size": len(sheet_before_raw),
+        },
+        tickets.ITEM_ATLAS_LOGICAL: {
+            "before_sha256": _sha(atlas_before_raw),
+            "before_size": len(atlas_before_raw),
+        },
+    }
+    preservation = {
+        "sheet_prefix": {
+            "before_dimensions": list(sheet_before.size),
+            "after_dimensions": list(sheet_after.size),
+            "before_rgba_sha256": before_pixels_sha,
+            "after_prefix_rgba_sha256": after_prefix_sha,
+        },
+        "atlas_prefix": {
+            "before_entry_count": len(atlas_before),
+            "after_entry_count": len(atlas_after),
+            "before_entries_sha256": before_entries_sha,
+            "after_prefix_entries_sha256": after_prefix_entries_sha,
+        },
+    }
+    return replacements, preservation
+
+
 def compile_ticket_component(
     *,
     item_raw: bytes,
@@ -197,6 +283,12 @@ def compile_ticket_component(
     )
 
     assets = tickets.compile_locked_item_assets(sheet_raw, atlas_raw)
+    replacements, preservation = _shared_asset_evidence(
+        sheet_raw,
+        atlas_raw,
+        assets.sheet_payload,
+        assets.atlas_payload,
+    )
     roots = _empty_roots()
     roots["common"].update({
         tickets.ITEM_T: item_payload,
@@ -220,6 +312,8 @@ def compile_ticket_component(
             tickets.GACHA_TICKET_TYPE_T: _sha(ticket_type_raw),
         },
         "art_source_sha256": dict(assets.source_sha256),
+        "shared_asset_replacements": replacements,
+        "shared_asset_preservation": preservation,
         "writes_live": False,
     })
 

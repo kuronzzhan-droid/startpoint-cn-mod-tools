@@ -40,13 +40,49 @@ class AbyssGachaPackageContractTests(unittest.TestCase):
         roots = {name: {} for name in module.ROOT_NAMES}
         for root, logical in module.NEW_PATHS:
             roots[root][logical] = f"new:{root}:{logical}".encode()
+        sheet_before_sha = hashlib.sha256(b"base347-sheet").hexdigest()
+        atlas_before_sha = hashlib.sha256(b"base347-atlas").hexdigest()
+        ticket_report = {
+            "writes_live": False,
+            "shared_asset_replacements": {
+                module.ITEM_SHEET_LOGICAL: {
+                    "before_sha256": sheet_before_sha,
+                    "before_size": len(b"base347-sheet"),
+                },
+                module.ITEM_ATLAS_LOGICAL: {
+                    "before_sha256": atlas_before_sha,
+                    "before_size": len(b"base347-atlas"),
+                },
+            },
+            "shared_asset_preservation": {
+                "sheet_prefix": {
+                    "before_dimensions": [1024, 2048],
+                    "after_dimensions": [1024, 2070],
+                    "before_rgba_sha256": "1" * 64,
+                    "after_prefix_rgba_sha256": "1" * 64,
+                },
+                "atlas_prefix": {
+                    "before_entry_count": 100,
+                    "after_entry_count": 102,
+                    "before_entries_sha256": "2" * 64,
+                    "after_prefix_entries_sha256": "2" * 64,
+                },
+            },
+        }
         return module.AdditionBundle(
             roots=roots,
             table_claims=tuple(module.expected_new_claims()),
-            input_sha256={"fixture": hashlib.sha256(b"fixture").hexdigest()},
+            input_sha256={
+                "fixture": hashlib.sha256(b"fixture").hexdigest(),
+                f"tickets:{module.ITEM_SHEET_LOGICAL}": sheet_before_sha,
+                f"tickets:{module.ITEM_ATLAS_LOGICAL}": atlas_before_sha,
+            },
             component_reports={
-                name: {"writes_live": False}
-                for name in ("gacha", "tickets", "shop", "drop", "banners")
+                **{
+                    name: {"writes_live": False}
+                    for name in ("gacha", "shop", "drop", "banners")
+                },
+                "tickets": ticket_report,
             },
             acceptance={
                 "all_references_closed": True,
@@ -90,6 +126,61 @@ class AbyssGachaPackageContractTests(unittest.TestCase):
                 self.assertEqual(raw, image.roots[root][logical])
         self.assertFalse(image.source_report["writes_live"])
         self.assertFalse(image.source_report["formal_workspace_written"])
+        self.assertEqual([
+            {
+                "root": "common",
+                "logical_path": module.ITEM_SHEET_LOGICAL,
+                "before_sha256": hashlib.sha256(b"base347-sheet").hexdigest(),
+                "before_size": len(b"base347-sheet"),
+            },
+            {
+                "root": "common",
+                "logical_path": module.ITEM_ATLAS_LOGICAL,
+                "before_sha256": hashlib.sha256(b"base347-atlas").hexdigest(),
+                "before_size": len(b"base347-atlas"),
+            },
+        ], image.manifest["snapshot"]["accepted_asset_replacements"])
+
+    def test_rejects_unbound_or_non_preserving_shared_asset_acceptance(self):
+        source = self._source()
+        cases = {}
+        missing_path = self._bundle()
+        missing_reports = copy.deepcopy(missing_path.component_reports)
+        missing_reports["tickets"]["shared_asset_replacements"].pop(
+            module.ITEM_ATLAS_LOGICAL
+        )
+        cases["exact paths"] = (missing_path, missing_reports)
+
+        changed_prefix = self._bundle()
+        changed_reports = copy.deepcopy(changed_prefix.component_reports)
+        changed_reports["tickets"]["shared_asset_preservation"][
+            "sheet_prefix"
+        ]["after_prefix_rgba_sha256"] = "3" * 64
+        cases["prefix preservation"] = (changed_prefix, changed_reports)
+
+        unbound = self._bundle()
+        unbound_reports = copy.deepcopy(unbound.component_reports)
+        unbound_reports["tickets"]["shared_asset_replacements"][
+            module.ITEM_SHEET_LOGICAL
+        ]["before_sha256"] = "4" * 64
+        cases["input hash binding"] = (unbound, unbound_reports)
+
+        for message, (bundle, reports) in cases.items():
+            with self.subTest(message=message):
+                with self.assertRaisesRegex(
+                    module.PackageAssemblyError, message
+                ):
+                    module.build_package_image(
+                        source,
+                        module.AdditionBundle(
+                            roots=bundle.roots,
+                            table_claims=bundle.table_claims,
+                            input_sha256=bundle.input_sha256,
+                            component_reports=reports,
+                            acceptance=bundle.acceptance,
+                        ),
+                        generator_git_head="c" * 40,
+                    )
 
     def test_requires_the_exact_new_path_and_claim_sets(self):
         source = self._source()
@@ -163,6 +254,17 @@ class AbyssGachaPackageContractTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(module.PackageAssemblyError, "source-lock"):
             module.audit_package_image(tampered)
+
+        tampered_manifest = copy.deepcopy(image.manifest)
+        tampered_manifest["snapshot"]["accepted_asset_replacements"][0][
+            "before_size"
+        ] += 1
+        with self.assertRaisesRegex(
+            module.PackageAssemblyError, "accepted asset replacement"
+        ):
+            module.audit_package_image(module.PackageImage(
+                image.roots, tampered_manifest, image.source_report
+            ))
 
         rejected = copy.deepcopy(bundle.acceptance)
         rejected["shop_contract_closed"] = False

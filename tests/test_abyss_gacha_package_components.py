@@ -60,6 +60,36 @@ class PackageComponentTests(unittest.TestCase):
         ))
         self.assertTrue(result.report["ticket_contract_closed"])
         self.assertFalse(result.report["writes_live"])
+        self.assertEqual({
+            tickets.ITEM_SHEET_LOGICAL: {
+                "before_sha256": hashlib.sha256(sheet).hexdigest(),
+                "before_size": len(sheet),
+            },
+            tickets.ITEM_ATLAS_LOGICAL: {
+                "before_sha256": hashlib.sha256(atlas).hexdigest(),
+                "before_size": len(atlas),
+            },
+        }, result.report["shared_asset_replacements"])
+        preservation = result.report["shared_asset_preservation"]
+        sheet_prefix = preservation["sheet_prefix"]
+        self.assertEqual(
+            sheet_prefix["before_rgba_sha256"],
+            sheet_prefix["after_prefix_rgba_sha256"],
+        )
+        self.assertEqual(
+            [sheet_prefix["before_dimensions"][0],
+             sheet_prefix["before_dimensions"][1] + 22],
+            sheet_prefix["after_dimensions"],
+        )
+        atlas_prefix = preservation["atlas_prefix"]
+        self.assertEqual(
+            atlas_prefix["before_entries_sha256"],
+            atlas_prefix["after_prefix_entries_sha256"],
+        )
+        self.assertEqual(
+            atlas_prefix["before_entry_count"] + 2,
+            atlas_prefix["after_entry_count"],
+        )
 
     def test_ticket_component_rejects_preoccupied_or_malformed_owned_ids(self):
         sheet, atlas = _base_item_assets()

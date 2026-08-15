@@ -177,6 +177,94 @@ def _flat_hashes(
     }
 
 
+def _accepted_asset_replacements(
+    input_sha256: Mapping[str, str],
+    component_reports: Mapping[str, Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    ticket_report = component_reports.get("tickets")
+    if not isinstance(ticket_report, Mapping):
+        raise PackageAssemblyError("ticket shared asset report is missing")
+    raw_replacements = ticket_report.get("shared_asset_replacements")
+    expected_paths = (ITEM_SHEET_LOGICAL, ITEM_ATLAS_LOGICAL)
+    if not isinstance(raw_replacements, Mapping) or set(raw_replacements) != set(
+        expected_paths
+    ):
+        raise PackageAssemblyError("ticket shared asset exact paths are not locked")
+
+    accepted: list[dict[str, Any]] = []
+    for logical in expected_paths:
+        record = raw_replacements[logical]
+        if not isinstance(record, Mapping) or set(record) != {
+            "before_sha256", "before_size"
+        }:
+            raise PackageAssemblyError(
+                f"ticket shared asset record is not exact: {logical}"
+            )
+        digest = record.get("before_sha256")
+        size = record.get("before_size")
+        if not _valid_hash(digest) or type(size) is not int or size < 0:
+            raise PackageAssemblyError(
+                f"ticket shared asset identity is invalid: {logical}"
+            )
+        if input_sha256.get(f"tickets:{logical}") != digest:
+            raise PackageAssemblyError(
+                f"ticket shared asset input hash binding drift: {logical}"
+            )
+        accepted.append({
+            "root": "common",
+            "logical_path": logical,
+            "before_sha256": digest,
+            "before_size": size,
+        })
+
+    preservation = ticket_report.get("shared_asset_preservation")
+    if not isinstance(preservation, Mapping) or set(preservation) != {
+        "sheet_prefix", "atlas_prefix"
+    }:
+        raise PackageAssemblyError("ticket shared asset prefix preservation is absent")
+    sheet = preservation["sheet_prefix"]
+    if not isinstance(sheet, Mapping) or set(sheet) != {
+        "before_dimensions", "after_dimensions",
+        "before_rgba_sha256", "after_prefix_rgba_sha256",
+    }:
+        raise PackageAssemblyError("ticket sheet prefix preservation is invalid")
+    before_dimensions = sheet["before_dimensions"]
+    after_dimensions = sheet["after_dimensions"]
+    if (
+        not isinstance(before_dimensions, list)
+        or not isinstance(after_dimensions, list)
+        or len(before_dimensions) != 2
+        or len(after_dimensions) != 2
+        or any(type(value) is not int or value <= 0 for value in before_dimensions)
+        or any(type(value) is not int or value <= 0 for value in after_dimensions)
+        or after_dimensions
+        != [before_dimensions[0], before_dimensions[1] + 22]
+        or not _valid_hash(sheet["before_rgba_sha256"])
+        or sheet["before_rgba_sha256"] != sheet["after_prefix_rgba_sha256"]
+    ):
+        raise PackageAssemblyError("ticket sheet prefix preservation drift")
+
+    atlas = preservation["atlas_prefix"]
+    if not isinstance(atlas, Mapping) or set(atlas) != {
+        "before_entry_count", "after_entry_count",
+        "before_entries_sha256", "after_prefix_entries_sha256",
+    }:
+        raise PackageAssemblyError("ticket atlas prefix preservation is invalid")
+    before_count = atlas["before_entry_count"]
+    after_count = atlas["after_entry_count"]
+    if (
+        type(before_count) is not int
+        or before_count < 0
+        or type(after_count) is not int
+        or after_count != before_count + 2
+        or not _valid_hash(atlas["before_entries_sha256"])
+        or atlas["before_entries_sha256"]
+        != atlas["after_prefix_entries_sha256"]
+    ):
+        raise PackageAssemblyError("ticket atlas prefix preservation drift")
+    return accepted
+
+
 def _validate_source(source: SealedSourcePackage) -> dict[str, Any]:
     manifest = dict(source.manifest)
     if (
@@ -229,7 +317,7 @@ def _validate_source(source: SealedSourcePackage) -> dict[str, Any]:
 
 def _validate_additions(
     source: SealedSourcePackage, additions: AdditionBundle
-) -> None:
+) -> list[dict[str, Any]]:
     if set(additions.roots) != set(ROOT_NAMES):
         raise PackageAssemblyError("new payload roots are not exact")
     old_keys = {
@@ -274,6 +362,9 @@ def _validate_additions(
         for label, digest in additions.input_sha256.items()
     ):
         raise PackageAssemblyError("input SHA-256 evidence is not exact")
+    return _accepted_asset_replacements(
+        additions.input_sha256, additions.component_reports
+    )
 
 
 def source_lock_evidence_bytes(source_locks: Mapping[str, Any]) -> bytes:
@@ -291,7 +382,7 @@ def build_package_image(
     """Build and self-audit the complete derived image without filesystem writes."""
 
     _validate_source(source)
-    _validate_additions(source, additions)
+    accepted_asset_replacements = _validate_additions(source, additions)
     if not isinstance(generator_git_head, str) or re.fullmatch(
         r"[0-9a-f]{40}", generator_git_head
     ) is None:
@@ -347,6 +438,7 @@ def build_package_image(
             "manifest_sha256"
         ],
         "source_workspace_input_sha256": source.workspace_input_sha256,
+        "accepted_asset_replacements": accepted_asset_replacements,
     })
     contract_report = {
         "payload_count": sum(len(files) for files in roots.values()),
