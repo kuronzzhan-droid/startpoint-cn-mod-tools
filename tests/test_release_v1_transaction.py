@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import json
 from pathlib import Path
 import tempfile
@@ -23,6 +23,7 @@ from wf_release_v1.receipts import (
     operation_reservation,
     write_phase_receipt as persist_phase_receipt,
 )
+from wf_release_v1.schema import AssetReplacement, SourceEvidence
 from wf_release_v1.target import (
     ComponentRoots,
     LaunchSpec,
@@ -34,6 +35,8 @@ from wf_release_v1.transaction import InstallResult, install_release
 
 OPERATION_ID = "20260812T010203.000000Z-0123456789abcdef0123456789abcdef"
 SHA = "a" * 64
+RELEASE_A = "sha256:" + "a" * 64
+RELEASE_B = "sha256:" + "b" * 64
 
 
 def _process(pid: int = 100) -> ManagedProcess:
@@ -150,6 +153,24 @@ class TransactionTests(unittest.TestCase):
         self.before = _target(cdn_target_version="1.4.53")
         self.after = _target(cdn_target_version="1.4.54")
         self.phases: list[str] = []
+        self.baseline_facts: list[object] = []
+
+    def _accepted_verified(self):
+        replacement = AssetReplacement(
+            "common",
+            "item/sprite_sheet.png",
+            "b" * 64,
+            482079,
+        )
+        source = SourceEvidence(
+            "character-workspace-v2",
+            self.verified.manifest.source_evidence.workspace_input_sha256,
+            (replacement,),
+        )
+        return replace(
+            self.verified,
+            manifest=replace(self.verified.manifest, source_evidence=source),
+        )
 
     def _receipt(self) -> dict[str, object]:
         path = self.target.state_root / "receipts" / f"{OPERATION_ID}.json"
@@ -166,10 +187,13 @@ class TransactionTests(unittest.TestCase):
         capability_requires_started: bool = False,
         capability_replacement: ManagedProcess | None = None,
         baseline_error: ReleaseError | None = None,
+        baseline_disk_digest: str | None = None,
+        verified=None,
     ) -> InstallResult:
         import wf_release_v1.transaction as transaction
 
         probe = FakeProbe(probes)
+        effective_verified = self.verified if verified is None else verified
         receipt_failed = False
         health_ready = False
 
@@ -206,6 +230,23 @@ class TransactionTests(unittest.TestCase):
             nonlocal health_ready
             health_ready = True
 
+        def verify_baseline(_verified, target: ManagedTarget, facts=None):
+            self.assertIs(self.target, target)
+            self.baseline_facts.append(facts)
+            if baseline_error is not None:
+                raise baseline_error
+            disk_digest = (
+                baseline_disk_digest
+                if baseline_disk_digest is not None
+                else getattr(facts, "release_digest", None)
+            )
+            if facts is not None and disk_digest != facts.release_digest:
+                raise ReleaseError(
+                    "WFREL_ASSET_BASELINE_UNAVAILABLE",
+                    "disk and runtime release digests disagree",
+                )
+            return SimpleNamespace(release_digest=disk_digest)
+
         with (
             mock.patch.object(transaction, "new_operation_id", return_value=OPERATION_ID),
             mock.patch.object(
@@ -218,16 +259,20 @@ class TransactionTests(unittest.TestCase):
                 "verify_release_contract",
                 return_value=(
                     SimpleNamespace(release_id=self.release_id),
-                    self.verified,
+                    effective_verified,
                 ),
             ),
             mock.patch.object(
                 transaction,
                 "verify_asset_replacement_baseline",
-                side_effect=baseline_error,
+                side_effect=verify_baseline,
             ),
             mock.patch.object(transaction, "import_verified_object", return_value=self.stored),
-            mock.patch.object(transaction, "load_verified_release", return_value=self.verified),
+            mock.patch.object(
+                transaction,
+                "load_verified_release",
+                return_value=effective_verified,
+            ),
             mock.patch.object(
                 transaction,
                 "materialize_candidates",
@@ -335,6 +380,11 @@ class TransactionTests(unittest.TestCase):
         self.assertFalse((self.target.state_root / "receipts").exists())
 
     def test_asset_baseline_mismatch_is_zero_write_before_import_or_receipt(self) -> None:
+        accepted = self._accepted_verified()
+        early = _target(
+            cdn_target_version="1.4.53",
+            release_digest=RELEASE_A,
+        )
         before = tuple(sorted(
             (path.relative_to(self.root).as_posix(), path.read_bytes())
             for path in self.root.rglob("*") if path.is_file()
@@ -344,21 +394,136 @@ class TransactionTests(unittest.TestCase):
         with self.assertRaises(ReleaseError) as caught:
             self._run(
                 platform,
-                [],
+                [early],
                 baseline_error=ReleaseError(
                     "WFREL_ASSET_BASELINE_MISMATCH",
                     "injected before-byte mismatch",
                 ),
+                verified=accepted,
             )
 
         self.assertEqual("WFREL_ASSET_BASELINE_MISMATCH", caught.exception.code)
-        self.assertEqual(["current", "capability"], platform.events)
+        self.assertNotIn("stop", platform.events)
+        self.assertNotIn("start", platform.events)
+        self.assertNotIn("prepare", platform.events)
         self.assertEqual([], self.phases)
         self.assertFalse((self.target.state_root / "receipts").exists())
         self.assertEqual(before, tuple(sorted(
             (path.relative_to(self.root).as_posix(), path.read_bytes())
             for path in self.root.rglob("*") if path.is_file()
         )))
+
+    def test_accepted_asset_install_requires_running_target_before_any_write(self) -> None:
+        accepted = self._accepted_verified()
+        before = tuple(sorted(
+            (path.relative_to(self.root).as_posix(), path.read_bytes())
+            for path in self.root.rglob("*") if path.is_file()
+        ))
+        platform = FakePlatform()
+
+        with self.assertRaises(ReleaseError) as caught:
+            self._run(
+                platform,
+                [],
+                verified=accepted,
+                baseline_disk_digest=RELEASE_A,
+            )
+
+        self.assertEqual("WFREL_REQUIRE_TARGET", caught.exception.code)
+        self.assertEqual(["current"], platform.events)
+        self.assertEqual([], self.baseline_facts)
+        self.assertEqual([], self.phases)
+        self.assertFalse((self.target.state_root / "receipts").exists())
+        self.assertEqual(before, tuple(sorted(
+            (path.relative_to(self.root).as_posix(), path.read_bytes())
+            for path in self.root.rglob("*") if path.is_file()
+        )))
+
+    def test_running_accepted_asset_install_binds_fresh_runtime_authority(self) -> None:
+        accepted = self._accepted_verified()
+        early = _target(
+            cdn_target_version="1.4.53",
+            release_digest=RELEASE_A,
+        )
+        after = _target(
+            cdn_target_version="1.4.54",
+            release_digest=RELEASE_B,
+        )
+        platform = FakePlatform(_process())
+
+        result = self._run(
+            platform,
+            [early, early, after],
+            verified=accepted,
+            baseline_disk_digest=RELEASE_A,
+        )
+
+        self.assertEqual("succeeded", result.outcome)
+        self.assertEqual([early], self.baseline_facts)
+        self.assertNotIn("BASE_STARTED", self.phases)
+        self.assertEqual(1, platform.events.count("start"))
+
+    def test_runtime_and_disk_release_digest_disagreement_is_zero_write(self) -> None:
+        accepted = self._accepted_verified()
+        runtime = _target(
+            cdn_target_version="1.4.53",
+            release_digest=RELEASE_A,
+        )
+        before = tuple(sorted(
+            (path.relative_to(self.root).as_posix(), path.read_bytes())
+            for path in self.root.rglob("*") if path.is_file()
+        ))
+        platform = FakePlatform(_process())
+
+        with self.assertRaises(ReleaseError) as caught:
+            self._run(
+                platform,
+                [runtime],
+                verified=accepted,
+                baseline_disk_digest=RELEASE_B,
+            )
+
+        self.assertEqual("WFREL_ASSET_BASELINE_UNAVAILABLE", caught.exception.code)
+        self.assertEqual([runtime], self.baseline_facts)
+        self.assertNotIn("stop", platform.events)
+        self.assertNotIn("start", platform.events)
+        self.assertNotIn("prepare", platform.events)
+        self.assertEqual([], self.phases)
+        self.assertFalse((self.target.state_root / "receipts").exists())
+        self.assertEqual(before, tuple(sorted(
+            (path.relative_to(self.root).as_posix(), path.read_bytes())
+            for path in self.root.rglob("*") if path.is_file()
+        )))
+
+    def test_release_digest_drift_before_stop_fails_without_materializing(self) -> None:
+        accepted = self._accepted_verified()
+        early = _target(
+            cdn_target_version="1.4.53",
+            release_digest=RELEASE_A,
+        )
+        drifted = _target(
+            cdn_target_version="1.4.53",
+            release_digest=RELEASE_B,
+        )
+        platform = FakePlatform(_process())
+
+        result = self._run(
+            platform,
+            [early, drifted],
+            verified=accepted,
+            baseline_disk_digest=RELEASE_A,
+        )
+
+        self.assertEqual("failed", result.outcome)
+        self.assertEqual("WFREL_ASSET_BASELINE_UNAVAILABLE", result.error_code)
+        self.assertEqual([early], self.baseline_facts)
+        self.assertNotIn("stop", platform.events)
+        self.assertNotIn("start", platform.events)
+        self.assertNotIn("prepare", platform.events)
+        self.assertNotIn("MATERIALIZED", self.phases)
+        self.assertEqual(_process(), platform.current)
+        self.assertEqual("failed", self._receipt()["outcome"])
+        self.assertEqual("VERIFIED", self._receipt()["phase"])
 
     def test_stopped_wrong_protocol_cleans_started_baseline(self) -> None:
         platform = FakePlatform()

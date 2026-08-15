@@ -8,7 +8,7 @@ from pathlib import Path
 import secrets
 
 from ._loopback_http import _timeout as _validated_health_timeout, wait_health_ready
-from .baseline_assets import verify_asset_replacement_baseline
+from .baseline_assets import AssetBaselineReport, verify_asset_replacement_baseline
 from ._platform_state import ManagedProcess
 from ._receipt_contract import OperationReceipt, new_operation_id
 from ._transaction_content import (
@@ -231,7 +231,24 @@ def _install_release_reserved(
     report, preverified = verify_release_contract(release)
     if any(item.release_id == report.release_id for item in previous.releases):
         return InstallResult(report.release_id, None, "noop", None, ())
-    verify_asset_replacement_baseline(preverified, target)
+    asset_baseline: AssetBaselineReport | None = None
+    if preverified.manifest.source_evidence.accepted_asset_replacements:
+        if initial_process is None:
+            raise _transaction_error(
+                "WFREL_REQUIRE_TARGET",
+                "asset replacement install requires a running managed target; resume first",
+            )
+        baseline_facts = target.target_probe(timeout_seconds=health_timeout).run()
+        asset_baseline = verify_asset_replacement_baseline(
+            preverified,
+            target,
+            baseline_facts,
+        )
+        if platform.current_process() != initial_process:
+            raise _transaction_error(
+                "WFREL_PROCESS_IDENTITY",
+                "managed process identity changed during asset baseline verification",
+            )
 
     started_at = datetime.now(timezone.utc)
     receipt = OperationReceipt(
@@ -306,6 +323,14 @@ def _install_release_reserved(
                 )
 
         before_facts = target.target_probe(timeout_seconds=health_timeout).run()
+        if (
+            asset_baseline is not None
+            and before_facts.release_digest != asset_baseline.release_digest
+        ):
+            raise _transaction_error(
+                "WFREL_ASSET_BASELINE_UNAVAILABLE",
+                "live Content Snapshot authority changed after asset baseline verification",
+            )
         phase = "PROBED"
         advance(phase)
         _gate(evaluate_requirements(verified, before_facts, previous))
