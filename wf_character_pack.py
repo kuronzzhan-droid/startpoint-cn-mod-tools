@@ -105,6 +105,14 @@ class PackFile:
     size: int
 
 
+@dataclass(frozen=True)
+class AcceptedAssetReplacement:
+    root: RootName
+    logical_path: str
+    before_sha256: str
+    before_size: int
+
+
 class PackPreflightError(ValueError):
     """The package cannot safely enter isolated staging."""
 
@@ -249,6 +257,7 @@ class PreflightReport:
     conflicts: tuple[FrozenRecord, ...]
     root_totals: FrozenRecord
     expected_base_hashes: FrozenRecord
+    accepted_asset_replacements: tuple[FrozenRecord, ...]
     capability_warnings: tuple[FrozenRecord, ...]
     can_prepare: bool
     delivery_status: str
@@ -265,6 +274,9 @@ class PreflightReport:
             "conflicts": _plain(self.conflicts),
             "root_totals": _plain(self.root_totals),
             "expected_base_hashes": _plain(self.expected_base_hashes),
+            "accepted_asset_replacements": _plain(
+                self.accepted_asset_replacements
+            ),
             "capability_warnings": _plain(self.capability_warnings),
             "can_prepare": self.can_prepare,
             "delivery_status": self.delivery_status,
@@ -1156,6 +1168,77 @@ def _parse_transaction_claims(manifest: dict) -> dict[TableKey, TableClaim]:
             tuple(inner_keys),
             tuple(semantics),
         )
+    if errors:
+        raise PackPreflightError("; ".join(sorted(errors)))
+    return result
+
+
+def _parse_accepted_asset_replacements(
+    manifest: Mapping[str, Any],
+    entries: Mapping[TableKey, Mapping[str, Any]],
+    claims: Mapping[TableKey, TableClaim],
+    *,
+    label: str,
+) -> dict[TableKey, AcceptedAssetReplacement]:
+    snapshot = manifest.get("snapshot")
+    raw = (
+        snapshot.get("accepted_asset_replacements", [])
+        if isinstance(snapshot, Mapping) else []
+    )
+    if not isinstance(raw, list):
+        raise PackPreflightError(
+            f"{label} snapshot.accepted_asset_replacements must be an array"
+        )
+    result: dict[TableKey, AcceptedAssetReplacement] = {}
+    windows_seen: dict[tuple[RootName, PureWindowsPath], str] = {}
+    errors: list[str] = []
+    required = {"root", "logical_path", "before_sha256", "before_size"}
+    for index, item in enumerate(raw):
+        prefix = f"{label} snapshot.accepted_asset_replacements[{index}]"
+        if not isinstance(item, Mapping) or set(item) != required:
+            errors.append(f"{prefix}: must contain only {sorted(required)}")
+            continue
+        root = item["root"]
+        logical = item["logical_path"]
+        digest = item["before_sha256"]
+        size = item["before_size"]
+        if root not in CLIENT_ROOTS:
+            errors.append(f"{prefix}.root: must be a client root")
+            continue
+        root = cast(RootName, root)
+        if not isinstance(logical, str) or _path_problem(logical):
+            errors.append(f"{prefix}.logical_path: invalid canonical logical path")
+            continue
+        windows_key = (root, _windows_logical_path_key(logical))
+        if windows_key in windows_seen:
+            errors.append(
+                f"{prefix}.logical_path: Windows-equivalent duplicate of "
+                f"{windows_seen[windows_key]}"
+            )
+            continue
+        windows_seen[windows_key] = logical
+        table_key: TableKey = (root, logical)
+        if table_key not in entries:
+            errors.append(
+                f"{prefix}.logical_path: path is not an exact candidate root entry"
+            )
+        if table_key in claims:
+            errors.append(f"{prefix}.logical_path: table paths cannot be accepted")
+        if not isinstance(digest, str) or SHA256_RE.fullmatch(digest) is None:
+            errors.append(f"{prefix}.before_sha256: invalid sha256")
+        if type(size) is not int or size < 0:
+            errors.append(f"{prefix}.before_size: must be a non-negative integer")
+        if (
+            table_key in entries
+            and table_key not in claims
+            and isinstance(digest, str)
+            and SHA256_RE.fullmatch(digest) is not None
+            and type(size) is int
+            and size >= 0
+        ):
+            result[table_key] = AcceptedAssetReplacement(
+                root, logical, digest, size
+            )
     if errors:
         raise PackPreflightError("; ".join(sorted(errors)))
     return result
@@ -2242,7 +2325,12 @@ class PackTransaction:
         }
 
     def _validate_inputs(self) -> tuple[
-            ReleaseBaseState, dict[str, TableClaim], dict[str, TableClaim]]:
+        ReleaseBaseState,
+        dict[TableKey, TableClaim],
+        dict[TableKey, TableClaim],
+        dict[TableKey, AcceptedAssetReplacement],
+        dict[TableKey, AcceptedAssetReplacement],
+    ]:
         named_live = {
             "common": self.live_roots.common,
             "medium": self.live_roots.medium,
@@ -2275,7 +2363,15 @@ class PackTransaction:
             raise PackPreflightError("candidate manifest invalid: " + "; ".join(errors))
         candidate_claims = _parse_transaction_claims(self.manifest)
         _validate_character_speech_claim(candidate_claims, label="candidate")
+        candidate_entries = self._entries(self.manifest)
+        candidate_replacements = _parse_accepted_asset_replacements(
+            self.manifest,
+            candidate_entries,
+            candidate_claims,
+            label="candidate",
+        )
         installed_claims: dict[TableKey, TableClaim] = {}
+        installed_replacements: dict[TableKey, AcceptedAssetReplacement] = {}
         if self.installed_manifest is not None:
             if self.installed_package_dir is None:
                 raise PackPreflightError(
@@ -2289,6 +2385,21 @@ class PackTransaction:
                     "installed manifest invalid: " + "; ".join(installed_errors)
                 )
             installed_claims = _parse_transaction_claims(self.installed_manifest)
+            installed_replacements = _parse_accepted_asset_replacements(
+                self.installed_manifest,
+                self._entries(self.installed_manifest),
+                installed_claims,
+                label="installed",
+            )
+            for table_key in sorted(
+                set(candidate_replacements) & set(installed_replacements)
+            ):
+                if candidate_replacements[table_key] != installed_replacements[table_key]:
+                    root, logical_path = table_key
+                    raise PackPreflightError(
+                        "candidate/installed accepted_asset_replacements mismatch: "
+                        f"{root}:{logical_path}"
+                    )
 
         def validate_server_contract(
             manifest: dict, claims: dict[TableKey, TableClaim], label: str,
@@ -2342,7 +2453,6 @@ class PackTransaction:
             validate_server_contract(
                 self.installed_manifest, installed_claims, "installed"
             )
-        candidate_entries = self._entries(self.manifest)
         for (root, logical_path), claim in candidate_claims.items():
             if claim.codec_id not in self.codecs:
                 raise PackPreflightError(
@@ -2380,7 +2490,13 @@ class PackTransaction:
             raise PackPreflightError(
                 "active ownership hash exists but installed manifest was not supplied"
             )
-        return state, candidate_claims, installed_claims
+        return (
+            state,
+            candidate_claims,
+            installed_claims,
+            candidate_replacements,
+            installed_replacements,
+        )
 
     def _inspect_tables(
         self,
@@ -2624,7 +2740,13 @@ class PackTransaction:
         return _record_sort(changes), totals
 
     def preflight(self) -> PreflightReport:
-        state, candidate_claims, installed_claims = self._validate_inputs()
+        (
+            state,
+            candidate_claims,
+            installed_claims,
+            candidate_replacements,
+            _installed_replacements,
+        ) = self._validate_inputs()
         candidate_images, live_images, conflicts, table_changes = self._inspect_tables(
             candidate_claims, installed_claims
         )
@@ -2633,18 +2755,43 @@ class PackTransaction:
             self._entries(self.installed_manifest)
             if self.installed_manifest is not None else {}
         )
+        accepted_replacements: list[dict] = []
         for item in file_changes:
             ownership_key = (item["root"], item["logical_path"])
             if (item["root"] in CLIENT_ROOTS
                     and not item["is_table"]
                     and item["source_path"] is not None
-                    and item["before"]["exists"]
                     and ownership_key not in installed_entries):
-                conflicts.append({
-                    "kind": "asset_path",
-                    "claim": f"{item['root']}:{item['logical_path']}",
-                    "reason": "occupied_without_hash_bound_prior_path_ownership",
-                })
+                accepted = candidate_replacements.get(ownership_key)
+                before = item["before"]
+                if accepted is not None:
+                    expected = {
+                        "exists": True,
+                        "sha256": accepted.before_sha256,
+                        "size": accepted.before_size,
+                    }
+                    if before == expected:
+                        accepted_replacements.append({
+                            "root": accepted.root,
+                            "logical_path": accepted.logical_path,
+                            "before_sha256": accepted.before_sha256,
+                            "before_size": accepted.before_size,
+                            "live_path": item["live_path"],
+                        })
+                    else:
+                        conflicts.append({
+                            "kind": "asset_path",
+                            "claim": f"{item['root']}:{item['logical_path']}",
+                            "reason": "accepted_live_before_mismatch",
+                            "expected": expected,
+                            "actual": before,
+                        })
+                elif before["exists"]:
+                    conflicts.append({
+                        "kind": "asset_path",
+                        "claim": f"{item['root']}:{item['logical_path']}",
+                        "reason": "occupied_without_hash_bound_prior_path_ownership",
+                    })
         table_file_before = {
             (item["root"], item["logical_path"]): item["before"]
             for item in file_changes if item["is_table"]
@@ -2740,6 +2887,7 @@ class PackTransaction:
                 "expected_from_version": state.expected_from_version,
                 "live": dict(sorted(live_hashes.items())),
             }),
+            accepted_asset_replacements=_record_sort(accepted_replacements),
             capability_warnings=_record_sort(capability_warnings),
             can_prepare=can_prepare,
             delivery_status=delivery,
