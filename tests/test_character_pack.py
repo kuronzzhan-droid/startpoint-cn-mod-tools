@@ -156,6 +156,18 @@ class TestManifestContract(unittest.TestCase):
             "character/seris/con.png",
             "character/seris/COM1.dat",
             "character/seris/lpt9",
+            "character/seris/COM¹",
+            "character/seris/COM¹.dat",
+            "character/seris/com²",
+            "character/seris/com².dat",
+            "character/seris/CoM³",
+            "character/seris/CoM³.dat",
+            "character/seris/LPT¹",
+            "character/seris/LPT¹.dat",
+            "character/seris/lpt²",
+            "character/seris/lpt².dat",
+            "character/seris/LpT³",
+            "character/seris/LpT³.dat",
             "character/seris/CONIN$",
             "character/seris/conout$.json",
         )
@@ -187,7 +199,10 @@ class TestManifestContract(unittest.TestCase):
                 "metadata/expressionist/asset.bin",
                 "metadata/console/asset.bin",
                 "metadata/com10.bin",
+                "metadata/com⁴.bin",
                 "metadata/nulled.bin",
+                "metadata/CONİN$.txt",
+                "metadata/conın$.txt",
             )
             for logical_path in allowed_paths:
                 self.assertIsNotNone(
@@ -197,6 +212,26 @@ class TestManifestContract(unittest.TestCase):
                 add_file(package_dir, allowed, "common", logical_path,
                          logical_path.encode("utf-8"))
             self.assertEqual(pack.validate_manifest(allowed, package_dir), [])
+
+    def test_windows_logical_path_key_folds_only_ascii_and_separators(self):
+        pack = self._module()
+
+        self.assertEqual(
+            pack.windows_logical_path_key(r"Extension\GACHA.JSON"),
+            pack.windows_logical_path_key("extension/gacha.json"),
+        )
+        self.assertNotEqual(
+            pack.windows_logical_path_key("metadata/K.bin"),
+            pack.windows_logical_path_key("metadata/K.bin"),
+        )
+        self.assertNotEqual(
+            pack.windows_logical_path_key("metadata/ω.bin"),
+            pack.windows_logical_path_key("metadata/Ω.bin"),
+        )
+        self.assertNotEqual(
+            pack.windows_logical_path_key("metadata/å.bin"),
+            pack.windows_logical_path_key("metadata/Å.bin"),
+        )
 
     def test_valid_manifest_loads_validates_and_hashes_canonically(self):
         pack = self._module()
@@ -498,6 +533,30 @@ class TestManifestContract(unittest.TestCase):
                         any("duplicate logical_path" in error for error in errors),
                         errors,
                     )
+
+    def test_preserves_windows_distinct_unicode_paths(self):
+        pack = self._module()
+        with tempfile.TemporaryDirectory() as td:
+            package_dir = Path(td)
+            manifest = base_manifest()
+            distinct_paths = (
+                "metadata/K.bin",
+                "metadata/K.bin",
+                "metadata/ω.bin",
+                "metadata/Ω.bin",
+                "metadata/å.bin",
+                "metadata/Å.bin",
+            )
+            for logical_path in distinct_paths:
+                add_file(
+                    package_dir,
+                    manifest,
+                    "common",
+                    logical_path,
+                    logical_path.encode("utf-8"),
+                )
+
+            self.assertEqual(pack.validate_manifest(manifest, package_dir), [])
 
     def test_rejects_root_level_and_nested_links_outside_package_before_hashing(self):
         pack = self._module()
@@ -1198,6 +1257,33 @@ class TestPackPreflight(_TransactionFixtureMixin, unittest.TestCase):
                      installed_manifest=other,
                      installed_package_dir=other_dir).preflight()
 
+    def test_installed_manifest_rejects_windows_equivalent_paths(self):
+        self._finish_setup()
+        installed, installed_dir = self._installed_copy()
+        add_file(
+            installed_dir,
+            installed,
+            "medium",
+            "extension/gacha.json",
+            b"same",
+        )
+        add_file(
+            installed_dir,
+            installed,
+            "medium",
+            "extension/GACHA.json",
+            b"same",
+        )
+
+        with self.assertRaisesRegex(
+            self.pack.PackPreflightError,
+            "installed manifest invalid: .*duplicate logical_path",
+        ):
+            self._tx(
+                installed_manifest=installed,
+                installed_package_dir=installed_dir,
+            ).preflight()
+
     def _multi_owner_state(self, owners, *, tail_hash=None):
         if self.release_state is None:
             self._finish_setup(active_manifest_hash=tail_hash)
@@ -1764,6 +1850,44 @@ class TestPackPreflight(_TransactionFixtureMixin, unittest.TestCase):
             self.pack.PackPreflightError, "duplicate logical_path"
         ):
             self._tx(manifest=manifest).preflight()
+
+    def test_server_extensions_preserve_windows_distinct_unicode_paths(self):
+        self._finish_setup()
+        manifest = copy.deepcopy(self.manifest)
+        server_codec = next(
+            item["codec_id"] for item in manifest["tables"]
+            if item["root"] == "server"
+        )
+        extensions = (
+            ("K.json", "990001"),
+            ("K.json", "990002"),
+            ("CONİN$.json", "990003"),
+        )
+        for logical_path, outer_key in extensions:
+            extension_raw = json.dumps({
+                "outer": {outer_key: {"id": int(outer_key)}},
+                "inner": {},
+                "semantics": {},
+            }, separators=(",", ":")).encode("utf-8")
+            add_file(
+                self.package_dir,
+                manifest,
+                "server",
+                logical_path,
+                extension_raw,
+            )
+            manifest["tables"].append({
+                "root": "server",
+                "logical_path": logical_path,
+                "codec_id": server_codec,
+                "outer_keys": [outer_key],
+                "inner_keys": [],
+                "semantic_claims": [],
+            })
+
+        report = self._tx(manifest=manifest).preflight()
+
+        self.assertFalse(report.conflicts)
 
     def test_server_json_codec_rejects_malformed_and_duplicate_object_keys(self):
         self._finish_setup()

@@ -55,10 +55,14 @@ FORBIDDEN_ASSET_SEGMENTS = frozenset({
 })
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 WINDOWS_DEVICE_NAME_RE = re.compile(
-    r"^(?:con|prn|aux|nul|com[1-9]|lpt[1-9]|conin\$|conout\$)(?:\.|$)",
-    re.IGNORECASE,
+    r"^(?:con|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³]|conin\$|conout\$)(?:\.|$)",
+    re.IGNORECASE | re.ASCII,
 )
 WINDOWS_FORBIDDEN_PATH_CHARS = frozenset('<>:"|?*')
+WINDOWS_LOGICAL_PATH_TRANSLATION = str.maketrans(
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ\\",
+    "abcdefghijklmnopqrstuvwxyz/",
+)
 FILESYSTEM_ERRORS = (OSError, RuntimeError, ValueError)
 SERVER_LOGICAL_PATHS = (
     "cdndata/character.json",
@@ -464,16 +468,16 @@ def logical_path_problem(logical_path: str) -> str | None:
     return None
 
 
-def windows_logical_path_key(logical_path: str) -> PureWindowsPath:
-    """Return the portable case-insensitive identity used by Win32 roots."""
-    return PureWindowsPath(logical_path)
+def windows_logical_path_key(logical_path: str) -> str:
+    """Return the ASCII-case-insensitive identity used by logical Win32 roots."""
+    return logical_path.translate(WINDOWS_LOGICAL_PATH_TRANSLATION)
 
 
 def _path_problem(logical_path: str) -> str | None:
     return logical_path_problem(logical_path)
 
 
-def _windows_logical_path_key(logical_path: str) -> PureWindowsPath:
+def _windows_logical_path_key(logical_path: str) -> str:
     return windows_logical_path_key(logical_path)
 
 
@@ -692,7 +696,7 @@ def validate_manifest(
     for root in sorted(set(roots) - set(ROOT_NAMES)):
         errors.append(f"roots: unexpected root {root}")
 
-    seen_paths: dict[PureWindowsPath, str] = {}
+    seen_paths: dict[str, str] = {}
     declared_common_paths: set[str] = set()
     qa = manifest.get("qa")
     production_package = (
