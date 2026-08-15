@@ -148,6 +148,10 @@ prepare、启动、`/healthz` ready、capabilities expected state、最后提交
 - 同一 `releaseId` 已 active 时是显式 no-op，不重启、不创建 operation receipt。
 - entity/record 冲突必须由精确 `replaces` 解决；共享表的 source path 不是独占键。
 - Content 只切换 `cdnRoot/patches/<targetVersion>`，永不覆盖官方 `cdnRoot/cn`。
+- Content candidate 会把已独立验证的单边 Overlay 外层 ZIP 解包成 Content Sync 实际接收的
+  `patch-manifest.json`、`README.md`、`requires.json` 与 `archive-*-diff/*.zip`，同时保留外层 ZIP
+  作为逐字节审计锚；candidate 复验覆盖全部文件并证明解包成员与该外层 ZIP 完全一致。当前事务只能
+  原子切换一个版本目录，因此多边 Overlay Release 在任何 candidate 写入前失败关闭。
 - Mode 只切换完整 active Mode 根；required/allowlist/private resource 由 Release 静态结构和服务端
   Mode loader 双重验收。Mode 变化只有在重启后 capabilities 的 loaded identity 与 `modeDigest`
   达到期望才会提交。

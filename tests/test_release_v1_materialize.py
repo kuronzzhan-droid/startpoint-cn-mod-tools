@@ -61,12 +61,17 @@ class MaterializeTests(unittest.TestCase):
         cls.addClassCleanup(temporary.cleanup)
         root = Path(temporary.name)
         workspace = make_sealed_character_workspace(root / "workspace")
+        cls.workspace = workspace
         overlay = make_patch_overlay(
             root / "source" / "worldflipper-overlay-1.4.54-to-1.4.55.zip",
             from_version="1.4.54",
             target_version="1.4.55",
         )
         cls.overlay_raw = overlay.read_bytes()
+        with zipfile.ZipFile(io.BytesIO(cls.overlay_raw), "r") as bundle:
+            cls.overlay_members = tuple(
+                (item.filename, bundle.read(item)) for item in bundle.infolist()
+            )
         cls.release = root / "valid-release.zip"
         build_character_release(
             BuildRequest(
@@ -154,7 +159,7 @@ class MaterializeTests(unittest.TestCase):
         self.assertEqual("WFREL_OBJECT_CORRUPT", raised.exception.code)
         self.assertEqual(corrupt, stored.archive.read_bytes())
 
-    def test_content_candidate_contains_only_declared_overlay_and_never_scans_cn(self) -> None:
+    def test_content_candidate_unpacks_overlay_into_content_sync_receiver_layout_without_scanning_cn(self) -> None:
         import wf_release_v1.materialize as materialize_module
 
         sentinel = self.target.cdn_root / "cn" / "ten-gigabyte-sentinel.bin"
@@ -174,17 +179,47 @@ class MaterializeTests(unittest.TestCase):
         self.assertEqual(expected_root, candidates.content_root)
         self.assertIsNone(candidates.server_root)
         self.assertIsNone(candidates.modes_root)
-        materialized = expected_root / "patches" / "1.4.55" / "worldflipper-overlay-1.4.54-to-1.4.55.zip"
-        self.assertEqual(self.overlay_raw, materialized.read_bytes())
+        receiver_root = expected_root / "patches" / "1.4.55"
+        expected_paths = tuple(sorted(
+            [
+                f"patches/1.4.55/{name}"
+                for name, _raw in self.overlay_members
+            ] + [
+                "patches/1.4.55/worldflipper-overlay-1.4.54-to-1.4.55.zip",
+            ],
+            key=lambda item: item.encode("utf-8"),
+        ))
+        for name, raw in self.overlay_members:
+            self.assertEqual(raw, (receiver_root / Path(name)).read_bytes())
+        self.assertEqual(
+            self.overlay_raw,
+            (receiver_root / "worldflipper-overlay-1.4.54-to-1.4.55.zip").read_bytes(),
+        )
         self.assertEqual(b"official-baseline-must-not-be-read", sentinel.read_bytes())
-        self.assertEqual(("patches/1.4.55/worldflipper-overlay-1.4.54-to-1.4.55.zip",), candidates.relative_paths)
-        self.assertEqual((len(self.overlay_raw),), tuple(item.size for item in candidates.identities))
+        self.assertEqual(expected_paths, candidates.relative_paths)
+        expected_raw = dict(self.overlay_members)
+        expected_raw["worldflipper-overlay-1.4.54-to-1.4.55.zip"] = self.overlay_raw
+        expected_identities = tuple(
+            (len(raw), hashlib.sha256(raw).hexdigest())
+            for name, raw in sorted(expected_raw.items(), key=lambda item: item[0].encode("utf-8"))
+        )
+        self.assertEqual(
+            expected_identities,
+            tuple((item.size, item.sha256) for item in candidates.identities),
+        )
 
     def test_candidate_identity_rejects_a_different_but_valid_overlay(self) -> None:
         from wf_release_v1.materialize import verify_candidates
 
         candidates = self._materialize()
-        candidate_file = candidates.content_root / Path(candidates.relative_paths[0])
+        outer_relative = next(
+            relative
+            for relative in candidates.relative_paths
+            if len(Path(relative).parts) == 3
+            and Path(relative).name
+            not in {"README.md", "requires.json", "patch-manifest.json"}
+        )
+        candidate_file = candidates.content_root / Path(outer_relative)
         output = io.BytesIO()
         with zipfile.ZipFile(io.BytesIO(self.overlay_raw)) as source, zipfile.ZipFile(
             output, "w", compression=zipfile.ZIP_DEFLATED
@@ -199,6 +234,41 @@ class MaterializeTests(unittest.TestCase):
         self.assertEqual("1.4.55", verify_overlay_chain((candidate_file,)))
         with self.assertRaises(ReleaseError) as raised:
             verify_candidates(candidates)
+        self.assertEqual("WFREL_CANDIDATE_INVALID", raised.exception.code)
+
+    def test_candidate_verifier_cross_binds_receiver_members_to_retained_outer(self) -> None:
+        from wf_release_v1.canonical import FileIdentity
+        from wf_release_v1.materialize import verify_candidates
+
+        candidates = self._materialize()
+        outer_index = next(
+            index
+            for index, relative in enumerate(candidates.relative_paths)
+            if len(Path(relative).parts) == 3
+            and Path(relative).name
+            not in {"README.md", "requires.json", "patch-manifest.json"}
+        )
+        outer = candidates.content_root / Path(candidates.relative_paths[outer_index])
+        output = io.BytesIO()
+        with zipfile.ZipFile(io.BytesIO(self.overlay_raw)) as source, zipfile.ZipFile(
+            output, "w", compression=zipfile.ZIP_DEFLATED
+        ) as changed:
+            for item in source.infolist():
+                raw = source.read(item)
+                changed.writestr(
+                    item.filename,
+                    b"valid but unrelated readme\n" if item.filename == "README.md" else raw,
+                )
+        alternate = output.getvalue()
+        outer.write_bytes(alternate)
+        forged_identities = list(candidates.identities)
+        forged_identities[outer_index] = FileIdentity(
+            len(alternate), hashlib.sha256(alternate).hexdigest()
+        )
+
+        with self.assertRaises(ReleaseError) as raised:
+            verify_candidates(replace(candidates, identities=tuple(forged_identities)))
+
         self.assertEqual("WFREL_CANDIDATE_INVALID", raised.exception.code)
 
     def test_materialize_same_release_is_noop_but_conflicting_candidate_is_rejected(self) -> None:
@@ -247,6 +317,80 @@ class MaterializeTests(unittest.TestCase):
             verify_candidates(replace(candidates, content_root=renamed))
         self.assertEqual("WFREL_CANDIDATE_INVALID", raised.exception.code)
 
+    def test_partial_overlay_write_and_readback_failure_leave_no_candidate_residue(self) -> None:
+        import wf_release_v1.overlay_candidates as overlay_candidates
+
+        stored = self._import()
+        real_copy = overlay_candidates._copy_member
+        calls = 0
+
+        def fail_after_first_write(*args, **kwargs):
+            nonlocal calls
+            calls += 1
+            if calls == 2:
+                raise ReleaseError("WFREL_CANDIDATE_IO", "injected partial write")
+            return real_copy(*args, **kwargs)
+
+        with patch.object(
+            overlay_candidates, "_copy_member", side_effect=fail_after_first_write
+        ):
+            with self.assertRaises(ReleaseError) as raised:
+                self._materialize(stored)
+        self.assertEqual("WFREL_CANDIDATE_IO", raised.exception.code)
+        self.assertEqual([], list(self.target.component_roots.content.iterdir()))
+
+        with patch.object(
+            overlay_candidates,
+            "verify_materialized_overlay",
+            side_effect=ReleaseError("WFREL_CANDIDATE_INVALID", "injected readback"),
+        ):
+            with self.assertRaises(ReleaseError) as raised:
+                self._materialize(stored)
+        self.assertEqual("WFREL_CANDIDATE_INVALID", raised.exception.code)
+        self.assertEqual([], list(self.target.component_roots.content.iterdir()))
+
+    def test_legacy_switch_uses_retained_outer_and_ignores_receiver_members(self) -> None:
+        from wf_release_v1._legacy_files import prepare_legacy_switch
+        from wf_release_v1.legacy_compatibility import LegacyInstallPlan
+        from wf_release_v1.verifier_overlay import inspect_overlay_chain
+
+        candidates = self._materialize()
+        outer = self.root / "legacy-plan-overlay.zip"
+        outer.write_bytes(self.overlay_raw)
+        overlay = inspect_overlay_chain((outer,))
+        plan = LegacyInstallPlan(
+            candidates.release_id,
+            False,
+            True,
+            False,
+            (),
+            overlay.from_version,
+            overlay.target_version,
+            overlay=overlay,
+        )
+        cn_root = self.target.cdn_root / "cn"
+        for layer in ("common", "medium", "android"):
+            (cn_root / f"archive-{layer}-diff").mkdir(parents=True, exist_ok=True)
+
+        switch = prepare_legacy_switch(
+            candidates,
+            plan,
+            self.target.state_root,
+            self.target.cdn_root,
+            OPERATION_ID,
+        )
+
+        self.assertEqual(3, len(switch.archives))
+        self.assertEqual(
+            {"android", "common", "medium"},
+            {
+                item.relative_path.split("/", 1)[0]
+                .removeprefix("archive-")
+                .removesuffix("-diff")
+                for item in switch.archives
+            },
+        )
+
     def test_invalid_operation_id_and_root_device_drift_fail_before_candidate_write(self) -> None:
         from wf_release_v1.materialize import materialize_candidates
 
@@ -256,14 +400,18 @@ class MaterializeTests(unittest.TestCase):
         self.assertEqual("WFREL_CANDIDATE_INVALID", raised.exception.code)
         self.assertEqual([], list(self.target.component_roots.content.iterdir()))
 
-        original = Path.lstat
+        import wf_release_v1.materialize as materialize_module
+        from wf_release_v1._path_io import native_path
+
+        original = materialize_module.os.lstat
         root = self.target.component_roots.content
+        root_native = native_path(root)
         calls = 0
 
-        def drifting(path: Path):
+        def drifting(path):
             nonlocal calls
             item = original(path)
-            if path == root:
+            if str(path) == root_native:
                 calls += 1
                 if calls > 1:
                     values = list(item)
@@ -271,7 +419,7 @@ class MaterializeTests(unittest.TestCase):
                     return type(item)(values)
             return item
 
-        with patch.object(Path, "lstat", drifting):
+        with patch.object(materialize_module.os, "lstat", side_effect=drifting):
             with self.assertRaises(ReleaseError) as raised:
                 self._materialize(stored)
         self.assertEqual("WFREL_CANDIDATE_INVALID", raised.exception.code)
@@ -284,6 +432,37 @@ class MaterializeTests(unittest.TestCase):
         self.assertEqual("WFREL_INSTALL_UNSUPPORTED_COMPONENT", raised.exception.code)
         objects = self.target.state_root / "objects"
         self.assertFalse(objects.exists() and any(objects.iterdir()))
+
+    def test_multi_edge_release_fails_closed_before_content_candidate_write(self) -> None:
+        first = make_patch_overlay(
+            self.root / "source-overlays" / "edge-1.zip",
+            from_version="1.4.54",
+            target_version="1.4.55",
+        )
+        second = make_patch_overlay(
+            self.root / "source-overlays" / "edge-2.zip",
+            from_version="1.4.55",
+            target_version="1.4.56",
+        )
+        release = self.root / "multi-edge-release.zip"
+        build_character_release(
+            BuildRequest(
+                name="seris-dragon-king-multi-edge",
+                version="1.0.0",
+                workspace=self.workspace,
+                overlay_archives=(first, second),
+                output=release,
+                requirements=parse_requirements(requirements_wire()),
+            )
+        )
+        self.source.write_bytes(release.read_bytes())
+        stored = self._import()
+
+        with self.assertRaises(ReleaseError) as raised:
+            self._materialize(stored)
+
+        self.assertEqual("WFREL_INSTALL_UNSUPPORTED_COMPONENT", raised.exception.code)
+        self.assertEqual([], list(self.target.component_roots.content.iterdir()))
 
     def test_stored_object_and_candidate_do_not_retain_source_or_target_paths_in_repr(self) -> None:
         stored = self._import()
