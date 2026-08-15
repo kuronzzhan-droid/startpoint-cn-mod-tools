@@ -148,7 +148,7 @@ def compile_flipbook_effect(
         for start in range(0, visible_ticks, len(frames))
     ]
     wave_segments = [
-        {"s": index, "i": index, "l": [{"m": 255}]}
+        {"s": index, "i": index, "l": [{"m": 4351}]}
         for index in range(len(frames))
     ]
     parts = {
@@ -161,6 +161,14 @@ def compile_flipbook_effect(
         "a": [1] * len(frames),
         "o": [],
         "t": [
+            {
+                "a": 4096,
+                "b": 0,
+                "c": 0,
+                "d": 4096,
+                "x": 0,
+                "y": 0,
+            },
             {
                 "a": 4096,
                 "b": 0,

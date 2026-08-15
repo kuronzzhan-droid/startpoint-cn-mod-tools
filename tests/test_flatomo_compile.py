@@ -178,9 +178,12 @@ class FlatomoCompileTests(unittest.TestCase):
         self.assertEqual(11, wave["t"])
         self.assertEqual(list(range(10)), [segment["s"] for segment in wave["s"]])
         self.assertEqual(list(range(10)), [segment["i"] for segment in wave["s"]])
-        self.assertTrue(all(segment["l"] == [{"m": 255}] for segment in wave["s"]))
+        self.assertTrue(all(segment["l"] == [{"m": 4351}] for segment in wave["s"]))
         self.assertEqual(
-            [{"a": 4096, "b": 0, "c": 0, "d": 4096, "x": -32768, "y": -131072}],
+            [
+                {"a": 4096, "b": 0, "c": 0, "d": 4096, "x": 0, "y": 0},
+                {"a": 4096, "b": 0, "c": 0, "d": 4096, "x": -32768, "y": -131072},
+            ],
             parts["t"],
         )
 
