@@ -78,6 +78,33 @@ class ThunderHotfixWorkspaceTests(unittest.TestCase):
                 ):
                     workspace.execute_fresh_workspace(target, image)
 
+    def test_fixed_workspace_handles_the_longest_action_payload_on_windows(self):
+        image = self._image()
+        logical = (
+            "battle/action/skill/action/rare5/"
+            "cnmod_thunder_dragon_ascendant$"
+            "cnmod_thunder_dragon_ascendant_1.action.dsl.amf3.deflate"
+        )
+        image.roots["common"][logical] = b"action"
+        with tempfile.TemporaryDirectory() as temporary_name:
+            target = Path(temporary_name) / workspace.WORKSPACE_NAME
+            with mock.patch.object(
+                package, "audit_hotfix_package",
+                return_value={"apply_ready": True, "payload_count": 1},
+            ):
+                report = workspace.execute_fresh_workspace(
+                    target,
+                    image,
+                    apply=True,
+                    confirmation=package.CONFIRMATION,
+                )
+            self.assertTrue(report["formal_workspace_written"])
+            self.assertEqual(
+                b"action",
+                (target / "package" / "roots" / "common"
+                 / Path(*logical.split("/"))).read_bytes(),
+            )
+
     def test_cli_double_reads_inputs_and_defaults_to_dry_run(self):
         source = object()
         donor = object()
