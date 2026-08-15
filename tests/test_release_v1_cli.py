@@ -147,6 +147,41 @@ class ReleaseCliTests(unittest.TestCase):
                 )
                 self.assertNotIn(b"usage:", result.stderr)
 
+    def test_build_accepts_repeated_replacements_and_encodes_them(self) -> None:
+        output = self.case_root / "replacement-release.zip"
+        replaced = (
+            "sha256:" + "1" * 64,
+            "sha256:" + "2" * 64,
+        )
+
+        result = self._run(
+            "build",
+            "--workspace",
+            str(self.workspace),
+            "--overlay",
+            str(self.overlay),
+            "--requirements",
+            str(self.requirements),
+            "--name",
+            "seris-dragon-king",
+            "--version",
+            "1.1.0",
+            "--output",
+            str(output),
+            "--replaces",
+            replaced[0],
+            "--replaces",
+            replaced[1],
+        )
+
+        self.assertEqual(0, result.returncode, result.stderr.decode("utf-8"))
+        self.assertEqual(b"", result.stderr)
+        with zipfile.ZipFile(output) as bundle:
+            manifest = json.loads(
+                bundle.read("wf-release-v1/release-manifest.json").decode("utf-8")
+            )
+        self.assertEqual(list(replaced), manifest["replaces"])
+
     def test_real_stdio_is_utf8_lf_under_hostile_default_encodings(self) -> None:
         unicode_release = self.case_root / "候选发行.zip"
         unicode_release.write_bytes(self.valid_release.read_bytes())
