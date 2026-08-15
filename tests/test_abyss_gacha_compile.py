@@ -368,7 +368,8 @@ class AbyssGachaCompileTests(unittest.TestCase):
         self.assertIn("其余1%由普通★5角色均分", note)
         self.assertIn("每次抽取累计1点兑换点数", note)
         self.assertIn("250点", note)
-        self.assertIn("50点", note)
+        self.assertEqual(2, note.count("250点兑换"))
+        self.assertNotIn("各需50点兑换", note)
 
     def test_rejects_missing_or_malformed_standard_pool_donor(self):
         self._require_module()

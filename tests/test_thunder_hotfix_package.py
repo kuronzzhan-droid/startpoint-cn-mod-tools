@@ -129,7 +129,8 @@ class ThunderHotfixPackageTests(unittest.TestCase):
         self.assertIn("★5角色总出现概率为5%", note)
         self.assertIn("单人出现概率均为0.5%", note)
         self.assertIn("各需250点兑换", note)
-        self.assertIn("各需50点兑换", note)
+        self.assertEqual(2, note.count("250点兑换"))
+        self.assertNotIn("各需50点兑换", note)
 
         portrait = image.roots["medium"][
             gacha_contract.TOP_BANNER_PAYLOAD_LOGICAL

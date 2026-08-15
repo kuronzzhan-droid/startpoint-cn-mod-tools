@@ -259,7 +259,7 @@ def repair_gacha_contract(
         "start_date": contract.START_DATE,
         "rank_rates": list(desired_runtime["rankRates"]["normal"]),
         "guarantee_rarity": desired_runtime["guaranteeRarity"],
-        "exchange_required_points": {"limited": 250, "standard": 50},
+        "exchange_required_points": {"limited": 250, "standard": 250},
         "exchangeable_limited_count": len(contract.CHARACTER_IDS),
         "exchangeable_standard_count": len(
             contract.STANDARD_EXCHANGE_CHARACTER_IDS

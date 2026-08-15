@@ -277,7 +277,7 @@ class ThunderHotfixPayloadTests(unittest.TestCase):
         self.assertEqual(8, report["changed_payload_count"])
         self.assertEqual([50, 250, 700], report["rank_rates"])
         self.assertEqual(
-            {"limited": 250, "standard": 50},
+            {"limited": 250, "standard": 250},
             report["exchange_required_points"],
         )
         self.assertEqual(8, report["exchangeable_limited_count"])

@@ -23,7 +23,7 @@ def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
             "雷龙 1.1.3 完整替换热修包；默认只读 dry-run，"
-            "修卡池抽取、竖版主图，并配置八名250点与四名50点兑换。"
+            "修卡池抽取、竖版主图，并将十二名角色统一配置为250点兑换。"
         )
     )
     parser.add_argument(

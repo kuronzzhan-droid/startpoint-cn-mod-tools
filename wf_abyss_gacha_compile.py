@@ -482,7 +482,7 @@ def compile_abyss_limited_gacha(
             "normal_page_contract": True,
             "exchange_points": {
                 "limited": 250,
-                "standard": 50,
+                "standard": 250,
             },
             "execution_contract": {
                 "single": {

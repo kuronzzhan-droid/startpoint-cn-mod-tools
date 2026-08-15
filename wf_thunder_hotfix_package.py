@@ -89,7 +89,7 @@ _ACCEPTANCE = {
     "gacha_schedule_game_clock_compatible": True,
     "gacha_standard_rank_rates": [50, 250, 700],
     "gacha_limited_rate_each": 0.005,
-    "gacha_exchange_required_points": {"limited": 250, "standard": 50},
+    "gacha_exchange_required_points": {"limited": 250, "standard": 250},
     "gacha_exchangeable_limited_count": 8,
     "gacha_exchangeable_standard_count": 4,
     "gacha_always_visible_normal_page": True,
@@ -345,7 +345,7 @@ def compile_hotfix_package(
             "effect_v1_sha256": dict(_EFFECT_OUTPUT_SHA256),
             "source_start_date": SOURCE_START_DATE,
             "standard_pool_donor_id": gacha_contract.STANDARD_POOL_DONOR_ID,
-            "exchange_required_points": {"limited": 250, "standard": 50},
+            "exchange_required_points": {"limited": 250, "standard": 250},
             "portrait_banner_source_sha256": next(
                 spec.source_sha256 for spec in banner_compile.LOCKED_BANNERS
                 if spec.logical_path == gacha_contract.TOP_BANNER_PAYLOAD_LOGICAL

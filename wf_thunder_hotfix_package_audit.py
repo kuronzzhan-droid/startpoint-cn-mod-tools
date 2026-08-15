@@ -30,7 +30,7 @@ def _repair_evidence(locks: Mapping[str, Any]) -> None:
         "effect_v1_sha256": dict(_EFFECT_OUTPUT_SHA256),
         "source_start_date": contract.SOURCE_START_DATE,
         "standard_pool_donor_id": "700004",
-        "exchange_required_points": {"limited": 250, "standard": 50},
+        "exchange_required_points": {"limited": 250, "standard": 250},
         "portrait_banner_source_sha256": next(
             spec.source_sha256 for spec in banner_compile.LOCKED_BANNERS
             if spec.logical_path == gacha_contract.TOP_BANNER_PAYLOAD_LOGICAL
@@ -70,7 +70,7 @@ def _repair_evidence(locks: Mapping[str, Any]) -> None:
         or gacha.get("rank_rates") != [50, 250, 700]
         or gacha.get("guarantee_rarity") != 4
         or gacha.get("exchange_required_points")
-        != {"limited": 250, "standard": 50}
+        != {"limited": 250, "standard": 250}
         or gacha.get("exchangeable_limited_count") != 8
         or gacha.get("exchangeable_standard_count") != 4
         or gacha.get("page_kind") != 0
