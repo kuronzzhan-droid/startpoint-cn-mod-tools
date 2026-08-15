@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Independent full-image audit for the thunder-dragon 1.1.3 hotfix."""
+"""Independent full-image audit for the thunder-dragon 1.1.4 hotfix."""
 
 from __future__ import annotations
 
@@ -36,6 +36,11 @@ def _repair_evidence(locks: Mapping[str, Any]) -> None:
             if spec.logical_path == gacha_contract.TOP_BANNER_PAYLOAD_LOGICAL
         ),
         "portrait_banner_dimensions": [1440, 1789],
+        "list_banner_source_sha256": next(
+            spec.source_sha256 for spec in banner_compile.LOCKED_BANNERS
+            if spec.logical_path == gacha_contract.LIST_BANNER_PAYLOAD_LOGICAL
+        ),
+        "list_banner_dimensions": [510, 180],
         "shared_asset_baseline": [
             dict(item) for item in contract.CURRENT_SHARED_ASSET_BASELINE
         ],
@@ -95,7 +100,7 @@ def _repair_evidence(locks: Mapping[str, Any]) -> None:
         or banner.get("writes_live") is not False
         or banner.get("payload_count") != 2
         or banner.get("logical_paths") != sorted({
-            gacha_contract.LIST_BANNER_LOGICAL,
+            gacha_contract.LIST_BANNER_PAYLOAD_LOGICAL,
             gacha_contract.TOP_BANNER_PAYLOAD_LOGICAL,
         })
     ):
@@ -103,7 +108,7 @@ def _repair_evidence(locks: Mapping[str, Any]) -> None:
 
 
 def audit_hotfix_package(image: contract.PackageImage) -> dict[str, Any]:
-    """Recompute the full image, evidence, seventeen changes, and one addition."""
+    """Recompute the full image, evidence, seventeen changes, and two additions."""
 
     if not isinstance(image, contract.PackageImage) or set(image.roots) != set(
         contract.ROOT_NAMES
@@ -127,7 +132,7 @@ def audit_hotfix_package(image: contract.PackageImage) -> dict[str, Any]:
     )
     if (
         root_report["root_counts"] != contract._EXPECTED_COUNTS
-        or root_report["payload_count"] != 106
+        or root_report["payload_count"] != 107
         or len(manifest.get("tables", [])) != 39
     ):
         raise contract.PackageAssemblyError("hotfix inventory/count drift")

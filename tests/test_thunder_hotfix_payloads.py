@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Pure payload-level regression tests for the thunder-dragon 1.1.3 hotfix."""
+"""Pure payload-level regression tests for the thunder-dragon 1.1.4 hotfix."""
 
 from __future__ import annotations
 
@@ -86,6 +86,7 @@ def _old_contract_fixture(compiled: dict[str, bytes], old_date: str) -> dict[str
     row[5:9] = ["", "", "", ""]
     row[10] = "5"
     row[29] = old_date
+    row[44] = "false"
     rows[GACHA_KEY] = core.write_csv_lines([row]).encode("utf-8")
     broken[GACHA_MASTER_LOGICAL] = core.build_orderedmap(core.OrderedMap(
         GACHA_MASTER_LOGICAL, list(rows), list(rows.values()), Path("<fixture>"),
@@ -113,6 +114,7 @@ def _old_contract_fixture(compiled: dict[str, bytes], old_date: str) -> dict[str
     cdndata[GACHA_KEY][0][5:9] = ["", "", "", ""]
     cdndata[GACHA_KEY][0][10] = "5"
     cdndata[GACHA_KEY][0][29] = old_date
+    cdndata[GACHA_KEY][0][44] = "false"
     broken["cdndata/gacha.json"] = _json(cdndata)
     broken[gacha_contract.RARITY_ODDS_LOGICAL] = (
         __import__("wf_abyss_gacha_compile")._new_nested(

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Fail-closed gacha contract repair for thunder hotfix 1.1.3."""
+"""Fail-closed gacha contract repair for thunder hotfix 1.1.4."""
 
 from __future__ import annotations
 

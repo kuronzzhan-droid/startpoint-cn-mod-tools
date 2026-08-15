@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Compile and audit the complete thunder-dragon 1.1.3 replacement image."""
+"""Compile and audit the complete thunder-dragon 1.1.4 replacement image."""
 
 from __future__ import annotations
 
@@ -40,9 +40,9 @@ PACKAGE_ID = thunder.PACKAGE_ID
 CHARACTER_ID = thunder.CHARACTER_ID
 CODE_NAME = thunder.CODE_NAME
 ROOT_NAMES = thunder.ROOT_NAMES
-PACKAGE_VERSION = "1.1.3"
-REQUIRES_CLIENT_BASE = "1.4.349"
-CONFIRMATION = "ASSEMBLE_CNMOD_THUNDER_DRAGON_ABYSS_GACHA_1_1_3"
+PACKAGE_VERSION = "1.1.4"
+REQUIRES_CLIENT_BASE = "1.4.350"
+CONFIRMATION = "ASSEMBLE_CNMOD_THUNDER_DRAGON_ABYSS_GACHA_1_1_4"
 SOURCE_START_DATE = "2026-08-15 00:00:00"
 
 _PIXEL_PREFIX = f"character/{CODE_NAME}/pixelart"
@@ -71,6 +71,7 @@ CHANGED_PAYLOADS = (
     ),
 )
 ADDED_PAYLOADS = (
+    ("common", gacha_contract.LIST_BANNER_PAYLOAD_LOGICAL),
     ("medium", gacha_contract.TOP_BANNER_PAYLOAD_LOGICAL),
 )
 CURRENT_SHARED_ASSET_BASELINE = (
@@ -92,7 +93,7 @@ CURRENT_SHARED_ASSET_BASELINE = (
     },
 )
 _SOURCE_COUNTS = {"common": 67, "medium": 25, "android": 2, "server": 11}
-_EXPECTED_COUNTS = {"common": 67, "medium": 26, "android": 2, "server": 11}
+_EXPECTED_COUNTS = {"common": 68, "medium": 26, "android": 2, "server": 11}
 _ACCEPTANCE = {
     "pixel_anchor_fixed": True,
     "special_alias_regenerated": True,
@@ -104,15 +105,21 @@ _ACCEPTANCE = {
     "gacha_exchangeable_limited_count": 8,
     "gacha_exchangeable_standard_count": 4,
     "gacha_always_visible_normal_page": True,
+    "gacha_exchange_button_enabled": True,
     "gacha_ticket_exec_types": {"single": 3, "ten": 4},
     "gacha_portrait_banner": {
         "logical_path": gacha_contract.TOP_BANNER_PAYLOAD_LOGICAL,
         "width": 1440,
         "height": 1789,
     },
+    "gacha_list_banner": {
+        "logical_path": gacha_contract.LIST_BANNER_PAYLOAD_LOGICAL,
+        "width": 510,
+        "height": 180,
+    },
     "unchanged_payload_count": 88,
     "changed_payload_count": 17,
-    "added_payload_count": 1,
+    "added_payload_count": 2,
     "package_manifest_eligible": True,
     "writes_live": False,
 }
@@ -373,6 +380,11 @@ def compile_hotfix_package(
                 if spec.logical_path == gacha_contract.TOP_BANNER_PAYLOAD_LOGICAL
             ),
             "portrait_banner_dimensions": [1440, 1789],
+            "list_banner_source_sha256": next(
+                spec.source_sha256 for spec in banner_compile.LOCKED_BANNERS
+                if spec.logical_path == gacha_contract.LIST_BANNER_PAYLOAD_LOGICAL
+            ),
+            "list_banner_dimensions": [510, 180],
             "shared_asset_baseline": [
                 dict(item) for item in CURRENT_SHARED_ASSET_BASELINE
             ],

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Pure payload repairs for the thunder-dragon 1.1.3 hotfix."""
+"""Pure payload repairs for the thunder-dragon 1.1.4 hotfix."""
 
 from __future__ import annotations
 

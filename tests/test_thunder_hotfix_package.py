@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Sealed-source and whole-image tests for thunder-dragon hotfix 1.1.3."""
+"""Sealed-source and whole-image tests for thunder-dragon hotfix 1.1.4."""
 
 from __future__ import annotations
 
@@ -54,18 +54,18 @@ class ThunderHotfixPackageTests(unittest.TestCase):
             source, donor, generator_git_head="a" * 40
         )
 
-    def test_builds_full_113_replacement_with_portrait_and_twelve_characters(self):
+    def test_builds_full_114_replacement_with_banners_and_twelve_characters(self):
         source, image = self._compile()
         audit = package.audit_hotfix_package(image)
-        self.assertEqual("1.1.3", image.manifest["package_version"])
-        self.assertEqual("1.4.349", image.manifest["requires_client_base"])
-        self.assertEqual(106, audit["payload_count"])
+        self.assertEqual("1.1.4", image.manifest["package_version"])
+        self.assertEqual("1.4.350", image.manifest["requires_client_base"])
+        self.assertEqual(107, audit["payload_count"])
         self.assertEqual(39, audit["table_claim_count"])
         self.assertEqual({
-            "common": 67, "medium": 26, "android": 2, "server": 11,
+            "common": 68, "medium": 26, "android": 2, "server": 11,
         }, audit["root_counts"])
         self.assertEqual(17, audit["changed_payload_count"])
-        self.assertEqual(1, audit["added_payload_count"])
+        self.assertEqual(2, audit["added_payload_count"])
         self.assertEqual(88, audit["unchanged_payload_count"])
         self.assertEqual(
             list(package.CHANGED_PAYLOADS), audit["changed_payloads"]
@@ -85,6 +85,13 @@ class ThunderHotfixPackageTests(unittest.TestCase):
         self.assertEqual(0, runtime["pageKind"])
         self.assertEqual([50, 250, 700], runtime["rankRates"]["normal"])
         self.assertEqual(4, runtime["guaranteeRarity"])
+        master = core.read_orderedmap_file_from_bytes(
+            image.roots["common"][gacha_contract.GACHA_MASTER_LOGICAL]
+        )
+        self.assertEqual(
+            "true",
+            core.read_csv_lines(master[gacha_contract.GACHA_KEY])[0][44],
+        )
         self.assertTrue(runtime["pool"]["2"])
         self.assertTrue(runtime["pool"]["3"])
         limited = [item for item in runtime["pool"]["1"] if item["id"] in {
@@ -140,6 +147,17 @@ class ThunderHotfixPackageTests(unittest.TestCase):
         decoded = wf_assets.png_decode(portrait)
         with Image.open(io.BytesIO(decoded)) as banner:
             self.assertEqual((1440, 1789), banner.size)
+            self.assertEqual("RGBA", banner.mode)
+
+        self.assertEqual(
+            source.roots["common"][gacha_contract.LIST_BANNER_LOGICAL],
+            image.roots["common"][gacha_contract.LIST_BANNER_LOGICAL],
+        )
+        list_banner = image.roots["common"][
+            gacha_contract.LIST_BANNER_PAYLOAD_LOGICAL
+        ]
+        with Image.open(io.BytesIO(wf_assets.png_decode(list_banner))) as banner:
+            self.assertEqual((510, 180), banner.size)
             self.assertEqual("RGBA", banner.mode)
 
     def test_recompiles_character_values_and_concise_skill_description(self):
