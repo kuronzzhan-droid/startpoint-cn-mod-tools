@@ -24,9 +24,14 @@ GACHA_TICKET_TYPE_T = "master/item/gacha_ticket_type.orderedmap"
 ITEM_SHEET_LOGICAL = "item/sprite_sheet.png"
 ITEM_ATLAS_LOGICAL = "item/sprite_sheet.atlas.amf3.deflate"
 SOURCE_ASSET_DIR = Path(__file__).resolve().parent / "assets" / "abyss-gacha-tickets"
-# Art agent handoff point. Production compilation fails closed until both exact
-# hashes are filled after the final 20x20 RGBA files arrive.
-LOCKED_ICON_SHA256: Mapping[str, str] = MappingProxyType({})
+LOCKED_ICON_SHA256: Mapping[str, str] = MappingProxyType(
+    {
+        "abyss_once_gacha_character_ticket.png":
+            "bf6be3234d530c7f206c92fcc4f04544f9e6e102dd10a470766207ef5d168c50",
+        "abyss_ten_times_gacha_character_ticket.png":
+            "f1a04683c0288783240064e65e5ff3c5f120bb6f89be4204774cd74645a7e454",
+    }
+)
 
 
 @dataclass(frozen=True)

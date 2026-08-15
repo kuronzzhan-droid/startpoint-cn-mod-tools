@@ -224,6 +224,24 @@ class TestItemAtlasCompiler(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "SHA-256"):
                 compiler(b"not-reached", b"not-reached")
 
+    def test_production_entrypoint_compiles_the_reviewed_ticket_art(self):
+        sheet, atlas = _base_item_assets()
+
+        try:
+            result = tickets.compile_locked_item_assets(sheet, atlas)
+        except ValueError as exc:
+            self.fail(f"已验收票券美术尚未锁入生产入口: {exc}")
+
+        self.assertEqual(
+            {
+                "abyss_once_gacha_character_ticket.png":
+                    "bf6be3234d530c7f206c92fcc4f04544f9e6e102dd10a470766207ef5d168c50",
+                "abyss_ten_times_gacha_character_ticket.png":
+                    "f1a04683c0288783240064e65e5ff3c5f120bb6f89be4204774cd74645a7e454",
+            },
+            result.source_sha256,
+        )
+
     def test_rejects_external_art_without_exact_sha256_locks(self):
         compiler = getattr(tickets, "compile_item_assets", None)
         self.assertIsNotNone(compiler, "共享 item 图集编译尚未实现")
