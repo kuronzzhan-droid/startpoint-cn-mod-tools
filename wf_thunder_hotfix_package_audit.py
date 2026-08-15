@@ -44,11 +44,12 @@ def _repair_evidence(locks: Mapping[str, Any]) -> None:
         raise contract.PackageAssemblyError("hotfix repair input identity drift")
     reports = locks.get("repair_reports")
     if not isinstance(reports, Mapping) or set(reports) != {
-        "pixel", "effect", "gacha", "banner"
+        "pixel", "effect", "character", "gacha", "banner"
     }:
         raise contract.PackageAssemblyError("hotfix repair reports are missing")
     pixel = reports["pixel"]
     effect = reports["effect"]
+    character = reports["character"]
     gacha = reports["gacha"]
     banner = reports["banner"]
     if (
@@ -62,6 +63,18 @@ def _repair_evidence(locks: Mapping[str, Any]) -> None:
         or effect.get("writes_live") is not False
         or effect.get("root_identity_transform") != 1
         or effect.get("child_anchor_layers") != 10
+        or not isinstance(character, Mapping)
+        or character.get("status") != "recompiled_summer_thunder_character_contract"
+        or character.get("changed_payload_count") != 6
+        or character.get("unique_condition_duration_frames") != 600
+        or character.get("leader_paralysis_duration_frames") != 180
+        or character.get("ability3_other_gauge_percent") != 25
+        or character.get("ability4_self_gauge_percent") != 100
+        or character.get("ability5_thunder_attack_percent") != 90
+        or character.get("ability5_thunder_ability_damage_percent") != 90
+        or character.get("ability6_self_charge_speed_percent") != 15
+        or character.get("skill_description_extra_multiplier_mentions") != 0
+        or character.get("writes_live") is not False
         or not isinstance(gacha, Mapping)
         or gacha.get("status") != "repaired_standard_pool_exchange_contract"
         or gacha.get("writes_live") is not False
@@ -90,7 +103,7 @@ def _repair_evidence(locks: Mapping[str, Any]) -> None:
 
 
 def audit_hotfix_package(image: contract.PackageImage) -> dict[str, Any]:
-    """Recompute the full image, evidence, eleven changes, and one addition."""
+    """Recompute the full image, evidence, seventeen changes, and one addition."""
 
     if not isinstance(image, contract.PackageImage) or set(image.roots) != set(
         contract.ROOT_NAMES
@@ -228,7 +241,7 @@ def audit_hotfix_package(image: contract.PackageImage) -> dict[str, Any]:
         "changed_payloads": list(contract.CHANGED_PAYLOADS),
         "added_payload_count": len(contract.ADDED_PAYLOADS),
         "added_payloads": list(contract.ADDED_PAYLOADS),
-        "unchanged_payload_count": 94,
+        "unchanged_payload_count": 88,
         "accepted_asset_replacements": [
             dict(item) for item in contract.CURRENT_SHARED_ASSET_BASELINE
         ],

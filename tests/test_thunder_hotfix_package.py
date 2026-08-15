@@ -16,6 +16,8 @@ from PIL import Image
 
 import wf_assets
 import wf_abyss_gacha_contract as gacha_contract
+import wf_mod_tool as core
+from wf_summer_thunder_ability_compile import build_summer_thunder_ability_rows
 
 try:
     import wf_thunder_hotfix_package as package
@@ -62,9 +64,9 @@ class ThunderHotfixPackageTests(unittest.TestCase):
         self.assertEqual({
             "common": 67, "medium": 26, "android": 2, "server": 11,
         }, audit["root_counts"])
-        self.assertEqual(11, audit["changed_payload_count"])
+        self.assertEqual(17, audit["changed_payload_count"])
         self.assertEqual(1, audit["added_payload_count"])
-        self.assertEqual(94, audit["unchanged_payload_count"])
+        self.assertEqual(88, audit["unchanged_payload_count"])
         self.assertEqual(
             list(package.CHANGED_PAYLOADS), audit["changed_payloads"]
         )
@@ -139,6 +141,47 @@ class ThunderHotfixPackageTests(unittest.TestCase):
         with Image.open(io.BytesIO(decoded)) as banner:
             self.assertEqual((1440, 1789), banner.size)
             self.assertEqual("RGBA", banner.mode)
+
+    def test_recompiles_character_values_and_concise_skill_description(self):
+        _source, image = self._compile()
+        expected = build_summer_thunder_ability_rows()
+
+        flat_contracts = {
+            "master/ability/ability.orderedmap": expected["ability"],
+            "master/ability/leader_ability.orderedmap": {
+                "139998": expected["leader_ability"]["139998"]
+            },
+            "master/character/unique_condition.orderedmap": {
+                "139998": [expected["unique_condition"]["139998"]]
+            },
+        }
+        for logical, expected_rows in flat_contracts.items():
+            decoded = core.read_orderedmap_file_from_bytes(image.roots["common"][logical])
+            for key, rows in expected_rows.items():
+                self.assertEqual(rows, core.read_csv_lines(decoded[key]), f"{logical}:{key}")
+
+        description = (
+            "向前方释放由中心扩散的黄蓝雷波，对扇形范围内的敌人造成雷属性伤害"
+            "（合计55倍／55段），并赋予自身「雷电增幅」效果（10秒）。"
+        )
+        client_text = core.read_orderedmap_file_from_bytes(
+            image.roots["common"]["master/character/character_text.orderedmap"]
+        )
+        client_row = core.read_csv_lines(client_text["139998"])[0]
+        server_row = json.loads(
+            image.roots["server"]["cdndata/character_text.json"]
+        )["139998"][0]
+        self.assertEqual(description, client_row[5])
+        self.assertEqual(description, client_row[7])
+        self.assertEqual(client_row, server_row)
+        self.assertNotIn("额外乘区", description)
+
+        action = core.load_nested_table_bytes(
+            image.roots["common"]["master/skill/action_skill.orderedmap"],
+            "master/skill/action_skill.orderedmap",
+        )
+        for row_text in action.rows[package.CODE_NAME].text_rows().values():
+            self.assertEqual(description, core.read_csv_lines(row_text)[0][1])
 
     def test_rejects_source_payload_and_donor_drift(self):
         self._require_modules()

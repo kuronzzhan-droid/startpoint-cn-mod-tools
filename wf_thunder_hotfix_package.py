@@ -30,6 +30,10 @@ from wf_thunder_hotfix_payloads import (
     repair_travelling_wave_effect,
 )
 from wf_thunder_hotfix_gacha import GACHA_REPAIR_PATHS
+from wf_thunder_hotfix_character import (
+    CHARACTER_REPAIR_PATHS,
+    repair_character_contract,
+)
 
 
 PACKAGE_ID = thunder.PACKAGE_ID
@@ -50,6 +54,13 @@ CHANGED_PAYLOADS = (
     ("common", f"{_PIXEL_PREFIX}/sprite_sheet.atlas.amf3.deflate"),
     ("common", f"{_PIXEL_PREFIX}/special_sprite_sheet.atlas.amf3.deflate"),
     ("common", _EFFECT_PARTS),
+    *(
+        (
+            "server" if logical == "cdndata/character_text.json" else "common",
+            logical,
+        )
+        for logical in CHARACTER_REPAIR_PATHS
+    ),
     *(
         (
             "server" if logical in {"cdndata/gacha.json", "gacha.json"}
@@ -99,8 +110,8 @@ _ACCEPTANCE = {
         "width": 1440,
         "height": 1789,
     },
-    "unchanged_payload_count": 94,
-    "changed_payload_count": 11,
+    "unchanged_payload_count": 88,
+    "changed_payload_count": 17,
     "added_payload_count": 1,
     "package_manifest_eligible": True,
     "writes_live": False,
@@ -228,7 +239,7 @@ def compile_hotfix_package(
     *,
     generator_git_head: str,
 ) -> PackageImage:
-    """Compile the full replacement image with eleven changes and one new banner."""
+    """Compile the full replacement image with seventeen changes and one new banner."""
 
     _validate_source(source)
     _validate_donor(donor)
@@ -263,6 +274,15 @@ def compile_hotfix_package(
         repaired_effect, effect_report = repair_travelling_wave_effect(
             effect, expected_sha256=dict(_EFFECT_OUTPUT_SHA256)
         )
+        character_source = {
+            logical: source.roots[
+                "server" if logical == "cdndata/character_text.json" else "common"
+            ][logical]
+            for logical in CHARACTER_REPAIR_PATHS
+        }
+        repaired_character, character_report = repair_character_contract(
+            character_source
+        )
         all_source = {
             **source.roots["common"],
             **source.roots["server"],
@@ -279,7 +299,9 @@ def compile_hotfix_package(
         ("common", CHANGED_PAYLOADS[1][1]): repaired_special[CHANGED_PAYLOADS[1][1]],
         ("common", CHANGED_PAYLOADS[2][1]): repaired_effect[CHANGED_PAYLOADS[2][1]],
     }
-    for root, logical in CHANGED_PAYLOADS[3:]:
+    for root, logical in CHANGED_PAYLOADS[3:3 + len(CHARACTER_REPAIR_PATHS)]:
+        candidates[(root, logical)] = repaired_character[logical]
+    for root, logical in CHANGED_PAYLOADS[3 + len(CHARACTER_REPAIR_PATHS):]:
         candidates[(root, logical)] = repaired_gacha[logical]
     if tuple(candidates) != CHANGED_PAYLOADS:
         raise PackageAssemblyError("hotfix changed payload set/order drift")
@@ -358,6 +380,7 @@ def compile_hotfix_package(
         "repair_reports": {
             "pixel": pixel_report,
             "effect": effect_report,
+            "character": character_report,
             "gacha": gacha_report,
             "banner": dict(banner_result.report),
         },
