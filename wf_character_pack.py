@@ -70,6 +70,7 @@ SERVER_LOGICAL_PATHS = (
     "character.json",
     "mana_node.json",
 )
+SERVER_EXTENSION_CODEC_IDS = frozenset({"json_object", "json_integer_set"})
 CLIENT_ROOTS: tuple[RootName, ...] = ("common", "medium", "android")
 ARCHIVE_PREFIXES = {
     "common": "production/upload/",
@@ -401,11 +402,46 @@ class _NestedCodec:
         return TableImage(outer, inner)
 
 
+class JsonIntegerSetCodec:
+    """Inspect a JSON array whose members are unique positive integer IDs."""
+
+    def inspect(
+        self,
+        raw: bytes,
+        claim: TableClaim,
+        semantic_claims: tuple[SemanticClaim, ...],
+    ) -> TableImage:
+        del claim, semantic_claims
+        try:
+            value = json.loads(
+                raw.decode("utf-8"), parse_constant=_reject_json_constant
+            )
+        except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
+            raise PackPreflightError(f"invalid JSON integer set: {exc}") from exc
+        if not isinstance(value, list):
+            raise PackPreflightError("JSON integer set must be an array")
+        seen: set[int] = set()
+        rows: list[tuple[str, bytes]] = []
+        for index, item in enumerate(value):
+            if type(item) is not int or item <= 0:
+                raise PackPreflightError(
+                    f"JSON integer set[{index}] must be a positive integer"
+                )
+            if item in seen:
+                raise PackPreflightError(
+                    f"JSON integer set[{index}] duplicates {item}"
+                )
+            seen.add(item)
+            rows.append((str(item), str(item).encode("ascii")))
+        return TableImage(tuple(rows))
+
+
 DEFAULT_CODECS: dict[str, TableCodec] = {
     "flat": _FlatCodec(compressed_rows=True),
     "raw_outer": _FlatCodec(compressed_rows=False),
     "action_nested": _NestedCodec(),
     "switched_nested": _NestedCodec(),
+    "json_integer_set": JsonIntegerSetCodec(),
 }
 
 
@@ -2020,6 +2056,12 @@ class PackTransaction:
         self.release_base_provider = release_base_provider
         self.codecs = dict(DEFAULT_CODECS)
         if codec_registry:
+            overridden = sorted(set(codec_registry) & set(DEFAULT_CODECS))
+            if overridden:
+                raise PackPreflightError(
+                    "codec registry cannot override built-in codec(s): "
+                    + ", ".join(overridden)
+                )
             self.codecs.update(codec_registry)
         self.installed_package_dir = (
             Path(installed_package_dir) if installed_package_dir is not None else None
@@ -2162,12 +2204,14 @@ class PackTransaction:
             server_codec = next(iter(required_codecs))
             wrong_codecs = sorted(
                 logical_path for logical_path in server_claims
-                if claims[("server", logical_path)].codec_id != server_codec
+                if logical_path not in required
+                and claims[("server", logical_path)].codec_id
+                not in ({server_codec} | SERVER_EXTENSION_CODEC_IDS)
             )
             if wrong_codecs:
                 raise PackPreflightError(
-                    f"{label} server tables must use the character server codec "
-                    f"{server_codec}: "
+                    f"{label} server extension codec must be one of "
+                    f"{sorted({server_codec} | SERVER_EXTENSION_CODEC_IDS)}: "
                     + ", ".join(wrong_codecs)
                 )
 

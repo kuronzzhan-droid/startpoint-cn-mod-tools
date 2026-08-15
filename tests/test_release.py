@@ -511,6 +511,39 @@ class TestAtomicCharacterRelease(unittest.TestCase):
         with self.assertRaisesRegex(module.ReleaseError, "JSON object"):
             module.JsonObjectCodec().inspect(b"[]", claim, ())
 
+    def test_json_integer_set_codec_exposes_each_positive_unique_id(self):
+        module = self._module()
+        codec_type = getattr(module, "JsonIntegerSetCodec", None)
+        self.assertIsNotNone(codec_type, "json_integer_set codec 尚未实现")
+        assert codec_type is not None
+        claim = module.character_pack.TableClaim(
+            "server", "item_ids.json", "json_integer_set", ("999013", "999014")
+        )
+
+        image = codec_type().inspect(
+            b"[10001,999013,999014]", claim, ()
+        )
+
+        self.assertEqual(
+            ("10001", "999013", "999014"),
+            tuple(key for key, _raw in image.outer_rows),
+        )
+        self.assertEqual(b"999014", dict(image.outer_rows)["999014"])
+
+    def test_json_integer_set_codec_rejects_wrong_types_duplicates_and_nonpositive_ids(self):
+        module = self._module()
+        codec_type = getattr(module, "JsonIntegerSetCodec", None)
+        self.assertIsNotNone(codec_type, "json_integer_set codec 尚未实现")
+        assert codec_type is not None
+        claim = module.character_pack.TableClaim(
+            "server", "item_ids.json", "json_integer_set", ("999013",)
+        )
+
+        for raw in (b"{}", b"[1,true]", b"[1,1]", b"[0,1]", b"[-1,1]"):
+            with self.subTest(raw=raw):
+                with self.assertRaises(module.ReleaseError):
+                    codec_type().inspect(raw, claim, ())
+
     def test_live_rebase_preserves_unclaimed_rows_for_every_table_codec(self):
         module = self._module()
         core = importlib.import_module("wf_mod_tool")
@@ -585,6 +618,23 @@ class TestAtomicCharacterRelease(unittest.TestCase):
              "129999": {"name": "Seris"}},
             merged_json,
         )
+
+    def test_live_rebase_adds_only_claimed_json_integer_set_members(self):
+        module = self._module()
+        claim = module.character_pack.TableClaim(
+            "server", "item_ids.json", "json_integer_set", ("999013", "999014")
+        )
+
+        try:
+            merged = json.loads(module._merge_claimed_table_bytes(
+                claim,
+                b"[10001,999013,999014]",
+                b"[10001,20002]",
+            ))
+        except module.ReleaseError as exc:
+            self.fail(f"json_integer_set runtime rebase 尚未实现: {exc}")
+
+        self.assertEqual([10001, 20002, 999013, 999014], merged)
 
     def test_transaction_records_convert_to_hash_bound_release_payload(self):
         module = self._module()

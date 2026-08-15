@@ -1814,7 +1814,7 @@ class TestPackPreflight(_TransactionFixtureMixin, unittest.TestCase):
             and item["logical_path"] == extension_path
         )["codec_id"] = "flat"
         with self.assertRaisesRegex(
-            self.pack.PackPreflightError, "server tables must use the character server codec"
+            self.pack.PackPreflightError, "server extension codec must be one of"
         ):
             self._tx(manifest=wrong_codec).preflight()
 
@@ -1886,6 +1886,39 @@ class TestPackPreflight(_TransactionFixtureMixin, unittest.TestCase):
             })
 
         report = self._tx(manifest=manifest).preflight()
+
+        self.assertFalse(report.conflicts)
+
+    def test_server_extension_accepts_the_validated_json_integer_set_codec(self):
+        self._finish_setup()
+        extended = copy.deepcopy(self.manifest)
+        logical_path = "item_ids.json"
+        add_file(
+            self.package_dir,
+            extended,
+            "server",
+            logical_path,
+            b"[10001,999013]",
+        )
+        (self.server / logical_path).write_bytes(b"[10001]")
+        extended["tables"].append({
+            "root": "server",
+            "logical_path": logical_path,
+            "codec_id": "json_integer_set",
+            "outer_keys": ["999013"],
+            "inner_keys": [],
+            "semantic_claims": [],
+        })
+        registry = {
+            "fixture_json": _JsonFixtureCodec(self.pack),
+        }
+
+        try:
+            report = self._tx(
+                manifest=extended, codec_registry=registry
+            ).preflight()
+        except self.pack.PackPreflightError as exc:
+            self.fail(f"validated server extension codec 尚未接通: {exc}")
 
         self.assertFalse(report.conflicts)
 
@@ -2024,6 +2057,33 @@ class TestPackPreflight(_TransactionFixtureMixin, unittest.TestCase):
                 )
                 image = self.pack.DEFAULT_CODECS[codec_id].inspect(raw, claim, ())
                 self.assertEqual(image.inner_rows, (("skill", "1", row),))
+
+    def test_builtin_json_integer_set_codec_is_available_to_release_transactions(self):
+        self._finish_setup()
+        codec = self.pack.DEFAULT_CODECS.get("json_integer_set")
+        self.assertIsNotNone(codec, "json_integer_set 必须是受控内建 codec")
+        assert codec is not None
+        claim = self.pack.TableClaim(
+            "server", "item_ids.json", "json_integer_set", ("999013",)
+        )
+
+        image = codec.inspect(b"[10001,999013]", claim, ())
+
+        self.assertEqual(
+            (("10001", b"10001"), ("999013", b"999013")),
+            image.outer_rows,
+        )
+
+    def test_codec_registry_cannot_override_a_validated_builtin_codec(self):
+        self._finish_setup()
+
+        with self.assertRaisesRegex(
+            self.pack.PackPreflightError, "cannot override built-in codec"
+        ):
+            self._tx(codec_registry={
+                "fixture_json": _JsonFixtureCodec(self.pack),
+                "json_integer_set": _JsonFixtureCodec(self.pack),
+            })
 
     def test_same_package_id_does_not_own_a_newly_claimed_occupied_key(self):
         installed, installed_dir = self._installed_copy()
