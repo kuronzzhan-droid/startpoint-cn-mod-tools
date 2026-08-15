@@ -12,7 +12,13 @@ from pathlib import Path
 from typing import Any
 
 import wf_abyss_gacha_package_contract as contract
+import wf_abyss_gacha_compile as gacha_compile
+import wf_abyss_gacha_contract as gacha_contract
+import wf_abyss_ticket_compile as tickets
+import wf_character_pack as character_pack
 import wf_character_workspace as workspace_module
+import wf_mod_tool as core
+import wf_rogue_shop as shop
 from wf_summer_thunder_package_evidence import (
     EVIDENCE_RELATIVE,
     source_lock_evidence_bytes,
@@ -70,6 +76,123 @@ def read_regular_stable(path: Path, label: str) -> bytes:
     finally:
         if descriptor >= 0:
             os.close(descriptor)
+
+
+def _safe_read_root(path: Path, label: str) -> Path:
+    root = Path(path)
+    if not root.is_absolute():
+        raise PackageAssemblyError(f"{label} must be an absolute directory")
+    try:
+        for current in (root, *root.parents):
+            info = os.lstat(current)
+            if _is_reparse(info):
+                raise OSError("reparse point")
+        if not stat.S_ISDIR(os.lstat(root).st_mode):
+            raise OSError("not a directory")
+        return root.resolve(strict=True)
+    except OSError as exc:
+        raise PackageAssemblyError(f"{label} is unsafe or missing") from exc
+
+
+def _safe_input_path(root: Path, relative: Path, label: str) -> Path:
+    if relative.is_absolute() or relative.drive or not relative.parts:
+        raise PackageAssemblyError(f"input path escapes {label}")
+    candidate = root.joinpath(*relative.parts)
+    cursor = root
+    try:
+        for part in relative.parts:
+            cursor = cursor / part
+            try:
+                info = os.lstat(cursor)
+            except FileNotFoundError:
+                break
+            if _is_reparse(info):
+                raise OSError("reparse point")
+        resolved = candidate.resolve(strict=False)
+        resolved.relative_to(root)
+    except (OSError, ValueError) as exc:
+        raise PackageAssemblyError(f"input path is unsafe: {label}") from exc
+    return candidate
+
+
+def _store_input_path(store: Path, logical: str) -> Path:
+    problem = character_pack.logical_path_problem(logical)
+    if problem:
+        raise PackageAssemblyError(f"invalid store logical path {logical}: {problem}")
+    hashed = core.table_path(store, logical)
+    return _safe_input_path(store, hashed.relative_to(store), f"store:{logical}")
+
+
+def _server_input_path(server: Path, logical: str) -> Path:
+    problem = character_pack.logical_path_problem(logical)
+    if problem:
+        raise PackageAssemblyError(f"invalid server logical path {logical}: {problem}")
+    relative = Path(*logical.split("/"))
+    return _safe_input_path(server, relative, f"server:{logical}")
+
+
+def _probe_optional_store_file(store: Path, logical: str) -> bool:
+    path = _store_input_path(store, logical)
+    try:
+        os.lstat(path)
+    except FileNotFoundError:
+        try:
+            os.lstat(path)
+        except FileNotFoundError:
+            return False
+        raise PackageAssemblyError(
+            f"optional store input appeared during probe: {logical}"
+        )
+    read_regular_stable(path, f"optional store:{logical}")
+    return True
+
+
+def load_addition_sources(store_root: Path, server_assets_root: Path):
+    """Read the explicit base347/store and server inputs without mutation."""
+
+    from wf_abyss_gacha_package_compile import AdditionSources
+
+    store = _safe_read_root(store_root, "base347 store root")
+    server = _safe_read_root(server_assets_root, "server assets root")
+
+    def store_read(logical: str) -> bytes:
+        return read_regular_stable(
+            _store_input_path(store, logical), f"store:{logical}"
+        )
+
+    def server_read(logical: str) -> bytes:
+        return read_regular_stable(
+            _server_input_path(server, logical), f"server:{logical}"
+        )
+
+    common = {
+        logical: store_read(logical)
+        for logical in gacha_compile.COMMON_SOURCE_PATHS
+    }
+    server_gacha = {
+        logical: server_read(logical)
+        for logical in gacha_compile.SERVER_SOURCE_PATHS
+    }
+    existing = list(common)
+    existing.extend(
+        logical for logical in gacha_contract.NEW_COMMON_PATHS
+        if _probe_optional_store_file(store, logical)
+    )
+    return AdditionSources(
+        gacha_common=common,
+        gacha_server=server_gacha,
+        existing_common_paths=tuple(existing),
+        item_raw=store_read(tickets.ITEM_T),
+        ticket_type_raw=store_read(tickets.GACHA_TICKET_TYPE_T),
+        item_ids_raw=server_read(contract.ITEM_IDS_LOGICAL),
+        item_sheet_raw=store_read(tickets.ITEM_SHEET_LOGICAL),
+        item_atlas_raw=store_read(tickets.ITEM_ATLAS_LOGICAL),
+        shop_client_raw=store_read(shop.SHOP_T),
+        shop_server_raw=server_read(shop.SHOP_JSON),
+        shop_id_map_raw=server_read(shop.SHOP_ID_MAP_JSON),
+        rogue_event_raw=server_read(contract.ROGUE_EVENT_LOGICAL),
+        rush_event_quest_raw=server_read("rush_event_quest.json"),
+    )
 
 
 def _strict_object(raw: bytes, label: str) -> dict[str, Any]:
@@ -189,4 +312,7 @@ def load_sealed_source_workspace(workspace: Path) -> contract.SealedSourcePackag
     return source
 
 
-__all__ = ["PackageAssemblyError", "read_regular_stable", "load_sealed_source_workspace"]
+__all__ = [
+    "PackageAssemblyError", "read_regular_stable", "load_sealed_source_workspace",
+    "load_addition_sources",
+]
