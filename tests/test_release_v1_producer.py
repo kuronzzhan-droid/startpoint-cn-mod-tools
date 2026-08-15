@@ -177,7 +177,9 @@ class ProducerTests(unittest.TestCase):
                 "before_sha256": hashlib.sha256(before).hexdigest(),
                 "before_size": len(before),
             })
-        manifest["snapshot"]["accepted_asset_replacements"] = accepted
+        # The sealed workspace binds author order, while Release v2 emits one
+        # canonical root/path order independent of that presentation detail.
+        manifest["snapshot"]["accepted_asset_replacements"] = list(reversed(accepted))
         manifest["qa"]["workspace_input_sha256"] = ""
         manifest_path.write_text(
             json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",

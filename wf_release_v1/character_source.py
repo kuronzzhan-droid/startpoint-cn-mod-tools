@@ -220,6 +220,10 @@ def _accepted_asset_replacements(
             "beforeSha256": value["before_sha256"],
             "beforeSize": value["before_size"],
         })
+    wire.sort(key=lambda item: (
+        str(item["root"]).encode("utf-8"),
+        str(item["logicalPath"]).encode("utf-8"),
+    ))
     try:
         replacements = parse_asset_replacements(wire)
     except ReleaseError as error:
