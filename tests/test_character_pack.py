@@ -1330,6 +1330,30 @@ class TestPackPreflight(_TransactionFixtureMixin, unittest.TestCase):
                 ):
                     self._tx(manifest=manifest).preflight()
 
+    def test_asset_replacement_rejects_orderedmap_even_when_candidate_omits_claim(self):
+        self._finish_setup()
+        logical = next(
+            item["logical_path"] for item in self.manifest["tables"]
+            if item["logical_path"].endswith("ability.orderedmap")
+        )
+        manifest = copy.deepcopy(self.manifest)
+        manifest["tables"] = [
+            item for item in manifest["tables"]
+            if item["logical_path"] != logical
+        ]
+        manifest["snapshot"]["accepted_asset_replacements"] = [{
+            "root": "common",
+            "logical_path": logical,
+            "before_sha256": "a" * 64,
+            "before_size": 1,
+        }]
+
+        with self.assertRaisesRegex(
+            self.pack.PackPreflightError,
+            "accepted_asset_replacements.*table",
+        ):
+            self._tx(manifest=manifest).preflight()
+
     def test_upgrade_rejects_candidate_installed_asset_replacement_contract_drift(self):
         import wf_mod_tool as core
 
@@ -1368,6 +1392,63 @@ class TestPackPreflight(_TransactionFixtureMixin, unittest.TestCase):
                 installed_manifest=installed,
                 installed_package_dir=installed_dir,
             ).preflight()
+
+    def test_upgrade_still_checks_declared_asset_replacement_live_before(self):
+        import wf_mod_tool as core
+
+        table_paths = {item["logical_path"] for item in self.manifest["tables"]}
+        entry = next(
+            item for item in self.manifest["roots"]["common"]
+            if item["logical_path"] not in table_paths
+        )
+        live_raw = b"locked-upgrade-before"
+        live = core.table_path(self.common, entry["logical_path"])
+        live.parent.mkdir(parents=True, exist_ok=True)
+        live.write_bytes(live_raw)
+        self.manifest["snapshot"]["accepted_asset_replacements"] = [{
+            "root": "common",
+            "logical_path": entry["logical_path"],
+            "before_sha256": hashlib.sha256(live_raw).hexdigest(),
+            "before_size": len(live_raw),
+        }]
+        installed, installed_dir = self._installed_copy()
+        installed_hash = hashlib.sha256(
+            self.pack.canonical_manifest_bytes(installed)
+        ).hexdigest()
+        self._finish_setup(active_manifest_hash=installed_hash)
+        candidate = copy.deepcopy(self.manifest)
+        candidate["package_version"] = "1.1.0"
+
+        exact = self._tx(
+            manifest=candidate,
+            installed_manifest=installed,
+            installed_package_dir=installed_dir,
+        ).preflight()
+        self.assertEqual(1, len(exact.accepted_asset_replacements))
+
+        for label, replacement in (
+            ("drift", live_raw + b"-drift"),
+            ("missing", None),
+        ):
+            with self.subTest(label=label):
+                if replacement is None:
+                    live.unlink(missing_ok=True)
+                else:
+                    live.write_bytes(replacement)
+                report = self._tx(
+                    manifest=candidate,
+                    installed_manifest=installed,
+                    installed_package_dir=installed_dir,
+                ).preflight()
+                conflict = next(
+                    item for item in report.conflicts
+                    if item["kind"] == "asset_path"
+                    and item["claim"] == f"common:{entry['logical_path']}"
+                )
+                self.assertEqual(
+                    "accepted_live_before_mismatch", conflict["reason"]
+                )
+                self.assertFalse(report.can_prepare)
 
     def test_first_install_rejects_every_occupied_declared_claim(self):
         self._finish_setup()

@@ -1222,7 +1222,11 @@ def _parse_accepted_asset_replacements(
             errors.append(
                 f"{prefix}.logical_path: path is not an exact candidate root entry"
             )
-        if table_key in claims:
+        table_like_path = (
+            logical.casefold().startswith("master/")
+            or logical.casefold().endswith((".orderedmap", ".json"))
+        )
+        if table_key in claims or table_like_path:
             errors.append(f"{prefix}.logical_path: table paths cannot be accepted")
         if not isinstance(digest, str) or SHA256_RE.fullmatch(digest) is None:
             errors.append(f"{prefix}.before_sha256: invalid sha256")
@@ -1231,6 +1235,7 @@ def _parse_accepted_asset_replacements(
         if (
             table_key in entries
             and table_key not in claims
+            and not table_like_path
             and isinstance(digest, str)
             and SHA256_RE.fullmatch(digest) is not None
             and type(size) is int
@@ -2760,8 +2765,7 @@ class PackTransaction:
             ownership_key = (item["root"], item["logical_path"])
             if (item["root"] in CLIENT_ROOTS
                     and not item["is_table"]
-                    and item["source_path"] is not None
-                    and ownership_key not in installed_entries):
+                    and item["source_path"] is not None):
                 accepted = candidate_replacements.get(ownership_key)
                 before = item["before"]
                 if accepted is not None:
@@ -2786,7 +2790,10 @@ class PackTransaction:
                             "expected": expected,
                             "actual": before,
                         })
-                elif before["exists"]:
+                elif (
+                    before["exists"]
+                    and ownership_key not in installed_entries
+                ):
                     conflicts.append({
                         "kind": "asset_path",
                         "claim": f"{item['root']}:{item['logical_path']}",
