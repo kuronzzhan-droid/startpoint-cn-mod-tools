@@ -165,6 +165,7 @@ class TransactionTests(unittest.TestCase):
         capability_level: str = "modern",
         capability_requires_started: bool = False,
         capability_replacement: ManagedProcess | None = None,
+        baseline_error: ReleaseError | None = None,
     ) -> InstallResult:
         import wf_release_v1.transaction as transaction
 
@@ -212,9 +213,19 @@ class TransactionTests(unittest.TestCase):
                 "inspect_target_capability",
                 side_effect=inspect_capability,
             ),
-            mock.patch.object(transaction, "verify_release", return_value=SimpleNamespace(
-                release_id=self.release_id,
-            )),
+            mock.patch.object(
+                transaction,
+                "verify_release_contract",
+                return_value=(
+                    SimpleNamespace(release_id=self.release_id),
+                    self.verified,
+                ),
+            ),
+            mock.patch.object(
+                transaction,
+                "verify_asset_replacement_baseline",
+                side_effect=baseline_error,
+            ),
             mock.patch.object(transaction, "import_verified_object", return_value=self.stored),
             mock.patch.object(transaction, "load_verified_release", return_value=self.verified),
             mock.patch.object(
@@ -323,6 +334,32 @@ class TransactionTests(unittest.TestCase):
         self.assertEqual([], self.phases)
         self.assertFalse((self.target.state_root / "receipts").exists())
 
+    def test_asset_baseline_mismatch_is_zero_write_before_import_or_receipt(self) -> None:
+        before = tuple(sorted(
+            (path.relative_to(self.root).as_posix(), path.read_bytes())
+            for path in self.root.rglob("*") if path.is_file()
+        ))
+        platform = FakePlatform(_process())
+
+        with self.assertRaises(ReleaseError) as caught:
+            self._run(
+                platform,
+                [],
+                baseline_error=ReleaseError(
+                    "WFREL_ASSET_BASELINE_MISMATCH",
+                    "injected before-byte mismatch",
+                ),
+            )
+
+        self.assertEqual("WFREL_ASSET_BASELINE_MISMATCH", caught.exception.code)
+        self.assertEqual(["current", "capability"], platform.events)
+        self.assertEqual([], self.phases)
+        self.assertFalse((self.target.state_root / "receipts").exists())
+        self.assertEqual(before, tuple(sorted(
+            (path.relative_to(self.root).as_posix(), path.read_bytes())
+            for path in self.root.rglob("*") if path.is_file()
+        )))
+
     def test_stopped_wrong_protocol_cleans_started_baseline(self) -> None:
         platform = FakePlatform()
 
@@ -400,7 +437,9 @@ class TransactionTests(unittest.TestCase):
 
         with (
             mock.patch.object(
-                transaction, "verify_release", side_effect=AssertionError("release was read")
+                transaction,
+                "verify_release_contract",
+                side_effect=AssertionError("release was read"),
             ),
             self.assertRaises(ReleaseError) as caught,
         ):

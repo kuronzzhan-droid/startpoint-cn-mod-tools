@@ -8,6 +8,7 @@ from pathlib import Path
 import secrets
 
 from ._loopback_http import _timeout as _validated_health_timeout, wait_health_ready
+from .baseline_assets import verify_asset_replacement_baseline
 from ._platform_state import ManagedProcess
 from ._receipt_contract import OperationReceipt, new_operation_id
 from ._transaction_content import (
@@ -49,7 +50,7 @@ from .receipts import (
 )
 from .target import ManagedTarget
 from .target_capability import inspect_target_capability
-from .verifier import verify_release
+from .verifier import verify_release_contract
 
 
 @dataclass(frozen=True)
@@ -227,9 +228,10 @@ def _install_release_reserved(
     initial_process: ManagedProcess | None,
     protocol_checked: bool,
 ) -> InstallResult:
-    report = verify_release(release)
+    report, preverified = verify_release_contract(release)
     if any(item.release_id == report.release_id for item in previous.releases):
         return InstallResult(report.release_id, None, "noop", None, ())
+    verify_asset_replacement_baseline(preverified, target)
 
     started_at = datetime.now(timezone.utc)
     receipt = OperationReceipt(

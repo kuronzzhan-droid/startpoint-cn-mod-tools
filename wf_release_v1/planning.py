@@ -12,6 +12,7 @@ from typing import Mapping
 
 import wf_character_workspace
 
+from .baseline_assets import verify_asset_replacement_baseline
 from .canonical import canonical_json_bytes, load_json_strict_bytes
 from .compatibility import ActiveState, VerifiedRelease, evaluate_requirements
 from .errors import ReleaseError
@@ -218,12 +219,18 @@ def plan_verified_install(
     active = _active_state(target)
     report = evaluate_requirements(verified, facts, active)
     no_op = report.codes == ("WFREL_OWNERSHIP_NOOP",)
+    baseline_codes: tuple[str, ...] = ()
+    if not no_op and verified.manifest.source_evidence.accepted_asset_replacements:
+        try:
+            verify_asset_replacement_baseline(verified, target, facts)
+        except ReleaseError as error:
+            baseline_codes = (error.code,)
     expected_version = verified.manifest.expected_state.cdn_target_version
     active_version = target.cdn_root / "patches" / expected_version
     version_occupied = not no_op and (
         active_version.exists() or active_version.is_symlink()
     )
-    codes = report.codes + (
+    codes = report.codes + baseline_codes + (
         ("WFREL_STATE_VERSION_CONFLICT",) if version_occupied else ()
     )
     previous_path = target.state_root / "previous.json"
@@ -234,7 +241,7 @@ def plan_verified_install(
     return InstallPlan(
         tuple(item.release_id for item in active.releases),
         codes,
-        report.compatible and not version_occupied,
+        report.compatible and not baseline_codes and not version_occupied,
         facts.cdn_target_version,
         expected_version,
         no_op,

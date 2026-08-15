@@ -80,7 +80,13 @@ def _sample(*, recovery: bool, sentinel_source: Path) -> dict[str, float | int]:
     try:
         with ExitStack() as stack:
             _guard_sparse_sentinel(stack, sentinel)
-            _timed(stack, transaction, "verify_release", phases, "releaseVerify")
+            _timed(
+                stack,
+                transaction,
+                "verify_release_contract",
+                phases,
+                "releaseVerify",
+            )
             _timed(stack, transaction, "import_verified_object", phases, "objectImport")
             _timed(stack, transaction, "materialize_candidates", phases, "materialize")
             _timed(stack, transaction, "verify_candidates", phases, "candidateVerify")
