@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Pure 1.1.5 character-row repair for the summer thunder dragon."""
+"""Pure 1.1.6 character-row repair for the summer thunder dragon."""
 
 from __future__ import annotations
 

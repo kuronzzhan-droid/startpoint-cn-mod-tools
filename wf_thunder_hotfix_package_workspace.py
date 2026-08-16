@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Atomic fresh-workspace boundary for thunder-dragon hotfix 1.1.5."""
+"""Atomic fresh-workspace boundary for thunder-dragon hotfix 1.1.6."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ from wf_summer_thunder_package_paths import assert_workspace_tree_safe
 from wf_summer_thunder_package_workspace_state import manifest_bytes
 
 
-WORKSPACE_NAME = "cnmod_thunder_dragon_hotfix_1_1_5"
+WORKSPACE_NAME = "cnmod_thunder_dragon_hotfix_1_1_6"
 LOCK_NAME = f".{WORKSPACE_NAME}.assemble.lock"
 STAGING_NAME = f".{WORKSPACE_NAME}.assemble.staging"
 _REPARSE_POINT = 0x0400

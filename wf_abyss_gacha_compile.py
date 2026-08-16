@@ -14,6 +14,7 @@ from collections.abc import Collection, Mapping
 from pathlib import Path, PureWindowsPath
 
 import wf_abyss_gacha_contract as contract
+import wf_abyss_gacha_pool as pool_contract
 import wf_mod_tool as core
 from wf_character_pack import logical_path_problem, windows_logical_path_key
 
@@ -443,8 +444,15 @@ def compile_abyss_limited_gacha(
     all_leaks = _find_character_pool_leaks(readback_server["gacha.json"])
     expected_locations = sorted((value, contract.GACHA_KEY) for value in contract.CHARACTER_IDS)
     if sorted(all_leaks) != expected_locations:
-        raise AssertionError("eight-character pickup pool readback mismatch")
+        raise AssertionError("limited pickup pool readback mismatch")
     runtime = readback_server["gacha.json"][contract.GACHA_KEY]
+    pickup_total, pickup_each = pool_contract.pickup_rates(runtime["pool"])
+    locked_exchange = sorted(
+        entry["id"] for entry in runtime["pool"]["1"]
+        if entry["isLimited"] and not entry["isExchangeable"]
+    )
+    if locked_exchange != sorted(contract.NON_EXCHANGEABLE_CHARACTER_IDS):
+        raise AssertionError("limited pickup exchange lock readback mismatch")
     if (
         runtime["pageKind"] != 2
         or runtime["onceTicketItemId"] != contract.SINGLE_TICKET_ID
@@ -466,6 +474,9 @@ def compile_abyss_limited_gacha(
             "gacha_id": contract.GACHA_ID,
             "code_name": contract.CODE_NAME,
             "character_ids": list(contract.CHARACTER_IDS),
+            "non_exchangeable_character_ids": list(
+                contract.NON_EXCHANGEABLE_CHARACTER_IDS
+            ),
             "standard_exchange_character_ids": list(
                 contract.STANDARD_EXCHANGE_CHARACTER_IDS
             ),
@@ -478,7 +489,14 @@ def compile_abyss_limited_gacha(
             "eight_character_closure": True,
             "standard_pool_contract": True,
             "rank_rates": runtime["rankRates"],
-            "limited_character_rate_percent": 0.5,
+            "limited_character_rate_total_percent": float(pickup_total * 100),
+            "limited_character_rate_each_percent": float(pickup_each * 100),
+            "limited_character_rate_total_ratio": [
+                pickup_total.numerator, pickup_total.denominator
+            ],
+            "limited_character_rate_each_ratio": [
+                pickup_each.numerator, pickup_each.denominator
+            ],
             "normal_page_contract": True,
             "exchange_points": {
                 "limited": 250,

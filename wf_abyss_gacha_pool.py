@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Mapping, Sequence
+from fractions import Fraction
 
 
 EXPECTED_ENTRY_KEYS = frozenset({
@@ -21,6 +22,13 @@ STANDARD_RANK_RATES = {
     "normal": [50, 250, 700],
     "multiGuarantee": [50, 950],
 }
+PICKUP_CHARACTER_COUNT = 9
+# Every standard five-star carries four times the pickup count, so the pickups
+# hold exactly one fifth of the five-star bucket for any standard pool size.
+STANDARD_TAIL_WEIGHT_FACTOR = 4
+# 5% five-star bucket * 1/5 pickup share = exactly 1% for all pickups together.
+PICKUP_TOTAL_RATE = Fraction(1, 100)
+PICKUP_EACH_RATE = PICKUP_TOTAL_RATE / PICKUP_CHARACTER_COUNT
 
 
 def _fail(detail: str) -> ValueError:
@@ -76,12 +84,49 @@ def _normal_entry(
     }
 
 
+def pickup_rates(
+    pool: Mapping[str, Sequence[Mapping[str, object]]]
+) -> tuple[Fraction, Fraction]:
+    """Return the exact (total, per-character) five-star pickup probabilities."""
+    entries = pool.get("1") if isinstance(pool, Mapping) else None
+    if not isinstance(entries, Sequence) or not entries:
+        raise ValueError("abyss pickup rate input must carry a five-star pool")
+    try:
+        pickups = [entry for entry in entries if entry.get("isLimited") is True]
+        weights = {int(entry["odds"]) for entry in pickups}
+        total_weight = sum(int(entry["odds"]) for entry in entries)
+    except (AttributeError, KeyError, TypeError, ValueError) as exc:
+        raise ValueError(f"abyss pickup rate input is malformed: {exc}") from exc
+    if (
+        len(pickups) != PICKUP_CHARACTER_COUNT
+        or len(weights) != 1
+        or total_weight <= 0
+    ):
+        raise ValueError(
+            "abyss pickup rate contract drift: "
+            f"pickups={len(pickups)}, weights={sorted(weights)}"
+        )
+    five_rate = Fraction(
+        STANDARD_RANK_RATES["normal"][0], sum(STANDARD_RANK_RATES["normal"])
+    )
+    total = five_rate * Fraction(
+        sum(int(entry["odds"]) for entry in pickups), total_weight
+    )
+    each = total / len(pickups)
+    if total != PICKUP_TOTAL_RATE or each != PICKUP_EACH_RATE:
+        raise ValueError(
+            f"abyss pickup rate is not the locked {PICKUP_TOTAL_RATE} total: {total}"
+        )
+    return total, each
+
+
 def build_pickup_pool(
     donor_runtime: object,
     limited_character_ids: Sequence[int],
     standard_exchange_character_ids: Sequence[int] = (),
+    non_exchangeable_limited_character_ids: Sequence[int] = (),
 ) -> dict[str, list[dict[str, object]]]:
-    """Return 5/4/3 pools with eight 0.5% pickups and a 1% standard ★5 tail."""
+    """Return 5/4/3 pools with nine pickups sharing 1% and a 4% standard ★5 tail."""
     if (
         not isinstance(donor_runtime, dict)
         or donor_runtime.get("rankRates") != STANDARD_RANK_RATES
@@ -91,12 +136,22 @@ def build_pickup_pool(
         raise _fail("runtime contract drift")
     if (
         isinstance(limited_character_ids, (str, bytes))
-        or len(limited_character_ids) != 8
-        or len(set(limited_character_ids)) != 8
+        or len(limited_character_ids) != PICKUP_CHARACTER_COUNT
+        or len(set(limited_character_ids)) != PICKUP_CHARACTER_COUNT
         or any(isinstance(value, bool) or not isinstance(value, int) or value <= 0
                 for value in limited_character_ids)
     ):
-        raise ValueError("limited character IDs must be eight unique positive integers")
+        raise ValueError("limited character IDs must be nine unique positive integers")
+    if (
+        isinstance(non_exchangeable_limited_character_ids, (str, bytes))
+        or len(set(non_exchangeable_limited_character_ids))
+        != len(non_exchangeable_limited_character_ids)
+        or not set(non_exchangeable_limited_character_ids)
+        <= set(limited_character_ids)
+    ):
+        raise ValueError(
+            "non-exchangeable pickup IDs must be unique members of the pickup list"
+        )
     if (
         isinstance(standard_exchange_character_ids, (str, bytes))
         or len(set(standard_exchange_character_ids))
@@ -162,37 +217,45 @@ def build_pickup_pool(
         raise _fail("contains no standard five-star characters")
 
     standard_count = len(standard_five)
-    # Eight pickups each receive 10% of the ★5 bucket.  The standard tail gets
-    # the remaining 20%, divided equally.  With weights N and 2 this remains
-    # exact for every positive standard pool size N.
+    pickup_count = len(limited_character_ids)
+    locked_ids = set(non_exchangeable_limited_character_ids)
+    # The nine pickups share one fifth of the ★5 bucket, which is exactly 1% of
+    # all draws; the standard tail keeps the other four fifths (4%).  With
+    # weights N per pickup and 4K per standard entry the split stays exact for
+    # every positive standard pool size N and pickup count K.
+    pickup_odds = standard_count
+    standard_odds = STANDARD_TAIL_WEIGHT_FACTOR * pickup_count
+    total_weight = pickup_count * pickup_odds + standard_count * standard_odds
     five = [
         {
             "id": character_id,
             "rank": 5,
-            "odds": standard_count,
+            "odds": pickup_odds,
             "isRateUp": True,
             "isLimited": True,
-            "isExchangeable": True,
-            "rarity": 100.0,
+            "isExchangeable": character_id not in locked_ids,
+            "rarity": 1000.0 * pickup_odds / total_weight,
             "trialReadingForced": False,
         }
         for character_id in limited_character_ids
     ]
-    standard_rarity = 200.0 / standard_count
+    standard_rarity = 1000.0 * standard_odds / total_weight
     five.extend(
         _normal_entry(
             entry,
-            odds=2,
+            odds=standard_odds,
             rarity=standard_rarity,
             exchangeable=int(entry["id"]) in exchange_id_set,
         )
         for entry in standard_five
     )
-    return {
+    pool = {
         "1": five,
         "2": [_normal_entry(entry) for entry in donor["2"]],
         "3": [_normal_entry(entry) for entry in donor["3"]],
     }
+    pickup_rates(pool)
+    return pool
 
 
 def build_character_rows(
@@ -221,4 +284,8 @@ def build_character_rows(
     }
 
 
-__all__ = ["STANDARD_RANK_RATES", "build_character_rows", "build_pickup_pool"]
+__all__ = [
+    "STANDARD_RANK_RATES", "PICKUP_CHARACTER_COUNT", "PICKUP_TOTAL_RATE",
+    "PICKUP_EACH_RATE", "STANDARD_TAIL_WEIGHT_FACTOR",
+    "build_character_rows", "build_pickup_pool", "pickup_rates",
+]

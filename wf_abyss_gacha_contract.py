@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import zlib
+from fractions import Fraction
 
 import wf_abyss_gacha_pool as pool_contract
 
@@ -12,11 +13,20 @@ GACHA_ID = 990001
 GACHA_KEY = str(GACHA_ID)
 CODE_NAME = "cnmod_abyss_limited_gacha"
 TITLE = "深渊限定扭蛋"
+# 泳皇女EX（莉莉丝）, code_name resistance_princess_ex, thunder ★5.
+SWIM_PRINCESS_EX_CHARACTER_ID = 139997
+SWIM_PRINCESS_EX_NAME = "泳皇女EX（莉莉丝）"
 CHARACTER_IDS = (
-    129999, 139998, 139999, 149998,
+    129999, SWIM_PRINCESS_EX_CHARACTER_ID, 139998, 139999, 149998,
     149999, 169998, 169999, 179999,
 )
+# Pickups that draw normally but are never offered in the 250-point exchange.
+NON_EXCHANGEABLE_CHARACTER_IDS = (SWIM_PRINCESS_EX_CHARACTER_ID,)
 STANDARD_EXCHANGE_CHARACTER_IDS = (141129, 161141, 123001, 131182)
+EXCHANGEABLE_CHARACTER_IDS = tuple(
+    value for value in CHARACTER_IDS
+    if value not in NON_EXCHANGEABLE_CHARACTER_IDS
+)
 SINGLE_TICKET_ID = 999013
 TEN_TICKET_ID = 999014
 STANDARD_POOL_DONOR_ID = "700004"
@@ -142,6 +152,7 @@ def build_runtime_pool(donor_runtime: object) -> dict[str, list[dict[str, object
         donor_runtime,
         CHARACTER_IDS,
         STANDARD_EXCHANGE_CHARACTER_IDS,
+        NON_EXCHANGEABLE_CHARACTER_IDS,
     )
 
 
@@ -179,7 +190,22 @@ def build_server_runtime(
 
 
 def build_rich_text_body() -> bytes:
-    html = """<!DOCTYPE html/>
+    pickup_count = len(CHARACTER_IDS)
+    exchangeable_count = len(EXCHANGEABLE_CHARACTER_IDS)
+    rank_rates = pool_contract.STANDARD_RANK_RATES["normal"]
+    five_percent = 100 * Fraction(rank_rates[0], sum(rank_rates))
+    pickup_percent = 100 * pool_contract.PICKUP_TOTAL_RATE
+    each_percent = float(100 * pool_contract.PICKUP_EACH_RATE)
+    standard_percent = five_percent - pickup_percent
+    locked_names = "、".join(
+        SWIM_PRINCESS_EX_NAME if value == SWIM_PRINCESS_EX_CHARACTER_ID
+        else str(value)
+        for value in NON_EXCHANGEABLE_CHARACTER_IDS
+    )
+    standard_exchange = "、".join(
+        str(value) for value in STANDARD_EXCHANGE_CHARACTER_IDS
+    )
+    html = f"""<!DOCTYPE html/>
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8"/>
@@ -192,10 +218,13 @@ def build_rich_text_body() -> bytes:
     <p>・本扭蛋不接受星导石或付费星导石抽取。</p><br/>
     <p>・本扭蛋不接受通用角色扭蛋券。</p><br/>
     <p>・★5角色总出现概率为5%，★4角色为25%，★3角色为70%。</p><br/>
-    <p>・8名深渊限定角色的单人出现概率均为0.5%，合计4%；其余1%由普通★5角色均分。</p><br/>
+    <p>・{pickup_count}名深渊限定角色合计出现概率为{pickup_percent}%，\
+单人均为1/{pickup_count}%（约{each_percent:.3f}%）；\
+其余{standard_percent}%由普通★5角色均分。</p><br/>
     <p>・使用1张深渊单抽券可抽取1次；使用1张深渊十连券可连续抽取10次。</p><br/>
-    <p>・每次抽取累计1点兑换点数；8名深渊限定角色各需250点兑换。</p><br/>
-    <p>・141129、161141、123001、131182四名普通★5角色同样各需250点兑换。</p><br/>
+    <p>・每次抽取累计1点兑换点数；其中{exchangeable_count}名深渊限定角色各需250点兑换。</p><br/>
+    <p>・{locked_names}不可用兑换点数兑换，仅能通过抽取获得。</p><br/>
+    <p>・{standard_exchange}四名普通★5角色同样各需250点兑换。</p><br/>
     <p>・重复获得已有角色时，按游戏现有角色重复获得规则处理。</p>
   </div>
 </body>

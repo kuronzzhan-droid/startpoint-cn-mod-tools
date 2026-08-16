@@ -17,7 +17,11 @@ except ImportError:
     compile_abyss_limited_gacha = None
 
 
-IDS = (129999, 139998, 139999, 149998, 149999, 169998, 169999, 179999)
+IDS = (
+    129999, 139997, 139998, 139999, 149998,
+    149999, 169998, 169999, 179999,
+)
+NON_EXCHANGEABLE_IDS = (139997,)
 STANDARD_EXCHANGE_IDS = (141129, 161141, 123001, 131182)
 EXPECTED_CLAIMS = {
     ("common", "master/gacha/gacha.orderedmap", "flat", ("990001",)),
@@ -240,11 +244,14 @@ class AbyssGachaCompileTests(unittest.TestCase):
             common, server, existing_common_paths=set(common)
         )
 
-    def test_contract_is_ticket_only_standard_rate_pool_with_eight_limited_rate_up_characters(self):
+    def test_contract_is_ticket_only_standard_rate_pool_with_nine_limited_rate_up_characters(self):
         _, _, result = self._compile()
         self.assertEqual(990001, contract.GACHA_ID)
         self.assertEqual("cnmod_abyss_limited_gacha", contract.CODE_NAME)
         self.assertEqual(IDS, contract.CHARACTER_IDS)
+        self.assertEqual(
+            NON_EXCHANGEABLE_IDS, contract.NON_EXCHANGEABLE_CHARACTER_IDS
+        )
         row = core.read_csv_lines(_decode_flat(
             result["files"][contract.GACHA_MASTER_LOGICAL], contract.GACHA_MASTER_LOGICAL
         )[contract.GACHA_KEY].decode("utf-8"))[0]
@@ -286,13 +293,23 @@ class AbyssGachaCompileTests(unittest.TestCase):
         total_weight = sum(entry["odds"] for entry in pool)
         for entry in limited:
             self.assertEqual(5, entry["rank"])
-            self.assertAlmostEqual(0.005, 0.05 * entry["odds"] / total_weight)
-            self.assertEqual(100.0, entry["rarity"])
+            self.assertAlmostEqual(
+                1 / 900, 0.05 * entry["odds"] / total_weight, places=12
+            )
+            self.assertAlmostEqual(
+                1000.0 * entry["odds"] / total_weight, entry["rarity"], places=9
+            )
             self.assertTrue(entry["isRateUp"])
             self.assertTrue(entry["isLimited"])
-            self.assertTrue(entry["isExchangeable"])
+            self.assertEqual(
+                entry["id"] not in NON_EXCHANGEABLE_IDS, entry["isExchangeable"]
+            )
         self.assertAlmostEqual(
             0.01,
+            0.05 * sum(entry["odds"] for entry in limited) / total_weight,
+        )
+        self.assertAlmostEqual(
+            0.04,
             0.05 * sum(entry["odds"] for entry in standard) / total_weight,
         )
         for entry in standard:
@@ -336,11 +353,16 @@ class AbyssGachaCompileTests(unittest.TestCase):
         )[contract.CHARACTER_5_ODDS_ID]
         self.assertEqual(
             [
-                *[f"{value},5,6,true,true,true,false".encode() for value in IDS],
-                b"111001,5,2,false,false,false,false",
-                b"111002,5,2,false,false,false,false",
                 *[
-                    f"{value},5,2,false,false,true,false".encode()
+                    "{},5,6,true,true,{},false".format(
+                        value, str(value not in NON_EXCHANGEABLE_IDS).lower()
+                    ).encode()
+                    for value in IDS
+                ],
+                b"111001,5,36,false,false,false,false",
+                b"111002,5,36,false,false,false,false",
+                *[
+                    f"{value},5,36,false,false,true,false".encode()
                     for value in STANDARD_EXCHANGE_IDS
                 ],
             ],
@@ -367,12 +389,16 @@ class AbyssGachaCompileTests(unittest.TestCase):
         self.assertNotIn("每日1次付费星导石", note)
         self.assertIn("通用角色扭蛋券", note)
         self.assertIn("★5角色总出现概率为5%", note)
-        self.assertIn("8名深渊限定角色的单人出现概率均为0.5%", note)
-        self.assertIn("其余1%由普通★5角色均分", note)
+        self.assertIn("9名深渊限定角色合计出现概率为1%", note)
+        self.assertIn("单人均为1/9%（约0.111%）", note)
+        self.assertIn("其余4%由普通★5角色均分", note)
         self.assertIn("每次抽取累计1点兑换点数", note)
+        self.assertIn("其中8名深渊限定角色各需250点兑换", note)
+        self.assertIn("泳皇女EX（莉莉丝）不可用兑换点数兑换", note)
         self.assertIn("250点", note)
         self.assertEqual(2, note.count("250点兑换"))
         self.assertNotIn("各需50点兑换", note)
+        self.assertNotIn("0.5%", note)
 
     def test_rejects_missing_or_malformed_standard_pool_donor(self):
         self._require_module()
@@ -615,6 +641,13 @@ class AbyssGachaCompileTests(unittest.TestCase):
         self.assertEqual(0, report["nonowned_client_changes"])
         self.assertEqual(0, report["nonowned_server_changes"])
         self.assertTrue(report["eight_character_closure"])
+        self.assertEqual(list(IDS), report["character_ids"])
+        self.assertEqual(
+            list(NON_EXCHANGEABLE_IDS),
+            report["non_exchangeable_character_ids"],
+        )
+        self.assertEqual(1.0, report["limited_character_rate_total_percent"])
+        self.assertEqual([1, 900], report["limited_character_rate_each_ratio"])
         self.assertTrue(report["normal_page_contract"])
         self.assertTrue(report["global_ball_animation_unchanged"])
         self.assertEqual("static_kind_1_top_banner", report["feature_contract"])

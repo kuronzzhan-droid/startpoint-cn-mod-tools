@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Stable read-only inputs for the thunder-dragon 1.1.5 hotfix package."""
+"""Stable read-only inputs for the thunder-dragon 1.1.6 hotfix package."""
 
 from __future__ import annotations
 

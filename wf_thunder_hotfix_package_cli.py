@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Fixed-input, dry-run-default assembler for thunder hotfix 1.1.5."""
+"""Fixed-input, dry-run-default assembler for thunder hotfix 1.1.6."""
 
 from __future__ import annotations
 
@@ -22,8 +22,9 @@ TOOL_ROOT = Path(__file__).resolve().parent
 def parse_args(arguments: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "雷龙 1.1.5 完整替换热修包；默认只读 dry-run，"
-            "强制深渊券抽取并换用简洁横幅与竖版背景。"
+            "雷龙 1.1.6 完整替换热修包；默认只读 dry-run，"
+            "把泳皇女EX（139997）并入深渊限定池：9名限定角色合计1%，"
+            "该角色不可兑换，横幅资产零改动。"
         )
     )
     parser.add_argument(

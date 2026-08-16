@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Fresh-workspace and fixed CLI tests for thunder hotfix 1.1.5."""
+"""Fresh-workspace and fixed CLI tests for thunder hotfix 1.1.6."""
 
 from __future__ import annotations
 
@@ -16,8 +16,24 @@ from wf_summer_thunder_package_contract import PackageImage
 
 
 class ThunderHotfixWorkspaceTests(unittest.TestCase):
-    def test_uses_a_fresh_115_workspace_name(self):
-        self.assertEqual("cnmod_thunder_dragon_hotfix_1_1_5", workspace.WORKSPACE_NAME)
+    def test_uses_a_fresh_116_workspace_name(self):
+        self.assertEqual("cnmod_thunder_dragon_hotfix_1_1_6", workspace.WORKSPACE_NAME)
+        self.assertEqual(
+            "ASSEMBLE_CNMOD_THUNDER_DRAGON_ABYSS_GACHA_1_1_6",
+            package.CONFIRMATION,
+        )
+        self.assertEqual("1.1.6", package.PACKAGE_VERSION)
+
+    def test_client_base_comes_from_one_flippable_constant(self):
+        self.assertEqual(
+            package.CLIENT_BASE_WITH_SWIM_PRINCESS_EX,
+            package.REQUIRES_CLIENT_BASE,
+        )
+        self.assertEqual(
+            package.CLIENT_BASE_WITH_SWIM_PRINCESS_EX,
+            package.SHARED_ASSET_BASELINE_CLIENT_VERSION,
+        )
+        self.assertEqual("1.4.325", package.REQUIRES_CLIENT_BASE)
 
     def _image(self) -> PackageImage:
         roots = {root: {} for root in package.ROOT_NAMES}

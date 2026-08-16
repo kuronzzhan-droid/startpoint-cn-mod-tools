@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Pure payload-level regression tests for the thunder-dragon 1.1.5 hotfix."""
+"""Pure payload-level regression tests for the thunder-dragon 1.1.6 hotfix."""
 
 from __future__ import annotations
 
@@ -27,12 +27,14 @@ SOURCE = normal_fixture.SOURCE
 TARGET = normal_fixture.TARGET
 
 try:
+    from wf_thunder_hotfix_gacha import SEALED_SOURCE_CHARACTER_IDS
     from wf_thunder_hotfix_payloads import (
         repair_gacha_contract,
         repair_normal_and_special,
         repair_travelling_wave_effect,
     )
 except ImportError:
+    SEALED_SOURCE_CHARACTER_IDS = ()
     repair_gacha_contract = None
     repair_normal_and_special = None
     repair_travelling_wave_effect = None
@@ -97,7 +99,7 @@ def _old_contract_fixture(compiled: dict[str, bytes], old_date: str) -> dict[str
             "id": value, "rank": 5, "odds": 100,
             "isRateUp": True, "isLimited": True, "isExchangeable": False,
             "rarity": 125.0, "trialReadingForced": False,
-        } for value in gacha_contract.CHARACTER_IDS],
+        } for value in SEALED_SOURCE_CHARACTER_IDS],
         "2": [], "3": [],
     }
     runtime = json.loads(broken["gacha.json"])
@@ -137,7 +139,7 @@ def _old_contract_fixture(compiled: dict[str, bytes], old_date: str) -> dict[str
     )
     old_five = {
         str(index): f"{value},5,100,true,true,false,false"
-        for index, value in enumerate(gacha_contract.CHARACTER_IDS)
+        for index, value in enumerate(SEALED_SOURCE_CHARACTER_IDS)
     }
     broken[gacha_contract.CHARACTER_5_ODDS_LOGICAL] = (
         __import__("wf_abyss_gacha_compile")._new_nested(
@@ -263,6 +265,15 @@ class ThunderHotfixPayloadTests(unittest.TestCase):
         self.assertEqual(1, report["root_identity_transform"])
         self.assertFalse(report["writes_live"])
 
+    def test_sealed_source_pickup_list_never_tracks_the_live_contract(self):
+        self._require_module()
+        self.assertEqual(
+            (129999, 139998, 139999, 149998, 149999, 169998, 169999, 179999),
+            SEALED_SOURCE_CHARACTER_IDS,
+        )
+        self.assertNotIn(139997, SEALED_SOURCE_CHARACTER_IDS)
+        self.assertEqual(9, len(gacha_contract.CHARACTER_IDS))
+
     def test_repairs_standard_pool_exchange_and_schedule_in_eight_payloads(self):
         self._require_module()
         common, server = _sources()
@@ -275,6 +286,19 @@ class ThunderHotfixPayloadTests(unittest.TestCase):
             broken, expected_start_date=old_date
         )
         self.assertEqual(compiled, repaired)
+        pickups = [
+            entry
+            for entry in json.loads(repaired["gacha.json"])[GACHA_KEY]["pool"]["1"]
+            if entry["isLimited"]
+        ]
+        self.assertEqual(
+            list(gacha_contract.CHARACTER_IDS),
+            [entry["id"] for entry in pickups],
+        )
+        self.assertEqual(
+            [139997],
+            [entry["id"] for entry in pickups if not entry["isExchangeable"]],
+        )
         self.assertEqual(START_DATE, report["start_date"])
         self.assertEqual(8, report["changed_payload_count"])
         self.assertEqual([50, 250, 700], report["rank_rates"])
@@ -284,6 +308,11 @@ class ThunderHotfixPayloadTests(unittest.TestCase):
         )
         self.assertEqual(8, report["exchangeable_limited_count"])
         self.assertEqual(4, report["exchangeable_standard_count"])
+        self.assertEqual(9, report["limited_pickup_count"])
+        self.assertEqual(1, report["non_exchangeable_limited_count"])
+        self.assertEqual([139997], report["non_exchangeable_limited_ids"])
+        self.assertEqual([1, 100], report["limited_rate_total_ratio"])
+        self.assertEqual([1, 900], report["limited_rate_each_ratio"])
         self.assertEqual(2, report["page_kind"])
         self.assertEqual({"single": 3, "ten": 4}, report["ticket_exec_types"])
         self.assertFalse(report["writes_live"])

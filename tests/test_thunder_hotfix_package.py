@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Sealed-source and whole-image tests for thunder-dragon hotfix 1.1.5."""
+"""Sealed-source and whole-image tests for thunder-dragon hotfix 1.1.6."""
 
 from __future__ import annotations
 
@@ -10,12 +10,14 @@ import json
 import unittest
 import zlib
 import io
+from fractions import Fraction
 from pathlib import Path
 
 from PIL import Image
 
 import wf_assets
 import wf_abyss_gacha_contract as gacha_contract
+import wf_abyss_gacha_pool as pool_contract
 import wf_mod_tool as core
 from wf_summer_thunder_ability_compile import build_summer_thunder_ability_rows
 
@@ -54,11 +56,11 @@ class ThunderHotfixPackageTests(unittest.TestCase):
             source, donor, generator_git_head="a" * 40
         )
 
-    def test_builds_full_115_replacement_with_banners_and_twelve_characters(self):
+    def test_builds_full_116_replacement_with_banners_and_nine_pickups(self):
         source, image = self._compile()
         audit = package.audit_hotfix_package(image)
-        self.assertEqual("1.1.5", image.manifest["package_version"])
-        self.assertEqual("1.4.351", image.manifest["requires_client_base"])
+        self.assertEqual("1.1.6", image.manifest["package_version"])
+        self.assertEqual("1.4.325", image.manifest["requires_client_base"])
         self.assertEqual(107, audit["payload_count"])
         self.assertEqual(39, audit["table_claim_count"])
         self.assertEqual({
@@ -75,6 +77,22 @@ class ThunderHotfixPackageTests(unittest.TestCase):
         self.assertEqual(
             list(package.CURRENT_SHARED_ASSET_BASELINE),
             image.manifest["snapshot"]["accepted_asset_replacements"],
+        )
+        for replacement in package.CURRENT_SHARED_ASSET_BASELINE:
+            raw = source.roots[replacement["root"]][replacement["logical_path"]]
+            self.assertEqual(replacement["before_size"], len(raw))
+            self.assertEqual(
+                replacement["before_sha256"],
+                hashlib.sha256(raw).hexdigest(),
+                replacement["logical_path"],
+            )
+        acceptance = image.source_report["acceptance"]
+        self.assertEqual(9, acceptance["gacha_limited_pickup_count"])
+        self.assertEqual([1, 100], acceptance["gacha_limited_rate_total_ratio"])
+        self.assertEqual([1, 900], acceptance["gacha_limited_rate_each_ratio"])
+        self.assertEqual(8, acceptance["gacha_exchangeable_limited_count"])
+        self.assertEqual(
+            [139997], acceptance["gacha_non_exchangeable_limited_ids"]
         )
         for root in package.ROOT_NAMES:
             for logical, raw in source.roots[root].items():
@@ -95,11 +113,19 @@ class ThunderHotfixPackageTests(unittest.TestCase):
         self.assertTrue(runtime["pool"]["2"])
         self.assertTrue(runtime["pool"]["3"])
         limited = [item for item in runtime["pool"]["1"] if item["id"] in {
-            129999, 139998, 139999, 149998, 149999, 169998, 169999, 179999,
+            129999, 139997, 139998, 139999, 149998,
+            149999, 169998, 169999, 179999,
         }]
-        self.assertEqual(8, len(limited))
-        self.assertTrue(all(item["isExchangeable"] for item in limited))
+        self.assertEqual(9, len(limited))
+        self.assertEqual(
+            [139997],
+            [item["id"] for item in limited if not item["isExchangeable"]],
+        )
+        self.assertEqual(
+            8, sum(1 for item in limited if item["isExchangeable"])
+        )
         self.assertTrue(all(item["isRateUp"] for item in limited))
+        self.assertTrue(all(item["isLimited"] for item in limited))
         exchange_standard = [
             item for item in runtime["pool"]["1"]
             if item["id"] in set(gacha_contract.STANDARD_EXCHANGE_CHARACTER_IDS)
@@ -116,14 +142,22 @@ class ThunderHotfixPackageTests(unittest.TestCase):
         self.assertTrue(all(not item["isExchangeable"] for item in standard))
         five_weight = sum(item["odds"] for item in runtime["pool"]["1"])
         self.assertTrue(all(
-            abs(0.005 - 0.05 * item["odds"] / five_weight) < 1e-12
+            abs(1 / 900 - 0.05 * item["odds"] / five_weight) < 1e-12
             for item in limited
         ))
         self.assertAlmostEqual(
             0.01,
+            0.05 * sum(item["odds"] for item in limited) / five_weight,
+        )
+        self.assertAlmostEqual(
+            0.04,
             0.05 * sum(
                 item["odds"] for item in (*standard, *exchange_standard)
             ) / five_weight,
+        )
+        self.assertEqual(
+            (Fraction(1, 100), Fraction(1, 900)),
+            pool_contract.pickup_rates(runtime["pool"]),
         )
         self.assertTrue(all(
             not item["isExchangeable"] and not item["isRateUp"]
@@ -136,10 +170,12 @@ class ThunderHotfixPackageTests(unittest.TestCase):
             -15,
         ).decode("utf-8")
         self.assertIn("★5角色总出现概率为5%", note)
-        self.assertIn("单人出现概率均为0.5%", note)
+        self.assertIn("9名深渊限定角色合计出现概率为1%", note)
+        self.assertIn("泳皇女EX（莉莉丝）不可用兑换点数兑换", note)
         self.assertIn("各需250点兑换", note)
         self.assertEqual(2, note.count("250点兑换"))
         self.assertNotIn("各需50点兑换", note)
+        self.assertNotIn("0.5%", note)
 
         portrait = image.roots["medium"][
             gacha_contract.TOP_BANNER_PAYLOAD_LOGICAL

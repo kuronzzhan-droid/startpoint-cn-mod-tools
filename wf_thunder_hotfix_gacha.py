@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Fail-closed gacha contract repair for thunder hotfix 1.1.5."""
+"""Fail-closed gacha contract repair for thunder hotfix 1.1.6."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ import hashlib
 from collections.abc import Mapping
 
 import wf_abyss_gacha_contract as contract
+import wf_abyss_gacha_pool as pool_contract
 import wf_mod_tool as core
 from wf_abyss_gacha_compile import (
     _build_flat,
@@ -29,6 +30,12 @@ GACHA_REPAIR_PATHS = (
     contract.RICH_TEXT_BODY_LOGICAL,
     "cdndata/gacha.json",
     "gacha.json",
+)
+# The sealed 1.1.0 source package froze a pure eight-character pickup pool.
+# It is an input fingerprint, so it must never track the live pickup contract.
+SEALED_SOURCE_CHARACTER_IDS = (
+    129999, 139998, 139999, 149998,
+    149999, 169998, 169999, 179999,
 )
 _OLD_RICH_TEXT_SHA256 = (
     "e47383674b190e6fa52e8ad5b529c57a485c764e893f8b92198c6ae5f6e8214a"
@@ -52,7 +59,7 @@ def _old_pool() -> dict[str, list[dict[str, object]]]:
             "isExchangeable": False,
             "rarity": 125.0,
             "trialReadingForced": False,
-        } for character_id in contract.CHARACTER_IDS],
+        } for character_id in SEALED_SOURCE_CHARACTER_IDS],
         "2": [],
         "3": [],
     }
@@ -101,7 +108,7 @@ def _old_runtime(expected_start_date: str) -> dict[str, object]:
 def _old_character_five_rows() -> dict[str, str]:
     return {
         str(index): f"{character_id},5,100,true,true,false,false"
-        for index, character_id in enumerate(contract.CHARACTER_IDS)
+        for index, character_id in enumerate(SEALED_SOURCE_CHARACTER_IDS)
     }
 
 
@@ -251,6 +258,7 @@ def repair_gacha_contract(
         != contract.build_rich_text_body()
     ):
         raise AssertionError("gacha repaired payload readback drift")
+    pickup_total, pickup_each = pool_contract.pickup_rates(desired_pool)
     return repaired, {
         "schema_version": 1,
         "status": "repaired_ticket_only_pool_exchange_contract",
@@ -260,7 +268,20 @@ def repair_gacha_contract(
         "rank_rates": list(desired_runtime["rankRates"]["normal"]),
         "guarantee_rarity": desired_runtime["guaranteeRarity"],
         "exchange_required_points": {"limited": 250, "standard": 250},
-        "exchangeable_limited_count": len(contract.CHARACTER_IDS),
+        "limited_pickup_count": len(contract.CHARACTER_IDS),
+        "exchangeable_limited_count": len(contract.EXCHANGEABLE_CHARACTER_IDS),
+        "non_exchangeable_limited_count": len(
+            contract.NON_EXCHANGEABLE_CHARACTER_IDS
+        ),
+        "non_exchangeable_limited_ids": list(
+            contract.NON_EXCHANGEABLE_CHARACTER_IDS
+        ),
+        "limited_rate_total_ratio": [
+            pickup_total.numerator, pickup_total.denominator
+        ],
+        "limited_rate_each_ratio": [
+            pickup_each.numerator, pickup_each.denominator
+        ],
         "exchangeable_standard_count": len(
             contract.STANDARD_EXCHANGE_CHARACTER_IDS
         ),
@@ -274,4 +295,6 @@ def repair_gacha_contract(
     }
 
 
-__all__ = ["GACHA_REPAIR_PATHS", "repair_gacha_contract"]
+__all__ = [
+    "GACHA_REPAIR_PATHS", "SEALED_SOURCE_CHARACTER_IDS", "repair_gacha_contract",
+]

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Compile and audit the complete thunder-dragon 1.1.5 replacement image."""
+"""Compile and audit the complete thunder-dragon 1.1.6 replacement image."""
 
 from __future__ import annotations
 
@@ -40,9 +40,15 @@ PACKAGE_ID = thunder.PACKAGE_ID
 CHARACTER_ID = thunder.CHARACTER_ID
 CODE_NAME = thunder.CODE_NAME
 ROOT_NAMES = thunder.ROOT_NAMES
-PACKAGE_VERSION = "1.1.5"
-REQUIRES_CLIENT_BASE = "1.4.351"
-CONFIRMATION = "ASSEMBLE_CNMOD_THUNDER_DRAGON_ABYSS_GACHA_1_1_5"
+PACKAGE_VERSION = "1.1.6"
+# Single flip point: the startpoint-cn client chain version that ships pickup
+# character 139997 (泳皇女EX).  Every client-base claim below derives from it.
+# The character package strand anchors on character-releases/active.json
+# (base_version 1.4.324), so its published edge is 1.4.324 -> 1.4.325.
+CLIENT_BASE_WITH_SWIM_PRINCESS_EX = "1.4.325"
+REQUIRES_CLIENT_BASE = CLIENT_BASE_WITH_SWIM_PRINCESS_EX
+SHARED_ASSET_BASELINE_CLIENT_VERSION = CLIENT_BASE_WITH_SWIM_PRINCESS_EX
+CONFIRMATION = "ASSEMBLE_CNMOD_THUNDER_DRAGON_ABYSS_GACHA_1_1_6"
 SOURCE_START_DATE = "2026-08-15 00:00:00"
 
 _PIXEL_PREFIX = f"character/{CODE_NAME}/pixelart"
@@ -100,9 +106,16 @@ _ACCEPTANCE = {
     "effect_single_anchor_fixed": True,
     "gacha_schedule_game_clock_compatible": True,
     "gacha_standard_rank_rates": [50, 250, 700],
-    "gacha_limited_rate_each": 0.005,
+    "gacha_limited_pickup_count": len(gacha_contract.CHARACTER_IDS),
+    "gacha_limited_rate_total_ratio": [1, 100],
+    "gacha_limited_rate_each_ratio": [1, 900],
     "gacha_exchange_required_points": {"limited": 250, "standard": 250},
-    "gacha_exchangeable_limited_count": 8,
+    "gacha_exchangeable_limited_count": len(
+        gacha_contract.EXCHANGEABLE_CHARACTER_IDS
+    ),
+    "gacha_non_exchangeable_limited_ids": list(
+        gacha_contract.NON_EXCHANGEABLE_CHARACTER_IDS
+    ),
     "gacha_exchangeable_standard_count": 4,
     "gacha_ticket_only_payment": True,
     "gacha_exchange_button_enabled": True,
@@ -226,7 +239,8 @@ def _validate_source(source: SealedHotfixSource) -> None:
             or _sha(raw) != replacement["before_sha256"]
         ):
             raise PackageAssemblyError(
-                "hotfix source shared asset does not match current 1.4.349 baseline"
+                "hotfix source shared asset does not match current "
+                f"{SHARED_ASSET_BASELINE_CLIENT_VERSION} baseline"
             )
 
 
@@ -443,7 +457,9 @@ def audit_hotfix_package(image: PackageImage) -> dict[str, Any]:
 
 __all__ = [
     "PACKAGE_ID", "CHARACTER_ID", "CODE_NAME", "ROOT_NAMES",
-    "PACKAGE_VERSION", "REQUIRES_CLIENT_BASE", "CONFIRMATION",
+    "PACKAGE_VERSION", "CLIENT_BASE_WITH_SWIM_PRINCESS_EX",
+    "REQUIRES_CLIENT_BASE", "SHARED_ASSET_BASELINE_CLIENT_VERSION",
+    "CONFIRMATION",
     "CHANGED_PAYLOADS", "ADDED_PAYLOADS", "CURRENT_SHARED_ASSET_BASELINE",
     "PackageAssemblyError", "PackageImage", "source_lock_evidence_bytes",
     "compile_hotfix_package", "audit_hotfix_package",

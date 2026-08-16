@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Independent full-image audit for the thunder-dragon 1.1.5 hotfix."""
+"""Independent full-image audit for the thunder-dragon 1.1.6 hotfix."""
 
 from __future__ import annotations
 
@@ -89,7 +89,12 @@ def _repair_evidence(locks: Mapping[str, Any]) -> None:
         or gacha.get("guarantee_rarity") != 4
         or gacha.get("exchange_required_points")
         != {"limited": 250, "standard": 250}
+        or gacha.get("limited_pickup_count") != 9
         or gacha.get("exchangeable_limited_count") != 8
+        or gacha.get("non_exchangeable_limited_count") != 1
+        or gacha.get("non_exchangeable_limited_ids") != [139997]
+        or gacha.get("limited_rate_total_ratio") != [1, 100]
+        or gacha.get("limited_rate_each_ratio") != [1, 900]
         or gacha.get("exchangeable_standard_count") != 4
         or gacha.get("page_kind") != 2
         or gacha.get("ticket_exec_types") != {"single": 3, "ten": 4}
