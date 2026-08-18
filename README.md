@@ -13,14 +13,15 @@
 
 | 你的服务端 | 怎么拿内容 |
 |---|---|
-| **想省事,完整验证过的路** | 直接部署 [kuronzzhan-droid/startpoint-cn](https://github.com/kuronzzhan-droid/startpoint-cn)(默认分支即发布分支)。两模式 + 15 把深渊武器 + 八位自制/改造角色的增量**随仓自带,clone 即得**,链尾 1.4.312 |
-| **已经在跑上游 `dev`**(不想 fork) | 装本仓 [Release `overlay-1.4.312`](https://github.com/kuronzzhan-droid/startpoint-cn-mod-tools/releases/tag/overlay-1.4.312) 的**两个**资产:`worldflipper-overlay-…zip`(客户端资源 + 激活表)解压到 `CDN_DIR/patches/1.4.312/`,`rogue-rush-mode-…zip`(700099 玩法模块)装进 `<server>/modes.d/`。装载缝已随 PR #19 合并进上游 `dev`,**不需要 fork** |
+| **想省事,完整验证过的路** | 直接部署 [kuronzzhan-droid/startpoint-cn](https://github.com/kuronzzhan-droid/startpoint-cn)(默认分支即发布分支)。两模式 + 15 把深渊武器 + 八位自制/改造角色的增量**随仓自带,clone 即得**,链尾 1.4.323 |
+| **已经在跑上游 `dev`**(不想 fork) | 装本仓 [Release `overlay-1.4.392`](https://github.com/kuronzzhan-droid/startpoint-cn-mod-tools/releases/tag/overlay-1.4.392) 的**两个**资产:`worldflipper-overlay-…zip`(客户端资源 + 激活表)解压到 `CDN_DIR/patches/1.4.392/`,`rogue-rush-mode-…zip`(700099 玩法模块)装进 `<server>/modes.d/`。装载缝已随 PR #19 合并进上游 `dev`,**不需要 fork** |
 
 两条路都还需要:**官方基础 CDN 自备**(完整到官方链尾 1.4.54),以及一只
 [五合一客户端基座 APK](https://github.com/kuronzzhan-droid/startpoint-cn/releases/tag/client-base-v2.0)
 重指向到你自己的服务器并重签(本仓 Release 也有同一份)。
 
 > ⚠️ dev 那条路的模式只验证到**服务端级**,客户端真机验收尚未完成;fork 那条路是完整验证过的。
+> 两条路的内容量不同:**dev overlay 已到 1.4.392(十二位角色)**,fork 的 zip 增量链停在 1.4.323(八位)。
 
 ---
 
@@ -123,9 +124,10 @@ python wf_publish.py --tables ability,character_status
 下载**「五合一客户端基座 APK v2.0」**(`WorldFlipper-abyss-v2.apk`,约 133 MB):
 
 - 五合一客户端补丁(免登录 / 服务器重定向 / 深渊装备战斗门控 / 赛瑞斯双形态 P-code / 逐角色 render-scale),
-  启动后自动增量更新到服务端链尾(当前 1.4.312),邮箱领取八位自制/改造角色
-  (赛瑞斯 129999 / 史黛拉 139999 / 风巨蜥 149998 / 杰拉德 149999 /
-  拉夫马诺 151159 / 阿鲁玛德乌斯 261089 / 拉芙 169998 / 基诺维 169999)
+  启动后自动增量更新到服务端链尾(当前 1.4.392),邮箱领取十二位自制/改造角色
+  (克劳德 129997 / 赛瑞斯 129999 / 莉莉丝 139997 / 拉姆斯 139998 / 史黛拉 139999 /
+  风巨蜥 149998 / 杰拉德 149999 / 拉夫马诺 151159 / 拉芙 169998 / 基诺维 169999 /
+  罗尔夫 179999 / 阿鲁玛德乌斯 261089)
 - ‼️ 本包**硬编码指向服主自己的服务器**,对官服无效;**自建服请勿使用**——照服务端仓库的
   [部署攻略](https://github.com/kuronzzhan-droid/startpoint-cn/blob/release/modes-20260714/docs/%E9%83%A8%E7%BD%B2%E6%94%BB%E7%95%A5.md)
   重打指向你自己服务器的客户端
