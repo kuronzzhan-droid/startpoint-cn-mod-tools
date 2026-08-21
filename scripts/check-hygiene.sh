@@ -69,8 +69,12 @@ scan_paths() {
     local path
     while IFS= read -r -d '' path; do
         [[ -f "$path" ]] || continue
-        # 唯一的整文件例外：本脚本自己含有全部策略字面量与豁免表。
-        [[ "$path" == 'scripts/check-hygiene.sh' ]] && continue
+        # 仅有的两个整文件例外：它们的内容**就是**策略字面量本身——
+        # 门禁脚本(正则+豁免表)和门禁自测(成排的植入用密钥/IP/家目录)。
+        # 除这两个文件外不得再有整文件豁免，一律走 ALLOW_LINES 行级豁免。
+        case "$path" in
+            scripts/check-hygiene.sh|scripts/tests/test-hygiene.sh) continue ;;
+        esac
         printf '%s\0' "$path" >> "$paths_file"
         if [[ "$path" == '.env' || "$path" == 'profiles.json' ]]; then
             note "$path 不得提交（只提交 .example 版本）"
