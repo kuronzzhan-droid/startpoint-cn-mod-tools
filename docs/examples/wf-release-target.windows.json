@@ -17,5 +17,8 @@
     "resourceBaseline": "1.4.324",
     "clientPatchProfile": true
   },
+  "network": {
+    "publicHost": "10.0.0.130"
+  },
   "serverUrl": "http://127.0.0.1:8001"
 }

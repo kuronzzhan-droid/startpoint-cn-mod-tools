@@ -25,6 +25,7 @@ from .receipts import (
     list_operation_receipts,
     load_active_state,
     load_previous_state,
+    operation_reservation,
     write_phase_receipt,
 )
 from .rollback import RollbackResult
@@ -42,7 +43,17 @@ def _ids(state: ActiveState) -> tuple[str, ...]:
 
 
 def _environment(target: ManagedTarget) -> LaunchEnvironment:
-    return LaunchEnvironment(target.data_root, target.cdn_root, target.modes_root)
+    return LaunchEnvironment(
+        target.data_root,
+        target.cdn_root,
+        target.modes_root,
+        listen_host=target.http_bind_host,
+        listen_port=target.server_port,
+        public_host=target.public_host,
+        session_host=target.session_bind_host,
+        session_port=target.session_port,
+        session_public_host=target.session_public_host,
+    )
 
 
 def _install_receipt(
@@ -84,6 +95,28 @@ def rollback_legacy_to_previous(
     timeout = _validated_timeout(health_timeout)
     if not isinstance(target, ManagedTarget) or not isinstance(to_release_id, str):
         raise _error("WFREL_STATE_CONFLICT", "legacy rollback target is invalid")
+    started_at = datetime.now(timezone.utc)
+    operation_id = new_operation_id(started_at, secrets.token_bytes(16))
+    with operation_reservation(target.state_root, operation_id):
+        return _rollback_legacy_to_previous_reserved(
+            target,
+            platform,
+            to_release_id,
+            timeout=timeout,
+            operation_id=operation_id,
+            started_at=started_at,
+        )
+
+
+def _rollback_legacy_to_previous_reserved(
+    target: ManagedTarget,
+    platform: PlatformAdapter,
+    to_release_id: str,
+    *,
+    timeout: float,
+    operation_id: str,
+    started_at: datetime,
+) -> RollbackResult:
     current = load_active_state(target.state_root)
     previous = load_previous_state(target.state_root)
     if to_release_id not in _ids(previous) or current == previous:
@@ -115,10 +148,9 @@ def rollback_legacy_to_previous(
 
     launch = target.launch_spec()
     environment = _environment(target)
-    operation_id = new_operation_id(datetime.now(timezone.utc), secrets.token_bytes(16))
-    now = datetime.now(timezone.utc)
     receipt = OperationReceipt(
-        2, operation_id, install.release_id, "CREATED", "in_progress", now, now,
+        2, operation_id, install.release_id, "CREATED", "in_progress",
+        started_at, started_at,
         _ids(current), _ids(previous), None, None, "legacy",
     )
 

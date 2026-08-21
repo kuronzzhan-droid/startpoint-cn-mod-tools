@@ -152,7 +152,7 @@ class ContentSwitch:
 
 def _target_version(candidates: CandidateSet) -> str:
     parts = tuple(PurePosixPath(item).parts for item in candidates.relative_paths)
-    if not parts or any(len(item) != 3 or item[0] != "patches" for item in parts):
+    if not parts or any(len(item) < 3 or item[0] != "patches" for item in parts):
         raise _error("candidate content layout is invalid")
     versions = {item[1] for item in parts}
     if len(versions) != 1:

@@ -26,6 +26,7 @@
     "modesRoot",
     "componentRoots",
     "compatibility",
+    "network",
     "serverUrl"
   ],
   "properties": {
@@ -57,9 +58,20 @@
         "clientPatchProfile": {"type": "boolean"}
       }
     },
+    "network": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["publicHost"],
+      "properties": {
+        "publicHost": {
+          "type": "string",
+          "pattern": "^(?:127(?:\\.[0-9]{1,3}){3}|10(?:\\.[0-9]{1,3}){3}|192\\.168(?:\\.[0-9]{1,3}){2}|172\\.(?:1[6-9]|2[0-9]|3[01])(?:\\.[0-9]{1,3}){2})(?![\\s\\S])"
+        }
+      }
+    },
     "serverUrl": {
       "type": "string",
-      "pattern": "^http://(?:localhost|127(?:\\.[0-9]{1,3}){3}|\\[::1\\]):[1-9][0-9]{0,4}(?![\\s\\S])"
+      "pattern": "^http://127\\.0\\.0\\.1:[1-9][0-9]{0,4}(?![\\s\\S])"
     }
   }
 }

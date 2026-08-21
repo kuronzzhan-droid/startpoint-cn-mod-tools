@@ -17,6 +17,7 @@ from wf_release_v1.target import (
     LaunchSpec,
     ManagedTarget,
     TargetCompatibility,
+    TargetNetwork,
 )
 
 
@@ -43,6 +44,7 @@ def _payload(root: Path) -> dict[str, object]:
             "resourceBaseline": "1.4.54",
             "clientPatchProfile": False,
         },
+        "network": {"publicHost": "10.0.0.130"},
         "serverUrl": "http://127.0.0.1:8001",
     }
 
@@ -77,11 +79,12 @@ class ManagedTargetTests(unittest.TestCase):
                 resource_baseline="1.4.54",
                 client_patch_profile=False,
             ), target.compatibility)
+            self.assertEqual(TargetNetwork("10.0.0.130"), target.network)
             self.assertEqual(
                 {
                     "server_bundle", "runtime_pack", "data_root", "state_root",
                     "cdn_root", "modes_root", "component_roots", "compatibility",
-                    "server_url",
+                    "server_url", "network",
                 },
                 {field.name for field in fields(target)},
             )
@@ -121,14 +124,11 @@ class ManagedTargetTests(unittest.TestCase):
             ), launch)
             read.assert_called_once_with()
 
-    def test_server_url_is_one_canonical_loopback_base_origin(self) -> None:
+    def test_server_url_is_one_canonical_managed_loopback_base_origin(self) -> None:
         with TemporaryDirectory(prefix="wfrel-target-") as temporary:
             root = Path(temporary)
             for accepted in (
                 "http://127.0.0.1:8001",
-                "http://localhost:8001",
-                "http://[::1]:8001",
-                "http://[::ffff:127.0.0.1]:8001",
             ):
                 with self.subTest(accepted=accepted):
                     payload = _payload(root); payload["serverUrl"] = accepted
@@ -147,6 +147,12 @@ class ManagedTargetTests(unittest.TestCase):
                 "http://127.0.0.1:8001?query=1",
                 "http://127.0.0.1:8001#fragment",
                 "http://0.0.0.0:8001",
+                "http://127.0.0.2:8001",
+                "http://localhost:8001",
+                "http://[::1]:8001",
+                "http://10.0.0.130:8001",
+                "http://172.15.255.255:8001",
+                "http://172.32.0.1:8001",
                 "http://192.0.2.1:8001",
                 "http://[::ffff:192.0.2.1]:8001",
                 "http://[::ffff:7f00:1]:8001",
@@ -156,6 +162,31 @@ class ManagedTargetTests(unittest.TestCase):
             ):
                 with self.subTest(rejected=rejected):
                     payload = _payload(root); payload["serverUrl"] = rejected
+                    with self.assertRaises(ReleaseError) as raised:
+                        ManagedTarget.load(_write_target(root, payload))
+                    self.assertEqual("WFREL_REQUIRE_TARGET", raised.exception.code)
+
+    def test_public_host_is_one_canonical_local_ipv4_address(self) -> None:
+        with TemporaryDirectory(prefix="wfrel-target-") as temporary:
+            root = Path(temporary)
+            for accepted in (
+                "127.0.0.1", "10.20.30.40", "172.16.0.1",
+                "172.31.255.254", "10.0.0.130",
+            ):
+                with self.subTest(accepted=accepted):
+                    payload = _payload(root)
+                    payload["network"] = {"publicHost": accepted}
+                    self.assertEqual(
+                        accepted,
+                        ManagedTarget.load(_write_target(root, payload)).public_host,
+                    )
+            for rejected in (
+                "0.0.0.0", "192.0.2.1", "172.15.255.255", "172.32.0.1",
+                "localhost", "::1", "010.0.0.130",
+            ):
+                with self.subTest(rejected=rejected):
+                    payload = _payload(root)
+                    payload["network"] = {"publicHost": rejected}
                     with self.assertRaises(ReleaseError) as raised:
                         ManagedTarget.load(_write_target(root, payload))
                     self.assertEqual("WFREL_REQUIRE_TARGET", raised.exception.code)
@@ -174,6 +205,10 @@ class ManagedTargetTests(unittest.TestCase):
                 payload = _payload(root); payload[key] = value; cases.append((label, payload))
             extra = _payload(root); extra["unknown"] = True; cases.append(("extra-key", extra))
             missing = _payload(root); del missing["dataRoot"]; cases.append(("missing-key", missing))
+            network_extra = _payload(root)
+            assert isinstance(network_extra["network"], dict)
+            network_extra["network"]["other"] = True
+            cases.append(("network-extra", network_extra))
             component_extra = _payload(root)
             assert isinstance(component_extra["componentRoots"], dict)
             component_extra["componentRoots"]["other"] = str(root / "other")

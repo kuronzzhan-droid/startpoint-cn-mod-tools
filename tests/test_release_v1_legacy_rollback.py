@@ -21,10 +21,12 @@ from wf_release_v1._platform_state import ManagedProcess
 from wf_release_v1._receipt_contract import OperationReceipt
 from wf_release_v1.canonical import canonical_json_bytes
 from wf_release_v1.compatibility import ActiveRelease
+from wf_release_v1.errors import ReleaseError
 from wf_release_v1.receipts import (
     commit_active_state,
     load_active_state,
     load_operation_receipt,
+    operation_reservation,
     write_phase_receipt,
 )
 from wf_release_v1.target import ComponentRoots, LaunchSpec, ManagedTarget, TargetCompatibility
@@ -161,6 +163,14 @@ class LegacyRollbackTests(unittest.TestCase):
             for layer in ("common", "medium", "android")
             for path in (self.target.cdn_root / "cn" / f"archive-{layer}-diff").iterdir()
         ))
+
+    def test_legacy_rollback_respects_operation_reservation(self) -> None:
+        platform = FakePlatform()
+        with operation_reservation(self.target.state_root, INSTALL_OPERATION):
+            with self.assertRaises(ReleaseError) as caught:
+                self._run(platform)
+        self.assertEqual("WFREL_STATE_LOCKED", caught.exception.code)
+        self.assertEqual([], platform.events)
 
     def test_removes_exact_last_release_restarts_and_commits_previous_state(self) -> None:
         previous_overlay = make_patch_overlay(

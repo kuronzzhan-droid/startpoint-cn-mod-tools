@@ -8,8 +8,13 @@
 - 所有操作都由宿主本地 `target.json` 指向；Release ZIP 和 receipt 不携带宿主绝对路径。
 - `serverUrl` 必须是本地回环 base origin；探针固定访问 `/healthz` 与
   `/api/server/capabilities`，不接受重定向、代理、用户信息或远程地址。
+- `network.publicHost` 必须是本机网卡实际持有的规范 IPv4 回环/RFC1918 地址。受管服务固定把 HTTP
+  绑定到 `0.0.0.0:<serverUrl端口>`、TCP 绑定到 `0.0.0.0:8003`，并把该公开地址分别注入
+  `CN_PUBLIC_HOST`、`SESSION_PUBLIC_HOST` 和 `CDN_BASE_URL`；控制探针仍只走回环地址。
 - 受管服务进程用 PID、创建时间、可执行文件路径和 SHA-256 四项共同识别；陌生进程不会按端口或
   进程名终止。
+- `bootstrap`、modern/legacy 安装、modern 恢复/回退与 legacy 回退共享同一个 nofollow 原子 operation
+  reservation；任一变更事务存续期间，第二个变更入口必须在读取可变目标状态或停服前失败关闭。
 - v1 只安装已经独立验证的 Content Overlay，以及可选的静态 Mode 组件；不执行 Release 中的
   脚本来决定安装路径。
 - 安装没有 purge、远程 shell、在线下载或隐式“最新版”选择。
@@ -43,6 +48,9 @@ wire shape，可以用于本机审计，但仍应按运维状态文件保护。
     "resourceBaseline": "1.4.53",
     "clientPatchProfile": true
   },
+  "network": {
+    "publicHost": "10.0.0.130"
+  },
   "serverUrl": "http://127.0.0.1:8001"
 }
 ```
@@ -53,8 +61,53 @@ Schema 不验证路径互斥、protected root、reparse、ADS 或回环地址的
 仍是唯一权威 parser。模板和生成后的 `target.json` 都不得进入 Release、receipt 或分享包。
 
 Server Bundle 与 Runtime Pack 必须先按各自 manifest 封装并通过 TargetProbe。初次安装前目标服务必须
-停止；如果本地没有 `active.json`，安装器可以启动声明的 baseline 做第一次探测，但不会接管已经在
-运行却没有受管状态的进程。
+停止；本地没有 `active.json` 时必须先执行下方显式 bootstrap。工具不会接管已经在运行却没有受管
+状态的进程。bootstrap 在任何 Content prepare 前，先持有 operation reservation、证明 publicHost
+属于本机接口，并证明 HTTP wildcard 端口与 TCP 8003 都没有监听者。
+
+### 首次受管 baseline bootstrap
+
+```powershell
+python -X utf8 -m wf_release_v1 bootstrap `
+  --target D:\wf-target\target.json `
+  --confirm BOOTSTRAP_WF_TARGET
+```
+
+该命令只接受没有 `active.json`、没有 `previous.json`、也没有受管进程记录的停止目标。固定顺序是
+`Content Sync prepare -> 启动 Server Bundle -> /healthz ready -> capabilities 与本地 Bundle/Runtime
+一致 -> live cdnTargetVersion 与 target.resourceBaseline 一致 -> 提交空 active/previous`。健康响应
+必须精确回显本操作 ID、PID、HTTP/TCP 监听和公开地址、CDN URL，并报告 HTTP/TCP 都 ready；工具不会
+按端口或进程名接管陌生进程。
+
+bootstrap 会写 Data Volume 的 Content 状态，服务启动还可能迁移数据库 schema；因此执行前必须完成
+项目专用的停服一致性备份。health、capabilities、版本校验或 state commit 失败时，只停止本事务启动且
+身份仍匹配的进程，不回滚数据库或 Data Volume。若停止失败则返回 `WFREL_RECOVERY_FAILED` 并保留现场；
+不得删除半状态后盲目重试。
+
+### 恢复已受管但停止的服务
+
+已存在合法 `active.json` 与 `previous.json`、但受管服务停止时，先显式恢复服务，再执行
+`capture-requirements` 或 `plan-install`：
+
+```powershell
+python -X utf8 -m wf_release_v1 resume `
+  --target D:\wf-target\target.json `
+  --confirm RESUME_WF_TARGET
+```
+
+`resume` 从读取 active/previous、进程或网络开始全程持有 operation reservation。若受管进程已经运行，
+命令只按 process state 精确验证 `/healthz` 的操作 ID、PID、HTTP/TCP bindings 和 modern capabilities，
+随后返回 `outcome=noop`，不会重启。若服务停止，则先证明 publicHost 属于本机且 `target.serverUrl`
+对应的 HTTP 端口与 target session 端口均未被占用，再按 target 的 launch/environment 启动；它不会运行
+Content prepare，也不会改写 active、previous 或 Content。`CN_ADMIN_TOKEN` 只继承到子进程环境，不进入
+state 或输出。
+
+成功输出为不含路径的单行 JSON，包括 `outcome`、本次 `operationId`、`targetProtocol=capabilities-v1`
+与完整 `TargetFacts` 顶层字段。启动后验证失败只会停止本次启动且身份仍精确匹配的进程；进程已退出视为
+已停止，process state 缺失或身份漂移则返回 `WFREL_RECOVERY_FAILED` 且不终止无法证明归属的进程。
+若 running-noop 验证完成后 reservation 释放失败，命令保留原 state/lock 错误且不停止既有进程；若本次
+启动已验收后才发生该失败，则返回 `WFREL_RECOVERY_FAILED` 并保留进程与现场，不在失去 reservation
+所有权后盲目停服。
 
 ## 3. 只读探针
 
@@ -120,6 +173,10 @@ prepare、启动、`/healthz` ready、capabilities expected state、最后提交
 - 同一 `releaseId` 已 active 时是显式 no-op，不重启、不创建 operation receipt。
 - entity/record 冲突必须由精确 `replaces` 解决；共享表的 source path 不是独占键。
 - Content 只切换 `cdnRoot/patches/<targetVersion>`，永不覆盖官方 `cdnRoot/cn`。
+- Content candidate 会把已独立验证的单边 Overlay 外层 ZIP 解包成 Content Sync 实际接收的
+  `patch-manifest.json`、`README.md`、`requires.json` 与 `archive-*-diff/*.zip`，同时保留外层 ZIP
+  作为逐字节审计锚；candidate 复验覆盖全部文件并证明解包成员与该外层 ZIP 完全一致。当前事务只能
+  原子切换一个版本目录，因此多边 Overlay Release 在任何 candidate 写入前失败关闭。
 - Mode 只切换完整 active Mode 根；required/allowlist/private resource 由 Release 静态结构和服务端
   Mode loader 双重验收。Mode 变化只有在重启后 capabilities 的 loaded identity 与 `modeDigest`
   达到期望才会提交。

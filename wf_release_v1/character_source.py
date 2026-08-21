@@ -19,6 +19,7 @@ from wf_character_workspace import (
 from .canonical import load_json_strict_bytes
 from .errors import ReleaseError
 from .patch_overlay_source import SourceFile, inspect_patch_overlay_chain
+from .schema import AssetReplacement, parse_asset_replacements
 
 
 _REPARSE_POINT = 0x0400
@@ -30,6 +31,7 @@ class CharacterReleaseSource:
     _package_manifest: dict[str, object] = field(repr=False)
     overlay_files: tuple[SourceFile, ...]
     cdn_target_version: str
+    accepted_asset_replacements: tuple[AssetReplacement, ...]
 
     def __init__(
         self,
@@ -38,6 +40,7 @@ class CharacterReleaseSource:
         package_manifest: Mapping[str, object],
         overlay_files: tuple[SourceFile, ...],
         cdn_target_version: str,
+        accepted_asset_replacements: tuple[AssetReplacement, ...] = (),
     ) -> None:
         object.__setattr__(self, "workspace_input_sha256", workspace_input_sha256)
         object.__setattr__(
@@ -47,6 +50,9 @@ class CharacterReleaseSource:
         )
         object.__setattr__(self, "overlay_files", overlay_files)
         object.__setattr__(self, "cdn_target_version", cdn_target_version)
+        object.__setattr__(
+            self, "accepted_asset_replacements", accepted_asset_replacements
+        )
 
     @property
     def package_manifest(self) -> dict[str, object]:
@@ -59,6 +65,7 @@ class _WorkspaceInspection:
     workspace: Workspace
     input_digest: str
     package_manifest: dict[str, object]
+    accepted_asset_replacements: tuple[AssetReplacement, ...]
 
 
 def _error(code: str, message: str, **details: object) -> ReleaseError:
@@ -171,11 +178,97 @@ def _inspect_workspace_before(workspace: Path) -> _WorkspaceInspection:
             "workspace identity and package seal do not match",
             label="package/manifest.json",
         )
+    replacements = _accepted_asset_replacements(manifest)
     return _WorkspaceInspection(
         workspace=current,
         input_digest=status.input_digest,
         package_manifest=copy.deepcopy(manifest),
+        accepted_asset_replacements=replacements,
     )
+
+
+def _accepted_asset_replacements(
+    manifest: Mapping[str, object],
+) -> tuple[AssetReplacement, ...]:
+    snapshot = manifest.get("snapshot")
+    raw = (
+        snapshot.get("accepted_asset_replacements", [])
+        if isinstance(snapshot, Mapping)
+        else []
+    )
+    if not isinstance(raw, list):
+        raise _error(
+            "WFREL_CHARACTER_SOURCE_INVALID",
+            "accepted asset replacements must be an array",
+            label="snapshot.accepted_asset_replacements",
+        )
+    if not raw:
+        return ()
+    wire: list[dict[str, object]] = []
+    for index, value in enumerate(raw):
+        if not isinstance(value, Mapping) or set(value) != {
+            "root", "logical_path", "before_sha256", "before_size"
+        }:
+            raise _error(
+                "WFREL_CHARACTER_SOURCE_INVALID",
+                "accepted asset replacement fields are invalid",
+                label=f"snapshot.accepted_asset_replacements[{index}]",
+            )
+        wire.append({
+            "root": value["root"],
+            "logicalPath": value["logical_path"],
+            "beforeSha256": value["before_sha256"],
+            "beforeSize": value["before_size"],
+        })
+    wire.sort(key=lambda item: (
+        str(item["root"]).encode("utf-8"),
+        str(item["logicalPath"]).encode("utf-8"),
+    ))
+    try:
+        replacements = parse_asset_replacements(wire)
+    except ReleaseError as error:
+        raise _error(
+            "WFREL_CHARACTER_SOURCE_INVALID",
+            "accepted asset replacements are invalid",
+            label="snapshot.accepted_asset_replacements",
+        ) from error
+
+    roots = manifest.get("roots")
+    tables = manifest.get("tables")
+    if not isinstance(roots, Mapping) or not isinstance(tables, list):
+        raise _error(
+            "WFREL_CHARACTER_SOURCE_INVALID",
+            "character manifest roots or tables are invalid",
+            label="package/manifest.json",
+        )
+    declared: set[tuple[str, str]] = set()
+    for root in ("common", "medium", "android"):
+        entries = roots.get(root)
+        if not isinstance(entries, list):
+            raise _error(
+                "WFREL_CHARACTER_SOURCE_INVALID",
+                "character manifest client roots are invalid",
+                label=f"roots.{root}",
+            )
+        declared.update(
+            (root, entry.get("logical_path"))
+            for entry in entries
+            if isinstance(entry, Mapping) and isinstance(entry.get("logical_path"), str)
+        )
+    table_paths = {
+        (entry.get("root"), entry.get("logical_path"))
+        for entry in tables
+        if isinstance(entry, Mapping)
+    }
+    for replacement in replacements:
+        key = replacement.root, replacement.logical_path
+        if key not in declared or key in table_paths:
+            raise _error(
+                "WFREL_CHARACTER_SOURCE_INVALID",
+                "accepted asset replacement is not an exact non-table candidate entry",
+                label=f"{replacement.root}:{replacement.logical_path}",
+            )
+    return replacements
 
 
 def inspect_character_source(
@@ -205,4 +298,5 @@ def inspect_character_source(
         package_manifest=before.package_manifest,
         overlay_files=overlay_files,
         cdn_target_version=target,
+        accepted_asset_replacements=before.accepted_asset_replacements,
     )

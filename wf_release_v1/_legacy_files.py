@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 import hashlib
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import stat
 from typing import Final
 import zipfile
@@ -215,9 +215,21 @@ def prepare_legacy_switch(
     operation = _ensure_staging(state_root, operation_id)
     staged: list[StagedLegacyArchive] = []
     try:
-        for relative, identity in zip(
-            candidates.relative_paths, candidates.identities, strict=True
-        ):
+        retained_overlays = tuple(
+            (relative, identity)
+            for relative, identity in zip(
+                candidates.relative_paths, candidates.identities, strict=True
+            )
+            if (
+                len(PurePosixPath(relative).parts) == 3
+                and PurePosixPath(relative).parts[0] == "patches"
+                and PurePosixPath(relative).name
+                not in {"README.md", "requires.json", "patch-manifest.json"}
+            )
+        )
+        if len(retained_overlays) != len(plan.overlay.edges):
+            raise _error("verified legacy Overlay set is incomplete")
+        for relative, identity in retained_overlays:
             _extract_expected(
                 candidates.content_root / Path(relative),
                 identity,

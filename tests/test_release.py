@@ -511,6 +511,132 @@ class TestAtomicCharacterRelease(unittest.TestCase):
         with self.assertRaisesRegex(module.ReleaseError, "JSON object"):
             module.JsonObjectCodec().inspect(b"[]", claim, ())
 
+    def test_json_integer_set_codec_exposes_each_positive_unique_id(self):
+        module = self._module()
+        codec_type = getattr(module, "JsonIntegerSetCodec", None)
+        self.assertIsNotNone(codec_type, "json_integer_set codec 尚未实现")
+        assert codec_type is not None
+        claim = module.character_pack.TableClaim(
+            "server", "item_ids.json", "json_integer_set", ("999013", "999014")
+        )
+
+        image = codec_type().inspect(
+            b"[10001,999013,999014]", claim, ()
+        )
+
+        self.assertEqual(
+            ("10001", "999013", "999014"),
+            tuple(key for key, _raw in image.outer_rows),
+        )
+        self.assertEqual(b"999014", dict(image.outer_rows)["999014"])
+
+    def test_json_integer_set_codec_rejects_wrong_types_duplicates_and_nonpositive_ids(self):
+        module = self._module()
+        codec_type = getattr(module, "JsonIntegerSetCodec", None)
+        self.assertIsNotNone(codec_type, "json_integer_set codec 尚未实现")
+        assert codec_type is not None
+        claim = module.character_pack.TableClaim(
+            "server", "item_ids.json", "json_integer_set", ("999013",)
+        )
+
+        for raw in (b"{}", b"[1,true]", b"[1,1]", b"[0,1]", b"[-1,1]"):
+            with self.subTest(raw=raw):
+                with self.assertRaises(module.ReleaseError):
+                    codec_type().inspect(raw, claim, ())
+
+    def test_event_shop_codec_exposes_unique_product_ids_with_their_location(self):
+        module = self._module()
+        codec = module.character_pack.DEFAULT_CODECS.get(
+            "json_event_shop_products"
+        )
+        self.assertIsNotNone(
+            codec, "json_event_shop_products must be a controlled built-in codec"
+        )
+        assert codec is not None
+        claim = module.character_pack.TableClaim(
+            "server", "event_item_shop.json", "json_event_shop_products",
+            ("9700116", "9700117"),
+        )
+
+        image = codec.inspect(
+            b'{"11":{"700099":{"9700116":{"stock":9}}},'
+            b'"2":{"100006":{"9700117":{"stock":8}}}}',
+            claim,
+            (),
+        )
+
+        rows = dict(image.outer_rows)
+        self.assertEqual(("9700116", "9700117"), tuple(rows))
+        self.assertEqual(
+            {"event_id": "700099", "event_type": "11", "product": {"stock": 9}},
+            json.loads(rows["9700116"]),
+        )
+
+    def test_event_shop_codec_rejects_ambiguous_or_noncanonical_product_ids(self):
+        module = self._module()
+        codec = module.character_pack.DEFAULT_CODECS.get(
+            "json_event_shop_products"
+        )
+        self.assertIsNotNone(codec)
+        assert codec is not None
+        claim = module.character_pack.TableClaim(
+            "server", "event_item_shop.json", "json_event_shop_products",
+            ("9700116",),
+        )
+        cases = (
+            b'[]',
+            b'{"11":[]}',
+            b'{"11":{"700099":[]}}',
+            b'{"11":{"700099":{"09700116":{}}}}',
+            b'{"11":{"700099":{"9700116":{}},"700100":{"9700116":{}}}}',
+        )
+        for raw in cases:
+            with self.subTest(raw=raw):
+                with self.assertRaises(module.character_pack.PackPreflightError):
+                    codec.inspect(raw, claim, ())
+
+    def test_rogue_events_codec_exposes_event_ids_and_binds_root_siblings(self):
+        module = self._module()
+        codec = module.character_pack.DEFAULT_CODECS.get("json_rogue_events")
+        self.assertIsNotNone(
+            codec, "json_rogue_events must be a controlled built-in codec"
+        )
+        assert codec is not None
+        claim = module.character_pack.TableClaim(
+            "server", "rogue_event.json", "json_rogue_events", ("700099",)
+        )
+
+        first = codec.inspect(
+            b'{"enabled":true,"events":{"700007":{"rounds":10},'
+            b'"700099":{"rounds":30}}}',
+            claim,
+            (),
+        )
+        second = codec.inspect(
+            b'{"enabled":false,"events":{"700007":{"rounds":10},'
+            b'"700099":{"rounds":30}}}',
+            claim,
+            (),
+        )
+
+        self.assertEqual(("700007", "700099"), tuple(
+            key for key, _raw in first.outer_rows
+        ))
+        self.assertNotEqual(first.semantic_values, second.semantic_values)
+
+    def test_rogue_events_codec_rejects_missing_events_and_noncanonical_event_ids(self):
+        module = self._module()
+        codec = module.character_pack.DEFAULT_CODECS.get("json_rogue_events")
+        self.assertIsNotNone(codec)
+        assert codec is not None
+        claim = module.character_pack.TableClaim(
+            "server", "rogue_event.json", "json_rogue_events", ("700099",)
+        )
+        for raw in (b'{}', b'{"events":[]}', b'{"events":{"0700099":{}}}'):
+            with self.subTest(raw=raw):
+                with self.assertRaises(module.character_pack.PackPreflightError):
+                    codec.inspect(raw, claim, ())
+
     def test_live_rebase_preserves_unclaimed_rows_for_every_table_codec(self):
         module = self._module()
         core = importlib.import_module("wf_mod_tool")
@@ -585,6 +711,92 @@ class TestAtomicCharacterRelease(unittest.TestCase):
              "129999": {"name": "Seris"}},
             merged_json,
         )
+
+    def test_live_rebase_adds_only_claimed_json_integer_set_members(self):
+        module = self._module()
+        claim = module.character_pack.TableClaim(
+            "server", "item_ids.json", "json_integer_set", ("999013", "999014")
+        )
+
+        try:
+            merged = json.loads(module._merge_claimed_table_bytes(
+                claim,
+                b"[10001,999013,999014]",
+                b"[10001,20002]",
+            ))
+        except module.ReleaseError as exc:
+            self.fail(f"json_integer_set runtime rebase 尚未实现: {exc}")
+
+        self.assertEqual([10001, 20002, 999013, 999014], merged)
+
+    def test_live_rebase_moves_only_claimed_event_shop_products(self):
+        module = self._module()
+        claim = module.character_pack.TableClaim(
+            "server", "event_item_shop.json", "json_event_shop_products",
+            ("9700116", "9700117"),
+        )
+        candidate = {
+            "11": {"700099": {
+                "9700101": {"source": "candidate-stale"},
+                "9700116": {"ticket": "single"},
+                "9700117": {"ticket": "ten"},
+            }},
+            "2": {"100006": {"42": {"source": "candidate-stale"}}},
+        }
+        live = {
+            "11": {"700099": {
+                "9700101": {"source": "live"},
+                "9700115": {"weapon": 15},
+            }},
+            "2": {"100006": {"42": {"source": "live"}}},
+        }
+
+        merged = json.loads(module._merge_claimed_table_bytes(
+            claim,
+            json.dumps(candidate, separators=(",", ":")).encode(),
+            json.dumps(live, separators=(",", ":")).encode(),
+        ))
+
+        self.assertEqual({"source": "live"}, merged["11"]["700099"]["9700101"])
+        self.assertEqual({"weapon": 15}, merged["11"]["700099"]["9700115"])
+        self.assertEqual({"ticket": "single"}, merged["11"]["700099"]["9700116"])
+        self.assertEqual({"ticket": "ten"}, merged["11"]["700099"]["9700117"])
+        self.assertEqual({"source": "live"}, merged["2"]["100006"]["42"])
+
+    def test_live_rebase_moves_only_claimed_rogue_events(self):
+        module = self._module()
+        claim = module.character_pack.TableClaim(
+            "server", "rogue_event.json", "json_rogue_events", ("700099",)
+        )
+        candidate = {
+            "enabled": False,
+            "events": {
+                "700007": {"source": "candidate-stale"},
+                "700099": {"drop": 999014},
+            },
+            "candidate_only": True,
+        }
+        live = {
+            "enabled": True,
+            "events": {
+                "700007": {"source": "live"},
+                "700008": {"source": "live-too"},
+            },
+            "live_only": True,
+        }
+
+        merged = json.loads(module._merge_claimed_table_bytes(
+            claim,
+            json.dumps(candidate, separators=(",", ":")).encode(),
+            json.dumps(live, separators=(",", ":")).encode(),
+        ))
+
+        self.assertTrue(merged["enabled"])
+        self.assertTrue(merged["live_only"])
+        self.assertNotIn("candidate_only", merged)
+        self.assertEqual({"source": "live"}, merged["events"]["700007"])
+        self.assertEqual({"source": "live-too"}, merged["events"]["700008"])
+        self.assertEqual({"drop": 999014}, merged["events"]["700099"])
 
     def test_transaction_records_convert_to_hash_bound_release_payload(self):
         module = self._module()

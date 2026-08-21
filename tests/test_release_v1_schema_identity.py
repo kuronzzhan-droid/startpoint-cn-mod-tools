@@ -243,6 +243,75 @@ class JsonSchemaLockTests(unittest.TestCase):
                     ownership_schema, parse_ownership, value
                 )
 
+    def test_asset_replacement_source_evidence_is_closed_canonical_and_portable(self) -> None:
+        """Aliases, unknown fields, and reordered before claims must not verify."""
+        evaluator = Draft202012Subset(self.load_schema("wf-release-v1.schema.json"))
+
+        def value(entries: list[dict[str, object]]) -> dict[str, object]:
+            manifest = release_without_id()
+            manifest["sourceEvidence"] = {
+                "kind": "character-workspace-v2",
+                "workspaceInputSha256": HEX_A,
+                "acceptedAssetReplacements": entries,
+            }
+            manifest["releaseId"] = RELEASE_ID_E
+            return manifest
+
+        valid_entries = [
+            {
+                "beforeSha256": HEX_B,
+                "beforeSize": 15,
+                "logicalPath": "item/sprite_sheet.atlas.amf3.deflate",
+                "root": "common",
+            },
+            {
+                "beforeSha256": HEX_C,
+                "beforeSize": 482079,
+                "logicalPath": "item/sprite_sheet.png",
+                "root": "common",
+            },
+        ]
+        valid = value(deepcopy(valid_entries))
+        self.assertTrue(evaluator.accepts(valid))
+        parsed = parse_release_manifest(valid)
+        self.assertEqual(valid, parsed.to_wire())
+        self.assertEqual(2, len(parsed.source_evidence.accepted_asset_replacements))
+
+        unicode_near_match = value([
+            {**valid_entries[0], "logicalPath": "item/ss.bin"},
+            {**valid_entries[1], "logicalPath": "item/ß.bin"},
+        ])
+        self.assertEqual(
+            unicode_near_match,
+            parse_release_manifest(unicode_near_match).to_wire(),
+        )
+
+        unknown = deepcopy(valid_entries)
+        unknown[0]["unexpected"] = True
+        structural = value(unknown)
+        self.assertFalse(evaluator.accepts(structural))
+        with self.assertRaises(ReleaseError):
+            parse_release_manifest(structural)
+
+        parser_only = (
+            list(reversed(deepcopy(valid_entries))),
+            [
+                {**valid_entries[0], "logicalPath": "item/SAME.png"},
+                {**valid_entries[1], "logicalPath": "item/same.png"},
+            ],
+            [{**valid_entries[0], "logicalPath": "master/item/item.orderedmap"}],
+            [{**valid_entries[0], "logicalPath": "item/CON.png"}],
+            [{**valid_entries[0], "logicalPath": "item/COM¹.png"}],
+            [{**valid_entries[0], "logicalPath": "item/com².png"}],
+            [{**valid_entries[0], "logicalPath": "item/LPT³.png"}],
+            [{**valid_entries[0], "beforeSize": 15.0}],
+        )
+        for entries in parser_only:
+            candidate = value(entries)
+            self.assertTrue(evaluator.accepts(candidate))
+            with self.assertRaises(ReleaseError):
+                parse_release_manifest(candidate)
+
     def test_parser_remains_authoritative_for_non_schema_semantics(self) -> None:
         release_document = self.load_schema("wf-release-v1.schema.json")
         requirements_document = self.load_schema(
@@ -396,8 +465,16 @@ class JsonSchemaLockTests(unittest.TestCase):
 
         release_properties = release_schema["properties"]
         self.assert_required(release_properties["producer"], "name", "version")
+        source_evidence_variants = release_properties["sourceEvidence"]["oneOf"]
+        self.assertEqual(2, len(source_evidence_variants))
         self.assert_required(
-            release_properties["sourceEvidence"], "kind", "workspaceInputSha256"
+            source_evidence_variants[0], "kind", "workspaceInputSha256"
+        )
+        self.assert_required(
+            source_evidence_variants[1],
+            "kind",
+            "workspaceInputSha256",
+            "acceptedAssetReplacements",
         )
         self.assert_required(
             release_properties["expectedState"],

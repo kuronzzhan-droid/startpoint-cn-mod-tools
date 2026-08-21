@@ -29,9 +29,14 @@ from tests.test_release_v1_probe import (
 )
 from wf_release_v1._platform_state import ManagedProcess
 from wf_release_v1.canonical import canonical_json_bytes
+from wf_release_v1.compatibility import ActiveState
 from wf_release_v1.errors import ReleaseError
 from wf_release_v1.producer import BuildRequest, build_character_release
-from wf_release_v1.receipts import load_active_state, load_operation_receipt
+from wf_release_v1.receipts import (
+    commit_active_state,
+    load_active_state,
+    load_operation_receipt,
+)
 from wf_release_v1.schema import parse_requirements
 from wf_release_v1.target import ManagedTarget
 from wf_release_v1.transaction import install_release
@@ -103,6 +108,7 @@ def _capabilities(
 class _LiveContract:
     def __init__(self) -> None:
         self.running = False
+        self.managed_launch: dict[str, object] | None = None
         self.value = _capabilities("1.4.54", content_digest=f"sha256:{SHA_A}")
         owner = self
 
@@ -112,7 +118,12 @@ class _LiveContract:
                     self.send_error(503)
                     return
                 if self.path == "/healthz":
-                    raw = canonical_json_bytes({"contractVersion": 1, "status": "ready"})
+                    raw = canonical_json_bytes({
+                        "contractVersion": 1,
+                        "status": "ready",
+                        "managedLaunch": owner.managed_launch,
+                        "services": {"http": True, "tcp": True},
+                    })
                 elif self.path == "/api/server/capabilities":
                     raw = canonical_json_bytes(owner.value)
                 else:
@@ -173,6 +184,7 @@ class _VerticalPlatform:
             raise AssertionError("attempted to stop an unowned process")
         self.current = None
         self.contract.running = False
+        self.contract.managed_launch = None
         return False
 
     def prepare_content(self, launch, environment) -> None:
@@ -185,7 +197,7 @@ class _VerticalPlatform:
         pointer.write_bytes(canonical_json_bytes({"targetVersion": "1.4.55"}))
 
     def start_server(self, launch, environment, operation_id: str) -> ManagedProcess:
-        del launch, operation_id
+        del launch
         self.events.append("start")
         self.start_count += 1
         if self.start_count == self.fail_start_number:
@@ -227,8 +239,13 @@ class _VerticalPlatform:
             1000 + self.start_count,
             2000 + self.start_count,
             SHA_A,
-            "20260812T010203.000000Z-0123456789abcdef0123456789abcdef",
+            operation_id,
         )
+        self.contract.managed_launch = {
+            "operationId": self.current.operation_id,
+            "pid": self.current.pid,
+            **environment.health_bindings(),
+        }
         return self.current
 
     def wait_exited(self, process: ManagedProcess, timeout: float) -> bool:
@@ -317,12 +334,34 @@ class CharacterInstallVerticalTests(unittest.TestCase):
                 "resourceBaseline": "1.4.53",
                 "clientPatchProfile": True,
             },
+            "network": {"publicHost": "127.0.0.1"},
             "serverUrl": self.contract.base_url,
         }))
         self.target = ManagedTarget.load(target_path)
+        empty = ActiveState(
+            client_version=self.target.compatibility.client_version,
+            resource_baseline=self.target.compatibility.resource_baseline,
+            client_patch_profile=self.target.compatibility.client_patch_profile,
+            releases=(),
+            known_release_ids=(),
+        )
+        commit_active_state(self.target.state_root, previous=empty, active=empty)
 
     def _pointer(self) -> Path:
         return self.roots["data"] / "state" / "content" / "current.json"
+
+    def test_stopped_target_without_bootstrap_state_cannot_install(self) -> None:
+        (self.target.state_root / "active.json").unlink()
+        (self.target.state_root / "previous.json").unlink()
+        platform = _VerticalPlatform(self.target, self.contract)
+
+        with self.assertRaises(ReleaseError) as caught:
+            install_release(self.release, self.target, platform, health_timeout=2)
+
+        self.assertEqual("WFREL_STATE_CONFLICT", caught.exception.code)
+        self.assertEqual([], platform.events)
+        self.assertFalse(self.contract.running)
+        self.assertFalse((self.target.state_root / "receipts").exists())
 
     def test_build_verify_install_accept_and_repeat_as_noop(self) -> None:
         platform = _VerticalPlatform(self.target, self.contract)
@@ -367,7 +406,7 @@ class CharacterInstallVerticalTests(unittest.TestCase):
         self.assertTrue(any(self.target.component_roots.content.rglob("1.4.55")))
         self.assertEqual("1.4.54", self.target.target_probe(timeout_seconds=2).run().cdn_target_version)
         self.assertIsNotNone(platform.current_process())
-        self.assertFalse((self.target.state_root / "active.json").exists())
+        self.assertEqual((), load_active_state(self.target.state_root).releases)
         receipt = load_operation_receipt(self.target.state_root, result.operation_id)
         self.assertEqual(("recovered", "recovered"), (receipt.outcome, receipt.recovery_outcome))
 
@@ -385,7 +424,7 @@ class CharacterInstallVerticalTests(unittest.TestCase):
         self.assertIsNone(platform.current_process())
         self.assertFalse(self.contract.running)
         self.assertEqual(self.baseline_pointer, self._pointer().read_bytes())
-        self.assertFalse((self.target.state_root / "active.json").exists())
+        self.assertEqual((), load_active_state(self.target.state_root).releases)
         receipt = load_operation_receipt(self.target.state_root, result.operation_id)
         self.assertEqual(("recovery_failed", "failed"), (
             receipt.outcome,

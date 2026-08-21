@@ -54,6 +54,15 @@ FORBIDDEN_ASSET_SEGMENTS = frozenset({
     "story", "words", "login", "expression", "expressions",
 })
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+WINDOWS_DEVICE_NAME_RE = re.compile(
+    r"^(?:con|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³]|conin\$|conout\$)(?:\.|$)",
+    re.IGNORECASE | re.ASCII,
+)
+WINDOWS_FORBIDDEN_PATH_CHARS = frozenset('<>:"|?*')
+WINDOWS_LOGICAL_PATH_TRANSLATION = str.maketrans(
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ\\",
+    "abcdefghijklmnopqrstuvwxyz/",
+)
 FILESYSTEM_ERRORS = (OSError, RuntimeError, ValueError)
 SERVER_LOGICAL_PATHS = (
     "cdndata/character.json",
@@ -61,6 +70,12 @@ SERVER_LOGICAL_PATHS = (
     "character.json",
     "mana_node.json",
 )
+SERVER_EXTENSION_CODEC_IDS = frozenset({
+    "json_object",
+    "json_integer_set",
+    "json_event_shop_products",
+    "json_rogue_events",
+})
 CLIENT_ROOTS: tuple[RootName, ...] = ("common", "medium", "android")
 ARCHIVE_PREFIXES = {
     "common": "production/upload/",
@@ -88,6 +103,14 @@ class PackFile:
     logical_path: str
     sha256: str
     size: int
+
+
+@dataclass(frozen=True)
+class AcceptedAssetReplacement:
+    root: RootName
+    logical_path: str
+    before_sha256: str
+    before_size: int
 
 
 class PackPreflightError(ValueError):
@@ -234,6 +257,7 @@ class PreflightReport:
     conflicts: tuple[FrozenRecord, ...]
     root_totals: FrozenRecord
     expected_base_hashes: FrozenRecord
+    accepted_asset_replacements: tuple[FrozenRecord, ...]
     capability_warnings: tuple[FrozenRecord, ...]
     can_prepare: bool
     delivery_status: str
@@ -250,6 +274,9 @@ class PreflightReport:
             "conflicts": _plain(self.conflicts),
             "root_totals": _plain(self.root_totals),
             "expected_base_hashes": _plain(self.expected_base_hashes),
+            "accepted_asset_replacements": _plain(
+                self.accepted_asset_replacements
+            ),
             "capability_warnings": _plain(self.capability_warnings),
             "can_prepare": self.can_prepare,
             "delivery_status": self.delivery_status,
@@ -392,11 +419,137 @@ class _NestedCodec:
         return TableImage(outer, inner)
 
 
+class JsonIntegerSetCodec:
+    """Inspect a JSON array whose members are unique positive integer IDs."""
+
+    def inspect(
+        self,
+        raw: bytes,
+        claim: TableClaim,
+        semantic_claims: tuple[SemanticClaim, ...],
+    ) -> TableImage:
+        del claim, semantic_claims
+        try:
+            value = json.loads(
+                raw.decode("utf-8"), parse_constant=_reject_json_constant
+            )
+        except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
+            raise PackPreflightError(f"invalid JSON integer set: {exc}") from exc
+        if not isinstance(value, list):
+            raise PackPreflightError("JSON integer set must be an array")
+        seen: set[int] = set()
+        rows: list[tuple[str, bytes]] = []
+        for index, item in enumerate(value):
+            if type(item) is not int or item <= 0:
+                raise PackPreflightError(
+                    f"JSON integer set[{index}] must be a positive integer"
+                )
+            if item in seen:
+                raise PackPreflightError(
+                    f"JSON integer set[{index}] duplicates {item}"
+                )
+            seen.add(item)
+            rows.append((str(item), str(item).encode("ascii")))
+        return TableImage(tuple(rows))
+
+
+class JsonEventShopProductsCodec:
+    """Expose globally unique product IDs below event-type/event-ID maps."""
+
+    def inspect(
+        self,
+        raw: bytes,
+        claim: TableClaim,
+        semantic_claims: tuple[SemanticClaim, ...],
+    ) -> TableImage:
+        del claim, semantic_claims
+        value = _strict_json_object_bytes(raw, "JSON event shop")
+        seen: set[str] = set()
+        rows: list[tuple[str, bytes]] = []
+        for event_type, events in value.items():
+            _require_canonical_integer_key(
+                event_type, "JSON event shop event type", allow_zero=True
+            )
+            if not isinstance(events, dict):
+                raise PackPreflightError(
+                    f"JSON event shop[{event_type}] must be an object"
+                )
+            for event_id, products in events.items():
+                _require_canonical_integer_key(
+                    event_id,
+                    f"JSON event shop[{event_type}] event ID",
+                    allow_zero=True,
+                )
+                if not isinstance(products, dict):
+                    raise PackPreflightError(
+                        f"JSON event shop[{event_type}][{event_id}] must be an object"
+                    )
+                for product_id, product in products.items():
+                    _require_canonical_integer_key(
+                        product_id,
+                        f"JSON event shop[{event_type}][{event_id}] product ID",
+                    )
+                    if product_id in seen:
+                        raise PackPreflightError(
+                            f"JSON event shop product ID is ambiguous: {product_id}"
+                        )
+                    if not isinstance(product, dict):
+                        raise PackPreflightError(
+                            f"JSON event shop product {product_id} must be an object"
+                        )
+                    seen.add(product_id)
+                    rows.append((product_id, _canonical_json_bytes({
+                        "event_id": event_id,
+                        "event_type": event_type,
+                        "product": product,
+                    })))
+        return TableImage(tuple(rows))
+
+
+class JsonRogueEventsCodec:
+    """Expose event IDs below ``events`` while binding every root sibling."""
+
+    def inspect(
+        self,
+        raw: bytes,
+        claim: TableClaim,
+        semantic_claims: tuple[SemanticClaim, ...],
+    ) -> TableImage:
+        del claim, semantic_claims
+        value = _strict_json_object_bytes(raw, "JSON rogue events")
+        events = value.get("events")
+        if not isinstance(events, dict):
+            raise PackPreflightError("JSON rogue events.events must be an object")
+        rows: list[tuple[str, bytes]] = []
+        for event_id, event in events.items():
+            _require_canonical_integer_key(
+                event_id, "JSON rogue events event ID"
+            )
+            if not isinstance(event, dict):
+                raise PackPreflightError(
+                    f"JSON rogue events.events[{event_id}] must be an object"
+                )
+            rows.append((event_id, _canonical_json_bytes(event)))
+        root_siblings = {
+            key: item for key, item in value.items() if key != "events"
+        }
+        sibling_digest = hashlib.sha256(
+            _canonical_json_bytes(root_siblings)
+        ).hexdigest()
+        return TableImage(
+            tuple(rows),
+            semantic_values=(("json_rogue_root_sha256", sibling_digest),),
+        )
+
+
 DEFAULT_CODECS: dict[str, TableCodec] = {
     "flat": _FlatCodec(compressed_rows=True),
     "raw_outer": _FlatCodec(compressed_rows=False),
     "action_nested": _NestedCodec(),
     "switched_nested": _NestedCodec(),
+    "json_integer_set": JsonIntegerSetCodec(),
+    "json_event_shop_products": JsonEventShopProductsCodec(),
+    "json_rogue_events": JsonRogueEventsCodec(),
 }
 
 
@@ -411,6 +564,32 @@ def _reject_duplicate_object_keys(pairs: list[tuple[str, object]]) -> dict:
             raise ValueError(f"duplicate JSON object key {key!r}")
         result[key] = value
     return result
+
+
+def _strict_json_object_bytes(raw: bytes, label: str) -> dict:
+    try:
+        value = json.loads(
+            raw.decode("utf-8"),
+            parse_constant=_reject_json_constant,
+            object_pairs_hook=_reject_duplicate_object_keys,
+        )
+    except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
+        raise PackPreflightError(f"{label} is invalid: {exc}") from exc
+    if not isinstance(value, dict):
+        raise PackPreflightError(f"{label} must be an object")
+    return value
+
+
+def _require_canonical_integer_key(
+    value: object, label: str, *, allow_zero: bool = False
+) -> str:
+    if not isinstance(value, str) or not value.isascii() or not value.isdigit():
+        raise PackPreflightError(f"{label} must be a canonical integer string")
+    number = int(value)
+    minimum = 0 if allow_zero else 1
+    if number < minimum or str(number) != value:
+        raise PackPreflightError(f"{label} must be a canonical integer string")
+    return value
 
 
 def load_manifest(path: Path) -> dict:
@@ -436,7 +615,7 @@ def canonical_manifest_bytes(manifest: dict) -> bytes:
     ).encode("utf-8")
 
 
-def _path_problem(logical_path: str) -> str | None:
+def logical_path_problem(logical_path: str) -> str | None:
     windows_path = PureWindowsPath(logical_path)
     if logical_path.startswith("/") or windows_path.is_absolute() or windows_path.drive:
         return "must be relative"
@@ -447,7 +626,29 @@ def _path_problem(logical_path: str) -> str | None:
         return "must not contain '..' segments"
     if any(segment in ("", ".") for segment in segments):
         return "must not contain empty or '.' segments"
+    if any(segment.endswith((".", " ")) for segment in segments):
+        return "must not contain segments ending in a dot or space"
+    if any(
+        ord(character) < 32 or character in WINDOWS_FORBIDDEN_PATH_CHARS
+        for segment in segments for character in segment
+    ):
+        return "must not contain Win32-forbidden characters"
+    if any(WINDOWS_DEVICE_NAME_RE.match(segment) for segment in segments):
+        return "must not contain reserved Windows device names"
     return None
+
+
+def windows_logical_path_key(logical_path: str) -> str:
+    """Return the ASCII-case-insensitive identity used by logical Win32 roots."""
+    return logical_path.translate(WINDOWS_LOGICAL_PATH_TRANSLATION)
+
+
+def _path_problem(logical_path: str) -> str | None:
+    return logical_path_problem(logical_path)
+
+
+def _windows_logical_path_key(logical_path: str) -> str:
+    return windows_logical_path_key(logical_path)
 
 
 def _sha256_file(path: Path) -> str:
@@ -723,14 +924,15 @@ def validate_manifest(
                     errors.append(f"{prefix}.logical_path: {problem}")
                 else:
                     path_valid = True
-                    previous = seen_paths.get(logical_path)
+                    path_key = _windows_logical_path_key(logical_path)
+                    previous = seen_paths.get(path_key)
                     if previous is not None:
                         errors.append(
                             f"{prefix}.logical_path: duplicate logical_path {logical_path!r}; "
                             f"first declared at {previous}"
                         )
                     else:
-                        seen_paths[logical_path] = prefix
+                        seen_paths[path_key] = prefix
                         if root == "common":
                             declared_common_paths.add(logical_path)
                 forbidden = sorted(
@@ -966,6 +1168,82 @@ def _parse_transaction_claims(manifest: dict) -> dict[TableKey, TableClaim]:
             tuple(inner_keys),
             tuple(semantics),
         )
+    if errors:
+        raise PackPreflightError("; ".join(sorted(errors)))
+    return result
+
+
+def _parse_accepted_asset_replacements(
+    manifest: Mapping[str, Any],
+    entries: Mapping[TableKey, Mapping[str, Any]],
+    claims: Mapping[TableKey, TableClaim],
+    *,
+    label: str,
+) -> dict[TableKey, AcceptedAssetReplacement]:
+    snapshot = manifest.get("snapshot")
+    raw = (
+        snapshot.get("accepted_asset_replacements", [])
+        if isinstance(snapshot, Mapping) else []
+    )
+    if not isinstance(raw, list):
+        raise PackPreflightError(
+            f"{label} snapshot.accepted_asset_replacements must be an array"
+        )
+    result: dict[TableKey, AcceptedAssetReplacement] = {}
+    windows_seen: dict[tuple[RootName, PureWindowsPath], str] = {}
+    errors: list[str] = []
+    required = {"root", "logical_path", "before_sha256", "before_size"}
+    for index, item in enumerate(raw):
+        prefix = f"{label} snapshot.accepted_asset_replacements[{index}]"
+        if not isinstance(item, Mapping) or set(item) != required:
+            errors.append(f"{prefix}: must contain only {sorted(required)}")
+            continue
+        root = item["root"]
+        logical = item["logical_path"]
+        digest = item["before_sha256"]
+        size = item["before_size"]
+        if root not in CLIENT_ROOTS:
+            errors.append(f"{prefix}.root: must be a client root")
+            continue
+        root = cast(RootName, root)
+        if not isinstance(logical, str) or _path_problem(logical):
+            errors.append(f"{prefix}.logical_path: invalid canonical logical path")
+            continue
+        windows_key = (root, _windows_logical_path_key(logical))
+        if windows_key in windows_seen:
+            errors.append(
+                f"{prefix}.logical_path: Windows-equivalent duplicate of "
+                f"{windows_seen[windows_key]}"
+            )
+            continue
+        windows_seen[windows_key] = logical
+        table_key: TableKey = (root, logical)
+        if table_key not in entries:
+            errors.append(
+                f"{prefix}.logical_path: path is not an exact candidate root entry"
+            )
+        table_like_path = (
+            logical.casefold().startswith("master/")
+            or logical.casefold().endswith((".orderedmap", ".json"))
+        )
+        if table_key in claims or table_like_path:
+            errors.append(f"{prefix}.logical_path: table paths cannot be accepted")
+        if not isinstance(digest, str) or SHA256_RE.fullmatch(digest) is None:
+            errors.append(f"{prefix}.before_sha256: invalid sha256")
+        if type(size) is not int or size < 0:
+            errors.append(f"{prefix}.before_size: must be a non-negative integer")
+        if (
+            table_key in entries
+            and table_key not in claims
+            and not table_like_path
+            and isinstance(digest, str)
+            and SHA256_RE.fullmatch(digest) is not None
+            and type(size) is int
+            and size >= 0
+        ):
+            result[table_key] = AcceptedAssetReplacement(
+                root, logical, digest, size
+            )
     if errors:
         raise PackPreflightError("; ".join(sorted(errors)))
     return result
@@ -1988,6 +2266,12 @@ class PackTransaction:
         self.release_base_provider = release_base_provider
         self.codecs = dict(DEFAULT_CODECS)
         if codec_registry:
+            overridden = sorted(set(codec_registry) & set(DEFAULT_CODECS))
+            if overridden:
+                raise PackPreflightError(
+                    "codec registry cannot override built-in codec(s): "
+                    + ", ".join(overridden)
+                )
             self.codecs.update(codec_registry)
         self.installed_package_dir = (
             Path(installed_package_dir) if installed_package_dir is not None else None
@@ -2046,7 +2330,12 @@ class PackTransaction:
         }
 
     def _validate_inputs(self) -> tuple[
-            ReleaseBaseState, dict[str, TableClaim], dict[str, TableClaim]]:
+        ReleaseBaseState,
+        dict[TableKey, TableClaim],
+        dict[TableKey, TableClaim],
+        dict[TableKey, AcceptedAssetReplacement],
+        dict[TableKey, AcceptedAssetReplacement],
+    ]:
         named_live = {
             "common": self.live_roots.common,
             "medium": self.live_roots.medium,
@@ -2079,7 +2368,15 @@ class PackTransaction:
             raise PackPreflightError("candidate manifest invalid: " + "; ".join(errors))
         candidate_claims = _parse_transaction_claims(self.manifest)
         _validate_character_speech_claim(candidate_claims, label="candidate")
+        candidate_entries = self._entries(self.manifest)
+        candidate_replacements = _parse_accepted_asset_replacements(
+            self.manifest,
+            candidate_entries,
+            candidate_claims,
+            label="candidate",
+        )
         installed_claims: dict[TableKey, TableClaim] = {}
+        installed_replacements: dict[TableKey, AcceptedAssetReplacement] = {}
         if self.installed_manifest is not None:
             if self.installed_package_dir is None:
                 raise PackPreflightError(
@@ -2093,6 +2390,21 @@ class PackTransaction:
                     "installed manifest invalid: " + "; ".join(installed_errors)
                 )
             installed_claims = _parse_transaction_claims(self.installed_manifest)
+            installed_replacements = _parse_accepted_asset_replacements(
+                self.installed_manifest,
+                self._entries(self.installed_manifest),
+                installed_claims,
+                label="installed",
+            )
+            for table_key in sorted(
+                set(candidate_replacements) & set(installed_replacements)
+            ):
+                if candidate_replacements[table_key] != installed_replacements[table_key]:
+                    root, logical_path = table_key
+                    raise PackPreflightError(
+                        "candidate/installed accepted_asset_replacements mismatch: "
+                        f"{root}:{logical_path}"
+                    )
 
         def validate_server_contract(
             manifest: dict, claims: dict[TableKey, TableClaim], label: str,
@@ -2100,19 +2412,45 @@ class PackTransaction:
             server_paths = tuple(
                 entry["logical_path"] for entry in manifest["roots"]["server"]
             )
-            expected = set(SERVER_LOGICAL_PATHS)
-            if set(server_paths) != expected or len(server_paths) != len(expected):
+            actual = set(server_paths)
+            required = set(SERVER_LOGICAL_PATHS)
+            missing = sorted(required - actual)
+            if missing:
                 raise PackPreflightError(
-                    f"{label} server root must contain exactly "
-                    + ", ".join(SERVER_LOGICAL_PATHS)
+                    f"{label} server root is missing required character tables: "
+                    + ", ".join(missing)
+                )
+            if len(actual) != len(server_paths):
+                raise PackPreflightError(
+                    f"{label} server root contains duplicate logical paths"
                 )
             server_claims = {
                 logical_path for root, logical_path in claims if root == "server"
             }
-            if server_claims != expected:
+            if server_claims != actual:
                 raise PackPreflightError(
-                    f"{label} server tables must claim exactly "
-                    + ", ".join(SERVER_LOGICAL_PATHS)
+                    f"{label} server tables must claim every server root exactly"
+                )
+            required_codecs = {
+                claims[("server", logical_path)].codec_id
+                for logical_path in required
+            }
+            if len(required_codecs) != 1:
+                raise PackPreflightError(
+                    f"{label} required character server tables must share one codec"
+                )
+            server_codec = next(iter(required_codecs))
+            wrong_codecs = sorted(
+                logical_path for logical_path in server_claims
+                if logical_path not in required
+                and claims[("server", logical_path)].codec_id
+                not in ({server_codec} | SERVER_EXTENSION_CODEC_IDS)
+            )
+            if wrong_codecs:
+                raise PackPreflightError(
+                    f"{label} server extension codec must be one of "
+                    f"{sorted({server_codec} | SERVER_EXTENSION_CODEC_IDS)}: "
+                    + ", ".join(wrong_codecs)
                 )
 
         validate_server_contract(self.manifest, candidate_claims, "candidate")
@@ -2120,7 +2458,6 @@ class PackTransaction:
             validate_server_contract(
                 self.installed_manifest, installed_claims, "installed"
             )
-        candidate_entries = self._entries(self.manifest)
         for (root, logical_path), claim in candidate_claims.items():
             if claim.codec_id not in self.codecs:
                 raise PackPreflightError(
@@ -2158,7 +2495,13 @@ class PackTransaction:
             raise PackPreflightError(
                 "active ownership hash exists but installed manifest was not supplied"
             )
-        return state, candidate_claims, installed_claims
+        return (
+            state,
+            candidate_claims,
+            installed_claims,
+            candidate_replacements,
+            installed_replacements,
+        )
 
     def _inspect_tables(
         self,
@@ -2402,7 +2745,13 @@ class PackTransaction:
         return _record_sort(changes), totals
 
     def preflight(self) -> PreflightReport:
-        state, candidate_claims, installed_claims = self._validate_inputs()
+        (
+            state,
+            candidate_claims,
+            installed_claims,
+            candidate_replacements,
+            _installed_replacements,
+        ) = self._validate_inputs()
         candidate_images, live_images, conflicts, table_changes = self._inspect_tables(
             candidate_claims, installed_claims
         )
@@ -2411,18 +2760,45 @@ class PackTransaction:
             self._entries(self.installed_manifest)
             if self.installed_manifest is not None else {}
         )
+        accepted_replacements: list[dict] = []
         for item in file_changes:
             ownership_key = (item["root"], item["logical_path"])
             if (item["root"] in CLIENT_ROOTS
                     and not item["is_table"]
-                    and item["source_path"] is not None
-                    and item["before"]["exists"]
-                    and ownership_key not in installed_entries):
-                conflicts.append({
-                    "kind": "asset_path",
-                    "claim": f"{item['root']}:{item['logical_path']}",
-                    "reason": "occupied_without_hash_bound_prior_path_ownership",
-                })
+                    and item["source_path"] is not None):
+                accepted = candidate_replacements.get(ownership_key)
+                before = item["before"]
+                if accepted is not None:
+                    expected = {
+                        "exists": True,
+                        "sha256": accepted.before_sha256,
+                        "size": accepted.before_size,
+                    }
+                    if before == expected:
+                        accepted_replacements.append({
+                            "root": accepted.root,
+                            "logical_path": accepted.logical_path,
+                            "before_sha256": accepted.before_sha256,
+                            "before_size": accepted.before_size,
+                            "live_path": item["live_path"],
+                        })
+                    else:
+                        conflicts.append({
+                            "kind": "asset_path",
+                            "claim": f"{item['root']}:{item['logical_path']}",
+                            "reason": "accepted_live_before_mismatch",
+                            "expected": expected,
+                            "actual": before,
+                        })
+                elif (
+                    before["exists"]
+                    and ownership_key not in installed_entries
+                ):
+                    conflicts.append({
+                        "kind": "asset_path",
+                        "claim": f"{item['root']}:{item['logical_path']}",
+                        "reason": "occupied_without_hash_bound_prior_path_ownership",
+                    })
         table_file_before = {
             (item["root"], item["logical_path"]): item["before"]
             for item in file_changes if item["is_table"]
@@ -2518,6 +2894,7 @@ class PackTransaction:
                 "expected_from_version": state.expected_from_version,
                 "live": dict(sorted(live_hashes.items())),
             }),
+            accepted_asset_replacements=_record_sort(accepted_replacements),
             capability_warnings=_record_sort(capability_warnings),
             can_prepare=can_prepare,
             delivery_status=delivery,

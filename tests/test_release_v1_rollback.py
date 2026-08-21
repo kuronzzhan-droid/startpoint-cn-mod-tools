@@ -21,6 +21,7 @@ from wf_release_v1.receipts import (
     commit_active_state,
     load_active_state,
     load_operation_receipt,
+    operation_reservation,
     write_phase_receipt,
 )
 from wf_release_v1.rollback import (
@@ -154,6 +155,25 @@ class RollbackTests(unittest.TestCase):
                 return_value=SimpleNamespace(components=("content",)),
             ),
         )
+
+    def test_modern_rollback_entrypoints_respect_operation_reservation(self) -> None:
+        platform = FakePlatform()
+        calls = (
+            lambda: recover_failed_operation(
+                self.target, platform, ORIGINAL_OPERATION, health_timeout=2.0
+            ),
+            lambda: rollback_to_previous(
+                self.target, platform, OLD_ID, health_timeout=2.0
+            ),
+        )
+
+        with operation_reservation(self.target.state_root, ORIGINAL_OPERATION):
+            for call in calls:
+                with self.subTest(call=call), self.assertRaises(ReleaseError) as caught:
+                    call()
+                self.assertEqual("WFREL_STATE_LOCKED", caught.exception.code)
+
+        self.assertEqual([], platform.events)
 
     def test_retries_only_a_recovery_failed_operation_and_records_a_new_audit_receipt(self) -> None:
         self._receipt(outcome="recovery_failed")

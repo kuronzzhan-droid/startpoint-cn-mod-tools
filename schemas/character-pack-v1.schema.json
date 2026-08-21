@@ -8,7 +8,7 @@
     "logicalPath": {
       "type": "string",
       "minLength": 1,
-      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*//)(?!.*(?:^|/)(?:\\.|\\.\\.)(?:/|$))(?!.*(?:^|/)(?:[sS][tT][oO][rR][yY]|[wW][oO][rR][dD][sS]|[lL][oO][gG][iI][nN]|[eE][xX][pP][rR][eE][sS][sS][iI][oO][nN][sS]?)(?:/|$))[^/]+(?:/[^/]+)*$"
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*//)(?!.*[\\u0000-\\u001F:<>\"|?*])(?!.*[. ](?:/|$))(?!.*(?:^|/)(?:[cC][oO][nN]|[pP][rR][nN]|[aA][uU][xX]|[nN][uU][lL]|[cC][oO][mM][1-9¹²³]|[lL][pP][tT][1-9¹²³]|[cC][oO][nN][iI][nN]\\$|[cC][oO][nN][oO][uU][tT]\\$)(?:[.]|/|$))(?!.*(?:^|/)(?:\\.|\\.\\.)(?:/|$))(?!.*(?:^|/)(?:[sS][tT][oO][rR][yY]|[wW][oO][rR][dD][sS]|[lL][oO][gG][iI][nN]|[eE][xX][pP][rR][eE][sS][sS][iI][oO][nN][sS]?)(?:/|$))[^/]+(?:/[^/]+)*$"
     },
     "fileEntry": {
       "type": "object",

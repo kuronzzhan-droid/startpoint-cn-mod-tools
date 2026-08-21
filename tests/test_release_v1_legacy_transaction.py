@@ -18,7 +18,7 @@ from wf_release_v1.canonical import FileIdentity
 from wf_release_v1.errors import ReleaseError
 from wf_release_v1.legacy_transaction import install_legacy_release
 from wf_release_v1.materialize import CandidateSet, StoredObject
-from wf_release_v1.receipts import load_active_state
+from wf_release_v1.receipts import load_active_state, operation_reservation
 from wf_release_v1.target import ComponentRoots, LaunchSpec, ManagedTarget, TargetCompatibility
 from wf_release_v1.verifier_overlay import inspect_overlay_chain
 
@@ -153,6 +153,7 @@ class LegacyTransactionTests(unittest.TestCase):
         recovery_failure: bool = False,
         late_conflict: bool = False,
         operation_id: str = OPERATION_ID,
+        capability_level: str = "transition",
     ):
         import wf_release_v1.legacy_transaction as transaction
 
@@ -194,8 +195,22 @@ class LegacyTransactionTests(unittest.TestCase):
                 target.write_bytes(b"unrelated-existing-bytes")
             return self.candidates
 
+        def inspect_capability(target: ManagedTarget, reader: object) -> object:
+            self.assertIs(self.target, target)
+            self.assertIs(platform, reader)
+            self.assertTrue(
+                (self.target.state_root / ".wf-release-v1.operation").is_file(),
+                "legacy capability inspection must happen inside the operation reservation",
+            )
+            return SimpleNamespace(level=capability_level)
+
         with (
             mock.patch.object(transaction, "new_operation_id", return_value=operation_id),
+            mock.patch.object(
+                transaction,
+                "inspect_target_capability",
+                side_effect=inspect_capability,
+            ),
             mock.patch.object(
                 transaction,
                 "verify_release_contract",
@@ -209,7 +224,31 @@ class LegacyTransactionTests(unittest.TestCase):
             mock.patch.object(transaction, "apply_legacy_switch", side_effect=apply_with_failure),
             mock.patch.object(transaction, "restore_legacy_switch", side_effect=restore),
         ):
-            return install_legacy_release(self.release, self.target, platform)
+            return install_legacy_release(
+                self.release,
+                self.target,
+                platform,
+                enforce_target_protocol=True,
+            )
+
+    def test_legacy_install_respects_operation_reservation(self) -> None:
+        platform = FakePlatform()
+        with operation_reservation(self.target.state_root, OPERATION_ID):
+            with self.assertRaises(ReleaseError) as caught:
+                self._run(platform)
+        self.assertEqual("WFREL_STATE_LOCKED", caught.exception.code)
+        self.assertEqual([], platform.events)
+
+    def test_wrong_protocol_is_rejected_inside_reservation_before_transaction_io(self) -> None:
+        platform = FakePlatform()
+
+        with self.assertRaises(ReleaseError) as caught:
+            self._run(platform, capability_level="modern")
+
+        self.assertEqual("WFREL_TARGET_PROTOCOL", caught.exception.code)
+        self.assertEqual([], platform.events)
+        self.assertFalse((self.target.state_root / "receipts").exists())
+        self.assertEqual({}, self._archive_bytes())
 
     def test_installs_three_layers_commits_state_and_restarts_owned_server(self) -> None:
         platform = FakePlatform()

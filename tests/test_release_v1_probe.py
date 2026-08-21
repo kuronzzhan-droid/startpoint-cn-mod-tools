@@ -219,6 +219,7 @@ class TargetProbeTests(unittest.TestCase):
             self.assertEqual(_runtime_manifest()["runtimeId"], facts.runtime_id)
             self.assertEqual("20.12.2", facts.node_version)
             self.assertEqual(GENERAL_CAPABILITIES, facts.capabilities)
+            self.assertEqual(f"sha256:{HEX_C}", facts.release_digest)
             self.assertEqual(f"sha256:{HEX_D}", facts.content_digest)
             self.assertEqual("1.4.58", facts.cdn_target_version)
             self.assertEqual(f"sha256:{HEX_D}", facts.mode_digest)

@@ -12,7 +12,7 @@ from .probe import TargetFacts
 _KEYS: Final = frozenset({
     "arch", "bundleId", "capabilities", "cdnTargetVersion", "contentDigest",
     "dependencyLock", "modeDigest", "nodeAbi", "nodeVersion", "patchOverlaySchema",
-    "platform", "runtimeApi", "runtimeId", "serverVersion",
+    "platform", "releaseDigest", "runtimeApi", "runtimeId", "serverVersion",
 })
 _DIGEST: Final = re.compile(r"sha256:[0-9a-f]{64}")
 _SEMVER: Final = re.compile(r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)")
@@ -47,6 +47,10 @@ def target_facts_from_wire(value: object) -> TargetFacts:
     node_abi = value["nodeAbi"]
     if not isinstance(node_abi, str) or not node_abi.isdecimal():
         raise _invalid("baseline target nodeAbi is invalid")
+    raw_release_digest = value["releaseDigest"]
+    release_digest = None if raw_release_digest is None else _string(
+        raw_release_digest, _DIGEST, "releaseDigest"
+    )
     return TargetFacts(
         bundle_id=_string(value["bundleId"], _DIGEST, "bundleId"),
         server_version=_string(value["serverVersion"], _SEMVER, "serverVersion"),
@@ -62,6 +66,7 @@ def target_facts_from_wire(value: object) -> TargetFacts:
         cdn_target_version=_string(value["cdnTargetVersion"], _DOTTED, "cdnTargetVersion"),
         mode_digest=_string(value["modeDigest"], _DIGEST, "modeDigest"),
         patch_overlay_schema=value["patchOverlaySchema"],  # type: ignore[arg-type]
+        release_digest=release_digest,
     )
 
 
@@ -80,6 +85,7 @@ def target_facts_to_wire(facts: TargetFacts) -> dict[str, object]:
         "nodeVersion": facts.node_version,
         "patchOverlaySchema": facts.patch_overlay_schema,
         "platform": facts.platform,
+        "releaseDigest": facts.release_digest,
         "runtimeApi": facts.runtime_api,
         "runtimeId": facts.runtime_id,
         "serverVersion": facts.server_version,

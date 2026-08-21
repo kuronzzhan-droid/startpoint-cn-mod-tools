@@ -11,7 +11,11 @@ import unittest
 
 from wf_release_v1.canonical import canonical_json_bytes
 from wf_release_v1.errors import ReleaseError
-from wf_release_v1._loopback_http import wait_health_ready
+from wf_release_v1._loopback_http import (
+    require_endpoint_unbound,
+    require_tcp_endpoint_unbound,
+    wait_health_ready,
+)
 
 
 @contextmanager
@@ -45,6 +49,161 @@ def _health_server(responses: list[tuple[int, object]]):
 
 
 class HealthReadyTests(unittest.TestCase):
+    def test_foreign_listener_is_rejected_before_managed_start(self) -> None:
+        with _health_server([(200, {"contractVersion": 1, "status": "ready"})]) as (url, _):
+            origin = url.removesuffix("/healthz")
+            with self.assertRaises(ReleaseError) as raised:
+                require_endpoint_unbound(origin)
+        self.assertEqual("WFREL_PROCESS_RUNNING", raised.exception.code)
+
+    def test_foreign_session_listener_is_rejected_before_managed_start(self) -> None:
+        with _health_server([(200, {"contractVersion": 1, "status": "ready"})]) as (url, _):
+            port = int(url.rsplit(":", 1)[1].split("/", 1)[0])
+            with self.assertRaises(ReleaseError) as raised:
+                require_tcp_endpoint_unbound("0.0.0.0", port, label="session")
+        self.assertEqual("WFREL_PROCESS_RUNNING", raised.exception.code)
+
+    def test_ready_health_must_echo_the_started_operation_and_pid(self) -> None:
+        operation_id = "20260815T010203.000000Z-0123456789abcdef0123456789abcdef"
+        for managed_launch in (
+            None,
+            {
+                "operationId": operation_id,
+                "pid": 998,
+                "http": {
+                    "host": "0.0.0.0", "port": 8001,
+                    "publicHost": "10.0.0.130",
+                },
+                "session": {
+                    "host": "0.0.0.0", "port": 8003,
+                    "publicHost": "10.0.0.130",
+                },
+                "cdnBaseUrl": "http://10.0.0.130:8001/patch/cn",
+            },
+            {
+                "operationId": "20260815T010203.000000Z-fedcba9876543210fedcba9876543210",
+                "pid": 997,
+                "http": {
+                    "host": "0.0.0.0", "port": 8001,
+                    "publicHost": "10.0.0.130",
+                },
+                "session": {
+                    "host": "0.0.0.0", "port": 8003,
+                    "publicHost": "10.0.0.130",
+                },
+                "cdnBaseUrl": "http://10.0.0.130:8001/patch/cn",
+            },
+            {
+                "operationId": operation_id,
+                "pid": 997,
+                "http": {
+                    "host": "0.0.0.0", "port": 8001,
+                    "publicHost": "10.0.0.130",
+                },
+                "session": {
+                    "host": "0.0.0.0", "port": 8003,
+                    "publicHost": "10.0.0.130",
+                },
+                "cdnBaseUrl": "http://10.0.0.130:8001/wrong",
+            },
+        ):
+            value = {
+                "contractVersion": 1,
+                "status": "ready",
+                "managedLaunch": managed_launch,
+                "services": {"http": True, "tcp": True},
+            }
+            with self.subTest(managed_launch=managed_launch), _health_server([(200, value)]) as (url, _):
+                with self.assertRaises(ReleaseError) as raised:
+                    wait_health_ready(
+                        url,
+                        1.0,
+                        expected_operation_id=operation_id,
+                        expected_pid=997,
+                        expected_bindings={
+                            "http": {
+                                "host": "0.0.0.0", "port": 8001,
+                                "publicHost": "10.0.0.130",
+                            },
+                            "session": {
+                                "host": "0.0.0.0", "port": 8003,
+                                "publicHost": "10.0.0.130",
+                            },
+                            "cdnBaseUrl": "http://10.0.0.130:8001/patch/cn",
+                        },
+                    )
+                self.assertEqual("WFREL_PROCESS_IDENTITY", raised.exception.code)
+
+        value = {
+            "contractVersion": 1,
+            "status": "ready",
+            "managedLaunch": {
+                "operationId": operation_id,
+                "pid": 997,
+                "http": {
+                    "host": "0.0.0.0", "port": 8001,
+                    "publicHost": "10.0.0.130",
+                },
+                "session": {
+                    "host": "0.0.0.0", "port": 8003,
+                    "publicHost": "10.0.0.130",
+                },
+                "cdnBaseUrl": "http://10.0.0.130:8001/patch/cn",
+            },
+            "services": {"http": True, "tcp": True},
+        }
+        with _health_server([(200, value)]) as (url, _):
+            wait_health_ready(
+                url,
+                1.0,
+                expected_operation_id=operation_id,
+                expected_pid=997,
+                expected_bindings={
+                    "http": {
+                        "host": "0.0.0.0", "port": 8001,
+                        "publicHost": "10.0.0.130",
+                    },
+                    "session": {
+                        "host": "0.0.0.0", "port": 8003,
+                        "publicHost": "10.0.0.130",
+                    },
+                    "cdnBaseUrl": "http://10.0.0.130:8001/patch/cn",
+                },
+            )
+
+    def test_managed_health_requires_both_http_and_tcp_ready(self) -> None:
+        operation_id = "20260815T010203.000000Z-0123456789abcdef0123456789abcdef"
+        bindings = {
+            "http": {
+                "host": "0.0.0.0", "port": 8001,
+                "publicHost": "10.0.0.130",
+            },
+            "session": {
+                "host": "0.0.0.0", "port": 8003,
+                "publicHost": "10.0.0.130",
+            },
+            "cdnBaseUrl": "http://10.0.0.130:8001/patch/cn",
+        }
+        value = {
+            "contractVersion": 1,
+            "status": "ready",
+            "managedLaunch": {
+                "operationId": operation_id,
+                "pid": 997,
+                **bindings,
+            },
+            "services": {"http": True, "tcp": False},
+        }
+        with _health_server([(200, value)]) as (url, _), self.assertRaises(ReleaseError) as raised:
+            wait_health_ready(
+                url,
+                1.0,
+                expected_operation_id=operation_id,
+                expected_pid=997,
+                expected_bindings=bindings,
+            )
+        self.assertEqual("WFREL_REQUIRE_TARGET", raised.exception.code)
+
     def test_retries_unavailable_and_not_ready_until_v1_ready(self) -> None:
         responses = [
             (503, {"contractVersion": 1, "status": "starting"}),

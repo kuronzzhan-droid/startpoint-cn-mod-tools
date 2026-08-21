@@ -23,6 +23,7 @@ from .receipts import (
     load_active_state,
     load_operation_receipt,
     load_previous_state,
+    operation_reservation,
     write_phase_receipt,
 )
 from .target import ManagedTarget
@@ -47,7 +48,17 @@ def _release_ids(state: ActiveState) -> tuple[str, ...]:
 
 
 def _environment(target: ManagedTarget) -> LaunchEnvironment:
-    return LaunchEnvironment(target.data_root, target.cdn_root, target.modes_root)
+    return LaunchEnvironment(
+        target.data_root,
+        target.cdn_root,
+        target.modes_root,
+        listen_host=target.http_bind_host,
+        listen_port=target.server_port,
+        public_host=target.public_host,
+        session_host=target.session_bind_host,
+        session_port=target.session_port,
+        session_public_host=target.session_public_host,
+    )
 
 
 def _stopped(platform: PlatformAdapter) -> None:
@@ -127,8 +138,15 @@ def _recover_runtime(
     if failure is not None:
         raise failure
     launch = target.launch_spec()
-    process = platform.start_server(launch, _environment(target), runtime_operation_id)
-    wait_health_ready(target.health_url, health_timeout)
+    environment = _environment(target)
+    process = platform.start_server(launch, environment, runtime_operation_id)
+    wait_health_ready(
+        target.health_url,
+        health_timeout,
+        expected_operation_id=process.operation_id,
+        expected_pid=process.pid,
+        expected_bindings=environment.health_bindings(),
+    )
     recovered = target.target_probe(timeout_seconds=health_timeout).run()
     if recovered != baseline or platform.current_process() != process:
         raise _error("WFREL_RECOVERY_FAILED", "recovered target disagrees with its witness")
@@ -154,13 +172,31 @@ def recover_failed_operation(
     timeout = _validated_timeout(health_timeout)
     if not isinstance(target, ManagedTarget):
         raise _error("WFREL_STATE_CONFLICT", "managed target is invalid")
+    recovery_id = new_operation_id(datetime.now(timezone.utc), secrets.token_bytes(16))
+    with operation_reservation(target.state_root, recovery_id):
+        return _recover_failed_operation_reserved(
+            target,
+            platform,
+            operation_id,
+            health_timeout=timeout,
+            recovery_id=recovery_id,
+        )
+
+
+def _recover_failed_operation_reserved(
+    target: ManagedTarget,
+    platform: PlatformAdapter,
+    operation_id: str,
+    *,
+    health_timeout: float,
+    recovery_id: str,
+) -> RollbackResult:
     original = load_operation_receipt(target.state_root, operation_id)
     _require_modern_receipt(original)
     if original.outcome != "recovery_failed" or original.recovery_outcome != "failed":
         raise _error("WFREL_STATE_CONFLICT", "operation is not recoverable")
     active = load_active_state(target.state_root)
     _stopped(platform)
-    recovery_id = new_operation_id(datetime.now(timezone.utc), secrets.token_bytes(16))
     try:
         _recover_runtime(
             target,
@@ -168,7 +204,7 @@ def recover_failed_operation(
             source_operation_id=operation_id,
             release_id=original.release_id,
             runtime_operation_id=recovery_id,
-            health_timeout=timeout,
+            health_timeout=health_timeout,
         )
         _final_receipt(
             target,
@@ -185,7 +221,7 @@ def recover_failed_operation(
             recovery_id, "recovered", original.release_id, None, False
         )
     except ReleaseError:
-        _stop_after_failure(platform, timeout)
+        _stop_after_failure(platform, health_timeout)
         try:
             _final_receipt(
                 target,
@@ -240,6 +276,25 @@ def rollback_to_previous(
     timeout = _validated_timeout(health_timeout)
     if not isinstance(target, ManagedTarget) or not isinstance(to_release_id, str):
         raise _error("WFREL_STATE_CONFLICT", "rollback target is invalid")
+    rollback_id = new_operation_id(datetime.now(timezone.utc), secrets.token_bytes(16))
+    with operation_reservation(target.state_root, rollback_id):
+        return _rollback_to_previous_reserved(
+            target,
+            platform,
+            to_release_id,
+            health_timeout=timeout,
+            rollback_id=rollback_id,
+        )
+
+
+def _rollback_to_previous_reserved(
+    target: ManagedTarget,
+    platform: PlatformAdapter,
+    to_release_id: str,
+    *,
+    health_timeout: float,
+    rollback_id: str,
+) -> RollbackResult:
     current = load_active_state(target.state_root)
     previous = load_previous_state(target.state_root)
     if to_release_id not in _release_ids(previous) or current == previous:
@@ -247,7 +302,6 @@ def rollback_to_previous(
     install = _install_receipt_for_previous(target, current, previous)
     _require_modern_receipt(install)
     _stopped(platform)
-    rollback_id = new_operation_id(datetime.now(timezone.utc), secrets.token_bytes(16))
     try:
         _recover_runtime(
             target,
@@ -255,7 +309,7 @@ def rollback_to_previous(
             source_operation_id=install.operation_id,
             release_id=install.release_id,
             runtime_operation_id=rollback_id,
-            health_timeout=timeout,
+            health_timeout=health_timeout,
         )
         rolled = ActiveState(
             previous.client_version,
@@ -287,7 +341,7 @@ def rollback_to_previous(
             )
         return RollbackResult(rollback_id, "succeeded", to_release_id, None, False)
     except ReleaseError:
-        _stop_after_failure(platform, timeout)
+        _stop_after_failure(platform, health_timeout)
         try:
             _final_receipt(
                 target,

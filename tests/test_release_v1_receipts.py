@@ -20,6 +20,7 @@ from wf_release_v1.receipts import (
     commit_active_state,
     load_active_state,
     new_operation_id,
+    operation_reservation,
     write_phase_receipt,
 )
 from wf_release_v1.schema import OwnershipManifest
@@ -81,6 +82,30 @@ def _read_json(path: Path) -> object:
 
 
 class OperationIdAndReceiptTests(unittest.TestCase):
+    def test_operation_reservation_is_exclusive_and_nofollow(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            reservation = root / ".wf-release-v1.operation"
+            with operation_reservation(root, OPERATION_ID):
+                self.assertTrue(reservation.is_file())
+                with self.assertRaises(ReleaseError) as caught:
+                    with operation_reservation(root, OPERATION_ID):
+                        pass
+                self.assertEqual("WFREL_STATE_LOCKED", caught.exception.code)
+            self.assertFalse(reservation.exists())
+
+            target = root / "outside"
+            target.write_text("foreign", encoding="utf-8")
+            try:
+                reservation.symlink_to(target)
+            except OSError:
+                return
+            with self.assertRaises(ReleaseError) as caught:
+                with operation_reservation(root, OPERATION_ID):
+                    pass
+            self.assertEqual("WFREL_STATE_LOCKED", caught.exception.code)
+            self.assertEqual("foreign", target.read_text(encoding="utf-8"))
+
     def test_operation_id_is_deterministic_utc_and_path_safe(self) -> None:
         offset_now = STARTED.astimezone(timezone(timedelta(hours=10)))
         self.assertEqual(OPERATION_ID, new_operation_id(offset_now, NONCE))
@@ -117,6 +142,8 @@ class OperationIdAndReceiptTests(unittest.TestCase):
             self.assertEqual(expected, _read_json(path))
             self.assertEqual(canonical_json_bytes(expected), path.read_bytes())
             self.assertNotIn(directory.encode("utf-8"), path.read_bytes())
+            self.assertNotIn(b"CN_ADMIN_TOKEN", path.read_bytes())
+            self.assertNotIn(b"admin-token-must-stay-process-only", path.read_bytes())
 
             updated = _receipt(phase="VERIFIED", updated_at=UPDATED)
             write_phase_receipt(root, updated)

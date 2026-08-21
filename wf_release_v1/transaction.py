@@ -8,6 +8,8 @@ from pathlib import Path
 import secrets
 
 from ._loopback_http import _timeout as _validated_health_timeout, wait_health_ready
+from .baseline_assets import AssetBaselineReport, verify_asset_replacement_baseline
+from ._platform_state import ManagedProcess
 from ._receipt_contract import OperationReceipt, new_operation_id
 from ._transaction_content import (
     ContentSwitch,
@@ -40,9 +42,15 @@ from .materialize import (
 )
 from .platform import LaunchEnvironment, PlatformAdapter
 from .probe import TargetFacts
-from .receipts import commit_active_state, load_active_state, write_phase_receipt
+from .receipts import (
+    commit_active_state,
+    load_active_state,
+    operation_reservation,
+    write_phase_receipt,
+)
 from .target import ManagedTarget
-from .verifier import verify_release
+from .target_capability import inspect_target_capability
+from .verifier import verify_release_contract
 
 
 @dataclass(frozen=True)
@@ -82,6 +90,27 @@ def _environment(target: ManagedTarget) -> LaunchEnvironment:
         data_root=target.data_root,
         cdn_root=target.cdn_root,
         modes_root=target.modes_root,
+        listen_host=target.http_bind_host,
+        listen_port=target.server_port,
+        public_host=target.public_host,
+        session_host=target.session_bind_host,
+        session_port=target.session_port,
+        session_public_host=target.session_public_host,
+    )
+
+
+def _wait_owned_health(
+    target: ManagedTarget,
+    environment: LaunchEnvironment,
+    process: ManagedProcess,
+    timeout: float,
+) -> None:
+    wait_health_ready(
+        target.health_url,
+        timeout,
+        expected_operation_id=process.operation_id,
+        expected_pid=process.pid,
+        expected_bindings=environment.health_bindings(),
     )
 
 
@@ -145,19 +174,83 @@ def install_release(
     platform: PlatformAdapter,
     *,
     health_timeout: float = 30.0,
+    enforce_target_protocol: bool = False,
 ) -> InstallResult:
-    """Verify, switch, double-accept and commit one content-only Release."""
+    """Reserve, verify, switch, double-accept and commit one content-only Release."""
     if not isinstance(release, Path) or not isinstance(target, ManagedTarget):
         raise _transaction_error("WFREL_TRANSACTION_FAILED", "install input is invalid")
+    if type(enforce_target_protocol) is not bool:
+        raise _transaction_error("WFREL_TRANSACTION_FAILED", "protocol gate is invalid")
     health_timeout = _validated_health_timeout(health_timeout)
-    report = verify_release(release)
-    previous, active_exists = _active_state(target)
-    initial_process = platform.current_process()
+    operation_id = new_operation_id(
+        datetime.now(timezone.utc),
+        secrets.token_bytes(16),
+    )
+    with operation_reservation(target.state_root, operation_id):
+        previous, active_exists = _active_state(target)
+        if not active_exists:
+            raise _transaction_error(
+                "WFREL_STATE_CONFLICT",
+                "managed target must be bootstrapped before install",
+            )
+        initial_process = platform.current_process()
+        protocol_checked = False
+        if enforce_target_protocol and initial_process is not None:
+            capability = inspect_target_capability(target, platform)
+            if capability.level != "modern":
+                raise _transaction_error(
+                    "WFREL_TARGET_PROTOCOL",
+                    "modern install requires a capabilities-v1 target",
+                )
+            protocol_checked = True
+        return _install_release_reserved(
+            release,
+            target,
+            platform,
+            operation_id=operation_id,
+            health_timeout=health_timeout,
+            previous=previous,
+            enforce_target_protocol=enforce_target_protocol,
+            initial_process=initial_process,
+            protocol_checked=protocol_checked,
+        )
+
+
+def _install_release_reserved(
+    release: Path,
+    target: ManagedTarget,
+    platform: PlatformAdapter,
+    *,
+    operation_id: str,
+    health_timeout: float,
+    previous: ActiveState,
+    enforce_target_protocol: bool,
+    initial_process: ManagedProcess | None,
+    protocol_checked: bool,
+) -> InstallResult:
+    report, preverified = verify_release_contract(release)
     if any(item.release_id == report.release_id for item in previous.releases):
         return InstallResult(report.release_id, None, "noop", None, ())
+    asset_baseline: AssetBaselineReport | None = None
+    if preverified.manifest.source_evidence.accepted_asset_replacements:
+        if initial_process is None:
+            raise _transaction_error(
+                "WFREL_REQUIRE_TARGET",
+                "asset replacement install requires a running managed target; resume first",
+            )
+        baseline_facts = target.target_probe(timeout_seconds=health_timeout).run()
+        asset_baseline = verify_asset_replacement_baseline(
+            preverified,
+            target,
+            baseline_facts,
+        )
+        if platform.current_process() != initial_process:
+            raise _transaction_error(
+                "WFREL_PROCESS_IDENTITY",
+                "managed process identity changed during asset baseline verification",
+            )
 
     started_at = datetime.now(timezone.utc)
-    operation_id = new_operation_id(started_at, secrets.token_bytes(16))
     receipt = OperationReceipt(
         schema_version=2,
         operation_id=operation_id,
@@ -215,18 +308,40 @@ def install_release(
         launch = target.launch_spec()
         environment = _environment(target)
 
-        if not active_exists and initial_process is not None:
-            raise _transaction_error(
-                "WFREL_STATE_CONFLICT",
-                "initial managed process has no active state",
-            )
         if baseline_process is None:
             baseline_process = platform.start_server(launch, environment, operation_id)
             phase = "BASE_STARTED"
             advance(phase)
-            wait_health_ready(target.health_url, health_timeout)
+            _wait_owned_health(target, environment, baseline_process, health_timeout)
+
+        if enforce_target_protocol and not protocol_checked:
+            capability = inspect_target_capability(target, platform)
+            if capability.level != "modern":
+                raise _transaction_error(
+                    "WFREL_TARGET_PROTOCOL",
+                    "modern install requires a capabilities-v1 target",
+                )
 
         before_facts = target.target_probe(timeout_seconds=health_timeout).run()
+        if (
+            asset_baseline is not None
+            and before_facts.release_digest != asset_baseline.release_digest
+        ):
+            raise _transaction_error(
+                "WFREL_ASSET_BASELINE_UNAVAILABLE",
+                "live Content Snapshot authority changed after asset baseline verification",
+            )
+        if asset_baseline is not None:
+            rechecked_baseline = verify_asset_replacement_baseline(
+                preverified,
+                target,
+                before_facts,
+            )
+            if rechecked_baseline != asset_baseline:
+                raise _transaction_error(
+                    "WFREL_ASSET_BASELINE_UNAVAILABLE",
+                    "disk asset baseline authority changed before target stop",
+                )
         phase = "PROBED"
         advance(phase)
         _gate(evaluate_requirements(verified, before_facts, previous))
@@ -255,14 +370,19 @@ def install_release(
         advance(phase)
 
         platform.prepare_content(launch, environment)
-        platform.start_server(launch, environment, operation_id)
+        switched_process = platform.start_server(launch, environment, operation_id)
         phase = "STARTED"
         advance(phase)
-        wait_health_ready(target.health_url, health_timeout)
+        _wait_owned_health(target, environment, switched_process, health_timeout)
         phase = "HEALTH_READY"
         advance(phase)
         accepted = target.target_probe(timeout_seconds=health_timeout).run()
         _gate(evaluate_expected_state(verified, accepted))
+        if platform.current_process() != switched_process:
+            raise _transaction_error(
+                "WFREL_PROCESS_IDENTITY",
+                "accepted process identity changed before commit",
+            )
         phase = "CAPABILITIES_ACCEPTED"
         advance(phase)
 
@@ -303,7 +423,7 @@ def install_release(
                     mode_applied=mode_switched,
                 )
                 recovered_process = platform.start_server(launch, environment, operation_id)
-                wait_health_ready(target.health_url, health_timeout)
+                _wait_owned_health(target, environment, recovered_process, health_timeout)
                 recovered = target.target_probe(timeout_seconds=health_timeout).run()
                 _same_target(before_facts, recovered)
                 if platform.current_process() != recovered_process:
@@ -344,26 +464,42 @@ def install_release(
                 )
 
         try:
-            current = platform.current_process()
             if initial_process is None:
-                if current is not None:
-                    platform.stop_owned(current, health_timeout)
-            elif (
-                current is None
-                and before_facts is not None
-                and launch is not None
-                and environment is not None
-            ):
-                recovered_process = platform.start_server(launch, environment, operation_id)
-                wait_health_ready(target.health_url, health_timeout)
-                _same_target(
-                    before_facts,
-                    target.target_probe(timeout_seconds=health_timeout).run(),
-                )
-                if platform.current_process() != recovered_process:
+                if baseline_process is not None:
+                    platform.stop_owned(baseline_process, health_timeout)
+                elif platform.current_process() is not None:
                     raise _transaction_error(
-                        "WFREL_RECOVERY_FAILED", "baseline process identity changed"
+                        "WFREL_PROCESS_IDENTITY",
+                        "managed process identity changed during failed install",
                     )
+            else:
+                current = platform.current_process()
+                if current is not None and current != initial_process:
+                    raise _transaction_error(
+                        "WFREL_PROCESS_IDENTITY",
+                        "managed process identity changed during failed install",
+                    )
+                if (
+                    current is None
+                    and before_facts is not None
+                    and launch is not None
+                    and environment is not None
+                ):
+                    recovered_process = platform.start_server(
+                        launch, environment, operation_id
+                    )
+                    _wait_owned_health(
+                        target, environment, recovered_process, health_timeout
+                    )
+                    _same_target(
+                        before_facts,
+                        target.target_probe(timeout_seconds=health_timeout).run(),
+                    )
+                    if platform.current_process() != recovered_process:
+                        raise _transaction_error(
+                            "WFREL_RECOVERY_FAILED",
+                            "baseline process identity changed",
+                        )
             advance(phase, outcome="failed", error_code=error.code)
             return InstallResult(report.release_id, operation_id, "failed", error.code, ())
         except ReleaseError:

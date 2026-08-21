@@ -14,11 +14,13 @@ from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import wf_mod_tool as core  # noqa: E402
+import wf_abyss_ticket_compile as ticket_compile  # noqa: E402
 import wf_rogue_rewards as rewards  # noqa: E402
 import wf_rogue_shop as shop  # noqa: E402
 
 
 SHOP_IDS = tuple(str(9_700_101 + index) for index in range(15))
+TICKET_SHOP_IDS = ("9700116", "9700117")
 LEGACY_MODE_DESCRIPTION = (
     "【测试版·连战专属】仅在深渊连战、宝物域连战 2001 与木桩假人生效。"
 )
@@ -49,10 +51,36 @@ def template_row(length: int = 51) -> list[str]:
 
 
 def client_fixture(*, template_length: int = 51) -> dict[str, object]:
+    single_ticket = template_row(template_length)
+    ten_ticket = template_row(template_length)
+    if template_length >= 35:
+        for row, name, icon, kind, item_id in (
+            (
+                single_ticket,
+                "通用角色单抽扭蛋券",
+                "item/spends/tickets/wildcard_once_gacha_character_ticket",
+                "1",
+                "999003",
+            ),
+            (
+                ten_ticket,
+                "通用角色十连扭蛋券",
+                "item/spends/tickets/wildcard_ten_times_gacha_character_ticket",
+                "2",
+                "999001",
+            ),
+        ):
+            row[7] = name
+            row[13] = icon
+            row[20] = f"official-ticket-kind-{kind}-sentinel"
+            row[32] = "0"
+            row[33] = item_id
     return {
         "9000000": "unrelated-high",
         "700099": core.write_csv_lines([["stale-client-row"]]),
         "310200": core.write_csv_lines([template_row(template_length)]),
+        "310194": core.write_csv_lines([single_ticket]),
+        "310195": core.write_csv_lines([ten_ticket]).encode("utf-8"),
         "2": "unrelated-low",
     }
 
@@ -108,6 +136,17 @@ def expected_product(spec: rewards.WeaponSpec) -> dict:
     }
 
 
+def expected_ticket_product(spec: ticket_compile.TicketSpec) -> dict:
+    price = 5 if spec.kind == "1" else 50
+    return {
+        "costs": [{"id": 2_370_099, "amount": price}],
+        "rewards": [{"type": 0, "id": int(spec.item_id), "count": 1}],
+        "availableFrom": "2000-01-01 00:00:00",
+        "availableUntil": "2099-12-31 23:59:59",
+        "stock": 9999,
+    }
+
+
 def assert_numeric_maps_sorted(case: unittest.TestCase, value) -> None:
     if isinstance(value, dict):
         keys = list(value)
@@ -127,7 +166,45 @@ class TestApiReuse(unittest.TestCase):
 
 
 class TestClientShop(unittest.TestCase):
-    def test_builds_exact_fifteen_rows_and_preserves_unrelated_entries(self):
+    def test_appends_two_ticket_products_after_the_unchanged_weapon_range(self):
+        result = shop.build_client_shop(client_fixture(), rewards.WEAPONS)
+
+        for shop_id in TICKET_SHOP_IDS:
+            self.assertIn(shop_id, result)
+        self.assertEqual(
+            SHOP_IDS + TICKET_SHOP_IDS,
+            tuple(key for key in result if key in SHOP_IDS + TICKET_SHOP_IDS),
+        )
+        for slot, (shop_id, spec) in enumerate(
+            zip(TICKET_SHOP_IDS, ticket_compile.TICKETS), start=16
+        ):
+            leaf = result[shop_id]
+            row = core.read_csv_lines(
+                leaf.decode("utf-8") if isinstance(leaf, bytes) else leaf
+            )[0]
+            self.assertEqual(51, len(row))
+            self.assertEqual("6", row[0])
+            self.assertEqual("700099", row[1])
+            self.assertEqual("11", row[2])
+            self.assertEqual(spec.name, row[7])
+            self.assertEqual(shop_id, row[8])
+            self.assertEqual("1", row[9])
+            self.assertEqual(str(slot), row[10])
+            self.assertEqual(spec.description, row[11])
+            self.assertEqual(spec.icon_name, row[13])
+            self.assertEqual("5", row[14])
+            self.assertEqual("2370099", row[18])
+            self.assertEqual("5" if spec.kind == "1" else "50", row[19])
+            self.assertEqual(f"official-ticket-kind-{spec.kind}-sentinel", row[20])
+            self.assertEqual("0", row[28])
+            self.assertEqual("9999", row[29])
+            self.assertEqual("9999", row[30])
+            self.assertEqual("(None)", row[31])
+            self.assertEqual("0", row[32])
+            self.assertEqual(spec.item_id, row[33])
+            self.assertEqual("1", row[34])
+
+    def test_preserves_exact_fifteen_weapon_rows_and_unrelated_entries(self):
         source = client_fixture()
         original = copy.deepcopy(source)
         result = shop.build_client_shop(source, rewards.WEAPONS)
@@ -138,9 +215,14 @@ class TestClientShop(unittest.TestCase):
         self.assertEqual("unrelated-high", result["9000000"])
         self.assertEqual(original["310200"], result["310200"])
         unrelated_before = [key for key in original if key != "700099"]
-        unrelated_after = [key for key in result if key not in SHOP_IDS]
+        unrelated_after = [
+            key for key in result if key not in SHOP_IDS + TICKET_SHOP_IDS
+        ]
         self.assertEqual(unrelated_before, unrelated_after)
-        self.assertEqual(SHOP_IDS, tuple(list(result)[-len(SHOP_IDS):]))
+        self.assertEqual(
+            SHOP_IDS + TICKET_SHOP_IDS,
+            tuple(list(result)[-len(SHOP_IDS + TICKET_SHOP_IDS):]),
+        )
         self.assertEqual(SHOP_IDS, tuple(key for key in result if key in SHOP_IDS))
 
         donor = template_row()
@@ -167,6 +249,23 @@ class TestClientShop(unittest.TestCase):
         self.assertTrue(all(len(core.read_csv_lines(short[key])[0]) == 51 for key in SHOP_IDS))
         with self.assertRaisesRegex(ValueError, "51"):
             shop.build_client_shop(client_fixture(template_length=52), rewards.WEAPONS)
+
+    def test_official_ticket_donor_reward_type_and_item_id_are_locked(self):
+        cases = (
+            ("310194", 32, "4"),
+            ("310195", 33, "999003"),
+        )
+        for donor_id, column, replacement in cases:
+            with self.subTest(donor=donor_id, column=column):
+                source = client_fixture()
+                leaf = source[donor_id]
+                raw = leaf.decode("utf-8") if isinstance(leaf, bytes) else leaf
+                row = core.read_csv_lines(raw)[0]
+                row[column] = replacement
+                source[donor_id] = core.write_csv_lines([row])
+
+                with self.assertRaisesRegex(ValueError, donor_id):
+                    shop.build_client_shop(source, rewards.WEAPONS)
 
     def test_byte_template_preserves_leaf_type(self):
         source = client_fixture()
@@ -216,6 +315,23 @@ class TestClientShop(unittest.TestCase):
 
 
 class TestServerShop(unittest.TestCase):
+    def test_appends_exact_ticket_products_without_changing_weapon_products(self):
+        event_shop, id_map = server_fixture()
+        built_shop, built_map = shop.build_server_shop(
+            event_shop, id_map, rewards.WEAPONS
+        )
+
+        products = built_shop["11"]["700099"]
+        for shop_id in TICKET_SHOP_IDS:
+            self.assertIn(shop_id, products)
+        for shop_id, spec in zip(TICKET_SHOP_IDS, ticket_compile.TICKETS):
+            self.assertEqual(expected_ticket_product(spec), products[shop_id])
+            self.assertEqual(
+                {"eventType": 11, "eventId": 700099}, built_map[shop_id]
+            )
+        for shop_id, spec in zip(SHOP_IDS, rewards.WEAPONS):
+            self.assertEqual(expected_product(spec), products[shop_id])
+
     def test_builds_exact_products_and_preserves_unrelated_entries(self):
         event_shop, id_map = server_fixture()
         original_shop = copy.deepcopy(event_shop)
@@ -258,6 +374,17 @@ class TestServerShop(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, SHOP_IDS[0]):
             shop.build_server_shop(event_shop, id_map, rewards.WEAPONS)
 
+    def test_foreign_ticket_product_or_id_map_is_rejected(self):
+        event_shop, id_map = server_fixture()
+        event_shop["11"]["700099"][TICKET_SHOP_IDS[0]] = {"foreign": True}
+        with self.assertRaisesRegex(ValueError, TICKET_SHOP_IDS[0]):
+            shop.build_server_shop(event_shop, id_map, rewards.WEAPONS)
+
+        event_shop, id_map = server_fixture()
+        id_map[TICKET_SHOP_IDS[1]] = {"eventType": 2, "eventId": 100006}
+        with self.assertRaisesRegex(ValueError, TICKET_SHOP_IDS[1]):
+            shop.build_server_shop(event_shop, id_map, rewards.WEAPONS)
+
         event_shop, id_map = server_fixture()
         id_map[SHOP_IDS[0]] = {"eventType": 2, "eventId": 100006}
         with self.assertRaisesRegex(ValueError, SHOP_IDS[0]):
@@ -278,6 +405,21 @@ class TestValidation(unittest.TestCase):
     def test_generated_shop_has_no_validation_problems(self):
         self.assertEqual([], shop.validate_shop(self.client, self.server, self.id_map))
 
+    def test_ticket_products_must_follow_the_owned_shop_order(self):
+        bad_client = {}
+        for key, value in self.client.items():
+            if key == TICKET_SHOP_IDS[0]:
+                bad_client[TICKET_SHOP_IDS[1]] = self.client[TICKET_SHOP_IDS[1]]
+                bad_client[TICKET_SHOP_IDS[0]] = value
+            elif key != TICKET_SHOP_IDS[1]:
+                bad_client[key] = value
+
+        problems = shop.validate_shop(bad_client, self.server, self.id_map)
+
+        self.assertTrue(
+            any("9700101..9700117" in problem for problem in problems), problems
+        )
+
     def test_bad_schema_and_wrong_total_cost_are_reported(self):
         bad_client = copy.deepcopy(self.client)
         row = core.read_csv_lines(bad_client[SHOP_IDS[0]])[0][:-1]
@@ -287,6 +429,40 @@ class TestValidation(unittest.TestCase):
         problems = shop.validate_shop(bad_client, bad_server, self.id_map)
         self.assertTrue(any("51" in problem for problem in problems), problems)
         self.assertTrue(any("825" in problem for problem in problems), problems)
+
+    def test_ticket_client_stock_and_reward_type_are_validated(self):
+        bad_client = copy.deepcopy(self.client)
+        leaf = bad_client[TICKET_SHOP_IDS[0]]
+        raw = leaf.decode("utf-8") if isinstance(leaf, bytes) else leaf
+        row = core.read_csv_lines(raw)[0]
+        row[29] = "5"
+        row[32] = "4"
+        bad_client[TICKET_SHOP_IDS[0]] = core.write_csv_lines([row])
+
+        problems = shop.validate_shop(bad_client, self.server, self.id_map)
+
+        self.assertTrue(
+            any("9700116 c29" in problem for problem in problems), problems
+        )
+        self.assertTrue(
+            any("9700116 c32" in problem for problem in problems), problems
+        )
+
+    def test_ticket_owned_id_outside_target_event_is_reported(self):
+        bad_server = copy.deepcopy(self.server)
+        bad_server["2"]["100006"][TICKET_SHOP_IDS[0]] = expected_ticket_product(
+            ticket_compile.TICKETS[0]
+        )
+
+        problems = shop.validate_shop(self.client, bad_server, self.id_map)
+
+        self.assertTrue(
+            any(
+                "9700116" in problem and "2/100006" in problem
+                for problem in problems
+            ),
+            problems,
+        )
 
 
 class TestCli(unittest.TestCase):
@@ -409,7 +585,8 @@ class TestCli(unittest.TestCase):
         save_table.assert_not_called()
         save_json.assert_not_called()
         report = output.getvalue()
-        self.assertIn("15 products", report)
+        self.assertIn("17 products", report)
+        self.assertIn("ticket 5 + 50", report)
         self.assertIn("825", report)
         self.assertIn("700099", report)
         self.assertIn("DRY-RUN", report)

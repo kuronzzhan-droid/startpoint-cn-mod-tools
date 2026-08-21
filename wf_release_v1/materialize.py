@@ -14,6 +14,7 @@ import tempfile
 from typing import Final
 
 from ._receipt_contract import _OPERATION_ID
+from ._path_io import native_path
 from .canonical import FileIdentity, normalize_relative_path, stream_copy_and_hash_stable_file
 from .compatibility import VerifiedRelease
 from .errors import ReleaseError
@@ -24,8 +25,11 @@ from .mode_candidates import (
     materialize_mode_candidate,
     verify_mode_candidate,
 )
+from .overlay_candidates import (
+    content_candidate_contract,
+    materialize_verified_overlay,
+)
 from .verifier import _exact_set, _metadata, verify_release
-from .verifier_overlay import verify_overlay_chain
 from .verifier_zip import ROOT, copy_hash_member, open_release, parse_classic_store
 
 
@@ -76,7 +80,7 @@ def _is_reparse(item: os.stat_result) -> bool:
 
 def _directory_identity(path: Path, *, candidate: bool = False) -> tuple[int, int]:
     try:
-        item = path.lstat()
+        item = os.lstat(native_path(path))
     except OSError:
         error = _candidate_invalid if candidate else lambda message: _error(
             "WFREL_OBJECT_CORRUPT", message, label="object"
@@ -100,7 +104,7 @@ def _same_directory(path: Path, expected: tuple[int, int], *, candidate: bool = 
 def _ensure_directory(parent: Path, expected: tuple[int, int], name: str, *, candidate: bool) -> Path:
     child = parent / name
     try:
-        child.mkdir()
+        os.mkdir(native_path(child))
     except FileExistsError:
         pass
     except OSError:
@@ -122,14 +126,17 @@ def _hash_stable(path: Path, *, candidate: bool) -> FileIdentity:
         "WFREL_OBJECT_CORRUPT", message, label="object"
     )
     try:
-        before_stat = path.lstat()
+        before_stat = os.lstat(native_path(path))
         if not stat.S_ISREG(before_stat.st_mode) or _is_reparse(before_stat):
             raise error("managed file must be a non-reparse regular file")
         before = (
             before_stat.st_dev, before_stat.st_ino, before_stat.st_size, before_stat.st_mtime_ns
         )
         digest = hashlib.sha256()
-        with path.open("rb") as reader:
+        descriptor = os.open(
+            native_path(path), os.O_RDONLY | getattr(os, "O_BINARY", 0)
+        )
+        with os.fdopen(descriptor, "rb") as reader:
             opened = os.fstat(reader.fileno())
             if (
                 opened.st_dev, opened.st_ino, opened.st_size, opened.st_mtime_ns
@@ -138,7 +145,7 @@ def _hash_stable(path: Path, *, candidate: bool) -> FileIdentity:
             while chunk := reader.read(1024 * 1024):
                 digest.update(chunk)
             opened_after = os.fstat(reader.fileno())
-        after = path.lstat()
+        after = os.lstat(native_path(path))
         if (
             opened_after.st_dev, opened_after.st_ino, opened_after.st_size, opened_after.st_mtime_ns
         ) != before or (
@@ -260,7 +267,7 @@ def _scan_candidate(root: Path) -> tuple[tuple[str, ...], tuple[str, ...]]:
 
     def visit(directory: Path, prefix: tuple[str, ...]) -> None:
         try:
-            entries = tuple(os.scandir(directory))
+            entries = tuple(os.scandir(native_path(directory)))
         except OSError:
             raise _candidate_invalid("candidate directory is unreadable") from None
         for entry in entries:
@@ -321,11 +328,28 @@ def _verify_content_candidate(candidates: CandidateSet) -> None:
     if actual != candidates.identities:
         raise _candidate_invalid("candidate file identities changed")
     parts = tuple(PurePosixPath(item).parts for item in candidates.relative_paths)
-    if not parts or any(len(item) != 3 or item[0] != "patches" for item in parts):
+    if not parts or any(len(item) < 3 or item[0] != "patches" for item in parts):
         raise _candidate_invalid("content candidate layout is invalid")
     targets = {item[1] for item in parts}
-    if len(targets) != 1 or verify_overlay_chain(paths) != next(iter(targets)):
+    if len(targets) != 1:
         raise _candidate_invalid("content candidate Overlay target disagrees")
+    metadata = {"README.md", "requires.json", "patch-manifest.json"}
+    outer_indexes = tuple(
+        index for index, item in enumerate(parts)
+        if len(item) == 3 and item[2] not in metadata
+    )
+    if len(outer_indexes) != 1:
+        raise _candidate_invalid("content candidate must retain one verified Overlay")
+    outer_index = outer_indexes[0]
+    outer_relative = candidates.relative_paths[outer_index]
+    expected_paths, expected_identities = content_candidate_contract(
+        root, outer_relative, candidates.identities[outer_index]
+    )
+    if (
+        candidates.relative_paths != expected_paths
+        or candidates.identities != expected_identities
+    ):
+        raise _candidate_invalid("content candidate receiver contract disagrees")
     _same_directory(root, before, candidate=True)
 
 
@@ -343,7 +367,7 @@ def verify_candidates(candidates: CandidateSet) -> None:
 def _write_member(stream, member, destination: Path, expected: FileIdentity) -> FileIdentity:
     flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0)
     try:
-        descriptor = os.open(destination, flags, 0o600)
+        descriptor = os.open(native_path(destination), flags, 0o600)
         with os.fdopen(descriptor, "wb", buffering=0) as writer:
             digest = copy_hash_member(stream, member, writer)
             writer.flush()
@@ -371,15 +395,34 @@ def _materialize_content_candidate(
     release_name = _release_directory(obj.release_id)
     final_root = component_root / release_name
     content_files = tuple(item for item in release.files if item.path.startswith("content/"))
-    expected_paths = tuple(
-        f"patches/{release.expected_state.cdn_target_version}/{PurePosixPath(item.path).name}"
-        for item in content_files
-    )
-    expected_identities = tuple(FileIdentity(item.size, item.sha256) for item in content_files)
-    existing = CandidateSet(
-        obj.release_id, final_root, None, None, expected_identities, expected_paths
-    )
+    if len(content_files) != 1:
+        raise _error(
+            "WFREL_INSTALL_UNSUPPORTED_COMPONENT",
+            "multi-edge content receiver switching is unavailable",
+            label="components",
+        )
+    content_file = content_files[0]
+    target_version = release.expected_state.cdn_target_version
+    outer_name = PurePosixPath(content_file.path).name
+    _portable_candidate_part(outer_name)
+    outer_relative = f"patches/{target_version}/{outer_name}"
+    outer_identity = FileIdentity(content_file.size, content_file.sha256)
+
+    def candidate_at(candidate_root: Path) -> CandidateSet:
+        relative_paths, identities = content_candidate_contract(
+            candidate_root, outer_relative, outer_identity
+        )
+        return CandidateSet(
+            obj.release_id,
+            candidate_root,
+            None,
+            None,
+            identities,
+            relative_paths,
+        )
+
     if final_root.exists():
+        existing = candidate_at(final_root)
         verify_candidates(existing)
         return existing
 
@@ -387,41 +430,36 @@ def _materialize_content_candidate(
     prefix = f".materialize-{operation_tag}-"
     with tempfile.TemporaryDirectory(prefix=prefix, dir=component_root) as temporary:
         staging = Path(temporary) / release_name
-        staging.mkdir()
+        os.mkdir(native_path(staging))
         patches = staging / "patches"
         target_root = patches / release.expected_state.cdn_target_version
-        patches.mkdir()
-        target_root.mkdir()
-        identities: list[FileIdentity] = []
+        os.mkdir(native_path(patches))
+        os.mkdir(native_path(target_root))
         with open_release(obj.archive) as (stream, archive_size):
             by_name = {
                 item.name: item for item in parse_classic_store(stream, archive_size)
             }
-            for item, relative, expected in zip(
-                content_files, expected_paths, expected_identities, strict=True
-            ):
-                member = by_name.get(f"{ROOT}{item.path}")
-                if member is None:
-                    raise _error("WFREL_OBJECT_CORRUPT", "stored payload is missing", label="object")
-                identities.append(
-                    _write_member(stream, member, staging / Path(relative), expected)
-                )
-        _sync_directory(target_root)
-        _sync_directory(patches)
-        _sync_directory(staging)
-        staged = CandidateSet(
-            obj.release_id, staging, None, None, tuple(identities), expected_paths
-        )
+            member = by_name.get(f"{ROOT}{content_file.path}")
+            if member is None:
+                raise _error("WFREL_OBJECT_CORRUPT", "stored payload is missing", label="object")
+            _write_member(stream, member, staging / Path(outer_relative), outer_identity)
+        materialize_verified_overlay(staging / Path(outer_relative), target_root)
+        _sync_directory(Path(native_path(target_root)))
+        _sync_directory(Path(native_path(patches)))
+        _sync_directory(Path(native_path(staging)))
+        staged = candidate_at(staging)
         verify_candidates(staged)
         _same_directory(component_root, root_identity, candidate=True)
         try:
-            os.rename(staging, final_root)
+            os.rename(native_path(staging), native_path(final_root))
         except FileExistsError:
+            existing = candidate_at(final_root)
             verify_candidates(existing)
             return existing
         except OSError:
             raise _error("WFREL_CANDIDATE_IO", "candidate could not be committed") from None
-        _sync_directory(component_root)
+        _sync_directory(Path(native_path(component_root)))
+        existing = candidate_at(final_root)
         verify_candidates(existing)
         return existing
 

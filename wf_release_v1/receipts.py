@@ -30,6 +30,7 @@ from .schema import OwnershipManifest, parse_ownership
 
 _MAX_DOCUMENT_BYTES: Final = 256 * 1024
 _LOCK_NAME: Final = ".wf-release-v1.lock"
+_OPERATION_RESERVATION_NAME: Final = ".wf-release-v1.operation"
 _REPARSE_POINT_ATTRIBUTE: Final = 0x0400
 _SAFE_TEXT: Final = re.compile(r"[A-Za-z0-9][A-Za-z0-9._+:-]{0,127}")
 _STATE_KEYS: Final = frozenset({
@@ -179,6 +180,71 @@ def _state_lock(root: Path) -> Iterator[tuple[int, int]]:
         except OSError:
             if not active_error:
                 raise ReleaseError("WFREL_STATE_IO", "state lock could not be released") from None
+
+
+@contextmanager
+def operation_reservation(root: Path, operation_id: str) -> Iterator[None]:
+    """Hold one nofollow operation-wide reservation across all release phases."""
+    if not isinstance(operation_id, str) or _OPERATION_ID.fullmatch(operation_id) is None:
+        raise _invalid("operation identity is invalid")
+    expected = _root_snapshot(root)
+    reservation = root / _OPERATION_RESERVATION_NAME
+    try:
+        descriptor = _open_exclusive(reservation)
+    except FileExistsError:
+        raise ReleaseError("WFREL_STATE_LOCKED", "target operation is already reserved") from None
+    except OSError:
+        raise ReleaseError("WFREL_STATE_IO", "target operation could not be reserved") from None
+
+    reservation_snapshot: tuple[int, int, int, int, bool, bool] | None = None
+    active_error = False
+    try:
+        raw = canonical_json_bytes({
+            "createdAt": _wire_time(datetime.now(timezone.utc)),
+            "operationId": operation_id,
+        })
+        with os.fdopen(descriptor, "wb", buffering=0) as writer:
+            try:
+                _write_exact(writer, raw)
+                writer.flush()
+                os.fsync(writer.fileno())
+            except OSError:
+                reservation_snapshot = _stat_identity(os.fstat(writer.fileno()))
+                raise ReleaseError(
+                    "WFREL_STATE_IO", "target operation reservation could not be initialized"
+                ) from None
+            reservation_snapshot = _stat_identity(os.fstat(writer.fileno()))
+        if (
+            not reservation_snapshot[4]
+            or reservation_snapshot[5]
+            or _snapshot(reservation) != reservation_snapshot
+        ):
+            raise _state_invalid("target operation reservation identity is invalid")
+        _same_root(root, expected)
+        _sync_directory(root)
+        yield
+    except BaseException:
+        active_error = True
+        raise
+    finally:
+        try:
+            current = _snapshot(reservation)
+            if reservation_snapshot is None or current != reservation_snapshot:
+                if not active_error:
+                    raise _state_invalid(
+                        "target operation reservation identity changed during the operation"
+                    )
+            else:
+                reservation.unlink()
+                _sync_directory(root)
+        except ReleaseError:
+            if not active_error:
+                raise
+        except OSError:
+            if not active_error:
+                raise ReleaseError(
+                    "WFREL_STATE_IO", "target operation reservation could not be released"
+                ) from None
 
 def _atomic_write(
     root: Path,
@@ -437,8 +503,14 @@ def commit_active_state(
             current = _state_from_wire(_read_canonical(active_path, kind="active state"))
             if current != previous:
                 raise ReleaseError("WFREL_STATE_CONFLICT", "active state changed before commit")
-        elif previous.releases or previous.known_release_ids:
-            raise ReleaseError("WFREL_STATE_CONFLICT", "initial active state is unavailable")
+        else:
+            if previous_path.exists() or previous_path.is_symlink():
+                raise ReleaseError(
+                    "WFREL_STATE_CONFLICT",
+                    "previous state exists without an active commit point",
+                )
+            if previous.releases or previous.known_release_ids:
+                raise ReleaseError("WFREL_STATE_CONFLICT", "initial active state is unavailable")
         if previous_path.exists() or previous_path.is_symlink():
             _state_from_wire(_read_canonical(previous_path, kind="previous state"))
         _atomic_write(root, expected, root, previous_path, previous_raw)
@@ -447,5 +519,5 @@ def commit_active_state(
 __all__ = [
     "OperationReceipt", "commit_active_state", "list_operation_receipts",
     "load_active_state", "load_operation_receipt", "load_previous_state",
-    "new_operation_id", "write_phase_receipt",
+    "new_operation_id", "operation_reservation", "write_phase_receipt",
 ]

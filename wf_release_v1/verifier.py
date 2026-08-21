@@ -115,11 +115,26 @@ def _payloads(
     return total, staged
 
 
-def _ownership(ownership: OwnershipManifest) -> None:
+def _ownership(release: ReleaseManifest, ownership: OwnershipManifest) -> None:
+    replacements = release.source_evidence.accepted_asset_replacements
+    expected_asset_claims = {
+        f"asset:{item.root}/{item.logical_path}"
+        for item in replacements
+    }
+    actual_asset_claims = {
+        item for item in ownership.records if item.startswith("asset:")
+    }
     if (
         len(ownership.entities) != 1
         or _CHARACTER_ENTITY.fullmatch(ownership.entities[0]) is None
         or any("*" in value or "?" in value for value in ownership.paths)
+        or (
+            release.source_evidence.kind == "character-workspace-v2"
+            and (
+                actual_asset_claims != expected_asset_claims
+                or any(item.logical_path not in ownership.paths for item in replacements)
+            )
+        )
     ):
         raise _error(
             "WFREL_OWNERSHIP_INVALID",
@@ -182,7 +197,7 @@ def verify_release_contract(path: Path) -> tuple[VerificationReport, VerifiedRel
             )
             verify_release_id(release)
             overlay = _components(release, requirements, staged)
-            _ownership(ownership)
+            _ownership(release, ownership)
         report = VerificationReport(
             release_id=release.release_id,
             components=tuple(component.kind for component in release.components),

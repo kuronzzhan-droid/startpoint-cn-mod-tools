@@ -54,7 +54,14 @@ class WindowsBackend:
         self._kernel32.TerminateProcess.argtypes = [wintypes.HANDLE, wintypes.UINT]
         self._kernel32.TerminateProcess.restype = wintypes.BOOL
 
-    def spawn(self, command: tuple[str, ...], cwd: Path, environment: dict[str, str]) -> object:
+    def spawn(
+        self,
+        command: tuple[str, ...],
+        cwd: Path,
+        environment: dict[str, str],
+        *,
+        capture_output: bool = True,
+    ) -> object:
         startup = subprocess.STARTUPINFO()
         startup.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         startup.wShowWindow = 0
@@ -63,8 +70,8 @@ class WindowsBackend:
             cwd=cwd,
             env=environment,
             stdin=subprocess.DEVNULL,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stdout=subprocess.PIPE if capture_output else subprocess.DEVNULL,
+            stderr=subprocess.PIPE if capture_output else subprocess.DEVNULL,
             creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
             startupinfo=startup,
         )

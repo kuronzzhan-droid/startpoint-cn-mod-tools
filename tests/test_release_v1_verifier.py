@@ -170,6 +170,95 @@ class VerifierTests(unittest.TestCase):
         payload = next(raw for name, raw in _members(self.valid_raw) if "/content/" in name)
         self.assertEqual(len(payload), report.payload_bytes)
 
+    def test_asset_before_evidence_and_exclusive_claims_are_exactly_cross_bound(self) -> None:
+        """A recomputed Release cannot drop or invent shared-asset ownership."""
+        base = _members(self.valid_raw)
+
+        def rebuilt(*, replacements: list[dict[str, object]] | None,
+                    asset_claims: list[str], omit_path: bool = False) -> bytes:
+            by_name = dict(base)
+            ownership = json.loads(by_name[OWNERSHIP])
+            ownership["records"] = sorted(
+                [
+                    item for item in ownership["records"]
+                    if not item.startswith("asset:")
+                ] + asset_claims,
+                key=lambda item: item.encode("utf-8"),
+            )
+            if replacements is not None and not omit_path:
+                ownership["paths"] = sorted(
+                    {
+                        *ownership["paths"],
+                        *(item["logicalPath"] for item in replacements),
+                    },
+                    key=lambda item: item.encode("utf-8"),
+                )
+            if omit_path:
+                ownership["paths"] = [
+                    item for item in ownership["paths"]
+                    if item != "item/sprite_sheet.png"
+                ]
+            ownership_raw = canonical_json_bytes(ownership)
+            release = json.loads(by_name[RELEASE])
+            if replacements is not None:
+                release["sourceEvidence"] = {
+                    "acceptedAssetReplacements": replacements,
+                    "kind": "character-workspace-v2",
+                    "workspaceInputSha256": "a" * 64,
+                }
+            release["metadataSha256"]["ownership"] = hashlib.sha256(
+                ownership_raw
+            ).hexdigest()
+            body = copy.deepcopy(release)
+            body.pop("releaseId")
+            release["releaseId"] = compute_release_id(body)
+            release_raw = canonical_json_bytes(release)
+            return _classic_store([
+                (
+                    name,
+                    release_raw if name == RELEASE else
+                    ownership_raw if name == OWNERSHIP else raw,
+                )
+                for name, raw in base
+            ])
+
+        replacement = {
+            "beforeSha256": "b" * 64,
+            "beforeSize": 12,
+            "logicalPath": "item/sprite_sheet.png",
+            "root": "common",
+        }
+        cases = (
+            rebuilt(replacements=[replacement], asset_claims=[]),
+            rebuilt(
+                replacements=[replacement],
+                asset_claims=[
+                    "asset:common/item/extra.png",
+                    "asset:common/item/sprite_sheet.png",
+                ],
+            ),
+            rebuilt(
+                replacements=[replacement],
+                asset_claims=["asset:common/item/sprite_sheet.png"],
+                omit_path=True,
+            ),
+        )
+        for raw in cases:
+            with self.subTest(case=hashlib.sha256(raw).hexdigest()):
+                self._rejects(raw, "WFREL_OWNERSHIP_INVALID")
+
+        valid_v2 = rebuilt(
+            replacements=[replacement],
+            asset_claims=["asset:common/item/sprite_sheet.png"],
+        )
+        self.assertTrue(self._verify(valid_v2).release_id.startswith("sha256:"))
+
+        legacy_asset_record = rebuilt(
+            replacements=None,
+            asset_claims=["asset:legacy-record-kept-for-v1"],
+        )
+        self.assertTrue(self._verify(legacy_asset_record).release_id.startswith("sha256:"))
+
     def test_valid_payload_is_streamed_and_hashed_once(self) -> None:
         import wf_release_v1.verifier as verifier
 

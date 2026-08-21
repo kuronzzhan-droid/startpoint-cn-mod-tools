@@ -1,0 +1,21 @@
+name: hygiene
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  hygiene:
+    name: Repository hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # 先证明门禁本身还有牙，再用它扫仓库。顺序不能反：门禁静默失效过两次，
+      # 单看「扫描通过」区分不出「真干净」和「规则根本没生效」。
+      - name: Prove the gate still fails on planted secrets
+        run: bash scripts/tests/test-hygiene.sh
+      - name: Scan every tracked file
+        run: bash scripts/check-hygiene.sh --all

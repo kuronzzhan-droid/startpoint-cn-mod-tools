@@ -6,6 +6,24 @@ from typing import Mapping
 
 
 def add_target_commands(commands, context, handlers: Mapping[str, object]) -> None:
+    bootstrap = commands.add_parser(
+        "bootstrap", help="初始化已停止的首个受管 baseline", output_context=context
+    )
+    bootstrap.add_argument("--target", required=True)
+    bootstrap.add_argument(
+        "--confirm", required=True, choices=("BOOTSTRAP_WF_TARGET",)
+    )
+    bootstrap.set_defaults(handler=handlers["bootstrap"])
+
+    resume = commands.add_parser(
+        "resume", help="恢复已停止的受管目标服务", output_context=context
+    )
+    resume.add_argument("--target", required=True)
+    resume.add_argument(
+        "--confirm", required=True, choices=("RESUME_WF_TARGET",)
+    )
+    resume.set_defaults(handler=handlers["resume"])
+
     capture = commands.add_parser(
         "capture-requirements", help="从当前目标只读捕获发行要求", output_context=context
     )

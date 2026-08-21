@@ -17,6 +17,8 @@ import unittest
 from unittest.mock import patch
 import zipfile
 
+import wf_character_workspace
+
 from tests.release_v1_fixtures import (
     make_patch_overlay,
     make_sealed_character_workspace,
@@ -142,6 +144,73 @@ class ProducerTests(unittest.TestCase):
             # Ownership is source-manifest semantics. It is intentionally not a
             # claim that these logical paths were mapped byte-for-byte inside
             # the independently validated outer Overlay archive.
+
+    def test_sealed_accepted_asset_replacements_are_release_bound_and_exclusive(self) -> None:
+        """Dropping accepted replacements during build would reopen shared-asset clobbers."""
+        from wf_release_v1.producer import build_character_release
+        from wf_release_v1.verifier import verify_release_contract
+
+        current = wf_character_workspace.load_workspace(self.workspace)
+        manifest_path = current.package_dir / "manifest.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        assets = (
+            (
+                "item/sprite_sheet.atlas.amf3.deflate",
+                b"atlas-after",
+                b"atlas-before",
+            ),
+            ("item/sprite_sheet.png", b"sheet-after", b"sheet-before"),
+        )
+        accepted = []
+        for logical_path, after, before in assets:
+            candidate = current.package_dir / "roots" / "common" / Path(logical_path)
+            candidate.parent.mkdir(parents=True, exist_ok=True)
+            candidate.write_bytes(after)
+            manifest["roots"]["common"].append({
+                "logical_path": logical_path,
+                "sha256": hashlib.sha256(after).hexdigest(),
+                "size": len(after),
+            })
+            accepted.append({
+                "root": "common",
+                "logical_path": logical_path,
+                "before_sha256": hashlib.sha256(before).hexdigest(),
+                "before_size": len(before),
+            })
+        # The sealed workspace binds author order, while Release v2 emits one
+        # canonical root/path order independent of that presentation detail.
+        manifest["snapshot"]["accepted_asset_replacements"] = list(reversed(accepted))
+        manifest["qa"]["workspace_input_sha256"] = ""
+        manifest_path.write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        wf_character_workspace.seal_workspace(current)
+
+        output = self.output_dir / "asset-replacements.zip"
+        build_character_release(self._request(output))
+        _report, verified = verify_release_contract(output)
+
+        self.assertEqual("character-workspace-v2", verified.manifest.source_evidence.kind)
+        self.assertEqual(
+            [
+                {
+                    "beforeSha256": hashlib.sha256(before).hexdigest(),
+                    "beforeSize": len(before),
+                    "logicalPath": logical_path,
+                    "root": "common",
+                }
+                for logical_path, _after, before in assets
+            ],
+            verified.manifest.source_evidence.to_wire()["acceptedAssetReplacements"],
+        )
+        self.assertEqual(
+            {
+                "asset:common/item/sprite_sheet.atlas.amf3.deflate",
+                "asset:common/item/sprite_sheet.png",
+            },
+            {record for record in verified.ownership.records if record.startswith("asset:")},
+        )
 
     def test_outer_zip_has_one_canonical_raw_encoding(self) -> None:
         from wf_release_v1.producer import build_character_release

@@ -14,11 +14,13 @@ from ._cli_files import read_stable_metadata
 from ._cli_target_commands import add_target_commands
 from .errors import ReleaseError
 from ._local_cli import (
+    run_bootstrap as _run_bootstrap,
     run_install as _run_install,
     run_legacy_install as _run_legacy_install,
     run_legacy_rollback as _run_legacy_rollback,
     run_plan as _run_target_plan,
     run_probe as _run_probe,
+    run_resume as _run_resume,
     run_rollback as _run_rollback,
 )
 from .legacy_share import inspect_legacy_share
@@ -178,6 +180,7 @@ def _run_build(arguments: argparse.Namespace) -> dict[str, object]:
             overlay_archives=tuple(Path(item) for item in arguments.overlay),
             output=Path(arguments.output),
             requirements=requirements,
+            replaces=tuple(arguments.replaces),
         )
     )
     return _build_receipt_wire(receipt)
@@ -253,6 +256,7 @@ def _parser(output_context: _ParseOutputContext | None = None) -> _ArgumentParse
     build.add_argument("--name", required=True)
     build.add_argument("--version", required=True)
     build.add_argument("--output", required=True)
+    build.add_argument("--replaces", action="append", default=[])
     build.set_defaults(handler=_run_build)
 
     for name, help_text in (
@@ -318,12 +322,14 @@ def _parser(output_context: _ParseOutputContext | None = None) -> _ArgumentParse
     overlay.set_defaults(handler=_run_build_overlay)
 
     add_target_commands(commands, context, {
+        "bootstrap": _run_bootstrap,
         "capture": _run_capture_requirements,
         "install": _run_install,
         "legacy": _run_legacy_install,
         "legacy_rollback": _run_legacy_rollback,
         "plan": _run_plan_install,
         "probe": _run_probe,
+        "resume": _run_resume,
         "rollback": _run_rollback,
     })
     return parser

@@ -12,6 +12,7 @@ import unittest
 from unittest import mock
 
 from wf_release_v1 import cli
+from wf_release_v1.errors import ReleaseError
 from wf_release_v1.legacy_compatibility import LegacyInstallPlan
 from wf_release_v1.transaction import InstallResult
 
@@ -106,7 +107,12 @@ class LegacyCliTests(unittest.TestCase):
             )
         self.assertEqual((0, "stdout"), (code, stream))
         self.assertEqual("succeeded", wire["outcome"])
-        install.assert_called_once_with(Path("release.zip"), target, mock.ANY)
+        install.assert_called_once_with(
+            Path("release.zip"),
+            target,
+            mock.ANY,
+            enforce_target_protocol=True,
+        )
 
         for wrong in ("INSTALL_WF_RELEASE", "install_legacy_release", ""):
             with self.subTest(wrong=wrong), mock.patch.object(
@@ -120,7 +126,7 @@ class LegacyCliTests(unittest.TestCase):
                 code, stream, wire["code"],
             ))
 
-    def test_write_routes_reject_the_other_protocol_before_transaction(self) -> None:
+    def test_write_routes_delegate_protocol_rejection_to_the_reserved_transaction(self) -> None:
         import wf_release_v1._local_cli as local_cli
 
         target = SimpleNamespace(
@@ -128,24 +134,21 @@ class LegacyCliTests(unittest.TestCase):
             launch_spec=lambda: SimpleNamespace(executable=Path("C:/node.exe")),
         )
         cases = (
-            ("install", "legacy", "INSTALL_WF_RELEASE"),
-            ("install-legacy", "modern", "INSTALL_LEGACY_RELEASE"),
-            ("install-legacy", "legacy", "INSTALL_LEGACY_RELEASE"),
+            ("install", "INSTALL_WF_RELEASE", "install_release"),
+            ("install-legacy", "INSTALL_LEGACY_RELEASE", "install_legacy_release"),
         )
-        for command, level, confirmation in cases:
+        for command, confirmation, transaction_name in cases:
+            protocol_error = ReleaseError(
+                "WFREL_TARGET_PROTOCOL", "injected reserved protocol rejection"
+            )
             with (
-                self.subTest(command=command, level=level),
+                self.subTest(command=command),
                 mock.patch.object(local_cli.ManagedTarget, "load", return_value=target),
                 mock.patch.object(local_cli, "WindowsPlatformAdapter", return_value=object()),
+                mock.patch.object(local_cli, "inspect_target_capability") as inspect,
                 mock.patch.object(
-                    local_cli, "inspect_target_capability", return_value=SimpleNamespace(level=level)
-                ),
-                mock.patch.object(
-                    local_cli, "install_release", side_effect=AssertionError("modern write")
-                ),
-                mock.patch.object(
-                    local_cli, "install_legacy_release", side_effect=AssertionError("legacy write")
-                ),
+                    local_cli, transaction_name, side_effect=protocol_error
+                ) as transaction,
             ):
                 code, wire, stream = self._run(
                     command, "--target", "target.json", "--release", "release.zip",
@@ -154,6 +157,13 @@ class LegacyCliTests(unittest.TestCase):
             self.assertEqual((20, "stderr", "WFREL_TARGET_PROTOCOL"), (
                 code, stream, wire["code"],
             ))
+            transaction.assert_called_once_with(
+                Path("release.zip"),
+                target,
+                mock.ANY,
+                enforce_target_protocol=True,
+            )
+            inspect.assert_not_called()
 
     def test_compatibility_adapter_has_no_second_wire_schema_parser(self) -> None:
         import wf_release_v1

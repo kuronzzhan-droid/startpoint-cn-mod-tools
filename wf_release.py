@@ -159,6 +159,22 @@ class JsonObjectCodec:
         ))
 
 
+class JsonIntegerSetCodec:
+    """Release-facing adapter for the validated built-in integer-set codec."""
+
+    def inspect(
+        self,
+        raw: bytes,
+        claim: character_pack.TableClaim,
+        semantic_claims: tuple[character_pack.SemanticClaim, ...],
+    ) -> character_pack.TableImage:
+        codec = character_pack.DEFAULT_CODECS["json_integer_set"]
+        try:
+            return codec.inspect(raw, claim, semantic_claims)
+        except character_pack.PackPreflightError as exc:
+            raise ReleaseError(f"server JSON integer set: {exc}") from exc
+
+
 def _merge_claimed_rows(
     live_keys: list[str],
     live_rows: list[bytes],
@@ -288,6 +304,70 @@ def _merge_claimed_table_bytes(
                 if key not in candidate:
                     raise ReleaseError(f"candidate lacks claimed JSON row: {logical}:{key}")
                 live[key] = candidate[key]
+            return _ordered_json(live)
+
+        if claim.codec_id == "json_integer_set":
+            candidate = _strict_positive_integer_array(
+                candidate_raw, f"candidate:{logical}"
+            )
+            live = _strict_positive_integer_array(live_raw, f"live:{logical}")
+            candidate_values = set(candidate)
+            live_values = set(live)
+            for key in claim.outer_keys:
+                try:
+                    value = int(key)
+                except ValueError as exc:
+                    raise ReleaseError(
+                        f"invalid claimed JSON integer: {logical}:{key}"
+                    ) from exc
+                if value <= 0 or str(value) != key or value not in candidate_values:
+                    raise ReleaseError(
+                        f"candidate lacks claimed JSON integer: {logical}:{key}"
+                    )
+                if value not in live_values:
+                    live.append(value)
+                    live_values.add(value)
+            return _ordered_json(live)
+
+        if claim.codec_id == "json_event_shop_products":
+            candidate, candidate_rows = _validated_nested_json(
+                claim, candidate_raw, "candidate"
+            )
+            live, _live_rows = _validated_nested_json(
+                claim, live_raw, "live"
+            )
+            for key in claim.outer_keys:
+                record_raw = candidate_rows.get(key)
+                if record_raw is None:
+                    raise ReleaseError(
+                        f"candidate lacks claimed event-shop product: {logical}:{key}"
+                    )
+                record = json.loads(record_raw)
+                for events in live.values():
+                    for products in events.values():
+                        products.pop(key, None)
+                event_type = record["event_type"]
+                event_id = record["event_id"]
+                events = live.setdefault(event_type, {})
+                products = events.setdefault(event_id, {})
+                products[key] = record["product"]
+            return _ordered_json(live)
+
+        if claim.codec_id == "json_rogue_events":
+            candidate, candidate_rows = _validated_nested_json(
+                claim, candidate_raw, "candidate"
+            )
+            live, _live_rows = _validated_nested_json(
+                claim, live_raw, "live"
+            )
+            candidate_events = candidate["events"]
+            live_events = live["events"]
+            for key in claim.outer_keys:
+                if key not in candidate_rows:
+                    raise ReleaseError(
+                        f"candidate lacks claimed rogue event: {logical}:{key}"
+                    )
+                live_events[key] = candidate_events[key]
             return _ordered_json(live)
     except ReleaseError:
         raise
@@ -654,6 +734,40 @@ def _strict_object(raw: bytes, label: str) -> dict:
     if not isinstance(value, dict):
         raise ReleaseError(f"{label}: object required")
     return value
+
+
+def _strict_positive_integer_array(raw: bytes, label: str) -> list[int]:
+    def reject_constant(value: str):
+        raise ValueError(f"non-JSON constant {value}")
+
+    try:
+        value = json.loads(raw.decode("utf-8"), parse_constant=reject_constant)
+    except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
+        raise ReleaseError(f"{label}: invalid JSON: {exc}") from exc
+    if not isinstance(value, list):
+        raise ReleaseError(f"{label}: array required")
+    seen: set[int] = set()
+    for index, item in enumerate(value):
+        if type(item) is not int or item <= 0:
+            raise ReleaseError(
+                f"{label}[{index}]: positive integer required"
+            )
+        if item in seen:
+            raise ReleaseError(f"{label}[{index}]: duplicate integer {item}")
+        seen.add(item)
+    return value
+
+
+def _validated_nested_json(
+    claim: character_pack.TableClaim, raw: bytes, label: str
+) -> tuple[dict, dict[str, bytes]]:
+    codec = character_pack.DEFAULT_CODECS[claim.codec_id]
+    try:
+        image = codec.inspect(raw, claim, claim.semantic_claims)
+    except character_pack.PackPreflightError as exc:
+        raise ReleaseError(f"{label}:{claim.logical_path}: {exc}") from exc
+    value = _strict_object(raw, f"{label}:{claim.logical_path}")
+    return value, dict(image.outer_rows)
 
 
 def rebase_runtime_package(
