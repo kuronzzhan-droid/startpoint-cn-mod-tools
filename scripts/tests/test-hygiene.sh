@@ -33,7 +33,7 @@ expect_red() {
 
 bash "$GATE" --all >/dev/null 2>&1 && ok "干净树通过" || bad "干净树竟然不通过"
 
-expect_red "内网 IP"        "host = 192.168.0.130"
+expect_red "内网 IP"        "host = 192.168.99.99"
 expect_red "Windows 家目录" "path C:\Users\bob\x.json"
 expect_red "POSIX 家目录"   "path /Users/bob/x.json"
 expect_red "个人邮箱"       "contact someone@gmail.com"
@@ -43,7 +43,7 @@ expect_red "sk- 令牌"       "sk-abcdefghijklmnopqrstuvwxyz0123"
 
 # 豁免必须是**行级**的：豁免文件里新增一条内网 IP 仍要红。
 printf "
-# leaked = 192.168.0.130
+# leaked = 192.168.99.99
 " >> wf_release_v1/target.py
 bash "$GATE" --all >/dev/null 2>&1
 rc=$?; git checkout -- wf_release_v1/target.py
@@ -51,7 +51,7 @@ rc=$?; git checkout -- wf_release_v1/target.py
                 || bad "豁免退化成了整文件豁免"
 
 # 豁免行被篡改（占位名换成真人名）也要红。
-sed -i 's|"/Users/Alice/secret.json",|"/Users/zzh/secret.json",|' tests/test_release_v1_canonical.py
+sed -i 's|"/Users/Alice/secret.json",|"/Users/mallory/secret.json",|' tests/test_release_v1_canonical.py
 bash "$GATE" --all >/dev/null 2>&1
 rc=$?; git checkout -- tests/test_release_v1_canonical.py
 (( rc == 1 )) && ok "豁免行被改动后失去豁免" || bad "豁免行被改动后仍然放行"
