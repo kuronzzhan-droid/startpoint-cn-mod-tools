@@ -43,6 +43,7 @@ import json
 import os
 import re
 import shutil
+import struct
 import subprocess
 import sys
 import zipfile
@@ -90,6 +91,20 @@ def rows(text: str) -> list[list[str]]:
     return list(csv.reader(io.StringIO(text, newline="")))
 
 
+def is_stub(raw: bytes) -> bool:
+    """store 里的 16 字节桩:键数为 0 的空 orderedmap,真表打包在 APK 里(曲线表等)。"""
+    if len(raw) > 64 or len(raw) < 8:
+        return False
+    ilen = struct.unpack_from("<I", raw, 0)[0]
+    if ilen <= 0 or 4 + ilen != len(raw):
+        return False
+    try:
+        index = zlib.decompress(raw[4:])
+    except zlib.error:
+        return False
+    return len(index) >= 4 and struct.unpack_from("<I", index, 0)[0] == 0
+
+
 # ---------------------------------------------------------------- 发现
 
 @dataclass
@@ -131,6 +146,8 @@ class View:
                 for n in zf.namelist():
                     self.index[n] = z
         self._zf: dict[Path, zipfile.ZipFile] = {}
+        self.stubs: set[str] = set()
+        self.broken: dict[str, str] = {}
 
     def _open(self, z: Path) -> zipfile.ZipFile:
         if z not in self._zf:
@@ -167,10 +184,18 @@ class View:
 
     @functools.lru_cache(maxsize=None)
     def table(self, logical: str):
+        """解析好的表;不在视图、APK 内置桩、解不开时返回 None(后两种记进 stubs/broken)。"""
         raw = self.raw(logical, ("upload",))
         if raw is None:
             return None
-        node = q.parse_node(raw)
+        if is_stub(raw):
+            self.stubs.add(logical)
+            return None
+        try:
+            node = q.parse_node(raw)
+        except Exception as exc:  # noqa: BLE001
+            self.broken[logical] = str(exc)
+            return None
         return node if isinstance(node, dict) else None
 
 
@@ -313,8 +338,11 @@ def check_chain(args, manifest: dict, active: Path, new_zips: set[str], rep: Rep
                 logical = pathlist.get(parts[-2] + parts[-1])
                 if not (logical and logical.startswith("master/")):
                     continue
+                data = zf.read(n)
+                if is_stub(data):
+                    continue
                 try:
-                    q.parse_node(zf.read(n))      # 少数 master 文件是整块 zlib 文本,返回 str 也算能解
+                    q.parse_node(data)      # 少数 master 文件是整块 zlib 文本,返回 str 也算能解
                 except Exception as exc:  # noqa: BLE001
                     rep.add("ERROR", "chain", f"chain.decode:{path.name}:{logical}",
                             f"{path.name} 里的 {logical} 解不开: {exc}")
@@ -991,6 +1019,17 @@ def main(argv=None) -> int:
         check_companion(args, view, old, rep, allow_iqs)
     if "level" in only:
         check_level(args, view, old, rep)
+
+    for v in (view, old):
+        if v is None:
+            continue
+        for lp, err in sorted(v.broken.items()):
+            fid = f"view.broken:{lp}"
+            if fid not in {f.fid for f in rep.items}:
+                rep.add("WARN", "chain", fid, f"{lp} 在视图里解不开,依赖它的检查按「不在视图」处理: {err}")
+    if view.stubs:
+        rep.notes.append("APK 内置表(store 里是 16 字节桩,按不在视图处理): "
+                         + ", ".join(Path(x).stem for x in sorted(view.stubs)))
 
     labels = {"chain": "补丁链/清单", "text": "改错表", "companion": "伴随表", "level": "等级缺口"}
     for chk in ("chain", "text", "companion", "level"):

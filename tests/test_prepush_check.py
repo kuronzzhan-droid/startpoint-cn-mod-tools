@@ -7,11 +7,13 @@ import hashlib
 import io
 import json
 import shutil
+import struct
 import subprocess
 import sys
 import tempfile
 import unittest
 import zipfile
+import zlib
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -217,6 +219,51 @@ class LevelTest(PrepushCase):
         code, findings = self.run_check("--only", "level", "--extra-zip", str(fix))
         self.assertEqual(code, 0, self.stdout)
         self.assertFalse(any(f["fid"].startswith("level.") and "gap" in f["fid"] for f in findings))
+
+
+class StubTableTest(PrepushCase):
+    """基础 store 里 APK 内置表是 16 字节桩(0c000000 78da…,键数 0),不能当表解析。"""
+
+    @staticmethod
+    def stub() -> bytes:
+        index = zlib.compress(struct.pack("<I", 0), 9)
+        raw = struct.pack("<I", len(index)) + index
+        assert len(raw) == 16 and raw[:6].hex() == "0c00000078da", raw.hex()
+        return raw
+
+    def make_store(self, logicals) -> Path:
+        store = self.fx.root.parent / "store" / "upload"
+        for lp in logicals:
+            d = pc.digest(lp)
+            (store / d[:2]).mkdir(parents=True, exist_ok=True)
+            (store / d[:2] / d[2:]).write_bytes(self.stub())
+        return store
+
+    def test_stub_tables_in_base_store_are_skipped(self):
+        stubs = list(pc.CURVE_TABLES.values()) + ["master/battle/boss/funnel/tentacle.orderedmap",
+                                                  "master/battle/zako/general_zako_variable.orderedmap"]
+        store = self.make_store(stubs)
+        code, findings = self.run_check("--base-store", str(store))
+        self.assertEqual(code, 0, self.stdout)
+        self.assertIn("APK 内置表", self.stdout)
+        self.assertIn("party_atk_curve", self.stdout)
+        self.assertFalse([f for f in findings if f["fid"].startswith("view.broken")], findings)
+
+    def test_stub_member_in_patch_is_not_a_decode_error(self):
+        name = "pinball-1.4.2-1.4.3-1-stub.zip"
+        with zipfile.ZipFile(self.fx.active / name, "w") as zf:
+            zf.writestr(member(pc.CURVE_TABLES["party_hp_curve"]), self.stub())
+        code, findings = self.run_check("--only", "chain")
+        self.assertFalse([f for f in findings if f["fid"].startswith("chain.decode")], findings)
+
+    def test_broken_table_in_view_is_reported_not_crash(self):
+        self.fx.add_patch("1.4.2", "1.4.3", {}, "empty")
+        store = self.fx.root.parent / "store" / "upload"
+        d = pc.digest(pc.CURVE_TABLES["tp_basic_curve"])
+        (store / d[:2]).mkdir(parents=True)
+        (store / d[:2] / d[2:]).write_bytes(b"\x20\x00\x00\x00garbage-not-zlib-garbage-not-zlib")
+        code, findings = self.run_check("--base-store", str(store), "--only", "level")
+        self.assertIn(f"view.broken:{pc.CURVE_TABLES['tp_basic_curve']}", self.ids(findings, "WARN"))
 
 
 class ChainTest(PrepushCase):
