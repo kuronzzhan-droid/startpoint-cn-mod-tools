@@ -169,6 +169,7 @@ mod-tools/
 | `wf_selftest.py` | **首跑自检**:物化/配置版本档案后先运行;环境可用性检测 + 功能模拟演练(--deep 含金丝雀写入闭环,写完即复原);GUI 工具箱可跑 |
 | `wf_publish.py` | 把改动打成增量包发布到服务端 CDN(与官方增量更新同构) |
 | `wf_pack_consolidate.py` | **增量包整合**:手选/上传多个已发布增量包按发布顺序合并去冗余,产出 `pinball-<最早from>-<最新to>` 单包(GUI「增量整合」页签同源;产物只写 work 输出目录,不碰 CDN/原包) |
+| `wf_prepush_check.py` | **推送前数据自检**:出包后、上服前跑一次,只读。四项:补丁链/清单(顺序类检查调用服务端 `checkPatchChainIntegrity`,另查清单 version/sha256/成员、cdn_version、未登记包、包内 master 表能否解码);改错表(服务端 `character_text*.json` 或客户端 `character_text` 改了而 `action_skill` 没改 = 游戏里看不到;只改部分档位);伴随表(新道具缺 `item_ids.json` / `item_quest_search`,即时道具缺等级行 C8601);等级缺口(quest 等级超过 boss/召唤物/小怪等级表与 `*_variable` 最高档,U_3be147)。`--since 1.4.N` 区分本次新增(ERROR)与历史遗留(WARN),`--extra-zip` 叠候选包,退出码 1 = 不要推送 |
 | `wf_chain_squash.py` | **整链压缩**:mod 增量链(≥base)压成最终版合集单边 + 全历史版本硬链桥 + verify/retire/undo,治链条无限变长 |
 | `wf_dev_catalog.py` | **dev Catalog 适配层**:把上游 dev 分支 `content:sync` 的整套 CDN 校验移植到 Python(错误码逐一对应),`audit` 体检 / `emit` 产出 dev 格式 manifest + 合并 EntityLists / `heal-layers` 补缺层占位包 / `export-pack` 产出**分享包**(含 `requires.json` 依赖声明)/ `verify-baseline` 金样验证。运行时接收与启动前编译两条路径并存,只读不改现有链目录 |
 | `wf_enhancement_policy.py` | **去增强策略引擎**:审计 mod 链终态里的"个人增强"(全角色平衡/官方角色重做/boss 血量上调),官方基准=官方 CDN 归档重放(非 store 备份,钉死哈希启动即校验);纠缠表按行重建(官方 key 取官方值、自制行原样保留),被改官方资产文件走 drop-list。只做策略与重建,不写 zip 不碰 CDN |
