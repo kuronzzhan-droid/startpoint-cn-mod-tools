@@ -102,7 +102,11 @@ def test_ambiguous_json_keys_cannot_be_rewritten():
 
 def test_cli_read_accepts_rank_and_exposes_its_snapshot(workspace, tmp_path, monkeypatch):
     import wf.view
+    import wf.text.cli
     from wf.text.cli import main
+    # This tests CLI wiring; a process-wide audit hook cannot be uninstalled
+    # and would forbid the independent hardlink tests later in this process.
+    monkeypatch.setattr(wf.text.cli, "restrict_writes", lambda: None)
     workspace.view.verify = lambda: None
     monkeypatch.setattr(wf.view, "ManifestView", lambda **kwargs: workspace.view)
     output = tmp_path / "read.json"

@@ -153,6 +153,9 @@ def test_fixed_223_verifier_refuses_recipe_or_lock_drift(tmp_path, monkeypatch):
 def test_balance_629_gate_blocks_before_writing_output(tmp_path, monkeypatch):
     import wf.balance.cli as cli
     import wf.dsl.gate as gate
+    # Keep this gate-wiring test independent of the process-wide replay fence;
+    # the fence is covered separately and cannot be removed after installation.
+    monkeypatch.setattr(cli, "restrict_writes", lambda: None)
     view = ability_view()
     seen = {}
 
