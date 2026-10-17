@@ -1,7 +1,7 @@
 """LiveReader over the 1.4.149 view + kulo server assets."""
 import functools, json, sys, zlib
 from .base149 import *
-ASSETS = KULO / "assets"
+from wf.paths import path
 
 @functools.lru_cache(maxsize=None)
 def flat(logical):
@@ -14,7 +14,7 @@ def nested(logical):
 
 @functools.lru_cache(maxsize=None)
 def server(name):
-    return json.loads((ASSETS / name).read_text("utf8"))
+    return json.loads(path("kulo", "assets", name).read_text("utf8"))
 
 def reader(W):
     return W.LiveReader(flat, nested, server)

@@ -7,6 +7,7 @@ restrict_writes()
 from wf.view.balance import *
 from wf.paths import path
 from wf.view import base149
+from wf.view.balance_inputs import verify_balance_view
 
 HERE = Path(__file__).resolve().parent
 # The source list later gained target 223 itself. Its frozen 222 prefix is
@@ -14,8 +15,12 @@ HERE = Path(__file__).resolve().parent
 _view_inputs = json.loads((HERE / "input-zips.json").read_text("utf-8"))
 _extra = [root_path(item["path"]) for item in _view_inputs["zips"]]
 for item, archive in zip(_view_inputs["zips"], _extra):
-    assert hashlib.sha256(archive.read_bytes()).hexdigest() == item["sha256"], archive
-base149.configure(tip=_view_inputs["tip"], extra_zips=_extra)
+    if hashlib.sha256(archive.read_bytes()).hexdigest() != item["sha256"]:
+        raise ValueError(f"balance extra ZIP digest drift: {archive}")
+_base_lock = json.loads((HERE / "base-lock.json").read_text("utf-8"))
+_view = base149.configure(tip=_view_inputs["tip"], extra_zips=_extra,
+                          store_member_sha256=_base_lock["store_members"])
+verify_balance_view(_view, _base_lock)
 
 MODS = os.environ["WF_MODS"].split(",") if os.environ.get("WF_MODS") else ["c129999", "c129992", "c139995", "c119992", "c169980", "c119991", "c139997", "c119990"]
 BASE = "1.4.222"
@@ -67,6 +72,7 @@ def main():
     print("server character_text keys:", srv_keys)
     if "--write" not in sys.argv:
         print("DRY RUN", len(files), "members"); return 0
+    verification = verify_balance_view(_view, _base_lock)
     OUT.mkdir(parents=True, exist_ok=True)
     path = OUT / NAME
     with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as zf:
@@ -96,7 +102,7 @@ def main():
     integ = {"name": NAME, "size": len(blob), "sha256": hashlib.sha256(blob).hexdigest(), "members": len(files),
              "files": sorted(files), "member_sha256": {m: hashlib.sha256(files[m]).hexdigest() for m in sorted(files)},
              "logical_paths": {m: lps[m] for m in sorted(files)}, "applies_on": BASE, "version": VER,
-             "server_files": srv, "log": F.LOG}
+             "server_files": srv, "log": F.LOG, "view_verification": verification}
     path.with_name(path.stem + ".integrity.json").write_text(json.dumps(integ, ensure_ascii=False, indent=2) + "\n", "utf-8")
     print(json.dumps({k: integ[k] for k in ("name", "size", "sha256", "members")}, ensure_ascii=False))
     return 0

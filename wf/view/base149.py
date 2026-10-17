@@ -12,17 +12,18 @@ from wf.paths import path
 import wf_quest_lib as q
 
 SALT = q.SALT
-KULO = path("kulo")
-STORE131 = path("store131")
-ACTIVE = KULO / "assets/asset-patch/active"
 
 def member(logical):
     digest = hashlib.sha1((logical + SALT).encode()).hexdigest()
     return f"production/upload/{digest[:2]}/{digest[2:]}"
 
 class HistoricalView:
-    def __init__(self, *, store=STORE131, active=ACTIVE, tip=149, extra_zips=()):
-        self.store, self.active, self.tip = Path(store), Path(active), int(tip)
+    def __init__(self, *, store=None, active=None, tip=149, extra_zips=(), store_member_sha256=None):
+        self.store = Path(store) if store is not None else path("store131")
+        self.active = Path(active) if active is not None else path("kulo", "assets/asset-patch/active")
+        self.tip = int(tip)
+        self.store_member_sha256 = store_member_sha256
+        self.read_members = {}
         self.zips = []
         names = sorted(p.name for p in self.active.iterdir())
         for version in range(131, self.tip):
@@ -42,21 +43,35 @@ class HistoricalView:
         if name in self.index:
             archive = self.index[name]
             with zipfile.ZipFile(archive) as z:
-                return z.read(name), archive.name
+                data, source = z.read(name), archive.name
+        else:
+            data, source = self.read_store_member(name), "store131"
+        self.read_members[name] = {"sha256": hashlib.sha256(data).hexdigest(), "source": source}
+        return data, source
+
+    def read_store_member(self, name):
+        """Reject unrecorded fallback reads whenever the recipe supplies a lock."""
         if not name.startswith("production/") or ".." in name.split("/"):
             raise ValueError(f"invalid CDN member: {name}")
+        if self.store_member_sha256 is not None and name not in self.store_member_sha256:
+            raise ValueError(f"unlocked store131 member: {name}")
         root, relative = name.removeprefix("production/").split("/", 1)
         directory = self.store if root == "upload" else self.store.parent / root
-        return (directory / relative).read_bytes(), "store131"
+        data = (directory / relative).read_bytes()
+        if self.store_member_sha256 is not None:
+            if hashlib.sha256(data).hexdigest() != self.store_member_sha256[name]:
+                raise ValueError(f"store131 member digest drift: {name}")
+        return data
 
     def load(self, logical):
         return q.parse_node(self.read_raw(logical)[0])
 
 _VIEW = None
 
-def configure(*, store=STORE131, active=ACTIVE, tip=149, extra_zips=()):
+def configure(*, store=None, active=None, tip=149, extra_zips=(), store_member_sha256=None):
     global _VIEW
-    _VIEW = HistoricalView(store=store, active=active, tip=tip, extra_zips=extra_zips)
+    _VIEW = HistoricalView(store=store, active=active, tip=tip, extra_zips=extra_zips,
+                           store_member_sha256=store_member_sha256)
     live = sys.modules.get("wf.view.live149")
     if live is not None:
         live.flat.cache_clear()
