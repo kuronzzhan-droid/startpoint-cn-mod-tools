@@ -179,3 +179,48 @@ def test_program_string_reference_and_variant_ownership(workspace):
     keys = workspace.custom_keys("1")
     assert "ability_skill_wolf_pf" in keys
     assert "change_skill_wolf_summer" not in keys
+
+
+@pytest.mark.parametrize("section,key,new_prefix", [
+    ("custom_ability_string", "change_skill_wolf", ""),
+    ("desc_override", "desc_override_wolf_1", "强化『斩击』："),
+])
+def test_editing_enhancement_cannot_introduce_cross_field_duplicate(workspace, section, key, new_prefix):
+    effect = "对前方的敌人造成火属性伤害"
+    workspace.view.raw[ACTION_SKILL] = codec.build_node({"wolf": {
+        str(tier): replace_cells("", [f"斩击{tier}", effect, "unchanged"])
+        for tier in (1, 2, 3)}})
+    workspace = TextWorkspace(workspace.view, workspace.server_path)
+    before = workspace.server_path.read_bytes()
+    old = workspace.read("1")[section][key]
+    with pytest.raises(ValueError, match="text.duplicate_enhancement"):
+        prepare_edit(workspace, edit_for(workspace, **{
+            section: {key: {"old": old, "new": new_prefix + effect}}}))
+    assert workspace.server_path.read_bytes() == before
+
+
+def test_noop_is_rejected_before_producing_changeset(workspace):
+    with pytest.raises(ValueError, match="no actual client changes"):
+        prepare_edit(workspace, edit_for(workspace,
+            character_text={"3": {"old": "白狼骑士", "new": "白狼骑士"}}))
+    custom = codec.parse_node(workspace.view.raw[CUSTOM])
+    custom["shared_text"] = '"共用描述"\n'
+    workspace.view.raw[CUSTOM] = codec.build_node(custom)
+    workspace = TextWorkspace(workspace.view, workspace.server_path)
+    with pytest.raises(ValueError, match="no actual client changes"):
+        prepare_edit(workspace, edit_for(workspace,
+            custom_ability_string={"shared_text": {"old": "共用描述", "new": "共用描述"}}))
+
+
+def test_unrelated_existing_cross_field_problem_is_retained(workspace):
+    effect = "对前方的敌人造成火属性伤害"
+    workspace.view.raw[ACTION_SKILL] = codec.build_node({"wolf": {
+        str(tier): replace_cells("", [f"斩击{tier}", effect, "unchanged"])
+        for tier in (1, 2, 3)}})
+    custom = codec.parse_node(workspace.view.raw[CUSTOM])
+    custom["change_skill_wolf"] = effect
+    workspace.view.raw[CUSTOM] = codec.build_node(custom)
+    workspace = TextWorkspace(workspace.view, workspace.server_path)
+    prepared = prepare_edit(workspace, edit_for(workspace,
+        character_text={"3": {"old": "白狼骑士", "new": "月下骑士"}}))
+    assert sum(f["rule"] == "text.duplicate_enhancement" for f in prepared["checks"]) == 3

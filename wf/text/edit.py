@@ -19,6 +19,10 @@ def _change(old, operation, location):
     return operation["new"]
 
 
+def _replace_row(original, row):
+    return original if cells(original) == row else replace_cells(original, row)
+
+
 def _encode(raw, before, after):
     """Retain every unchanged compressed leaf, including non-default zlib levels."""
     if before == after:
@@ -86,7 +90,7 @@ def prepare_edit(workspace: TextWorkspace, edit: dict) -> dict:
             new = _change(fields[column], op, f"action_skill.{tier}.{field}")
             fields[column] = new
             sync(2 + 2 * int(tier) + column, new, f"action_skill.{tier}.{field}")
-        tables[ACTION_SKILL][skill_key][tier] = replace_cells(leaf, fields)
+        tables[ACTION_SKILL][skill_key][tier] = _replace_row(leaf, fields)
     for key, op in edit.get("character_text", {}).items():
         column = int(key)
         if column < 0 or column >= len(ct) or 4 <= column <= 9:
@@ -97,7 +101,7 @@ def prepare_edit(workspace: TextWorkspace, edit: dict) -> dict:
             leaf = tables[CHARACTER][cid]
             character = cells(leaf)
             character[18] = new
-            tables[CHARACTER][cid] = replace_cells(leaf, character)
+            tables[CHARACTER][cid] = _replace_row(leaf, character)
     for section in ("custom_ability_string", "desc_override"):
         for key, op in edit.get(section, {}).items():
             if key not in original[section]:
@@ -107,11 +111,11 @@ def prepare_edit(workspace: TextWorkspace, edit: dict) -> dict:
                 raise ValueError(f"shared custom text {key} has owners {owners}; choose a separate key before editing")
             leaf = tables[CUSTOM][key]
             new = _change(custom_text(leaf), op, f"{section}.{key}")
-            tables[CUSTOM][key] = replace_cells(leaf, [new])
+            tables[CUSTOM][key] = _replace_row(leaf, [new])
             changes.append({"character_id": cid, "surface": section, "key": key,
                             "old": op["old"], "new": new,
                             "server_mapping": "client-only surface; character_text.json has no ability-text columns"})
-    tables[CHARACTER_TEXT][cid] = replace_cells(tables[CHARACTER_TEXT][cid], ct)
+    tables[CHARACTER_TEXT][cid] = _replace_row(tables[CHARACTER_TEXT][cid], ct)
     if not changes:
         raise ValueError("text edit has no operations")
     class EditedView:
@@ -126,11 +130,21 @@ def prepare_edit(workspace: TextWorkspace, edit: dict) -> dict:
     changed_locations |= {f"character_text.{column}" for column in edit.get("character_text", {})}
     if "3" in edit.get("character_text", {}):
         changed_locations.add("title")
-    violations = [f for f in findings if f["state"] == "问题" and f["location"] in changed_locations]
+    # Cross-field findings are located on action_skill even when the edit was
+    # made to its custom/override enhancement. Compare before/after findings,
+    # and also follow their explicit source key rather than only the location.
+    identity = lambda finding: json.dumps(finding, ensure_ascii=False, sort_keys=True)
+    previous_problems = {identity(f) for f in check_character(original) if f["state"] == "问题"}
+    changed_keys = set(edit.get("custom_ability_string", {})) | set(edit.get("desc_override", {}))
+    violations = [f for f in findings if f["state"] == "问题" and (
+        f["location"] in changed_locations or identity(f) not in previous_problems
+        or f["evidence"].get("key") in changed_keys)]
     if violations:
         raise ValueError("text rules failed: " + json.dumps(violations, ensure_ascii=False))
     client = {logical: _encode(workspace.raw[logical], workspace.tables[logical], value)
               for logical, value in tables.items() if value != workspace.tables[logical]}
+    if not client:
+        raise ValueError("text edit has no actual client changes")
     server_bytes = (json.dumps(server, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
     return {"client": client, "server": server_bytes, "changes": changes,
             "before": {logical: sha256(raw) for logical, raw in workspace.raw.items()},

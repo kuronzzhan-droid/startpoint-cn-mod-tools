@@ -30,7 +30,7 @@ python -B -m wf text edit work/m1/text/edit.json --tip 1.4.224 --server-text <�
 
 `prepare_edit` 在内存断言与检查，`stage_edit` 只向新的本仓目录写入。旧服务端文件与视图在暂存前再次核对；未改的压缩叶子按原字节保留。输出 `changeset.json` 使用 `wf-change-set/1`，包含客户端 payload 和 `server_changes` 的完整 JSON 镜像，均有前后 SHA-256。原客户端输入和服务端文件始终只读，输出可交给 `wf deliver`。能力文案的客户端专属属性在每条变更中明示；同步服务端文本行不等于部署。
 
-规则检查拒绝生命值100%以下的恒真条件、称号/技能名/明确引号名称中的“…之核”，以及可证明的重复强化文本。只出现相同效果名称时返回“待验证”，不会把语义猜测当成确定错误。规则只阻止本次修改新触及的错误，旧字段的检查结果仍随输出保留。
+规则检查拒绝生命值100%以下的恒真条件、称号/技能名/明确引号名称中的“…之核”，以及可证明的重复强化文本。只出现相同效果名称时返回“待验证”，不会把语义猜测当成确定错误。门禁比较编辑前后的问题集合，并跟踪跨字段规则引用的强化键；因此修改 custom/override 导致 action_skill 新增重复也会拒绝。与本次编辑无关的原有问题仍随输出保留。所有字段 old/new 相同且客户端没有实际改动时，prepare_edit 明确拒绝；不会靠重写相同 CSV 的引号产生空操作补丁。
 
 ```powershell
 python -B -m wf text explain <prepush-224-since.json> --tip 1.4.224 --server-text <历史镜像character_text.json> --rank-text <历史镜像character_text_rank_p5b.json> --output work/m1/text/warnings.json
