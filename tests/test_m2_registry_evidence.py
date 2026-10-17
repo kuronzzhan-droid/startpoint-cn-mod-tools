@@ -17,6 +17,13 @@ def test_unknown_binary_name_does_not_claim_v34(tmp_path):
         build_provides(path)
 
 
+def test_malformed_apk_is_a_clear_input_error(tmp_path):
+    path = tmp_path / "broken.apk"
+    path.write_bytes(b"not a ZIP")
+    with pytest.raises(ValueError, match="invalid APK ZIP"):
+        build_provides(path)
+
+
 def test_summary_negative_status_and_unknown_patch(tmp_path):
     path = tmp_path / "summary.json"
     path.write_text(json.dumps({"schema": "wf-apk-summary/1", "patches": [
@@ -39,12 +46,13 @@ def test_pipeline_records_do_not_inherit_base_and_merge_shared_archive(tmp_path)
 
 
 def test_known_swf_alone_does_not_prove_asset_or_native_entries(tmp_path, monkeypatch):
-    path = tmp_path / "fixture.swf"
+    path = tmp_path / "fixture.SWF"
     path.write_bytes(b"synthetic test SWF")
     record = evidence.v34_evidence()
     record["swf_sha256"] = evidence.digest(path.read_bytes())
     monkeypatch.setattr(evidence, "v34_evidence", lambda: copy.deepcopy(record))
     output = build_provides(path)
+    assert output["source"]["kind"] == "swf"
     numbers = {p["number"] for p in output["patches"]}
     assert {79, 82, 86, 97, 98, 99, 100}.isdisjoint(numbers)
     assert {87, 88, 89}.issubset(numbers)

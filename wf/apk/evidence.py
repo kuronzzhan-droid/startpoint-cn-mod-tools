@@ -28,7 +28,7 @@ def payload_digest(archive: zipfile.ZipFile) -> str:
 
 
 def _binary_record(path: Path, data: bytes, known: dict) -> tuple[dict, dict]:
-    source = {"path": str(path), "sha256": digest(data), "kind": path.suffix.lstrip(".")}
+    source = {"path": str(path), "sha256": digest(data), "kind": path.suffix.lower().lstrip(".")}
     artifact = None
     if path.suffix.lower() == ".apk":
         with zipfile.ZipFile(path) as archive:
@@ -82,7 +82,10 @@ def read_evidence(filename: str | Path) -> tuple[dict, dict]:
     data = path.read_bytes()
     known = v34_evidence()
     if path.suffix.lower() in {".apk", ".swf"}:
-        return _binary_record(path, data, known)
+        try:
+            return _binary_record(path, data, known)
+        except zipfile.BadZipFile as error:
+            raise ValueError(f"invalid APK ZIP: {error}") from error
     document = json.loads(data.decode("utf-8-sig"))
     if not isinstance(document, dict):
         raise ValueError("APK summary must be a JSON object")
