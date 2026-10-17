@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:wf:delivery-manifest:1",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "wf-delivery-manifest/1"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "from_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "to_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "local_test_only": {
+      "type": "boolean"
+    },
+    "archives": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^(?!/)(?!.*\\\\)(?!.*:)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5242880
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "installed_size": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "members": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(?!/)(?!.*\\\\)(?!.*:)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "seq": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "name",
+          "size",
+          "sha256",
+          "installed_size",
+          "members",
+          "files",
+          "seq"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "installed_size": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "download_size": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "upstream_manifest": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*\\\\)(?!.*:)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    },
+    "legacy_manifest": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*\\\\)(?!.*:)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    },
+    "requires": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*\\\\)(?!.*:)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    },
+    "assertions": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*\\\\)(?!.*:)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    },
+    "prepush": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "enum": [
+            "满足",
+            "问题",
+            "待验证",
+            "未执行"
+          ]
+        },
+        "exit_code": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "since": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "report": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*\\\\)(?!.*:)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+        },
+        "log": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*\\\\)(?!.*:)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "status",
+        "exit_code",
+        "since",
+        "report",
+        "log",
+        "limitations"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema",
+    "id",
+    "from_version",
+    "to_version",
+    "local_test_only",
+    "archives",
+    "installed_size",
+    "download_size",
+    "upstream_manifest",
+    "legacy_manifest",
+    "requires",
+    "assertions",
+    "prepush"
+  ],
+  "additionalProperties": false
+}
