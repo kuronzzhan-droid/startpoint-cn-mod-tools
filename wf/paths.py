@@ -18,6 +18,7 @@ _DEFAULTS = {
     "out": "out",
     "server": "startpoint-cn",
     "store131": "out/kulo-patch-toolkit/store131/production/upload",
+    "asr_model": "models/faster-whisper-large-v3",
 }
 _LOCAL_DEFAULTS = {
     "output": "work/m0",
@@ -77,3 +78,11 @@ def path(name: str, *parts: str | Path) -> Path:
     if not base.is_absolute():
         base = root_path() / base
     return base.joinpath(*parts)
+
+
+def configured(name: str) -> bool:
+    """Whether a named location is explicit, rather than a discovery default."""
+    config, _ = _profile()
+    key = name.lower()
+    return ("WF_" + key.upper() in os.environ
+            or key in config.get("paths", {}) or key in config)

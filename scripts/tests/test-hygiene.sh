@@ -8,6 +8,7 @@
 # 的用例，删掉判据就必须变红。
 set -uo pipefail
 cd "$(dirname "$0")/../.." || exit 1
+repo_root=$(pwd -P)
 GATE=scripts/check-hygiene.sh
 fail=0
 ok()   { printf "  [ok] %s
@@ -15,7 +16,34 @@ ok()   { printf "  [ok] %s
 bad()  { printf "  [XX] %s
 " "$*"; fail=1; }
 
-work=$(mktemp -d); trap 'rm -rf -- "$work"' EXIT
+test_root="$repo_root/work/m0/hygiene-selftest"
+mkdir -p -- "$test_root" || exit 1
+work=$(mktemp -d "$test_root/case.XXXXXX") || exit 1
+# 递归清理只允许验证过的本仓测试目录。
+work=$(cd "$work" && pwd -P) || exit 1
+case "$work" in "$repo_root"/work/m0/hygiene-selftest/case.*) ;; *) exit 1 ;; esac
+trap 'rm -rf -- "$work"' EXIT
+# 仅复制门禁及精确豁免样本；从这里开始所有 Git 操作都在隔离仓。
+fixtures=(
+    scripts/check-hygiene.sh
+    archive/legacy/tests/test_release_v1_canonical.py
+    wf_release_v1/_loopback_http.py
+    wf_release_v1/platform.py
+    wf_release_v1/target.py
+    tests/test_offline_bundle.py
+    tests/test_wiki_battle_package.py
+    wf_offline_bundle.py
+)
+for file in "${fixtures[@]}"; do
+    mkdir -p -- "$work/$(dirname "$file")" || exit 1
+    cp -- "$repo_root/$file" "$work/$file" || exit 1
+done
+cd "$work" || exit 1
+mkdir -p docs
+git init -q || exit 1
+git add -- . || exit 1
+git -c user.name='Hygiene Fixture' -c user.email='fixture@example.invalid' \
+    commit -qm 'test: initialize isolated hygiene fixture' || exit 1
 probe=docs/.hygiene-selftest-probe.md
 
 # 在临时 git 仓里跑，避免污染真实工作树。
@@ -51,9 +79,9 @@ rc=$?; git checkout -- wf_release_v1/target.py
                 || bad "豁免退化成了整文件豁免"
 
 # 豁免行被篡改（占位名换成真人名）也要红。
-sed -i 's|"/Users/Alice/secret.json",|"/Users/mallory/secret.json",|' tests/test_release_v1_canonical.py
+sed -i 's|"/Users/Alice/secret.json",|"/Users/mallory/secret.json",|' archive/legacy/tests/test_release_v1_canonical.py
 bash "$GATE" --all >/dev/null 2>&1
-rc=$?; git checkout -- tests/test_release_v1_canonical.py
+rc=$?; git checkout -- archive/legacy/tests/test_release_v1_canonical.py
 (( rc == 1 )) && ok "豁免行被改动后失去豁免" || bad "豁免行被改动后仍然放行"
 
 if (( fail )); then printf "

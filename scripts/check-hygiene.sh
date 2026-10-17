@@ -43,18 +43,33 @@ SECRET_RE='(sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{36}|gho_[A-Za-z0-9]{36}|github_p
 # 4-5) 反例 fixture：test_redacts_untrusted_invalid_paths_from_errors 要证明
 #      家目录形状的路径被拒绝且从报错里抹掉，"Alice" 是通用占位名。路径必须
 #      保持家目录形状，否则这个测试就不再测它要测的东西：
-#        tests/test_release_v1_canonical.py:132,133,135
+#        archive/legacy/tests/test_release_v1_canonical.py:132,133,135
 # ---------------------------------------------------------------------------
+# M0 追加：仅登记已复核的私钥格式阻断标记及相应负向测试整行；不豁免真实密钥。
 # 逐条是「文件路径|该行去缩进后的完整内容」。用 [[ == "$var" ]] 做**字面量**比较，
 # 不要退回 case 模式匹配：case 的 glob 把反斜杠当转义符，含 C:\Users\ 的那条
 # 永远匹配不上，豁免看似写了其实没生效（本仓实测踩过两次）。
 ALLOW_LINES=(
-    'wf_release_v1/_loopback_http.py|ipaddress.ip_network("192.168.0.0/16"),'
-    'wf_release_v1/platform.py|ipaddress.ip_network("192.168.0.0/16"),'
-    'wf_release_v1/target.py|ipaddress.ip_network("192.168.0.0/16"),'
+    'archive/legacy/tests/test_release_v1_canonical.py|r"C:\Users\Alice\secret.json",'
+    'archive/legacy/tests/test_release_v1_canonical.py|"C:/Users/Alice/secret.json",'
+    'archive/legacy/tests/test_release_v1_canonical.py|"/Users/Alice/secret.json",'
     'tests/test_release_v1_canonical.py|r"C:\Users\Alice\secret.json",'
     'tests/test_release_v1_canonical.py|"C:/Users/Alice/secret.json",'
     'tests/test_release_v1_canonical.py|"/Users/Alice/secret.json",'
+    'wf_release_v1/_loopback_http.py|ipaddress.ip_network("192.168.0.0/16"),'
+    'wf_release_v1/platform.py|ipaddress.ip_network("192.168.0.0/16"),'
+    'wf_release_v1/target.py|ipaddress.ip_network("192.168.0.0/16"),'
+    'tests/test_offline_bundle.py|payload = b"prefix\n-----BEGIN ENCRYPTED PRIVATE KEY-----\nsuffix\n"'
+    'tests/test_offline_bundle.py|payload = b"prefix\n-----BEGIN RSA PRIVATE KEY-----\nsuffix\n"'
+    'tests/test_offline_bundle.py|"lib/arm64-v8a/extra.so": b"-----BEGIN PRIVATE KEY-----",'
+    'tests/test_offline_bundle.py|payload = b"prefix\n-----BEGIN EC PRIVATE KEY-----\nsuffix\n"'
+    'tests/test_offline_bundle.py|(scan / "marker.txt").write_bytes(b"-----BEGIN PRIVATE KEY-----")'
+    'tests/test_wiki_battle_package.py|cases = [r'"'"'C:\Users\fixture\secret.json'"'"', '"'"'C:/Users/fixture/secret.json'"'"','
+    'wf_offline_bundle.py|b"-----BEGIN PRIVATE KEY-----",'
+    'wf_offline_bundle.py|b"-----BEGIN ENCRYPTED PRIVATE KEY-----",'
+    'wf_offline_bundle.py|b"-----BEGIN RSA PRIVATE KEY-----",'
+    'wf_offline_bundle.py|b"-----BEGIN EC PRIVATE KEY-----",'
+    'wf_offline_bundle.py|b"-----BEGIN OPENSSH PRIVATE KEY-----",'
 )
 
 allowed_line() {
