@@ -110,6 +110,12 @@ def make_icons(source, landmarks, masks, role, *, headshots=False):
             # 窄长的原生框仍留足脸宽；锚点居中，不再偏上露出半身。
             fx = fy = .5
             factor = max(1.0, .82 * size[1] / size[0])
+        # 编辑台裁剪模板可按组覆盖取景倍数（框高 = square_height × factor）。
+        override = landmarks.get("icon_factors", {}).get(slots[0])
+        if override is not None:
+            if type(override) not in (int, float) or not 0 < override <= 20:
+                raise ValueError(f"invalid icon factor: {slots[0]}")
+            factor = override
         # 按本组主槽单独定位；写入角色 landmarks，重建时保留作者的构图修订。
         anchor = landmarks.get("icon_anchors", {}).get(slots[0])
         if anchor is not None:
