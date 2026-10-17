@@ -100,6 +100,7 @@ def test_catalog_covers_every_section_and_cannot_claim_semantics_pass():
         if not rule["implementation"]["check"] and not rule["implementation"]["patterns"]:
             assert rule["implementation"]["mode"] == "review"
     assert all(entry["state"] == "不适用" for entry in coverage(set()))
+    assert all("未做自动判定" in entry["boundary"] for entry in coverage({"desc_override"}) if entry["mode"] == "review")
 
 
 def test_check_character_and_edit_gate_use_the_same_new_rules(workspace):
