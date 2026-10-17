@@ -167,7 +167,7 @@ def scan_characters(src, server_assets):
                     continue
                 f = facts(p)
                 if f and "effects" in f:
-                    for e in f["effects"]:
+                    for e in sorted(f["effects"]):
                         eff[e] = effect_origin(e, code)
                     rec["uniques"] |= f["uniques"]
                     bta |= f["bta"]

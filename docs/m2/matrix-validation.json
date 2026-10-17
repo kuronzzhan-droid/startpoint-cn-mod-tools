@@ -16,9 +16,9 @@
       "official_tail": "1.4.54",
       "artifacts": {
         "comparison.json": "70b42e64c8d1d3b700287b8ea207e0e1594a3cc836fe378309baea5413d1bf86",
-        "matrix.csv": "2f99d685e965d4389c93d3f78eb8b36b8e6b2faf2e4671b0aa273df68314a5d8",
-        "matrix.json": "5b5764a77aa37d05823546e1616de172672eb28e2cbc483ddc1959d312d865ee",
-        "scan_raw.json": "6077ea16f44a15135b9b5c771f83518f1a9084c9b21e866bc0805a1645a300a8",
+        "matrix.csv": "01dfda3c46c8cb480ad7c89dd54387cb5a7b0808a5e4f2bd11486d6f4f547f68",
+        "matrix.json": "2e5c7df828201f8ff3a7a88d480b4a86a4dca7b973e4b49f6c25323c6db25af8",
+        "scan_raw.json": "6ae879c395a129eccb5d6b29d966e185278bce128a9a30164bb22a717bbe8d36",
         "view.lock.json": "b7d4a174dd2034da5131cd5deb919b04c96967f7f25558889f7cb8f8b90d499d",
         "角色机制矩阵.csv": "9c4ccdcba0c02f3282a95d07062f018f8ad8c73165f29ec66f3a36fd52433650"
       }
@@ -34,10 +34,10 @@
       "scan_complete": true,
       "official_tail": "1.4.54",
       "artifacts": {
-        "comparison.json": "94cd2be5c60e3a937fb10d603454457db3d82e2f07e0a34cc5a79102b0317314",
-        "matrix.csv": "2f99d685e965d4389c93d3f78eb8b36b8e6b2faf2e4671b0aa273df68314a5d8",
-        "matrix.json": "8b0a0aaf11e0fdef69e3134a6e0692dfc3cfd24a4f3d1a4d448c39d4ccd90d79",
-        "scan_raw.json": "6b217d0efbe7e4619007f781db14fccbf8288c0d1d9537193a95d4d1d0fd2784",
+        "comparison.json": "181cd2255f7b1eca2f5d866ba083018a0d59bdf96d8bbf2038483834a1efab99",
+        "matrix.csv": "01dfda3c46c8cb480ad7c89dd54387cb5a7b0808a5e4f2bd11486d6f4f547f68",
+        "matrix.json": "85f145f750aceb6c4bca95bf5ac9f2bf3ca33bed7d4b4c6baf602a3fa43a4efa",
+        "scan_raw.json": "2a325a3dd66c6b32f5caf1c9a7b84c8e887b61bef2bb9c4e1097ba7a1dcbce59",
         "view.lock.json": "5d541442cbb64b1085ac6832bcb40cbd815468c66c53c50c59a69652a9ad7484",
         "角色机制矩阵.csv": "b69f9f37e00d4de3941db274dcb7bb4dab7fa39fc9dd74edf870bf21f4578d52"
       }
@@ -53,10 +53,10 @@
       "scan_complete": true,
       "official_tail": "1.4.54",
       "artifacts": {
-        "comparison.json": "60aaa4872361b409e51ca81359edc0e4482eff9dd2d8ebe60943e3639643a992",
-        "matrix.csv": "2f99d685e965d4389c93d3f78eb8b36b8e6b2faf2e4671b0aa273df68314a5d8",
-        "matrix.json": "93692118b895afb016fbae503eac93c9bcb50d0a72c4108bd27824c0aed8662d",
-        "scan_raw.json": "babb015b0caad85d704538e66a021466d5c7ca3be894a8aeb8fea9922e28feb8",
+        "comparison.json": "619676dd990449e49aa01a8c5be563c07083d988b87a173df7e3450379a9d71f",
+        "matrix.csv": "01dfda3c46c8cb480ad7c89dd54387cb5a7b0808a5e4f2bd11486d6f4f547f68",
+        "matrix.json": "daa2c40ce49fb096fbf036b0bd1af2170bf48b575ffcf91afcee05e9db963fc3",
+        "scan_raw.json": "96d93c834b7bc89ed259fe9a977941fbe120e9e68f2abdc79f86c365abe0ea80",
         "view.lock.json": "bb20d194216efc0a5b4a3446e45e33fedb9f646841cc7e18945666e238d35a25",
         "角色机制矩阵.csv": "2c99a9f772548ea32009cd0f79bba65e6af4cd16343ff732e02379cdb752f16b"
       }
@@ -129,5 +129,23 @@
         ]
       ]
     }
-  ]
+  ],
+  "unit_tests": {
+    "passed": 18,
+    "junit": "work/m2/matrix/pytest.xml"
+  },
+  "mutation": {
+    "mutation": "dsl_facts always removes buffTargetAs conversion evidence",
+    "expected_exit": 1,
+    "actual_exit": 1,
+    "detected": true
+  },
+  "hash_seed_determinism": {
+    "comparison.json": true,
+    "matrix.csv": true,
+    "matrix.json": true,
+    "scan_raw.json": true,
+    "view.lock.json": true,
+    "角色机制矩阵.csv": true
+  }
 }

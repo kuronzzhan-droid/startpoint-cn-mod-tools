@@ -98,6 +98,13 @@ class ScanSource:
                            "title": text[3] if len(text) > 3 else "", "origin": origin})
         return sorted(result, key=lambda item: (not item["id"].isdigit(), int(item["id"]) if item["id"].isdigit() else item["id"]))
 
+    def unison_abilities(self, cid):
+        """Only the first row's c1 enables an ability in the unison slot."""
+        character = self.table("character")[cid][0]
+        abilities = self.table("ability")
+        return [key for key in character[19:25]
+                if abilities.get(key) and len(abilities[key][0]) > 1 and abilities[key][0][1] == "true"]
+
     def verify(self):
         for filename, raw in self._server.items():
             if filename.read_bytes() != raw:

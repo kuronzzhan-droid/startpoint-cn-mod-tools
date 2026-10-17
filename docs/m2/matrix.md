@@ -17,6 +17,8 @@
 
 服务端 JSON 是显式提供的快照，并不随客户端 `--tip` 回放；JSON 的 `scope` 与 `evidence.server_inputs` 清楚保留这一边界。角色专用 APK 标签沿用原矩阵中有文档依据的映射，并在 `capability_evidence.source` 标作“文档中的角色专用补丁映射”。未找到资源的特效目录推断仍保留“推断官方”字样。C 层名称来自原人工表，包含原先的“推断”标注；它不是新的实测结论。
 
+新能力矩阵额外补齐官方合击资格：除了旧扫描的合击条件/触发，还读取能力首行 c1=true；第二行的 true 不算。该证据仅加入 `capability_evidence`，保留旧原始 `unison` 字段的“合击条件/触发”含义，避免把新旧字段口径混在一起。231的旧字段有11角色命中，新能力矩阵共有106角色具备 `official.unison@1` 证据；新增的95个徽章来自首行资格，不能解释为95个新玩法。
+
 ## 本次真实验收
 
 当前只读 manifest 的最高链尾为 **1.4.231**，高于任务书要求的 1.4.229。独立配置在忽略目录 `work/m2/matrix/profile.json`，原 `profiles/local.json` 已恢复 M1.1 配置；复现时用 `WF_PATHS_PROFILE` 选择这份配置。它引用 ghmain manifest、原 store131 和官方 CDN，ZIP 目录包含原历史目录及 225–231 的归档目录。
@@ -35,3 +37,5 @@ python -B -m wf caps scan --tip 1.4.231 --output work/m2/matrix/231
 224 的108个角色、全部原始字段与旧 `scan_raw.json` 相同；中文 CSV 与旧 `角色机制矩阵.csv` **逐字节相同**。229 和231的角色 ID 集合、每个角色的能力 ID 集合都与224相同。字段变化主要是227文案改写加入来源记录；休尔特平衡调整改变觉醒行数/PF所在行，黑与231两个气绝修复角色改变覆盖文本的重复引用次数。没有通过忽略这些字段来实现“相同”。[逐条差异](matrix-differences.md) 列全110项，包含对229的子集说明；[结构化验收](matrix-validation.json) 记录各产物 SHA-256。
 
 实际产物位于 `work/m2/matrix/224/`、`229/`、`231/`。`step-differences.json` 定位225–231每一版本引入的字段变化。单元反证覆盖错误 PF 档位、错误触发种类、损坏/缺失 DSL、未登记能力、相同角色数量但ID变更、空官方基线和服务端白名单缺失。
+
+定向测试 **18 passed**，JUnit 为 `work/m2/matrix/pytest.xml`。进程内变异让 DSL 扫描总是删掉 buffTargetAs 转换证据，现有测试因此 exit 1；证据为 `mutation.json` 和 `mutation.log`。以不同 `PYTHONHASHSEED` 独立重跑231，六个输出文件全部逐字节相同（`determinism.json`）；特效路径集合在输出前排序，不依赖 Python 集合迭代顺序。

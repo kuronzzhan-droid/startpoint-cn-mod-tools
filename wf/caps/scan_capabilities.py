@@ -27,7 +27,7 @@ LABEL_IDS = {
 }
 
 
-def project_character(record, names, registry):
+def project_character(record, names, registry, *, unison_abilities=()):
     evidence = {}
 
     def add(capability_id, source, detail):
@@ -51,6 +51,8 @@ def project_character(record, names, registry):
             add(capability_id, "扫描数据", field)
     if record["awake_rows"] or record["awake_event"] != "无":
         add("official.awakening@1", "扫描数据", "awake_rows / awake_event")
+    if unison_abilities:
+        add("official.unison@1", "扫描数据", {"first_row_c1_true": list(unison_abilities)})
     layers = {layer: [] for layer in ("A", "B", "C", "platform")}
     for capability_id in sorted(evidence):
         layers[registry[capability_id]["layer"]].append(capability_id)

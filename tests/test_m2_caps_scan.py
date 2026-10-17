@@ -143,6 +143,27 @@ def test_changed_server_snapshot_is_rejected(tmp_path):
         source.verify()
 
 
+def test_unison_eligibility_only_uses_first_row():
+    source = ScanSource.__new__(ScanSource)
+    char = [""] * 25
+    char[19:22] = ["a", "b", "c"]
+    tables = {"character": {"999": [char]},
+              "ability": {"a": [["a", "true"]], "b": [["b", "false"], ["b", "true"]], "c": []}}
+    source.table = tables.__getitem__
+    assert source.unison_abilities("999") == ["a"]
+
+
+def test_unison_projection_keeps_historical_fields(monkeypatch, tmp_path):
+    from wf.caps.registry import load_registry
+    source, _ = source_for(monkeypatch, tmp_path)
+    record = scan_characters(source, tmp_path)[0]
+    assert not record["unison"]
+    projection = project_character(record, {}, load_registry(), unison_abilities=["ability"])
+    assert "official.unison@1" in projection["capability_layers"]["B"]
+    assert projection["unison"] == record["unison"]
+    assert projection["capability_evidence"]["official.unison@1"][0]["detail"] == {"first_row_c1_true": ["ability"]}
+
+
 def test_cli_refuses_output_outside_checkout():
     import subprocess
     import sys

@@ -43,7 +43,8 @@ def run_scan(args):
     # Freeze sets before comparison and emitting either matrix format.
     raw = json.loads(json.dumps(raw, ensure_ascii=False, default=json_value))
     registry = load_registry()
-    rows = [project_character(r, names, registry) for r in raw]
+    rows = [project_character(r, names, registry, unison_abilities=source.unison_abilities(r["id"]))
+            for r in raw]
     capability_ids = sorted({c for r in rows for c in r["capabilities"]})
     evidence = source.evidence()
     comparison = None
