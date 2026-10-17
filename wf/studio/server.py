@@ -14,6 +14,7 @@ from urllib.parse import parse_qs, unquote, urlparse
 
 import wf_describe
 
+from .assets import AssetIndex
 from .characters import BOARD_RULE, character_detail, list_characters
 from .patches import patch_chain, patch_members
 from .pixels import SLOTS, PixelCache
@@ -21,6 +22,7 @@ from .source import StudioSource
 
 REPOSITORY = Path(__file__).resolve().parents[2]
 DEFAULT_STATIC = REPOSITORY / "studio" / "dist"
+ASSET_PREFIXES = ("character/", "battle/", "bgm/", "dynamic/")
 
 
 @dataclass
@@ -44,6 +46,7 @@ class StudioApp:
     def __init__(self, source: StudioSource):
         self.source = source
         self.pixels = PixelCache(source)
+        self.assets = AssetIndex(source)
         self._lock = threading.Lock()
         self._characters: list[dict] | None = None
         self._lookup: list[dict] | None = None
@@ -55,6 +58,9 @@ class StudioApp:
             ("GET", re.compile(r"^/api/characters/(?P<cid>\d+)/pixels$"), self.pixel_meta),
             ("GET", re.compile(r"^/api/characters/(?P<cid>\d+)/pixels/(?P<family>pixelart|special)\.png$"),
              self.pixel_sheet),
+            ("GET", re.compile(r"^/api/characters/(?P<cid>\d+)/assets$"), self.character_assets),
+            ("GET", re.compile(r"^/api/characters/(?P<cid>\d+)/avatar/(?P<form>[01])\.png$"), self.avatar),
+            ("GET", re.compile(r"^/api/asset$"), self.asset_file),
             ("GET", re.compile(r"^/api/lookup$"), self.lookup),
             ("GET", re.compile(r"^/api/patches$"), self.patches),
             ("GET", re.compile(r"^/api/patches/(?P<archive>[^/]+\.zip)/members$"), self.patch_files),
@@ -138,6 +144,25 @@ class StudioApp:
             return error(404, "该角色没有这一组像素资源")
         return Response(200, png, "image/png")
 
+    def character_assets(self, query, cid: str) -> Response:
+        result = self.assets.character(cid)
+        return json_response(result) if result else error(404, f"角色 {cid} 不存在于当前视图")
+
+    def avatar(self, query, cid: str, form: str) -> Response:
+        found = self.assets.avatar(cid, form)
+        if found is None:
+            return error(404, "没有头像资源")
+        return Response(200, found[0], "image/png")
+
+    def asset_file(self, query) -> Response:
+        logical = (query.get("path") or [""])[0]
+        if not logical.startswith(ASSET_PREFIXES) or ".." in logical.split("/"):
+            return error(400, "只允许读取角色相关资源路径")
+        found = self.assets.file(logical)
+        if found is None:
+            return error(404, "当前视图中没有这个资源")
+        return Response(200, found[0], found[1])
+
     def lookup(self, query) -> Response:
         text = (query.get("q") or [""])[0].strip()
         try:
@@ -176,7 +201,7 @@ def make_handler(app: StudioApp, static_root: Path):
             self.send_response(response.status)
             self.send_header("Content-Type", response.content_type)
             self.send_header("Content-Length", str(len(response.body)))
-            self.send_header("Cache-Control", "no-store" if response.content_type.startswith("application/json") else "max-age=60")
+            self.send_header("Cache-Control", "no-store" if response.content_type.startswith("application/json") else "max-age=600")
             self.end_headers()
             if not head:
                 self.wfile.write(response.body)
