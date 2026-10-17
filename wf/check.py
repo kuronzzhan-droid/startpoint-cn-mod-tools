@@ -14,6 +14,8 @@ SCHEMAS = {
     "wf-change-set/1": ("change-set.schema.json", "delivery"),
     "wf-delivery-manifest/1": ("delivery-manifest.schema.json", "delivery"),
     "wf-character-text/1": ("character-text.schema.json", "text"),
+    "wf-capability/1": ("capability.schema.json", "capability"),
+    "wf-apk-provides/1": ("provides.schema.json", "capability"),
 }
 
 
@@ -67,21 +69,26 @@ def check_file(filename):
         results = schema_results(document, schema_name)
         if results[0]["status"] == "问题":
             return with_metadata(results, scope)
-        if scope == "balance":
+        if schema == "wf-capability/1":
+            from wf.caps.registry import validate_capability
+            validate_capability(document)
+            results.append(result("capability.registration", "满足", "能力字段、补丁归属及哈希待补标记一致"))
+        elif scope == "balance":
             results.extend(balance_checks(document, filename))
         elif schema == "wf-change-set/1":
             from wf.deliver.changeset import load_changeset
             load_changeset(filename)
             results.append(result("delivery.forward-edge", "满足", "已验证前进版本、输入成员 SHA-256 和重复目标"))
         elif scope == "requires":
-            pending = document["requires"]["capabilityResolution"] == "pending-m2"
+            pending = document["requires"]["capabilityResolution"] in {"pending-m2", "partial"}
             results.append(result("capability.unknown", "待验证" if pending else "未执行",
-                "能力扫描待 M2 接入，空列表不表示无依赖" if pending else "已声明依赖，尚未提供目标 provides.json 做匹配"))
+                "依赖推导不完整，空列表不表示无依赖" if pending else "已推导或声明依赖，尚未提供目标 provides.json 做匹配"))
         elif schema == "wf-delivery-manifest/1":
             from wf.check_delivery import check_delivery
             results.extend(check_delivery(document, filename.parent))
         elif scope == "text":
             from wf.text.rules import check_character
+            from wf.text.standard import coverage
             findings = check_character(document)
             issues = [finding for finding in findings if finding["state"] == "问题"]
             pending = [finding for finding in findings if finding["state"] == "待验证"]
@@ -89,6 +96,10 @@ def check_file(filename):
                                   "按实际可见字段检查恒真条件、命名与重复强化", blocking=bool(issues), findings=findings))
             results.append(result("text.visible-sources", "未执行",
                                   "快照字段已齐；此文件检查不重新读取客户端和服务端来源"))
+            surfaces = [field for field in ("action_skill", "custom_ability_string", "desc_override") if document.get(field)]
+            results.extend(result(entry["rule"], entry["state"], entry["requirement"],
+                                  blocking=entry["state"] == "问题", boundary=entry["boundary"])
+                           for entry in coverage(surfaces, findings))
         return with_metadata(results, scope)
     except (ValueError, OSError, KeyError, TypeError) as error:
         return [result("input", "问题", str(error), blocking=True)]
@@ -96,14 +107,49 @@ def check_file(filename):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="wf check")
-    parser.add_argument("target", help="文件，或 dsl / rules")
+    parser.add_argument("target", help="文件，或 dsl / rules / caps / compat / text")
     parser.add_argument("files", nargs="*", type=Path)
     parser.add_argument("--kind", type=int, help="DSL 调用 kind；能力动作用 629")
     parser.add_argument("--json", type=Path)
+    parser.add_argument("--requires", type=Path)
+    parser.add_argument("--provides", type=Path)
     args = parser.parse_args(argv)
     if args.target == "rules":
         document = catalog()
         failed = False
+    elif args.target == "compat":
+        if not args.requires or not args.provides or args.files:
+            parser.error("wf check compat --requires X --provides Y")
+        from wf.caps.compat import check_compat
+        try:
+            results = check_compat(read_document(args.requires), read_document(args.provides))
+        except (ValueError, OSError, KeyError, TypeError) as error:
+            results = [result("input", "问题", str(error), blocking=True)]
+        document = {"schema": "wf-check-results/1", "results": results}
+        failed = any(entry["blocking"] for entry in results)
+    elif args.target in {"caps", "text"}:
+        if args.target == "caps":
+            from wf.caps.registry import load_registry
+            load_registry()
+            filenames = args.files or sorted((REPOSITORY / "wf/caps").glob("*.yml"))
+        else:
+            filenames = args.files
+        if not filenames:
+            parser.error(f"wf check {args.target} 需要输入文件")
+        files = []
+        for filename in filenames:
+            expected = {"wf-capability/1"} if args.target == "caps" else {"wf-character-text/1"}
+            try:
+                value = read_document(filename)
+                if not isinstance(value, dict) or value.get("schema") not in expected:
+                    raise ValueError(f"wf check {args.target} 输入类型不匹配")
+                results = check_file(filename)
+            except (ValueError, OSError, TypeError) as error:
+                results = [result("input", "问题", str(error), blocking=True)]
+            files.append({"file": str(filename), "results": results})
+        document = {"schema": "wf-check-results/1", "files": files}
+        failed = any(r.get("blocking") for f in files for r in f["results"])
+        failed |= any(all(r["status"] in {"未执行", "不适用"} for r in f["results"]) for f in files)
     elif args.target == "dsl":
         from wf.dsl.check import check_tree, read_tree
         if not args.files:

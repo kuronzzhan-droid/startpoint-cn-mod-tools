@@ -57,7 +57,7 @@ def test_unsupported_and_malformed_files_do_not_succeed(tmp_path, capsys):
 
 def test_catalog_evidence_and_every_five_state_are_preserved():
     entries = catalog()["rules"]
-    assert 10 <= len(entries) <= 20
+    assert {"ability.old-values", "text.wording", "capability.unknown"} <= {r["id"] for r in entries}
     assert len({r["id"] for r in entries}) == len(entries)
     for entry in entries:
         assert entry["evidence_nature"] in EVIDENCE

@@ -15,7 +15,11 @@
 
 确实缺少客户端基线时，仅显式 `--no-baseline-i-know` 可以放弃这项检查，交付清单与 prepush 报告会保留该决定。已提供但矛盾的基线不能因此放行。此开关也不能豁免 629 门禁或服务端前置摘要。`--server-dir` 只读取 prepush 所需 JSON，不加载服务程序、不向该目录写入；涉及 `server_changes` 必须提供，并逐文件检查前置摘要，包括原文件不存在的断言。
 
-继承 prepush 的 ERROR 会使命令返回非零。缺少必需基线或服务端前置输入属于问题；未加载 kulo #35 服务模块等剩余限制仍标为待验证。本模块另行检查本地版本边、seq 连续性、重复、分叉、断链和前后摘要；这些结果保存在 `prepush.json` 的 `local_contract`。打 ZIP 前从候选能力表推导受影响的 629 树并递归检查 `path$program`，问题会留下报告并阻止出包。能力表与 DSL 必须位于 common 层，不能用其他层跳过门禁。M2 之前能力解析为 `pending-m2`，`clientCapabilities` 字段始终存在；空列表不表示已证明任何客户端都兼容。
+继承 prepush 的 ERROR 会使命令返回非零。缺少必需基线或服务端前置输入属于问题；未加载 kulo #35 服务模块等剩余限制仍标为待验证。本模块另行检查本地版本边、seq 连续性、重复、分叉、断链和前后摘要；这些结果保存在 `prepush.json` 的 `local_contract`。打 ZIP 前从候选能力表推导受影响的 629 树并递归检查 `path$program`，问题会留下报告并阻止出包。能力表与 DSL 必须位于 common 层，不能用其他层跳过门禁。
+
+M2 起 `requires.json` 从变更叶子及其引用闭包推导已登记能力：角色引用、真实 kind 列、PF 等级、固有 ID/字符串、技能 DSL、超限表和语音路径。保留各能力命中位置、成员 SHA-256 与必需补丁号；不把未改叶子一并算作本次新增依赖。引用完整时为 `resolved`，缺少引用数据时为 `partial` 并列明缺项。结构损坏出包前失败。旧 `pending-m2` 文件仍可读，但不能通过兼容匹配。显式 `capabilities` 只能追加已登记的依赖，不能掩盖自动推导结果。
+
+用 `python -m wf check compat --requires <交付/requires.json> --provides <客户端/provides.json>` 匹配目标客户端。缺能力会列出中文名称和必需补丁；同时核对能力与补丁两处方法哈希。`resolved` 表示本次内容的注册能力扫描完成，不代表所有客户端都兼容、所有游戏语义已知或设备已实测；服务端配合项仍单独列在 `serverFeatures`。完整格式与边界见 [M2 能力依赖说明](../../docs/m2/capabilities.md)。
 
 断言脚本只读，可在交付目录单独使用：
 

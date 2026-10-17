@@ -7,7 +7,8 @@ import sys
 def main(argv=None):
     values = list(sys.argv[1:] if argv is None else argv)
     commands = {"view": "wf.view.cli", "balance": "wf.balance.cli",
-                "text": "wf.text.cli", "deliver": "wf.deliver.cli", "check": "wf.check"}
+                "text": "wf.text.cli", "deliver": "wf.deliver.cli", "check": "wf.check",
+                "caps": "wf.caps.cli", "apk": "wf.apk.cli"}
     if not values or values[0] in {"-h", "--help"}:
         parser = argparse.ArgumentParser(prog="wf", description="World Flipper 离线 MOD 工具")
         parser.add_argument("command", choices=commands)
