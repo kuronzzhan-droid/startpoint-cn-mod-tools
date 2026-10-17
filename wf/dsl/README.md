@@ -4,7 +4,7 @@
 
 入口按 `ability_enum_map.json` 的布局读取 ability、leader_ability、ability_soul 和 equipment_enhancement_ability 的 `instant_content.kind == 629`，使用 `action_path`，缺省时从引用的 action_skill 各档 c7 解析路径。随后递归跟踪所有 `path$program`；环只遍历一次，选中动作的缺失或无法解析的依赖会报错。ability 与 leader 表缺失会阻断；没有装入的可选装备能力表不会被虚构为空表来提供完整性证明。
 
-增量检查按前后能力表键差异、技能键差异以及被修改 DSL 的可达关系选根，检查每个选中根的完整调用闭包。无关旧键不阻止独立改动；传 `changed_logicals=None` 则检查全部根。不应把候选视图当作 `read_raw` 基线，否则前后差异会消失。
+增量检查按前后能力表键差异、技能键差异（含删除）以及被修改 DSL 的可达关系选根，检查每个选中根的完整调用闭包。只改能力或技能键时，无关旧键不阻止独立改动；改 DSL 时，如果任一 629 根或中间子程序缺失，就无法排除它调用了该 DSL，门禁保守报「问题」。传 `changed_logicals=None` 则检查全部根。不应把候选视图当作 `read_raw` 基线，否则前后差异会消失。
 
 生命周期检查不依赖 `Command` 包装，能识别裸枚举、Event 包装和具名 JSON 节点。Wait 通过回调内容识别，不要求固定参数个数。普通字符串中的命令名不会被当作命令。`sanitize_for_629` 只返回独立新树，不修改原输入；它不会替调用方写回跨文件子程序。跨文件检查由上述门禁负责。
 

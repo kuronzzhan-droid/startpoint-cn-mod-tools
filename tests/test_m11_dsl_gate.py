@@ -110,6 +110,20 @@ def test_missing_selected_subprogram_and_missing_callers_block():
     assert run(raw, {ROOT: dsl()})["status"] == "问题"
 
 
+@pytest.mark.parametrize("missing_intermediate", [False, True])
+def test_missing_caller_closure_cannot_clear_an_unmapped_changed_child(missing_intermediate):
+    raw = data()
+    missing = "battle/action/skill/action/test$missing" + DSL_SUFFIX
+    if missing_intermediate:
+        raw[ROOT] = dsl(["Run", missing.removesuffix(DSL_SUFFIX)])
+    else:
+        del raw[ROOT]
+        missing = ROOT
+    report = run(raw, {CHILD: dsl(["NotifyPowerflipEnd", 0])})
+    assert report["status"] == "问题"
+    assert any(f.get("logical_path") == missing for f in report["findings"])
+
+
 @pytest.mark.parametrize("params", [[10], [10, "*"], [10, "*", 123]])
 def test_wait_argument_count_does_not_hide_notify_callback(params):
     source = ["Event", ["Wait", *params, ["Block", [["NotifyPowerflipEnd", 0]]]]]

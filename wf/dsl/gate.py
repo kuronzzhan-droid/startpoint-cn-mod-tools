@@ -114,14 +114,17 @@ def check_629_actions(read_raw, *, overrides=None, changed_logicals=None):
         try:
             roots = resolve_programs(reference, skills or {})
         except ValueError as error:
-            if selected:
+            if selected or changed_dsl:
                 problem(str(error), reference=reference)
             continue
         reachable = set()
         for logical in roots:
             graph(logical, reachable)
         if not selected and not reachable.intersection(changed or ()):
-            continue
+            # A broken root/intermediate node can hide the changed descendant.
+            # Without its complete closure we cannot certify non-reachability.
+            if not changed_dsl or not any(cache[p][1] is not None for p in reachable):
+                continue
         report["references"].append({**reference, "programs": sorted(reachable)})
         for logical in sorted(reachable - checked):
             checked.add(logical)
