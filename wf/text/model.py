@@ -8,6 +8,8 @@ import json
 import re
 from pathlib import Path
 
+from .json_patch import parse_mirror
+
 CHARACTER = "master/character/character.orderedmap"
 CHARACTER_TEXT = "master/character/character_text.orderedmap"
 ACTION_SKILL = "master/skill/action_skill.orderedmap"
@@ -16,6 +18,8 @@ ABILITY = "master/ability/ability.orderedmap"
 LEADER = "master/ability/leader_ability.orderedmap"
 TITLE_COLUMN = 3  # zero-based c3; c2 is the biography, not the title.
 SERVER_TARGET = "assets/cdndata/character_text.json"
+RANK_TARGET = "assets/cdndata/character_text_rank_p5b.json"
+SERVER_TARGETS = (SERVER_TARGET, RANK_TARGET)
 
 
 def sha256(data: bytes) -> str:
@@ -45,15 +49,20 @@ def custom_text(leaf: str) -> str:
 class TextWorkspace:
     """Cache inputs; external paths are read-only and edits produce new payloads."""
 
-    def __init__(self, view, server_path: Path | None = None):
+    def __init__(self, view, server_path: Path | None = None, rank_path: Path | None = None):
         self.view = view
         self.raw = {}
         self.tables = {}
         self.server_path = Path(server_path) if server_path else None
-        self.server_raw = self.server_path.read_bytes() if self.server_path else None
-        self.server = json.loads(self.server_raw) if self.server_raw is not None else None
-        if self.server is not None and not isinstance(self.server, dict):
-            raise ValueError("character_text.json must be an object")
+        self.rank_path = Path(rank_path) if rank_path else None
+        self.server_paths = {target: path for target, path in
+                             zip(SERVER_TARGETS, (self.server_path, self.rank_path)) if path}
+        if len({path.resolve() for path in self.server_paths.values()}) != len(self.server_paths):
+            raise ValueError("server text mirrors must use distinct input paths")
+        self.server_raws = {target: path.read_bytes() for target, path in self.server_paths.items()}
+        self.server_docs = {target: parse_mirror(raw) for target, raw in self.server_raws.items()}
+        self.server_raw = self.server_raws.get(SERVER_TARGET)
+        self.server = self.server_docs.get(SERVER_TARGET)
 
     def table(self, logical: str):
         if logical not in self.tables:
@@ -72,8 +81,9 @@ class TextWorkspace:
         for logical, original in self.raw.items():
             if self.view.read_raw(logical)[0] != original:
                 raise ValueError(f"text input changed during edit: {logical}")
-        if self.server_path and self.server_path.read_bytes() != self.server_raw:
-            raise ValueError("server character_text.json changed during edit")
+        for target, path in self.server_paths.items():
+            if path.read_bytes() != self.server_raws[target]:
+                raise ValueError(f"server {Path(target).name} changed during edit")
 
     def custom_keys(self, cid: str) -> list[str]:
         row = cells(self.table(CHARACTER)[cid])
@@ -121,8 +131,7 @@ class TextWorkspace:
                 tiers[tier] = {"c0": fields[0], "c1": fields[1]}
         customs = {key: custom_text(self.table(CUSTOM)[key]) for key in self.custom_keys(cid)}
         sources = {logical: sha256(raw) for logical, raw in sorted(self.raw.items())}
-        if self.server_raw is not None:
-            sources[SERVER_TARGET] = sha256(self.server_raw)
+        sources.update({target: sha256(raw) for target, raw in self.server_raws.items()})
         snapshot = sha256(json.dumps(sources, sort_keys=True).encode())
         server_rows = self.server.get(cid) if self.server is not None else None
         return {"schema": "wf-character-text/1", "character_id": cid, "code": char[0], "skill_key": char[8],
@@ -132,4 +141,5 @@ class TextWorkspace:
                 "custom_ability_string": {k: v for k, v in customs.items() if not k.startswith("desc_override_")},
                 "desc_override": {k: v for k, v in customs.items() if k.startswith("desc_override_")},
                 "server_character_text": server_rows,
+                "server_character_text_rank_p5b": self.server_docs.get(RANK_TARGET, {}).get(cid),
                 "sources": sources, "snapshot_sha256": snapshot}

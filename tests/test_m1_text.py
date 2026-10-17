@@ -7,7 +7,7 @@ import wf_quest_lib as codec
 from wf.text import TextWorkspace, check_character
 from wf.text.edit import prepare_edit, stage_edit
 from wf.text.model import (ABILITY, ACTION_SKILL, CHARACTER, CHARACTER_TEXT, CUSTOM,
-                           LEADER, cells, replace_cells, sha256)
+                           LEADER, RANK_TARGET, SERVER_TARGET, cells, replace_cells, sha256)
 
 
 class View:
@@ -31,7 +31,9 @@ def workspace(tmp_path):
               ABILITY: {"11": "wolf_1,true,shared_text"}, LEADER: {"1": "wolf"}}
     server = tmp_path / "character_text.json"
     server.write_text(json.dumps({"1": [text], "untouched": [["保持"]]}, ensure_ascii=False), "utf-8")
-    return TextWorkspace(View(tables), server)
+    rank = tmp_path / "character_text_rank_p5b.json"
+    rank.write_bytes(server.read_bytes())
+    return TextWorkspace(View(tables), server, rank)
 
 
 def edit_for(workspace, **sections):
@@ -45,6 +47,8 @@ def test_read_all_surfaces_title_is_c3(workspace):
     assert doc["desc_override"] == {"desc_override_wolf_1": "自身攻击力提升"}
     assert "shared_text" in doc["custom_ability_string"]
     assert doc["server_character_text"][0][2] == "这是一段角色介绍"
+    assert doc["server_character_text_rank_p5b"][0][2] == "这是一段角色介绍"
+    assert set((SERVER_TARGET, RANK_TARGET)) <= doc["sources"].keys()
 
 
 def test_three_tiers_names_descriptions_and_server_sync(workspace, tmp_path):
@@ -56,24 +60,28 @@ def test_three_tiers_names_descriptions_and_server_sync(workspace, tmp_path):
     action = codec.parse_node(prepared["client"][ACTION_SKILL])
     ct = cells(codec.parse_node(prepared["client"][CHARACTER_TEXT])["1"])
     server = json.loads(prepared["server"])
+    rank = json.loads(prepared["servers"][RANK_TARGET])
     for tier in ("1", "2", "3"):
         row = cells(action["wolf"][tier])
         assert row[:2] == [f"新{tier}c0", f"新{tier}c1"]
         assert row[2] == "unchanged"
         assert ct[2+2*int(tier):4+2*int(tier)] == row[:2]
         assert server["1"][0][2+2*int(tier):4+2*int(tier)] == row[:2]
+        assert rank["1"][0][2+2*int(tier):4+2*int(tier)] == row[:2]
     assert server["untouched"] == [["保持"]]
     assert workspace.server_path.read_bytes() == before
     metadata = dict(id="text-1", name="文本", from_version="1.4.1", to_version="1.4.2", slug="text", created_at="2026-10-17")
     result = stage_edit(prepared, tmp_path / "staged", metadata)
     manifest = json.loads(result.read_text("utf-8"))
     assert manifest["schema"] == "wf-change-set/1"
-    assert len(manifest["members"]) == 2 and len(manifest["server_changes"]) == 1
-    assert manifest["server_changes"][0]["before_sha256"] == sha256(before)
+    assert len(manifest["members"]) == 2 and len(manifest["server_changes"]) == 2
+    assert {entry["target"] for entry in manifest["server_changes"]} == {SERVER_TARGET, RANK_TARGET}
+    assert all(entry["before_sha256"] == sha256(before) for entry in manifest["server_changes"])
     from wf.deliver.changeset import load_changeset
     loaded, members, staged_server = load_changeset(result)
     assert loaded == manifest and len(members) == 2
     assert json.loads(staged_server["assets/cdndata/character_text.json"]) == server
+    assert json.loads(staged_server[RANK_TARGET]) == rank
     assert workspace.server_path.read_bytes() == before
     with pytest.raises(FileExistsError):
         stage_edit(prepared, result.parent, metadata)
@@ -170,7 +178,7 @@ def test_shared_custom_key_edit_requires_ownership_decision(workspace):
     char[0], char[8], char[19] = "other", "other", "22"
     workspace.view.raw[CHARACTER] = codec.build_node({"1": workspace.table(CHARACTER)["1"], "2": replace_cells("", char)})
     workspace.view.raw[ABILITY] = codec.build_node({"11": "wolf_1,true,shared_text", "22": "other_1,true,shared_text"})
-    workspace = TextWorkspace(workspace.view, workspace.server_path)
+    workspace = TextWorkspace(workspace.view, workspace.server_path, workspace.rank_path)
     with pytest.raises(ValueError, match="shared custom text"):
         prepare_edit(workspace, edit_for(workspace, custom_ability_string={"shared_text": {"old": "共用描述", "new": "新"}}))
 
@@ -191,7 +199,7 @@ def test_program_string_reference_and_variant_ownership(workspace):
     variant = cells(tables[CHARACTER]["1"])
     variant[0], variant[8] = "wolf_summer", "wolf_summer"
     tables[CHARACTER]["2"] = replace_cells("", variant)
-    workspace = TextWorkspace(View(tables), workspace.server_path)
+    workspace = TextWorkspace(View(tables), workspace.server_path, workspace.rank_path)
     keys = workspace.custom_keys("1")
     assert "ability_skill_wolf_pf" in keys
     assert "change_skill_wolf_summer" not in keys
@@ -206,7 +214,7 @@ def test_editing_enhancement_cannot_introduce_cross_field_duplicate(workspace, s
     workspace.view.raw[ACTION_SKILL] = codec.build_node({"wolf": {
         str(tier): replace_cells("", [f"斩击{tier}", effect, "unchanged"])
         for tier in (1, 2, 3)}})
-    workspace = TextWorkspace(workspace.view, workspace.server_path)
+    workspace = TextWorkspace(workspace.view, workspace.server_path, workspace.rank_path)
     before = workspace.server_path.read_bytes()
     old = workspace.read("1")[section][key]
     with pytest.raises(ValueError, match="text.duplicate_enhancement"):
@@ -222,7 +230,7 @@ def test_noop_is_rejected_before_producing_changeset(workspace):
     custom = codec.parse_node(workspace.view.raw[CUSTOM])
     custom["shared_text"] = '"共用描述"\n'
     workspace.view.raw[CUSTOM] = codec.build_node(custom)
-    workspace = TextWorkspace(workspace.view, workspace.server_path)
+    workspace = TextWorkspace(workspace.view, workspace.server_path, workspace.rank_path)
     with pytest.raises(ValueError, match="no actual client changes"):
         prepare_edit(workspace, edit_for(workspace,
             custom_ability_string={"shared_text": {"old": "共用描述", "new": "共用描述"}}))
@@ -236,7 +244,7 @@ def test_unrelated_existing_cross_field_problem_is_retained(workspace):
     custom = codec.parse_node(workspace.view.raw[CUSTOM])
     custom["change_skill_wolf"] = effect
     workspace.view.raw[CUSTOM] = codec.build_node(custom)
-    workspace = TextWorkspace(workspace.view, workspace.server_path)
+    workspace = TextWorkspace(workspace.view, workspace.server_path, workspace.rank_path)
     prepared = prepare_edit(workspace, edit_for(workspace,
         character_text={"3": {"old": "白狼骑士", "new": "月下骑士"}}))
     assert sum(f["rule"] == "text.duplicate_enhancement" for f in prepared["checks"]) == 3

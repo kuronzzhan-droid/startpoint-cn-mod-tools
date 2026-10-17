@@ -17,6 +17,7 @@
     "custom_ability_string": {"$ref": "#/$defs/texts"},
     "desc_override": {"$ref": "#/$defs/texts"},
     "server_character_text": {"type": ["array", "null"], "items": {"type": "array", "items": {"type": "string"}}},
+    "server_character_text_rank_p5b": {"type": ["array", "null"], "items": {"type": "array", "items": {"type": "string"}}},
     "sources": {"type": "object", "additionalProperties": {"$ref": "#/$defs/hash"}},
     "snapshot_sha256": {"$ref": "#/$defs/hash"}
   },

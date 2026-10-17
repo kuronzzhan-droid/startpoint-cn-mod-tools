@@ -20,6 +20,7 @@ def main(argv=None) -> int:
         command.add_argument("--tip", required=True)
         command.add_argument("--lock", type=Path)
         command.add_argument("--server-text", type=Path, help="explicit read-only character_text.json")
+        command.add_argument("--rank-text", type=Path, help="explicit read-only character_text_rank_p5b.json")
         if name in ("read", "check"):
             command.add_argument("character_id")
             command.add_argument("--output", type=Path)
@@ -30,14 +31,13 @@ def main(argv=None) -> int:
                 command.add_argument("--" + field, required=True)
         if name == "explain":
             command.add_argument("log", type=Path)
-            command.add_argument("--rank-text", type=Path)
             command.add_argument("--output", required=True, type=Path)
     args = parser.parse_args(argv)
     try:
         restrict_writes()
         from wf.view import ManifestView
         view = ManifestView(tip=args.tip, lock=args.lock)
-        workspace = TextWorkspace(view, args.server_text)
+        workspace = TextWorkspace(view, args.server_text, args.rank_text)
         if args.command in ("read", "check"):
             document = workspace.read(args.character_id)
             result = document if args.command == "read" else check_character(document)

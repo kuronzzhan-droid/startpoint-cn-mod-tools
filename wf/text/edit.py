@@ -5,7 +5,8 @@ import copy
 import json
 from pathlib import Path
 
-from .model import (ACTION_SKILL, CHARACTER, CHARACTER_TEXT, CUSTOM, SERVER_TARGET,
+from .json_patch import patch_columns
+from .model import (ACTION_SKILL, CHARACTER, CHARACTER_TEXT, CUSTOM, SERVER_TARGET, SERVER_TARGETS,
                     TextWorkspace, cells, custom_text, replace_cells, sha256)
 from .rules import check_character
 from wf.view.safety import local_output
@@ -49,22 +50,34 @@ def prepare_edit(workspace: TextWorkspace, edit: dict) -> dict:
     workspace.verify()
     if edit.get("snapshot_sha256") != original["snapshot_sha256"]:
         raise ValueError("text input snapshot changed; read it again before editing")
-    if workspace.server is None or cid not in workspace.server:
-        raise ValueError("explicit character_text.json with this character is required for synchronized edits")
-    server = copy.deepcopy(workspace.server)
-    if not server[cid] or not isinstance(server[cid][0], list):
-        raise ValueError("server character_text row is malformed")
     tables = copy.deepcopy(workspace.tables)
     ct = cells(tables[CHARACTER_TEXT][cid])
-    srv = server[cid][0]
-    if len(srv) != len(ct):
-        raise ValueError("client/server character_text column counts differ")
+    servers = copy.deepcopy(workspace.server_docs)
+    for target in SERVER_TARGETS:
+        if target not in servers:
+            raise ValueError(f"explicit {Path(target).name} is required for synchronized edits")
+        if cid not in servers[target]:
+            continue  # The rank file is a sparse overlay, not a second full table.
+        rows = servers[target][cid]
+        if not isinstance(rows, list) or not rows or not isinstance(rows[0], list):
+            raise ValueError(f"server character_text row is malformed: {target}")
+        if len(rows[0]) != len(ct) or any(not isinstance(value, str) for value in rows[0]):
+            raise ValueError(f"client/server character_text columns differ: {target}")
+    if not any(cid in server for server in servers.values()):
+        raise ValueError("character is missing from both server text mirrors")
     changes = []
+    patched_columns = {}
 
     def sync(column, new, source):
         changes.append({"character_id": cid, "surface": source, "column": column,
-                        "client_old": ct[column], "server_old": srv[column], "new": new})
-        ct[column] = srv[column] = new
+                        "client_old": ct[column],
+                        "server_old_by_target": {target: server[cid][0][column]
+                                                 for target, server in servers.items() if cid in server},
+                        "new": new})
+        ct[column] = patched_columns[column] = new
+        for server in servers.values():
+            if cid in server:
+                server[cid][0][column] = new
 
     skill_changes = edit.get("action_skill", {})
     tiers = original["action_skill"]
@@ -122,7 +135,11 @@ def prepare_edit(workspace: TextWorkspace, edit: dict) -> dict:
         def read_raw(self, logical):
             return _encode(workspace.raw[logical], workspace.tables[logical], tables[logical]), "staged"
     staged = TextWorkspace(EditedView())
-    staged.server, staged.server_raw = server, json.dumps(server, ensure_ascii=False).encode()
+    server_bytes = {target: patch_columns(workspace.server_raws[target], cid, patched_columns)
+                    if cid in servers[target] else workspace.server_raws[target]
+                    for target in SERVER_TARGETS}
+    staged.server_docs, staged.server_raws = servers, server_bytes
+    staged.server, staged.server_raw = servers[SERVER_TARGET], server_bytes[SERVER_TARGET]
     document = staged.read(cid)
     findings = check_character(document)
     changed_locations = {f"action_skill.{tier}.{field}" for tier, pair in skill_changes.items() for field in pair}
@@ -145,10 +162,10 @@ def prepare_edit(workspace: TextWorkspace, edit: dict) -> dict:
               for logical, value in tables.items() if value != workspace.tables[logical]}
     if not client:
         raise ValueError("text edit has no actual client changes")
-    server_bytes = (json.dumps(server, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
-    return {"client": client, "server": server_bytes, "changes": changes,
+    return {"client": client, "server": server_bytes[SERVER_TARGET], "servers": server_bytes, "changes": changes,
             "before": {logical: sha256(raw) for logical, raw in workspace.raw.items()},
             "server_before": sha256(workspace.server_raw), "document": document,
+            "server_before_by_target": {target: sha256(raw) for target, raw in workspace.server_raws.items()},
             "checks": findings, "_workspace": workspace}
 
 
@@ -168,13 +185,15 @@ def stage_edit(prepared: dict, output: Path, metadata: dict) -> Path:
         payloads[relative] = data
         members.append({"root": "common", "logical_path": logical, "source": relative,
                         "sha256": sha256(data), "before_sha256": prepared["before"][logical]})
-    server_source = "server/character_text.json"
-    payloads[server_source] = prepared["server"]
+    server_changes = []
+    for target, data in prepared["servers"].items():
+        source = "server/" + Path(target).name
+        payloads[source] = data
+        server_changes.append({"target": target, "source": source, "sha256": sha256(data),
+                               "before_sha256": prepared["server_before_by_target"][target]})
     change_set = {"schema": "wf-change-set/1", **metadata, "local_test_only": True,
                   "experimental": False, "capabilities": [], "members": members,
-                  "server_changes": [{"target": SERVER_TARGET, "source": server_source,
-                                      "sha256": sha256(prepared["server"]),
-                                      "before_sha256": prepared["server_before"]}],
+                  "server_changes": server_changes,
                   "changes": prepared["changes"]}
     from wf.deliver.changeset import validate_document
     validate_document(change_set, "change-set.schema.json")
