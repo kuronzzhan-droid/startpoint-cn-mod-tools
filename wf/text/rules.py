@@ -4,6 +4,12 @@ from __future__ import annotations
 import re
 import unicodedata
 
+_MAX_HP = r"100(?:\.0+)?%"
+_TAUTOLOGY = re.compile(
+    rf"(?:生命值|HP|体力)(?:为|在|是)?(?:"
+    rf"(?:不高于|小于等于|不超过|≤|<=){_MAX_HP}|"
+    rf"{_MAX_HP}(?:以下|及以下|以内))", re.I)
+
 
 def normalized(text: str) -> str:
     return re.sub(r"\s+", "", unicodedata.normalize("NFKC", text)).replace("＋", "+")
@@ -27,7 +33,7 @@ def check_character(document: dict) -> list[dict]:
                for column, value in document["character_text"].items() if int(column) not in range(4, 10)]
     for location, value, is_name in fields:
         text = normalized(value)
-        if re.search(r"(?:生命值|HP|体力)(?:为|在|是)?100(?:\.0+)?%(?:以下|及以下|以内)", text, re.I):
+        if _TAUTOLOGY.search(text):
             add("text.tautology", "问题", location, "生命值不高于100%的条件恒真；应删除条件或核实真实阈值", text=value)
         if (is_name and re.search(r"之核(?:[+＋]*|[）)】」』])?$", text)) or re.search(r"[「『【]([^」』】]*之核)[」』】]", text):
             add("text.core_name", "问题", location, "命名不得采用‘…之核’", text=value)

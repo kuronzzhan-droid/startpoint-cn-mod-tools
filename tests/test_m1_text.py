@@ -117,11 +117,27 @@ def test_reject_missing_server_and_external_output(workspace, tmp_path):
         stage_edit(prepared, tmp_path.anchor + "outside-text-output", {})
 
 
-@pytest.mark.parametrize("bad", ["生命值 100% 以下时攻击力提升", "HP１００％以下", "生命值100.0%及以下"])
+@pytest.mark.parametrize("bad", [
+    "生命值 100% 以下时攻击力提升", "HP１００％以下", "生命值100.0%及以下",
+    "生命值不高于100%", "生命值≤100%", "生命值小于等于100%",
+    "HP不高于100%", "HP≤100%", "hp小于等于100%",
+    "生命值不超过100%", "HP ＜＝ １００％",
+])
 def test_tautology_rule_cannot_be_deleted(workspace, bad):
     doc = workspace.read("1")
     doc["desc_override"]["desc_override_wolf_1"] = bad
     assert any(x["rule"] == "text.tautology" and x["state"] == "问题" for x in check_character(doc))
+
+
+@pytest.mark.parametrize("valid", [
+    "生命值严格小于100%", "生命值小于100%", "生命值低于100%", "生命值<100%",
+    "HP严格小于100%", "HP小于100%", "hp低于100%", "HP ＜ １００％",
+    "生命值不高于80%", "生命值≤80%", "HP80%以下",
+])
+def test_non_tautological_hp_conditions_remain_allowed(workspace, valid):
+    doc = workspace.read("1")
+    doc["desc_override"]["desc_override_wolf_1"] = valid
+    assert not any(x["rule"] == "text.tautology" for x in check_character(doc))
 
 
 def test_name_and_duplicate_enhancement_rules(workspace):
