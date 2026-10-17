@@ -56,3 +56,22 @@ CDN 可直接指定 `cdn_dir`，或者从显式 `server` 的 `.env` 中读取 `C
 仅两项具备本仓默认值：`output` 为 `work/m0`，`pathlist` 为 `WF_PATHLIST_recovered.txt`。
 `root_path()` 无显式根时使用本仓 `work/external`，供离线导入和相对路径定位；这不会把外部输入标成已配置。
 `project_root()`、发布保护的 `PACKS`、角色支持层的默认 `ROOT` 和 GUI `ROOT` 都以本工具仓根为准。
+
+## M1 自动视图
+
+`python -m wf view --tip 1.4.N` 从 `paths.kulo/assets/asset-patch/manifest.json` 的依赖链读取 ZIP，以 `paths.store131` 为基线。后续离线交付可配置 ZIP 搜索目录与补充 manifest，路径相对 `wf_root`：
+
+```json
+{
+  "view": {
+    "zip_dirs": ["releases/first", "releases/latest"],
+    "manifests": ["releases/latest/manifest.json"]
+  }
+}
+```
+
+搜索只访问这些目录的直接子文件，不遍历相邻 worktree。未设置 `view.manifests` 时读取配置目录内的 `manifest*.json`；目录内保留互斥的历史草稿时，应显式选择已确认的完整 manifest。不同文件给出的同一版本边或 SHA 不一致会拒绝，不按时间戳猜新版。同名 ZIP 在多个目录中必须字节相同。ZIP 按依赖链及数值 seq 排序，缺边、缺分包和重复 seq 均拒绝。
+
+CLI `--manifest` 显式指定主清单时不继承 `view.manifests`；补充清单通过重复的 `--extra-manifest` 给出。`--zip-dir` 可重复，覆盖 profile 的 ZIP 搜索目录；主清单旁的 `active` 始终加入。`--base-version` 默认 `1.4.131`，其它基线必须明确指定。
+
+`--write-lock work/m1/view.lock.json` 记录有序 ZIP 名称和 SHA-256，以及本次实际读取的 store 成员摘要；`--lock` 强制验证。空 `store_members` 表示禁止任何 store 回退。`--logical` 可重复，用于在创建锁时读取本次任务需要的额外逻辑成员。输入锁与首读摘要在会话内固定，`verify()` 在出包前再次复核。锁、报告和所有 CLI 输出均限定为本 worktree 内路径。

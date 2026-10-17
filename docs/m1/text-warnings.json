@@ -1,0 +1,2909 @@
+{
+  "schema": "wf-text-warning-audit/1",
+  "log_sha256": "3594c79dda3f126340aa37ef7989d2d2c55bcbc81104c9c27d1cb83a39604de7",
+  "since": "1.4.223",
+  "warning_count": 78,
+  "historical_matches": 78,
+  "states": {
+    "问题": 78
+  },
+  "categories": {
+    "效果或参数描述不同步": 47,
+    "旧日文技能名": 14,
+    "客户端描述为内部标识符": 2,
+    "技能名档位标记不一致": 2,
+    "镜像混写两档倍率": 4,
+    "倍率仍是旧值": 2,
+    "镜像仅保留强化摘要": 2,
+    "标点或空白不一致": 3,
+    "高档强化文字写入低档镜像": 2
+  },
+  "entries": [
+    {
+      "number": 1,
+      "fid": "text.drift:服务端 assets/cdndata/character_text.json:149999:1:技能描述",
+      "character_id": "149999",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text.json",
+      "mirror_column": 5,
+      "source_sha256": "630eec61905f608ff85c3de16c2ae984e80dc6e7fd0039841c8ffae75bfa11e1",
+      "action_skill_key": "white_wolf_gerald",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "时空为之凝滞的一闪。展开时之魔法阵，向最近的敌人突进并对接触到的敌人造成光属性伤害／以全屏月牙交叉斩对全体敌人造成光属性伤害 ＋ 消除2个强化效果 ＋ 赋予累积全属性抗性降低效果／赋予队伍最大速度固定＋贯穿＋浮游效果",
+      "action_skill_text": "时空为之凝滞的一闪。向最近的敌人突进，对接触到的敌人造成光属性伤害／以全屏月牙交叉斩对全体敌人造成光属性伤害 ＋ 消除敌人的2个强化效果／赋予队伍最大速度固定＋贯穿＋浮游效果（技能伤害以直接攻击伤害计算）",
+      "differences": [
+        {
+          "mirror": "展开时之魔法阵，",
+          "action_skill": ""
+        },
+        {
+          "mirror": "并",
+          "action_skill": "，"
+        },
+        {
+          "mirror": "",
+          "action_skill": "敌人的"
+        },
+        {
+          "mirror": "效果 ＋ 赋予累积全属性抗性降低",
+          "action_skill": ""
+        },
+        {
+          "mirror": "",
+          "action_skill": "（技能伤害以直接攻击伤害计算）"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 2,
+      "fid": "text.drift:服务端 assets/cdndata/character_text.json:149999:2:技能描述",
+      "character_id": "149999",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text.json",
+      "mirror_column": 7,
+      "source_sha256": "630eec61905f608ff85c3de16c2ae984e80dc6e7fd0039841c8ffae75bfa11e1",
+      "action_skill_key": "white_wolf_gerald",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "时空为之凝滞的一闪。展开时之魔法阵，向最近的敌人突进并对接触到的敌人造成光属性伤害／以全屏月牙交叉斩对全体敌人造成光属性伤害 ＋ 消除2个强化效果 ＋ 赋予累积全属性抗性降低效果／赋予队伍最大速度固定＋贯穿＋浮游效果",
+      "action_skill_text": "时空为之凝滞的一闪。向最近的敌人突进，对接触到的敌人造成光属性伤害／以全屏月牙交叉斩对全体敌人造成光属性伤害 ＋ 消除敌人的2个强化效果／赋予队伍最大速度固定＋贯穿＋浮游效果（技能伤害以直接攻击伤害计算）",
+      "differences": [
+        {
+          "mirror": "展开时之魔法阵，",
+          "action_skill": ""
+        },
+        {
+          "mirror": "并",
+          "action_skill": "，"
+        },
+        {
+          "mirror": "",
+          "action_skill": "敌人的"
+        },
+        {
+          "mirror": "效果 ＋ 赋予累积全属性抗性降低",
+          "action_skill": ""
+        },
+        {
+          "mirror": "",
+          "action_skill": "（技能伤害以直接攻击伤害计算）"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 3,
+      "fid": "text.drift:服务端 assets/cdndata/character_text.json:151159:3:技能描述",
+      "character_id": "151159",
+      "tier": "3",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text.json",
+      "mirror_column": 9,
+      "source_sha256": "630eec61905f608ff85c3de16c2ae984e80dc6e7fd0039841c8ffae75bfa11e1",
+      "action_skill_key": "golden_dragon_jr",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "以古龙的威光赋予领域内全体敌人累积光属性抗性降低效果 ＋ 消除1个强化效果 ／ 放出锐利的光芒，对领域内全体敌人造成光属性伤害",
+      "action_skill_text": "以古龙的威光赋予领域内全体敌人累积光·暗属性抗性降低效果 ＋ 消除1个强化效果 ／ 放出锐利的光芒，在一段时间内对领域内全体敌人连续造成多段光属性伤害 ／ 赋予我方全体与协力角色“光暗共鸣”效果（攻击力提升＋全属性抗性提升＋持续回复），其持续期间我方直接攻击伤害进一步提升",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": "·暗"
+        },
+        {
+          "mirror": "",
+          "action_skill": "在一段时间内"
+        },
+        {
+          "mirror": "",
+          "action_skill": "连续"
+        },
+        {
+          "mirror": "",
+          "action_skill": "多段"
+        },
+        {
+          "mirror": "",
+          "action_skill": " ／ 赋予我方全体与协力角色“光暗共鸣”效果（攻击力提升＋全属性抗性提升＋持续回复），其持续期间我方直接攻击伤害进一步提升"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 4,
+      "fid": "text.drift:服务端 assets/cdndata/character_text.json:261089:3:技能描述",
+      "character_id": "261089",
+      "tier": "3",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text.json",
+      "mirror_column": 9,
+      "source_sha256": "630eec61905f608ff85c3de16c2ae984e80dc6e7fd0039841c8ffae75bfa11e1",
+      "action_skill_key": "darkness_dragon",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "引爆黑暗，对领域内全体敌人造成暗属性伤害 ／ 赋予暗属性角色技能伤害提升效果",
+      "action_skill_text": "引爆黑暗，对领域内全体敌人连续释放三段暗属性伤害＋消除其强化效果＋赋予麻痹与“光暗抗性降低”效果（光属性·暗属性抗性同时降低） ／ 赋予我方全体角色攻击力提升与技能伤害提升效果",
+      "differences": [
+        {
+          "mirror": "造成",
+          "action_skill": "连续释放三段"
+        },
+        {
+          "mirror": "",
+          "action_skill": "＋消除其强化效果＋赋予麻痹与“光暗抗性降低”效果（光属性·暗属性抗性同时降低）"
+        },
+        {
+          "mirror": "暗属性",
+          "action_skill": "我方全体"
+        },
+        {
+          "mirror": "",
+          "action_skill": "攻击力提升与"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 5,
+      "fid": "text.drift:服务端 assets/cdndata/character_text.json:700001:1:技能名",
+      "character_id": "700001",
+      "tier": "1",
+      "field": "技能名",
+      "mirror_source": "assets/cdndata/character_text.json",
+      "mirror_column": 4,
+      "source_sha256": "630eec61905f608ff85c3de16c2ae984e80dc6e7fd0039841c8ffae75bfa11e1",
+      "action_skill_key": "devil_leader_assist",
+      "action_skill_column": 0,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "旧日文技能名",
+      "conclusion": "镜像名称与该档 action_skill c0 不同；客户端读取 action_skill 名称，需按该档名称同步镜像。",
+      "mirror_text": "カース・ブリンガー",
+      "action_skill_text": "诅咒逆焰",
+      "differences": [
+        {
+          "mirror": "カース・ブリンガー",
+          "action_skill": "诅咒逆焰"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 6,
+      "fid": "text.drift:服务端 assets/cdndata/character_text.json:700002:1:技能名",
+      "character_id": "700002",
+      "tier": "1",
+      "field": "技能名",
+      "mirror_source": "assets/cdndata/character_text.json",
+      "mirror_column": 4,
+      "source_sha256": "630eec61905f608ff85c3de16c2ae984e80dc6e7fd0039841c8ffae75bfa11e1",
+      "action_skill_key": "elf_princess_assist",
+      "action_skill_column": 0,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "旧日文技能名",
+      "conclusion": "镜像名称与该档 action_skill c0 不同；客户端读取 action_skill 名称，需按该档名称同步镜像。",
+      "mirror_text": "サドール・ハソル",
+      "action_skill_text": "忠勇斧刃",
+      "differences": [
+        {
+          "mirror": "サドール・ハソル",
+          "action_skill": "忠勇斧刃"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 7,
+      "fid": "text.drift:服务端 assets/cdndata/character_text.json:700003:1:技能名",
+      "character_id": "700003",
+      "tier": "1",
+      "field": "技能名",
+      "mirror_source": "assets/cdndata/character_text.json",
+      "mirror_column": 4,
+      "source_sha256": "630eec61905f608ff85c3de16c2ae984e80dc6e7fd0039841c8ffae75bfa11e1",
+      "action_skill_key": "resistance_princess_assist",
+      "action_skill_column": 0,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "旧日文技能名",
+      "conclusion": "镜像名称与该档 action_skill c0 不同；客户端读取 action_skill 名称，需按该档名称同步镜像。",
+      "mirror_text": "アルケミック・ヴァリデート",
+      "action_skill_text": "艾克赛里奥圣剑",
+      "differences": [
+        {
+          "mirror": "アルケミック・ヴァリデート",
+          "action_skill": "艾克赛里奥圣剑"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 8,
+      "fid": "text.drift:服务端 assets/cdndata/character_text.json:700004:1:技能名",
+      "character_id": "700004",
+      "tier": "1",
+      "field": "技能名",
+      "mirror_source": "assets/cdndata/character_text.json",
+      "mirror_column": 4,
+      "source_sha256": "630eec61905f608ff85c3de16c2ae984e80dc6e7fd0039841c8ffae75bfa11e1",
+      "action_skill_key": "horn_leader_assist",
+      "action_skill_column": 0,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "旧日文技能名",
+      "conclusion": "镜像名称与该档 action_skill c0 不同；客户端读取 action_skill 名称，需按该档名称同步镜像。",
+      "mirror_text": "カース・ブリンガー",
+      "action_skill_text": "同胞们、都来呀！",
+      "differences": [
+        {
+          "mirror": "カース・ブリンガー",
+          "action_skill": "同胞们、都来呀！"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 9,
+      "fid": "text.drift:服务端 assets/cdndata/character_text.json:700005:1:技能名",
+      "character_id": "700005",
+      "tier": "1",
+      "field": "技能名",
+      "mirror_source": "assets/cdndata/character_text.json",
+      "mirror_column": 4,
+      "source_sha256": "630eec61905f608ff85c3de16c2ae984e80dc6e7fd0039841c8ffae75bfa11e1",
+      "action_skill_key": "guildknight_leader_assist",
+      "action_skill_column": 0,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "旧日文技能名",
+      "conclusion": "镜像名称与该档 action_skill c0 不同；客户端读取 action_skill 名称，需按该档名称同步镜像。",
+      "mirror_text": "サドール・ハソル",
+      "action_skill_text": "工作开始了哟、公会骑士",
+      "differences": [
+        {
+          "mirror": "サドール・ハソル",
+          "action_skill": "工作开始了哟、公会骑士"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 10,
+      "fid": "text.drift:服务端 assets/cdndata/character_text.json:700006:1:技能名",
+      "character_id": "700006",
+      "tier": "1",
+      "field": "技能名",
+      "mirror_source": "assets/cdndata/character_text.json",
+      "mirror_column": 4,
+      "source_sha256": "630eec61905f608ff85c3de16c2ae984e80dc6e7fd0039841c8ffae75bfa11e1",
+      "action_skill_key": "desert_commander_no_piercing",
+      "action_skill_column": 0,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "旧日文技能名",
+      "conclusion": "镜像名称与该档 action_skill c0 不同；客户端读取 action_skill 名称，需按该档名称同步镜像。",
+      "mirror_text": "ザハブ・ファジュル",
+      "action_skill_text": "黄金黎明",
+      "differences": [
+        {
+          "mirror": "ザハブ・ファジュル",
+          "action_skill": "黄金黎明"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 11,
+      "fid": "text.drift:服务端 assets/cdndata/character_text.json:700007:1:技能描述",
+      "character_id": "700007",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text.json",
+      "mirror_column": 5,
+      "source_sha256": "630eec61905f608ff85c3de16c2ae984e80dc6e7fd0039841c8ffae75bfa11e1",
+      "action_skill_key": "ruin_lady_no_piercing",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "客户端描述为内部标识符",
+      "conclusion": "action_skill c1 是内部英文键；不能把此值复制成玩家文案。须先核对真实技能及中文描述，再同步两端。",
+      "mirror_text": "命令Alter Device进行炮击，对领域内全体敌人造成水属性伤害／赋予全体队员攻击力提升效果／提升Fever槽",
+      "action_skill_text": "ruin_lady_no_piercing",
+      "differences": [
+        {
+          "mirror": "命令A",
+          "action_skill": "ruin_"
+        },
+        {
+          "mirror": "t",
+          "action_skill": "ady_no_pi"
+        },
+        {
+          "mirror": " Dev",
+          "action_skill": "c"
+        },
+        {
+          "mirror": "ce进行炮击，对领域内全体敌人造成水属性伤害／赋予全体队员攻击力提升效果／提升Fever槽",
+          "action_skill": "ng"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 12,
+      "fid": "text.drift:服务端 assets/cdndata/character_text.json:700007:1:技能名",
+      "character_id": "700007",
+      "tier": "1",
+      "field": "技能名",
+      "mirror_source": "assets/cdndata/character_text.json",
+      "mirror_column": 4,
+      "source_sha256": "630eec61905f608ff85c3de16c2ae984e80dc6e7fd0039841c8ffae75bfa11e1",
+      "action_skill_key": "ruin_lady_no_piercing",
+      "action_skill_column": 0,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "技能名档位标记不一致",
+      "conclusion": "镜像名称与该档 action_skill c0 不同；客户端读取 action_skill 名称，需按该档名称同步镜像。",
+      "mirror_text": "阿德·乌姆",
+      "action_skill_text": "众神之怒",
+      "differences": [
+        {
+          "mirror": "阿德·乌姆",
+          "action_skill": "众神之怒"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 13,
+      "fid": "text.drift:服务端 assets/cdndata/character_text.json:700008:1:技能名",
+      "character_id": "700008",
+      "tier": "1",
+      "field": "技能名",
+      "mirror_source": "assets/cdndata/character_text.json",
+      "mirror_column": 4,
+      "source_sha256": "630eec61905f608ff85c3de16c2ae984e80dc6e7fd0039841c8ffae75bfa11e1",
+      "action_skill_key": "justice_lady_assist",
+      "action_skill_column": 0,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "旧日文技能名",
+      "conclusion": "镜像名称与该档 action_skill c0 不同；客户端读取 action_skill 名称，需按该档名称同步镜像。",
+      "mirror_text": "カース・ブリンガー",
+      "action_skill_text": "将觉悟存于胸中。",
+      "differences": [
+        {
+          "mirror": "カース・ブリンガー",
+          "action_skill": "将觉悟存于胸中。"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 14,
+      "fid": "text.drift:服务端 assets/cdndata/character_text.json:149997:1:技能描述",
+      "character_id": "149997",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text.json",
+      "mirror_column": 5,
+      "source_sha256": "630eec61905f608ff85c3de16c2ae984e80dc6e7fd0039841c8ffae75bfa11e1",
+      "action_skill_key": "mosiyike",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "以风包裹全体队友，各起一圈守护的风盾／解除全体队友的全部弱化效果／赋予全体队友最大生命值 15% 的护盾／全体队友全属性抗性 +25%（20 秒）、攻击力 +250%（20 秒）",
+      "action_skill_text": "以风包裹全体队友，各起一圈守护的风盾／解除全体队友的全部弱化效果／赋予全体队友最大生命值 15% 的护盾／全体队友全属性抗性 +25%（20 秒）、攻击力 +250%（20 秒）／赋予全体队友最大速度固定效果（6 秒）",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": "／赋予全体队友最大速度固定效果（6 秒）"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 15,
+      "fid": "text.drift:服务端 assets/cdndata/character_text.json:149997:2:技能描述",
+      "character_id": "149997",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text.json",
+      "mirror_column": 7,
+      "source_sha256": "630eec61905f608ff85c3de16c2ae984e80dc6e7fd0039841c8ffae75bfa11e1",
+      "action_skill_key": "mosiyike",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "以风包裹全体队友，各起一圈守护的风盾／解除全体队友的全部弱化效果／赋予全体队友最大生命值 15% 的护盾／全体队友全属性抗性 +25%（20 秒）、攻击力 +250%（20 秒）",
+      "action_skill_text": "以风包裹全体队友，各起一圈守护的风盾／解除全体队友的全部弱化效果／赋予全体队友最大生命值 15% 的护盾／全体队友全属性抗性 +25%（20 秒）、攻击力 +250%（20 秒）／赋予全体队友最大速度固定效果（6 秒）",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": "／赋予全体队友最大速度固定效果（6 秒）"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 16,
+      "fid": "text.drift:服务端 assets/cdndata/character_text.json:149995:1:技能描述",
+      "character_id": "149995",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text.json",
+      "mirror_column": 5,
+      "source_sha256": "630eec61905f608ff85c3de16c2ae984e80dc6e7fd0039841c8ffae75bfa11e1",
+      "action_skill_key": "seofon_wind",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "镜像混写两档倍率",
+      "conclusion": "镜像同时写入进化前后倍率，action_skill 按当前档仅显示一组；应按档同步，不能把两组重新堆回技能描述。",
+      "mirror_text": "剑神双奏：无「剑神」时，原地召唤剑神——全体队员获得15%护盾，自身获得1级「剑神」与30%加速（10秒）；持有N级「剑神」时，剑神化身突进攻击1段，并向前方推出N把灵剑（每把攻击1段），共N+1段，随后消耗1级「剑神」。进化前每段倍率：1～2级25倍，3～5级30倍，6～8级40倍，9～11级50倍，12级70倍；进化后每段倍率：1～2级30倍，3～5级35倍，6～8级45倍，9～11级55倍，12级80倍。",
+      "action_skill_text": "剑神双奏：无「剑神」时，原地召唤剑神——全体队员获得15%护盾，自身获得1级「剑神」与30%加速（10秒）；持有N级「剑神」时，剑神化身突进攻击1段，并向前方推出N把灵剑（每把攻击1段），共N+1段，随后消耗1级「剑神」。进化前每段倍率：1～2级25倍，3～5级30倍，6～8级40倍，9～11级50倍，12级70倍。",
+      "differences": [
+        {
+          "mirror": "；进化后每段倍率：1～2级30倍，3～5级35倍，6～8级45倍，9～11级55倍，12级80倍",
+          "action_skill": ""
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 17,
+      "fid": "text.drift:服务端 assets/cdndata/character_text.json:149995:2:技能描述",
+      "character_id": "149995",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text.json",
+      "mirror_column": 7,
+      "source_sha256": "630eec61905f608ff85c3de16c2ae984e80dc6e7fd0039841c8ffae75bfa11e1",
+      "action_skill_key": "seofon_wind",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "镜像混写两档倍率",
+      "conclusion": "镜像同时写入进化前后倍率，action_skill 按当前档仅显示一组；应按档同步，不能把两组重新堆回技能描述。",
+      "mirror_text": "剑神双奏：无「剑神」时，原地召唤剑神——全体队员获得15%护盾，自身获得1级「剑神」与30%加速（10秒）；持有N级「剑神」时，剑神化身突进攻击1段，并向前方推出N把灵剑（每把攻击1段），共N+1段，随后消耗1级「剑神」。进化前每段倍率：1～2级25倍，3～5级30倍，6～8级40倍，9～11级50倍，12级70倍；进化后每段倍率：1～2级30倍，3～5级35倍，6～8级45倍，9～11级55倍，12级80倍。",
+      "action_skill_text": "剑神双奏：无「剑神」时，原地召唤剑神——全体队员获得15%护盾，自身获得1级「剑神」与30%加速（10秒）；持有N级「剑神」时，剑神化身突进攻击1段，并向前方推出N把灵剑（每把攻击1段），共N+1段，随后消耗1级「剑神」。进化后每段倍率：1～2级30倍，3～5级35倍，6～8级45倍，9～11级55倍，12级80倍。",
+      "differences": [
+        {
+          "mirror": "前每段倍率：1～2级25倍，3～5级30倍，6～8级40倍，9～11级50倍，12级70倍；进化",
+          "action_skill": ""
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 18,
+      "fid": "text.drift:服务端 assets/cdndata/character_text.json:129992:1:技能描述",
+      "character_id": "129992",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text.json",
+      "mirror_column": 5,
+      "source_sha256": "630eec61905f608ff85c3de16c2ae984e80dc6e7fd0039841c8ffae75bfa11e1",
+      "action_skill_key": "unicorn_lancer_rose",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "倍率仍是旧值",
+      "conclusion": "镜像写60/75倍，当前 action_skill 两档为40/50倍；应连同该档实际配置核对后同步镜像。",
+      "mirror_text": "将守护的誓约寄于枪锋，向距离最近的敌人突进，并在原地释放连续突刺，对命中的敌人造成合计60倍水属性技能伤害，随连击数提升威力。",
+      "action_skill_text": "将守护的誓约寄于枪锋，向距离最近的敌人突进，并在原地释放连续突刺，对命中的敌人造成合计40倍水属性技能伤害，随连击数提升威力。",
+      "differences": [
+        {
+          "mirror": "6",
+          "action_skill": "4"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 19,
+      "fid": "text.drift:服务端 assets/cdndata/character_text.json:129992:2:技能描述",
+      "character_id": "129992",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text.json",
+      "mirror_column": 7,
+      "source_sha256": "630eec61905f608ff85c3de16c2ae984e80dc6e7fd0039841c8ffae75bfa11e1",
+      "action_skill_key": "unicorn_lancer_rose",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "倍率仍是旧值",
+      "conclusion": "镜像写60/75倍，当前 action_skill 两档为40/50倍；应连同该档实际配置核对后同步镜像。",
+      "mirror_text": "将守护的誓约寄于枪锋，向距离最近的敌人突进，并在原地释放连续突刺，对命中的敌人造成合计75倍水属性技能伤害，随连击数提升威力。",
+      "action_skill_text": "将守护的誓约寄于枪锋，向距离最近的敌人突进，并在原地释放连续突刺，对命中的敌人造成合计50倍水属性技能伤害，随连击数提升威力。",
+      "differences": [
+        {
+          "mirror": "7",
+          "action_skill": ""
+        },
+        {
+          "mirror": "",
+          "action_skill": "0"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 20,
+      "fid": "text.drift:服务端 assets/cdndata/character_text.json:159991:1:技能描述",
+      "character_id": "159991",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text.json",
+      "mirror_column": 5,
+      "source_sha256": "630eec61905f608ff85c3de16c2ae984e80dc6e7fd0039841c8ffae75bfa11e1",
+      "action_skill_key": "cnmod_inaho_midautumn",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "对全场敌人造成光属性伤害（共3段，合计30倍技能伤害） / 消除敌方1个强化效果与队伍全体2个弱化效果。\n强制赋予敌方永久、不可驱散的「月蚀」：光属性耐性-15%；光属性共鸣时，追加能力伤害耐性、直接攻击耐性各-7.5%。\n赋予队伍全体20秒「月满丰穰」：攻击力、能力伤害各+200%，直接攻击伤害+75%，再生效果[恢复75]；另赋予队伍全体8秒「月行」，自身获得浮游、贯穿、最大速度固定效果（8秒）。",
+      "action_skill_text": "对全场敌人造成光属性伤害（共3段，合计30倍技能伤害） / 消除敌方1个强化效果与队伍全体2个弱化效果。\n强制赋予敌方永久、不可驱散的「月蚀」：光属性耐性-7.5%。\n赋予队伍全体20秒「月满丰穰」：攻击力、能力伤害、直接攻击伤害各+50%，再生效果[恢复75]；另赋予队伍全体8秒「月行」，自身获得浮游、贯穿、最大速度固定效果（8秒）。",
+      "differences": [
+        {
+          "mirror": "15%；光属性共鸣时，追加能力伤害耐性、直接攻击耐性各-",
+          "action_skill": ""
+        },
+        {
+          "mirror": "各+200%，",
+          "action_skill": "、"
+        },
+        {
+          "mirror": "",
+          "action_skill": "各"
+        },
+        {
+          "mirror": "7",
+          "action_skill": ""
+        },
+        {
+          "mirror": "",
+          "action_skill": "0"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 21,
+      "fid": "text.drift:服务端 assets/cdndata/character_text.json:159991:2:技能描述",
+      "character_id": "159991",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text.json",
+      "mirror_column": 7,
+      "source_sha256": "630eec61905f608ff85c3de16c2ae984e80dc6e7fd0039841c8ffae75bfa11e1",
+      "action_skill_key": "cnmod_inaho_midautumn",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "对全场敌人造成光属性伤害（共3段，合计30倍技能伤害） / 消除敌方1个强化效果与队伍全体2个弱化效果。\n强制赋予敌方永久、不可驱散的「月蚀」：光属性耐性-15%；光属性共鸣时，追加能力伤害耐性、直接攻击耐性各-7.5%。\n赋予队伍全体20秒「月满丰穰」：攻击力、能力伤害各+200%，直接攻击伤害+75%，再生效果[恢复75]；另赋予队伍全体8秒「月行」，自身获得浮游、贯穿、最大速度固定效果（8秒）。",
+      "action_skill_text": "对全场敌人造成光属性伤害（共3段，合计30倍技能伤害） / 消除敌方1个强化效果与队伍全体2个弱化效果。\n强制赋予敌方永久、不可驱散的「月蚀」：光属性耐性-7.5%。\n赋予队伍全体20秒「月满丰穰」：攻击力、能力伤害、直接攻击伤害各+50%，再生效果[恢复75]；另赋予队伍全体8秒「月行」，自身获得浮游、贯穿、最大速度固定效果（8秒）。",
+      "differences": [
+        {
+          "mirror": "15%；光属性共鸣时，追加能力伤害耐性、直接攻击耐性各-",
+          "action_skill": ""
+        },
+        {
+          "mirror": "各+200%，",
+          "action_skill": "、"
+        },
+        {
+          "mirror": "",
+          "action_skill": "各"
+        },
+        {
+          "mirror": "7",
+          "action_skill": ""
+        },
+        {
+          "mirror": "",
+          "action_skill": "0"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 22,
+      "fid": "text.drift:服务端 assets/cdndata/character_text.json:159992:1:技能描述",
+      "character_id": "159992",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text.json",
+      "mirror_column": 5,
+      "source_sha256": "630eec61905f608ff85c3de16c2ae984e80dc6e7fd0039841c8ffae75bfa11e1",
+      "action_skill_key": "liangyue_onmyoji",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "驱使画出的百鬼向前方奔袭斩击，对周围的敌人造成风属性伤害",
+      "action_skill_text": "驱使画出的百鬼向前方奔袭斩击，对前方区域内的敌人造成风属性伤害",
+      "differences": [
+        {
+          "mirror": "周围",
+          "action_skill": "前方区域内"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 23,
+      "fid": "text.drift:服务端 assets/cdndata/character_text.json:159992:2:技能描述",
+      "character_id": "159992",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text.json",
+      "mirror_column": 7,
+      "source_sha256": "630eec61905f608ff85c3de16c2ae984e80dc6e7fd0039841c8ffae75bfa11e1",
+      "action_skill_key": "liangyue_onmyoji",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "驱使画出的百鬼向前方奔袭斩击，对周围的敌人造成风属性伤害／赋予己方直击联动效果",
+      "action_skill_text": "驱使画出的百鬼向前方奔袭斩击，对前方区域内的敌人造成风属性伤害／赋予风属性角色「直接攻击伤害上升效果」／赋予己方浮游效果",
+      "differences": [
+        {
+          "mirror": "周围",
+          "action_skill": "前方区域内"
+        },
+        {
+          "mirror": "",
+          "action_skill": "风属性角色「直接攻击伤害上升效果」／赋予"
+        },
+        {
+          "mirror": "直击联动",
+          "action_skill": "浮游"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 24,
+      "fid": "text.drift:服务端 assets/cdndata/character_text.json:159992:3:技能描述",
+      "character_id": "159992",
+      "tier": "3",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text.json",
+      "mirror_column": 9,
+      "source_sha256": "630eec61905f608ff85c3de16c2ae984e80dc6e7fd0039841c8ffae75bfa11e1",
+      "action_skill_key": "liangyue_onmyoji",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "驱使画出的百鬼向前方奔袭斩击，对周围的敌人造成风属性伤害／赋予己方直击联动效果／赋予己方浮游效果",
+      "action_skill_text": "驱使画出的百鬼向前方奔袭斩击，对前方区域内的敌人造成风属性伤害／赋予风属性角色「直接攻击伤害上升效果」／赋予己方浮游效果",
+      "differences": [
+        {
+          "mirror": "周围",
+          "action_skill": "前方区域内"
+        },
+        {
+          "mirror": "己方",
+          "action_skill": "风属性角色「"
+        },
+        {
+          "mirror": "",
+          "action_skill": "接攻"
+        },
+        {
+          "mirror": "联动",
+          "action_skill": "伤害上升"
+        },
+        {
+          "mirror": "",
+          "action_skill": "」"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 25,
+      "fid": "text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:169995:2:技能描述",
+      "character_id": "169995",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text_rank_p5b.json",
+      "mirror_column": 7,
+      "source_sha256": "ecb6c00eb169271f96acb19ea39c3f25390a345397177bc73b692bb515fe2fa6",
+      "action_skill_key": "maou2_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "镜像仅保留强化摘要",
+      "conclusion": "镜像只写进一步增强，action_skill 已有完整技能说明；应同步完整该档描述。",
+      "mirror_text": "终结爆发进一步增强。",
+      "action_skill_text": "降下黑雷雨与四连光柱，终以湮灭冲击归零万象，对全体敌人造成大伤害。",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": "降下黑雷雨与四连光柱，"
+        },
+        {
+          "mirror": "结爆发进一步增强",
+          "action_skill": "以湮灭冲击归零万象，对全体敌人造成大伤害"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 26,
+      "fid": "text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:169995:2:技能名",
+      "character_id": "169995",
+      "tier": "2",
+      "field": "技能名",
+      "mirror_source": "assets/cdndata/character_text_rank_p5b.json",
+      "mirror_column": 6,
+      "source_sha256": "ecb6c00eb169271f96acb19ea39c3f25390a345397177bc73b692bb515fe2fa6",
+      "action_skill_key": "maou2_playable",
+      "action_skill_column": 0,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "标点或空白不一致",
+      "conclusion": "完整文字内容一致，仅标点或空白不同；精确同步仍未完成。",
+      "mirror_text": "勇者终焉・万象归零＋",
+      "action_skill_text": "勇者终焉・万象归零",
+      "differences": [
+        {
+          "mirror": "＋",
+          "action_skill": ""
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 27,
+      "fid": "text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:119951:1:技能描述",
+      "character_id": "119951",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text_rank_p5b.json",
+      "mirror_column": 5,
+      "source_sha256": "ecb6c00eb169271f96acb19ea39c3f25390a345397177bc73b692bb515fe2fa6",
+      "action_skill_key": "spirit_beast_fire_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "展开缠绕自身的炎环，在一段时间内持续对范围内的敌人造成火属性伤害，被炎环命中的敌人火属性耐性降低25%（最多3层）／随后向前方释放两道炎狱",
+      "action_skill_text": "在弹珠落点展开缠绕的炎环，10 秒内持续对范围内的敌人造成火属性伤害，被炎环命中的敌人火属性耐性降低 25%（最多 3 层，持续 65 秒）／随后向左、右、正面依次释放三道炎狱，最后一道范围与威力更大",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": "在弹珠落点"
+        },
+        {
+          "mirror": "自身",
+          "action_skill": ""
+        },
+        {
+          "mirror": "在一段时间",
+          "action_skill": "10 秒"
+        },
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": "，持续 65 秒"
+        },
+        {
+          "mirror": "前方",
+          "action_skill": "左、右、正面依次"
+        },
+        {
+          "mirror": "两",
+          "action_skill": "三"
+        },
+        {
+          "mirror": "",
+          "action_skill": "，最后一道范围与威力更大"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 28,
+      "fid": "text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:119951:2:技能描述",
+      "character_id": "119951",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text_rank_p5b.json",
+      "mirror_column": 7,
+      "source_sha256": "ecb6c00eb169271f96acb19ea39c3f25390a345397177bc73b692bb515fe2fa6",
+      "action_skill_key": "spirit_beast_fire_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "展开缠绕自身的炎环，在一段时间内持续对范围内的敌人造成火属性伤害，被炎环命中的敌人火属性耐性降低30%（最多3层）／随后向前方释放两道炎狱",
+      "action_skill_text": "在弹珠落点展开缠绕的炎环，10 秒内持续对范围内的敌人造成火属性伤害，被炎环命中的敌人火属性耐性降低 30%（最多 3 层，持续 65 秒）／随后向左、右、正面依次释放三道炎狱，最后一道范围与威力更大",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": "在弹珠落点"
+        },
+        {
+          "mirror": "自身",
+          "action_skill": ""
+        },
+        {
+          "mirror": "在一段时间",
+          "action_skill": "10 秒"
+        },
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": "，持续 65 秒"
+        },
+        {
+          "mirror": "前方",
+          "action_skill": "左、右、正面依次"
+        },
+        {
+          "mirror": "两",
+          "action_skill": "三"
+        },
+        {
+          "mirror": "",
+          "action_skill": "，最后一道范围与威力更大"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 29,
+      "fid": "text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:119970:1:技能描述",
+      "character_id": "119970",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text_rank_p5b.json",
+      "mirror_column": 5,
+      "source_sha256": "ecb6c00eb169271f96acb19ea39c3f25390a345397177bc73b692bb515fe2fa6",
+      "action_skill_key": "steam_robot_fire_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "举剑下劈斩开前方直线,对命中的敌人造成火属性伤害;自身「嫉火」达到 20 层时追加一圈处刑爆炎,并将嫉火全部烧尽换取技能伤害提升。",
+      "action_skill_text": "举剑下劈，在前方开出一道宽幅绝杀斩击，对命中的敌人造成火属性伤害并炸开绝杀弹；自身「嫉火」达到 20 层时追加一圈处刑爆炎，随后烧尽全部嫉火，换取自身技能伤害提升（最多 3 层）。",
+      "differences": [
+        {
+          "mirror": "斩开",
+          "action_skill": "，在"
+        },
+        {
+          "mirror": "直线,",
+          "action_skill": "开出一道宽幅绝杀斩击，"
+        },
+        {
+          "mirror": ";",
+          "action_skill": "并炸开绝杀弹；"
+        },
+        {
+          "mirror": ",并将",
+          "action_skill": "，随后烧尽全部"
+        },
+        {
+          "mirror": "全部烧尽",
+          "action_skill": "，"
+        },
+        {
+          "mirror": "",
+          "action_skill": "自身"
+        },
+        {
+          "mirror": "",
+          "action_skill": "（最多 3 层）"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 30,
+      "fid": "text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:119970:2:技能描述",
+      "character_id": "119970",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text_rank_p5b.json",
+      "mirror_column": 7,
+      "source_sha256": "ecb6c00eb169271f96acb19ea39c3f25390a345397177bc73b692bb515fe2fa6",
+      "action_skill_key": "steam_robot_fire_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "下劈的威力与追加处刑爆炎的范围同步提升,烧尽嫉火后获得的技能伤害提升更高。",
+      "action_skill_text": "下劈与处刑爆炎的威力同步提升，烧尽嫉火后获得的技能伤害提升更高。",
+      "differences": [
+        {
+          "mirror": "的威力",
+          "action_skill": ""
+        },
+        {
+          "mirror": "追加",
+          "action_skill": ""
+        },
+        {
+          "mirror": "范围",
+          "action_skill": "威力"
+        },
+        {
+          "mirror": ",",
+          "action_skill": "，"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 31,
+      "fid": "text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:129951:1:技能描述",
+      "character_id": "129951",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text_rank_p5b.json",
+      "mirror_column": 5,
+      "source_sha256": "ecb6c00eb169271f96acb19ea39c3f25390a345397177bc73b692bb515fe2fa6",
+      "action_skill_key": "spirit_beast_water_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "【水势】掀起横贯战场的巨浪，并在落点留下持续的回旋涡流，命中的敌人水属性耐性降低20%（最多3层）／【冰势】降下冰河【对冻结中的敌人伤害提升】，并以冰晶爆破使命中的敌人陷入冻结／每次发动后在两势之间切换",
+      "action_skill_text": "【水势】掀起横贯战场的巨浪，并在落点留下持续的回旋涡流，命中的敌人水属性耐性降低 20%（最多 3 层，持续 65 秒）／【冰势】降下冰河【对冻结中的敌人伤害提升】，并以冰晶爆散使命中的敌人陷入冻结 3 秒／每次发动后在两势之间切换",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": "，持续 65 秒"
+        },
+        {
+          "mirror": "破",
+          "action_skill": "散"
+        },
+        {
+          "mirror": "",
+          "action_skill": " 3 秒"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 32,
+      "fid": "text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:129951:2:技能描述",
+      "character_id": "129951",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text_rank_p5b.json",
+      "mirror_column": 7,
+      "source_sha256": "ecb6c00eb169271f96acb19ea39c3f25390a345397177bc73b692bb515fe2fa6",
+      "action_skill_key": "spirit_beast_water_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "【水势】掀起横贯战场的巨浪，并在落点留下持续的回旋涡流，命中的敌人水属性耐性降低25%（最多3层）／【冰势】降下冰河【对冻结中的敌人伤害提升】，并以冰晶爆破使命中的敌人陷入冻结／每次发动后在两势之间切换",
+      "action_skill_text": "【水势】掀起横贯战场的巨浪，并在落点留下持续的回旋涡流，命中的敌人水属性耐性降低 25%（最多 3 层，持续 65 秒）／【冰势】降下冰河【对冻结中的敌人伤害提升】，并以冰晶爆散使命中的敌人陷入冻结 3 秒／每次发动后在两势之间切换",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": "，持续 65 秒"
+        },
+        {
+          "mirror": "破",
+          "action_skill": "散"
+        },
+        {
+          "mirror": "",
+          "action_skill": " 3 秒"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 33,
+      "fid": "text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:129970:1:技能描述",
+      "character_id": "129970",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text_rank_p5b.json",
+      "mirror_column": 5,
+      "source_sha256": "ecb6c00eb169271f96acb19ea39c3f25390a345397177bc73b692bb515fe2fa6",
+      "action_skill_key": "steam_robot_water_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "以曲射炮向前方倾泻弹幕,对命中的敌人造成水属性伤害;持有「运转率」时追加一次重启冲击并回复我方全员生命值,随后清空运转率,换取自身永久的强化弹射伤害提升(最多 3 层)。",
+      "action_skill_text": "以曲射炮向前方倾泻弹幕并甩出薬莢，对命中的敌人造成水属性伤害；持有「运转率」时追加一次重启冲击波并回复我方全员生命值，随后清空运转率，换取自身永久的强化弹射伤害提升（最多 3 层）。",
+      "differences": [
+        {
+          "mirror": ",",
+          "action_skill": "并甩出薬莢，"
+        },
+        {
+          "mirror": ";",
+          "action_skill": "；"
+        },
+        {
+          "mirror": "",
+          "action_skill": "波"
+        },
+        {
+          "mirror": ",",
+          "action_skill": "，"
+        },
+        {
+          "mirror": ",",
+          "action_skill": "，"
+        },
+        {
+          "mirror": "(",
+          "action_skill": "（"
+        },
+        {
+          "mirror": ")",
+          "action_skill": "）"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 34,
+      "fid": "text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:129970:2:技能描述",
+      "character_id": "129970",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text_rank_p5b.json",
+      "mirror_column": 7,
+      "source_sha256": "ecb6c00eb169271f96acb19ea39c3f25390a345397177bc73b692bb515fe2fa6",
+      "action_skill_key": "steam_robot_water_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "曲射与重启冲击的威力、回复量与重启后获得的强化弹射伤害提升全面加强。",
+      "action_skill_text": "曲射、薬莢与重启冲击的威力、回复量与重启后获得的强化弹射伤害提升全面加强。",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": "、薬莢"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 35,
+      "fid": "text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:139951:1:技能描述",
+      "character_id": "139951",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text_rank_p5b.json",
+      "mirror_column": 5,
+      "source_sha256": "ecb6c00eb169271f96acb19ea39c3f25390a345397177bc73b692bb515fe2fa6",
+      "action_skill_key": "spirit_beast_thunder_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "在战场上展开持续的带电领域，反复对领域内的敌人造成雷属性伤害／同时降下三道天雷",
+      "action_skill_text": "在战场上展开持续 10 秒的带电领域，反复对领域内的敌人造成雷属性伤害／同时依次降下四道天雷，最后一道的落点范围与威力更大",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": " 10 秒"
+        },
+        {
+          "mirror": "",
+          "action_skill": "依次"
+        },
+        {
+          "mirror": "三",
+          "action_skill": "四"
+        },
+        {
+          "mirror": "",
+          "action_skill": "，最后一道的落点范围与威力更大"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 36,
+      "fid": "text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:139951:2:技能描述",
+      "character_id": "139951",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text_rank_p5b.json",
+      "mirror_column": 7,
+      "source_sha256": "ecb6c00eb169271f96acb19ea39c3f25390a345397177bc73b692bb515fe2fa6",
+      "action_skill_key": "spirit_beast_thunder_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "在战场上展开持续的带电领域，反复对领域内的敌人造成雷属性伤害（威力提升）／同时降下三道天雷",
+      "action_skill_text": "在战场上展开持续 10 秒的带电领域，反复对领域内的敌人造成雷属性伤害（威力提升）／同时依次降下四道天雷，最后一道的落点范围与威力更大",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": " 10 秒"
+        },
+        {
+          "mirror": "",
+          "action_skill": "依次"
+        },
+        {
+          "mirror": "三",
+          "action_skill": "四"
+        },
+        {
+          "mirror": "",
+          "action_skill": "，最后一道的落点范围与威力更大"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 37,
+      "fid": "text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:139970:1:技能描述",
+      "character_id": "139970",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text_rank_p5b.json",
+      "mirror_column": 5,
+      "source_sha256": "ecb6c00eb169271f96acb19ea39c3f25390a345397177bc73b692bb515fe2fa6",
+      "action_skill_key": "steam_robot_thunder_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "向前方注水并以螯肢横扫,对命中的敌人造成雷属性伤害;「蓄电水域」达到 3 级时一次排干并放电,造成大额雷属性伤害并使敌方陷入麻痹。",
+      "action_skill_text": "向前方注水铺开电域并以螯肢横扫，对命中的敌人造成雷属性伤害；「蓄电水域」达到 3 级时一次排干并放电，射出放电光束造成大额雷属性伤害，使全体敌人陷入麻痹，随后消耗 3 级蓄电水域。",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": "铺开电域"
+        },
+        {
+          "mirror": ",",
+          "action_skill": "，"
+        },
+        {
+          "mirror": ";",
+          "action_skill": "；"
+        },
+        {
+          "mirror": ",",
+          "action_skill": "，射出放电光束"
+        },
+        {
+          "mirror": "并",
+          "action_skill": "，"
+        },
+        {
+          "mirror": "",
+          "action_skill": "全体"
+        },
+        {
+          "mirror": "方",
+          "action_skill": "人"
+        },
+        {
+          "mirror": "",
+          "action_skill": "，随后消耗 3 级蓄电水域"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 38,
+      "fid": "text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:139970:2:技能描述",
+      "character_id": "139970",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text_rank_p5b.json",
+      "mirror_column": 7,
+      "source_sha256": "ecb6c00eb169271f96acb19ea39c3f25390a345397177bc73b692bb515fe2fa6",
+      "action_skill_key": "steam_robot_thunder_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "标点或空白不一致",
+      "conclusion": "完整文字内容一致，仅标点或空白不同；精确同步仍未完成。",
+      "mirror_text": "注水横扫与排水放电的威力提升,麻痹的持续时间同步延长。",
+      "action_skill_text": "注水横扫与排水放电的威力提升，麻痹的持续时间同步延长。",
+      "differences": [
+        {
+          "mirror": ",",
+          "action_skill": "，"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 39,
+      "fid": "text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:149951:1:技能描述",
+      "character_id": "149951",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text_rank_p5b.json",
+      "mirror_column": 5,
+      "source_sha256": "ecb6c00eb169271f96acb19ea39c3f25390a345397177bc73b692bb515fe2fa6",
+      "action_skill_key": "spirit_beast_wind_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "于前方展开毒风，对命中的敌人造成风属性伤害，并赋予中毒与属性耐性降低效果。自身持有 8 层以上「风蛇的诅咒」时，追加引爆诅咒，对周围敌人造成风属性伤害并消耗 8 层。无论是否引爆，都会赋予我方全体攻击力提升；仅在引爆时增加自身技能槽5%。",
+      "action_skill_text": "于前方展开毒风，对命中的敌人造成风属性伤害，并赋予中毒与全属性耐性降低 18%（最多 3 层）。自身持有 8 层以上「风蛇的诅咒」时，追加引爆诅咒，对周围敌人造成风属性伤害并消耗 8 层，赋予我方全体攻击力提升 25%（15 秒）并增加自身技能槽 5%；未达 8 层时改为赋予我方全体「风蛇的加护」攻击力提升 12%（10 秒）。",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": "全"
+        },
+        {
+          "mirror": "效果",
+          "action_skill": " 18%（最多 3 层）"
+        },
+        {
+          "mirror": "。无论是否引爆",
+          "action_skill": ""
+        },
+        {
+          "mirror": "都会",
+          "action_skill": ""
+        },
+        {
+          "mirror": "；仅在引爆时",
+          "action_skill": " 25%（15 秒）并"
+        },
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": "；未达 8 层时改为赋予我方全体「风蛇的加护」攻击力提升 12%（10 秒）"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 40,
+      "fid": "text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:149951:2:技能描述",
+      "character_id": "149951",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text_rank_p5b.json",
+      "mirror_column": 7,
+      "source_sha256": "ecb6c00eb169271f96acb19ea39c3f25390a345397177bc73b692bb515fe2fa6",
+      "action_skill_key": "spirit_beast_wind_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "于前方展开毒风，对命中的敌人造成风属性伤害，并赋予中毒与属性耐性降低效果。自身持有 8 层以上「风蛇的诅咒」时，追加引爆诅咒，对周围敌人造成风属性伤害并消耗 8 层。无论是否引爆，都会赋予我方全体攻击力提升；仅在引爆时增加自身技能槽5%。",
+      "action_skill_text": "于前方展开毒风，对命中的敌人造成风属性伤害，并赋予中毒与全属性耐性降低 25%（最多 3 层）。自身持有 8 层以上「风蛇的诅咒」时，追加引爆诅咒，对周围敌人造成风属性伤害并消耗 8 层，赋予我方全体攻击力提升 30%（15 秒）并增加自身技能槽 5%；未达 8 层时改为赋予我方全体「风蛇的加护」攻击力提升 15%（10 秒）。",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": "全"
+        },
+        {
+          "mirror": "效果",
+          "action_skill": " 25%（最多 3 层）"
+        },
+        {
+          "mirror": "。无论是否引爆",
+          "action_skill": ""
+        },
+        {
+          "mirror": "都会",
+          "action_skill": ""
+        },
+        {
+          "mirror": "；仅在引爆时",
+          "action_skill": " 30%（15 秒）并"
+        },
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": "；未达 8 层时改为赋予我方全体「风蛇的加护」攻击力提升 15%（10 秒）"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 41,
+      "fid": "text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:149970:1:技能描述",
+      "character_id": "149970",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text_rank_p5b.json",
+      "mirror_column": 5,
+      "source_sha256": "ecb6c00eb169271f96acb19ea39c3f25390a345397177bc73b692bb515fe2fa6",
+      "action_skill_key": "steam_robot_wind_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "展翼进行地毯式轰炸,对前方直线上的敌人造成风属性伤害并降低其风属性抗性;同时解除我方全员的弱体状态并赋予护盾,「愁绪」达到 3 层时再加厚一层并将其消耗。",
+      "action_skill_text": "展翼掠出翼刃并进行地毯式轰炸，对前方直线上的敌人造成风属性伤害并降低其风属性抗性；同时解除我方全员的弱体状态并赋予护盾，「愁绪」达到 3 层时再加厚一层护盾并消耗 3 层愁绪。",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": "掠出翼刃并"
+        },
+        {
+          "mirror": ",",
+          "action_skill": "，"
+        },
+        {
+          "mirror": ";",
+          "action_skill": "；"
+        },
+        {
+          "mirror": ",",
+          "action_skill": "，"
+        },
+        {
+          "mirror": "",
+          "action_skill": "护盾"
+        },
+        {
+          "mirror": "将其",
+          "action_skill": ""
+        },
+        {
+          "mirror": "",
+          "action_skill": " 3 层愁绪"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 42,
+      "fid": "text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:159951:1:技能描述",
+      "character_id": "159951",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text_rank_p5b.json",
+      "mirror_column": 5,
+      "source_sha256": "ecb6c00eb169271f96acb19ea39c3f25390a345397177bc73b692bb515fe2fa6",
+      "action_skill_key": "spirit_beast_light_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "于前方张开巨网，持续对网内的敌人造成光属性伤害，并叠加「破绽」（光属性耐性降低，最多 3 层）。随后引爆蛛网，对周围敌人造成光属性伤害。技能结束时赋予我方全体贯通与浮游效果。",
+      "action_skill_text": "于前方张开巨网，持续对网内的敌人造成光属性伤害，并叠加「破绽」（光属性耐性降低 12%，最多 3 层，持续 20 秒）。随后引爆蛛网，对周围敌人造成光属性伤害。技能结束时赋予我方全体贯通与浮游 8 秒。",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": " 12%"
+        },
+        {
+          "mirror": "",
+          "action_skill": "，持续 20 秒"
+        },
+        {
+          "mirror": "效果",
+          "action_skill": " 8 秒"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 43,
+      "fid": "text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:159951:2:技能描述",
+      "character_id": "159951",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text_rank_p5b.json",
+      "mirror_column": 7,
+      "source_sha256": "ecb6c00eb169271f96acb19ea39c3f25390a345397177bc73b692bb515fe2fa6",
+      "action_skill_key": "spirit_beast_light_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "于前方张开巨网，持续对网内的敌人造成光属性伤害，并叠加「破绽」（光属性耐性降低，最多 3 层）。随后引爆蛛网，对周围敌人造成光属性伤害。技能结束时赋予我方全体贯通与浮游效果。",
+      "action_skill_text": "于前方张开巨网，持续对网内的敌人造成光属性伤害，并叠加「破绽」（光属性耐性降低 15%，最多 3 层，持续 20 秒）。随后引爆蛛网，对周围敌人造成光属性伤害。技能结束时赋予我方全体贯通与浮游 10 秒。",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": " 15%"
+        },
+        {
+          "mirror": "",
+          "action_skill": "，持续 20 秒"
+        },
+        {
+          "mirror": "效果",
+          "action_skill": " 10 秒"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 44,
+      "fid": "text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:169951:1:技能描述",
+      "character_id": "169951",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text_rank_p5b.json",
+      "mirror_column": 5,
+      "source_sha256": "ecb6c00eb169271f96acb19ea39c3f25390a345397177bc73b692bb515fe2fa6",
+      "action_skill_key": "spirit_beast_dark_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "化为冥炎向前俯冲，对命中的敌人造成暗属性伤害并驱散其增益效果。随后散射黑羽追击，最后引爆深渊地狱造成暗属性伤害。技能结束时为自身张开护罩，并在一段时间内使自身的直接攻击变为 2 段、直击伤害提升。",
+      "action_skill_text": "化为冥炎向前俯冲，对命中的敌人造成暗属性伤害并驱散其增益效果。随后散射三道黑羽追击，最后引爆深渊地狱造成暗属性伤害。技能结束时为自身张开吸收 6% 伤害的护罩，并在 12 秒内使自身的直接攻击变为 2 段、直击伤害提升 20%。",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": "三道"
+        },
+        {
+          "mirror": "",
+          "action_skill": "吸收 6% 伤害的"
+        },
+        {
+          "mirror": "一段时间",
+          "action_skill": " 12 秒"
+        },
+        {
+          "mirror": "",
+          "action_skill": " 20%"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 45,
+      "fid": "text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:169951:2:技能描述",
+      "character_id": "169951",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "assets/cdndata/character_text_rank_p5b.json",
+      "mirror_column": 7,
+      "source_sha256": "ecb6c00eb169271f96acb19ea39c3f25390a345397177bc73b692bb515fe2fa6",
+      "action_skill_key": "spirit_beast_dark_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "化为冥炎向前俯冲，对命中的敌人造成暗属性伤害并驱散其增益效果。随后散射黑羽追击，最后引爆深渊地狱造成暗属性伤害。技能结束时为自身张开护罩，并在一段时间内使自身的直接攻击变为 2 段、直击伤害提升。",
+      "action_skill_text": "化为冥炎向前俯冲，对命中的敌人造成暗属性伤害并驱散其增益效果。随后散射三道黑羽追击，最后引爆深渊地狱造成暗属性伤害。技能结束时为自身张开吸收 8% 伤害的护罩，并在 15 秒内使自身的直接攻击变为 2 段、直击伤害提升 25%。",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": "三道"
+        },
+        {
+          "mirror": "",
+          "action_skill": "吸收 8% 伤害的"
+        },
+        {
+          "mirror": "一段时间",
+          "action_skill": " 15 秒"
+        },
+        {
+          "mirror": "",
+          "action_skill": " 25%"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 46,
+      "fid": "text.drift:客户端 character_text 表:151159:3:技能描述",
+      "character_id": "151159",
+      "tier": "3",
+      "field": "技能描述",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 9,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "golden_dragon_jr",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "以古龙的威光赋予领域内全体敌人累积光属性抗性降低效果 ＋ 消除1个强化效果 ／ 放出锐利的光芒，对领域内全体敌人造成光属性伤害",
+      "action_skill_text": "以古龙的威光赋予领域内全体敌人累积光·暗属性抗性降低效果 ＋ 消除1个强化效果 ／ 放出锐利的光芒，在一段时间内对领域内全体敌人连续造成多段光属性伤害 ／ 赋予我方全体与协力角色“光暗共鸣”效果（攻击力提升＋全属性抗性提升＋持续回复），其持续期间我方直接攻击伤害进一步提升",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": "·暗"
+        },
+        {
+          "mirror": "",
+          "action_skill": "在一段时间内"
+        },
+        {
+          "mirror": "",
+          "action_skill": "连续"
+        },
+        {
+          "mirror": "",
+          "action_skill": "多段"
+        },
+        {
+          "mirror": "",
+          "action_skill": " ／ 赋予我方全体与协力角色“光暗共鸣”效果（攻击力提升＋全属性抗性提升＋持续回复），其持续期间我方直接攻击伤害进一步提升"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 47,
+      "fid": "text.drift:客户端 character_text 表:261089:1:技能描述",
+      "character_id": "261089",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 5,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "darkness_dragon",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "高档强化文字写入低档镜像",
+      "conclusion": "该档 action_skill 保留普通效果，客户端 character_text 提前写入强化版；不能因高档存在强化而覆盖低档技能。",
+      "mirror_text": "引爆黑暗，对领域内全体敌人连续释放三段暗属性伤害＋消除其强化效果＋赋予麻痹与暗属性抗性降低效果 ／ 赋予暗属性角色技能伤害提升效果＋解除其弱体效果",
+      "action_skill_text": "引爆黑暗，对领域内全体敌人造成暗属性伤害 ／ 赋予暗属性角色技能伤害提升效果",
+      "differences": [
+        {
+          "mirror": "连续释放三段",
+          "action_skill": "造成"
+        },
+        {
+          "mirror": "＋消除其强化效果＋赋予麻痹与暗属性抗性降低效果",
+          "action_skill": ""
+        },
+        {
+          "mirror": "＋解除其弱体效果",
+          "action_skill": ""
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 48,
+      "fid": "text.drift:客户端 character_text 表:261089:2:技能描述",
+      "character_id": "261089",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 7,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "darkness_dragon",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "高档强化文字写入低档镜像",
+      "conclusion": "该档 action_skill 保留普通效果，客户端 character_text 提前写入强化版；不能因高档存在强化而覆盖低档技能。",
+      "mirror_text": "引爆黑暗，对领域内全体敌人连续释放三段暗属性伤害＋消除其强化效果＋赋予麻痹与暗属性抗性降低效果 ／ 赋予暗属性角色技能伤害提升效果＋解除其弱体效果",
+      "action_skill_text": "引爆黑暗，对领域内全体敌人造成暗属性伤害 ／ 赋予暗属性角色技能伤害提升效果",
+      "differences": [
+        {
+          "mirror": "连续释放三段",
+          "action_skill": "造成"
+        },
+        {
+          "mirror": "＋消除其强化效果＋赋予麻痹与暗属性抗性降低效果",
+          "action_skill": ""
+        },
+        {
+          "mirror": "＋解除其弱体效果",
+          "action_skill": ""
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 49,
+      "fid": "text.drift:客户端 character_text 表:261089:3:技能描述",
+      "character_id": "261089",
+      "tier": "3",
+      "field": "技能描述",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 9,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "darkness_dragon",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "引爆黑暗，对领域内全体敌人造成暗属性伤害 ／ 赋予暗属性角色技能伤害提升效果",
+      "action_skill_text": "引爆黑暗，对领域内全体敌人连续释放三段暗属性伤害＋消除其强化效果＋赋予麻痹与“光暗抗性降低”效果（光属性·暗属性抗性同时降低） ／ 赋予我方全体角色攻击力提升与技能伤害提升效果",
+      "differences": [
+        {
+          "mirror": "造成",
+          "action_skill": "连续释放三段"
+        },
+        {
+          "mirror": "",
+          "action_skill": "＋消除其强化效果＋赋予麻痹与“光暗抗性降低”效果（光属性·暗属性抗性同时降低）"
+        },
+        {
+          "mirror": "暗属性",
+          "action_skill": "我方全体"
+        },
+        {
+          "mirror": "",
+          "action_skill": "攻击力提升与"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 50,
+      "fid": "text.drift:客户端 character_text 表:700006:1:技能名",
+      "character_id": "700006",
+      "tier": "1",
+      "field": "技能名",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 4,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "desert_commander_no_piercing",
+      "action_skill_column": 0,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "旧日文技能名",
+      "conclusion": "镜像名称与该档 action_skill c0 不同；客户端读取 action_skill 名称，需按该档名称同步镜像。",
+      "mirror_text": "ザハブ・ファジュル",
+      "action_skill_text": "黄金黎明",
+      "differences": [
+        {
+          "mirror": "ザハブ・ファジュル",
+          "action_skill": "黄金黎明"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 51,
+      "fid": "text.drift:客户端 character_text 表:700007:1:技能描述",
+      "character_id": "700007",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 5,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "ruin_lady_no_piercing",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "客户端描述为内部标识符",
+      "conclusion": "action_skill c1 是内部英文键；不能把此值复制成玩家文案。须先核对真实技能及中文描述，再同步两端。",
+      "mirror_text": "命令Alter Device进行炮击，对领域内全体敌人造成水属性伤害／赋予全体队员攻击力提升效果／提升Fever槽",
+      "action_skill_text": "ruin_lady_no_piercing",
+      "differences": [
+        {
+          "mirror": "命令A",
+          "action_skill": "ruin_"
+        },
+        {
+          "mirror": "t",
+          "action_skill": "ady_no_pi"
+        },
+        {
+          "mirror": " Dev",
+          "action_skill": "c"
+        },
+        {
+          "mirror": "ce进行炮击，对领域内全体敌人造成水属性伤害／赋予全体队员攻击力提升效果／提升Fever槽",
+          "action_skill": "ng"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 52,
+      "fid": "text.drift:客户端 character_text 表:700007:1:技能名",
+      "character_id": "700007",
+      "tier": "1",
+      "field": "技能名",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 4,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "ruin_lady_no_piercing",
+      "action_skill_column": 0,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "技能名档位标记不一致",
+      "conclusion": "镜像名称与该档 action_skill c0 不同；客户端读取 action_skill 名称，需按该档名称同步镜像。",
+      "mirror_text": "阿德·乌姆",
+      "action_skill_text": "众神之怒",
+      "differences": [
+        {
+          "mirror": "阿德·乌姆",
+          "action_skill": "众神之怒"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 53,
+      "fid": "text.drift:客户端 character_text 表:700008:1:技能名",
+      "character_id": "700008",
+      "tier": "1",
+      "field": "技能名",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 4,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "justice_lady_assist",
+      "action_skill_column": 0,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "旧日文技能名",
+      "conclusion": "镜像名称与该档 action_skill c0 不同；客户端读取 action_skill 名称，需按该档名称同步镜像。",
+      "mirror_text": "カース・ブリンガー",
+      "action_skill_text": "将觉悟存于胸中。",
+      "differences": [
+        {
+          "mirror": "カース・ブリンガー",
+          "action_skill": "将觉悟存于胸中。"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 54,
+      "fid": "text.drift:客户端 character_text 表:700004:1:技能名",
+      "character_id": "700004",
+      "tier": "1",
+      "field": "技能名",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 4,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "horn_leader_assist",
+      "action_skill_column": 0,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "旧日文技能名",
+      "conclusion": "镜像名称与该档 action_skill c0 不同；客户端读取 action_skill 名称，需按该档名称同步镜像。",
+      "mirror_text": "カース・ブリンガー",
+      "action_skill_text": "同胞们、都来呀！",
+      "differences": [
+        {
+          "mirror": "カース・ブリンガー",
+          "action_skill": "同胞们、都来呀！"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 55,
+      "fid": "text.drift:客户端 character_text 表:700005:1:技能名",
+      "character_id": "700005",
+      "tier": "1",
+      "field": "技能名",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 4,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "guildknight_leader_assist",
+      "action_skill_column": 0,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "旧日文技能名",
+      "conclusion": "镜像名称与该档 action_skill c0 不同；客户端读取 action_skill 名称，需按该档名称同步镜像。",
+      "mirror_text": "サドール・ハソル",
+      "action_skill_text": "工作开始了哟、公会骑士",
+      "differences": [
+        {
+          "mirror": "サドール・ハソル",
+          "action_skill": "工作开始了哟、公会骑士"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 56,
+      "fid": "text.drift:客户端 character_text 表:700001:1:技能名",
+      "character_id": "700001",
+      "tier": "1",
+      "field": "技能名",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 4,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "devil_leader_assist",
+      "action_skill_column": 0,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "旧日文技能名",
+      "conclusion": "镜像名称与该档 action_skill c0 不同；客户端读取 action_skill 名称，需按该档名称同步镜像。",
+      "mirror_text": "カース・ブリンガー",
+      "action_skill_text": "诅咒逆焰",
+      "differences": [
+        {
+          "mirror": "カース・ブリンガー",
+          "action_skill": "诅咒逆焰"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 57,
+      "fid": "text.drift:客户端 character_text 表:700002:1:技能名",
+      "character_id": "700002",
+      "tier": "1",
+      "field": "技能名",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 4,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "elf_princess_assist",
+      "action_skill_column": 0,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "旧日文技能名",
+      "conclusion": "镜像名称与该档 action_skill c0 不同；客户端读取 action_skill 名称，需按该档名称同步镜像。",
+      "mirror_text": "サドール・ハソル",
+      "action_skill_text": "忠勇斧刃",
+      "differences": [
+        {
+          "mirror": "サドール・ハソル",
+          "action_skill": "忠勇斧刃"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 58,
+      "fid": "text.drift:客户端 character_text 表:700003:1:技能名",
+      "character_id": "700003",
+      "tier": "1",
+      "field": "技能名",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 4,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "resistance_princess_assist",
+      "action_skill_column": 0,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "旧日文技能名",
+      "conclusion": "镜像名称与该档 action_skill c0 不同；客户端读取 action_skill 名称，需按该档名称同步镜像。",
+      "mirror_text": "アルケミック・ヴァリデート",
+      "action_skill_text": "艾克赛里奥圣剑",
+      "differences": [
+        {
+          "mirror": "アルケミック・ヴァリデート",
+          "action_skill": "艾克赛里奥圣剑"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 59,
+      "fid": "text.drift:客户端 character_text 表:149999:1:技能描述",
+      "character_id": "149999",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 5,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "white_wolf_gerald",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "时空为之凝滞的一闪。展开时之魔法阵，向最近的敌人突进并对接触到的敌人造成光属性伤害／以全屏月牙交叉斩对全体敌人造成光属性伤害 ＋ 消除2个强化效果／赋予队伍最大速度固定＋贯穿＋浮游效果",
+      "action_skill_text": "时空为之凝滞的一闪。向最近的敌人突进，对接触到的敌人造成光属性伤害／以全屏月牙交叉斩对全体敌人造成光属性伤害 ＋ 消除敌人的2个强化效果／赋予队伍最大速度固定＋贯穿＋浮游效果（技能伤害以直接攻击伤害计算）",
+      "differences": [
+        {
+          "mirror": "展开时之魔法阵，",
+          "action_skill": ""
+        },
+        {
+          "mirror": "并",
+          "action_skill": "，"
+        },
+        {
+          "mirror": "",
+          "action_skill": "敌人的"
+        },
+        {
+          "mirror": "",
+          "action_skill": "（技能伤害以直接攻击伤害计算）"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 60,
+      "fid": "text.drift:客户端 character_text 表:149999:2:技能描述",
+      "character_id": "149999",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 7,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "white_wolf_gerald",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "时空为之凝滞的一闪。展开时之魔法阵，向最近的敌人突进并对接触到的敌人造成光属性伤害／以全屏月牙交叉斩对全体敌人造成光属性伤害 ＋ 消除2个强化效果／赋予队伍最大速度固定＋贯穿＋浮游效果",
+      "action_skill_text": "时空为之凝滞的一闪。向最近的敌人突进，对接触到的敌人造成光属性伤害／以全屏月牙交叉斩对全体敌人造成光属性伤害 ＋ 消除敌人的2个强化效果／赋予队伍最大速度固定＋贯穿＋浮游效果（技能伤害以直接攻击伤害计算）",
+      "differences": [
+        {
+          "mirror": "展开时之魔法阵，",
+          "action_skill": ""
+        },
+        {
+          "mirror": "并",
+          "action_skill": "，"
+        },
+        {
+          "mirror": "",
+          "action_skill": "敌人的"
+        },
+        {
+          "mirror": "",
+          "action_skill": "（技能伤害以直接攻击伤害计算）"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 61,
+      "fid": "text.drift:客户端 character_text 表:149997:1:技能描述",
+      "character_id": "149997",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 5,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "mosiyike",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "以风包裹全体队友，各起一圈守护的风盾／解除全体队友的全部弱化效果／赋予全体队友最大生命值 15% 的护盾／全体队友全属性抗性 +25%（20 秒）、攻击力 +250%（20 秒）",
+      "action_skill_text": "以风包裹全体队友，各起一圈守护的风盾／解除全体队友的全部弱化效果／赋予全体队友最大生命值 15% 的护盾／全体队友全属性抗性 +25%（20 秒）、攻击力 +250%（20 秒）／赋予全体队友最大速度固定效果（6 秒）",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": "／赋予全体队友最大速度固定效果（6 秒）"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 62,
+      "fid": "text.drift:客户端 character_text 表:149997:2:技能描述",
+      "character_id": "149997",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 7,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "mosiyike",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "以风包裹全体队友，各起一圈守护的风盾／解除全体队友的全部弱化效果／赋予全体队友最大生命值 15% 的护盾／全体队友全属性抗性 +25%（20 秒）、攻击力 +250%（20 秒）",
+      "action_skill_text": "以风包裹全体队友，各起一圈守护的风盾／解除全体队友的全部弱化效果／赋予全体队友最大生命值 15% 的护盾／全体队友全属性抗性 +25%（20 秒）、攻击力 +250%（20 秒）／赋予全体队友最大速度固定效果（6 秒）",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": "／赋予全体队友最大速度固定效果（6 秒）"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 63,
+      "fid": "text.drift:客户端 character_text 表:149995:1:技能描述",
+      "character_id": "149995",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 5,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "seofon_wind",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "镜像混写两档倍率",
+      "conclusion": "镜像同时写入进化前后倍率，action_skill 按当前档仅显示一组；应按档同步，不能把两组重新堆回技能描述。",
+      "mirror_text": "剑神双奏：无「剑神」时，原地召唤剑神——全体队员获得15%护盾，自身获得1级「剑神」与30%加速（10秒）；持有N级「剑神」时，剑神化身突进攻击1段，并向前方推出N把灵剑（每把攻击1段），共N+1段，随后消耗1级「剑神」。进化前每段倍率：1～2级25倍，3～5级30倍，6～8级40倍，9～11级50倍，12级70倍；进化后每段倍率：1～2级30倍，3～5级35倍，6～8级45倍，9～11级55倍，12级80倍。",
+      "action_skill_text": "剑神双奏：无「剑神」时，原地召唤剑神——全体队员获得15%护盾，自身获得1级「剑神」与30%加速（10秒）；持有N级「剑神」时，剑神化身突进攻击1段，并向前方推出N把灵剑（每把攻击1段），共N+1段，随后消耗1级「剑神」。进化前每段倍率：1～2级25倍，3～5级30倍，6～8级40倍，9～11级50倍，12级70倍。",
+      "differences": [
+        {
+          "mirror": "；进化后每段倍率：1～2级30倍，3～5级35倍，6～8级45倍，9～11级55倍，12级80倍",
+          "action_skill": ""
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 64,
+      "fid": "text.drift:客户端 character_text 表:149995:2:技能描述",
+      "character_id": "149995",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 7,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "seofon_wind",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "镜像混写两档倍率",
+      "conclusion": "镜像同时写入进化前后倍率，action_skill 按当前档仅显示一组；应按档同步，不能把两组重新堆回技能描述。",
+      "mirror_text": "剑神双奏：无「剑神」时，原地召唤剑神——全体队员获得15%护盾，自身获得1级「剑神」与30%加速（10秒）；持有N级「剑神」时，剑神化身突进攻击1段，并向前方推出N把灵剑（每把攻击1段），共N+1段，随后消耗1级「剑神」。进化前每段倍率：1～2级25倍，3～5级30倍，6～8级40倍，9～11级50倍，12级70倍；进化后每段倍率：1～2级30倍，3～5级35倍，6～8级45倍，9～11级55倍，12级80倍。",
+      "action_skill_text": "剑神双奏：无「剑神」时，原地召唤剑神——全体队员获得15%护盾，自身获得1级「剑神」与30%加速（10秒）；持有N级「剑神」时，剑神化身突进攻击1段，并向前方推出N把灵剑（每把攻击1段），共N+1段，随后消耗1级「剑神」。进化后每段倍率：1～2级30倍，3～5级35倍，6～8级45倍，9～11级55倍，12级80倍。",
+      "differences": [
+        {
+          "mirror": "前每段倍率：1～2级25倍，3～5级30倍，6～8级40倍，9～11级50倍，12级70倍；进化",
+          "action_skill": ""
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 65,
+      "fid": "text.drift:客户端 character_text 表:169995:2:技能描述",
+      "character_id": "169995",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 7,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "maou2_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "镜像仅保留强化摘要",
+      "conclusion": "镜像只写进一步增强，action_skill 已有完整技能说明；应同步完整该档描述。",
+      "mirror_text": "终结爆发进一步增强。",
+      "action_skill_text": "降下黑雷雨与四连光柱，终以湮灭冲击归零万象，对全体敌人造成大伤害。",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": "降下黑雷雨与四连光柱，"
+        },
+        {
+          "mirror": "结爆发进一步增强",
+          "action_skill": "以湮灭冲击归零万象，对全体敌人造成大伤害"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 66,
+      "fid": "text.drift:客户端 character_text 表:169995:2:技能名",
+      "character_id": "169995",
+      "tier": "2",
+      "field": "技能名",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 6,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "maou2_playable",
+      "action_skill_column": 0,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "标点或空白不一致",
+      "conclusion": "完整文字内容一致，仅标点或空白不同；精确同步仍未完成。",
+      "mirror_text": "勇者终焉・万象归零＋",
+      "action_skill_text": "勇者终焉・万象归零",
+      "differences": [
+        {
+          "mirror": "＋",
+          "action_skill": ""
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 67,
+      "fid": "text.drift:客户端 character_text 表:119951:1:技能描述",
+      "character_id": "119951",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 5,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "spirit_beast_fire_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "展开缠绕自身的炎环，在一段时间内持续对范围内的敌人造成火属性伤害，被炎环命中的敌人火属性耐性降低25%（最多3层）／随后向前方释放两道炎狱",
+      "action_skill_text": "在弹珠落点展开缠绕的炎环，10 秒内持续对范围内的敌人造成火属性伤害，被炎环命中的敌人火属性耐性降低 25%（最多 3 层，持续 65 秒）／随后向左、右、正面依次释放三道炎狱，最后一道范围与威力更大",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": "在弹珠落点"
+        },
+        {
+          "mirror": "自身",
+          "action_skill": ""
+        },
+        {
+          "mirror": "在一段时间",
+          "action_skill": "10 秒"
+        },
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": "，持续 65 秒"
+        },
+        {
+          "mirror": "前方",
+          "action_skill": "左、右、正面依次"
+        },
+        {
+          "mirror": "两",
+          "action_skill": "三"
+        },
+        {
+          "mirror": "",
+          "action_skill": "，最后一道范围与威力更大"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 68,
+      "fid": "text.drift:客户端 character_text 表:119951:2:技能描述",
+      "character_id": "119951",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 7,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "spirit_beast_fire_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "展开缠绕自身的炎环，在一段时间内持续对范围内的敌人造成火属性伤害，被炎环命中的敌人火属性耐性降低30%（最多3层）／随后向前方释放两道炎狱",
+      "action_skill_text": "在弹珠落点展开缠绕的炎环，10 秒内持续对范围内的敌人造成火属性伤害，被炎环命中的敌人火属性耐性降低 30%（最多 3 层，持续 65 秒）／随后向左、右、正面依次释放三道炎狱，最后一道范围与威力更大",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": "在弹珠落点"
+        },
+        {
+          "mirror": "自身",
+          "action_skill": ""
+        },
+        {
+          "mirror": "在一段时间",
+          "action_skill": "10 秒"
+        },
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": "，持续 65 秒"
+        },
+        {
+          "mirror": "前方",
+          "action_skill": "左、右、正面依次"
+        },
+        {
+          "mirror": "两",
+          "action_skill": "三"
+        },
+        {
+          "mirror": "",
+          "action_skill": "，最后一道范围与威力更大"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 69,
+      "fid": "text.drift:客户端 character_text 表:129951:1:技能描述",
+      "character_id": "129951",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 5,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "spirit_beast_water_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "【水势】掀起横贯战场的巨浪，并在落点留下持续的回旋涡流，命中的敌人水属性耐性降低20%（最多3层）／【冰势】降下冰河【对冻结中的敌人伤害提升】，并以冰晶爆破使命中的敌人陷入冻结／每次发动后在两势之间切换",
+      "action_skill_text": "【水势】掀起横贯战场的巨浪，并在落点留下持续的回旋涡流，命中的敌人水属性耐性降低 20%（最多 3 层，持续 65 秒）／【冰势】降下冰河【对冻结中的敌人伤害提升】，并以冰晶爆散使命中的敌人陷入冻结 3 秒／每次发动后在两势之间切换",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": "，持续 65 秒"
+        },
+        {
+          "mirror": "破",
+          "action_skill": "散"
+        },
+        {
+          "mirror": "",
+          "action_skill": " 3 秒"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 70,
+      "fid": "text.drift:客户端 character_text 表:129951:2:技能描述",
+      "character_id": "129951",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 7,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "spirit_beast_water_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "【水势】掀起横贯战场的巨浪，并在落点留下持续的回旋涡流，命中的敌人水属性耐性降低25%（最多3层）／【冰势】降下冰河【对冻结中的敌人伤害提升】，并以冰晶爆破使命中的敌人陷入冻结／每次发动后在两势之间切换",
+      "action_skill_text": "【水势】掀起横贯战场的巨浪，并在落点留下持续的回旋涡流，命中的敌人水属性耐性降低 25%（最多 3 层，持续 65 秒）／【冰势】降下冰河【对冻结中的敌人伤害提升】，并以冰晶爆散使命中的敌人陷入冻结 3 秒／每次发动后在两势之间切换",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": "，持续 65 秒"
+        },
+        {
+          "mirror": "破",
+          "action_skill": "散"
+        },
+        {
+          "mirror": "",
+          "action_skill": " 3 秒"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 71,
+      "fid": "text.drift:客户端 character_text 表:139951:1:技能描述",
+      "character_id": "139951",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 5,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "spirit_beast_thunder_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "在战场上展开持续的带电领域，反复对领域内的敌人造成雷属性伤害／同时降下三道天雷",
+      "action_skill_text": "在战场上展开持续 10 秒的带电领域，反复对领域内的敌人造成雷属性伤害／同时依次降下四道天雷，最后一道的落点范围与威力更大",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": " 10 秒"
+        },
+        {
+          "mirror": "",
+          "action_skill": "依次"
+        },
+        {
+          "mirror": "三",
+          "action_skill": "四"
+        },
+        {
+          "mirror": "",
+          "action_skill": "，最后一道的落点范围与威力更大"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 72,
+      "fid": "text.drift:客户端 character_text 表:139951:2:技能描述",
+      "character_id": "139951",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 7,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "spirit_beast_thunder_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "在战场上展开持续的带电领域，反复对领域内的敌人造成雷属性伤害（威力提升）／同时降下三道天雷",
+      "action_skill_text": "在战场上展开持续 10 秒的带电领域，反复对领域内的敌人造成雷属性伤害（威力提升）／同时依次降下四道天雷，最后一道的落点范围与威力更大",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": " 10 秒"
+        },
+        {
+          "mirror": "",
+          "action_skill": "依次"
+        },
+        {
+          "mirror": "三",
+          "action_skill": "四"
+        },
+        {
+          "mirror": "",
+          "action_skill": "，最后一道的落点范围与威力更大"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 73,
+      "fid": "text.drift:客户端 character_text 表:149951:1:技能描述",
+      "character_id": "149951",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 5,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "spirit_beast_wind_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "于前方展开毒风，对命中的敌人造成风属性伤害，并赋予中毒与属性耐性降低效果。自身持有 8 层以上「风蛇的诅咒」时，追加引爆诅咒，对周围敌人造成风属性伤害并消耗 8 层。无论是否引爆，都会赋予我方全体攻击力提升；仅在引爆时增加自身技能槽5%。",
+      "action_skill_text": "于前方展开毒风，对命中的敌人造成风属性伤害，并赋予中毒与全属性耐性降低 18%（最多 3 层）。自身持有 8 层以上「风蛇的诅咒」时，追加引爆诅咒，对周围敌人造成风属性伤害并消耗 8 层，赋予我方全体攻击力提升 25%（15 秒）并增加自身技能槽 5%；未达 8 层时改为赋予我方全体「风蛇的加护」攻击力提升 12%（10 秒）。",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": "全"
+        },
+        {
+          "mirror": "效果",
+          "action_skill": " 18%（最多 3 层）"
+        },
+        {
+          "mirror": "。无论是否引爆",
+          "action_skill": ""
+        },
+        {
+          "mirror": "都会",
+          "action_skill": ""
+        },
+        {
+          "mirror": "；仅在引爆时",
+          "action_skill": " 25%（15 秒）并"
+        },
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": "；未达 8 层时改为赋予我方全体「风蛇的加护」攻击力提升 12%（10 秒）"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 74,
+      "fid": "text.drift:客户端 character_text 表:149951:2:技能描述",
+      "character_id": "149951",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 7,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "spirit_beast_wind_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "于前方展开毒风，对命中的敌人造成风属性伤害，并赋予中毒与属性耐性降低效果。自身持有 8 层以上「风蛇的诅咒」时，追加引爆诅咒，对周围敌人造成风属性伤害并消耗 8 层。无论是否引爆，都会赋予我方全体攻击力提升；仅在引爆时增加自身技能槽5%。",
+      "action_skill_text": "于前方展开毒风，对命中的敌人造成风属性伤害，并赋予中毒与全属性耐性降低 25%（最多 3 层）。自身持有 8 层以上「风蛇的诅咒」时，追加引爆诅咒，对周围敌人造成风属性伤害并消耗 8 层，赋予我方全体攻击力提升 30%（15 秒）并增加自身技能槽 5%；未达 8 层时改为赋予我方全体「风蛇的加护」攻击力提升 15%（10 秒）。",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": "全"
+        },
+        {
+          "mirror": "效果",
+          "action_skill": " 25%（最多 3 层）"
+        },
+        {
+          "mirror": "。无论是否引爆",
+          "action_skill": ""
+        },
+        {
+          "mirror": "都会",
+          "action_skill": ""
+        },
+        {
+          "mirror": "；仅在引爆时",
+          "action_skill": " 30%（15 秒）并"
+        },
+        {
+          "mirror": "",
+          "action_skill": " "
+        },
+        {
+          "mirror": "",
+          "action_skill": "；未达 8 层时改为赋予我方全体「风蛇的加护」攻击力提升 15%（10 秒）"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 75,
+      "fid": "text.drift:客户端 character_text 表:159951:1:技能描述",
+      "character_id": "159951",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 5,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "spirit_beast_light_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "于前方张开巨网，持续对网内的敌人造成光属性伤害，并叠加「破绽」（光属性耐性降低，最多 3 层）。随后引爆蛛网，对周围敌人造成光属性伤害。技能结束时赋予我方全体贯通与浮游效果。",
+      "action_skill_text": "于前方张开巨网，持续对网内的敌人造成光属性伤害，并叠加「破绽」（光属性耐性降低 12%，最多 3 层，持续 20 秒）。随后引爆蛛网，对周围敌人造成光属性伤害。技能结束时赋予我方全体贯通与浮游 8 秒。",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": " 12%"
+        },
+        {
+          "mirror": "",
+          "action_skill": "，持续 20 秒"
+        },
+        {
+          "mirror": "效果",
+          "action_skill": " 8 秒"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 76,
+      "fid": "text.drift:客户端 character_text 表:159951:2:技能描述",
+      "character_id": "159951",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 7,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "spirit_beast_light_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "于前方张开巨网，持续对网内的敌人造成光属性伤害，并叠加「破绽」（光属性耐性降低，最多 3 层）。随后引爆蛛网，对周围敌人造成光属性伤害。技能结束时赋予我方全体贯通与浮游效果。",
+      "action_skill_text": "于前方张开巨网，持续对网内的敌人造成光属性伤害，并叠加「破绽」（光属性耐性降低 15%，最多 3 层，持续 20 秒）。随后引爆蛛网，对周围敌人造成光属性伤害。技能结束时赋予我方全体贯通与浮游 10 秒。",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": " 15%"
+        },
+        {
+          "mirror": "",
+          "action_skill": "，持续 20 秒"
+        },
+        {
+          "mirror": "效果",
+          "action_skill": " 10 秒"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 77,
+      "fid": "text.drift:客户端 character_text 表:169951:1:技能描述",
+      "character_id": "169951",
+      "tier": "1",
+      "field": "技能描述",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 5,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "spirit_beast_dark_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "化为冥炎向前俯冲，对命中的敌人造成暗属性伤害并驱散其增益效果。随后散射黑羽追击，最后引爆深渊地狱造成暗属性伤害。技能结束时为自身张开护罩，并在一段时间内使自身的直接攻击变为 2 段、直击伤害提升。",
+      "action_skill_text": "化为冥炎向前俯冲，对命中的敌人造成暗属性伤害并驱散其增益效果。随后散射三道黑羽追击，最后引爆深渊地狱造成暗属性伤害。技能结束时为自身张开吸收 6% 伤害的护罩，并在 12 秒内使自身的直接攻击变为 2 段、直击伤害提升 20%。",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": "三道"
+        },
+        {
+          "mirror": "",
+          "action_skill": "吸收 6% 伤害的"
+        },
+        {
+          "mirror": "一段时间",
+          "action_skill": " 12 秒"
+        },
+        {
+          "mirror": "",
+          "action_skill": " 20%"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    },
+    {
+      "number": 78,
+      "fid": "text.drift:客户端 character_text 表:169951:2:技能描述",
+      "character_id": "169951",
+      "tier": "2",
+      "field": "技能描述",
+      "mirror_source": "master/character/character_text.orderedmap",
+      "mirror_column": 7,
+      "source_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "action_skill_key": "spirit_beast_dark_playable",
+      "action_skill_column": 1,
+      "action_skill_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "historical_evidence_matches": true,
+      "state": "问题",
+      "category": "效果或参数描述不同步",
+      "conclusion": "完整差异含效果范围、对象、数值、时间或具体动作变化；不是仅改了展示表就能影响游戏。按差异片段核对设计后同步该档镜像，保留 action_skill 的实际读取优先级。",
+      "mirror_text": "化为冥炎向前俯冲，对命中的敌人造成暗属性伤害并驱散其增益效果。随后散射黑羽追击，最后引爆深渊地狱造成暗属性伤害。技能结束时为自身张开护罩，并在一段时间内使自身的直接攻击变为 2 段、直击伤害提升。",
+      "action_skill_text": "化为冥炎向前俯冲，对命中的敌人造成暗属性伤害并驱散其增益效果。随后散射三道黑羽追击，最后引爆深渊地狱造成暗属性伤害。技能结束时为自身张开吸收 8% 伤害的护罩，并在 15 秒内使自身的直接攻击变为 2 段、直击伤害提升 25%。",
+      "differences": [
+        {
+          "mirror": "",
+          "action_skill": "三道"
+        },
+        {
+          "mirror": "",
+          "action_skill": "吸收 8% 伤害的"
+        },
+        {
+          "mirror": "一段时间",
+          "action_skill": " 15 秒"
+        },
+        {
+          "mirror": "",
+          "action_skill": " 25%"
+        }
+      ],
+      "basis": "源码推断",
+      "basis_reference": "wf/deliver/prepush_text.py:_skill_tiers,check_text"
+    }
+  ]
+}

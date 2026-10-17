@@ -84,7 +84,7 @@ def build_parser():
     return ap
 
 
-def main(argv=None) -> int:
+def main(argv=None, *, archive_paths=None) -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8")
     except Exception:  # noqa: BLE001
@@ -108,22 +108,22 @@ def main(argv=None) -> int:
     allow_iqs = {str(x) for x in allow_doc.get("item_quest_search_exempt", [])}
     only = set((args.only or "chain,text,companion,level").split(","))
 
-    chain = list_chain(active) + [p.resolve() for p in args.extra_zip]
+    chain = (list_chain(active) if archive_paths is None else list(archive_paths)) + [p.resolve() for p in args.extra_zip]
     view = View(chain, args.base_store)
     old = None
     if args.since:
-        old = View(list_chain(active, vkey(args.since)), args.base_store)
+        old = View([p for p in chain if archive_key(p.name) and archive_key(p.name)[1] <= vkey(args.since)], args.base_store)
         new_zips = {p.name for p in chain if p not in set(old.zips)}
     else:
         new_zips = {p.name for p in chain}
-    tail = max((archive_key(p.name)[1] for p in list_chain(active)), default=None)
+    tail = max((archive_key(p.name)[1] for p in chain if archive_key(p.name)), default=None)
     print(f"视图: 基础 store={args.base_store or '(无,只看链)'}; 链 {len(chain)} 个包,"
           f"链尾 {'.'.join(map(str, tail)) if tail else '?'}"
           + (f"; 候选 {', '.join(p.name for p in args.extra_zip)}" if args.extra_zip else "")
           + (f"; --since {args.since}(新包 {len(new_zips)} 个)" if args.since else ""))
 
     if "chain" in only:
-        check_chain(args, manifest, active, new_zips, rep, load_pathlist(args.pathlist))
+        check_chain(args, manifest, active, new_zips, rep, load_pathlist(args.pathlist), archive_paths=chain)
     if "text" in only:
         check_text(args, view, old, rep)
     if "companion" in only:

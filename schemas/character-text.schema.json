@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:wf:character-text:1",
+  "title": "角色可见文本读取快照",
+  "type": "object",
+  "required": ["schema", "character_id", "code", "skill_key", "title", "title_column", "character_text", "action_skill", "custom_ability_string", "desc_override", "server_character_text", "sources", "snapshot_sha256"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"const": "wf-character-text/1"},
+    "character_id": {"type": "string", "minLength": 1},
+    "code": {"type": "string"},
+    "skill_key": {"type": "string"},
+    "title": {"type": "string"},
+    "title_column": {"const": 3},
+    "character_text": {"type": "object", "patternProperties": {"^[0-9]+$": {"type": "string"}}, "additionalProperties": false},
+    "action_skill": {"type": "object", "patternProperties": {"^[123]$": {"type": "object", "required": ["c0", "c1"], "additionalProperties": false, "properties": {"c0": {"type": "string"}, "c1": {"type": "string"}}}}, "additionalProperties": false},
+    "custom_ability_string": {"$ref": "#/$defs/texts"},
+    "desc_override": {"$ref": "#/$defs/texts"},
+    "server_character_text": {"type": ["array", "null"], "items": {"type": "array", "items": {"type": "string"}}},
+    "server_character_text_rank_p5b": {"type": ["array", "null"], "items": {"type": "array", "items": {"type": "string"}}},
+    "sources": {"type": "object", "additionalProperties": {"$ref": "#/$defs/hash"}},
+    "snapshot_sha256": {"$ref": "#/$defs/hash"}
+  },
+  "$defs": {
+    "hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "texts": {"type": "object", "additionalProperties": {"type": "string"}}
+  }
+}
