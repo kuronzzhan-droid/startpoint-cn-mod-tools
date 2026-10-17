@@ -6,10 +6,25 @@ import copy
 PF_COMMANDS = frozenset({"SetPowerFilpSuppress", "NotifyPowerflipEnd", "RemoveEvent"})
 
 
-def _body(node, tag):
-    if (isinstance(node, list) and len(node) == 2 and node[0] == tag
-            and isinstance(node[1], list) and node[1] and isinstance(node[1][0], str)):
-        return node[1]
+def _body(node):
+    """Recognize enum bodies, expression wrappers and named JSON nodes.
+
+    Lifecycle detection is deliberately independent of signature validation:
+    malformed or alternative wrappers must not hide a dangerous constructor.
+    Ordinary strings (including Trace payloads) are never constructors.
+    """
+    if isinstance(node, list) and node and isinstance(node[0], str):
+        if node[0] in {"Command", "Event"} and len(node) >= 2:
+            return _body(node[1])
+        return node
+    if isinstance(node, dict):
+        for wrapper in ("Command", "Event"):
+            if wrapper in node:
+                return _body(node[wrapper])
+        for key in ("command", "name", "type"):
+            if isinstance(node.get(key), str) and node[key] in PF_COMMANDS | {"Wait"}:
+                args = node.get("args", [])
+                return [node[key], *(args if isinstance(args, list) else [args])]
     return None
 
 
@@ -19,20 +34,19 @@ def _only_notify(node):
     An empty Wait left by the historical 222 fix is harmless and is accepted.
     Do not remove timed effects or normal attack notifications.
     """
-    body = _body(node, "Command")
-    if body:
-        return body[0] == "NotifyPowerflipEnd"
+    body = _body(node)
+    if body and body[0] == "NotifyPowerflipEnd":
+        return True
     if isinstance(node, list) and len(node) == 2 and node[0] == "Block":
         return isinstance(node[1], list) and bool(node[1]) and all(_only_notify(child) for child in node[1])
     return False
 
 
 def _forbidden(node):
-    body = _body(node, "Command")
+    body = _body(node)
     if body and body[0] in PF_COMMANDS:
         return body[0]
-    event = _body(node, "Event")
-    if event and event[0] == "Wait" and len(event) == 4 and _only_notify(event[3]):
+    if body and body[0] == "Wait" and any(_only_notify(arg) for arg in body[1:]):
         return "Wait(NotifyPowerflipEnd only)"
     return None
 
@@ -45,6 +59,7 @@ def forbidden_629(tree):
         label = _forbidden(node)
         if label:
             findings.append({"path": location, "command": label})
+            return
         if isinstance(node, list):
             for index, child in enumerate(node):
                 walk(child, f"{location}/{index}")
