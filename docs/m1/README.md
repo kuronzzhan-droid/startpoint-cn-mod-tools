@@ -6,7 +6,7 @@
 python -m wf view --tip 1.4.224 --write-lock work/m1/view.lock.json --json work/m1/view.json
 python -m wf view --tip 1.4.224 --lock work/m1/view.lock.json
 python -m recipes.balance_replay223
-python -m wf check recipes/balance/balance1017-223.yml
+python -m wf check <新的数值平衡配方.yml>
 python -m wf check dsl work/example.action.dsl.amf3.deflate --kind 629
 python -m wf text read 149999 --tip 1.4.224 --output work/m1/character.json
 python -m wf check work/m1/character.json

@@ -83,3 +83,53 @@ JUnit 包含子测试的累计计数为 tests=6366、skipped=357、failures=0、
 已按模块及独立修复分开提交；完整提交清单见 `git log 3c749fc..HEAD --oneline`。主要实现提交为 balance `3608a7c`、text `5d3097e`、view `6e6e42a`、DSL `87c406e`、统一 check `3576464`、deliver `0714c6c`；审阅修复各有独立提交。未 push。
 
 使用入口和格式示例见 [docs/m1/README.md](docs/m1/README.md)。
+
+## M1.1 审查修复与最终验收
+
+日期：2026-10-17。本节记录对 `M1.1-任务书.md` 全部 13 项的处理；涉及旧行为时，以本节为准。所有源码、临时依赖复用、缓存、验收产物和执行记录只写当前 worktree；外部输入只读。按主题完成本地提交，未 push，未操作服务器或设备。任务书限定其他路径只读，因此临时记录保存在忽略的 `work/m1.1/`，不纳入版本控制。
+
+| 项目 | 最终行为与反证 |
+|---|---|
+| H1 | manifest tip 与历史锁推导的有效链尾必须等于 `from_version`；224 视图伪报 from=226 会拒绝。历史锁先验证 extra ZIP 版本边和 seq，不能只相信标签。 |
+| H2 | deliver 默认要求 `wf view` / manifest 基线；没有基线即问题、非零退出。唯一缺失基线豁免是显式 `--no-baseline-i-know`，清单和报告均留痕；已提供基线中的过期 from、已占用 to（含禁用边）、同版本重铸仍拒绝。 |
+| H3 | balance、deliver 出包前从四张能力类表推导 629 动作，并跟踪 `path$program`。按能力/技能键差异与 DSL 可达性选根；删除被引用技能、无法完整构建相关闭包、非 common 层 combat 表/DSL 均拒绝。真实 221 PF3 被 deliver 阻断且没有 ZIP，222 修复树在相同真实能力上下文通过。 |
+| M1 | 选择任务书允许的“直接拒绝”方案：balance 禁止 action_skill c0/c1 和 custom_ability_string 修改，提示改用 `wf text`。 |
+| M2 | text 同时读取并校验 character_text 与 character_text_rank_p5b 两份服务端镜像；稀疏镜像只修改已有角色键，不擅自补键。两个输入都纳入快照与 server_changes 前置摘要。 |
+| M3 | 服务端 JSON 仅替换选中列的字符串 token，保留键序、缩进、换行与未改内容字节。deliver 对每份 server_changes 强制验证服务端前置摘要；缺 server-dir 不能被客户端基线豁免放行。交付回读也要求服务端 pre/post 证据一致。 |
+| M4 | CSV 保留原 CRLF/LF 及末尾换行状态；编辑前执行 split→join 断言。13 个真实 CRLF 叶子均有逐项往返、修改、恢复回归。 |
+| M5 | balance 校验角色归属；共享键列出全部所有者并要求每个操作显式 `shared_ok: true`。真实 resistance_princess_3halfanv 的 111165、119999 两所有者已验证。 |
+| M6 | Wait 检查不再限定 4 项；支持不同节点包装和变长参数。消毒保留额外效果回调，包括具名 JSON 形式。 |
+| L1 | 单元格编辑、插入或删除导致首行 c1 合击资格变化时，报告明确警告与 before/after。 |
+| L2 | manifest 自动发现排除 `manifest-entry-*.json`；显式指定仍按正常冲突规则验证。 |
+| L3 | check_delivery 比较分层 ZIP 与 legacy 的成员集合、层归属和每成员摘要；即使重新计算了 ZIP 自身 SHA，内容、缺失、多余或错层仍拒绝。 |
+| L5 | 基线 ZIP 从 manifest 链选择并只读引用；active 中未登记草稿不参与，validation 内不复制任何基线 ZIP。 |
+
+### 官方 629 正向对照与范围
+
+使用 `OfficialBaseline` 读取指定 CN 官方归档至 **1.4.54**，开启 pinned 表摘要核验；没有把含 MOD 的 store131 当官方语料。四张能力类表共 **3 处 629 引用、3 棵唯一树**，其中 ability 1 处、leader 2 处。RemoveEvent、SetPowerFilpSuppress、NotifyPowerflipEnd、Wait 均为 **0 次**，没有额外子程序引用。因此本次语料没有提供需要降为“待验证”的合法正例，现有禁用类别继续报问题。结论只覆盖这些已核验归档，不能外推其他地区或后续官方版本。
+
+可复现入口与输入成员摘要见 [629 说明](wf/dsl/README.md)、[official-629-corpus.json](docs/m1/official-629-corpus.json)。现有独立签名检查器对官方 CreateSummonsMultiball 的 null 回调有误报；自动 629 门禁检查二进制解析与生命周期，不借该旧签名缺口阻断官方正例。
+
+### 两次历史字节验收
+
+- **223：3/3**。原 YAML 包含 7 个历史 custom 文本操作，正常 balance 现在应拒绝。固定入口 `python -B -m recipes.balance_replay223` 校验原配方及两份输入锁的固定摘要，在内存重建并逐成员核对原始字节摘要；不产生 ZIP、payload 或可交付 changeset。证据：`work/m1.1/balance/223-byte-verification.json`。
+- **221：11 ZIP、310/310**，差异成员 **0**，旧 manifest 语义一致，上游固定 schema 验证通过。使用原 M1 已完整重建且内容寻址的 changeset，重新运行归档与双清单生成层；期望 ZIP 在生成后只读比较。证据：`work/m1.1/acceptance221.json`，重跑脚本 `work/m1.1/verify221.py`。本轮没有重新生产立绘/语音等资产。
+- 这两项证明历史编码和包装兼容性；不声称新公开入口允许旧风险内容。真实 221 的 497 字节 PF3 经 `build_delivery` 精确命中 SetPowerFilpSuppress 与只含通知的 Wait，出包前阻断；同一真实能力叶搭配 222 的 463 字节修复树通过。完整旧 221 changeset 也实际阻断于 `work/m1.1/dsl/real221-block/`，ZIP 数为 0；该完整变更集运行使用显式无基线选项与旧 store，因此其额外缺依赖诊断不冒充完整历史 220 基线验证。
+
+### 最小文本写回的真实输入验收
+
+以 1.4.224 视图角色 149998 编辑称号：普通镜像 **566** 个未改顶层键、rank 镜像 **44** 个未改顶层键逐字节保持；目标角色只替换 c3 字符串 token。外部两份输入原字节未变，证据 `work/m1.1/text/real-mirror-evidence.json`。实际镜像是稀疏集合，普通表 567 键、rank 表 45 键、交集 18 键、rank 独有 27 键，所以不把“两份同步”实现成给缺失角色凭空补行。
+
+### 反证、全量检查与本地提交
+
+实际执行 **16 组**进程内变异：balance 5 组、text 2 组、DSL 3 组、deliver/view 6 组，全部使对应原测试变红；其中强制 LF 会使 **13 个真实 CRLF 用例全部失败**。变异不修改生产源码文件。四份证据为 `work/m1.1/balance/mutation-evidence.json`、`text/mutation-evidence.json`、`dsl/mutation-evidence.json`、`mutations/evidence.json`（后三项同在 `work/m1.1/`）。
+
+最终源码冻结在 `adb1b59`，整轮命令 `python -B -m pytest --basetemp=work/m1.1/full-tmp --junitxml=work/m1.1/pytest-full.xml`：**3831 passed, 354 skipped, 26 warnings in 336.16s (0:05:36)**，**exit 0**，耗时 338.0 秒。只复用了当前 worktree 已有的 `work/m1/deps`，未安装系统依赖。完整日志与退出码为 `work/m1.1/pytest-full.log`、`pytest-full-exit.json`。
+
+JUnit 含子测试累计 tests=6451、skipped=357、failures=0、errors=0，与终端主测试计数分别报告。跳过项不计作已验证；仍主要是缺少完整外部数据或可选包、平台专属条件。第一次启动后发现 Wait 回调保留问题并主动中止；第二轮暴露两个新增 CLI 单测在宿主进程安装不可撤销审计钩子，污染既有硬链接测试。已隔离这两处单测，顺序组合回归 294 passed、1 skipped、46 subtests passed，随后从头完成本节所列整轮。前两次日志分别保存在 `pytest-interrupted*`、`pytest-contaminated*`，不混作通过证据；生产写入限制没有放宽。
+
+路径扫描 **0 命中**（`work/m1.1/path-scan-final.json`），提交卫生 `bash scripts/check-hygiene.sh --all` **exit 0**（`hygiene.log`），`git diff --check` 通过。全量结束后仅追加本报告及修正文档示例；未改变已验证源码。
+
+本地主题提交：`a8413d6`（草稿发现与分层成员）、`652c198`（双镜像最小写回）、`99fb911`（629 解析）、`b8188f0`（balance 绑定和数据保真）、`9185c7f`（真实 PF3 与删除技能回归）、`6fbbed0`（deliver 基线与主门禁）、`27f4ce4`（不完整闭包拒绝）、`de50455`（Wait 额外回调保留）、`adb1b59`（CLI 单测隔离）。本节与最终文档更新另行本地提交；完整记录见 `git log 3db4134..HEAD --oneline`。
+
+这些结果属于本地工具、文件与回归验证。未进行客户端设备实测、服务端运行验证、安装或发布；`requires` 的能力匹配仍按原 M1 范围保留 `pending-m2`。
