@@ -1,0 +1,27 @@
+.ability-effect-list{display:grid;gap:8px;list-style:none;padding:0;margin:0}
+.ability-effect-row{display:grid;grid-template-columns:29px minmax(0,1fr);min-width:0;background:#f9fbfb;border:1px solid #d1dddf;border-bottom:3px solid #c6d5d7;border-radius:7px;overflow:hidden}
+.ability-effect-number{display:flex;align-items:flex-start;justify-content:center;padding-top:13px;border-right:1px solid #d8e2e4;background:#e8eff0;color:#789195;font-size:10px;font-variant-numeric:tabular-nums}
+.ability-effect-body{min-width:0;padding:10px 12px}
+.ability-effect-description{margin:0;color:#536a71;font-size:12px;line-height:1.95;white-space:pre-wrap;overflow-wrap:anywhere}
+.ability-restrictions{display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px;margin-bottom:7px}
+.ability-condition{display:inline-flex;align-items:center;gap:5px;min-width:0;max-width:100%;padding:4px 7px;border:1px solid #c3d1d5;border-radius:5px;background:#edf2f3;color:#546d77;font-size:10px;line-height:1.6}
+.ability-condition>span{min-width:0;overflow-wrap:anywhere}
+.ability-condition .native-icon{width:23px;height:23px;flex:none;object-fit:contain}
+.ability-condition-main,.ability-condition-unison{background:#4d6068;color:#fff;border-color:#4d6068}
+.ability-condition-resonance{background:#fff7e4;color:#8a6629;border-color:#e5d3a2}
+.ability-condition-operator{font-size:10px;color:#86999e}
+.ability-authored-description{margin-bottom:12px}
+.ability-effect-disclosure{margin-top:10px}
+.ability-effect-disclosure>summary{font-size:11px;color:#748c92;padding:6px 0 10px}
+[data-theme="dark"] .ability-effect-row{background:#192a34;border-color:#3b515d}
+[data-theme="dark"] .ability-effect-number{background:#253a45;color:#9bb9c2;border-color:#3b515d}
+[data-theme="dark"] .ability-effect-description{color:#c7dbe1}
+[data-theme="dark"] .ability-condition{background:#2a414b;color:#c8dce2;border-color:#48616c}
+[data-theme="dark"] .ability-condition-resonance{background:#433822;color:#f0d295;border-color:#79663f}
+[data-theme="dark"] .ability-condition-main,[data-theme="dark"] .ability-condition-unison{background:#3a5866;color:#eef7f8}
+[data-theme="dark"] .ability-condition-operator,[data-theme="dark"] .ability-effect-disclosure>summary{color:#a8bec4}
+@media(max-width:640px){
+  .ability-effect-row{grid-template-columns:23px minmax(0,1fr)}.ability-effect-body{padding:9px}
+  .ability-effect-number{font-size:9px}.ability-condition{font-size:9px;padding:3px 5px}
+  .ability-condition .native-icon{width:21px;height:21px}.ability-restrictions{gap:4px}
+}

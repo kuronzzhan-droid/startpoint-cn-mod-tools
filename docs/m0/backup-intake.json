@@ -1,0 +1,22 @@
+[
+  {
+    "source": "out/kulo-patch-toolkit/oldrepo_modtools/rogue_layout_plan.json.bak-canary-20260805-112156",
+    "destination": "archive/legacy/oldrepo/rogue_layout_plan.json.bak-canary-20260805-112156",
+    "source_sha256": "ee7a6b0f64b9bd631a3faf79164a8edb4666506c25d71ab0ae0c87f7e642fa3c"
+  },
+  {
+    "source": "out/kulo-patch-toolkit/oldrepo_modtools/wf_enhancement_switch.py.bak-before-orbgolden-20260730",
+    "destination": "archive/legacy/oldrepo/wf_enhancement_switch.py.bak-before-orbgolden-20260730",
+    "source_sha256": "12d00b33b97fc41fa269fd1fd5f4aa231f62cdc9f899079f34a51115a8d8ee20"
+  },
+  {
+    "source": "out/kulo-patch-toolkit/oldrepo_modtools/wf_rogue_rewards.py.bak-before-colspec-20260730",
+    "destination": "archive/legacy/oldrepo/wf_rogue_rewards.py.bak-before-colspec-20260730",
+    "source_sha256": "284db5440bc3d6cc7854e2886c906f1beda16c44fe9f19af42b1c4b7963b59af"
+  },
+  {
+    "source": "out/kulo-patch-toolkit/oldrepo_modtools/wf_rogue_rewards.py.bak-before-v33-20260730",
+    "destination": "archive/legacy/oldrepo/wf_rogue_rewards.py.bak-before-v33-20260730",
+    "source_sha256": "948d960b4d4194a2506f70007902a5a357be90fae11125393c2693d1a8072288"
+  }
+]

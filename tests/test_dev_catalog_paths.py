@@ -69,6 +69,18 @@ class DevCatalogPathCase(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "shared catalog resolver sentinel"):
                 importlib.import_module("wf_dev_catalog")
 
+    def test_unconfigured_server_has_no_foreign_root(self) -> None:
+        with mock.patch.object(core, "resolve_server_dir", side_effect=core.ServerDirNotConfiguredError("unconfigured")):
+            catalog = importlib.import_module("wf_dev_catalog")
+        self.assertIsNone(catalog.ASSET_PATCH_ACTIVE)
+        with self.assertRaises(core.ServerDirNotConfiguredError):
+            catalog.cmd_relocate_foreign(mock.Mock())
+
+    def test_invalid_server_is_not_treated_as_unconfigured(self) -> None:
+        with mock.patch.object(core, "resolve_server_dir", side_effect=ValueError("invalid server sentinel")):
+            with self.assertRaisesRegex(ValueError, "invalid server sentinel"):
+                importlib.import_module("wf_dev_catalog")
+
     def test_foreign_entity_rows_use_the_resolved_asset_patch_root(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)

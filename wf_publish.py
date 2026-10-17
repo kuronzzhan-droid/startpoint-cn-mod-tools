@@ -14,6 +14,8 @@ WF mod 发布器:把改动的数据表打成客户端增量包(diff zip),经服�
   python mod-tools/wf_publish.py                 # 发布 pending 列表里的文件
   python mod-tools/wf_publish.py --tables ability,character_status
   python mod-tools/wf_publish.py --list          # 只看将发布什么/版本推进
+能力闸门:打包前按 --client-profile(默认 local-mumu,见 mod-tools/client_profiles.json)
+  判定本批数据需要的客户端补丁能力,缺崩溃级/语义必需级即拒绝(wfx_gate.py)。
 注意:CN 表含觉醒列(col3/4 awake_kind),打包为原样字节复制,不做重编码。
 """
 from __future__ import annotations
@@ -31,11 +33,12 @@ import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_mod_tool as core  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
-# CDN 发布根统一走 core 四级解析链；显式坏配置不得被 publisher 绕过。
+# CDN 发布根:WF_CDN_DIR 显式优先(原样使用);否则走 core 四级解析链
+# (profile.cdn_dir > 服务端识别 > 嵌套遗留 <repo>/.cdn/cn),见 T2 两仓独立。
 CDN_ROOT = core.resolve_cdn_root_lax()
 CDN_DIFF = CDN_ROOT / "archive-common-diff"
 WORK = Path(__file__).resolve().parent / "work"
@@ -101,6 +104,9 @@ TABLE_ALIASES = {
     "boss_coin_shop": "master/shop/boss_coin_shop.orderedmap",
     "boss_coin_shop_category": "master/shop/boss_coin_shop_category.orderedmap",
     "trimmed_image": "master/generated/trimmed_image.orderedmap",
+    # --- 称号/铭牌(见 mod-tools/wf_degree.py) ---
+    "degree": "master/degree/degree.orderedmap",
+    "degree_category": "master/degree/degree_category.orderedmap",
     # --- boss 战 / 副本 / 连战(roguelike boss rush 方案用,见 docs/boss连战roguelike方案.md) ---
     "general_boss": "master/battle/boss/general_boss.orderedmap",
     "general_boss_state": "master/battle/boss/general_boss_state.orderedmap",
@@ -179,8 +185,7 @@ def collect_files(args) -> list[str]:
         for t in args.tables.split(","):
             t = t.strip()
             logical = TABLE_ALIASES.get(t, t)
-            digest = core.sha1_path(logical)
-            rels.append(f"{digest[:2]}/{digest[2:]}")
+            rels.append(_relative_for_logical(logical))
     else:
         try:
             rels = json.loads(PENDING.read_text(encoding="utf-8"))
@@ -208,8 +213,21 @@ def _explicit_logicals(tables: str) -> list[str]:
 
 
 def _relative_for_logical(logical: str) -> str:
-    digest = core.sha1_path(logical)
-    return f"{digest[:2]}/{digest[2:]}"
+    """逻辑路径 -> 'xx/hash',保留 medium:/android: 层前缀。
+
+    层前缀必须在做 sha1 **之前**摘掉:哈希只针对逻辑路径本身,前缀是投递层的
+    标记,由 `_prepare_files` 解读。旧实现连前缀一起哈希,算出一个不存在的地址,
+    又因为结果里没有前缀而被当成 upload 层去找,报
+    "missing explicit publish entry" —— `--tables` 这条路上层前缀等于没实现。
+    (2026-09-01 发 medium 层立绘时踩到;pending 那条路存的本来就是带前缀的 rel,
+    所以一直没暴露。)
+    """
+    prefix = next(
+        (value for value in ("medium:", "android:") if logical.startswith(value)),
+        "",
+    )
+    digest = core.sha1_path(logical[len(prefix):])
+    return f"{prefix}{digest[:2]}/{digest[2:]}"
 
 
 def _load_snapshot(
@@ -435,6 +453,11 @@ def main(argv: list[str] | None = None) -> int:
         type=Path,
         help="校验器生成的严格发布快照(必须与 --tables 同时使用)",
     )
+    ap.add_argument(
+        "--client-profile",
+        help="接收方客户端档案(mod-tools/client_profiles.json;默认 local-mumu):"
+             "能力闸门按它判定本批数据会不会崩/静默失效",
+    )
     ap.add_argument("--list", action="store_true", help="只显示将发布的内容,不打包")
     ap.add_argument("--from-ver", help="覆盖起始版本(默认=CDN 现有最高版本)")
     ap.add_argument(
@@ -516,6 +539,26 @@ def main(argv: list[str] | None = None) -> int:
                     "确认这就是你要的效果,再加 --allow-key-deletion 重跑。"
                 )
             print("  [放行] --allow-key-deletion 已指定,明知故犯继续发布。")
+
+        # 客户端能力闸门(扩展词条框架 B1-0):本批数据要求接收方具备的 capability
+        # (补丁构造 422/423/424/724、wfx 效果状态、面板覆盖键)与档案比对。
+        # 无 wfx 行、只用本机已装补丁的数据 = 空操作通过;没有豁免开关。
+        import wfx_gate
+
+        client_profile = args.client_profile or wfx_gate.default_publish_profile()
+        print("能力闸门   :")
+        capability_gate = wfx_gate.check_publish(
+            [(entry.archive_name, entry.payload) for entry in prepared if not entry.prefix],
+            store,
+            client_profile,
+        )
+        for line in capability_gate.lines():
+            print("  " + line)
+        if not capability_gate.ok:
+            raise ValueError(
+                f"发布被客户端能力闸门阻断(档案 {client_profile}):接收方缺少上面列出的能力,"
+                "发出去会崩或静默失效。改数据,或换成真实具备这些能力的 --client-profile。"
+            )
 
         if args.list:
             return 0

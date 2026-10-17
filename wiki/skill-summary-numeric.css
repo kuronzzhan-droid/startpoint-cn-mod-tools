@@ -1,0 +1,18 @@
+.skill-summary-numeric{margin-top:7px;padding-top:6px;border-top:1px solid var(--summary-line);min-width:0}
+.summary-numeric-preview{display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px;min-width:0;font-size:11px;line-height:1.6}
+.summary-numeric-level{color:var(--muted);font-size:10px}.summary-numeric-chip{max-width:100%;box-sizing:border-box;padding:1px 6px;border-radius:4px;background:var(--summary-soft);color:var(--summary-accent);overflow-wrap:anywhere}
+.summary-numeric-brief-formula{display:block;min-width:0;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.skill-summary-numeric>.summary-numeric-more{margin-top:2px}.skill-summary-numeric>.summary-numeric-more>summary{padding:2px 0;font-size:10px}
+.summary-numeric-note,.summary-numeric-missing{margin:5px 0;color:var(--muted);font-size:10px;line-height:1.7;overflow-wrap:anywhere}
+.summary-numeric-item,.summary-numeric-formula{margin-top:7px;padding:8px;border:1px solid var(--summary-line);border-radius:5px;background:var(--summary-soft);min-width:0}
+.summary-numeric-item>h5,.summary-numeric-formula>h5{margin:0 0 4px;font-size:12px;color:var(--summary-accent)}
+.summary-numeric-source{margin:0 0 4px;font-size:9px;color:var(--muted);overflow-wrap:anywhere}
+.summary-numeric-context{margin:3px 0 6px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:10px;line-height:1.6;color:inherit}
+.summary-numeric-values{display:grid;grid-template-columns:minmax(85px,.7fr) minmax(0,1.5fr);gap:3px 7px;margin:0;font-size:11px;line-height:1.6}
+.summary-numeric-values dt{color:var(--muted);overflow-wrap:anywhere}.summary-numeric-values dd{margin:0;overflow-wrap:anywhere;white-space:pre-wrap;font-variant-numeric:tabular-nums}
+.summary-numeric-definition{margin-top:6px;padding-left:7px;border-left:2px solid var(--summary-accent);font-size:10px;line-height:1.7;overflow-wrap:anywhere}
+.summary-numeric-definition>span{color:var(--muted)}.summary-numeric-definition>p{margin:2px 0}
+.summary-numeric-more{margin-top:7px}.summary-numeric-more>summary{padding:5px 0;cursor:pointer;color:var(--summary-accent);font-size:11px;line-height:1.6}
+.summary-numeric-notes{margin-top:7px}
+.team-inspector .summary-numeric-values{grid-template-columns:minmax(72px,.75fr) minmax(0,1.25fr);font-size:10px}
+@media(max-width:420px){.summary-numeric-values{grid-template-columns:minmax(75px,.7fr) minmax(0,1.3fr);font-size:10px}}

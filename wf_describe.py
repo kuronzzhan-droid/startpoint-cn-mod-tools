@@ -28,8 +28,21 @@ _MD_SECTIONS = {"6.1": "precondition", "6.2": "trigger", "6.3": "during_trigger"
 TARGET_CN = {0: "自身", 1: "除自身全员", 2: "队长", 3: "2号位", 4: "3号位", 5: "全队",
              6: "协力全队", 7: "触发者", 8: "多球", 9: "HP最低者", 10: "HP最低者",
              11: "HP最低者(除自身)", 12: "HP最低者(除自身)", 13: "多球(按组)", 14: "多球(按角色组)"}
-PULLER_CN = {0: "", 1: "队长", 2: "2号位", 3: "3号位", 4: "除自身任一", 5: "全队任一",
-             6: "除自身合计", 7: "全队合计", 8: "沿用前置来源", 9: "全队总和", 10: "多球任一"}
+# 客户端使用两套不同的 trigger_puller 枚举。前置/持续触发的 9=全队总和、
+# 10=多球任一；瞬发触发没有“全队总和”，其 9 已经是多球任一。旧描述器
+# 共用一张表，既漏掉了来源，也会把瞬发 puller=9 误译成全队总和。
+INSTANT_PULLER_CN = {
+    0: "自身", 1: "队长", 2: "2号位", 3: "3号位", 4: "除自身任一",
+    5: "全队任一", 6: "除自身合计", 7: "全队合计", 8: "沿用前置来源",
+    9: "多球任一",
+}
+DURING_PULLER_CN = {
+    0: "自身", 1: "队长", 2: "2号位", 3: "3号位", 4: "除自身任一",
+    5: "全队任一", 6: "除自身合计", 7: "全队合计", 8: "沿用前置来源",
+    9: "全队总和", 10: "多球任一",
+}
+# 兼容词条工坊旧接口；精确描述必须按块类型选择上面两张表。
+PULLER_CN = DURING_PULLER_CN
 ELEMENT_CN = {0: "全属性", 1: "火", 2: "水", 3: "雷", 4: "风", 5: "光", 6: "暗"}
 GROUP_CN = {"Red": "火", "Blue": "水", "Yellow": "雷", "Green": "风", "White": "光",
             "Black": "暗", "All": "全属性", "Dragon": "龙族", "Male": "男性", "Female": "女性",
@@ -143,7 +156,19 @@ def _groups(v: str) -> str:
     v = (v or "").strip()
     if not v or v == "(None)":
         return ""
-    return "/".join(GROUP_CN.get(t.strip(), t.strip()) for t in v.split("/") if t.strip())
+    # 旧表常见 "/"，当前 master 的角色组字段则使用逗号（例如
+    # Red,Blue,Green,Yellow,White,Black）；两种序列化都必须支持。
+    return "/".join(
+        GROUP_CN.get(t.strip(), t.strip())
+        for t in re.split(r"[/,]", v)
+        if t.strip()
+    )
+
+
+def _is_six_element_groups(v: str) -> bool:
+    """角色组是否刚好覆盖火/水/雷/风/光/暗六种常规属性。"""
+    tokens = {t.strip() for t in re.split(r"[/,]", (v or "")) if t.strip()}
+    return tokens == {"Red", "Blue", "Yellow", "Green", "White", "Black"}
 
 
 # ---------------------------------------------------------------- 块描述
@@ -151,6 +176,26 @@ def _groups(v: str) -> str:
 def _cell(row: list[str], i: int) -> str:
     v = row[i] if 0 <= i < len(row) else ""
     return "" if v == "(None)" else v
+
+
+def _case_uses_field(case_key: str, kind: str, field: str) -> bool:
+    """枚举构造器是否实际消费某字段，避免给无来源的全局触发强加“自身”。"""
+    case = _enum_map.get("cases", {}).get(case_key, {}).get(kind, {})
+    return field in case.get("fields", {})
+
+
+def _desc_puller(row: list[str], b: int, case_key: str, kind: str) -> str:
+    """描述触发来源及其角色组；前置/持续与瞬发使用不同枚举。"""
+    if not _case_uses_field(case_key, kind, "trigger_puller"):
+        return ""
+    puller = _num(_cell(row, b + 1))
+    puller = 0 if puller is None else puller
+    labels = INSTANT_PULLER_CN if case_key == "instant_trigger" else DURING_PULLER_CN
+    s = labels.get(puller, f"来源{puller}")
+    grp = _groups(_cell(row, b + 2))
+    if grp:
+        s += f"({grp})"
+    return s
 
 
 def _desc_precondition(row: list[str], b: int) -> str:
@@ -162,12 +207,12 @@ def _desc_precondition(row: list[str], b: int) -> str:
     grp = _groups(_cell(row, b + 5))
     if grp:
         s = f"{grp}·{s}"
+    source = _desc_puller(row, b, "precondition", kind)
+    if source:
+        s = f"{source}·{s}"
     th = _endpoints(_cell(row, b + 3), _cell(row, b + 4), _threshold)
     if th:
         s += th if s and s[-1] in "≥≤<>=" else f"≥{th}"
-    puller = _num(_cell(row, b + 1))
-    if puller:
-        s += f"({PULLER_CN.get(puller, puller)})"
     uc = _cell(row, b + 6).strip()
     if uc not in ("", "0"):
         s += f"[固有{uc}]"
@@ -190,6 +235,10 @@ def _desc_trigger(row: list[str], b: int, enum_key: str) -> str:
     grp = _groups(_cell(row, b + 9 if enum_key == "trigger" else b + 6))
     if grp:
         s = f"{grp}·{s}"
+    case_key = "instant_trigger" if enum_key == "trigger" else "during_trigger"
+    source = _desc_puller(row, b, case_key, kind or "0")
+    if source:
+        s = f"{source}·{s}"
     if th:
         # 触发名自带比较符(HP≤/连击≥…)时直接接数值,避免「HP≤≥50%」双符号
         s += th if s and s[-1] in "≥≤<>=" else f"≥{th}"
@@ -200,8 +249,8 @@ def _desc_trigger(row: list[str], b: int, enum_key: str) -> str:
     if enum_key == "trigger":
         ct = _num(_cell(row, b + 8))
         if ct:
-            frames = ct / 100000 if ct >= 100000 else ct  # 两种存法都见过,大值按×100000
-            s += f"(CT{frames / 60:g}秒)"
+            # InstantAbilityTriggerMasterValueTools 直接 int(cooltime)，单位为原始帧。
+            s += f"(CT{ct / 60:g}秒)"
     uc_off = 10 if enum_key == "trigger" else 7
     uc = _cell(row, b + uc_off).strip()
     if uc not in ("", "0"):
@@ -238,6 +287,14 @@ def _desc_content(row: list[str], b: int, enum_key: str) -> str:
     # 对敌伤害三族(251-286 EnemyDamage/316-351 Trigger/352-387 Nearest):
     # 补敌方目标语义(time 列:EnemyDamage 空=全体/N=最近顺序N段)+ 倍数显示
     k_i = int(kind) if kind.isdigit() else -1
+    group_raw = _cell(row, b + (19 if is_instant else 8))
+    grp = _groups(group_raw)
+    character_slayer = (is_instant and k_i == 52) or (not is_instant and k_i == 20)
+    if character_slayer:
+        # CharacterSlayer 不是含糊的“角色特攻”面板，而是对匹配角色组的
+        # 敌人造成伤害的独立乘区1。六种元素角色组齐全时直接归纳为六属性。
+        scope = "六属性" if _is_six_element_groups(group_raw) else (f"{grp}角色组" if grp else "指定角色组")
+        s = f"对{scope}敌人造成的伤害+"
     dmg = is_instant and (251 <= k_i <= 387)
     if dmg:
         time_v = _num(_cell(row, b + 22))
@@ -249,8 +306,14 @@ def _desc_content(row: list[str], b: int, enum_key: str) -> str:
             phrase = "最近的敌人" + (f"×{time_v}段" if time_v and time_v > 1 else "")
         m_basis = re.search(r"依(.+)$", name)
         s = f"对{phrase} 能力伤害·依{m_basis.group(1)}" if m_basis else f"对{phrase} {name}"
-    # 计数类效果(连击/次数/数量/层)强度按整数存(十万=1),其余按千分比
-    flat = any(w in name for w in ("连击", "次数", "数量", "层"))
+    # 计数类效果(连击/次数/数量/层)强度按整数存(十万=1),其余按千分比。
+    # 固有状态增减同样走 resolveInt:ConditionUnique/ConsumeUniqueCondition
+    # 的 100000=1级，而不是100%。
+    unique_level = is_instant and k_i in (413, 436, 459, 461, 525)
+    integer_strength = unique_level or (is_instant and k_i in (203, 204, 468))
+    flat = integer_strength or any(
+        w in name for w in ("连击", "计数", "次数", "数量", "层", "等级")
+    )
     if dmg:
         fmt_stren = lambda v: _pct(v) + (f"({v / 100000:g}倍)" if v >= 100000 else "")
     elif flat and all((_num(_cell(row, b + i)) or 0) % 100000 == 0 for i in (4, 5)):
@@ -259,7 +322,9 @@ def _desc_content(row: list[str], b: int, enum_key: str) -> str:
         fmt_stren = _pct
     stren = _endpoints(_cell(row, b + 4), _cell(row, b + 5), fmt_stren)
     if stren:
-        s += f" {stren}"
+        s += stren if character_slayer else f" {stren}"
+    if character_slayer:
+        s += "（独立伤害乘区1）"
     s2 = _endpoints(_cell(row, b + 6), _cell(row, b + 7), _pct)
     if s2:
         s += f"(强度2 {s2})"
@@ -271,7 +336,8 @@ def _desc_content(row: list[str], b: int, enum_key: str) -> str:
         if frame:
             s += f"({frame})"
         cnt = _endpoints(_cell(row, b + 12), _cell(row, b + 13), _x100k_count)
-        if cnt:
+        # ConditionUnique 的 number=1 是施加一次该等级变化；详情页只显示等级增量。
+        if cnt and not (k_i in (461, 468) and cnt == "1次"):
             s += f"×{cnt}"
         acc = _num(_cell(row, b + 14))
         if acc:
@@ -292,7 +358,6 @@ def _desc_content(row: list[str], b: int, enum_key: str) -> str:
         el = _num(_cell(row, b + 10)) if _cell(row, b + 10).strip() != "" else None
         if el is not None:
             s += f"[{ELEMENT_CN.get(el, el)}]"
-    grp = _groups(_cell(row, b + (19 if is_instant else 8)))
     tgt_grp = _groups(_cell(row, b + 2))
     tgt_s = TARGET_CN.get(tgt, str(tgt))
     if tgt_grp:
@@ -301,7 +366,7 @@ def _desc_content(row: list[str], b: int, enum_key: str) -> str:
         out = s if tgt_s == "自身" else f"{s}(以{tgt_s}为基准)"
     else:
         out = f"自身 {s}" if tgt_s == "自身" else f"赋予{tgt_s} {s}"
-    if grp:
+    if grp and not character_slayer:
         out += f"[限{grp}]"
     return out
 
@@ -329,6 +394,10 @@ def describe_line(row: list[str], kind: str) -> str:
     trig_col = B["precondition1"] - 1  # 各表 trigger 都紧贴 precondition1 之前
     trig = _num(_cell(row, trig_col)) or 0
     parts = []
+
+    # ability/ex_ability 的 unisonable=false(空值也按 false 解析)就是详情页的Ⓜ。
+    if kind in ("ability", "ex_ability") and _cell(row, 1).strip().lower() != "true":
+        parts.append("[主位]")
 
     # 觉醒标记(ability c3/c4,leader c1/c2)
     if kind == "ability":
@@ -373,7 +442,8 @@ def describe_line(row: list[str], kind: str) -> str:
         if ic:
             seg = (seg + " → " + ic) if seg else ic
         if delay:
-            seg += f"(延迟{delay / 60:g}秒)"
+            # InstantAbilitySource: delaySec=instant_delay; delayFrame=delaySec*60。
+            seg += f"(延迟{delay:g}秒)"
         parts.append(seg)
 
     return " ".join(p for p in parts if p).strip()
@@ -387,7 +457,7 @@ if __name__ == "__main__":
     # 自测:瓦格纳词条 + 队长技
     import sys, io
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-    sys.path.insert(0, str(HERE))
+    pass  # Imports resolve from this checkout/package, not external source copies.
     import wf_mod_tool as core
     store = core.require_active_store()
     ab = core.load_table("master/ability/ability.orderedmap", store, store)

@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))
+pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_dsl  # noqa: E402
 import wf_quest_lib as q  # noqa: E402
 

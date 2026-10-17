@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "description": "接收方客户端档案：每个档案 = 该客户端 APK 声明的 capability 全集。wfx_gate 用它判定一批数据发给谁会崩 / 静默失效。capability 名必须登记在 wfx_registry.json；status=planned（尚无 APK 实现）的 capability 不许写进任何档案。",
+  "default_publish_profile": "local-mumu",
+  "profiles": {
+    "local-mumu": {
+      "description": "本机 MuMu 实例 1：最终合成 APK b0b13112（编成槽框 b 2f085757 → 觉醒专属素材 → 装备置顶 → 物品底色覆盖），缓存 SWF b4a22c8a；含五重三项补丁（auto-lock/random-map/single-allowed），无 multi-only",
+      "capabilities": [
+        "damage-type-rules-v1",
+        "dash-parameter-v1",
+        "equipment-awakening-material-v1",
+        "equipment-description-override-v1",
+        "equipment-enhanced-look-v1",
+        "equipment-enhanced-party-frame-v1",
+        "equipment-gauge-gain-rules-v1",
+        "equipment-rules-v1",
+        "equipment-sort-pin-v1",
+        "gauge-gain-rules-v1",
+        "item-rarity-frame-override-v1",
+        "kyubi-fever-ratio-v1",
+        "kyubi-panel-description-override-v1",
+        "kyubi-pf-initial-combo-v1",
+        "panel-description-override-v2"
+      ],
+      "evidence": {
+        "apk_sha256": "b0b13112e3ce84bb1e5005da4e7b0226428e01ce7fea282f54d648cf469972f5",
+        "swf_sha256": "b4a22c8a68beb8b5368a24bfd35e0837190729a1db99806d0c44eb400abeaa49",
+        "build_summary": "${WF_ROOT}/out/item-rarity-frame-20260928/build-summary.json（candidate_capabilities）",
+        "install_receipt": "${WF_ROOT}/out/item-rarity-frame-20260928/install-receipt.json",
+        "installed_on": "2026-09-28"
+      },
+      "update_rule": "本机装新补丁 APK 后，按其 build-summary 的 candidate_capabilities 与安装回执重写本档案"
+    },
+    "gray-1047": {
+      "description": "灰方（Ku1o）1047 系客户端：作者 2026-09-28 确认已装 1047 系回槽限制补丁（角色能力表 423）；未装 equipment-rules e03bc22b 与 equipment-description-override cf91b29b",
+      "capabilities": [
+        "damage-type-rules-v1",
+        "dash-parameter-v1",
+        "gauge-gain-rules-v1",
+        "kyubi-fever-ratio-v1",
+        "kyubi-panel-description-override-v1",
+        "kyubi-pf-initial-combo-v1",
+        "panel-description-override-v2"
+      ],
+      "evidence": {
+        "source": "client-patch/equipment-rules/rules.py INHERITED_CAPABILITIES（1047 SWF 6e7b2db7…），去掉 equipment-rules-v1 / equipment-gauge-gain-rules-v1 / equipment-description-override-v1",
+        "author_confirmed": "2026-09-28"
+      },
+      "update_rule": "只在作者确认灰方装了新 APK 后手工改"
+    },
+    "official": {
+      "description": "官方 / 未打任何补丁的客户端",
+      "capabilities": [],
+      "evidence": {},
+      "update_rule": "不改"
+    }
+  }
+}

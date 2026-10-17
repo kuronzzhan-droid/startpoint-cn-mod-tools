@@ -1,0 +1,19 @@
+.community-announcement{margin:0 0 12px;padding:10px 12px;border:1px solid #eab649;border-left:4px solid #edab23;border-radius:9px;background:#fff7df;color:#674817;box-shadow:0 3px 10px #ac771513;min-width:0}
+.community-announcement-row{display:flex;align-items:center;gap:10px;min-width:0}
+.community-announcement-label,.community-announcement-pause{flex:none;min-height:34px;border:0;border-radius:5px;padding:5px 9px;font:inherit;cursor:pointer}
+.community-announcement-label{background:#ebac25;color:#3d2906;font-size:14px;font-weight:800}
+.community-announcement-pause{background:transparent;color:inherit;font-size:12px}
+.community-announcement-viewport{flex:1;overflow:hidden;min-width:0;font-size:14px;font-weight:600;line-height:1.65}
+.community-announcement-track{display:flex;width:max-content;animation:community-announcement-scroll var(--announcement-duration,25s) linear infinite}
+.community-announcement-track>span{flex:none;padding-right:5rem;white-space:nowrap}
+@keyframes community-announcement-scroll{to{transform:translateX(-50%)}}
+.community-announcement:hover .community-announcement-track,.community-announcement:focus-within .community-announcement-track,.community-announcement[data-paused="true"] .community-announcement-track{animation-play-state:paused}
+.community-announcement-full{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7;font-size:14px;margin:9px 0 0;padding-top:9px;border-top:1px solid #eab64966}
+.community-announcement-editor{margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.community-announcement-editor>summary{font-weight:700;cursor:pointer;min-height:28px;line-height:28px}
+.community-announcement-editor form{margin-top:10px;max-width:760px}.community-announcement-help{font-size:12px;line-height:1.6}
+[data-theme="dark"] .community-announcement{background:#352c1b;color:#f6d993;border-color:#9b782f}
+@media(max-width:768px),(hover:none) and (pointer:coarse),(prefers-reduced-motion:reduce){
+  .community-announcement-track{animation:none;width:auto;display:block}.community-announcement-track>span{padding:0;white-space:pre-wrap;overflow-wrap:anywhere}.community-announcement-track>span[aria-hidden="true"],.community-announcement-pause{display:none}
+  .community-announcement-row{align-items:flex-start;gap:8px}.community-announcement-viewport{font-size:13px}.community-announcement-label{min-height:30px;padding:4px 7px}
+}

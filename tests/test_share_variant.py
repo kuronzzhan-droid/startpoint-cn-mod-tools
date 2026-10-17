@@ -3,7 +3,11 @@
 """分享包双变体构建器的端到端测试(临时 CDN + 合成表,不碰真实 store/.cdn)。"""
 from __future__ import annotations
 
+import contextlib
+import hashlib
+import io
 import json
+import shutil
 import sys
 import tempfile
 import unittest
@@ -23,6 +27,8 @@ CHARACTER = "master/character/character.orderedmap"
 WHITE_TIGER_DSL = policy_mod.DROP_LOGICALS[0]
 CUSTOM_ASSET = "character/seris_dragon_king/ui/full_shot_1440_1920_0.png"
 EXPECT = {CHARACTER: ["129999", "139999", "149999"]}
+OVERLAY_ASSET = "dynamic/degree/degree_overlay_test.png"
+PNG = b"\x89PNG\r\n\x1a\nsynthetic-overlay"
 
 
 def table(rows: dict) -> bytes:
@@ -78,7 +84,7 @@ class VariantFixture(unittest.TestCase):
 
     def build(self, **kwargs):
         params = dict(tag="t0729", out_dir=self.out, expect_content_rows=EXPECT,
-                      foreign_lineage=True)
+                      foreign_lineage=True, client_profile="official")
         params.update(kwargs)
         return build(self.cdn, self.repo, **params)
 
@@ -94,6 +100,402 @@ class VariantFixture(unittest.TestCase):
     def member(self, pack_dir: Path, logical: str) -> bytes | None:
         return self.members(pack_dir).get(
             f"production/upload/{quest.hashed_rel(logical)}")
+
+    def overlay_manifest(
+        self,
+        entries: list[tuple[str, str, bytes, str]],
+        *,
+        source_tail: str = "1.4.55",
+    ) -> Path:
+        """写一个完全位于临时目录的 frozen-overlay 合同。"""
+        overlay_dir = Path(self._tmp.name) / "overlay"
+        store = overlay_dir / "store"
+        pending = overlay_dir / "sync_pending.json"
+        manifest_path = overlay_dir / "manifest.json"
+        store.mkdir(parents=True, exist_ok=True)
+
+        manifest_entries = []
+        sequence = []
+        for root, logical, payload, codec in entries:
+            rel = quest.hashed_rel(logical)
+            target = store / rel
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(payload)
+            sequence.append(rel if root == "common" else f"{root}:{rel}")
+            manifest_entries.append({
+                "root": root,
+                "logicalPath": logical,
+                "hashedRel": rel,
+                "size": len(payload),
+                "sha256": hashlib.sha256(payload).hexdigest(),
+                "codec": codec,
+                "owner": "rank-p5b-test-fixture",
+            })
+
+        pending_bytes = (json.dumps(sequence, ensure_ascii=False, separators=(",", ":"))
+                         + "\n").encode("utf-8")
+        pending.write_bytes(pending_bytes)
+        manifest = {
+            "schemaVersion": 1,
+            "sourceChainTail": source_tail,
+            "storePath": "store",
+            "pendingPath": "sync_pending.json",
+            "pendingSha256": hashlib.sha256(pending_bytes).hexdigest(),
+            "pendingSequence": sequence,
+            "entries": manifest_entries,
+        }
+        canonical = json.dumps(
+            manifest, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+        ).encode("utf-8")
+        manifest["overlayDigest"] = hashlib.sha256(canonical).hexdigest()
+        manifest_path.write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        return manifest_path
+
+    @staticmethod
+    def rewrite_manifest(path: Path, payload: dict, *, refresh_digest: bool = True) -> None:
+        payload = dict(payload)
+        if refresh_digest:
+            payload.pop("overlayDigest", None)
+            canonical = json.dumps(
+                payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+            ).encode("utf-8")
+            payload["overlayDigest"] = hashlib.sha256(canonical).hexdigest()
+        path.write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+class PendingOverlayCliTest(VariantFixture):
+    def test_plan_accepts_explicit_pending_overlay_manifest_without_writing(self):
+        manifest = self.overlay_manifest([
+            ("common", OVERLAY_ASSET, PNG, "png"),
+        ])
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            try:
+                result = variant_mod.main([
+                    "plan", "--variant", "full", "--tag", "overlay1",
+                    "--cdn", str(self.cdn), "--repo-root", str(self.repo),
+                    "--out", str(self.out), "--foreign-lineage",
+                    "--pending-overlay-manifest", str(manifest), "--json",
+                    "--client-profile", "official",
+                ])
+            except SystemExit as exc:
+                result = int(exc.code)
+        self.assertEqual(0, result, stderr.getvalue())
+        report = json.loads(stdout.getvalue())
+        self.assertTrue(report["unpublishedOverlay"])
+        self.assertEqual(1, report["pendingOverlay"]["entryCount"])
+        self.assertEqual(len(LIVE) + 1, report["variants"]["full"]["entries"])
+        self.assertFalse(self.out.exists())
+
+
+class PendingOverlayBuildTest(VariantFixture):
+    def test_overlay_is_final_layer_and_content_only_rebuilds_overlay_table(self):
+        overlay_ability = table({
+            "111001": "overlay 仍改过官方词条",
+            "10": "overlay 仍改过白虎",
+            "1299991": "赛瑞斯词条",
+            "1299992": "overlay 新内容词条",
+        })
+        manifest = self.overlay_manifest([
+            ("common", ABILITY, overlay_ability, "orderedmap-flat-zlib"),
+            ("common", OVERLAY_ASSET, PNG, "png"),
+        ])
+        expected = dict(EXPECT)
+        expected[ABILITY] = ["1299991", "1299992"]
+        self.build(
+            anchor_from="1.4.130", pending_overlay_manifest=manifest,
+            expect_content_rows=expected)
+
+        full = self.out / "wfshare-1.4.130-to-1.4.131-full"
+        content = self.out / "wfshare-1.4.130-to-1.4.131-content-only"
+        self.assertEqual(overlay_ability, self.member(full, ABILITY))
+        self.assertEqual(PNG, self.member(full, OVERLAY_ASSET))
+        self.assertEqual(PNG, self.member(content, OVERLAY_ASSET))
+
+        rebuilt = quest.parse_node(self.member(content, ABILITY))
+        self.assertEqual("官方词条", rebuilt["111001"])
+        self.assertEqual("白虎官方词条", rebuilt["10"])
+        self.assertEqual("赛瑞斯词条", rebuilt["1299991"])
+        self.assertEqual("overlay 新内容词条", rebuilt["1299992"])
+
+    def test_reports_and_requires_declare_unpublished_overlay_provenance(self):
+        overlay_ability = table({
+            "111001": "overlay 官方改动", "10": "overlay 白虎",
+            "1299991": "赛瑞斯词条", "1299992": "新内容",
+        })
+        manifest = self.overlay_manifest([
+            ("common", ABILITY, overlay_ability, "orderedmap-flat-zlib"),
+            ("common", OVERLAY_ASSET, PNG, "png"),
+        ])
+        expected_manifest_sha = hashlib.sha256(manifest.read_bytes()).hexdigest()
+        frozen = json.loads(manifest.read_text(encoding="utf-8"))
+        report = self.build(
+            anchor_from="1.4.130", variants=("full",),
+            pending_overlay_manifest=manifest)
+
+        pack = self.out / "wfshare-1.4.130-to-1.4.131-full"
+        on_disk = json.loads((self.out / "report.json").read_text(encoding="utf-8"))
+        variant_report = json.loads((pack / "report.json").read_text(encoding="utf-8"))
+        requires = json.loads((pack / "requires.json").read_text(encoding="utf-8"))
+        for payload in (report, on_disk, variant_report, requires):
+            self.assertIn("unpublishedOverlay", payload)
+            self.assertIn("sourceChainTail", payload)
+            self.assertIn("pendingOverlay", payload)
+            self.assertTrue(payload["unpublishedOverlay"])
+            self.assertEqual("1.4.55", payload["sourceChainTail"])
+            overlay = payload["pendingOverlay"]
+            self.assertEqual(2, overlay["entryCount"])
+            self.assertEqual(expected_manifest_sha, overlay["manifestSha256"])
+            self.assertEqual(frozen["overlayDigest"], overlay["overlayDigest"])
+            self.assertEqual(frozen["pendingSha256"], overlay["pendingSha256"])
+            self.assertFalse(overlay["publicationReceipt"])
+            self.assertIn("不是发布回执", overlay["note"])
+
+        self.assertEqual("1.4.55", report["chain"]["tail"])
+        self.assertEqual(len(LIVE), report["chain"]["entries"])
+        self.assertEqual(len(LIVE) + 1, report["variants"]["full"]["entries"])
+        by_logical = {entry["logicalPath"]: entry
+                      for entry in report["pendingOverlay"]["entries"]}
+        replaced = by_logical[ABILITY]
+        self.assertTrue(replaced["overridesChain"])
+        self.assertEqual(hashlib.sha256(LIVE[ABILITY]).hexdigest(),
+                         replaced["chainSha256"])
+        self.assertEqual(hashlib.sha256(overlay_ability).hexdigest(), replaced["sha256"])
+        added = by_logical[OVERLAY_ASSET]
+        self.assertFalse(added["overridesChain"])
+        self.assertIsNone(added["chainSha256"])
+        readme = (pack / "说明.txt").read_text(encoding="utf-8")
+        self.assertIn("未发布 overlay", readme)
+        self.assertIn("不是发布回执", readme)
+        self.assertIn("不得再叠加或重复应用", readme)
+
+    def test_build_accepts_only_exact_manifest_store_and_pending_paths(self):
+        manifest = self.overlay_manifest([
+            ("common", OVERLAY_ASSET, PNG, "png"),
+        ])
+        report = self.build(
+            anchor_from="1.4.130", variants=("full",), dry_run=True,
+            pending_overlay_manifest=manifest,
+            pending_overlay_store=(manifest.parent / "store").resolve(),
+            pending_overlay_pending=(manifest.parent / "sync_pending.json").resolve())
+        self.assertEqual(1, report["pendingOverlay"]["entryCount"])
+        self.assertFalse(self.out.exists())
+
+    def test_explicit_clean_copy_cannot_bypass_drifted_manifest_live_inputs(self):
+        manifest = self.overlay_manifest([
+            ("common", OVERLAY_ASSET, PNG, "png"),
+        ])
+        clean_store = manifest.parent.parent / "explicit-store"
+        clean_pending = manifest.parent.parent / "explicit-pending.json"
+        shutil.copytree(manifest.parent / "store", clean_store)
+        shutil.copy2(manifest.parent / "sync_pending.json", clean_pending)
+        live_payload = manifest.parent / "store" / quest.hashed_rel(OVERLAY_ASSET)
+        live_payload.write_bytes(PNG[:-1] + b"X")
+        with self.assertRaises(VariantError) as ctx:
+            self.build(
+                anchor_from="1.4.130", variants=("full",), dry_run=True,
+                pending_overlay_manifest=manifest,
+                pending_overlay_store=clean_store.resolve(),
+                pending_overlay_pending=clean_pending.resolve())
+        self.assertIn("必须等于 manifest", str(ctx.exception))
+
+
+class PendingOverlayGuardTest(VariantFixture):
+    def assert_overlay_rejected(self, manifest: Path, message: str):
+        with self.assertRaises(VariantError) as ctx:
+            self.build(
+                anchor_from="1.4.130", variants=("full",), dry_run=True,
+                pending_overlay_manifest=manifest)
+        self.assertIn(message.lower(), str(ctx.exception).lower())
+
+    def test_source_chain_tail_must_match_replayed_chain(self):
+        manifest = self.overlay_manifest([
+            ("common", OVERLAY_ASSET, PNG, "png"),
+        ], source_tail="1.4.999")
+        with self.assertRaises(VariantError) as ctx:
+            self.build(
+                anchor_from="1.4.130", variants=("full",), dry_run=True,
+                pending_overlay_manifest=manifest)
+        self.assertIn("sourceChainTail", str(ctx.exception))
+
+    def test_store_or_pending_override_cannot_bypass_manifest(self):
+        with self.assertRaises(VariantError) as ctx:
+            self.build(
+                anchor_from="1.4.130", variants=("full",), dry_run=True,
+                pending_overlay_store=Path(self._tmp.name),
+                pending_overlay_pending=Path(self._tmp.name) / "pending.json")
+        self.assertIn("manifest", str(ctx.exception).lower())
+
+    def test_explicit_store_override_must_be_absolute(self):
+        manifest = self.overlay_manifest([
+            ("common", OVERLAY_ASSET, PNG, "png"),
+        ])
+        with self.assertRaises(VariantError) as ctx:
+            self.build(
+                anchor_from="1.4.130", variants=("full",), dry_run=True,
+                pending_overlay_manifest=manifest,
+                pending_overlay_store=Path("relative-store"))
+        self.assertIn("绝对", str(ctx.exception))
+
+    def test_manifest_entry_requires_non_empty_owner(self):
+        manifest = self.overlay_manifest([
+            ("common", OVERLAY_ASSET, PNG, "png"),
+        ])
+        payload = json.loads(manifest.read_text(encoding="utf-8"))
+        payload["entries"][0]["owner"] = ""
+        self.rewrite_manifest(manifest, payload)
+        self.assert_overlay_rejected(manifest, "owner")
+
+    def test_tmp_path_segment_is_forbidden(self):
+        manifest = self.overlay_manifest([
+            ("common", "dynamic/tmp/plate.png", PNG, "png"),
+        ])
+        self.assert_overlay_rejected(manifest, "tmp")
+
+    def test_pending_sequence_drift_fails_closed(self):
+        manifest = self.overlay_manifest([
+            ("common", OVERLAY_ASSET, PNG, "png"),
+        ])
+        (manifest.parent / "sync_pending.json").write_text(
+            json.dumps([quest.hashed_rel(OVERLAY_ASSET), "aa/" + "0" * 38]),
+            encoding="utf-8")
+        with self.assertRaises(VariantError) as ctx:
+            self.build(
+                anchor_from="1.4.130", variants=("full",), dry_run=True,
+                pending_overlay_manifest=manifest)
+        self.assertIn("pending", str(ctx.exception).lower())
+
+    def test_pending_sequence_mismatch_fails_even_with_matching_file_sha(self):
+        manifest = self.overlay_manifest([
+            ("common", OVERLAY_ASSET, PNG, "png"),
+        ])
+        pending = manifest.parent / "sync_pending.json"
+        sequence = [quest.hashed_rel(OVERLAY_ASSET), "aa/" + "0" * 38]
+        pending_bytes = json.dumps(sequence, separators=(",", ":")).encode("utf-8")
+        pending.write_bytes(pending_bytes)
+        payload = json.loads(manifest.read_text(encoding="utf-8"))
+        payload["pendingSha256"] = hashlib.sha256(pending_bytes).hexdigest()
+        self.rewrite_manifest(manifest, payload)
+        self.assert_overlay_rejected(manifest, "有序序列")
+
+    def test_live_payload_sha_drift_fails_closed(self):
+        manifest = self.overlay_manifest([
+            ("common", OVERLAY_ASSET, PNG, "png"),
+        ])
+        target = manifest.parent / "store" / quest.hashed_rel(OVERLAY_ASSET)
+        target.write_bytes(PNG[:-1] + b"X")
+        self.assert_overlay_rejected(manifest, "sha-256")
+
+    def test_logical_path_must_hash_to_declared_rel(self):
+        manifest = self.overlay_manifest([
+            ("common", OVERLAY_ASSET, PNG, "png"),
+        ])
+        payload = json.loads(manifest.read_text(encoding="utf-8"))
+        wrong_rel = "aa/" + "0" * 38
+        payload["entries"][0]["hashedRel"] = wrong_rel
+        payload["pendingSequence"] = [wrong_rel]
+        pending_bytes = (json.dumps([wrong_rel], separators=(",", ":")) + "\n").encode()
+        (manifest.parent / "sync_pending.json").write_bytes(pending_bytes)
+        payload["pendingSha256"] = hashlib.sha256(pending_bytes).hexdigest()
+        target = manifest.parent / "store" / wrong_rel
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(PNG)
+        self.rewrite_manifest(manifest, payload)
+        self.assert_overlay_rejected(manifest, "logicalpath")
+
+    def test_invalid_root_fails_closed(self):
+        manifest = self.overlay_manifest([
+            ("common", OVERLAY_ASSET, PNG, "png"),
+        ])
+        payload = json.loads(manifest.read_text(encoding="utf-8"))
+        rel = payload["entries"][0]["hashedRel"]
+        payload["entries"][0]["root"] = "ios"
+        payload["pendingSequence"] = [f"ios:{rel}"]
+        pending_bytes = (json.dumps(payload["pendingSequence"], separators=(",", ":"))
+                         + "\n").encode()
+        (manifest.parent / "sync_pending.json").write_bytes(pending_bytes)
+        payload["pendingSha256"] = hashlib.sha256(pending_bytes).hexdigest()
+        self.rewrite_manifest(manifest, payload)
+        self.assert_overlay_rejected(manifest, "root")
+
+    def test_forbidden_env_and_bot_paths_fail_closed(self):
+        for logical in (".env", ".database/player.sqlite", ".database.sqlite",
+                        "dynamic/foo.png.bak-1", "dynamic/bots/seed.png"):
+            with self.subTest(logical=logical):
+                manifest = self.overlay_manifest([
+                    ("common", logical, PNG, "png"),
+                ])
+                self.assert_overlay_rejected(manifest, "禁入")
+
+    def test_duplicate_entries_fail_closed(self):
+        manifest = self.overlay_manifest([
+            ("common", OVERLAY_ASSET, PNG, "png"),
+            ("common", OVERLAY_ASSET, PNG, "png"),
+        ])
+        self.assert_overlay_rejected(manifest, "重复")
+
+    def test_unknown_codec_fails_closed(self):
+        manifest = self.overlay_manifest([
+            ("common", OVERLAY_ASSET, PNG, "mystery-codec"),
+        ])
+        self.assert_overlay_rejected(manifest, "codec")
+
+    def test_non_string_codec_fails_closed_as_contract_error(self):
+        manifest = self.overlay_manifest([
+            ("common", OVERLAY_ASSET, PNG, "png"),
+        ])
+        payload = json.loads(manifest.read_text(encoding="utf-8"))
+        payload["entries"][0]["codec"] = ["png"]
+        self.rewrite_manifest(manifest, payload)
+        self.assert_overlay_rejected(manifest, "codec")
+
+    def test_pending_path_without_overlay_entry_fails_closed(self):
+        manifest = self.overlay_manifest([
+            ("common", OVERLAY_ASSET, PNG, "png"),
+        ])
+        payload = json.loads(manifest.read_text(encoding="utf-8"))
+        payload["pendingSequence"].append("aa/" + "0" * 38)
+        pending_bytes = (json.dumps(payload["pendingSequence"], separators=(",", ":"))
+                         + "\n").encode()
+        (manifest.parent / "sync_pending.json").write_bytes(pending_bytes)
+        payload["pendingSha256"] = hashlib.sha256(pending_bytes).hexdigest()
+        self.rewrite_manifest(manifest, payload)
+        self.assert_overlay_rejected(manifest, "未知")
+
+    def test_manifest_digest_drift_fails_closed(self):
+        manifest = self.overlay_manifest([
+            ("common", OVERLAY_ASSET, PNG, "png"),
+        ])
+        payload = json.loads(manifest.read_text(encoding="utf-8"))
+        payload["overlayDigest"] = "0" * 64
+        self.rewrite_manifest(manifest, payload, refresh_digest=False)
+        self.assert_overlay_rejected(manifest, "overlaydigest")
+
+    def test_relative_manifest_paths_cannot_traverse_parent(self):
+        manifest = self.overlay_manifest([
+            ("common", OVERLAY_ASSET, PNG, "png"),
+        ])
+        outside = manifest.parent.parent / "outside-store"
+        source = manifest.parent / "store"
+        source.replace(outside)
+        payload = json.loads(manifest.read_text(encoding="utf-8"))
+        payload["storePath"] = "../outside-store"
+        self.rewrite_manifest(manifest, payload)
+        self.assert_overlay_rejected(manifest, "相对路径")
+
+    def test_output_cannot_overlap_manifest_live_store(self):
+        manifest = self.overlay_manifest([
+            ("common", OVERLAY_ASSET, PNG, "png"),
+        ])
+        with self.assertRaises(VariantError) as ctx:
+            self.build(
+                anchor_from="1.4.130", variants=("full",),
+                pending_overlay_manifest=manifest,
+                out_dir=manifest.parent / "store")
+        self.assertIn("输入路径", str(ctx.exception))
 
 
 class BuildTest(VariantFixture):
@@ -197,9 +599,12 @@ class BuildTest(VariantFixture):
         self.assertFalse((self.out / "wfshare-1.4.130-to-1.4.131-full").exists())
 
     def test_plan_writes_nothing(self):
+        cache_dir = policy_mod.CACHE_DIR
+        self.assertFalse(cache_dir.exists())
         report = self.build(anchor_from="1.4.130", dry_run=True)
         self.assertTrue(report["dry_run"])
         self.assertFalse(self.out.exists())
+        self.assertFalse(cache_dir.exists())
 
     def test_default_anchor_spans_our_own_edge(self):
         report = self.build()
@@ -225,6 +630,13 @@ class GuardTest(VariantFixture):
         with self.assertRaises(VariantError):
             self.build(anchor_from="1.4.130",
                        out_dir=self.repo / "assets" / "asset-patch" / "active")
+
+    def test_refuses_writing_into_database_or_env_paths(self):
+        for forbidden in (".database", ".env"):
+            with self.subTest(forbidden=forbidden), self.assertRaises(VariantError):
+                self.build(
+                    anchor_from="1.4.130", dry_run=True,
+                    out_dir=self.repo / forbidden / "share-output")
 
     def test_refuses_backwards_anchor(self):
         with self.assertRaises(VariantError):
@@ -257,7 +669,7 @@ class GuardTest(VariantFixture):
         with self.assertRaises(policy_mod.BaselineUnavailable):
             build(empty, self.repo, tag="t0729", out_dir=self.out,
                   variants=("content-only",), expect_content_rows=EXPECT,
-                  foreign_lineage=True, anchor_from="1.4.130")
+                  foreign_lineage=True, anchor_from="1.4.130", client_profile="official")
 
 
 class SplitTest(VariantFixture):

@@ -24,26 +24,28 @@
 注意:cloneSave 接口会把账号默认存档切到新克隆,本工具默认随后切回 --source;
 开一局 run = admin 后台把默认存档切到肉鸽档 → 重启游戏。
 """
+
+from wf.paths import root_path
 import argparse
 import csv
 import io
 import json
 import os
 import random
-import shutil
 import sqlite3
 import subprocess
 import sys
 import tempfile
 import urllib.request
-from collections.abc import Mapping
 from pathlib import Path
 
 import wf_server_auth
-import wf_database_paths
-import wf_device_paths
+import wf_mod_tool as core
+from wf.config import database as wf_database_paths, device as wf_device_paths
+from collections.abc import Mapping
+import shutil
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TOOL_DIR = Path(__file__).resolve().parent
 
 
 def _explicit_path(environment: Mapping[str, str], key: str) -> Path | None:
@@ -60,7 +62,12 @@ def _explicit_path(environment: Mapping[str, str], key: str) -> Path | None:
 
 def resolve_database_path(
         environment: Mapping[str, str] = os.environ,
-        *, server_root: Path | str = ROOT) -> Path:
+        *, server_root: Path | str | None = None) -> Path:
+    if server_root is None:
+        # The shared resolver ignores this base for an explicit database directory.
+        # Only an absent database override requires a configured server checkout.
+        server_root = (environment["WF_DATABASE_DIR"]
+                       if "WF_DATABASE_DIR" in environment else core.resolve_server_dir())
     return wf_database_paths.resolve_database_path(
         environment,
         server_root=server_root,
@@ -74,7 +81,8 @@ def resolve_mumu_manager(
     return wf_device_paths.find_mumu_manager(environment, finder=finder)
 
 
-DB_PATH = os.fspath(resolve_database_path())
+DB_PATH: str | None = None  # Optional explicit override; normal resolution is lazy.
+MUMU = ('${WF_ROOT}\\MuMuPlayer\\nx_main\\MuMuManager.exe'.replace("${WF_ROOT}", str(root_path())))
 WF_PACKAGE = "com.leiting.wf"
 WF_ACTIVITY = "com.leiting.wf/com.leiting.sdk.activity.PrivacyActivity"
 RUSH_QUEST_LOGICAL = "master/quest/event/rush_event_quest.orderedmap"
@@ -96,7 +104,7 @@ def api_post(server: str, path: str, query: str = "", body: dict | None = None) 
     headers = {
         "Accept": "application/json",
         "Content-Type": "application/json",
-        **wf_server_auth.admin_bearer_headers(Path(ROOT)),
+        **wf_server_auth.admin_bearer_headers(core.resolve_server_dir()),
     }
     req = urllib.request.Request(url, data=data, method="POST", headers=headers)
     with urllib.request.urlopen(req, timeout=15) as resp:
@@ -104,7 +112,7 @@ def api_post(server: str, path: str, query: str = "", body: dict | None = None) 
 
 
 def load_soul_ids() -> list[int]:
-    soul_json = os.path.join(ROOT, "assets", "soul_item_ids.json")
+    soul_json = core.resolve_server_dir() / "assets" / "soul_item_ids.json"
     try:
         with open(soul_json, encoding="utf-8") as fh:
             return [int(x) for x in json.load(fh)]
@@ -127,7 +135,7 @@ def _publish_command(logicals: tuple[str, ...], *, list_only: bool = False) \
     if not logicals or logicals[-1] != RUSH_QUEST_LOGICAL:
         raise ValueError("无尽层发布闭包必须 dependency-first 且 rush quest 最后")
     command = [
-        sys.executable, os.path.join(ROOT, "mod-tools", "wf_publish.py"),
+        sys.executable, str(TOOL_DIR / "wf_publish.py"),
         "--tables", ",".join(logicals),
     ]
     if list_only:
@@ -155,8 +163,11 @@ def _restore_exact_bytes(path: Path, original: bytes) -> None:
 def reroll_endless_field(event: str, quest_no: str, apply: bool) -> None:
     """把 700099/99 投影到正式构建器筛后的原生 boss bundle。"""
     validate_endless_target(event, quest_no)
+    if apply:
+        server_root = core.resolve_server_dir()
+        core.resolve_cdn_root()
 
-    sys.path.insert(0, os.path.join(ROOT, "mod-tools"))
+    pass  # Imports resolve from this checkout/package, not external source copies.
     import wf_quest_lib as q
     import wf_rogue_build as rb
 
@@ -211,9 +222,10 @@ def reroll_endless_field(event: str, quest_no: str, apply: bool) -> None:
         raise RuntimeError("rush quest 拟写字节 build→parse 不等价")
 
     publish_env = dict(os.environ)
-    publish_env["WF_TARGET_STORE"] = str(quest_path.parent.parent.resolve())
+    publish_env["WF_STORE"] = str(quest_path.parent.parent.resolve())
+    publish_env.pop("WF_TARGET_STORE", None)
     preflight = subprocess.run(
-        _publish_command(publish_items, list_only=True), cwd=ROOT,
+        _publish_command(publish_items, list_only=True), cwd=server_root,
         env=publish_env)
     print(f"[PREFLIGHT] wf_publish --list 退出码 {preflight.returncode}")
     if preflight.returncode != 0:
@@ -226,7 +238,7 @@ def reroll_endless_field(event: str, quest_no: str, apply: bool) -> None:
             raise RuntimeError(f"rush quest 写后复读与拟写字节不一致:{out}")
         print(f"[OK] 已写入 {out}")
         published = subprocess.run(
-            _publish_command(publish_items), cwd=ROOT, env=publish_env)
+            _publish_command(publish_items), cwd=server_root, env=publish_env)
         print(f"[PUBLISH] wf_publish 退出码 {published.returncode}")
         if published.returncode != 0:
             raise RuntimeError(
@@ -285,7 +297,7 @@ def main() -> int:
     ap.add_argument("--quest-no", default=ENDLESS_QUEST_NO,
                     help="无尽 quest 在活动内的序号键(--random-boss 固定 99)")
     ap.add_argument("--name", default="肉鸽空武器", help="新存档名")
-    ap.add_argument("--server", default=wf_server_auth.resolve_server_url(Path(ROOT)))
+    ap.add_argument("--server")
     ap.add_argument("--apply", action="store_true", help="真执行(默认 dry-run)")
     ap.add_argument("--keep-active", action="store_true", help="默认存档留在新档")
     args = ap.parse_args()
@@ -293,11 +305,19 @@ def main() -> int:
     if args.random_boss:
         validate_endless_target(args.event, args.quest_no)
 
+    if args.reset is None and args.source is None:
+        ap.error("--source 或 --reset 必须给一个")
+    server_root = core.resolve_server_dir()
+    database_path = DB_PATH or os.fspath(resolve_database_path(server_root=server_root))
+    args.server = args.server or wf_server_auth.resolve_server_url(server_root)
+    if args.random_boss and args.apply:
+        core.resolve_cdn_root()
+
     if args.reset is not None:
         if args.restart_game and args.apply:
             print("[GAME] force-stop …")
             mumu_sh(f"am force-stop {WF_PACKAGE}")
-        db = sqlite3.connect(DB_PATH, timeout=15)
+        db = sqlite3.connect(database_path, timeout=15)
         db.execute("PRAGMA busy_timeout=15000")
         try:
             code = reset_run(db, args.reset, args.apply)
@@ -310,10 +330,7 @@ def main() -> int:
             mumu_sh(f"am start -n {WF_ACTIVITY}")
         return code
 
-    if args.source is None:
-        ap.error("--source 或 --reset 必须给一个")
-
-    db = sqlite3.connect(DB_PATH, timeout=15)
+    db = sqlite3.connect(database_path, timeout=15)
     db.execute("PRAGMA busy_timeout=15000")
     try:
         row = db.execute(

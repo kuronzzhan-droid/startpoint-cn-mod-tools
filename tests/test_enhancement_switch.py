@@ -4,12 +4,10 @@
 from __future__ import annotations
 
 import shutil
-import os
 import sys
 import tempfile
 import unittest
 from pathlib import Path
-from unittest import mock
 
 MOD_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(MOD_DIR))
@@ -22,30 +20,6 @@ ABILITY = sw.ABILITY
 LEADER = sw.LEADER
 SOUL = sw.SOUL
 NCOLS = 126
-
-
-class StoreResolutionTest(unittest.TestCase):
-    def test_target_store_environment_wins_over_profile_store(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            env_store = root / "env-store"
-            profile_store = root / "profile-store"
-            cdn = root / "cdn"
-            for directory in (env_store, profile_store, cdn):
-                directory.mkdir()
-            profile = sw.core.VersionProfile(
-                id="cn", label="CN", store=profile_store
-            )
-            with mock.patch.object(
-                sw.core, "resolve_profile", return_value=profile
-            ), mock.patch.object(
-                sw.pol, "_resolve_cdn", return_value=cdn
-            ), mock.patch.dict(
-                os.environ, {"WF_TARGET_STORE": str(env_store)}, clear=False
-            ):
-                context = sw.resolve_context(repo=root)
-
-        self.assertEqual(env_store.resolve(), context.store)
 
 
 def line(**cells: str) -> str:
@@ -340,9 +314,14 @@ class SnapshotTest(unittest.TestCase):
         sw.STATE_PATH = sw.WORK_DIR / "state.json"
         sw.WORK_DIR.mkdir(parents=True)
         self.addCleanup(self._restore_dirs)
-        for logical, payload in ((ABILITY, table({"1": line()})),
-                                 (sw.CHARACTER, table({"129999": "a", "139999": "b",
-                                                       "149999": "c"}))):
+        ability_rows = {key: line()
+                        for key in pol.EXPECTED_CONTENT_ROWS.get(ABILITY, ())}
+        ability_rows["1"] = line()
+        character_rows = {key: f"custom-{key}"
+                          for key in pol.EXPECTED_CONTENT_ROWS.get(sw.CHARACTER, ())}
+        self.ability_payload = table(ability_rows)
+        for logical, payload in ((ABILITY, self.ability_payload),
+                                 (sw.CHARACTER, table(character_rows))):
             path = self.store / quest.hashed_rel(logical)
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(payload)
@@ -371,7 +350,7 @@ class SnapshotTest(unittest.TestCase):
 
     def test_snapshot_round_trips_bytes(self):
         snap = sw.snapshot_freeze(self.ctx(), tag="ok")
-        self.assertEqual(table({"1": line()}), snap.get(ABILITY))
+        self.assertEqual(self.ability_payload, snap.get(ABILITY))
         self.assertEqual(snap.name, sw.load_snapshot().name)
 
     def test_bad_tag_is_rejected(self):

@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "id": "abyss-weapons-v3.6-thunder-light-rework",
+  "status": "pending",
+  "source": "mod-tools/wf_rogue_rewards.py",
+  "source_revision": "539c23b51f00231cf83ea96239ec5df7705e8c08",
+  "semantic_sha256": "e9d5edae65099976bcdc191bd65914d8fe69bef5568e4816b355b5e74a30aafc",
+  "artifact": null,
+  "source_revision_note": "Parent revision at staging of the 2026-09-28 thunder/light rework (8000106: PF damage +300%, party attack +300%, 5x thunder damage to all enemies on Power Flip, skill-invoke 629 PF payload; 8000110: 245 max skill gauge 50%, Fever-gated party attack/direct +250% during rows). Re-pin to the real parent if HEAD moves before commit. Semantic hash describes the current full-strength generator output (equipment, equipment_status, unsplit ability_soul) only; the awakening split, the 629 DSL program and its custom_ability_string key are not covered."
+}

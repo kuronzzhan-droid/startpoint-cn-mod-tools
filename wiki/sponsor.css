@@ -1,0 +1,14 @@
+.site-sponsor{margin:24px auto 12px;max-width:760px;min-width:0}
+.site-sponsor[hidden]{display:none!important}
+.wiki-sponsor-card{padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);overflow:hidden}
+.wiki-sponsor-label{display:block;margin-bottom:8px;color:var(--muted);font-size:11px;letter-spacing:.08em}
+.wiki-sponsor-content{display:flex;align-items:center;gap:18px;min-height:82px;color:inherit;text-decoration:none}
+.wiki-sponsor-content:focus-visible{outline:3px solid var(--accent);outline-offset:5px;border-radius:5px}
+.wiki-sponsor-media{flex:0 0 180px;aspect-ratio:2/1;overflow:hidden;border-radius:8px;background:var(--soft)}
+.wiki-sponsor-media img{display:block;width:100%;height:100%;object-fit:contain}
+.wiki-sponsor-copy{min-width:0;flex:1;overflow-wrap:anywhere}.wiki-sponsor-copy h2{font-size:17px;line-height:1.45;margin:0 0 5px}.wiki-sponsor-copy p{font-size:13px;line-height:1.6;margin:0 0 7px;color:var(--muted)}
+.wiki-sponsor-action{font-size:12px;color:var(--accent);font-weight:700}
+.sponsor-editor{margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.sponsor-editor>summary{font-weight:700;cursor:pointer;min-height:30px;line-height:30px}.sponsor-editor form{margin-top:12px;max-width:760px}.sponsor-editor .admin-field{margin-bottom:10px}.sponsor-editor input[type="url"],.sponsor-editor input[type="text"],.sponsor-editor textarea{max-width:100%;width:100%;box-sizing:border-box}
+.sponsor-editor input[type="checkbox"]{width:18px;height:18px;vertical-align:middle}.sponsor-editor-help{color:var(--muted);font-size:12px;line-height:1.7}.sponsor-editor-preview{margin:12px 0}.sponsor-editor-preview:empty{display:none}
+@media(max-width:640px){.site-sponsor{margin-top:18px}.wiki-sponsor-card{padding:10px 12px}.wiki-sponsor-content{gap:12px;min-height:72px}.wiki-sponsor-media{flex-basis:96px;aspect-ratio:1}.wiki-sponsor-copy h2{font-size:14px}.wiki-sponsor-copy p{font-size:12px}}

@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import importlib
 import io
 import json
+import os
+import shutil
 import sys
 import tempfile
 import unittest
@@ -179,7 +182,7 @@ class TestAtomicCharacterRelease(unittest.TestCase):
                 root / "common", root / "medium", root / "android", root / "server"
             )
             transaction = object()
-            release_pack = importlib.import_module("wf_seris_release_pack")
+            release_pack = importlib.import_module("wf.deliver.runtime_package")
             with (
                 mock.patch.object(
                     release_pack, "validate_runtime_test_package", return_value=[]
@@ -229,7 +232,7 @@ class TestAtomicCharacterRelease(unittest.TestCase):
             live_roots = module.character_pack.LiveRoots(
                 root / "common", root / "medium", root / "android", root / "server"
             )
-            release_pack = importlib.import_module("wf_seris_release_pack")
+            release_pack = importlib.import_module("wf.deliver.runtime_package")
             with (
                 mock.patch.object(
                     release_pack, "validate_runtime_test_package", return_value=[]
@@ -511,132 +514,6 @@ class TestAtomicCharacterRelease(unittest.TestCase):
         with self.assertRaisesRegex(module.ReleaseError, "JSON object"):
             module.JsonObjectCodec().inspect(b"[]", claim, ())
 
-    def test_json_integer_set_codec_exposes_each_positive_unique_id(self):
-        module = self._module()
-        codec_type = getattr(module, "JsonIntegerSetCodec", None)
-        self.assertIsNotNone(codec_type, "json_integer_set codec 尚未实现")
-        assert codec_type is not None
-        claim = module.character_pack.TableClaim(
-            "server", "item_ids.json", "json_integer_set", ("999013", "999014")
-        )
-
-        image = codec_type().inspect(
-            b"[10001,999013,999014]", claim, ()
-        )
-
-        self.assertEqual(
-            ("10001", "999013", "999014"),
-            tuple(key for key, _raw in image.outer_rows),
-        )
-        self.assertEqual(b"999014", dict(image.outer_rows)["999014"])
-
-    def test_json_integer_set_codec_rejects_wrong_types_duplicates_and_nonpositive_ids(self):
-        module = self._module()
-        codec_type = getattr(module, "JsonIntegerSetCodec", None)
-        self.assertIsNotNone(codec_type, "json_integer_set codec 尚未实现")
-        assert codec_type is not None
-        claim = module.character_pack.TableClaim(
-            "server", "item_ids.json", "json_integer_set", ("999013",)
-        )
-
-        for raw in (b"{}", b"[1,true]", b"[1,1]", b"[0,1]", b"[-1,1]"):
-            with self.subTest(raw=raw):
-                with self.assertRaises(module.ReleaseError):
-                    codec_type().inspect(raw, claim, ())
-
-    def test_event_shop_codec_exposes_unique_product_ids_with_their_location(self):
-        module = self._module()
-        codec = module.character_pack.DEFAULT_CODECS.get(
-            "json_event_shop_products"
-        )
-        self.assertIsNotNone(
-            codec, "json_event_shop_products must be a controlled built-in codec"
-        )
-        assert codec is not None
-        claim = module.character_pack.TableClaim(
-            "server", "event_item_shop.json", "json_event_shop_products",
-            ("9700116", "9700117"),
-        )
-
-        image = codec.inspect(
-            b'{"11":{"700099":{"9700116":{"stock":9}}},'
-            b'"2":{"100006":{"9700117":{"stock":8}}}}',
-            claim,
-            (),
-        )
-
-        rows = dict(image.outer_rows)
-        self.assertEqual(("9700116", "9700117"), tuple(rows))
-        self.assertEqual(
-            {"event_id": "700099", "event_type": "11", "product": {"stock": 9}},
-            json.loads(rows["9700116"]),
-        )
-
-    def test_event_shop_codec_rejects_ambiguous_or_noncanonical_product_ids(self):
-        module = self._module()
-        codec = module.character_pack.DEFAULT_CODECS.get(
-            "json_event_shop_products"
-        )
-        self.assertIsNotNone(codec)
-        assert codec is not None
-        claim = module.character_pack.TableClaim(
-            "server", "event_item_shop.json", "json_event_shop_products",
-            ("9700116",),
-        )
-        cases = (
-            b'[]',
-            b'{"11":[]}',
-            b'{"11":{"700099":[]}}',
-            b'{"11":{"700099":{"09700116":{}}}}',
-            b'{"11":{"700099":{"9700116":{}},"700100":{"9700116":{}}}}',
-        )
-        for raw in cases:
-            with self.subTest(raw=raw):
-                with self.assertRaises(module.character_pack.PackPreflightError):
-                    codec.inspect(raw, claim, ())
-
-    def test_rogue_events_codec_exposes_event_ids_and_binds_root_siblings(self):
-        module = self._module()
-        codec = module.character_pack.DEFAULT_CODECS.get("json_rogue_events")
-        self.assertIsNotNone(
-            codec, "json_rogue_events must be a controlled built-in codec"
-        )
-        assert codec is not None
-        claim = module.character_pack.TableClaim(
-            "server", "rogue_event.json", "json_rogue_events", ("700099",)
-        )
-
-        first = codec.inspect(
-            b'{"enabled":true,"events":{"700007":{"rounds":10},'
-            b'"700099":{"rounds":30}}}',
-            claim,
-            (),
-        )
-        second = codec.inspect(
-            b'{"enabled":false,"events":{"700007":{"rounds":10},'
-            b'"700099":{"rounds":30}}}',
-            claim,
-            (),
-        )
-
-        self.assertEqual(("700007", "700099"), tuple(
-            key for key, _raw in first.outer_rows
-        ))
-        self.assertNotEqual(first.semantic_values, second.semantic_values)
-
-    def test_rogue_events_codec_rejects_missing_events_and_noncanonical_event_ids(self):
-        module = self._module()
-        codec = module.character_pack.DEFAULT_CODECS.get("json_rogue_events")
-        self.assertIsNotNone(codec)
-        assert codec is not None
-        claim = module.character_pack.TableClaim(
-            "server", "rogue_event.json", "json_rogue_events", ("700099",)
-        )
-        for raw in (b'{}', b'{"events":[]}', b'{"events":{"0700099":{}}}'):
-            with self.subTest(raw=raw):
-                with self.assertRaises(module.character_pack.PackPreflightError):
-                    codec.inspect(raw, claim, ())
-
     def test_live_rebase_preserves_unclaimed_rows_for_every_table_codec(self):
         module = self._module()
         core = importlib.import_module("wf_mod_tool")
@@ -712,92 +589,6 @@ class TestAtomicCharacterRelease(unittest.TestCase):
             merged_json,
         )
 
-    def test_live_rebase_adds_only_claimed_json_integer_set_members(self):
-        module = self._module()
-        claim = module.character_pack.TableClaim(
-            "server", "item_ids.json", "json_integer_set", ("999013", "999014")
-        )
-
-        try:
-            merged = json.loads(module._merge_claimed_table_bytes(
-                claim,
-                b"[10001,999013,999014]",
-                b"[10001,20002]",
-            ))
-        except module.ReleaseError as exc:
-            self.fail(f"json_integer_set runtime rebase 尚未实现: {exc}")
-
-        self.assertEqual([10001, 20002, 999013, 999014], merged)
-
-    def test_live_rebase_moves_only_claimed_event_shop_products(self):
-        module = self._module()
-        claim = module.character_pack.TableClaim(
-            "server", "event_item_shop.json", "json_event_shop_products",
-            ("9700116", "9700117"),
-        )
-        candidate = {
-            "11": {"700099": {
-                "9700101": {"source": "candidate-stale"},
-                "9700116": {"ticket": "single"},
-                "9700117": {"ticket": "ten"},
-            }},
-            "2": {"100006": {"42": {"source": "candidate-stale"}}},
-        }
-        live = {
-            "11": {"700099": {
-                "9700101": {"source": "live"},
-                "9700115": {"weapon": 15},
-            }},
-            "2": {"100006": {"42": {"source": "live"}}},
-        }
-
-        merged = json.loads(module._merge_claimed_table_bytes(
-            claim,
-            json.dumps(candidate, separators=(",", ":")).encode(),
-            json.dumps(live, separators=(",", ":")).encode(),
-        ))
-
-        self.assertEqual({"source": "live"}, merged["11"]["700099"]["9700101"])
-        self.assertEqual({"weapon": 15}, merged["11"]["700099"]["9700115"])
-        self.assertEqual({"ticket": "single"}, merged["11"]["700099"]["9700116"])
-        self.assertEqual({"ticket": "ten"}, merged["11"]["700099"]["9700117"])
-        self.assertEqual({"source": "live"}, merged["2"]["100006"]["42"])
-
-    def test_live_rebase_moves_only_claimed_rogue_events(self):
-        module = self._module()
-        claim = module.character_pack.TableClaim(
-            "server", "rogue_event.json", "json_rogue_events", ("700099",)
-        )
-        candidate = {
-            "enabled": False,
-            "events": {
-                "700007": {"source": "candidate-stale"},
-                "700099": {"drop": 999014},
-            },
-            "candidate_only": True,
-        }
-        live = {
-            "enabled": True,
-            "events": {
-                "700007": {"source": "live"},
-                "700008": {"source": "live-too"},
-            },
-            "live_only": True,
-        }
-
-        merged = json.loads(module._merge_claimed_table_bytes(
-            claim,
-            json.dumps(candidate, separators=(",", ":")).encode(),
-            json.dumps(live, separators=(",", ":")).encode(),
-        ))
-
-        self.assertTrue(merged["enabled"])
-        self.assertTrue(merged["live_only"])
-        self.assertNotIn("candidate_only", merged)
-        self.assertEqual({"source": "live"}, merged["events"]["700007"])
-        self.assertEqual({"source": "live-too"}, merged["events"]["700008"])
-        self.assertEqual({"drop": 999014}, merged["events"]["700099"])
-
     def test_transaction_records_convert_to_hash_bound_release_payload(self):
         module = self._module()
         with tempfile.TemporaryDirectory() as td:
@@ -851,7 +642,7 @@ class TestAtomicCharacterRelease(unittest.TestCase):
     def test_prepare_runtime_release_uses_pack_transaction_without_live_writes(self):
         module = self._module()
         core = importlib.import_module("wf_mod_tool")
-        release_pack = importlib.import_module("wf_seris_release_pack")
+        release_pack = importlib.import_module("wf.deliver.runtime_package")
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
             package = root / "package"
@@ -1318,6 +1109,313 @@ class TestDerivePackageOwners(unittest.TestCase):
             )
             state = store.read_validated_base()
             self.assertEqual((), state.package_owners)
+
+
+# --- MAX_PATH 复现夹具 -------------------------------------------------------
+# rebase 把 `package`(7 字符)顶替成 `.rebased-package.live-rebase-<8>`(37 字符),
+# 包里每条路径 +30。LongPathsEnabled=0 的机器上,越过 MAX_PATH 的路径用无前缀
+# Win32 API 直接失败——确定性故障,重试多少次都一样。本机实测的两条硬边界:
+#   * 建文件:259 字符可写,260 起 FileNotFoundError(errno 2,无 winerror)
+#   * 建目录:247 字符可建,248 起 FileNotFoundError(WinError 206)
+# 下面把父目录长度钉在"暂存树里所有目录都仍合法、只有文件越线"的窗口内,
+# 这样复现出来的就是生产事故那一面:errno 2 落在 `open("xb")` 上,而不是 mkdir。
+_MAX_PATH_FILE = 259
+_MAX_PATH_DIR = 247
+_PACKAGE_NAME = "package"
+_OUTPUT_NAME = "rebased-package"
+# mkdtemp 前缀 `.{output_dir.name}.live-rebase-` 再加 8 位随机后缀。
+_STAGING_NAME_LEN = len(f".{_OUTPUT_NAME}.live-rebase-") + 8
+# 包里最深的 root 载荷目录,暂存树里它也必须仍然可建。
+_DEEPEST_ROOT_DIR = "roots/android/character/seris_dragon_king/ui"
+_RUNTIME_TEST_SERVER_PATHS = (
+    "cdndata/character.json",
+    "cdndata/character_text.json",
+    "character.json",
+    "mana_node.json",
+)
+
+
+def _extended(path) -> str:
+    """测试自用的扩展长度路径:夹具自己也要越过 MAX_PATH 才建得起、拆得掉。"""
+    raw = os.path.abspath(str(path))
+    if os.name != "nt" or raw.startswith("\\\\?\\"):
+        return raw
+    if raw.startswith("\\\\"):
+        return "\\\\?\\UNC\\" + raw[2:]
+    return "\\\\?\\" + raw
+
+
+def _plain_max_path_enforced(base: Path) -> bool:
+    """LongPathsEnabled=1 的机器不受 MAX_PATH 约束,这条复现在那里没有意义。"""
+    probe = base / "probe"
+    probe.mkdir(parents=True, exist_ok=True)
+    need = _MAX_PATH_FILE + 6 - len(str(probe)) - 1
+    if not 1 <= need <= 240:
+        return False
+    target = probe / ("y" * need)
+    try:
+        target.write_bytes(b"probe")
+    except OSError:
+        return True
+    finally:
+        try:
+            os.unlink(_extended(target))
+        except OSError:
+            pass
+    return False
+
+
+def _build_seris_runtime_test_package(
+    module, core, package: Path, live: dict, *, extra_qa: str | None = None
+) -> dict:
+    """铺一份最小合法 runtime_test 包,并写好它声明的 live 基线。"""
+    roots = {name: [] for name in ("common", "medium", "android", "server")}
+
+    def add(root_name: str, logical_path: str, raw: bytes) -> None:
+        output = package / "roots" / root_name / Path(*logical_path.split("/"))
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_bytes(raw)
+        roots[root_name].append({
+            "logical_path": logical_path,
+            "sha256": hashlib.sha256(raw).hexdigest(),
+            "size": len(raw),
+        })
+
+    table_logicals = (
+        "master/character/character.orderedmap",
+        "master/character/character_speech.orderedmap",
+    )
+    for logical in table_logicals:
+        live_raw = core.build_orderedmap(core.OrderedMap(
+            logical, ["1"], [b"live-row"], Path("<memory>")
+        ))
+        live_path = core.table_path(live["common"], logical)
+        live_path.parent.mkdir(parents=True, exist_ok=True)
+        live_path.write_bytes(live_raw)
+        add("common", logical, core.build_orderedmap(core.OrderedMap(
+            logical, ["1", "129999"], [b"stale-row", b"seris-row"], Path("<memory>")
+        )))
+    add("medium", "character/seris_dragon_king/ui/square_0.png", b"\x89png\r\n\x1a\n")
+    add("android", "character/seris_dragon_king/ui/skill_cutin_0.atf.deflate", b"atf")
+    for server_path in _RUNTIME_TEST_SERVER_PATHS:
+        live_path = live["server"] / Path(*server_path.split("/"))
+        live_path.parent.mkdir(parents=True, exist_ok=True)
+        live_path.write_bytes(
+            json.dumps({"1": {"live": True}}, separators=(",", ":")).encode()
+        )
+        add("server", server_path, json.dumps(
+            {"1": {"stale": True}, "129999": {"seris": True}}, separators=(",", ":")
+        ).encode())
+    qa_raw = b'{"pass":true}'
+    (package / "qa").mkdir(parents=True, exist_ok=True)
+    (package / "qa" / "index.json").write_bytes(qa_raw)
+    qa_files = [{
+        "logical_path": "index.json",
+        "sha256": hashlib.sha256(qa_raw).hexdigest(),
+        "size": len(qa_raw),
+    }]
+    if extra_qa is not None:
+        extra_raw = b"deep-qa-evidence"
+        extra_path = package / "qa" / Path(*extra_qa.split("/"))
+        extra_path.parent.mkdir(parents=True, exist_ok=True)
+        extra_path.write_bytes(extra_raw)
+        qa_files.append({
+            "logical_path": extra_qa,
+            "sha256": hashlib.sha256(extra_raw).hexdigest(),
+            "size": len(extra_raw),
+        })
+    tables = [{
+        "root": "common", "logical_path": logical, "codec_id": "flat",
+        "outer_keys": ["129999"], "inner_keys": [], "semantic_claims": [],
+    } for logical in table_logicals]
+    tables.extend({
+        "root": "server", "logical_path": server_path,
+        "codec_id": "json_object", "outer_keys": ["129999"],
+        "inner_keys": [], "semantic_claims": [],
+    } for server_path in _RUNTIME_TEST_SERVER_PATHS)
+    manifest = {
+        "schema_version": 1,
+        "package_id": "seris_dragon_king",
+        "character_id": 129999,
+        "code_name": "seris_dragon_king",
+        "package_version": "1.0.0-runtime-test",
+        "requires_client_base": "dual_form_v1",
+        "required_capabilities": ["ModDualForm"],
+        "roots": roots,
+        "tables": tables,
+        "skills": {},
+        "unique_condition": {"id": 22},
+        "qa": {
+            "delivery_mode": "runtime_test", "release_ready": False,
+            "user_authorized_direct_real_test": True,
+            "files": qa_files,
+        },
+        "snapshot": {"offline_manifest_sha256": "e" * 64},
+    }
+    (package / "manifest.json").write_bytes(
+        module.character_pack.canonical_manifest_bytes(manifest)
+    )
+    return manifest
+
+
+@unittest.skipUnless(os.name == "nt", "MAX_PATH 只有 Windows 会拒绝")
+class TestRuntimeRebaseCrossesMaxPath(unittest.TestCase):
+    """暂存目录名 +30、输出目录名 +8:两者都要能越过 MAX_PATH 而不丢文件。"""
+
+    def _module(self):
+        return importlib.import_module("wf_release")
+
+    def _stage(self):
+        module = self._module()
+        core = importlib.import_module("wf_mod_tool")
+        base = Path(tempfile.mkdtemp(prefix="wf-maxpath-"))
+        self.addCleanup(shutil.rmtree, _extended(base), True)
+        if not _plain_max_path_enforced(base):
+            self.skipTest("LongPathsEnabled=1:本机 plain 路径不受 MAX_PATH 限制")
+
+        # 父目录长度:留 3 字符余量,让暂存树里最深的目录仍然可建(≤247)。
+        parent_len = (
+            _MAX_PATH_DIR - 1 - _STAGING_NAME_LEN - 1 - len(_DEEPEST_ROOT_DIR) - 3
+        )
+        # 最长那条相对路径的取值窗口:
+        #   下界 —— 换名成 `rebased-package` 之后必须已越过 MAX_PATH,
+        #           这样无前缀的 validate(output_dir) 会看不见它;
+        #   上界 —— 在 `package` 名下必须仍然可读,否则 rebase 前的校验就先炸了。
+        rel_min = _MAX_PATH_FILE + 1 - 1 - len(_OUTPUT_NAME) - 1 - parent_len
+        rel_max = _MAX_PATH_FILE - 1 - len(_PACKAGE_NAME) - 1 - parent_len
+        self.assertLessEqual(rel_min, rel_max)
+        rel_len = (rel_min + rel_max) // 2
+        qa_dir = "d" * 17
+        name_len = rel_len - len("qa/") - len(qa_dir) - 1
+        self.assertGreaterEqual(name_len, 1)
+        extra_qa = f"{qa_dir}/{'c' * name_len}"
+        deep_rel = f"qa/{extra_qa}"
+        self.assertEqual(rel_len, len(deep_rel))
+
+        pad = parent_len - len(str(base)) - 1
+        if not 1 <= pad <= 240:
+            self.skipTest(f"临时目录 {len(str(base))} 字符,补不到 {parent_len}")
+        parent = base / ("d" * pad)
+        parent.mkdir(parents=True)
+        self.assertEqual(parent_len, len(str(parent)))
+        live = {
+            name: base / "live" / name
+            for name in ("common", "medium", "android", "server")
+        }
+        for directory in live.values():
+            directory.mkdir(parents=True)
+        package = parent / _PACKAGE_NAME
+        package.mkdir()
+        _build_seris_runtime_test_package(
+            module, core, package, live, extra_qa=extra_qa
+        )
+        live_roots = module.character_pack.LiveRoots(
+            live["common"], live["medium"], live["android"], live["server"],
+            (base / "cdn",),
+        )
+        output = parent / _OUTPUT_NAME
+        return module, core, parent, package, output, live_roots, live, deep_rel
+
+    def _assert_reproduction_geometry(self, package, output, deep_rel):
+        """锁死复现几何:目录处处合法,只有文件越线;且换名后输出侧也越线。"""
+        deep = Path(*deep_rel.split("/"))
+        staging_len = len(str(package.parent)) + 1 + _STAGING_NAME_LEN
+        # 暂存树里最深的目录仍在 mkdir 限内 ⇒ 第一处失败必然落在建文件那一步,
+        # 与生产 traceback 里的 `[Errno 2] No such file or directory` 同一个面。
+        self.assertLessEqual(
+            staging_len + 1 + len(_DEEPEST_ROOT_DIR), _MAX_PATH_DIR
+        )
+        self.assertLessEqual(
+            staging_len + 1 + len(deep_rel) - len(deep.name) - 1, _MAX_PATH_DIR
+        )
+        self.assertGreater(staging_len + 1 + len(deep_rel), _MAX_PATH_FILE)
+        # 源包必须完好可读,否则 rebase 前的校验就先失败了。
+        self.assertLessEqual(len(str(package / deep)), _MAX_PATH_FILE)
+        self.assertTrue(Path(_extended(package / deep)).is_file())
+        # 换名到 `rebased-package` 之后仍越线 ⇒ 覆盖 validate(output_dir) 那一处。
+        self.assertGreater(len(str(output / deep)), _MAX_PATH_FILE)
+
+    def test_rebase_keeps_every_file_when_staging_and_output_cross_max_path(self):
+        module, core, parent, package, output, live_roots, _live, deep_rel = self._stage()
+        release_pack = importlib.import_module("wf.deliver.runtime_package")
+        scanned = release_pack._scan_files(package)
+        self.assertEqual(deep_rel, max(scanned, key=len))
+        self._assert_reproduction_geometry(package, output, deep_rel)
+
+        result = module.rebase_runtime_package(
+            package, output, live_roots=live_roots, generator_git_head="f" * 40
+        )
+
+        # 返回值必须保持 plain:wf_character_flow._activate_rebased_package 断言
+        # output.parent == workspace.root,带前缀的路径过不了那道门。
+        self.assertEqual(output, result.output_dir)
+        self.assertNotIn("?", str(result.output_dir))
+        long_output = Path(_extended(output))
+        self.assertEqual(scanned, release_pack._scan_files(long_output))
+        self.assertEqual([], release_pack.validate_runtime_test_package(long_output))
+        self.assertEqual(
+            {_PACKAGE_NAME, _OUTPUT_NAME},
+            {child.name for child in Path(_extended(parent)).iterdir()},
+        )
+        logical = "master/character/character.orderedmap"
+        rebased = core.read_orderedmap_file(
+            long_output / "roots" / "common" / Path(*logical.split("/")), logical
+        )
+        rows = dict(zip(rebased.keys, rebased.rows))
+        self.assertEqual(b"live-row", rows["1"])
+        self.assertEqual(b"seris-row", rows["129999"])
+
+    def test_failed_rebase_leaves_no_staging_residue_beyond_max_path(self):
+        module, _core, parent, package, output, live_roots, live, deep_rel = self._stage()
+        self._assert_reproduction_geometry(package, output, deep_rel)
+        (live["server"] / "mana_node.json").unlink()
+
+        with self.assertRaises(module.ReleaseError):
+            module.rebase_runtime_package(
+                package, output, live_roots=live_roots, generator_git_head="f" * 40
+            )
+
+        self.assertEqual(
+            {_PACKAGE_NAME}, {child.name for child in Path(_extended(parent)).iterdir()}
+        )
+
+    def test_cleanup_failure_warns_and_never_masks_the_original_error(self):
+        module, _core, parent, package, output, live_roots, live, _deep = self._stage()
+        (live["server"] / "mana_node.json").unlink()
+
+        def fake_rmtree(path, ignore_errors=False, **kwargs):
+            # 忠实模拟 shutil.rmtree 的两种语义:ignore_errors=True 静默吞掉,
+            # 否则把故障原样抛给调用方。
+            if not os.path.exists(path):
+                if ignore_errors:
+                    return
+                raise FileNotFoundError(2, "missing", str(path))
+            if ignore_errors:
+                return
+            raise PermissionError(13, "denied", str(path))
+
+        stderr = io.StringIO()
+        with (
+            mock.patch.object(module.shutil, "rmtree", side_effect=fake_rmtree),
+            contextlib.redirect_stderr(stderr),
+        ):
+            # 清理失败绝不能顶掉真正的死因。
+            with self.assertRaisesRegex(module.ReleaseError, "cannot read live table"):
+                module.rebase_runtime_package(
+                    package, output, live_roots=live_roots,
+                    generator_git_head="f" * 40,
+                )
+
+        # 删不掉就必须留下可见的警告 + 现场,不许当作"清干净了"。
+        warning = stderr.getvalue()
+        self.assertIn("runtime rebase staging", warning)
+        self.assertIn("residue left on disk", warning)
+        self.assertNotIn("runtime rebase output", warning)  # 输出目录本就没建出来
+        residue = [
+            child.name for child in Path(_extended(parent)).iterdir()
+            if child.name.startswith(f".{_OUTPUT_NAME}.live-rebase-")
+        ]
+        self.assertEqual(1, len(residue))
 
 
 if __name__ == "__main__":

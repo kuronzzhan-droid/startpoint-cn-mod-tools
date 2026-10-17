@@ -123,7 +123,7 @@ class RogueSavePathTests(unittest.TestCase):
             capture_output=True,
         )
 
-    def test_fresh_process_binds_module_constants_to_explicit_configuration(self) -> None:
+    def test_fresh_process_resolves_explicit_configuration_at_use_time(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
             database = root / "database"
@@ -143,7 +143,8 @@ class RogueSavePathTests(unittest.TestCase):
                     "utf8",
                     "-c",
                     "import json, os, wf_rogue_save as r; "
-                    "print(json.dumps([r.DB_PATH, os.fspath(r.resolve_mumu_manager())]))",
+                    "print(json.dumps([os.fspath(r.resolve_database_path()), "
+                    "os.fspath(r.resolve_mumu_manager())]))",
                 ],
                 cwd=MOD_TOOLS,
                 env=environment,

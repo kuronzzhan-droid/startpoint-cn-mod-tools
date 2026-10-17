@@ -49,8 +49,8 @@ from pathlib import Path
 from typing import Callable, Iterable
 
 MOD_DIR = Path(__file__).resolve().parent
-ROOT = MOD_DIR.parent
-sys.path.insert(0, str(MOD_DIR))
+ROOT = MOD_DIR
+pass  # Imports resolve from this checkout/package, not external source copies.
 
 import wf_quest_lib as quest  # noqa: E402
 import wf_mod_tool as core  # noqa: E402
@@ -105,17 +105,26 @@ PINNED_BASELINES: dict[str, tuple[int, str]] = {
 # 不命中的新增行不会被删,但会在审计里单列出来等人工判定。
 CONTENT_KEY_PATTERNS: tuple[str, ...] = (
     r"^mod_",                                            # wf_rogue_build 生成的模式行
-    r"^(111991|119998|119999|129999|139999|149999)\d*$",  # 自制角色 + 金丝雀(含 ability 后缀)
+    r"^(111991|119998|119999|129999|139999|149999|169980|169994|169995|179981)\d*$",
+    # 历史自制角色 + Rank P5b 四 boss(含 ability/unique-condition 后缀)
     r"^80001(0[1-9]|1[0-5])$",                           # 深渊武器 8000101-8000115
-    r"^97001(0[1-9]|1[0-5])$",                           # 兑换商店条目
+    r"^(97001(0[1-9]|1[0-5])|9700118)$",                 # 深渊商店 + 资深玩家称号
     r"^2370099$",                                        # 模式代币
+    r"^99901[56]$",                                      # 灰白卡池两种券
     r"^700099\d*$",                                      # 700099 模式 event/quest
+    r"^(990002|990000[2-6])$",                            # 灰白卡池 + 五枚称号
     r"^(seris_dragon_king|stella_summer_goddess|white_wolf_gerald)",
+    r"^(white_tiger_ghost_playable|abyss_beast_playable|cnmod_epuration_empress"
+    r"|maou2_playable)(?:_pf)?$",
     r"^resistance_princess_canary2$",
     r"^override_",                                       # power_flip_action 覆写
     r"^ability_skill_(white_tiger_pf|white_wolf_moon_fang)$",
+    r"^(ability_skill|power_flip|override_string)_"
+    r"(white_tiger_ghost|abyss_beast|cnmod_epuration_empress|maou2_playable)",
+    r"^rich_text/cnmod_ashen_verdict_gacha_note$",
     r"^character/(kyle_wolf_knight|seris_dragon_king|stella_summer_goddess"
-    r"|white_wolf_gerald|resistance_princess_canary2)/",
+    r"|white_wolf_gerald|resistance_princess_canary2|white_tiger_ghost_playable"
+    r"|abyss_beast_playable|cnmod_epuration_empress|maou2_playable)/",
 )
 # 表内点名放行(模式给官方枚举续号,靠模式匹配认不出来)
 EXTRA_CONTENT_KEYS: dict[str, frozenset[str]] = {
@@ -124,26 +133,47 @@ EXTRA_CONTENT_KEYS: dict[str, frozenset[str]] = {
 
 ABYSS_WEAPONS: tuple[str, ...] = tuple(str(8000100 + n) for n in range(1, 16))
 SHOP_ITEMS: tuple[str, ...] = tuple(str(9700100 + n) for n in range(1, 16))
-RELEASED_CHARACTERS: tuple[str, ...] = ("129999", "139999", "149999")
+LEGACY_RELEASED_CHARACTERS: tuple[str, ...] = ("129999", "139999", "149999")
+RANK_P5B_BOSSES: tuple[str, ...] = ("169994", "169980", "179981", "169995")
+RELEASED_CHARACTERS: tuple[str, ...] = (*LEGACY_RELEASED_CHARACTERS, *RANK_P5B_BOSSES)
+RANK_P5B_BOSS_ABILITIES: tuple[str, ...] = tuple(
+    f"{character_id}{index}"
+    for character_id in RANK_P5B_BOSSES
+    for index in range(1, 7)
+)
+RANK_P5B_ACTION_SKILLS: tuple[str, ...] = (
+    "white_tiger_ghost_playable", "abyss_beast_playable",
+    "cnmod_epuration_empress", "maou2_playable",
+)
+RANK_P5B_POWER_FLIPS: tuple[str, ...] = tuple(
+    f"{code_name}_pf" for code_name in RANK_P5B_ACTION_SKILLS
+)
+RANK_P5B_DEGREES: tuple[str, ...] = tuple(str(value) for value in range(9_900_002, 9_900_007))
 
-# 纯内容变体必须携带的行(金样验证的"齐全"判据):三自制角色 + 15 把深渊武器
-# + 700099 模式。缺任何一条即判失败,防止重建把内容一起洗掉。
+# 纯内容变体必须携带的行(金样验证的"齐全"判据):历史三角色 + Rank P5b
+# 四 boss + 15 把深渊武器 + 700099 + 990002 + 五称号 + 9700118。
+# 缺任何一条即判失败,防止重建把内容一起洗掉。
 EXPECTED_CONTENT_ROWS: dict[str, tuple[str, ...]] = {
+    "master/ability/ability.orderedmap": RANK_P5B_BOSS_ABILITIES,
     "master/character/character.orderedmap": RELEASED_CHARACTERS,
     "master/character/character_status.orderedmap": RELEASED_CHARACTERS,
     "master/character/character_text.orderedmap": RELEASED_CHARACTERS,
     "master/ability/leader_ability.orderedmap": RELEASED_CHARACTERS,
     "master/mana_board/mana_node.orderedmap": RELEASED_CHARACTERS,
     "master/skill/action_skill.orderedmap": (
-        "seris_dragon_king", "stella_summer_goddess", "white_wolf_gerald"),
+        "seris_dragon_king", "stella_summer_goddess", "white_wolf_gerald",
+        *RANK_P5B_ACTION_SKILLS),
     "master/skill/power_flip_action.orderedmap": (
         "white_wolf_gerald_pf", "override_seris_human_powerflip",
-        "override_seris_dragon_special"),
+        "override_seris_dragon_special", *RANK_P5B_POWER_FLIPS),
     "master/ability/ability_soul.orderedmap": ABYSS_WEAPONS,
     "master/item/equipment.orderedmap": ABYSS_WEAPONS,
     "master/item/equipment_status.orderedmap": ABYSS_WEAPONS,
-    "master/item/item.orderedmap": ("2370099", *ABYSS_WEAPONS),
-    "master/shop/event_item_shop.orderedmap": SHOP_ITEMS,
+    "master/item/item.orderedmap": ("2370099", "999015", "999016", *ABYSS_WEAPONS),
+    "master/shop/event_item_shop.orderedmap": (*SHOP_ITEMS, "9700118"),
+    "master/gacha/gacha.orderedmap": ("990002",),
+    "master/gacha/gacha_feature_content.orderedmap": ("990002",),
+    "master/degree/degree.orderedmap": RANK_P5B_DEGREES,
     "master/quest/event/event_list.orderedmap": ("700099",),
     "master/quest/event/rush_event.orderedmap": ("700099",),
     "master/quest/event/rush_event_quest.orderedmap": ("700099",),
@@ -263,12 +293,14 @@ class OfficialBaseline:
         official_tail: str = OFFICIAL_TAIL,
         cache_dir: Path | None = None,
         verify_pinned: bool = True,
+        write_cache: bool = True,
     ) -> None:
         self.cdn_root = Path(cdn_root)
         self.official_tail = official_tail
         self.cache_dir = Path(cache_dir) if cache_dir else CACHE_DIR
         self._index: dict[str, dict[str, BaselineEntry]] = {}
         self._verify_pinned = verify_pinned
+        self._write_cache = write_cache
         self._verified = False
 
     # -- 归档发现 ---------------------------------------------------
@@ -345,16 +377,17 @@ class OfficialBaseline:
                                 rel, info.CRC, info.file_size, path, info.filename)
                 except zipfile.BadZipFile:
                     continue
-            self.cache_dir.mkdir(parents=True, exist_ok=True)
-            cache_file.write_text(json.dumps({
-                "stamp": stamp,
-                "root": root,
-                "officialTail": self.official_tail,
-                "entries": {
-                    rel: [entry.crc, entry.size, str(entry.archive), entry.member]
-                    for rel, entry in index.items()
-                },
-            }, ensure_ascii=False), encoding="utf-8")
+            if self._write_cache:
+                self.cache_dir.mkdir(parents=True, exist_ok=True)
+                cache_file.write_text(json.dumps({
+                    "stamp": stamp,
+                    "root": root,
+                    "officialTail": self.official_tail,
+                    "entries": {
+                        rel: [entry.crc, entry.size, str(entry.archive), entry.member]
+                        for rel, entry in index.items()
+                    },
+                }, ensure_ascii=False), encoding="utf-8")
         self._index[root] = index
         if root == "common" and self._verify_pinned and not self._verified:
             self._verify_pinned_baselines(index)
@@ -772,15 +805,12 @@ def chain_sources(
 def _resolve_cdn(cdn: str | None) -> Path:
     if cdn:
         return Path(cdn).resolve()
-    try:
-        return Path(core.resolve_cdn_root_lax())
-    except Exception:
-        return ROOT / ".cdn" / "cn"
+    return core.resolve_cdn_root()
 
 
 def cmd_audit(args: argparse.Namespace) -> int:
     cdn_root = _resolve_cdn(args.cdn)
-    repo_root = Path(args.repo_root).resolve() if args.repo_root else ROOT
+    repo_root = Path(args.repo_root).resolve() if args.repo_root else core.resolve_server_dir()
     baseline = OfficialBaseline(cdn_root, official_tail=args.official_tail)
     sources, meta = chain_sources(cdn_root, repo_root, since=args.since)
     verdicts, summary = plan_content_only(
@@ -824,8 +854,8 @@ def cmd_baseline(args: argparse.Namespace) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--cdn", help="CDN 根(默认 WF_CDN_DIR 或 <repo>/.cdn/cn)")
-    parser.add_argument("--repo-root", help="仓库根(默认按脚本位置)")
+    parser.add_argument("--cdn", help="CDN 根(默认统一 CDN/服务端配置)")
+    parser.add_argument("--repo-root", help="服务端根(默认 WF_SERVER 或本地路径档案)")
     parser.add_argument("--official-tail", default=OFFICIAL_TAIL,
                         help=f"官方链尾版本(默认 {OFFICIAL_TAIL},之后的边全是我们发的)")
     sub = parser.add_subparsers(dest="command", required=True)

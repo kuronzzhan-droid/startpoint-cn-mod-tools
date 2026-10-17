@@ -1,0 +1,288 @@
+[
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/abcfmt.py",
+    "source_sha256": "2d35f0fb5476bde3a400756ece1467a4dce665fd9c9e7618e1c6815cb5f51f82",
+    "destination": "wf/apk/abcfmt.py",
+    "decision": "通用库：包内相对导入，消除固定数据和导入路径副作用",
+    "destination_sha256": "2d35f0fb5476bde3a400756ece1467a4dce665fd9c9e7618e1c6815cb5f51f82"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/asm.py",
+    "source_sha256": "c033836d0a7aa109b81509c1cb0731be82fc543c76d8d3b43881f9dab7d81e87",
+    "destination": "wf/apk/asm.py",
+    "decision": "通用库：包内相对导入，消除固定数据和导入路径副作用",
+    "destination_sha256": "019ac7aad2ec17927ea5c6af6ef8c1b2ca886502de40bca85b443c1582b40bc7"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/avm_mini.py",
+    "source_sha256": "b169c2127de6d536229a0bf620729c00d4d02120dae36a8062acada6ff679da1",
+    "destination": "wf/apk/avm_mini.py",
+    "decision": "通用库：包内相对导入，消除固定数据和导入路径副作用",
+    "destination_sha256": "46149d2c014b47c0e56007ae119c0bdbac86fcb4f6f62666acd07adc4ab3a559"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/bodies.py",
+    "source_sha256": "daa069c919b46d25bf6b25e367f1ac2744ffd64f76d6d0469e0eacf42d0d25d8",
+    "destination": "wf/apk/bodies.py",
+    "decision": "通用库：包内相对导入，消除固定数据和导入路径副作用",
+    "destination_sha256": "0d3e2cdfa2f74d4ec4816fcafa4f58c6dcb56334690cbb46ab682aa6161a4aeb"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/build_e0.py",
+    "source_sha256": "6f667074e320fdbc7acebff0e1dcb8821403bd58e87882538e00bcf1eb077451",
+    "destination": "archive/legacy/apk/build_e0.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "6f667074e320fdbc7acebff0e1dcb8821403bd58e87882538e00bcf1eb077451"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/build_perf2_apk.py",
+    "source_sha256": "52f0ed20f5b74bddc3c3b76c6100525cbaa8751674dd12b8180db1754d48b862",
+    "destination": "archive/legacy/apk/build_perf2_apk.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "52f0ed20f5b74bddc3c3b76c6100525cbaa8751674dd12b8180db1754d48b862"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/build_perf_apk.py",
+    "source_sha256": "ade104daff1cafed047dc2a1cdc02d8446610f6198bebf55f39c9286cd46cec3",
+    "destination": "archive/legacy/apk/build_perf_apk.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "89ca6b69c2cae978cb6389cad4fa2e27574cd82bd04f52e765d65752641a23af"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/build_x86.py",
+    "source_sha256": "93dad51b1a9316cbedf4f76042d507cbb119dbfab50a547f5a1347a4339fb3ac",
+    "destination": "archive/legacy/apk/build_x86.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "93dad51b1a9316cbedf4f76042d507cbb119dbfab50a547f5a1347a4339fb3ac"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/bump_versioncode.py",
+    "source_sha256": "0d04f0cd425027a29e57def9a71da3cb8113c4c8b915747035dedbd2baed0740",
+    "destination": "wf/apk/bump_versioncode.py",
+    "decision": "通用库：包内相对导入，消除固定数据和导入路径副作用",
+    "destination_sha256": "0d04f0cd425027a29e57def9a71da3cb8113c4c8b915747035dedbd2baed0740"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/common.py",
+    "source_sha256": "45c60c75e3d022d434006d606bbbfb3850fed8f79de0d3638190769b1dec9b9e",
+    "destination": "wf/apk/common.py",
+    "decision": "通用库：包内相对导入，消除固定数据和导入路径副作用",
+    "destination_sha256": "82a0c70a2237177030ccc56bf4a80f587fdc17f0a5fe2f7c3dfc556f17db8436"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/diff_v29_vs_original.py",
+    "source_sha256": "0a0f44c5c93671816ffbf533f8b8eebd70f98cf20e46177c969cbefd6d2f35c0",
+    "destination": "archive/legacy/apk/diff_v29_vs_original.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "0a0f44c5c93671816ffbf533f8b8eebd70f98cf20e46177c969cbefd6d2f35c0"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/dump_helpers.py",
+    "source_sha256": "abbec6e11a3ded78acf7f041d2584cf25b1a2b9b99caf5777f90c17af4892d73",
+    "destination": "archive/legacy/apk/dump_helpers.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "abbec6e11a3ded78acf7f041d2584cf25b1a2b9b99caf5777f90c17af4892d73"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/dump_perf2_pcode.py",
+    "source_sha256": "70a7922e5b28952a196e8bca20a1e2e538320e423a9e393b96bb7ca296309807",
+    "destination": "archive/legacy/apk/dump_perf2_pcode.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "70a7922e5b28952a196e8bca20a1e2e538320e423a9e393b96bb7ca296309807"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/fetch_tools.py",
+    "source_sha256": "18d6b4a30a78f7e744fdbfcd1a6bc93e884316422d3ceb5cbe28813e1a7b2a04",
+    "destination": "archive/legacy/apk/fetch_tools.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "4b39930d42dcc4a980d23ec5fd7a6edaf19bdc59ddff34cfad69fe76584c292b"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/inspect_helper_pool.py",
+    "source_sha256": "9e011f1d7fffed5e9c9cf7129f89b98a242a84fc8451935aa46218024453bfae",
+    "destination": "archive/legacy/apk/inspect_helper_pool.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "9e011f1d7fffed5e9c9cf7129f89b98a242a84fc8451935aa46218024453bfae"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/opwalk.py",
+    "source_sha256": "c3e17d85438d5f1a62320c811b77bdfd7f475a123e0e8ea2ac759062bb9d6080",
+    "destination": "wf/apk/opwalk.py",
+    "decision": "通用库：包内相对导入，消除固定数据和导入路径副作用",
+    "destination_sha256": "c3e17d85438d5f1a62320c811b77bdfd7f475a123e0e8ea2ac759062bb9d6080"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/patch_perf.py",
+    "source_sha256": "8774d4809f0cd648687c121306f54551c482ed83672b225d12303eb0dc34455a",
+    "destination": "archive/legacy/apk/patch_perf.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "8774d4809f0cd648687c121306f54551c482ed83672b225d12303eb0dc34455a"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/perf2_apply.py",
+    "source_sha256": "d000586e73c2c430b91e3efc8a3e1f6676ee20c02f36b95b78a3b689f88a6966",
+    "destination": "archive/legacy/apk/perf2_apply.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "d000586e73c2c430b91e3efc8a3e1f6676ee20c02f36b95b78a3b689f88a6966"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/perf2_core.py",
+    "source_sha256": "b5d50c6ae613e22773f8dd969df0faf80a3afe4a1aa1bef790b561ceb94c4a8a",
+    "destination": "wf/apk/patching.py",
+    "decision": "通用库：包内相对导入，消除固定数据和导入路径副作用",
+    "destination_sha256": "5fb839c9bf35455f515900e9670b8caef97f4e8122bcfb26ea7131109aa0539f"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/perf2_patches.py",
+    "source_sha256": "08c28cf3492d0c5c03ae87a51e0477e18a00438f4358d21ee08c87536841c224",
+    "destination": "archive/legacy/apk/perf2_patches.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "08c28cf3492d0c5c03ae87a51e0477e18a00438f4358d21ee08c87536841c224"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/probe_sha.py",
+    "source_sha256": "c4b28bba8beca1fb17e776962bce526c52b23bd83cab6ebbf9d9e2424c062fc3",
+    "destination": "archive/legacy/apk/probe_sha.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "c4b28bba8beca1fb17e776962bce526c52b23bd83cab6ebbf9d9e2424c062fc3"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/ref_abc_reader.py",
+    "source_sha256": "85c3235250e42f171210667d2821484a152b92ed72dca3743f5a8bfc09ad3c98",
+    "destination": "archive/legacy/apk/ref_abc_reader.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "85c3235250e42f171210667d2821484a152b92ed72dca3743f5a8bfc09ad3c98"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/ref_build_coop_apk.py",
+    "source_sha256": "827057057af149d5a053dc0ed74c6cc96f144031ce44a224b54c908480346e8e",
+    "destination": "archive/legacy/apk/ref_build_coop_apk.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "53e85285a50ae1cef60fe0c2c4f73e3d99c595baf8618bb7f97f8a0b7fb84d83"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/ref_build_local_baseline.py",
+    "source_sha256": "7f45aa17625b813344e9db43ccd6165dcb2ff5d9c7cb3074143d3bfdb787c968",
+    "destination": "archive/legacy/apk/ref_build_local_baseline.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "fdd712a426cd1a44b31ffc96683f5ff6ed19f53630c663cae1878f9ac807ce93"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/ref_inspect_v28.py",
+    "source_sha256": "77c1934d320bf08a2095af49baf12fb2b0df6424bc41546199333645c6c333b4",
+    "destination": "archive/legacy/apk/ref_inspect_v28.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "c1d563721f4f4ee59c3334345837020bf09c88fc12fe41b5ec283280cf5c3121"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/ref_patch_coop_grace.py",
+    "source_sha256": "325d676f3256f9d866236f786ca06ce2ae16ad9ee7101de8c4e7b8ed233fa51f",
+    "destination": "archive/legacy/apk/ref_patch_coop_grace.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "325d676f3256f9d866236f786ca06ce2ae16ad9ee7101de8c4e7b8ed233fa51f"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/ref_patch_local_endpoints.py",
+    "source_sha256": "b494f647fe926d25245383cb58d2461c5412e9c907a5f3c5e50de165e1786495",
+    "destination": "archive/legacy/apk/ref_patch_local_endpoints.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "7f180d6b15483017073d6e709fd8625fc7a85af7e5306cf11aa022f3d685f897"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/ref_pcode_utils.py",
+    "source_sha256": "4e8ab68342dfa056d73abbcc17128f6444390e23a32cff9b8556610ae7f32b0b",
+    "destination": "archive/legacy/apk/ref_pcode_utils.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "4e8ab68342dfa056d73abbcc17128f6444390e23a32cff9b8556610ae7f32b0b"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/ref_test_coop_grace.py",
+    "source_sha256": "cf9b73c92adf9a336c0f6cca6aae07262d0dd1ad28fe41562b1b4c3fc440fc03",
+    "destination": "archive/legacy/apk/ref_test_coop_grace.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "cf9b73c92adf9a336c0f6cca6aae07262d0dd1ad28fe41562b1b4c3fc440fc03"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/ref_verify_coop_apk.py",
+    "source_sha256": "b7cb34030f51f2f73732831f10cca8d486f1b88b2355514f0bca3b6d7ba7c3fa",
+    "destination": "archive/legacy/apk/ref_verify_coop_apk.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "2c6eac46161849857a76881c19e62a083d686d682bf03d7ff8fdd14a60161f7d"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/ref_verify_local_baseline.py",
+    "source_sha256": "8f3e663537fb614f0166146f83818e7f50b40bd787e60d8df62181615732e98f",
+    "destination": "archive/legacy/apk/ref_verify_local_baseline.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "4ff43dfb674312f003969b2cbee3cfa3625c3002694b7cc4fb092fb30782968e"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/sign_perf2_apk.py",
+    "source_sha256": "88a0e2f1629331bdebc9b4ab39b9e2c78d3091fa9aae4d22ec6f04ef460ed184",
+    "destination": "archive/legacy/apk/sign_perf2_apk.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "88a0e2f1629331bdebc9b4ab39b9e2c78d3091fa9aae4d22ec6f04ef460ed184"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/sign_perf_apk.py",
+    "source_sha256": "fef55278a6735d5bc220f99b87593d73cd90ad48dce5b90f4924a354bfff946c",
+    "destination": "archive/legacy/apk/sign_perf_apk.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "fef55278a6735d5bc220f99b87593d73cd90ad48dce5b90f4924a354bfff946c"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/swfabc.py",
+    "source_sha256": "d3a56b7f23d809e14d78b0ac11e55f8bf127fb60f1d9dfd5814502cc691eaad3",
+    "destination": "wf/apk/swfabc.py",
+    "decision": "通用库：包内相对导入，消除固定数据和导入路径副作用",
+    "destination_sha256": "8c4da4422f7d29c3a1369a1a283d61d08b628f0653b0e3685c3e2cf0df3181b4"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/swftags.py",
+    "source_sha256": "81d253a0c27ada1f4e377384484fcadd8bf8a360e4d93b456483ef1128ea6b06",
+    "destination": "wf/apk/swftags.py",
+    "decision": "通用库：包内相对导入，消除固定数据和导入路径副作用",
+    "destination_sha256": "81d253a0c27ada1f4e377384484fcadd8bf8a360e4d93b456483ef1128ea6b06"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/table_sizes.py",
+    "source_sha256": "396514bf4a6ba316eaea4f79b2a1fd55c201fcd486c051df4dcc671bac210103",
+    "destination": "archive/legacy/apk/table_sizes.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "68a3bbbcd43e1d24324f9cca787bff075fe841443dc3cb943ccc5df9f6ab9d16"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/test_perf.py",
+    "source_sha256": "9d061421aaced2f4f5039097697fe043aae840162a2bb00a47046de21e0ec585",
+    "destination": "archive/legacy/apk/test_perf.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "26e276cb1515d9b664b97cec108cb532bc72c66276f304e91f2e27c5514b9e9d"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/test_perf2.py",
+    "source_sha256": "17c32f68f0ff257357a869e1d5aa662e10732893b0f83ccd7e298dcb0e28ad70",
+    "destination": "archive/legacy/apk/test_perf2.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "17c32f68f0ff257357a869e1d5aa662e10732893b0f83ccd7e298dcb0e28ad70"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/verify_perf2_apk.py",
+    "source_sha256": "61915bbbeb6d130af11c1e63fbae6eb9bbfae6d2b1fc6f1d999a58e05fb9aa65",
+    "destination": "archive/legacy/apk/verify_perf2_apk.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "61915bbbeb6d130af11c1e63fbae6eb9bbfae6d2b1fc6f1d999a58e05fb9aa65"
+  },
+  {
+    "source": "${WF_ROOT}/perf-v30-20261015/tools/verify_perf_apk.py",
+    "source_sha256": "4ad123b2c377daf7dcc97ca2fa132747626a189680b8da80f8c6e1d3356c0820",
+    "destination": "archive/legacy/apk/verify_perf_apk.py",
+    "decision": "版本/任务专用或诊断脚本：完整收编归档，不加入活动兼容层和测试发现",
+    "destination_sha256": "bff04755a7ed1ed7eef54b2a2bc8f1c8f803552892fa830494352c4a45504a1c"
+  },
+  {
+    "source": "${WF_ROOT}/out/kulo-patch-toolkit/prepush/wf_prepush_check.py",
+    "source_sha256": "df9535bb83a6943431e1151f2d460e7ae8f37e9d604ea07dae9866a28ea87e70",
+    "destination": "wf/deliver/prepush*.py; wf_prepush_check.py",
+    "decision": "按视图/链/文本/伴随/等级/CLI拆分；保留检查函数及命令参数；不再修改sys.path；pathlist由仓根读取"
+  }
+]

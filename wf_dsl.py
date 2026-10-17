@@ -348,10 +348,138 @@ def save_dsl_file(fp: Path, data: bytes, backup_suffix: str) -> None:
     fp.write_bytes(co.compress(data) + co.flush())
 
 
+# ---------------------------------------------------------------- 方向门禁(玩家侧程序)
+# 2026-08-28:歼灭者从官方敌方 boss 程序 `enemy_shot_high_epuration` 克隆特效族时
+# 连朝向常量一起抄走 —— 真机表现就是「攻击方向都反了」。这一节把方向语义固化成规则。
+#
+# 方向语义(反编译 弹国服/scripts/pinball/scene/battle/battle/action/ActionHitArea.as):
+#   calcDir():1189-1209  AB→0 / CD→target.getDirCD() / EF→getDirEF()+π/2 / GH→bearing+π/2
+#   stepDir():610        r = 参数 w + calcDir()
+#   矩形 pivotY:338-403  VAlign Top→+h/2 / Center→0 / Bottom→−h/2
+#   moveShape():704-717  形状中心 = 锚点 + rot(pivot, r)
+# ⇒ 屏幕 y 轴朝下、敌人在上方,所以 **r=0 ⇔ 朝敌方(上);r=π ⇔ 朝玩家自己(下)**。
+#   独立佐证:官方 `laser_skill_invoker$laser_front/back/right/left`
+#   四个程序的角度正好是 0 / 180 / 90 / 270。
+#
+# 正向对照(官方 store 全表,长柱 = Rectangle + VAlign Bottom + 高 ≥ 1000):
+#   玩家侧 81 条:(AB,0°) 47 / (GH,0°) 21 / (CD,0°) 6 / (AB,180°) 3 / (EF,0°) 2 / (AB,±90°) 各 1
+#   敌方侧 2119 条:(AB,180°) 打头,150°~230° 一大扇
+#   玩家侧那 5 条例外里,3 条在 `skill_invoker/`(场地役物,不是角色技能),
+#   剩下 2 条是同一个 rare2 角色 `towa_namakubi`(官方唯一先例,见单测钉死)。
+
+# 与 TypePackerResource2.as h[24] / ActionDslCommand.as 逐位对照的参数槽
+_HA_SLOTS = dict(subject=2, coord=3, dx=4, dy=5, angle=6, shape=9,
+                 halign=10, valign=11, fx_block=20, dmg_block=23)
+_FX_SLOTS = dict(path=2, subject=3, coord=6, angle=9)
+_RP_SLOTS = dict(subject=1, coord=2)
+_MV_SLOTS = dict(subject=1, coord=2)
+
+# `getDirCD()` 在这些实现里直接 `throw "INTERNAL ERROR"`:
+#   MemberImpl.as:6254 / BallImpl.as:2049 / EnemyImpl.as:3553 / Unit.as:957 / Mate.as:420
+# 所以 CoordSysSource=CD 只能挂在判定区/参考点(ActionHitArea.getDirCD 返回 r)或
+# Marker/ImaginaryTarget/Coffin 上。−17(自身=Member)与 −18(球=Ball)必 throw。
+# 官方 6485 个程序里 CD + 内置负 id 只出现过 −33(敌方自身,另一套实现),0 例 −17/−18。
+CD_FORBIDDEN_SUBJECTS = {-17: "自身(MemberImpl.getDirCD 抛 INTERNAL ERROR)",
+                         -18: "球(BallImpl.getDirCD 抛 INTERNAL ERROR)"}
+
+# 判为「长柱/光柱」的矩形最小高度:官方玩家侧长柱统计用的同一门槛
+BEAM_MIN_HEIGHT = 1000.0
+
+
+def _tag(v):
+    """haxe enum 序列化成 [标签, 参数...];取标签。"""
+    if isinstance(v, list) and v and isinstance(v[0], str):
+        return v[0]
+    return v
+
+
+def iter_dsl_commands(node, name: str | None = None):
+    """深度优先产出 ["Command",[名称, ...]] 的参数数组(name=None 则全给)。"""
+    if isinstance(node, list):
+        if node and node[0] == "Command" and isinstance(node[1], list):
+            if name is None or node[1][0] == name:
+                yield node[1]
+            for x in node[1][1:]:
+                yield from iter_dsl_commands(x, name)
+            return
+        for x in node:
+            yield from iter_dsl_commands(x, name)
+
+
+def _slv_max(v):
+    try:
+        return float(v[0]["max"])
+    except Exception:
+        return None
+
+
+def _norm_deg(rad) -> float:
+    """弧度 → [0,360) 度。"""
+    import math
+    try:
+        return math.degrees(float(rad)) % 360.0
+    except Exception:
+        return 0.0
+
+
+def beam_direction_problems(tree) -> list[str]:
+    """玩家侧程序里「朝自己那半场发射的长柱判定」= 敌方蓝本没翻转过来。
+
+    只判 coord=AB 的矩形长柱(AB 下 r 就是写在数据里的角度,可静态判定);
+    CD/EF/GH 的朝向取决于运行时目标,静态判不了,一律放过。
+    """
+    probs: list[str] = []
+    for c in iter_dsl_commands(tree, "CreateHitArea"):
+        if len(c) <= _HA_SLOTS["valign"]:
+            continue
+        if _tag(c[_HA_SLOTS["coord"]]) != "AB":
+            continue
+        shape = c[_HA_SLOTS["shape"]]
+        if _tag(shape) != "Rectangle" or len(shape) < 3:
+            continue
+        height = _slv_max(shape[2])
+        if height is None or height < BEAM_MIN_HEIGHT:
+            continue
+        if _tag(c[_HA_SLOTS["valign"]]) != "Bottom":
+            continue
+        deg = _norm_deg(c[_HA_SLOTS["angle"]])
+        if 90.0 <= deg <= 270.0:
+            probs.append(
+                f"CreateHitArea(bind={c[19] if len(c) > 19 else '?'}) "
+                f"AB/VAlign=Bottom/高{height:g} 角度 {deg:g}° 朝向玩家自己那半场"
+                "(r=0 才是朝敌方;敌方 boss 蓝本用的就是 180°,克隆时必须翻转)"
+            )
+    return probs
+
+
+def coord_sys_source_problems(tree) -> list[str]:
+    """CoordSysSource=CD 挂在 getDirCD() 会 throw 的内置 subject 上 = 进战斗必崩。"""
+    probs: list[str] = []
+    sites = (("CreateHitArea", _HA_SLOTS), ("CreateReferencePoint", _RP_SLOTS),
+             ("ShowEffect", _FX_SLOTS), ("MoveHitArea", _MV_SLOTS))
+    for name, slots in sites:
+        si, ci = slots["subject"], slots["coord"]
+        for c in iter_dsl_commands(tree, name):
+            if len(c) <= max(si, ci):
+                continue
+            if _tag(c[ci]) != "CD":
+                continue
+            subj = c[si]
+            if isinstance(subj, int) and subj in CD_FORBIDDEN_SUBJECTS:
+                probs.append(f"{name} 的 CoordSysSource=CD 挂在 subject={subj} "
+                             f"{CD_FORBIDDEN_SUBJECTS[subj]}")
+    return probs
+
+
+def player_side_dsl_problems(tree) -> list[str]:
+    """玩家侧(角色技能 / 强化弹射覆盖)DSL 的方向类硬规则合集。"""
+    return beam_direction_problems(tree) + coord_sys_source_problems(tree)
+
+
 if __name__ == "__main__":
     import io, sys
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    pass  # Imports resolve from this checkout/package, not external source copies.
     store = core.require_active_store()
     fp, data = load_dsl_file(store, "battle/action/skill/action/rare5/fire_dragon$fire_dragon_1")
     r = parse_dsl(data)

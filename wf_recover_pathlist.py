@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-r"""
+"""
 从 FileReader 的哈希算法 + wf-extracted/.pathlist + 主数据表(ordermap) + voiceLines.json,
 复原**下载包(production/) 与 bundle 包(APK 内 bundle.zip)** 每个加密哈希文件的原始逻辑路径。
 
 哈希(pinball/asset/path/AssetPathTools.getHashedPath):
-    规范化   = 把 [/\\]+ 合并成 /,去掉开头的 /
+    规范化   = 把 [/\\\\]+ 合并成 /,去掉开头的 /
     文件名   = SHA1( 规范化(逻辑路径 + 扩展名) + SALT )
     存储位置 = 文件名[:2] / 文件名[2:]
   前缀 store 只决定文件夹,不进哈希:
@@ -15,7 +15,7 @@ r"""
 来源(按贡献):
   1. .pathlist   —— 提取工具留下的无扩展名逻辑路径清单(含 voice/words、故事表情等)。
   2. ordermap    —— 解密所有 .orderedmap 主表,提取单元格里的路径引用。
-  3. voiceLines  —— 显式 `--voice` 根下的 <code>/voiceLines.json。
+  3. voiceLines  —— ${WF_ROOT}\\角色语音\\<code>\\voiceLines.json 键 = character/<code>/voice/<key>.mp3。
   4. 同族交叉    —— 把某 key 的 (tail,ext) 套到同族所有 key。
   5. bundle 索引 —— bundle_<amf|encrypt|copy|compress|png|atf>.filelist(哈希命名的索引文件)直接命名。
 
@@ -30,10 +30,12 @@ r"""
   WF_PATHLIST_uncovered.csv   仍未复原的哈希
 """
 from __future__ import annotations
+
+from wf.paths import root_path
 import argparse, csv, hashlib, json, re, sys, collections
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_mod_tool as core
 
 SALT = "K6R9T9Hz22OpeIGEWB0ui6c6PYFQnJGy"
@@ -73,28 +75,30 @@ def scan_stores(root: Path, stores: list[str], present: dict, loc2file: dict) ->
                         loc2file[(name, loc)] = fp
 
 
-def build_parser() -> argparse.ArgumentParser:
+def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--base", required=True, help="下载包 production 目录")
-    ap.add_argument("--bundle",
+    ap.add_argument("--base", help="下载包 production 目录(不填自动查找)")
+    ap.add_argument("--bundle", default=('${WF_ROOT}\\wf-bundle\\production'.replace("${WF_ROOT}", str(root_path()))),
                     help="bundle 包 production 目录(APK bundle.zip 解出);不存在则跳过")
-    ap.add_argument("--pathlist", required=True, help="必需的 .pathlist 文件")
-    ap.add_argument("--voice", help="可选 voiceLines 根目录")
-    ap.add_argument("--out", required=True, help="显式输出目录")
-    return ap
+    ap.add_argument("--pathlist", default=('${WF_ROOT}\\wf-extracted\\wf-extracted\\.pathlist'.replace("${WF_ROOT}", str(root_path()))))
+    ap.add_argument("--voice", default=('${WF_ROOT}\\角色语音'.replace("${WF_ROOT}", str(root_path()))))
+    ap.add_argument("--out", default=str(Path(__file__).resolve().parent))
+    args = ap.parse_args()
 
-
-def main(argv=None) -> None:
-    args = build_parser().parse_args(argv)
-
-    base = Path(args.base)
+    if args.base:
+        base = Path(args.base)
+    else:
+        up = core.find_world_upload(Path(__file__).resolve().parent.parent)
+        if not up:
+            print("未找到 production,请用 --base 指定"); sys.exit(1)
+        base = up.parent
     out = Path(args.out)
 
     present: dict[str, set] = {}
     loc2file: dict = {}
     scan_stores(base, DL_STORES, present, loc2file)
-    bundle_root = Path(args.bundle) if args.bundle else None
-    have_bundle = bool(bundle_root and bundle_root.exists())
+    bundle_root = Path(args.bundle)
+    have_bundle = bundle_root.exists()
     if have_bundle:
         scan_stores(bundle_root, BUNDLE_STORES, present, loc2file)
     allhash = set()
@@ -166,8 +170,8 @@ def main(argv=None) -> None:
     print(f"[2] ordermap cells : {len(found)}/{len(allhash)} = {len(found)*100//len(allhash)}%  (cells {len(cell_paths)})")
 
     # ---- 3. voiceLines.json ----
-    vd = Path(args.voice) if args.voice else None
-    if vd and vd.exists():
+    vd = Path(args.voice)
+    if vd.exists():
         for cd in vd.iterdir():
             vf = cd / "voiceLines.json"
             if not vf.exists():

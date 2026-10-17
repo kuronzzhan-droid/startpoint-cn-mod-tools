@@ -11,13 +11,14 @@ from unittest.mock import patch
 import zipfile
 
 from tests.release_v1_fixtures import make_patch_overlay
+from wf_release_v1._path_io import native_path
 from wf_release_v1.errors import ReleaseError
 
 
 class OverlayCandidateTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        temporary = tempfile.TemporaryDirectory()
+        temporary = tempfile.TemporaryDirectory(dir=native_path(Path(tempfile.gettempdir())))
         cls.addClassCleanup(temporary.cleanup)
         root = Path(temporary.name)
         outer = make_patch_overlay(
@@ -32,7 +33,7 @@ class OverlayCandidateTests(unittest.TestCase):
             )
 
     def setUp(self) -> None:
-        temporary = tempfile.TemporaryDirectory()
+        temporary = tempfile.TemporaryDirectory(dir=native_path(Path(tempfile.gettempdir())))
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name)
 

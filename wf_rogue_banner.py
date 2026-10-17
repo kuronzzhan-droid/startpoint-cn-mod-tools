@@ -22,8 +22,7 @@ import os
 import sys
 
 TOOL_DIR = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.dirname(TOOL_DIR)
-sys.path.insert(0, TOOL_DIR)
+pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_assets as wa            # noqa: E402
 import wf_mod_tool as core        # noqa: E402
 import wf_quest_lib as q          # noqa: E402
@@ -81,6 +80,11 @@ def main() -> int:
     ap.add_argument("--publish", action="store_true")
     args = ap.parse_args()
 
+    if args.publish:
+        if not args.write:
+            ap.error("--publish requires --write")
+        server_root = core.resolve_server_dir()
+        core.resolve_cdn_root()
     store = core.require_active_store()
 
     for src in [args.main] + ([args.boss] if args.boss else []):
@@ -126,7 +130,7 @@ def main() -> int:
 
     if args.publish:
         import subprocess
-        r = subprocess.run([sys.executable, os.path.join(ROOT, "mod-tools", "wf_publish.py")], cwd=ROOT)
+        r = subprocess.run([sys.executable, os.path.join(TOOL_DIR, "wf_publish.py")], cwd=server_root)
         print(f"[PUBLISH] wf_publish 退出码 {r.returncode}")
     else:
         print("记得发布:python mod-tools/wf_publish.py(走 pending)")

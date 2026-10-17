@@ -1552,6 +1552,13 @@ class StatNormalizeCase(unittest.TestCase):
 
 
 class EndlessRerollSafetyCase(unittest.TestCase):
+    def setUp(self):
+        for name, value in (("resolve_server_dir", Path("configured-server")),
+                            ("resolve_cdn_root", Path("configured-cdn"))):
+            patch = mock.patch.object(rsave.core, name, return_value=value)
+            patch.start()
+            self.addCleanup(patch.stop)
+
     def test_endless_reroll_rejects_every_non_700099_99_target_before_write(self):
         """目标门禁若被移除，首个官方 700007/8 fixture 会被旧实现真实改写。"""
         for event, quest_no in (("700007", "8"), ("700099", "8")):
@@ -1798,7 +1805,7 @@ class EndlessRerollSafetyCase(unittest.TestCase):
             def reject_preflight(_command, **kwargs):
                 observed_original.append(quest_path.read_bytes() == original)
                 observed_store.append(
-                    kwargs.get("env", {}).get("WF_TARGET_STORE"))
+                    kwargs.get("env", {}).get("WF_STORE"))
                 return mock.Mock(returncode=7)
 
             with mock.patch.object(q, "store_path", return_value=quest_path), \
@@ -2504,10 +2511,11 @@ class TowerHpTargetCase(unittest.TestCase):
             bl = q.load_table("master/battle/boss/boss_level.orderedmap")
         except FileNotFoundError:
             self.skipTest("store 不可用")
-        fields = [rb.deep_hp_anchor_field(r, 30) for r in range(25, 31)]
-        self.assertEqual(len(set(fields)), 6)
+        fields = [rb.deep_hp_anchor_field(r, 30) for r in range(26, 31)]
+        self.assertIsNone(rb.deep_hp_anchor_field(25, 30))
+        self.assertEqual(len(set(fields)), 5)
         refs = rb.code_referenced_bosses(gb)
-        for r, field in zip(range(25, 31), fields):
+        for r, field in zip(range(26, 31), fields):
             bosses, _ = rb._zone_pick(field)
             self.assertTrue(bosses, field)
             got = rb.floor_native_hp(bosses, 100, sb)

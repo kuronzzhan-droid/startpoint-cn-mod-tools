@@ -1,0 +1,12 @@
+.character-labels{position:absolute;left:2px;bottom:2px;z-index:3;display:flex;flex-wrap:wrap;gap:2px;max-width:calc(100% - 4px);pointer-events:none}
+.character-label{display:inline-block;padding:2px 4px;border-radius:3px;font:800 10px/1.1 system-ui,sans-serif;letter-spacing:.1px;white-space:nowrap;border:1px solid #ffffffc9;box-shadow:0 1px 2px #0005;pointer-events:auto}
+.character-label-limited{background:#ffdf63;color:#5d3900}
+.character-label-mod{background:#187d82;color:#fff}
+.character-label-modified{background:#7756a0;color:#fff}
+.character-labels-inline{position:static;max-width:none;pointer-events:auto}
+.character-labels-inline .character-label{font-size:11px;padding:4px 6px}
+.team-candidate-art{display:block;position:relative;width:48px;height:48px;box-sizing:content-box;border-radius:4px;overflow:hidden}
+.team-candidate-art>.team-candidate-image{display:block;width:100%;height:100%;object-fit:cover}
+.team-candidate-art .character-label,.team-slot .character-label,#catalog-view[data-layout="dense"] .character-label{font-size:8px;padding:1px 2px;border-radius:2px}
+.team-candidate-art .character-labels,.team-slot .character-labels{left:1px;bottom:1px;gap:1px;max-width:calc(100% - 2px)}
+@media(max-width:640px){#catalog-view[data-layout="dense"] .character-label{font-size:7px;padding:1px}}

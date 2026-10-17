@@ -428,7 +428,7 @@ def _materialize_content_candidate(
 
     operation_tag = hashlib.sha256(operation_id.encode("ascii")).hexdigest()[:12]
     prefix = f".materialize-{operation_tag}-"
-    with tempfile.TemporaryDirectory(prefix=prefix, dir=component_root) as temporary:
+    with tempfile.TemporaryDirectory(prefix=prefix, dir=Path(native_path(component_root))) as temporary:
         staging = Path(temporary) / release_name
         os.mkdir(native_path(staging))
         patches = staging / "patches"

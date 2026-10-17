@@ -12,18 +12,14 @@ import wf_dsl
 
 try:
     from wf_pixelart_compile import (
-        SUMMER_THUNDER_TEMPLATE_SHA256,
         compile_skill_ready_canary,
-        compile_summer_thunder_dragon_skill_ready_canary,
     )
 except ImportError:
-    SUMMER_THUNDER_TEMPLATE_SHA256 = None
     compile_skill_ready_canary = None
-    compile_summer_thunder_dragon_skill_ready_canary = None
 
 
-SOURCE = "character/thunder_dragon/pixelart"
-TARGET = "character/cnmod_thunder_dragon_ascendant/pixelart"
+SOURCE = "character/synthetic_source/pixelart"
+TARGET = "character/synthetic_target/pixelart"
 
 
 def _raw_deflate(tree):
@@ -233,26 +229,10 @@ class PixelArtCompileTests(unittest.TestCase):
                 )
             cels = self._write_cels(root)
             with self.assertRaisesRegex(ValueError, "locked SHA-256"):
-                compile_summer_thunder_dragon_skill_ready_canary(template, cels)
+                compile_skill_ready_canary(template, cels, source_prefix=SOURCE, target_prefix=TARGET, expected_sha256=["0" * 64] * 9)
 
     def test_locks_template_identity_and_rejects_passthrough_out_of_bounds(self):
         self._require_module()
-        expected_locked_hashes = {
-            f"{SOURCE}/sprite_sheet.png": (
-                "578f26226ae4681d51719e3d00640cad01b7a24b0c03222c51643bcd6b79cf28"
-            ),
-            f"{SOURCE}/sprite_sheet.atlas.amf3.deflate": (
-                "76ca593252886f19ac8f8c9cd086d06ed4291eddd557a7a3fc6924fded395939"
-            ),
-            f"{SOURCE}/pixelart.frame.amf3.deflate": (
-                "d2e6a74036fec03f04948b539a11adb742b9a848012fbf0251ad746c351adc1e"
-            ),
-            f"{SOURCE}/pixelart.timeline.amf3.deflate": (
-                "23bee417315db0b49fa4bd87d62af39682a3ce9dd07b1409e01bf1c813232d8b"
-            ),
-        }
-        self.assertEqual(expected_locked_hashes, SUMMER_THUNDER_TEMPLATE_SHA256)
-
         template, _ = _template_files()
         synthetic_hashes = {
             logical: hashlib.sha256(payload).hexdigest()

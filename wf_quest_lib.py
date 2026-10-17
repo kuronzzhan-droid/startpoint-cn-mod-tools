@@ -37,7 +37,7 @@ from pathlib import Path
 
 MOD_DIR = Path(__file__).resolve().parent
 ROOT = MOD_DIR.parent
-sys.path.insert(0, str(MOD_DIR))
+pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_mod_tool as _m  # noqa: E402
 
 SALT = "K6R9T9Hz22OpeIGEWB0ui6c6PYFQnJGy"
@@ -45,16 +45,15 @@ SALT = "K6R9T9Hz22OpeIGEWB0ui6c6PYFQnJGy"
 
 # ---------------------------------------------------------------- store 定位
 
-# 作者本机的历史布局;只作为解析链全落空时的最后兜底,外部用户不该被它绑架。
+# 历史布局仅供兼容调用方识别；解析链不会再自动选择它。
 LEGACY_STORE_REL = "弹国服/WorldFlipper/dummy/download/production/upload"
 
 
 def _store_base() -> Path:
     """目标 store 根目录。
 
-    走 wf_mod_tool 的标准解析链(WF_TARGET_STORE > profiles.json 激活档案 >
-    自动探测),与 wf_gui.resolve_store()/wf_selftest 完全一致;全部落空时
-    才退回作者本机的历史路径(存在才用),否则抛出带配置指引的错误。
+    走 wf_mod_tool 的标准解析链(WF_STORE > profiles/local.json)，
+    缺少配置时直接报错，不再使用历史目录兜底。
 
     历史缺陷:这里曾写 `load_profiles().active_store`,而 load_profiles() 返回
     dict —— 必抛 AttributeError,于是永远落到 `弹国服/...`,WF_TARGET_STORE 与
@@ -63,11 +62,8 @@ def _store_base() -> Path:
     store = _m.resolve_active_store(ROOT)
     if store is not None:
         return store
-    legacy = ROOT / LEGACY_STORE_REL
-    if legacy.exists():
-        return legacy
     raise FileNotFoundError(
-        "未找到数据包 store:WF_TARGET_STORE / mod-tools/profiles.json / 自动探测均未命中。\n"
+        "未找到数据包 store；必须显式配置，不能自动选择历史目录。\n"
         + _m.TARGET_STORE_HINT
     )
 

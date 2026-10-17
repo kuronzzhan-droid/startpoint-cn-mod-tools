@@ -458,14 +458,8 @@ class TestReleaseWiring(unittest.TestCase):
                     release, "_validate_qa_contract", return_value="production"
                 ),
                 mock.patch.object(
-                    release,
-                    "_resolve_repo_paths",
-                    return_value=release._RepoPaths(
-                        tool_root=root,
-                        server_root=root,
-                        live_roots=live_roots,
-                        cdn_root=root / "cdn",
-                    ),
+                    release, "_repo_paths",
+                    return_value=(root, live_roots, root / "cdn"),
                 ),
                 mock.patch.object(release, "_server_running", return_value=False),
                 mock.patch.object(
@@ -558,14 +552,8 @@ class TestReleaseWiring(unittest.TestCase):
                     release, "_validate_qa_contract", return_value="runtime_test"
                 ),
                 mock.patch.object(
-                    release,
-                    "_resolve_repo_paths",
-                    return_value=release._RepoPaths(
-                        tool_root=root,
-                        server_root=root,
-                        live_roots=live_roots,
-                        cdn_root=root / "cdn",
-                    ),
+                    release, "_repo_paths",
+                    return_value=(root, live_roots, root / "cdn"),
                 ),
                 mock.patch.object(release, "_server_running", return_value=False),
                 mock.patch.object(
@@ -617,14 +605,8 @@ class TestReleaseWiring(unittest.TestCase):
                     release, "_validate_qa_contract", return_value="runtime_test"
                 ),
                 mock.patch.object(
-                    release,
-                    "_resolve_repo_paths",
-                    return_value=release._RepoPaths(
-                        tool_root=root,
-                        server_root=root,
-                        live_roots=live_roots,
-                        cdn_root=root / "cdn",
-                    ),
+                    release, "_repo_paths",
+                    return_value=(root, live_roots, root / "cdn"),
                 ),
                 mock.patch.object(release, "_server_running", return_value=False),
                 mock.patch.object(
@@ -672,14 +654,8 @@ class TestReleaseWiring(unittest.TestCase):
                     release, "_validate_qa_contract", return_value="runtime_test"
                 ),
                 mock.patch.object(
-                    release,
-                    "_resolve_repo_paths",
-                    return_value=release._RepoPaths(
-                        tool_root=root,
-                        server_root=root,
-                        live_roots=live_roots,
-                        cdn_root=root / "cdn",
-                    ),
+                    release, "_repo_paths",
+                    return_value=(root, live_roots, root / "cdn"),
                 ),
                 mock.patch.object(
                     release, "detect_canonical_base_version", return_value="1.4.136"

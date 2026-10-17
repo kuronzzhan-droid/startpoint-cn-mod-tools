@@ -1817,3 +1817,9 @@ def brief_command(arr) -> str:
     if bits:
         s += " (" + ", ".join(bits[:4]) + ")"
     return s
+
+
+# Keep the historical top-level API while the validator has its own module.
+from wf.rules.dsl_signature import (  # noqa: E402,F401
+    DslSignatureError, assert_command_parameter_edits, validate_action_dsl,
+)

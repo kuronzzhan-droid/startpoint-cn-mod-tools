@@ -26,8 +26,8 @@ from collections import Counter
 from pathlib import Path
 
 MOD_DIR = Path(__file__).resolve().parent
-ROOT = MOD_DIR.parent
-sys.path.insert(0, str(MOD_DIR))
+ROOT = MOD_DIR
+pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_mod_tool as core  # noqa: E402
 import wf_quest_lib as qlib  # noqa: E402
 
@@ -64,8 +64,8 @@ BOSS_HP_FACTOR = 1.5
 
 def load_roster() -> list[dict]:
     """rarity>=3 的玩家角色(排除 700xxx 助战);含六槽词条/技能键/元素/世代分层。"""
-    ch = json.loads((ROOT / "assets/cdndata/character.json").read_text(encoding="utf-8"))
-    tx = json.loads((ROOT / "assets/cdndata/character_text.json").read_text(encoding="utf-8"))
+    ch = json.loads((core.resolve_cdndata_dir() / "character.json").read_text(encoding="utf-8"))
+    tx = json.loads((core.resolve_cdndata_dir() / "character_text.json").read_text(encoding="utf-8"))
     roster = []
     for cid, rows in ch.items():
         r = core.normalize_row_length(rows[0], 37)
@@ -162,7 +162,7 @@ def main() -> None:
     parsed = {k: core.read_csv_lines(t) for k, t in ab.text_rows().items()}
 
     use = Counter()
-    ch_all = json.loads((ROOT / "assets/cdndata/character.json").read_text(encoding="utf-8"))
+    ch_all = json.loads((core.resolve_cdndata_dir() / "character.json").read_text(encoding="utf-8"))
     for rows in ch_all.values():
         r = core.normalize_row_length(rows[0], 37)
         for x in set(a for a in (r[19 + i] for i in range(6)) if a and a != "(None)"):

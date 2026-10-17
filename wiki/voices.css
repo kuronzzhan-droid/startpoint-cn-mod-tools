@@ -1,0 +1,23 @@
+/* Respond to the actual detail-panel width, including an expanded sidebar. */
+.voice-section{container-type:inline-size}
+.voice-stage-note{margin:-5px 0 12px;color:var(--muted);font-size:11px;line-height:1.65}
+.voice-section .voice-match-count{margin-bottom:10px}
+.voice-section .voice-list{grid-template-columns:repeat(3,minmax(0,1fr));align-items:start;gap:10px}
+.voice-group{min-width:0;border:1px solid var(--line);border-radius:8px;background:var(--surface);overflow:hidden}
+.voice-group-header{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:10px 8px;color:var(--ink);cursor:pointer;list-style:none;background:var(--soft)}
+.voice-group-header::-webkit-details-marker,.voice-header::-webkit-details-marker{display:none}
+.voice-group-label{font-size:12px;font-weight:700;overflow-wrap:anywhere}
+.voice-group-count{margin-left:auto;font-size:10px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.voice-toggle{flex:none;font-size:13px;transition:transform .12s}
+.voice-group[open]>.voice-group-header>.voice-toggle,.voice-card[open]>.voice-header>.voice-toggle{transform:rotate(90deg)}
+.voice-group-body{padding:6px;display:grid;gap:5px}
+.voice-section .voice-card{min-width:0;padding:0;border-color:var(--line);border-radius:5px;background:var(--surface);box-shadow:none}
+.voice-section .voice-header{display:flex;gap:5px;align-items:baseline;flex-wrap:wrap;padding:8px 6px;margin:0;border:0;cursor:pointer;list-style:none;color:var(--ink)}
+.voice-entry-label{flex:1;min-width:0;font-size:11px;line-height:1.6;overflow-wrap:anywhere}
+.voice-entry-state{font-size:9px;color:var(--muted);white-space:nowrap}
+.voice-entry-body{padding:0 8px 9px;border-top:1px solid var(--line)}
+.voice-entry-body .voice-text{grid-template-columns:1fr;gap:2px;margin:8px 0;font-size:11px}
+.voice-entry-body audio{display:block;max-width:100%;min-width:0}
+.voice-group-header:focus-visible,.voice-header:focus-visible{outline:2px solid var(--accent-dark);outline-offset:-2px}
+@container(max-width:660px){.voice-section .voice-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@container(max-width:420px){.voice-section .voice-list{grid-template-columns:minmax(0,1fr)}}

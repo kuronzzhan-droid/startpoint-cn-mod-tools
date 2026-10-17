@@ -1,0 +1,134 @@
+{
+  "tip": 206,
+  "target_base": "1.4.222",
+  "zips": [
+    {
+      "path": "rel1016/pinball-1.4.206-1.4.207-1-overlimit120-wagner-local.zip",
+      "sha256": "acc71d2819044e21d843ffaa27519b795fa2711b7777c340b73b0d292ed0168f"
+    },
+    {
+      "path": "rel1016/pinball-1.4.207-1.4.208-1-overlimit120-rose-dragon-local.zip",
+      "sha256": "f637b4277d3bf7827bedb6b7e619afc751f6f2e7972c3015ff9f96210b713114"
+    },
+    {
+      "path": "rel1016/pinball-1.4.208-1.4.209-1-seris-rework-local.zip",
+      "sha256": "945856ecaa81ff608936ce552c29db198ad1900b3a6b6220f110967ec9232caa"
+    },
+    {
+      "path": "rel1016/pinball-1.4.208-1.4.209-2-seris-rework-local.zip",
+      "sha256": "1b08003e5cdf11a456fe23cf28f0373b6b047cdf1b54d0c9aac690344f12117a"
+    },
+    {
+      "path": "rel1016/pinball-1.4.208-1.4.209-3-seris-rework-local.zip",
+      "sha256": "0c34ef331a82516ad974975ac26c526328f5d534f0b05181f21589b6f90c61f1"
+    },
+    {
+      "path": "rel1016/pinball-1.4.208-1.4.209-4-seris-rework-local.zip",
+      "sha256": "7e5d09ebe7e461b15812fa8ac215d7614a2b2003ba2733b3d6e6e9f3e7c4fce1"
+    },
+    {
+      "path": "rel1016/pinball-1.4.208-1.4.209-5-seris-rework-local.zip",
+      "sha256": "0575be11aba731773a6f06c2cd873b3dff353145ebba908dbb9a4640273bfbbe"
+    },
+    {
+      "path": "rel1016/pinball-1.4.209-1.4.210-1-overlimit-crystal-icon-fix-local.zip",
+      "sha256": "c5ff58ed125e778d744bdce626952657df50e808a99ba886ec53b9c7a15d8436"
+    },
+    {
+      "path": "rel1016/pinball-1.4.210-1.4.211-1-wagner-overlimit-tweak-local.zip",
+      "sha256": "aa6cd34381bb3ee24c43524416701a178e32deb2c5441c737090853f6850f691"
+    },
+    {
+      "path": "rel1016/pinball-1.4.211-1.4.212-1-ten-items-local.zip",
+      "sha256": "d519945b5285818ee96790413b3a2cdd8316c4740eb023ecf79fdedecc000d61"
+    },
+    {
+      "path": "rel1016/pinball-1.4.212-1.4.213-1-liangyue-ability-columns-local.zip",
+      "sha256": "6ceac0739cca43d9a89e2134421a40b8043eebdab1420db38d34925e455ae951"
+    },
+    {
+      "path": "rel1016/pinball-1.4.213-1.4.214-1-wagner-overlimit-pillar-dim-local.zip",
+      "sha256": "8aa4f5aa1f21951a06440847c6c380b5d2ad70cd0a36bd6264f17c2af2184ef2"
+    },
+    {
+      "path": "rel1016/pinball-1.4.214-1.4.215-1-balance-1016-local.zip",
+      "sha256": "b7fd0783f08200748c82895347b0ce94e1e539ea9b16ecad6d662cfba4c193ed"
+    },
+    {
+      "path": "rel1016/pinball-1.4.215-1.4.216-1-vyrn-character-local.zip",
+      "sha256": "edaddf77cc491ea4923d6dc28c0d3c44dfdfbfa7f2d980f6bbc8dd027d784319"
+    },
+    {
+      "path": "rel1016/pinball-1.4.215-1.4.216-2-vyrn-character-local.zip",
+      "sha256": "87dc87f6e81d4bd13117f43f4ac22e006c23d6bb4c4309fe2270408a4c9ac02b"
+    },
+    {
+      "path": "rel1016/pinball-1.4.215-1.4.216-3-vyrn-character-local.zip",
+      "sha256": "7752602536ad93be637e8154542b7036c0203ff7f1c135c79c6fe5c609946d58"
+    },
+    {
+      "path": "rel1016/pinball-1.4.216-1.4.217-1-vyrn-illustration-sheet-local.zip",
+      "sha256": "90bfdbf3ce72d8e3ae0af61e91353a11a88f21d3d182c11de5729ffa7c92a578"
+    },
+    {
+      "path": "rel1016/pinball-1.4.217-1.4.218-1-illustration-sheet-fix6-local.zip",
+      "sha256": "5385bfe4b8c07c5afecb8dfbf37c287f0a9b697c207c938377e475ae9035f67d"
+    },
+    {
+      "path": "rel219/pinball-1.4.218-1.4.219-1-wagner-overlimit-fx-restore-local.zip",
+      "sha256": "0ce827337ada19a3971489200d8f084b81b8d560b156cdf2a0b2882fbdd58435"
+    },
+    {
+      "path": "out/灰分享包-20261016/交付/pinball-1.4.219-1.4.220-1-align-live-local.zip",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "path": "out/万圣新角色-20261016/delivery-1.4.221/pinball-1.4.220-1.4.221-1-halloween4-characters-local.zip",
+      "sha256": "19ca8f56e576aae1c3cec8e9d898cbc18f05308c86ca2d56555ef89ed4c6c615"
+    },
+    {
+      "path": "out/万圣新角色-20261016/delivery-1.4.221/pinball-1.4.220-1.4.221-2-halloween4-characters-local.zip",
+      "sha256": "6bfc5034726b9b152b1fff4603cfce3aad7f59171314ec6bc42af507bec7410a"
+    },
+    {
+      "path": "out/万圣新角色-20261016/delivery-1.4.221/pinball-1.4.220-1.4.221-3-halloween4-characters-local.zip",
+      "sha256": "794626724c5f79084c4118303bdb697d28a3d245ba186486f458700d5eb2a38e"
+    },
+    {
+      "path": "out/万圣新角色-20261016/delivery-1.4.221/pinball-1.4.220-1.4.221-4-halloween4-characters-local.zip",
+      "sha256": "f07d1695c945d385f852669d98ca92f82780fb78695dd35bd62d3105fffd60e2"
+    },
+    {
+      "path": "out/万圣新角色-20261016/delivery-1.4.221/pinball-1.4.220-1.4.221-5-halloween4-characters-local.zip",
+      "sha256": "a6efb14778fa6e78cfc0346c6b9f83d16872041268595586edd9c64b8adc1cb3"
+    },
+    {
+      "path": "out/万圣新角色-20261016/delivery-1.4.221/pinball-1.4.220-1.4.221-6-halloween4-characters-local.zip",
+      "sha256": "52ff8e1a3b1eea3fe7fb409eab92d32708d85e3417794cca7324970ac0ce0577"
+    },
+    {
+      "path": "out/万圣新角色-20261016/delivery-1.4.221/pinball-1.4.220-1.4.221-7-halloween4-characters-local.zip",
+      "sha256": "7be1d939f4cd51dd6ce686e0c00648539ef53e726b5542b563aa3743c6093e2b"
+    },
+    {
+      "path": "out/万圣新角色-20261016/delivery-1.4.221/pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+      "sha256": "e119834d9ea6b672351961e969c4fbe2c8e9827f394940d4246e905c4633b391"
+    },
+    {
+      "path": "out/万圣新角色-20261016/delivery-1.4.221/pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "sha256": "e91ddabdf5e517efd6e19e92eaefa6f46bd89cc7c48d1a1abb0fc972e2806ca6"
+    },
+    {
+      "path": "out/万圣新角色-20261016/delivery-1.4.221/pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "sha256": "6423180e1e714f3128a1231c9d7add4c15693d2e9a1c22bacd1d6dd8c298ea76"
+    },
+    {
+      "path": "out/万圣新角色-20261016/delivery-1.4.221/pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "sha256": "0f304961559b91e53c111ddf41b869db5f325b9bf5e9c031a3afbda94fb03fac"
+    },
+    {
+      "path": "out/万圣新角色-20261016/delivery-1.4.222/pinball-1.4.221-1.4.222-1-seriol-pf3-fix-local.zip",
+      "sha256": "9b8d0be1448e1c3689ad29a42cfbc09bc2951dfcec0f9309e96c5ac3117e25f3"
+    }
+  ]
+}

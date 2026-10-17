@@ -323,16 +323,8 @@ CHARACTER_TEXT_LOGICAL = "master/character/character_text.orderedmap"
 STORY_CHARACTER_LOGICAL = "master/story/story_character.orderedmap"
 
 MOD_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = MOD_DIR.parent
-DEFAULT_STORE = (
-    PROJECT_ROOT
-    / "弹国服"
-    / "WorldFlipper"
-    / "dummy"
-    / "download"
-    / "production"
-    / "upload"
-)
+PROJECT_ROOT = MOD_DIR
+DEFAULT_STORE = None  # Resolve the configured store when running the command.
 DEFAULT_PATHLIST = MOD_DIR / "WF_PATHLIST_recovered.txt"
 DEFAULT_OUT = MOD_DIR / "work" / "story_export"
 
@@ -1315,7 +1307,8 @@ def main(
     args = parser.parse_args(argv)
     try:
         selected_pathlist = pathlist if pathlist is not None else DEFAULT_PATHLIST
-        catalog = StoryCatalog(args.store, selected_pathlist)
+        store = args.store if args.store is not None else core.require_active_store()
+        catalog = StoryCatalog(store, selected_pathlist)
         if args.list is not None:
             entries = (
                 catalog.entries

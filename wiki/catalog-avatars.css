@@ -1,0 +1,5 @@
+.catalog-avatar{display:block;width:100%;height:100%}
+.catalog-avatar>img{display:block;width:100%;height:100%;object-fit:cover}
+.catalog-avatar>.image-placeholder{height:100%}
+.community-avatar-controls{margin:10px 0}
+.team-avatar-controls{display:flex;align-items:center}

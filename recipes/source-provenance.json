@@ -1,0 +1,162 @@
+[
+  {
+    "path": "out/kulo-patch-toolkit/cursed_abyss/build/base149.py",
+    "sha256": "0ab9519d44fc6c7dbb3c26b47600996b817d2ff5dead2c3dee53616b7251a30d"
+  },
+  {
+    "path": "out/kulo-patch-toolkit/cursed_abyss/build/live149.py",
+    "sha256": "cebbabea50d3f515b2b199a4cb1a41cfe40cdfdea18a2c3c59eddbd702fd85a2"
+  },
+  {
+    "path": "out/kulo-patch-toolkit/cursed_abyss/build/stage_all.py",
+    "sha256": "86923b335d87a2b1d1c72c63d20f022df85c4b6c996543c3200d722e4f8370ba"
+  },
+  {
+    "path": "out/kulo-patch-toolkit/cursed_abyss/build/dsltools.py",
+    "sha256": "4c1a11d678bb5c672381c81f01372822b9443f31130dea7eb8bf766593a529a2"
+  },
+  {
+    "path": "out/kulo-patch-toolkit/cursed_abyss/build/layout.py",
+    "sha256": "860c28c92c308410519f6b78fe003167b2e65a2315398d101dd4fe65cab95699"
+  },
+  {
+    "path": "out/万圣新角色-20261016/hw/hw_art.py",
+    "sha256": "b649b156969c35fe92c124ebb13e737779dd4fcf29d5d07c7b663ff230217c73"
+  },
+  {
+    "path": "out/万圣新角色-20261016/hw/hw_build.py",
+    "sha256": "aedff5915721d6b4b80cf01f4b9e72a9f81edc81e00411cb32355d42c080a2b8"
+  },
+  {
+    "path": "out/万圣新角色-20261016/hw/hw_color.py",
+    "sha256": "4d31398ba344bfa20cebb1d00a79566c1b02fd04194edc6681b275399a5852ba"
+  },
+  {
+    "path": "out/万圣新角色-20261016/hw/hw_common.py",
+    "sha256": "f148ae2565f6107938095bf46afde478a479b7ea7422d0fd8beeb3c44aa93c3f"
+  },
+  {
+    "path": "out/万圣新角色-20261016/hw/hw_env.py",
+    "sha256": "396321643235ce488cd164d0d538eefae169dc4ac47b92acb4b3133b699ada7e"
+  },
+  {
+    "path": "out/万圣新角色-20261016/hw/hw_install_local.py",
+    "sha256": "47976d63b27feb6e55135c786504e643e25b79ab9c717b9ddb8c380882475d4c"
+  },
+  {
+    "path": "out/万圣新角色-20261016/hw/hw_kitlib.py",
+    "sha256": "a9f771dbba8b98b20f252ad14dbeebd65554aa964e465188257b3a2f9f04c0e6"
+  },
+  {
+    "path": "out/万圣新角色-20261016/hw/hw_kit_ludi.py",
+    "sha256": "dc5b102a05b3368a2ef228829bad854a497476c16e7dea0478f9f3b0131534e6"
+  },
+  {
+    "path": "out/万圣新角色-20261016/hw/hw_kit_momiya.py",
+    "sha256": "4b9b6423b125741a86933855f3e2db7a30f03a6cddb416ef702eb87a61f6c6d6"
+  },
+  {
+    "path": "out/万圣新角色-20261016/hw/hw_kit_recital.py",
+    "sha256": "00ee02228ae90579d77be7c4060870e48f32f2de05f6be4ec5c04ccd066c528d"
+  },
+  {
+    "path": "out/万圣新角色-20261016/hw/hw_kit_seriol.py",
+    "sha256": "caddc0f7cd449fbe0fa34954eb7dcaaac57cc1e9e88aa73b6fc61003d84ca22e"
+  },
+  {
+    "path": "out/万圣新角色-20261016/hw/hw_matte.py",
+    "sha256": "3f838802d4e7ed8c0c8a6e2aad0028dd1adff7e41bae4cc4f28aa9bad87bb13e"
+  },
+  {
+    "path": "out/万圣新角色-20261016/hw/hw_pack.py",
+    "sha256": "d2e5d88cc80f97c6994a90a944fe6f583a0594565b17effc047ef275079112e8"
+  },
+  {
+    "path": "out/万圣新角色-20261016/hw/hw_pixel.py",
+    "sha256": "a96782b3f86a62dcb857f54c3bbcc90ab8aeb87eb3e93d245dfac20a93466c40"
+  },
+  {
+    "path": "out/万圣新角色-20261016/hw/hw_server.py",
+    "sha256": "af77b568a41ea1c071c85d0534e1ee3e36aead3d2a166fbb8b9fc0f263a00000"
+  },
+  {
+    "path": "out/万圣新角色-20261016/hw/hw_specs.py",
+    "sha256": "6d89508b2fc00c07216f0c6ca476ea66ff4d9eb5531dc0ea9b59f543d3b9888a"
+  },
+  {
+    "path": "out/万圣新角色-20261016/hw/hw_verify.py",
+    "sha256": "907b268f5aaa40ea9856d8571f378d05f2fb960ce954e4d1a64681c59867f43f"
+  },
+  {
+    "path": "out/万圣新角色-20261016/hw/hw_voice.py",
+    "sha256": "bdd0e7a5bff4f4e562b963e4f16f1b7f1b64c832ca4b52de6a3cf5b2966e9989"
+  },
+  {
+    "path": "out/平衡1017/build.py",
+    "sha256": "5a987863ebd0299ef824fd07c704e5ec933a3ebe399f3de1ff69e8ea47150408"
+  },
+  {
+    "path": "out/平衡1017/fw.py",
+    "sha256": "17f85a1d2e4a0a11c102e6757f1ff67d94e6e7850b96787cbef350edcb006f00"
+  },
+  {
+    "path": "startpoint-cn-wiki/mod-tools/wf_seasonal7_specs.py",
+    "sha256": "a5e37a18e517abf3e9ddda8a57b200dcb4022586f3341e6d033bb61f40bc6a07"
+  },
+  {
+    "path": "startpoint-cn-wiki/mod-tools/wf_seasonal7_common.py",
+    "sha256": "54e55ec4504b260a7642920b9fae224cf6a84389d8e8c16aa4767fe317ed07e5"
+  },
+  {
+    "path": "startpoint-cn-wiki/mod-tools/wf_midautumn_common.py",
+    "sha256": "2d77d85c07b9c3719840861c63d10e4a5995894e7702628a03a347976835ee66"
+  },
+  {
+    "path": "startpoint-cn-wiki/mod-tools/wf_midautumn_kitlib.py",
+    "sha256": "c10b7899af77af44ada5ab0c3f2e9b2d32a7961abd013265b6c02efab1bac8b7"
+  },
+  {
+    "path": "startpoint-cn-wiki/mod-tools/wf_seasonal7_build.py",
+    "sha256": "bd4b1649290eb48eea1a64b3a4621d52d143c67de6bed820f580c1068f814d60"
+  },
+  {
+    "path": "startpoint-cn-wiki/mod-tools/wf_seasonal7_tables.py",
+    "sha256": "680821fd6e3ad1be53b2d7750fb8b92b9e9b4eac7e4f13c465f12532bd911f24"
+  },
+  {
+    "path": "startpoint-cn-wiki/mod-tools/wf_seasonal7_assets.py",
+    "sha256": "871c59c56f62aec19f61ff94ec44042f275434237d3f6331834441fc85efa594"
+  },
+  {
+    "path": "startpoint-cn-wiki/mod-tools/wf_campus_art_images.py",
+    "sha256": "e1518390359bb4808e69d18d9cce718e29d51792954ead525f9a666e58b027c3"
+  },
+  {
+    "path": "startpoint-cn-wiki/mod-tools/wf_campus_art.py",
+    "sha256": "16892b7a2937cb0d9c6446848727007a66cc1e12f6a2b25bbecdaba85c495c80"
+  },
+  {
+    "path": "startpoint-cn-wiki/mod-tools/wf_seasonal7_art.py",
+    "sha256": "dba5055018b66d95ac08cd32265aece02dca0dd731e2f5d184ad2159f198d324"
+  },
+  {
+    "path": "startpoint-cn-wiki/mod-tools/wf_seasonal7_voice.py",
+    "sha256": "78fcbb27352ff203aa22b842582c124636e340f2b00cd169a0bd9e1d1565dc2a"
+  },
+  {
+    "path": "startpoint-cn-wiki/mod-tools/wf_canary_skin.py",
+    "sha256": "6d7d65416875749002accf27ce8b97d698fe42e3aaf953eea55578521379de24"
+  },
+  {
+    "path": "startpoint-cn-wiki/mod-tools/wf_nephtim_fever_pixels.py",
+    "sha256": "1fcbca02ac6b301ca89f9bb1223c35a4e48973833fb46e93e2fd6d87f679b782"
+  },
+  {
+    "path": "startpoint-cn-wiki/mod-tools/wf_nephtim_fever_ball_pixels.py",
+    "sha256": "a9aa0f19a832f7d34a80ab7adda04018636677f27af12bf2928ec47f588556a6"
+  },
+  {
+    "path": "startpoint-cn-wiki/mod-tools/wf_cursed_weapons.py",
+    "sha256": "d9a4ee47c23e1ac6625f103170b7ea908d952280764d119b6df9185107ac0d81"
+  }
+]

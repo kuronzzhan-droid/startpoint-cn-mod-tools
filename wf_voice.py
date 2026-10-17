@@ -166,11 +166,7 @@ def synth(
 
 
 def find_ffmpeg() -> Path | None:
-    """Resolve ffmpeg using WF_FFMPEG > PATH.
-
-    An explicitly configured path is authoritative. Invalid explicit values
-    fail closed instead of silently selecting another ffmpeg installation.
-    """
+    """Resolve WF_FFMPEG > PATH; reject any invalid explicit configuration."""
     if "WF_FFMPEG" in os.environ:
         configured = os.environ["WF_FFMPEG"].strip().strip('"').strip()
         if not configured:

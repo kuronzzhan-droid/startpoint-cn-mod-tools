@@ -25,8 +25,7 @@ import wf_rogue_rewards as rewards
 import wf_rogue_shop as shop
 
 
-ROOT = Path(__file__).resolve().parents[1]
-ASSETS_DIR = ROOT / "assets"
+ASSETS_DIR: Path | None = None
 
 
 def _strict_json_load(text: str) -> Any:
@@ -47,24 +46,15 @@ def _strict_json_load(text: str) -> Any:
 
 def _resolve_client_patch_dir() -> Path:
     if "WF_CLIENT_PATCH_DIR" in os.environ:
-        raw = os.environ["WF_CLIENT_PATCH_DIR"]
-        if not raw.strip():
-            raise ValueError("WF_CLIENT_PATCH_DIR must be a non-empty path")
-        client_patch = Path(raw).expanduser()
-        if not client_patch.is_absolute():
-            raise ValueError(
-                f"WF_CLIENT_PATCH_DIR must be an absolute path: {raw}"
-            )
-    else:
-        client_patch = core.resolve_server_dir() / "client-patch"
-
-    client_patch = client_patch.resolve()
-    if not client_patch.is_dir():
-        raise ValueError(
-            "WF_CLIENT_PATCH_DIR/client-patch is not an existing directory: "
-            f"{client_patch}"
-        )
-    return client_patch
+        raw = os.environ["WF_CLIENT_PATCH_DIR"].strip()
+        configured = Path(raw).expanduser()
+        if not raw or not configured.is_absolute() or not configured.is_dir():
+            raise ValueError("WF_CLIENT_PATCH_DIR must be an existing absolute directory")
+        return configured.resolve()
+    configured = core.resolve_server_dir() / "client-patch"
+    if not configured.is_dir():
+        raise ValueError(f"client-patch directory does not exist: {configured}")
+    return configured.resolve()
 
 
 def _load_task7_builder():
@@ -72,7 +62,7 @@ def _load_task7_builder():
     existing = sys.modules.get(module_name)
     if existing is not None:
         return existing
-    # client-patch 属服务端仓工作区;独立布局只经显式目录/共享服务端解析器定位。
+    # Loading the external APK integration is deferred until APK validation.
     client_patch = _resolve_client_patch_dir()
     path = client_patch / "abyss-mode-equipment" / "build_apk.py"
     spec = importlib.util.spec_from_file_location(module_name, path)
@@ -82,6 +72,14 @@ def _load_task7_builder():
     sys.modules[module_name] = module
     spec.loader.exec_module(module)
     return module
+
+
+class _LazyApkBuilder:
+    def __getattr__(self, name):
+        return getattr(_load_task7_builder(), name)
+
+
+apk_builder = _LazyApkBuilder()
 
 
 @dataclass(frozen=True)
@@ -479,12 +477,14 @@ def main() -> int:
     args = parser.parse_args()
     try:
         profile = rewards.require_cn_profile()
+        assets_dir = (ASSETS_DIR if ASSETS_DIR is not None
+                      else core.resolve_server_dir() / "assets")
     except (OSError, KeyError, TypeError, ValueError, RuntimeError) as exc:
         print(f"[ERR] CN profile validation failed: {exc}", file=sys.stderr)
         return 1
     result = validate_release(
         profile.store,
-        ASSETS_DIR,
+        assets_dir,
         Path(args.client_verification),
         ffdec=args.ffdec,
         java=args.java,
@@ -1047,7 +1047,7 @@ def _validate_pngs(
     *,
     access_hook: Callable[[str], None] | None = None,
 ) -> None:
-    source_dir = assets_dir.parent / "mod-tools" / "assets" / "abyss-equipment"
+    source_dir = rewards.SOURCE_ASSET_DIR
     try:
         rewards.validate_source_assets(source_dir, rewards.WEAPONS)
     except Exception as exc:
@@ -1110,11 +1110,6 @@ def _validate_client_verification(
     if not isinstance(data, dict):
         errors.append("client_verification.report.invalid: root is not an object")
         return
-
-    # APK builder code belongs to the separately configured client-patch tree.
-    # Keep ordinary module import and data-only validation independent from that
-    # optional tree; only the APK verification lane is allowed to resolve it.
-    apk_builder = _load_task7_builder()
 
     if type(data.get("schema_version")) is not int:
         errors.append(

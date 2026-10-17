@@ -14,10 +14,9 @@ WF 单机版 · 本地网页修改器 (GUI)
 浏览器: http://127.0.0.1:8765/
 
 环境变量(可选):
-  WF_TARGET_STORE  目标 upload 目录(默认按 profiles.json / 项目根目录查找)
-  WF_CDNDATA       服务端 assets/cdndata 目录(①层;独立部署必配,默认取仓库根布局)
-  WF_CDN_DIR       服务端 .cdn/cn 目录(发布目标;独立部署必配,默认取仓库根布局)
-  WF_APK           内置 base 资产来源 APK 或 bundle.zip 的绝对路径
+  WF_STORE         目标 upload 目录(或 profiles/local.json；不自动扫描数据包)
+  WF_CDNDATA       服务端 assets/cdndata 目录(①层;缺省由已配置 WF_SERVER 派生)
+  WF_CDN_DIR       CDN 根(发布目标;缺省由已配置 WF_SERVER 派生)
   WF_ADB           adb.exe 完整路径
   WF_ADB_PORT      模拟器 adb 端口(默认 16384 = MuMu 12)
   WF_PKG           游戏包名(默认 com.leiting.wf,雷霆国服)
@@ -25,6 +24,8 @@ WF 单机版 · 本地网页修改器 (GUI)
 """
 
 from __future__ import annotations
+
+from wf.paths import root_path
 
 import base64
 import csv
@@ -47,7 +48,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_mod_tool as core  # noqa: E402
 import wf_describe  # noqa: E402  行级中文描述器(逆向布局+枚举直译)
 import wf_client_legality  # noqa: E402  客户端 parseAt* 硬规则(纯函数,不碰 store)
@@ -56,21 +57,23 @@ import wf_character_requirements as char_requirements  # noqa: E402  统一 37 �
 import wf_dsl  # noqa: E402       技能 ActionDsl 数值编辑
 import wf_atf  # noqa: E402       skill_cutin ATF(ETC1)纹理重编码(战斗真机只读 ATF 不读 PNG)
 import wf_boss  # noqa: E402      Boss 数值 + 副本列表(Boss·副本页)
+from wf.config import database as wf_database_paths
 import wf_server_auth  # noqa: E402  服务端管理 API 地址与 Bearer 认证
-import wf_database_paths  # noqa: E402  独立部署时的存档数据库路径
-import wf_apk_paths  # noqa: E402  独立部署时的 APK/bundle 资产来源
-import wf_device_paths  # noqa: E402  可选 adb 的独立路径解析
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = core.project_root()
 try:
     _PROFILE = core.resolve_profile(os.environ.get("WF_PROFILE"))
 except ValueError as error:
     raise SystemExit(str(error)) from None
 # ①层 cdndata:独立部署时用 WF_CDNDATA 指向服务端 assets/cdndata
-_ENV_CDNDATA = os.environ.get("WF_CDNDATA")
-CDNDATA = (Path(_ENV_CDNDATA) if _ENV_CDNDATA
-           else _PROFILE.cdndata if _PROFILE and _PROFILE.cdndata
-           else ROOT / "assets" / "cdndata")
+CDNDATA = (core._require_existing_directory(_PROFILE.cdndata, label="WF_CDNDATA / profile cdndata")
+           if _PROFILE and _PROFILE.cdndata else None)
+
+
+def _cdndata_dir() -> Path:
+    return CDNDATA if CDNDATA is not None else core.resolve_cdndata_dir()
+
+
 WORK_DIR = Path(__file__).resolve().parent / "work"
 PENDING_FILE = WORK_DIR / "sync_pending.json"
 
@@ -96,7 +99,7 @@ def resolve_store() -> Path:
         raise SystemExit(str(error)) from None
     if store:
         return store
-    raise SystemExit("未找到 WorldFlipper/dummy/.../upload,请设置 WF_TARGET_STORE 或配置 mod-tools/profiles.json")
+    raise SystemExit(core.TARGET_STORE_HINT)
 
 
 TARGET_STORE = resolve_store()
@@ -124,9 +127,9 @@ def load_characters() -> list[dict]:
     global _char_cache
     if _char_cache is not None:
         return _char_cache
-    chars = json.loads((CDNDATA / "character.json").read_text(encoding="utf-8"))
+    chars = json.loads((_cdndata_dir() / "character.json").read_text(encoding="utf-8"))
     try:
-        texts = json.loads((CDNDATA / "character_text.json").read_text(encoding="utf-8"))
+        texts = json.loads((_cdndata_dir() / "character_text.json").read_text(encoding="utf-8"))
     except Exception:
         texts = {}
 
@@ -1392,6 +1395,8 @@ def composer_meta() -> dict:
     small = {
         "target": {str(k): v for k, v in wf_describe.TARGET_CN.items()},
         "puller": {str(k): v for k, v in wf_describe.PULLER_CN.items()},
+        "instant_puller": {str(k): v for k, v in wf_describe.INSTANT_PULLER_CN.items()},
+        "during_puller": {str(k): v for k, v in wf_describe.DURING_PULLER_CN.items()},
         "element": {str(k): v for k, v in wf_describe.ELEMENT_CN.items()},
         "precontent": {str(k): v for k, v in wf_describe.PRECONTENT_CN.items()},
         "multiply": {str(k): v for k, v in wf_describe.MULTIPLY_CN.items()},
@@ -1403,7 +1408,7 @@ def composer_meta() -> dict:
                        for tok in m["character_groups_seen"]},
             "categories": list(m["category_strings"].keys()),
             "usage": m["usage_counts"], "unique_conditions": ucs,
-            "note": "数值单位:强度类 1000=1%;阈值 100000=1次/层;帧×100000;60帧=1秒"}
+            "note": "数值单位:强度类1000=1%;阈值100000=1次/层;内容frame为100000=1帧;cooltime为原始帧;instant_delay为原始秒"}
 
 
 def composer_row(key: str, line: int, as_key: str = "") -> dict:
@@ -1855,6 +1860,8 @@ def composer_generate(dst_key: str, trigger_id: str = "", effect_id: str = "",
             row[cbase + 23] = string_id           # InvokeSkill 技能键
         if action_path:
             row[cbase + 24] = action_path         # InvokeSkill DSL 路径
+    from wf.rules.instant_content import fill_instant_content_defaults
+    row = fill_instant_content_defaults(kind, row)
     desc = wf_describe.describe_line(row, kind)
     return {"key": dst_key, "kind": kind, "ncols": len(row), "row": row, "desc": desc,
             "trigger": tr_name, "effect": fx_name,
@@ -2299,6 +2306,7 @@ CHAR_FIELD_MAP = {
     "name": ("text", 0), "name_en": ("text", 1), "description": ("text", 2),
     "title": ("text", 3), "skill_name": ("text", 4), "skill_desc": ("text", 5),
     "skill_plus_name": ("text", 6), "skill_plus_desc": ("text", 7),
+    "skill_plusplus_name": ("text", 8), "skill_plusplus_desc": ("text", 9),
     "leader_title": ("text", 10), "cv": ("text", 11),
 }
 
@@ -2313,19 +2321,19 @@ RACE_TOKENS = ("Human", "Beast", "Element", "Machine", "Undead",
                "Mystery", "Dragon", "Devil", "Plants", "Aquatic")
 # 资料页技能字段 → action_skill 级别/列(技能名＋=级别2;＋＋级别3 资料页未暴露不动)
 _SKILL_TEXT_SYNC = {"1": ("skill_name", "skill_desc"),
-                    "2": ("skill_plus_name", "skill_plus_desc")}
+                    "2": ("skill_plus_name", "skill_plus_desc"),
+                    "3": ("skill_plusplus_name", "skill_plusplus_desc")}
 
 
 def _char_json_paths() -> tuple[Path, Path]:
-    return CDNDATA / "character.json", CDNDATA / "character_text.json"
+    cdndata = _cdndata_dir()
+    return cdndata / "character.json", cdndata / "character_text.json"
 
 
 # ---- 改星级后的存档校正 ----
 # 已拥有角色的 突破段/exp 超出新星级上限 → 客户端查看角色即 C2275 崩溃
 # (CharacterLevelLogic.as:94 校验)。上限镜像自 src/routes/api/character.ts
 # (characterMaxOverLimits) + src/lib/character.ts(characterExpCaps,index=突破段)。
-
-
 def _resolve_save_database() -> Path:
     if "WF_DATABASE_DIR" in os.environ:
         return wf_database_paths.resolve_database_path(os.environ, server_root=ROOT)
@@ -2335,7 +2343,10 @@ def _resolve_save_database() -> Path:
     )
 
 
-SAVE_DB = _resolve_save_database()
+try:
+    SAVE_DB = _resolve_save_database()
+except core.ServerDirNotConfiguredError:
+    SAVE_DB = None
 MAX_OVER_LIMITS = {1: 12, 2: 10, 3: 8, 4: 6, 5: 4}
 CHARACTER_EXP_CAPS = {
     1: [11416, 15820, 21477, 28538, 37241, 49481, 66600, 91180, 125223, 170928, 216633, 262338, 308043],
@@ -2351,10 +2362,13 @@ def _clamp_save_for_rarity(cid: str, rarity: int, apply: bool) -> str:
     apply=False 只预览。返回日志串(空=没有需要校正的行)。"""
     mx = MAX_OVER_LIMITS.get(rarity)
     caps = CHARACTER_EXP_CAPS.get(rarity)
-    if mx is None or not caps or not SAVE_DB.exists():
+    if mx is None or not caps:
+        return ""
+    database = SAVE_DB if SAVE_DB is not None else _resolve_save_database()
+    if not database.exists():
         return ""
     try:
-        con = sqlite3.connect(str(SAVE_DB), timeout=10)
+        con = sqlite3.connect(str(database), timeout=10)
         try:
             rows = con.execute(
                 "SELECT player_id, over_limit_step, exp FROM players_characters WHERE id=?",
@@ -2376,7 +2390,7 @@ def _clamp_save_for_rarity(cid: str, rarity: int, apply: bool) -> str:
         finally:
             con.close()
     except Exception as exc:
-        return f"⚠ 存档校正失败(可手动查 {SAVE_DB}): {exc}"
+        return f"⚠ 存档校正失败(可手动查 .database/wdfp_data.db): {exc}"
 
 
 def get_char_fields(cid: str) -> dict:
@@ -2396,8 +2410,8 @@ def get_char_fields(cid: str) -> dict:
 
 
 def _server_char_json_path() -> Path:
-    """服务端逻辑用的简化表 assets/character.json(邮件发放/admin 校验),cdndata 的兄弟文件。"""
-    return CDNDATA.parent / "character.json"
+    """服务端逻辑用的简化表；独立 cdndata 不隐含服务端写入授权。"""
+    return core.resolve_server_dir() / "assets" / "character.json"
 
 
 def save_char_fields(cid: str, edits: dict, dry_run: bool) -> dict:
@@ -2407,6 +2421,7 @@ def save_char_fields(cid: str, edits: dict, dry_run: bool) -> dict:
     服务端简化表 assets/character.json(name/rarity/element,邮件/校验用,重启服务端生效)。
     """
     mp, tp = _char_json_paths()
+    sp = _server_char_json_path()  # Resolve all write roots before action_skill can write.
     master = json.loads(mp.read_text(encoding="utf-8"))
     text = json.loads(tp.read_text(encoding="utf-8"))
     if cid not in master:
@@ -2513,7 +2528,6 @@ def save_char_fields(cid: str, edits: dict, dry_run: bool) -> dict:
             log.append(f"⚠ action_skill 同步失败(游戏内技能名/描述不会变): {e}")
 
     # ---- 服务端简化表 assets/character.json(name/rarity/element) ----
-    sp = _server_char_json_path()
     server = None
     if sp.exists() and any(f in norm for f in ("name", "rarity", "element")):
         try:
@@ -3551,9 +3565,9 @@ def _dsl_store_path(pp: str) -> Path:
 
 def _find_apk() -> Path | None:
     """内置 base 资产来源 APK:WF_APK 环境变量 > 仓库 弹国服/*.apk 取最新。"""
-    configured = wf_apk_paths.resolve_explicit_apk(os.environ)
-    if configured is not None:
-        return configured
+    envp = os.environ.get("WF_APK")
+    if envp and Path(envp).exists():
+        return Path(envp)
     cands = sorted((ROOT / "弹国服").glob("*.apk"),
                    key=lambda p: p.stat().st_mtime, reverse=True)
     return cands[0] if cands else None
@@ -5088,8 +5102,27 @@ def rollback_and_publish(name: str) -> dict:
 
 # ---------------------------------------------------------------- adb sync
 
+ADB_CANDIDATES = [
+    ('${WF_ROOT}\\MuMuPlayer\\nx_main\\adb.exe'.replace("${WF_ROOT}", str(root_path()))),
+    r"C:\Program Files\Netease\MuMuPlayer-12.0\shell\adb.exe",
+    r"C:\Program Files\Netease\MuMu Player 12\shell\adb.exe",
+    r"C:\Program Files (x86)\Netease\MuMuPlayer-12.0\shell\adb.exe",
+    r"D:\Program Files\Netease\MuMuPlayer-12.0\shell\adb.exe",
+    r"C:\Program Files\Netease\MuMuPlayerGlobal-12.0\shell\adb.exe",
+]
+
+
 def find_adb() -> str | None:
-    return wf_device_paths.find_adb()
+    env = os.environ.get("WF_ADB")
+    if env and Path(env).exists():
+        return env
+    which = shutil.which("adb")
+    if which:
+        return which
+    for cand in ADB_CANDIDATES:
+        if Path(cand).exists():
+            return cand
+    return None
 
 
 def adb_run(adb: str, *args: str, timeout: int = 600) -> tuple[int, str]:
@@ -5569,18 +5602,19 @@ def save_char_image_pos(cid: str, level: str, fs: dict | None, attr: dict | None
 
 
 def _resolve_server_url() -> str:
-    return wf_server_auth.resolve_server_url(ROOT)
+    return wf_server_auth.resolve_server_url(core.resolve_server_dir())
 
 
-SERVER_URL = _resolve_server_url()
+SERVER_URL: str | None = None  # Optional override; server settings are resolved on use.
 
 
 def _server_call(path: str, post: bool = False) -> dict:
-    headers = wf_server_auth.admin_bearer_headers(ROOT)
+    server_root = core.resolve_server_dir()
+    headers = wf_server_auth.admin_bearer_headers(server_root)
     if post:
         headers["Content-Type"] = "application/json"
     req = urllib.request.Request(
-        SERVER_URL + path,
+        (SERVER_URL or wf_server_auth.resolve_server_url(server_root)) + path,
         data=b"{}" if post else None,
         headers=headers,
         method="POST" if post else "GET")
@@ -5589,12 +5623,14 @@ def _server_call(path: str, post: bool = False) -> dict:
 
 
 def server_ping() -> dict:
+    url = SERVER_URL
     try:
+        url = url or _resolve_server_url()
         d = _server_call("/api/mod-admin/ping")
-        return {"online": True, "url": SERVER_URL, **d}
+        return {"online": True, "url": url, **d}
     except Exception as exc:
         # 字段名用 detail 而非 error:离线是正常状态,不能触发前端 api() 的统一报错
-        return {"online": False, "url": SERVER_URL, "detail": str(exc)}
+        return {"online": False, "url": url, "detail": str(exc)}
 
 
 def server_push() -> dict:
@@ -5797,15 +5833,20 @@ BSHOP_ROW_WIDTH = 50
 BSHOP_COLS = {"name": 6, "desc": 10, "icon": 12, "cost_id": 17, "cost_amount": 18,
               "available_from": 25, "available_until": 26,
               "reward_type": 32, "reward_id": 33, "reward_count": 34}
-SERVER_ASSETS = CDNDATA.parent  # assets/
+SERVER_ASSETS: Path | None = None  # Optional explicit override for offline callers.
+
+
+def _server_assets() -> Path:
+    return SERVER_ASSETS if SERVER_ASSETS is not None else core.resolve_server_dir() / "assets"
 
 
 def _bshop_server_paths() -> tuple[Path, Path]:
-    return SERVER_ASSETS / "boss_coin_shop.json", SERVER_ASSETS / "boss_coin_shop_item_category_map.json"
+    assets = _server_assets()
+    return assets / "boss_coin_shop.json", assets / "boss_coin_shop_item_category_map.json"
 
 
 def _bshop_cdn_path() -> Path:
-    return CDNDATA / "boss_coin_shop.json"
+    return _cdndata_dir() / "boss_coin_shop.json"
 
 
 def shop_categories() -> dict:
@@ -6043,9 +6084,9 @@ def save_shop_item(cat: str, iid: str, edits: dict, clone_from: str, dry_run: bo
     written = None
     if not dry_run:
         # ② 层 + cdndata 镜像 + 服务端两 json,全部备份后写
+        cp = _bshop_cdn_path()
         parsed[iid] = [row]
         written = str(_write_with_backup_ml(om, parsed, log, ".bak-wfmod-shop-"))
-        cp = _bshop_cdn_path()
         cdn = json.loads(cp.read_text(encoding="utf-8")) if cp.exists() else {}
         cdn[iid] = [row]
         _write_json_asset_file(cp, cdn, "cdndata/boss_coin_shop.json", ".bak-wfmod-shop-")
@@ -6121,7 +6162,7 @@ def _rj_load_table(spec: dict) -> core.OrderedMap:
 
 
 def _rj_cdn_path(spec: dict) -> Path:
-    return CDNDATA / spec["file"]
+    return _cdndata_dir() / spec["file"]
 
 
 def _rj_dump_rows(rows: list[list[str]], indent: str = "") -> str:
@@ -6391,8 +6432,8 @@ def weapon_clone(src: str, new_id: str, new_name: str, new_desc: str,
     wa_rows = wa.text_rows()
     has_wa = src in wa_rows
 
-    ids_p = SERVER_ASSETS / "equipment_ids.json"
-    lookup_p = SERVER_ASSETS / "equipment_lookup.json"
+    ids_p = _server_assets() / "equipment_ids.json"
+    lookup_p = _server_assets() / "equipment_lookup.json"
     lookup = json.loads(lookup_p.read_text(encoding="utf-8"))
     src_lk = lookup.get(src, {})
     log = [f"equipment[{new_id}] 克隆自 {src}({src_name}): 名={row[1]!r} 图标沿用 {row[6]}",
@@ -6475,7 +6516,7 @@ def quest_clone(src_node: str, src_rank: str, mode: str, new_name: str,
     if new_name:
         c[2] = new_name
 
-    sj_p = SERVER_ASSETS / "boss_battle_quest.json"
+    sj_p = _server_assets() / "boss_battle_quest.json"
     sj = json.loads(sj_p.read_text(encoding="utf-8"))
     if qid in sj:
         raise ValueError(f"quest id {qid} 已在服务端 boss_battle_quest.json(数据不一致,先排查)")
@@ -6720,6 +6761,38 @@ ROGUE_SHOP_COLS = {"name": 7, "cost_id": 18, "price": 19, "stock": 29,
 # 与 general_boss c0(1火2水3雷4风5光6暗)不是同一个枚举,别混用。
 ROGUE_ELEM_CN = ["风", "火", "水", "雷", "暗", "光"]
 
+# 这两条路(①难度曲线/重摇面板的「应用+发布」、⑥面板的「📤 发布」)会重建并发布
+# 整座塔。20260828 之前它们**完全不换排行榜的期**:楼层/boss/场地全换了,榜上却还
+# 留着旧塔的成绩 —— 正是作者要消灭的现象(「塔刷新榜也刷新」)。
+#
+# 现在两条都接上了 `wf_rogue_season.sync()`:发布成功之后按**楼层指纹**判一次
+# 「真换塔 vs 只动一层」,只有真换塔才回调服务端「结算并开启新一期」。
+# 为什么不无脑换期:⑥ 面板**也用来改单层 boss**,每发一次就换一期会造出一串
+# 没人打过的空榜,而换期不可逆(换掉之后上一期再也结算不了)。
+# 判据与阈值实证见 `mod-tools/wf_rogue_season.py` 的模块说明。
+#
+# 服务端的指纹兜底帮不上忙:它只看**轮数**(`computeRushSeasonFingerprint` 读
+# assets/rush_event_quest.json 的 folder→最大轮数),轮数不变就察觉不到换了一座塔。
+ROGUE_SEASON_UNSURE_HINT = (
+    "(拿不准时一律不换期:少换一次只是「新塔挂着旧榜」,后台点一下就补上;"
+    "错换一次是不可逆的。)")
+
+
+def _rogue_season_sync(source: str) -> str:
+    """发布成功之后判一次要不要换期,返回给日志用的一行说明(绝不抛)。"""
+    try:
+        import wf_rogue_season
+        result = wf_rogue_season.sync(ROGUE_EVENT_ID, source)
+        line = f"[排行榜] {result['message']}"
+        # `stale-baseline` = 基线是别的通道换期之前记的(或核对不上服务端期号),
+        # 和「小修 / 没基线」同属「拿不准 ⇒ 不换期」那一档,提示同款。
+        if result["verdict"] in ("minor-edit", "unknown", "stale-baseline"):
+            line += " " + ROGUE_SEASON_UNSURE_HINT
+        return line
+    except Exception as exc:
+        return (f"[排行榜] ⚠ 换期判定没跑起来({type(exc).__name__}: {exc});"
+                "期号未动。若这次确实换了塔,请到后台排行榜页点「结算并开启新一期」。")
+
 
 def _rogue_cells(leaf) -> list[str]:
     line = leaf.decode("utf-8") if isinstance(leaf, (bytes, bytearray)) else leaf
@@ -6734,7 +6807,7 @@ def _rogue_join(row: list[str], like) -> object:
 
 
 def _rogue_asset_path(name: str) -> str:
-    return os.path.join(ROOT, "assets", name)
+    return os.fspath(core.resolve_server_dir() / "assets" / name)
 
 
 def _rogue_run(script: str, args: list[str]) -> dict:
@@ -6975,37 +7048,7 @@ def rogue_tower() -> dict:
 
 def _rogue_reload_server() -> None:
     """通知服务端热重载 mod assets(奖励/掉落改动即时生效,不必重启)。"""
-    import urllib.request
-    token = ""
-    try:
-        with open(os.path.join(ROOT, ".env"), encoding="utf-8") as fh:
-            for line in fh:
-                if line.startswith("CN_ADMIN_TOKEN"):
-                    token = line.split("=", 1)[1].strip().strip(chr(34))
-                    break
-    except Exception:
-        pass
-    # 服务端可能只绑在 LAN 网卡上:127.0.0.1 之外再探本机全部 IPv4;
-    # 远程 GUI 场景用 WF_RELOAD_HOST 显式指定。
-    hosts = ["127.0.0.1"]
-    try:
-        import socket
-        hosts += [ip for ip in socket.gethostbyname_ex(socket.gethostname())[2]
-                  if not ip.startswith("127.")]
-    except Exception:
-        pass
-    if os.environ.get("WF_RELOAD_HOST"):
-        hosts.insert(0, os.environ["WF_RELOAD_HOST"])
-    for host in hosts:
-        try:
-            req = urllib.request.Request(
-                f"http://{host}:8001/api/mod-admin/reload_assets", data=b"", method="POST")
-            if token:
-                req.add_header("Authorization", f"Bearer {token}")
-            urllib.request.urlopen(req, timeout=5).read()
-            return
-        except Exception:
-            continue
+    _server_call("/api/mod-admin/reload_assets", post=True)
 
 
 def rogue_rewards(body: dict | None = None) -> dict:
@@ -7263,11 +7306,17 @@ def rogue_build_apply(body: dict, dry_run: bool) -> dict:
         args += ["--difficulty", str(body["difficulty"]).strip()]
     if body.get("seed") not in (None, ""):
         args += ["--seed", str(int(float(body["seed"])))]
+    published = bool(body.get("publish")) and not dry_run
     if not dry_run:
         args += ["--write"]
         if body.get("publish"):
             args += ["--publish"]
-    return _rogue_run("wf_rogue_build.py", args)
+    r = _rogue_run("wf_rogue_build.py", args)
+    # 只有**真发布**了才判换期:build --write 不发布时塔还没上链,
+    # 期该在⑥「📤 发布」那一刻才动。
+    if published and r.get("ok"):
+        r["log"] = "\n".join([(r.get("log") or ""), _rogue_season_sync("gui-build")])
+    return r
 
 
 def rogue_nerf_apply(body: dict, dry_run: bool) -> dict:
@@ -7552,8 +7601,12 @@ def rogue_layout_apply(body: dict, dry_run: bool) -> dict:
     out = qlib.save_table(ROGUE_Q_LOGICAL, quest)
     if body.get("publish"):
         pub = _rogue_run("wf_publish.py", ["--tables", "rush_event_quest"])
+        # 第三条会把楼层改动推上链的入口(⑥ 面板逐层编辑器自带的「写入并发布」)。
+        # 同样按楼层指纹判:改一层 = 小修不换期,整塔被覆盖过 = 真换塔才换期。
+        season_line = _rogue_season_sync("gui-layout") if pub["ok"] else ""
         return {"ok": pub["ok"], "log": "\n".join(log)
-                + f"\n[已写 {os.path.basename(str(out))} 并发布 ②表]\n" + pub["log"][-300:]}
+                + f"\n[已写 {os.path.basename(str(out))} 并发布 ②表]\n" + pub["log"][-300:]
+                + (f"\n{season_line}" if season_line else "")}
     return {"ok": True, "log": "\n".join(log)
             + f"\n[已写 {os.path.basename(str(out))},未发布——点「📤 发布」推送到游戏]"}
 
@@ -7636,6 +7689,12 @@ def rogue_publish() -> dict:
             r["log"] += (f"\n[OK] 发布自检:②五表 + battle {len(ROGUE_BATTLE_LOGICALS)}表"
                          " + 锻造 DSL "
                          f"{len(forged)} 个,全部在 CDN 链上且字节一致")
+    # 这颗按钮把塔发上链 ⇒ 这一刻才是「新塔对玩家生效」的时刻,换期判定挂在这里。
+    # 但 ⑥ 面板**也用来改单层 boss**,所以不能无脑换期:先按楼层指纹判一次
+    # 「真换塔 vs 只动一层」,只有真换塔才回调服务端结算+换期。
+    # 判据与实证阈值见 mod-tools/wf_rogue_season.py。
+    if r.get("ok"):
+        r["log"] = "\n".join([(r.get("log") or ""), _rogue_season_sync("gui-publish")])
     return r
 
 
@@ -7671,6 +7730,12 @@ def rogue_randomize(body: dict, dry_run: bool) -> dict:
             lines.append(r2["log"][-400:])
     lines.append("[DRY-RUN] 未写入。" if dry_run
                  else "已写入(未发布)。可在⑥手动微调,然后点「📤 发布」。")
+    if not dry_run:
+        # 这条路只写 store、不发布 ⇒ 玩家还看不到新塔 ⇒ 期号此刻不该动。
+        # 换期判定挂在⑥「📤 发布」上,那时会把这里写进去的整塔改动一并算进去
+        # (逐层指纹一比就是「全塔都变了」⇒ 判真换塔)。
+        lines.append("[排行榜] 尚未发布 ⇒ 期号不动。点⑥「📤 发布」时会自动判"
+                     "「真换塔 vs 只动一层」,真换塔才结算并开启新一期。")
     return {"ok": True, "log": "\n".join(lines)}
 
 
@@ -7758,6 +7823,14 @@ def _rogue_auto_run(body: dict | None = None) -> dict:
         if not _ROGUE_AUTO.get("restart_game"):
             args.append("--no-restart")
         r = _rogue_run("wf_rogue_reroll.py", args)
+        # 退出码 3 = 塔重摇成功了,但**排行榜没换期**(8001 没起 / 结算真炸了)。
+        # 不能当失败:重摇本身成了,报红会诱使操作者再重摇一次(又换一座塔);
+        # 也不能当成功:得让人看见还差一刀。⇒ 绿色 + 醒目告警。
+        if r.get("rc") == 3:
+            r["ok"] = True
+            r["log"] = ((r.get("log") or "") + "\n"
+                        + "[排行榜] ⚠ 塔已重摇,但期号没动 —— 榜上还是上一座塔的成绩。"
+                          "请到后台排行榜页点「结算并开启新一期」(会先结算发奖再换期)。")
         _ROGUE_AUTO_RT["last_run"] = time.strftime("%Y-%m-%d %H:%M:%S")
         _ROGUE_AUTO_RT["last_log"] = (r["log"] or "")[-1500:]
         _ROGUE_AUTO["last_run_date"] = time.strftime("%Y-%m-%d")

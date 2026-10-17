@@ -1,0 +1,19 @@
+/* Only the full-portrait catalogue receives this layout and motion. */
+#catalog-view[data-layout="portrait"]{--catalog-card-width:230px;--catalog-card-gap:18px}
+#catalog-view[data-layout="portrait"] .character-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr));gap:18px;align-items:start}
+#catalog-view .portrait-card{position:relative;min-width:0;overflow:hidden;transform:none;transition:box-shadow .18s,border-color .18s;isolation:isolate}
+/* Keep intrinsic portrait sizes out of flex sizing when hover opens the clipping layers. */
+#catalog-view .portrait-card .card-art{flex:none;min-height:0;width:100%;aspect-ratio:3/4;overflow:hidden;background:var(--surface,#f0f4f5)}
+#catalog-view .portrait-card .card-content{padding:10px 12px 12px}
+#catalog-view .portrait-card:focus-visible{outline:3px solid var(--accent,#168d80);outline-offset:4px}
+.portrait-card-media{display:block;position:absolute;inset:0;box-sizing:border-box;width:100%;height:100%;padding:12px;overflow:hidden}
+.portrait-card-media>.portrait-card-image{display:block;width:100%;height:100%;object-fit:contain;image-rendering:auto;transform:none;pointer-events:none}
+.portrait-card-placeholder{display:flex;align-items:center;justify-content:center;height:100%;min-height:160px;color:var(--muted);font-size:12px;text-align:center}
+@media(min-width:769px) and (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  #catalog-view .portrait-card-active{overflow:visible;z-index:1}
+  #catalog-view .portrait-card-active .card-art,.portrait-card-active .portrait-card-media{overflow:visible}
+  .portrait-card-media>.portrait-card-image{transition:transform .2s ease-out}
+  .portrait-card-active .portrait-card-image{position:relative;z-index:2;transform:perspective(900px) translate(var(--portrait-shift-x,0px),var(--portrait-shift-y,0px)) rotateX(var(--portrait-rotate-x,0deg)) rotateY(var(--portrait-rotate-y,0deg)) scale(1.32);will-change:transform;transition:none}
+}
+@media(max-width:640px){#catalog-view[data-layout="portrait"] .character-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}#catalog-view .portrait-card .card-content{padding:8px}.portrait-card-media{padding:10px}}
+@media(max-width:360px){#catalog-view[data-layout="portrait"] .character-grid{grid-template-columns:minmax(0,1fr)}}

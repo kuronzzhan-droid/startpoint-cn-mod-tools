@@ -1,0 +1,4 @@
+.character-view-count{display:flex;align-items:baseline;flex-wrap:wrap;gap:5px;padding:8px 12px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+.character-view-count strong{color:var(--ink);font-size:16px;font-variant-numeric:tabular-nums}
+.character-view-status{margin-left:4px;font-size:11px}
+.character-view-count .text-button{font-size:11px}
