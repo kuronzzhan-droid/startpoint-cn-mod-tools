@@ -56,3 +56,11 @@ def test_signature_failure_is_not_hidden_by_sanitizer():
     source = tree(command("ShakeCamera", "bad-int"))
     assert check_tree(source, kind=629)[0]["status"] == "问题"
     assert sanitize_for_629(source) == source
+
+
+@pytest.mark.parametrize("source", [
+    ["ActionDsl", ["Block", []]],
+    tree() + [command("DefinitelyUnknownCommand")],
+])
+def test_invalid_root_or_trailing_expression_fails_signature_gate(source):
+    assert check_tree(source, kind=629)[0]["status"] == "问题"

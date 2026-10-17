@@ -11,9 +11,12 @@ from wf.deliver.changeset import sha256
 @pytest.fixture
 def delivery(tmp_path, monkeypatch):
     import wf.deliver.build as build
-    monkeypatch.setattr(build, "run_prepush", lambda *_a, **_kw: {
-        "status": "待验证", "exit_code": 0, "since": "1.4.131", "report": "prepush.json",
-        "log": "prepush.log", "limitations": ["测试夹具未提供完整服务端"]})
+    def prepush(out, *_a, **_kw):
+        (out / "prepush.json").write_text(json.dumps({"since": "1.4.131", "findings": []}), encoding="utf-8")
+        (out / "prepush.log").write_text("test fixture", encoding="utf-8")
+        return {"status": "待验证", "exit_code": 0, "since": "1.4.131", "report": "prepush.json",
+                "log": "prepush.log", "limitations": ["测试夹具未提供完整服务端"]}
+    monkeypatch.setattr(build, "run_prepush", prepush)
     source = tmp_path / "source"
     source.mkdir()
     (source / "data.bin").write_bytes(b"data")
@@ -51,4 +54,22 @@ def test_check_rejects_upstream_only_corruption(delivery):
     path = manifest.parent / entry["relativePath"]
     path.write_bytes(b"broken")
     with pytest.raises(ValueError, match="upstream archive integrity"):
+        check_delivery(doc, directory)
+
+
+@pytest.mark.parametrize("change", ["exit_code", "limitations", "missing-report", "missing-assertions", "error-report"])
+def test_claimed_prepush_pass_requires_consistent_evidence(delivery, change):
+    directory, doc = delivery
+    doc["prepush"].update(status="满足", limitations=[])
+    if change == "exit_code":
+        doc["prepush"]["exit_code"] = 99
+    elif change == "limitations":
+        doc["prepush"]["limitations"] = ["检查未执行"]
+    elif change == "missing-report":
+        doc["prepush"]["report"] = "nonexistent.json"
+    elif change == "missing-assertions":
+        doc["assertions"] = "nonexistent.json"
+    else:
+        (directory / "prepush.json").write_text(json.dumps({"since": "1.4.131", "findings": [{"level": "ERROR"}]}), encoding="utf-8")
+    with pytest.raises((ValueError, OSError)):
         check_delivery(doc, directory)

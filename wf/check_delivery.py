@@ -11,7 +11,7 @@ def check_delivery(document, directory):
     target = tuple(map(int, document["to_version"].split(".")))
     if previous >= target:
         raise ValueError("delivery version must move forward")
-    installed_size, download_size, seen = 0, 0, set()
+    installed_size, download_size, seen, hashes = 0, 0, set(), {}
     for entry in document["archives"]:
         path = (directory / entry["name"]).resolve()
         if not path.is_relative_to(directory.resolve()):
@@ -32,6 +32,7 @@ def check_delivery(document, directory):
             if names & seen:
                 raise ValueError("delivery repeats members across seq archives")
             seen.update(names)
+            hashes.update({name: hashlib.sha256(archive.read(name)).hexdigest() for name in names})
             installed_size += sum(item.file_size for item in members)
             if archive.testzip() is not None:
                 raise ValueError(f"delivery ZIP CRC mismatch: {entry['name']}")
@@ -66,6 +67,31 @@ def check_delivery(document, directory):
         raise ValueError("legacy manifest archive chain mismatch")
     checks = [result("delivery.forward-edge", "满足", "双格式归档摘要、安装体积、CRC、成员清单及前进版本均已回读")]
     gate = document["prepush"]
+    assertions = json.loads(local_read(document["assertions"])[1])
+    if (assertions.get("from_version"), assertions.get("to_version")) != (
+            document["from_version"], document["to_version"]):
+        raise ValueError("assert_box version does not match delivery")
+    client_assertions = [entry for entry in assertions["files"] if entry["kind"] == "client"]
+    if len(client_assertions) != len(hashes) or {entry["member"]: entry["sha256"] for entry in client_assertions} != hashes:
+        raise ValueError("assert_box client assertions do not match delivered members")
+    for entry in assertions["files"]:
+        if entry["kind"] == "server":
+            raw = local_read("server/" + entry["target"])[1]
+            if hashlib.sha256(raw).hexdigest() != entry["sha256"]:
+                raise ValueError("assert_box server assertion does not match staged bytes")
+    report = json.loads(local_read(gate["report"])[1])
+    local_read(gate["log"])
+    if gate["since"] != document["from_version"] or report.get("since") != gate["since"]:
+        raise ValueError("prepush since does not match delivery")
+    findings = report.get("findings")
+    if not isinstance(findings, list):
+        raise ValueError("prepush report lacks findings")
+    has_errors = any(f.get("level") == "ERROR" for f in findings) or report.get("local_contract", {}).get("errors")
+    if gate["status"] in {"满足", "待验证"} and (gate["exit_code"] != 0 or has_errors):
+        raise ValueError("prepush status contradicts exit code or ERROR findings")
+    skipped = any(any(token in f.get("fid", "") for token in ("skipped", "missing", "failed", "view.broken")) for f in findings)
+    if gate["status"] == "满足" and (gate["limitations"] or skipped):
+        raise ValueError("prepush status ignores unexecuted checks")
     checks.append(result("delivery.prepush", gate["status"], "自动 prepush 的实际结果",
                          blocking=gate["status"] == "问题", exit_code=gate["exit_code"], limitations=gate["limitations"]))
     return checks

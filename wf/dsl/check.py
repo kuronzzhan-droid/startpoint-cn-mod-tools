@@ -23,6 +23,9 @@ def read_tree(filename):
 def check_tree(tree, *, kind=None):
     results = []
     try:
+        if (not isinstance(tree, list) or len(tree) != 12 or tree[0] != "ActionDsl"
+                or not isinstance(tree[11], list) or len(tree[11]) != 2 or tree[11][0] != "Block"):
+            raise DslSignatureError("ActionDsl 根必须为12项，索引11必须是唯一的动作 Block")
         validate_action_dsl(tree)
         results.append({"rule": "dsl.signature", "status": "满足", "message": "已登记的命令签名和参数类型匹配"})
     except (DslSignatureError, TypeError, IndexError) as error:
