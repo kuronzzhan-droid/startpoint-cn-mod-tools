@@ -1,0 +1,138 @@
+schema: wf-capability/1
+id: client.apk.patch104@1
+title: R4：网络独立超时预算
+layer: platform
+provided_by:
+  patches:
+  - 104
+  match: all
+  methods:
+  - patch: 104
+    abc: boot_ffc6
+    label: pinball.context.remote::RemoteEventListenerManager/removeListeners|1
+    sha256: 6acb353fe43291526536b171b06225d2ae4b7cf7734f063f7e0e8edc8e8aa0a0
+    status: 已记录
+    source: v34/apk-patches-additions/104-client-network-optimization/entry.json
+  - patch: 104
+    abc: boot_ffc6
+    label: pinball.context.remote::RemoteEventListenerManager/addEventListeners|1
+    sha256: b6256f2fabec6e445ac33006d68ed8bd49d50cbb675c2cfae37490ac5139d9c9
+    status: 已记录
+    source: v34/apk-patches-additions/104-client-network-optimization/entry.json
+  - patch: 104
+    abc: boot_ffc6
+    label: pinball.context.remote::RequestQueue/startRequest|1
+    sha256: eed578b10355d3a829f0ce943f639c4e57f1b9acf2c420ad42b6e068e252591e
+    status: 已记录
+    source: v34/apk-patches-additions/104-client-network-optimization/entry.json
+  - patch: 104
+    abc: boot_ffc6
+    label: pinball.context.remote::RequestQueue/requestErrorHandler|1
+    sha256: 0a08e8e03365815fec4bb794e2a388907200ef8e91f0b02185273f81759ef198
+    status: 已记录
+    source: v34/apk-patches-additions/104-client-network-optimization/entry.json
+  - patch: 104
+    abc: cn/optimize/network/NetworkBudget
+    label: cn.optimize.network::NetworkBudget$/remaining|1
+    sha256: a732614aad8ce12a94246018a52842a30843de73aa1ab555ed041a8bc1310175
+    status: 已记录
+    source: v34/apk-patches-additions/104-client-network-optimization/entry.json
+  - patch: 104
+    abc: cn/optimize/network/NetworkBudget
+    label: cn.optimize.network::NetworkBudget$/prepare|1
+    sha256: 9cfeb09440709663f096c9c611d5f606bb72fcc4f867412985ac6a753cc7594d
+    status: 已记录
+    source: v34/apk-patches-additions/104-client-network-optimization/entry.json
+  - patch: 104
+    abc: cn/optimize/network/NetworkBudget
+    label: cn.optimize.network::NetworkBudget$/allowSend|1
+    sha256: d6230a3b7965383a7a7002b23686a27cf44442770cf5219379243b415f027e7b
+    status: 已记录
+    source: v34/apk-patches-additions/104-client-network-optimization/entry.json
+  - patch: 104
+    abc: cn/optimize/network/NetworkBudget
+    label: cn.optimize.network::NetworkBudget$/install|1
+    sha256: cdcbb2477efd44c12ac111e6553f979c30e0beea00a7d09886303bc584f2306d
+    status: 已记录
+    source: v34/apk-patches-additions/104-client-network-optimization/entry.json
+  - patch: 104
+    abc: cn/optimize/network/NetworkBudget
+    label: cn.optimize.network::NetworkBudget$/<cinit>
+    sha256: 333e0a1e27815d0ceee55c473fe3dc93d56c63e3bee2b3b4aee8eed6d70191a3
+    status: 已记录
+    source: v34/apk-patches-additions/104-client-network-optimization/entry.json
+  - patch: 104
+    abc: cn/optimize/network/NetworkBudget
+    label: cn.optimize.network::NetworkBudget/<ctor>
+    sha256: 8ff32749a852a1d83829c6a3fac8ec00822f06b5c7177f9ebb43a09287b2101a
+    status: 已记录
+    source: v34/apk-patches-additions/104-client-network-optimization/entry.json
+  - patch: 104
+    abc: cn/optimize/network/NetworkBudget
+    label: script:cn.optimize.network::NetworkBudget/<init>
+    sha256: fe11b4393214b9e6b48b2285f6123066fa6287abe44a29e78b2efb8a25465e2e
+    status: 已记录
+    source: v34/apk-patches-additions/104-client-network-optimization/entry.json
+  - patch: 104
+    abc: cn/optimize/network/RequestTimer
+    label: cn.optimize.network::RequestTimer/cn.optimize.network:RequestTimer::tick|1
+    sha256: 9d78491a6acfeb89a998aa91d13817ca10cade9d9708dbe9ae61835877d31bde
+    status: 已记录
+    source: v34/apk-patches-additions/104-client-network-optimization/entry.json
+  - patch: 104
+    abc: cn/optimize/network/RequestTimer
+    label: cn.optimize.network::RequestTimer/stop|1
+    sha256: a2d8624ac5f5ec56037f1ce5451e3d74d27b25232180ff8845b4ef9006033d15
+    status: 已记录
+    source: v34/apk-patches-additions/104-client-network-optimization/entry.json
+  - patch: 104
+    abc: cn/optimize/network/RequestTimer
+    label: cn.optimize.network::RequestTimer/<ctor>
+    sha256: 1b546f41f7e4df015d7ebae63597bde0b102d15105065dc1b12abf21699edbf3
+    status: 已记录
+    source: v34/apk-patches-additions/104-client-network-optimization/entry.json
+  - patch: 104
+    abc: cn/optimize/network/RequestTimer
+    label: cn.optimize.network::RequestTimer$/<cinit>
+    sha256: 333e0a1e27815d0ceee55c473fe3dc93d56c63e3bee2b3b4aee8eed6d70191a3
+    status: 已记录
+    source: v34/apk-patches-additions/104-client-network-optimization/entry.json
+  - patch: 104
+    abc: cn/optimize/network/RequestTimer
+    label: script:cn.optimize.network::RequestTimer/<init>
+    sha256: 84abbac93fc429c844e6208fe70e38f5c7067a94b0312e00ac0c1861e074303a
+    status: 已记录
+    source: v34/apk-patches-additions/104-client-network-optimization/entry.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: false
+  features: []
+  note: 无额外服务端改动要求
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: R4：网络独立超时预算
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: R4：网络独立超时预算
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: R4：网络独立超时预算
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/apk-patches-additions/104-client-network-optimization/entry.json

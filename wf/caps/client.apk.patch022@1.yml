@@ -1,0 +1,636 @@
+schema: wf-capability/1
+id: client.apk.patch022@1
+title: 空更新兼容/切号保留偏好
+layer: platform
+provided_by:
+  patches:
+  - 22
+  match: all
+  methods:
+  - patch: 22
+    abc: boot_ffc6
+    label: AssetGetPathRealRemote/successHandler
+    sha256: 1b4ba31b15628d5eab11d6b6f535327277d2d8e507f564da8153871e17bbeb28
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-0
+    sha256: 6c73681b8c49cc4aec2b71ff2f72b1beffb2b73827b1d01b2632a2b74a1346d0
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-10
+    sha256: e8697f8915c88ef997c15784adaae0cc0240716b506143abb8d935fa010c9f10
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-11
+    sha256: e8697f8915c88ef997c15784adaae0cc0240716b506143abb8d935fa010c9f10
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-12
+    sha256: e8697f8915c88ef997c15784adaae0cc0240716b506143abb8d935fa010c9f10
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-13
+    sha256: e8697f8915c88ef997c15784adaae0cc0240716b506143abb8d935fa010c9f10
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-14
+    sha256: e8697f8915c88ef997c15784adaae0cc0240716b506143abb8d935fa010c9f10
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-2
+    sha256: bd6a7565cfed4142fc5b0a699b31d018c8ccacf19c2bc4f3a19fb28cfb722e0f
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-23
+    sha256: 81e34c90a350c6a43354af20f5d245dddc1d266d0a8c6fb7771f346ef4031569
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-3
+    sha256: 4ff73de7e1851205d648dc81bb4d16c19fba4719b0e63908fc434fcbbc34cca0
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-31
+    sha256: 7fecea38dd3896bf87e351c0f03212063b0ed353d273a2195a0aab61d2b2f8c2
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-32
+    sha256: 8d9076abf1c292288254240faf1e45b57c12d1877eff5ad2b02d8e174b556651
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-34
+    sha256: 97aa21983897fc990c30c4a69395436a7cba733bc0147e26cd774d14a90edf13
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-35
+    sha256: 45644a0b3482a3000188042a7f43468db9acadec94be747ff3526d0d4cdb5b5c
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-36
+    sha256: ee8b4daf99e9d1a96b24f4a1f4df38e74a55bd7560086f1e5f5f9dd04d6754bf
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-37
+    sha256: 3abbfe05707156b6d1d4bd902f16b6e5f9a10836b973f00e4d57a7e6197925e0
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-38
+    sha256: 610e0b45ac711297858b377ca2756302784234c86f82053ebba810e5e0f5c2d5
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-41
+    sha256: e85edae24999d4281d6c29833b707d87a87faa5765e71a9795c9b2410bad9785
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-42
+    sha256: d77582a5e73db9aaee5c985b62abe0bd5e2b0cb6301619fb2a5b635e04242b43
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-44
+    sha256: 063e2902f6f7ff0dcbc5f73892cc9316968b6f50f39e24dbc80bcec3cb853acc
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-45
+    sha256: 0d0eced91e1e96790ed0aed5cd51afc8ae43a24497af0a48552a6b87b4f3153f
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-46
+    sha256: 063e2902f6f7ff0dcbc5f73892cc9316968b6f50f39e24dbc80bcec3cb853acc
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-47
+    sha256: 216e5ddc4034c8bb8d3063d58c54220b8ed2c6343f5a6a2e0555606d45da3dbc
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-48
+    sha256: 575f08740cfa89112e68efa5872ae18e76b67c796f8e298340709c36aeb96ed0
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-49
+    sha256: f908ec72ff40a13cdf6d873c6a54564c919b56b8c3e2616d87aa38d6fe3215d7
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-50
+    sha256: 8da3fa085fe7c5e9bbc511925d3365e3d74ef4ea64b2ea149e6b23c7716f6009
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-51
+    sha256: b45d878e8649a852e9286daa5142951e70eb016a83b5ff577da8a613e5f2bff2
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-52
+    sha256: 9bf13cf33328f7a01e3a811a97782463228dcbf2f187dda63bdcb0c2728fb09e
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-53
+    sha256: 051f279231f1009b4bf9a2a63a75f5921c2f671db98879ced2a37f0ffd665d61
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-54
+    sha256: a010875f9cd0c61f307b83476eb6985ed95776a0091b1c87e261a61b462e172d
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-55
+    sha256: 7390cfcd0761681db5df96bd733889a32352e7eadc4a15e32715ce3f307c7783
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-56
+    sha256: 193335d671cb1d17fb3582038efc4bde269da02417ed22318099b1c66dd2e31c
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-57
+    sha256: c7835be95ad5b21a3790acb5c2ac873847276217388b960cfce37bacca61fa88
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-58
+    sha256: 8fedea4ecce7bfef0d2c264b49a95b105e421d7ae2c2a6bb30e6a775e4d946ce
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-59
+    sha256: 3fb57d7fbdef07fc874e9833703993c800e985a69dbd15c9b14d2302d504ee2b
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-60
+    sha256: 998289aededc12e1e29a4da2c00bf0d0d6a8f77f40195ad65b7ec5fb11f3c2c6
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-61
+    sha256: 8fedea4ecce7bfef0d2c264b49a95b105e421d7ae2c2a6bb30e6a775e4d946ce
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-62
+    sha256: 998289aededc12e1e29a4da2c00bf0d0d6a8f77f40195ad65b7ec5fb11f3c2c6
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-63
+    sha256: 998289aededc12e1e29a4da2c00bf0d0d6a8f77f40195ad65b7ec5fb11f3c2c6
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-64
+    sha256: 240d4eefbbb3c79029e1fd538a59b603947a6603f6e6f98193e45dde300a6da7
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-65
+    sha256: 204f1c83e5e6efceb4a910b80e79eb6d454d2817d3d67e1476551c8bbb719123
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-69
+    sha256: 871e799be5250427914150faffdeeeb84fb5294430e01a1c6aa50079478f6620
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-70
+    sha256: eb40bef7a0aea2f69bd09fa75ecdc8c80e8e88269f2525c7c2cf87c446144d2d
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-73
+    sha256: 204f1c83e5e6efceb4a910b80e79eb6d454d2817d3d67e1476551c8bbb719123
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-74
+    sha256: 0197753d0e9812b3f45bcb8f999a18ce4b1d339812f5ea145bd96cefe7724c3d
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-77
+    sha256: 851e464025009e602002998346d59cd5bfc301855adca0fbc5902019dcf51512
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-78
+    sha256: 4418daba7d453a3ce3c22830c5dbf1cac5caf7002078807adb4fb95bc7d3b127
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-79
+    sha256: 175996617a13da655722071ef237c96f77c2dcc8eca0d254b489d7c540c7e4f9
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-80
+    sha256: 44cca709b4544cffee7ed8e47d3be804ed31d0f233cd5094f4d0da910787d57a
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-82
+    sha256: 98b32818b9107c82c4bdb413e21fb328f3a20ead723c88f1c1e1a6ccb8775a46
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-84
+    sha256: 03ccf376ce23535dffe785d4b6ff41e15d24c8f00a41007336d58a0c5c73cf1c
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: anonymous-method-86
+    sha256: 03ccf376ce23535dffe785d4b6ff41e15d24c8f00a41007336d58a0c5c73cf1c
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/<cinit>
+    sha256: 13b3c1289ac932eda376540011233d08a3397e22ce849253e9e4b5331dc35a57
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/accept
+    sha256: d5ba21746d0e2d10e448f4b85a463160f6c261709e7226fa9334987197b0f518
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/accountRow
+    sha256: 4dbd55b18cc9e9b4caf0e38954d97db01cabec3a0d50ad50828b3f5d50baafbd
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/attach
+    sha256: 29fafac5c6c566d51efd5c4a1a9f62982314a984292efe77fa5b17a1723e4c9b
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/badge
+    sha256: 93e2db8d9953fef8391b9c5a9a0c46d90d435cc687f37be62c87e44326e0712c
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/button
+    sha256: da3d7b0dfe4a1246f652407a9efdc0f2d78e9d8cbbbd2eeb8b6206f0535e8d47
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/cancelNetwork
+    sha256: ea7bb63812fc4e12a85994b9e8077f753173637f8fce9915d1ab3abca74e04cc
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/checkbox
+    sha256: 34c53e9f53372d02f38ca8640010d7a70d000390c076041e3c4bea8a8ae2e311
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/clearLiveSession
+    sha256: 1b62491b67aef18ed65f966970f2ace7214678f574a5cff5d3cf9af845228868
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/continueGame
+    sha256: b68897a92a08bd3adee9708b7c3a4a6e3a31cd2459559917f144638219f87d1e
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin/<ctor>
+    sha256: 8ff32749a852a1d83829c6a3fac8ec00822f06b5c7177f9ebb43a09287b2101a
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/detachBackGuard
+    sha256: ef6630e6c1a3cc740802234dcff735068d6b0b603d533dc5b72b822a36753a78
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/detectLocalSave
+    sha256: fd580e57b0855836ac6df4f9870e03c9ba86454c92a4fe114be61e3930e6e447
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/dispose
+    sha256: b688df737b5709ff041b4a2ccc81d5f4d515a98196b2ecf460342536ba6d690f
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/expiryLabel
+    sha256: 00bab8214b964c4d66f81c2506ef7b7355739dceb9fa55500db7087ad2fc916e
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/findEntry
+    sha256: c46784a6f1de8d73f578d00ab814dca465678db93d0b6d2405bb6a6287936212
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/guardBack
+    sha256: 918432dfc55d64b14363b02889d361bdc2ce2c065c725f15fc924d2a8eb62998
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/input
+    sha256: 065e4c969c2c6071f46e7df8e1fe80260920d4ea9ea5e327c64092e07a321fbd
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/invalidateEntry
+    sha256: 6bcb6523745137640ba59a9fda2d7bbfe319e8aa6f999bca339c82d8da792c6f
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/label
+    sha256: 1459c3b464ff6e800621e2e30832f500a1cad39eee9ce5c50fedbb678ad10cdb
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/line
+    sha256: 17248c1be261d0720a07c50ca5f74adf4faf11b7b6c07cae067ea19b458908ab
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/link
+    sha256: ba91dc18405531df9326e3cdcfdd156e52940b11ef19c31e02d22abb7edd62ae
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/loadAccounts
+    sha256: 27019d04bf6d591bd53ee9ca2e6fecb4c4632bf509b1f528127801fc4e1f8002
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/navigate
+    sha256: 9ddc02859d364a94ac9ae624f6217b833aa3005c94f4f5d9c565904d7c1c870c
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/persistAccounts
+    sha256: 90399b76f7d0fa1593b054123860151537c08513191813cd409d87c29cc68454
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/playerCard
+    sha256: 169790c429217a91e7422472a06e62f633b62cb44d9fed683fe7e4ca8a19adff
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/readStoredRecord
+    sha256: 3011006461044d70b121708baec9a4363beafabd85bd5e3596a7ace6d0b39aa4
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/removeEntry
+    sha256: c0faa766888c21206bd9df439383a076309e52840aed20c00979f57997f6ac86
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/render
+    sha256: 8c5b13b79a33ec3ca51ae28695bdca9dc90f22e29c8f1e9444fbd7bf1bb40d9a
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/request
+    sha256: 5a89ee133b9ea7f4d97cdfe39d09675480b32d021110e9a58ef45a433b28c315
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/resize
+    sha256: 5ad84a0574cad13f67ca23215ba62f4f4c0f472b945b48f55e551a47aa3ef4da
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/resumeEntry
+    sha256: 785dcd6ff95295a35dfed3a795f6ebdc646f987fddd0a1579fcb70ffde5f1ff5
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/rounded
+    sha256: 3027be937c36d30681bbe37e269ee7c3958c5a8e788effd72861e9a877956de2
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/show
+    sha256: fb190df232e18a890598a6538a36990016b5f8ceed4260a443e60fdf1a077584
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/socket
+    sha256: 9607b48cf6a34d9143e33f421e7638ce221a32badb7d518f6ccb9d6d012f4df5
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/start
+    sha256: 8cf30674fac365ca39f39a63ffd1e84888a17dbd98b88bd3562ab380136bfde1
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/storageStatus
+    sha256: 061341abe1b924cb7bd3bb8bba59949a4eb0d323bf723942795c71e0e55691c7
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/submit
+    sha256: 9f4fc36de1908a5a032e7535817bb615213f7b38269395be3c54a0d7a9d7ffc4
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/switchAccount
+    sha256: ea8ac8549f7c4239f0d0c76685861ca5357ff110ef05d53d35993d3161fe1002
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/tabs
+    sha256: 4068318d6e65a9465852904f333d0b8829c11b8bf644650299c1ab6c3a6bdea5
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/title
+    sha256: 803bf50e692ea1f93a972c08760f8649e0668bfe4751d00f0968552db63f6eb4
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.account.PlayerLogin
+    label: PlayerLogin$/wrappedLabel
+    sha256: ccb0c76428177e31d51333a53c45fe7b41e07bccd83c2dd63bea66c066276e52
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.asset.EmptyUpdate
+    label: anonymous-method-0
+    sha256: d0dce5d8c73a9148a052376abb9845c39f0347fcba75264049e27b270ded94e1
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.asset.EmptyUpdate
+    label: EmptyUpdate$/<cinit>
+    sha256: 333e0a1e27815d0ceee55c473fe3dc93d56c63e3bee2b3b4aee8eed6d70191a3
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.asset.EmptyUpdate
+    label: EmptyUpdate/<ctor>
+    sha256: 8ff32749a852a1d83829c6a3fac8ec00822f06b5c7177f9ebb43a09287b2101a
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.asset.EmptyUpdate
+    label: EmptyUpdate$/empty
+    sha256: a5ba2f7ce1c194aa907d67f12d5c645ed33f35b557f370ab225e5755db216c14
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 22
+    abc: cn.asset.EmptyUpdate
+    label: EmptyUpdate$/normalize
+    sha256: d63a38e092207419f21092ef1fd670c1fa68e36444525f7b2393d1fcf5116a1e
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: false
+  features: []
+  note: 无额外服务端改动要求
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: 空更新兼容/切号保留偏好
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: 空更新兼容/切号保留偏好
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: 空更新兼容/切号保留偏好
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/verification/v33-patches-preserved-o8-o12-r2.json

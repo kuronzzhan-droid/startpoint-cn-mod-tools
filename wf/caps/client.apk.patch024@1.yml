@@ -1,0 +1,114 @@
+schema: wf-capability/1
+id: client.apk.patch024@1
+title: 幻想连战多人路由
+layer: A
+provided_by:
+  patches:
+  - 24
+  match: all
+  methods:
+  - patch: 24
+    abc: boot_ffc6
+    label: AdventEventQuestLogic/isRequiredHostClearFromOtherQuest
+    sha256: 93d440800eca6bf9d9281c98dbfb1132f2e4853bb124b1b73b8c292e75846765
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 24
+    abc: boot_ffc6
+    label: AdventEventQuestLogic/isSelectable
+    sha256: fa30506f61f35800ca78a3c9070406adf9322ea7df3e5f06d4476a8f096bca7b
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 24
+    abc: boot_ffc6
+    label: AdventEventQuestLogic/isViewable
+    sha256: 8798d2e905f224a0af773692342b2e40a8c869bad76520b7aec0ab605b47a9d4
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 24
+    abc: boot_ffc6
+    label: BossBattleModeSelectScene/isFantasyRushBossQuest
+    sha256: 498f61fe586f70bf4169bd100373135748e0cde9de7b03148d9a1d8c10c89848
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 24
+    abc: boot_ffc6
+    label: BossBattleModeSelectScene/prepareScene
+    sha256: a68d3be29d63c16ea97129b04e080ce9b56c9d50fa5aaa8210839c92cf58afcf
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 24
+    abc: boot_ffc6
+    label: BossBattleModeSelectScene/startFantasyRushMultiBattle
+    sha256: f6034f2437ce5ea49cf919a4f5e89d3bd1cf4dbe24ed66056f4c437379119284
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 24
+    abc: boot_ffc6
+    label: MultiBattleRoomPrepareFlow/createRoomNotFoundDialog
+    sha256: 46614ab0ff0cc8024bcd42740c25a87edd36a84c07474e629d1f8cbf5fb45c23
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 24
+    abc: boot_ffc6
+    label: MultiBattleRoomPrepareFlow/sceneChangeToRoom
+    sha256: a366ee6fae39650e5796c50eb9260f9897ad11f410fabaf60958310c3a857124
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 24
+    abc: boot_ffc6
+    label: PartySelectScene/run
+    sha256: e7e852be6d1763117e4a1adf4be9d4a9d7fe043789525c650fa23e1d1a0f5570
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 24
+    abc: boot_ffc6
+    label: RushEventQuestSelectScene/selectQuest
+    sha256: 4caa158cb310699932c3b816cab07537c0a80e7ce6610c861c77458bd832d912
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 24
+    abc: boot_ffc6
+    label: RushEventQuestSelectScene/startQuest
+    sha256: a48f031b6b87320a16c11ebf44194036dfdaa13310e1d7ce42591bbcc0f27100
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 24
+    abc: boot_ffc6
+    label: SingleQuestStartFlow/start
+    sha256: bcba39e333edb74276821d1b37ba89eed26e6e6378daccf5e39634be6b621525
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: true
+  features: []
+  note: 需要对应服务端规则；本能力声明不证明服务端已部署
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: 幻想连战多人路由
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: 幻想连战多人路由
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: 幻想连战多人路由
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/verification/v33-patches-preserved-o8-o12-r2.json

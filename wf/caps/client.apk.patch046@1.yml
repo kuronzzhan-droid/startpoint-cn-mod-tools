@@ -1,0 +1,132 @@
+schema: wf-capability/1
+id: client.apk.patch046@1
+title: Rush 原生排行榜
+layer: platform
+provided_by:
+  patches:
+  - 46
+  match: all
+  methods:
+  - patch: 46
+    abc: boot_ffc6
+    label: EventRushRewardRealRemote/<ctor>
+    sha256: 36411b6694c06c1578848c535b0fe243de22ae3bdb643d27d8e30bbb3be17b20
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 46
+    abc: boot_ffc6
+    label: EventRushRewardRealRemote/successHandler
+    sha256: a558b9711da96a1308e26b52d355d5f9f540d642ff2f448767e8d2feb8fe6384
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 46
+    abc: boot_ffc6
+    label: RushEventRankingPartyListCellContentView/apply
+    sha256: 6d23b6d82f3c00abe461e557fc4e23b322e3ff58ca1df89df9a37fef2e596e6a
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 46
+    abc: boot_ffc6
+    label: RushEventRankingPartyListCellContentView/resizeWidth
+    sha256: da79dca455460c5aa3c34c784209bc43d0c88fd18a33b20ab6fb3e53aec23153
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 46
+    abc: boot_ffc6
+    label: RushEventRankingPartyListCellContentView/run
+    sha256: 795e4692235094e46b9b04d0cd39508047f3fc6be9d10d1d37d82476f5dd0d0b
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 46
+    abc: boot_ffc6
+    label: RushEventRankingPartyListView/createListCell
+    sha256: 046c2ba2f8755a08affa59456220138a29d36ce4cd62f7edd07f12f6dc33e231
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 46
+    abc: boot_ffc6
+    label: RushEventRankingPartyScene/afterTransition
+    sha256: 52dc974bbe75f7597e6160539574f2fc1949096d17f93553a880646b35bc85b7
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 46
+    abc: boot_ffc6
+    label: RushEventRankingPartyScene/buttonClicked
+    sha256: 9f1f3c2d5510b4d96e6370957a25a792ee847e085a144548934179eb32ef7a53
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 46
+    abc: boot_ffc6
+    label: RushEventRankingPartyScene/copyPlayedParty
+    sha256: e44d600bf617c0b100dbc4b2aebadb9f977a72d9b0a4f651719f9627f4cdef00
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 46
+    abc: boot_ffc6
+    label: RushEventRankingPartyScene/preparation
+    sha256: 290e64aaab3a904ad5dc4566dcdc79548cb2dc653c5a1390e0d07ea449368a11
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 46
+    abc: boot_ffc6
+    label: RushEventRankingPartyScene/run
+    sha256: 778d46660d1ca60f0e3ffbbd1e40ac4f166cbdb15ae567da33c4e42b7a49d351
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 46
+    abc: boot_ffc6
+    label: RushEventRankingPartyView/run
+    sha256: 40f0a147bbd0b4051806625c59269e0e113a777b1030be101aec2014ddd148c2
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 46
+    abc: boot_ffc6
+    label: RushEventTopScene/buttonClicked
+    sha256: ff1399e1d817506365d54528bbb528ec90710b6081a2336e86ac6e7edecdceb4
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 46
+    abc: boot_ffc6
+    label: RushEventTopScene/run
+    sha256: 92018c3f00aa31ce271987b8f00fab9c07dd57c60cd158064c514ebf52b1ce9d
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 46
+    abc: boot_ffc6
+    label: RushEventTopView/run
+    sha256: 64c20d3f9cba4969835d634d5acae79326dfbc8ca883556d8ec0bf1d956db9a9
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: true
+  features: []
+  note: 需要对应服务端规则；本能力声明不证明服务端已部署
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: Rush 原生排行榜
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: Rush 原生排行榜
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: Rush 原生排行榜
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/verification/v33-patches-preserved-o8-o12-r2.json

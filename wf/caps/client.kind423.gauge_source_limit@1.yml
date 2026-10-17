@@ -1,0 +1,158 @@
+schema: wf-capability/1
+id: client.kind423.gauge_source_limit@1
+title: kind 423 通用回槽来源限制
+layer: A
+provided_by:
+  patches:
+  - 30
+  - 31
+  match: all
+  methods:
+  - patch: 30
+    abc: boot_ffc6
+    label: MemberAbilityTotalizerImpl/wfBlocksGauge
+    sha256: c00c039ed5450963581587afefb79a4e0e8185bba082a0f95677263e9a510e37
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 30
+    abc: boot_ffc6
+    label: MemberImpl/applyInstantAbility
+    sha256: 6088e8e59832bca7c260e5f82339395fe1d1fce47c92aa7fa2f0591549052817
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 31
+    abc: boot_ffc6
+    label: AbilitySlotImpl/applyInstant
+    sha256: 2e0ad12bc7b99ee1adf36fba1bebb62883b95684a430bb77fde4af08c912807c
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 31
+    abc: boot_ffc6
+    label: AbilityValues$/parseAt109
+    sha256: 3e42c85d4ee45ce33be9a7aec70e350a2303ce3cb7132dd0e8183c02310516eb
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 31
+    abc: boot_ffc6
+    label: ActionEvaluator/evalCommand
+    sha256: 740d1da65f427f1fd65adb18261d71d333a8e0b8ebe5142299abf266121e9b14
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 31
+    abc: boot_ffc6
+    label: InstantAbility/<ctor>
+    sha256: 2443e534a28afc075bbbbc5f65090458114422da74425dce893a5495a00868bb
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 31
+    abc: boot_ffc6
+    label: InstantAbilityAddress/<ctor>
+    sha256: 0cc2af56cd2dccbeb11bd1a15f8d276c662dd103ad3b3f1a2294f0d054f2e4e0
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 31
+    abc: boot_ffc6
+    label: MemberAbilityTotalizerImpl/addDuringContent
+    sha256: a05011f9959b625d0744ca20bf2c65dec54440e9652f13cdd43a9cc8bc723138
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 31
+    abc: boot_ffc6
+    label: MemberAbilityTotalizerImpl/wfBlocksGauge
+    sha256: c00c039ed5450963581587afefb79a4e0e8185bba082a0f95677263e9a510e37
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 31
+    abc: boot_ffc6
+    label: MemberImpl$/wfGaugeFromAction
+    sha256: 8a388cec98cec7c6d1722010b889c9e53b67a32911ac1b745df57839760e2c90
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 31
+    abc: boot_ffc6
+    label: MemberImpl$/wfGaugeFromAddress
+    sha256: 7014ebb423883d75b41b1ae2500889f6376b579520e957ac859bd45481f17436
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 31
+    abc: boot_ffc6
+    label: MemberImpl/addSkillPoint
+    sha256: 17616e77a698088c7c5eccebfdfb6aae6b8a1690bd259e2dfc29b11d0f32ecff
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 31
+    abc: boot_ffc6
+    label: MemberImpl/applyInitialSkillPointRatio
+    sha256: 45aa616e249da0d1f7906ec9b148fad7664130d2c90adcf39a18bfc7cdffe87c
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 31
+    abc: boot_ffc6
+    label: MemberImpl/applyInstantAbility
+    sha256: 6088e8e59832bca7c260e5f82339395fe1d1fce47c92aa7fa2f0591549052817
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 31
+    abc: boot_ffc6
+    label: MemberImpl/move
+    sha256: 254bfe6d69423f5c40c6f47256d92ed4dd4b370e8503eae12d9659241a05dac5
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 31
+    abc: boot_ffc6
+    label: MemberImpl/reserveFixedSkillPoint
+    sha256: 9f3fd6bcafcc769b93d53cc7033e2aaa516f578872a4519419a9819fc1aa0a61
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 31
+    abc: boot_ffc6
+    label: MemberImpl/reserveSkillPoint
+    sha256: 6fe9817a84ad66ca0cdeaed697b1e984f3953b78dcea0ef76e6de6b35e16c1f2
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 31
+    abc: boot_ffc6
+    label: MemberImpl/wfAllowsGauge
+    sha256: c0767e932272aed7021d42cba1bd0a3d46e6f7a6848d93cc3a46af018bfefae4
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 31
+    abc: boot_ffc6
+    label: DuringAbilitySource$/createFromDuringAbilityValues
+    sha256: 7a5349a32a8335817281b9bb9b52f345dec5c26aa56333e27209472fe0aed46f
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: false
+  features: []
+  note: 无额外服务端改动要求
+data_surface:
+  kinds:
+  - 423
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: kind 423 通用回槽来源限制
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: kind 423 通用回槽来源限制
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: kind 423 通用回槽来源限制
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/verification/v33-patches-preserved-o8-o12-r2.json

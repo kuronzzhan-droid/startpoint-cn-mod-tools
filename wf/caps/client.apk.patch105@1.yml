@@ -1,0 +1,258 @@
+schema: wf-capability/1
+id: client.apk.patch105@1
+title: R4：数据优化(含徽标延迟求值)
+layer: platform
+provided_by:
+  patches:
+  - 105
+  match: all
+  methods:
+  - patch: 105
+    abc: boot_ffc6
+    label: pinball.scene.character.characterList::CharacterListCachedRepository/find|1
+    sha256: b766c71a7103935b83dfa096f22951828e73a2ed63050dd2aabe323e43d4973d
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: boot_ffc6
+    label: pinball.scene.character.characterList::CharacterListCachedRepository/clearCache|1
+    sha256: 791c2a91d821401b891b284092d89087499abd1d8742af910f06e507c830a558
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: boot_ffc6
+    label: pinball.scene.character.characterTable::CharacterTable/applyCharacters|1
+    sha256: b79eeb06c593df69a7557ab85b2e4e605b2e3889e26c11bfc73aa51f6a2b17d7
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: boot_ffc6
+    label: pinball.scene.character.partyCarousel::PartyCarousel/partyChanged|1
+    sha256: 48d829caaeeaad02ce969ce1450b2b3bd872ded98fd469b58366e7dbcf9f04e0
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: boot_ffc6
+    label: pinball.scene.character.partyCarousel::PartyCarousel/getPartyData|1
+    sha256: c70fb9304efda08eafb22cc45096db17a22110f8e1564157a15fe03c419b7dbd
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: boot_ffc6
+    label: pinball.scene.character.partyCarousel::PartyCarousel/applyParty|1
+    sha256: 314c0270a6e7cd134c1f718cdb1c15f888b02d82e74811f8833495a2c4710261
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: boot_ffc6
+    label: pinball.scene.character.partyCarousel::PartyCarousel/applyDetailSetting|1
+    sha256: 772325f45c1d02e1482cb97946f068ca9e0e653007f275b0eb2a5503747e91d3
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: boot_ffc6
+    label: pinball.scene.character.translator::CharacterTranslator/getBadgeReasonMethod|1
+    sha256: acff6c0a4c27a6fdcd8cf29e831e9b07086e73b14cf2724893c39a49dea0b4a9
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: boot_ffc6
+    label: pinball.scene.character.translator::PartyTranslator/translate|1
+    sha256: f8afab6e8406ac92c6862fa1982854ca60be8202081c0c2a99b6b46d2e7793ed
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: boot_ffc6
+    label: pinball.scene.character.translator::PartyTranslator/createStatus|1
+    sha256: 42963079ee9d4685b7746a1b5cba2cc1fbd1c9062f3ce7b69d74abf7a93d60ef
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: boot_ffc6
+    label: pinball.common.data.character::BattleCharacterLogic/getLearnedManaNodes|1
+    sha256: 25d9b15a0c720a34f6aaa44b694d2b6d2113695667584816cdeeea8a90287503
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: cn.optimize.data.DataOptimization
+    label: cn.optimize.data::DataOptimization$/deferredQuestBadge|1/closure:0
+    sha256: 3e02ea6cef20ec471e212c36108bfaed7905664b06e6979feee42f87a039080e
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: cn.optimize.data.DataOptimization
+    label: cn.optimize.data::DataOptimization$/deferredQuestBadge|1
+    sha256: f5e75b0c2b80cff296df0faf94f0eb7acaabb4c8c00bfa75277fc3996472ae80
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: cn.optimize.data.DataOptimization
+    label: cn.optimize.data::DataOptimization$/ranks|1
+    sha256: 0f06e5bf87889b4629908c3a3f5da217be071caaeee56d756817f730b9bc1c65
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: cn.optimize.data.DataOptimization
+    label: cn.optimize.data::DataOptimization$/rank|1
+    sha256: 0f2b4b4a8e578d4ffefa24cd6914c83179c894190e0d510478757e88950e6c93
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: cn.optimize.data.DataOptimization
+    label: cn.optimize.data::DataOptimization$/rankComparator|1/closure:0
+    sha256: 36d9bef97635fe6b4f62ac47a317ba162e68b63cfbcd752dd22d2c34084aeafb
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: cn.optimize.data.DataOptimization
+    label: cn.optimize.data::DataOptimization$/rankComparator|1
+    sha256: 3fc79e21caf02821a2bb2a979f2e4066238beaa03a079ea2442283fcdb96e9d0
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: cn.optimize.data.DataOptimization
+    label: cn.optimize.data::DataOptimization$/cn.optimize.data:DataOptimization::primary|1
+    sha256: c1bdce6968665258c69721e65d56a2bd473b0d2518a8529ebaef11e90ac3017c
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: cn.optimize.data.DataOptimization
+    label: cn.optimize.data::DataOptimization$/cn.optimize.data:DataOptimization::sortSnapshot|1
+    sha256: 1dfc21179b1e7f6fe14f000339102a48abe2de89426d5edcef97fb170086a9e6
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: cn.optimize.data.DataOptimization
+    label: cn.optimize.data::DataOptimization$/cn.optimize.data:DataOptimization::equals|1
+    sha256: b32323e31e20f3d56b38696d55f35f881c8cf023b58a6813fe4f7b83923e3fc1
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: cn.optimize.data.DataOptimization
+    label: cn.optimize.data::DataOptimization$/sortIfChanged|1/closure:0
+    sha256: aa40c3ff3fed16c0a65448aa2638f0dc25c01d9d50c66884a4d439dab75c7995
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: cn.optimize.data.DataOptimization
+    label: cn.optimize.data::DataOptimization$/sortIfChanged|1
+    sha256: ac3f72ce657d93a23db989d739a931e03a53c9adf2676b82f167ccf5a5ca32af
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: cn.optimize.data.DataOptimization
+    label: cn.optimize.data::DataOptimization$/forgetSort|1
+    sha256: fc47e7aae703fc3de780d721c00f8f105d7e9d900669e25a56a1f83760200004
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: cn.optimize.data.DataOptimization
+    label: cn.optimize.data::DataOptimization$/cn.optimize.data:DataOptimization::details|1
+    sha256: fce55c052cbd70403c4a9955e89a8b9fa7de01ca7013a47a59c5661ccf826f0e
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: cn.optimize.data.DataOptimization
+    label: cn.optimize.data::DataOptimization$/acceptParty|1
+    sha256: bb814d2ab1d62ced882f6de4c0c62f70a3d95ef0bbb83a2e562010dcece7f742
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: cn.optimize.data.DataOptimization
+    label: cn.optimize.data::DataOptimization$/partyData|1
+    sha256: e9c755721486199aed379996b24d79dd7a1b5fc6582ceaee103ad0f5ca473654
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: cn.optimize.data.DataOptimization
+    label: cn.optimize.data::DataOptimization$/ensureParty|1
+    sha256: e35215cd272673a559c759a827a61340153368847a0f4d97cad5168b2d6ffed2
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: cn.optimize.data.DataOptimization
+    label: cn.optimize.data::DataOptimization$/applyDetails|1
+    sha256: 052737539b74b4156cd1c086b55b8776c09484256f94f9ae75d0b771119eeb49
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: cn.optimize.data.DataOptimization
+    label: cn.optimize.data::DataOptimization$/beginNodes|1
+    sha256: 0df1b0415cbc0f75d61d024322712a39c412cd313354e4c7b69219bbf6d1a5da
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: cn.optimize.data.DataOptimization
+    label: cn.optimize.data::DataOptimization$/endNodes|1
+    sha256: d2be7945f46e4ca2d02b2569051c480a999d82080b158eff767b800693408f3a
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: cn.optimize.data.DataOptimization
+    label: cn.optimize.data::DataOptimization$/scopeDepth|1
+    sha256: 5c48f4593260f2b3b67875195e619d8d79acd471002d33aaca7d04bfc8fe8963
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: cn.optimize.data.DataOptimization
+    label: cn.optimize.data::DataOptimization$/cn.optimize.data:DataOptimization::nodeSignature|1
+    sha256: 3902293a643bf0641c1a36bbfe570ee11aaf001803c717c225450594b1e43815
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: cn.optimize.data.DataOptimization
+    label: cn.optimize.data::DataOptimization$/nodes|1
+    sha256: b9db0fe0c16246635bfe81414f38ebab153ef081a385a629f878fc7ffc1c0b8a
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: cn.optimize.data.DataOptimization
+    label: cn.optimize.data::DataOptimization$/<cinit>
+    sha256: f9340ec2ee1894720739cf85058ff16837e73518e49d8d395802e30e3ce3c5af
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: cn.optimize.data.DataOptimization
+    label: cn.optimize.data::DataOptimization/<ctor>
+    sha256: 8ff32749a852a1d83829c6a3fac8ec00822f06b5c7177f9ebb43a09287b2101a
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  - patch: 105
+    abc: cn.optimize.data.DataOptimization
+    label: script:cn.optimize.data::DataOptimization/<init>
+    sha256: b2dda6028b588b7343aa4f3e74c8a0e297d968e2f22c83f10178ad138433e7a8
+    status: 已记录
+    source: v34/apk-patches-additions/105-client-data-optimization/entry.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: false
+  features: []
+  note: 无额外服务端改动要求
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: R4：数据优化(含徽标延迟求值)
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: R4：数据优化(含徽标延迟求值)
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: R4：数据优化(含徽标延迟求值)
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/apk-patches-additions/105-client-data-optimization/entry.json

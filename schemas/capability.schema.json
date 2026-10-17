@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wf-capability/1",
+  "title": "能力声明",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "title", "layer", "provided_by", "server", "data_surface", "form", "describe", "rules", "preview", "golden", "docs"],
+  "properties": {
+    "schema": {"const": "wf-capability/1"},
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9_.]*@[1-9][0-9]*$"},
+    "title": {"type": "string", "minLength": 1},
+    "layer": {"enum": ["A", "B", "C", "platform"]},
+    "provided_by": {
+      "type": "object", "additionalProperties": false,
+      "required": ["patches", "match", "methods", "status", "basis"],
+      "properties": {
+        "patches": {"type": "array", "uniqueItems": true, "items": {"type": "integer", "minimum": 1}},
+        "match": {"const": "all"},
+        "methods": {"type": "array", "items": {"$ref": "#/$defs/method"}},
+        "status": {"enum": ["已记录", "待补", "官方系统"]},
+        "basis": {"type": "string", "minLength": 1}
+      }
+    },
+    "server": {
+      "type": "object", "additionalProperties": false, "required": ["required", "note", "features"],
+      "properties": {"required": {"type": "boolean"}, "note": {"type": "string"}, "features": {"$ref": "#/$defs/strings"}}
+    },
+    "data_surface": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kinds", "dsl_nodes", "unique_prefixes", "unique_ids", "tables", "selectors"],
+      "properties": {
+        "kinds": {"type": "array", "uniqueItems": true, "items": {"type": "integer", "minimum": 0}},
+        "dsl_nodes": {"$ref": "#/$defs/strings"},
+        "unique_prefixes": {"$ref": "#/$defs/strings"},
+        "unique_ids": {"$ref": "#/$defs/strings"},
+        "tables": {"$ref": "#/$defs/strings"},
+        "selectors": {"$ref": "#/$defs/strings"}
+      }
+    },
+    "form": {"type": "object", "required": ["label", "fields", "note"], "properties": {"label": {"type": "string"}, "fields": {"type": "array"}, "note": {"type": "string"}}},
+    "describe": {"type": "object", "required": ["template", "channel"], "properties": {"template": {"type": "string"}, "channel": {"type": "string"}}},
+    "rules": {"$ref": "#/$defs/strings"},
+    "preview": {"type": "object", "required": ["label", "status"], "properties": {"label": {"type": "string"}, "status": {"enum": ["满足", "问题", "待验证", "不适用", "未执行"]}}},
+    "golden": {"type": "array", "items": {"type": "object", "required": ["source", "kind", "note"], "properties": {"source": {"type": "string"}, "kind": {"type": "string"}, "note": {"type": "string"}}}},
+    "docs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+  },
+  "$defs": {
+    "strings": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "method": {
+      "type": "object", "additionalProperties": false,
+      "required": ["patch", "abc", "label", "sha256", "status", "source"],
+      "properties": {
+        "patch": {"type": "integer", "minimum": 1},
+        "abc": {"type": ["string", "null"]},
+        "label": {"type": ["string", "null"]},
+        "sha256": {"anyOf": [{"type": "string", "pattern": "^[0-9a-f]{64}$"}, {"type": "null"}]},
+        "status": {"enum": ["已记录", "待补"]},
+        "source": {"type": "string", "minLength": 1}
+      },
+      "allOf": [{"if": {"properties": {"sha256": {"type": "null"}}}, "then": {"properties": {"status": {"const": "待补"}}}}]
+    }
+  }
+}

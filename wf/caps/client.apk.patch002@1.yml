@@ -1,0 +1,66 @@
+schema: wf-capability/1
+id: client.apk.patch002@1
+title: 文案覆盖 desc_override
+layer: A
+provided_by:
+  patches:
+  - 2
+  match: all
+  methods:
+  - patch: 2
+    abc: boot_ffc6
+    label: AbilityLogic/getDescriptions
+    sha256: 3e396ebe35c717c1e064f14bf2b9708672ab7352f0a5271c48e5397e875a3e27
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 2
+    abc: boot_ffc6
+    label: AbilityLogic/getDescriptionWithSimplify
+    sha256: 229ef6943988233f9f13b8201dc12d8180bf571ba041e16b96a0aad42dde26a9
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 2
+    abc: boot_ffc6
+    label: LeaderAbilityLogic/getDescriptions
+    sha256: 3e396ebe35c717c1e064f14bf2b9708672ab7352f0a5271c48e5397e875a3e27
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 2
+    abc: boot_ffc6
+    label: LeaderAbilityLogic/getDescriptionWithSimplify
+    sha256: 229ef6943988233f9f13b8201dc12d8180bf571ba041e16b96a0aad42dde26a9
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: false
+  features: []
+  note: 无额外服务端改动要求
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: 文案覆盖 desc_override
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: 文案覆盖 desc_override
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: 文案覆盖 desc_override
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/verification/v33-patches-preserved-o8-o12-r2.json

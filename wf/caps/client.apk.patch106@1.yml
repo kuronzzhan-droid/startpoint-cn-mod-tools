@@ -1,0 +1,480 @@
+schema: wf-capability/1
+id: client.apk.patch106@1
+title: R4：资源优化
+layer: platform
+provided_by:
+  patches:
+  - 106
+  match: all
+  methods:
+  - patch: 106
+    abc: boot_ffc6
+    label: pinball.asset.file::BitmapTextureRestoreHandler/uploadPng|1
+    sha256: bb2abb9782aeb52d6cf1f8a8a144cf0ac572435ec63ac13f2972a90edab6a7d6
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: boot_ffc6
+    label: pinball.asset.file::BitmapTextureRestoreHandler/restoreHandler|1
+    sha256: fda26c886cab279b72178d8f3b3925b5b155058b92ed5164df74d1244b105572
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: boot_ffc6
+    label: pinball.asset.file::BitmapTextureRestoreHandler/<ctor>
+    sha256: ab1a336b892a94192c39f0e9d1b451da016ef1bd62e2eb2ed4ab2c9fa654d3cb
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: boot_ffc6
+    label: pinball.asset.file._FileReader::OpenHandler/execute|1
+    sha256: 5851aa79469b40c293146cb4ce2042ba4055bf0495817888756b7a8b7784897b
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: boot_ffc6
+    label: pinball.asset.file._FileReader::OpenHandler/<ctor>
+    sha256: 56eb35c84f0c9ae577c3699e3dc976bec871832e1b7a04e776942e129f9eb3e3
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: boot_ffc6
+    label: pinball.asset.file::FileStreamWithCounter/openAsync|1
+    sha256: b67806d22f927ad258d0919486b6f967c5dd952686f29cd784d274325c8d2677
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: boot_ffc6
+    label: pinball.asset.file::FileStreamWithCounter/open|1
+    sha256: 720dddc15dcb4e318cbfed8619ee71bad959a85285300a25700b2bda3e86e291
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: boot_ffc6
+    label: pinball.asset.file::FileStreamWithCounter/close|1
+    sha256: 3550f1470d5663ed94c53a3fef684e00563cf55edb442a27fd3e95280f90d568
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: boot_ffc6
+    label: pinball.asset.file::FileStreamWithCounter/_openAsync|1
+    sha256: 631eea2bb3be3432265cd4b0fa70e6cbd654539ea348af06ce27270e7aa5b896
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: boot_ffc6
+    label: pinball.asset.file::FileStreamWithCounter/_close|1
+    sha256: 3455a46cf36421ddc78929a119c30d69e03a4969786006adae861be3f135949f
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: boot_ffc6
+    label: pinball.asset.file::ReadAtfTextureFileHandler/uploadAtf|1
+    sha256: d935409512feebed6e8b4dbb77594c185bf8916e8aa522091cd4265ddb61ce48
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: boot_ffc6
+    label: pinball.asset.file::ReadAtfTextureFileHandler/<ctor>
+    sha256: 575b96131bbc35d45c844387137cd4a33590f883b5c68ff5227529578b4df849
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: boot_ffc6
+    label: pinball.asset.file::ReadPngTextureFileHandler/_uploadPng|1
+    sha256: 77022a02a0e73053bf8330f6a9ed158e9f07d527a1eab5b0daa4e7ce364630de
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: boot_ffc6
+    label: pinball.asset.file::ReadPngTextureFileHandler/<ctor>
+    sha256: 129a18c16502aab6423e7c4295e81cec4455086c2dc9ff3fd3ec2966d441ae6e
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: boot_ffc6
+    label: pinball.asset.view::ViewAssetCache$/disposeDownloadedTexture|1
+    sha256: f36ccad31b43e424950dea81d5a9b1b6d1ab7da7606bb30b88655dc69474aa09
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: boot_ffc6
+    label: pinball.asset.view::ViewAssetCache/startOtherLoad|1
+    sha256: 9299d31efe2d539a8b7c42779170b32e160ef5116fb3ca4b9e04ca597aaede7b
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: boot_ffc6
+    label: pinball.asset.view::ViewAssetCache/readTextureHandler|1
+    sha256: ad33ce37796ac4753c98fdf1eff0070bb6b563aed5c13f3e6bde5a05c85f15a1
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: boot_ffc6
+    label: pinball.asset.view::ViewAssetCache/readTexture|1
+    sha256: 58da791ad1207eecc7db9e46569adf68aec61997498dde8a1ec18514250c2a6f
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: boot_ffc6
+    label: pinball.asset.view::ViewAssetCache/downloadTexture|1
+    sha256: 06a9fcd694508931ce56a41788b6a1797a95a6a658ffa906077821aee63a8d06
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: boot_ffc6
+    label: pinball.asset.view::ViewAssetCache/dispose|1
+    sha256: c0c5271510a343214e191d03c833071830138ea8ee6e2819a858c0e47feebacc
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: boot_ffc6
+    label: pinball.asset.view::ViewAssetCache/addGroup|1
+    sha256: 833072337d92ba7598d69669afc5abf6ddadfb0b7d17f9c3a5b60683f57933c8
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: boot_ffc6
+    label: pinball.common.task::MultiTask/startNextTask|1
+    sha256: 311bc5721d1fc89999e8b2a42a4d3657074649d0d114f29fc93260461ab218a4
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: boot_ffc6
+    label: pinball.common.task::MultiTask/_startNextTask|1
+    sha256: 311bc5721d1fc89999e8b2a42a4d3657074649d0d114f29fc93260461ab218a4
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/cn.optimize.resources:ResourceRuntime::counterClass|1
+    sha256: 0826425ca34268cffc49d0a36aebad15a79828e8ff12b07293d5f70391f72a16
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/cn.optimize.resources:ResourceRuntime::live|1
+    sha256: 7974781b694e620b04861cd9af46a34fdc7db8c190615d8ac299d806e1191ed9
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/register|1
+    sha256: dc7a344cc8420e667527e5ee14f5b3ee9714820d4561653eceb387662d816c13
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/cn.optimize.resources:ResourceRuntime::ownerOf|1
+    sha256: 64946eb4c1153790610611baf7fc582964711dcc8666a2cbc84c36c855d23dc5
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/attachOpen|1
+    sha256: 79b6611fe28750dc85f9bc6c2ac49d6cce5679672f8dd1699ae4e7f6b9996e92
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/attachPng|1
+    sha256: 9403eeaf478d1de1feb63fb5aad3857c2b98b25a56c66000638bb938b677c1d0
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/attachAtf|1/closure:0
+    sha256: 320ee1216e1281c9badead9ae117825395a9d8d1f06eba1f1dfd171ebb0c9d54
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/attachAtf|1
+    sha256: b96f633666183e641812f383280ecda04e4acabf91aaa56a58856f3340116f85
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/attachRestore|1
+    sha256: 7e1fc8aafd3bdd97539f9dcf3beff758830b6e45acfdd537c3377c537a385755
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/allow|1
+    sha256: 061e7a789e64849ced01ab4259de2b02a8f3de5a2ff60e09f2660f718e0c74d4
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/bindTexture|1
+    sha256: b67ff1b17d4007b9b006c94ad15514b3adcee06ad24728b28e61ccb50913c4bb
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/ownTask|1
+    sha256: 296462439cc0a1f4080eea125b80575560e3db6d0e9673d259b97abf866e0b34
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/forgetTexture|1
+    sha256: 538a3fb20cb697e0f4c91fae6d49529b4b5481aea46455a5c7062331e2e206fb
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/begin|1
+    sha256: e601299464a8cfeb10703034dd5db76e4af6409791ef6d25cd90a2db4056fe4d
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/grant|1/closure:0
+    sha256: 900fdef0c14ef8a78f3bfd1db8168f65fb19c8d676f8987ea37cfb4563209196
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/grant|1
+    sha256: 4322c5cb5150e7107da5acb199364fd5f079d44b4f7906f6238d73cbaf2843be
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/opened|1
+    sha256: ad2bc8e4f0b3d9fb4c83e9f92b8558b699f3ca8e495c4b406b987624c1c4ed3b
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/enqueueOpen|1
+    sha256: da48708d1de4c054552fca6ad3e173f1ec9204d3f9eb412b90f680a158b3a0b0
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/failed|1
+    sha256: 213198a17672538fc8ca4b8d87de26288a195ecc670b710fc6bf0eb58cf7330c
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/wantClose|1
+    sha256: ba7dc0bc8b448e09c8b239d8c07dcd650e4d24a16365087578c7f44d37371c08
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/held|1
+    sha256: 0bdb930e7d95742b20eec5eef38057b24543183e7d27714043d88e5d5190b787
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/release|1
+    sha256: 55b656f43df7603380b63c7e6c18ff895983b68dda5e7dabe321d1db09d0d7cf
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/closeError|1
+    sha256: c1cf5892d4aa7333fd440f80f282fbec38c8a09ba521687d2bf15238b2504282
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/cancelOwner|1
+    sha256: fdeac1ea9acb137de41e3fe0ce34effb81494472bb531aa1333ee6976c190bd8
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/startTasks|1
+    sha256: 7ce61340cb31bdc59e60a2f85275adea87ff6399b8eacca0839928d0b0b3302e
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/cn.optimize.resources:ResourceRuntime::launch|1/closure:0
+    sha256: 4e429140304271490576b134af65e5361f0aff064e65dd06e12a680805afae34
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/cn.optimize.resources:ResourceRuntime::launch|1
+    sha256: da7220c06d5ee1153cae801c218fda29d75edf48dfc5b062de765c23b1fba6f0
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/cn.optimize.resources:ResourceRuntime::enqueue|1
+    sha256: ba886c60f05b81e1988064bc47d87d72446ca3a1cd2f5e6bfca57c6225e5e8fb
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/completeRead|1/closure:0/closure:0
+    sha256: c6667bea8cfddecef0951fc7d88c5466bfbc2e63a2044365b566b50615528cf1
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/completeRead|1/closure:0/closure:1
+    sha256: b1c2588fa84beffb884bd779514b8b768443fcedc69a1eaddcf6f800c294b2cd
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/completeRead|1/closure:0
+    sha256: c08afb411f1b2e7072b408d14fd7d921dc780693cf1879e652aad5fadd6f08f3
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/completeRead|1/closure:1
+    sha256: 54be09832f82ae00466d24f3132f74563a976fc889a9ad58cf53564716455de5
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/completeRead|1
+    sha256: 0c553f67b5c34162a27e6b26ad550bfeed16eded26c932fece30ae0f4a70204f
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/uploadPng|1/closure:0
+    sha256: b97800fd83607b99011af95131ff4af82654d88d97160933257604e353aa536b
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/uploadPng|1/closure:1
+    sha256: 6eeda1eabfa8cc2c88e6e299ccd42c7c46b938c089feffd3af8cf9b0b52e78a5
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/uploadPng|1
+    sha256: 790a449592b2a6d254d41b85a4ffe7741abefa0a77d4ff8f109ee0bfa9714fba
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/restore|1/closure:0/closure:0/closure:0
+    sha256: f128d7a9450fa11310d4c6e2fcd02b6886ab2846bfc2250890bf417b1ab3d9cc
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/restore|1/closure:0/closure:0
+    sha256: dc227c42885e5643c8ded05103eebb2cd495d7b645e5627ca80b05a1a98646bd
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/restore|1/closure:0
+    sha256: 2b7541602784b96461a023e8a5317cfaadab0e4be53d8fe749cbf3cf25039fb8
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/restore|1
+    sha256: 04efa8844c0b6594432f51715fd0b50781985b78b8ed37c2d5b1e1ca163b5b1f
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/uploadRestore|1/closure:0
+    sha256: a9a518d92f4cf1633f83c61390b32ad3195b473661f12bf66e639bcc1405cf03
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/uploadRestore|1/closure:1
+    sha256: 6eeda1eabfa8cc2c88e6e299ccd42c7c46b938c089feffd3af8cf9b0b52e78a5
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/uploadRestore|1
+    sha256: 46d74f1be90be466fbda266429002aada5a8e60a026ce89c0b2a9a79e1a7cc70
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/cn.optimize.resources:ResourceRuntime::active|1
+    sha256: 3ac41ac013d0c6180507246f4b25278e7e74c9da6ce9c4d001e5066d30161bc7
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/cn.optimize.resources:ResourceRuntime::schedule|1
+    sha256: cae7a27e337c5a3a08624072252dbe4b90ded055cc2ee07fc5ec32487c7b730b
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/pump|1
+    sha256: 83a8ae7ca6bd852c90d0f13fddef3a3e7967553f0ef39a8334f0a7053270a5e7
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/snapshot|1
+    sha256: 7316ed3cd4e54eac810a4384e3e90b543c930fd787ec4f0441691017eb2766c9
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime$/<cinit>
+    sha256: 5fcf99e6a5b382ae94161d78c823de20811fc1dccb4c02fe504bea6f0d537f4e
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: cn.optimize.resources::ResourceRuntime/<ctor>
+    sha256: 8ff32749a852a1d83829c6a3fac8ec00822f06b5c7177f9ebb43a09287b2101a
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  - patch: 106
+    abc: cn.optimize.resources.ResourceRuntime
+    label: script:cn.optimize.resources::ResourceRuntime/<init>
+    sha256: ac0bb359cd03cf8b231378f5eba6bbee8e00a164fc91e04ac833784a0c1d9658
+    status: 已记录
+    source: v34/apk-patches-additions/106-client-resource-optimization/entry.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: false
+  features: []
+  note: 无额外服务端改动要求
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: R4：资源优化
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: R4：资源优化
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: R4：资源优化
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/apk-patches-additions/106-client-resource-optimization/entry.json

@@ -1,0 +1,162 @@
+schema: wf-capability/1
+id: client.apk.patch039@1
+title: 队伍派生缓存
+layer: platform
+provided_by:
+  patches:
+  - 39
+  match: all
+  methods:
+  - patch: 39
+    abc: boot_ffc6
+    label: BattlePartyLogic/getUnitedCharacters
+    sha256: 46c807a5ff5b1b02e4435417d1e026b33683909b726c0f1b7095148e325f2e7c
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 39
+    abc: cn/loading/PartyDerivedCache
+    label: anonymous-method-0
+    sha256: e14877b7d93d62f8847ca6b5b8c358591f3adb25303e005a20cb51fbda04c07f
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 39
+    abc: cn/loading/PartyDerivedCache
+    label: anonymous-method-11
+    sha256: ee1a1e0c31bc7bccd32fcb51676bd376aac128a53694e0055a88b61b4d16169f
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 39
+    abc: cn/loading/PartyDerivedCache
+    label: anonymous-method-13
+    sha256: 6a0c9ab58aaa42809013ab4163b77f78e7e73b11aab2926248ea50eb1ede7d92
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 39
+    abc: cn/loading/PartyDerivedCache
+    label: PartyDerivedCache$/<cinit>
+    sha256: 10fe9e763de10a0b148654e1539db1391cec9e1a8cf60e610681ad3972f53cfa
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 39
+    abc: cn/loading/PartyDerivedCache
+    label: PartyDerivedCache$/begin
+    sha256: 562021a3d33aa12f7f8d738a07b8a5edbb413d3b2b0154dc4eb095ebd693eb01
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 39
+    abc: cn/loading/PartyDerivedCache
+    label: PartyDerivedCache$/checkpoint
+    sha256: 333e0a1e27815d0ceee55c473fe3dc93d56c63e3bee2b3b4aee8eed6d70191a3
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 39
+    abc: cn/loading/PartyDerivedCache
+    label: PartyDerivedCache$/createEntry
+    sha256: 7009e21431fa1ed9baea9ad5066f5df0475e56ca02ed605e2c96dc94eae2e383
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 39
+    abc: cn/loading/PartyDerivedCache
+    label: PartyDerivedCache/<ctor>
+    sha256: 8ff32749a852a1d83829c6a3fac8ec00822f06b5c7177f9ebb43a09287b2101a
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 39
+    abc: cn/loading/PartyDerivedCache
+    label: PartyDerivedCache$/defer
+    sha256: ed74fba30a6d83ddb3682017536f2936fd8f8444f1bacf21bc3e734ba8e0e452
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 39
+    abc: cn/loading/PartyDerivedCache
+    label: PartyDerivedCache$/enqueue
+    sha256: dad97231604a644e4d93468b44a73ebfb5742ff90f07394845a02eec00f71119
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 39
+    abc: cn/loading/PartyDerivedCache
+    label: PartyDerivedCache$/find
+    sha256: 2c7efbd3346b4386af60766d46d5c883a9754ce2ec473e2a5eec54aec47b4ab0
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 39
+    abc: cn/loading/PartyDerivedCache
+    label: PartyDerivedCache$/finish
+    sha256: 7f99c45b1479003ff8c7f3b4dee642b02d895dd1e79dd336c8b30ab9619e4181
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 39
+    abc: cn/loading/PartyDerivedCache
+    label: PartyDerivedCache$/get
+    sha256: 60e29ffa9b4d0bcd122e357f5066d1ce855028661fbe2d9f2d534fe7d341e2a6
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 39
+    abc: cn/loading/PartyDerivedCache
+    label: PartyDerivedCache$/key
+    sha256: 0e20ed5e5d87414d24757452a535aa523aa01956c519f70d4849247b67b77d59
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 39
+    abc: cn/loading/PartyDerivedCache
+    label: PartyDerivedCache$/metrics
+    sha256: 2e0aad34bcdf8e5b092629dc38581a01b1102e9d61aa6e414d4b7c17f55106eb
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 39
+    abc: cn/loading/PartyDerivedCache
+    label: PartyDerivedCache$/reset
+    sha256: b65025645dc8b3d7bd720079e88aa72e70112014ccce751465417e6cd817e1b5
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 39
+    abc: cn/loading/PartyDerivedCache
+    label: PartyDerivedCache$/runOne
+    sha256: 778548493f9a3bde6a42406bff86df5c33e02a6910c7b3ba799197c5b9ad2021
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 39
+    abc: cn/loading/PartyDerivedCache
+    label: PartyDerivedCache$/snapshot
+    sha256: bd361676756a4fc1d6c3e65a699b9b37732e6a55718145370bf5a5f926417a95
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 39
+    abc: cn/loading/PartyDerivedCache
+    label: PartyDerivedCache$/tick
+    sha256: 76675f7bda88b0d027db17936133eb63ed2f99be1ad8d5d18be85507f9bd3d3f
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: false
+  features: []
+  note: 无额外服务端改动要求
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: 队伍派生缓存
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: 队伍派生缓存
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: 队伍派生缓存
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/verification/v33-patches-preserved-o8-o12-r2.json

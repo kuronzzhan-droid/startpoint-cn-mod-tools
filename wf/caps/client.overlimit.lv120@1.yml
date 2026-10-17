@@ -1,0 +1,152 @@
+schema: wf-capability/1
+id: client.overlimit.lv120@1
+title: 超限 Lv120 / O1–O12
+layer: A
+provided_by:
+  patches:
+  - 78
+  - 79
+  - 80
+  - 81
+  - 82
+  - 83
+  - 84
+  - 85
+  - 86
+  - 101
+  - 108
+  - 109
+  - 110
+  - 111
+  match: all
+  methods:
+  - patch: 78
+    abc: boot_ffc6
+    label: OwnedOverLimitLogic/getAwakingCrystalToOverLimit
+    sha256: 2e584914a2f67e60a268e62502f8e7af84a6a6e1e38af444b8de79c446470b34
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 79
+    abc: null
+    label: null
+    sha256: null
+    status: 待补
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 80
+    abc: boot_ffc6
+    label: GeneralCharacterLogic/getPedestalImagePath
+    sha256: 1c5905b65f624a24c01cf58adeeb90c300a9e9ae965577c4b295c093f0be117d
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 81
+    abc: boot_ffc6
+    label: GeneralCharacterLogic/getHalfPedestalImagePath
+    sha256: 0dc8e515702c2c3c77cca60549da8e063eec0785f89a57e503b5ddf41be6a28a
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 82
+    abc: null
+    label: null
+    sha256: null
+    status: 待补
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 83
+    abc: boot_ffc6
+    label: GeneralCharacterLogic/get_maxOverLimitStep
+    sha256: a1b57b4034b60def3d9b1a328b7ceb321157f45e5243c246353d733a7643ebab
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 84
+    abc: boot_ffc6
+    label: OwnedOverLimitLogic/getOverLimitState
+    sha256: 98f9c7121ac212729daaf7a0e9b740e2de275dcc26e2536ad4d8e1d63d023fd0
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 85
+    abc: boot_ffc6
+    label: OwnedOverLimitLogic/getOwnAwakingCrystalToOverLimit
+    sha256: 2be9af1fa92ed8bb56a5ee90b9eb511f7f94c6941f38a223e406207e17be61b2
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 86
+    abc: null
+    label: null
+    sha256: null
+    status: 待补
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 101
+    abc: boot_ffc6
+    label: OwnedCharacterLogic/getPossibleOverLimitCountByItem
+    sha256: 7fa65be8a2181e01a0a17b400d74fecbd0565c2600be4e78a7be8d96a94e837e
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 108
+    abc: boot_ffc6
+    label: PixelArtCharacter/getPedestalImagePath
+    sha256: 10eb1e21f915782bcd5715a3fb58670cb18737ae8a5f0f569781f774b1a48f0d
+    status: 已记录
+    source: v34/apk-patches-additions/108-overlimit-owned-pedestal/entry.json
+  - patch: 109
+    abc: boot_ffc6
+    label: OverLimitWindow/getOverLimitState
+    sha256: ae683cc1f5574ac7b415c43cf779ea642535cd6a66531aa1ee51a150d1492068
+    status: 已记录
+    source: v34/apk-patches-additions/109-overlimit-paradox-core-gate/entry.json
+  - patch: 110
+    abc: boot_ffc6
+    label: OverLimitWindow/run
+    sha256: b96160fc0f1046a50cf78065ed8d907861a2a65fb13c4f365abad60cbd4b2a7e
+    status: 已记录
+    source: v34/apk-patches-additions/110-overlimit-two-cost-slots/entry.json
+  - patch: 110
+    abc: boot_ffc6
+    label: OverLimitWindow/getStatusInformation
+    sha256: c64d19bbf7957fd9490406d4d251abb9d1e16eeb3062e1b49148f56afbd29aa4
+    status: 已记录
+    source: v34/apk-patches-additions/110-overlimit-two-cost-slots/entry.json
+  - patch: 111
+    abc: boot_ffc6
+    label: ExpodOverLimitByItemDialog/getDescription
+    sha256: a0468818a62ad753f0d18a755b29af19c61ebf5c3cd4a145c7a5a8cfc8a8be55
+    status: 已记录
+    source: v34/apk-patches-additions/111-overlimit-dialog-paradox-text/entry.json
+  status: 待补
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: true
+  features:
+  - character-overlimit
+  note: 需要对应服务端规则；本能力声明不证明服务端已部署
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables:
+  - character_overlimit
+  selectors:
+  - character_status.level>100
+form:
+  label: 超限 Lv120 / O1–O12
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: 等级上限与突破门控、O1–O12客户端交互；服务端白名单、额外消耗仍需另行部署。觉醒为独立B层系统。
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: 超限 Lv120 / O1–O12
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/apk-patches-additions/108-overlimit-owned-pedestal/entry.json
+- v34/apk-patches-additions/109-overlimit-paradox-core-gate/entry.json
+- v34/apk-patches-additions/110-overlimit-two-cost-slots/entry.json
+- v34/apk-patches-additions/111-overlimit-dialog-paradox-text/entry.json
+- v34/verification/v33-patches-preserved-o8-o12-r2.json

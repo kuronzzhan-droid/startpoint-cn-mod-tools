@@ -1,0 +1,102 @@
+schema: wf-capability/1
+id: client.apk.patch049@1
+title: 活动商品索引
+layer: platform
+provided_by:
+  patches:
+  - 49
+  match: all
+  methods:
+  - patch: 49
+    abc: boot_ffc6
+    label: ShopProductRepository/existsEventItemInQuestEvent
+    sha256: bc3956a4e87ea5c6878008d0ec2dde0524030064e5ba9062cb92a9090ccb63cb
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 49
+    abc: boot_ffc6
+    label: ShopProductRepository/getAllProducts
+    sha256: d876a9c9842dd16661c24188b71c718219f74d316843d328e93273dad906ad2c
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 49
+    abc: cn.shop.ShopFirstOpen
+    label: anonymous-method-0
+    sha256: 7bbd992deb307d33a9aa565267e37d0031b92079e037272afd778d3ef176231f
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 49
+    abc: cn.shop.ShopFirstOpen
+    label: ShopFirstOpen$/<cinit>
+    sha256: 3f53edde9e8f5e3717157140d1de36723d14de92e557ccbaada2b93905f55f9f
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 49
+    abc: cn.shop.ShopFirstOpen
+    label: ShopFirstOpen/<ctor>
+    sha256: 8ff32749a852a1d83829c6a3fac8ec00822f06b5c7177f9ebb43a09287b2101a
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 49
+    abc: cn.shop.ShopFirstOpen
+    label: ShopFirstOpen$/eventKey
+    sha256: 060577dad26bcf7e5a1f295841a7fbda571b3f927b972001413df09af597a70b
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 49
+    abc: cn.shop.ShopFirstOpen
+    label: ShopFirstOpen$/hasProductsOrBox
+    sha256: 8a3702c553e281fb673a5f8092b7ee1fd86bf434a426ed7ee9cdb6b6917ed354
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 49
+    abc: cn.shop.ShopFirstOpen
+    label: ShopFirstOpen$/productIds
+    sha256: a7bdffc161992fc7829e8b467685a35db8bc3c4d998c569c5eee56185e4d8b2a
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 49
+    abc: cn.shop.ShopFirstOpen
+    label: ShopFirstOpen$/shopTopExists
+    sha256: 8d9a436a9e936ed6ca8199570db0e44ab22c8605ddb668492353db1ea83cd1d8
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 49
+    abc: cn.shop.ShopFirstOpen
+    label: ShopFirstOpen$/sideStoryExists
+    sha256: 69a0cb3068196578dfcd3289fbb9905fa1dab91285eb495a957c905a8cdf70da
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: false
+  features: []
+  note: 无额外服务端改动要求
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: 活动商品索引
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: 活动商品索引
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: 活动商品索引
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/verification/v33-patches-preserved-o8-o12-r2.json

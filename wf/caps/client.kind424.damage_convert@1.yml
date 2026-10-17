@@ -1,0 +1,95 @@
+schema: wf-capability/1
+id: client.kind424.damage_convert@1
+title: kind 424 伤害类型转换
+layer: A
+provided_by:
+  patches:
+  - 20
+  match: all
+  methods:
+  - patch: 20
+    abc: boot_ffc6
+    label: AbilityValues$/parseAt109
+    sha256: 3e42c85d4ee45ce33be9a7aec70e350a2303ce3cb7132dd0e8183c02310516eb
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 20
+    abc: boot_ffc6
+    label: Environment/getBuffTargetAs
+    sha256: 3534ccee67770f7f2f581051c53c7b13f35f0bb75a80a13fe4390d0a2bf5cfa1
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 20
+    abc: boot_ffc6
+    label: ImpactSourceContent$/NormalAttack
+    sha256: 9377796ffd220380cded6ada63de54f50534596bb67bd8586f4a57cd15caf50a
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 20
+    abc: boot_ffc6
+    label: MemberAbilityTotalizerImpl/addDuringContent
+    sha256: a05011f9959b625d0744ca20bf2c65dec54440e9652f13cdd43a9cc8bc723138
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 20
+    abc: boot_ffc6
+    label: MemberAbilityTotalizerImpl/wfResolveDamageType
+    sha256: 13482a0345ec249255960ba143f1abf5c85843ecbf27273f383795e4d9555c75
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 20
+    abc: boot_ffc6
+    label: MemberImpl$/wfConvertNormalAttack
+    sha256: d75e6f800238961f51ba118216857f320303362ec5a6bfec1c87054bbac39bc0
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 20
+    abc: boot_ffc6
+    label: DuringAbilitySource$/createFromDuringAbilityValues
+    sha256: 7a5349a32a8335817281b9bb9b52f345dec5c26aa56333e27209472fe0aed46f
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: false
+  features: []
+  note: 无额外服务端改动要求
+data_surface:
+  kinds:
+  - 424
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors:
+  - dsl.buffTargetAs=101,102,104,131,132,133
+form:
+  label: kind 424 伤害类型转换
+  fields:
+  - name: buffTargetAs
+    values:
+    - 101
+    - 102
+    - 104
+    - 131
+    - 132
+    - 133
+    note: 技能/能力/直击/PF1–3 伤害类型标记
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: kind 424 伤害类型转换
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: kind 424 伤害类型转换
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/verification/v33-patches-preserved-o8-o12-r2.json
