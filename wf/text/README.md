@@ -37,3 +37,5 @@ python -B -m wf text explain <prepush-224-since.json> --tip 1.4.224 --server-tex
 ```
 
 `explain` 对每个稳定 fid 从完整表回读，核对原日志前120字，再保留全文、实际表键/列、输入 SHA-256 和差异片段。历史输入已漂移则标为“待验证”，不声称还原了原警告。退出0仅表示归因过程完成，不表示这些警告已修好。M1 的78条逐项结果见 `docs/m1/text-warnings.md` 与同名 JSON：78条均可解释且均保留“问题”状态，未自动改动玩家文案。
+
+M2 接入面板文案规范全部 10 节、56 条规则：`wf text rules` 查看依据和覆盖边界，`wf text audit-standard --tip 1.4.N --output work/m2/text/audit.json` 全表只读核查，`wf check text <读取快照.json>` 使用相同规则。自动写法检查、部分片段检查和人工语义核对分开；无命中不表示尚未核对的数据、条件和效果已满足。详见 [面板文案规则与只读核查](../../docs/m2/text-standard.md)。

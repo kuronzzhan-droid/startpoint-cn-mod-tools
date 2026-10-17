@@ -3,11 +3,15 @@ import json
 from pathlib import Path
 
 STATES = ("满足", "问题", "待验证", "不适用", "未执行")
-EVIDENCE = ("真机实锤", "源码推断", "经验推测")
+EVIDENCE = ("真机实锤", "源码推断", "经验推测", "作者规范", "官方模板引用")
 
 
 def catalog():
-    return json.loads(Path(__file__).with_name("catalog.json").read_text(encoding="utf-8"))
+    from wf.text.standard import rule_catalog
+    document = json.loads(Path(__file__).with_name("catalog.json").read_text(encoding="utf-8"))
+    document["rules"].extend(rule_catalog()["rules"])
+    document["version"] = "2.0.0"
+    return document
 
 
 def result(rule, status, message, *, blocking=False, **detail):

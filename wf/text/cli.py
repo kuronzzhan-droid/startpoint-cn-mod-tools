@@ -9,13 +9,17 @@ from .audit import explain_warnings, markdown_audit
 from .edit import prepare_edit, stage_edit
 from .model import TextWorkspace
 from .rules import check_character
+from .release import audit_workspace, write_report
+from .standard import rule_catalog
 from wf.view.safety import local_output, restrict_writes
 
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="wf text")
     commands = parser.add_subparsers(dest="command", required=True)
-    for name in ("read", "check", "edit", "explain"):
+    rules = commands.add_parser("rules", help="查看逐项文案规范与自动检查边界")
+    rules.add_argument("--output", type=Path)
+    for name in ("read", "check", "edit", "explain", "audit-standard"):
         command = commands.add_parser(name)
         command.add_argument("--tip", required=True)
         command.add_argument("--lock", type=Path)
@@ -32,12 +36,28 @@ def main(argv=None) -> int:
         if name == "explain":
             command.add_argument("log", type=Path)
             command.add_argument("--output", required=True, type=Path)
+        if name == "audit-standard":
+            command.add_argument("--output", required=True, type=Path)
     args = parser.parse_args(argv)
     try:
         restrict_writes()
+        if args.command == "rules":
+            encoded = json.dumps(rule_catalog(), ensure_ascii=False, indent=2) + "\n"
+            if args.output:
+                output = local_output(args.output)
+                output.parent.mkdir(parents=True, exist_ok=True)
+                output.write_text(encoded, "utf-8")
+            else:
+                print(encoded, end="")
+            return 0
         from wf.view import ManifestView
         view = ManifestView(tip=args.tip, lock=args.lock)
         workspace = TextWorkspace(view, args.server_text, args.rank_text)
+        if args.command == "audit-standard":
+            report = audit_workspace(workspace)
+            write_report(report, args.output)
+            print(json.dumps({key: report[key] for key in ("tip", "state", "checked_entries", "problem_count", "problem_entries")}, ensure_ascii=False))
+            return int(report["state"] in {"问题", "未执行"})
         if args.command in ("read", "check"):
             document = workspace.read(args.character_id)
             result = document if args.command == "read" else check_character(document)
