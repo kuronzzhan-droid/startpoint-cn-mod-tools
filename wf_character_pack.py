@@ -2326,6 +2326,12 @@ class PackTransaction:
         self.release_base_provider = release_base_provider
         self.codecs = dict(DEFAULT_CODECS)
         if codec_registry:
+            overridden = sorted(set(codec_registry) & set(DEFAULT_CODECS))
+            if overridden:
+                raise PackPreflightError(
+                    "codec registry cannot override built-in codec(s): "
+                    + ", ".join(overridden)
+                )
             self.codecs.update(codec_registry)
         self.installed_package_dir = (
             Path(installed_package_dir) if installed_package_dir is not None else None
