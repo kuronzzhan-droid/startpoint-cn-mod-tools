@@ -2,7 +2,7 @@
  "meta": {
   "generated": "2026-07-05",
   "source": "decompile DECRIPT pinball.master.generated.*Values (CN)",
-  "note": "列号0-based;实测计数来自弹国服数据包 ability/leader_ability/ability_soul/equipment_enhancement_ability"
+  "note": "列号0-based;实测计数来自弹国服数据包 ability/leader_ability/ability_soul/equipment_enhancement_ability;instant_content 724 AddFeverPointRatio 由客户端补丁 kyubi-fever-ratio-v1 追加,非官方枚举;during_content 422 DashParameter 由客户端补丁 dash-parameter-v1 追加,非官方枚举(param_id 借 unique_condition_id 列 c118)"
  },
  "layouts": {
   "ability": {
@@ -279,7 +279,7 @@
    [
     8,
     "cooltime",
-    "冷却(帧×100000)"
+    "冷却(原始帧)"
    ],
    [
     9,
@@ -2181,7 +2181,8 @@
    "519": "UniqueDirectDamageSlayer",
    "595": "UniquePowerFlipSlayer",
    "565": "UniqueSkillSlayer",
-   "518": "UniqueSlayer"
+   "518": "UniqueSlayer",
+   "724": "AddFeverPointRatio"
   },
   "CommonAbilityContentMasterValue": {
    "42": "PowerFlipDamageDownPrevent",
@@ -2605,7 +2606,10 @@
    "250": "UniqueDirectDamageSlayer",
    "317": "UniquePowerFlipSlayer",
    "287": "UniqueSkillSlayer",
-   "81": "UniqueSlayer"
+   "81": "UniqueSlayer",
+   "422": "DashParameter",
+   "423": "GaugeGainRestriction",
+   "424": "DamageTypeConversion"
   },
   "AbilityTargetMasterValue": {
    "2": "Leader",
@@ -15210,6 +15214,14 @@
      "target": "parseAt48",
      "strength": "parseAt51"
     }
+   },
+   "724": {
+    "ctor": "AddFeverPointRatio",
+    "cls": "InstantAbilityContentMasterValue",
+    "fields": {
+     "strength": "parseAt51"
+    },
+    "requires_client_capability": "kyubi-fever-ratio-v1"
    }
   },
   "during_content": {
@@ -18497,6 +18509,33 @@
      "target": "parseAt110",
      "strength": "parseAt113"
     }
+   },
+   "422": {
+    "ctor": "DashParameter",
+    "cls": "CommonAbilityContentMasterValue",
+    "fields": {
+     "unique_condition_id": "parseAt118",
+     "strength": "parseAt113"
+    },
+    "requires_client_capability": "dash-parameter-v1"
+   },
+   "423": {
+    "ctor": "GaugeGainRestriction",
+    "cls": "CommonAbilityContentMasterValue",
+    "fields": {
+     "target": "parseAt110",
+     "unique_condition_id": "parseAt118"
+    },
+    "requires_client_capability": "gauge-gain-rules-v1"
+   },
+   "424": {
+    "ctor": "DamageTypeConversion",
+    "cls": "CommonAbilityContentMasterValue",
+    "fields": {
+     "target": "parseAt110",
+     "unique_condition_id": "parseAt118"
+    },
+    "requires_client_capability": "damage-type-rules-v1"
    }
   }
  },

@@ -1,18 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-r"""
-从客户端 SWF/APK 的 ActionScript 字节码(ABC)**字符串常量池**里抽出资源逻辑路径,
-再用 SHA1(path+SALT) 撞库匹配 production/upload 存储,生成 PathList。
-
-优点:只解析常量池,不做完整反编译 —— 秒级完成,规避 FFDec 反编译超时。
-
-用法:
-  python mod-tools/wf_extract_paths.py <SWF或APK路径> [--store <upload目录>] [--out PathList.csv]
-
-例:
-  python mod-tools/wf_extract_paths.py 弹国服/wf_M358262.apk
-python wf_extract_paths.py wf-2.1.125.swf --store <production/upload>
-"""
+'\n从客户端 SWF/APK 的 ActionScript 字节码(ABC)**字符串常量池**里抽出资源逻辑路径,\n再用 SHA1(path+SALT) 撞库匹配 production/upload 存储,生成 PathList。\n\n优点:只解析常量池,不做完整反编译 —— 秒级完成,规避 FFDec 反编译超时。\n\n用法:\n  python mod-tools/wf_extract_paths.py <SWF或APK路径> [--store <upload目录>] [--out PathList.csv]\n\n例:\n  python mod-tools/wf_extract_paths.py 弹国服/wf_M358262.apk\n  python mod-tools/wf_extract_paths.py wf-2.1.125.swf --store ${WF_ROOT}\\...\\upload\n'
 from __future__ import annotations
 import argparse
 import csv
@@ -24,7 +12,7 @@ import zipfile
 import zlib
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_mod_tool as core
 
 

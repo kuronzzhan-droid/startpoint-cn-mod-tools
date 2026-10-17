@@ -17,7 +17,6 @@ WF 单机版 · 本地网页修改器 (GUI)
   WF_TARGET_STORE  目标 upload 目录(默认按 profiles.json / 项目根目录查找)
   WF_CDNDATA       服务端 assets/cdndata 目录(①层;独立部署必配,默认取仓库根布局)
   WF_CDN_DIR       服务端 .cdn/cn 目录(发布目标;独立部署必配,默认取仓库根布局)
-  WF_APK           内置 base 资产来源 APK 或 bundle.zip 的绝对路径
   WF_ADB           adb.exe 完整路径
   WF_ADB_PORT      模拟器 adb 端口(默认 16384 = MuMu 12)
   WF_PKG           游戏包名(默认 com.leiting.wf,雷霆国服)
@@ -25,6 +24,8 @@ WF 单机版 · 本地网页修改器 (GUI)
 """
 
 from __future__ import annotations
+
+from wf.paths import root_path
 
 import base64
 import csv
@@ -47,7 +48,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_mod_tool as core  # noqa: E402
 import wf_describe  # noqa: E402  行级中文描述器(逆向布局+枚举直译)
 import wf_client_legality  # noqa: E402  客户端 parseAt* 硬规则(纯函数,不碰 store)
@@ -56,10 +57,8 @@ import wf_character_requirements as char_requirements  # noqa: E402  统一 37 �
 import wf_dsl  # noqa: E402       技能 ActionDsl 数值编辑
 import wf_atf  # noqa: E402       skill_cutin ATF(ETC1)纹理重编码(战斗真机只读 ATF 不读 PNG)
 import wf_boss  # noqa: E402      Boss 数值 + 副本列表(Boss·副本页)
+from wf.config import database as wf_database_paths
 import wf_server_auth  # noqa: E402  服务端管理 API 地址与 Bearer 认证
-import wf_database_paths  # noqa: E402  独立部署时的存档数据库路径
-import wf_apk_paths  # noqa: E402  独立部署时的 APK/bundle 资产来源
-import wf_device_paths  # noqa: E402  可选 adb 的独立路径解析
 
 ROOT = Path(__file__).resolve().parent.parent
 try:
@@ -1855,6 +1854,8 @@ def composer_generate(dst_key: str, trigger_id: str = "", effect_id: str = "",
             row[cbase + 23] = string_id           # InvokeSkill 技能键
         if action_path:
             row[cbase + 24] = action_path         # InvokeSkill DSL 路径
+    from wf.rules.instant_content import fill_instant_content_defaults
+    row = fill_instant_content_defaults(kind, row)
     desc = wf_describe.describe_line(row, kind)
     return {"key": dst_key, "kind": kind, "ncols": len(row), "row": row, "desc": desc,
             "trigger": tr_name, "effect": fx_name,
@@ -2324,8 +2325,6 @@ def _char_json_paths() -> tuple[Path, Path]:
 # 已拥有角色的 突破段/exp 超出新星级上限 → 客户端查看角色即 C2275 崩溃
 # (CharacterLevelLogic.as:94 校验)。上限镜像自 src/routes/api/character.ts
 # (characterMaxOverLimits) + src/lib/character.ts(characterExpCaps,index=突破段)。
-
-
 def _resolve_save_database() -> Path:
     if "WF_DATABASE_DIR" in os.environ:
         return wf_database_paths.resolve_database_path(os.environ, server_root=ROOT)
@@ -2376,7 +2375,7 @@ def _clamp_save_for_rarity(cid: str, rarity: int, apply: bool) -> str:
         finally:
             con.close()
     except Exception as exc:
-        return f"⚠ 存档校正失败(可手动查 {SAVE_DB}): {exc}"
+        return f"⚠ 存档校正失败(可手动查 .database/wdfp_data.db): {exc}"
 
 
 def get_char_fields(cid: str) -> dict:
@@ -3551,9 +3550,9 @@ def _dsl_store_path(pp: str) -> Path:
 
 def _find_apk() -> Path | None:
     """内置 base 资产来源 APK:WF_APK 环境变量 > 仓库 弹国服/*.apk 取最新。"""
-    configured = wf_apk_paths.resolve_explicit_apk(os.environ)
-    if configured is not None:
-        return configured
+    envp = os.environ.get("WF_APK")
+    if envp and Path(envp).exists():
+        return Path(envp)
     cands = sorted((ROOT / "弹国服").glob("*.apk"),
                    key=lambda p: p.stat().st_mtime, reverse=True)
     return cands[0] if cands else None
@@ -5088,8 +5087,27 @@ def rollback_and_publish(name: str) -> dict:
 
 # ---------------------------------------------------------------- adb sync
 
+ADB_CANDIDATES = [
+    ('${WF_ROOT}\\MuMuPlayer\\nx_main\\adb.exe'.replace("${WF_ROOT}", str(root_path()))),
+    r"C:\Program Files\Netease\MuMuPlayer-12.0\shell\adb.exe",
+    r"C:\Program Files\Netease\MuMu Player 12\shell\adb.exe",
+    r"C:\Program Files (x86)\Netease\MuMuPlayer-12.0\shell\adb.exe",
+    r"D:\Program Files\Netease\MuMuPlayer-12.0\shell\adb.exe",
+    r"C:\Program Files\Netease\MuMuPlayerGlobal-12.0\shell\adb.exe",
+]
+
+
 def find_adb() -> str | None:
-    return wf_device_paths.find_adb()
+    env = os.environ.get("WF_ADB")
+    if env and Path(env).exists():
+        return env
+    which = shutil.which("adb")
+    if which:
+        return which
+    for cand in ADB_CANDIDATES:
+        if Path(cand).exists():
+            return cand
+    return None
 
 
 def adb_run(adb: str, *args: str, timeout: int = 600) -> tuple[int, str]:
@@ -6720,6 +6738,38 @@ ROGUE_SHOP_COLS = {"name": 7, "cost_id": 18, "price": 19, "stock": 29,
 # 与 general_boss c0(1火2水3雷4风5光6暗)不是同一个枚举,别混用。
 ROGUE_ELEM_CN = ["风", "火", "水", "雷", "暗", "光"]
 
+# 这两条路(①难度曲线/重摇面板的「应用+发布」、⑥面板的「📤 发布」)会重建并发布
+# 整座塔。20260828 之前它们**完全不换排行榜的期**:楼层/boss/场地全换了,榜上却还
+# 留着旧塔的成绩 —— 正是作者要消灭的现象(「塔刷新榜也刷新」)。
+#
+# 现在两条都接上了 `wf_rogue_season.sync()`:发布成功之后按**楼层指纹**判一次
+# 「真换塔 vs 只动一层」,只有真换塔才回调服务端「结算并开启新一期」。
+# 为什么不无脑换期:⑥ 面板**也用来改单层 boss**,每发一次就换一期会造出一串
+# 没人打过的空榜,而换期不可逆(换掉之后上一期再也结算不了)。
+# 判据与阈值实证见 `mod-tools/wf_rogue_season.py` 的模块说明。
+#
+# 服务端的指纹兜底帮不上忙:它只看**轮数**(`computeRushSeasonFingerprint` 读
+# assets/rush_event_quest.json 的 folder→最大轮数),轮数不变就察觉不到换了一座塔。
+ROGUE_SEASON_UNSURE_HINT = (
+    "(拿不准时一律不换期:少换一次只是「新塔挂着旧榜」,后台点一下就补上;"
+    "错换一次是不可逆的。)")
+
+
+def _rogue_season_sync(source: str) -> str:
+    """发布成功之后判一次要不要换期,返回给日志用的一行说明(绝不抛)。"""
+    try:
+        import wf_rogue_season
+        result = wf_rogue_season.sync(ROGUE_EVENT_ID, source)
+        line = f"[排行榜] {result['message']}"
+        # `stale-baseline` = 基线是别的通道换期之前记的(或核对不上服务端期号),
+        # 和「小修 / 没基线」同属「拿不准 ⇒ 不换期」那一档,提示同款。
+        if result["verdict"] in ("minor-edit", "unknown", "stale-baseline"):
+            line += " " + ROGUE_SEASON_UNSURE_HINT
+        return line
+    except Exception as exc:
+        return (f"[排行榜] ⚠ 换期判定没跑起来({type(exc).__name__}: {exc});"
+                "期号未动。若这次确实换了塔,请到后台排行榜页点「结算并开启新一期」。")
+
 
 def _rogue_cells(leaf) -> list[str]:
     line = leaf.decode("utf-8") if isinstance(leaf, (bytes, bytearray)) else leaf
@@ -7263,11 +7313,17 @@ def rogue_build_apply(body: dict, dry_run: bool) -> dict:
         args += ["--difficulty", str(body["difficulty"]).strip()]
     if body.get("seed") not in (None, ""):
         args += ["--seed", str(int(float(body["seed"])))]
+    published = bool(body.get("publish")) and not dry_run
     if not dry_run:
         args += ["--write"]
         if body.get("publish"):
             args += ["--publish"]
-    return _rogue_run("wf_rogue_build.py", args)
+    r = _rogue_run("wf_rogue_build.py", args)
+    # 只有**真发布**了才判换期:build --write 不发布时塔还没上链,
+    # 期该在⑥「📤 发布」那一刻才动。
+    if published and r.get("ok"):
+        r["log"] = "\n".join([(r.get("log") or ""), _rogue_season_sync("gui-build")])
+    return r
 
 
 def rogue_nerf_apply(body: dict, dry_run: bool) -> dict:
@@ -7552,8 +7608,12 @@ def rogue_layout_apply(body: dict, dry_run: bool) -> dict:
     out = qlib.save_table(ROGUE_Q_LOGICAL, quest)
     if body.get("publish"):
         pub = _rogue_run("wf_publish.py", ["--tables", "rush_event_quest"])
+        # 第三条会把楼层改动推上链的入口(⑥ 面板逐层编辑器自带的「写入并发布」)。
+        # 同样按楼层指纹判:改一层 = 小修不换期,整塔被覆盖过 = 真换塔才换期。
+        season_line = _rogue_season_sync("gui-layout") if pub["ok"] else ""
         return {"ok": pub["ok"], "log": "\n".join(log)
-                + f"\n[已写 {os.path.basename(str(out))} 并发布 ②表]\n" + pub["log"][-300:]}
+                + f"\n[已写 {os.path.basename(str(out))} 并发布 ②表]\n" + pub["log"][-300:]
+                + (f"\n{season_line}" if season_line else "")}
     return {"ok": True, "log": "\n".join(log)
             + f"\n[已写 {os.path.basename(str(out))},未发布——点「📤 发布」推送到游戏]"}
 
@@ -7636,6 +7696,12 @@ def rogue_publish() -> dict:
             r["log"] += (f"\n[OK] 发布自检:②五表 + battle {len(ROGUE_BATTLE_LOGICALS)}表"
                          " + 锻造 DSL "
                          f"{len(forged)} 个,全部在 CDN 链上且字节一致")
+    # 这颗按钮把塔发上链 ⇒ 这一刻才是「新塔对玩家生效」的时刻,换期判定挂在这里。
+    # 但 ⑥ 面板**也用来改单层 boss**,所以不能无脑换期:先按楼层指纹判一次
+    # 「真换塔 vs 只动一层」,只有真换塔才回调服务端结算+换期。
+    # 判据与实证阈值见 mod-tools/wf_rogue_season.py。
+    if r.get("ok"):
+        r["log"] = "\n".join([(r.get("log") or ""), _rogue_season_sync("gui-publish")])
     return r
 
 
@@ -7671,6 +7737,12 @@ def rogue_randomize(body: dict, dry_run: bool) -> dict:
             lines.append(r2["log"][-400:])
     lines.append("[DRY-RUN] 未写入。" if dry_run
                  else "已写入(未发布)。可在⑥手动微调,然后点「📤 发布」。")
+    if not dry_run:
+        # 这条路只写 store、不发布 ⇒ 玩家还看不到新塔 ⇒ 期号此刻不该动。
+        # 换期判定挂在⑥「📤 发布」上,那时会把这里写进去的整塔改动一并算进去
+        # (逐层指纹一比就是「全塔都变了」⇒ 判真换塔)。
+        lines.append("[排行榜] 尚未发布 ⇒ 期号不动。点⑥「📤 发布」时会自动判"
+                     "「真换塔 vs 只动一层」,真换塔才结算并开启新一期。")
     return {"ok": True, "log": "\n".join(lines)}
 
 
@@ -7758,6 +7830,14 @@ def _rogue_auto_run(body: dict | None = None) -> dict:
         if not _ROGUE_AUTO.get("restart_game"):
             args.append("--no-restart")
         r = _rogue_run("wf_rogue_reroll.py", args)
+        # 退出码 3 = 塔重摇成功了,但**排行榜没换期**(8001 没起 / 结算真炸了)。
+        # 不能当失败:重摇本身成了,报红会诱使操作者再重摇一次(又换一座塔);
+        # 也不能当成功:得让人看见还差一刀。⇒ 绿色 + 醒目告警。
+        if r.get("rc") == 3:
+            r["ok"] = True
+            r["log"] = ((r.get("log") or "") + "\n"
+                        + "[排行榜] ⚠ 塔已重摇,但期号没动 —— 榜上还是上一座塔的成绩。"
+                          "请到后台排行榜页点「结算并开启新一期」(会先结算发奖再换期)。")
         _ROGUE_AUTO_RT["last_run"] = time.strftime("%Y-%m-%d %H:%M:%S")
         _ROGUE_AUTO_RT["last_log"] = (r["log"] or "")[-1500:]
         _ROGUE_AUTO["last_run_date"] = time.strftime("%Y-%m-%d")

@@ -1,0 +1,116 @@
+{
+ "_meta": {
+  "count": 43,
+  "keys": "BEFORE = wf_balance_20260927b_gray3.ART_BEFORE_BY_CID['149995']",
+  "source": "extra5 stage_batch.make_read(live_only=True)，本地链尾 1.4.1054（gray3 核心导入后）只读取数"
+ },
+ "live": {
+  "file_sha256|[\"android\", \"character/seofon_wind/ui/skill_cutin_0.atf.deflate\"]": "2d2825906e8966dd36408cf02416ceaf41eb0bfdd2b372ce4ed9c6c466321b45",
+  "file_sha256|[\"android\", \"character/seofon_wind/ui/skill_cutin_1.atf.deflate\"]": "6c7b06d7df1f79d246eeb52a41c91cc4afa050ea0910e985e1aef3ce021417d4",
+  "file_sha256|[\"common\", \"character/seofon_wind/battle/character_detail_skill_preview.battle.amf3.deflate\"]": "809e55d2c7e141c1a835992cd7ceae02009e24d57d01e4557523b48bf4369125",
+  "file_sha256|[\"common\", \"character/seofon_wind/pixelart/pixelart.frame.amf3.deflate\"]": "cb070d1e5efc6f232b9cb014431bbb2a4073508401d70aeb7d9b22c5ea7b388d",
+  "file_sha256|[\"common\", \"character/seofon_wind/pixelart/pixelart.timeline.amf3.deflate\"]": "23bee417315db0b49fa4bd87d62af39682a3ce9dd07b1409e01bf1c813232d8b",
+  "file_sha256|[\"common\", \"character/seofon_wind/pixelart/special.frame.amf3.deflate\"]": "e37ba24697b859b5baa5723c7b89d987538401a8834ebd5e3c5c738f20e6bcf6",
+  "file_sha256|[\"common\", \"character/seofon_wind/pixelart/special.timeline.amf3.deflate\"]": "50a131416916a6b2705fd59220f7548cc0a289d5e9dfadba39817bcec8b3dfb7",
+  "file_sha256|[\"common\", \"character/seofon_wind/pixelart/special_sprite_sheet.atlas.amf3.deflate\"]": "efad97f7335ea0ec094bbcc603740c11f7690e5f853f7f6110baddd3b9f52c12",
+  "file_sha256|[\"common\", \"character/seofon_wind/pixelart/special_sprite_sheet.png\"]": "57bb64b9922ac55daef1bfaa649b816acfb17c08f8d4572714e475469f709d42",
+  "file_sha256|[\"common\", \"character/seofon_wind/pixelart/sprite_sheet.atlas.amf3.deflate\"]": "76a39999f6819585c3b0be192b229d5f6c1007c500a941c0b030187d4cfd5b23",
+  "file_sha256|[\"common\", \"character/seofon_wind/pixelart/sprite_sheet.png\"]": "0ad4ef530b0d4e61243d1643eb6077f5d33854447213769a8412af3a5dd893ea",
+  "file_sha256|[\"common\", \"character/seofon_wind/ui/illustration_setting_sprite_sheet.atlas.amf3.deflate\"]": "6ff35345898d3a7d0ce0c4ecfa4a6d2b1393aada7af4aabe8409aacd92f94cbe",
+  "file_sha256|[\"medium\", \"character/seofon_wind/ui/battle_control_board_0.png\"]": "f95d2d442b789dc0f3b14ecf8a7110d82805857910e74f618cdc6bb5531edffc",
+  "file_sha256|[\"medium\", \"character/seofon_wind/ui/battle_control_board_1.png\"]": "4ba054f320012bb7bce4d1d66327c936e305dc34ed9e9edf0d78747e24fb1d45",
+  "file_sha256|[\"medium\", \"character/seofon_wind/ui/battle_member_status_0.png\"]": "0a84613f829784fa245257c065dd2c6d2059b3bca86bfcd9e14a5817dcfdc00d",
+  "file_sha256|[\"medium\", \"character/seofon_wind/ui/battle_member_status_1.png\"]": "6547dd7f7f0d4192a4370fd7954adeacc2a1a1eb1c689a928b0779151db91027",
+  "file_sha256|[\"medium\", \"character/seofon_wind/ui/cutin_skill_chain_0.png\"]": "0c4752bf876b28723a8e553a3eea8fcbfc019bef3454d65e77c67b58455b541e",
+  "file_sha256|[\"medium\", \"character/seofon_wind/ui/cutin_skill_chain_1.png\"]": "3e2b8bc1fe44e4fdab08da08f6dea781ee4999dd30a4c1d067cb8b60a326b2ad",
+  "file_sha256|[\"medium\", \"character/seofon_wind/ui/full_shot_1440_1920_0.png\"]": "cfc96455075ca9498155519c7aea32213ddd1c9621d398c7226a74259364b0d4",
+  "file_sha256|[\"medium\", \"character/seofon_wind/ui/full_shot_1440_1920_1.png\"]": "9b483832fc3c4be7daa3ccafa4769f10abe8528236a7963ea0f20caa75e4863d",
+  "file_sha256|[\"medium\", \"character/seofon_wind/ui/illustration_setting_sprite_sheet.png\"]": "baf61f72f793ed49bd24b86dee96427fba9a8d71159a62429b544842435e683b",
+  "file_sha256|[\"medium\", \"character/seofon_wind/ui/skill_cutin_0.png\"]": "3f68948271c197072649a81f91538370c45c6af8e481bed66491a9cb4d4601bd",
+  "file_sha256|[\"medium\", \"character/seofon_wind/ui/skill_cutin_1.png\"]": "8ce9aea622ebbad185249fa18c852f6af7f339bf195ad67e41facf7226746832",
+  "file_sha256|[\"medium\", \"character/seofon_wind/ui/square_0.png\"]": "2d14337890034c5b2e5a1f8a1d3db45b7b709abc8c4d3dfa83074830e4ac1290",
+  "file_sha256|[\"medium\", \"character/seofon_wind/ui/square_1.png\"]": "d563f4adaba870a0781b719c788b3eac495992238b9dac8bd7d1d499c2d28b70",
+  "file_sha256|[\"medium\", \"character/seofon_wind/ui/square_132_132_0.png\"]": "d420b1f09c187bf9c0d1f3d81ae8460e6b5ff229387e3eb693e561f307779674",
+  "file_sha256|[\"medium\", \"character/seofon_wind/ui/square_132_132_1.png\"]": "53a2b9747db75470b4dc00092a2ba90e0b9913ec245e1f5a91ae90f7fa39733b",
+  "file_sha256|[\"medium\", \"character/seofon_wind/ui/square_round_136_136_0.png\"]": "eb006ddad7add61760827133ee23648610700e02625513f196f0571b42940ba9",
+  "file_sha256|[\"medium\", \"character/seofon_wind/ui/square_round_136_136_1.png\"]": "6fe3a7dff025d885043d72fba7668db618f5e9288c550cdcc08627576a1a404a",
+  "file_sha256|[\"medium\", \"character/seofon_wind/ui/square_round_95_95_0.png\"]": "ab3829335ab966aa8febf36cd49693e826e3e553e827e431c0aad32ba20c28bd",
+  "file_sha256|[\"medium\", \"character/seofon_wind/ui/square_round_95_95_1.png\"]": "a1fb27555cd9607199cfc3d19b3ed11a25de0396a9a6df593e32b0c329e449cc",
+  "file_sha256|[\"medium\", \"character/seofon_wind/ui/thumb_level_up_0.png\"]": "fcbdf9a0832d68fe93bb89336b7b7a00f8e629ca9cae9f6e42a5ed776c6de172",
+  "file_sha256|[\"medium\", \"character/seofon_wind/ui/thumb_level_up_1.png\"]": "365de15c1e278b609a03b243073796b20eb2d18ab8d7f8cc8333e51f778eda6b",
+  "file_sha256|[\"medium\", \"character/seofon_wind/ui/thumb_party_main_0.png\"]": "5b265c0e7e129971a44981e46d157781be1878c0348fccc1410f3258b54c8da5",
+  "file_sha256|[\"medium\", \"character/seofon_wind/ui/thumb_party_main_1.png\"]": "3d7bdaa20dd3cff9170dfa59bf10fc952bf5218f66719aa39c9536f0eb4e96d4",
+  "file_sha256|[\"medium\", \"character/seofon_wind/ui/thumb_party_unison_0.png\"]": "f8ead055d2c3ec5e21faebe1c37c0037566c83bd44348489488c06c191bddc0e",
+  "file_sha256|[\"medium\", \"character/seofon_wind/ui/thumb_party_unison_1.png\"]": "2d88cb411d581e55ea36b9b6f793339f0017ea33a25872d0bbc214be6cde6fb2",
+  "nested_table|[\"master/character/full_shot_image_attribute.orderedmap\", \"149995\"]": {
+   "0": [
+    [
+     "1000",
+     "1000",
+     "1",
+     "973",
+     "505"
+    ]
+   ],
+   "1": [
+    [
+     "1000",
+     "1000",
+     "1",
+     "1000",
+     "505"
+    ]
+   ]
+  },
+  "nested_table|[\"master/generated/character_image.orderedmap\", \"149995\"]": {
+   "0": [
+    [
+     "226",
+     "153",
+     "1774",
+     "1769"
+    ]
+   ],
+   "1": [
+    [
+     "129",
+     "169",
+     "1741",
+     "1772"
+    ]
+   ]
+  },
+  "table|[\"master/generated/trimmed_image.orderedmap\", \"character/seofon_wind/ui/full_shot_1440_1920_0\"]": [
+   [
+    "226",
+    "153",
+    "2000",
+    "2000"
+   ]
+  ],
+  "table|[\"master/generated/trimmed_image.orderedmap\", \"character/seofon_wind/ui/full_shot_1440_1920_1\"]": [
+   [
+    "129",
+    "169",
+    "2000",
+    "2000"
+   ]
+  ],
+  "table|[\"master/generated/trimmed_image.orderedmap\", \"character/seofon_wind/ui/skill_cutin_0\"]": [
+   [
+    "450",
+    "83",
+    "1024",
+    "512"
+   ]
+  ],
+  "table|[\"master/generated/trimmed_image.orderedmap\", \"character/seofon_wind/ui/skill_cutin_1\"]": [
+   [
+    "0",
+    "0",
+    "1024",
+    "512"
+   ]
+  ]
+ }
+}

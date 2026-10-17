@@ -1,0 +1,52 @@
+{
+  "stages": [
+    {
+      "id": "fire",
+      "name": "烈焰前线",
+      "bossId": "c22d4a8ac42f7",
+      "theme": "fire",
+      "difficulty": 1
+    },
+    {
+      "id": "water",
+      "name": "潮汐防线",
+      "bossId": "cbb042f435215",
+      "theme": "water",
+      "difficulty": 1.12
+    },
+    {
+      "id": "thunder",
+      "name": "雷鸣阵地",
+      "bossId": "cc052ad18584b",
+      "theme": "thunder",
+      "difficulty": 1.24
+    },
+    {
+      "id": "wind",
+      "name": "疾风草原",
+      "bossId": "cb821b8bdcf90",
+      "theme": "wind",
+      "difficulty": 1.36
+    },
+    {
+      "id": "light",
+      "name": "光芒壁垒",
+      "bossId": "ccae1a246e7f4",
+      "theme": "light",
+      "difficulty": 1.48
+    },
+    {
+      "id": "dark",
+      "name": "凶暗终点",
+      "bossId": "c6ffda440dbf2",
+      "theme": "dark",
+      "difficulty": 1.6
+    }
+  ],
+  "endless": {
+    "hpBase": 2000,
+    "attackBase": 70,
+    "vanguardHp": 450,
+    "vanguardAttack": 30
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "route_id": "five_boss_coop_v1",
+  "ticket_item_id": "10000143",
+  "ai_fill_timeout_seconds": 120,
+  "scenes": [
+    {
+      "source_fields": [
+        "mod_fb_sand_s1",
+        "mod_fb_thunder_s1",
+        "mod_fb_hero_s1"
+      ],
+      "note": "2026-09-06: 场景一(mod_five_boss_coop_v1_zone_1, c22=1 顺序三连)三个槽位在「诅咒」施工中全部改指向载体克隆 mod_fb_*_s1(母本 desert_bonds_big_boss_multi / discarded_dragon_thunder_multi_80 / hero_big_boss_kc_multi,编成与出场顺序不变);此前列的是早期设计的旧代号,与 live zone 不符,一并订正。长度仍为 3。",
+      "field": "mod_five_boss_coop_v1_zone_1"
+    },
+    {
+      "source_fields": [
+        "administrator_light_multi_80",
+        "mod_fb_eye_r",
+        "devil_commander_evil_envy_80",
+        "mod_fb_yokai_r"
+      ],
+      "note": "2026-09-05: 场景二两波×2 boss 同屏(4 槽)= 兜底关 1099003 的 wave0/wave1(官方码@p0/p1 + 克隆 _r@p_r);每对关卡 7 只 boss 互不重复,场景一=2 走位 boss+1 同屏余下",
+      "field": "mod_five_boss_crystal_hall"
+    }
+  ]
+}

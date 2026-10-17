@@ -29,7 +29,7 @@ import zlib
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))
+pass  # Imports resolve from this checkout/package, not external source copies.
 
 PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
 ATF_HEAD8 = b"ATF\x00\x00\x01\xff\x03"  # 新版头 + ATF v3(与官方 cutin 文件逐字节一致)

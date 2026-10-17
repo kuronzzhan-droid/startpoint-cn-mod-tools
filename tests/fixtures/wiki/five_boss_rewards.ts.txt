@@ -1,0 +1,9 @@
+// Wiki parser fixture only; not a game server configuration or implementation.
+export const FIVE_BOSS_BLUEPRINT_DROP_RATE = 0.6
+export const FIVE_BOSS_CURSED_WEAPON_DROP_RATE = 0.05
+export const FIVE_BOSS_KING_COIN_MIN = 10
+export const FIVE_BOSS_KING_COIN_SPAN = 6
+
+const crystal = { amount: 10 * input.rewardMultiplier }
+let fiveKingCoreAmount = input.rewardMultiplier
+if (random() < 0.25) fiveKingCoreAmount += input.rewardMultiplier

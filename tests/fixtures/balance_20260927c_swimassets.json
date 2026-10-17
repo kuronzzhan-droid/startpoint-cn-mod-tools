@@ -1,0 +1,126 @@
+{
+ "_meta": {
+  "source": "extra5 stage_batch.make_read(live_only=True)，2026-09-27 本地链尾 1.4.1054（gray3 导入后）",
+  "absent": [
+   "table|[\"master/quest/character_quest.orderedmap\", \"14999601\"]",
+   "table|[\"master/quest/character_quest.orderedmap\", \"14999602\"]",
+   "table|[\"master/quest/character_quest.orderedmap\", \"14999603\"]"
+  ],
+  "note": "absent 列出的键在 live 读取时为 KeyError（149996 没有角色剧情）；夹具 reader 对缺键同样抛 KeyError"
+ },
+ "live": {
+  "file_sha256|[\"common\", \"character/wind_spgirl_swim/voice/ally/evolution.mp3\"]": "25a25c4aa3938e6e5ede3c5c5aff78af7580e253ce6a6af223a55d74b77cefac",
+  "file_sha256|[\"common\", \"character/wind_spgirl_swim/voice/ally/join.mp3\"]": "9f053522b46a105ceec81fb526c0c874ba12a77924d46df0f1323584bcbc412c",
+  "file_sha256|[\"common\", \"character/wind_spgirl_swim/voice/battle/battle_start_0.mp3\"]": "82d9876218fde7f5e2b540183a581ae7b8a9ca942f44eca1b5ba3394e8355298",
+  "file_sha256|[\"common\", \"character/wind_spgirl_swim/voice/battle/battle_start_1.mp3\"]": "6bc2492693ddc30e26b2d295a1cc62625792a53854c9d4e03e3f12a52c4f8bbc",
+  "file_sha256|[\"common\", \"character/wind_spgirl_swim/voice/battle/outhole_0.mp3\"]": "686e8ae806f6ba4401c774aea8e1a30d0e21e5438c26f270c3d23b6e43cf1d9f",
+  "file_sha256|[\"common\", \"character/wind_spgirl_swim/voice/battle/outhole_1.mp3\"]": "f693ab73bec9a83d9d65ff45b7924df610916301a0a5e4fbf8a231cae45317fa",
+  "file_sha256|[\"common\", \"character/wind_spgirl_swim/voice/battle/power_flip_0.mp3\"]": "446488b15c5269f98d606f8de06729d61233063cf7fbe097b6cf47482dc2f854",
+  "file_sha256|[\"common\", \"character/wind_spgirl_swim/voice/battle/power_flip_1.mp3\"]": "c56adfe5857bfca9d6916feb0ea5d605e54cc69a39e0adba554c40b81bd3a579",
+  "file_sha256|[\"common\", \"character/wind_spgirl_swim/voice/battle/skill_0.mp3\"]": "72d30d93b9008f643df195892573b699e31f1436a8094c6566ac700c0e23b2ef",
+  "file_sha256|[\"common\", \"character/wind_spgirl_swim/voice/battle/skill_1.mp3\"]": "2f92a43ecefb44149dc98a69f54f72f61b6abcb20790031e63784bf4cb07fd52",
+  "file_sha256|[\"common\", \"character/wind_spgirl_swim/voice/battle/skill_ready.mp3\"]": "9da614e06d1ff4f6d0344956faea31aad89f2c24f4dba36c45be34a8a39377ea",
+  "file_sha256|[\"common\", \"character/wind_spgirl_swim/voice/battle/win_0.mp3\"]": "83d456c35e4839aa838bbe3dd2f55318025aa0ea71979b4fd8b32afffd672215",
+  "file_sha256|[\"common\", \"character/wind_spgirl_swim/voice/battle/win_1.mp3\"]": "4c96792313502ef5729bfb412c955bfb8d4f485e5404fc471ef12b48956d3a64",
+  "file_sha256|[\"medium\", \"character/wind_spgirl_swim/ui/episode_banner_0.png\"]": null,
+  "table|[\"master/character/character_speech.orderedmap\", \"149996\"]": [
+   [
+    "0",
+    "2",
+    "",
+    "阿尔克哥哥，久等了！\n你愿意跟和希尔媞交个手吗♪\n呵呵呵，不会让你逃掉的哦？",
+    "home/alk_niisama"
+   ],
+   [
+    "0",
+    "2",
+    "",
+    "空牙·风神。这本是莎蒂雅被龙夺走的宝剑，后来被希尔媞夺回来了哦。\n龙吗？\n那是个不会挥剑的对手，很无聊哦？",
+    "home/kuga"
+   ],
+   [
+    "0",
+    "2",
+    "",
+    "能与史黛拉姐姐她们相遇，希尔媞真的很开心。\n毕竟在这里没必要装老实了♪",
+    "home/stella_nesamatachito"
+   ],
+   [
+    "0",
+    "1",
+    "",
+    "最近也跟其他人交过手呢……想知道对方是谁吗？\n哼哼，希尔媞才不告诉阿尔克哥哥呢♪",
+    "home/chikagorowa"
+   ],
+   [
+    "0",
+    "1",
+    "",
+    "这把剑也承载着莎蒂雅的骄傲。\n真不可思议。原来一直觉得无所谓的，现在我却感到很安心。",
+    "home/konokenniwa"
+   ],
+   [
+    "0",
+    "1",
+    "",
+    "比起挽着手臂跳舞，希尔媞更想跟人比剑。\n来对决吧，用彼此的剑刃释放这满腔热血♪",
+    "home/udewo"
+   ],
+   [
+    "2",
+    "",
+    "",
+    "我叫希尔媞·莎蒂雅，\n来自法兰德。\n希尔媞对剑术还是有些信心的♪\n请多指教哦？",
+    "ally/join"
+   ],
+   [
+    "1",
+    "",
+    "1",
+    "以此剑起誓，希尔媞·莎蒂雅愿成为这星见镇的骑士。\n星之骑士什么的，很帅气吧♪",
+    "ally/evolution"
+   ]
+  ],
+  "table|[\"master/character/character.orderedmap\", \"149996\"]": [
+   [
+    "wind_spgirl_swim",
+    "1",
+    "5",
+    "3",
+    "Human",
+    "",
+    "0",
+    "Female",
+    "wind_spgirl_swim",
+    "(None)",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "149996",
+    "千刃共振",
+    "1499961",
+    "1499962",
+    "1499963",
+    "1499964",
+    "1499965",
+    "1499966",
+    "0",
+    "Attacker",
+    "149996",
+    "(None)",
+    "1",
+    "false",
+    "true",
+    "0",
+    "1",
+    "",
+    "",
+    "6,6,6,6,6,6"
+   ]
+  ]
+ }
+}

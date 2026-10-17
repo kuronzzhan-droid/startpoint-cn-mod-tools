@@ -1,0 +1,38 @@
+{
+ "_doc": "作者确认图标预览的登记（设计 §6.5 第 3 步）。wf_weapon_awaken.py approve 写入；stage-e1 只发 sha 与此一致的图，图一改就要重新确认。",
+ "approved_by": "作者",
+ "evidence": "2026-09-28 作者撤回彩虹重画：「禁忌星铁上版那个紫灰挺好的，保持那个和现在的200级悖论武器品质底色」——像素回到 37a2d165 的紫灰锭（c3 RGBA sha 11539376…），底框改走蓝金框补丁",
+ "c3_rgba_sha256": {
+  "contradiction_crystal": "d201d2aba80a70f4ba77bcc928d68f386b9d3d0484492ddfed757e87701d3f98",
+  "deathbringer_blueprint_v2": "f4dc67347d94936732af89eb64d8da92868b7e2cffed427756366c17c984ea0b",
+  "deep_crystal_v2": "4e8027e59b148a3070be5999b46e30812cd822f1a2812c688dd0217a93f1a1de",
+  "five_king_core_v2": "0564483d57dd98b4ccad672b3800cf625c4d82e42b6d26b7aaa17a8fd1730eda",
+  "fivefold_clear_badge_v2": "1774ba6eeaf7e63689d017002853539fae50e59fbe0add02dd75de3e386ff64b",
+  "forbidden_star_steel": "11539376bdf9e4194967efb516171c1fed971c372341df080bd51c993396a7d5",
+  "king_coin": "2257835d838270955999649a49f29f8dc120983f2377dfb041b578a5d42da6c5",
+  "paradox_core": "12ddae27180d40448cab1fab88005aad6a847dcc0fb00928ae1655bbd540cf2d"
+ },
+ "history": [
+  {
+   "approved_by": "作者",
+   "evidence": "2026-09-28 作者看过 icons_review.png：「可以，发吧，…禁忌星铁要彩虹」；彩虹版按要求重画后作者催促发布「星铁只是换个背景图怎么这么久」",
+   "stems": [
+    "contradiction_crystal",
+    "deathbringer_blueprint_v2",
+    "deep_crystal_v2",
+    "five_king_core_v2",
+    "fivefold_clear_badge_v2",
+    "forbidden_star_steel",
+    "king_coin",
+    "paradox_core"
+   ]
+  },
+  {
+   "approved_by": "作者",
+   "evidence": "2026-09-28 作者撤回彩虹重画：「禁忌星铁上版那个紫灰挺好的，保持那个和现在的200级悖论武器品质底色」——像素回到 37a2d165 的紫灰锭（c3 RGBA sha 11539376…），底框改走蓝金框补丁",
+   "stems": [
+    "forbidden_star_steel"
+   ]
+  }
+ ]
+}

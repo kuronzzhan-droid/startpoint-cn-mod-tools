@@ -1,0 +1,1336 @@
+{
+ "_doc": "五重决战 v2 阵容与数值（wf_five_boss_v2.py 读取）。设计见 mod-tools/docs/五重决战重做设计-20260928.md。hp_e8=目标血量（亿，多人；单人客户端自动×0.55）。",
+ "schema": 1,
+ "entry_quest": 1099001,
+ "map_id_base": 1099001100,
+ "fallback_map_id": 1099001999,
+ "time_limit_frames": 108000,
+ "budget": {
+  "pass_mpx": 5.5,
+  "fail_mpx": 6.0
+ },
+ "reward_display": {
+  "group": 590010001,
+  "first_equipment": 5910101,
+  "last_equipment": 5910129
+ },
+ "terrains": {
+  "r0": {
+   "base": "battle/terrain/mod/five_boss/expert_white_tiger_100_coffin9",
+   "out": "battle/terrain/mod/five_boss_v2/r0_trial_hall",
+   "_object_overrides_doc": "管理者召唤锚：照官方原生地形 boss_battle_administrator_80（BOUNDS 46,0），坐标相对本层 BOUNDS 左上角",
+   "object_overrides": {
+    "FUNNEL_SPAWN6": [
+     [
+      56,
+      116.5,
+      15,
+      15
+     ],
+     [
+      109,
+      116.5,
+      15,
+      15
+     ],
+     [
+      83,
+      126.833,
+      15,
+      15
+     ]
+    ],
+    "FUNNEL_SPAWN8": [
+     [
+      114.25,
+      79.75,
+      15,
+      15
+     ],
+     [
+      153.25,
+      77.25,
+      15,
+      15
+     ],
+     [
+      50.5,
+      78.75,
+      15,
+      15
+     ],
+     [
+      12.5,
+      76.5,
+      15,
+      15
+     ]
+    ]
+   }
+  },
+  "r1": {
+   "base": "battle/terrain/mod/five_boss/desert_bonds_01_big_boss_single_hell_coffin9",
+   "out": "battle/terrain/mod/five_boss_v2/r1_throne",
+   "remove_types": [
+    "DIRECT_INSTANT_ITEM#ACCUMULATION_ATTACK_POWER_UP_25_500_FEVER"
+   ],
+   "object_overrides": {
+    "FUNNEL_SPAWN6": [
+     [
+      56,
+      116.5,
+      15,
+      15
+     ],
+     [
+      109,
+      116.5,
+      15,
+      15
+     ],
+     [
+      83,
+      126.833,
+      15,
+      15
+     ]
+    ],
+    "FUNNEL_SPAWN8": [
+     [
+      114.25,
+      79.75,
+      15,
+      15
+     ],
+     [
+      153.25,
+      77.25,
+      15,
+      15
+     ],
+     [
+      50.5,
+      78.75,
+      15,
+      15
+     ],
+     [
+      12.5,
+      76.5,
+      15,
+      15
+     ]
+    ]
+   },
+   "position_overrides": {
+    "1": {
+     "p0": [
+      89,
+      138
+     ],
+     "p1": [
+      62,
+      132.2
+     ],
+     "p2": [
+      116,
+      132.2
+     ]
+    }
+   }
+  }
+ },
+ "art": {
+  "_doc": "UI 图原位替换（尺寸须与 live 相同，新路径写 size）；field 行从母本行克隆背景四件套只换 PNG；图集只追加。道具 c3/c4 在图集那条边上线后才会进入暂存（C8004 顺序约束）。",
+  "files": [
+   {
+    "src": "assets/five-boss-v2/header.png",
+    "logical": "quest/event/background/story_event/mod/five_boss/five_boss.png"
+   },
+   {
+    "src": "assets/five-boss-v2/banner.png",
+    "logical": "quest/event/banner/story_event/mod/five_boss/five_boss.png"
+   },
+   {
+    "src": "assets/five-boss-v2/thumbnail.png",
+    "logical": "quest/thumbnail/multi_battle/mod_five_boss.png"
+   },
+   {
+    "src": "assets/five-boss-v2/ticket_icon_20.png",
+    "logical": "item/materials/mod/five_boss/deep_realm_ticket.png",
+    "size": [
+     20,
+     20
+    ]
+   }
+  ],
+  "node_thumbnail": {
+   "path": [
+    "1",
+    "99"
+   ],
+   "col": 11,
+   "value": "quest/thumbnail/multi_battle/mod_five_boss"
+  },
+  "atlas_icons": [
+   {
+    "src": "assets/five-boss-v2/ticket_icon_41.png",
+    "name": "item_icon/materials/mod/five_boss/deep_realm_ticket"
+   }
+  ],
+  "item_icons": {
+   "10000143": {
+    "thumbnail": "item/materials/mod/five_boss/deep_realm_ticket",
+    "small": "item_icon/materials/mod/five_boss/deep_realm_ticket"
+   }
+  },
+  "shop_icons": {
+   "990099002": {
+    "col": 12,
+    "value": "item/materials/mod/five_boss/deep_realm_ticket"
+   }
+  },
+  "fields": {
+   "mod_fb2_trial_hall": {
+    "_doc": "试炼回廊：白虎 expert 同地形；added 置空（白虎侧墙紫色 ADD 光会染紫五色晶石），multiply 保留共享专家档压暗",
+    "from": "beast_ruins_expert",
+    "background": {
+     "src": "assets/five-boss-v2/field_trial_hall.png",
+     "out": "battle/field/mod/five_boss_v2/trial_hall/background/background"
+    },
+    "set": {
+     "2": "(None)"
+    }
+   },
+   "mod_fb2_throne_hall": {
+    "_doc": "深界王座：沙漠 hell 同地形；门/传送舱/Fever 条沿用水晶神殿行",
+    "from": "mod_five_boss_crystal_hall",
+    "background": {
+     "src": "assets/five-boss-v2/field_throne_hall.png",
+     "out": "battle/field/mod/five_boss_v2/throne_hall/background/background"
+    }
+   }
+  }
+ },
+ "rounds": {
+  "r0": {
+   "field": "mod_fb2_trial_hall",
+   "zone_template": [
+    "mod_five_boss_coop_v1_zone_1",
+    "0"
+   ],
+   "quest_template": "2",
+   "hp_mult": [
+    40,
+    6,
+    1
+   ],
+   "atk_mult": [
+    1,
+    1,
+    1.5
+   ],
+   "fever_cap": 5000,
+   "tp_target": 5000
+  },
+  "r1": {
+   "field": "mod_fb2_throne_hall",
+   "zone_template": [
+    "mod_five_boss_var_s2_ability_a",
+    "0"
+   ],
+   "quest_template": "3",
+   "hp_mult": [
+    40,
+    6,
+    1
+   ],
+   "atk_mult": [
+    1,
+    1,
+    2.0
+   ],
+   "fever_cap": 7500,
+   "tp_target": 15000
+  }
+ },
+ "bosses": {
+  "sand": {
+   "mother": "mod_fb_sand_s1"
+  },
+  "thunder": {
+   "mother": "mod_fb_thunder_s1"
+  },
+  "water": {
+   "mother": "mod_fb_water_s1"
+  },
+  "hero": {
+   "mother": "mod_fb_hero_s1"
+  },
+  "admin": {
+   "mother": "mod_fb_admin_s1"
+  },
+  "yokai": {
+   "mother": "mod_fb_yokai_s1"
+  },
+  "eye": {
+   "mother": "mod_fb_eye_s1"
+  },
+  "envy": {
+   "mother": "devil_commander_evil_envy_80"
+  },
+  "spirit_water": {
+   "mother": "spirit_beast_water"
+  },
+  "golem_g": {
+   "mother": "simon_golem_g_multi"
+  },
+  "sheep": {
+   "mother": "alter_sheep_materia_multi_80"
+  },
+  "secmk2": {
+   "mother": "hero_middle_boss_multi"
+  },
+  "crab_light": {
+   "mother": "hermit_crab_another_light_single"
+  },
+  "evil": {
+   "mother": "devil_commander_evil"
+  },
+  "lich": {
+   "mother": "lich_wind_multi"
+  },
+  "abyss_lich": {
+   "_doc": "自制第一步：不死王专家档（26 招）换色——紫袍、品红法冠、青白骨面、青色宝石，保留金饰；签名「亡者诅咒」",
+   "mother": "lich_wind_expert_100",
+   "name": "深渊不死王",
+   "recolor": {
+    "from": "battle/boss/lich/lich_wind/lich_wind",
+    "out": "battle/boss/mod/five_boss_v2/abyss_lich/abyss_lich",
+    "rules": [
+     {
+      "h": [
+       95,
+       160
+      ],
+      "s_min": 0.5,
+      "v_min": 0.45,
+      "to_h": 182,
+      "s_mul": 0.9,
+      "v_mul": 1.05
+     },
+     {
+      "h": [
+       50,
+       130
+      ],
+      "s_max": 0.7,
+      "to_h": 272,
+      "s_mul": 1.35,
+      "s_add": 0.08,
+      "v_mul": 0.95
+     },
+     {
+      "h": [
+       325,
+       360
+      ],
+      "s_min": 0.35,
+      "to_h": 312,
+      "s_mul": 1.0,
+      "v_mul": 1.0
+     },
+     {
+      "h": [
+       0,
+       18
+      ],
+      "s_min": 0.35,
+      "to_h": 312,
+      "s_mul": 1.0,
+      "v_mul": 1.0
+     },
+     {
+      "h": [
+       195,
+       250
+      ],
+      "to_h": 188,
+      "s_mul": 0.55,
+      "v_mul": 1.08
+     },
+     {
+      "h": [
+       18,
+       50
+      ],
+      "s_max": 0.3,
+      "v_max": 0.6,
+      "to_h": 262,
+      "s_mul": 1.2,
+      "s_add": 0.06
+     }
+    ]
+   },
+   "signature": [
+    "sig_abyss_curse"
+   ]
+  },
+  "blood_crab": {
+   "_doc": "自制第一步：寄居蟹船长专家 100 档（23 招，站位 p0–p3）换色——暗红身、焦铜壳、骨金骷髅、金橙光效；签名「血潮侵蚀」",
+   "mother": "hermit_crab_water_expert_100",
+   "name": "血潮船长",
+   "recolor": {
+    "from": "battle/boss/hermit_crab/hermit_crab_water/hermit_crab_water",
+    "out": "battle/boss/mod/five_boss_v2/blood_crab/blood_crab",
+    "rules": [
+     {
+      "h": [
+       150,
+       215
+      ],
+      "s_min": 0.9,
+      "v_min": 0.9,
+      "to_h": 36,
+      "s_mul": 0.95
+     },
+     {
+      "h": [
+       225,
+       300
+      ],
+      "s_min": 0.4,
+      "to_h": 352,
+      "s_mul": 1.05,
+      "v_mul": 0.92
+     },
+     {
+      "h": [
+       255,
+       300
+      ],
+      "s_max": 0.4,
+      "v_min": 0.85,
+      "to_h": 18,
+      "s_mul": 1.1
+     },
+     {
+      "h": [
+       200,
+       225
+      ],
+      "s_min": 0.35,
+      "to_h": 28,
+      "s_mul": 0.75,
+      "v_mul": 0.85
+     },
+     {
+      "h": [
+       185,
+       200
+      ],
+      "s_max": 0.25,
+      "v_min": 0.5,
+      "to_h": 42,
+      "s_add": 0.18,
+      "v_mul": 1.02
+     },
+     {
+      "h": [
+       205,
+       245
+      ],
+      "s_min": 0.35,
+      "v_max": 0.4,
+      "to_h": 350,
+      "s_mul": 0.8,
+      "v_mul": 0.9
+     }
+    ]
+   },
+   "signature": [
+    "sig_blood_tide"
+   ]
+  },
+  "deep_king": {
+   "_doc": "自制第二步（作者 0928：全新造型、放最后一张图、限制技能、清空 buff、带试炼）：骨架=不死王专家档（动作/碰撞/骷髅犬+超级蓄力机制），本体 51 帧重画（金冠/象牙面具/紫金王袍/紫晶权杖）；暗属性；16 个招式槽借五王招牌招式；射击3蓄力挂强化弹射命中 25、大招2蓄力挂技能命中 12（10 秒倒数，达成跳过大招）；签名：每 25 秒强制沉默 6 秒并扣 30% 技能槽，登场及每 30 秒强制驱散全部增益。召唤物属性不同由构建器自动补 C8016 预载垫片。 0928 作者实机反馈：满场铺地的冰面/暗影领域（enemy_shot_slip_damage）压在角色上，槽 06/16 换成伊劳德雷斯追踪重炮、画龙全屏光束。",
+   "mother": "lich_wind_expert_100",
+   "name": "深界王",
+   "body": {
+    "from": "battle/boss/lich/lich_wind/lich_wind",
+    "out": "battle/boss/mod/five_boss_v2/deep_king/deep_king",
+    "frames": "assets/five-boss-v2/deep_king/frames"
+   },
+   "routine": {
+    "out": "mod_fb2_deep_king",
+    "trials": {
+     "skill2_charge1": {
+      "kind": "skill",
+      "count": 12,
+      "frames": 600
+     },
+     "skill2_charge2": {
+      "kind": "skill",
+      "count": 12,
+      "frames": 600
+     },
+     "skill2_charge3": {
+      "kind": "skill",
+      "count": 12,
+      "frames": 600
+     },
+     "shot3_charge1": {
+      "kind": "pf",
+      "count": 25,
+      "frames": 600
+     },
+     "shot3_charge2": {
+      "kind": "pf",
+      "count": 25,
+      "frames": 600
+     },
+     "shot3_charge3": {
+      "kind": "pf",
+      "count": 25,
+      "frames": 600
+     }
+    }
+   },
+   "signature": [
+    "sig_king_seal",
+    "sig_king_purge"
+   ],
+   "element": 6,
+   "actions": {
+    "1": {
+     "from": "mod_fb_thunder_s1",
+     "slot": 8
+    },
+    "11": {
+     "from": "mod_fb_water_s1",
+     "slot": 10
+    },
+    "21": {
+     "from": "mod_fb_yokai_s1",
+     "slot": 2
+    },
+    "2": {
+     "from": "devil_commander_evil_envy_80",
+     "slot": 7
+    },
+    "12": {
+     "from": "devil_commander_evil_envy_80",
+     "slot": 4
+    },
+    "22": {
+     "from": "mod_fb_sand_s1",
+     "slot": 8
+    },
+    "3": {
+     "from": "spirit_beast_water",
+     "slot": 2
+    },
+    "13": {
+     "from": "simon_golem_g_multi",
+     "slot": 2
+    },
+    "23": {
+     "from": "mod_fb_hero_s1",
+     "slot": 12
+    },
+    "4": {
+     "from": "simon_golem_g_multi",
+     "slot": 4
+    },
+    "5": {
+     "from": "spirit_beast_water",
+     "slot": 6
+    },
+    "6": {
+     "from": "mod_fb_water_s1",
+     "slot": 4
+    },
+    "7": {
+     "from": "mod_fb_yokai_s1",
+     "slot": 3
+    },
+    "10": {
+     "from": "mod_fb_thunder_s1",
+     "slot": 11
+    },
+    "16": {
+     "from": "mod_fb_yokai_s1",
+     "slot": 11
+    },
+    "17": {
+     "from": "mod_fb_sand_s1",
+     "slot": 9
+    }
+   },
+   "texts": {
+    "100": "深渊瘴气变浓了",
+    "101": "王之守护消失了",
+    "102": "王之低语消失了",
+    "103": "深渊之力不足"
+   }
+  }
+ },
+ "affix_params": {
+  "enrage_r0": {
+   "interval": 480,
+   "atk": 0.15,
+   "atk_layers": 8,
+   "res": 0.1,
+   "res_layers": 5,
+   "count": 999
+  },
+  "enrage_r1": {
+   "interval": 360,
+   "atk": 0.15,
+   "atk_layers": 12,
+   "res": 0.1,
+   "res_layers": 5,
+   "count": 999
+  },
+  "weaken_rotation": {
+   "period": 1800,
+   "frames": 900,
+   "value": -0.2,
+   "count": 999
+  },
+  "heal_seal": {
+   "cancel_direct_hits": 250
+  },
+  "combo_cap": {
+   "cap": 30,
+   "cancel_powerflips": 10
+  },
+  "slow_charge": {
+   "value": -0.3,
+   "cancel_direct_hits": 300
+  },
+  "slip": {
+   "value": 20,
+   "cancel_conditions": 50
+  },
+  "silence_waves": {
+   "interval": 2400,
+   "frames": 300,
+   "count": 999
+  },
+  "fever_drain": {
+   "value": -0.5
+  },
+  "purge_r1": {
+   "buff_reject_frames": 900,
+   "periodic_interval": 1200,
+   "periodic_count": 999,
+   "periodic_limit": 2
+  },
+  "sig_abyss_curse": {
+   "interval": 1200,
+   "count": 999,
+   "key": "mod_fb2_sig_abyss_curse",
+   "effects": [
+    [
+     "ACSkillDamage",
+     480,
+     -0.35
+    ],
+    [
+     "ACFeverPoint",
+     480,
+     -0.5
+    ]
+   ]
+  },
+  "sig_blood_tide": {
+   "interval": 1500,
+   "count": 999,
+   "key": "mod_fb2_sig_blood_tide",
+   "effects": [
+    [
+     "ACDirectDamage",
+     480,
+     -0.3
+    ]
+   ],
+   "drain": 0.25
+  },
+  "sig_king_seal": {
+   "interval": 1500,
+   "count": 999,
+   "key": "mod_fb2_sig_king_seal",
+   "silence": 360,
+   "drain": 0.3
+  },
+  "sig_king_purge": {
+   "interval": 1800,
+   "count": 999,
+   "key": "mod_fb2_sig_king_purge",
+   "purge": 99,
+   "on_entry": true
+  }
+ },
+ "variants": [
+  {
+   "quest": 1099031,
+   "round": "r0",
+   "name": "五重决战·试炼回廊「炎沙」 ::quest_rank::",
+   "group_kind": 1,
+   "waves": [
+    [
+     {
+      "alias": "sand",
+      "hp_e8": 1100
+     },
+     {
+      "alias": "water",
+      "hp_e8": 1000
+     },
+     {
+      "alias": "admin",
+      "hp_e8": 900
+     }
+    ]
+   ],
+   "enemy_states": [
+    [
+     0,
+     0.5
+    ],
+    [
+     1,
+     -0.3
+    ]
+   ],
+   "affixes": [
+    "enrage_r0",
+    "weaken_rotation",
+    "heal_seal"
+   ]
+  },
+  {
+   "quest": 1099032,
+   "round": "r0",
+   "name": "五重决战·试炼回廊「雷霆」 ::quest_rank::",
+   "group_kind": 1,
+   "waves": [
+    [
+     {
+      "alias": "thunder",
+      "hp_e8": 1100
+     },
+     {
+      "alias": "admin",
+      "hp_e8": 1000
+     },
+     {
+      "alias": "yokai",
+      "hp_e8": 900
+     }
+    ]
+   ],
+   "enemy_states": [
+    [
+     1,
+     0.5
+    ],
+    [
+     0,
+     -0.3
+    ]
+   ],
+   "affixes": [
+    "enrage_r0",
+    "silence_waves",
+    "combo_cap"
+   ]
+  },
+  {
+   "quest": 1099033,
+   "round": "r0",
+   "name": "五重决战·试炼回廊「寒渊」 ::quest_rank::",
+   "group_kind": 1,
+   "waves": [
+    [
+     {
+      "alias": "water",
+      "hp_e8": 1000
+     },
+     {
+      "alias": "yokai",
+      "hp_e8": 900
+     },
+     {
+      "alias": "sand",
+      "hp_e8": 1100
+     }
+    ]
+   ],
+   "enemy_states": [
+    [
+     1,
+     0.5
+    ],
+    [
+     3,
+     -0.3
+    ],
+    [
+     4,
+     null
+    ]
+   ],
+   "affixes": [
+    "enrage_r0",
+    "slow_charge",
+    "weaken_rotation"
+   ]
+  },
+  {
+   "quest": 1099034,
+   "round": "r0",
+   "name": "五重决战·试炼回廊「潮汐」 ::quest_rank::",
+   "group_kind": 1,
+   "waves": [
+    [
+     {
+      "alias": "spirit_water",
+      "hp_e8": 1100
+     },
+     {
+      "alias": "crab_light",
+      "hp_e8": 900
+     },
+     {
+      "alias": "lich",
+      "hp_e8": 1000
+     }
+    ]
+   ],
+   "enemy_states": [
+    [
+     1,
+     0.5
+    ],
+    [
+     2,
+     -0.3
+    ]
+   ],
+   "affixes": [
+    "enrage_r0",
+    "heal_seal",
+    "silence_waves"
+   ]
+  },
+  {
+   "quest": 1099035,
+   "round": "r0",
+   "name": "五重决战·试炼回廊「遗城」 ::quest_rank::",
+   "group_kind": 1,
+   "waves": [
+    [
+     {
+      "alias": "golem_g",
+      "hp_e8": 1100
+     },
+     {
+      "alias": "sheep",
+      "hp_e8": 900
+     },
+     {
+      "alias": "evil",
+      "hp_e8": 1000
+     }
+    ]
+   ],
+   "enemy_states": [
+    [
+     0,
+     0.5
+    ],
+    [
+     3,
+     -0.3
+    ]
+   ],
+   "affixes": [
+    "enrage_r0",
+    "weaken_rotation"
+   ]
+  },
+  {
+   "quest": 1099036,
+   "round": "r0",
+   "name": "五重决战·试炼回廊「机械」 ::quest_rank::",
+   "group_kind": 1,
+   "waves": [
+    [
+     {
+      "alias": "secmk2",
+      "hp_e8": 900
+     },
+     {
+      "alias": "hero",
+      "hp_e8": 1100
+     },
+     {
+      "alias": "admin",
+      "hp_e8": 1000
+     }
+    ]
+   ],
+   "enemy_states": [
+    [
+     2,
+     0.5
+    ],
+    [
+     1,
+     -0.3
+    ]
+   ],
+   "affixes": [
+    "enrage_r0",
+    "combo_cap",
+    "slow_charge"
+   ]
+  },
+  {
+   "quest": 1099037,
+   "round": "r0",
+   "name": "五重决战·试炼回廊「亡灵」 ::quest_rank::",
+   "group_kind": 1,
+   "waves": [
+    [
+     {
+      "alias": "lich",
+      "hp_e8": 900
+     },
+     {
+      "alias": "evil",
+      "hp_e8": 900
+     },
+     {
+      "alias": "envy",
+      "hp_e8": 1200
+     }
+    ]
+   ],
+   "enemy_states": [
+    [
+     3,
+     0.5
+    ],
+    [
+     0,
+     -0.3
+    ]
+   ],
+   "affixes": [
+    "enrage_r0",
+    "fever_drain",
+    "weaken_rotation"
+   ]
+  },
+  {
+   "quest": 1099038,
+   "round": "r0",
+   "name": "五重决战·试炼回廊「风暴」 ::quest_rank::",
+   "group_kind": 1,
+   "waves": [
+    [
+     {
+      "alias": "sheep",
+      "hp_e8": 900
+     },
+     {
+      "alias": "thunder",
+      "hp_e8": 1100
+     },
+     {
+      "alias": "crab_light",
+      "hp_e8": 1000
+     }
+    ]
+   ],
+   "enemy_states": [
+    [
+     1,
+     0.4
+    ],
+    [
+     2,
+     0.4
+    ],
+    [
+     3,
+     -0.3
+    ]
+   ],
+   "affixes": [
+    "enrage_r0",
+    "silence_waves",
+    "weaken_rotation"
+   ]
+  },
+  {
+   "quest": 1099039,
+   "round": "r0",
+   "name": "五重决战·试炼回廊「深渊」 ::quest_rank::",
+   "group_kind": 1,
+   "waves": [
+    [
+     {
+      "alias": "abyss_lich",
+      "hp_e8": 1000
+     },
+     {
+      "alias": "blood_crab",
+      "hp_e8": 1000
+     },
+     {
+      "alias": "evil",
+      "hp_e8": 1000
+     }
+    ]
+   ],
+   "enemy_states": [
+    [
+     2,
+     0.5
+    ],
+    [
+     0,
+     -0.3
+    ]
+   ],
+   "affixes": [
+    "enrage_r0",
+    "combo_cap",
+    "weaken_rotation"
+   ]
+  },
+  {
+   "quest": 1099051,
+   "round": "r1",
+   "name": "五重决战·深界王座「星辰」 ::quest_rank::",
+   "group_kind": 0,
+   "waves": [
+    [
+     {
+      "alias": "admin",
+      "hp_e8": 1400,
+      "position": "p0"
+     },
+     {
+      "alias": "yokai",
+      "hp_e8": 1400,
+      "position": "p_r"
+     }
+    ],
+    [
+     {
+      "alias": "deep_king",
+      "hp_e8": 4200,
+      "position": "p0"
+     }
+    ]
+   ],
+   "enemy_states": [
+    [
+     2,
+     0.5
+    ],
+    [
+     0,
+     -0.3
+    ]
+   ],
+   "entry_affixes": [
+    "purge_r1"
+   ],
+   "affixes": [
+    "enrage_r1",
+    "fever_drain",
+    "heal_seal"
+   ]
+  },
+  {
+   "quest": 1099052,
+   "round": "r1",
+   "name": "五重决战·深界王座「雷霆」 ::quest_rank::",
+   "group_kind": 0,
+   "waves": [
+    [
+     {
+      "alias": "envy",
+      "hp_e8": 1400,
+      "position": "p0"
+     },
+     {
+      "alias": "admin",
+      "hp_e8": 1400,
+      "position": "p_r"
+     }
+    ],
+    [
+     {
+      "alias": "deep_king",
+      "hp_e8": 4200,
+      "position": "p0"
+     }
+    ]
+   ],
+   "enemy_states": [
+    [
+     0,
+     0.4
+    ],
+    [
+     1,
+     0.4
+    ],
+    [
+     3,
+     -0.3
+    ]
+   ],
+   "entry_affixes": [
+    "purge_r1"
+   ],
+   "affixes": [
+    "enrage_r1",
+    "silence_waves",
+    "slip"
+   ]
+  },
+  {
+   "quest": 1099053,
+   "round": "r1",
+   "name": "五重决战·深界王座「深潮」 ::quest_rank::",
+   "group_kind": 0,
+   "waves": [
+    [
+     {
+      "alias": "envy",
+      "hp_e8": 1400,
+      "position": "p0"
+     },
+     {
+      "alias": "admin",
+      "hp_e8": 1400,
+      "position": "p_r"
+     }
+    ],
+    [
+     {
+      "alias": "deep_king",
+      "hp_e8": 4200,
+      "position": "p0"
+     }
+    ]
+   ],
+   "enemy_states": [
+    [
+     0,
+     0.5
+    ],
+    [
+     1,
+     -0.3
+    ]
+   ],
+   "entry_affixes": [
+    "purge_r1"
+   ],
+   "affixes": [
+    "enrage_r1",
+    "slip",
+    "fever_drain"
+   ]
+  },
+  {
+   "quest": 1099054,
+   "round": "r1",
+   "name": "五重决战·深界王座「遗城」 ::quest_rank::",
+   "group_kind": 0,
+   "waves": [
+    [
+     {
+      "alias": "hero",
+      "hp_e8": 1400,
+      "position": "p0"
+     },
+     {
+      "alias": "yokai",
+      "hp_e8": 1400,
+      "position": "p_r"
+     }
+    ],
+    [
+     {
+      "alias": "deep_king",
+      "hp_e8": 4200,
+      "position": "p0"
+     }
+    ]
+   ],
+   "enemy_states": [
+    [
+     1,
+     0.5
+    ],
+    [
+     3,
+     -0.3
+    ]
+   ],
+   "entry_affixes": [
+    "purge_r1"
+   ],
+   "affixes": [
+    "enrage_r1",
+    "heal_seal",
+    "silence_waves"
+   ]
+  },
+  {
+   "quest": 1099055,
+   "round": "r1",
+   "name": "五重决战·深界王座「王者」 ::quest_rank::",
+   "group_kind": 0,
+   "waves": [
+    [
+     {
+      "alias": "spirit_water",
+      "hp_e8": 1400,
+      "position": "p0"
+     },
+     {
+      "alias": "admin",
+      "hp_e8": 1400,
+      "position": "p_r"
+     }
+    ],
+    [
+     {
+      "alias": "deep_king",
+      "hp_e8": 4200,
+      "position": "p0"
+     }
+    ]
+   ],
+   "enemy_states": [
+    [
+     2,
+     0.5
+    ],
+    [
+     0,
+     -0.3
+    ]
+   ],
+   "entry_affixes": [
+    "purge_r1"
+   ],
+   "affixes": [
+    "enrage_r1",
+    "combo_cap",
+    "fever_drain"
+   ]
+  },
+  {
+   "quest": 1099056,
+   "round": "r1",
+   "name": "五重决战·深界王座「双龙」 ::quest_rank::",
+   "group_kind": 0,
+   "waves": [
+    [
+     {
+      "alias": "admin",
+      "hp_e8": 1400,
+      "position": "p0"
+     },
+     {
+      "alias": "yokai",
+      "hp_e8": 1400,
+      "position": "p_r"
+     }
+    ],
+    [
+     {
+      "alias": "deep_king",
+      "hp_e8": 4200,
+      "position": "p0"
+     }
+    ]
+   ],
+   "enemy_states": [
+    [
+     3,
+     0.5
+    ],
+    [
+     1,
+     -0.3
+    ]
+   ],
+   "entry_affixes": [
+    "purge_r1"
+   ],
+   "affixes": [
+    "enrage_r1",
+    "slow_charge",
+    "weaken_rotation"
+   ]
+  },
+  {
+   "quest": 1099057,
+   "round": "r1",
+   "name": "五重决战·深界王座「血潮」 ::quest_rank::",
+   "group_kind": 0,
+   "waves": [
+    [
+     {
+      "alias": "blood_crab",
+      "hp_e8": 1400,
+      "position": "p0"
+     },
+     {
+      "alias": "envy",
+      "hp_e8": 1400,
+      "position": "p_r"
+     }
+    ],
+    [
+     {
+      "alias": "deep_king",
+      "hp_e8": 4200,
+      "position": "p0"
+     }
+    ]
+   ],
+   "enemy_states": [
+    [
+     0,
+     0.5
+    ],
+    [
+     2,
+     -0.3
+    ]
+   ],
+   "entry_affixes": [
+    "purge_r1"
+   ],
+   "affixes": [
+    "enrage_r1",
+    "fever_drain",
+    "heal_seal"
+   ]
+  }
+ ]
+}

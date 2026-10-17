@@ -1,0 +1,145 @@
+{
+ "_source": "live 快照（2026-09-29，只读）：强化商店诅咒线模板行 591010102（50 列）与类目表 1–6 全部行（10 列）；羁绊生成器 wf_bond_weapon_enhance 的模板/顺序测试用。",
+ "shop_template": {
+  "591010102": [
+   [
+    "6",
+    "(None)",
+    "5910101",
+    "2",
+    "1",
+    "100",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "(None)",
+    "",
+    "(None)",
+    "10000145",
+    "10",
+    "10000147",
+    "1",
+    "(None)",
+    "",
+    "(None)",
+    "",
+    "2000-01-01 00:00:00",
+    "(None)",
+    "90",
+    "",
+    "",
+    "",
+    "",
+    "5910101",
+    "70",
+    "5",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ]
+  ]
+ },
+ "category": {
+  "1": [
+   [
+    "anamnesis_weapon",
+    "1",
+    "(None)",
+    "领主币兑换装备强化",
+    "dynamic/equipment_enhancement/anamnesis_weapon_banner",
+    "dynamic/equipment_enhancement/anamnesis_weapon_header",
+    "equipment_enhancement_anamnesis_weapon_how_to_play",
+    "Equipment_Enhancement_Anamnesis_Weapon",
+    "2024-05-23 12:00:00",
+    "(None)"
+   ]
+  ],
+  "2": [
+   [
+    "epuration_weapon",
+    "2",
+    "(None)",
+    "歼灭装备强化",
+    "dynamic/equipment_enhancement/epuration_weapon_banner",
+    "dynamic/equipment_enhancement/epuration_weapon_header",
+    "equipment_enhancement_epuration_weapon_how_to_play",
+    "equipment_enhancement_epuration_weapon",
+    "2024-07-18 12:00:00",
+    "(None)"
+   ]
+  ],
+  "3": [
+   [
+    "steam_robot_weapon",
+    "3",
+    "(None)",
+    "机兵装备强化",
+    "dynamic/equipment_enhancement/steam_robot_weapon_banner",
+    "dynamic/equipment_enhancement/steam_robot_weapon_header",
+    "equipment_enhancement_steam_robot_weapon_how_to_play",
+    "Equipment_Enhancement_Steam_Robot_Weapon",
+    "2024-08-16 12:00:00",
+    "(None)"
+   ]
+  ],
+  "4": [
+   [
+    "score_attack_event",
+    "4",
+    "(None)",
+    "普·莉莉艾的勋章装备强化",
+    "dynamic/equipment_enhancement/score_attack_weapon_banner",
+    "dynamic/equipment_enhancement/score_attack_weapon_header",
+    "score_attack_weapon_enhancement_how_to_play",
+    "Equipment_Enhancement_Score_Attack_Event",
+    "2024-09-27 12:00:00",
+    "(None)"
+   ]
+  ],
+  "5": [
+   [
+    "abyss_weapon",
+    "-1",
+    "(None)",
+    "深渊武装·觉醒",
+    "dynamic/equipment_enhancement/abyss_weapon_banner",
+    "dynamic/equipment_enhancement/abyss_weapon_header",
+    "equipment_enhancement_epuration_weapon_how_to_play",
+    "equipment_enhancement_epuration_weapon",
+    "2000-01-01 00:00:00",
+    "(None)"
+   ]
+  ],
+  "6": [
+   [
+    "cursed_weapon",
+    "-2",
+    "(None)",
+    "诅咒武器·觉醒",
+    "dynamic/equipment_enhancement/cursed_weapon_banner",
+    "dynamic/equipment_enhancement/cursed_weapon_header",
+    "equipment_enhancement_epuration_weapon_how_to_play",
+    "equipment_enhancement_epuration_weapon",
+    "2000-01-01 00:00:00",
+    "(None)"
+   ]
+  ]
+ }
+}

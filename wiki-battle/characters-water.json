@@ -1,0 +1,251 @@
+{
+  "characters": [
+    {
+      "id": "cbb042f435215",
+      "role": "ranged",
+      "sourceSkill": "水鳞·死潮＋",
+      "sourceExcerpt": "追踪泡沫、多落点海啸、水队护盾",
+      "skill": {
+        "name": "水鳞·死潮＋",
+        "description": "泡沫连续命中后在三个落点引发海啸；邻域友方获得中效 8s 护盾。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":2},"geometry":{"kind":"circle","center":"self","radius":2},"effects":[{"type":"shield","duration":8,"budgetShare":0.28}],"requiresCasterAlive":true},
+          {"offset":0.6,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true},
+          {"offset":1,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1,"offsetX":-1},"effects":[{"type":"damage","budgetShare":0.14}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1},"effects":[{"type":"damage","budgetShare":0.14}],"requiresCasterAlive":true},
+          {"offset":1.4,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1,"offsetX":1},"effects":[{"type":"damage","budgetShare":0.14}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c230cb7dfddb4",
+      "role": "ranged",
+      "sourceSkill": "大海啸·冰河世纪／大海啸·冰河世纪＋",
+      "sourceExcerpt": "海啸涡流与冰河冻结两种攻势",
+      "skill": {
+        "name": "大海啸·冰河世纪",
+        "description": "一次施放先海啸，再生成短效 5s 涡流持续伤害，末段冰河伤害并减速 5s。两种姿态压缩为同一次水冰连段，不保存切换状态。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":3,"length":4,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"dot","duration":5,"interval":1,"requiresCasterAlive":false,"budgetShare":0.3,"targetMode":"area"}],"requiresCasterAlive":true},
+          {"offset":5,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":false},
+          {"offset":5,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"slow","duration":5,"budgetShare":0.2}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "cc890cc6f5b9f",
+      "role": "ranged",
+      "sourceSkill": "碧潮之爪＋",
+      "sourceExcerpt": "潮爪裂隙持续伤害、中毒和多种异常、水队攻击提升",
+      "skill": {
+        "name": "碧潮之爪＋",
+        "description": "潮爪裂隙造成中效 8s 持续伤害，命中减速 5s；全队攻击提升 5s。随机沉默、麻痹和冻结统一为确定的减速。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"dot","duration":8,"interval":1,"requiresCasterAlive":false,"budgetShare":0.6,"targetMode":"area"}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"slow","duration":5,"budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"attackUp","duration":5,"budgetShare":0.2}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "cff8b856bd63e",
+      "role": "healer",
+      "sourceSkill": "系统再启动／系统再启动＋",
+      "sourceExcerpt": "弧形弹幕、再启动冲击、全体回复",
+      "skill": {
+        "name": "系统再启动",
+        "description": "先发射一轮弧形弹幕伤害，1s 后再启动脉冲治疗全队；自身获得短效 5s 护盾。护盾是再启动防护的设计转换，删除运行时间永久强化。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"fan","center":"self","radius":3,"angle":90,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":1,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"heal","budgetShare":0.5}],"requiresCasterAlive":true},
+          {"offset":1,"selector":{"team":"ally","kind":"self","range":0},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"shield","duration":5,"budgetShare":0.2}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "cbd4438ee04a2",
+      "role": "support",
+      "sourceSkill": "浪花雪晶·多重结界／浪花雪晶·多重结界＋",
+      "sourceExcerpt": "六重旋转结界、纵向冲击、队伍强化与水盾",
+      "skill": {
+        "name": "浪花雪晶·多重结界",
+        "description": "六次结界伤害后释放纵向贯穿冲击；全队护盾持续中效 8s。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"self","radius":1.5},"effects":[{"type":"damage","budgetShare":0.05}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"shield","duration":8,"budgetShare":0.4}],"requiresCasterAlive":true},
+          {"offset":0.24,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"self","radius":1.5},"effects":[{"type":"damage","budgetShare":0.05}],"requiresCasterAlive":true},
+          {"offset":0.48,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"self","radius":1.5},"effects":[{"type":"damage","budgetShare":0.05}],"requiresCasterAlive":true},
+          {"offset":0.72,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"self","radius":1.5},"effects":[{"type":"damage","budgetShare":0.05}],"requiresCasterAlive":true},
+          {"offset":0.96,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"self","radius":1.5},"effects":[{"type":"damage","budgetShare":0.05}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"self","radius":1.5},"effects":[{"type":"damage","budgetShare":0.05}],"requiresCasterAlive":true},
+          {"offset":1.5,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":4,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.3}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c4d91125f2dba",
+      "role": "melee",
+      "sourceSkill": "誓约之枪·连突／誓约之枪·连突＋",
+      "sourceExcerpt": "突进后连续枪刺、连击强化",
+      "skill": {
+        "name": "誓约之枪·连突",
+        "description": "对直线目标快速连刺，末段重刺；全程作为一次连击，末段占较高伤害预算。本次施放内结束，无永久连击成长。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"line","center":"self","width":1,"length":2,"direction":"target"},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true},
+          {"offset":0.3,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"line","center":"self","width":1,"length":2,"direction":"target"},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true},
+          {"offset":0.6,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"line","center":"self","width":1,"length":2,"direction":"target"},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true},
+          {"offset":0.9,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"line","center":"self","width":1,"length":2,"direction":"target"},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"line","center":"self","width":1,"length":2,"direction":"target"},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true},
+          {"offset":1.5,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"line","center":"self","width":1,"length":2,"direction":"target"},"effects":[{"type":"damage","budgetShare":0.5}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "cb300516a46bd",
+      "role": "ranged",
+      "sourceSkill": "大海啸＋",
+      "sourceExcerpt": "五道横向冰浪、冻结、敌攻击降低",
+      "skill": {
+        "name": "大海啸＋",
+        "description": "五次冰浪伤害并施加短效 5s 减速；宽范围定位，单目标总伤害按范围档降低。冻结不完全禁止敌人行动。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":5,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.16}],"requiresCasterAlive":true},
+          {"offset":0.3,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":5,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.16}],"requiresCasterAlive":true},
+          {"offset":0.6,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":5,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.16}],"requiresCasterAlive":true},
+          {"offset":0.9,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":5,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.16}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":5,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.16}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":5,"length":3,"direction":"up"},"effects":[{"type":"slow","duration":5,"budgetShare":0.2}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "cb911196e000f",
+      "role": "support",
+      "sourceSkill": "哈宁爆破＋",
+      "sourceExcerpt": "三颗大泡沫分裂、三次队伍攻击强化",
+      "skill": {
+        "name": "哈宁爆破＋",
+        "description": "三颗泡沫依次爆裂造成伤害；第一颗命中即给予全队攻击提升，中效 8s，后续只刷新而不三倍叠加。泡沫无独立实体逻辑。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0.05,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"attackUp","duration":8,"budgetShare":0.4}],"requiresCasterAlive":true,"requiresHit":0},
+          {"offset":0.5,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0.55,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[],"requiresCasterAlive":true,"requiresHit":2,"refreshFrom":1},
+          {"offset":1,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":1.05,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[],"requiresCasterAlive":true,"requiresHit":4,"refreshFrom":1}
+        ]
+      }
+    },
+    {
+      "id": "caa3e97fb083b",
+      "role": "melee",
+      "sourceSkill": "彷徨・水盾双断＋",
+      "sourceExcerpt": "双水刃、盾击、队伍抗性与自身装甲",
+      "skill": {
+        "name": "彷徨・水盾双断＋",
+        "description": "两道水刃后盾击造成三段伤害；自身及邻域友方护盾持续中效 8s，自身护盾份额更高。坦克归入近战，不新增嘲讽系统。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"rect","center":"self","width":3,"length":2,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":1.5},"geometry":{"kind":"circle","center":"self","radius":1.5},"effects":[{"type":"shield","duration":8,"budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"self","range":0},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"shield","duration":8,"budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0.5,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"rect","center":"self","width":3,"length":2,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":1,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"rect","center":"self","width":3,"length":2,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c422f7cbecb02",
+      "role": "healer",
+      "sourceSkill": "海妖泡沫＋",
+      "sourceExcerpt": "追踪泡沫冻结、后续泡沫攻击、全体回复",
+      "skill": {
+        "name": "海妖泡沫＋",
+        "description": "泡沫爆裂伤害并减速 5s，随后三次小泡沫追击；同步治疗全队。泡沫追击分摊一次技能的伤害预算。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"circle","center":"target","radius":1},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"circle","center":"target","radius":1},"effects":[{"type":"slow","duration":5,"budgetShare":0.15}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"heal","budgetShare":0.45}],"requiresCasterAlive":true},
+          {"offset":0.3,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.06666667}],"requiresCasterAlive":true},
+          {"offset":0.9,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.06666667}],"requiresCasterAlive":true},
+          {"offset":1.5,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.06666667}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c91bf0fe8263f",
+      "role": "support",
+      "sourceSkill": "蚀刃终决＋",
+      "sourceExcerpt": "水队多重攻击提升、场域伤害和淬毒",
+      "skill": {
+        "name": "蚀刃终决＋",
+        "description": "敌区受短效 5s 持续毒伤；全队攻击提升，中效 8s。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"circle","center":"target","radius":2},"effects":[{"type":"dot","duration":5,"interval":1,"requiresCasterAlive":false,"budgetShare":0.5,"targetMode":"area"}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"attackUp","duration":8,"budgetShare":0.5}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "cbab087128a78",
+      "role": "ranged",
+      "sourceSkill": "悔恨・幽水葬＋",
+      "sourceExcerpt": "幽水葬全场打击、冻结、三道灵魂追击",
+      "skill": {
+        "name": "悔恨・幽水葬＋",
+        "description": "葬水冲击造成伤害并减速 5s；随后三道灵魂连续追击最近目标。灵魂仅作伤害轨迹，不召唤单位。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":5,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":5,"length":3,"direction":"up"},"effects":[{"type":"slow","duration":5,"budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0.3,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.16666667}],"requiresCasterAlive":true},
+          {"offset":0.9,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.16666667}],"requiresCasterAlive":true},
+          {"offset":1.5,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.16666667}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "ca92616555900",
+      "role": "ranged",
+      "sourceSkill": "苍海雷狱・龙王显现＋",
+      "sourceExcerpt": "水雷双击、龙王显现、三段递增吐息",
+      "skill": {
+        "name": "苍海雷狱・龙王显现＋",
+        "description": "水雷双色吐息连续三次，范围与末段伤害份额递增；命中减速 5s。龙王形态只覆盖施放演出，不保存变身或跨次技能替换。",
+        "cooldown": 30,
+        "cost": 25,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"fan","center":"self","radius":2,"angle":90,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0.5,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"fan","center":"self","radius":3,"angle":90,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":1,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"fan","center":"self","radius":4,"angle":90,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":1,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"fan","center":"self","radius":4,"angle":90,"direction":"up"},"effects":[{"type":"slow","duration":5,"budgetShare":0.2}],"requiresCasterAlive":true}
+        ]
+      }
+    }
+  ]
+}

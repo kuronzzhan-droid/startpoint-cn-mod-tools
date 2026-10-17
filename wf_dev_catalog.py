@@ -43,8 +43,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-import wf_mod_tool as core  # noqa: E402
+import wf_mod_tool as core
 
 ROOT = Path(__file__).resolve().parent.parent
 CDN_ROOT = core.resolve_cdn_root_lax()
@@ -1144,9 +1143,7 @@ def emit_dev_catalog(
     canonical_stats: dict = {}
     if canonicalize:
         archives, canonical_stats = canonicalize_archives(archives)
-    mod_rows, row_issues = backfill_entity_rows(
-        archives, cdn_root, asset_patch_active
-    )
+    mod_rows, row_issues = backfill_entity_rows(archives, cdn_root)
     merged_rows = merge_entity_rows(scan.entity_rows, mod_rows)
     installed_bytes = entity_rows_installed_bytes(merged_rows)
     catalog, catalog_issues = build_catalog(
@@ -1446,9 +1443,7 @@ def materialize_dev_view(
 
     scan = scan_chain(cdn_root, asset_patch_active, digest_mode=digest_mode)
     archives, canonical_stats = canonicalize_archives(scan.archives)
-    mod_rows, row_issues = backfill_entity_rows(
-        archives, cdn_root, asset_patch_active
-    )
+    mod_rows, row_issues = backfill_entity_rows(archives, cdn_root)
     merged_rows = merge_entity_rows(scan.entity_rows, mod_rows)
     issues = scan.issues + row_issues
 

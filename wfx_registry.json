@@ -1,0 +1,377 @@
+{
+  "schema_version": 1,
+  "registry_version": "b1-0-20260928b",
+  "description": "扩展词条框架（WFX）唯一真源：效果码、保留号、客户端补丁构造的解析器范围与 capability 目录。wf_client_patch_scope / wf_client_legality / wf_wfx / wfx_gate 从这里取表；client-patch 构建器生成常量时读这里并把 sha 写进构建报告。",
+  "design_doc": "${WF_ROOT}/out/扩展词条框架-20260928/设计.md（4.2 注册表、4.9 capability 与门禁）",
+  "failure_levels": {
+    "crash": "缺失即崩（C7050 等）：发布门禁拒绝",
+    "semantic": "缺失即静默失效（诅咒/平衡关键）：发布门禁拒绝",
+    "cosmetic": "缺失只影响文字：发布门禁只警告"
+  },
+  "capabilities": {
+    "kyubi-fever-ratio-v1": {
+      "level": "crash", "layer": "1047", "status": "shipped",
+      "summary": "instant_content 724 AddFeverPointRatio（只扩 AbilityValues$/parseAt47）"
+    },
+    "dash-parameter-v1": {
+      "level": "crash", "layer": "1047", "status": "shipped",
+      "summary": "during_content 422 DashParameter（只扩 AbilityValues$/parseAt109）"
+    },
+    "gauge-gain-rules-v1": {
+      "level": "crash", "layer": "1047", "status": "shipped",
+      "summary": "during_content 423 GaugeGainRestriction（battle-rules，ability 表）"
+    },
+    "damage-type-rules-v1": {
+      "level": "crash", "layer": "1047", "status": "shipped",
+      "summary": "during_content 424 DamageTypeConversion（battle-rules，ability 表）"
+    },
+    "kyubi-pf-initial-combo-v1": {
+      "level": "semantic", "layer": "1047", "status": "shipped",
+      "summary": "九尾 PF 初始连击（行为型，数据侧不可推导）"
+    },
+    "kyubi-panel-description-override-v1": {
+      "level": "cosmetic", "layer": "1047", "status": "shipped",
+      "summary": "desc_override_fox_oracle_autumn* 面板覆盖（V11）"
+    },
+    "panel-description-override-v2": {
+      "level": "cosmetic", "layer": "1047", "status": "shipped",
+      "summary": "任意 string_id 的 desc_override_* 面板覆盖（V14）"
+    },
+    "equipment-rules-v1": {
+      "level": "semantic", "layer": "L0", "status": "shipped",
+      "summary": "equipment-rules R1 衰减分档 / R2 诅咒互斥（旧端读到分档键不崩，只是规则不生效；数据侧暂不推导）"
+    },
+    "equipment-gauge-gain-rules-v1": {
+      "level": "crash", "layer": "L0", "status": "shipped",
+      "summary": "equipment-rules R3：423 扩到 AbilitySoulValues$/parseAt106 与 EquipmentEnhancementAbilityValues$/parseAt109"
+    },
+    "equipment-description-override-v1": {
+      "level": "cosmetic", "layer": "L1", "status": "shipped",
+      "summary": "desc_override_equipment_* 装备详情覆盖"
+    },
+    "item-rarity-frame-override-v1": {
+      "level": "cosmetic", "layer": "L1", "status": "shipped",
+      "summary": "物品品质底色覆盖：rarity_frame_override_<缩略图图标路径> = <底色图路径>（ItemThumbnailView.setRarity 在非强化态 hideRarity + replaceBackgroundImage；replace 入口先写 itemImagePath，商店格复用不串色）；client-patch/item-rarity-frame-override，叠在 v1 之后的 setRarity 上（登记底包：编成槽框 a 016cd927 / b 2a9583cd、觉醒专属素材 22292c21、最终合成链 c39746e0）；强化态仍归 v1，只装 v1 / 编成槽框的客户端不读这个键"
+    },
+    "equipment-enhanced-look-v1": {
+      "level": "cosmetic", "layer": "L1", "status": "shipped",
+      "summary": "装备强化外观：enhanced_pixelart_tier2_* 第二图标档（getPixelart）+ enhanced_frame_override_* 强化框换底（ItemThumbnailView.setRarity）；client-patch/equipment-enhanced-look，叠在 cf91b29b 上"
+    },
+    "equipment-enhanced-party-frame-v1": {
+      "level": "cosmetic", "layer": "L1", "status": "shipped",
+      "summary": "编成装备槽强化框换图：enhanced_party_frame_override_*（PartyItemThumbnailView.updateEnhancedEffectAnimation，隐藏 rarity 容器、在 image 容器第 0 位显示框图）；client-patch/equipment-enhanced-party-frame，叠在 7056f7dc 上；与 v1 是两个 capability，只装 v1 的客户端不读这个键"
+    },
+    "equipment-awakening-material-v1": {
+      "level": "semantic", "layer": "L1", "status": "shipped",
+      "summary": "觉醒专属素材：awakening_material_<装备ID> = <道具ID>（OwnedEquipmentLogic.getUseableAwakingCrystal 在没有重复本体时，行存在就只提供该道具或 None，绝不回落星铁钢）；client-patch/equipment-awakening-material，叠在编成槽框 b 版 2f085757 上；旧客户端不读，受限装备仍提供星铁钢、服务端白名单返回 400 = 静默失效"
+    },
+    "equipment-sort-pin-v1": {
+      "level": "cosmetic", "layer": "L1", "status": "shipped",
+      "summary": "装备列表置顶：equipment_sort_pin_<装备ID> = <序号>（EquipmentListScene.compareByEquipmentStatus 与 EquipmentSelectThumbnailListRepository.sortByRarity 入口，有序号的按序号升序排在最前，其余原生顺序）；client-patch/equipment-sort-pin，叠在 equipment-awakening-material 上；旧客户端不读，显示原生顺序"
+    },
+    "wfx-core-v1": {
+      "level": "semantic", "layer": "L2", "status": "planned",
+      "summary": "规格缓存、查询层、pin（flags bit0）；缺失时效果状态全部惰性"
+    },
+    "wfx-damage-v1": {
+      "level": "semantic", "layer": "L2", "status": "planned", "depends_on": ["wfx-core-v1"],
+      "summary": "码 10、20–23"
+    },
+    "wfx-gauge-v1": {
+      "level": "semantic", "layer": "L2", "status": "planned",
+      "depends_on": ["wfx-core-v1", "gauge-gain-rules-v1"],
+      "summary": "码 30、31（来源位复用 423 的 gauge_mask）"
+    },
+    "wfx-dash-v1": {
+      "level": "semantic", "layer": "L2", "status": "planned",
+      "depends_on": ["wfx-core-v1", "dash-parameter-v1"],
+      "summary": "码 40（与 422 合计相加）"
+    },
+    "wfx-lock-v1": {
+      "level": "semantic", "layer": "L2", "status": "planned", "depends_on": ["wfx-core-v1"],
+      "summary": "码 50–52"
+    },
+    "wfx-parsers-v1": {
+      "level": "crash", "layer": "batch-2", "status": "planned",
+      "summary": "五表共享解析（422/423/424/425 全表合法）"
+    },
+    "wfx-effect-during-v1": {
+      "level": "crash", "layer": "batch-2", "status": "planned",
+      "depends_on": ["wfx-core-v1", "wfx-parsers-v1"],
+      "summary": "持续行 425 WfxEffect 运行时与描述"
+    },
+    "wfx-dsl-v1": {
+      "level": "semantic", "layer": "batch-2", "status": "planned", "depends_on": ["wfx-core-v1"],
+      "summary": "DSL Trace(\"wfx:…\") 通道"
+    },
+    "ex-description-override-v1": {
+      "level": "cosmetic", "layer": "batch-2", "status": "planned",
+      "summary": "EX 说明覆盖"
+    }
+  },
+  "patch_content_kinds": [
+    {
+      "block": "instant_content", "value": "724", "ctor": "AddFeverPointRatio",
+      "capability": "kyubi-fever-ratio-v1",
+      "parser_tables": ["ability"],
+      "unique_condition_id_column": "unused"
+    },
+    {
+      "block": "during_content", "value": "422", "ctor": "DashParameter",
+      "capability": "dash-parameter-v1",
+      "parser_tables": ["ability"],
+      "unique_condition_id_column": "param_id",
+      "note": "dash-parameter 只改 AbilityValues$/parseAt109；leader/soul/EA/EX 写 422 = C7050（批 2 共享解析前不扩表）"
+    },
+    {
+      "block": "during_content", "value": "423", "ctor": "GaugeGainRestriction",
+      "capability": "gauge-gain-rules-v1",
+      "parser_tables": ["ability", "ability_soul", "equipment_enhancement_ability"],
+      "parser_capabilities": {
+        "ability_soul": "equipment-gauge-gain-rules-v1",
+        "equipment_enhancement_ability": "equipment-gauge-gain-rules-v1"
+      },
+      "unique_condition_id_column": "rule_code"
+    },
+    {
+      "block": "during_content", "value": "424", "ctor": "DamageTypeConversion",
+      "capability": "damage-type-rules-v1",
+      "parser_tables": ["ability"],
+      "unique_condition_id_column": "rule_code"
+    }
+  ],
+  "reserved_numbers": {
+    "CommonAbilityContentMasterValue": {
+      "occupied": {"422": "DashParameter", "423": "GaugeGainRestriction", "424": "DamageTypeConversion"},
+      "reserved": {"425": "WfxEffect（批 2）"}
+    },
+    "InstantAbilityContentMasterValue": {
+      "occupied": {"724": "AddFeverPointRatio"},
+      "reserved": {"725": "WfxAction（批 3）"},
+      "note": "瞬发命名空间的 425 是官方已有 kind，与持续命名空间的 425 无关"
+    },
+    "CommonAbilityCharacterContent.index": {
+      "occupied": {"37": "423 GaugeGainRestriction", "38": "424 DamageTypeConversion"},
+      "reserved": {"39": "WfxEffect"}
+    },
+    "CommonAbilityBattleContent.index": {
+      "occupied": {"21": "422 DashParameter"},
+      "reserved": {"22": "预留，暂不用"}
+    },
+    "InstantAbilityInstantBattleContent.index": {
+      "occupied": {"5": "724 AddFeverPointRatio"},
+      "reserved": {}
+    },
+    "InstantAbilityInstantCharacterContent.index": {
+      "occupied": {},
+      "reserved": {"23": "WfxAction（批 3）"}
+    }
+  },
+  "effect_code_ranges": [
+    {"from": 10, "to": 19, "family": "clamp", "label": "数值钳位", "batch": 1},
+    {"from": 20, "to": 29, "family": "damage", "label": "伤害", "batch": 1},
+    {"from": 30, "to": 39, "family": "gauge", "label": "回槽", "batch": 1},
+    {"from": 40, "to": 49, "family": "dash", "label": "冲刺/球", "batch": 1},
+    {"from": 50, "to": 59, "family": "lock", "label": "锁", "batch": 1},
+    {"from": 60, "to": 69, "family": "fever", "label": "Fever", "batch": 2},
+    {"from": 70, "to": 79, "family": "skill_gauge", "label": "槽容量/消耗", "batch": 2},
+    {"from": 80, "to": 99, "family": "reserved", "label": "预留", "batch": null}
+  ],
+  "unique_condition": {
+    "public_uid_pool_start": 99000001,
+    "columns": ["string_id", "name", "icon", "duration_frames", "max_accumulation", "flip_limit",
+                "power_flip_limit", "end_power_flip", "end_power_flip_levels", "cancelable", "force",
+                "direction", "overwrite", "remove_on_coffin", "power_flip_voice"],
+    "icon_prefix": "battle/common/unique_condition/"
+  },
+  "sid": {
+    "prefix": "wfx:",
+    "family_prefix": "wfx",
+    "family_note": "以 wfx 开头（大小写不敏感）的 string_id 整个前缀保留给本框架：只有逐字节以 prefix 开头的才是效果行，reserved_prefixes 是尚无实现的载体，其余（WFX:、wfx;、wfx21:、首尾带空白等）一律按写错拒绝——客户端 split(\":\") 首段不是 wfx，会静默失效",
+    "segments": ["code", "arg", "value", "flags", "label"],
+    "label_pattern": "^[A-Za-z0-9_]{1,48}$",
+    "reserved_prefixes": {
+      "wfxq:": "副本规则载体 D（批 3），尚无客户端实现"
+    }
+  },
+  "flags": {
+    "known_mask": 1,
+    "bits": {
+      "0": {"name": "pin", "label": "防全删（不被 cancelableKind 0/1/2 的驱散选中）", "capability": "wfx-core-v1"}
+    }
+  },
+  "arg_kinds": {
+    "none": {"label": "不用参数位，必须为 0"},
+    "damage_mask": {
+      "label": "伤害掩码：类型组（组掩码 255）与属性组（组掩码 32512）；组内 OR、组间 AND；某组全 0 = 不限",
+      "type_group_mask": 255,
+      "types": {"direct": 1, "skill_main": 2, "skill_unison": 4, "ability": 8,
+                "pf1": 16, "pf2": 32, "pf3": 64, "other": 128},
+      "element_group_mask": 32512,
+      "element_shift": 8,
+      "elements": {"fire": 0, "water": 1, "thunder": 2, "wind": 3, "light": 4, "dark": 5, "colorless": 6}
+    },
+    "damage_pool": {
+      "label": "官方独立乘区池号（低 8 位，恰好一个池）+ 属性组（组掩码 32512，与伤害掩码同位；全 0 = 不限属性，否则满足属性条件才计入该池）",
+      "ruling": "作者裁决 2026-09-28 #2：不新开乘区，码 20 并入官方独立乘区池、与原生同池相加（原生公式不变）",
+      "pool_field_mask": 255,
+      "pools": {
+        "0": {"name": "all", "label": "全伤害", "ctor": "SeparatedTermDamage",
+              "instant_content": "723", "during_content": "421"},
+        "1": {"name": "direct", "label": "直击", "ctor": "SeparatedTermDirectDamage",
+              "instant_content": "693", "during_content": "410"},
+        "2": {"name": "skill", "label": "技能", "ctor": "SeparatedTermSkillDamage",
+              "instant_content": "694", "during_content": "411"},
+        "3": {"name": "ability", "label": "能力", "ctor": "SeparatedTermAbilityDamage",
+              "instant_content": "695", "during_content": "412"},
+        "4": {"name": "power_flip", "label": "强化弹射", "ctor": "SeparatedTermPowerFlipDamage",
+              "instant_content": "696", "during_content": "413"}
+      },
+      "element_group_mask": 32512,
+      "element_shift": 8,
+      "elements": {"fire": 0, "water": 1, "thunder": 2, "wind": 3, "light": 4, "dark": 5, "colorless": 6},
+      "element_basis": "伤害的属性（与码 21–23 伤害掩码的属性组同一判据）；判定对象待 B1-2 按伤害池判据定稿"
+    },
+    "gauge_mask":{"label": "回槽来源掩码：与 during 423 规则码同一布局（wf_battle_rules.gauge_mask）"},
+    "dash_param_id": {
+      "label": "冲刺参数号：与 during 422 的 param_id 相同",
+      "values": {"0": "冷却", "1": "弹射速度", "2": "锁定距离上限（绝对像素）", "3": "蓄力帧",
+                 "4": "回拉距离", "5": "惯性", "6": "可冲刺高度"}
+    }
+  },
+  "uid_reference_blocks": {
+    "note": "行引用固有状态 uid 的判据：按触发模式实际解析的块取 kind，case 声明了 unique_condition_id 字段即读该列（patch_content_kinds 里借用该列的构造除外）；instant_precontent 没有 case 表，按下列 kind 判",
+    "instant_precontent_uid_kinds": ["1", "2", "3"]
+  },
+  "dsl": {
+    "apply_construct": "ACUnique",
+    "trace_construct": "Trace",
+    "trace_prefix": "wfx:",
+    "trace_capability": "wfx-dsl-v1"
+  },
+  "string_keys": {
+    "rarity_frame_override_": {"capability": "item-rarity-frame-override-v1", "level": "cosmetic",
+                               "note": "物品品质底色覆盖 rarity_frame_override_<缩略图图标路径> = <底色图路径>（144×144 不透明 PNG，原尺寸显示在 background 层）；只在非强化态生效；未装补丁时不被读取，显示原生稀有度底色"},
+    "wfx_text_": {"capability": "wfx-effect-during-v1", "level": "cosmetic",
+                  "note": "批 2 持续行 425 的面板正文 wfx_text_<uid>；未装补丁时不被读取"},
+    "enhanced_pixelart_tier2_": {"capability": "equipment-enhanced-look-v1", "level": "cosmetic",
+                                 "note": "装备第二图标档 enhanced_pixelart_tier2_<pixelart0 图标路径> = \"<等级>,<路径>\"；未装补丁时不被读取，显示 pixelart0"},
+    "enhanced_frame_override_": {"capability": "equipment-enhanced-look-v1", "level": "cosmetic",
+                                 "note": "装备强化框换底 enhanced_frame_override_<图标路径> = <背景图路径>；未装补丁时不被读取，显示粉框"},
+    "enhanced_party_frame_override_": {"capability": "equipment-enhanced-party-frame-v1", "level": "cosmetic",
+                                       "note": "编成装备槽强化框换图 enhanced_party_frame_override_<编成槽图标路径> = <框图路径>（72×72 RGBA，套 rarity 容器矩阵显示为 146×146）；未装补丁时不被读取，显示粉框"},
+    "awakening_material_": {"capability": "equipment-awakening-material-v1", "level": "semantic",
+                            "note": "觉醒专属素材 awakening_material_<装备ID> = <道具ID>（规范十进制正整数）；未装补丁时不被读取，重复数为 0 仍提供星铁钢，被服务端白名单拒绝（400）"},
+    "equipment_sort_pin_": {"capability": "equipment-sort-pin-v1", "level": "cosmetic",
+                            "note": "装备列表置顶 equipment_sort_pin_<装备ID> = <序号>（规范十进制正整数，小者在前）；未装补丁时不被读取，显示原生顺序"}
+  },
+  "effect_codes": [
+    {
+      "code": 10, "name": "atk.floor", "label": "攻击加成下限", "side": "attacker",
+      "arg": "none",
+      "value": {"min": -1.0, "max": -0.5, "max_exclusive": true, "integer": false},
+      "reduce": "min", "stack_scaled": false,
+      "hooks": ["NormalAttackCalculator/_calculate #262", "NormalAttackCalculator/_calculate #289"],
+      "capability": "wfx-damage-v1", "gate": "block",
+      "text_template": "攻击加成下限 {value:%}", "since_layer": "L2 B1-2"
+    },
+    {
+      "code": 20, "name": "dmg.out.pool", "label": "造成伤害（计入官方乘区池）", "side": "attacker",
+      "arg": "damage_pool",
+      "value": {"min": -1.0, "integer": false,
+                "note": "每层 v（0.3 = +30%），按层数线性后与原生同池相加；池合计公式与钳位沿用原生"},
+      "reduce": "sum", "stack_scaled": true,
+      "merges_into_official_pool": true,
+      "ruling": "作者裁决 2026-09-28 #2 取代设计稿正文 4.2 的「Π(1 + max(v·n, -1)) 独立相乘」与 4.12 例 5 的伤害掩码 112；码 21/22/23 不受影响",
+      "hooks": ["官方独立乘区池合计处（723/421、693/410、694/411、695/412、696/413 的读取点；B1-2 构建时定位并锁 sha）"],
+      "capability": "wfx-damage-v1", "gate": "block",
+      "text_template": "{arg}伤害 每层 {value:+%}（计入官方同类乘区）", "since_layer": "L2 B1-2"
+    },
+    {
+      "code": 21, "name": "dmg.out.cap", "label": "造成伤害上限", "side": "attacker",
+      "arg": "damage_mask",
+      "value": {"min": 1, "integer": true},
+      "reduce": "min", "stack_scaled": false,
+      "hooks": ["NormalAttackCalculator/_calculate #2439"],
+      "capability": "wfx-damage-v1", "gate": "block",
+      "text_template": "{arg}造成伤害上限 {value}", "since_layer": "L2 B1-2"
+    },
+    {
+      "code": 22, "name": "dmg.in.mul", "label": "受到伤害乘区", "side": "target",
+      "arg": "damage_mask",
+      "value": {"min": -1.0, "integer": false},
+      "reduce": "prod", "stack_scaled": true,
+      "hooks": ["NormalAttackCalculator/_calculate #2439"],
+      "capability": "wfx-damage-v1", "gate": "block",
+      "text_template": "受到{arg}伤害 每层 {value:+%}", "since_layer": "L2 B1-2"
+    },
+    {
+      "code": 23, "name": "dmg.in.cap", "label": "受到伤害上限", "side": "target",
+      "arg": "damage_mask",
+      "value": {"min": 1, "integer": true},
+      "reduce": "min", "stack_scaled": false,
+      "hooks": ["NormalAttackCalculator/_calculate #2439"],
+      "capability": "wfx-damage-v1", "gate": "block",
+      "text_template": "受到{arg}伤害上限 {value}", "since_layer": "L2 B1-2"
+    },
+    {
+      "code": 30, "name": "gauge.block", "label": "回槽拦截", "side": "member",
+      "arg": "gauge_mask",
+      "value": {"min": 0, "max": 0, "integer": true, "note": "不读，规范写 0"},
+      "reduce": "any", "stack_scaled": false,
+      "hooks": ["MemberImpl/wfAllowsGauge #67"],
+      "capability": "wfx-gauge-v1", "gate": "block",
+      "text_template": "无法通过{arg}获得技能槽", "since_layer": "L2 B1-3"
+    },
+    {
+      "code": 31, "name": "gauge.scale", "label": "回槽倍率", "side": "member",
+      "arg": "gauge_mask",
+      "value": {"min": -1.0, "integer": false},
+      "reduce": "prod", "stack_scaled": true,
+      "hooks": ["MemberImpl/addSkillPoint #10", "MemberImpl/reserveSkillPoint", "MemberImpl/reserveFixedSkillPoint",
+                "MemberImpl/applyInitialSkillPointRatio", "MemberImpl/move"],
+      "capability": "wfx-gauge-v1", "gate": "block",
+      "text_template": "{arg}获得的技能槽 每层 {value:+%}", "since_layer": "L2 B1-3"
+    },
+    {
+      "code": 40, "name": "dash", "label": "冲刺参数", "side": "ball",
+      "arg": "dash_param_id",
+      "value": {"integer": false, "note": "同 422 的 strength/100000，每层；param 2 为绝对像素"},
+      "reduce": "sum", "stack_scaled": true,
+      "hooks": ["BattleAbilityTotalizerImpl/getTotalDashParameter", "BallImpl/update"],
+      "capability": "wfx-dash-v1", "gate": "block",
+      "apply_targets": ["2", "5"],
+      "text_template": "冲刺{arg} 每层 {value:+%}", "since_layer": "L2 B1-4"
+    },
+    {
+      "code": 50, "name": "lock.combo", "label": "连击上限", "side": "primary",
+      "arg": "none",
+      "value": {"min": 1, "integer": true},
+      "reduce": "min", "stack_scaled": false,
+      "hooks": ["ConditionSlot/getComboRestriction #206"],
+      "capability": "wfx-lock-v1", "gate": "block",
+      "apply_targets": ["2", "5"],
+      "text_template": "连击数上限 {value}", "since_layer": "L2 B1-5"
+    },
+    {
+      "code": 51, "name": "lock.silence", "label": "技能封印", "side": "member",
+      "arg": "none",
+      "value": {"min": 0, "max": 0, "integer": true, "note": "不读，规范写 0"},
+      "reduce": "any", "stack_scaled": false,
+      "hooks": ["ConditionSlot/isSilent #2"],
+      "capability": "wfx-lock-v1", "gate": "block",
+      "text_template": "无法发动技能", "since_layer": "L2 B1-5"
+    },
+    {
+      "code": 52, "name": "pf.cap", "label": "PF 最高档", "side": "primary",
+      "arg": "none",
+      "value": {"min": 0, "max": 3, "integer": true},
+      "reduce": "min", "stack_scaled": false,
+      "hooks": ["ComboCalculatorImpl/getPowerFlipChargeLv #16", "ComboCalculatorImpl/getPowerFlipChargeLv #26",
+                "ComboCalculatorImpl/getPowerFlipChargeLv #37"],
+      "capability": "wfx-lock-v1", "gate": "block",
+      "apply_targets": ["2", "5"],
+      "text_template": "强化弹射最高 Lv{value}", "since_layer": "L2 B1-5"
+    }
+  ]
+}

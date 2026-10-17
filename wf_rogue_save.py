@@ -24,28 +24,27 @@
 注意:cloneSave 接口会把账号默认存档切到新克隆,本工具默认随后切回 --source;
 开一局 run = admin 后台把默认存档切到肉鸽档 → 重启游戏。
 """
+
+from wf.paths import root_path
 import argparse
 import csv
 import io
 import json
 import os
 import random
-import shutil
 import sqlite3
 import subprocess
 import sys
 import tempfile
 import urllib.request
-from collections.abc import Mapping
 from pathlib import Path
 
 import wf_server_auth
-import wf_database_paths
-import wf_device_paths
+from wf.config import database as wf_database_paths, device as wf_device_paths
+from collections.abc import Mapping
+import shutil
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-
 def _explicit_path(environment: Mapping[str, str], key: str) -> Path | None:
     raw = environment.get(key)
     if raw is None:
@@ -75,6 +74,7 @@ def resolve_mumu_manager(
 
 
 DB_PATH = os.fspath(resolve_database_path())
+MUMU = ('${WF_ROOT}\\MuMuPlayer\\nx_main\\MuMuManager.exe'.replace("${WF_ROOT}", str(root_path())))
 WF_PACKAGE = "com.leiting.wf"
 WF_ACTIVITY = "com.leiting.wf/com.leiting.sdk.activity.PrivacyActivity"
 RUSH_QUEST_LOGICAL = "master/quest/event/rush_event_quest.orderedmap"
@@ -156,7 +156,7 @@ def reroll_endless_field(event: str, quest_no: str, apply: bool) -> None:
     """把 700099/99 投影到正式构建器筛后的原生 boss bundle。"""
     validate_endless_target(event, quest_no)
 
-    sys.path.insert(0, os.path.join(ROOT, "mod-tools"))
+    pass  # Imports resolve from this checkout/package, not external source copies.
     import wf_quest_lib as q
     import wf_rogue_build as rb
 

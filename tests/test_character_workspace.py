@@ -77,6 +77,41 @@ class TestCharacterWorkspace(unittest.TestCase):
         manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
         return workspace
 
+    def test_status_flags_store_shard_residue_and_declared_shard_paths(self):
+        # 1.4.441-459 regression: a hashed store rel (<2hex>/<38hex>) written into
+        # package roots was swept into the manifest as a logical_path, then hashed
+        # a second time at publish, minting a dead CDN address.
+        shard = "1e/664c1cc8d80f4f9a69aae2c49ae8c01d1c4001"
+        workspace = self.make_release_ready_workspace()
+        stray = workspace.package_dir / "roots" / "common" / Path(*shard.split("/"))
+        stray.parent.mkdir(parents=True, exist_ok=True)
+        stray_raw = b"orderedmap-bytes"
+        stray.write_bytes(stray_raw)
+
+        status = workspace_module.workspace_status(workspace)
+        self.assertFalse(status.release_ready)
+        self.assertTrue(
+            any("store-shard residue" in error and shard in error
+                for error in status.manifest_errors),
+            status.manifest_errors,
+        )
+
+        manifest_path = workspace.package_dir / "manifest.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest["roots"]["common"].append({
+            "logical_path": shard,
+            "sha256": hashlib.sha256(stray_raw).hexdigest(),
+            "size": len(stray_raw),
+        })
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+        status = workspace_module.workspace_status(workspace)
+        self.assertFalse(status.release_ready)
+        self.assertTrue(
+            any("hashed store rel" in error for error in status.manifest_errors),
+            status.manifest_errors,
+        )
+
     def test_inspect_workspace_does_not_write_status_or_hash_cache(self):
         workspace = self.make_release_ready_workspace()
         before = self.tree_bytes(workspace.root)

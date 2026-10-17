@@ -1,0 +1,3449 @@
+{
+ "schema": "wf-atlas-budget-roster/1",
+ "generated": "2026-09-17",
+ "measured_from": "production/{upload,medium_upload,android_upload}",
+ "sources": [
+  "${WF_ROOT}/out/atlas_probe_20260909/atlas_data.json",
+  "work/character_packs/seasonal7-20260916/audit-assets-20260917/scripts/_live_chars_20260917.json",
+  "work/character_packs/seasonal7-20260916/audit-assets-20260917/data_seasonal7.json",
+  "work/character_packs/seasonal7-20260916/audit-assets-20260917/data_prev.json"
+ ],
+ "atlas": {
+  "width": 4096,
+  "height": 4096,
+  "margin": 2
+ },
+ "shared": {
+  "battle/common/layer0": [
+   252,
+   2646
+  ],
+  "battle/field_object/world_beast/beast_ruins_expert/outhole/outhole": [
+   114,
+   132
+  ],
+  "battle/field_object/world_beast/beast_ruins_expert/yakumono/dash_panel/dash_panel": [
+   64,
+   231
+  ],
+  "battle/field_object/world_beast/beast_ruins_expert/rotation_panel/rotation_panel": [
+   25,
+   226
+  ],
+  "battle/field_object/world_sand/sand_coreroom_giant_expert/outhole/outhole": [
+   47,
+   19
+  ],
+  "battle/field_object/world_sand/sand_coreroom_giant_expert/yakumono/dash_panel/dash_panel": [
+   216,
+   64
+  ],
+  "battle/field_object/world_sand/sand_coreroom_giant_expert/rotation_panel/rotation_panel": [
+   225,
+   25
+  ]
+ },
+ "bosses": {
+  "mod_fb_sand_s1": {
+   "base": {
+    "battle/boss/desert_bonds_big_boss/desert_bonds_big_boss": [
+     1012,
+     2044
+    ]
+   },
+   "effects": {
+    "battle/effect/enemy_unique/enemy_laser_notice/enemy_laser_notice": [
+     13,
+     322
+    ],
+    "battle/effect/enemy_unique/enemy_shot_bird_boss/enemy_shot_bird_boss": [
+     256,
+     973
+    ],
+    "battle/effect/enemy_unique/enemy_shot_middle_boss_dragon_smr20/enemy_shot_middle_boss_dragon_smr20": [
+     616,
+     64
+    ]
+   }
+  },
+  "mod_fb_thunder_s1": {
+   "base": {
+    "battle/boss/discarded_dragon_thunder/discarded_dragon_thunder": [
+     1024,
+     2575
+    ]
+   },
+   "effects": {
+    "battle/effect/enemy_unique/enemy_shot_thunderbolt_small_yellow/enemy_shot_thunderbolt_small_yellow": [
+     1015,
+     64
+    ],
+    "battle/effect/enemy_unique/enemy_shot_whole_large_yellow/enemy_shot_whole_large_yellow": [
+     526,
+     255
+    ]
+   }
+  },
+  "mod_fb_hero_s1": {
+   "base": {
+    "battle/boss/hero_big_boss/hero_big_boss": [
+     506,
+     2667
+    ]
+   },
+   "effects": {
+    "battle/effect/enemy_unique/enemy_shot_whole_large_red/enemy_shot_whole_large_red": [
+     561,
+     128
+    ]
+   }
+  },
+  "administrator_light_multi_80": {
+   "base": {
+    "battle/boss/administrator/administrator_light/administrator_light": [
+     246,
+     2968
+    ],
+    "battle/boss/administrator/administrator": [
+     27,
+     24
+    ]
+   },
+   "effects": {
+    "battle/effect/enemy_unique/enemy_shot_administrator_skill/enemy_shot_administrator_skill": [
+     59,
+     61
+    ]
+   }
+  },
+  "mod_fb_eye_r": {
+   "base": {
+    "battle/boss/eye_dragon_multibattle_boss/eye_dragon_multibattle_boss": [
+     1907,
+     1880
+    ]
+   },
+   "effects": {
+    "battle/effect/enemy_unique/enemy_laser_notice/enemy_laser_notice": [
+     13,
+     322
+    ],
+    "battle/effect/enemy_unique/enemy_shot_circle/enemy_shot_circle": [
+     495,
+     1327
+    ],
+    "battle/effect/enemy_unique/enemy_shot_discard_dragon_wind/enemy_shot_discard_dragon_wind": [
+     98,
+     122
+    ],
+    "battle/effect/enemy_unique/enemy_shot_eye_dragon/enemy_shot_eye_dragon": [
+     125,
+     124
+    ],
+    "battle/effect/enemy_unique/enemy_shot_thunderbolt_small_yellow/enemy_shot_thunderbolt_small_yellow": [
+     1015,
+     64
+    ],
+    "battle/effect/enemy_unique/enemy_shot_wind_sphere_wear_attack/enemy_shot_wind_sphere_wear_attack": [
+     127,
+     844
+    ]
+   }
+  },
+  "devil_commander_evil_envy_80": {
+   "base": {
+    "battle/boss/devil_commander_evil_envy/devil_commander_evil_envy": [
+     253,
+     2958
+    ]
+   },
+   "effects": {
+    "battle/effect/enemy_unique/enemy_laser_notice/enemy_laser_notice": [
+     13,
+     322
+    ],
+    "battle/effect/enemy_unique/enemy_shot_arck_evil/enemy_shot_arck_evil": [
+     106,
+     1213
+    ],
+    "battle/effect/enemy_unique/enemy_shot_devil_commander_evil_envy/enemy_shot_devil_commander_evil_envy": [
+     250,
+     123
+    ],
+    "battle/effect/enemy_unique/enemy_shot_discard_dragon_wind/enemy_shot_discard_dragon_wind": [
+     98,
+     122
+    ]
+   }
+  },
+  "mod_fb_yokai_r": {
+   "base": {
+    "battle/boss/yokai_emaki_middle_boss/yokai_emaki_middle_boss": [
+     256,
+     2544
+    ]
+   },
+   "effects": {
+    "battle/effect/enemy_unique/enemy_shot_thunderbolt_small_yellow/enemy_shot_thunderbolt_small_yellow": [
+     1015,
+     64
+    ],
+    "battle/effect/enemy_unique/enemy_shot_yokai_emaki_all_beam/enemy_shot_yokai_emaki_all_beam": [
+     116,
+     205
+    ],
+    "battle/effect/enemy_unique/enemy_shot_yokai_emaki_fire_shot/enemy_shot_yokai_emaki_fire_shot": [
+     672,
+     248
+    ]
+   }
+  }
+ },
+ "scenarios": {
+  "five-boss-r0": {
+   "label": "五重连战 1099001 round0(zone_1 三 boss 底座)",
+   "bosses": [
+    "mod_fb_sand_s1",
+    "mod_fb_thunder_s1",
+    "mod_fb_hero_s1"
+   ]
+  },
+  "five-boss-r1": {
+   "label": "五重连战 1099001 round1(zone_2 两行共 4 boss)",
+   "bosses": [
+    "administrator_light_multi_80",
+    "mod_fb_eye_r",
+    "devil_commander_evil_envy_80",
+    "mod_fb_yokai_r"
+   ]
+  }
+ },
+ "characters": {
+  "ginovi": {
+   "id": "169999",
+   "group": "custom",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "probe-20260909"
+   ],
+   "pixelart": {
+    "character/ginovi/pixelart/sprite_sheet": [
+     254,
+     33
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/ginovi/nightcrow_ring/nightcrow_ring": [
+     120,
+     112
+    ],
+    "battle/effect/skill_unique/ginovi/nightcrow_skill/nightcrow_skill": [
+     252,
+     235
+    ]
+   },
+   "pf_sheets": {
+    "battle/effect/skill_unique/ginovi/nightcrow_pfsupport/nightcrow_pfsupport": [
+     240,
+     77
+    ]
+   },
+   "ui_layer1": {
+    "character/ginovi/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/ginovi/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/ginovi/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/ginovi/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/ginovi/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/ginovi/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/ginovi/ui/square_0": [
+     212,
+     212
+    ],
+    "character/ginovi/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.102184
+  },
+  "abyss_beast_playable": {
+   "id": "169980",
+   "group": "custom",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "probe-20260909"
+   ],
+   "pixelart": {
+    "character/abyss_beast_playable/pixelart/sprite_sheet": [
+     512,
+     689
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/abyss_beast_playable/p1_wave/p1_wave": [
+     502,
+     75
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p2_burst/p2_burst": [
+     107,
+     117
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p2_core/p2_core": [
+     105,
+     244
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p2_explosion/p2_explosion": [
+     245,
+     296
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p3_arc30/p3_arc30": [
+     160,
+     32
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p3_arc60/p3_arc60": [
+     238,
+     61
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p3_craw/p3_craw": [
+     66,
+     68
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p4_dark_matter_core/p4_dark_matter_core": [
+     49,
+     51
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p4_laser_ll/p4_laser_ll": [
+     123,
+     502
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p4_laser_lll/p4_laser_lll": [
+     125,
+     627
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p_heavy_cannon/p_heavy_cannon": [
+     104,
+     114
+    ]
+   },
+   "pf_sheets": {
+    "battle/effect/powerflip/abyss_beast_playable_pf/p1_laser/p1_laser": [
+     62,
+     93
+    ],
+    "battle/effect/powerflip/abyss_beast_playable_pf/p3_laser/p3_laser": [
+     386,
+     124
+    ],
+    "battle/effect/powerflip/abyss_beast_playable_pf/p4_dark_matter_core/p4_dark_matter_core": [
+     49,
+     51
+    ],
+    "battle/effect/powerflip/abyss_beast_playable_pf/p4_laser_lll/p4_laser_lll": [
+     125,
+     627
+    ],
+    "battle/effect/powerflip/effect_powerflip_attack_special/effect_powerflip_attack_special": [
+     488,
+     63
+    ]
+   },
+   "ui_layer1": {
+    "character/abyss_beast_playable/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/abyss_beast_playable/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/abyss_beast_playable/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/abyss_beast_playable/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/abyss_beast_playable/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/abyss_beast_playable/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/abyss_beast_playable/ui/square_0": [
+     212,
+     212
+    ],
+    "character/abyss_beast_playable/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.859555
+  },
+  "black_wolf_knight_wt26": {
+   "id": "179999",
+   "group": "custom",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "probe-20260909"
+   ],
+   "pixelart": {
+    "character/black_wolf_knight_wt26/pixelart/sprite_sheet": [
+     256,
+     344
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/black_wolf_knight/black_wolf_knight": [
+     128,
+     685
+    ],
+    "battle/field_object/black_wolf_knight_wt26/fever_gauge/fever_gauge": [
+     140,
+     220
+    ]
+   },
+   "pf_sheets": {
+    "battle/effect/powerflip/effect_powerflip_attack_support/effect_powerflip_attack_support": [
+     240,
+     77
+    ],
+    "battle/effect/powerflip/wt26_beam_lv1/wt26_beam_lv1": [
+     189,
+     63
+    ],
+    "battle/effect/powerflip/wt26_beam_lv2/wt26_beam_lv2": [
+     189,
+     63
+    ],
+    "battle/effect/powerflip/wt26_beam_lv3/wt26_beam_lv3": [
+     189,
+     63
+    ]
+   },
+   "ui_layer1": {
+    "character/black_wolf_knight_wt26/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/black_wolf_knight_wt26/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/black_wolf_knight_wt26/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/black_wolf_knight_wt26/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/black_wolf_knight_wt26/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/black_wolf_knight_wt26/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/black_wolf_knight_wt26/ui/square_0": [
+     212,
+     212
+    ],
+    "character/black_wolf_knight_wt26/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.266465
+  },
+  "claude_wolf_assassin_ex": {
+   "id": "129997",
+   "group": "custom",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "probe-20260909"
+   ],
+   "pixelart": {
+    "character/claude_wolf_assassin_ex/pixelart/sprite_sheet": [
+     218,
+     64
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/black_wolf_knight/black_wolf_knight": [
+     128,
+     685
+    ]
+   },
+   "pf_sheets": {
+    "battle/effect/powerflip/effect_powerflip_attack_special/effect_powerflip_attack_special": [
+     488,
+     63
+    ],
+    "battle/effect/powerflip/effect_powerflip_attack_support/effect_powerflip_attack_support": [
+     240,
+     77
+    ]
+   },
+   "ui_layer1": {
+    "character/claude_wolf_assassin_ex/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/claude_wolf_assassin_ex/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/claude_wolf_assassin_ex/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/claude_wolf_assassin_ex/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/claude_wolf_assassin_ex/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/claude_wolf_assassin_ex/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/claude_wolf_assassin_ex/ui/square_0": [
+     212,
+     212
+    ],
+    "character/claude_wolf_assassin_ex/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.154798
+  },
+  "unicorn_lancer_rose": {
+   "id": "129992",
+   "group": "custom",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "probe-20260909"
+   ],
+   "pixelart": {
+    "character/unicorn_lancer_rose/pixelart/sprite_sheet": [
+     271,
+     109
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/unicorn_lancer_rose/lance/lance": [
+     124,
+     507
+    ],
+    "battle/effect/skill_unique/unicorn_lancer_rose/unicorn_lancer_rose": [
+     253,
+     124
+    ],
+    "battle/effect/skill_unique/unicorn_lancer_rose_api/unicorn_lancer_rose_api": [
+     969,
+     193
+    ]
+   },
+   "pf_sheets": {
+    "battle/effect/powerflip/effect_powerflip_attack_spin/effect_powerflip_attack_spin": [
+     285,
+     127
+    ],
+    "battle/effect/powerflip/effect_powerflip_attack_support/effect_powerflip_attack_support": [
+     240,
+     77
+    ]
+   },
+   "ui_layer1": {
+    "character/unicorn_lancer_rose/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/unicorn_lancer_rose/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/unicorn_lancer_rose/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/unicorn_lancer_rose/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/unicorn_lancer_rose/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/unicorn_lancer_rose/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/unicorn_lancer_rose/ui/square_0": [
+     212,
+     212
+    ],
+    "character/unicorn_lancer_rose/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.372053
+  },
+  "white_wolf_gerald": {
+   "id": "149999",
+   "group": "custom",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "probe-20260909"
+   ],
+   "pixelart": {
+    "character/white_wolf_gerald/pixelart/sprite_sheet": [
+     252,
+     351
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/white_wolf_gerald/white_wolf_gerald": [
+     438,
+     568
+    ],
+    "battle/effect/skill_unique/white_wolf_gerald/time_aura/time_aura": [
+     117,
+     130
+    ]
+   },
+   "pf_sheets": {
+    "battle/effect/powerflip/white_wolf_gerald_powerflip/white_wolf_gerald_powerflip": [
+     379,
+     323
+    ]
+   },
+   "ui_layer1": {
+    "character/white_wolf_gerald/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/white_wolf_gerald/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/white_wolf_gerald/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/white_wolf_gerald/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/white_wolf_gerald/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/white_wolf_gerald/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/white_wolf_gerald/ui/square_0": [
+     212,
+     212
+    ],
+    "character/white_wolf_gerald/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.479995
+  },
+  "resistance_princess_ex": {
+   "id": "139997",
+   "group": "custom",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "probe-20260909"
+   ],
+   "pixelart": {
+    "character/resistance_princess_ex/pixelart/sprite_sheet": [
+     126,
+     518
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/resistance_princess_ex/blade/blade": [
+     218,
+     288
+    ],
+    "battle/effect/skill_unique/resistance_princess_ex/orbit/orbit": [
+     650,
+     650
+    ],
+    "battle/effect/skill_unique/resistance_princess_ex/resistance_princess_ex": [
+     248,
+     334
+    ],
+    "battle/effect/skill_unique/resistance_princess_ex/ring/ring": [
+     484,
+     430
+    ]
+   },
+   "pf_sheets": {
+    "battle/effect/powerflip/resistance_princess_ex_pf_fist/resistance_princess_ex_pf_fist": [
+     293,
+     127
+    ],
+    "battle/effect/powerflip/resistance_princess_ex_pf_spin/resistance_princess_ex_pf_spin": [
+     184,
+     181
+    ]
+   },
+   "ui_layer1": {
+    "character/resistance_princess_ex/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/resistance_princess_ex/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/resistance_princess_ex/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/resistance_princess_ex/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/resistance_princess_ex/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/resistance_princess_ex/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/resistance_princess_ex/ui/square_0": [
+     212,
+     212
+    ],
+    "character/resistance_princess_ex/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.921509
+  },
+  "fox_oracle_autumn": {
+   "id": "139995",
+   "group": "custom",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "probe-20260909"
+   ],
+   "pixelart": {
+    "character/fox_oracle_autumn/pixelart/sprite_sheet": [
+     645,
+     317
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/fox_oracle_autumn/fox_oracle_autumn": [
+     64,
+     123
+    ],
+    "battle/effect/skill_unique/fox_oracle_autumn_api/fox_oracle_autumn_api": [
+     969,
+     193
+    ]
+   },
+   "pf_sheets": {
+    "battle/effect/powerflip/fox_oracle_autumn_native/effect_powerflip_attack_beam/effect_powerflip_attack_beam": [
+     189,
+     63
+    ],
+    "battle/effect/powerflip/fox_oracle_autumn_native/effect_powerflip_attack_special/effect_powerflip_attack_special": [
+     488,
+     63
+    ]
+   },
+   "ui_layer1": {
+    "character/fox_oracle_autumn/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/fox_oracle_autumn/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/fox_oracle_autumn/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/fox_oracle_autumn/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/fox_oracle_autumn/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/fox_oracle_autumn/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/fox_oracle_autumn/ui/square_0": [
+     212,
+     212
+    ],
+    "character/fox_oracle_autumn/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.448253
+  },
+  "lion_swordman_reborn": {
+   "id": "119996",
+   "group": "custom",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "probe-20260909"
+   ],
+   "pixelart": {
+    "character/lion_swordman_reborn/pixelart/sprite_sheet": [
+     127,
+     572
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/lion_swordman_playable/lion_swordman_playable": [
+     694,
+     247
+    ],
+    "battle/effect/skill_unique/lion_swordman_reborn/lion_swordman_reborn": [
+     441,
+     455
+    ],
+    "battle/effect/skill_unique/lion_swordman_reborn/zenith_explosion/zenith_explosion": [
+     306,
+     136
+    ]
+   },
+   "pf_sheets": {
+    "battle/effect/powerflip/lion_swordman_reborn/lion_swordman_reborn": [
+     370,
+     330
+    ]
+   },
+   "ui_layer1": {
+    "character/lion_swordman_reborn/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/lion_swordman_reborn/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/lion_swordman_reborn/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/lion_swordman_reborn/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/lion_swordman_reborn/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/lion_swordman_reborn/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/lion_swordman_reborn/ui/square_0": [
+     212,
+     212
+    ],
+    "character/lion_swordman_reborn/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.615809
+  },
+  "xiaketi": {
+   "id": "119997",
+   "group": "custom",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "probe-20260909"
+   ],
+   "pixelart": {
+    "character/xiaketi/pixelart/sprite_sheet": [
+     1953,
+     81
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/flame_witch/flame_witch": [
+     128,
+     679
+    ]
+   },
+   "pf_sheets": {},
+   "ui_layer1": {
+    "character/xiaketi/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/xiaketi/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/xiaketi/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/xiaketi/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/xiaketi/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/xiaketi/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/xiaketi/ui/square_0": [
+     212,
+     212
+    ],
+    "character/xiaketi/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.250795
+  },
+  "wind_spgirl_swim": {
+   "id": "149996",
+   "group": "custom",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "probe-20260909"
+   ],
+   "pixelart": {
+    "character/wind_spgirl_swim/pixelart/sprite_sheet": [
+     64,
+     344
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/wind_spgirl/wind_spgirl": [
+     127,
+     369
+    ]
+   },
+   "pf_sheets": {},
+   "ui_layer1": {
+    "character/wind_spgirl_swim/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/wind_spgirl_swim/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/wind_spgirl_swim/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/wind_spgirl_swim/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/wind_spgirl_swim/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/wind_spgirl_swim/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/wind_spgirl_swim/ui/square_0": [
+     212,
+     212
+    ],
+    "character/wind_spgirl_swim/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.070695
+  },
+  "touyakiren_ceo_ny26": {
+   "id": "169998",
+   "group": "custom",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "probe-20260909"
+   ],
+   "pixelart": {
+    "character/touyakiren_ceo_ny26/pixelart/sprite_sheet": [
+     128,
+     529
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/touyakiren_ceo_ny26/touyakiren_ceo_ny26": [
+     364,
+     363
+    ],
+    "battle/effect/skill_unique/touyakiren_ceo_ny26_petal/touyakiren_ceo_ny26_petal": [
+     62,
+     68
+    ],
+    "battle/effect/skill_unique/touyakiren_ceo_ny26_sakura/touyakiren_ceo_ny26_sakura": [
+     156,
+     156
+    ]
+   },
+   "pf_sheets": {
+    "battle/effect/powerflip/effect_powerflip_attack_special/effect_powerflip_attack_special": [
+     488,
+     63
+    ]
+   },
+   "ui_layer1": {
+    "character/touyakiren_ceo_ny26/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/touyakiren_ceo_ny26/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/touyakiren_ceo_ny26/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/touyakiren_ceo_ny26/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/touyakiren_ceo_ny26/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/touyakiren_ceo_ny26/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/touyakiren_ceo_ny26/ui/square_0": [
+     212,
+     212
+    ],
+    "character/touyakiren_ceo_ny26/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.263914
+  },
+  "darkness_dragon": {
+   "id": "261089",
+   "group": "custom",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "probe-20260909"
+   ],
+   "pixelart": {
+    "character/darkness_dragon/pixelart/sprite_sheet": [
+     128,
+     315
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/darkness_dragon/darkness_dragon": [
+     254,
+     250
+    ]
+   },
+   "pf_sheets": {
+    "battle/effect/powerflip/effect_powerflip_attack_special/effect_powerflip_attack_special": [
+     488,
+     63
+    ]
+   },
+   "ui_layer1": {
+    "character/darkness_dragon/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/darkness_dragon/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/darkness_dragon/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/darkness_dragon/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/darkness_dragon/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/darkness_dragon/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/darkness_dragon/ui/square_0": [
+     212,
+     212
+    ],
+    "character/darkness_dragon/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.137572
+  },
+  "golden_dragon_jr": {
+   "id": "151159",
+   "group": "custom",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "probe-20260909"
+   ],
+   "pixelart": {
+    "character/golden_dragon_jr/pixelart/sprite_sheet": [
+     252,
+     417
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/golden_dragon_jr/golden_dragon_jr": [
+     128,
+     332
+    ]
+   },
+   "pf_sheets": {
+    "battle/effect/powerflip/effect_powerflip_attack_special/effect_powerflip_attack_special": [
+     488,
+     63
+    ]
+   },
+   "ui_layer1": {
+    "character/golden_dragon_jr/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/golden_dragon_jr/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/golden_dragon_jr/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/golden_dragon_jr/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/golden_dragon_jr/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/golden_dragon_jr/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/golden_dragon_jr/ui/square_0": [
+     212,
+     212
+    ],
+    "character/golden_dragon_jr/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.181696
+  },
+  "land_dragon_wind_playable": {
+   "id": "149998",
+   "group": "custom",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "probe-20260909"
+   ],
+   "pixelart": {
+    "character/land_dragon_wind_playable/pixelart/sprite_sheet": [
+     116,
+     64
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/land_dragon_wind_playable/craw/craw": [
+     66,
+     68
+    ],
+    "battle/effect/skill_unique/land_dragon_wind_playable/laser/laser": [
+     123,
+     502
+    ],
+    "battle/effect/skill_unique/land_dragon_wind_playable/overall/overall": [
+     233,
+     363
+    ],
+    "battle/effect/skill_unique/land_dragon_wind_playable/slash/slash": [
+     128,
+     259
+    ],
+    "battle/effect/skill_unique/land_dragon_wind_playable/target_sight/target_sight": [
+     98,
+     122
+    ],
+    "battle/effect/skill_unique/land_dragon_wind_playable/wave_arc120_fast/wave_arc120_fast": [
+     111,
+     587
+    ],
+    "battle/effect/skill_unique/land_dragon_wind_playable/wave_arc120_middle/wave_arc120_middle": [
+     1,
+     1
+    ],
+    "battle/effect/skill_unique/land_dragon_wind_playable/wave_arc120_slow/wave_arc120_slow": [
+     1,
+     1
+    ],
+    "battle/effect/skill_unique/land_dragon_wind_playable/wave_arc30/wave_arc30": [
+     160,
+     32
+    ]
+   },
+   "pf_sheets": {
+    "battle/effect/powerflip/effect_powerflip_attack_special/effect_powerflip_attack_special": [
+     488,
+     63
+    ],
+    "battle/effect/powerflip/land_dragon_wind_powerflip/wind_burst/wind_burst": [
+     137,
+     247
+    ]
+   },
+   "ui_layer1": {
+    "character/land_dragon_wind_playable/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/land_dragon_wind_playable/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/land_dragon_wind_playable/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/land_dragon_wind_playable/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/land_dragon_wind_playable/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/land_dragon_wind_playable/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/land_dragon_wind_playable/ui/square_0": [
+     212,
+     212
+    ],
+    "character/land_dragon_wind_playable/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.346197
+  },
+  "seris_dragon_king": {
+   "id": "129999",
+   "group": "custom",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "probe-20260909"
+   ],
+   "pixelart": {
+    "character/seris_dragon_king/pixelart/sprite_sheet": [
+     995,
+     388
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/seris_dragon_king/seris_dragon_king": [
+     1980,
+     879
+    ],
+    "battle/effect/skill_unique/seris_human_royal_tide_ring/seris_human_royal_tide_ring": [
+     512,
+     512
+    ]
+   },
+   "pf_sheets": {
+    "battle/effect/powerflip/effect_powerflip_attack_beam/effect_powerflip_attack_beam": [
+     189,
+     63
+    ],
+    "battle/effect/powerflip/effect_powerflip_attack_special/effect_powerflip_attack_special": [
+     488,
+     63
+    ],
+    "battle/effect/powerflip/seris_dragon_special_powerflip/seris_dragon_special_powerflip": [
+     512,
+     512
+    ],
+    "battle/effect/powerflip/seris_human_shooting_powerflip/seris_human_shooting_powerflip": [
+     512,
+     512
+    ]
+   },
+   "ui_layer1": {
+    "character/seris_dragon_king/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/seris_dragon_king/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/seris_dragon_king/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/seris_dragon_king/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/seris_dragon_king/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/seris_dragon_king/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/seris_dragon_king/ui/square_0": [
+     212,
+     212
+    ],
+    "character/seris_dragon_king/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 2.971825
+  },
+  "stella_summer_goddess": {
+   "id": "139999",
+   "group": "custom",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "probe-20260909"
+   ],
+   "pixelart": {
+    "character/stella_summer_goddess/pixelart/sprite_sheet": [
+     468,
+     16
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/stella_ballot23/stella_ballot23": [
+     114,
+     484
+    ]
+   },
+   "pf_sheets": {},
+   "ui_layer1": {
+    "character/stella_summer_goddess/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/stella_summer_goddess/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/stella_summer_goddess/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/stella_summer_goddess/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/stella_summer_goddess/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/stella_summer_goddess/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/stella_summer_goddess/ui/square_0": [
+     212,
+     212
+    ],
+    "character/stella_summer_goddess/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.064836
+  },
+  "white_tiger_summer": {
+   "id": "149990",
+   "group": "custom",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "prev5-20260912",
+    "prev5-upper-20260912",
+    "probe-20260909"
+   ],
+   "pixelart": {
+    "character/white_tiger_summer/pixelart/sprite_sheet": [
+     389,
+     129
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/desert_commander/desert_commander": [
+     124,
+     599
+    ],
+    "battle/effect/skill_unique/prince_zero_smr20/prince_zero_smr20": [
+     255,
+     418
+    ],
+    "battle/effect/skill_unique/white_tiger_summer/wts_fever_burst/wts_fever_burst": [
+     574,
+     239
+    ],
+    "battle/effect/skill_unique/white_tiger_summer/white_tiger_summer": [
+     182,
+     128
+    ]
+   },
+   "pf_sheets": {
+    "battle/effect/powerflip/effect_powerflip_attack_fight/effect_powerflip_attack_fight": [
+     592,
+     63
+    ],
+    "battle/effect/powerflip/effect_powerflip_attack_special/effect_powerflip_attack_special": [
+     488,
+     63
+    ]
+   },
+   "ui_layer1": {
+    "character/white_tiger_summer/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/white_tiger_summer/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/white_tiger_summer/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/white_tiger_summer/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/white_tiger_summer/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/white_tiger_summer/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/white_tiger_summer/ui/square_0": [
+     212,
+     212
+    ],
+    "character/white_tiger_summer/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.468083
+  },
+  "blade_dancer": {
+   "id": "blade_dancer",
+   "group": "official",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "probe-20260909"
+   ],
+   "pixelart": {
+    "character/blade_dancer/pixelart/sprite_sheet": [
+     127,
+     463
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/blade_dancer/blade_dancer": [
+     128,
+     829
+    ]
+   },
+   "pf_sheets": {},
+   "ui_layer1": {
+    "character/blade_dancer/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/blade_dancer/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/blade_dancer/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/blade_dancer/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/blade_dancer/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/blade_dancer/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/blade_dancer/ui/square_0": [
+     212,
+     212
+    ],
+    "character/blade_dancer/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.168015
+  },
+  "white_tiger": {
+   "id": "white_tiger",
+   "group": "official",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "probe-20260909"
+   ],
+   "pixelart": {
+    "character/white_tiger/pixelart/sprite_sheet": [
+     63,
+     600
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/white_tiger/white_tiger": [
+     182,
+     128
+    ]
+   },
+   "pf_sheets": {
+    "battle/effect/powerflip/effect_powerflip_attack_special/effect_powerflip_attack_special": [
+     488,
+     63
+    ],
+    "battle/effect/powerflip/psycho_reaper_meteor23/psycho_reaper_meteor23": [
+     699,
+     127
+    ],
+    "battle/effect/powerflip/wind_spgirl_4anv/wind_spgirl_4anv": [
+     128,
+     901
+    ]
+   },
+   "ui_layer1": {
+    "character/white_tiger/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/white_tiger/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/white_tiger/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/white_tiger/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/white_tiger/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/white_tiger/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/white_tiger/ui/square_0": [
+     212,
+     212
+    ],
+    "character/white_tiger/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.302719
+  },
+  "fire_dragon": {
+   "id": "fire_dragon",
+   "group": "official",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "probe-20260909"
+   ],
+   "pixelart": {
+    "character/fire_dragon/pixelart/sprite_sheet": [
+     255,
+     541
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/fire_dragon/fire_dragon": [
+     64,
+     377
+    ]
+   },
+   "pf_sheets": {},
+   "ui_layer1": {
+    "character/fire_dragon/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/fire_dragon/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/fire_dragon/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/fire_dragon/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/fire_dragon/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/fire_dragon/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/fire_dragon/ui/square_0": [
+     212,
+     212
+    ],
+    "character/fire_dragon/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.164565
+  },
+  "elf_archer": {
+   "id": "elf_archer",
+   "group": "official",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "probe-20260909"
+   ],
+   "pixelart": {
+    "character/elf_archer/pixelart/sprite_sheet": [
+     64,
+     246
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_general/decoration/long_range_aura/long_range_aura_green/long_range_aura_green": [
+     169,
+     102
+    ],
+    "battle/effect/skill_unique/elf_archer/elf_archer": [
+     61,
+     121
+    ]
+   },
+   "pf_sheets": {},
+   "ui_layer1": {
+    "character/elf_archer/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/elf_archer/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/elf_archer/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/elf_archer/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/elf_archer/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/elf_archer/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/elf_archer/ui/square_0": [
+     212,
+     212
+    ],
+    "character/elf_archer/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.041901
+  },
+  "beatrix": {
+   "id": "beatrix",
+   "group": "official",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "probe-20260909"
+   ],
+   "pixelart": {
+    "character/beatrix/pixelart/sprite_sheet": [
+     128,
+     449
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/beatrix/beatrix": [
+     247,
+     443
+    ]
+   },
+   "pf_sheets": {},
+   "ui_layer1": {
+    "character/beatrix/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/beatrix/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/beatrix/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/beatrix/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/beatrix/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/beatrix/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/beatrix/ui/square_0": [
+     212,
+     212
+    ],
+    "character/beatrix/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.169435
+  },
+  "little_wizard": {
+   "id": "little_wizard",
+   "group": "official",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "probe-20260909"
+   ],
+   "pixelart": {
+    "character/little_wizard/pixelart/sprite_sheet": [
+     63,
+     345
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_general/decoration/dummy_ball/dummy_ball_yellow/dummy_ball_yellow": [
+     82,
+     82
+    ],
+    "battle/effect/skill_unique/little_wizard/little_wizard": [
+     128,
+     323
+    ]
+   },
+   "pf_sheets": {},
+   "ui_layer1": {
+    "character/little_wizard/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/little_wizard/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/little_wizard/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/little_wizard/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/little_wizard/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/little_wizard/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/little_wizard/ui/square_0": [
+     212,
+     212
+    ],
+    "character/little_wizard/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.071861
+  },
+  "psychic_tomboygirl": {
+   "id": "psychic_tomboygirl",
+   "group": "official",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "probe-20260909"
+   ],
+   "pixelart": {
+    "character/psychic_tomboygirl/pixelart/sprite_sheet": [
+     128,
+     123
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/psychic_tomboygirl/psychic_tomboygirl": [
+     1554,
+     330
+    ]
+   },
+   "pf_sheets": {
+    "battle/effect/powerflip/effect_powerflip_attack_special/effect_powerflip_attack_special": [
+     488,
+     63
+    ]
+   },
+   "ui_layer1": {
+    "character/psychic_tomboygirl/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/psychic_tomboygirl/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/psychic_tomboygirl/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/psychic_tomboygirl/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/psychic_tomboygirl/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/psychic_tomboygirl/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/psychic_tomboygirl/ui/square_0": [
+     212,
+     212
+    ],
+    "character/psychic_tomboygirl/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.564692
+  },
+  "lady_summoner_campus": {
+   "id": "119989",
+   "group": "custom",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "prev5-20260912",
+    "prev5-upper-20260912"
+   ],
+   "pixelart": {
+    "character/lady_summoner_campus/pixelart/sprite_sheet": [
+     32,
+     308
+    ],
+    "character/lady_summoner_campus_dragon/pixelart/sprite_sheet": [
+     131,
+     15
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/campus_bianca_descent/campus_bianca_descent": [
+     330,
+     254
+    ],
+    "battle/effect/skill_unique/campus_bianca_dragon_call/campus_bianca_dragon_call": [
+     107,
+     15
+    ],
+    "battle/effect/skill_unique/campus_bianca_breath/campus_bianca_breath": [
+     330,
+     254
+    ],
+    "battle/effect/skill_unique/campus_bianca_dragon/campus_bianca_dragon": [
+     63,
+     266
+    ]
+   },
+   "pf_sheets": {},
+   "ui_layer1": {
+    "character/lady_summoner_campus/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/lady_summoner_campus/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/lady_summoner_campus/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/lady_summoner_campus/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/lady_summoner_campus/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/lady_summoner_campus/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/lady_summoner_campus/ui/square_0": [
+     212,
+     212
+    ],
+    "character/lady_summoner_campus/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.202058
+  },
+  "wind_spgirl_campus": {
+   "id": "149989",
+   "group": "custom",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "prev5-20260912",
+    "prev5-upper-20260912"
+   ],
+   "pixelart": {
+    "character/wind_spgirl_campus/pixelart/sprite_sheet": [
+     256,
+     598
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_general/decoration/dummy_ball/dummy_ball_green/dummy_ball_green": [
+     82,
+     82
+    ],
+    "battle/effect/skill_unique/campus_celtie_cross/campus_celtie_cross": [
+     127,
+     593
+    ],
+    "battle/effect/skill_unique/campus_celtie_dash/campus_celtie_dash": [
+     128,
+     893
+    ],
+    "battle/effect/skill_unique/wind_spgirl_campus/wind_spgirl_campus": [
+     128,
+     893
+    ]
+   },
+   "pf_sheets": {
+    "battle/effect/powerflip/campus_celtie_fever/campus_celtie_fever": [
+     128,
+     901
+    ]
+   },
+   "ui_layer1": {
+    "character/wind_spgirl_campus/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/wind_spgirl_campus/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/wind_spgirl_campus/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/wind_spgirl_campus/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/wind_spgirl_campus/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/wind_spgirl_campus/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/wind_spgirl_campus/ui/square_0": [
+     212,
+     212
+    ],
+    "character/wind_spgirl_campus/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.588701
+  },
+  "ruin_girl_campus": {
+   "id": "169989",
+   "group": "custom",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "prev5-20260912",
+    "prev5-upper-20260912"
+   ],
+   "pixelart": {
+    "character/ruin_girl_campus/pixelart/sprite_sheet": [
+     730,
+     249
+    ],
+    "character/ruin_girl_campus_dark_ball/pixelart/sprite_sheet": [
+     169,
+     16
+    ],
+    "character/ruin_girl_campus_light_ball/pixelart/sprite_sheet": [
+     123,
+     21
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/ruin_girl_campus_fever/ruin_girl_campus_fever": [
+     470,
+     187
+    ],
+    "battle/effect/skill_unique/ruin_girl_campus_dark_call/ruin_girl_campus_dark_call": [
+     255,
+     1038
+    ],
+    "battle/effect/skill_unique/ruin_girl_campus_light_call/ruin_girl_campus_light_call": [
+     64,
+     589
+    ],
+    "battle/effect/skill_unique/ruin_girl_campus_light_fade/ruin_girl_campus_light_fade": [
+     124,
+     212
+    ],
+    "battle/effect/skill_unique/ruin_girl_campus_star/ruin_girl_campus_star": [
+     544,
+     250
+    ],
+    "battle/effect/skill_unique/ruin_girl_campus_wave/ruin_girl_campus_wave": [
+     250,
+     482
+    ]
+   },
+   "pf_sheets": {
+    "battle/effect/powerflip/effect_powerflip_attack_special/effect_powerflip_attack_special": [
+     488,
+     63
+    ],
+    "battle/effect/powerflip/ruin_girl_campus_fever/effect_powerflip_attack_special/effect_powerflip_attack_special": [
+     488,
+     63
+    ],
+    "battle/effect/powerflip/ruin_girl_campus_fever/effect_powerflip_attack_support/effect_powerflip_attack_support": [
+     240,
+     77
+    ]
+   },
+   "ui_layer1": {
+    "character/ruin_girl_campus/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/ruin_girl_campus/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/ruin_girl_campus/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/ruin_girl_campus/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/ruin_girl_campus/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/ruin_girl_campus/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/ruin_girl_campus/ui/square_0": [
+     212,
+     212
+    ],
+    "character/ruin_girl_campus/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.954521
+  },
+  "scutum_valentine": {
+   "id": "149988",
+   "group": "custom",
+   "closure_source": "live-20260917",
+   "sources": [
+    "live-20260917",
+    "prev5-20260912",
+    "prev5-upper-20260912"
+   ],
+   "pixelart": {
+    "character/scutum_valentine/pixelart/sprite_sheet": [
+     96,
+     32
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/scutum_valentine/scutum_valentine": [
+     298,
+     123
+    ]
+   },
+   "pf_sheets": {},
+   "ui_layer1": {
+    "character/scutum_valentine/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/scutum_valentine/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/scutum_valentine/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/scutum_valentine/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/scutum_valentine/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/scutum_valentine/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/scutum_valentine/ui/square_0": [
+     212,
+     212
+    ],
+    "character/scutum_valentine/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.040832
+  },
+  "rec_android_seaside": {
+   "id": "139994",
+   "group": "custom",
+   "closure_source": "seasonal7-20260916",
+   "sources": [
+    "seasonal7-20260916"
+   ],
+   "pixelart": {
+    "character/rec_android_seaside/pixelart/sprite_sheet": [
+     127,
+     428
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/rec_android_seaside/seaside_beam/seaside_beam": [
+     758,
+     255
+    ],
+    "battle/effect/skill_unique/rec_android_seaside/seaside_ray/seaside_ray": [
+     246,
+     124
+    ]
+   },
+   "pf_sheets": {},
+   "ui_layer1": {
+    "character/rec_android_seaside/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/rec_android_seaside/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/rec_android_seaside/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/rec_android_seaside/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/rec_android_seaside/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/rec_android_seaside/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/rec_android_seaside/ui/square_0": [
+     212,
+     212
+    ],
+    "character/rec_android_seaside/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.282038
+  },
+  "super_robot_tailcoat": {
+   "id": "139993",
+   "group": "custom",
+   "closure_source": "seasonal7-20260916",
+   "sources": [
+    "seasonal7-20260916"
+   ],
+   "pixelart": {
+    "character/super_robot_tailcoat/pixelart/sprite_sheet": [
+     240,
+     482
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/enemy_unique/enemy_laser_notice/enemy_laser_notice": [
+     13,
+     322
+    ],
+    "battle/effect/skill_general/decoration/charge/charge_yellow/charge_yellow": [
+     74,
+     147
+    ],
+    "battle/effect/skill_unique/super_robot_tailcoat/cannon/cannon": [
+     245,
+     964
+    ],
+    "battle/effect/skill_unique/super_robot_tailcoat/laser_l/laser_l": [
+     386,
+     124
+    ],
+    "battle/effect/skill_unique/super_robot_tailcoat/laser_ll/laser_ll": [
+     123,
+     502
+    ],
+    "battle/effect/skill_unique/super_robot_tailcoat/laser_lll/laser_lll": [
+     252,
+     255
+    ],
+    "battle/effect/skill_unique/super_robot_tailcoat/laser_s/laser_s": [
+     62,
+     93
+    ]
+   },
+   "pf_sheets": {},
+   "ui_layer1": {
+    "character/super_robot_tailcoat/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/super_robot_tailcoat/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/super_robot_tailcoat/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/super_robot_tailcoat/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/super_robot_tailcoat/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/super_robot_tailcoat/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/super_robot_tailcoat/ui/square_0": [
+     212,
+     212
+    ],
+    "character/super_robot_tailcoat/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.55516
+  },
+  "samurai_robot_plum": {
+   "id": "159998",
+   "group": "custom",
+   "closure_source": "seasonal7-20260916",
+   "sources": [
+    "seasonal7-20260916"
+   ],
+   "pixelart": {
+    "character/samurai_robot_plum/pixelart/sprite_sheet": [
+     239,
+     367
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_general/decoration/dummy_ball/dummy_ball_white/dummy_ball_white": [
+     82,
+     82
+    ],
+    "battle/effect/skill_unique/samurai_robot_plum_ittou/samurai_robot_plum_ittou": [
+     1130,
+     128
+    ],
+    "battle/effect/skill_unique/samurai_robot_plum_kanbai/samurai_robot_plum_kanbai": [
+     699,
+     198
+    ]
+   },
+   "pf_sheets": {},
+   "ui_layer1": {
+    "character/samurai_robot_plum/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/samurai_robot_plum/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/samurai_robot_plum/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/samurai_robot_plum/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/samurai_robot_plum/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/samurai_robot_plum/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/samurai_robot_plum/ui/square_0": [
+     212,
+     212
+    ],
+    "character/samurai_robot_plum/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.383345
+  },
+  "guildknight_leader_tavern": {
+   "id": "159997",
+   "group": "custom",
+   "closure_source": "seasonal7-20260916",
+   "sources": [
+    "seasonal7-20260916"
+   ],
+   "pixelart": {
+    "character/guildknight_leader_tavern/pixelart/sprite_sheet": [
+     125,
+     431
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/guildknight_leader_tavern/skill/skill": [
+     1178,
+     256
+    ]
+   },
+   "pf_sheets": {
+    "battle/effect/skill_unique/guildknight_leader_tavern/pf_blaze/pf_blaze": [
+     126,
+     406
+    ],
+    "battle/effect/skill_unique/guildknight_leader_tavern/pf_spin/pf_spin": [
+     285,
+     127
+    ],
+    "battle/effect/skill_unique/guildknight_leader_tavern/pf_support/pf_support": [
+     240,
+     77
+    ]
+   },
+   "ui_layer1": {
+    "character/guildknight_leader_tavern/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/guildknight_leader_tavern/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/guildknight_leader_tavern/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/guildknight_leader_tavern/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/guildknight_leader_tavern/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/guildknight_leader_tavern/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/guildknight_leader_tavern/ui/square_0": [
+     212,
+     212
+    ],
+    "character/guildknight_leader_tavern/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.467796
+  },
+  "wind_oracle_yukata": {
+   "id": "159996",
+   "group": "custom",
+   "closure_source": "seasonal7-20260916",
+   "sources": [
+    "seasonal7-20260916"
+   ],
+   "pixelart": {
+    "character/wind_oracle_yukata/pixelart/sprite_sheet": [
+     234,
+     370
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/wind_oracle_yukata/heal/heal": [
+     126,
+     339
+    ],
+    "battle/effect/skill_unique/wind_oracle_yukata/rain/rain": [
+     551,
+     128
+    ],
+    "battle/effect/skill_unique/wind_oracle_yukata/sword/sword": [
+     439,
+     146
+    ]
+   },
+   "pf_sheets": {
+    "battle/effect/powerflip/effect_powerflip_attack_special/effect_powerflip_attack_special": [
+     488,
+     63
+    ]
+   },
+   "ui_layer1": {
+    "character/wind_oracle_yukata/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/wind_oracle_yukata/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/wind_oracle_yukata/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/wind_oracle_yukata/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/wind_oracle_yukata/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/wind_oracle_yukata/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/wind_oracle_yukata/ui/square_0": [
+     212,
+     212
+    ],
+    "character/wind_oracle_yukata/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.300448
+  },
+  "blackflower_wiz_yukata": {
+   "id": "169992",
+   "group": "custom",
+   "closure_source": "seasonal7-20260916",
+   "sources": [
+    "seasonal7-20260916"
+   ],
+   "pixelart": {
+    "character/blackflower_wiz_yukata/pixelart/sprite_sheet": [
+     256,
+     248
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/blackflower_wiz_yukata_garden/blackflower_wiz_yukata_garden": [
+     125,
+     360
+    ],
+    "battle/effect/skill_unique/blackflower_wiz_yukata_hanabi/blackflower_wiz_yukata_hanabi": [
+     111,
+     237
+    ]
+   },
+   "pf_sheets": {},
+   "ui_layer1": {
+    "character/blackflower_wiz_yukata/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/blackflower_wiz_yukata/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/blackflower_wiz_yukata/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/blackflower_wiz_yukata/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/blackflower_wiz_yukata/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/blackflower_wiz_yukata/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/blackflower_wiz_yukata/ui/square_0": [
+     212,
+     212
+    ],
+    "character/blackflower_wiz_yukata/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.137481
+  },
+  "psychic_yuki_swim": {
+   "id": "129991",
+   "group": "custom",
+   "closure_source": "seasonal7-20260916",
+   "sources": [
+    "seasonal7-20260916"
+   ],
+   "pixelart": {
+    "character/psychic_yuki_swim/pixelart/sprite_sheet": [
+     247,
+     378
+    ]
+   },
+   "skill_sheets": {
+    "battle/effect/skill_unique/psychic_yuki_swim_barrier/psychic_yuki_swim_barrier": [
+     247,
+     504
+    ],
+    "battle/effect/skill_unique/psychic_yuki_swim_wave/psychic_yuki_swim_wave": [
+     578,
+     124
+    ]
+   },
+   "pf_sheets": {
+    "battle/effect/powerflip/effect_powerflip_attack_special/effect_powerflip_attack_special": [
+     488,
+     63
+    ]
+   },
+   "ui_layer1": {
+    "character/psychic_yuki_swim/ui/cutin_skill_chain_0": [
+     276,
+     319
+    ],
+    "character/psychic_yuki_swim/ui/cutin_skill_chain_1": [
+     276,
+     319
+    ],
+    "character/psychic_yuki_swim/ui/battle_member_status_0": [
+     58,
+     58
+    ],
+    "character/psychic_yuki_swim/ui/battle_member_status_1": [
+     58,
+     58
+    ],
+    "character/psychic_yuki_swim/ui/battle_control_board_0": [
+     104,
+     268
+    ],
+    "character/psychic_yuki_swim/ui/battle_control_board_1": [
+     104,
+     268
+    ],
+    "character/psychic_yuki_swim/ui/square_0": [
+     212,
+     212
+    ],
+    "character/psychic_yuki_swim/ui/square_1": [
+     212,
+     212
+    ]
+   },
+   "total_mpx": 0.325544
+  }
+ },
+ "golden_formations": [
+  {
+   "name": "audit-20260917-r0-heavy9-mains",
+   "note": "五重 round0 底座 + 09-09 探针口径下最重 9 个自制主位(0/3/6 号位算队长)",
+   "codes": [
+    "seris_dragon_king",
+    "lion_swordman_reborn",
+    "resistance_princess_ex",
+    "abyss_beast_playable",
+    "white_wolf_gerald",
+    "fox_oracle_autumn",
+    "unicorn_lancer_rose",
+    "land_dragon_wind_playable",
+    "black_wolf_knight_wt26"
+   ],
+   "expect": {
+    "fits": true,
+    "used": [
+     4094,
+     4087
+    ],
+    "sheets": 73,
+    "mpx": 14.479722,
+    "fill_pct": 86.31
+   },
+   "sheets": {
+    "battle/common/layer0": [
+     252,
+     2646
+    ],
+    "battle/field_object/world_beast/beast_ruins_expert/outhole/outhole": [
+     114,
+     132
+    ],
+    "battle/field_object/world_beast/beast_ruins_expert/yakumono/dash_panel/dash_panel": [
+     64,
+     231
+    ],
+    "battle/field_object/world_beast/beast_ruins_expert/rotation_panel/rotation_panel": [
+     25,
+     226
+    ],
+    "battle/field_object/world_sand/sand_coreroom_giant_expert/outhole/outhole": [
+     47,
+     19
+    ],
+    "battle/field_object/world_sand/sand_coreroom_giant_expert/yakumono/dash_panel/dash_panel": [
+     216,
+     64
+    ],
+    "battle/field_object/world_sand/sand_coreroom_giant_expert/rotation_panel/rotation_panel": [
+     225,
+     25
+    ],
+    "battle/boss/desert_bonds_big_boss/desert_bonds_big_boss": [
+     1012,
+     2044
+    ],
+    "battle/effect/enemy_unique/enemy_laser_notice/enemy_laser_notice": [
+     13,
+     322
+    ],
+    "battle/effect/enemy_unique/enemy_shot_bird_boss/enemy_shot_bird_boss": [
+     256,
+     973
+    ],
+    "battle/effect/enemy_unique/enemy_shot_middle_boss_dragon_smr20/enemy_shot_middle_boss_dragon_smr20": [
+     616,
+     64
+    ],
+    "battle/boss/discarded_dragon_thunder/discarded_dragon_thunder": [
+     1024,
+     2575
+    ],
+    "battle/effect/enemy_unique/enemy_shot_thunderbolt_small_yellow/enemy_shot_thunderbolt_small_yellow": [
+     1015,
+     64
+    ],
+    "battle/effect/enemy_unique/enemy_shot_whole_large_yellow/enemy_shot_whole_large_yellow": [
+     526,
+     255
+    ],
+    "battle/boss/hero_big_boss/hero_big_boss": [
+     506,
+     2667
+    ],
+    "battle/effect/enemy_unique/enemy_shot_whole_large_red/enemy_shot_whole_large_red": [
+     561,
+     128
+    ],
+    "character/seris_dragon_king/pixelart/sprite_sheet": [
+     995,
+     388
+    ],
+    "battle/effect/skill_unique/seris_dragon_king/seris_dragon_king": [
+     1980,
+     879
+    ],
+    "battle/effect/skill_unique/seris_human_royal_tide_ring/seris_human_royal_tide_ring": [
+     512,
+     512
+    ],
+    "battle/effect/powerflip/effect_powerflip_attack_beam/effect_powerflip_attack_beam": [
+     189,
+     63
+    ],
+    "battle/effect/powerflip/effect_powerflip_attack_special/effect_powerflip_attack_special": [
+     488,
+     63
+    ],
+    "battle/effect/powerflip/seris_dragon_special_powerflip/seris_dragon_special_powerflip": [
+     512,
+     512
+    ],
+    "battle/effect/powerflip/seris_human_shooting_powerflip/seris_human_shooting_powerflip": [
+     512,
+     512
+    ],
+    "character/lion_swordman_reborn/pixelart/sprite_sheet": [
+     127,
+     572
+    ],
+    "battle/effect/skill_unique/fire_dragon_zenith/fire_dragon_zenith": [
+     251,
+     1500
+    ],
+    "battle/effect/skill_unique/lion_swordman_playable/lion_swordman_playable": [
+     694,
+     247
+    ],
+    "battle/effect/skill_unique/lion_swordman_reborn/lion_swordman_reborn": [
+     441,
+     455
+    ],
+    "character/resistance_princess_ex/pixelart/sprite_sheet": [
+     126,
+     518
+    ],
+    "battle/effect/skill_unique/resistance_princess_ex/blade/blade": [
+     218,
+     288
+    ],
+    "battle/effect/skill_unique/resistance_princess_ex/orbit/orbit": [
+     650,
+     650
+    ],
+    "battle/effect/skill_unique/resistance_princess_ex/resistance_princess_ex": [
+     248,
+     334
+    ],
+    "battle/effect/skill_unique/resistance_princess_ex/ring/ring": [
+     484,
+     430
+    ],
+    "character/abyss_beast_playable/pixelart/sprite_sheet": [
+     512,
+     689
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p1_wave/p1_wave": [
+     502,
+     75
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p2_burst/p2_burst": [
+     107,
+     117
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p2_core/p2_core": [
+     105,
+     244
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p2_explosion/p2_explosion": [
+     245,
+     296
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p3_arc30/p3_arc30": [
+     160,
+     32
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p3_arc60/p3_arc60": [
+     238,
+     61
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p3_craw/p3_craw": [
+     66,
+     68
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p4_dark_matter_core/p4_dark_matter_core": [
+     49,
+     51
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p4_laser_ll/p4_laser_ll": [
+     123,
+     502
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p4_laser_lll/p4_laser_lll": [
+     125,
+     627
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p_heavy_cannon/p_heavy_cannon": [
+     104,
+     114
+    ],
+    "battle/effect/powerflip/abyss_beast_playable_pf/p1_laser/p1_laser": [
+     62,
+     93
+    ],
+    "battle/effect/powerflip/abyss_beast_playable_pf/p3_laser/p3_laser": [
+     386,
+     124
+    ],
+    "battle/effect/powerflip/abyss_beast_playable_pf/p4_dark_matter_core/p4_dark_matter_core": [
+     49,
+     51
+    ],
+    "battle/effect/powerflip/abyss_beast_playable_pf/p4_laser_lll/p4_laser_lll": [
+     125,
+     627
+    ],
+    "character/white_wolf_gerald/pixelart/sprite_sheet": [
+     252,
+     351
+    ],
+    "battle/effect/skill_unique/white_wolf_gerald/white_wolf_gerald": [
+     438,
+     568
+    ],
+    "battle/effect/skill_unique/white_wolf_gerald/time_aura/time_aura": [
+     117,
+     130
+    ],
+    "character/fox_oracle_autumn/pixelart/sprite_sheet": [
+     645,
+     317
+    ],
+    "battle/effect/skill_unique/fox_oracle_autumn/fox_oracle_autumn": [
+     64,
+     123
+    ],
+    "battle/effect/skill_unique/fox_oracle_autumn_api/fox_oracle_autumn_api": [
+     969,
+     193
+    ],
+    "character/unicorn_lancer_rose/pixelart/sprite_sheet": [
+     271,
+     109
+    ],
+    "battle/effect/skill_unique/unicorn_lancer_rose/lance/lance": [
+     124,
+     507
+    ],
+    "battle/effect/skill_unique/unicorn_lancer_rose/unicorn_lancer_rose": [
+     253,
+     124
+    ],
+    "battle/effect/skill_unique/unicorn_lancer_rose_api/unicorn_lancer_rose_api": [
+     969,
+     193
+    ],
+    "battle/effect/powerflip/effect_powerflip_attack_spin/effect_powerflip_attack_spin": [
+     285,
+     127
+    ],
+    "battle/effect/powerflip/effect_powerflip_attack_support/effect_powerflip_attack_support": [
+     240,
+     77
+    ],
+    "character/land_dragon_wind_playable/pixelart/sprite_sheet": [
+     116,
+     64
+    ],
+    "battle/effect/skill_unique/land_dragon_wind_playable/craw/craw": [
+     66,
+     68
+    ],
+    "battle/effect/skill_unique/land_dragon_wind_playable/laser/laser": [
+     123,
+     502
+    ],
+    "battle/effect/skill_unique/land_dragon_wind_playable/overall/overall": [
+     233,
+     363
+    ],
+    "battle/effect/skill_unique/land_dragon_wind_playable/slash/slash": [
+     128,
+     259
+    ],
+    "battle/effect/skill_unique/land_dragon_wind_playable/target_sight/target_sight": [
+     98,
+     122
+    ],
+    "battle/effect/skill_unique/land_dragon_wind_playable/wave_arc120_fast/wave_arc120_fast": [
+     111,
+     587
+    ],
+    "battle/effect/skill_unique/land_dragon_wind_playable/wave_arc120_middle/wave_arc120_middle": [
+     1,
+     1
+    ],
+    "battle/effect/skill_unique/land_dragon_wind_playable/wave_arc120_slow/wave_arc120_slow": [
+     1,
+     1
+    ],
+    "battle/effect/skill_unique/land_dragon_wind_playable/wave_arc30/wave_arc30": [
+     160,
+     32
+    ],
+    "character/black_wolf_knight_wt26/pixelart/sprite_sheet": [
+     256,
+     344
+    ],
+    "battle/effect/skill_unique/black_wolf_knight/black_wolf_knight": [
+     128,
+     685
+    ],
+    "battle/field_object/black_wolf_knight_wt26/fever_gauge/fever_gauge": [
+     140,
+     220
+    ]
+   }
+  },
+  {
+   "name": "audit-20260917-r0-heavy9-plus-seasonal7-unison",
+   "note": "上一组 + 本批 7 人全部上协力(只带技能特效)",
+   "codes": [
+    "seris_dragon_king",
+    "lion_swordman_reborn",
+    "resistance_princess_ex",
+    "abyss_beast_playable",
+    "white_wolf_gerald",
+    "fox_oracle_autumn",
+    "unicorn_lancer_rose",
+    "land_dragon_wind_playable",
+    "black_wolf_knight_wt26",
+    "super_robot_tailcoat",
+    "guildknight_leader_tavern",
+    "samurai_robot_plum",
+    "psychic_yuki_swim",
+    "wind_oracle_yukata",
+    "rec_android_seaside",
+    "blackflower_wiz_yukata"
+   ],
+   "expect": {
+    "fits": false,
+    "overflow_at": "battle/effect/skill_unique/unicorn_lancer_rose/unicorn_lancer_rose (253x124 -> 126x255 padded)",
+    "sheets": 92,
+    "mpx": 16.191179,
+    "fill_pct": 96.51
+   },
+   "sheets": {
+    "battle/common/layer0": [
+     252,
+     2646
+    ],
+    "battle/field_object/world_beast/beast_ruins_expert/outhole/outhole": [
+     114,
+     132
+    ],
+    "battle/field_object/world_beast/beast_ruins_expert/yakumono/dash_panel/dash_panel": [
+     64,
+     231
+    ],
+    "battle/field_object/world_beast/beast_ruins_expert/rotation_panel/rotation_panel": [
+     25,
+     226
+    ],
+    "battle/field_object/world_sand/sand_coreroom_giant_expert/outhole/outhole": [
+     47,
+     19
+    ],
+    "battle/field_object/world_sand/sand_coreroom_giant_expert/yakumono/dash_panel/dash_panel": [
+     216,
+     64
+    ],
+    "battle/field_object/world_sand/sand_coreroom_giant_expert/rotation_panel/rotation_panel": [
+     225,
+     25
+    ],
+    "battle/boss/desert_bonds_big_boss/desert_bonds_big_boss": [
+     1012,
+     2044
+    ],
+    "battle/effect/enemy_unique/enemy_laser_notice/enemy_laser_notice": [
+     13,
+     322
+    ],
+    "battle/effect/enemy_unique/enemy_shot_bird_boss/enemy_shot_bird_boss": [
+     256,
+     973
+    ],
+    "battle/effect/enemy_unique/enemy_shot_middle_boss_dragon_smr20/enemy_shot_middle_boss_dragon_smr20": [
+     616,
+     64
+    ],
+    "battle/boss/discarded_dragon_thunder/discarded_dragon_thunder": [
+     1024,
+     2575
+    ],
+    "battle/effect/enemy_unique/enemy_shot_thunderbolt_small_yellow/enemy_shot_thunderbolt_small_yellow": [
+     1015,
+     64
+    ],
+    "battle/effect/enemy_unique/enemy_shot_whole_large_yellow/enemy_shot_whole_large_yellow": [
+     526,
+     255
+    ],
+    "battle/boss/hero_big_boss/hero_big_boss": [
+     506,
+     2667
+    ],
+    "battle/effect/enemy_unique/enemy_shot_whole_large_red/enemy_shot_whole_large_red": [
+     561,
+     128
+    ],
+    "character/seris_dragon_king/pixelart/sprite_sheet": [
+     995,
+     388
+    ],
+    "battle/effect/skill_unique/seris_dragon_king/seris_dragon_king": [
+     1980,
+     879
+    ],
+    "battle/effect/skill_unique/seris_human_royal_tide_ring/seris_human_royal_tide_ring": [
+     512,
+     512
+    ],
+    "battle/effect/powerflip/effect_powerflip_attack_beam/effect_powerflip_attack_beam": [
+     189,
+     63
+    ],
+    "battle/effect/powerflip/effect_powerflip_attack_special/effect_powerflip_attack_special": [
+     488,
+     63
+    ],
+    "battle/effect/powerflip/seris_dragon_special_powerflip/seris_dragon_special_powerflip": [
+     512,
+     512
+    ],
+    "battle/effect/powerflip/seris_human_shooting_powerflip/seris_human_shooting_powerflip": [
+     512,
+     512
+    ],
+    "character/lion_swordman_reborn/pixelart/sprite_sheet": [
+     127,
+     572
+    ],
+    "battle/effect/skill_unique/fire_dragon_zenith/fire_dragon_zenith": [
+     251,
+     1500
+    ],
+    "battle/effect/skill_unique/lion_swordman_playable/lion_swordman_playable": [
+     694,
+     247
+    ],
+    "battle/effect/skill_unique/lion_swordman_reborn/lion_swordman_reborn": [
+     441,
+     455
+    ],
+    "character/resistance_princess_ex/pixelart/sprite_sheet": [
+     126,
+     518
+    ],
+    "battle/effect/skill_unique/resistance_princess_ex/blade/blade": [
+     218,
+     288
+    ],
+    "battle/effect/skill_unique/resistance_princess_ex/orbit/orbit": [
+     650,
+     650
+    ],
+    "battle/effect/skill_unique/resistance_princess_ex/resistance_princess_ex": [
+     248,
+     334
+    ],
+    "battle/effect/skill_unique/resistance_princess_ex/ring/ring": [
+     484,
+     430
+    ],
+    "character/abyss_beast_playable/pixelart/sprite_sheet": [
+     512,
+     689
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p1_wave/p1_wave": [
+     502,
+     75
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p2_burst/p2_burst": [
+     107,
+     117
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p2_core/p2_core": [
+     105,
+     244
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p2_explosion/p2_explosion": [
+     245,
+     296
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p3_arc30/p3_arc30": [
+     160,
+     32
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p3_arc60/p3_arc60": [
+     238,
+     61
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p3_craw/p3_craw": [
+     66,
+     68
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p4_dark_matter_core/p4_dark_matter_core": [
+     49,
+     51
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p4_laser_ll/p4_laser_ll": [
+     123,
+     502
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p4_laser_lll/p4_laser_lll": [
+     125,
+     627
+    ],
+    "battle/effect/skill_unique/abyss_beast_playable/p_heavy_cannon/p_heavy_cannon": [
+     104,
+     114
+    ],
+    "battle/effect/powerflip/abyss_beast_playable_pf/p1_laser/p1_laser": [
+     62,
+     93
+    ],
+    "battle/effect/powerflip/abyss_beast_playable_pf/p3_laser/p3_laser": [
+     386,
+     124
+    ],
+    "battle/effect/powerflip/abyss_beast_playable_pf/p4_dark_matter_core/p4_dark_matter_core": [
+     49,
+     51
+    ],
+    "battle/effect/powerflip/abyss_beast_playable_pf/p4_laser_lll/p4_laser_lll": [
+     125,
+     627
+    ],
+    "character/white_wolf_gerald/pixelart/sprite_sheet": [
+     252,
+     351
+    ],
+    "battle/effect/skill_unique/white_wolf_gerald/white_wolf_gerald": [
+     438,
+     568
+    ],
+    "battle/effect/skill_unique/white_wolf_gerald/time_aura/time_aura": [
+     117,
+     130
+    ],
+    "character/fox_oracle_autumn/pixelart/sprite_sheet": [
+     645,
+     317
+    ],
+    "battle/effect/skill_unique/fox_oracle_autumn/fox_oracle_autumn": [
+     64,
+     123
+    ],
+    "battle/effect/skill_unique/fox_oracle_autumn_api/fox_oracle_autumn_api": [
+     969,
+     193
+    ],
+    "character/unicorn_lancer_rose/pixelart/sprite_sheet": [
+     271,
+     109
+    ],
+    "battle/effect/skill_unique/unicorn_lancer_rose/lance/lance": [
+     124,
+     507
+    ],
+    "battle/effect/skill_unique/unicorn_lancer_rose/unicorn_lancer_rose": [
+     253,
+     124
+    ],
+    "battle/effect/skill_unique/unicorn_lancer_rose_api/unicorn_lancer_rose_api": [
+     969,
+     193
+    ],
+    "battle/effect/powerflip/effect_powerflip_attack_spin/effect_powerflip_attack_spin": [
+     285,
+     127
+    ],
+    "battle/effect/powerflip/effect_powerflip_attack_support/effect_powerflip_attack_support": [
+     240,
+     77
+    ],
+    "character/land_dragon_wind_playable/pixelart/sprite_sheet": [
+     116,
+     64
+    ],
+    "battle/effect/skill_unique/land_dragon_wind_playable/craw/craw": [
+     66,
+     68
+    ],
+    "battle/effect/skill_unique/land_dragon_wind_playable/laser/laser": [
+     123,
+     502
+    ],
+    "battle/effect/skill_unique/land_dragon_wind_playable/overall/overall": [
+     233,
+     363
+    ],
+    "battle/effect/skill_unique/land_dragon_wind_playable/slash/slash": [
+     128,
+     259
+    ],
+    "battle/effect/skill_unique/land_dragon_wind_playable/target_sight/target_sight": [
+     98,
+     122
+    ],
+    "battle/effect/skill_unique/land_dragon_wind_playable/wave_arc120_fast/wave_arc120_fast": [
+     111,
+     587
+    ],
+    "battle/effect/skill_unique/land_dragon_wind_playable/wave_arc120_middle/wave_arc120_middle": [
+     1,
+     1
+    ],
+    "battle/effect/skill_unique/land_dragon_wind_playable/wave_arc120_slow/wave_arc120_slow": [
+     1,
+     1
+    ],
+    "battle/effect/skill_unique/land_dragon_wind_playable/wave_arc30/wave_arc30": [
+     160,
+     32
+    ],
+    "character/black_wolf_knight_wt26/pixelart/sprite_sheet": [
+     256,
+     344
+    ],
+    "battle/effect/skill_unique/black_wolf_knight/black_wolf_knight": [
+     128,
+     685
+    ],
+    "battle/field_object/black_wolf_knight_wt26/fever_gauge/fever_gauge": [
+     140,
+     220
+    ],
+    "battle/effect/skill_general/decoration/charge/charge_yellow/charge_yellow": [
+     74,
+     147
+    ],
+    "battle/effect/skill_unique/super_robot_tailcoat/cannon/cannon": [
+     245,
+     964
+    ],
+    "battle/effect/skill_unique/super_robot_tailcoat/laser_l/laser_l": [
+     386,
+     124
+    ],
+    "battle/effect/skill_unique/super_robot_tailcoat/laser_ll/laser_ll": [
+     123,
+     502
+    ],
+    "battle/effect/skill_unique/super_robot_tailcoat/laser_lll/laser_lll": [
+     252,
+     255
+    ],
+    "battle/effect/skill_unique/super_robot_tailcoat/laser_s/laser_s": [
+     62,
+     93
+    ],
+    "battle/effect/skill_unique/guildknight_leader_tavern/skill/skill": [
+     1178,
+     256
+    ],
+    "battle/effect/skill_general/decoration/dummy_ball/dummy_ball_white/dummy_ball_white": [
+     82,
+     82
+    ],
+    "battle/effect/skill_unique/samurai_robot_plum_ittou/samurai_robot_plum_ittou": [
+     1130,
+     128
+    ],
+    "battle/effect/skill_unique/samurai_robot_plum_kanbai/samurai_robot_plum_kanbai": [
+     699,
+     198
+    ],
+    "battle/effect/skill_unique/psychic_yuki_swim_barrier/psychic_yuki_swim_barrier": [
+     247,
+     504
+    ],
+    "battle/effect/skill_unique/psychic_yuki_swim_wave/psychic_yuki_swim_wave": [
+     578,
+     124
+    ],
+    "battle/effect/skill_unique/wind_oracle_yukata/heal/heal": [
+     126,
+     339
+    ],
+    "battle/effect/skill_unique/wind_oracle_yukata/rain/rain": [
+     551,
+     128
+    ],
+    "battle/effect/skill_unique/wind_oracle_yukata/sword/sword": [
+     439,
+     146
+    ],
+    "battle/effect/skill_unique/rec_android_seaside/seaside_beam/seaside_beam": [
+     758,
+     255
+    ],
+    "battle/effect/skill_unique/rec_android_seaside/seaside_ray/seaside_ray": [
+     246,
+     124
+    ],
+    "battle/effect/skill_unique/blackflower_wiz_yukata_garden/blackflower_wiz_yukata_garden": [
+     125,
+     360
+    ],
+    "battle/effect/skill_unique/blackflower_wiz_yukata_hanabi/blackflower_wiz_yukata_hanabi": [
+     111,
+     237
+    ]
+   }
+  }
+ ],
+ "unresolved_sheets": []
+}

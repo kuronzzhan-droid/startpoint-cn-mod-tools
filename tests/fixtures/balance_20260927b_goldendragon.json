@@ -1,0 +1,1941 @@
+{
+ "source": "live store 1.4.1049 (stage_batch.make_read(live_only=True)), read-only capture 2026-09-27",
+ "inputs": {
+  "action": {
+   "golden_dragon_jr": [
+    [
+     "1",
+     [
+      "至天光辉",
+      "以古龙的威光赋予领域内全体敌人累积光·暗属性抗性降低效果 ＋ 消除1个强化效果 ／ 放出锐利的光芒，在一段时间内对领域内全体敌人连续造成多段光属性伤害 ／ 赋予我方全体与协力角色“光暗共鸣”效果（攻击力提升＋全属性抗性提升＋持续回复），其持续期间我方直接攻击伤害进一步提升",
+      "dynamic/skill/atk_field",
+      "true",
+      "580",
+      "580",
+      "1",
+      "battle/action/skill/action/rare5/golden_dragon_jr$golden_dragon_jr_1",
+      "1",
+      "2",
+      "2400",
+      "3000",
+      "0",
+      "0",
+      "0",
+      "0",
+      "(None)",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+     ]
+    ],
+    [
+     "2",
+     [
+      "至天光辉＋",
+      "以古龙的威光赋予领域内全体敌人累积光·暗属性抗性降低效果 ＋ 消除1个强化效果 ／ 放出锐利的光芒，在一段时间内对领域内全体敌人连续造成多段光属性伤害 ／ 赋予我方全体与协力角色“光暗共鸣”效果（攻击力提升＋全属性抗性提升＋持续回复），其持续期间我方直接攻击伤害进一步提升",
+      "dynamic/skill/atk_field",
+      "true",
+      "580",
+      "530",
+      "1",
+      "battle/action/skill/action/rare5/golden_dragon_jr$golden_dragon_jr_2",
+      "1",
+      "2",
+      "2400",
+      "3000",
+      "0",
+      "0",
+      "0",
+      "0",
+      "(None)",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+     ]
+    ]
+   ]
+  },
+  "dsl": {
+   "battle/action/skill/action/rare5/golden_dragon_jr$golden_dragon_jr_1": [
+    "ActionDsl",
+    1,
+    [
+     "None"
+    ],
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    0,
+    [
+     "Block",
+     [
+      [
+       "Command",
+       [
+        "StopBall",
+        -18,
+        120,
+        [
+         "RestoreToSpeedBeforeActionExecution"
+        ],
+        [
+         "AB"
+        ],
+        0
+       ]
+      ],
+      [
+       "Command",
+       [
+        "ShowEffect",
+        "飛び立つ演出",
+        [
+         "SpecifyEffectDirectly",
+         "battle/effect/skill_unique/golden_dragon_jr/golden_dragon_jr_fly"
+        ],
+        -18,
+        [
+         "ForesideOfCharacter"
+        ],
+        [
+         "PlayOnlyFirstSequence"
+        ],
+        [
+         "AB"
+        ],
+        0,
+        0,
+        0,
+        false,
+        false,
+        [
+         "None"
+        ]
+       ]
+      ],
+      [
+       "Command",
+       [
+        "FindAllSubjects",
+        6,
+        113,
+        [],
+        [],
+        [],
+        [],
+        [],
+        [
+         "DoNothing"
+        ],
+        [
+         "Block",
+         [
+          [
+           "Command",
+           [
+            "CreateCondition",
+            6,
+            [
+             [
+              "ACAttackPoint",
+              [
+               {
+                "min": 99999999,
+                "max": 99999999
+               }
+              ],
+              [
+               {
+                "min": 3.0,
+                "max": 3.0
+               }
+              ],
+              [
+               {
+                "min": 1,
+                "max": 1
+               }
+              ]
+             ]
+            ],
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            [
+             "GenericConditionHitEffect"
+            ],
+            true,
+            false,
+            "",
+            null,
+            false,
+            3,
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            false
+           ]
+          ],
+          [
+           "Command",
+           [
+            "CreateCondition",
+            6,
+            [
+             [
+              "ACToleranceOfElement",
+              [
+               {
+                "min": 99999999,
+                "max": 99999999
+               }
+              ],
+              254,
+              [
+               {
+                "min": 0.5,
+                "max": 0.5
+               }
+              ],
+              [
+               {
+                "min": 1,
+                "max": 1
+               }
+              ]
+             ]
+            ],
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            [
+             "GenericConditionHitEffect"
+            ],
+            true,
+            false,
+            "",
+            null,
+            false,
+            3,
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            false
+           ]
+          ],
+          [
+           "Command",
+           [
+            "CreateCondition",
+            6,
+            [
+             [
+              "ACRegeneration",
+              [
+               {
+                "min": 900,
+                "max": 900
+               }
+              ],
+              [
+               {
+                "min": 400,
+                "max": 400
+               }
+              ]
+             ]
+            ],
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            [
+             "GenericConditionHitEffect"
+            ],
+            true,
+            false,
+            "",
+            null,
+            false,
+            3,
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            false
+           ]
+          ],
+          [
+           "Command",
+           [
+            "CreateCondition",
+            6,
+            [
+             [
+              "ACUnique",
+              151159,
+              [
+               {
+                "min": 1,
+                "max": 1
+               }
+              ]
+             ]
+            ],
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            [
+             "GenericConditionHitEffect"
+            ],
+            true,
+            false,
+            "",
+            null,
+            false,
+            3,
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            false
+           ]
+          ]
+         ]
+        ]
+       ]
+      ],
+      [
+       "Command",
+       [
+        "FindAllSubjects",
+        7,
+        145,
+        [],
+        [],
+        [],
+        [],
+        [],
+        [
+         "DoNothing"
+        ],
+        [
+         "Block",
+         [
+          [
+           "Command",
+           [
+            "CreateCondition",
+            7,
+            [
+             [
+              "ACAttackPoint",
+              [
+               {
+                "min": 99999999,
+                "max": 99999999
+               }
+              ],
+              [
+               {
+                "min": 3.0,
+                "max": 3.0
+               }
+              ],
+              [
+               {
+                "min": 1,
+                "max": 1
+               }
+              ]
+             ]
+            ],
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            [
+             "GenericConditionHitEffect"
+            ],
+            true,
+            false,
+            "",
+            null,
+            false,
+            3,
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            false
+           ]
+          ],
+          [
+           "Command",
+           [
+            "CreateCondition",
+            7,
+            [
+             [
+              "ACToleranceOfElement",
+              [
+               {
+                "min": 99999999,
+                "max": 99999999
+               }
+              ],
+              254,
+              [
+               {
+                "min": 0.5,
+                "max": 0.5
+               }
+              ],
+              [
+               {
+                "min": 1,
+                "max": 1
+               }
+              ]
+             ]
+            ],
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            [
+             "GenericConditionHitEffect"
+            ],
+            true,
+            false,
+            "",
+            null,
+            false,
+            3,
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            false
+           ]
+          ],
+          [
+           "Command",
+           [
+            "CreateCondition",
+            7,
+            [
+             [
+              "ACRegeneration",
+              [
+               {
+                "min": 900,
+                "max": 900
+               }
+              ],
+              [
+               {
+                "min": 400,
+                "max": 400
+               }
+              ]
+             ]
+            ],
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            [
+             "GenericConditionHitEffect"
+            ],
+            true,
+            false,
+            "",
+            null,
+            false,
+            3,
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            false
+           ]
+          ],
+          [
+           "Command",
+           [
+            "CreateCondition",
+            7,
+            [
+             [
+              "ACUnique",
+              151159,
+              [
+               {
+                "min": 1,
+                "max": 1
+               }
+              ]
+             ]
+            ],
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            [
+             "GenericConditionHitEffect"
+            ],
+            true,
+            false,
+            "",
+            null,
+            false,
+            3,
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            false
+           ]
+          ]
+         ]
+        ]
+       ]
+      ],
+      [
+       "Event",
+       [
+        "Wait",
+        55,
+        "*",
+        [
+         "Block",
+         [
+          [
+           "Command",
+           [
+            "CreateHitArea",
+            "*",
+            -1,
+            [
+             "AB"
+            ],
+            0,
+            0,
+            0,
+            false,
+            false,
+            [
+             "Rectangle",
+             [
+              {
+               "min": 1500,
+               "max": 1500
+              }
+             ],
+             [
+              {
+               "min": 2000,
+               "max": 2000
+              }
+             ]
+            ],
+            [
+             "Center"
+            ],
+            [
+             "Center"
+            ],
+            [
+             "Single"
+            ],
+            [
+             "SpecifyHitAreaLifetimeDirectly",
+             10
+            ],
+            [
+             "CalculatedUsingMaxNumOfHits",
+             1
+            ],
+            [
+             "Some",
+             [
+              {
+               "min": 1,
+               "max": 1
+              }
+             ]
+            ],
+            false,
+            false,
+            [
+             "None"
+            ],
+            0,
+            [
+             "Block",
+             [
+              [
+               "Command",
+               [
+                "ShowEffect",
+                "デバフ付与時の演出",
+                [
+                 "SpecifyEffectDirectly",
+                 "battle/effect/skill_unique/golden_dragon_jr/golden_dragon_jr_shine"
+                ],
+                -1,
+                [
+                 "SuperForesideOfCharacter"
+                ],
+                [
+                 "PlayOnlyFirstSequence"
+                ],
+                [
+                 "AB"
+                ],
+                0,
+                0,
+                0,
+                false,
+                false,
+                [
+                 "None"
+                ]
+               ]
+              ]
+             ]
+            ],
+            1,
+            2,
+            [
+             "Block",
+             [
+              [
+               "Command",
+               [
+                "CreateCondition",
+                2,
+                [
+                 [
+                  "ACToleranceOfElement",
+                  [
+                   {
+                    "min": 99999999,
+                    "max": 99999999
+                   }
+                  ],
+                  5,
+                  [
+                   {
+                    "min": -0.075,
+                    "max": -0.075
+                   }
+                  ],
+                  [
+                   {
+                    "min": 99,
+                    "max": 99
+                   }
+                  ]
+                 ]
+                ],
+                [
+                 {
+                  "min": 1,
+                  "max": 1
+                 }
+                ],
+                [
+                 "GenericConditionHitEffect"
+                ],
+                true,
+                false,
+                "",
+                null,
+                false,
+                3,
+                [
+                 {
+                  "min": 2,
+                  "max": 2
+                 }
+                ],
+                false
+               ]
+              ],
+              [
+               "Command",
+               [
+                "CreateCondition",
+                2,
+                [
+                 [
+                  "ACToleranceOfElement",
+                  [
+                   {
+                    "min": 99999999,
+                    "max": 99999999
+                   }
+                  ],
+                  6,
+                  [
+                   {
+                    "min": -0.075,
+                    "max": -0.075
+                   }
+                  ],
+                  [
+                   {
+                    "min": 99,
+                    "max": 99
+                   }
+                  ]
+                 ]
+                ],
+                [
+                 {
+                  "min": 1,
+                  "max": 1
+                 }
+                ],
+                [
+                 "GenericConditionHitEffect"
+                ],
+                true,
+                false,
+                "",
+                null,
+                false,
+                3,
+                [
+                 {
+                  "min": 2,
+                  "max": 2
+                 }
+                ],
+                false
+               ]
+              ],
+              [
+               "Command",
+               [
+                "DeleteCondition",
+                2,
+                [
+                 "DCAll",
+                 2
+                ],
+                1,
+                0,
+                "",
+                [
+                 "Default"
+                ]
+               ]
+              ]
+             ]
+            ],
+            0,
+            0,
+            [
+             "None"
+            ]
+           ]
+          ]
+         ]
+        ]
+       ]
+      ],
+      [
+       "Event",
+       [
+        "Wait",
+        65,
+        "*",
+        [
+         "Block",
+         [
+          [
+           "Command",
+           [
+            "ShowEffect",
+            "全体演出",
+            [
+             "SpecifyEffectDirectly",
+             "battle/effect/skill_unique/golden_dragon_jr/golden_dragon_jr_laser"
+            ],
+            -1,
+            [
+             "SuperForesideOfCharacter"
+            ],
+            [
+             "PlayOnlyFirstSequence"
+            ],
+            [
+             "AB"
+            ],
+            0,
+            0,
+            0,
+            false,
+            false,
+            [
+             "None"
+            ]
+           ]
+          ]
+         ]
+        ]
+       ]
+      ],
+      [
+       "Event",
+       [
+        "Wait",
+        100,
+        "*",
+        [
+         "Block",
+         [
+          [
+           "Command",
+           [
+            "CreateHitArea",
+            "*",
+            -1,
+            [
+             "AB"
+            ],
+            0,
+            0,
+            0,
+            false,
+            false,
+            [
+             "Rectangle",
+             [
+              {
+               "min": 1500,
+               "max": 1500
+              }
+             ],
+             [
+              {
+               "min": 2000,
+               "max": 2000
+              }
+             ]
+            ],
+            [
+             "Center"
+            ],
+            [
+             "Center"
+            ],
+            [
+             "Single"
+            ],
+            [
+             "SpecifyHitAreaLifetimeDirectly",
+             120
+            ],
+            [
+             "CalculatedUsingMaxNumOfHits",
+             8
+            ],
+            [
+             "None"
+            ],
+            false,
+            true,
+            [
+             "None"
+            ],
+            3,
+            [
+             "Block",
+             [
+              [
+               "Command",
+               [
+                "ShakeCamera",
+                3
+               ]
+              ]
+             ]
+            ],
+            4,
+            5,
+            [
+             "Block",
+             [
+              [
+               "Command",
+               [
+                "CreateNormalAttack",
+                5,
+                255,
+                [],
+                [],
+                100,
+                [
+                 {
+                  "min": 15,
+                  "max": 15
+                 }
+                ],
+                [
+                 {
+                  "min": 0,
+                  "max": 0
+                 }
+                ],
+                false,
+                false,
+                false,
+                false,
+                false,
+                [
+                 {
+                  "min": 15,
+                  "max": 15
+                 }
+                ],
+                [
+                 {
+                  "min": 15,
+                  "max": 15
+                 }
+                ],
+                [
+                 "Coarse"
+                ],
+                true
+               ]
+              ]
+             ]
+            ],
+            0,
+            0,
+            [
+             "None"
+            ]
+           ]
+          ]
+         ]
+        ]
+       ]
+      ]
+     ]
+    ]
+   ],
+   "battle/action/skill/action/rare5/golden_dragon_jr$golden_dragon_jr_2": [
+    "ActionDsl",
+    1,
+    [
+     "None"
+    ],
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    0,
+    [
+     "Block",
+     [
+      [
+       "Command",
+       [
+        "StopBall",
+        -18,
+        120,
+        [
+         "RestoreToSpeedBeforeActionExecution"
+        ],
+        [
+         "AB"
+        ],
+        0
+       ]
+      ],
+      [
+       "Command",
+       [
+        "ShowEffect",
+        "飛び立つ演出",
+        [
+         "SpecifyEffectDirectly",
+         "battle/effect/skill_unique/golden_dragon_jr/golden_dragon_jr_fly"
+        ],
+        -18,
+        [
+         "ForesideOfCharacter"
+        ],
+        [
+         "PlayOnlyFirstSequence"
+        ],
+        [
+         "AB"
+        ],
+        0,
+        0,
+        0,
+        false,
+        false,
+        [
+         "None"
+        ]
+       ]
+      ],
+      [
+       "Command",
+       [
+        "FindAllSubjects",
+        6,
+        113,
+        [],
+        [],
+        [],
+        [],
+        [],
+        [
+         "DoNothing"
+        ],
+        [
+         "Block",
+         [
+          [
+           "Command",
+           [
+            "CreateCondition",
+            6,
+            [
+             [
+              "ACAttackPoint",
+              [
+               {
+                "min": 99999999,
+                "max": 99999999
+               }
+              ],
+              [
+               {
+                "min": 3.0,
+                "max": 3.0
+               }
+              ],
+              [
+               {
+                "min": 1,
+                "max": 1
+               }
+              ]
+             ]
+            ],
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            [
+             "GenericConditionHitEffect"
+            ],
+            true,
+            false,
+            "",
+            null,
+            false,
+            3,
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            false
+           ]
+          ],
+          [
+           "Command",
+           [
+            "CreateCondition",
+            6,
+            [
+             [
+              "ACToleranceOfElement",
+              [
+               {
+                "min": 99999999,
+                "max": 99999999
+               }
+              ],
+              254,
+              [
+               {
+                "min": 0.5,
+                "max": 0.5
+               }
+              ],
+              [
+               {
+                "min": 1,
+                "max": 1
+               }
+              ]
+             ]
+            ],
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            [
+             "GenericConditionHitEffect"
+            ],
+            true,
+            false,
+            "",
+            null,
+            false,
+            3,
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            false
+           ]
+          ],
+          [
+           "Command",
+           [
+            "CreateCondition",
+            6,
+            [
+             [
+              "ACRegeneration",
+              [
+               {
+                "min": 900,
+                "max": 900
+               }
+              ],
+              [
+               {
+                "min": 400,
+                "max": 400
+               }
+              ]
+             ]
+            ],
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            [
+             "GenericConditionHitEffect"
+            ],
+            true,
+            false,
+            "",
+            null,
+            false,
+            3,
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            false
+           ]
+          ],
+          [
+           "Command",
+           [
+            "CreateCondition",
+            6,
+            [
+             [
+              "ACUnique",
+              151159,
+              [
+               {
+                "min": 1,
+                "max": 1
+               }
+              ]
+             ]
+            ],
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            [
+             "GenericConditionHitEffect"
+            ],
+            true,
+            false,
+            "",
+            null,
+            false,
+            3,
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            false
+           ]
+          ]
+         ]
+        ]
+       ]
+      ],
+      [
+       "Command",
+       [
+        "FindAllSubjects",
+        7,
+        145,
+        [],
+        [],
+        [],
+        [],
+        [],
+        [
+         "DoNothing"
+        ],
+        [
+         "Block",
+         [
+          [
+           "Command",
+           [
+            "CreateCondition",
+            7,
+            [
+             [
+              "ACAttackPoint",
+              [
+               {
+                "min": 99999999,
+                "max": 99999999
+               }
+              ],
+              [
+               {
+                "min": 3.0,
+                "max": 3.0
+               }
+              ],
+              [
+               {
+                "min": 1,
+                "max": 1
+               }
+              ]
+             ]
+            ],
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            [
+             "GenericConditionHitEffect"
+            ],
+            true,
+            false,
+            "",
+            null,
+            false,
+            3,
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            false
+           ]
+          ],
+          [
+           "Command",
+           [
+            "CreateCondition",
+            7,
+            [
+             [
+              "ACToleranceOfElement",
+              [
+               {
+                "min": 99999999,
+                "max": 99999999
+               }
+              ],
+              254,
+              [
+               {
+                "min": 0.5,
+                "max": 0.5
+               }
+              ],
+              [
+               {
+                "min": 1,
+                "max": 1
+               }
+              ]
+             ]
+            ],
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            [
+             "GenericConditionHitEffect"
+            ],
+            true,
+            false,
+            "",
+            null,
+            false,
+            3,
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            false
+           ]
+          ],
+          [
+           "Command",
+           [
+            "CreateCondition",
+            7,
+            [
+             [
+              "ACRegeneration",
+              [
+               {
+                "min": 900,
+                "max": 900
+               }
+              ],
+              [
+               {
+                "min": 400,
+                "max": 400
+               }
+              ]
+             ]
+            ],
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            [
+             "GenericConditionHitEffect"
+            ],
+            true,
+            false,
+            "",
+            null,
+            false,
+            3,
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            false
+           ]
+          ],
+          [
+           "Command",
+           [
+            "CreateCondition",
+            7,
+            [
+             [
+              "ACUnique",
+              151159,
+              [
+               {
+                "min": 1,
+                "max": 1
+               }
+              ]
+             ]
+            ],
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            [
+             "GenericConditionHitEffect"
+            ],
+            true,
+            false,
+            "",
+            null,
+            false,
+            3,
+            [
+             {
+              "min": 1,
+              "max": 1
+             }
+            ],
+            false
+           ]
+          ]
+         ]
+        ]
+       ]
+      ],
+      [
+       "Event",
+       [
+        "Wait",
+        55,
+        "*",
+        [
+         "Block",
+         [
+          [
+           "Command",
+           [
+            "CreateHitArea",
+            "*",
+            -1,
+            [
+             "AB"
+            ],
+            0,
+            0,
+            0,
+            false,
+            false,
+            [
+             "Rectangle",
+             [
+              {
+               "min": 1500,
+               "max": 1500
+              }
+             ],
+             [
+              {
+               "min": 2000,
+               "max": 2000
+              }
+             ]
+            ],
+            [
+             "Center"
+            ],
+            [
+             "Center"
+            ],
+            [
+             "Single"
+            ],
+            [
+             "SpecifyHitAreaLifetimeDirectly",
+             10
+            ],
+            [
+             "CalculatedUsingMaxNumOfHits",
+             1
+            ],
+            [
+             "Some",
+             [
+              {
+               "min": 1,
+               "max": 1
+              }
+             ]
+            ],
+            false,
+            false,
+            [
+             "None"
+            ],
+            0,
+            [
+             "Block",
+             [
+              [
+               "Command",
+               [
+                "ShowEffect",
+                "デバフ付与時の演出",
+                [
+                 "SpecifyEffectDirectly",
+                 "battle/effect/skill_unique/golden_dragon_jr/golden_dragon_jr_shine"
+                ],
+                -1,
+                [
+                 "SuperForesideOfCharacter"
+                ],
+                [
+                 "PlayOnlyFirstSequence"
+                ],
+                [
+                 "AB"
+                ],
+                0,
+                0,
+                0,
+                false,
+                false,
+                [
+                 "None"
+                ]
+               ]
+              ]
+             ]
+            ],
+            1,
+            2,
+            [
+             "Block",
+             [
+              [
+               "Command",
+               [
+                "CreateCondition",
+                2,
+                [
+                 [
+                  "ACToleranceOfElement",
+                  [
+                   {
+                    "min": 99999999,
+                    "max": 99999999
+                   }
+                  ],
+                  5,
+                  [
+                   {
+                    "min": -0.1,
+                    "max": -0.125
+                   }
+                  ],
+                  [
+                   {
+                    "min": 99,
+                    "max": 99
+                   }
+                  ]
+                 ]
+                ],
+                [
+                 {
+                  "min": 1,
+                  "max": 1
+                 }
+                ],
+                [
+                 "GenericConditionHitEffect"
+                ],
+                true,
+                false,
+                "",
+                null,
+                false,
+                3,
+                [
+                 {
+                  "min": 2,
+                  "max": 2
+                 }
+                ],
+                false
+               ]
+              ],
+              [
+               "Command",
+               [
+                "CreateCondition",
+                2,
+                [
+                 [
+                  "ACToleranceOfElement",
+                  [
+                   {
+                    "min": 99999999,
+                    "max": 99999999
+                   }
+                  ],
+                  6,
+                  [
+                   {
+                    "min": -0.1,
+                    "max": -0.125
+                   }
+                  ],
+                  [
+                   {
+                    "min": 99,
+                    "max": 99
+                   }
+                  ]
+                 ]
+                ],
+                [
+                 {
+                  "min": 1,
+                  "max": 1
+                 }
+                ],
+                [
+                 "GenericConditionHitEffect"
+                ],
+                true,
+                false,
+                "",
+                null,
+                false,
+                3,
+                [
+                 {
+                  "min": 2,
+                  "max": 2
+                 }
+                ],
+                false
+               ]
+              ],
+              [
+               "Command",
+               [
+                "DeleteCondition",
+                2,
+                [
+                 "DCAll",
+                 2
+                ],
+                1,
+                0,
+                "",
+                [
+                 "Default"
+                ]
+               ]
+              ]
+             ]
+            ],
+            0,
+            0,
+            [
+             "None"
+            ]
+           ]
+          ]
+         ]
+        ]
+       ]
+      ],
+      [
+       "Event",
+       [
+        "Wait",
+        65,
+        "*",
+        [
+         "Block",
+         [
+          [
+           "Command",
+           [
+            "ShowEffect",
+            "全体演出",
+            [
+             "SpecifyEffectDirectly",
+             "battle/effect/skill_unique/golden_dragon_jr/golden_dragon_jr_laser"
+            ],
+            -1,
+            [
+             "SuperForesideOfCharacter"
+            ],
+            [
+             "PlayOnlyFirstSequence"
+            ],
+            [
+             "AB"
+            ],
+            0,
+            0,
+            0,
+            false,
+            false,
+            [
+             "None"
+            ]
+           ]
+          ]
+         ]
+        ]
+       ]
+      ],
+      [
+       "Event",
+       [
+        "Wait",
+        100,
+        "*",
+        [
+         "Block",
+         [
+          [
+           "Command",
+           [
+            "CreateHitArea",
+            "*",
+            -1,
+            [
+             "AB"
+            ],
+            0,
+            0,
+            0,
+            false,
+            false,
+            [
+             "Rectangle",
+             [
+              {
+               "min": 1500,
+               "max": 1500
+              }
+             ],
+             [
+              {
+               "min": 2000,
+               "max": 2000
+              }
+             ]
+            ],
+            [
+             "Center"
+            ],
+            [
+             "Center"
+            ],
+            [
+             "Single"
+            ],
+            [
+             "SpecifyHitAreaLifetimeDirectly",
+             120
+            ],
+            [
+             "CalculatedUsingMaxNumOfHits",
+             8
+            ],
+            [
+             "None"
+            ],
+            false,
+            true,
+            [
+             "None"
+            ],
+            3,
+            [
+             "Block",
+             [
+              [
+               "Command",
+               [
+                "ShakeCamera",
+                3
+               ]
+              ]
+             ]
+            ],
+            4,
+            5,
+            [
+             "Block",
+             [
+              [
+               "Command",
+               [
+                "CreateNormalAttack",
+                5,
+                255,
+                [],
+                [],
+                100,
+                [
+                 {
+                  "min": 15,
+                  "max": 15
+                 }
+                ],
+                [
+                 {
+                  "min": 0,
+                  "max": 0
+                 }
+                ],
+                false,
+                false,
+                false,
+                false,
+                false,
+                [
+                 {
+                  "min": 15,
+                  "max": 15
+                 }
+                ],
+                [
+                 {
+                  "min": 15,
+                  "max": 15
+                 }
+                ],
+                [
+                 "Coarse"
+                ],
+                true
+               ]
+              ]
+             ]
+            ],
+            0,
+            0,
+            [
+             "None"
+            ]
+           ]
+          ]
+         ]
+        ]
+       ]
+      ]
+     ]
+    ]
+   ]
+  }
+ },
+ "dsl_raw_sha256": {
+  "battle/action/skill/action/rare5/golden_dragon_jr$golden_dragon_jr_1": "8f6f81da87dcbc0cd83cc55735507318463f0cc24a0c13427e9f33ee3a6998de",
+  "battle/action/skill/action/rare5/golden_dragon_jr$golden_dragon_jr_2": "81c90fa6ad40f2c07e15dd5e1a7984fadcf8a4d50e382e66d63601e387c5f626"
+ },
+ "context": {
+  "text": {
+   "151159": [
+    [
+     "拉夫马诺",
+     "LAFUMANUO",
+     "伟大的圣龙。经历的时光在六头古龙之中最为漫长。为了深爱的小小公主能拥有未来，他留下力量，进入了转世轮回——而现在，他却成了六龙中最倔强好胜的那个。",
+     "延续爱之龙",
+     "至天光辉",
+     "以古龙的威光赋予领域内全体敌人累积光属性抗性降低效果 ＋ 消除1个强化效果 ／ 放出锐利的光芒，对领域内全体敌人造成光属性伤害",
+     "至天光辉＋",
+     "以古龙的威光赋予领域内全体敌人累积光属性抗性降低效果 ＋ 消除1个强化效果 ／ 放出锐利的光芒，对领域内全体敌人造成光属性伤害",
+     "至天光辉＋＋",
+     "以古龙的威光赋予领域内全体敌人累积光属性抗性降低效果 ＋ 消除1个强化效果 ／ 放出锐利的光芒，对领域内全体敌人造成光属性伤害",
+     "我乃圣龙王！",
+     "石上静香"
+    ]
+   ]
+  },
+  "server_text": {
+   "151159": [
+    [
+     "拉夫马诺",
+     "LAFUMANUO",
+     "伟大的圣龙。经历的时光在六头古龙之中最为漫长。为了深爱的小小公主能拥有未来，他留下力量，进入了转世轮回——而现在，他却成了六龙中最倔强好胜的那个。",
+     "延续爱之龙",
+     "至天光辉",
+     "以古龙的威光赋予领域内全体敌人累积光属性抗性降低效果 ＋ 消除1个强化效果 ／ 放出锐利的光芒，对领域内全体敌人造成光属性伤害",
+     "至天光辉＋",
+     "以古龙的威光赋予领域内全体敌人累积光属性抗性降低效果 ＋ 消除1个强化效果 ／ 放出锐利的光芒，对领域内全体敌人造成光属性伤害",
+     "至天光辉＋＋",
+     "以古龙的威光赋予领域内全体敌人累积光属性抗性降低效果 ＋ 消除1个强化效果 ／ 放出锐利的光芒，对领域内全体敌人造成光属性伤害",
+     "我乃圣龙王！",
+     "石上静香"
+    ]
+   ]
+  }
+ }
+}

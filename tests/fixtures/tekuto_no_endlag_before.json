@@ -1,0 +1,56 @@
+{
+ "battle/action/skill/action/rare5/super_robot_tailcoat$super_robot_tailcoat_1.action.dsl.amf3.deflate": {
+  "program": "battle/action/skill/action/rare5/super_robot_tailcoat$super_robot_tailcoat_1",
+  "root_index": 3,
+  "statement": [
+   "Command",
+   [
+    "StopBall",
+    -18,
+    10,
+    [
+     "RestoreToSpeedBeforeActionExecution"
+    ],
+    [
+     "EF"
+    ],
+    0
+   ]
+  ],
+  "movement_priority": 1,
+  "root_statements": [
+   9,
+   8
+  ],
+  "live_file_sha256": "7d087d601b36f1367a17b10bcb560dec8f22cf1a079f1d29d80a6853602a1302",
+  "before_sha256": "7d087d601b36f1367a17b10bcb560dec8f22cf1a079f1d29d80a6853602a1302",
+  "after_sha256": "2c1a0e7fe7a8bc2aa4cf874845108255ba8164db9fe4a81dd9285f377f9be726"
+ },
+ "battle/action/skill/action/rare5/super_robot_tailcoat$super_robot_tailcoat_2.action.dsl.amf3.deflate": {
+  "program": "battle/action/skill/action/rare5/super_robot_tailcoat$super_robot_tailcoat_2",
+  "root_index": 3,
+  "statement": [
+   "Command",
+   [
+    "StopBall",
+    -18,
+    10,
+    [
+     "RestoreToSpeedBeforeActionExecution"
+    ],
+    [
+     "EF"
+    ],
+    0
+   ]
+  ],
+  "movement_priority": 1,
+  "root_statements": [
+   9,
+   8
+  ],
+  "live_file_sha256": "825e7f087c892f4335a01d7b51bdde6ec8d52adeab1495c3daeaab32ebcd69a9",
+  "before_sha256": "825e7f087c892f4335a01d7b51bdde6ec8d52adeab1495c3daeaab32ebcd69a9",
+  "after_sha256": "dd9efee30f8afa324f3d6a0b438c762f6a9045d281d5b4bb3e305f0aec8d20f5"
+ }
+}

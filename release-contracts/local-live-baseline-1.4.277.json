@@ -1,0 +1,730 @@
+{
+  "schema": "wf-release-inventory/v1",
+  "contract_id": "local-live-baseline-1-4-277",
+  "members": [
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/action/skill/action/rare4/darkness_dragon$darkness_dragon_1.action.dsl.amf3.deflate",
+      "size": 605,
+      "sha256": "7424e1f99b4d02e10179994336b9831fffc2920cf1ceaa0e265743fa51d6082d"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/action/skill/action/rare4/darkness_dragon$darkness_dragon_2.action.dsl.amf3.deflate",
+      "size": 605,
+      "sha256": "eaaf0b1770e4cf4e9127d9739aec7d0dc7965a2ffb94dd717f9c4306156ac3a5"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/action/skill/action/rare5/golden_dragon_jr$golden_dragon_jr_1.action.dsl.amf3.deflate",
+      "size": 767,
+      "sha256": "92d6f2cd03fdf6e6938918fcad2a813e2be011ba4d4cb21c01b76951b5e87bad"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/action/skill/action/rare5/golden_dragon_jr$golden_dragon_jr_2.action.dsl.amf3.deflate",
+      "size": 774,
+      "sha256": "00577891e00f4f26c4e6e6f166e9ebcd7d5065af0b7e0c4ca5344b6a9ba09a05"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/dark_01.png",
+      "size": 600,
+      "sha256": "c92c7175d059e2f63b78022b2c443544b715199a92c6632e2631211ed4580669"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/dark_02.png",
+      "size": 570,
+      "sha256": "dae307df2592fe472873679bdf1b6eff70167c86a55de1032fcd8ef42965cc11"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/fire_01.png",
+      "size": 708,
+      "sha256": "139a7e9e2005e88d6d110c36fe6c382bd4132e4fd9b3ef5354176be8a0b697f9"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/fire_02.png",
+      "size": 607,
+      "sha256": "d5ca407aa04d42d9eb0891f3d023299a5516b4b3b9d8dbcf5426b73ce06e51e1"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/light_01.png",
+      "size": 420,
+      "sha256": "1b9274080c8230f8ccbb659f678b9fad8cf0a71c3984b69d899d6bfa9858fa01"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/light_02.png",
+      "size": 702,
+      "sha256": "652f2053faa965ab1005cdd93c4baf3f622e04051d89525c5171acbef3ee5c43"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/thunder_01.png",
+      "size": 903,
+      "sha256": "992752cc02985d338221384876d6fc9205c1a0a491db247e1811e274ef4384ef"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/thunder_02.png",
+      "size": 743,
+      "sha256": "ff693d70355278cf52fd856659a364846ad71aed60d9c3f5d6232178074305df"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/universal_01.png",
+      "size": 654,
+      "sha256": "9ffc873d88ab867a247ea5011d1a1b9cd771bf8950e63193a0a4cdd4088f0700"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/universal_02.png",
+      "size": 1207,
+      "sha256": "6e427f5f420a4cda6134e0f74296e1e59d7d9397eb8bd7ed29334da474a58dc6"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/universal_03.png",
+      "size": 999,
+      "sha256": "83280a099f6e46fd338442155b68f1c1eb8c284e0a8f625e935d1457e413e8d8"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/water_01.png",
+      "size": 539,
+      "sha256": "1681378c93f6eca67c7e099cee4353600505bdbbc00264f8fb6dc487bf0583c1"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/water_02.png",
+      "size": 922,
+      "sha256": "03556f48fe9cb69cf37f0e99c662aedfe6e6de5833f8a2cb579bca5e12bc4aa1"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/wind_01.png",
+      "size": 665,
+      "sha256": "7c9d987a29ec93861062d4d518785c0a1aab9e4e8fe17875a743a95e8b77499c"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/wind_02.png",
+      "size": 567,
+      "sha256": "7e2df0e4b36c42b2a47787735c901fe035082efb01632989da66c45ae1f8096a"
+    },
+    {
+      "owner": "light_dark_dragons",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/ability/ability.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "1511591",
+          "1511592",
+          "1511593",
+          "1511594",
+          "1511595",
+          "1511596",
+          "2610891",
+          "2610892",
+          "2610893",
+          "2610894",
+          "2610895",
+          "2610896"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "f36f614ec050cd6e238f473317052c2bb8030f5a5e4d11beb0134e45379ffb09",
+      "source": {
+        "size": 316796,
+        "sha256": "ae0e4576acf2747ebb227c0687aa43fbaf49a4c186b99e24e917f32287ff7e43"
+      }
+    },
+    {
+      "owner": "abyss_weapons",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/ability/ability_soul.orderedmap",
+      "claim": {
+        "codec_id": "raw_outer",
+        "outer_keys": [
+          "8000101",
+          "8000102",
+          "8000103",
+          "8000104",
+          "8000105",
+          "8000106",
+          "8000107",
+          "8000108",
+          "8000109",
+          "8000110",
+          "8000111",
+          "8000112",
+          "8000113",
+          "8000114",
+          "8000115"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "555a315f0dd3974464209eafa935d3efd39c0d0dc0d728e85147de92e4cf2b4f",
+      "source": {
+        "size": 42465,
+        "sha256": "3f2aaf1297b4e2045013acb56d61c5c3cefff18c82a1d175ed35c69bee266edd"
+      }
+    },
+    {
+      "owner": "light_dark_dragons",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/ability/leader_ability.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "151159",
+          "261089"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "9dcaae3a60644d7cd89820ee418b9435f6863d1d7fe99053da87d64c1f5298ef",
+      "source": {
+        "size": 53883,
+        "sha256": "19f828cb313007bf10fb8f44119c76726272fb58ec7cbd545dadd0fe41042779"
+      }
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "master/battle/boss/boss_level.orderedmap",
+      "size": 43243,
+      "sha256": "d256e1e2181f21ccafee9ded2e7c95ebed1ddf53523f34161d03f77b3363a203"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "master/battle/boss/general_boss.orderedmap",
+      "size": 345850,
+      "sha256": "92ee5026fd10b935d39068e750ebf95acb4a104f105d9fe82f7e11b2c87c8375"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "master/battle/boss/general_boss_variable.orderedmap",
+      "size": 88321,
+      "sha256": "474b990eb164884d724999fe41fa8d957e9ae8d7c084734469fbb408051e6a32"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "master/battle/field_data.orderedmap",
+      "size": 124987,
+      "sha256": "b869f774464a09595eb9d0ef83cc2ad61d93da4908496cd218fdad01b6d33a29"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "master/battle/zone.orderedmap",
+      "size": 248391,
+      "sha256": "d17892260c87e4636de465482e330c42b23c216f6032faa67bc120e99e1a6bae"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "master/character/character.orderedmap",
+      "size": 75959,
+      "sha256": "e3529dc7597132b59a9d87de09f61ddd9de5d42a541b0b0f264892d4231ab366"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "master/character/character_awake_status.orderedmap",
+      "size": 737,
+      "sha256": "beb1acd385008f4d015aeec61a071d21830f186f72aae0f77b9d2bf5b51f5167"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "master/character/character_gacha_sound.orderedmap",
+      "size": 100897,
+      "sha256": "e5d8da2175f6b002440751789af847e8160e3b11e117577e479784b50a4cb1cf"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "master/character/character_speech.orderedmap",
+      "size": 385670,
+      "sha256": "149efcee523984da760a00f29127daf03d631d8f86f531c10eaaa135d1aec494"
+    },
+    {
+      "owner": "light_dark_dragons",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/character/character_status.orderedmap",
+      "claim": {
+        "codec_id": "raw_outer",
+        "outer_keys": [
+          "151159",
+          "261089"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "600b8446e76e9929c2ab5c95fb789896621bce8a0f7e4bf5c7b1aaabf5fcc688",
+      "source": {
+        "size": 58196,
+        "sha256": "3917dd71de4580d0c36b0cfd6fd146a7b70452345fea6e7f692188bbbf2f4457"
+      }
+    },
+    {
+      "owner": "light_dark_dragons",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/character/character_text.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "151159",
+          "261089"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "01181db1aab525b45ee2d5cc741c092f51b85b178b156e3569df21108f9ec091",
+      "source": {
+        "size": 185042,
+        "sha256": "97e7c2eebe98f1d327a4d21c4a7212a1aa4996c20ab6458eb968d94931a6a0f4"
+      }
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "master/character/full_shot_image_attribute.orderedmap",
+      "size": 41235,
+      "sha256": "827c43272abbac771810951babefa3b7f596157e3d02a17cc35adec7d1ad9218"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "master/character/unique_condition.orderedmap",
+      "size": 2506,
+      "sha256": "6783d8f19c3abfc92da90fd882b7616179d2fa919e2d5c458dc5426e80e66b25"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "master/generated/character_image.orderedmap",
+      "size": 41733,
+      "sha256": "b5becb7189c4b986bf03a741388b6e08d3553744bf841f309a70c989e5186cb7"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "master/generated/mana_board.orderedmap",
+      "size": 834161,
+      "sha256": "0a7ae9814a4d29817695e07965859f0386db49a795e8448fc40522b1433801da"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "master/generated/trimmed_image.orderedmap",
+      "size": 375300,
+      "sha256": "da8d43f3d955296945b54abacb44313997845ebc6f89b2069f808b1e8ec8bda3"
+    },
+    {
+      "owner": "abyss_weapons",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/item/equipment.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "8000101",
+          "8000102",
+          "8000103",
+          "8000104",
+          "8000105",
+          "8000106",
+          "8000107",
+          "8000108",
+          "8000109",
+          "8000110",
+          "8000111",
+          "8000112",
+          "8000113",
+          "8000114",
+          "8000115"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "add65270d0474e8673e0a672e9821aa64540aea74cf0f189be55692e030748ef",
+      "source": {
+        "size": 93643,
+        "sha256": "1738c22203f1063585b92243f7f2812056ba09d8058aeb683fedc82aad614ad6"
+      }
+    },
+    {
+      "owner": "abyss_weapons",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/item/equipment_status.orderedmap",
+      "claim": {
+        "codec_id": "raw_outer",
+        "outer_keys": [
+          "8000101",
+          "8000102",
+          "8000103",
+          "8000104",
+          "8000105",
+          "8000106",
+          "8000107",
+          "8000108",
+          "8000109",
+          "8000110",
+          "8000111",
+          "8000112",
+          "8000113",
+          "8000114",
+          "8000115"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "b11333bae6fb83f74de0882b2a468a4f835b182eb1100f5ac14d922747584f8c",
+      "source": {
+        "size": 30965,
+        "sha256": "14d82bbeb4e1804d95d424fa2da5318f46214f44ccbb5abf9dab9a0bdf9cae99"
+      }
+    },
+    {
+      "owner": "abyss_weapons",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/item/item.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "2370099",
+          "8000101",
+          "8000102",
+          "8000103",
+          "8000104",
+          "8000105",
+          "8000106",
+          "8000107",
+          "8000108",
+          "8000109",
+          "8000110",
+          "8000111",
+          "8000112",
+          "8000113",
+          "8000114",
+          "8000115"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "ac8d3ac61880ce530b7cfe3498d9cebb385a559b2456b9e9f3b3f6e4945d058d",
+      "source": {
+        "size": 291980,
+        "sha256": "5bf2c166071ff87572b7a0ebff742f66ab20115946e4164abc53159bbd533117"
+      }
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "master/mana_board/mana_board2_open_condition.orderedmap",
+      "size": 25944,
+      "sha256": "04feede4af74c2a1b296fb800b60b472aa19a3f511a95c022894872f2802eded"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "master/mana_board/mana_node.orderedmap",
+      "size": 1016875,
+      "sha256": "c051ef46f7111e05dc4e49e6de1254fc3ec54ec2611bb6b6c04a2c54afcc8e57"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "master/mana_board/upskill.orderedmap",
+      "size": 22039,
+      "sha256": "14331c2578517c9bba824eba8a0672c008df8cc5fb3e620a7176c180cd34688d"
+    },
+    {
+      "owner": "abyss_tower",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/quest/event/event_list.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "700099"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "e3045efe3c0bd9da1123c859279d84def22470088f224a242d336a076be65fda",
+      "source": {
+        "size": 6660,
+        "sha256": "4f0c705ce89d7f1548b9de13b063c76c26ce53612749ac4fbe4a097a2e8e982d"
+      }
+    },
+    {
+      "owner": "abyss_700099_core",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/quest/event/rush_event.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "700099"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "8c7a7dd552041937bdb9ba8a4523ab9fb47207e09a1fc5d56d3e0e69509a610e",
+      "source": {
+        "size": 3832,
+        "sha256": "9c1d02bdc8609fa5b244fee56da884648a8cfe9b80960507e4ace557e4517a00"
+      }
+    },
+    {
+      "owner": "abyss_tower",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/quest/event/rush_event_battle_quest_correction.orderedmap",
+      "claim": {
+        "codec_id": "raw_outer",
+        "outer_keys": [
+          "700099"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "65f8b6b87cac66431a95aad796cf77cfb7a9b433a4abf52d10c278e3d88ab99c",
+      "source": {
+        "size": 6979,
+        "sha256": "15b3f71fb95e09b66a9ffbc6254a672636ba3d7e12b8de8fe9c54e0b435a0522"
+      }
+    },
+    {
+      "owner": "abyss_tower",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/quest/event/rush_event_quest.orderedmap",
+      "claim": {
+        "codec_id": "action_nested",
+        "outer_keys": [
+          "700099"
+        ],
+        "inner_keys": {
+          "700099": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28",
+            "29",
+            "30",
+            "99"
+          ]
+        }
+      },
+      "projection_sha256": "a440535e60583e1809522f42d6935820bd471afb635d35bd9ec23a706995507f",
+      "source": {
+        "size": 38377,
+        "sha256": "b4637b11e506fb6d3cc513e0d21734d5014dd7861e9703c01e8bbef1a0643c9e"
+      }
+    },
+    {
+      "owner": "abyss_tower",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/quest/event/rush_event_quest_folder.orderedmap",
+      "claim": {
+        "codec_id": "action_nested",
+        "outer_keys": [
+          "700099"
+        ],
+        "inner_keys": {
+          "700099": [
+            "1",
+            "2"
+          ]
+        }
+      },
+      "projection_sha256": "2880bc8e8e559e45b3a6576233d71406c0f081233ec1b4cc4773f09176759c0d",
+      "source": {
+        "size": 9556,
+        "sha256": "7ac5bfcfb5b4c2cf77e705bdf11c464486316738cc6493506583099942a5bd1b"
+      }
+    },
+    {
+      "owner": "abyss_weapons",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/shop/event_item_shop.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "9700101",
+          "9700102",
+          "9700103",
+          "9700104",
+          "9700105",
+          "9700106",
+          "9700107",
+          "9700108",
+          "9700109",
+          "9700110",
+          "9700111",
+          "9700112",
+          "9700113",
+          "9700114",
+          "9700115"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "4529a973089f6e877b2d593c3a87ae03d15e9995bd688bc485199c540fefc9e7",
+      "source": {
+        "size": 2306397,
+        "sha256": "a02c1f54d2d69d63c457ca0a03b1aa1c3de6077354a0231aeb48e4daf9a5a6fb"
+      }
+    },
+    {
+      "owner": "light_dark_dragons",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/skill/action_skill.orderedmap",
+      "claim": {
+        "codec_id": "action_nested",
+        "outer_keys": [
+          "golden_dragon_jr",
+          "darkness_dragon"
+        ],
+        "inner_keys": {
+          "golden_dragon_jr": [
+            "1",
+            "2"
+          ],
+          "darkness_dragon": [
+            "1",
+            "2"
+          ]
+        }
+      },
+      "projection_sha256": "259e4eece61db0e2a5aa5e38e37c03804c153c4e2d6dd2309e33653f9f05bcea",
+      "source": {
+        "size": 301492,
+        "sha256": "3bde7708d24e149af10123809311af54586a17d2cbd939fac265e04a6e935bf8"
+      }
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "master/skill/power_flip_action.orderedmap",
+      "size": 897,
+      "sha256": "9ab57d6fdcc88533e95f51a096b8d28523d3dae0f2528fe56bd61386c9dadd59"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "master/skill_preview/skill_preview_character.orderedmap",
+      "size": 26435,
+      "sha256": "115455ea8726e40d7788ff56153af68e254ec2c39f2e45252382c1127daf9177"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "master/stance_detail/character_stance_detail.orderedmap",
+      "size": 14716,
+      "sha256": "23e3f203d73463977f7cf092f805e9966e4dbd6c7fde251bbfcce02a89991b0a"
+    },
+    {
+      "owner": "baseline-1-4-277",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "master/string/custom_ability_string.orderedmap",
+      "size": 7346,
+      "sha256": "80b4179497462a9dd0f4b190cf9f8065ddd92213ac9c8ffd53402525246606bf"
+    }
+  ]
+}

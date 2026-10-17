@@ -70,7 +70,7 @@ from typing import Callable, Iterable, Mapping, Sequence
 
 MOD_DIR = Path(__file__).resolve().parent
 ROOT = MOD_DIR.parent
-sys.path.insert(0, str(MOD_DIR))
+pass  # Imports resolve from this checkout/package, not external source copies.
 
 import wf_enhancement_policy as pol  # noqa: E402
 import wf_mod_tool as core  # noqa: E402
@@ -435,17 +435,13 @@ def resolve_context(*, store: str | Path | None = None, cdn: str | Path | None =
         profile_id = "explicit"
     else:
         profile = core.resolve_profile()
-        try:
-            store_root = core.require_active_store(repo_root, profile=profile)
-        except (OSError, ValueError) as exc:
+        if profile is None or not getattr(profile, "store", None):
             raise SwitchError(
-                f"没找到可用的 store: {exc}"
-            ) from exc
-        profile_id = (
-            "environment"
-            if "WF_TARGET_STORE" in os.environ
-            else getattr(profile, "id", None) or getattr(profile, "key", "cn")
-        )
+                "没找到可用的 store(mod-tools/profiles.json 缺失或 active 档不完整)")
+        store_root = Path(profile.store)
+        if not store_root.is_absolute():
+            store_root = repo_root / store_root
+        profile_id = getattr(profile, "id", None) or getattr(profile, "key", "cn")
     if not store_root.is_dir():
         raise SwitchError(f"store 不存在: {store_root}")
     cdn_root = Path(cdn).resolve() if cdn else pol._resolve_cdn(None)

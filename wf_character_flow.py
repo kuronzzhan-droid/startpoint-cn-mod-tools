@@ -4,12 +4,14 @@
 from __future__ import annotations
 
 import argparse
+import errno
 import hashlib
 import io
 import json
 import os
 import shutil
 import sys
+import time
 import uuid
 import zipfile
 import zlib
@@ -20,7 +22,6 @@ from typing import Any
 import wf_character_pack as character_pack
 import wf_character_requirements as requirements
 import wf_character_workspace as workspace_module
-import wf_apk_paths
 import wf_dsl
 import wf_mod_tool as core
 import wf_release
@@ -52,8 +53,15 @@ def _parser() -> argparse.ArgumentParser:
         if name in {"preflight", "publish"}:
             child.add_argument("--profile", default="cn")
             child.add_argument("--installed-package-dir", type=Path)
+            # 接收方客户端档案(client_profiles.json);--profile 是 store 档案,两者无关
+            child.add_argument("--client-profile")
         if name == "publish":
             child.add_argument("--confirm", required=True)
+
+    mana_board = sub.add_parser("mana-board")
+    mana_board.add_argument("--workspace", required=True, type=Path)
+    mana_board.add_argument("--server-root", type=Path)
+    mana_board.add_argument("--apply", action="store_true")
 
     rebase = sub.add_parser("rebase")
     rebase.add_argument("--workspace", required=True, type=Path)
@@ -138,6 +146,111 @@ def _archives_inside(result: Any, cdn_root: Path) -> bool:
     return False
 
 
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parent.parent
+
+
+def _live_cdn_root() -> Path:
+    override = os.environ.get("WF_CDN_DIR")
+    return Path(override) if override else _repo_root() / ".cdn" / "cn"
+
+
+# ---------------------------------------------------------------------------
+# 服务端玛纳板镜像回灌
+# ---------------------------------------------------------------------------
+# `assets/mana_board.json` 是 `src/lib/assets.ts:getManaNodeAwakeCost` 的输入,
+# 查不到角色就返回 null → `/api/character/mana` 400(玛纳板觉醒直接不可用)。
+# 老包(2026-09-02 之前的 119 份 manifest)server 根里只有必需四项,永远不会带
+# mana_board.json,所以每发一个自制角色服务端镜像就少一行。这里从包**自带的**
+# 客户端表 `master/generated/mana_board.orderedmap` 派生该角色行,键级并进镜像。
+# 带了 mana_board.json 的新包由发布事务自己写,本回灌必须让路(package_owned)。
+# ---------------------------------------------------------------------------
+
+SERVER_MANA_BOARD_LOGICAL = character_pack.SERVER_MANA_BOARD_LOGICAL
+
+
+def sync_server_mana_board(
+    package_dir: Path,
+    server_root: Path,
+    *,
+    apply: bool = False,
+) -> dict[str, Any]:
+    """派生并键级合并 `<server_root>/mana_board.json`;`apply=False` 只报告。
+
+    返回报告的 `status`:
+      ``package_owned``   包在 server 根里声明了 mana_board.json,交给发布事务;
+      ``no_client_table`` 包没带客户端玛纳板表,无从派生;
+      ``up_to_date``      镜像已含同样内容;
+      ``backfilled``      有键级新增/变更(`written` 表示是否真写了盘)。
+    """
+    package_dir = Path(package_dir)
+    server_root = Path(server_root)
+    manifest = character_pack.load_manifest(package_dir / "manifest.json")
+    character_id = str(manifest.get("character_id"))
+    mirror_path = server_root / SERVER_MANA_BOARD_LOGICAL
+    report: dict[str, Any] = {
+        "logical_path": SERVER_MANA_BOARD_LOGICAL,
+        "path": str(mirror_path),
+        "package_dir": str(package_dir),
+        "character_ids": [character_id],
+        "added": [],
+        "updated": [],
+        "written": False,
+        "status": "backfilled",
+    }
+
+    roots = manifest.get("roots")
+    server_entries = roots.get("server") if isinstance(roots, dict) else None
+    declared = {
+        entry.get("logical_path")
+        for entry in (server_entries if isinstance(server_entries, list) else ())
+        if isinstance(entry, dict)
+    }
+    if SERVER_MANA_BOARD_LOGICAL in declared:
+        report["status"] = "package_owned"
+        return report
+
+    rows = character_pack.package_server_mana_board_rows(package_dir, character_id)
+    if rows is None:
+        report["status"] = "no_client_table"
+        return report
+
+    live_raw = mirror_path.read_bytes() if mirror_path.is_file() else None
+    live = character_pack.load_server_json_mirror(
+        live_raw, f"server mirror {mirror_path}"
+    )
+    report["added"] = sorted(key for key in rows if key not in live)
+    report["updated"] = sorted(
+        key for key in rows if key in live and live[key] != rows[key]
+    )
+    merged = character_pack.merge_server_json_object(live_raw, rows)
+    if live_raw is not None and merged == live_raw:
+        report["status"] = "up_to_date"
+        return report
+    if apply:
+        mirror_path.parent.mkdir(parents=True, exist_ok=True)
+        mirror_path.write_bytes(merged)
+        report["written"] = True
+    return report
+
+
+def backfill_server_mana_board_after_publish(
+    result: Any, package_dir: Path
+) -> dict[str, Any] | None:
+    """发布提交后回灌仓库 `assets/mana_board.json`;不满足发射条件返回 None。
+
+    发射条件与 dev catalog 钩子同义:发布确实提交,且归档确实落进真实 CDN 链根
+    —— 注入了假 release 模块的测试写不到链根,自然跳过,不会碰仓库 assets/。
+    """
+    if not getattr(result, "committed", False):
+        return None
+    if not _archives_inside(result, _live_cdn_root()):
+        return None
+    return sync_server_mana_board(
+        Path(package_dir), _repo_root() / "assets", apply=True
+    )
+
+
 def emit_dev_catalog_after_publish(result: Any) -> str | None:
     """返回 dev catalog manifest 路径;不满足发射条件时返回 None。"""
     if not getattr(result, "committed", False):
@@ -168,9 +281,10 @@ def emit_dev_catalog_after_publish(result: Any) -> str | None:
 
 def _master_gate_stores(profile_id: str) -> tuple[Path, ...]:
     profile = core.resolve_profile(profile_id)
-    primary = core.resolve_active_store(profile=profile, profile_id=profile_id)
-    candidates = [primary] if primary is not None else []
-    if profile is not None and profile.fallback is not None:
+    if profile is None:
+        return ()
+    candidates = [profile.store]
+    if profile.fallback is not None:
         candidates.append(profile.fallback)
     return tuple(path for path in candidates if path.is_dir())
 
@@ -186,15 +300,16 @@ _BUNDLE_INDEX_CACHE: dict[str, frozenset[str]] = {}
 
 def _bundle_asset_tails() -> frozenset[str]:
     """APK 内置 bundle 里的 `<xx>/<hash>` 集合;读不到时返回空集(=退回原行为)。"""
-    repo_root = Path(__file__).resolve().parent.parent
-    explicit_apk = wf_apk_paths.resolve_explicit_apk(os.environ)
-    source = explicit_apk or repo_root / "弹国服" / "bundle.zip"
-    key = str(source.resolve())
+    key = "cn"
     cached = _BUNDLE_INDEX_CACHE.get(key)
     if cached is not None:
         return cached
     tails: set[str] = set()
-    candidates = [source]
+    repo_root = Path(__file__).resolve().parent.parent
+    candidates = [repo_root / "弹国服" / "bundle.zip"]
+    env_apk = os.environ.get("WF_APK")
+    if env_apk:
+        candidates.append(Path(env_apk))
     for source in candidates:
         if not source.is_file():
             continue
@@ -226,6 +341,26 @@ def _bundle_has(logical: str) -> bool:
 
 def _package_client_file(package_dir: Path, logical: str) -> Path:
     return package_dir / "roots" / "common" / Path(*logical.split("/"))
+
+
+# cdndata/character.json 第 3 列 = 内部属性(0 火 1 水 2 雷 3 风 4 光 5 暗);
+# 只用于把 DSL 里 ResolveByElement 的 255(跟随施法者)解析成确定的分色路径。
+_CHARACTER_ELEMENT_COLUMN = 3
+
+
+def _package_context_element(package_dir: Path) -> int | None:
+    """包自带 server 层 cdndata/character.json → 本角色属性;读不出返回 None。"""
+    try:
+        manifest = character_pack.load_manifest(package_dir / "manifest.json")
+        character_id = str(manifest.get("character_id"))
+        table = json.loads(
+            (package_dir / "roots" / "server" / "cdndata" / "character.json")
+            .read_text(encoding="utf-8")
+        )
+        row = table[character_id][0]
+        return int(row[_CHARACTER_ELEMENT_COLUMN])
+    except (OSError, ValueError, TypeError, KeyError, IndexError):
+        return None
 
 
 def _store_table_path(stores: tuple[Path, ...], logical: str) -> Path | None:
@@ -327,6 +462,7 @@ def master_reference_report(
 
     references = requirements.extract_master_asset_references(
         changed_flat, nested_tables, dsl_trees,
+        context_element=_package_context_element(package_dir),
     )
 
     # 包内可满足 = manifest roots.common 声明(发布只装声明过的文件,
@@ -434,6 +570,22 @@ def _master_gate_errors(report: dict[str, Any]) -> list[str]:
     return errors
 
 
+def package_capability_gate(
+    package_dir: Path,
+    stores: tuple[Path, ...],
+    client_profile: str | None = None,
+):
+    """包 roots/common 整文件投递 ⇒ 按整表/全部 DSL 推导接收方需要的客户端能力(wfx_gate)。
+
+    默认档案 local-mumu;无 wfx 行、只用本机已装补丁的包 = 空操作通过。delivery_mode 不豁免。
+    """
+    import wfx_gate
+
+    return wfx_gate.check_package(
+        package_dir, stores, client_profile or wfx_gate.default_publish_profile()
+    )
+
+
 def _can_seal(status: workspace_module.WorkspaceStatus) -> bool:
     allowed_errors = {
         "manifest workspace_input_sha256 does not match status",
@@ -446,6 +598,75 @@ def _can_seal(status: workspace_module.WorkspaceStatus) -> bool:
         and status.three_layer_claim_status.get("consistent") is True
         and not (set(status.manifest_errors) - allowed_errors)
     )
+
+
+# Windows 删目录树的两类瞬时故障：
+#   145 ERROR_DIR_NOT_EMPTY —— 并发写入者在 rmtree 的 scandir 快照与 os.rmdir 之间
+#       又往目录里塞了新条目（另一个 workflow / 编辑器 / 杀软临时文件都算）；
+#   32 ERROR_SHARING_VIOLATION、5 ERROR_ACCESS_DENIED —— 文件被别的进程占用。
+# 这两类重试一两次通常就过。绝不 ignore_errors：静默吞掉就是丢文件的那条路。
+_CLEANUP_RETRY_WINERRORS = frozenset({5, 32, 145})
+_CLEANUP_RETRY_ERRNOS = frozenset(
+    {errno.EACCES, errno.EBUSY, errno.ENOTEMPTY, errno.EPERM}
+)
+
+
+def _is_transient_cleanup_error(exc: OSError) -> bool:
+    return (
+        getattr(exc, "winerror", None) in _CLEANUP_RETRY_WINERRORS
+        or exc.errno in _CLEANUP_RETRY_ERRNOS
+    )
+
+
+def _extended_length_path(path: Path | str) -> str:
+    """Windows 上返回 `\\\\?\\` 扩展长度形式,其它平台原样返回绝对路径。
+
+    145 在本机是**确定性**故障而非并发瞬时故障:`package` 改名成
+    `package-pre-rebase-<32hex>` 让路径长 44 个字符,注册表
+    HKLM\\SYSTEM\\CurrentControlSet\\Control\\FileSystem\\LongPathsEnabled=0 时,
+    越过 MAX_PATH(260) 的文件 os.stat 直接 FileNotFoundError,rmtree 删不掉它,
+    随后 os.rmdir 父目录就撞 ERROR_DIR_NOT_EMPTY。这种情况重试多少次都失败,
+    只有扩展长度前缀能绕开 MAX_PATH。仓库里最深的包(233 字符)改名后 277 字符,
+    实测 13 个包越线。
+    """
+    raw = str(path)
+    if os.name != "nt":
+        return os.path.abspath(raw)
+    if raw.startswith("\\\\?\\"):
+        return raw
+    absolute = os.path.abspath(raw)
+    if absolute.startswith("\\\\?\\"):
+        return absolute
+    if absolute.startswith("\\\\"):          # UNC: \\host\share -> \\?\UNC\host\share
+        return "\\\\?\\UNC\\" + absolute[2:]
+    return "\\\\?\\" + absolute
+
+
+def _remove_tree_with_retry(
+    path: Path, *, attempts: int = 5, delay: float = 0.2
+) -> None:
+    """带指数退避地删除目录树；重试用尽就把最后一个 OSError 原样上抛。
+
+    调用方必须把失败当成硬错误处理 —— rmtree 是原地破坏且非原子的，抛错那一刻
+    目录里已经少了一批文件，任何"当作没事继续"的分支都会把残骸当成好包。
+    """
+    target = _extended_length_path(path)
+    last: OSError | None = None
+    for attempt in range(attempts):
+        try:
+            shutil.rmtree(target)
+            return
+        except FileNotFoundError:
+            return
+        except OSError as exc:
+            if not _is_transient_cleanup_error(exc):
+                raise
+            last = exc
+            if attempt + 1 < attempts:
+                time.sleep(delay * (2 ** attempt))
+    if last is None:  # attempts <= 0，调用方传了非法参数
+        raise FlowError(f"_remove_tree_with_retry: attempts 必须 >= 1（收到 {attempts}）")
+    raise last
 
 
 def _activate_rebased_package(
@@ -466,8 +687,6 @@ def _activate_rebased_package(
         sealed = workspace_module.seal_workspace(workspace)
         if workspace_module._is_reparse(backup):
             raise FlowError("rebase backup ownership changed; preserving it for inspection")
-        shutil.rmtree(backup)
-        return sealed
     except Exception as exc:
         restore_errors: list[str] = []
         if activated and workspace.package_dir.exists():
@@ -484,6 +703,17 @@ def _activate_rebased_package(
         if restore_errors:
             detail += "; " + "; ".join(restore_errors)
         raise FlowError(detail) from exc
+    # seal 成功之后激活已是既成事实，backup 只剩垃圾。清垃圾失败只能报警，
+    # 绝不能回滚 —— rmtree 抛错时 backup 已被删掉一部分，把它搬回 package_dir
+    # 就是拿残骸覆盖好包。
+    try:
+        _remove_tree_with_retry(backup)
+    except OSError as exc:
+        raise FlowError(
+            f"rebase activated but backup cleanup failed: {backup} ({exc}); "
+            f"新包已就位于 {workspace.package_dir}，请人工删除该 backup 目录，不要重跑 rebase"
+        ) from exc
+    return sealed
 
 
 def run_command(
@@ -491,6 +721,7 @@ def run_command(
     *,
     release_module=wf_release,
     dev_catalog_hook=emit_dev_catalog_after_publish,
+    mana_board_hook=backfill_server_mana_board_after_publish,
 ) -> tuple[int, dict[str, Any]]:
     command = "unknown"
     workspace_path: str | None = None
@@ -564,6 +795,23 @@ def run_command(
 
         workspace = workspace_module.load_workspace(args.workspace)
         workspace_path = str(workspace.root)
+        if command == "mana-board":
+            server_root = args.server_root or (_repo_root() / "assets")
+            report = sync_server_mana_board(
+                workspace.package_dir, server_root, apply=args.apply,
+            )
+            return 0, _base_payload(
+                stage="mana-board",
+                workspace=workspace_path,
+                release_ready=False,
+                next_command=(
+                    None if args.apply else
+                    f"python mod-tools/wf_character_flow.py mana-board --workspace "
+                    f"{workspace.root} --apply"
+                ),
+                mana_board=report,
+            )
+
         if command == "status":
             status = workspace_module.workspace_status(workspace)
             payload = status.to_dict()
@@ -593,6 +841,23 @@ def run_command(
                     status=status.to_dict(),
                     master_reference_report=master_report,
                 )
+            capability_gate = package_capability_gate(
+                workspace.package_dir, _master_gate_stores(args.profile), args.client_profile
+            )
+            if not capability_gate.ok:
+                return 3, _base_payload(
+                    stage="preflight",
+                    workspace=workspace_path,
+                    release_ready=False,
+                    errors=list(capability_gate.problems),
+                    next_command=(
+                        "改掉接收方客户端不具备能力的数据(或换成真实接收方的 --client-profile)"
+                        "后重新运行 preflight"
+                    ),
+                    status=status.to_dict(),
+                    master_reference_report=master_report,
+                    client_capability_gate=capability_gate.to_dict(),
+                )
             if (
                 mode == "production"
                 and not status.release_ready
@@ -618,6 +883,7 @@ def run_command(
                 status=status.to_dict(),
                 preflight=report,
                 master_reference_report=master_report,
+                client_capability_gate=capability_gate.to_dict(),
             )
 
         if command == "publish":
@@ -638,6 +904,14 @@ def run_command(
                         "master 表资产引用门禁未通过: "
                         + "; ".join(_master_gate_errors(master_report))
                     )
+            capability_gate = package_capability_gate(
+                workspace.package_dir, _master_gate_stores(args.profile), args.client_profile
+            )
+            if not capability_gate.ok:
+                raise FlowError(
+                    f"客户端能力闸门未通过(档案 {capability_gate.profile}): "
+                    + "; ".join(capability_gate.problems)
+                )
             result = release_module.publish_package(
                 workspace.package_dir,
                 args.profile,
@@ -654,6 +928,17 @@ def run_command(
                         f"{type(exc).__name__}: {exc}",
                         file=sys.stderr,
                     )
+            # 与 dev catalog 同一纪律:发布已提交、不可回滚,回灌失败只能 [WARN]。
+            mana_board: dict[str, Any] | None = None
+            if mana_board_hook is not None:
+                try:
+                    mana_board = mana_board_hook(result, workspace.package_dir)
+                except Exception as exc:
+                    print(
+                        "[WARN] publish committed; server mana_board backfill failed: "
+                        f"{type(exc).__name__}: {exc}",
+                        file=sys.stderr,
+                    )
             return 0, _base_payload(
                 stage="publish",
                 workspace=workspace_path,
@@ -661,6 +946,7 @@ def run_command(
                 next_command=None,
                 delivery_mode=mode,
                 dev_catalog=dev_catalog,
+                mana_board=mana_board,
                 **_release_result_payload(result),
             )
 

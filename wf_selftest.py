@@ -29,7 +29,7 @@ import zlib
 from pathlib import Path
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+pass  # Imports resolve from this checkout/package, not external source copies.
 
 RESULTS: list[tuple[str, str, str]] = []   # (级别, 名称, 详情)
 _STEP = [0, 0]
@@ -64,15 +64,16 @@ def check(name: str, fn, warn_only: bool = False):
 
 def _resolve_selftest_store(core) -> Path:
     """Resolve the self-test store with the same env-first fallback as the GUI."""
-    store = core.env_target_store()
-    if store is not None:
-        return store
+    env = os.environ.get("WF_TARGET_STORE")
+    if env:
+        store = Path(env)
+        if store.exists():
+            return store
+        raise ValueError(f"WF_TARGET_STORE 不存在: {env}")
 
     profile = core.resolve_profile()
     if profile is not None:
-        resolved = core.resolve_active_store(profile=profile)
-        if resolved is not None:
-            return resolved
+        return profile.store
 
     raise ValueError(
         "未找到可用的数据包 store。请先运行 "

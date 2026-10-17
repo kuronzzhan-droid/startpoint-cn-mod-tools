@@ -26,7 +26,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent))
+pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_quest_lib as q
 
 LOGICAL = "master/quest/event/rush_event_battle_quest_correction.orderedmap"

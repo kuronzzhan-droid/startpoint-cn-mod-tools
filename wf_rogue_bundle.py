@@ -1540,7 +1540,7 @@ def build_native_bundle_catalog(
     """
 
     names = display_names or {}
-    is_official = official_field or (lambda field_id: not str(field_id).startswith("mod_rogue"))
+    is_official = official_field or (lambda field_id: not str(field_id).startswith("mod_"))
     official_ids = tuple(sorted(str(field_id) for field_id in field_data
                                 if is_official(str(field_id))))
     discovered: list[NativeBossBundle] = []

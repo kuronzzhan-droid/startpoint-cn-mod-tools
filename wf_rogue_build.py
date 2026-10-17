@@ -58,7 +58,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # 本脚本所在目录:主仓 = ROOT/mod-tools,平铺导出仓 = 仓根。工具自带的数据文件
 # (rogue_*.json / work/)一律以此为基准,两种布局都能找到。
 MOD_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, MOD_DIR)
+pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_quest_lib as q          # noqa: E402
 import wf_chain_build as cb       # noqa: E402
 import wf_dsl                     # noqa: E402
@@ -2236,7 +2236,7 @@ def build_native_bundle_catalog(
         reference_gate=reference_gate,
         zako_codes=set(gz),
         portability_gate=portability_gate,
-        official_field=lambda field_id: not field_id.startswith("mod_rogue_"),
+        official_field=lambda field_id: not str(field_id).startswith("mod_"),
         metadata_of=metadata_provider,
         c8016_prefixes=C8016_BLOCKED_BOSS_PREFIXES,
     )
@@ -7135,7 +7135,7 @@ def main() -> int:
             log(f"[curse] round={r} field-underfill="
                 f"{curse['field_applied']}/{curse['field_requested']} reason={why}")
             # 非破坏性策略下这不再是致命错误。法阵载体必须是 general 系 boss
-            # (见「深渊连战-随机方案-当前.md」第九节:抽到 standard/专用表 boss
+            # (见「深渊连战-随机方案-快照1.4.247-20260729.md」第九节:抽到 standard/专用表 boss
             # 时法阵**静默落不上,不是崩溃**)。既然我们不再为了凑载体把策展
             # 锚位换掉,就得允许这些层欠配——[领域/时限] 行会如实报「欠配 N 层」。
             print(f"[WARN] 第{r}战领域保底欠配:"

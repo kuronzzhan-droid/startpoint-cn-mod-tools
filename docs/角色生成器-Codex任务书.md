@@ -1,6 +1,6 @@
 # 角色生成器与编辑器 · Codex 实施任务书(v2)
 
-> 交给 Codex 的自包含任务说明。**必须在本机工作区 `D:\WF\startpoint-cn` 上以本地模式运行**
+> 交给 Codex 的自包含任务说明。**必须在本机工作区 `${WF_ROOT}\startpoint-cn` 上以本地模式运行**
 > (mod-tools/、弹国服/ 数据包均为未跟踪本地目录,云端克隆的仓库里没有)。
 > 环境:Windows 10 + PowerShell,Python 3(已装 Pillow),git 分支 release/modes-20260714。
 > v2 变更:发布链路改走 `wf_character_flow.py`(零直写 live)、语音 provider 抽象(开源引擎

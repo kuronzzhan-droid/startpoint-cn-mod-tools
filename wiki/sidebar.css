@@ -1,0 +1,13 @@
+.sidebar-toolbar{grid-column:1/-1;display:flex;align-items:center;padding:10px 18px 0}
+.sidebar-toggle{padding:6px 12px;min-height:32px;border:1px solid #c5d6d8;border-radius:7px;background:#f6fbfb;color:#42777a;font-size:11px}
+.sidebar-toggle:hover{background:#e7f6f3;border-color:#35b7a5}
+.page-shell.sidebar-collapsed{grid-template-columns:minmax(0,1fr)}
+[data-theme="dark"] .sidebar-toggle{background:#253743;color:#cbdde1;border-color:#48616e}
+.sidebar-toggle:focus-visible{outline:3px solid #e6af3a;outline-offset:3px}
+@media(max-width:640px){
+  .sidebar-toolbar{padding:9px 14px 0}
+  .page-shell.catalog-home>.sidebar-toolbar{position:fixed;left:env(safe-area-inset-left,0px);bottom:calc(24vh + env(safe-area-inset-bottom,0px));z-index:45;padding:0}
+  .page-shell.catalog-home .sidebar-toggle{display:grid;place-items:center;min-width:40px;min-height:44px;padding:10px 8px;border-left:0;border-radius:0 12px 12px 0;font-size:0;background:color-mix(in srgb,var(--surface) 85%,transparent);backdrop-filter:blur(6px);box-shadow:none}
+  .page-shell.catalog-home .sidebar-toggle::before{content:"";width:18px;height:18px;background:currentColor;mask:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='2' stroke-linecap='round' d='M9 5h12M9 12h12M9 19h12M3 5h1M3 12h1M3 19h1'/%3E%3C/svg%3E")}
+  .page-shell.catalog-home .sidebar-toggle:focus-visible{outline-width:2px;outline-offset:-2px}
+}

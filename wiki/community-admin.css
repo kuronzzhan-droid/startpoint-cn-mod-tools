@@ -1,0 +1,66 @@
+.community-admin{--admin-bg:#fff;--admin-border:#cedcde;--admin-muted:#607780;min-width:0}
+.admin-action-dialog{box-sizing:border-box;width:min(440px,calc(100% - 28px));padding:22px;border:1px solid var(--line);border-radius:14px;background:var(--surface,#fff);color:var(--ink,#263d45);box-shadow:0 20px 70px #0004}
+.admin-action-dialog::backdrop{background:#11283288}.admin-action-dialog h2{margin:0 0 12px;font-size:22px}.admin-action-dialog p{white-space:pre-line;line-height:1.7}
+.admin-action-dialog-buttons{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}.admin-action-dialog-buttons button{min-height:40px;padding:8px 15px;border-radius:7px;cursor:pointer}
+[data-theme="dark"] .admin-action-dialog{background:#1c2834;color:#e4edef;border-color:#3b505d}
+.admin-header,.admin-edit-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.admin-header h1{margin:0}.admin-account{color:var(--admin-muted);overflow-wrap:anywhere;font-size:13px}
+.admin-notice,.admin-edit-status{white-space:pre-wrap;overflow-wrap:anywhere;color:#147267;min-height:24px}
+.admin-controls{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;margin:14px 0}
+.community-admin button,.community-admin .primary-button{min-height:38px;padding:8px 12px;border-radius:6px;cursor:pointer}
+.community-admin button:disabled{opacity:.55;cursor:default}
+.admin-layout{display:block;min-width:0}
+.admin-layout:has(.admin-editor:not([hidden])) .admin-list{display:none}
+.admin-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,255px),1fr));gap:12px;align-items:stretch}.admin-team-row,.admin-editor{padding:15px;background:var(--admin-bg);border:1px solid var(--admin-border);border-radius:12px;min-width:0}
+.admin-team-row h2{font-size:17px;margin:0 0 8px;overflow-wrap:anywhere}.admin-team-meta,.admin-team-main,.admin-version{font-size:12px;color:var(--admin-muted);overflow-wrap:anywhere}
+.admin-field{display:grid;gap:6px;min-width:0;font-size:13px}
+.admin-edit-form{display:grid;gap:14px}.admin-edit-heading h2{font-size:19px;margin:0;overflow-wrap:anywhere}
+.admin-edit-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.community-admin input:not([type="checkbox"]),.community-admin textarea,.community-admin select{box-sizing:border-box;width:100%;min-width:0;border:1px solid var(--admin-border);border-radius:6px;padding:9px;font:inherit;background:var(--admin-bg);color:inherit}
+.community-admin textarea{resize:vertical}.community-admin input:focus-visible,.community-admin select:focus-visible,.community-admin textarea:focus-visible,.community-admin button:focus-visible{outline:3px solid #dea62a;outline-offset:2px}
+.admin-damage{display:flex;flex-wrap:wrap;gap:10px 16px;border:1px solid var(--admin-border);border-radius:6px;padding:12px;min-width:0}.admin-damage .admin-field{display:flex;align-items:center;gap:7px}
+.admin-slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.admin-slot{min-width:0;display:grid;gap:6px;border:1px solid var(--admin-border);padding:8px;border-radius:6px;margin:0}.admin-slot legend{font-weight:bold;font-size:12px}.admin-slot-hint{color:var(--admin-muted);font-size:11px;line-height:1.5}
+[data-theme="dark"] .community-admin{--admin-bg:#1c2834;--admin-border:#3b505d;--admin-muted:#a5bac5}
+[data-theme="dark"] .admin-notice,[data-theme="dark"] .admin-edit-status{color:#8fdccb}
+.admin-space-tabs{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap}
+.admin-space-tab{border:1px solid var(--admin-border);background:var(--admin-bg);color:inherit;font-weight:650;flex:0 1 auto}
+.admin-space-tab[aria-pressed="true"]{background:var(--accent-dark,#147e77);border-color:var(--accent-dark,#147e77);color:#fff}
+.admin-search-row{grid-column:1/-1;display:grid;grid-template-columns:minmax(180px,1fr) minmax(145px,190px) auto;align-items:end;gap:8px}
+.admin-search-row>input{height:40px}.admin-search-row .admin-field>span{font-size:11px;color:var(--admin-muted)}
+.admin-filter-details{min-width:0;font-size:12px}.admin-filter-details summary{cursor:pointer;padding:8px 0;color:var(--admin-muted)}
+.admin-filter-body{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:6px 0}
+.admin-avatar-controls{justify-self:end;align-self:start}.admin-avatar-controls .catalog-layout-label{display:none}
+.admin-team-row{display:flex;flex-direction:column;box-shadow:0 3px 9px #152d3810}
+.admin-card-heading{display:flex;align-items:start;gap:6px;justify-content:space-between}.admin-card-heading h2{font-size:17px;margin:0;line-height:1.4;flex:1;min-width:0}
+.admin-card-badges{flex:none}.admin-state{display:inline-block;padding:3px 6px;border-radius:5px;font-size:10px;white-space:nowrap}
+.admin-state-public{background:#e0f5ec;color:#246a4f}.admin-state-private{background:#e7effc;color:#375681}.admin-state-deleted{background:#fae8e8;color:#974e51}
+.admin-card-tags{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0 0}.admin-card-tags span{font-size:11px;background:var(--soft);color:var(--admin-muted);padding:3px 5px;border-radius:4px}
+.community-admin .admin-card-preview{display:block;width:100%;padding:0;background:transparent;border:0;margin:9px 0 0;color:inherit;box-shadow:none}
+.admin-card-preview .community-board{width:100%;max-width:210px;gap:7px;margin:0 auto}
+.admin-card-preview .community-board-column{grid-template-columns:minmax(0,1fr);grid-template-areas:"main" "unison";gap:6px}
+.admin-card-preview .community-slot{box-sizing:border-box}.admin-card-preview .community-slot-label{display:none}
+.admin-card-preview .community-board-column:first-child .community-slot-main .community-slot-label{display:block}
+.admin-card-preview:focus-visible{outline:3px solid var(--accent-dark);outline-offset:4px;border-radius:6px}
+.admin-team-row .admin-team-meta{margin:9px 0;font-size:11px}
+.admin-team-row .community-game-code-compact{padding:7px;margin:0 0 10px;margin-top:auto;border-radius:7px;min-width:0}
+.admin-team-row .community-game-code-value{font-size:13px;letter-spacing:.03em;width:100%;min-width:0}
+.admin-team-row .community-game-code-row{display:flex;gap:5px;min-width:0;align-items:center}
+.admin-team-row .community-game-code-copy-status:empty{display:none}
+.admin-team-row .community-game-code-label{font-size:10px}
+.admin-card-code-empty{padding:8px 0;margin:0 0 8px;margin-top:auto;font-size:12px;color:var(--admin-muted)}
+.admin-card-actions{display:flex;gap:8px;border-top:1px solid var(--admin-border);padding-top:10px}
+.admin-card-actions .primary-button{flex:1}.admin-delete-button{background:transparent;border:1px solid #ddaaad;color:#a53942}
+.admin-delete-button:hover{background:#fae8e8}.community-admin .community-more{margin:18px auto}
+[data-theme="dark"] .admin-state-public{background:#153f37;color:#a2e3c8}[data-theme="dark"] .admin-state-private{background:#263c59;color:#b6d1f4}
+[data-theme="dark"] .admin-state-deleted{background:#502f37;color:#ffc2c5}[data-theme="dark"] .admin-delete-button{color:#ffb3b9;border-color:#955963}
+[data-theme="dark"] .admin-delete-button:hover{background:#502f37}
+@media(max-width:580px){.admin-slots{grid-template-columns:1fr}.admin-edit-meta{grid-template-columns:1fr}.admin-header h1{font-size:23px}.admin-header .back-button{font-size:12px}.admin-editor,.admin-team-row{padding:12px}
+  .admin-controls{grid-template-columns:minmax(0,1fr);gap:6px}.admin-space-tab{flex:1;min-width:0;font-size:12px;padding:7px 5px!important}
+  .admin-search-row{grid-template-columns:minmax(0,1fr) auto}.admin-search-row>input{grid-column:1/-1}.admin-search-row .admin-field{min-width:0}
+  .admin-filter-body{gap:8px}.admin-avatar-controls{justify-self:start}.admin-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .admin-card-heading{flex-direction:column;gap:4px}.admin-card-heading h2{font-size:14px}.admin-card-tags span{font-size:10px}
+  .admin-team-row{padding:8px}.admin-card-preview .community-board{gap:4px}.admin-card-preview .community-board-column{gap:4px}
+  .admin-card-actions{gap:5px}.admin-card-actions button{font-size:12px;padding:6px!important;min-height:36px}
+  .admin-team-row .community-game-code-compact{padding:4px}.admin-team-row .community-game-code-row{gap:3px}.admin-team-row .community-game-code-value{font-size:10px;letter-spacing:0;padding:5px 2px}
+  .admin-team-row .community-game-code-row button{padding:4px;min-height:30px;font-size:11px}.admin-team-meta{line-height:1.5}
+}

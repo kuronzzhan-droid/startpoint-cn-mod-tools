@@ -1,0 +1,342 @@
+{
+ "battle/action/skill/action/rare5/wind_oracle_yukata$wind_oracle_yukata_1.action.dsl.amf3.deflate": {
+  "program": "battle/action/skill/action/rare5/wind_oracle_yukata$wind_oracle_yukata_1",
+  "before_sha256": "fd00edd04a4c0c1827ec11883ef5b95e74d5264085974a65f86a2807c2834ee7",
+  "after_sha256": "3fa1d4f19e4030ab78ddf53c4a223dc59cbc9ee80b7f0cbaa2afc8f23fd1f08c",
+  "root_index": 3,
+  "inner_index": 0,
+  "pruned_search": true,
+  "search_shell": [
+   "Command",
+   [
+    "FindAllSubjects",
+    110,
+    33,
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+     "DoNothing"
+    ],
+    [
+     "Block",
+     []
+    ]
+   ]
+  ],
+  "statement": [
+   "Command",
+   [
+    "CreateCondition",
+    110,
+    [
+     [
+      "ACFlying",
+      [
+       {
+        "min": 480,
+        "max": 480
+       }
+      ]
+     ]
+    ],
+    [
+     {
+      "min": 1,
+      "max": 1
+     }
+    ],
+    [
+     "None"
+    ],
+    true,
+    false,
+    "",
+    null,
+    false,
+    3,
+    [
+     {
+      "min": 1,
+      "max": 1
+     }
+    ],
+    false
+   ]
+  ]
+ },
+ "battle/action/skill/action/rare5/wind_oracle_yukata$wind_oracle_yukata_2.action.dsl.amf3.deflate": {
+  "program": "battle/action/skill/action/rare5/wind_oracle_yukata$wind_oracle_yukata_2",
+  "before_sha256": "567d7eee3b110de9d5c88f46728710ced3a44382ddff82d81f436569070ac1b6",
+  "after_sha256": "62e01373ad8fee051099a92849cfb318a4fb1e52ad9d435fa6e7c32d41c638f7",
+  "root_index": 3,
+  "inner_index": 0,
+  "pruned_search": true,
+  "search_shell": [
+   "Command",
+   [
+    "FindAllSubjects",
+    110,
+    33,
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+     "DoNothing"
+    ],
+    [
+     "Block",
+     []
+    ]
+   ]
+  ],
+  "statement": [
+   "Command",
+   [
+    "CreateCondition",
+    110,
+    [
+     [
+      "ACFlying",
+      [
+       {
+        "min": 600,
+        "max": 720
+       }
+      ]
+     ]
+    ],
+    [
+     {
+      "min": 1,
+      "max": 1
+     }
+    ],
+    [
+     "None"
+    ],
+    true,
+    false,
+    "",
+    null,
+    false,
+    3,
+    [
+     {
+      "min": 1,
+      "max": 1
+     }
+    ],
+    false
+   ]
+  ]
+ },
+ "battle/action/power_flip/action/override/wind_oracle_yukata_pf$wind_oracle_yukata_pf_lv1.action.dsl.amf3.deflate": {
+  "program": "battle/action/power_flip/action/override/wind_oracle_yukata_pf$wind_oracle_yukata_pf_lv1",
+  "before_sha256": "11b79e42bad07c20a081e3389fa5b4b2e86c5c6dd1991b3775a1be727c1374e1",
+  "after_sha256": "1f7adf0279bf3d5a140b22da4ab42aeac550385847e34b156f9a29b84d170d2d",
+  "root_index": 3,
+  "inner_index": 2,
+  "pruned_search": false,
+  "search_shell": [
+   "Command",
+   [
+    "FindAllSubjects",
+    400,
+    33,
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+     "DoNothing"
+    ],
+    [
+     "Block",
+     []
+    ]
+   ]
+  ],
+  "statement": [
+   "Command",
+   [
+    "CreateCondition",
+    400,
+    [
+     [
+      "ACFlying",
+      [
+       {
+        "min": 60,
+        "max": 60
+       }
+      ]
+     ]
+    ],
+    [
+     {
+      "min": 1,
+      "max": 1
+     }
+    ],
+    [
+     "None"
+    ],
+    true,
+    false,
+    "",
+    null,
+    false,
+    3,
+    [
+     {
+      "min": 1,
+      "max": 1
+     }
+    ],
+    false
+   ]
+  ]
+ },
+ "battle/action/power_flip/action/override/wind_oracle_yukata_pf$wind_oracle_yukata_pf_lv2.action.dsl.amf3.deflate": {
+  "program": "battle/action/power_flip/action/override/wind_oracle_yukata_pf$wind_oracle_yukata_pf_lv2",
+  "before_sha256": "490a8368ea689b406a3fb27822388bc45ea669209f2a8f903f412f1b6a9569a5",
+  "after_sha256": "d37e8e497dfe01d760853d64764a0b55bcbfbde8c004343605f5b2c009f60c77",
+  "root_index": 3,
+  "inner_index": 2,
+  "pruned_search": false,
+  "search_shell": [
+   "Command",
+   [
+    "FindAllSubjects",
+    400,
+    33,
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+     "DoNothing"
+    ],
+    [
+     "Block",
+     []
+    ]
+   ]
+  ],
+  "statement": [
+   "Command",
+   [
+    "CreateCondition",
+    400,
+    [
+     [
+      "ACFlying",
+      [
+       {
+        "min": 90,
+        "max": 90
+       }
+      ]
+     ]
+    ],
+    [
+     {
+      "min": 1,
+      "max": 1
+     }
+    ],
+    [
+     "GenericConditionHitEffect"
+    ],
+    true,
+    false,
+    "",
+    null,
+    false,
+    3,
+    [
+     {
+      "min": 1,
+      "max": 1
+     }
+    ],
+    false
+   ]
+  ]
+ },
+ "battle/action/power_flip/action/override/wind_oracle_yukata_pf$wind_oracle_yukata_pf_lv3.action.dsl.amf3.deflate": {
+  "program": "battle/action/power_flip/action/override/wind_oracle_yukata_pf$wind_oracle_yukata_pf_lv3",
+  "before_sha256": "1e3dfdb0b3cd801ea9d0e37f0760a290c76c36ce6b177c7e72c23665cbc3c438",
+  "after_sha256": "0bd66ead7cea4a66f2c0694e705df3b57a3fa773cbcda9b75308749331e7554e",
+  "root_index": 3,
+  "inner_index": 2,
+  "pruned_search": false,
+  "search_shell": [
+   "Command",
+   [
+    "FindAllSubjects",
+    400,
+    33,
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+     "DoNothing"
+    ],
+    [
+     "Block",
+     []
+    ]
+   ]
+  ],
+  "statement": [
+   "Command",
+   [
+    "CreateCondition",
+    400,
+    [
+     [
+      "ACFlying",
+      [
+       {
+        "min": 150,
+        "max": 150
+       }
+      ]
+     ]
+    ],
+    [
+     {
+      "min": 1,
+      "max": 1
+     }
+    ],
+    [
+     "None"
+    ],
+    true,
+    false,
+    "",
+    null,
+    false,
+    3,
+    [
+     {
+      "min": 1,
+      "max": 1
+     }
+    ],
+    false
+   ]
+  ]
+ }
+}

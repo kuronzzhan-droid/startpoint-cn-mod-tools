@@ -47,8 +47,8 @@ import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-import wf_mod_tool as core  # noqa: E402
+pass  # Imports resolve from this checkout/package, not external source copies.
+import wf_mod_tool as core
 import wf_release  # noqa: E402
 
 FULL_BASE = "1.4.0"
@@ -436,9 +436,7 @@ def _resolve_dirs(args) -> tuple[Path, Path]:
     if args.cdn:
         cdn_root = Path(args.cdn).resolve()
     else:
-        cdn_root = core.resolve_cdn_root_lax(
-            legacy_root=repo_root / ".cdn" / "cn"
-        )
+        cdn_root = core.resolve_cdn_root_lax(legacy_root=repo_root / ".cdn" / "cn")
     return cdn_root, repo_root
 
 

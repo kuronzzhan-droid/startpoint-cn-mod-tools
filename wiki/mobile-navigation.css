@@ -1,0 +1,9 @@
+.mobile-nav-hint{display:none}
+@media(max-width:760px){
+  .masthead.mobile-nav-ready{grid-template-areas:"brand theme" "navigation navigation" "swipe swipe"}
+  .mobile-nav-ready .app-navigation{touch-action:pan-y pinch-zoom;user-select:none;-webkit-user-select:none}
+  .mobile-nav-ready .app-navigation a{-webkit-user-drag:none}
+  .mobile-nav-ready .mobile-nav-hint{display:block;grid-area:swipe;margin:-2px 0 4px;color:var(--muted);font-size:11px;line-height:1.4;text-align:center;pointer-events:none}
+  body:has(#main-content form:not([role="search"]):not([hidden])) .mobile-nav-ready .app-navigation{touch-action:auto}
+  body:has(#main-content form:not([role="search"]):not([hidden])) .mobile-nav-hint{display:none}
+}

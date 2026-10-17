@@ -1,0 +1,15 @@
+.community-code-search{margin:10px 0;min-width:0}
+.community-code-search-form{display:flex;align-items:center;gap:8px;max-width:620px}
+.community-code-search-input{flex:1;min-width:0;width:100%;height:40px;box-sizing:border-box;padding:8px 11px;border:1px solid var(--line);border-radius:7px;background:var(--surface);color:var(--ink);font:inherit;font-size:14px}
+.community-code-search-form button{flex:none;min-height:40px;padding:7px 12px;border-radius:7px;font-size:13px;white-space:nowrap}
+.community-code-search-form button:disabled{opacity:.6;cursor:default}
+.community-code-search-status{font-size:13px;line-height:1.5;color:var(--muted);margin:7px 0;overflow-wrap:anywhere}
+.community-code-search-status:empty{display:none}
+.community-code-result-card{box-sizing:border-box;max-width:480px;margin-top:10px}
+.community-code-result-card>.community-game-code{max-width:230px;margin:0}
+.community-code-portraits .community-board{max-width:240px;margin:12px auto}
+.community-code-portraits .community-board-column{grid-template-columns:minmax(0,1fr);grid-template-areas:"main" "unison";gap:5px}
+.community-code-details{padding:10px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:13px}
+.community-code-details>summary{cursor:pointer;min-height:24px;line-height:24px}
+.community-code-search-note{font-size:12px;line-height:1.6;margin:0;overflow-wrap:anywhere}
+@media(max-width:400px){.community-code-search-form{gap:5px}.community-code-search-form button{padding:7px 8px;font-size:12px}.community-code-search-input{padding:8px;font-size:12px}}

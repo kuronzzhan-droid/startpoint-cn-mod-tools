@@ -56,7 +56,7 @@ from pathlib import Path
 
 TOOL_DIR = Path(__file__).resolve().parent
 ROOT = TOOL_DIR.parent
-sys.path.insert(0, str(TOOL_DIR))
+pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_mod_tool as core  # noqa: E402
 
 CDN_ROOT = core.resolve_cdn_root_lax()

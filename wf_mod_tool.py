@@ -338,9 +338,8 @@ class VersionProfile:
 
 
 def project_root() -> Path:
-    """Return the checkout root for embedded and flat tool layouts."""
-    tool_dir = Path(__file__).resolve().parent
-    return tool_dir.parent if tool_dir.name.casefold() == "mod-tools" else tool_dir
+    """mod-tools/ 的上一级 = startpoint-cn 仓库根;profiles.json 里的相对路径以此为基准。"""
+    return Path(__file__).resolve().parent.parent
 
 
 def profiles_file() -> Path:
@@ -350,18 +349,6 @@ def profiles_file() -> Path:
 def _resolve_profile_path(value: str) -> Path:
     p = Path(value)
     return p if p.is_absolute() else (project_root() / p).resolve()
-
-
-def _optional_profile_path(
-    entry: dict[str, Any], profile_id: str, key: str
-) -> Path | None:
-    """Resolve an optional path, rejecting an explicitly present empty value."""
-    if key not in entry:
-        return None
-    value = entry[key]
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"profile {key} must be a non-empty path: {profile_id}")
-    return _resolve_profile_path(value)
 
 
 def load_profiles() -> dict[str, Any]:
@@ -421,6 +408,22 @@ TARGET_STORE_HINT = (
 _UNSET_PROFILE = object()
 
 
+class _CdnRootNotFoundError(ValueError):
+    """No CDN seam was configured and no legacy CDN root was discoverable."""
+
+
+def _optional_profile_path(
+    entry: dict[str, Any], profile_id: str, key: str
+) -> Path | None:
+    """Resolve an optional path, rejecting an explicitly present empty value."""
+    if key not in entry:
+        return None
+    value = entry[key]
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"profile {key} must be a non-empty path: {profile_id}")
+    return _resolve_profile_path(value)
+
+
 def _require_existing_directory(
     value: str | os.PathLike[str], *, label: str
 ) -> Path:
@@ -434,6 +437,21 @@ def _require_existing_directory(
     if not directory.is_dir():
         raise ValueError(f"{label} is not an existing directory: {directory}")
     return directory
+
+
+def require_active_store(
+    root: Path | None = None,
+    *,
+    profile: Any = _UNSET_PROFILE,
+    profile_id: str | None = None,
+) -> Path:
+    """Resolve the authoritative store or fail with the shared setup hint."""
+    store = resolve_active_store(
+        root, profile=profile, profile_id=profile_id
+    )
+    if store is None:
+        raise FileNotFoundError(TARGET_STORE_HINT)
+    return store
 
 
 def env_target_store() -> Path | None:
@@ -469,6 +487,9 @@ def resolve_active_store(
         profile = resolve_profile(profile_id or os.environ.get("WF_PROFILE"))
     if profile is not None and getattr(profile, "store", None):
         return _require_existing_directory(profile.store, label="profile store")
+    from wf.paths import configured, path
+    if configured("store"):
+        return _require_existing_directory(path("store"), label="configured store")
     seen: list[Path] = []
     for base in (root, project_root(), Path.cwd()):
         if base is None:
@@ -484,21 +505,6 @@ def resolve_active_store(
         if found:
             return found
     return None
-
-
-def require_active_store(
-    root: Path | None = None,
-    *,
-    profile: Any = _UNSET_PROFILE,
-    profile_id: str | None = None,
-) -> Path:
-    """Resolve the authoritative store or fail with the shared setup hint."""
-    store = resolve_active_store(
-        root, profile=profile, profile_id=profile_id
-    )
-    if store is None:
-        raise FileNotFoundError(TARGET_STORE_HINT)
-    return store
 
 
 # ---------------------------------------------------------------------------
@@ -519,10 +525,6 @@ def looks_like_cdn_root(path: Path) -> bool:
         (path / "archive-common-diff").is_dir()
         or (path / "archive-common-full").is_dir()
     )
-
-
-class _CdnRootNotFoundError(ValueError):
-    """No CDN seam was configured and no legacy CDN root was discoverable."""
 
 
 def _read_server_cdn_dir(server_dir: Path) -> Path | None:

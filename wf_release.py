@@ -25,11 +25,6 @@ from pathlib import Path, PurePosixPath
 from typing import Callable, Iterator, Literal, Mapping
 
 import wf_character_pack as character_pack
-from wf_release_paths import (
-    ReleasePathError,
-    ReleasePaths as _RepoPaths,
-    resolve_release_paths,
-)
 
 
 RootName = Literal["common", "medium", "android", "server"]
@@ -157,22 +152,6 @@ class JsonObjectCodec:
         return character_pack.TableImage(tuple(
             (str(key), _canonical(item)) for key, item in value.items()
         ))
-
-
-class JsonIntegerSetCodec:
-    """Release-facing adapter for the validated built-in integer-set codec."""
-
-    def inspect(
-        self,
-        raw: bytes,
-        claim: character_pack.TableClaim,
-        semantic_claims: tuple[character_pack.SemanticClaim, ...],
-    ) -> character_pack.TableImage:
-        codec = character_pack.DEFAULT_CODECS["json_integer_set"]
-        try:
-            return codec.inspect(raw, claim, semantic_claims)
-        except character_pack.PackPreflightError as exc:
-            raise ReleaseError(f"server JSON integer set: {exc}") from exc
 
 
 def _merge_claimed_rows(
@@ -305,70 +284,6 @@ def _merge_claimed_table_bytes(
                     raise ReleaseError(f"candidate lacks claimed JSON row: {logical}:{key}")
                 live[key] = candidate[key]
             return _ordered_json(live)
-
-        if claim.codec_id == "json_integer_set":
-            candidate = _strict_positive_integer_array(
-                candidate_raw, f"candidate:{logical}"
-            )
-            live = _strict_positive_integer_array(live_raw, f"live:{logical}")
-            candidate_values = set(candidate)
-            live_values = set(live)
-            for key in claim.outer_keys:
-                try:
-                    value = int(key)
-                except ValueError as exc:
-                    raise ReleaseError(
-                        f"invalid claimed JSON integer: {logical}:{key}"
-                    ) from exc
-                if value <= 0 or str(value) != key or value not in candidate_values:
-                    raise ReleaseError(
-                        f"candidate lacks claimed JSON integer: {logical}:{key}"
-                    )
-                if value not in live_values:
-                    live.append(value)
-                    live_values.add(value)
-            return _ordered_json(live)
-
-        if claim.codec_id == "json_event_shop_products":
-            candidate, candidate_rows = _validated_nested_json(
-                claim, candidate_raw, "candidate"
-            )
-            live, _live_rows = _validated_nested_json(
-                claim, live_raw, "live"
-            )
-            for key in claim.outer_keys:
-                record_raw = candidate_rows.get(key)
-                if record_raw is None:
-                    raise ReleaseError(
-                        f"candidate lacks claimed event-shop product: {logical}:{key}"
-                    )
-                record = json.loads(record_raw)
-                for events in live.values():
-                    for products in events.values():
-                        products.pop(key, None)
-                event_type = record["event_type"]
-                event_id = record["event_id"]
-                events = live.setdefault(event_type, {})
-                products = events.setdefault(event_id, {})
-                products[key] = record["product"]
-            return _ordered_json(live)
-
-        if claim.codec_id == "json_rogue_events":
-            candidate, candidate_rows = _validated_nested_json(
-                claim, candidate_raw, "candidate"
-            )
-            live, _live_rows = _validated_nested_json(
-                claim, live_raw, "live"
-            )
-            candidate_events = candidate["events"]
-            live_events = live["events"]
-            for key in claim.outer_keys:
-                if key not in candidate_rows:
-                    raise ReleaseError(
-                        f"candidate lacks claimed rogue event: {logical}:{key}"
-                    )
-                live_events[key] = candidate_events[key]
-            return _ordered_json(live)
     except ReleaseError:
         raise
     except Exception as exc:
@@ -443,7 +358,7 @@ def prepare_runtime_release(
     snapshot_root: Path,
     available_capabilities: tuple[str, ...] = ("dual_form_v1",),
 ) -> PreparedRuntimeRelease:
-    import wf_seris_release_pack as seris_release_pack
+    from wf.deliver import runtime_package as seris_release_pack
 
     package_dir = Path(package_dir)
     errors = seris_release_pack.validate_runtime_test_package(package_dir)
@@ -649,6 +564,51 @@ def _safe_relative(value: str) -> bool:
     return not path.is_absolute() and all(part not in {"", ".", ".."} for part in path.parts)
 
 
+def _extended_length_path(path: Path | str) -> str:
+    """Windows 上返回 `\\\\?\\` 扩展长度形式,其它平台原样返回绝对路径。
+
+    ``rebase_runtime_package`` 把 ``package``(7 字符)顶替成
+    ``.rebased-package.live-rebase-<8hex>``(37 字符),包里每条路径 +30。
+    注册表 ``HKLM\\SYSTEM\\CurrentControlSet\\Control\\FileSystem\\LongPathsEnabled=0``
+    时(本机即是),无前缀的 Win32 API 有两条硬边界:建文件 259 字符、建目录 247
+    字符,越线直接 ``FileNotFoundError``。这是**确定性**故障而不是并发瞬时故障,
+    重试多少次都一样失败,只有扩展长度前缀能绕开 MAX_PATH。
+
+    与 ``wf_character_flow._extended_length_path`` 同源同语义;两个模块各留一份
+    是为了不让 ``wf_release``(被 flow import)反向依赖 flow。
+    """
+    raw = str(path)
+    if os.name != "nt":
+        return os.path.abspath(raw)
+    if raw.startswith("\\\\?\\"):
+        return raw
+    absolute = os.path.abspath(raw)
+    if absolute.startswith("\\\\?\\"):
+        return absolute
+    if absolute.startswith("\\\\"):          # UNC: \\host\share -> \\?\UNC\host\share
+        return "\\\\?\\UNC\\" + absolute[2:]
+    return "\\\\?\\" + absolute
+
+
+def _discard_tree(path: Path | str, *, label: str) -> None:
+    """尽力删掉一棵已经作废的目录树。
+
+    只在异常回卷路径上调用:此时已经有一个真实错误在上抛,清理失败必须让位给它,
+    否则原始死因就被掩盖了。所以这里**报警但不再抛**——同时也绝不 ``ignore_errors``
+    式地静默吞掉:残骸留在盘上必须有人看得见,不能当作"清干净了"。
+    """
+    target = _extended_length_path(path)
+    try:
+        shutil.rmtree(target)
+    except FileNotFoundError:
+        return
+    except OSError as exc:
+        print(
+            f"warning: {label} cleanup failed, residue left on disk: {target}: {exc}",
+            file=sys.stderr,
+        )
+
+
 def _fsync_directory(path: Path) -> None:
     if os.name == "nt":
         return
@@ -736,40 +696,6 @@ def _strict_object(raw: bytes, label: str) -> dict:
     return value
 
 
-def _strict_positive_integer_array(raw: bytes, label: str) -> list[int]:
-    def reject_constant(value: str):
-        raise ValueError(f"non-JSON constant {value}")
-
-    try:
-        value = json.loads(raw.decode("utf-8"), parse_constant=reject_constant)
-    except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
-        raise ReleaseError(f"{label}: invalid JSON: {exc}") from exc
-    if not isinstance(value, list):
-        raise ReleaseError(f"{label}: array required")
-    seen: set[int] = set()
-    for index, item in enumerate(value):
-        if type(item) is not int or item <= 0:
-            raise ReleaseError(
-                f"{label}[{index}]: positive integer required"
-            )
-        if item in seen:
-            raise ReleaseError(f"{label}[{index}]: duplicate integer {item}")
-        seen.add(item)
-    return value
-
-
-def _validated_nested_json(
-    claim: character_pack.TableClaim, raw: bytes, label: str
-) -> tuple[dict, dict[str, bytes]]:
-    codec = character_pack.DEFAULT_CODECS[claim.codec_id]
-    try:
-        image = codec.inspect(raw, claim, claim.semantic_claims)
-    except character_pack.PackPreflightError as exc:
-        raise ReleaseError(f"{label}:{claim.logical_path}: {exc}") from exc
-    value = _strict_object(raw, f"{label}:{claim.logical_path}")
-    return value, dict(image.outer_rows)
-
-
 def rebase_runtime_package(
     package_dir: Path,
     output_dir: Path,
@@ -779,7 +705,7 @@ def rebase_runtime_package(
 ) -> RuntimeRebaseResult:
     """Create a package whose declared full tables preserve the current live baseline."""
     import wf_mod_tool as core
-    import wf_seris_release_pack as release_pack
+    from wf.deliver import runtime_package as release_pack
 
     package_dir = Path(package_dir)
     output_dir = Path(output_dir)
@@ -802,7 +728,10 @@ def rebase_runtime_package(
     errors = validate(package_dir)
     if errors:
         raise ReleaseError("package is invalid before rebase:\n- " + "\n- ".join(errors))
-    if output_dir.exists():
+    # 输出目录名比 `package` 长,里面的深层文件可能已经越过 MAX_PATH;凡是要看见
+    # 树里每一个文件的操作都必须走扩展长度形式,否则越线文件在无前缀 API 下"不存在"。
+    long_output = Path(_extended_length_path(output_dir))
+    if long_output.exists():
         raise ReleaseError("runtime rebase output already exists")
     source_resolved = package_dir.resolve()
     output_parent = output_dir.parent.resolve()
@@ -817,9 +746,12 @@ def rebase_runtime_package(
     source_manifest_raw = manifest_path.read_bytes()
     claims = character_pack._parse_transaction_claims(manifest)  # type: ignore[attr-defined]
     source_files = release_pack._scan_files(package_dir)  # type: ignore[attr-defined]
-    output_dir.parent.mkdir(parents=True, exist_ok=True)
+    os.makedirs(_extended_length_path(output_dir.parent), exist_ok=True)
+    # 暂存目录名 `.<output>.live-rebase-<8hex>` 比 `package` 长 30 字符;`dir=` 带上
+    # 扩展长度前缀,mkdtemp 返回的路径以及它派生出的每一条子路径都自动继承前缀。
     staging = Path(tempfile.mkdtemp(
-        prefix=f".{output_dir.name}.live-rebase-", dir=output_dir.parent
+        prefix=f".{output_dir.name}.live-rebase-",
+        dir=_extended_length_path(output_dir.parent),
     ))
     try:
         for relative in sorted(source_files - {"manifest.json"}):
@@ -889,13 +821,15 @@ def rebase_runtime_package(
                 "rebased package validation failed:\n- "
                 + "\n- ".join(staged_errors)
             )
-        os.replace(staging, output_dir)
-        final_errors = validate(output_dir)
+        os.replace(staging, long_output)
+        final_errors = validate(long_output)
         if final_errors:
             raise ReleaseError(
                 "renamed rebased package validation failed:\n- "
                 + "\n- ".join(final_errors)
             )
+        # 返回值必须是 plain 形式:wf_character_flow._activate_rebased_package 会断言
+        # output.parent == workspace.root,带 `\\?\` 前缀的路径过不了那道门。
         return RuntimeRebaseResult(
             output_dir=output_dir,
             source_manifest_sha256=_sha256(source_manifest_raw),
@@ -903,10 +837,8 @@ def rebase_runtime_package(
             table_count=len(rebase_facts),
         )
     except Exception:
-        if staging.exists():
-            shutil.rmtree(staging, ignore_errors=True)
-        if output_dir.exists():
-            shutil.rmtree(output_dir, ignore_errors=True)
+        _discard_tree(staging, label="runtime rebase staging")
+        _discard_tree(long_output, label="runtime rebase output")
         raise
 
 
@@ -1425,17 +1357,25 @@ class AtomicReleasePublisher:
                 raise ReleaseError(detail) from exc
 
 
-def _resolve_repo_paths(profile_id: str) -> _RepoPaths:
-    try:
-        return resolve_release_paths(profile_id, module_file=Path(__file__))
-    except ReleasePathError as exc:
-        raise ReleaseError(str(exc)) from exc
-
-
 def _repo_paths(profile_id: str) -> tuple[Path, character_pack.LiveRoots, Path]:
-    """Legacy tuple view retained for callers outside this module."""
-    paths = _resolve_repo_paths(profile_id)
-    return paths.tool_root, paths.live_roots, paths.cdn_root
+    if profile_id != "cn":
+        raise ReleaseError("character release is CN-only")
+    import wf_mod_tool as core
+
+    repo_root = Path(__file__).resolve().parent.parent
+    profile = core.resolve_profile("cn")
+    if profile is None or profile.id != "cn" or not Path(profile.store).is_dir():
+        raise ReleaseError("active CN profile/store is unavailable")
+    store = Path(profile.store).resolve()
+    cdn_root = Path(os.environ.get("WF_CDN_DIR", repo_root / ".cdn" / "cn")).resolve()
+    live_roots = character_pack.LiveRoots(
+        common=store,
+        medium=store.parent / "medium_upload",
+        android=store.parent / "android_upload",
+        server=repo_root / "assets",
+        protected=(cdn_root,),
+    )
+    return repo_root, live_roots, cdn_root
 
 
 def _current_git_head(repo_root: Path) -> str:
@@ -1461,12 +1401,12 @@ def rebase_package(
     generator_git_head: str | None = None,
 ) -> RuntimeRebaseResult:
     """Rebase declared runtime-table rows without touching live roots."""
-    paths = _resolve_repo_paths(profile_id)
-    git_head = generator_git_head or _current_git_head(paths.tool_root)
+    repo_root, live_roots, _cdn_root = _repo_paths(profile_id)
+    git_head = generator_git_head or _current_git_head(repo_root)
     return rebase_runtime_package(
         Path(package_dir),
         Path(output_dir),
-        live_roots=paths.live_roots,
+        live_roots=live_roots,
         generator_git_head=git_head,
     )
 
@@ -1529,7 +1469,7 @@ def _new_transaction(
     *,
     installed_package_dir: Path | None = None,
 ) -> tuple[dict, character_pack.PackTransaction]:
-    import wf_seris_release_pack as seris_release_pack
+    from wf.deliver import runtime_package as seris_release_pack
 
     errors = seris_release_pack.validate_runtime_test_package(package_dir)
     if errors:
@@ -1726,37 +1666,35 @@ def preflight_package(
     package_dir = Path(package_dir)
     manifest = character_pack.load_manifest(package_dir / "manifest.json")
     mode = _validate_qa_contract(manifest)
-    paths = _resolve_repo_paths(profile_id)
-    canonical_base = detect_canonical_base_version(paths.cdn_root, paths.server_root)
+    repo_root, live_roots, cdn_root = _repo_paths(profile_id)
+    canonical_base = detect_canonical_base_version(cdn_root, repo_root)
     import wf_release_guard
 
-    charpkg_strand = wf_release_guard.charpkg_strand_report(
-        paths.cdn_root, paths.server_root
-    )
+    charpkg_strand = wf_release_guard.charpkg_strand_report(cdn_root, repo_root)
     if mode == "production":
         status = _production_workspace_status(package_dir)
         tail = _reachable_client_base(
             manifest["requires_client_base"],
-            repo_root=paths.server_root,
-            cdn_root=paths.cdn_root,
+            repo_root=repo_root,
+            cdn_root=cdn_root,
             canonical_base=canonical_base,
         )
         _manifest, transaction = _new_production_transaction(
             package_dir,
-            paths.live_roots,
-            paths.cdn_root,
+            live_roots,
+            cdn_root,
             canonical_base,
             installed_package_dir=installed_package_dir,
         )
     else:
         status = None
         tail = ActiveReleaseStore(
-            paths.cdn_root, canonical_base_version=canonical_base
+            cdn_root, canonical_base_version=canonical_base
         ).read_validated_base().validated_chain_tail
         _manifest, transaction = _new_transaction(
             package_dir,
-            paths.live_roots,
-            paths.cdn_root,
+            live_roots,
+            cdn_root,
             canonical_base,
             installed_package_dir=installed_package_dir,
         )
@@ -1779,33 +1717,38 @@ def publish_package(
     confirmation: str,
     installed_package_dir: Path | None = None,
 ) -> ReleaseResult:
-    """Publish a production or explicitly authorized runtime-test package."""
+    """Publish a production or explicitly authorized runtime-test package.
+
+    Callers own the client capability gate (wfx_gate): wf_character_flow and
+    this module's CLI (``_client_capability_gate``) run it before calling here.
+    A new caller must do the same.
+    """
     package_dir = Path(package_dir)
     manifest = character_pack.load_manifest(package_dir / "manifest.json")
     mode = _validate_qa_contract(manifest, confirmation=confirmation)
-    paths = _resolve_repo_paths(profile_id)
-    if _server_running(paths.server_root):
+    repo_root, live_roots, cdn_root = _repo_paths(profile_id)
+    if _server_running(repo_root):
         raise ReleaseError("CN server must be stopped before character publication")
-    canonical_base = detect_canonical_base_version(paths.cdn_root, paths.server_root)
+    canonical_base = detect_canonical_base_version(cdn_root, repo_root)
     # 重锚防孤儿门禁:被 active.json 丢弃的 charpkg 历史必须仍可达 tail,
     # 缺口自动补 charbridge 副本,补不齐则拒绝发布(2026-07-18 链重锚事故)
     import wf_release_guard
 
-    staging_root = paths.tool_root / "work" / "character_releases" / "staging"
-    snapshot_root = paths.tool_root / "work" / "character_releases" / "snapshots"
+    staging_root = repo_root / "work" / "character_releases" / "staging"
+    snapshot_root = repo_root / "work" / "character_releases" / "snapshots"
     if mode == "production":
         _production_workspace_status(package_dir)
         _reachable_client_base(
             manifest["requires_client_base"],
-            repo_root=paths.server_root,
-            cdn_root=paths.cdn_root,
+            repo_root=repo_root,
+            cdn_root=cdn_root,
             canonical_base=canonical_base,
         )
         prepared = _prepare_production_release(
             package_dir,
             installed_package_dir=installed_package_dir,
-            live_roots=paths.live_roots,
-            cdn_root=paths.cdn_root,
+            live_roots=live_roots,
+            cdn_root=cdn_root,
             canonical_base_version=canonical_base,
             staging_root=staging_root,
             snapshot_root=snapshot_root,
@@ -1814,8 +1757,8 @@ def publish_package(
         prepared = prepare_runtime_release(
             package_dir,
             installed_package_dir=installed_package_dir,
-            live_roots=paths.live_roots,
-            cdn_root=paths.cdn_root,
+            live_roots=live_roots,
+            cdn_root=cdn_root,
             canonical_base_version=canonical_base,
             staging_root=staging_root,
             snapshot_root=snapshot_root,
@@ -1823,21 +1766,21 @@ def publish_package(
 
     def prepare_live_guard() -> Callable[[], None] | None:
         report = wf_release_guard.ensure_charpkg_history_bridged(
-            paths.cdn_root, paths.server_root, assume_lock_held=True
+            cdn_root, repo_root, assume_lock_held=True
         )
         receipts = tuple(report["bridge_receipts"])
         if not receipts:
             return None
         return lambda: wf_release_guard.rollback_charpkg_bridges(
-            receipts, paths.cdn_root, assume_lock_held=True
+            receipts, cdn_root, assume_lock_held=True
         )
 
     try:
         result = AtomicReleasePublisher(
-            paths.cdn_root, canonical_base_version=canonical_base
+            cdn_root, canonical_base_version=canonical_base
         ).publish(
             prepared.payload,
-            server_running=lambda: _server_running(paths.server_root),
+            server_running=lambda: _server_running(repo_root),
             prepare_live_guard=prepare_live_guard,
         )
     except Exception as exc:
@@ -1975,13 +1918,44 @@ def reanchor_active_ledger(
     被账本丢下的 charpkg 边会变成孤儿,故**先补 charbridge 副本再换账本**:桥是
     纯增量的可见边,提前建好不会留下任何搁浅窗口。
     """
-    paths = _resolve_repo_paths(profile_id)
-    with _release_lock(paths.cdn_root / ".character-release.lock"):
+    repo_root, _live_roots, cdn_root = _repo_paths(profile_id)
+    with _release_lock(cdn_root / ".character-release.lock"):
         return _reanchor_locked(
-            paths.cdn_root,
-            paths.server_root,
-            target_base=target_base,
-            dry_run=dry_run,
+            cdn_root, repo_root, target_base=target_base, dry_run=dry_run
+        )
+
+
+def _client_capability_gate(
+    package_dir: Path, profile_id: str, client_profile: str | None
+) -> None:
+    """CLI publish exit: the same client capability gate as wf_character_flow.
+
+    publish_package itself stays gate-free (callers own the gate): the flow
+    gates before calling it, and this CLI gates here, so running
+    ``wf_release.py publish`` directly can no longer skip the check.
+    Default receiving profile is the local device (mod-tools/client_profiles.json).
+    """
+    import wf_mod_tool as core
+    import wfx_gate
+
+    stores: list[Path] = []
+    store_profile = core.resolve_profile(profile_id)
+    if store_profile is not None:
+        for candidate in (store_profile.store, getattr(store_profile, "fallback", None)):
+            if candidate is not None and Path(candidate).is_dir():
+                stores.append(Path(candidate))
+    try:
+        report = wfx_gate.check_package(
+            package_dir, stores, client_profile or wfx_gate.default_publish_profile()
+        )
+    except wfx_gate.GateError as exc:
+        raise ReleaseError(str(exc)) from exc
+    for line in report.lines():
+        print(line, file=sys.stderr)
+    if not report.ok:
+        raise ReleaseError(
+            f"client capability gate rejected the package for profile {report.profile}: "
+            + "; ".join(report.problems)
         )
 
 
@@ -2000,6 +1974,11 @@ def main(argv: list[str] | None = None) -> int:
     rebase.add_argument("--profile", default="cn")
     publish = sub.choices["publish"]
     publish.add_argument("--confirm", required=True)
+    publish.add_argument(
+        "--client-profile",
+        help="receiving client profile in mod-tools/client_profiles.json "
+             "(default local-mumu); the capability gate runs before publishing",
+    )
     args = parser.parse_args(argv)
     try:
         if args.command == "rebase":
@@ -2026,6 +2005,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             print(_canonical(report).decode("utf-8"))
             return 0 if report.get("can_prepare") else 3
+        _client_capability_gate(args.package_dir, args.profile, args.client_profile)
         result = publish_package(
             args.package_dir,
             args.profile,

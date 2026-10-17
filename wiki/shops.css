@@ -1,0 +1,47 @@
+.dungeon-rewards{min-width:0;margin:14px 0;padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.dungeon-rewards h2{font-size:20px;margin:0 0 12px}
+.dungeon-shop-links,.shop-related{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.dungeon-shop-link,.dungeon-shops-entry{display:inline-flex;align-items:center;gap:5px;padding:8px 12px;border:1px solid var(--accent-dark,#138b80);border-radius:8px;background:var(--soft);color:var(--accent-dark,#138b80);text-decoration:none;font-weight:600;font-size:13px}
+.reward-quest-body{padding:0 12px 12px}
+.reward-quest-body h3{font-size:15px;margin:14px 0 8px}
+.reward-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(230px,100%),1fr));gap:8px}
+.reward-card{display:flex;align-items:center;gap:8px;min-width:0;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--soft);text-decoration:none;color:var(--ink)}
+a.reward-card:hover,a.reward-card:focus-visible{border-color:var(--accent-dark,#138b80)}
+.reward-icon{width:44px;height:44px;object-fit:contain;flex:none}
+.reward-card-text{display:grid;gap:3px;flex:1;min-width:0;overflow-wrap:anywhere}
+.reward-card-text strong{font-size:14px}
+.reward-amount{font-size:13px;font-weight:600}
+.reward-probability{font-size:11px;color:var(--muted)}
+.reward-kind{flex:none;align-self:flex-start;font-size:10px;color:var(--muted)}
+.reward-notes{font-size:12px;line-height:1.7;margin:10px 0;padding-left:20px;overflow-wrap:anywhere;color:var(--muted)}
+.reward-source{font-size:11px;line-height:1.6;overflow-wrap:anywhere;margin-top:18px}
+.shops-page{min-width:0}
+.shops-page h1{font-size:26px;margin:14px 0}
+.shop-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.shop-search,.shop-dungeon-filter{min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit;box-sizing:border-box;max-width:100%}
+.shop-search{flex:1;min-width:min(240px,100%);max-width:460px}
+.shop-dungeon-filter{max-width:340px}
+.shop-count{font-size:12px;margin:10px 0}
+.shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(240px,100%),1fr));gap:10px}
+.shop-card{display:flex;flex-direction:column;justify-content:center;min-width:0;height:104px;box-sizing:border-box;padding:14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);text-decoration:none}
+.shop-card:hover,.shop-card:focus-visible{border-color:var(--accent-dark,#138b80);box-shadow:0 3px 12px #0002}
+.shop-card h2{font-size:17px;line-height:1.5;margin:0 0 7px;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.shop-card p{font-size:12px;margin:0}
+.shop-exchanges{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr));align-items:start;gap:12px}
+.shop-exchange{min-width:0;padding:14px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.shop-exchange h3{font-size:14px;margin:0 0 8px}.shop-exchange h4{font-size:13px;margin:14px 0 7px}
+.shop-exchange .reward-grid{grid-template-columns:1fr}
+.shop-stock,.shop-dates{font-size:11px;line-height:1.6;margin:8px 0 0;overflow-wrap:anywhere}
+.shop-more{display:block;margin:16px auto;padding:10px 24px}
+.shops-page [hidden]{display:none!important}
+@media(max-width:640px){
+.dungeon-rewards{padding:12px}.dungeon-rewards h2{font-size:18px}
+.dungeon-header{flex-wrap:wrap}.dungeon-shops-entry{margin-left:auto}
+.reward-quest-body{padding:0 9px 9px}.reward-grid{grid-template-columns:1fr}
+.reward-card-text strong{font-size:13px}.reward-icon{width:40px;height:40px}
+.shops-page h1{font-size:22px}.shop-toolbar{gap:8px}
+.shop-search,.shop-dungeon-filter{width:100%;max-width:none;min-height:42px}
+.shop-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.shop-card{height:90px;padding:10px}.shop-card h2{font-size:14px}.shop-card p{font-size:11px}
+.shop-exchanges{grid-template-columns:1fr}.shop-exchange{padding:12px}
+}

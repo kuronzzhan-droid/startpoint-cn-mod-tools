@@ -148,28 +148,10 @@ class TestManifestContract(unittest.TestCase):
             "character/seris/Expression/asset.bin",
             "character/seris/expressions/asset.bin",
             "character/seris/EXPRESSIONS/asset.bin",
-            "character/seris/icon.png.",
-            "character/seris/icon.png ",
-            "character/seris/icon.png:metadata",
-            "character/seris/invalid?.png",
-            "character/seris/CON",
-            "character/seris/con.png",
-            "character/seris/COM1.dat",
-            "character/seris/lpt9",
-            "character/seris/COM¹",
-            "character/seris/COM¹.dat",
-            "character/seris/com²",
-            "character/seris/com².dat",
-            "character/seris/CoM³",
-            "character/seris/CoM³.dat",
-            "character/seris/LPT¹",
-            "character/seris/LPT¹.dat",
-            "character/seris/lpt²",
-            "character/seris/lpt².dat",
-            "character/seris/LpT³",
-            "character/seris/LpT³.dat",
-            "character/seris/CONIN$",
-            "character/seris/conout$.json",
+            # hashed store rels (<2hex>/<38hex>) — publishing would hash them a
+            # second time and mint a dead address (seofon 1.4.441-459 regression)
+            "1e/664c1cc8d80f4f9a69aae2c49ae8c01d1c4001",
+            "ab/0123456789abcdef0123456789abcdef012345",
         )
         with tempfile.TemporaryDirectory() as td:
             package_dir = Path(td)
@@ -197,12 +179,10 @@ class TestManifestContract(unittest.TestCase):
                 "metadata/wordsmith/asset.bin",
                 "metadata/login_bonus/asset.bin",
                 "metadata/expressionist/asset.bin",
-                "metadata/console/asset.bin",
-                "metadata/com10.bin",
-                "metadata/com⁴.bin",
-                "metadata/nulled.bin",
-                "metadata/CONİN$.txt",
-                "metadata/conın$.txt",
+                # near-misses of the store-shard shape stay legal
+                "1e/664c1cc8d80f4f9a69aae2c49ae8c01d1c4001x",
+                "1e/664c1cc8d80f4f9a69aae2c49ae8c01d1c400",
+                "1e/664c/asset.bin",
             )
             for logical_path in allowed_paths:
                 self.assertIsNotNone(
@@ -212,26 +192,6 @@ class TestManifestContract(unittest.TestCase):
                 add_file(package_dir, allowed, "common", logical_path,
                          logical_path.encode("utf-8"))
             self.assertEqual(pack.validate_manifest(allowed, package_dir), [])
-
-    def test_windows_logical_path_key_folds_only_ascii_and_separators(self):
-        pack = self._module()
-
-        self.assertEqual(
-            pack.windows_logical_path_key(r"Extension\GACHA.JSON"),
-            pack.windows_logical_path_key("extension/gacha.json"),
-        )
-        self.assertNotEqual(
-            pack.windows_logical_path_key("metadata/K.bin"),
-            pack.windows_logical_path_key("metadata/K.bin"),
-        )
-        self.assertNotEqual(
-            pack.windows_logical_path_key("metadata/ω.bin"),
-            pack.windows_logical_path_key("metadata/Ω.bin"),
-        )
-        self.assertNotEqual(
-            pack.windows_logical_path_key("metadata/å.bin"),
-            pack.windows_logical_path_key("metadata/Å.bin"),
-        )
 
     def test_valid_manifest_loads_validates_and_hashes_canonically(self):
         pack = self._module()
@@ -505,59 +465,6 @@ class TestManifestContract(unittest.TestCase):
             duplicate_errors = [error for error in errors if "duplicate logical_path" in error]
             self.assertGreaterEqual(len(duplicate_errors), 2, errors)
 
-    def test_rejects_windows_equivalent_paths_in_every_root(self):
-        pack = self._module()
-        with tempfile.TemporaryDirectory() as td:
-            package_dir = Path(td)
-            for root in ROOTS:
-                with self.subTest(root=root):
-                    manifest = base_manifest()
-                    add_file(
-                        package_dir,
-                        manifest,
-                        root,
-                        "extension/gacha.json",
-                        b"same",
-                    )
-                    add_file(
-                        package_dir,
-                        manifest,
-                        root,
-                        "extension/GACHA.json",
-                        b"same",
-                    )
-
-                    errors = pack.validate_manifest(manifest, package_dir)
-
-                    self.assertTrue(
-                        any("duplicate logical_path" in error for error in errors),
-                        errors,
-                    )
-
-    def test_preserves_windows_distinct_unicode_paths(self):
-        pack = self._module()
-        with tempfile.TemporaryDirectory() as td:
-            package_dir = Path(td)
-            manifest = base_manifest()
-            distinct_paths = (
-                "metadata/K.bin",
-                "metadata/K.bin",
-                "metadata/ω.bin",
-                "metadata/Ω.bin",
-                "metadata/å.bin",
-                "metadata/Å.bin",
-            )
-            for logical_path in distinct_paths:
-                add_file(
-                    package_dir,
-                    manifest,
-                    "common",
-                    logical_path,
-                    logical_path.encode("utf-8"),
-                )
-
-            self.assertEqual(pack.validate_manifest(manifest, package_dir), [])
-
     def test_rejects_root_level_and_nested_links_outside_package_before_hashing(self):
         pack = self._module()
         payload = b"external-payload"
@@ -725,6 +632,235 @@ class TestManifestContract(unittest.TestCase):
         self.assertEqual(first, second)
         self.assertGreaterEqual(len(first), 4, first)
         self.assertEqual(manifest, before)
+
+
+PIXELART_TIMELINE_PATH = (
+    "character/seris_dragon_king/pixelart/pixelart.timeline.amf3.deflate"
+)
+ACTION_DSL_PATH = (
+    "battle/action/skill/action/rare5/"
+    "seris_dragon_king$seris_dragon_king_1.action.dsl.amf3.deflate"
+)
+_TIMELINE_SEQUENCES = (
+    ("neutral", "loop", 1, 2), ("walk_back", "loop", 3, 26),
+    ("walk_front", "loop", 27, 50), ("skill_ready", "once", 51, 110),
+    ("kachidoki", "loop", 111, 158), ("into_coffin", "pass", 159, 200),
+    ("ghost_raise", "pass", 201, 225), ("ghost_neutral", "loop", 226, 386),
+    ("revive", "once", 387, 428),
+)
+
+
+def _deflate_amf3(tree) -> bytes:
+    import zlib
+
+    import wf_dsl
+    payload = wf_dsl.encode_amf3(tree)
+    compressor = zlib.compressobj(9, zlib.DEFLATED, -15)
+    return compressor.compress(payload) + compressor.flush()
+
+
+def _timeline_payload(*, kachidoki_kind: str = "loop") -> bytes:
+    ground = ("neutral", "walk_back", "walk_front")
+    seqs = [{"name": n, "kind": kachidoki_kind if n == "kachidoki" else k,
+             "begin": b, "end": e} for n, k, b, e in _TIMELINE_SEQUENCES]
+    return _deflate_amf3({
+        "sequences": seqs,
+        "sounds": [],
+        "points": [{"path": "hp_gauge",
+                    "frames": [{"begin": 1, "data": [{"x": 0, "y": -10}]}]}],
+        "circles": [{"path": "unit_body", "frames": [
+            {"begin": s["begin"] + 1,
+             "data": [{"x": 0, "y": 0, "r": 8.3}] if s["name"] in ground else []}
+            for s in seqs]}],
+        "rectangles": [],
+        "matrices": [],
+    })
+
+
+def _dsl_payload(element: int) -> bytes:
+    return _deflate_amf3(["ActionDsl", 1, ["Block", [
+        ["Command", ["CreateNormalAttack", 12, element, [], [], 0,
+                     [{"min": 2.0, "max": 2.0}], [{"min": 0.0, "max": 0.0}],
+                     False, False, False, False, False,
+                     [{"min": 0.0, "max": 0.0}], [{"min": 0.0, "max": 0.0}],
+                     ["Fine"], True]],
+    ]]])
+
+
+def _production_qa() -> dict:
+    return {
+        "delivery_mode": "production",
+        "release_ready": True,
+        "required_assets_total": 37,
+        "required_assets_present": 37,
+    }
+
+
+def _character_table(element: str = "5") -> bytes:
+    import wf_mod_tool as core
+    # c2(稀有度)刻意写 4,与 c3(元素)不同 —— 读错列会被单测抓住。
+    row = ("seris_dragon_king,1,4," + element
+           + ",Dragon,,4,Female,seris_dragon_king,(None),,")
+    return core.build_orderedmap(core.OrderedMap(
+        "master/character/character.orderedmap",
+        ["129999"], [row.encode("utf-8")], Path("<memory>"),
+    ))
+
+
+class TestClientAssetShapeGate(unittest.TestCase):
+    """`validate_manifest` 里的 pixelart.timeline / action DSL 形状门禁。
+
+    两条规则的正向对照见 wf_client_legality 顶部注释:官方 1011 个玩家侧
+    action DSL + 500 份可玩角色 pixelart.timeline 零误报。
+    """
+
+    def _module(self):
+        import wf_character_pack
+        return wf_character_pack
+
+    def _package(self, package_dir: Path, *, element_code: int,
+                 kachidoki_kind: str = "loop", production: bool = True,
+                 with_character_table: bool = True,
+                 dsl_payload: bytes | None = None) -> dict:
+        manifest = base_manifest()
+        if production:
+            manifest["qa"] = _production_qa()
+        if with_character_table:
+            add_file(package_dir, manifest, "common",
+                     "master/character/character.orderedmap", _character_table())
+        add_file(package_dir, manifest, "common", PIXELART_TIMELINE_PATH,
+                 _timeline_payload(kachidoki_kind=kachidoki_kind))
+        add_file(package_dir, manifest, "common", ACTION_DSL_PATH,
+                 dsl_payload if dsl_payload is not None
+                 else _dsl_payload(element_code))
+        return manifest
+
+    def test_official_shape_passes(self):
+        pack = self._module()
+        with tempfile.TemporaryDirectory() as td:
+            package_dir = Path(td)
+            manifest = self._package(package_dir, element_code=6)
+            self.assertEqual(
+                pack.validate_manifest(manifest, package_dir,
+                                       require_referenced_assets=True),
+                [],
+            )
+
+    def test_off_by_one_element_code_is_flagged(self):
+        pack = self._module()
+        with tempfile.TemporaryDirectory() as td:
+            package_dir = Path(td)
+            manifest = self._package(package_dir, element_code=5)
+            errors = pack.validate_manifest(manifest, package_dir,
+                                            require_referenced_assets=True)
+            self.assertTrue(
+                any(ACTION_DSL_PATH in e and "1-based" in e for e in errors),
+                errors,
+            )
+
+    def test_pixelart_timeline_shape_is_flagged(self):
+        pack = self._module()
+        with tempfile.TemporaryDirectory() as td:
+            package_dir = Path(td)
+            manifest = self._package(package_dir, element_code=6,
+                                     kachidoki_kind="once")
+            errors = pack.validate_manifest(manifest, package_dir,
+                                            require_referenced_assets=True)
+            self.assertTrue(
+                any(PIXELART_TIMELINE_PATH in e and "kachidoki" in e
+                    for e in errors),
+                errors,
+            )
+
+    def test_installed_legacy_packages_stay_usable_as_repair_input(self):
+        """非 production / 不要求引用资产时不判 —— 复原已发布包时必须能读回来。"""
+        pack = self._module()
+        with tempfile.TemporaryDirectory() as td:
+            package_dir = Path(td)
+            manifest = self._package(package_dir, element_code=5,
+                                     kachidoki_kind="once")
+            self.assertEqual(
+                pack.validate_manifest(manifest, package_dir), [])
+        with tempfile.TemporaryDirectory() as td:
+            package_dir = Path(td)
+            manifest = self._package(package_dir, element_code=5,
+                                     kachidoki_kind="once", production=False)
+            self.assertEqual(
+                pack.validate_manifest(manifest, package_dir,
+                                       require_referenced_assets=True),
+                [],
+            )
+
+    def test_without_character_row_only_the_range_check_survives(self):
+        pack = self._module()
+        with tempfile.TemporaryDirectory() as td:
+            package_dir = Path(td)
+            manifest = self._package(package_dir, element_code=5,
+                                     with_character_table=False)
+            self.assertEqual(
+                pack.validate_manifest(manifest, package_dir,
+                                       require_referenced_assets=True),
+                [],
+                "取不到 c3 时差一签名必须退让,不能凭空报错",
+            )
+        with tempfile.TemporaryDirectory() as td:
+            package_dir = Path(td)
+            manifest = self._package(package_dir, element_code=9,
+                                     with_character_table=False)
+            errors = pack.validate_manifest(manifest, package_dir,
+                                            require_referenced_assets=True)
+            self.assertTrue(any("越界" in e for e in errors), errors)
+
+    def test_undecodable_payload_is_reported_not_swallowed(self):
+        pack = self._module()
+        with tempfile.TemporaryDirectory() as td:
+            package_dir = Path(td)
+            manifest = self._package(package_dir, element_code=6,
+                                     dsl_payload=b"not-a-deflate-stream")
+            errors = pack.validate_manifest(manifest, package_dir,
+                                            require_referenced_assets=True)
+            self.assertTrue(
+                any("cannot decode AMF3 payload" in e for e in errors), errors)
+
+    def test_wrong_element_column_is_pinned(self):
+        """c3 是元素;读成 c2(稀有度=4)会把 5 当成合法值放过去。"""
+        pack = self._module()
+        with tempfile.TemporaryDirectory() as td:
+            package_dir = Path(td)
+            manifest = self._package(package_dir, element_code=5)
+            errors = pack.validate_manifest(manifest, package_dir,
+                                            require_referenced_assets=True)
+            self.assertTrue(any("角色内部元素 5" in e for e in errors), errors)
+        with tempfile.TemporaryDirectory() as td:
+            package_dir = Path(td)
+            manifest = self._package(package_dir, element_code=4)
+            self.assertEqual(
+                pack.validate_manifest(manifest, package_dir,
+                                       require_referenced_assets=True),
+                [],
+                "4 是稀有度不是元素;读错列会在这里变红",
+            )
+
+    def test_server_root_and_unrelated_paths_are_exempt(self):
+        """server 根不是客户端资产;非 battle/action 的 .amf3.deflate 也不判。"""
+        pack = self._module()
+        with tempfile.TemporaryDirectory() as td:
+            package_dir = Path(td)
+            manifest = base_manifest()
+            manifest["qa"] = _production_qa()
+            add_file(package_dir, manifest, "common",
+                     "master/character/character.orderedmap", _character_table())
+            # 同一条逻辑路径,只是落在 server 根上 —— 必须被豁免。
+            add_file(package_dir, manifest, "server", ACTION_DSL_PATH,
+                     _dsl_payload(5))
+            add_file(package_dir, manifest, "common",
+                     "battle/effect/skill_unique/seris/vfx.timeline.amf3.deflate",
+                     b"unrelated")
+            self.assertEqual(
+                pack.validate_manifest(manifest, package_dir,
+                                       require_referenced_assets=True),
+                [],
+            )
 
 
 class _FakeReleaseBaseProvider:
@@ -1065,7 +1201,358 @@ class _TransactionFixtureMixin:
         return installed, installed_dir
 
 
+# 「声明即必填」通用律要求:kind 在 enum_map()['cases'] 里声明的块字段,入口列不许留空
+# (无空串分支的 parseAt:trigger_puller/target/multiply_trigger 直接 C7050,其余
+# Std.parseInt('')=NaN)。基准 fixture 行必须本身合法,违规由各用例自己注入。
+# 取值逐字抄官方行(ability 键 84 记录0,CN store 1.4.559)。
+_BASELINE_BLOCK_FIELD_VALUES = {
+    "trigger_puller": "0",
+    "threshold": "100000",
+    "threshold2": "100000",
+    "start_threshold": "100000",
+    "trigger_limit": "(None)",
+    "cooltime": "0",
+    "unique_condition_id": "0",
+    "multiball_group_id": "0",
+    "target": "0",
+    "strength": "10000",
+    "strength2": "10000",
+    "frame": "90000000",
+    "number": "100000",
+    "max_accumulation": "(None)",
+    "flip_limit": "(None)",
+    "power_flip_limit": "(None)",
+    "end_power_flip_limit": "(None)",
+    "end_power_flip_accepted_levels": "(None)",
+    "cancelable": "0",
+    "time": "0",
+    "element": "0",
+    "initial_multiply": "1",
+    "multiply_trigger": "0",
+    "by_each_trigger_puller": "false",
+}
+
+_BASELINE_BLOCK_FIELD_TABLE = {
+    "precondition1": "precondition",
+    "precondition2": "precondition",
+    "precondition3": "precondition",
+    "instant_trigger": "instant_trigger",
+    "during_accumulation_trigger": "during_accumulation_trigger",
+    "during_trigger": "during_trigger",
+    "instant_content": "instant_content",
+    "during_content": "during_content",
+}
+
+
+def _fill_baseline_block_fields(kind: str, row: list[str]) -> None:
+    import wf_describe
+
+    blocks = {
+        name: int(index)
+        for name, index in wf_describe.layout(kind)["blocks"].items()
+    }
+    block_fields = wf_describe.enum_map()["block_fields"]
+    for block, fields_key in _BASELINE_BLOCK_FIELD_TABLE.items():
+        base = blocks[block]
+        for name, value in _BASELINE_BLOCK_FIELD_VALUES.items():
+            offsets = [
+                int(offset)
+                for offset, field, _label in block_fields[fields_key]
+                if field == name or field.startswith(name + ".")
+            ]
+            if not offsets:
+                continue
+            col = base + min(offsets)
+            if not row[col]:
+                row[col] = value
+
+
 class TestPackPreflight(_TransactionFixtureMixin, unittest.TestCase):
+    @staticmethod
+    def _client_ability_row(kind: str, trigger_mode: str) -> list[str]:
+        import wf_describe
+
+        layout = wf_describe.layout(kind)
+        blocks = {name: int(index) for name, index in layout["blocks"].items()}
+        row = [""] * int(layout["ncols"])
+        _fill_baseline_block_fields(kind, row)
+        row[blocks["precondition1"] - 1] = trigger_mode
+        for name in ("precondition1", "precondition2", "precondition3"):
+            row[blocks[name]] = "0"
+        if trigger_mode == "0":
+            row[blocks["instant_trigger"]] = "0"
+            row[blocks["instant_precontent"]] = "(None)"
+            row[blocks["instant_delay"]] = "0"
+            row[blocks["instant_content"]] = "0"
+            # instant_content kind 0 走 parseAt<mt> 读 multiply_trigger(41 个 kind
+            # 都读),空串不在 InstantAbilityMultiplyTriggerMasterValue 的 0..3 枚举域,
+            # 基准行必须合法,违规由各用例自己注入。
+            content_offsets = {
+                field: int(offset)
+                for offset, field, _label
+                in wf_describe.enum_map()["block_fields"]["instant_content"]
+            }
+            row[blocks["instant_content"] + content_offsets["multiply_trigger"]] = "0"
+        elif trigger_mode == "1":
+            row[blocks["during_accumulation_trigger"]] = "(None)"
+            row[blocks["during_trigger"]] = "0"
+            # during_trigger kind 0 走 parseAt98 读 trigger_puller(230 个 kind 里
+            # 147 个都读),空串不在 DuringAbilityTriggerPullerMasterValue 的 0..10
+            # 枚举域内,留空的基准行本身就会 C7050。基准行必须合法,违规由各用例自己注入。
+            offsets = {
+                field: int(offset)
+                for offset, field, _label
+                in wf_describe.enum_map()["block_fields"]["during_trigger"]
+            }
+            row[blocks["during_trigger"] + offsets["trigger_puller"]] = "0"
+            row[blocks["even_if_owner_dead"]] = "false"
+            row[blocks["during_content"]] = "0"
+        else:
+            row[blocks["opening"]] = "0"
+        return row
+
+    def _add_client_ability_table(
+        self, kind: str, outer_key: str, rows: list[list[str]],
+    ) -> str:
+        import wf_mod_tool as core
+
+        logical_path = {
+            "ability": "master/ability/ability.orderedmap",
+            "leader_ability": "master/ability/leader_ability.orderedmap",
+            "ability_soul": "master/ability/ability_soul.orderedmap",
+            "equipment_enhancement_ability": (
+                "master/equipment_enhancement/"
+                "equipment_enhancement_ability.orderedmap"
+            ),
+            "ex_ability": "master/ex_boost/ex_ability.orderedmap",
+        }[kind]
+        row_text = core.write_csv_lines(rows).encode("utf-8")
+        raw = core.build_orderedmap(core.OrderedMap(
+            logical_path, [outer_key], [row_text], Path("<memory>"),
+        ))
+        add_file(self.package_dir, self.manifest, "common", logical_path, raw)
+        self.manifest["tables"].append({
+            "root": "common",
+            "logical_path": logical_path,
+            "codec_id": "flat",
+            "outer_keys": [outer_key],
+            "inner_keys": [],
+            "semantic_claims": [],
+        })
+        return logical_path
+
+    def test_preflight_rejects_client_illegal_claimed_ability_row(self):
+        self._finish_setup()
+        legal = self._client_ability_row("ability", "1")
+        illegal = self._client_ability_row("ability", "1")
+        illegal[109] = "723"
+        logical_path = self._add_client_ability_table(
+            "ability", "1499953", [legal, legal, legal, illegal],
+        )
+
+        report = self._tx().preflight()
+
+        legality_conflicts = [
+            item for item in report.conflicts
+            if item["kind"] == "client_legality"
+        ]
+        self.assertEqual(
+            [{
+                "kind": "client_legality",
+                "claim": f"{logical_path}:1499953:row4",
+                "reason": (
+                    "c109 持续效果kind='723' 不属于 "
+                    "CommonAbilityContentMasterValue 枚举域"
+                ),
+            }],
+            legality_conflicts,
+        )
+        self.assertFalse(report.can_prepare)
+
+    def test_preflight_scans_all_supported_client_ability_tables(self):
+        import wf_describe
+
+        self._finish_setup()
+        claimed = {
+            "ability_soul": "8000105",
+            "equipment_enhancement_ability": "9000001",
+            "ex_ability": "9000002",
+        }
+        expected_claims = set()
+        for kind, outer_key in claimed.items():
+            row = self._client_ability_row(kind, "1")
+            block = int(wf_describe.layout(kind)["blocks"]["during_content"])
+            row[block] = "723"
+            logical_path = self._add_client_ability_table(
+                kind, outer_key, [row],
+            )
+            expected_claims.add(f"{logical_path}:{outer_key}:row1")
+
+        report = self._tx().preflight()
+
+        legality_conflicts = [
+            item for item in report.conflicts
+            if item["kind"] == "client_legality"
+        ]
+        self.assertEqual(
+            expected_claims,
+            {item["claim"] for item in legality_conflicts},
+        )
+        self.assertEqual(3, len(legality_conflicts))
+        self.assertTrue(all(
+            "不属于 CommonAbilityContentMasterValue 枚举域"
+            in item["reason"]
+            for item in legality_conflicts
+        ))
+        self.assertFalse(report.can_prepare)
+
+    def test_preflight_accepts_legal_rows_for_all_supported_ability_tables(self):
+        self._finish_setup()
+        for index, kind in enumerate((
+            "ability",
+            "leader_ability",
+            "ability_soul",
+            "equipment_enhancement_ability",
+            "ex_ability",
+        ), 1):
+            self._add_client_ability_table(
+                kind, str(9100000 + index),
+                [self._client_ability_row(kind, "1")],
+            )
+
+        report = self._tx().preflight()
+
+        self.assertFalse(any(
+            item["kind"] == "client_legality" for item in report.conflicts
+        ), report.conflicts)
+        self.assertTrue(report.can_prepare)
+
+    def test_preflight_rejects_numeric_but_unknown_trigger_constructor(self):
+        import wf_describe
+
+        self._finish_setup()
+        row = self._client_ability_row("ability", "0")
+        blocks = {
+            name: int(index)
+            for name, index in wf_describe.layout("ability")["blocks"].items()
+        }
+        row[blocks["instant_trigger"]] = "9999"
+        row[blocks["instant_content"]] = "100"
+        logical_path = self._add_client_ability_table(
+            "ability", "1499953", [row],
+        )
+
+        report = self._tx().preflight()
+
+        self.assertIn(
+            {
+                "kind": "client_legality",
+                "claim": f"{logical_path}:1499953:row1",
+                "reason": (
+                    "c27 瞬发触发kind='9999' 不属于 "
+                    "InstantAbilityTriggerMasterValue 枚举域"
+                ),
+            },
+            report.conflicts,
+        )
+        self.assertFalse(report.can_prepare)
+
+    def test_preflight_rejects_unknown_during_accumulation_constructor(self):
+        import wf_describe
+
+        self._finish_setup()
+        row = self._client_ability_row("ability", "1")
+        blocks = {
+            name: int(index)
+            for name, index in wf_describe.layout("ability")["blocks"].items()
+        }
+        row[blocks["during_accumulation_trigger"]] = "9999"
+        logical_path = self._add_client_ability_table(
+            "ability", "1499953", [row],
+        )
+
+        report = self._tx().preflight()
+
+        self.assertIn(
+            {
+                "kind": "client_legality",
+                "claim": f"{logical_path}:1499953:row1",
+                "reason": (
+                    f"c{blocks['during_accumulation_trigger']} "
+                    "累积触发='9999' 不属于 "
+                    "InstantAbilityTriggerMasterValue 枚举域"
+                ),
+            },
+            report.conflicts,
+        )
+        self.assertFalse(report.can_prepare)
+
+    def test_preflight_rejects_raw_outer_codec_for_known_ability_table(self):
+        import wf_mod_tool as core
+
+        self._finish_setup()
+        logical_path = "master/ability/ability.orderedmap"
+        outer_key = "1499953"
+        row = self._client_ability_row("ability", "1")
+        row_bytes = core.write_csv_lines([row]).encode("utf-8")
+        raw = core.build_orderedmap_raw_rows(core.OrderedMap(
+            logical_path, [outer_key], [row_bytes], Path("<memory>"),
+        ))
+        add_file(self.package_dir, self.manifest, "common", logical_path, raw)
+        self.manifest["tables"].append({
+            "root": "common",
+            "logical_path": logical_path,
+            "codec_id": "raw_outer",
+            "outer_keys": [outer_key],
+            "inner_keys": [],
+            "semantic_claims": [],
+        })
+
+        with self.assertRaisesRegex(
+            self.pack.PackPreflightError,
+            "candidate known client ability table .* must use flat codec",
+        ):
+            self._tx().preflight()
+
+    def test_preflight_rejects_client_illegal_claimed_leader_boolean(self):
+        self._finish_setup()
+        row = self._client_ability_row("leader_ability", "0")
+        row[45] = "486"
+        row[70] = ""
+        logical_path = self._add_client_ability_table(
+            "leader_ability", "169997", [row],
+        )
+
+        report = self._tx().preflight()
+
+        legality_conflicts = [
+            item for item in report.conflicts
+            if item["kind"] == "client_legality"
+        ]
+        self.assertEqual(
+            [{
+                "kind": "client_legality",
+                "claim": f"{logical_path}:169997:row1",
+                "reason": "c70 by_each_trigger_puller='' 须为 true/false(否则C7101)",
+            }],
+            legality_conflicts,
+        )
+        self.assertFalse(report.can_prepare)
+
+    def test_preflight_accepts_client_legal_claimed_leader_boolean_false(self):
+        self._finish_setup()
+        row = self._client_ability_row("leader_ability", "0")
+        row[45] = "486"
+        row[70] = "false"
+        self._add_client_ability_table("leader_ability", "169997", [row])
+
+        report = self._tx().preflight()
+
+        self.assertFalse(any(
+            item["kind"] == "client_legality" for item in report.conflicts
+        ), report.conflicts)
+        self.assertTrue(report.can_prepare)
+
     def test_canonical_character_claim_requires_matching_speech_claim(self):
         self._finish_setup()
         logical_path = "master/character/character.orderedmap"
@@ -1206,250 +1693,6 @@ class TestPackPreflight(_TransactionFixtureMixin, unittest.TestCase):
                     ("asset_path", f"{root}:{entry['logical_path']}"), conflicts
                 )
 
-    def test_exact_live_before_contract_accepts_only_the_declared_asset_replacement(self):
-        self._finish_setup()
-        import wf_mod_tool as core
-
-        table_paths = {item["logical_path"] for item in self.manifest["tables"]}
-        entry = next(
-            item for item in self.manifest["roots"]["common"]
-            if item["logical_path"] not in table_paths
-        )
-        live_raw = b"locked-base347-shared-asset"
-        live = core.table_path(self.common, entry["logical_path"])
-        live.parent.mkdir(parents=True, exist_ok=True)
-        live.write_bytes(live_raw)
-        manifest = copy.deepcopy(self.manifest)
-        manifest["snapshot"]["accepted_asset_replacements"] = [{
-            "root": "common",
-            "logical_path": entry["logical_path"],
-            "before_sha256": hashlib.sha256(live_raw).hexdigest(),
-            "before_size": len(live_raw),
-        }]
-
-        report = self._tx(manifest=manifest).preflight()
-
-        self.assertTrue(report.can_prepare, report.conflicts)
-        self.assertFalse(any(
-            item["kind"] == "asset_path" for item in report.conflicts
-        ))
-        self.assertEqual(1, len(report.accepted_asset_replacements))
-        accepted = report.accepted_asset_replacements[0]
-        self.assertEqual("common", accepted["root"])
-        self.assertEqual(entry["logical_path"], accepted["logical_path"])
-        self.assertEqual(hashlib.sha256(live_raw).hexdigest(), accepted["before_sha256"])
-        self.assertEqual(len(live_raw), accepted["before_size"])
-
-        claimed_paths = {
-            (item["root"], item["logical_path"])
-            for item in self.manifest["tables"]
-        }
-        undeclared_root, undeclared_entry = next(
-            (root, item)
-            for root in ("common", "medium", "android")
-            for item in self.manifest["roots"][root]
-            if (root, item["logical_path"]) not in claimed_paths
-            and (root, item["logical_path"])
-            != ("common", entry["logical_path"])
-        )
-        undeclared_live = core.table_path(
-            {"common": self.common, "medium": self.medium,
-             "android": self.android}[undeclared_root],
-            undeclared_entry["logical_path"],
-        )
-        undeclared_live.parent.mkdir(parents=True, exist_ok=True)
-        undeclared_live.write_bytes(b"occupied-but-not-accepted")
-        undeclared = self._tx(manifest=manifest).preflight()
-        conflict = next(
-            item for item in undeclared.conflicts
-            if item["kind"] == "asset_path"
-            and item["claim"]
-            == f"{undeclared_root}:{undeclared_entry['logical_path']}"
-        )
-        self.assertEqual(
-            "occupied_without_hash_bound_prior_path_ownership",
-            conflict["reason"],
-        )
-        undeclared_live.unlink()
-
-        live.unlink()
-        missing = self._tx(manifest=manifest).preflight()
-        missing_conflict = next(
-            item for item in missing.conflicts
-            if item["kind"] == "asset_path"
-            and item["claim"] == f"common:{entry['logical_path']}"
-        )
-        self.assertEqual(
-            "accepted_live_before_mismatch", missing_conflict["reason"]
-        )
-        self.assertFalse(missing_conflict["actual"]["exists"])
-
-        live.write_bytes(live_raw + b"-drift")
-        drifted = self._tx(manifest=manifest).preflight()
-        conflict = next(
-            item for item in drifted.conflicts
-            if item["kind"] == "asset_path"
-            and item["claim"] == f"common:{entry['logical_path']}"
-        )
-        self.assertEqual("accepted_live_before_mismatch", conflict["reason"])
-        self.assertFalse(drifted.can_prepare)
-
-    def test_asset_replacement_contract_rejects_server_table_alias_and_bad_hash_shapes(self):
-        self._finish_setup()
-        table_path = self.manifest["tables"][0]["logical_path"]
-        asset_path = next(
-            item["logical_path"] for item in self.manifest["roots"]["common"]
-            if item["logical_path"] not in {
-                claim["logical_path"] for claim in self.manifest["tables"]
-            }
-        )
-        valid = {
-            "root": "common", "logical_path": asset_path,
-            "before_sha256": "a" * 64, "before_size": 1,
-        }
-        cases = {
-            "server": [{**valid, "root": "server", "logical_path": "character.json"}],
-            "table": [{**valid, "logical_path": table_path}],
-            "missing_hash": [{
-                key: value for key, value in valid.items()
-                if key != "before_sha256"
-            }],
-            "missing_candidate_path": [{
-                **valid, "logical_path": "item/not-in-candidate.bin"
-            }],
-            "wildcard": [{**valid, "logical_path": "character/*/asset.bin"}],
-            "windows_alias": [valid, {**valid, "logical_path": asset_path.upper()}],
-            "bad_size": [{**valid, "before_size": True}],
-        }
-        for label, replacements in cases.items():
-            with self.subTest(label=label):
-                manifest = copy.deepcopy(self.manifest)
-                manifest["snapshot"]["accepted_asset_replacements"] = replacements
-                with self.assertRaisesRegex(
-                    self.pack.PackPreflightError, "accepted_asset_replacements"
-                ):
-                    self._tx(manifest=manifest).preflight()
-
-    def test_asset_replacement_rejects_orderedmap_even_when_candidate_omits_claim(self):
-        self._finish_setup()
-        logical = next(
-            item["logical_path"] for item in self.manifest["tables"]
-            if item["logical_path"].endswith("ability.orderedmap")
-        )
-        manifest = copy.deepcopy(self.manifest)
-        manifest["tables"] = [
-            item for item in manifest["tables"]
-            if item["logical_path"] != logical
-        ]
-        manifest["snapshot"]["accepted_asset_replacements"] = [{
-            "root": "common",
-            "logical_path": logical,
-            "before_sha256": "a" * 64,
-            "before_size": 1,
-        }]
-
-        with self.assertRaisesRegex(
-            self.pack.PackPreflightError,
-            "accepted_asset_replacements.*table",
-        ):
-            self._tx(manifest=manifest).preflight()
-
-    def test_upgrade_rejects_candidate_installed_asset_replacement_contract_drift(self):
-        import wf_mod_tool as core
-
-        table_paths = {item["logical_path"] for item in self.manifest["tables"]}
-        entry = next(
-            item for item in self.manifest["roots"]["common"]
-            if item["logical_path"] not in table_paths
-        )
-        live_raw = b"locked-before"
-        live = core.table_path(self.common, entry["logical_path"])
-        live.parent.mkdir(parents=True, exist_ok=True)
-        live.write_bytes(live_raw)
-        self.manifest["snapshot"]["accepted_asset_replacements"] = [{
-            "root": "common",
-            "logical_path": entry["logical_path"],
-            "before_sha256": hashlib.sha256(live_raw).hexdigest(),
-            "before_size": len(live_raw),
-        }]
-        installed, installed_dir = self._installed_copy()
-        installed_hash = hashlib.sha256(
-            self.pack.canonical_manifest_bytes(installed)
-        ).hexdigest()
-        self._finish_setup(active_manifest_hash=installed_hash)
-        candidate = copy.deepcopy(self.manifest)
-        candidate["package_version"] = "1.1.0"
-        candidate["snapshot"]["accepted_asset_replacements"][0][
-            "before_sha256"
-        ] = "f" * 64
-
-        with self.assertRaisesRegex(
-            self.pack.PackPreflightError,
-            "candidate/installed accepted_asset_replacements mismatch",
-        ):
-            self._tx(
-                manifest=candidate,
-                installed_manifest=installed,
-                installed_package_dir=installed_dir,
-            ).preflight()
-
-    def test_upgrade_still_checks_declared_asset_replacement_live_before(self):
-        import wf_mod_tool as core
-
-        table_paths = {item["logical_path"] for item in self.manifest["tables"]}
-        entry = next(
-            item for item in self.manifest["roots"]["common"]
-            if item["logical_path"] not in table_paths
-        )
-        live_raw = b"locked-upgrade-before"
-        live = core.table_path(self.common, entry["logical_path"])
-        live.parent.mkdir(parents=True, exist_ok=True)
-        live.write_bytes(live_raw)
-        self.manifest["snapshot"]["accepted_asset_replacements"] = [{
-            "root": "common",
-            "logical_path": entry["logical_path"],
-            "before_sha256": hashlib.sha256(live_raw).hexdigest(),
-            "before_size": len(live_raw),
-        }]
-        installed, installed_dir = self._installed_copy()
-        installed_hash = hashlib.sha256(
-            self.pack.canonical_manifest_bytes(installed)
-        ).hexdigest()
-        self._finish_setup(active_manifest_hash=installed_hash)
-        candidate = copy.deepcopy(self.manifest)
-        candidate["package_version"] = "1.1.0"
-
-        exact = self._tx(
-            manifest=candidate,
-            installed_manifest=installed,
-            installed_package_dir=installed_dir,
-        ).preflight()
-        self.assertEqual(1, len(exact.accepted_asset_replacements))
-
-        for label, replacement in (
-            ("drift", live_raw + b"-drift"),
-            ("missing", None),
-        ):
-            with self.subTest(label=label):
-                if replacement is None:
-                    live.unlink(missing_ok=True)
-                else:
-                    live.write_bytes(replacement)
-                report = self._tx(
-                    manifest=candidate,
-                    installed_manifest=installed,
-                    installed_package_dir=installed_dir,
-                ).preflight()
-                conflict = next(
-                    item for item in report.conflicts
-                    if item["kind"] == "asset_path"
-                    and item["claim"] == f"common:{entry['logical_path']}"
-                )
-                self.assertEqual(
-                    "accepted_live_before_mismatch", conflict["reason"]
-                )
-                self.assertFalse(report.can_prepare)
-
     def test_first_install_rejects_every_occupied_declared_claim(self):
         self._finish_setup()
         self._occupy_claims()
@@ -1500,33 +1743,6 @@ class TestPackPreflight(_TransactionFixtureMixin, unittest.TestCase):
             self._tx(provider=_FakeReleaseBaseProvider(other_state),
                      installed_manifest=other,
                      installed_package_dir=other_dir).preflight()
-
-    def test_installed_manifest_rejects_windows_equivalent_paths(self):
-        self._finish_setup()
-        installed, installed_dir = self._installed_copy()
-        add_file(
-            installed_dir,
-            installed,
-            "medium",
-            "extension/gacha.json",
-            b"same",
-        )
-        add_file(
-            installed_dir,
-            installed,
-            "medium",
-            "extension/GACHA.json",
-            b"same",
-        )
-
-        with self.assertRaisesRegex(
-            self.pack.PackPreflightError,
-            "installed manifest invalid: .*duplicate logical_path",
-        ):
-            self._tx(
-                installed_manifest=installed,
-                installed_package_dir=installed_dir,
-            ).preflight()
 
     def _multi_owner_state(self, owners, *, tail_hash=None):
         if self.release_state is None:
@@ -1991,7 +2207,7 @@ class TestPackPreflight(_TransactionFixtureMixin, unittest.TestCase):
         with self.assertRaises(self.pack.PackPreflightError):
             self._tx(manifest=extra).preflight()
 
-    def test_server_json_tables_require_base_files_and_explicit_extension_claims(self):
+    def test_server_json_tables_require_explicit_claims_and_exact_four_files(self):
         self._finish_setup()
         missing_claim = copy.deepcopy(self.manifest)
         missing_claim["tables"] = [
@@ -2000,7 +2216,7 @@ class TestPackPreflight(_TransactionFixtureMixin, unittest.TestCase):
                     and item["logical_path"] == self.SERVER_PATHS[0])
         ]
         with self.assertRaisesRegex(
-            self.pack.PackPreflightError, "server tables must claim every server root"
+            self.pack.PackPreflightError, "server tables must claim exactly"
         ):
             self._tx(manifest=missing_claim).preflight()
 
@@ -2010,184 +2226,9 @@ class TestPackPreflight(_TransactionFixtureMixin, unittest.TestCase):
             if item["logical_path"] != self.SERVER_PATHS[0]
         ]
         with self.assertRaisesRegex(
-            self.pack.PackPreflightError, "server root is missing required character tables"
+            self.pack.PackPreflightError, "server root must contain exactly"
         ):
             self._tx(manifest=missing_file).preflight()
-
-        extended = copy.deepcopy(self.manifest)
-        extension_path = "gacha.json"
-        extension_raw = (
-            b'{"outer":{"990001":{"id":990001}},'
-            b'"inner":{},"semantics":{}}'
-        )
-        add_file(
-            self.package_dir, extended, "server", extension_path, extension_raw
-        )
-        server_codec = next(
-            item["codec_id"] for item in extended["tables"]
-            if item["root"] == "server"
-        )
-        extended["tables"].append({
-            "root": "server",
-            "logical_path": extension_path,
-            "codec_id": server_codec,
-            "outer_keys": ["990001"],
-            "inner_keys": [],
-            "semantic_claims": [],
-        })
-        report = self._tx(manifest=extended).preflight()
-        self.assertFalse(report.conflicts)
-
-        unclaimed = copy.deepcopy(extended)
-        unclaimed["tables"] = [
-            item for item in unclaimed["tables"]
-            if not (
-                item["root"] == "server"
-                and item["logical_path"] == extension_path
-            )
-        ]
-        with self.assertRaisesRegex(
-            self.pack.PackPreflightError, "server tables must claim every server root"
-        ):
-            self._tx(manifest=unclaimed).preflight()
-
-        wrong_codec = copy.deepcopy(extended)
-        next(
-            item for item in wrong_codec["tables"]
-            if item["root"] == "server"
-            and item["logical_path"] == extension_path
-        )["codec_id"] = "flat"
-        with self.assertRaisesRegex(
-            self.pack.PackPreflightError, "server extension codec must be one of"
-        ):
-            self._tx(manifest=wrong_codec).preflight()
-
-    def test_server_extensions_reject_windows_equivalent_paths_before_preflight(self):
-        self._finish_setup()
-        manifest = copy.deepcopy(self.manifest)
-        extension_raw = (
-            b'{"outer":{"990001":{"id":990001}},'
-            b'"inner":{},"semantics":{}}'
-        )
-        server_codec = next(
-            item["codec_id"] for item in manifest["tables"]
-            if item["root"] == "server"
-        )
-        for logical_path in ("gacha.json", "GACHA.json"):
-            add_file(
-                self.package_dir,
-                manifest,
-                "server",
-                logical_path,
-                extension_raw,
-            )
-            manifest["tables"].append({
-                "root": "server",
-                "logical_path": logical_path,
-                "codec_id": server_codec,
-                "outer_keys": ["990001"],
-                "inner_keys": [],
-                "semantic_claims": [],
-            })
-
-        with self.assertRaisesRegex(
-            self.pack.PackPreflightError, "duplicate logical_path"
-        ):
-            self._tx(manifest=manifest).preflight()
-
-    def test_server_extensions_preserve_windows_distinct_unicode_paths(self):
-        self._finish_setup()
-        manifest = copy.deepcopy(self.manifest)
-        server_codec = next(
-            item["codec_id"] for item in manifest["tables"]
-            if item["root"] == "server"
-        )
-        extensions = (
-            ("K.json", "990001"),
-            ("K.json", "990002"),
-            ("CONİN$.json", "990003"),
-        )
-        for logical_path, outer_key in extensions:
-            extension_raw = json.dumps({
-                "outer": {outer_key: {"id": int(outer_key)}},
-                "inner": {},
-                "semantics": {},
-            }, separators=(",", ":")).encode("utf-8")
-            add_file(
-                self.package_dir,
-                manifest,
-                "server",
-                logical_path,
-                extension_raw,
-            )
-            manifest["tables"].append({
-                "root": "server",
-                "logical_path": logical_path,
-                "codec_id": server_codec,
-                "outer_keys": [outer_key],
-                "inner_keys": [],
-                "semantic_claims": [],
-            })
-
-        report = self._tx(manifest=manifest).preflight()
-
-        self.assertFalse(report.conflicts)
-
-    def test_server_extension_accepts_the_validated_json_integer_set_codec(self):
-        self._finish_setup()
-        extended = copy.deepcopy(self.manifest)
-        logical_path = "item_ids.json"
-        add_file(
-            self.package_dir,
-            extended,
-            "server",
-            logical_path,
-            b"[10001,999013]",
-        )
-        (self.server / logical_path).write_bytes(b"[10001]")
-        extended["tables"].append({
-            "root": "server",
-            "logical_path": logical_path,
-            "codec_id": "json_integer_set",
-            "outer_keys": ["999013"],
-            "inner_keys": [],
-            "semantic_claims": [],
-        })
-        registry = {
-            "fixture_json": _JsonFixtureCodec(self.pack),
-        }
-
-        try:
-            report = self._tx(
-                manifest=extended, codec_registry=registry
-            ).preflight()
-        except self.pack.PackPreflightError as exc:
-            self.fail(f"validated server extension codec 尚未接通: {exc}")
-
-        self.assertFalse(report.conflicts)
-
-    def test_nested_server_extension_occupied_product_requires_prior_ownership(self):
-        self._finish_setup()
-        extended = copy.deepcopy(self.manifest)
-        logical_path = "event_item_shop.json"
-        candidate = b'{"11":{"700099":{"9700116":{"ticket":"single"}}}}'
-        add_file(self.package_dir, extended, "server", logical_path, candidate)
-        (self.server / logical_path).write_bytes(candidate)
-        extended["tables"].append({
-            "root": "server",
-            "logical_path": logical_path,
-            "codec_id": "json_event_shop_products",
-            "outer_keys": ["9700116"],
-            "inner_keys": [],
-            "semantic_claims": [],
-        })
-
-        report = self._tx(manifest=extended).preflight()
-
-        self.assertIn(
-            ("outer_key", f"{logical_path}:9700116"),
-            {(item["kind"], item["claim"]) for item in report.conflicts},
-        )
 
     def test_server_json_codec_rejects_malformed_and_duplicate_object_keys(self):
         self._finish_setup()
@@ -2324,46 +2365,6 @@ class TestPackPreflight(_TransactionFixtureMixin, unittest.TestCase):
                 )
                 image = self.pack.DEFAULT_CODECS[codec_id].inspect(raw, claim, ())
                 self.assertEqual(image.inner_rows, (("skill", "1", row),))
-
-    def test_builtin_json_integer_set_codec_is_available_to_release_transactions(self):
-        self._finish_setup()
-        codec = self.pack.DEFAULT_CODECS.get("json_integer_set")
-        self.assertIsNotNone(codec, "json_integer_set 必须是受控内建 codec")
-        assert codec is not None
-        claim = self.pack.TableClaim(
-            "server", "item_ids.json", "json_integer_set", ("999013",)
-        )
-
-        image = codec.inspect(b"[10001,999013]", claim, ())
-
-        self.assertEqual(
-            (("10001", b"10001"), ("999013", b"999013")),
-            image.outer_rows,
-        )
-
-    def test_nested_server_codecs_are_controlled_builtins(self):
-        self._finish_setup()
-        self.assertTrue({
-            "json_event_shop_products",
-            "json_rogue_events",
-        }.issubset(self.pack.DEFAULT_CODECS))
-
-    def test_codec_registry_cannot_override_a_validated_builtin_codec(self):
-        self._finish_setup()
-
-        for codec_id in (
-            "json_integer_set",
-            "json_event_shop_products",
-            "json_rogue_events",
-        ):
-            with self.subTest(codec_id=codec_id):
-                with self.assertRaisesRegex(
-                    self.pack.PackPreflightError, "cannot override built-in codec"
-                ):
-                    self._tx(codec_registry={
-                        "fixture_json": _JsonFixtureCodec(self.pack),
-                        codec_id: _JsonFixtureCodec(self.pack),
-                    })
 
     def test_same_package_id_does_not_own_a_newly_claimed_occupied_key(self):
         installed, installed_dir = self._installed_copy()

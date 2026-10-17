@@ -78,5 +78,14 @@
   "owl_direct",
   "owl_pf"
  ],
- "featured_weight": 4
+ "featured_weight": 4,
+ "_说明high_threat": "作者维护的高威胁 boss 规则。prefixes 用 startswith，exact 只做完整代号匹配；命中后禁时限、禁 r>=99 属性墙，诅咒 HP 乘数不超过 1.5。",
+ "high_threat": {
+  "prefixes": [
+   "guardian_golem"
+  ],
+  "exact": [
+   "lich_wind_expert_100"
+  ]
+ }
 }

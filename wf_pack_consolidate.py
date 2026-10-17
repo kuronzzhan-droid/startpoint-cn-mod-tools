@@ -45,10 +45,10 @@ import time
 import zipfile
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_chain_squash as squash  # noqa: E402
-import wf_mod_tool as core  # noqa: E402
 import wf_quest_lib as quest  # noqa: E402
+import wf_mod_tool as core
 import wf_release  # noqa: E402
 
 DEFAULT_BASE = squash.DEFAULT_BASE
@@ -63,9 +63,7 @@ def _resolve_dirs(cdn: str | None = None, repo_root: str | None = None) -> tuple
     if cdn:
         cdn_root = Path(cdn).resolve()
     else:
-        cdn_root = core.resolve_cdn_root_lax(
-            legacy_root=root / ".cdn" / "cn"
-        )
+        cdn_root = core.resolve_cdn_root_lax(legacy_root=root / ".cdn" / "cn")
     return cdn_root, root
 
 

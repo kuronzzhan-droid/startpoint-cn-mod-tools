@@ -37,7 +37,7 @@ from pathlib import Path
 
 MOD_DIR = Path(__file__).resolve().parent
 ROOT = MOD_DIR.parent
-sys.path.insert(0, str(MOD_DIR))
+pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_mod_tool as _m  # noqa: E402
 
 SALT = "K6R9T9Hz22OpeIGEWB0ui6c6PYFQnJGy"

@@ -23,7 +23,7 @@ import sys
 
 TOOL_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(TOOL_DIR)
-sys.path.insert(0, TOOL_DIR)
+pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_assets as wa            # noqa: E402
 import wf_mod_tool as core        # noqa: E402
 import wf_quest_lib as q          # noqa: E402

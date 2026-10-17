@@ -35,7 +35,7 @@ from pathlib import Path
 
 MOD_DIR = Path(__file__).resolve().parent
 ROOT = MOD_DIR.parent
-sys.path.insert(0, str(MOD_DIR))
+pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_mod_tool as core  # noqa: E402
 import wf_quest_lib as qlib  # noqa: E402
 import wf_boss  # noqa: E402
@@ -253,14 +253,14 @@ def main() -> None:
         #   ability/status/action_skill = 今晚 v1 应用前的备份(含用户自己的历史手改,正确基线)
         #   leader/soul/wab            = 首次套件运行时的备份(套件动它们之前的状态)
         # 不能取"最老备份"——GUI 时代的更旧备份会回滚用户手改甚至行错位(161093 乱码案例)
-        baseline_store = core.require_active_store()
+        store0 = core.require_active_store()
         PIN = {core.ABILITY_LOGICAL: ".bak-wfmod-balance-20260709-003745",
                core.STATUS_LOGICAL: ".bak-wfmod-balance-20260709-003745",
                "master/skill/action_skill.orderedmap": ".bak-wfmod-balance-20260709-003745",
                LEADER: None, SOUL: None, WAB: None}   # None = 最早 .bak-wfmod-suite-*
         restored = 0
         for lg, pin in PIN.items():
-            p = core.table_path(baseline_store, lg)
+            p = core.table_path(store0, lg)
             if pin:
                 bak = p.with_name(p.name + pin)
                 if not bak.exists():

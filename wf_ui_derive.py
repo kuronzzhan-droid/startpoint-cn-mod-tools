@@ -7,7 +7,7 @@ from pathlib import Path
 
 from PIL import Image
 
-import wf_canary_skin as skin
+from wf.art import image_fit as skin
 
 
 # 裁切语义来自已真机验证的 Kyle 金丝雀。尺寸不属于共享表，必须由模板实测结果传入。

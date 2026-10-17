@@ -373,7 +373,9 @@ def describe_line(row: list[str], kind: str) -> str:
         if ic:
             seg = (seg + " → " + ic) if seg else ic
         if delay:
-            seg += f"(延迟{delay / 60:g}秒)"
+            # InstantAbilitySource treats the CSV cell as seconds and derives
+            # frames internally (delayFrame = delaySec * 60).
+            seg += f"(延迟{delay:g}秒)"
         parts.append(seg)
 
     return " ".join(p for p in parts if p).strip()
@@ -387,7 +389,7 @@ if __name__ == "__main__":
     # 自测:瓦格纳词条 + 队长技
     import sys, io
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-    sys.path.insert(0, str(HERE))
+    pass  # Imports resolve from this checkout/package, not external source copies.
     import wf_mod_tool as core
     store = core.require_active_store()
     ab = core.load_table("master/ability/ability.orderedmap", store, store)

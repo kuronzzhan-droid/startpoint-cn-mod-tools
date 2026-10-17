@@ -1,0 +1,8 @@
+.community-game-code{margin:12px 0;padding:10px;border:1px solid var(--line);border-radius:7px;background:var(--soft);min-width:0}
+.community-game-code-label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted)}
+.community-game-code-value{box-sizing:border-box;max-width:100%;width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--ink);font:700 17px/1.4 ui-monospace,Consolas,monospace;letter-spacing:.12em;user-select:all}
+.community-game-code-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:9px}
+.community-game-code-actions button{min-height:36px;padding:7px 10px;border-radius:5px;font-size:12px}
+.community-game-code-copy-status,.community-game-code-status,.community-game-code-note{font-size:12px;line-height:1.5;overflow-wrap:anywhere}.community-game-code-note{margin:8px 0 0}
+.community-game-code-manager{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}.community-game-code-manager>summary{cursor:pointer;font-size:13px;color:var(--ink)}
+.community-game-code-actions button:disabled{opacity:.55;cursor:default}
