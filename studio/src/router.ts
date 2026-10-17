@@ -7,6 +7,9 @@ export type Route =
 
 export function parse(hash: string): Route {
   const parts = hash.replace(/^#\/?/, "").split("/").filter(Boolean).map(decodeURIComponent);
+  // Short deep link: #/character/139985[/tab]
+  if (parts[0] === "character" && parts[1])
+    return { work: "content", shop: "characters", id: parts[1], tab: parts[2] };
   if (parts[0] === "patches") return { work: "patches", archive: parts[1] };
   if (parts[0] === "content" && parts[1] === "boss") return { work: "content", shop: "boss" };
   if (parts[0] === "content" && parts[1] === "characters" && parts[2])

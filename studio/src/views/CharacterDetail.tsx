@@ -1,7 +1,8 @@
 import { useEffect, useState } from "preact/hooks";
 import { AbilityGroup, AbilityRow, api, CharacterDetail, ColumnLabel } from "../api";
 import { href } from "../router";
-import { ElementBadge, Notice, OriginBadge, Rarity, StatusStrip } from "./common";
+import { Avatar, ElementBadge, Notice, OriginBadge, Rarity, StatusStrip } from "./common";
+import { AssetsTab } from "./AssetsTab";
 import { PixelPlayer } from "./PixelPlayer";
 
 const TABS: { id: string; label: string }[] = [
@@ -10,6 +11,7 @@ const TABS: { id: string; label: string }[] = [
   { id: "board3", label: "三板（觉醒）" },
   { id: "skill", label: "技能" },
   { id: "pixel", label: "像素小人" },
+  { id: "assets", label: "全套资源" },
 ];
 
 export function CharacterDetailView({ id, tab }: { id: string; tab?: string }) {
@@ -32,9 +34,10 @@ export function CharacterDetailView({ id, tab }: { id: string; tab?: string }) {
     <section class="page detail">
       <BackLink />
       <header class="char-header">
-        <ElementBadge element={detail.element} />
+        <Avatar id={detail.id} element={detail.element} size={64} />
         <div class="char-header-main">
           <h1>
+            <ElementBadge element={detail.element} />
             {detail.name}
             <Rarity value={detail.rarity} />
           </h1>
@@ -62,6 +65,8 @@ export function CharacterDetailView({ id, tab }: { id: string; tab?: string }) {
         <BoardTab detail={detail} boardId={active} />
       ) : active === "skill" ? (
         <SkillTab detail={detail} />
+      ) : active === "assets" ? (
+        <AssetsTab characterId={detail.id} />
       ) : (
         <PixelPlayer characterId={detail.id} />
       )}

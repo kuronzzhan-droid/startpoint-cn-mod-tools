@@ -239,3 +239,35 @@ table.patches td, table.patches th { padding: 7px 12px; border-bottom: 1px solid
   .status-strip { grid-template-columns: 1fr; }
   .char-grid { grid-template-columns: 1fr; }
 }
+
+/* M3.1: avatars and asset inventory */
+.avatar { flex: none; border-radius: 10px; object-fit: cover; background: var(--surface-2); border: 1px solid var(--border); }
+.char-name .el-badge, h1 .el-badge { width: 18px; height: 18px; font-size: 11px; margin-right: 6px; vertical-align: 2px; }
+.char-header .avatar { border-radius: 14px; }
+.asset-summary { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin: 8px 0 14px; font-size: 13px; }
+.asset-summary .toc { display: flex; gap: 10px; flex-wrap: wrap; font-size: 12.5px; }
+.asset-group { margin-bottom: 22px; scroll-margin-top: 64px; }
+.asset-group h3 { margin-bottom: 8px; }
+.count.bad { color: var(--danger); }
+.asset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+.asset-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; }
+.asset-card.missing, .asset-row.missing { border-color: var(--danger); border-style: dashed; }
+.asset-preview { height: 150px; display: flex; align-items: center; justify-content: center;
+  background: repeating-conic-gradient(#e9ecf1 0% 25%, #f7f8fa 0% 50%) 50% / 16px 16px; }
+.asset-thumb { max-width: 100%; max-height: 150px; display: block; }
+.small-thumb { max-height: 56px; max-width: 120px; }
+.asset-meta { padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.asset-path { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.asset-list { display: flex; flex-direction: column; gap: 6px; }
+.asset-row { display: flex; gap: 12px; align-items: center; justify-content: space-between; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 8px; padding: 2px 10px 2px 0; flex-wrap: wrap; }
+.asset-row .asset-meta { flex: 1; }
+.asset-line { color: var(--text); }
+.status { font-weight: 600; margin-right: 6px; }
+.status.ok { color: var(--ok); }
+.status.bad { color: var(--danger); }
+audio { height: 32px; max-width: 260px; }
+details.speech table { border-collapse: collapse; width: 100%; font-size: 13px; margin: 6px 0 12px; background: var(--surface); }
+details.speech td, details.speech th { border-bottom: 1px solid var(--border); padding: 4px 8px; text-align: left; vertical-align: middle; }
+.speech-text { white-space: pre-wrap; min-width: 240px; }
+@media (max-width: 640px) { .asset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

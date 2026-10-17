@@ -6,6 +6,7 @@ export interface SourceInfo {
   zipCount: number;
   memberCount: number;
   extraZips: string[];
+  chain: { manifest: string; resolved: number; missing: { version: string; name: string }[] } | null;
   officialBaseline: boolean;
   officialBaselineError: string | null;
 }
@@ -149,6 +150,59 @@ export interface PixelMeta {
   note: string;
 }
 
+export interface AssetRoot {
+  root: string;
+  layer: string;
+  layerLabel: string;
+}
+
+export interface AssetItem {
+  path: string;
+  layer: string | null;
+  layerLabel: string;
+  media: "image" | "audio" | "data";
+  group: string;
+  expected: "required" | "optional" | "referenced" | null;
+  notes: string[];
+  text: string;
+  tag: string;
+  status: "存在" | "缺失" | "引用但缺失";
+  size?: number;
+  width?: number;
+  height?: number;
+  official?: string;
+  roots?: AssetRoot[];
+}
+
+export interface AssetGroup {
+  id: string;
+  label: string;
+  items: AssetItem[];
+  present: number;
+  missing: number;
+}
+
+export interface SpeechLine {
+  row: number;
+  kind: string;
+  constraint: string;
+  evoLevel: string;
+  text: string;
+  voice: string;
+  path?: string;
+  present?: boolean;
+}
+
+export interface CharacterAssets {
+  characterId: string;
+  code: string;
+  groups: AssetGroup[];
+  speech: SpeechLine[];
+  cutins: { form: string; png: boolean; atf: boolean; pngLayer: string | null; atfLayer: string | null }[];
+  total: number;
+  note: string;
+}
+
 export interface LookupHit {
   characterId: string;
   characterName: string;
@@ -208,6 +262,9 @@ export const api = {
   characters: () => cached<{ version: string; count: number; characters: CharacterSummary[] }>("/api/characters"),
   character: (id: string) => cached<CharacterDetail>(`/api/characters/${id}`),
   pixels: (id: string) => cached<PixelMeta>(`/api/characters/${id}/pixels`),
+  assets: (id: string) => cached<CharacterAssets>(`/api/characters/${id}/assets`),
+  avatarUrl: (id: string, form: "0" | "1" = "0") => `/api/characters/${id}/avatar/${form}.png`,
+  assetUrl: (path: string) => `/api/asset?path=${encodeURIComponent(path)}`,
   pixelSheetUrl: (id: string, family: string) => `/api/characters/${id}/pixels/${family}.png`,
   lookup: (q: string) =>
     get<{ total: number; count: number; results: LookupHit[]; note: string }>(

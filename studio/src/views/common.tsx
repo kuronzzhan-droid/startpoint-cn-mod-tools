@@ -1,5 +1,6 @@
 import { ComponentChildren } from "preact";
-import { Origin } from "../api";
+import { useState } from "preact/hooks";
+import { api, Origin } from "../api";
 
 const ELEMENT_CLASS: Record<string, string> = {
   火: "el-fire", 水: "el-water", 雷: "el-thunder", 风: "el-wind", 光: "el-light", 暗: "el-dark",
@@ -49,4 +50,14 @@ export function StatusStrip() {
 
 export function Notice({ kind = "info", children }: { kind?: "info" | "warn" | "error"; children: ComponentChildren }) {
   return <div class={"notice " + kind}>{children}</div>;
+}
+
+/** Native square avatar (ui/square_N.png and fallbacks), lazy-loaded; element badge if absent. */
+export function Avatar({ id, element, size = 40 }: { id: string; element: string; size?: number }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return <ElementBadge element={element} />;
+  return (
+    <img class="avatar" src={api.avatarUrl(id)} width={size} height={size} loading="lazy" decoding="async"
+      alt="" onError={() => setFailed(true)} />
+  );
 }

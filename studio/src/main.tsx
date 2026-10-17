@@ -53,7 +53,13 @@ function App() {
         </span>
         <span class="pill readonly" title="本版只读：不保存、不生成、不导出、不应用、不发布">只读</span>
         {meta && meta.source.extraZips.length > 0 ? (
-          <span class="muted">另叠加 {meta.source.extraZips.length} 个额外 ZIP</span>
+          <span class="muted" title={meta.source.chain ? "清单：" + meta.source.chain.manifest : ""}>
+            active 之后叠加 {meta.source.extraZips.length} 个 ZIP
+            {meta.source.chain ? `（按补丁链清单找到 ${meta.source.chain.resolved} 个）` : ""}
+          </span>
+        ) : null}
+        {meta?.source.chain?.missing.length ? (
+          <span class="error-text">补丁链缺 {meta.source.chain.missing.length} 个 ZIP，视图不完整</span>
         ) : null}
         {metaError ? <span class="error-text">后端不可用：{metaError}</span> : null}
       </div>

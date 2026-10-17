@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { api, CharacterSummary } from "../api";
 import { href } from "../router";
-import { ElementBadge, OriginBadge, Rarity } from "./common";
+import { Avatar, ElementBadge, OriginBadge, Rarity } from "./common";
 
 const ORIGINS: { id: string; label: string }[] = [
   { id: "all", label: "全部" },
@@ -101,9 +101,10 @@ export function CharacterList() {
             {filtered.slice(0, 400).map((c) => (
               <li>
                 <a class="char-card" href={href({ work: "content", shop: "characters", id: c.id })}>
-                  <ElementBadge element={c.element} />
+                  <Avatar id={c.id} element={c.element} />
                   <div class="char-main">
                     <div class="char-name">
+                      <ElementBadge element={c.element} />
                       {c.name}
                       <Rarity value={c.rarity} />
                     </div>
