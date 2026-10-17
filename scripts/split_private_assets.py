@@ -13,12 +13,12 @@ import re
 import subprocess
 
 try:
-    from scripts.private_asset_refs import destination, replace_links, rewrite_python
+    from scripts.private_asset_refs import destination, replace_links, rewrite_javascript, rewrite_python
 except ModuleNotFoundError:
-    from private_asset_refs import destination, replace_links, rewrite_python
+    from private_asset_refs import destination, replace_links, rewrite_javascript, rewrite_python
 
 REPOSITORY = Path(__file__).resolve().parents[1]
-TEXT_SUFFIXES = {".py", ".json", ".md", ".html", ".js", ".css", ".txt", ".ts", ".yml", ".yaml", ".toml"}
+TEXT_SUFFIXES = {".py", ".json", ".md", ".html", ".js", ".cjs", ".mjs", ".css", ".txt", ".ts", ".yml", ".yaml", ".toml"}
 
 
 def decisions(text: str, allowed: set[str]) -> list[str]:
@@ -102,8 +102,12 @@ def plan(root: Path, selected: list[str], tracked: list[Path], inventory: dict) 
             text = raw.decode("utf-8")
         except UnicodeDecodeError:
             continue
-        updated = (rewrite_python(text, source, root, selected) if source.suffix == ".py"
-                   else replace_links(text, selected))
+        if source.suffix == ".py":
+            updated = rewrite_python(text, source, root, selected)
+        elif source.suffix in {".js", ".cjs", ".mjs", ".ts"}:
+            updated = rewrite_javascript(text, source, root, selected)
+        else:
+            updated = replace_links(text, selected)
         if updated != text:
             edits.append((destination(source, root, selected), raw, updated.encode("utf-8")))
     return {"moves": moves, "edits": edits}

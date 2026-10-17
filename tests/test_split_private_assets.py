@@ -7,7 +7,7 @@ import sys
 
 import pytest
 
-from scripts.private_asset_refs import replace_links, rewrite_python
+from scripts.private_asset_refs import replace_links, rewrite_javascript, rewrite_python
 from scripts.split_private_assets import apply_plan, decisions, plan
 import wf.local_assets as resources
 
@@ -108,6 +108,39 @@ def test_moved_builder_runs_directly_and_creates_new_output(tmp_path):
                             env=environment, capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
     assert (relocated.parent / "new-output.bin").read_bytes() == b"generated"
+
+
+def test_javascript_static_relative_references_follow_selected_directory(tmp_path):
+    source = tmp_path / "tests/fixture.cjs"
+    text = ("const order = require('../wiki/equipment-order.js');\n"
+            "const label = 'wiki'; const external = require('wiki');\n"
+            "read(path.join(__dirname,'../wiki',file));\n"
+            "const elsewhere = require('../wiki-battle/engine.js');\n")
+    updated = rewrite_javascript(text, source, tmp_path, ["wiki"])
+    assert "require('../private-assets/wiki/equipment-order.js')" in updated
+    assert "path.join(__dirname,'../private-assets/wiki',file)" in updated
+    assert "const label = 'wiki'; const external = require('wiki');" in updated
+    assert "require('../wiki-battle/engine.js')" in updated
+
+
+def test_javascript_inside_moved_directory_keeps_internal_relative_imports(tmp_path):
+    source = tmp_path / "wiki/module.js"
+    text = "require('./helper.js'); require('../wiki-battle/shared.js');"
+    updated = rewrite_javascript(text, source, tmp_path, ["wiki"])
+    assert "require('./helper.js')" in updated
+    assert "require('../../wiki-battle/shared.js')" in updated
+
+
+def test_plan_includes_commonjs_consumers(tmp_path):
+    folder = tmp_path / "wiki"
+    folder.mkdir()
+    (folder / "helper.js").write_text("module.exports = {};", encoding="utf-8")
+    source = tmp_path / "tests/fixture.cjs"
+    source.parent.mkdir()
+    source.write_text("require('../wiki/helper.js');", encoding="utf-8")
+    changes = plan(tmp_path, ["wiki"], [source], {"files": []})
+    apply_plan(tmp_path, changes)
+    assert source.read_text(encoding="utf-8") == "require('../private-assets/wiki/helper.js');"
 
 
 @pytest.mark.parametrize("component", ["private-assets", "private-assets/assets/demo"])

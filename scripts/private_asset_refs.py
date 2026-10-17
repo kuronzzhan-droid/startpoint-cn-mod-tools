@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import ast
 from functools import cache
+import os
 from pathlib import Path
 import re
 
@@ -24,6 +25,31 @@ def replace_links(text: str, selected: list[str]) -> str:
         text = re.sub(r"(path\.join\(\s*__dirname\s*,\s*)(['\"])" + re.escape(directory) + r"\2",
                       lambda m: m[1] + m[2] + "private-assets/" + directory + m[2], text)
     return text
+
+
+def rewrite_javascript(text: str, source: Path, root: Path, selected: list[str]) -> str:
+    """Rewrite static module and __dirname paths relative to their real source."""
+    new_parent = destination(source, root, selected).parent
+
+    def relative(match):
+        value = match.group("path")
+        if match.group("head").lstrip().startswith(("require", "import", "from")) and not value.startswith("."):
+            return match.group(0)  # Named packages are not filesystem resources.
+        old = (source.parent / value).resolve()
+        if not old.is_relative_to(root):
+            return match.group(0)
+        new = destination(old, root, selected)
+        if new == old and new_parent == source.parent:
+            return match.group(0)
+        updated = os.path.relpath(new, new_parent).replace("\\", "/")
+        if not updated.startswith("."):
+            updated = "./" + updated
+        return match.group("head") + match.group("quote") + updated + match.group("quote")
+
+    pattern = (r"(?P<head>\b(?:require|import)\(\s*|\bfrom\s+|"
+               r"\bpath\.(?:join|resolve)\(\s*__dirname\s*,\s*)"
+               r"(?P<quote>['\"])(?P<path>[^'\"\r\n]+)(?P=quote)")
+    return replace_links(re.sub(pattern, relative, text), selected)
 
 
 def rewrite_python(text: str, source: Path, root: Path, selected: list[str]) -> str:
