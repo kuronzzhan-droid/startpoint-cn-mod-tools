@@ -1,0 +1,966 @@
+schema: wf-balance-recipe/1
+id: balance1017-223
+name: 平衡 1017 八角色批次
+from_version: 1.4.222
+to_version: 1.4.223
+slug: balance-1017
+created_at: '2026-10-17'
+local_test_only: true
+experimental: false
+manual_version: m1-20261017
+capabilities: []
+input:
+  kind: historical-lock
+  base_lock: ../balance1017/base-lock.json
+  extra_lock: ../balance1017/input-zips.json
+notes:
+- 迁自 recipes.balance1017 的八角色公式；运行时只读取本 YAML，不导入历史角色脚本。
+- 行号从 0 开始，leader 使用 ability 的列号自动映射；插入/删除行逐格断言 null/旧值。
+- 目标 1.4.223 ZIP 仅用于独立验收，未参与输入或生成。
+- 赛瑞斯 能力1：「非FEVER模式中发动技能时，FEVER槽+35%」改为需水属性共鸣（水属性编成≥6）才生效，数值不变
+- 杰拉尔 能力6：删除「水属性共鸣时，直接攻击1次时连击+5」（原来副位时会被主位角色的直击触发）
+- 杰拉尔 队长技：新增「水属性共鸣时，自身每直接攻击1次，连击+5（CT 0.5秒）」
+- 稻穗 能力2：强化弹射Lv3以上时对最近敌人造成20倍雷属性能力伤害 —— 改为需雷属性共鸣，CT 0.75秒→1秒
+- 稻穗 能力3（主位）：强化弹射伤害+300%、自身能力伤害+300%、攻击力+300% —— 改为需雷属性共鸣，数值不变
+- 稻穗 能力5：雷属性共鸣时，雷属性角色对麻痹中的敌人伤害 +10%→+5%（独立乘区）；独立乘区能力伤害 +20% 改为独立乘区强化弹射伤害 +10%
+- 稻穗 能力6：雷属性共鸣时，FEVER模式中独立乘区强化弹射伤害 +30%→+10%
+- 米娅 能力2：强化弹射时自身攻击力+10%（最大+200%）、强化弹射伤害+7.5%（最大+150%）—— 改为需火属性共鸣，数值不变
+- 米娅 能力6：自身为队长时独立乘区强化弹射伤害 +20%→+10%；新增「火属性共鸣时，独立乘区强化弹射伤害+10%」（两条可叠加，队长且共鸣时合计仍是+20%）
+- 深渊之兽 队长技：深渊相位每升1级 暗属性角色伤害（独立乘区）+25%（最大+100%）→ +10%（最大+40%）；相位3个以上发动强化弹射Lv3时 赋予5秒「自身强化弹射伤害+50%」→「全队能力伤害+50%」
+- 深渊之兽 能力2：深渊相位每升1级（最多4级）—— 自身攻击力 +60%→+25%、自身能力伤害 +120%→+25%、暗属性角色攻击力 +25%→+30%、暗属性角色能力伤害 +25%→+60%；伤害（独立乘区）自身 +20% → 暗属性角色 +5%
+- 深渊之兽 能力3（主位）：除自身外的角色直接攻击时 赋予20秒「自身强化弹射伤害+50%」→「全队能力伤害+50%」（CT 1秒不变）
+- 妮可拉 能力2：火属性共鸣时，自身发动技能时火属性角色技能伤害 +50%（最多5次，最大+250%）→ +20%（最大+100%）
+- 妮可拉 能力3：消耗「月讲」时该角色攻击力 +65%→+20%；火属性共鸣时对抗性降低中的敌人 攻击力 +300%→+100%、技能伤害 +300%→+100%，技能伤害额外乘区 +15%→+2%
+- 莉莉丝 队长技：雷属性角色能力伤害 +450%→+400%、攻击力 +250%→+150%，并改为需雷属性共鸣
+- 莉莉丝 能力1：战斗开始时自身技能槽+50%、雷属性角色能力伤害+200%→+150% —— 两条都改为需雷属性共鸣
+- 莉莉丝 能力2：生命值50%以下时 自身能力伤害 +200%→+150%、攻击力 +200%→+100%、强化弹射伤害 +200%→+100%，并改为需雷属性共鸣
+- 玛格诺斯 队长技：火属性共鸣时每发动3次强化弹射 引擎点火 +7层→+4层；引擎点火每层火属性角色技能伤害额外乘区 +5%→+3.5%（最多计3层）
+- 玛格诺斯 能力3：发动技能时引擎点火+1层 加 CT 4秒；技能命中时消耗引擎点火 1层→2层；引擎点火 5层以上 技能伤害额外乘区 +10% → 6层以上 +5%；每层火属性角色技能伤害额外乘区 +0.5%（最多10层）→ +0.33%（最多15层）；每发动3次强化弹射引擎点火+3层 → 每发动4次强化弹射+1层
+- 玛格诺斯 能力5：独立乘区技能伤害 +15%→+10% 并改为需火属性共鸣；每发动3次强化弹射技能槽+5%（CT 5秒）→ 每4次 +4%（CT 6秒）
+operations:
+- op: set_cells
+  character: '129999'
+  table: ability
+  key: '1299991'
+  row: 2
+  row_count: 5
+  cells:
+  - {column: c6, old: '186', new: '2'}
+  - {column: c9, old: '', new: '600000'}
+  - {column: c10, old: '', new: '600000'}
+  - {column: c11, old: '', new: Blue}
+  - {column: c13, old: '0', new: '186'}
+- op: set_cells
+  character: '129999'
+  table: custom_ability_string
+  key: desc_override_seris_dragon_king_1
+  row: 0
+  row_count: 1
+  cells:
+  - {column: c0, old: '战斗开始时，自身技能槽＋50％
+
+      强化弹射伤害＋100％
+
+      非FEVER模式中，发动技能时，FEVER槽＋35％
+
+      自身为队长且非FEVER模式中，发动强化弹射Lv3时，FEVER槽＋5％（CT：2秒）
+
+      自身为队长时，FEVER模式结束时，FEVER槽＋30％', new: '战斗开始时，自身技能槽＋50％
+
+      强化弹射伤害＋100％
+
+      水属性共鸣时，非FEVER模式中，发动技能时，FEVER槽＋35％
+
+      自身为队长且非FEVER模式中，发动强化弹射Lv3时，FEVER槽＋5％（CT：2秒）
+
+      自身为队长时，FEVER模式结束时，FEVER槽＋30％'}
+- op: delete_row
+  character: '129992'
+  table: ability
+  key: '1299926'
+  row: 0
+  row_count: 2
+  cells:
+  - {column: c0, old: unicorn_lancer_rose_6, new: null}
+  - {column: c1, old: 'true', new: null}
+  - {column: c2, old: condition, new: null}
+  - {column: c3, old: '0', new: null}
+  - {column: c4, old: '', new: null}
+  - {column: c5, old: '0', new: null}
+  - {column: c6, old: '2', new: null}
+  - {column: c7, old: '', new: null}
+  - {column: c8, old: '', new: null}
+  - {column: c9, old: '600000', new: null}
+  - {column: c10, old: '600000', new: null}
+  - {column: c11, old: Blue, new: null}
+  - {column: c12, old: '', new: null}
+  - {column: c13, old: '0', new: null}
+  - {column: c14, old: '', new: null}
+  - {column: c15, old: '', new: null}
+  - {column: c16, old: '', new: null}
+  - {column: c17, old: '', new: null}
+  - {column: c18, old: '', new: null}
+  - {column: c19, old: '', new: null}
+  - {column: c20, old: '0', new: null}
+  - {column: c21, old: '', new: null}
+  - {column: c22, old: '', new: null}
+  - {column: c23, old: '', new: null}
+  - {column: c24, old: '', new: null}
+  - {column: c25, old: '', new: null}
+  - {column: c26, old: '', new: null}
+  - {column: c27, old: '20', new: null}
+  - {column: c28, old: '0', new: null}
+  - {column: c29, old: '', new: null}
+  - {column: c30, old: '100000', new: null}
+  - {column: c31, old: '100000', new: null}
+  - {column: c32, old: '', new: null}
+  - {column: c33, old: '', new: null}
+  - {column: c34, old: (None), new: null}
+  - {column: c35, old: '0', new: null}
+  - {column: c36, old: '', new: null}
+  - {column: c37, old: '', new: null}
+  - {column: c38, old: '', new: null}
+  - {column: c39, old: (None), new: null}
+  - {column: c40, old: '', new: null}
+  - {column: c41, old: '', new: null}
+  - {column: c42, old: '', new: null}
+  - {column: c43, old: '', new: null}
+  - {column: c44, old: '', new: null}
+  - {column: c45, old: '', new: null}
+  - {column: c46, old: '0', new: null}
+  - {column: c47, old: '226', new: null}
+  - {column: c48, old: '', new: null}
+  - {column: c49, old: '', new: null}
+  - {column: c50, old: '', new: null}
+  - {column: c51, old: '500000', new: null}
+  - {column: c52, old: '500000', new: null}
+  - {column: c53, old: '', new: null}
+  - {column: c54, old: '', new: null}
+  - {column: c55, old: '', new: null}
+  - {column: c56, old: '', new: null}
+  - {column: c57, old: '', new: null}
+  - {column: c58, old: '', new: null}
+  - {column: c59, old: '', new: null}
+  - {column: c60, old: '', new: null}
+  - {column: c61, old: '', new: null}
+  - {column: c62, old: '', new: null}
+  - {column: c63, old: '', new: null}
+  - {column: c64, old: '', new: null}
+  - {column: c65, old: '', new: null}
+  - {column: c66, old: '', new: null}
+  - {column: c67, old: '', new: null}
+  - {column: c68, old: '', new: null}
+  - {column: c69, old: '', new: null}
+  - {column: c70, old: '', new: null}
+  - {column: c71, old: '', new: null}
+  - {column: c72, old: '', new: null}
+  - {column: c73, old: '', new: null}
+  - {column: c74, old: '', new: null}
+  - {column: c75, old: '', new: null}
+  - {column: c76, old: '', new: null}
+  - {column: c77, old: '', new: null}
+  - {column: c78, old: '', new: null}
+  - {column: c79, old: '', new: null}
+  - {column: c80, old: '', new: null}
+  - {column: c81, old: '', new: null}
+  - {column: c82, old: '', new: null}
+  - {column: c83, old: '', new: null}
+  - {column: c84, old: '', new: null}
+  - {column: c85, old: '', new: null}
+  - {column: c86, old: '', new: null}
+  - {column: c87, old: '', new: null}
+  - {column: c88, old: '', new: null}
+  - {column: c89, old: '', new: null}
+  - {column: c90, old: '', new: null}
+  - {column: c91, old: '', new: null}
+  - {column: c92, old: '', new: null}
+  - {column: c93, old: '', new: null}
+  - {column: c94, old: '', new: null}
+  - {column: c95, old: '', new: null}
+  - {column: c96, old: '', new: null}
+  - {column: c97, old: '', new: null}
+  - {column: c98, old: '', new: null}
+  - {column: c99, old: '', new: null}
+  - {column: c100, old: '', new: null}
+  - {column: c101, old: '', new: null}
+  - {column: c102, old: '', new: null}
+  - {column: c103, old: '', new: null}
+  - {column: c104, old: '', new: null}
+  - {column: c105, old: '', new: null}
+  - {column: c106, old: '', new: null}
+  - {column: c107, old: '', new: null}
+  - {column: c108, old: '', new: null}
+  - {column: c109, old: '', new: null}
+  - {column: c110, old: '', new: null}
+  - {column: c111, old: '', new: null}
+  - {column: c112, old: '', new: null}
+  - {column: c113, old: '', new: null}
+  - {column: c114, old: '', new: null}
+  - {column: c115, old: '', new: null}
+  - {column: c116, old: '', new: null}
+  - {column: c117, old: '', new: null}
+  - {column: c118, old: '', new: null}
+  - {column: c119, old: '', new: null}
+  - {column: c120, old: '', new: null}
+  - {column: c121, old: '', new: null}
+  - {column: c122, old: '', new: null}
+  - {column: c123, old: '', new: null}
+  - {column: c124, old: '', new: null}
+  - {column: c125, old: '', new: null}
+- op: insert_row
+  character: '129992'
+  table: leader_ability
+  key: '129992'
+  row: 8
+  row_count: 9
+  cells:
+  - {column: c0, old: null, new: unicorn_lancer_rose}
+  - {column: c3, old: null, new: '0'}
+  - {column: c4, old: null, new: ''}
+  - {column: c5, old: null, new: '0'}
+  - {column: c6, old: null, new: '2'}
+  - {column: c7, old: null, new: ''}
+  - {column: c8, old: null, new: ''}
+  - {column: c9, old: null, new: '600000'}
+  - {column: c10, old: null, new: '600000'}
+  - {column: c11, old: null, new: Blue}
+  - {column: c12, old: null, new: ''}
+  - {column: c13, old: null, new: '0'}
+  - {column: c14, old: null, new: ''}
+  - {column: c15, old: null, new: ''}
+  - {column: c16, old: null, new: ''}
+  - {column: c17, old: null, new: ''}
+  - {column: c18, old: null, new: ''}
+  - {column: c19, old: null, new: ''}
+  - {column: c20, old: null, new: '0'}
+  - {column: c21, old: null, new: ''}
+  - {column: c22, old: null, new: ''}
+  - {column: c23, old: null, new: ''}
+  - {column: c24, old: null, new: ''}
+  - {column: c25, old: null, new: ''}
+  - {column: c26, old: null, new: ''}
+  - {column: c27, old: null, new: '20'}
+  - {column: c28, old: null, new: '0'}
+  - {column: c29, old: null, new: ''}
+  - {column: c30, old: null, new: '100000'}
+  - {column: c31, old: null, new: '100000'}
+  - {column: c32, old: null, new: ''}
+  - {column: c33, old: null, new: ''}
+  - {column: c34, old: null, new: (None)}
+  - {column: c35, old: null, new: '30'}
+  - {column: c36, old: null, new: ''}
+  - {column: c37, old: null, new: ''}
+  - {column: c38, old: null, new: ''}
+  - {column: c39, old: null, new: (None)}
+  - {column: c40, old: null, new: ''}
+  - {column: c41, old: null, new: ''}
+  - {column: c42, old: null, new: ''}
+  - {column: c43, old: null, new: ''}
+  - {column: c44, old: null, new: ''}
+  - {column: c45, old: null, new: ''}
+  - {column: c46, old: null, new: '0'}
+  - {column: c47, old: null, new: '226'}
+  - {column: c48, old: null, new: ''}
+  - {column: c49, old: null, new: ''}
+  - {column: c50, old: null, new: ''}
+  - {column: c51, old: null, new: '500000'}
+  - {column: c52, old: null, new: '500000'}
+  - {column: c53, old: null, new: ''}
+  - {column: c54, old: null, new: ''}
+  - {column: c55, old: null, new: ''}
+  - {column: c56, old: null, new: ''}
+  - {column: c57, old: null, new: ''}
+  - {column: c58, old: null, new: ''}
+  - {column: c59, old: null, new: ''}
+  - {column: c60, old: null, new: ''}
+  - {column: c61, old: null, new: ''}
+  - {column: c62, old: null, new: ''}
+  - {column: c63, old: null, new: ''}
+  - {column: c64, old: null, new: ''}
+  - {column: c65, old: null, new: ''}
+  - {column: c66, old: null, new: ''}
+  - {column: c67, old: null, new: ''}
+  - {column: c68, old: null, new: ''}
+  - {column: c69, old: null, new: ''}
+  - {column: c70, old: null, new: ''}
+  - {column: c71, old: null, new: ''}
+  - {column: c72, old: null, new: ''}
+  - {column: c73, old: null, new: ''}
+  - {column: c74, old: null, new: ''}
+  - {column: c75, old: null, new: ''}
+  - {column: c76, old: null, new: ''}
+  - {column: c77, old: null, new: ''}
+  - {column: c78, old: null, new: ''}
+  - {column: c79, old: null, new: ''}
+  - {column: c80, old: null, new: ''}
+  - {column: c81, old: null, new: ''}
+  - {column: c82, old: null, new: ''}
+  - {column: c83, old: null, new: ''}
+  - {column: c84, old: null, new: ''}
+  - {column: c85, old: null, new: ''}
+  - {column: c86, old: null, new: ''}
+  - {column: c87, old: null, new: ''}
+  - {column: c88, old: null, new: ''}
+  - {column: c89, old: null, new: ''}
+  - {column: c90, old: null, new: ''}
+  - {column: c91, old: null, new: ''}
+  - {column: c92, old: null, new: ''}
+  - {column: c93, old: null, new: ''}
+  - {column: c94, old: null, new: ''}
+  - {column: c95, old: null, new: ''}
+  - {column: c96, old: null, new: ''}
+  - {column: c97, old: null, new: ''}
+  - {column: c98, old: null, new: ''}
+  - {column: c99, old: null, new: ''}
+  - {column: c100, old: null, new: ''}
+  - {column: c101, old: null, new: ''}
+  - {column: c102, old: null, new: ''}
+  - {column: c103, old: null, new: ''}
+  - {column: c104, old: null, new: ''}
+  - {column: c105, old: null, new: ''}
+  - {column: c106, old: null, new: ''}
+  - {column: c107, old: null, new: ''}
+  - {column: c108, old: null, new: ''}
+  - {column: c109, old: null, new: ''}
+  - {column: c110, old: null, new: ''}
+  - {column: c111, old: null, new: ''}
+  - {column: c112, old: null, new: ''}
+  - {column: c113, old: null, new: ''}
+  - {column: c114, old: null, new: ''}
+  - {column: c115, old: null, new: ''}
+  - {column: c116, old: null, new: ''}
+  - {column: c117, old: null, new: ''}
+  - {column: c118, old: null, new: ''}
+  - {column: c119, old: null, new: ''}
+  - {column: c120, old: null, new: ''}
+  - {column: c121, old: null, new: ''}
+  - {column: c122, old: null, new: ''}
+  - {column: c123, old: null, new: ''}
+  - {column: c124, old: null, new: ''}
+  - {column: c125, old: null, new: ''}
+- op: set_cells
+  character: '139995'
+  table: ability
+  key: '1399952'
+  row: 0
+  row_count: 3
+  cells:
+  - {column: c6, old: '0', new: '2'}
+  - {column: c9, old: '', new: '600000'}
+  - {column: c10, old: '', new: '600000'}
+  - {column: c11, old: '', new: Yellow}
+  - {column: c35, old: '45', new: '60'}
+- op: set_cells
+  character: '139995'
+  table: ability
+  key: '1399953'
+  row: 1
+  row_count: 9
+  cells:
+  - {column: c6, old: '0', new: '2'}
+  - {column: c9, old: '', new: '600000'}
+  - {column: c10, old: '', new: '600000'}
+  - {column: c11, old: '', new: Yellow}
+- op: set_cells
+  character: '139995'
+  table: ability
+  key: '1399953'
+  row: 2
+  row_count: 9
+  cells:
+  - {column: c6, old: '0', new: '2'}
+  - {column: c9, old: '', new: '600000'}
+  - {column: c10, old: '', new: '600000'}
+  - {column: c11, old: '', new: Yellow}
+- op: set_cells
+  character: '139995'
+  table: ability
+  key: '1399953'
+  row: 6
+  row_count: 9
+  cells:
+  - {column: c6, old: '0', new: '2'}
+  - {column: c9, old: '', new: '600000'}
+  - {column: c10, old: '', new: '600000'}
+  - {column: c11, old: '', new: Yellow}
+- op: set_cells
+  character: '139995'
+  table: ability
+  key: '1399955'
+  row: 0
+  row_count: 2
+  cells:
+  - {column: c51, old: '5000', new: '2500'}
+  - {column: c52, old: '10000', new: '5000'}
+- op: set_cells
+  character: '139995'
+  table: ability
+  key: '1399955'
+  row: 1
+  row_count: 2
+  cells:
+  - {column: c47, old: '695', new: '696'}
+  - {column: c51, old: '10000', new: '5000'}
+  - {column: c52, old: '20000', new: '10000'}
+- op: set_cells
+  character: '139995'
+  table: ability
+  key: '1399956'
+  row: 0
+  row_count: 2
+  cells:
+  - {column: c113, old: '15000', new: '5000'}
+  - {column: c114, old: '30000', new: '10000'}
+- op: set_cells
+  character: '139995'
+  table: custom_ability_string
+  key: desc_override_fox_oracle_autumn_2
+  row: 0
+  row_count: 1
+  cells:
+  - {column: c0, old: '强化弹射Lv3以上时，对距离最近的敌人造成自身攻击20倍威力的雷属性能力伤害（CT：0.75秒）
+
+      Fever模式中，弹射时，连击＋10
+
+      Fever模式中，无法获得Fever', new: '雷属性共鸣时，强化弹射Lv3以上时，对距离最近的敌人造成自身攻击20倍威力的雷属性能力伤害（CT：1秒）
+
+      Fever模式中，弹射时，连击＋10
+
+      Fever模式中，无法获得Fever'}
+- op: set_cells
+  character: '139995'
+  table: custom_ability_string
+  key: desc_override_fox_oracle_autumn_6
+  row: 0
+  row_count: 1
+  cells:
+  - {column: c0, old: 雷属性共鸣时，FEVER模式中，独立乘区的强化弹射伤害提升30％, new: 雷属性共鸣时，FEVER模式中，独立乘区的强化弹射伤害提升10％}
+- op: set_cells
+  character: '119992'
+  table: ability
+  key: '1199922'
+  row: 0
+  row_count: 2
+  cells:
+  - {column: c6, old: '0', new: '2'}
+  - {column: c9, old: '', new: '600000'}
+  - {column: c10, old: '', new: '600000'}
+- op: set_cells
+  character: '119992'
+  table: ability
+  key: '1199922'
+  row: 1
+  row_count: 2
+  cells:
+  - {column: c6, old: '0', new: '2'}
+  - {column: c9, old: '', new: '600000'}
+  - {column: c10, old: '', new: '600000'}
+  - {column: c11, old: '', new: Red}
+- op: set_cells
+  character: '119992'
+  table: ability
+  key: '1199926'
+  row: 0
+  row_count: 2
+  cells:
+  - {column: c51, old: '20000', new: '10000'}
+  - {column: c52, old: '20000', new: '10000'}
+- op: insert_row
+  character: '119992'
+  table: ability
+  key: '1199926'
+  row: 1
+  row_count: 2
+  cells:
+  - {column: c0, old: null, new: tiger_treasure_hunter_moon_6}
+  - {column: c1, old: null, new: 'true'}
+  - {column: c2, old: null, new: power_flip}
+  - {column: c3, old: null, new: '0'}
+  - {column: c4, old: null, new: ''}
+  - {column: c5, old: null, new: '0'}
+  - {column: c6, old: null, new: '2'}
+  - {column: c7, old: null, new: ''}
+  - {column: c8, old: null, new: ''}
+  - {column: c9, old: null, new: '600000'}
+  - {column: c10, old: null, new: '600000'}
+  - {column: c11, old: null, new: Red}
+  - {column: c12, old: null, new: ''}
+  - {column: c13, old: null, new: '0'}
+  - {column: c14, old: null, new: ''}
+  - {column: c15, old: null, new: ''}
+  - {column: c16, old: null, new: ''}
+  - {column: c17, old: null, new: ''}
+  - {column: c18, old: null, new: ''}
+  - {column: c19, old: null, new: ''}
+  - {column: c20, old: null, new: '0'}
+  - {column: c21, old: null, new: ''}
+  - {column: c22, old: null, new: ''}
+  - {column: c23, old: null, new: ''}
+  - {column: c24, old: null, new: ''}
+  - {column: c25, old: null, new: ''}
+  - {column: c26, old: null, new: ''}
+  - {column: c27, old: null, new: '0'}
+  - {column: c28, old: null, new: ''}
+  - {column: c29, old: null, new: ''}
+  - {column: c30, old: null, new: ''}
+  - {column: c31, old: null, new: ''}
+  - {column: c32, old: null, new: ''}
+  - {column: c33, old: null, new: ''}
+  - {column: c34, old: null, new: ''}
+  - {column: c35, old: null, new: ''}
+  - {column: c36, old: null, new: ''}
+  - {column: c37, old: null, new: ''}
+  - {column: c38, old: null, new: ''}
+  - {column: c39, old: null, new: (None)}
+  - {column: c40, old: null, new: ''}
+  - {column: c41, old: null, new: ''}
+  - {column: c42, old: null, new: ''}
+  - {column: c43, old: null, new: ''}
+  - {column: c44, old: null, new: ''}
+  - {column: c45, old: null, new: ''}
+  - {column: c46, old: null, new: '0'}
+  - {column: c47, old: null, new: '696'}
+  - {column: c48, old: null, new: ''}
+  - {column: c49, old: null, new: ''}
+  - {column: c50, old: null, new: ''}
+  - {column: c51, old: null, new: '10000'}
+  - {column: c52, old: null, new: '10000'}
+  - {column: c53, old: null, new: ''}
+  - {column: c54, old: null, new: ''}
+  - {column: c55, old: null, new: ''}
+  - {column: c56, old: null, new: ''}
+  - {column: c57, old: null, new: ''}
+  - {column: c58, old: null, new: ''}
+  - {column: c59, old: null, new: ''}
+  - {column: c60, old: null, new: ''}
+  - {column: c61, old: null, new: ''}
+  - {column: c62, old: null, new: ''}
+  - {column: c63, old: null, new: ''}
+  - {column: c64, old: null, new: ''}
+  - {column: c65, old: null, new: ''}
+  - {column: c66, old: null, new: ''}
+  - {column: c67, old: null, new: ''}
+  - {column: c68, old: null, new: ''}
+  - {column: c69, old: null, new: ''}
+  - {column: c70, old: null, new: ''}
+  - {column: c71, old: null, new: ''}
+  - {column: c72, old: null, new: ''}
+  - {column: c73, old: null, new: ''}
+  - {column: c74, old: null, new: ''}
+  - {column: c75, old: null, new: ''}
+  - {column: c76, old: null, new: ''}
+  - {column: c77, old: null, new: ''}
+  - {column: c78, old: null, new: ''}
+  - {column: c79, old: null, new: ''}
+  - {column: c80, old: null, new: ''}
+  - {column: c81, old: null, new: ''}
+  - {column: c82, old: null, new: ''}
+  - {column: c83, old: null, new: ''}
+  - {column: c84, old: null, new: ''}
+  - {column: c85, old: null, new: ''}
+  - {column: c86, old: null, new: ''}
+  - {column: c87, old: null, new: ''}
+  - {column: c88, old: null, new: ''}
+  - {column: c89, old: null, new: ''}
+  - {column: c90, old: null, new: ''}
+  - {column: c91, old: null, new: ''}
+  - {column: c92, old: null, new: ''}
+  - {column: c93, old: null, new: ''}
+  - {column: c94, old: null, new: ''}
+  - {column: c95, old: null, new: ''}
+  - {column: c96, old: null, new: ''}
+  - {column: c97, old: null, new: ''}
+  - {column: c98, old: null, new: ''}
+  - {column: c99, old: null, new: ''}
+  - {column: c100, old: null, new: ''}
+  - {column: c101, old: null, new: ''}
+  - {column: c102, old: null, new: ''}
+  - {column: c103, old: null, new: ''}
+  - {column: c104, old: null, new: ''}
+  - {column: c105, old: null, new: ''}
+  - {column: c106, old: null, new: ''}
+  - {column: c107, old: null, new: ''}
+  - {column: c108, old: null, new: ''}
+  - {column: c109, old: null, new: ''}
+  - {column: c110, old: null, new: ''}
+  - {column: c111, old: null, new: ''}
+  - {column: c112, old: null, new: ''}
+  - {column: c113, old: null, new: ''}
+  - {column: c114, old: null, new: ''}
+  - {column: c115, old: null, new: ''}
+  - {column: c116, old: null, new: ''}
+  - {column: c117, old: null, new: ''}
+  - {column: c118, old: null, new: ''}
+  - {column: c119, old: null, new: ''}
+  - {column: c120, old: null, new: ''}
+  - {column: c121, old: null, new: ''}
+  - {column: c122, old: null, new: ''}
+  - {column: c123, old: null, new: ''}
+  - {column: c124, old: null, new: ''}
+  - {column: c125, old: null, new: ''}
+- op: set_cells
+  character: '169980'
+  table: ability
+  key: '1699802'
+  row: 0
+  row_count: 5
+  cells:
+  - {column: c113, old: '60000', new: '25000'}
+  - {column: c114, old: '60000', new: '25000'}
+- op: set_cells
+  character: '169980'
+  table: ability
+  key: '1699802'
+  row: 1
+  row_count: 5
+  cells:
+  - {column: c113, old: '120000', new: '25000'}
+  - {column: c114, old: '120000', new: '25000'}
+- op: set_cells
+  character: '169980'
+  table: ability
+  key: '1699802'
+  row: 2
+  row_count: 5
+  cells:
+  - {column: c113, old: '25000', new: '30000'}
+  - {column: c114, old: '25000', new: '30000'}
+- op: set_cells
+  character: '169980'
+  table: ability
+  key: '1699802'
+  row: 3
+  row_count: 5
+  cells:
+  - {column: c113, old: '25000', new: '60000'}
+  - {column: c114, old: '25000', new: '60000'}
+- op: set_cells
+  character: '169980'
+  table: ability
+  key: '1699802'
+  row: 4
+  row_count: 5
+  cells:
+  - {column: c110, old: '0', new: '5'}
+  - {column: c111, old: '', new: Black}
+  - {column: c113, old: '20000', new: '5000'}
+  - {column: c114, old: '20000', new: '5000'}
+- op: set_cells
+  character: '169980'
+  table: ability
+  key: '1699803'
+  row: 2
+  row_count: 4
+  cells:
+  - {column: c47, old: '28', new: '486'}
+  - {column: c48, old: '0', new: '5'}
+  - {column: c49, old: '', new: (None)}
+- op: set_cells
+  character: '169980'
+  table: leader_ability
+  key: '169980'
+  row: 6
+  row_count: 15
+  cells:
+  - {column: c113, old: '25000', new: '10000'}
+  - {column: c114, old: '25000', new: '10000'}
+- op: set_cells
+  character: '169980'
+  table: leader_ability
+  key: '169980'
+  row: 11
+  row_count: 15
+  cells:
+  - {column: c47, old: '28', new: '486'}
+  - {column: c48, old: '0', new: '5'}
+  - {column: c49, old: '', new: (None)}
+- op: set_cells
+  character: '119991'
+  table: ability
+  key: '1199912'
+  row: 0
+  row_count: 2
+  cells:
+  - {column: c51, old: '25000', new: '10000'}
+  - {column: c52, old: '50000', new: '20000'}
+- op: set_cells
+  character: '119991'
+  table: ability
+  key: '1199913'
+  row: 2
+  row_count: 9
+  cells:
+  - {column: c51, old: '65000', new: '20000'}
+  - {column: c52, old: '65000', new: '20000'}
+- op: set_cells
+  character: '119991'
+  table: ability
+  key: '1199913'
+  row: 6
+  row_count: 9
+  cells:
+  - {column: c51, old: '300000', new: '100000'}
+  - {column: c52, old: '300000', new: '100000'}
+- op: set_cells
+  character: '119991'
+  table: ability
+  key: '1199913'
+  row: 7
+  row_count: 9
+  cells:
+  - {column: c51, old: '300000', new: '100000'}
+  - {column: c52, old: '300000', new: '100000'}
+- op: set_cells
+  character: '119991'
+  table: ability
+  key: '1199913'
+  row: 8
+  row_count: 9
+  cells:
+  - {column: c51, old: '15000', new: '2000'}
+  - {column: c52, old: '15000', new: '2000'}
+- op: set_cells
+  character: '119991'
+  table: custom_ability_string
+  key: desc_override_sorceress_teacher_moon_3
+  row: 0
+  row_count: 1
+  cells:
+  - {column: c0, old: " <icon id='main'>  火属性共鸣时，自身技能槽每达到100%，自身获得1层「月讲」状态\n <icon id='main'>  除自身外的火属性角色发动技能时，消耗1层「月讲」，使该角色技能槽＋10%、攻击力＋65%，同时自身技能槽上限＋6.5%、技能充能速度＋6.5%（最多3次）\n <icon id='main'>\
+      \  火属性共鸣时，火属性角色对处于抗性降低状态的敌人，攻击力＋300%、技能伤害＋300%，对敌人的技能额外伤害乘区＋15%", new: " <icon id='main'>  火属性共鸣时，自身技能槽每达到100%，自身获得1层「月讲」状态\n <icon id='main'>  除自身外的火属性角色发动技能时，消耗1层「月讲」，使该角色技能槽＋10%、攻击力＋20%，同时自身技能槽上限＋6.5%、技能充能速度＋6.5%（最多3次）\n\
+      \ <icon id='main'>  火属性共鸣时，火属性角色对处于抗性降低状态的敌人，攻击力＋100%、技能伤害＋100%，对敌人的技能额外伤害乘区＋2%"}
+- op: set_cells
+  character: '139997'
+  table: ability
+  key: '1399971'
+  row: 0
+  row_count: 4
+  cells:
+  - {column: c6, old: '0', new: '2'}
+  - {column: c9, old: '', new: '600000'}
+  - {column: c10, old: '', new: '600000'}
+  - {column: c11, old: '', new: Yellow}
+- op: set_cells
+  character: '139997'
+  table: ability
+  key: '1399971'
+  row: 1
+  row_count: 4
+  cells:
+  - {column: c6, old: '0', new: '2'}
+  - {column: c9, old: '', new: '600000'}
+  - {column: c10, old: '', new: '600000'}
+  - {column: c11, old: '', new: Yellow}
+  - {column: c51, old: '100000', new: '75000'}
+  - {column: c52, old: '200000', new: '150000'}
+- op: set_cells
+  character: '139997'
+  table: ability
+  key: '1399972'
+  row: 1
+  row_count: 4
+  cells:
+  - {column: c6, old: '0', new: '2'}
+  - {column: c9, old: '', new: '600000'}
+  - {column: c10, old: '', new: '600000'}
+  - {column: c11, old: '', new: Yellow}
+  - {column: c113, old: '200000', new: '150000'}
+  - {column: c114, old: '200000', new: '150000'}
+- op: set_cells
+  character: '139997'
+  table: ability
+  key: '1399972'
+  row: 2
+  row_count: 4
+  cells:
+  - {column: c6, old: '0', new: '2'}
+  - {column: c9, old: '', new: '600000'}
+  - {column: c10, old: '', new: '600000'}
+  - {column: c11, old: '', new: Yellow}
+  - {column: c113, old: '200000', new: '100000'}
+  - {column: c114, old: '200000', new: '100000'}
+- op: set_cells
+  character: '139997'
+  table: ability
+  key: '1399972'
+  row: 3
+  row_count: 4
+  cells:
+  - {column: c6, old: '0', new: '2'}
+  - {column: c9, old: '', new: '600000'}
+  - {column: c10, old: '', new: '600000'}
+  - {column: c11, old: '', new: Yellow}
+  - {column: c113, old: '200000', new: '100000'}
+  - {column: c114, old: '200000', new: '100000'}
+- op: set_cells
+  character: '139997'
+  table: leader_ability
+  key: '139997'
+  row: 1
+  row_count: 9
+  cells:
+  - {column: c6, old: '0', new: '2'}
+  - {column: c9, old: '', new: '600000'}
+  - {column: c10, old: '', new: '600000'}
+  - {column: c11, old: '', new: Yellow}
+  - {column: c51, old: '450000', new: '400000'}
+  - {column: c52, old: '450000', new: '400000'}
+- op: set_cells
+  character: '139997'
+  table: leader_ability
+  key: '139997'
+  row: 2
+  row_count: 9
+  cells:
+  - {column: c6, old: '0', new: '2'}
+  - {column: c9, old: '', new: '600000'}
+  - {column: c10, old: '', new: '600000'}
+  - {column: c11, old: '', new: Yellow}
+  - {column: c51, old: '250000', new: '150000'}
+  - {column: c52, old: '250000', new: '150000'}
+- op: set_cells
+  character: '119990'
+  table: ability
+  key: '1199903'
+  row: 0
+  row_count: 6
+  cells:
+  - {column: c35, old: '0', new: '240'}
+- op: set_cells
+  character: '119990'
+  table: ability
+  key: '1199903'
+  row: 2
+  row_count: 6
+  cells:
+  - {column: c51, old: '100000', new: '200000'}
+  - {column: c52, old: '100000', new: '200000'}
+- op: set_cells
+  character: '119990'
+  table: ability
+  key: '1199903'
+  row: 3
+  row_count: 6
+  cells:
+  - {column: c100, old: '500000', new: '600000'}
+  - {column: c101, old: '500000', new: '600000'}
+  - {column: c113, old: '10000', new: '5000'}
+  - {column: c114, old: '10000', new: '5000'}
+- op: set_cells
+  character: '119990'
+  table: ability
+  key: '1199903'
+  row: 4
+  row_count: 6
+  cells:
+  - {column: c102, old: '10', new: '15'}
+  - {column: c113, old: '500', new: '330'}
+  - {column: c114, old: '500', new: '330'}
+- op: set_cells
+  character: '119990'
+  table: ability
+  key: '1199903'
+  row: 5
+  row_count: 6
+  cells:
+  - {column: c30, old: '300000', new: '400000'}
+  - {column: c31, old: '300000', new: '400000'}
+  - {column: c74, old: '3', new: '1'}
+- op: set_cells
+  character: '119990'
+  table: ability
+  key: '1199905'
+  row: 0
+  row_count: 4
+  cells:
+  - {column: c6, old: '0', new: '2'}
+  - {column: c9, old: '', new: '600000'}
+  - {column: c10, old: '', new: '600000'}
+  - {column: c11, old: '', new: Red}
+  - {column: c51, old: '15000', new: '10000'}
+  - {column: c52, old: '15000', new: '10000'}
+- op: set_cells
+  character: '119990'
+  table: ability
+  key: '1199905'
+  row: 1
+  row_count: 4
+  cells:
+  - {column: c30, old: '300000', new: '400000'}
+  - {column: c31, old: '300000', new: '400000'}
+  - {column: c35, old: '300', new: '360'}
+  - {column: c51, old: '5000', new: '4000'}
+  - {column: c52, old: '5000', new: '4000'}
+- op: set_cells
+  character: '119990'
+  table: leader_ability
+  key: '119990'
+  row: 4
+  row_count: 13
+  cells:
+  - {column: c51, old: '700000', new: '400000'}
+  - {column: c52, old: '700000', new: '400000'}
+- op: set_cells
+  character: '119990'
+  table: leader_ability
+  key: '119990'
+  row: 12
+  row_count: 13
+  cells:
+  - {column: c113, old: '5000', new: '3500'}
+  - {column: c114, old: '5000', new: '3500'}
+- op: set_cells
+  character: '119990'
+  table: custom_ability_string
+  key: desc_override_lion_swordman_moon
+  row: 0
+  row_count: 1
+  cells:
+  - {column: c0, old: '火属性共鸣时，自身的强化弹射变为特殊强化弹射，造成的伤害按技能伤害结算，威力随引擎点火层数提升
+
+      自身获得冲刺强化效果，冲刺冷却时间－30%
+
+      冲刺间隔缩短效果不会让自身的冲刺冷却时间进一步缩短
+
+      火属性共鸣时，每发动3次强化弹射，火属性角色技能伤害＋100%、攻击力＋50%、技能槽＋5%，自身技能伤害＋25%、引擎点火＋7层（伤害加成最多3次）
+
+      自身引擎点火每提升1层，自身技能伤害＋45%、攻击力＋45%，火属性角色技能伤害额外乘区＋5%（最多计3层）
+
+      火属性共鸣时，强化『烈焰轰鸣』：技能倍率随引擎点火层数持续提升（含引擎之炎）
+
+      自身持有「烈焰光环」期间，每次弹射，连击＋35', new: '火属性共鸣时，自身的强化弹射变为特殊强化弹射，造成的伤害按技能伤害结算，威力随引擎点火层数提升
+
+      自身获得冲刺强化效果，冲刺冷却时间－30%
+
+      冲刺间隔缩短效果不会让自身的冲刺冷却时间进一步缩短
+
+      火属性共鸣时，每发动3次强化弹射，火属性角色技能伤害＋100%、攻击力＋50%、技能槽＋5%，自身技能伤害＋25%、引擎点火＋4层（伤害加成最多3次）
+
+      自身引擎点火每提升1层，自身技能伤害＋45%、攻击力＋45%，火属性角色技能伤害额外乘区＋3.5%（最多计3层）
+
+      火属性共鸣时，强化『烈焰轰鸣』：技能倍率随引擎点火层数持续提升（含引擎之炎）
+
+      自身持有「烈焰光环」期间，每次弹射，连击＋35'}
+- op: set_cells
+  character: '119990'
+  table: custom_ability_string
+  key: desc_override_lion_swordman_moon_3
+  row: 0
+  row_count: 1
+  cells:
+  - {column: c0, old: " <icon id='main'>  火属性共鸣时，火属性角色发动技能时，自身引擎点火＋1层\n <icon id='main'>  自身处于「引擎点火」期间，自身技能命中敌人时，发动「引擎之炎」：造成技能伤害\n <icon id='main'>  自身处于「引擎点火」期间，自身技能命中敌人时，消耗1层「引擎点火」\n\
+      \ <icon id='main'>  自身引擎点火在5层以上时：自身技能伤害额外乘区＋10%\n <icon id='main'>  自身引擎点火每提升1层，火属性角色技能伤害额外乘区＋0.5%（最多10层）\n <icon id='main'>  火属性共鸣时，每发动3次强化弹射，自身引擎点火＋3层", new: " <icon id='main'>\
+      \  火属性共鸣时，火属性角色发动技能时，自身引擎点火＋1层（CT：4秒）\n <icon id='main'>  自身处于「引擎点火」期间，自身技能命中敌人时，发动「引擎之炎」：造成技能伤害\n <icon id='main'>  自身处于「引擎点火」期间，自身技能命中敌人时，消耗2层「引擎点火」\n <icon id='main'>  自身引擎点火在6层以上时：自身技能伤害额外乘区＋5%\n\
+      \ <icon id='main'>  自身引擎点火每提升1层，火属性角色技能伤害额外乘区＋0.33%（最多15层）\n <icon id='main'>  火属性共鸣时，每发动4次强化弹射，自身引擎点火＋1层"}
+- op: set_cells
+  character: '119990'
+  table: custom_ability_string
+  key: desc_override_lion_swordman_moon_5
+  row: 0
+  row_count: 1
+  cells:
+  - {column: c0, old: '自身独立乘区技能伤害＋15%
+
+      火属性共鸣时，每发动3次强化弹射，自身技能槽＋5%（冷却时间：5秒）', new: '火属性共鸣时，自身独立乘区技能伤害＋10%
+
+      火属性共鸣时，每发动4次强化弹射，自身技能槽＋4%（冷却时间：6秒）'}

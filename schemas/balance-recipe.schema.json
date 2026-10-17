@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wf-balance-recipe/1",
+  "title": "逐格旧值断言的平衡配方",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "name", "from_version", "to_version", "slug", "created_at", "local_test_only", "operations"],
+  "properties": {
+    "schema": {"const": "wf-balance-recipe/1"},
+    "id": {"type": "string", "minLength": 1},
+    "name": {"type": "string", "minLength": 1},
+    "from_version": {"$ref": "#/$defs/version"},
+    "to_version": {"$ref": "#/$defs/version"},
+    "slug": {"type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-]*$"},
+    "created_at": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+    "local_test_only": {"const": true},
+    "experimental": {"type": "boolean"},
+    "manual_version": {"type": "string"},
+    "target_client": {"type": "string"},
+    "capabilities": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "notes": {"type": "array", "items": {"type": "string"}},
+    "input": {
+      "oneOf": [
+        {"type": "object", "additionalProperties": false,
+         "required": ["kind", "base_lock", "extra_lock"],
+         "properties": {"kind": {"const": "historical-lock"}, "base_lock": {"type": "string"}, "extra_lock": {"type": "string"}}},
+        {"type": "object", "additionalProperties": false,
+         "required": ["kind", "tip"],
+         "properties": {"kind": {"const": "manifest"}, "tip": {"$ref": "#/$defs/version"}, "lock": {"type": "string"}}}
+      ]
+    },
+    "operations": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/operation"}}
+  },
+  "$defs": {
+    "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "column": {"oneOf": [{"type": "integer", "minimum": 0}, {"type": "string", "pattern": "^c[0-9]+$"}]},
+    "cell": {
+      "type": "object", "additionalProperties": false,
+      "required": ["column", "old", "new"],
+      "properties": {"column": {"$ref": "#/$defs/column"}, "old": {"type": ["string", "null"]}, "new": {"type": ["string", "null"]}}
+    },
+    "operation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["op", "character", "table", "key", "row", "row_count", "cells"],
+      "properties": {
+        "op": {"enum": ["set_cells", "insert_row", "delete_row"]},
+        "character": {"type": "string", "minLength": 1},
+        "table": {"enum": ["ability", "leader_ability", "action_skill", "custom_ability_string"]},
+        "key": {"type": "string", "minLength": 1},
+        "level": {"enum": ["0", "1", "2"]},
+        "row": {"type": "integer", "minimum": 0},
+        "row_count": {"type": "integer", "minimum": 1},
+        "column_space": {"enum": ["ability", "native"]},
+        "group": {"type": "string"},
+        "note": {"type": "string"},
+        "cells": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/cell"}}
+      },
+      "allOf": [
+        {"if": {"properties": {"table": {"const": "action_skill"}}},
+         "then": {"required": ["level"]}, "else": {"not": {"required": ["level"]}}},
+        {"if": {"properties": {"op": {"const": "set_cells"}}},
+         "then": {"properties": {"cells": {"items": {"properties": {"old": {"type": "string"}, "new": {"type": "string"}}}}}}},
+        {"if": {"properties": {"op": {"const": "insert_row"}}},
+         "then": {"properties": {"table": {"enum": ["ability", "leader_ability"]}, "cells": {"items": {"properties": {"old": {"type": "null"}, "new": {"type": "string"}}}}}}},
+        {"if": {"properties": {"op": {"const": "delete_row"}}},
+         "then": {"properties": {"table": {"enum": ["ability", "leader_ability"]}, "cells": {"items": {"properties": {"old": {"type": "string"}, "new": {"type": "null"}}}}}}}
+      ]
+    }
+  }
+}
