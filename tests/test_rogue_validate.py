@@ -472,6 +472,10 @@ class CompleteFixtureCase(unittest.TestCase):
         shutil.copytree(self.baseline_root, self.root)
         self.store = self.root / "store"
         self.assets_dir = self.root / "assets"
+        sources = mock.patch.object(
+            rewards, "SOURCE_ASSET_DIR", self.root / "mod-tools/assets/abyss-equipment")
+        sources.start()
+        self.addCleanup(sources.stop)
         self.report_path = self.root / "out/abyss-client-patch/gate-verification.json"
         self.ffdec = self.root / "tools/ffdec.jar"
         self.java = self.root / "tools/java.exe"

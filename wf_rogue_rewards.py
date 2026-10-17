@@ -24,7 +24,6 @@ import copy
 import hashlib
 import io
 import json
-import os
 import subprocess
 import sys
 import tempfile
@@ -34,7 +33,7 @@ from types import MappingProxyType
 
 from PIL import Image, UnidentifiedImageError
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MOD_DIR = Path(__file__).resolve().parent
 pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_quest_lib as q          # noqa: E402
 import wf_mod_tool as core        # noqa: E402
@@ -63,7 +62,7 @@ IMAGE_PREFIX = "item/equipment/mod/abyss"
 ABILITY_SOUL_ALL_ELEMENTS = "0,3,2,1,4,5"
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 SOURCE_ASSET_SIZE = (20, 20)
-SOURCE_ASSET_DIR = Path(ROOT) / "mod-tools" / "assets" / "abyss-equipment"
+SOURCE_ASSET_DIR = MOD_DIR / "assets" / "abyss-equipment"
 DEFAULT_UPLIFT_MULTIPLIER = (3, 2)
 
 
@@ -1238,12 +1237,12 @@ def apply_server_mirrors(mirrors: ServerMirrors) -> ServerMirrors:
 
 
 def load_json(name: str):
-    with open(os.path.join(ROOT, "assets", name), encoding="utf-8") as fh:
+    with open(core.resolve_server_dir() / "assets" / name, encoding="utf-8") as fh:
         return json.load(fh)
 
 
 def save_json(name: str, data) -> None:
-    with open(os.path.join(ROOT, "assets", name), "w", encoding="utf-8") as fh:
+    with open(core.resolve_server_dir() / "assets" / name, "w", encoding="utf-8") as fh:
         json.dump(data, fh, ensure_ascii=False, indent=0 if isinstance(data, list) else 1)
 
 
@@ -1406,6 +1405,9 @@ def main() -> int:
 
     try:
         profile = require_cn_profile()
+        if args.publish:
+            server_root = core.resolve_server_dir()
+            core.resolve_cdn_root()
         tables = MasterTables(
             items=q.load_table(ITEM_T),
             equipment=q.load_table(EQUIP_T),
@@ -1523,7 +1525,7 @@ def main() -> int:
     try:
         release_snapshot = require_release_ready(
             publish_profile.store,
-            Path(ROOT) / "assets",
+            server_root / "assets",
             Path(args.client_verification),
             ffdec=args.ffdec,
             java=args.java,
@@ -1538,13 +1540,13 @@ def main() -> int:
             release_snapshot.write(snapshot_path)
             command = [
                 sys.executable,
-                str(Path(ROOT) / "mod-tools" / "wf_publish.py"),
+                str(MOD_DIR / "wf_publish.py"),
                 "--tables",
                 publish_tables,
                 "--snapshot",
                 str(snapshot_path),
             ]
-            subprocess.run(command, cwd=ROOT, check=True)
+            subprocess.run(command, cwd=server_root, check=True)
     except subprocess.CalledProcessError as exc:
         code = exc.returncode if exc.returncode else 1
         print(f"[ERR] wf_publish 退出码 {code}", file=sys.stderr)

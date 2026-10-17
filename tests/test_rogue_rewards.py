@@ -779,6 +779,13 @@ class TestSourceAssets(unittest.TestCase):
 
 
 class TestCnProfilePreflight(unittest.TestCase):
+    def setUp(self):
+        for name, value in (("resolve_server_dir", Path("configured-server")),
+                            ("resolve_cdn_root", Path("configured-cdn"))):
+            patch = mock.patch.object(core, name, return_value=value)
+            patch.start()
+            self.addCleanup(patch.stop)
+
     def test_active_global_fails_before_any_read_write_or_publish(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -1082,6 +1089,13 @@ class TestCnProfilePreflight(unittest.TestCase):
 
 
 class TestReleaseGate(unittest.TestCase):
+    def setUp(self):
+        for name, value in (("resolve_server_dir", Path("configured-server")),
+                            ("resolve_cdn_root", Path("configured-cdn"))):
+            patch = mock.patch.object(core, name, return_value=value)
+            patch.start()
+            self.addCleanup(patch.stop)
+
     def test_publish_without_write_is_rejected_before_reads_writes_or_subprocess(self):
         with (
             mock.patch.object(rewards, "validate_source_assets") as validate_assets,
@@ -1294,7 +1308,7 @@ class TestReleaseGate(unittest.TestCase):
         self.assertEqual(2, preflight.call_count)
         gate.assert_called_once_with(
             profile.store,
-            Path(rewards.ROOT) / "assets",
+            Path("configured-server") / "assets",
             Path("client-verification.json"),
             ffdec=Path("client-ffdec.jar"),
             java=Path("client-java.exe"),
@@ -1304,14 +1318,14 @@ class TestReleaseGate(unittest.TestCase):
         self.assertEqual(
             [
                 sys.executable,
-                str(Path(rewards.ROOT) / "mod-tools" / "wf_publish.py"),
+                str(rewards.MOD_DIR / "wf_publish.py"),
                 "--tables",
                 ",".join(validator.release_logicals()),
             ],
             command[:4],
         )
         self.assertEqual("--snapshot", command[4])
-        self.assertEqual(rewards.ROOT, publish.call_args.kwargs["cwd"])
+        self.assertEqual(Path("configured-server"), publish.call_args.kwargs["cwd"])
         self.assertIs(True, publish.call_args.kwargs["check"])
         self.assertEqual(1, manifest["schema_version"])
         self.assertEqual(

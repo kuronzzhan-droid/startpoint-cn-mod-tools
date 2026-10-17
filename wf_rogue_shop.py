@@ -15,7 +15,6 @@ import sys
 import tempfile
 from pathlib import Path
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_mod_tool as core  # noqa: E402
 import wf_quest_lib as q  # noqa: E402
@@ -46,7 +45,12 @@ STOCK = 5
 AVAILABLE_FROM = "2000-01-01 00:00:00"
 AVAILABLE_UNTIL = "2099-12-31 23:59:59"
 RESERVED_SHOP_IDS = tuple(str(9_700_101 + index) for index in range(15))
-ASSETS_DIR = Path(ROOT) / "assets"
+ASSETS_DIR: Path | None = None
+
+
+def _assets_dir() -> Path:
+    """Resolve at use time; the optional override supports isolated callers."""
+    return ASSETS_DIR if ASSETS_DIR is not None else core.resolve_server_dir() / "assets"
 
 
 def _leaf_text(leaf: bytes | str) -> str:
@@ -382,7 +386,7 @@ def validate_shop(client: dict, shop: dict, id_map: dict) -> list[str]:
 
 
 def load_json(name: str):
-    return json.loads((ASSETS_DIR / name).read_text(encoding="utf-8"))
+    return json.loads((_assets_dir() / name).read_text(encoding="utf-8"))
 
 
 def _atomic_write_bytes(path: Path, payload: bytes) -> None:
@@ -409,14 +413,14 @@ def _atomic_write_bytes(path: Path, payload: bytes) -> None:
 def save_json(name: str, data) -> None:
     ordered = _sort_numeric_mapping(data) if isinstance(data, dict) else data
     payload = json.dumps(ordered, ensure_ascii=False, indent=4) + "\n"
-    _atomic_write_bytes(ASSETS_DIR / name, payload.encode("utf-8"))
+    _atomic_write_bytes(_assets_dir() / name, payload.encode("utf-8"))
 
 
 def _write_target_paths() -> tuple[Path, Path, Path]:
     return (
         Path(q.store_path(SHOP_T)),
-        ASSETS_DIR / SHOP_JSON,
-        ASSETS_DIR / SHOP_ID_MAP_JSON,
+        _assets_dir() / SHOP_JSON,
+        _assets_dir() / SHOP_ID_MAP_JSON,
     )
 
 

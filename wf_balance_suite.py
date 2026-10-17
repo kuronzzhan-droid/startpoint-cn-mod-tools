@@ -34,7 +34,7 @@ from collections import Counter
 from pathlib import Path
 
 MOD_DIR = Path(__file__).resolve().parent
-ROOT = MOD_DIR.parent
+ROOT = MOD_DIR
 pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_mod_tool as core  # noqa: E402
 import wf_quest_lib as qlib  # noqa: E402
@@ -233,6 +233,25 @@ def adapt_leader_row(row, dst_el, dst_sid):
     return row
 
 
+def export_pack(cdn_root: Path, ts: str) -> Path:
+    cdn = cdn_root / "archive-common-diff"
+    # 打包全部 mod 系增量(文件名带 -mod 标记),对方无论停在链上哪个版本都能续上
+    zips = sorted(cdn.glob("pinball-*-mod*.zip"), key=lambda p: p.stat().st_mtime)
+    out = ROOT / f"WF平衡增强包-{ts}.zip"
+    with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
+        for p in zips:
+            z.write(p, f"archive-common-diff/{p.name}")
+        z.writestr("使用说明.txt",
+                   "WF 平衡增强包(startpoint-cn 私服用)\n"
+                   "1. 把 archive-common-diff/ 下的 zip 复制到你的 startpoint-cn/.cdn/cn/archive-common-diff/\n"
+                   "2. 服务端动态扫描,无需重启;重启游戏客户端即自动增量下载生效\n"
+                   "3. 客户端资源版本需低于包内目标版本(文件名 pinball-<from>-<to>);\n"
+                   "   若客户端版本过旧会按版本链依次下载,不影响使用\n"
+                   "4. 回滚:删除该 zip,客户端清资源缓存后重下\n")
+    print(f"分享包 → {out}")
+    return out
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="平衡增强总包 v3")
     ap.add_argument("--apply", action="store_true")
@@ -245,6 +264,12 @@ def main() -> None:
     ap.add_argument("--legacy-weapon-buff", action="store_true",
                     help="恢复旧版原版武器超模加强(默认关闭=官方原值)")
     args = ap.parse_args()
+    if args.publish and not args.apply:
+        ap.error("--publish requires --apply")
+    # Resolve external inputs before the first baseline restore or other write.
+    server_root = core.resolve_server_dir() if args.publish else None
+    cdn_root = core.resolve_cdn_root() if args.publish or args.export_pack else None
+    cdndata_dir = core.resolve_cdndata_dir()
     dry = not args.apply
     if args.apply and MARKER.exists() and not args.force:
         sys.exit(f"已应用过({MARKER})。--force = 从最老备份(真·纯净态)重建后按当前规则重跑。")
@@ -293,7 +318,7 @@ def main() -> None:
     allj = json.loads((ROOT / "logs" / "all_analysis.json").read_text(encoding="utf-8"))
     meta = {c["id"]: c for rows in allj["elements"].values() for c in rows}
     assigns = json.loads((ROOT / "logs" / "unique_assign.json").read_text(encoding="utf-8"))
-    ch = json.loads((ROOT / "assets/cdndata/character.json").read_text(encoding="utf-8"))
+    ch = json.loads((cdndata_dir / "character.json").read_text(encoding="utf-8"))
 
     def slots(cid):
         r = core.normalize_row_length(ch[cid][0], 37)
@@ -1462,23 +1487,9 @@ def main() -> None:
             subprocess.run([sys.executable, str(MOD_DIR / "wf_publish.py"), "--tables",
                             "ability,leader_ability,character_status,boss_level,"
                             "ability_soul,weapon_ability,action_skill"],
-                           check=True)
+                           cwd=server_root, check=True)
     if args.export_pack:
-        cdn = ROOT / ".cdn" / "cn" / "archive-common-diff"
-        # 打包全部 mod 系增量(文件名带 -mod 标记),对方无论停在链上哪个版本都能续上
-        zips = sorted(cdn.glob("pinball-*-mod*.zip"), key=lambda p: p.stat().st_mtime)
-        out = ROOT / f"WF平衡增强包-{ts}.zip"
-        with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
-            for p in zips:
-                z.write(p, f"archive-common-diff/{p.name}")
-            z.writestr("使用说明.txt",
-                       "WF 平衡增强包(startpoint-cn 私服用)\n"
-                       "1. 把 archive-common-diff/ 下的 zip 复制到你的 startpoint-cn/.cdn/cn/archive-common-diff/\n"
-                       "2. 服务端动态扫描,无需重启;重启游戏客户端即自动增量下载生效\n"
-                       "3. 客户端资源版本需低于包内目标版本(文件名 pinball-<from>-<to>);\n"
-                       "   若客户端版本过旧会按版本链依次下载,不影响使用\n"
-                       "4. 回滚:删除该 zip,客户端清资源缓存后重下\n")
-        print(f"分享包 → {out}")
+        export_pack(cdn_root, ts)
     if dry:
         print("(dry-run,未写入;--apply 写入,--apply --publish 一键下发,--export-pack 打分享包)")
 

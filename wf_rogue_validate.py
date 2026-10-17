@@ -25,8 +25,7 @@ import wf_rogue_rewards as rewards
 import wf_rogue_shop as shop
 
 
-ROOT = Path(__file__).resolve().parents[1]
-ASSETS_DIR = ROOT / "assets"
+ASSETS_DIR: Path | None = None
 
 
 def _strict_json_load(text: str) -> Any:
@@ -478,12 +477,14 @@ def main() -> int:
     args = parser.parse_args()
     try:
         profile = rewards.require_cn_profile()
+        assets_dir = (ASSETS_DIR if ASSETS_DIR is not None
+                      else core.resolve_server_dir() / "assets")
     except (OSError, KeyError, TypeError, ValueError, RuntimeError) as exc:
         print(f"[ERR] CN profile validation failed: {exc}", file=sys.stderr)
         return 1
     result = validate_release(
         profile.store,
-        ASSETS_DIR,
+        assets_dir,
         Path(args.client_verification),
         ffdec=args.ffdec,
         java=args.java,
@@ -1046,7 +1047,7 @@ def _validate_pngs(
     *,
     access_hook: Callable[[str], None] | None = None,
 ) -> None:
-    source_dir = assets_dir.parent / "mod-tools" / "assets" / "abyss-equipment"
+    source_dir = rewards.SOURCE_ASSET_DIR
     try:
         rewards.validate_source_assets(source_dir, rewards.WEAPONS)
     except Exception as exc:
