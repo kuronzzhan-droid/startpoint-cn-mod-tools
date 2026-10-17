@@ -19,7 +19,8 @@ data_surface:
   unique_ids: []
   tables:
   - character_awake_event
-  selectors: []
+  selectors:
+  - ability.awake-row
 form:
   label: 官方觉醒系统
   fields: []
