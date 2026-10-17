@@ -42,6 +42,11 @@ def build(key):
     out.mkdir(parents=True, exist_ok=True)
     cands, fulls, geometry, prev_i, prev_a, report = {}, [], [], {}, {}, {"gates": {}}
     cache = hw_env.INPUT / "pkgroot/art-official-shape-masks.npz"
+    # Replay consumes the original official-mask intermediate. It must never
+    # regenerate that cache in the read-only source package directory.
+    if not cache.is_file() or not cache.with_suffix(".json").is_file():
+        raise FileNotFoundError(f"original mask cache and metadata are required: {cache}")
+    report["mask_cache"] = {"recomputed": False, "sha256": images.sha(cache.read_bytes())}
     for level in (0, 1):
         land = LANDMARKS[key][level]
         master, _src = images.load_master(MASTERS / f"{key}-{level}.png", land)
@@ -75,7 +80,8 @@ def build(key):
     report["files"] = sorted(cands)
     report["geometry"] = geometry
     (out / "applied.json").write_text(json.dumps(report, ensure_ascii=False, indent=1, default=str), "utf-8")
-    return {"files": len(cands), "gates": report["gates"], "contact": str(out / "icons-contact.png")}
+    return {"files": len(cands), "gates": report["gates"], "contact": str(out / "icons-contact.png"),
+            "mask_cache": report["mask_cache"]}
 
 
 if __name__ == "__main__":

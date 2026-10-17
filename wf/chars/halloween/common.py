@@ -6,6 +6,7 @@ from pathlib import Path
 from wf.chars.support import rarity as MC
 from wf.chars.support.rarity import RarityUpgrade
 from wf.chars.halloween import specs as HS
+from wf.paths import path
 
 # donor = 同元素同 pf 类型官方 ★5 按 Lv100 ATK 中位(hw_build --step donors 复算)
 RARITY: dict[str, RarityUpgrade] = {
@@ -20,7 +21,8 @@ class HWPack(MC.MAPack):
     def __init__(self, spec, **kw):
         kw.setdefault("root", hw_env.ROOT)
         kw.setdefault("store", hw_env.STORE)
-        kw.setdefault("server_base", hw_env.SERVER_BASE)
+        if "server_base" not in kw:
+            kw["server_base"] = path("kulo", "assets")
         kw.setdefault("use_official", False)
         super().__init__(spec, **kw)
 

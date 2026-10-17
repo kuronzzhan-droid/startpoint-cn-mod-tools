@@ -2,4 +2,4 @@
 from wf.chars.halloween.replay import main
 
 if __name__ == "__main__":
-    main()
+    main(historical_version="1.4.221")

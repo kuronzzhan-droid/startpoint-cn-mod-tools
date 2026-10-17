@@ -12,6 +12,5 @@ ROOT = RUN_ROOT / "pkgroot"
 if os.name == "nt":
     ROOT = Path("\\\\?\\" + str(ROOT.resolve()))
 STORE = INPUT / "viewstore/production/upload"
-SERVER_BASE = path("kulo", "assets")
 SCRIPTS = Path.home() / "Downloads"
 TEMP = RUN_ROOT / "tmp"

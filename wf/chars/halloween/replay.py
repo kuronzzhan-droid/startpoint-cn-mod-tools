@@ -1,8 +1,8 @@
 """Rebuild all four Halloween packages from source tables, art and approved WAVs.
 
 No TTS/image generation, services, device access, or deployment is invoked.
-The recipe explicitly selects the verified pre-222 Seriol formula for 221.
-Ordinary kit construction keeps the later fix; expected ZIPs are never inputs.
+The 221 entry explicitly selects the verified pre-222 Seriol formula.
+The current entry retains the 222 fix; expected ZIPs are never inputs.
 """
 from __future__ import annotations
 import importlib
@@ -13,16 +13,21 @@ from wf.paths import path, REPOSITORY
 from wf.view.safety import restrict_writes
 
 
-def build_kit(key, pack, build_api):
+def build_kit(key, pack, build_api, historical_version=None):
     context = build_api.KitContext(pack)
-    context.historical_version = "1.4.221"
+    context.historical_version = historical_version
     return importlib.import_module("wf.chars.halloween.kit_" + key).build(context)
 
 
-def main():
+def main(*, historical_version=None):
+    if historical_version not in (None, "1.4.221"):
+        raise ValueError("only the 1.4.221 historical recipe is supported")
+    version = historical_version or "1.4.222"
+    os.environ.setdefault("WF_REPLAY_RUN", "historical221-run1" if historical_version else "current222-run1")
     observed_reads = restrict_writes()
     from wf.chars.halloween import env
-    os.environ["WF_TARGET_STORE"] = str(env.STORE)
+    os.environ["WF_STORE"] = str(env.STORE)
+    os.environ.pop("WF_TARGET_STORE", None)
     from wf.chars.halloween import common, art, pixel, voice
     from wf.chars.support import build, tables, assets
     env.ROOT.mkdir(parents=True, exist_ok=True)
@@ -34,16 +39,17 @@ def main():
     shutil.copyfile(env.INPUT / "pkgroot/mod-tools/WF_PATHLIST_recovered.txt", target)
     report_file = env.RUN_ROOT / "build-report.json"
     report = json.loads(report_file.read_text("utf-8")) if report_file.exists() else {}
-    if report and report.get("historical_version") != "1.4.221":
+    if report and report.get("historical_version") != historical_version:
         raise ValueError("run directory belongs to a different recipe mode; choose a fresh WF_REPLAY_RUN")
-    report["historical_version"] = "1.4.221"
+    report["historical_version"] = historical_version
+    report["version"] = version
     for key in ("ludi", "momiya", "seriol", "recital"):
         pack = common.pack_for(key)
         steps = report.setdefault(key, {})
         for name, run in [
             ("init", lambda: build.step_init(pack)),
             ("tables", lambda: tables.build(pack)),
-            ("kit", lambda: build_kit(key, pack, build)),
+            ("kit", lambda: build_kit(key, pack, build, historical_version)),
             ("assets", lambda: assets.build(pack)),
             ("pixel", lambda: pixel.build(pack)),
             ("art", lambda: art.build(key)),
@@ -69,7 +75,7 @@ def main():
     report_file.write_text(json.dumps(report, ensure_ascii=False, indent=2, default=str), "utf-8")
     from wf.view import character_pack
     character_pack.hw_env.ROOT = env.ROOT
-    character_pack.main(["1.4.220", "1.4.221", "--out", str(env.RUN_ROOT / "delivery")])
+    character_pack.main(["1.4.220", version, "--out", str(env.RUN_ROOT / "delivery")])
 
 if __name__ == "__main__":
     main()

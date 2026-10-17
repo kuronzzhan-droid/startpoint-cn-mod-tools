@@ -1,4 +1,4 @@
-"""Replay the complete 1.4.221 delivery from its original source assets."""
+"""Build all four Halloween characters from current source, including the 222 fix."""
 from wf.chars.halloween.replay import main
 
 if __name__ == "__main__":
