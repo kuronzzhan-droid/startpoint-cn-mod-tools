@@ -33,7 +33,7 @@ def delivery(case, tmp_path):
     # Test runner's basetemp is within this checkout; no external fixture writes.
     path, _ = case
     out = tmp_path / "delivery"
-    result = build_delivery(path, out)
+    result = build_delivery(path, out, no_baseline_i_know=True)
     return out, result
 
 
@@ -153,12 +153,12 @@ def test_prepush_runs_since_and_reports_skips_honestly(delivery):
 
 def test_prepush_failure_is_not_success(case, tmp_path, monkeypatch):
     from wf.deliver import prepush
-    def fail(argv):
+    def fail(argv, **_kwargs):
         path = Path(argv[argv.index("--json") + 1])
         path.write_text(json.dumps({"findings": [{"fid": "forced", "msg": "bad", "level": "ERROR"}]}), "utf-8")
         return 1
     monkeypatch.setattr(prepush, "main", fail)
-    result = build_delivery(case[0], tmp_path / "failed")
+    result = build_delivery(case[0], tmp_path / "failed", no_baseline_i_know=True)
     assert result["prepush"]["status"] == "问题"
     assert result["prepush"]["exit_code"] == 1
 
@@ -171,7 +171,9 @@ def test_server_payload_is_staged_and_asserted_only(case, tmp_path):
                                "sha256": sha256(raw), "before_sha256": None}]
     path.write_text(json.dumps(doc), "utf-8")
     out = tmp_path / "with-server"
-    result = build_delivery(path, out)
+    server = tmp_path / "server"
+    server.mkdir()
+    result = build_delivery(path, out, server_dir=server, no_baseline_i_know=True)
     assert (out / "server/assets/cdndata/character_text.json").read_bytes() == raw
     asserts = json.loads((out / "assert-box.json").read_text("utf-8"))
     assert asserts["files"][-1]["kind"] == "server"
@@ -202,7 +204,7 @@ def test_before_hash_drift_fails_delivery(case, tmp_path):
     filename = store / member_name("common", doc["members"][0]["logical_path"]).removeprefix("production/")
     filename.parent.mkdir(parents=True)
     filename.write_bytes(b"drift")
-    result = build_delivery(path, tmp_path / "drifted", base_store=store)
+    result = build_delivery(path, tmp_path / "drifted", base_store=store, no_baseline_i_know=True)
     assert result["prepush"]["exit_code"] == 1
     assert result["prepush"]["status"] == "问题"
 
@@ -219,7 +221,7 @@ def test_server_before_hash_is_enforced_without_external_mutation(case, tmp_path
     target = server / relative
     target.parent.mkdir(parents=True)
     target.write_bytes(b"{}")
-    result = build_delivery(path, tmp_path / "server-drift", server_dir=server)
+    result = build_delivery(path, tmp_path / "server-drift", server_dir=server, no_baseline_i_know=True)
     assert result["prepush"]["exit_code"] == 1
     assert target.read_bytes() == b"{}"
 

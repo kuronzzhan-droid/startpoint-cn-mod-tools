@@ -5,8 +5,10 @@ from pathlib import Path
 
 from wf.view.safety import local_output
 from .archives import write_archives
+from .baseline import resolve_baseline
 from .changeset import load_changeset, sha256, validate_document, write_json
 from .gate import run_prepush
+from .dsl_gate import check_candidate
 from .manifests import write_manifests
 
 
@@ -15,7 +17,9 @@ def build_delivery(changeset: Path, out: Path, **prepush_options) -> dict:
     out = local_output(out)
     if out.exists() and any(out.iterdir()):
         raise FileExistsError(f"delivery output must be empty: {out}")
+    baseline = resolve_baseline(doc, **prepush_options)
     out.mkdir(parents=True, exist_ok=True)
+    check_candidate(out, members, baseline, prepush_options.get("base_store"))
     records = write_archives(out, members, lambda seq:
         f"pinball-{doc['from_version']}-{doc['to_version']}-{seq}-{doc['slug']}.zip")
     legacy, upstream = write_manifests(out, doc, members, records)
@@ -29,12 +33,18 @@ def build_delivery(changeset: Path, out: Path, **prepush_options) -> dict:
                 "installed_size": sum(len(raw) for raw, _ in members.values()),
                 "download_size": sum(r["size"] for r in records),
                 "upstream_manifest": upstream, "legacy_manifest": legacy,
-                "requires": "requires.json", "assertions": "assert-box.json",
+                "requires": "requires.json", "assertions": "assert-box.json", "dsl_gate": "dsl-629.json",
+                "baseline": {"no_baseline_i_know": baseline is None,
+                             "tip": baseline.tip if baseline is not None else None,
+                             "lock": "baseline.lock.json" if baseline is not None else None},
                 "prepush": {"status": "未执行", "exit_code": None, "since": doc["from_version"],
                             "report": "prepush.json", "log": "prepush.log", "limitations": []}}
     write_json(out / "delivery-manifest.json", delivery)
     try:
-        delivery["prepush"] = run_prepush(out, doc, records, server, **prepush_options)
+        delivery["prepush"] = run_prepush(out, doc, records, server,
+                                        baseline=baseline, members=members, **prepush_options)
+        if baseline is not None:
+            baseline.save_lock(out / "baseline.lock.json")
     except Exception as exc:
         delivery["prepush"].update(status="问题", exit_code=2, limitations=[str(exc)])
         write_json(out / "delivery-manifest.json", delivery)

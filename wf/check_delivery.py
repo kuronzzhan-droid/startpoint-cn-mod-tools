@@ -101,12 +101,29 @@ def check_delivery(document, directory):
                 raise ValueError("assert_box server assertion does not match staged bytes")
     report = json.loads(local_read(gate["report"])[1])
     local_read(gate["log"])
+    baseline = document["baseline"]
+    contract = report.get("local_contract", {})
+    if gate["exit_code"] == 0 and any(entry["kind"] == "server" for entry in assertions["files"]):
+        if not contract.get("server_pre_hashes_checked") or not contract.get("server_post_hashes_checked"):
+            raise ValueError("server pre/post hashes were not checked")
+    if baseline["no_baseline_i_know"]:
+        if baseline["tip"] is not None or baseline["lock"] is not None or not contract.get("no_baseline_i_know"):
+            raise ValueError("baseline waiver does not match prepush evidence")
+    else:
+        lock = json.loads(local_read(baseline["lock"])[1])
+        if baseline["tip"] != document["from_version"] or lock.get("tip") != baseline["tip"]:
+            raise ValueError("baseline tip does not match delivery")
+        if gate["exit_code"] == 0 and not contract.get("pre_and_post_hashes_checked"):
+            raise ValueError("baseline hashes were not checked")
+    dsl = json.loads(local_read(document["dsl_gate"])[1])
+    if dsl.get("status") not in {"满足", "不适用", "待验证"}:
+        raise ValueError("629 gate did not pass")
     if gate["since"] != document["from_version"] or report.get("since") != gate["since"]:
         raise ValueError("prepush since does not match delivery")
     findings = report.get("findings")
     if not isinstance(findings, list):
         raise ValueError("prepush report lacks findings")
-    has_errors = any(f.get("level") == "ERROR" for f in findings) or report.get("local_contract", {}).get("errors")
+    has_errors = any(f.get("level") == "ERROR" for f in findings) or contract.get("errors")
     if gate["status"] in {"满足", "待验证"} and (gate["exit_code"] != 0 or has_errors):
         raise ValueError("prepush status contradicts exit code or ERROR findings")
     skipped = any(any(token in f.get("fid", "") for token in ("skipped", "missing", "failed", "view.broken")) for f in findings)

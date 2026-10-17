@@ -13,7 +13,8 @@ from wf.deliver.changeset import sha256
 def delivery(tmp_path, monkeypatch):
     import wf.deliver.build as build
     def prepush(out, *_a, **_kw):
-        (out / "prepush.json").write_text(json.dumps({"since": "1.4.131", "findings": []}), encoding="utf-8")
+        (out / "prepush.json").write_text(json.dumps({"since": "1.4.131", "findings": [],
+            "local_contract": {"no_baseline_i_know": True}}), encoding="utf-8")
         (out / "prepush.log").write_text("test fixture", encoding="utf-8")
         return {"status": "待验证", "exit_code": 0, "since": "1.4.131", "report": "prepush.json",
                 "log": "prepush.log", "limitations": ["测试夹具未提供完整服务端"]}
@@ -28,7 +29,7 @@ def delivery(tmp_path, monkeypatch):
     changes = source / "changeset.json"
     changes.write_text(json.dumps(doc), encoding="utf-8")
     target = tmp_path / "delivery"
-    return target, build_delivery(changes, target)
+    return target, build_delivery(changes, target, no_baseline_i_know=True)
 
 
 def test_check_preserves_incomplete_or_failed_prepush(delivery):

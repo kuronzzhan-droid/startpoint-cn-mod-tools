@@ -51,9 +51,10 @@ def run_kulo35(server_dir: Path, published: list[str], on_disk: list[str], rep: 
         rep.add("ERROR", "chain", f"chain.kulo35:{w}", f"[#35] {w}")
 
 
-def check_chain(args, manifest: dict, active: Path, new_zips: set[str], rep: Report, pathlist):
+def check_chain(args, manifest: dict, active: Path, new_zips: set[str], rep: Report, pathlist, *, archive_paths=None):
     published = enabled_names(manifest)
-    on_disk = sorted(p.name for p in active.glob("*.zip"))
+    paths = {p.name: p for p in (active.glob("*.zip") if archive_paths is None else archive_paths)}
+    on_disk = sorted(paths)
     run_kulo35(args.server_dir, published, on_disk, rep)
 
     # 未登记:active 里有、清单启用项里没有。服务端会照样扫描 active 下发它。
@@ -82,7 +83,7 @@ def check_chain(args, manifest: dict, active: Path, new_zips: set[str], rep: Rep
             tail = max(tail or p["version"], p["version"], key=vkey)
         for ent in p.get("archive_integrity") or []:
             name = ent.get("name")
-            path = active / name if name else None
+            path = paths.get(name)
             if not path or not path.is_file():
                 continue          # 缺文件由 #35 报
             blob = path.read_bytes()
@@ -108,7 +109,7 @@ def check_chain(args, manifest: dict, active: Path, new_zips: set[str], rep: Rep
                 f"清单 cdn_version={manifest['cdn_version']},启用链尾是 {tail}")
 
     # 新包逐个:CRC、成员路径、master 表可解码(平表新增行没压缩时这里会炸)
-    for path in list_chain(active):
+    for path in (list_chain(active) if archive_paths is None else archive_paths):
         if path.name not in new_zips:
             continue
         with zipfile.ZipFile(path) as zf:

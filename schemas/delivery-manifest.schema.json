@@ -98,6 +98,17 @@
       "type": "string",
       "pattern": "^(?!/)(?!.*\\\\)(?!.*:)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
     },
+    "baseline": {
+      "type": "object",
+      "properties": {
+        "no_baseline_i_know": {"type": "boolean"},
+        "tip": {"type": ["string", "null"]},
+        "lock": {"type": ["string", "null"]}
+      },
+      "required": ["no_baseline_i_know", "tip", "lock"],
+      "additionalProperties": false
+    },
+    "dsl_gate": {"const": "dsl-629.json"},
     "prepush": {
       "type": "object",
       "properties": {
@@ -159,7 +170,9 @@
     "legacy_manifest",
     "requires",
     "assertions",
-    "prepush"
+    "prepush",
+    "baseline",
+    "dsl_gate"
   ],
   "additionalProperties": false
 }
