@@ -1,4 +1,8 @@
-"""Stdlib HTTP server: explicit route table + static frontend. Read-only."""
+"""Stdlib HTTP server: explicit route table + static frontend.
+
+GET routes read the layered view. POST routes only write the draft workspace
+(``work/studio-drafts``) and are guarded by :class:`~wf.studio.guard.WriteGuard`.
+"""
 from __future__ import annotations
 
 import json
@@ -16,6 +20,9 @@ import wf_describe
 
 from .assets import AssetIndex
 from .characters import BOARD_RULE, character_detail, list_characters
+from .drafts import DraftError
+from .guard import GuardError, WriteGuard
+from .operations import DraftOps
 from .patches import patch_chain, patch_members
 from .pixels import SLOTS, PixelCache
 from .source import StudioSource
@@ -43,10 +50,11 @@ def error(status: int, message: str) -> Response:
 class StudioApp:
     """Request handlers bound to one :class:`StudioSource`."""
 
-    def __init__(self, source: StudioSource):
+    def __init__(self, source: StudioSource, *, drafts=None):
         self.source = source
         self.pixels = PixelCache(source)
         self.assets = AssetIndex(source)
+        self.ops = DraftOps(source, store=drafts, assets=self.assets, characters=self.character_list)
         self._lock = threading.Lock()
         self._characters: list[dict] | None = None
         self._lookup: list[dict] | None = None
@@ -64,16 +72,41 @@ class StudioApp:
             ("GET", re.compile(r"^/api/lookup$"), self.lookup),
             ("GET", re.compile(r"^/api/patches$"), self.patches),
             ("GET", re.compile(r"^/api/patches/(?P<archive>[^/]+\.zip)/members$"), self.patch_files),
+            # -- draft workspace (M3.2) --
+            ("GET", re.compile(r"^/api/drafts$"), self.draft_index),
+            ("GET", re.compile(r"^/api/drafts/(?P<cid>\d+)$"), self.draft),
+            ("GET", re.compile(r"^/api/drafts/(?P<cid>\d+)/file$"), self.draft_file),
+            ("GET", re.compile(r"^/api/characters/(?P<cid>\d+)/portrait/(?P<form>[01])$"), self.portrait_info),
+            ("GET", re.compile(r"^/api/characters/(?P<cid>\d+)/voice$"), self.voice_lines),
+            ("GET", re.compile(r"^/api/studio/masks/(?P<slot>[a-z0-9_]+)\.png$"), self.mask),
+            ("GET", re.compile(r"^/api/studio/schema$"), self.schema),
+            ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/portrait/(?P<form>[01])/source$"), self.portrait_upload),
+            ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/portrait$"), self.portrait_save),
+            ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/pixel$"), self.pixel_save),
+            ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/voice$"), self.voice_save),
+            ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/changes/(?P<change>c-[0-9a-f]{12})/revert$"), self.revert),
+            ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/save$"), self.save),
         ]
 
     # -- dispatch -------------------------------------------------------
-    def dispatch(self, method: str, path: str, query: dict[str, list[str]]) -> Response | None:
+    def dispatch(self, method: str, path: str, query: dict[str, list[str]], body=None) -> Response | None:
+        matched = False
         for verb, pattern, handler in self.routes:
             match = pattern.match(path)
-            if match:
-                if verb != method:
-                    return error(405, "只读接口，仅支持 GET")
-                return handler(query=query, **{k: unquote(v) for k, v in match.groupdict().items()})
+            if not match:
+                continue
+            matched = True
+            if verb != method:
+                continue
+            groups = {k: unquote(v) for k, v in match.groupdict().items()}
+            try:
+                if verb == "POST":
+                    return handler(query=query, body=body if isinstance(body, dict) else {}, **groups)
+                return handler(query=query, **groups)
+            except DraftError as exc:
+                return error(400, str(exc))
+        if matched:
+            return error(405, "这个接口不支持 " + method)
         return None
 
     # -- cached lists ---------------------------------------------------
@@ -113,7 +146,7 @@ class StudioApp:
     def meta(self, query) -> Response:
         return json_response({"source": self.source.describe(), "boardRule": BOARD_RULE,
                               "slots": [{"name": n, "label": l} for n, l in SLOTS],
-                              "mode": "只读", "writes": False})
+                              "mode": "草稿可写", "writes": "draft-only"})
 
     def characters(self, query) -> Response:
         items = self.character_list()
@@ -180,6 +213,52 @@ class StudioApp:
         return json_response({"total": len(index), "count": len(hits), "results": hits[:limit],
                               "note": "描述为 wf_describe 语义翻译，不是客户端原文。"})
 
+    # -- drafts ----------------------------------------------------------
+    def draft_index(self, query) -> Response:
+        return json_response({"drafts": self.ops.store.characters()})
+
+    def draft(self, query, cid: str) -> Response:
+        return json_response(self.ops.draft(cid))
+
+    def draft_file(self, query, cid: str) -> Response:
+        relative = (query.get("path") or [""])[0]
+        data = self.ops.store.read_file(cid, relative)
+        if data is None:
+            return error(404, "草稿里没有这个文件")
+        kind = mimetypes.guess_type(relative)[0] or "application/octet-stream"
+        return Response(200, data, kind)
+
+    def portrait_info(self, query, cid: str, form: str) -> Response:
+        return json_response(self.ops.portrait_info(cid, form))
+
+    def voice_lines(self, query, cid: str) -> Response:
+        return json_response(self.ops.voice_lines(cid))
+
+    def mask(self, query, slot: str) -> Response:
+        return Response(200, self.ops.mask_png(slot), "image/png")
+
+    def schema(self, query) -> Response:
+        from .drafts import schema
+        return json_response(schema())
+
+    def portrait_upload(self, query, body, cid: str, form: str) -> Response:
+        return json_response(self.ops.portrait_upload(cid, form, body.get("png", "")))
+
+    def portrait_save(self, query, body, cid: str) -> Response:
+        return json_response(self.ops.portrait_save(cid, body))
+
+    def pixel_save(self, query, body, cid: str) -> Response:
+        return json_response(self.ops.pixel_save(cid, body))
+
+    def voice_save(self, query, body, cid: str) -> Response:
+        return json_response(self.ops.voice_save(cid, body))
+
+    def revert(self, query, body, cid: str, change: str) -> Response:
+        return json_response(self.ops.revert(cid, change))
+
+    def save(self, query, body, cid: str) -> Response:
+        return json_response(self.ops.save(cid))
+
     def patches(self, query) -> Response:
         return json_response(patch_chain(self.source))
 
@@ -188,7 +267,7 @@ class StudioApp:
         return json_response(result) if result else error(404, "当前视图中没有这个补丁 ZIP")
 
 
-def make_handler(app: StudioApp, static_root: Path):
+def make_handler(app: StudioApp, static_root: Path, guard: WriteGuard):
     static_root = static_root.resolve()
 
     class Handler(BaseHTTPRequestHandler):
@@ -217,18 +296,33 @@ def make_handler(app: StudioApp, static_root: Path):
             kind = mimetypes.guess_type(target.name)[0] or "application/octet-stream"
             if kind.startswith("text/") or kind in ("application/javascript",):
                 kind += "; charset=utf-8"
-            return Response(200, target.read_bytes(), kind)
+            body = target.read_bytes()
+            if target.name == "index.html":
+                body = guard.inject(body)
+            return Response(200, body, kind)
 
         def _handle(self, method: str):
             parsed = urlparse(self.path)
             try:
                 if parsed.path.startswith("/api/"):
+                    body = None
+                    if method == "POST":
+                        guard.check(self.headers)
+                        length = guard.body_length(self.headers)
+                        raw = self.rfile.read(length)
+                        if len(raw) != length:
+                            raise GuardError(400, "studio_bad_body", "请求体长度不符")
+                        body = guard.parse(raw)
+                    elif method not in ("GET", "HEAD"):
+                        raise GuardError(405, "studio_method", "不支持的方法")
                     response = app.dispatch(method if method != "HEAD" else "GET", parsed.path,
-                                            parse_qs(parsed.query)) or error(404, "未知接口")
+                                            parse_qs(parsed.query), body) or error(404, "未知接口")
                 elif method in ("GET", "HEAD"):
                     response = self._static(parsed.path)
                 else:
-                    response = error(405, "只读服务")
+                    response = error(405, "静态资源只读")
+            except GuardError as exc:
+                response = json_response({"error": exc.message, "code": exc.code}, exc.status)
             except Exception as exc:  # noqa: BLE001 - report instead of dropping the connection
                 traceback.print_exc()
                 response = error(500, f"{type(exc).__name__}: {exc}")
@@ -252,6 +346,9 @@ def make_handler(app: StudioApp, static_root: Path):
     return Handler
 
 
-def serve(app: StudioApp, *, host: str = "127.0.0.1", port: int = 8790, static_root: Path = DEFAULT_STATIC):
-    server = ThreadingHTTPServer((host, port), make_handler(app, static_root))
+def serve(app: StudioApp, *, host: str = "127.0.0.1", port: int = 8790, static_root: Path = DEFAULT_STATIC,
+          guard: WriteGuard | None = None, extra_origins=()):
+    guard = guard or WriteGuard(port, extra_origins=extra_origins)
+    server = ThreadingHTTPServer((host, port), make_handler(app, static_root, guard))
+    server.guard = guard
     return server

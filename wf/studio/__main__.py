@@ -1,4 +1,4 @@
-"""python -m wf.studio — start the read-only 编辑台 backend on 127.0.0.1:8790."""
+"""python -m wf.studio — start the 编辑台 backend on 127.0.0.1:8790 (reads the view, writes only drafts)."""
 from __future__ import annotations
 
 import argparse
@@ -10,7 +10,7 @@ from .source import build_source
 
 
 def main(argv=None) -> int:
-    parser = argparse.ArgumentParser(prog="python -m wf.studio", description="编辑台只读后端")
+    parser = argparse.ArgumentParser(prog="python -m wf.studio", description="编辑台后端：读分层视图，只写草稿 work/studio-drafts")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8790)
     parser.add_argument("--tip", type=int, help="视图 TIP 小版本号（默认取 kulo active 中最新的补丁边）")
@@ -26,6 +26,8 @@ def main(argv=None) -> int:
     parser.add_argument("--no-chain", action="store_true", help="不按清单自动叠加，只用 active 与 --extra-zip")
     parser.add_argument("--static", type=Path, default=DEFAULT_STATIC, help="前端构建目录")
     parser.add_argument("--warm", action="store_true", help="启动时预先加载角色列表")
+    parser.add_argument("--allow-origin", action="append", default=[], metavar="URL",
+                        help="额外允许写入的 Origin（例如 Vite 开发服务器 http://127.0.0.1:5173），可重复")
     args = parser.parse_args(argv)
 
     if sys.stdout and hasattr(sys.stdout, "reconfigure"):
@@ -37,14 +39,18 @@ def main(argv=None) -> int:
     if args.warm:
         app.character_list()
     info = source.describe()
-    server = serve(app, host=args.host, port=args.port, static_root=args.static)
-    print(f"编辑台（只读）: http://{args.host}:{args.port}/  视图 {info['version']}  "
+    if args.host not in ("127.0.0.1", "localhost", "::1"):
+        parser.error("编辑台只监听本机回环地址")
+    server = serve(app, host=args.host, port=args.port, static_root=args.static, extra_origins=args.allow_origin)
+    session = server.guard.write_session(app.ops.store.root, args.host)
+    print(f"编辑台（草稿可写）: http://{args.host}:{args.port}/  视图 {info['version']}  "
           f"ZIP {info['zipCount']} 个，额外叠加 {len(info['extraZips'])} 个", flush=True)
     if info.get("chain"):
         chain = info["chain"]
         print(f"补丁链清单 {chain['manifest']}：找到 {chain['resolved']} 个 ZIP，缺 {len(chain['missing'])} 个", flush=True)
         for item in chain["missing"]:
             print(f"  缺少 {item['version']} {item['name']}", flush=True)
+    print(f"写入令牌已写到 {session}（agent 用 X-WF-Studio-Token 头调用 POST 接口）", flush=True)
     if not (args.static / "index.html").is_file():
         print(f"提示：前端未构建（{args.static}），请在 studio/ 下运行 npm run build", flush=True)
     try:
