@@ -1,0 +1,2023 @@
+{
+  "schema_version": 1,
+  "python": "3.14.6",
+  "platform": "win32",
+  "status": "completed_with_resolved_gate_failure",
+  "full_run": {
+    "command": "python -B -m pytest -q --tb=short --junitxml=work/m0/pytest-final.xml",
+    "exit_code": 1,
+    "passed": 3450,
+    "failed": 1,
+    "errors": 0,
+    "skipped": 357,
+    "subtests_passed": 2256,
+    "duration_seconds": 310.25,
+    "junit_testcase_records": 6064,
+    "log": "work/m0/pytest-final.log",
+    "junit": "work/m0/pytest-final.xml",
+    "failed_nodeids": [
+      "tests/test_m0_paths.py::test_repository_has_no_machine_paths"
+    ],
+    "note": "JUnit 包含成功 subtest 记录；主测试与 subtest 分开计数。整轮命令真实 exit code 为 1。"
+  },
+  "resolved_failure": {
+    "nodeid": "tests/test_m0_paths.py::test_repository_has_no_machine_paths",
+    "finding": {
+      "path": "archive/legacy/assets/paradox/build_frame_bluegold.py",
+      "rule": "absolute-import-path"
+    },
+    "fix": "删除归档脚本残留的外部 sys.path bootstrap；扫描器增加语法失败不静默放行的负向规则。",
+    "followup": {
+      "command": "python -B -m pytest -q --tb=short --junitxml=work/m0/pytest-final-paths.xml tests/test_m0_paths.py",
+      "exit_code": 0,
+      "passed": 5,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 18.127,
+      "log": "work/m0/pytest-final-paths.log",
+      "junit": "work/m0/pytest-final-paths.xml"
+    },
+    "note": "其余功能代码及环境未变；只补跑与该修复有关的完整路径门禁组，没有把原整轮结果改写为 exit 0。"
+  },
+  "unresolved_failures": [],
+  "skip_categories": {
+    "external_client_patch_collection": 5,
+    "external_game_data": 127,
+    "host_filesystem_capability": 16,
+    "external_client_patch": 190,
+    "external_production_assets": 4,
+    "external_character_package": 8,
+    "external_truth_root": 1,
+    "external_server_source": 6
+  },
+  "skip_reasons": [
+    {
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py",
+      "count": 83
+    },
+    {
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE",
+      "count": 83
+    },
+    {
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py",
+      "count": 37
+    },
+    {
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py",
+      "count": 28
+    },
+    {
+      "reason": "store 不可用",
+      "count": 24
+    },
+    {
+      "reason": "external client-patch integration source unavailable",
+      "count": 23
+    },
+    {
+      "reason": "live store not available",
+      "count": 11
+    },
+    {
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: rules.py",
+      "count": 11
+    },
+    {
+      "reason": "Inaho character package is unavailable",
+      "count": 8
+    },
+    {
+      "reason": "collection skipped",
+      "count": 5
+    },
+    {
+      "reason": "本检出没有 live store",
+      "count": 5
+    },
+    {
+      "reason": "POSIX dir_fd cleanup contract",
+      "count": 4
+    },
+    {
+      "reason": "需要官方 1.4.0 全量归档与 restored 路径表",
+      "count": 3
+    },
+    {
+      "reason": "assets/asset-patch/active 不在(平铺工具仓布局)",
+      "count": 3
+    },
+    {
+      "reason": "external server integration source unavailable; set WF_SERVER_DIR to run: assets/character.json",
+      "count": 3
+    },
+    {
+      "reason": "real POSIX filesystem contract",
+      "count": 2
+    },
+    {
+      "reason": "symlink unavailable: [WinError 1314] 客户端没有所需的特权。",
+      "count": 2
+    },
+    {
+      "reason": "host does not permit symlinks",
+      "count": 2
+    },
+    {
+      "reason": "POSIX fail-closed contract",
+      "count": 1
+    },
+    {
+      "reason": "CN live store 不可用",
+      "count": 1
+    },
+    {
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: patch.py",
+      "count": 1
+    },
+    {
+      "reason": "requires repo assets",
+      "count": 1
+    },
+    {
+      "reason": "requires explicit local truth root",
+      "count": 1
+    },
+    {
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: resource_version_pcode.py",
+      "count": 1
+    },
+    {
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: base-lock.json",
+      "count": 1
+    },
+    {
+      "reason": "POSIX dirfd integration fixture",
+      "count": 1
+    },
+    {
+      "reason": "client-patch/equipment-enhanced-look 尚未落地",
+      "count": 1
+    },
+    {
+      "reason": "client-patch/equipment-enhanced-party-frame 尚未落地",
+      "count": 1
+    },
+    {
+      "reason": "client-patch/equipment-description-override 尚未落地",
+      "count": 1
+    },
+    {
+      "reason": "Linux /proc fd publication gate",
+      "count": 1
+    },
+    {
+      "reason": "external server integration source unavailable; set WF_SERVER_DIR to run: assets/rush_event_quest.json",
+      "count": 1
+    },
+    {
+      "reason": "external server integration source unavailable; set WF_SERVER_DIR to run: src/routes/api/rushEvent.ts",
+      "count": 1
+    },
+    {
+      "reason": "symlink creation is unavailable: [WinError 1314] 客户端没有所需的特权。",
+      "count": 1
+    },
+    {
+      "reason": "client-patch/item-rarity-frame-override 不在本检出",
+      "count": 1
+    },
+    {
+      "reason": "[WinError 1314] 客户端没有所需的特权。",
+      "count": 1
+    },
+    {
+      "reason": "可选集成校验需要匹配版本的完整游戏服务端源码",
+      "count": 1
+    },
+    {
+      "reason": "可选集成校验需要匹配版本的完整客户端补丁源码",
+      "count": 1
+    },
+    {
+      "reason": "Runner cannot create symlinks",
+      "count": 1
+    }
+  ],
+  "collection_skipped_modules": [
+    {
+      "source": "tests/test_abyss_apk_builder.py",
+      "declared_test_functions": 16,
+      "note": "缺少显式配置的外部 client-patch 源码，模块在收集阶段跳过；函数数为静态声明数，不当作已收集或已运行数量。"
+    },
+    {
+      "source": "tests/test_abyss_mode_patch.py",
+      "declared_test_functions": 23,
+      "note": "缺少显式配置的外部 client-patch 源码，模块在收集阶段跳过；函数数为静态声明数，不当作已收集或已运行数量。"
+    },
+    {
+      "source": "tests/test_offline_apk_abyss_merge.py",
+      "declared_test_functions": 22,
+      "note": "缺少显式配置的外部 client-patch 源码，模块在收集阶段跳过；函数数为静态声明数，不当作已收集或已运行数量。"
+    },
+    {
+      "source": "tests/test_offline_apk_baseline.py",
+      "declared_test_functions": 22,
+      "note": "缺少显式配置的外部 client-patch 源码，模块在收集阶段跳过；函数数为静态声明数，不当作已收集或已运行数量。"
+    },
+    {
+      "source": "tests/test_rogue_validate.py",
+      "declared_test_functions": 50,
+      "note": "缺少显式配置的外部 client-patch 源码，模块在收集阶段跳过；函数数为静态声明数，不当作已收集或已运行数量。"
+    }
+  ],
+  "skipped_cases": [
+    {
+      "nodeid": "tests/test_abyss_apk_builder.py",
+      "category": "external_client_patch_collection",
+      "reason": "collection skipped"
+    },
+    {
+      "nodeid": "tests/test_abyss_mode_patch.py",
+      "category": "external_client_patch_collection",
+      "reason": "collection skipped"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_abyss_merge.py",
+      "category": "external_client_patch_collection",
+      "reason": "collection skipped"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_baseline.py",
+      "category": "external_client_patch_collection",
+      "reason": "collection skipped"
+    },
+    {
+      "nodeid": "tests/test_rogue_validate.py",
+      "category": "external_client_patch_collection",
+      "reason": "collection skipped"
+    },
+    {
+      "nodeid": "tests/test_bond_weapon_enhance.py::LiveStoreTests::test_abyss_reference_matches_the_pricing_anchor",
+      "category": "external_game_data",
+      "reason": "本检出没有 live store"
+    },
+    {
+      "nodeid": "tests/test_bond_weapon_enhance.py::LiveStoreTests::test_live_build_has_no_problems_and_stage_is_all_new_or_all_published",
+      "category": "external_game_data",
+      "reason": "本检出没有 live store"
+    },
+    {
+      "nodeid": "tests/test_bond_weapon_enhance.py::LiveStoreTests::test_live_matches_the_frozen_official_baseline",
+      "category": "external_game_data",
+      "reason": "本检出没有 live store"
+    },
+    {
+      "nodeid": "tests/test_bond_weapon_enhance.py::LiveStoreTests::test_nested_builder_reproduces_live_bytes",
+      "category": "external_game_data",
+      "reason": "本检出没有 live store"
+    },
+    {
+      "nodeid": "tests/test_character_pack.py::TestPosixStagingFailClosed::test_prepare_fails_before_owned_output_and_preserves_every_tree",
+      "category": "host_filesystem_capability",
+      "reason": "POSIX fail-closed contract"
+    },
+    {
+      "nodeid": "tests/test_character_pack_mana_board.py::DerivationMatchesRepoMirrorTest::test_derivation_matches_repo_mirror",
+      "category": "external_game_data",
+      "reason": "CN live store 不可用"
+    },
+    {
+      "nodeid": "tests/test_client_legality_lookup_scope.py::OfficialCorpusControlTest::test_corpus_is_large_enough_to_mean_something",
+      "category": "external_game_data",
+      "reason": "需要官方 1.4.0 全量归档与 restored 路径表"
+    },
+    {
+      "nodeid": "tests/test_client_legality_lookup_scope.py::OfficialCorpusControlTest::test_no_official_tree_is_flagged",
+      "category": "external_game_data",
+      "reason": "需要官方 1.4.0 全量归档与 restored 路径表"
+    },
+    {
+      "nodeid": "tests/test_client_legality_lookup_scope.py::OfficialCorpusControlTest::test_player_side_trees_are_covered",
+      "category": "external_game_data",
+      "reason": "需要官方 1.4.0 全量归档与 restored 路径表"
+    },
+    {
+      "nodeid": "tests/test_client_patch_kinds.py::ClientPatchKindTests::test_dash_parameter_table_set_matches_the_patch_parser_targets",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: patch.py"
+    },
+    {
+      "nodeid": "tests/test_enhancement_category_order.py::CategoryOrderTests::test_live_store",
+      "category": "external_game_data",
+      "reason": "本检出没有 live store"
+    },
+    {
+      "nodeid": "tests/test_five_boss_v2.py::LiveBuildTests::test_budget_every_variant_within_fail_line",
+      "category": "external_game_data",
+      "reason": "live store not available"
+    },
+    {
+      "nodeid": "tests/test_five_boss_v2.py::LiveBuildTests::test_carriers_and_entry_purge",
+      "category": "external_game_data",
+      "reason": "live store not available"
+    },
+    {
+      "nodeid": "tests/test_five_boss_v2.py::LiveBuildTests::test_clone_hp_and_tp_match_targets",
+      "category": "external_game_data",
+      "reason": "live store not available"
+    },
+    {
+      "nodeid": "tests/test_five_boss_v2.py::LiveBuildTests::test_envy_revert_restores_official",
+      "category": "external_game_data",
+      "reason": "live store not available"
+    },
+    {
+      "nodeid": "tests/test_five_boss_v2.py::LiveBuildTests::test_fields_and_ui_art",
+      "category": "external_game_data",
+      "reason": "live store not available"
+    },
+    {
+      "nodeid": "tests/test_five_boss_v2.py::LiveBuildTests::test_no_gate_problems",
+      "category": "external_game_data",
+      "reason": "live store not available"
+    },
+    {
+      "nodeid": "tests/test_five_boss_v2.py::LiveBuildTests::test_own_prefixes",
+      "category": "external_game_data",
+      "reason": "live store not available"
+    },
+    {
+      "nodeid": "tests/test_five_boss_v2.py::LiveBuildTests::test_quest_rows",
+      "category": "external_game_data",
+      "reason": "live store not available"
+    },
+    {
+      "nodeid": "tests/test_five_boss_v2.py::LiveBuildTests::test_recolored_bosses_keep_layout_and_point_clones_at_new_sheet",
+      "category": "external_game_data",
+      "reason": "live store not available"
+    },
+    {
+      "nodeid": "tests/test_five_boss_v2.py::LiveBuildTests::test_routes_cover_all_pairs_and_fallback_is_last",
+      "category": "external_game_data",
+      "reason": "live store not available"
+    },
+    {
+      "nodeid": "tests/test_five_boss_v2.py::LiveBuildTests::test_terrains",
+      "category": "external_game_data",
+      "reason": "live store not available"
+    },
+    {
+      "nodeid": "tests/test_gacha_seasonal7_pools.py::LiveGachaMatchesRevisionTest::test_both_pools_match_the_expected_revision",
+      "category": "external_production_assets",
+      "reason": "requires repo assets"
+    },
+    {
+      "nodeid": "tests/test_inaho_v12_package.py::InahoV12PackageTest::test_ability_1_fever_skill_ratio_and_ally_gauge_rows",
+      "category": "external_character_package",
+      "reason": "Inaho character package is unavailable"
+    },
+    {
+      "nodeid": "tests/test_inaho_v12_package.py::InahoV12PackageTest::test_ability_1_seeds_nothing_and_gains_one_layer_per_fever",
+      "category": "external_character_package",
+      "reason": "Inaho character package is unavailable"
+    },
+    {
+      "nodeid": "tests/test_inaho_v12_package.py::InahoV12PackageTest::test_ability_6_has_no_skill_fever_gain_row",
+      "category": "external_character_package",
+      "reason": "Inaho character package is unavailable"
+    },
+    {
+      "nodeid": "tests/test_inaho_v12_package.py::InahoV12PackageTest::test_dead_strings_and_dsls_left_the_package_and_the_manifest",
+      "category": "external_character_package",
+      "reason": "Inaho character package is unavailable"
+    },
+    {
+      "nodeid": "tests/test_inaho_v12_package.py::InahoV12PackageTest::test_every_row_is_client_legal_and_only_724_needs_the_patch",
+      "category": "external_character_package",
+      "reason": "Inaho character package is unavailable"
+    },
+    {
+      "nodeid": "tests/test_inaho_v12_package.py::InahoV12PackageTest::test_leader_scales_the_fever_rate_per_layer_and_keeps_the_i722_slot",
+      "category": "external_character_package",
+      "reason": "Inaho character package is unavailable"
+    },
+    {
+      "nodeid": "tests/test_inaho_v12_package.py::InahoV12PackageTest::test_skill_dsls_are_plain_add_fever_point_again",
+      "category": "external_character_package",
+      "reason": "Inaho character package is unavailable"
+    },
+    {
+      "nodeid": "tests/test_inaho_v12_package.py::InahoV12PackageTest::test_unique_condition_counts_layers_not_a_raw_accumulator",
+      "category": "external_character_package",
+      "reason": "Inaho character package is unavailable"
+    },
+    {
+      "nodeid": "tests/test_local_live_release_contract.py::LocalLiveReleaseContractTest::test_real_baselines_attest_read_only_over_the_published_local_edge",
+      "category": "external_truth_root",
+      "reason": "requires explicit local truth root"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_batch_apksigner_sign_and_verify_use_the_same_selected_java_jar",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_builder_uses_only_the_frozen_baseline_lock_mapping",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_cancel_cleans_transaction_without_publishing",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_cancel_immediately_after_either_final_link_rolls_back_the_pair",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_cancellation_after_final_path_replacement_preserves_competitor",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_chinese_final_name_never_reaches_external_commands",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_destination_parent_identity_drift_rolls_back_without_publication",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_destination_parent_reparse_is_rejected_before_baseline_work",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_failure_redacts_password_and_cleans_transaction",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_ffdec_internal_paths_stay_below_windows_classic_max_path",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_final_active_offline_and_resource_hashes_are_both_bound",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_handle_cleanup_after_path_replacement_preserves_competitor",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_input_paths_are_not_resolved_before_the_baseline_gate",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_member_diff_rejects_changed_dex",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_missing_signer_password_fails_before_baseline_or_patch_work",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_mocked_broken_output_and_report_links_are_refused_lexically",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_mocked_windows_reparse_source_and_lock_are_rejected_without_skip",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_non_ascii_work_directory_fails_closed",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_output_uses_dedicated_signer_and_requires_v1_v2_v3",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_patches_rewrites_aligns_signs_and_verifies_exactly_once",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_preexisting_output_or_report_is_never_overwritten",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_publication_race_preserves_competitor_and_leaves_no_report",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_publication_rejects_bytes_changed_after_verification",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_publication_staging_writes_the_original_handle_inode",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_report_is_canonical_and_contains_no_private_paths_or_secret",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_report_publication_race_rolls_back_our_output",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_rewrite_preserves_lowercase_signature_like_member",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_rewrite_strips_only_top_level_signatures_and_preserves_air",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_same_byte_source_replacement_is_detected_by_identity",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_same_destination_parent_reuses_one_deny_delete_handle",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_sign_command_uses_env_password_and_disables_v4",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_signed_apk_hash_is_bound_through_final_inspection",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_source_and_lock_symlinks_reach_baseline_gate_without_resolution",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_source_has_no_dependency_on_work_or_repoint_artifacts",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_staging_name_replacement_before_identity_return_preserves_competitor",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_builder.py::OfflineApkBuilderTests::test_transaction_root_is_rename_locked_and_removed_by_handle",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_render_scale.py::TestRenderPatchFunctions::test_all_three_patchers_reject_duplicate_application",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_render_scale.py::TestRenderPatchFunctions::test_all_three_patchers_reject_zero_and_multiple_anchors",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_render_scale.py::TestRenderPatchFunctions::test_canonical_pcode_normalizes_only_valid_offset_label_renumbering",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_render_scale.py::TestRenderPatchFunctions::test_character_cell_scales_after_matrix_without_overwriting_base_logic",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_render_scale.py::TestRenderPatchFunctions::test_character_cell_verifier_rejects_header_and_pseudo_local_drift",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_render_scale.py::TestRenderPatchFunctions::test_member_view_removes_only_character_scale_renderer_and_keeps_shadow",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_render_scale.py::TestRenderPatchFunctions::test_pixel_art_preserves_base_logic_and_uses_frame_scale",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_render_scale.py::TestRenderPatchFunctions::test_production_source_is_pcode_only_and_independent_from_work",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_render_scale.py::TestRenderPatchFunctions::test_public_stage_signatures_require_explicit_tools",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_render_scale.py::TestRenderPatchFunctions::test_report_is_frozen_slotted_and_exact",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_render_scale.py::TestRenderPatchFunctions::test_schema_is_ordered_immutable_and_uses_corrected_character_cell_site",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_render_scale.py::TestRenderPatchFunctions::test_verifiers_reject_critical_semantic_mutations",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_render_scale.py::TestRenderStage::test_lock_schema_is_exact_and_base_specific",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_render_scale.py::TestRenderStage::test_member_constructor_extraction_does_not_fall_through_to_next_method",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_render_scale.py::TestRenderStage::test_member_constructor_is_extracted_without_a_trait",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_render_scale.py::TestRenderStage::test_stage_is_exclusive_and_preserves_existing_output",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_render_scale.py::TestRenderStage::test_stage_rejects_before_and_after_raw_abc_lock_mismatches",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_render_scale.py::TestRenderStage::test_stage_rejects_canonical_pcode_lock_mismatch",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_render_scale.py::TestRenderStage::test_stage_resolves_by_name_reopens_and_cumulatively_reverifies",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_render_scale.py::TestRenderStage::test_verify_reopens_all_sites_and_reports_bound_output_hash",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_resource_version.py::TestResourceVersionModuleExists::test_task10_resource_version_module_exists",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: resource_version_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_resource_version.py::TestResourceVersionPcode::test_canonical_pcode_only_normalizes_offset_label_names",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_resource_version.py::TestResourceVersionPcode::test_exact_identity_and_release_versions_are_exposed",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_resource_version.py::TestResourceVersionPcode::test_exported_initializer_extraction_is_unique",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_resource_version.py::TestResourceVersionPcode::test_idempotence_and_non_release_versions_are_rejected",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_resource_version.py::TestResourceVersionPcode::test_is_full_package_false_missing_or_reordered_is_rejected",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_resource_version.py::TestResourceVersionPcode::test_plan_style_opcode_case_is_preserved",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_resource_version.py::TestResourceVersionPcode::test_replaces_only_one_expected_value_and_preserves_full_package",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_resource_version.py::TestResourceVersionPcode::test_source_has_no_runtime_dependency_on_work_tree",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_resource_version.py::TestResourceVersionPcode::test_verify_requires_exact_expected_value_and_one_property",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_resource_version.py::TestResourceVersionPcode::test_zero_two_source_and_existing_target_are_rejected",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_resource_version.py::TestResourceVersionLock::test_before_and_after_locks_must_differ_and_dummy_lock_is_required",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_resource_version.py::TestResourceVersionLock::test_lock_reader_is_strict_and_preserves_task9_fields",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_resource_version.py::TestResourceVersionLock::test_lock_rejects_missing_extra_identity_version_and_hash_drift",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_resource_version.py::TestResourceVersionStage::test_dummy_remote_drift_before_or_after_replace_is_rejected",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_resource_version.py::TestResourceVersionStage::test_keyboard_interrupt_at_each_external_boundary_cleans_transaction",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_resource_version.py::TestResourceVersionStage::test_keyboard_interrupt_in_staging_hooks_cleans_owned_artifacts",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_resource_version.py::TestResourceVersionStage::test_output_ancestor_and_hardlink_alias_are_rejected_before_tools",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_resource_version.py::TestResourceVersionStage::test_reopen_is_full_package_drift_is_rejected_even_with_raw_abc_match",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_resource_version.py::TestResourceVersionStage::test_source_drift_after_external_call_stops_without_final",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_resource_version.py::TestResourceVersionStage::test_stage_never_overwrites_preexisting_or_racing_output",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_resource_version.py::TestResourceVersionStage::test_stage_rejects_wrong_pcode_and_raw_abc_locks",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_resource_version.py::TestResourceVersionStage::test_stage_resolves_names_replaces_reopens_and_reports_exact_versions",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_resource_version.py::TestResourceVersionStage::test_standalone_verify_reopens_and_checks_output",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestPatchSchema::test_exact_assets_only",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestPatchSchema::test_patch_schema_is_ordered_immutable_and_has_no_refresh",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestPatchSchema::test_public_signatures_keep_stage_tools_explicit",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestPatchSchema::test_report_is_frozen_slotted_and_exact",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestPatchFixtures::test_all_nine_before_to_after_blocks_verify",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestPatchFixtures::test_common_instructions_elsewhere_in_original_method_do_not_false_positive",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestPatchFixtures::test_cutin_requires_two_read_anchors_and_one_assist_insertion",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestPatchFixtures::test_cutin_verifier_rejects_assist_fallback_redirected_to_seris_join",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestPatchFixtures::test_declarations_are_raised_and_verifier_rejects_insufficient_values",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestPatchFixtures::test_each_patch_rejects_duplicate_application",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestPatchFixtures::test_each_patch_rejects_new_label_collision",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestPatchFixtures::test_each_patch_rejects_zero_or_multiple_anchors",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestPatchFixtures::test_each_verifier_accepts_ffdec_offset_label_renumbering",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestPatchFixtures::test_each_verifier_rejects_duplicate_critical_semantics",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestPatchFixtures::test_each_verifier_rejects_non_marker_semantic_mutation",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestPatchFixtures::test_each_verifier_rejects_semantic_marker_mutation",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestPatchFixtures::test_preload_and_power_flip_verifiers_reject_inverted_seris_branches",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestPatchFixtures::test_production_like_preexisting_generic_counts_do_not_false_positive",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestPatchFixtures::test_read_exported_method_dedents_real_ffdec_class_nesting",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestPatchFixtures::test_special_swap_keeps_data_driven_scale_and_seris_guard_order",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestPatchFixtures::test_voice_fallback_and_seris_form_selection_are_both_preserved",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestFakeStagedFlow::test_keyboard_interrupt_at_each_first_stage_boundary_leaves_no_final",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestFakeStagedFlow::test_keyboard_interrupt_during_snapshot_staging_and_cleanup_leaves_no_final",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestFakeStagedFlow::test_publish_interrupt_never_unlinks_external_destination",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestFakeStagedFlow::test_report_hash_is_bound_before_publish_and_never_reads_final_path",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestFakeStagedFlow::test_site_ids_define_order_while_canonical_site_key_order_is_irrelevant",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestFakeStagedFlow::test_stage_is_exclusive_and_rejects_wrong_lock",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestFakeStagedFlow::test_stage_preserves_output_created_by_an_external_publisher",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestFakeStagedFlow::test_stage_rejects_lexically_existing_output_leaf",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestFakeStagedFlow::test_stage_rejects_output_ancestor_topology_before_external_calls",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestFakeStagedFlow::test_stage_rejects_raw_abc_lock_mismatch_before_and_after",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestFakeStagedFlow::test_stage_rejects_source_output_hardlink_alias_before_external_calls",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestFakeStagedFlow::test_stage_resolves_by_name_reopens_and_cumulatively_reverifies",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestFakeStagedFlow::test_stage_stops_after_external_call_when_original_source_drifts",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestFakeStagedFlow::test_transaction_is_clean_before_final_commit",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_accept_binds_the_exact_reviewed_candidate_digest",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_accept_extension_candidate_publication_zero_or_two_matches_preserves_files",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_accept_extension_cas_replaces_exact_old_with_exact_candidate",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_accept_extension_cli_forwards_both_exact_hashes",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_accept_extension_closes_frozen_handle_when_identity_check_fails",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_accept_extension_external_race_preserves_external_and_old_recovery",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_accept_extension_freeze_boundary_interrupts_preserve_candidate_and_old",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_accept_extension_freeze_rejects_post_publish_rewrite_or_replacement",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_accept_extension_frozen_candidate_denies_write_and_delete_during_old_cleanup",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_accept_extension_frozen_candidate_digest_mismatch_preserves_old_recovery",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_accept_extension_interrupt_after_retire_restores_exact_old",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_accept_extension_old_cleanup_interrupt_boundaries_close_frozen_candidate",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_accept_extension_post_commit_cleanup_failure_keeps_candidate",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_accept_extension_post_commit_errors_always_report_retained_digest",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_accept_extension_publish_post_rename_interrupt_never_deletes_candidate",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_accept_extension_reconciles_actual_path_on_pre_rename_interrupt",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_accept_extension_reports_all_existing_restore_pending_paths",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_accept_extension_restore_identity_failure_reports_destination",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_accept_extension_restore_race_closes_and_reports_live_recovery",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_accept_extension_retire_post_rename_failure_restores_exact_old",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_accept_extension_retries_pending_paths_after_probe_failure",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_accept_extension_settles_restore_pending_after_probe_failure",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_accept_extension_wrong_digest_or_old_projection_never_mutates_old",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_accept_external_race_and_keyboard_interrupt_leave_no_owned_partial",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_accept_rejects_parseable_noncanonical_candidate_bytes",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_accept_requires_confirmation_is_canonical_and_never_overwrites",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_build_extension_provider_wires_real_stage_adapters",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_candidate_schema_freezes_compatibility_merges_and_exact_order",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_candidate_schema_rejects_bool_counts_and_nonstring_hashes",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_discover_cli_wires_explicit_tool_work_and_profile_paths",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_discover_extension_cli_wires_base_hash_and_explicit_provider",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_discover_extension_rejects_wrong_old_lock_digest_before_provider",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_discover_extension_writes_new_full_candidate_and_never_edits_base",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_discover_rejects_extracted_swf_that_differs_from_inspected_baseline",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_extension_candidate_preserves_every_task9_field",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_extension_provider_composes_all_stages_in_locked_order",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_extension_schema_rejects_old_field_or_corrected_site_drift",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_fake_discover_extracts_one_swf_and_emits_candidate_only",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_open_existing_for_cas_closes_descriptor_when_fdopen_fails",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_privacy_scan_rejects_paths_timestamps_commands_secrets_and_refresh",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_render_extension_discovery_derives_each_reopened_hash",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_resource_extension_discovery_uses_post_render_raw_hashes",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_save_haxe_verifier_checks_each_exact_method_body",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_save_haxe_verifier_rejects_literal_only_in_unrelated_method",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_save_lock_uses_actual_read_and_write_method_identities",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_seris_exports_controlled_lock_interfaces_and_verify_lock_cli",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_strict_json_rejects_duplicate_keys_and_nonstandard_constants",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_apk_seris.py::TestLockDiscovery::test_unlocked_discovery_runs_nine_name_based_replace_reopen_stages",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: seris_phase4_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_offline_bundle.py::OfflineBundleTests::test_production_secret_pin_matches_accepted_base_lock",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: base-lock.json"
+    },
+    {
+      "nodeid": "tests/test_offline_bundle.py::OfflineBundleTests::test_release_evidence_accepts_the_real_task11_report_contract",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: build_offline_apk.py"
+    },
+    {
+      "nodeid": "tests/test_offline_player.py::OfflinePlayerOverlayTests::test_real_posix_success_leaves_no_private_transaction",
+      "category": "host_filesystem_capability",
+      "reason": "real POSIX filesystem contract"
+    },
+    {
+      "nodeid": "tests/test_offline_player.py::OfflinePlayerOverlayTests::test_real_posix_write_faults_leave_no_payload_or_private_transaction",
+      "category": "host_filesystem_capability",
+      "reason": "real POSIX filesystem contract"
+    },
+    {
+      "nodeid": "tests/test_offline_store.py::OfflineStoreTests::test_materialize_posix_swap_restore_never_writes_payload_outside",
+      "category": "host_filesystem_capability",
+      "reason": "POSIX dirfd integration fixture"
+    },
+    {
+      "nodeid": "tests/test_paradox_weapon.py::ParadoxTests::test_client_capability_sets_match_equipment_rules_patch",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: rules.py"
+    },
+    {
+      "nodeid": "tests/test_paradox_weapon.py::ParadoxTests::test_look_keys_match_client_patch",
+      "category": "external_client_patch",
+      "reason": "client-patch/equipment-enhanced-look 尚未落地"
+    },
+    {
+      "nodeid": "tests/test_paradox_weapon.py::ParadoxTests::test_party_frame_key_matches_client_patch",
+      "category": "external_client_patch",
+      "reason": "client-patch/equipment-enhanced-party-frame 尚未落地"
+    },
+    {
+      "nodeid": "tests/test_paradox_weapon.py::ParadoxDescriptionOverrideTests::test_capability_name_matches_client_patch",
+      "category": "external_client_patch",
+      "reason": "client-patch/equipment-description-override 尚未落地"
+    },
+    {
+      "nodeid": "tests/test_public_chain_reachable.py::PublicChainReachabilityTest::test_edge_sequence_numbers_are_unique_per_edge",
+      "category": "external_production_assets",
+      "reason": "assets/asset-patch/active 不在(平铺工具仓布局)"
+    },
+    {
+      "nodeid": "tests/test_public_chain_reachable.py::PublicChainReachabilityTest::test_every_active_zip_is_declared_in_the_manifest_chain",
+      "category": "external_production_assets",
+      "reason": "assets/asset-patch/active 不在(平铺工具仓布局)"
+    },
+    {
+      "nodeid": "tests/test_public_chain_reachable.py::PublicChainReachabilityTest::test_official_dump_tail_reaches_the_newest_published_version",
+      "category": "external_production_assets",
+      "reason": "assets/asset-patch/active 不在(平铺工具仓布局)"
+    },
+    {
+      "nodeid": "tests/test_release_v1_canonical.py::StableFileCopyTests::test_rejects_a_symlink_source_without_leaking_its_absolute_path",
+      "category": "host_filesystem_capability",
+      "reason": "symlink unavailable: [WinError 1314] 客户端没有所需的特权。"
+    },
+    {
+      "nodeid": "tests/test_release_v1_producer_readback.py::ProducerReadbackTests::test_linux_ordinary_user_procfd_fallback_links_real_open_file",
+      "category": "host_filesystem_capability",
+      "reason": "Linux /proc fd publication gate"
+    },
+    {
+      "nodeid": "tests/test_release_v1_receipts_state.py::ActiveStatePersistenceTests::test_symlink_state_root_and_active_leaf_are_rejected",
+      "category": "host_filesystem_capability",
+      "reason": "symlink unavailable: [WinError 1314] 客户端没有所需的特权。"
+    },
+    {
+      "nodeid": "tests/test_repoint_apk_render_sites.py::RenderFingerprintTest::test_fingerprints_are_stable_across_offset_label_renumbering",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_repoint_apk_render_sites.py::RenderFingerprintTest::test_fingerprints_cover_every_render_site_including_character_cell",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_repoint_apk_render_sites.py::RenderFingerprintTest::test_fingerprints_reject_a_base_missing_the_character_cell_fix",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_repoint_apk_render_sites.py::RenderFingerprintTest::test_unchanged_assertion_catches_a_dropped_or_altered_site",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_repoint_apk_render_sites.py::RenderFingerprintTest::test_unchanged_assertion_requires_the_full_expected_site_set",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_repoint_apk_render_sites.py::RepointBuilderContractTest::test_builder_checks_all_three_render_sites",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_repoint_apk_render_sites.py::RepointBuilderContractTest::test_builder_delegates_to_the_shared_render_site_definitions",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_repoint_apk_render_sites.py::RepointBuilderContractTest::test_builder_reports_name_every_render_site_it_verified",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: render_scale_pcode.py"
+    },
+    {
+      "nodeid": "tests/test_rogue_chain_gate.py::SpecialBossTableCase::test_special_table_boss_not_dangling",
+      "category": "external_game_data",
+      "reason": "store 不可用"
+    },
+    {
+      "nodeid": "tests/test_rogue_chain_gate.py::MainStoryPoolCase::test_admin_human_dropped_for_expert_version",
+      "category": "external_game_data",
+      "reason": "store 不可用"
+    },
+    {
+      "nodeid": "tests/test_rogue_chain_gate.py::MainStoryPoolCase::test_model_reads_both_path_shapes",
+      "category": "external_game_data",
+      "reason": "store 不可用"
+    },
+    {
+      "nodeid": "tests/test_rogue_chain_gate.py::BossSeriesCase::test_orochi_heads_untouched",
+      "category": "external_game_data",
+      "reason": "store 不可用"
+    },
+    {
+      "nodeid": "tests/test_rogue_chain_gate.py::CollapseGradesCase::test_keeps_highest_grade_only",
+      "category": "external_game_data",
+      "reason": "store 不可用"
+    },
+    {
+      "nodeid": "tests/test_rogue_chain_gate.py::StatNormalizeCase::test_growth_curves_decode",
+      "category": "external_game_data",
+      "reason": "store 不可用"
+    },
+    {
+      "nodeid": "tests/test_rogue_chain_gate.py::StatNormalizeCase::test_standard_boss_really_has_no_stats",
+      "category": "external_game_data",
+      "reason": "store 不可用"
+    },
+    {
+      "nodeid": "tests/test_rogue_chain_gate.py::StatNormalizeCase::test_unknown_curve_falls_back_to_proxy",
+      "category": "external_game_data",
+      "reason": "store 不可用"
+    },
+    {
+      "nodeid": "tests/test_rogue_chain_gate.py::StandardBossHpCase::test_floor_native_hp_keeps_two_real_instances_with_the_same_code",
+      "category": "external_game_data",
+      "reason": "store 不可用"
+    },
+    {
+      "nodeid": "tests/test_rogue_chain_gate.py::StandardBossHpCase::test_live_chapter12_resource_decodes_to_700m",
+      "category": "external_game_data",
+      "reason": "store 不可用"
+    },
+    {
+      "nodeid": "tests/test_rogue_chain_gate.py::StandardBossHpCase::test_zone_pick_uses_single_battle_side_of_each_boss_slot",
+      "category": "external_game_data",
+      "reason": "store 不可用"
+    },
+    {
+      "nodeid": "tests/test_rogue_chain_gate.py::BossLevelHpScalingCase::test_hit_hp_clone_changes_only_c2_and_preserves_the_source",
+      "category": "external_game_data",
+      "reason": "store 不可用"
+    },
+    {
+      "nodeid": "tests/test_rogue_chain_gate.py::TowerHpTargetCase::test_deep_hp_anchor_expansion_is_general_c2_scalable",
+      "category": "external_game_data",
+      "reason": "store 不可用"
+    },
+    {
+      "nodeid": "tests/test_rogue_chain_gate.py::TowerHpTargetCase::test_fix_hp_general_boss_uses_its_fixed_curve_without_k_twice",
+      "category": "external_game_data",
+      "reason": "store 不可用"
+    },
+    {
+      "nodeid": "tests/test_rogue_chain_gate.py::TowerHpTargetCase::test_native_hp_combines_general_formula_and_standard_esdl",
+      "category": "external_game_data",
+      "reason": "store 不可用"
+    },
+    {
+      "nodeid": "tests/test_rogue_chain_gate.py::TaskCDryRunCase::test_canonical_30_floor_dry_run_hits_all_task_c_gates",
+      "category": "external_game_data",
+      "reason": "store 不可用"
+    },
+    {
+      "nodeid": "tests/test_rogue_chain_gate.py::TaskCDryRunCase::test_explicit_ramp_keeps_the_old_geometric_profile",
+      "category": "external_game_data",
+      "reason": "store 不可用"
+    },
+    {
+      "nodeid": "tests/test_rogue_chain_gate.py::TaskCDryRunCase::test_flat_hell_mix_build_has_at_least_one_real_safe_transplant",
+      "category": "external_game_data",
+      "reason": "store 不可用"
+    },
+    {
+      "nodeid": "tests/test_rogue_chain_gate.py::TaskCDryRunCase::test_ineligible_pinned_boss_and_immunity_fails_instead_of_eating_pin",
+      "category": "external_game_data",
+      "reason": "store 不可用"
+    },
+    {
+      "nodeid": "tests/test_rogue_chain_gate.py::TaskCDryRunCase::test_pinned_shallow_immunity_survives_hp_reorder",
+      "category": "external_game_data",
+      "reason": "store 不可用"
+    },
+    {
+      "nodeid": "tests/test_rogue_chain_gate.py::TaskCDryRunCase::test_pinned_terrain_does_not_bypass_immunity_aware_hp_reorder",
+      "category": "external_game_data",
+      "reason": "store 不可用"
+    },
+    {
+      "nodeid": "tests/test_rogue_chain_gate.py::FixedSlotQuotaCase::test_phenomena_still_lives_in_the_source_pools",
+      "category": "external_game_data",
+      "reason": "store 不可用"
+    },
+    {
+      "nodeid": "tests/test_rogue_chain_gate.py::HighMobilityCase::test_guardian_golem_family_matches_after_hp_pick_before_clone",
+      "category": "external_game_data",
+      "reason": "store 不可用"
+    },
+    {
+      "nodeid": "tests/test_rogue_chain_gate.py::GeneralBossElementResistanceCase::test_known_official_prototypes_are_blocked_before_cloning",
+      "category": "external_game_data",
+      "reason": "store 不可用"
+    },
+    {
+      "nodeid": "tests/test_rogue_tower_season.py::RealHistoryTest::test_criterion_separates_rebuilds_from_hand_edits",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_rush_leaderboard_tools.py::RerollSeasonTest::test_fingerprint_matches_server_algorithm",
+      "category": "external_server_source",
+      "reason": "external server integration source unavailable; set WF_SERVER_DIR to run: assets/rush_event_quest.json"
+    },
+    {
+      "nodeid": "tests/test_rush_leaderboard_tools.py::RerollSeasonTest::test_keep_season_is_a_two_sided_contract",
+      "category": "external_server_source",
+      "reason": "external server integration source unavailable; set WF_SERVER_DIR to run: src/routes/api/rushEvent.ts"
+    },
+    {
+      "nodeid": "tests/test_scoped_release_transaction_identity.py::ScopedTransactionIdentityTest::test_posix_cleanup_refuses_a_replacement_that_reused_the_inode",
+      "category": "host_filesystem_capability",
+      "reason": "POSIX dir_fd cleanup contract"
+    },
+    {
+      "nodeid": "tests/test_scoped_release_transaction_identity.py::ScopedTransactionIdentityTest::test_posix_cleanup_refuses_a_symlinked_parent_directory",
+      "category": "host_filesystem_capability",
+      "reason": "POSIX dir_fd cleanup contract"
+    },
+    {
+      "nodeid": "tests/test_scoped_release_transaction_identity.py::ScopedTransactionIdentityTest::test_posix_cleanup_refuses_an_owned_path_that_was_never_pinned",
+      "category": "host_filesystem_capability",
+      "reason": "POSIX dir_fd cleanup contract"
+    },
+    {
+      "nodeid": "tests/test_scoped_release_transaction_identity.py::ScopedTransactionIdentityTest::test_posix_cleanup_removes_only_the_owned_object",
+      "category": "host_filesystem_capability",
+      "reason": "POSIX dir_fd cleanup contract"
+    },
+    {
+      "nodeid": "tests/test_server_mana_mirror.py::ServerManaMirrorCoverageTest::test_every_playable_character_has_a_mana_board_entry",
+      "category": "external_server_source",
+      "reason": "external server integration source unavailable; set WF_SERVER_DIR to run: assets/character.json"
+    },
+    {
+      "nodeid": "tests/test_server_mana_mirror.py::ServerManaMirrorCoverageTest::test_every_playable_character_has_a_mana_node_entry",
+      "category": "external_server_source",
+      "reason": "external server integration source unavailable; set WF_SERVER_DIR to run: assets/character.json"
+    },
+    {
+      "nodeid": "tests/test_server_mana_mirror.py::ServerManaMirrorCoverageTest::test_mana_board_rows_have_the_six_column_client_shape",
+      "category": "external_server_source",
+      "reason": "external server integration source unavailable; set WF_SERVER_DIR to run: assets/character.json"
+    },
+    {
+      "nodeid": "tests/test_story_export.py::TestStoryCli::test_export_rejects_a_symlink_output_leaf_when_supported",
+      "category": "host_filesystem_capability",
+      "reason": "symlink creation is unavailable: [WinError 1314] 客户端没有所需的特权。"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE1Tests::test_approve_refuses_art_that_fails_gates",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE1Tests::test_atlas_is_append_only",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE1Tests::test_author_preview_confirmation_gates_ready",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE1Tests::test_bad_art_is_refused_and_nothing_written",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE1Tests::test_c4_equals_c3_times_two",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE1Tests::test_delivered_art_passes_builder_gates",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE1Tests::test_explicit_c4_must_equal_c3_times_two",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE1Tests::test_idempotent_once_live",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE1Tests::test_manifest_contract_is_enforced",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE1Tests::test_missing_required_art_blocks_and_paradox_needs_its_redraw",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE1Tests::test_no_problems_and_status",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE2Tests::test_awakening_item_gates",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE2Tests::test_cas_ui_and_reward_tables",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE2Tests::test_gates_have_teeth",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE2Tests::test_item_table_owned_keys_only",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE2Tests::test_material_splice_on_synthetic_drift",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE2Tests::test_paradox_sync_warning_reads_the_paradox_tool",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE2Tests::test_rarity_gates_have_teeth",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE2Tests::test_rarity_overrides_follow_live_c11",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE2Tests::test_rarity_overrides_resync_on_drift",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE2Tests::test_rarity_overrides_synthetic",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE2Tests::test_repoints_only_c3_c4",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE2Tests::test_server_material_json_equals_cas",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE2Tests::test_server_splices",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE2Tests::test_status_follows_e1",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE3Tests::test_drop_detection_needs_source_and_build",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE3Tests::test_drop_not_live_blocks_even_with_after",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE3Tests::test_shop_rows_match_gacha_builder",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE3Tests::test_stage_node_c9_is_opt_in",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE3Tests::test_status_follows_e1_e2",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::StageContractTests::test_blocked_predecessor_blocks_dependent",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::StageContractTests::test_edges_touch_disjoint_files",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::StageContractTests::test_overlay_integrity",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::StageContractTests::test_plans_follow_the_apply_contract",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::StageContractTests::test_refuses_live_directories",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::StageContractTests::test_restage_replaces_stale_plan_files",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::RarityFrameKeyTests::test_e2_stages_the_key_and_requires_the_frame_png",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::RarityFrameKeyTests::test_e2_without_awakening_cas_keeps_only_the_frame_key",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::RarityFrameKeyTests::test_key_format_matches_patch_rules",
+      "category": "external_client_patch",
+      "reason": "client-patch/item-rarity-frame-override 不在本检出"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::RarityFrameKeyTests::test_missing_frame_png_blocks",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::ShopFrameFixTests::test_drift_wrong_reward_and_item_rarity_mismatch_refused",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::ShopFrameFixTests::test_live_ticket_item_is_rainbow",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::ShopFrameFixTests::test_ticket_frame_goes_rainbow_only_c13",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE4Tests::test_gacha_note_says_paradox_class",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE4Tests::test_merge_refuses_two_edges_on_one_file",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE4Tests::test_no_problems_and_only_revision_keys",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE4Tests::test_stage_writes_one_ready_plan",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE4Tests::test_staged_values",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_awaken.py::EdgeE4Tests::test_star_steel_art_is_the_approved_purple_grey",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::PoolTests::test_client_display_strings",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::PoolTests::test_composition_and_display_order",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::PoolTests::test_exact_probabilities",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::PoolTests::test_flags",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::PoolTests::test_integer_weights",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::PoolTests::test_no_problems",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::PoolTests::test_rank_matches_live_equipment_and_all_are_weapons",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::ClientRowTests::test_client_odds_equal_server_row_by_row",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::ClientRowTests::test_column_counts",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::ClientRowTests::test_feature_and_rich_text_keys",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::ClientRowTests::test_gacha_row_contract",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::ClientRowTests::test_nested_files_round_trip_byte_exact",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::ClientRowTests::test_old_prices_are_never_written_back",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::ClientRowTests::test_shop_rows_prices_and_deletions",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::ClientRowTests::test_ticket_rows_and_icons",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::ShopReadinessTests::test_drop_detection_default_matches_function",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::ShopReadinessTests::test_drop_not_live_defers_even_when_items_are_live",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::ShopReadinessTests::test_ready_live_stages_new_prices_only_on_owned_keys",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::ShopReadinessTests::test_shop_order_and_description_gates",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::StagedLiveTests::test_new_flat_rows_are_compressed_like_live_rows",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::StagedLiveTests::test_server_splices_leave_every_other_key_identical",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::StagedLiveTests::test_server_targets_match_contract",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::StagedLiveTests::test_tables_touch_only_owned_keys",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::ArtAndStageTests::test_art_problems",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::ArtAndStageTests::test_art_roots_and_publish_names",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::ArtAndStageTests::test_missing_art_is_reported_not_fatal",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::ArtAndStageTests::test_stage_refuses_live_directories_and_problems",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_gacha.py::ArtAndStageTests::test_stage_writes_the_apply_fix_contract",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_sort_pin.py::LiveTests::test_build_is_clean_against_live",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_sort_pin.py::LiveTests::test_changed_live_value_is_restaged_with_a_warning",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_sort_pin.py::LiveTests::test_live_workdir_is_refused",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_sort_pin.py::LiveTests::test_missing_equipment_is_refused",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_sort_pin.py::LiveTests::test_stage_writes_only_the_workdir_and_the_gacha_plan_contract",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_weapon_sort_pin.py::LiveTests::test_stray_key_in_live_is_refused_and_nothing_is_written",
+      "category": "external_game_data",
+      "reason": "read-only live-data integration requires a configured WF_TARGET_STORE"
+    },
+    {
+      "nodeid": "tests/test_wf_share_assets_receive.py::ReceiveTests::test_asset_under_symlink_rejected",
+      "category": "host_filesystem_capability",
+      "reason": "[WinError 1314] 客户端没有所需的特权。"
+    },
+    {
+      "nodeid": "tests/test_wfx_gate.py::CheckTests::test_weapon_data_tools_pass_the_gate_on_the_candidate_profile",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: rules.py"
+    },
+    {
+      "nodeid": "tests/test_wfx_registry.py::ClientPatchConstantTests::test_awakening_material_capabilities_are_registered",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: rules.py"
+    },
+    {
+      "nodeid": "tests/test_wfx_registry.py::ClientPatchConstantTests::test_description_override_capabilities_are_registered",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: rules.py"
+    },
+    {
+      "nodeid": "tests/test_wfx_registry.py::ClientPatchConstantTests::test_enhanced_look_capabilities_are_registered",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: rules.py"
+    },
+    {
+      "nodeid": "tests/test_wfx_registry.py::ClientPatchConstantTests::test_enhanced_party_frame_capabilities_are_registered",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: rules.py"
+    },
+    {
+      "nodeid": "tests/test_wfx_registry.py::ClientPatchConstantTests::test_equipment_rules_capabilities_are_registered",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: rules.py"
+    },
+    {
+      "nodeid": "tests/test_wfx_registry.py::ClientPatchConstantTests::test_item_rarity_frame_override_capabilities_are_registered",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: rules.py"
+    },
+    {
+      "nodeid": "tests/test_wfx_registry.py::ClientPatchConstantTests::test_sort_pin_capabilities_are_registered",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: rules.py"
+    },
+    {
+      "nodeid": "tests/test_wfx_registry.py::ClientProfileTests::test_gray_1047_is_the_1047_base_without_equipment_layers",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: rules.py"
+    },
+    {
+      "nodeid": "tests/test_wfx_registry.py::ClientProfileTests::test_local_mumu_equals_the_installed_b0b13112_capabilities",
+      "category": "external_client_patch",
+      "reason": "external client-patch integration source unavailable; set WF_CLIENT_PATCH_DIR to run: rules.py"
+    },
+    {
+      "nodeid": "tests/test_wiki_boss_guide.py::BossGuideTests::test_current_server_reward_rates_match_guide",
+      "category": "external_server_source",
+      "reason": "可选集成校验需要匹配版本的完整游戏服务端源码"
+    },
+    {
+      "nodeid": "tests/test_wiki_data.py::WikiDataTests::test_output_links_are_rejected_before_replacing_index",
+      "category": "host_filesystem_capability",
+      "reason": "host does not permit symlinks"
+    },
+    {
+      "nodeid": "tests/test_wiki_equipment.py::EquipmentTests::test_current_client_party_policy_matches_guide",
+      "category": "external_client_patch",
+      "reason": "可选集成校验需要匹配版本的完整客户端补丁源码"
+    },
+    {
+      "nodeid": "tests/test_wiki_media.py::WikiExportTests::test_existing_link_cannot_redirect_output",
+      "category": "host_filesystem_capability",
+      "reason": "host does not permit symlinks"
+    },
+    {
+      "nodeid": "tests/test_wiki_paths.py::ExportLinkChecks::test_symlink_boundary_still_rejects_missing_target",
+      "category": "host_filesystem_capability",
+      "reason": "Runner cannot create symlinks"
+    }
+  ],
+  "boundary": "本机离线测试仅写当前 checkout，临时目录位于 work/t；未启动真实游戏服务、设备操作或外部发布。缺少集成素材的跳过不代表该层通过。"
+}
