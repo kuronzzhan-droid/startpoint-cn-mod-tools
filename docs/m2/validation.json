@@ -1,0 +1,163 @@
+{
+  "schema": "wf-m2-validation/1",
+  "source_commit": "39807af374718802dec599a8b2868b519dfd27bd",
+  "pytest": {
+    "command": "python -B -m pytest --basetemp=work/m2/full-tmp --junitxml=work/m2/pytest-full.xml",
+    "exit_code": 0,
+    "elapsed_seconds": 294.0,
+    "terminal_counts": {
+      "passed": 3982,
+      "skipped": 354,
+      "warnings": 26
+    },
+    "junit_counts": {
+      "tests": 6602,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 357
+    },
+    "summary": "3982 passed, 354 skipped, 26 warnings in 292.00s (0:04:52)"
+  },
+  "checks": {
+    "caps-check": 0,
+    "path-scan": 0,
+    "hygiene": 0,
+    "diff-check": 0
+  },
+  "capability_count": 141,
+  "matrix_characters": 108,
+  "historical_bytes": {
+    "223": {
+      "matched": 3,
+      "different": 0
+    },
+    "221": {
+      "zips": 11,
+      "matched": 310,
+      "different": 0
+    }
+  },
+  "text_audit": {
+    "1.4.227": {
+      "texts": 1576,
+      "violations": 45,
+      "affected_texts": 41,
+      "expected_exit_code": 1
+    },
+    "1.4.228": {
+      "texts": 1576,
+      "violations": 45,
+      "affected_texts": 41,
+      "expected_exit_code": 1
+    },
+    "1.4.229": {
+      "texts": 1576,
+      "violations": 45,
+      "affected_texts": 41,
+      "expected_exit_code": 1
+    }
+  },
+  "artifacts": [
+    {
+      "path": "work/m2/pytest-full.log",
+      "sha256": "7e95c966ec86f5382653074e16825152b913ef745c00559b1d1dee75de34c1cf",
+      "bytes": 26430
+    },
+    {
+      "path": "work/m2/pytest-full.xml",
+      "sha256": "2146b71ffa1e715d8e35032c794e83740ae6df517ff3057066e491f91456860c",
+      "bytes": 722461
+    },
+    {
+      "path": "work/m2/pytest-full-exit.json",
+      "sha256": "a807842b5dfa9ebbda7e13de974de136c6cfbe866b14420d69afe83c451ed042",
+      "bytes": 279
+    },
+    {
+      "path": "work/m2/path-scan-final.json",
+      "sha256": "3bb6cb0d1f39f5ccac4fa3477c1ec3a061986584fb2593227532834770d23b40",
+      "bytes": 70
+    },
+    {
+      "path": "work/m2/caps-check.json",
+      "sha256": "569a0e9c58e0f5d43b1f2ea710adde588090d2ceb6107330ac30c0835ee27868",
+      "bytes": 3542733
+    },
+    {
+      "path": "work/m2/hygiene-final.log",
+      "sha256": "afdf5bc1be4a013fc35f4f5e26cfed89c0e993e752130d26b60bd274a764456e",
+      "bytes": 28
+    },
+    {
+      "path": "work/m2/acceptance-final/221.json",
+      "sha256": "9af07ef26314f8145455a14857a8b9e5831b49500ee7242f80ff0f0254e26673",
+      "bytes": 128345
+    },
+    {
+      "path": "work/m2/acceptance-final/223.json",
+      "sha256": "8833840e5380d63d58bc4310f16cac18b4491bc847fde56740fe86c48ec80c73",
+      "bytes": 1524
+    },
+    {
+      "path": "work/m2/acceptance-final/seris209-requires.json",
+      "sha256": "949fb1b404d7fd1792ef4f011878e71f6ec0db6fdfa7b99b9e8a7127fb19dc1d",
+      "bytes": 13976
+    },
+    {
+      "path": "work/m2/acceptance-final/cli-positive.json",
+      "sha256": "0ca3e7082b1c1c055a59b2ddc0d0a169af2e644dc8881e3dd52c138596e0387d",
+      "bytes": 3324
+    },
+    {
+      "path": "work/m2/acceptance-final/cli-negative.json",
+      "sha256": "c232a7028d314842d34ae0f768ff11e08bcfb7ea2a31c87635febded0663e2eb",
+      "bytes": 3365
+    },
+    {
+      "path": "work/m2/acceptance-final/cli-exit.json",
+      "sha256": "3e658b6265091fa48f5f85635a6299f868fb3a6c4b02102f9efb7cf6f1aeb9d9",
+      "bytes": 165
+    },
+    {
+      "path": "work/m2/registry/acceptance.json",
+      "sha256": "de082c1bebeb05d43cda6ae59f5220b64ef6f38a4a04fc9f7ef2f8848cc239b2",
+      "bytes": 2612
+    },
+    {
+      "path": "work/m2/matrix/determinism.json",
+      "sha256": "b9551e36a3704a459983ca7deb859f10ecc08d716752698e12b8e9a006979b7b",
+      "bytes": 184
+    },
+    {
+      "path": "work/m2/matrix/mutation.json",
+      "sha256": "5bd3b34bd1a79073ff510f0577298c5aa9cf957a25ee9225c4ac572e87ef7e40",
+      "bytes": 144
+    },
+    {
+      "path": "work/m2/text/audit-1.4.227.json",
+      "sha256": "d222a862bd6464fe4acf41b5ccd3e6a5e39a684bf19b343d9cccdff2b4323877",
+      "bytes": 725586
+    },
+    {
+      "path": "work/m2/text/audit-1.4.228.json",
+      "sha256": "4751d929bd1858c966d4c1222f25326e1ddcf445dc9394127e238e319cf34e1c",
+      "bytes": 725765
+    },
+    {
+      "path": "work/m2/text/audit-1.4.229.json",
+      "sha256": "9878ab7841ee58c1c9600b7f59e3e166c3273096442854e03169c1a2431d23f5",
+      "bytes": 725940
+    },
+    {
+      "path": "work/m2/text/server-deltas-227.json",
+      "sha256": "60eb6e842e493d3acc1f3432035956513c3e14d13136f823e1000e3adac5d043",
+      "bytes": 333737
+    },
+    {
+      "path": "work/m2/text/source-manifest.json",
+      "sha256": "05f48b86209aeeb97167ed08d5268ed5093a26653668917c78ca4ec6425ca459",
+      "bytes": 5764
+    }
+  ],
+  "scope": "本地离线代码和文件验证；跳过项不算验证通过；未操作服务器、设备、安装、发布或push"
+}
