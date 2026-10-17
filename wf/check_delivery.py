@@ -6,6 +6,13 @@ import zipfile
 from wf.rules.catalog import result
 
 
+def _object(raw, label):
+    value = json.loads(raw)
+    if not isinstance(value, dict):
+        raise ValueError(f"{label} must be a JSON object")
+    return value
+
+
 def check_delivery(document, directory):
     previous = tuple(map(int, document["from_version"].split(".")))
     target = tuple(map(int, document["to_version"].split(".")))
@@ -46,7 +53,7 @@ def check_delivery(document, directory):
         return target, target.read_bytes()
 
     upstream_path, raw = local_read(document["upstream_manifest"])
-    upstream = json.loads(raw)
+    upstream = _object(raw, "upstream manifest")
     if (upstream.get("schema"), upstream.get("baseVersion"), upstream.get("targetVersion")) != (
             1, document["from_version"], document["to_version"]):
         raise ValueError("upstream patch-manifest version mismatch")
@@ -81,13 +88,28 @@ def check_delivery(document, directory):
         raise ValueError("upstream members differ from legacy members")
     _, raw = local_read(document["requires"])
     from wf.deliver.changeset import validate_document
-    validate_document(json.loads(raw), "requires.schema.json")
-    legacy = json.loads(local_read(document["legacy_manifest"])[1])
+    requirements = _object(raw, "requires")
+    validate_document(requirements, "requires.schema.json")
+    pack, dependencies = requirements["pack"], requirements["requires"]
+    if (pack["since"], pack["tail"], pack["archives"]) != (
+            document["from_version"], document["to_version"], [a["name"] for a in document["archives"]]):
+        raise ValueError("requires input versions or archives differ from delivery")
+    if dependencies["capabilityResolution"] in {"resolved", "partial"}:
+        from wf.deliver.changeset import member_name
+        scanned = dependencies.get("scannedMembers", [])
+        inferred_hashes = {member_name(m["root"], m["logical_path"]): m["sha256"] for m in scanned}
+        if len(scanned) != len(inferred_hashes) or inferred_hashes != hashes:
+            raise ValueError("requires capability scan does not match delivered members")
+    legacy = _object(local_read(document["legacy_manifest"])[1], "legacy manifest")
     if legacy.get("chain") != [entry["name"] for entry in document["archives"]]:
         raise ValueError("legacy manifest archive chain mismatch")
     checks = [result("delivery.forward-edge", "满足", "双格式归档摘要、安装体积、CRC、成员清单及前进版本均已回读")]
+    incomplete = dependencies["capabilityResolution"] in {"partial", "pending-m2"} or bool(dependencies.get("unresolved"))
+    checks.append(result("capability.resolution", "待验证" if incomplete else "满足",
+                         "依赖引用尚未完整解析" if incomplete else "依赖声明及扫描成员摘要已核对；目标客户端兼容性需另行匹配",
+                         unresolved=dependencies.get("unresolved", [])))
     gate = document["prepush"]
-    assertions = json.loads(local_read(document["assertions"])[1])
+    assertions = _object(local_read(document["assertions"])[1], "assertions")
     if (assertions.get("from_version"), assertions.get("to_version")) != (
             document["from_version"], document["to_version"]):
         raise ValueError("assert_box version does not match delivery")
@@ -99,10 +121,12 @@ def check_delivery(document, directory):
             raw = local_read("server/" + entry["target"])[1]
             if hashlib.sha256(raw).hexdigest() != entry["sha256"]:
                 raise ValueError("assert_box server assertion does not match staged bytes")
-    report = json.loads(local_read(gate["report"])[1])
+    report = _object(local_read(gate["report"])[1], "prepush report")
     local_read(gate["log"])
     baseline = document["baseline"]
     contract = report.get("local_contract", {})
+    if not isinstance(contract, dict):
+        raise ValueError("prepush local_contract must be an object")
     if gate["exit_code"] == 0 and any(entry["kind"] == "server" for entry in assertions["files"]):
         if not contract.get("server_pre_hashes_checked") or not contract.get("server_post_hashes_checked"):
             raise ValueError("server pre/post hashes were not checked")
@@ -115,13 +139,13 @@ def check_delivery(document, directory):
             raise ValueError("baseline tip does not match delivery")
         if gate["exit_code"] == 0 and not contract.get("pre_and_post_hashes_checked"):
             raise ValueError("baseline hashes were not checked")
-    dsl = json.loads(local_read(document["dsl_gate"])[1])
+    dsl = _object(local_read(document["dsl_gate"])[1], "DSL gate")
     if dsl.get("status") not in {"满足", "不适用", "待验证"}:
         raise ValueError("629 gate did not pass")
     if gate["since"] != document["from_version"] or report.get("since") != gate["since"]:
         raise ValueError("prepush since does not match delivery")
     findings = report.get("findings")
-    if not isinstance(findings, list):
+    if not isinstance(findings, list) or not all(isinstance(f, dict) for f in findings):
         raise ValueError("prepush report lacks findings")
     has_errors = any(f.get("level") == "ERROR" for f in findings) or contract.get("errors")
     if gate["status"] in {"满足", "待验证"} and (gate["exit_code"] != 0 or has_errors):

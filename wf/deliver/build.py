@@ -20,9 +20,25 @@ def build_delivery(changeset: Path, out: Path, **prepush_options) -> dict:
     baseline = resolve_baseline(doc, **prepush_options)
     out.mkdir(parents=True, exist_ok=True)
     check_candidate(out, members, baseline, prepush_options.get("base_store"))
+    from wf.caps.requirements import requirements_document
+    from .prepush_base import View
+    fallback = View([], prepush_options["base_store"]) if prepush_options.get("base_store") else None
+
+    def read_raw(logical):
+        if baseline is not None:
+            return baseline.read_raw(logical)
+        raw = fallback.raw(logical) if fallback is not None else None
+        if raw is None:
+            raise FileNotFoundError(logical)
+        return raw
+
+    # Parse and derive before creating archives; malformed capability data must
+    # never produce an apparently complete deliverable.
+    requirements = requirements_document(doc, members, ["pending.zip"], read_raw=read_raw, server=server)
     records = write_archives(out, members, lambda seq:
         f"pinball-{doc['from_version']}-{doc['to_version']}-{seq}-{doc['slug']}.zip")
-    legacy, upstream = write_manifests(out, doc, members, records)
+    requirements["pack"]["archives"] = [record["name"] for record in records]
+    legacy, upstream = write_manifests(out, doc, members, records, requirements=requirements)
     for rel, raw in server.items():
         target = local_output(out / "server" / rel)
         target.parent.mkdir(parents=True, exist_ok=True)

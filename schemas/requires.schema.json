@@ -98,9 +98,31 @@
         "capabilityResolution": {
           "enum": [
             "pending-m2",
-            "declared"
+            "declared",
+            "resolved",
+            "partial"
           ]
-        }
+        },
+        "capabilityEvidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "evidence"],
+            "properties": {
+              "id": {"type": "string", "minLength": 1},
+              "evidence": {"type": "array", "minItems": 1, "items": {
+                "type": "object", "required": ["logical_path", "signal", "value"]
+              }}
+            },
+            "additionalProperties": false
+          }
+        },
+        "unresolved": {"type": "array", "items": {"type": "object", "required": ["logical_path", "key", "referenced_by"]}},
+        "scannedMembers": {"type": "array", "items": {
+          "type": "object", "required": ["logical_path", "root", "sha256"],
+          "properties": {"logical_path": {"type": "string"}, "root": {"enum": ["common", "medium", "android"]}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}},
+          "additionalProperties": false
+        }}
       },
       "required": [
         "clientCapabilities",

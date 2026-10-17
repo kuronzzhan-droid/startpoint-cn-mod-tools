@@ -121,12 +121,13 @@ def test_upstream_three_layers_empty_marker_and_exact_contract(delivery):
                 assert archive.namelist() == [".empty"]
 
 
-def test_requires_has_explicit_pending_capabilities(delivery):
+def test_requires_scans_ordinary_asset_without_inventing_capabilities(delivery):
     out, _ = delivery
     doc = json.loads((out / "requires.json").read_text("utf-8"))
     validate_document(doc, "requires.schema.json")
     assert doc["requires"]["clientCapabilities"] == []
-    assert doc["requires"]["capabilityResolution"] == "pending-m2"
+    assert doc["requires"]["capabilityResolution"] == "resolved"
+    assert doc["requires"]["scannedMembers"][0]["logical_path"] == "test/payload.bin"
 
 
 def test_assert_box_checks_versions_and_before_after_hashes(delivery, tmp_path):

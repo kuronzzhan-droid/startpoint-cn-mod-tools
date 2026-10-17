@@ -36,10 +36,11 @@ def test_check_preserves_incomplete_or_failed_prepush(delivery):
     directory, doc = delivery
     results = check_delivery(doc, directory)
     assert results[0]["status"] == "满足"
-    assert results[1]["status"] == "待验证" and not results[1]["blocking"]
+    prepush = next(r for r in results if r["rule"] == "delivery.prepush")
+    assert prepush["status"] == "待验证" and not prepush["blocking"]
     doc = copy.deepcopy(doc)
     doc["prepush"].update(status="问题", exit_code=1)
-    assert check_delivery(doc, directory)[1]["blocking"]
+    assert next(r for r in check_delivery(doc, directory) if r["rule"] == "delivery.prepush")["blocking"]
 
 
 def test_check_rejects_total_size_drift(delivery):

@@ -7,7 +7,7 @@ from .archives import write_archives
 from .changeset import sha256, validate_document, write_json
 
 
-def write_manifests(out: Path, doc, members, records):
+def write_manifests(out: Path, doc, members, records, *, requirements=None):
     old_records = [{k: r[k] for k in ("name", "size", "sha256", "members", "files")} for r in records]
     legacy = {"id": doc["id"], "type": "patch", "name": doc["name"],
               "description": doc.get("description", ""), "version": doc["to_version"],
@@ -41,12 +41,10 @@ def write_manifests(out: Path, doc, members, records):
     upstream = {"schema": 1, "targetVersion": doc["to_version"], "baseVersion": doc["from_version"],
                 "compatibleClient": "CN 1.8.1", "local_test_only": doc["local_test_only"], "archives": layered}
     write_json(out / upstream_name, upstream)
-    requires = {"schemaVersion": 2, "pack": {"since": doc["from_version"], "tail": doc["to_version"],
-                "anchor": {"from": doc["from_version"], "to": doc["to_version"]},
-                "archives": legacy["chain"]}, "requires": {"clientCapabilities": doc.get("capabilities", []),
-                "clientPatches": [], "serverFeatures": [], "serverRestart": bool(doc.get("server_changes")),
-                "restartReasons": ["server data changed"] if doc.get("server_changes") else [],
-                "minServerVersion": None, "capabilityResolution": "pending-m2"}}
+    if requirements is None:
+        from wf.caps.requirements import requirements_document
+        requirements = requirements_document(doc, members, legacy["chain"])
+    requires = requirements
     validate_document(requires, "requires.schema.json")
     write_json(out / "requires.json", requires)
     assertions = {"schema": 1, "from_version": doc["from_version"], "to_version": doc["to_version"],
