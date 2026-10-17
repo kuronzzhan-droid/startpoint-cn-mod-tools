@@ -23,11 +23,19 @@ def validate_capability(document: dict) -> dict:
     if errors:
         raise ValueError("invalid capability: " + "; ".join(error.message for error in errors))
     provider = document["provided_by"]
+    observed = set()
     for method in provider["methods"]:
+        key = method["patch"], method["abc"], method["label"]
+        if key in observed:
+            raise ValueError(f"{document['id']}: duplicate method evidence")
+        observed.add(key)
         if method["patch"] not in provider["patches"]:
             raise ValueError(f"{document['id']}: method refers to an undeclared patch")
         if method["sha256"] is None and method["status"] != "待补":
             raise ValueError(f"{document['id']}: null method hash must be marked 待补")
+    missing = set(provider["patches"]) - {method["patch"] for method in provider["methods"]}
+    if missing:
+        raise ValueError(f"{document['id']}: patches lack method evidence or explicit null: {sorted(missing)}")
     if provider["patches"] and not provider["methods"]:
         raise ValueError(f"{document['id']}: patch evidence must include a method or explicit null")
     if document["layer"] == "B" and provider["patches"]:
