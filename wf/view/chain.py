@@ -65,6 +65,11 @@ def resolve_chain(manifest, directories, base_version, tip, manifests=None):
     by_version, enabled_states = {}, {}
     for entry in manifest_entries(manifest, directories, manifests):
         target = entry.get("version")
+        # Disabled authoring templates can contain a version placeholder. They
+        # are not chain edges; real disabled versions still participate in
+        # conflict detection so an older manifest cannot resurrect them.
+        if entry.get("enabled") is False and (not isinstance(target, str) or not VERSION.fullmatch(target)):
+            continue
         if target is None or not (lower < version(target) <= upper):
             continue
         enabled = entry.get("enabled", True)

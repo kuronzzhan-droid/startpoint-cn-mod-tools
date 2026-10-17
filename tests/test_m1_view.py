@@ -181,3 +181,10 @@ def test_malformed_lock_is_rejected_cleanly(tmp_path, monkeypatch):
     _, store, manifest = setup_view(tmp_path, monkeypatch)
     with pytest.raises(ValueError, match="lock must be an object"):
         view(store, manifest, "1.4.131", lock=[])
+
+
+def test_disabled_authoring_placeholder_is_not_a_chain_edge(tmp_path, monkeypatch):
+    active, store, manifest = setup_view(tmp_path, monkeypatch)
+    edge = patch(active, "1.4.131", "1.4.132", {"a": b"value"})
+    write_manifest(manifest, [edge, {"enabled": False, "version": "<由所有者分配>"}])
+    assert view(store, manifest).read_raw("a")[0] == b"value"
