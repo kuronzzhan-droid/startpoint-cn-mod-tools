@@ -67,7 +67,7 @@ export function PatchManager({ archive }: { archive?: string }) {
                 <td class="small">{p.origin}</td>
                 <td class="small"><PatchState patch={p} /></td>
                 <td class="small nowrap">{size(p.archiveSize)}</td>
-                <td><a href={href({ work: "patches", archive: p.archive })}>查看</a></td>
+                <td class="nowrap"><a href={href({ work: "patches", archive: p.archive })}>查看</a></td>
               </tr>
             ))}
           </tbody>
