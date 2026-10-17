@@ -43,8 +43,10 @@ from .prepush_level import *
 from .prepush_text import _empty, _git_show, _skill_tiers
 from .prepush_level import _strings, _lists, _pieces, _numeric_keys
 
-def load_pathlist() -> dict[str, str]:
-    p = configured_path("pathlist")
+def load_pathlist(filename: Path | None = None) -> dict[str, str]:
+    p = Path(filename) if filename is not None else configured_path("pathlist")
+    if filename is not None and not p.is_file():
+        raise FileNotFoundError(f"--pathlist does not exist: {p}")
     out = {}
     if p.is_file():
         for line in p.read_text("utf-8").splitlines():
@@ -68,6 +70,8 @@ def build_parser():
                     help="基础 store:production 目录(含 upload/medium_upload/...)或 upload 目录本身")
     ap.add_argument("--extra-zip", type=Path, action="append", default=[],
                     help="叠在链尾的候选包(可多次),按给出顺序覆盖")
+    ap.add_argument("--pathlist", type=Path,
+                    help="逻辑路径表(默认 WF_PATHLIST / profiles 路径配置 / 仓内 WF_PATHLIST_recovered.txt)")
     ap.add_argument("--since", help="对比基线版本 1.4.N:之后的包算本次新增,新问题记 ERROR、旧问题记 WARN")
     ap.add_argument("--git-since", help="服务端仓的 git 基线(如 HEAD~1 或 origin/main),判断服务端文本是否本次改动")
     ap.add_argument("--custom-item-min", type=int, default=10000300,
@@ -96,6 +100,9 @@ def main(argv=None) -> int:
     if args.base_store is not None and not args.base_store.is_dir():
         print(f"--base-store 不存在: {args.base_store}")
         return 2
+    if args.pathlist is not None and not args.pathlist.is_file():
+        print(f"--pathlist 不存在: {args.pathlist}")
+        return 2
     allow_doc = json.loads(args.allowlist.read_text("utf-8")) if args.allowlist else {}
     rep = Report(set(allow_doc.get("ids", [])))
     allow_iqs = {str(x) for x in allow_doc.get("item_quest_search_exempt", [])}
@@ -116,7 +123,7 @@ def main(argv=None) -> int:
           + (f"; --since {args.since}(新包 {len(new_zips)} 个)" if args.since else ""))
 
     if "chain" in only:
-        check_chain(args, manifest, active, new_zips, rep, load_pathlist())
+        check_chain(args, manifest, active, new_zips, rep, load_pathlist(args.pathlist))
     if "text" in only:
         check_text(args, view, old, rep)
     if "companion" in only:
