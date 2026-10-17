@@ -53,7 +53,7 @@ def manifest_entries(manifest, directories, manifests=None):
         for entry in patches:
             if not isinstance(entry, dict):
                 raise ValueError(f"invalid manifest entry: {filename}")
-            if entry.get("enabled", True) and entry.get("type", "patch") == "patch":
+            if entry.get("type", "patch") == "patch":
                 entries.append(entry)
     return entries
 
@@ -62,10 +62,18 @@ def resolve_chain(manifest, directories, base_version, tip, manifests=None):
     lower, upper = version(base_version), version(tip)
     if upper < lower:
         raise ValueError("tip precedes the configured store base version")
-    by_version = {}
+    by_version, enabled_states = {}, {}
     for entry in manifest_entries(manifest, directories, manifests):
         target = entry.get("version")
         if target is None or not (lower < version(target) <= upper):
+            continue
+        enabled = entry.get("enabled", True)
+        if not isinstance(enabled, bool):
+            raise ValueError(f"manifest enabled must be boolean: {target}")
+        if target in enabled_states and enabled_states[target] != enabled:
+            raise ValueError(f"conflicting manifest enabled state for {target}")
+        enabled_states[target] = enabled
+        if not enabled:
             continue
         previous = entry.get("depends_on")
         if version(previous) >= version(target):

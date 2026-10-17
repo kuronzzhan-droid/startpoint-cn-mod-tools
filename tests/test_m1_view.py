@@ -165,3 +165,19 @@ def test_explicit_manifest_does_not_inherit_unrelated_profile_manifests(tmp_path
     profile.write_text(json.dumps({"view": {"manifests": [str(tmp_path / "missing.json")]}}), encoding="utf-8")
     write_manifest(manifest, [patch(active, "1.4.131", "1.4.132", {"a": b"value"})])
     assert view(store, manifest).read_raw("a")[0] == b"value"
+
+
+def test_disabled_supplement_cannot_resurrect_old_enabled_edge(tmp_path, monkeypatch):
+    active, store, manifest = setup_view(tmp_path, monkeypatch)
+    edge = patch(active, "1.4.131", "1.4.132", {"a": b"value"})
+    write_manifest(manifest, [edge])
+    supplemental = tmp_path / "later.json"
+    write_manifest(supplemental, [dict(edge, enabled=False)])
+    with pytest.raises(ValueError, match="enabled state"):
+        view(store, manifest, manifests=[supplemental])
+
+
+def test_malformed_lock_is_rejected_cleanly(tmp_path, monkeypatch):
+    _, store, manifest = setup_view(tmp_path, monkeypatch)
+    with pytest.raises(ValueError, match="lock must be an object"):
+        view(store, manifest, "1.4.131", lock=[])

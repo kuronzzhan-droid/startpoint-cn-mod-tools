@@ -36,6 +36,8 @@ class ManifestView(HistoricalView):
         self.store_member_sha256 = None
         if self._lock is not None:
             expected = self._lock
+            if not isinstance(expected, dict):
+                raise ValueError("view lock must be an object")
             if (expected.get("schema"), expected.get("base_version"), expected.get("tip")) != (
                     "wf-view-lock/1", base_version, tip):
                 raise ValueError("view lock schema, baseline or tip mismatch")
