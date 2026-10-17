@@ -25,7 +25,7 @@ from wf_character_revision import encode_tree
 from wf_midautumn_kit_hibiki import dsl_problems as kit_dsl_problems
 from wf_midautumn_kitlib import panel_problems as kit_panel_problems
 
-FIXTURE = Path(__file__).parent / 'fixtures/balance_20260927b_claus_rework.json'
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_claus_rework.json'
 WORKSPACE = ROOT / 'work/character_packs' / M.PACKAGES[0]
 S1, S2 = M.SKILL_PROGRAMS[1], M.SKILL_PROGRAMS[2]
 PF = M.PF_PROGRAMS

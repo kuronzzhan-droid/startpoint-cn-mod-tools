@@ -23,8 +23,8 @@ import wf_dsl
 import wf_mod_tool as core
 from wf_character_revision import encode_tree
 
-FIXTURE = Path(__file__).parent / 'fixtures/balance_20260927c_mosiyike.json'
-FIXTURE_B = Path(__file__).parent / 'fixtures/balance_20260927b_mosiyike.json'
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_mosiyike.json'
+FIXTURE_B = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_mosiyike.json'
 WORKSPACE = ROOT / 'work/character_packs' / M.PACKAGES[0]
 PF1, PF2, PF3 = (M.PF_PROGRAMS[level] for level in M.PF_LEVELS)
 NEW_TOTALS = {1: 15.0, 2: 30.0, 3: 45.0}

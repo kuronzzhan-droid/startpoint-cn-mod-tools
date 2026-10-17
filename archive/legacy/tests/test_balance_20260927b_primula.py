@@ -16,7 +16,7 @@ from wf_character_revision import encode_tree
 from wf_midautumn_kit_hibiki import dsl_problems as kit_dsl_problems
 from wf_midautumn_kitlib import panel_problems
 
-FIXTURE = Path(__file__).parent / 'fixtures/balance_20260927b_primula.json'
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_primula.json'
 WORKSPACE = ROOT / 'work/character_packs' / B.PACKAGES[0]
 PROGRAMS = B.SKILL_PROGRAMS
 GARDEN_P13 = [11, 1, 1, 1, 6, 1, 0, 1, 11, 1, 2, 1, 3, 1, 0, 1, 23, 1, 1, 1, 13]   # 花园 onHit 第 2 条

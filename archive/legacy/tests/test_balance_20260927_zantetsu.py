@@ -27,7 +27,7 @@ import wf_balance_20260927b_zantetsu as MB  # noqa: E402  （第二批：Fever �
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-FIXTURE = HERE / "fixtures/balance_20260927_zantetsu.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927_zantetsu.json'
 NICOLA_DESIGN = ROOT / "work/character_packs/midautumn-20260920/design/nicola.json"
 STRINGS = {M.CAS_CHANGE_SKILL, M.CAS_PF}
 

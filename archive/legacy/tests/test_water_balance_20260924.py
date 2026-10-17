@@ -11,7 +11,7 @@ import wf_dsl
 from wf_client_legality import client_legality_problems
 from wf_midautumn_kit_hibiki import dsl_problems
 
-FIXTURE = Path(__file__).parent/'fixtures/water_balance_20260924.json'
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'water_balance_20260924.json'
 
 
 class WaterBalanceTest(unittest.TestCase):

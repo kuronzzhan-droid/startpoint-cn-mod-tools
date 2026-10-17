@@ -16,7 +16,7 @@ from wf_character_revision import encode_tree
 from wf_midautumn_kit_hibiki import dsl_problems as kit_dsl_problems
 from wf_midautumn_kitlib import panel_problems
 
-FIXTURE = Path(__file__).parent / 'fixtures/balance_20260927b_lionreborn.json'
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_lionreborn.json'
 WORKSPACE = ROOT / 'work/character_packs/lion_swordman_reborn'
 PF1, PF2, PF3 = (B.PF_PROGRAMS[level] for level in B.PF_LEVELS)
 SK1, SK2 = (B.SKILL_PROGRAMS[level] for level in B.SKILL_LEVELS)

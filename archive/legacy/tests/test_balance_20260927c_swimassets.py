@@ -29,7 +29,7 @@ import wf_assets as A  # noqa: E402
 import wf_balance_20260927c_swimassets as M  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927c_swimassets.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_swimassets.json'
 DATA = json.loads(FIXTURE.read_text(encoding="utf-8"))
 LOCAL_STORE = (ROOT / "mod-tools/profiles.json").is_file()
 GRAY_CHAIN = ROOT / M.GRAY_CHAIN_ZIP

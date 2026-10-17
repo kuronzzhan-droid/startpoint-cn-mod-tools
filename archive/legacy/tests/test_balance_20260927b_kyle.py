@@ -29,8 +29,8 @@ import wf_seasonal7_kit_philia as PH  # noqa: E402
 from wf_character_revision import encode_tree  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927b_kyle.json"
-FIXTURE_BATCH1 = Path(__file__).parent / "fixtures/balance_20260927_kyle.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_kyle.json'
+FIXTURE_BATCH1 = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927_kyle.json'
 CANDIDATE = ROOT / "work/character_packs/ma-kyle"
 TABLE_KIND = {"leader": "leader_ability", "ability": "ability"}
 
@@ -75,7 +75,7 @@ def batch3_overlay(live: dict, out: dict) -> dict:
     for kind in ("leader", "ability", "cas", "dsl"):
         live3[kind].update(deepcopy(out[kind]))
     # 第三轮面板合并补读、第二批不涉及的键（desc_override_kyle_moon_3）取第三轮 fixture（= live）
-    fixture3 = json.loads((Path(__file__).parent / "fixtures/balance_20260927c_kyle.json").read_text(encoding="utf-8"))
+    fixture3 = json.loads((Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_kyle.json').read_text(encoding="utf-8"))
     for kind, key in M3.BEFORE:
         live3.setdefault(kind, {}).setdefault(key, deepcopy(fixture3[kind][key]))
     out3 = M3.revise(reader(live3))
@@ -511,8 +511,7 @@ class ChainTests(unittest.TestCase):
                 # 本来就已在 live（第三轮只读核对，不是本批新增），只是第二批 fixture 没收录；
                 # 补进 live 后续等式判定才成立，取值与 wf_balance_20260927c_kyle.BEFORE 锁的哈希对应的快照一致。
                 import wf_balance_20260927c_kyle as M3
-                fixture3 = json.loads((Path(__file__).parent /
-                                       "fixtures/balance_20260927c_kyle.json").read_text(encoding="utf-8"))
+                fixture3 = json.loads((Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_kyle.json').read_text(encoding="utf-8"))
                 for kind, key in M3.BEFORE:
                     live.setdefault(kind, {}).setdefault(key, deepcopy(fixture3[kind][key]))
                 out = batch3_overlay(live, out)

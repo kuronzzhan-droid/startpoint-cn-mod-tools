@@ -32,3 +32,6 @@ export/
 profiles/local.json
 .pytest_cache/
 !archive/legacy/**/*.bak*
+
+# Author-reviewed private resources and archived game-data fixtures
+/private-assets/

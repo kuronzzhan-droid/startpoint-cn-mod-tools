@@ -31,7 +31,7 @@ import wf_tekuto_low_hp as LOW_HP  # noqa: E402
 import wf_tekuto_no_endlag_revision as NE  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927c_tekuto.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_tekuto.json'
 DESIGN = ROOT / K.DESIGN_REL
 PLAN = ROOT / K.REVISION_REL
 MANIFEST = ROOT / "work/character_packs/s7-tekuto/package/manifest.json"
@@ -126,7 +126,7 @@ class ReviseTests(unittest.TestCase):
 
     def test_live_is_the_batch2_output(self):
         """输入基线 = 第二批 revise() 的输出（live 1.4.1053 上特克托这几项自第二批发布后没动过）。"""
-        b_live = json.loads((Path(__file__).parent / "fixtures/balance_20260927b_tekuto.json")
+        b_live = json.loads((Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_tekuto.json')
                             .read_text(encoding="utf-8"))
         b_live = {k: v for k, v in b_live.items() if not k.startswith("_")}
         b_out = B.revise(reader(deepcopy(b_live)))

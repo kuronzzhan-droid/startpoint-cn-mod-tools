@@ -16,7 +16,7 @@ from wf_client_legality import (client_legality_problems, declared_block_field_p
 from wf_character_revision import encode_tree
 from wf_midautumn_kit_hibiki import dsl_problems as kit_dsl_problems
 
-FIXTURE = Path(__file__).parent / 'fixtures/balance_20260927_lilith.json'
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927_lilith.json'
 WORKSPACE = ROOT / 'work/character_packs' / M.PACKAGES[0]
 A1, A2, A3, A4, A5 = (M.ABILITY[i] for i in range(1, 6))
 

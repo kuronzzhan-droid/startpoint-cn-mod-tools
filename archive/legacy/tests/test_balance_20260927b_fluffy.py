@@ -27,7 +27,7 @@ import wf_mod_tool as core  # noqa: E402
 from wf_character_revision import encode_tree  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927b_fluffy.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_fluffy.json'
 #: 候选 ma-fluffy manifest 现有的 required_capabilities（改后不新增）。
 CANDIDATE_CAPABILITIES = {"panel-description-override-v2", "dash-parameter-v1", "gauge-gain-rules-v1"}
 
@@ -37,7 +37,7 @@ def load_fixture() -> dict:
     return {kind: value for kind, value in data.items() if not kind.startswith("_")}
 
 
-C_FIXTURE = Path(__file__).parent / "fixtures/balance_20260927c_fluffy.json"
+C_FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_fluffy.json'
 #: 第三轮（``wf_balance_20260927c_fluffy``，成长复核）已把生成器的队长成长推进到 c 值：生成器一致性按
 #: 「第二批输出 + 第三轮覆盖」核对（b → c 两种状态都接受；逐格断言与设计镜像同步由 c 测试接管）。
 GENERATOR_AT_C = K.LEADER[4][2][49] != M.LEADER_CHANGES[4][1]

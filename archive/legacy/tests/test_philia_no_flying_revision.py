@@ -20,7 +20,7 @@ from wf_character_revision import encode_tree  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 PACKAGE = ROOT / "work/character_packs/s7-philia/package"
-FIXTURE = Path(__file__).resolve().parent / "fixtures/philia_no_flying_before.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'philia_no_flying_before.json'
 LOGICALS = tuple(wf_dsl.dsl_logical(p) for p in R.SKILL_PROGRAMS + R.PF_PROGRAMS)
 
 

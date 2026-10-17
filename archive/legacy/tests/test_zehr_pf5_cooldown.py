@@ -8,7 +8,7 @@ from wf_zehr_pf5_cooldown import revise_rows, compact_text
 
 class ZehrPF5Test(unittest.TestCase):
     def setUp(self):
-        self.rows = json.loads((Path(__file__).parent/'fixtures/zehr_pf5_before.json').read_bytes())
+        self.rows = json.loads((Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'zehr_pf5_before.json').read_bytes())
 
     def test_only_lv3_counter_and_cooldown_change(self):
         before = deepcopy(self.rows)

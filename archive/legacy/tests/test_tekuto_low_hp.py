@@ -9,7 +9,7 @@ from wf_seasonal7_kit_philia import cmds
 class TekutoLowHpTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.data=json.loads((Path(__file__).parent/'fixtures/tekuto_low_hp_before.json').read_bytes())
+        cls.data=json.loads((Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'tekuto_low_hp_before.json').read_bytes())
 
     def test_removes_both_ally_skill_growth_rows_and_keeps_every_other_leader_row(self):
         before=self.data[T.CID]

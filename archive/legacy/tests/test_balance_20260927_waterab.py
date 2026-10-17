@@ -30,8 +30,8 @@ from wf_battle_rules import DAMAGE_CAP  # noqa: E402
 from wf_character_revision import encode_tree  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927_waterab.json"
-W_FIXTURE = Path(__file__).parent / "fixtures/water_balance_20260924.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927_waterab.json'
+W_FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'water_balance_20260924.json'
 GERALD, YUKI = M.UNITS
 KINDS = ("ability", "leader", "cas", "text", "table", "action", "dsl", "server_text")
 

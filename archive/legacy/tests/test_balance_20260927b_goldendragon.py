@@ -14,7 +14,7 @@ import wf_dsl
 from wf_character_revision import encode_tree
 from wf_midautumn_kit_hibiki import dsl_problems as kit_dsl_problems
 
-FIXTURE = Path(__file__).parent / 'fixtures/balance_20260927b_goldendragon.json'
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_goldendragon.json'
 SK1, SK2 = (B.SKILL_PROGRAMS[level] for level in B.SKILL_LEVELS)
 HIT_P13 = [11, 1, 6, 1, 3, 1, 0, 1, 23, 1, 0, 1, 13]        # Wait(100) 伤害判定区（8 段）
 HIT_AREA = HIT_P13[:-5]                                     # 伤害判定区 CreateHitArea 参数

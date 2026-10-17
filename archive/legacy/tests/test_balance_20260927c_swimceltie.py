@@ -26,7 +26,7 @@ import wf_describe  # noqa: E402
 import wf_dsl  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).resolve().parent / "fixtures/balance_20260927c_swimceltie.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_swimceltie.json'
 FX = json.loads(FIXTURE.read_text(encoding="utf-8"))
 
 

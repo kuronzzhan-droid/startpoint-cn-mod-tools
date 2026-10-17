@@ -8,7 +8,7 @@ import wf_zehr_lamp_revision as R
 
 class LampTest(unittest.TestCase):
     def setUp(self):
-        self.data = json.loads((Path(__file__).parent/'fixtures/zehr_lamp_before.json').read_bytes())
+        self.data = json.loads((Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'zehr_lamp_before.json').read_bytes())
         self.a, self.b = self.data['a1'], self.data['a3']
 
     def test_resonance_combo_replaces_flip_and_rewards_stay_in_sync(self):

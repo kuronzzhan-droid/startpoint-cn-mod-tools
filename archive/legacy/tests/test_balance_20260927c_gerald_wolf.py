@@ -31,8 +31,8 @@ import wf_gerald_cast_growth as G  # noqa: E402
 import wf_midautumn_kitlib as KL  # noqa: E402
 import wf_panel_merge_check as PMC  # noqa: E402   面板合并校验器（仓库内，硬依赖）
 
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927c_gerald_wolf.json"
-B2_FIXTURE = Path(__file__).parent / "fixtures/balance_20260927b_gerald_wolf.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_gerald_wolf.json'
+B2_FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_gerald_wolf.json'
 WORKSPACE = ROOT / "work/character_packs" / M.PACKAGES[0]
 LEADER_TABLE = "master/ability/leader_ability.orderedmap"
 CAS_TABLE = "master/string/custom_ability_string.orderedmap"

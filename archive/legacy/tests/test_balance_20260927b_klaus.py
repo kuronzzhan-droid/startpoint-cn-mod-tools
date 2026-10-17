@@ -15,7 +15,7 @@ from wf_character_revision import encode_tree
 from wf_midautumn_kit_hibiki import dsl_problems as kit_dsl_problems
 from wf_midautumn_kitlib import panel_problems
 
-FIXTURE = Path(__file__).parent / 'fixtures/balance_20260927b_klaus.json'
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_klaus.json'
 WORKSPACE = ROOT / 'work/character_packs' / B.PACKAGES[0]
 PF1, PF2, PF3 = (B.PF_PROGRAMS[level] for level in B.PF_LEVELS)
 
@@ -57,7 +57,7 @@ def rework_output():
     """作者 09-27 小重做（wf_balance_20260927b_claus_rework，在本批 1.4.1051 之上）又改了 PF 三档：
     live 与候选在它暂存/发布后是它的输出，而不是本模块的输出。按它的夹具重算，供本机断言放行。"""
     import wf_balance_20260927b_claus_rework as R
-    data = json.loads((Path(__file__).parent / 'fixtures/balance_20260927b_claus_rework.json').read_bytes())
+    data = json.loads((Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_claus_rework.json').read_bytes())
     inputs = data['inputs']
     return R, R.revise(lambda kind, key: inputs[kind]['|'.join(key) if kind == 'table' else key])
 

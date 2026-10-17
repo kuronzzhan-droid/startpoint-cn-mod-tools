@@ -29,8 +29,8 @@ import wf_zantetsu_fever_revision as F  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-FIXTURE = HERE / "fixtures/balance_20260927b_zantetsu.json"
-FIXTURE_15 = HERE / "fixtures/balance_20260927_zantetsu.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_zantetsu.json'
+FIXTURE_15 = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927_zantetsu.json'
 STRINGS = {M.CAS_CHANGE_SKILL, M.CAS_PF}
 MIDAUTUMN_DESIGN = ROOT / "work/character_packs/midautumn-20260920/design"
 

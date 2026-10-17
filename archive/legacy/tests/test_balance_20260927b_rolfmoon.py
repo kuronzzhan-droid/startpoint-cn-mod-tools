@@ -26,7 +26,7 @@ import wf_mod_tool as core  # noqa: E402
 from wf_character_revision import encode_tree  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927b_rolfmoon.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_rolfmoon.json'
 #: 候选 ma-rolf manifest 现有的 required_capabilities（改后不新增）。
 CANDIDATE_CAPABILITIES = {"dash-parameter-v1", "panel-description-override-v2"}
 

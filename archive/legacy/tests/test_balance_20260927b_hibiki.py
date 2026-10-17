@@ -26,7 +26,7 @@ import wf_mod_tool as core  # noqa: E402
 from wf_character_revision import encode_tree  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927b_hibiki.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_hibiki.json'
 WORKSPACE = ROOT / "work/character_packs" / M.PACKAGES[0]
 #: 候选 ma-hibiki manifest 现有的 required_capabilities（改后不新增）。
 CANDIDATE_CAPABILITIES = {"dash-parameter-v1", "panel-description-override-v2", "damage-type-rules-v1"}
@@ -52,7 +52,7 @@ def _baseline_available() -> bool:
     return profile is not None and profile.store.is_dir() and (ROOT / ".cdn" / "cn").is_dir()
 
 
-C_FIXTURE = Path(__file__).parent / "fixtures/balance_20260927c_hibiki.json"
+C_FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_hibiki.json'
 #: 第三轮（``wf_balance_20260927c_hibiki``，成长复核）已把生成器的队长成长推进到 c 值：生成器一致性按
 #: 「第二批输出 + 第三轮覆盖」核对（b → c 两种状态都接受；逐格断言与设计镜像同步由 c 测试接管）。
 GENERATOR_AT_C = K.ECHO_LEADER_STEP != M.ECHO_LEADER
@@ -460,7 +460,7 @@ class GeneratorSyncTests(unittest.TestCase):
                                                 "per_call": 1.0, "official_per_segment": 6.25})
 
 
-PHILIA_FIXTURE = Path(__file__).parent / "fixtures/balance_20260927b_philia.json"
+PHILIA_FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_philia.json'
 
 
 class DonorPinTest(unittest.TestCase):

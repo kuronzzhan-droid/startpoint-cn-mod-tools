@@ -24,7 +24,7 @@ from wf_client_legality import (CUSTOM_ABILITY_STRING_KIND, PANEL_OVERRIDE_V1,
                                 invoke_skill_string_problems, required_client_capabilities)
 from wf_midautumn_kitlib import panel_problems
 
-FIXTURE = Path(__file__).parent / 'fixtures/balance_20260927b_inaho.json'
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_inaho.json'
 WORKSPACE = ROOT / 'work/character_packs' / M.PACKAGES[0]
 LEADER_TABLE = 'master/ability/leader_ability.orderedmap'
 ABILITY_TABLE = 'master/ability/ability.orderedmap'

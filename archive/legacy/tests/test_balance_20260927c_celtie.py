@@ -39,7 +39,7 @@ from wf_character_revision import encode_tree  # noqa: E402
 from wf_midautumn_kit_hibiki import dsl_problems as kit_dsl_problems  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927c_celtie.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_celtie.json'
 DATA = json.loads(FIXTURE.read_text(encoding="utf-8"))
 WORKSPACE = ROOT / "work/character_packs" / M.PACKAGES[0]
 TABLE = {"ability": "ability", "leader": "leader_ability"}

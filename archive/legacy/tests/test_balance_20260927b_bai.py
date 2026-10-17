@@ -28,7 +28,7 @@ from wf_client_legality import (client_legality_problems, declared_block_field_p
                                 invoke_skill_string_problems, required_client_capabilities)
 from wf_midautumn_kit_hibiki import dsl_problems as kit_dsl_problems  # noqa: E402
 
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927b_bai.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_bai.json'
 WORKSPACE = ROOT / "work/character_packs" / M.PACKAGES[0]
 PRE_REVISION_VERSION = (1, 0, 2)      # white_tiger_summer 候选在本批之前的 package_version
 SNAPSHOT_KEY = "revision_20260927b"

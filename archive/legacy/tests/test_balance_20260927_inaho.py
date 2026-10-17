@@ -15,7 +15,7 @@ from wf_client_description_legality import description_compatibility_problems
 from wf_client_legality import (client_legality_problems, declared_block_field_problems,
                                 invoke_skill_string_problems, required_client_capabilities)
 
-FIXTURE = Path(__file__).parent / 'fixtures/balance_20260927_inaho.json'
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927_inaho.json'
 WORKSPACE = ROOT / 'work/character_packs' / M.PACKAGES[0]
 A3 = M.ABILITY3
 ABILITY_TABLE = 'master/ability/ability.orderedmap'

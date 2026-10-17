@@ -32,9 +32,9 @@ from wf_client_legality import (CUSTOM_ABILITY_STRING_KIND, PANEL_OVERRIDE_V1, c
 from wf_midautumn_kitlib import panel_problems
 from wf_panel_merge_check import check as check_merge
 
-FIXTURE = Path(__file__).parent / 'fixtures/balance_20260927c_inaho.json'
-B2_FIXTURE = Path(__file__).parent / 'fixtures/balance_20260927b_inaho.json'
-B22_FIXTURE = Path(__file__).parent / 'fixtures/balance_20260927b_inaho2.json'
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_inaho.json'
+B2_FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_inaho.json'
+B22_FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_inaho2.json'
 WORKSPACE = ROOT / 'work/character_packs' / M.PACKAGES[0]
 LEADER_TABLE = 'master/ability/leader_ability.orderedmap'
 CAS_TABLE = 'master/string/custom_ability_string.orderedmap'

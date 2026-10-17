@@ -16,7 +16,7 @@ from wf_character_revision import encode_tree
 from wf_midautumn_kit_hibiki import dsl_problems as kit_dsl_problems
 from wf_midautumn_kitlib import panel_problems
 
-FIXTURE = Path(__file__).parent / 'fixtures/balance_20260927b_geral_water.json'
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_geral_water.json'
 WORKSPACE = ROOT / 'work/character_packs' / B.PACKAGES[0]
 PROGRAMS = B.SKILL_PROGRAMS
 LANCE_P13 = [11, 1, 2, 1, 6, 1, 1, 1, 23, 1, 0, 1, 13]
@@ -84,7 +84,7 @@ class GeralWaterBatch2Test(unittest.TestCase):
         self.assertEqual({('dsl', p) for p in PROGRAMS.values()}, shared)
         for key in shared:
             self.assertEqual(batch15['BEFORE'][key], B.BEFORE[key], key)
-        fixture = json.loads((Path(__file__).parent / 'fixtures/balance_20260927_waterab.json').read_bytes())
+        fixture = json.loads((Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927_waterab.json').read_bytes())
         batch15_out = batch15['revise'](lambda kind, key: fixture[kind][key])
         self.assertEqual(set(), set(batch15_out['dsl']) & set(self.out['dsl']))
         self.assertIn(W.generator.STRIKE_PROGRAM, batch15_out['dsl'])                    # 追击树归 1.5 批

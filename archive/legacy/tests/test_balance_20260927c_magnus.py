@@ -32,9 +32,9 @@ import wf_mod_tool as core  # noqa: E402
 import wf_panel_merge_check as PMC  # noqa: E402   面板合并校验器（仓库内，硬依赖）
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927c_magnus.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_magnus.json'
 #: 第二批 fixture = 第二批前的 live（技能树点火上限 99）：用来核对「撤封顶 = 逐字恢复」。
-FIXTURE_B = Path(__file__).parent / "fixtures/balance_20260927b_magnus.json"
+FIXTURE_B = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_magnus.json'
 UID = MC.UID
 CODE = MC.CODE
 BIND_PATH = (11, 1, 0, 1, 5)

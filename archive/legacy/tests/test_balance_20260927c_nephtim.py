@@ -25,7 +25,7 @@ import wf_nephtim_fever_text as text
 from wf_panel_merge_check import check as panel_merge_check  # 面板合并校验器（仓库内，硬依赖）
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927c_nephtim.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_nephtim.json'
 LEADER_KEY, A3_KEY = "169989", "1699893"
 
 #: 成长复核只换数字后的中间态（9 行；check_merge 的原文）。
@@ -109,7 +109,7 @@ class NephtimBalance20260927cTest(unittest.TestCase):
 
     def test_baseline_is_the_published_batch2_state(self):
         # 第二批 revise() 的输出 == 本轮输入：c 以第二批发布后的 live（链尾 1.4.1053）为原像。
-        fixture = json.loads((Path(__file__).parent / "fixtures/balance_20260927b_nephtim.json").read_bytes())
+        fixture = json.loads((Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_nephtim.json').read_bytes())
         data = {(r["kind"], tuple(r["key"]) if isinstance(r["key"], list) else r["key"]): r["value"]
                 for r in fixture["reads"]}
         second = B.revise(lambda kind, key: deepcopy(data[kind, key]))

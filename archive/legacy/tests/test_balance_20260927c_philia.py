@@ -26,8 +26,8 @@ import wf_seasonal7_kit_philia as K  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-FIXTURE = HERE / "fixtures/balance_20260927c_philia.json"
-FIXTURE_B = HERE / "fixtures/balance_20260927b_philia.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_philia.json'
+FIXTURE_B = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_philia.json'
 MANIFEST_CAPS = {"kyubi-fever-ratio-v1"}
 
 

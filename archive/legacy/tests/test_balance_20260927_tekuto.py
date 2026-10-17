@@ -21,7 +21,7 @@ import wf_describe as D  # noqa: E402
 import wf_seasonal7_kit_tekuto as K  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927_tekuto.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927_tekuto.json'
 DESIGN = ROOT / K.DESIGN_REL
 PLAN = ROOT / K.REVISION_REL
 

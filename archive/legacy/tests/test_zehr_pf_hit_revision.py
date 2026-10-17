@@ -11,7 +11,7 @@ from wf_zehr_pf_hit_revision import revise, HIT
 class ZehrPfHitTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.before = json.loads((Path(__file__).parent/'fixtures/zehr_pf_hit_before.json').read_bytes())
+        cls.before = json.loads((Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'zehr_pf_hit_before.json').read_bytes())
 
     def test_only_spin_multiplier_changes_on_all_levels(self):
         for level in (1,2,3):

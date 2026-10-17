@@ -26,7 +26,7 @@ import wf_midautumn_kitlib as KL  # noqa: E402
 import wf_mod_tool as core  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927b_nicola.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_nicola.json'
 WORKSPACE = ROOT / "work/character_packs" / M.PACKAGES[0]
 DESIGN_PATH = ROOT / M.DESIGN_REL
 #: 候选 ma-nicola manifest 现有的 required_capabilities（改后不新增）。

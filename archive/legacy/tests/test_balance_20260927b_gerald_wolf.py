@@ -35,7 +35,7 @@ import wf_gerald_percent_skill as P  # noqa: E402
 import wf_midautumn_kitlib as KL  # noqa: E402
 from wf_character_revision import encode_tree  # noqa: E402
 
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927b_gerald_wolf.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_gerald_wolf.json'
 WORKSPACE = ROOT / "work/character_packs" / M.PACKAGES[0]
 #: 09-25 修订前捕获的 live 技能树（percent_skill 之后、cast_growth 之前 = cast_growth 的真实输入）。
 CAPTURED_0925 = Path(('${WF_ROOT}/out/风巨蜥与校园希尔媞调整-20260925/before/live/common'.replace("${WF_ROOT}", str(root_path()))))

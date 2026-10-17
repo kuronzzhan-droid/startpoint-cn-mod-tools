@@ -25,7 +25,7 @@ import wf_nephtim_fever_text as text
 from wf_character_revision import encode_tree
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927b_nephtim.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_nephtim.json'
 MAIN = " <icon id='main'>  "
 LEADER_KEY, A3_KEY = "169989", "1699893"
 APK = Path(os.environ.get("WF_APK", ('${WF_ROOT}/out/newchars-pf-v9-20260906/wf_newchars_pf_v9.apk'.replace("${WF_ROOT}", str(root_path())))))

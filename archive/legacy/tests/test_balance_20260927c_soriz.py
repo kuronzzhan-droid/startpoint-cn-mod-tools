@@ -28,7 +28,7 @@ import wf_midautumn_kitlib as KL  # noqa: E402
 import wf_mod_tool as core  # noqa: E402
 from wf_panel_merge_check import check as check_merge  # noqa: E402  面板合并校验器（仓库内，硬依赖）
 
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927c_soriz.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_soriz.json'
 LEADER_FORBIDDEN = {"422", "724", "713"}           # 队长表写这三个 kind = C7050
 NUMERIC_TEXT_LINE = "每层「三羽乌」使自身攻击力+70%、强化弹射伤害+70%、强化弹射伤害额外+2%（独立乘区）。"
 NEW_TEXT_LINE = "每层「三羽乌」使自身攻击力+70%，强化弹射伤害+70%、强化弹射伤害额外+2%（独立乘区）。"
@@ -106,7 +106,7 @@ class ContractTests(Base):
 
     def test_baseline_is_the_published_batch2_state(self):
         # 第二批 revise() 的输出 == 本轮输入：c 以第二批发布后的 live（链尾 1.4.1053）为原像。
-        fixture = json.loads((Path(__file__).parent / "fixtures/balance_20260927b_gbf.json").read_text(encoding="utf-8"))
+        fixture = json.loads((Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_gbf.json').read_text(encoding="utf-8"))
         inputs = fixture["inputs"]
         second = B.revise_soriz(lambda kind, key: deepcopy(inputs[kind].get(key)))
         self.assertEqual(second["leader"][C.CID], self.old("leader", C.CID))

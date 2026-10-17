@@ -14,7 +14,7 @@ import wf_client_legality as legality
 import wf_mod_tool as core
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927_vaseraga.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927_vaseraga.json'
 MAIN = " <icon id='main'>  "
 A = {slot: f"169997{slot}" for slot in range(1, 7)}
 

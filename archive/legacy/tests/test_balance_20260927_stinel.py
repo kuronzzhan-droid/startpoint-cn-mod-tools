@@ -24,7 +24,7 @@ import wf_midautumn_kitlib as KL  # noqa: E402
 import wf_mod_tool as core  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927_stinel.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927_stinel.json'
 #: 候选 ma-stinel manifest 现有的 required_capabilities（改后不新增）。
 CANDIDATE_CAPABILITIES = {"kyubi-fever-ratio-v1", "panel-description-override-v2"}
 

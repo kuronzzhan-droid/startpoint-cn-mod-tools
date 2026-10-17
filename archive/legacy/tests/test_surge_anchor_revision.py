@@ -13,7 +13,7 @@ import wf_seasonal7_kit_regis as K
 class SurgeAnchorTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.data = json.loads((Path(__file__).parent/'fixtures/surge_anchor_before.json').read_bytes())
+        cls.data = json.loads((Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'surge_anchor_before.json').read_bytes())
 
     def test_three_disjoint_stages_boundary_and_damage(self):
         for source in self.data['regis']:

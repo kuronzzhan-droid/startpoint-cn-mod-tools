@@ -30,7 +30,7 @@ from wf_midautumn_kitlib import panel_problems  # noqa: E402
 from wf_miniboss_roster import BY_ID as MINIBOSS  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927c_panels.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_panels.json'
 ICON = " <icon id='main'>  "
 
 #: 改后面板逐字（主会话合并稿 + 已定小项 + 口径1/3/5 + 索恩作者定稿）。

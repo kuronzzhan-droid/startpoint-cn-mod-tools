@@ -15,7 +15,7 @@ from wf_character_revision import encode_tree
 from wf_midautumn_kit_hibiki import dsl_problems as kit_dsl_problems
 from wf_midautumn_kitlib import panel_problems
 
-FIXTURE = Path(__file__).parent / 'fixtures/balance_20260927b_lilith.json'
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_lilith.json'
 WORKSPACE = ROOT / 'work/character_packs' / B.PACKAGES[0]
 PF1, PF2, PF3 = (B.PF_PROGRAMS[level] for level in B.PF_LEVELS)
 SWORD_P13_PATH = [11, 1, 1, 1, 23, 1, 0, 1, 13]   # body[1] 剑段 onHit 首条 CreateNormalAttack 的 p13

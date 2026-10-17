@@ -21,9 +21,9 @@ from wf_client_description_legality import description_compatibility_problems
 from wf_client_legality import (client_legality_problems, declared_block_field_problems,
                                 invoke_skill_string_problems, required_client_capabilities)
 
-FIXTURE = Path(__file__).parent / 'fixtures/balance_20260927b_inaho2.json'
-BATCH1_FIXTURE = Path(__file__).parent / 'fixtures/balance_20260927_inaho.json'
-BATCH2_FIXTURE = Path(__file__).parent / 'fixtures/balance_20260927b_inaho.json'
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_inaho2.json'
+BATCH1_FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927_inaho.json'
+BATCH2_FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_inaho.json'
 WORKSPACE = ROOT / 'work/character_packs' / M.PACKAGES[0]
 ABILITY_TABLE = 'master/ability/ability.orderedmap'
 SNAPSHOT = 'revision_20260927b'   # stage_batch 第二批统一快照键

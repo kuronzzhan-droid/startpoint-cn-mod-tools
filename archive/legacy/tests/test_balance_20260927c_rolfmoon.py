@@ -31,8 +31,8 @@ import wf_mod_tool as core  # noqa: E402
 import wf_panel_merge_check as PMC  # noqa: E402   面板合并校验器（仓库内，硬依赖）
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927c_rolfmoon.json"
-B2_FIXTURE = Path(__file__).parent / "fixtures/balance_20260927b_rolfmoon.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_rolfmoon.json'
+B2_FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_rolfmoon.json'
 WORKSPACE = ROOT / "work/character_packs" / M.PACKAGES[0]
 TABLES = {"leader": "master/ability/leader_ability.orderedmap", "ability": "master/ability/ability.orderedmap",
           "cas": "master/string/custom_ability_string.orderedmap"}

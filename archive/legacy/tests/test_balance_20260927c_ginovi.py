@@ -31,8 +31,8 @@ import wf_mod_tool as core  # noqa: E402
 from wf_panel_merge_check import check as panel_merge_check  # noqa: E402  面板合并校验器（仓库内，硬依赖）
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927c_ginovi.json"
-B_FIXTURE = Path(__file__).parent / "fixtures/balance_20260927b_ginovi.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_ginovi.json'
+B_FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_ginovi.json'
 WORKSPACE = ROOT / "work/character_packs" / M.PACKAGES[0]
 BUILD_SCRIPT = WORKSPACE / "build_workspace.py"
 CANDIDATE_CAPABILITIES = {"dash-parameter-v1", "panel-description-override-v2"}

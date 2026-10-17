@@ -28,7 +28,7 @@ import wf_tekuto_low_hp as LOW_HP  # noqa: E402
 import wf_tekuto_no_endlag_revision as NE  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927b_tekuto.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_tekuto.json'
 DESIGN = ROOT / K.DESIGN_REL
 PLAN = ROOT / K.REVISION_REL
 MANIFEST = ROOT / "work/character_packs/s7-tekuto/package/manifest.json"

@@ -28,7 +28,7 @@ import wf_dsl  # noqa: E402
 import wf_mod_tool as core  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927d_ginovi.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927d_ginovi.json'
 WORKSPACE = ROOT / "work/character_packs" / M.PACKAGES[0]
 BUILD_SCRIPT = WORKSPACE / "build_workspace.py"
 P1, P2 = M.PROGRAMS["1"], M.PROGRAMS["2"]

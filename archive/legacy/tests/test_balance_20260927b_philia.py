@@ -27,7 +27,7 @@ from wf_philia_random_pf import revise_pf as random_pf  # noqa: E402
 from wf_philia_wind_revision import revise_pf as wind_pf, revise_skill as wind_skill  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
-FIXTURE = HERE / "fixtures/balance_20260927b_philia.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_philia.json'
 ROOT = HERE.parents[1]
 WORKSPACE = ROOT / "work/character_packs/s7-philia"
 SKILLS = tuple(M.SKILL_PROGRAMS.values())

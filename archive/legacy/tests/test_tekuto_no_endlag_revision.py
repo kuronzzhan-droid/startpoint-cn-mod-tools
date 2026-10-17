@@ -23,7 +23,7 @@ from wf_character_revision import encode_tree  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 PACKAGE = ROOT / "work/character_packs/s7-tekuto/package"
-FIXTURE = Path(__file__).resolve().parent / "fixtures/tekuto_no_endlag_before.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'tekuto_no_endlag_before.json'
 LOGICALS = tuple(wf_dsl.dsl_logical(p) for p in R.SKILL_PROGRAMS)
 #: 2026-09-27 平衡第二批暂存脚本（${WF_ROOT}/out/平衡调整批次-20260927/batch2/stage_batch.py SNAPSHOT）回写候选时的快照键。
 BALANCE_B_SNAPSHOT = "revision_20260927b"

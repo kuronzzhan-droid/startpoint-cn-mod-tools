@@ -24,7 +24,7 @@ import wf_balance_20260927c_seofonart as M  # noqa: E402
 import wf_share_update_codec as X  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927c_seofonart.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_seofonart.json'
 DATA = json.loads(FIXTURE.read_text(encoding="utf-8"))
 FAKE_ROOT = Path("Z:/seofonart-fixture/production")
 WORKSPACE = ROOT / "work/character_packs/seofon_wind"

@@ -40,8 +40,8 @@ import wf_mod_tool as core  # noqa: E402
 import wf_panel_merge_check as PMC  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927c_kuro.json"
-FIXTURE_B = Path(__file__).parent / "fixtures/balance_20260927b_kuro.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_kuro.json'
+FIXTURE_B = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_kuro.json'
 CANDIDATE = ROOT / "work/character_packs/ma-kuro"
 MANIFEST = CANDIDATE / "package/manifest.json"
 

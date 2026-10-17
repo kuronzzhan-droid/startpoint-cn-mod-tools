@@ -27,7 +27,7 @@ import wf_zehr_lamp_revision as R  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-FIXTURE = HERE / "fixtures/balance_20260927b_zehr.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_zehr.json'
 ICON = M.MAIN_ICON
 
 

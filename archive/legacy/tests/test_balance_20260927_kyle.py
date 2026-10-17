@@ -22,7 +22,7 @@ import wf_midautumn_kitlib as KL  # noqa: E402
 import wf_mod_tool as core  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927_kyle.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927_kyle.json'
 TABLE_KIND = {"leader": "leader_ability", "ability": "ability"}
 
 
@@ -202,14 +202,14 @@ def batch2_overlay(out: dict) -> dict:
     2026-09-27 第三轮（wf_balance_20260927c_kyle，BEFORE 锁定第二批输出）再覆盖队长 / 队长面板 / 追击树。"""
     import wf_balance_20260927b_kyle as M2
     import wf_balance_20260927c_kyle as M3
-    fixture = Path(__file__).parent / "fixtures/balance_20260927b_kyle.json"
+    fixture = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_kyle.json'
     live2 = {k: v for k, v in json.loads(fixture.read_text(encoding="utf-8")).items() if not k.startswith("_")}
     assert live2["leader"][M.CID] == out["leader"][M.CID] and live2["cas"][M.CAS_LEADER] == out["cas"][M.CAS_LEADER]
     out2 = M2.revise(reader(deepcopy(live2)))
     for kind in ("leader", "ability", "cas", "dsl"):
         live2[kind].update(deepcopy(out2[kind]))
     # 第三轮面板合并补读、前两批不涉及的键（desc_override_kyle_moon_3）取第三轮 fixture（= live）
-    fixture3 = json.loads((Path(__file__).parent / "fixtures/balance_20260927c_kyle.json").read_text(encoding="utf-8"))
+    fixture3 = json.loads((Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_kyle.json').read_text(encoding="utf-8"))
     for kind, key in M3.BEFORE:
         live2.setdefault(kind, {}).setdefault(key, deepcopy(fixture3[kind][key]))
     out3 = M3.revise(reader(live2))

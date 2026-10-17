@@ -43,8 +43,8 @@ import wf_seasonal7_kit_philia as PH  # noqa: E402
 from wf_character_revision import encode_tree  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927c_kyle.json"
-FIXTURE_B = Path(__file__).parent / "fixtures/balance_20260927b_kyle.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_kyle.json'
+FIXTURE_B = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_kyle.json'
 CANDIDATE = ROOT / "work/character_packs/ma-kyle"
 
 
@@ -929,7 +929,7 @@ class ChainTests(unittest.TestCase):
 
     def test_ability5_input_is_the_first_batch_output(self):
         """D 节补读的能力5（只读依据）= 第一批 revise() 输出（第二批不涉及能力5）。"""
-        path = Path(__file__).parent / "fixtures/balance_20260927_kyle.json"
+        path = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927_kyle.json'
         live1 = load_fixture(path)
         out1 = M1.revise(reader(deepcopy(live1)))
         self.assertEqual(M1.ABILITY_KEY, M.ABILITY5)

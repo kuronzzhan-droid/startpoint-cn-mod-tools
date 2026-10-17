@@ -35,8 +35,8 @@ import wf_seasonal7_kit_zehr as K  # noqa: E402
 import wf_zehr_lamp_revision as R  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
-FIXTURE = HERE / "fixtures/balance_20260927c_zehr.json"
-FIXTURE_B = HERE / "fixtures/balance_20260927b_zehr.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_zehr.json'
+FIXTURE_B = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_zehr.json'
 #: 队长表效果列（instant c45–c50 / during c107–c112），与能力表 M.ABILITY_EFFECT_COLUMNS 同义。
 LEADER_EFFECT_COLUMNS = frozenset(range(45, 51)) | frozenset(range(107, 113))
 A6_TEXT_AFTER = "光属性共鸣时，光属性角色技能充能速度＋15%，强化弹射伤害＋50%"

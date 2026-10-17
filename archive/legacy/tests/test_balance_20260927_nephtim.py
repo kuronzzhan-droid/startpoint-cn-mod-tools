@@ -24,7 +24,7 @@ import wf_nephtim_multiball_fever as multiball_fever
 from wf_character_revision import encode_tree
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927_nephtim.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927_nephtim.json'
 MAIN = " <icon id='main'>  "
 PREFIX = "battle/action/skill/action/ability_skill/ruin_girl_campus$"
 PROGRAMS = {PREFIX + "ruin_girl_campus_ball_hit_count": 2,

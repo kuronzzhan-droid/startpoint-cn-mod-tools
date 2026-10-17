@@ -9,7 +9,7 @@ import wf_seasonal7_kit_philia as K
 
 class RolfTrackingTest(unittest.TestCase):
     def original(self, level):
-        return json.loads((Path(__file__).parent/f'fixtures/rolf_pf_before_{level}.json').read_bytes())
+        return json.loads((Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / f'rolf_pf_before_{level}.json').read_bytes())
 
     def test_all_levels_native_roundtrip_scopes_and_effects(self):
         for level in (1,2,3):

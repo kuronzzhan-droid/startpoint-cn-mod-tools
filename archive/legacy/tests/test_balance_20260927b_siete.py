@@ -19,7 +19,7 @@ from wf_character_revision import encode_tree
 from wf_midautumn_kit_hibiki import dsl_problems as kit_dsl_problems
 from wf_midautumn_kitlib import panel_problems
 
-FIXTURE = Path(__file__).parent / 'fixtures/balance_20260927b_siete.json'
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_siete.json'
 WORKSPACE = ROOT / 'work/character_packs' / B.PACKAGES[0]
 GENERATOR = WORKSPACE / 'seofon_dsl.py'
 ECHO = B.ECHO_PROGRAM

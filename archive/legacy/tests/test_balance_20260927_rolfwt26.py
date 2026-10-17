@@ -25,7 +25,7 @@ import wf_mod_tool as core  # noqa: E402
 import wf_seasonal7_kit_philia as PH  # noqa: E402
 from wf_character_revision import encode_tree  # noqa: E402
 
-FIXTURE = Path(__file__).parent / "fixtures" / "balance_20260927_rolfwt26.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927_rolfwt26.json'
 DATA = json.loads(FIXTURE.read_text(encoding="utf-8"))
 PRE_REVISION_VERSION = (0, 1, 1)      # black_wolf_knight_wt26 候选在本批之前的 package_version
 

@@ -31,8 +31,8 @@ from wf_client_legality import (ability_element_column_problems, client_legality
                                 declared_block_field_problems, invoke_skill_string_problems,
                                 required_client_capabilities)
 
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927c_bai.json"
-B_FIXTURE = Path(__file__).parent / "fixtures/balance_20260927b_bai.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_bai.json'
+B_FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_bai.json'
 WORKSPACE = ROOT / "work/character_packs" / M.PACKAGES[0]
 #: 队长行依赖固有状态的列（前置 uid ×3、瞬发触发 uid、瞬发前置计数 uid、持续前置 uid、持续触发 uid）。
 LEADER_STATE_COLS = (10, 17, 24, 35, 43, 93, 102)

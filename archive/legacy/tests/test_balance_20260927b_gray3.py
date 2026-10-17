@@ -38,7 +38,7 @@ import wf_dsl  # noqa: E402
 from wf_character_revision import encode_tree  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927b_gray3.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_gray3.json'
 DATA = json.loads(FIXTURE.read_text(encoding="utf-8"))
 FAKE_ROOT = Path("Z:/gray3-fixture/production")
 CIDS = ("149997", "149995", "149996")
@@ -838,12 +838,11 @@ class ImportTests(unittest.TestCase):
         # 这里从各自模块的 c 测试夹具重放同一 revise()，把结果也算作合法落点（不改变 self.out/self.full 本身）。
         import wf_balance_20260927c_mosiyike as C_MOSIYIKE
         import wf_balance_20260927c_swimceltie as C_SWIMCELTIE
-        mosiyike_inputs = json.loads((Path(__file__).parent /
-                                     "fixtures/balance_20260927c_mosiyike.json").read_bytes())["inputs"]
+        mosiyike_inputs = json.loads((Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_mosiyike.json').read_bytes())["inputs"]
         mosiyike_layer = C_MOSIYIKE.revise(
             lambda kind, key: mosiyike_inputs[kind]["|".join(key) if kind == "table" else key])
         swim_reads = {(k, key): deepcopy(v) for k, key, v in json.loads(
-            (Path(__file__).parent / "fixtures/balance_20260927c_swimceltie.json").read_bytes())["reads"]}
+            (Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_swimceltie.json').read_bytes())["reads"]}
         swimceltie_layer = C_SWIMCELTIE.revise(lambda kind, key: swim_reads[kind, key])
         later_layers = {"149997": mosiyike_layer, "149996": swimceltie_layer}
 

@@ -29,7 +29,7 @@ from wf_character_revision import encode_tree  # noqa: E402
 from wf_midautumn_kit_hibiki import dsl_problems as kit_dsl_problems  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927b_ginovi.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_ginovi.json'
 WORKSPACE = ROOT / "work/character_packs" / M.PACKAGES[0]
 BUILD_SCRIPT = WORKSPACE / "build_workspace.py"
 #: 候选 ginovi manifest 现有的 required_capabilities（改后不新增）。
@@ -114,7 +114,7 @@ def load_generator():
     return module
 
 
-C_FIXTURE = Path(__file__).parent / "fixtures/balance_20260927c_ginovi.json"
+C_FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_ginovi.json'
 
 
 def batch3_output(out: dict) -> dict:

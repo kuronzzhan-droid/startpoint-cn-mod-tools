@@ -24,7 +24,7 @@ import wf_midautumn_kitlib as KL  # noqa: E402
 import wf_mod_tool as core  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-FIXTURE = Path(__file__).parent / "fixtures/balance_20260927b_kuro.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_kuro.json'
 MANIFEST = ROOT / "work/character_packs/ma-kuro/package/manifest.json"
 
 
@@ -54,7 +54,7 @@ def batch3_overlay(live: dict, out: dict) -> dict:
     for kind in ("leader", "ability", "cas"):
         live3[kind].update(deepcopy(out[kind]))
     # 第三轮面板合并补读、第二批不涉及的键（能力6 行 / 能力6 面板）取第三轮 fixture（= live）
-    fixture3 = json.loads((Path(__file__).parent / "fixtures/balance_20260927c_kuro.json").read_text(encoding="utf-8"))
+    fixture3 = json.loads((Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_kuro.json').read_text(encoding="utf-8"))
     for kind, key in M3.BEFORE:
         live3.setdefault(kind, {}).setdefault(key, deepcopy(fixture3[kind][key]))
     out3 = M3.revise(reader(live3))

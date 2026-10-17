@@ -19,7 +19,7 @@ from wf_midautumn_kitlib import panel_problems
 from wf_miniboss_kits import build_abilities
 from wf_miniboss_text import MAIN, ability_panel_rows
 
-FIXTURE = Path(__file__).parent / 'fixtures/balance_20260927b_miniboss.json'
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_miniboss.json'
 P = M.program
 #: 作者口径 / 设计稿给出的单目标每次削韧（改前, 改后）；技能 ≤30；629 两名的触发 CT=0 ≤3 秒 ⇒ 每次 ≤1（口径 B3）。
 EXPECTED_TOTALS = {

@@ -32,10 +32,10 @@ from wf_character_revision import encode_tree  # noqa: E402
 from wf_seasonal7_kit_philia import cmds, dsl_gates  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
-FIXTURE = HERE / "fixtures/balance_20260927c_regis.json"
-B2_FIXTURE = HERE / "fixtures/balance_20260927b_regis.json"
-B1_FIXTURE = HERE / "fixtures/balance_20260927_regis.json"
-SURGE_FIXTURE = HERE / "fixtures/surge_anchor_before.json"
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927c_regis.json'
+B2_FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_regis.json'
+B1_FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927_regis.json'
+SURGE_FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'surge_anchor_before.json'
 ROOT = HERE.parents[1]
 L1, L2 = M.SKILL_PROGRAMS["1"], M.SKILL_PROGRAMS["2"]
 CHAR = "master/character/character.orderedmap"

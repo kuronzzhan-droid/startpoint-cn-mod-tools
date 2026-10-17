@@ -17,8 +17,8 @@ from wf_miniboss_kits import build, build_abilities
 from wf_miniboss_roster import ROSTER
 from wf_miniboss_text import MAIN, ability_panel_rows
 
-FIXTURE = Path(__file__).parent / 'fixtures/balance_20260927_miniboss.json'
-FIXTURE_2 = Path(__file__).parent / 'fixtures/balance_20260927b_miniboss.json'   # 第二批覆盖层
+FIXTURE = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927_miniboss.json'
+FIXTURE_2 = Path(__file__).resolve().parents[3] / "private-assets/tests/fixtures" / 'balance_20260927b_miniboss.json'   # 第二批覆盖层
 OPENING = {  # 开局加槽（c27=0）：键, 行(1 基), 强度 —— 规则 3 不动
     ('1299981', 1, '75000'), ('1399961', 1, '75000'), ('1299964', 1, '60000'),
     ('1499941', 1, '75000'), ('1599994', 2, '75000'), ('1299951', 1, '70000'),
