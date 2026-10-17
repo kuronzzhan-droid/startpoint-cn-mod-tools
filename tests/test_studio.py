@@ -75,3 +75,37 @@ def test_real_character_detail_and_pixels(real_app):
         assert all(0 <= c["cell"] < base["cellCount"] for c in action["cells"])
     png = real_app.dispatch("GET", "/api/characters/111183/pixels/pixelart.png", {})
     assert png.status == 200 and png.body[:8] == b"\x89PNG\r\n\x1a\n"
+
+
+def test_chain_resolution_picks_matching_hash(tmp_path):
+    import hashlib
+    from wf.studio.chain import resolve_chain
+    name = "pinball-1.4.10-1.4.11-1-demo-local.zip"
+    good, bad = tmp_path / "good", tmp_path / "bad"
+    good.mkdir(); bad.mkdir()
+    (bad / name).write_bytes(b"other-bytes")
+    (good / name).write_bytes(b"right-bytes")
+    manifest = tmp_path / "repo" / "manifest.json"
+    manifest.parent.mkdir()
+    entries = [
+        {"version": "1.4.10", "enabled": True, "archive": "old.zip"},
+        {"version": "1.4.11", "enabled": True, "archive": name, "archive_integrity": [
+            {"name": name, "size": 11, "sha256": hashlib.sha256(b"right-bytes").hexdigest()}]},
+        {"version": "1.4.12", "enabled": True, "archive": "pinball-1.4.11-1.4.12-1-x.zip"},
+        {"version": "1.4.13", "enabled": False, "archive": "pinball-1.4.12-1.4.13-1-y.zip"},
+    ]
+    manifest.write_text(json.dumps({"patches": entries}), "utf-8")
+    result = resolve_chain(manifest, [bad, good], after_tip=10)
+    assert result.zips == [good / name]
+    assert [m["name"] for m in result.missing] == ["pinball-1.4.11-1.4.12-1-x.zip"]
+
+
+def test_real_assets_inventory(real_app):
+    body = json.loads(real_app.dispatch("GET", "/api/characters/111183/assets", {}).body)
+    groups = {g["id"]: g for g in body["groups"]}
+    assert groups["portrait"]["present"] == 2
+    assert groups["pixel"]["present"] >= 4
+    assert any(line.get("present") for line in body["speech"])
+    avatar = real_app.dispatch("GET", "/api/characters/111183/avatar/0.png", {})
+    assert avatar.status == 200 and avatar.body[:8] == b"\x89PNG\r\n\x1a\n"
+    assert real_app.dispatch("GET", "/api/asset", {"path": ["master/x"]}).status == 400

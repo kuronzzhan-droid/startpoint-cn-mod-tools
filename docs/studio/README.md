@@ -25,8 +25,20 @@ python -m wf.studio            # 打开 http://127.0.0.1:8790/
 | `--tip N` | 视图 TIP 小版本号。默认取 kulo `assets/asset-patch/active` 里最新补丁边的目标版本（当前 206） |
 | `--extra-zip ZIP` | 在 active 链之后叠加一个补丁 ZIP，可重复，按顺序后者覆盖前者 |
 | `--extra-zips-file TXT` | 每行一个 ZIP 路径的清单，可重复；例如万圣角色构建用的 `build/extra_zips.txt` |
+| `--chain-manifest JSON` | 补丁链清单（kulo `asset-patch/manifest.json` 格式）。TIP 之后已启用的边按 `archive_integrity` 的文件名、大小、SHA-256 在搜索目录里找 ZIP 并依次叠加 |
+| `--zip-dir DIR` | 查找补丁 ZIP 的目录，可重复（最多下探 4 层） |
+| `--no-chain` | 不按清单自动叠加 |
 | `--port` / `--host` | 默认 `127.0.0.1:8790` |
 | `--warm` | 启动时预读角色列表（首次约 1 秒，用于与官方基线比对） |
+
+不带参数启动时，清单和搜索目录读 `profiles/local.json`：`paths.studio_chain_manifest`（相对 `wf_root`）与 `studio_zip_dirs`（列表）；也可用环境变量 `WF_STUDIO_CHAIN_MANIFEST`、`WF_STUDIO_ZIP_DIRS`。没配清单时只叠 active。本机配置示例（不入库）：
+
+```json
+{"wf_root": "<资料根>", "paths": {"studio_chain_manifest": "ghmain/assets/asset-patch/manifest.json"},
+ "studio_zip_dirs": ["rel1016", "rel219", "rel224", "out"]}
+```
+
+这样直接 `python -m wf.studio` 就叠到 1.4.224（34 个 ZIP，与手写清单逐个 SHA-256 一致；同名不同内容的构建会按哈希挑对）。`--extra-zips-file` 仍可用，和清单重复的同名 ZIP 只叠一次。
 
 开发前端：另开终端在 `studio/` 运行 `npm run dev`，Vite 会把 `/api` 代理到 8790。
 
@@ -44,6 +56,9 @@ python -m wf.studio            # 打开 http://127.0.0.1:8790/
 - 像素小人（L1 素材级预览）：播放/暂停、逐帧、拖动时间轴、速度 0.25–2×、循环、洋葱皮（前一帧 30%、后一帧 15%）、最近邻缩放 1–8×、锚点十字、三种背景、帧条点选；列出 18 个官方动作槽及本角色有无。
 - 词条速查：在当前视图所有能力/队长技数据行（约 7500 行）的中文描述、角色名、词条键中检索，点击跳到对应角色的板。
 - 补丁管理：列出 kulo `manifest.json` 登记的补丁与视图实际叠加但清单未登记的 ZIP；详情页显示说明、改动列表、ZIP 成员（哈希路径）。
+- 头像：列表和详情头部用角色原生方形头像 `ui/square_0.png`（缺则依次退到 `thumbnail_0`、`square_132_132_0`、`square_round_136_136_0`），懒加载，后端内存缓存。
+- 「全套资源」标签：按 立绘 / UI 图标 / 像素 / 技能 cutin / 特效 / 语音 / 其它 分组列出角色资源；每项显示逻辑路径、所在 CDN 根（通用/大图/安卓）、来自 store131 基底还是哪条补丁边、尺寸/大小、与官方 CDN 是否一致、预览（图片缩略图、mp3 内嵌播放器）。语音组顶部是 character_speech 台词表（类型、可见条件、台词、播放）。cutin 组标出 PNG 与 ATF 是否都在（真机读安卓根 ATF）。模板必备或被引用但不存在的项标红「缺失 / 引用但缺失」。
+- 深链接：`#/character/<ID>[/<标签>]` 直接打开角色，例如 `#/character/139985/assets`。
 - BOSS 工坊：占位页，只列计划中的页面。
 
 ## 已核对的
@@ -68,6 +83,8 @@ python -m wf.studio            # 打开 http://127.0.0.1:8790/
 - 默认 TIP 只看 kulo active（当前到 1.4.206）。测试服链更新的边（207→222 等）不在 active，需要用 `--extra-zip(s-file)` 手工叠加；没有自动发现。
 - 像素：同一族所有动作共用一个包围盒，小动作在大光环角色上显得偏小；声音、points/circles 只计数不播放；L2 编排级与 L3 真机级预览未做。
 - 词条速查只做子串匹配，未区分块＋编号身份，也没有「为当前效果找参考」的语境筛选。
-- 没有角色头像/立绘。
+- 资源清单靠候选路径探测（恢复路径表 + 模板矩阵 + speech 表 + DSL 特效引用），不在这些来源里的文件（例如自制角色另起名的特效目录且未被 DSL 引用）不会出现；「模板可选」项不存在时不列出。
+- 列表头像用 `square_0`，是否就是客户端角色列表实际用的那张没有在客户端代码里核对。
+- 特效只按 DSL 引用推出 parts/timeline/贴图/atlas 及 `_end` 段；ResolveByElement 按角色属性派生；未解析 flatomo 内部引用的其它贴图。
 - 后端单进程、内存缓存不失效；改了 active 目录需重启。
 - 测试：`tests/test_studio.py`（路由表；有真实视图时检查角色列表与 111183 像素数据，否则跳过）。
