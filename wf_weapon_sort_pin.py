@@ -1,5 +1,41 @@
 # -*- coding: utf-8 -*-
-'装备列表置顶：只读 live 的 ``custom_ability_string`` 键构建器 + 暂存（stage）。\n\n方案 ``${WF_ROOT}/out/武器置顶-20260928/方案.md``（B「数据」；「目标顺序」表）。客户端补丁\n``client-patch/equipment-sort-pin``（capability ``equipment-sort-pin-v1``，cosmetic）在装备一览\n``EquipmentListScene.compareByEquipmentStatus`` 与编成选武器 ``EquipmentSelectThumbnailListRepository.sortByRarity``\n的入口读 ``equipment_sort_pin_<装备ID>``：两件都有合法序号且不等 → 序号升序；只有一件有 → 它在前；其余原生顺序。\n没打补丁的客户端不读这些行（显示原生顺序、不崩），所以数据可以先于 APK 发布。\n\n## 产物（common 层，只动本工具自有键）\n\n``master/string/custom_ability_string.orderedmap`` 46 行（单列 ``string``）：\n\n  - PARADOX 5920001 → ``1000``；\n  - 诅咒武器 5910101–5910129 → ``2001``–``2029``（按 ID 升序）；\n  - 深渊武器 8000101–8000115 → ``3001``–``3015``（按 ID 升序）；\n  - 死亡使者·终式 5900101 → ``3100``（放在深渊之后，所以不能只按 ID 分档）。\n\n按千位分段给以后新增的武器留位置（第 30 把诅咒写 2030，不用改补丁）。服务端不读这些键（``src/`` 无引用），\n本工具不产服务端文件。\n\n## 两条纪律\n\n1. **只读 live。** 从不写 store、``.cdn``、``assets/``，也不调用 wf_publish。``stage <workdir>`` 只写\n   ``<workdir>/stage/common/<逻辑路径>`` 与 ``<workdir>/plan.json``（合同同 ``wf_weapon_gacha``：\n   ``tables`` / ``files`` / ``server`` / ``deleted``，每张表带 ``changed`` / ``live_sha256`` / ``staged_sha256``），\n   落 live 与铸边由调用方完成。\n2. **幂等。** 构建的是目标态，暂存时与 live 逐键比较：已经一致的键不进 plan，上线后再跑只会得到空 plan。\n\n门禁（problems 非空一律拒绝，什么都不写）：键尾装备 ID 必须在 live 装备表里；每个值过\n``wf_client_legality.equipment_key_problems``（规范十进制正整数 1–999999999）且互不相同（相同序号的两件之间\n客户端回落原生顺序，不是「置顶」）；live 里有合同外的 ``equipment_sort_pin_*`` 键也拒绝（避免残留行把别的装备顶上来）。\n\n用法::\n\n    python mod-tools/wf_weapon_sort_pin.py check            # 只读体检：摘要 + problems\n    python mod-tools/wf_weapon_sort_pin.py stage <workdir>  # problems 非空时拒绝\n'
+"""装备列表置顶：只读 live 的 ``custom_ability_string`` 键构建器 + 暂存（stage）。
+
+方案 ``${WF_ROOT}/out/武器置顶-20260928/方案.md``（B「数据」；「目标顺序」表）。客户端补丁
+``client-patch/equipment-sort-pin``（capability ``equipment-sort-pin-v1``，cosmetic）在装备一览
+``EquipmentListScene.compareByEquipmentStatus`` 与编成选武器 ``EquipmentSelectThumbnailListRepository.sortByRarity``
+的入口读 ``equipment_sort_pin_<装备ID>``：两件都有合法序号且不等 → 序号升序；只有一件有 → 它在前；其余原生顺序。
+没打补丁的客户端不读这些行（显示原生顺序、不崩），所以数据可以先于 APK 发布。
+
+## 产物（common 层，只动本工具自有键）
+
+``master/string/custom_ability_string.orderedmap`` 46 行（单列 ``string``）：
+
+  - PARADOX 5920001 → ``1000``；
+  - 诅咒武器 5910101–5910129 → ``2001``–``2029``（按 ID 升序）；
+  - 深渊武器 8000101–8000115 → ``3001``–``3015``（按 ID 升序）；
+  - 死亡使者·终式 5900101 → ``3100``（放在深渊之后，所以不能只按 ID 分档）。
+
+按千位分段给以后新增的武器留位置（第 30 把诅咒写 2030，不用改补丁）。服务端不读这些键（``src/`` 无引用），
+本工具不产服务端文件。
+
+## 两条纪律
+
+1. **只读 live。** 从不写 store、``.cdn``、``assets/``，也不调用 wf_publish。``stage <workdir>`` 只写
+   ``<workdir>/stage/common/<逻辑路径>`` 与 ``<workdir>/plan.json``（合同同 ``wf_weapon_gacha``：
+   ``tables`` / ``files`` / ``server`` / ``deleted``，每张表带 ``changed`` / ``live_sha256`` / ``staged_sha256``），
+   落 live 与铸边由调用方完成。
+2. **幂等。** 构建的是目标态，暂存时与 live 逐键比较：已经一致的键不进 plan，上线后再跑只会得到空 plan。
+
+门禁（problems 非空一律拒绝，什么都不写）：键尾装备 ID 必须在 live 装备表里；每个值过
+``wf_client_legality.equipment_key_problems``（规范十进制正整数 1–999999999）且互不相同（相同序号的两件之间
+客户端回落原生顺序，不是「置顶」）；live 里有合同外的 ``equipment_sort_pin_*`` 键也拒绝（避免残留行把别的装备顶上来）。
+
+用法::
+
+    python mod-tools/wf_weapon_sort_pin.py check            # 只读体检：摘要 + problems
+    python mod-tools/wf_weapon_sort_pin.py stage <workdir>  # problems 非空时拒绝
+"""
 from __future__ import annotations
 
 import argparse

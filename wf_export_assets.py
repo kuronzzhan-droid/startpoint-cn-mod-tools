@@ -1,6 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-'\nWF 数据包**完全解密导出器** —— 按客户端逻辑解密/解码 **下载包(production/) + bundle 包**\n每一个哈希文件,还原成真实资产,并用复原的逻辑路径建成目录树。\n\n覆盖 store(6 个):\n  下载包 upload / medium_upload / android_upload      (root = 弹国服/.../download/production)\n  bundle包 bundle / medium_bundle / small_bundle        (root = wf-bundle/production, 来自 APK assets/bundle.zip)\n\n已逆向的内容混淆(fileFaker.converter / FileReader):\n  1. orderedmap 数据表           -> .csv\n  2. 混淆 PNG(头 3 字节 +0x20)  -> .png\n  3. MP3(明文 ID3 / 首字节 0xff->0x7f)-> .mp3\n  4. AMF3(zlib,可含 4 字节长度前缀)-> .json  (timeline/frame/movie/parts/atlas/ui/action.dsl...)\n  5. OGG / HTML / XML / CSS / JPEG / ATF / 其它 -> 对应后缀\n\n文件名来自 WF_PATHLIST_recovered.csv(哈希->逻辑路径,SHA1 校验过);未复原的进 _unnamed/<store>/<hash>。\n输出目录树保留逻辑路径,内容后缀按解码结果(x.timeline.amf3.deflate -> x.timeline.json)。\n\n用法:\n  python mod-tools/wf_export_assets.py --out ${WF_ROOT}\\wf-decrypted --workers 16\n  python mod-tools/wf_export_assets.py --limit 300           # 小样验证\n  python mod-tools/wf_export_assets.py --only-bundle         # 只导 bundle 包\n'
+"""
+WF 数据包**完全解密导出器** —— 按客户端逻辑解密/解码 **下载包(production/) + bundle 包**
+每一个哈希文件,还原成真实资产,并用复原的逻辑路径建成目录树。
+
+覆盖 store(6 个):
+  下载包 upload / medium_upload / android_upload      (root = 弹国服/.../download/production)
+  bundle包 bundle / medium_bundle / small_bundle        (root = wf-bundle/production, 来自 APK assets/bundle.zip)
+
+已逆向的内容混淆(fileFaker.converter / FileReader):
+  1. orderedmap 数据表           -> .csv
+  2. 混淆 PNG(头 3 字节 +0x20)  -> .png
+  3. MP3(明文 ID3 / 首字节 0xff->0x7f)-> .mp3
+  4. AMF3(zlib,可含 4 字节长度前缀)-> .json  (timeline/frame/movie/parts/atlas/ui/action.dsl...)
+  5. OGG / HTML / XML / CSS / JPEG / ATF / 其它 -> 对应后缀
+
+文件名来自 WF_PATHLIST_recovered.csv(哈希->逻辑路径,SHA1 校验过);未复原的进 _unnamed/<store>/<hash>。
+输出目录树保留逻辑路径,内容后缀按解码结果(x.timeline.amf3.deflate -> x.timeline.json)。
+
+用法:
+  python mod-tools/wf_export_assets.py --out ${WF_ROOT}\\wf-decrypted --workers 16
+  python mod-tools/wf_export_assets.py --limit 300           # 小样验证
+  python mod-tools/wf_export_assets.py --only-bundle         # 只导 bundle 包
+"""
 from __future__ import annotations
 
 from wf.paths import root_path

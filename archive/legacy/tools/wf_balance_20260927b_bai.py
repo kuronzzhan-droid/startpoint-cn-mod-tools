@@ -1,5 +1,35 @@
 # -*- coding: utf-8 -*-
-'白「盛夏的咆哮」149990 ``white_tiger_summer``：2026-09-27 第二批平衡修订。\n\n依据：``${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md``（作者已拍板）A.2/A.3/A.6、B.1/B.2/B.6，\n设计稿 growth_design.json / down_design.json 的 149990 条目（按 live 1.4.1049 重读重推）。\n\n只做三类键级修改，其余行、其余树节点逐字保留：\n\n1. 成长（口径 A.3「已在队长技的成长 → 原位放缓」）：``leader_ability:149990`` 行4/行5（0 基 #3/#4，\n   trigger 248 FeverFrame 每满 90 帧 → 风队攻击力 kind32 / 能力伤害 kind388）c49/c50 50000 → 5000，\n   即每 1.5 秒 +50% → +5%。3 分钟触发次数 ≥30（见 ``FEVER_TICK_ESTIMATE``）⇒ 每步 ×1/10（口径 A.2）。\n   c32=(None) 保持——本来就在队长，只放缓不封顶。队长行1（每次进 Fever 风队技能槽充能 +100%，kind 35）\n   属于充能，口径 A.6「其他充能的都暂时不动」，原样保留。\n   面板 ``desc_override_white_tiger_summer`` 第 5 行同步 50% → 5%，不写「可无限」类后缀（口径 D）。\n2. 技能 Down（口径 B.1/B.6）：两档技能树里 p13=1.625 的两处 CreateNormalAttack（750 帧领域\n   SpecifyMinHitIntervalDirectly 30 ⇒ 单目标最多 26 段；技能旗分支 1 段）→ 0.75；Fever 真分支全屏一击 p13=8 不动。\n   单目标每次施放最坏（Fever 中 + 技能旗）51.875 → 28.25 ≤ 30。\n3. 强化弹射 Down（口径 B.2「每级上限 15/20/25，尽量正好顶到上限」）：PF 覆盖树碰撞块里特殊型爆裂参考点\n   （CreateReferencePoint id 101，官方 special 供体）两处 CreateNormalAttack 的 p13：\n   Lv1 5→1、Lv2 5→1.25、Lv3 6.25→1.25；格斗连打 0.5 段与格斗终结段不动。27/35/45 → 15/20/25。\n   （设计稿写「都改 1 → 15/19/24」，口径 B.2 要求正好顶到上限，Lv2/Lv3 取 1.25。）\n\n真源：角色由 flow 包 ``work/character_packs/white_tiger_summer`` 管理；mod-tools 里只有两个增量修订脚本\n``wf_summer_bai_ability.py``（Fever 判定区 params[23]→2）与 ``wf_summer_bai_fever_damage.py``（Fever 追加 75 倍），\n都不碰 p13 与队长行，对本模块输出幂等（测试断言）。PF 树/队长行的历史构建脚本\n（``work/character_packs/_wts_scripts``、``work/codex_out/emergency-takeover-20260910/.../sum_kit``）是快照，\n禁止重跑。候选包的两档技能树仍是 75 倍与 params[23] 修订之前的版本（live 已上、未回写）；本模块从 live\n整树修订后写回候选即补齐。\n\n纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件；候选回写、发布由批次暂存脚本统一做\n（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md，第二批 b 后缀）。\n'
+"""白「盛夏的咆哮」149990 ``white_tiger_summer``：2026-09-27 第二批平衡修订。
+
+依据：``${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md``（作者已拍板）A.2/A.3/A.6、B.1/B.2/B.6，
+设计稿 growth_design.json / down_design.json 的 149990 条目（按 live 1.4.1049 重读重推）。
+
+只做三类键级修改，其余行、其余树节点逐字保留：
+
+1. 成长（口径 A.3「已在队长技的成长 → 原位放缓」）：``leader_ability:149990`` 行4/行5（0 基 #3/#4，
+   trigger 248 FeverFrame 每满 90 帧 → 风队攻击力 kind32 / 能力伤害 kind388）c49/c50 50000 → 5000，
+   即每 1.5 秒 +50% → +5%。3 分钟触发次数 ≥30（见 ``FEVER_TICK_ESTIMATE``）⇒ 每步 ×1/10（口径 A.2）。
+   c32=(None) 保持——本来就在队长，只放缓不封顶。队长行1（每次进 Fever 风队技能槽充能 +100%，kind 35）
+   属于充能，口径 A.6「其他充能的都暂时不动」，原样保留。
+   面板 ``desc_override_white_tiger_summer`` 第 5 行同步 50% → 5%，不写「可无限」类后缀（口径 D）。
+2. 技能 Down（口径 B.1/B.6）：两档技能树里 p13=1.625 的两处 CreateNormalAttack（750 帧领域
+   SpecifyMinHitIntervalDirectly 30 ⇒ 单目标最多 26 段；技能旗分支 1 段）→ 0.75；Fever 真分支全屏一击 p13=8 不动。
+   单目标每次施放最坏（Fever 中 + 技能旗）51.875 → 28.25 ≤ 30。
+3. 强化弹射 Down（口径 B.2「每级上限 15/20/25，尽量正好顶到上限」）：PF 覆盖树碰撞块里特殊型爆裂参考点
+   （CreateReferencePoint id 101，官方 special 供体）两处 CreateNormalAttack 的 p13：
+   Lv1 5→1、Lv2 5→1.25、Lv3 6.25→1.25；格斗连打 0.5 段与格斗终结段不动。27/35/45 → 15/20/25。
+   （设计稿写「都改 1 → 15/19/24」，口径 B.2 要求正好顶到上限，Lv2/Lv3 取 1.25。）
+
+真源：角色由 flow 包 ``work/character_packs/white_tiger_summer`` 管理；mod-tools 里只有两个增量修订脚本
+``wf_summer_bai_ability.py``（Fever 判定区 params[23]→2）与 ``wf_summer_bai_fever_damage.py``（Fever 追加 75 倍），
+都不碰 p13 与队长行，对本模块输出幂等（测试断言）。PF 树/队长行的历史构建脚本
+（``work/character_packs/_wts_scripts``、``work/codex_out/emergency-takeover-20260910/.../sum_kit``）是快照，
+禁止重跑。候选包的两档技能树仍是 75 倍与 params[23] 修订之前的版本（live 已上、未回写）；本模块从 live
+整树修订后写回候选即补齐。
+
+纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件；候选回写、发布由批次暂存脚本统一做
+（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md，第二批 b 后缀）。
+"""
 from __future__ import annotations
 
 from copy import deepcopy

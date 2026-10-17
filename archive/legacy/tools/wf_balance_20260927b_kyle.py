@@ -1,5 +1,47 @@
 # -*- coding: utf-8 -*-
-"凯尔 139990 ``kyle_moon``：2026-09-27 平衡调整第二批（无上限成长 + Down）。\n\n口径 = ``${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md``（作者已拍板）；设计稿\n``growth/growth_design.json`` / ``growth/down_design.json`` 的 139990 条目只作参考，行号与数值按\nlive 1.4.1049 重新推导（第一批已删队长「月牙 Stunify」与能力5「雷队 Stunify」，本批不重复）。\n\n**A. 无上限成长（口径 A1–A5）**——3 分钟触发次数：月牙约 35–60 层（队长位约 60；雷队技能约 22–26 次\n各 +1 层，雷队每 100 直击 +1 层约 15–30 次）、获得贯穿约 30–60 次（队长冲刺 CD−50% 每次给贯穿，强化档\n技能给全队贯穿）⇒ 都 ≥30 次 ⇒ 每步 ×1/10（口径 A2 按实际次数，不按事件名；设计稿按旧 R2 标签给的\n月牙 ×1/5 不采用，见 notes）。\n\n1. ``leader_ability:139990``（live 9 行，0 基）原位放缓：\n   #0 月牙每层 → 雷队攻击力 12.5% → 1.25%；#3 月牙每层 → 自身直击 25% → 2.5%；\n   #6 每获得贯穿 → 雷队攻击力 25% → 2.5%；#7 每获得贯穿 → 雷队眩晕畏缩特攻（面板「追击伤害」）5% → 0.5%。\n2. ``ability:1399902``（能力2 Ⓜ）两条无上限逐层成长搬进队长（行 = ``[c0,'0',''] + 能力行[5:]``，\n   与队长 #2 / #1 同触发 134、同 kind、同目标、同前置、无 CT ⇒ 合并，强度相加）：\n   #2 雷队直击 2.5% + 能力2#0 50%/10 = 7.5%；#1 自身攻击 1.25% + 能力2#1 50%/10 = 6.25%。\n   能力栏原位换成有上限的弱化版（设计稿给定值）：c102 (None) → 10（官方 134 限次族 1611231–1611236\n   同写法），#0 雷队直击每层 50% → 10%（满 +100%），#1 自身攻击每层 50% → 16%（满 +160%）。\n3. 技能程序里的无上限：629 追击树 ``ability_skill_kyle_moon_pierce``（能力3#4/#5，前置 42 仅队长）\n   ``BindConditionAccumulationVariable(-17, 1, DCUnique 13999001, 1, 99)`` → 第 5 参 99 → 10，\n   段数 = 1 + min(月牙层数, 10)（客户端 ActionEvaluator case 101 ``min(层数/第4参, 第5参)``；\n   live 先例索利兹 10、普莉姆拉 20）。无上限部分由队长月牙逐层成长行承担（口径 A5：视为已合并）。\n   ⚠ 作业单写的是「雷击 629（ability_skill kyle_moon_thunder）段数 = 1+月牙层数」，按 live 核对段数成长\n   实际在 ``_pierce`` 树；``_thunder`` 树没有 vlv（只做下面 B 的削韧）。\n4. 不动（口径 A6「其他充能的都暂时不动」）：能力5#0「每 50 直击雷队充能 +5%」（kind 35）及设计稿里它的\n   队长搬移/能力替换项；队长 #4/#5 技能槽上限 / 充能。\n\n**B. Down（口径 B1、B3、B6）**——只改 ``CreateNormalAttack`` node[13]（参数卡 p13 削韧），其余逐字保留：\n\n5. 技能两档 ``kyle_moon_1/_2``：首斩 10 → 8、终斩 12 → 8，连斩 1×14 不动 ⇒ 单目标 36 → 30。\n6. 天雷 629 ``ability_skill_kyle_moon_thunder``（能力3#6 触发 CT c35=180 帧 = 3 秒 ⇒ CT ≤3 秒每次 ≤1）：\n   常态分支单段 20 → 1；强化分支（ConditionalsChangeSkillFlag 1）5 段 × 3.6 → 5 × 0.2 = 1。\n\n面板：``desc_override_kyle_moon``（队长，6 → 7 行：段数上限单列一行）、``desc_override_kyle_moon_2``。\n技能描述 / character_text / 服务端文本没有受影响的数字，不改。\n\n生成器 ``wf_midautumn_kit_kyle``（LEADER / PIERCING_GROWTH / PLAN[2] / EXPECT / PANEL_* / CNA_SHAPE /\nPIERCE_VAR_CEIL / THUNDER_DETOUGHNESS_*）已同步，测试断言生成器输出 == :func:`revise` 输出。\n设计镜像（design/kyle.json、rework1/panel/kyle.json）由 :func:`sync_mirrors` 幂等同步。\n\n本模块只读 ``read()`` 给的 live 值并返回新值；不写 live store / assets / .cdn / 候选包。\n"
+"""凯尔 139990 ``kyle_moon``：2026-09-27 平衡调整第二批（无上限成长 + Down）。
+
+口径 = ``${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md``（作者已拍板）；设计稿
+``growth/growth_design.json`` / ``growth/down_design.json`` 的 139990 条目只作参考，行号与数值按
+live 1.4.1049 重新推导（第一批已删队长「月牙 Stunify」与能力5「雷队 Stunify」，本批不重复）。
+
+**A. 无上限成长（口径 A1–A5）**——3 分钟触发次数：月牙约 35–60 层（队长位约 60；雷队技能约 22–26 次
+各 +1 层，雷队每 100 直击 +1 层约 15–30 次）、获得贯穿约 30–60 次（队长冲刺 CD−50% 每次给贯穿，强化档
+技能给全队贯穿）⇒ 都 ≥30 次 ⇒ 每步 ×1/10（口径 A2 按实际次数，不按事件名；设计稿按旧 R2 标签给的
+月牙 ×1/5 不采用，见 notes）。
+
+1. ``leader_ability:139990``（live 9 行，0 基）原位放缓：
+   #0 月牙每层 → 雷队攻击力 12.5% → 1.25%；#3 月牙每层 → 自身直击 25% → 2.5%；
+   #6 每获得贯穿 → 雷队攻击力 25% → 2.5%；#7 每获得贯穿 → 雷队眩晕畏缩特攻（面板「追击伤害」）5% → 0.5%。
+2. ``ability:1399902``（能力2 Ⓜ）两条无上限逐层成长搬进队长（行 = ``[c0,'0',''] + 能力行[5:]``，
+   与队长 #2 / #1 同触发 134、同 kind、同目标、同前置、无 CT ⇒ 合并，强度相加）：
+   #2 雷队直击 2.5% + 能力2#0 50%/10 = 7.5%；#1 自身攻击 1.25% + 能力2#1 50%/10 = 6.25%。
+   能力栏原位换成有上限的弱化版（设计稿给定值）：c102 (None) → 10（官方 134 限次族 1611231–1611236
+   同写法），#0 雷队直击每层 50% → 10%（满 +100%），#1 自身攻击每层 50% → 16%（满 +160%）。
+3. 技能程序里的无上限：629 追击树 ``ability_skill_kyle_moon_pierce``（能力3#4/#5，前置 42 仅队长）
+   ``BindConditionAccumulationVariable(-17, 1, DCUnique 13999001, 1, 99)`` → 第 5 参 99 → 10，
+   段数 = 1 + min(月牙层数, 10)（客户端 ActionEvaluator case 101 ``min(层数/第4参, 第5参)``；
+   live 先例索利兹 10、普莉姆拉 20）。无上限部分由队长月牙逐层成长行承担（口径 A5：视为已合并）。
+   ⚠ 作业单写的是「雷击 629（ability_skill kyle_moon_thunder）段数 = 1+月牙层数」，按 live 核对段数成长
+   实际在 ``_pierce`` 树；``_thunder`` 树没有 vlv（只做下面 B 的削韧）。
+4. 不动（口径 A6「其他充能的都暂时不动」）：能力5#0「每 50 直击雷队充能 +5%」（kind 35）及设计稿里它的
+   队长搬移/能力替换项；队长 #4/#5 技能槽上限 / 充能。
+
+**B. Down（口径 B1、B3、B6）**——只改 ``CreateNormalAttack`` node[13]（参数卡 p13 削韧），其余逐字保留：
+
+5. 技能两档 ``kyle_moon_1/_2``：首斩 10 → 8、终斩 12 → 8，连斩 1×14 不动 ⇒ 单目标 36 → 30。
+6. 天雷 629 ``ability_skill_kyle_moon_thunder``（能力3#6 触发 CT c35=180 帧 = 3 秒 ⇒ CT ≤3 秒每次 ≤1）：
+   常态分支单段 20 → 1；强化分支（ConditionalsChangeSkillFlag 1）5 段 × 3.6 → 5 × 0.2 = 1。
+
+面板：``desc_override_kyle_moon``（队长，6 → 7 行：段数上限单列一行）、``desc_override_kyle_moon_2``。
+技能描述 / character_text / 服务端文本没有受影响的数字，不改。
+
+生成器 ``wf_midautumn_kit_kyle``（LEADER / PIERCING_GROWTH / PLAN[2] / EXPECT / PANEL_* / CNA_SHAPE /
+PIERCE_VAR_CEIL / THUNDER_DETOUGHNESS_*）已同步，测试断言生成器输出 == :func:`revise` 输出。
+设计镜像（design/kyle.json、rework1/panel/kyle.json）由 :func:`sync_mirrors` 幂等同步。
+
+本模块只读 ``read()`` 给的 live 值并返回新值；不写 live store / assets / .cdn / 候选包。
+"""
 from __future__ import annotations
 
 from copy import deepcopy

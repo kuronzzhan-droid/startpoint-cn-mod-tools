@@ -1,5 +1,46 @@
 # -*- coding: utf-8 -*-
-"希尔媞·校园 149989 ``wind_spgirl_campus``：2026-09-27 平衡调整第二批——「星风心得」无上限成长。\n\n依据：``${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md`` A1–A5（作者已拍板），\n设计稿 ``growth/growth_design.json`` id=149989（按当前 live 1.4.1049 重读、重推；行号与设计稿一致）。\n\n星风心得（固有 14998902，上限 2147483647）由风队在 Fever 中每次施技获得 3 层（队长 629 给 2 层、\n能力3 629 给 1 层），只增不减。改前它在三处无上限地放大伤害：能力3 两条 D134 行（每层风队能力伤害 /\n攻击力各 +25%，c102 (None)），以及技能 DSL 的倍率（每层 +10 倍，Bind 上限 2147483647）。\n\n改动（其余行、树节点逐字保留）：\n\n1. ``ability:1499893`` #6 / #7（能力3，整键仅主位）——有上限的弱化版（口径 A3）：\n   c102 (None)→10（最多计 10 层；官方 1611231..6 blackflower_wiz_smr22 同为 D134 + 限 10），\n   c113/c114：#6 能力伤害 25000→8000（+8%/层，上限 +80%），#7 攻击力 25000→5000（+5%/层，上限 +50%）。\n2. ``leader_ability:149989`` 追加 #6 / #7——把原两行的无上限成长搬进队长（口径 A3），行形 =\n   ``[CODE, '0', ''] + 改前能力行[5:]``（列号 −2），c111/c112 25000→2500（放缓 1/10，口径 A2：\n   按实际步数计，这两行每层心得一步；3 分钟 Fever 中风队施技约 13–20 次、每次 +3 层 ⇒ 约 40–60 层，\n   仅队长 629 的 2 层也有 26–40 层 ⇒ ≥30 ⇒ 1/10。设计稿按「每层固有＝低频」标签取 1/5，口径 A2\n   「不按事件名称」不采用；同批 hibiki / kyle / magnus / nephtim 的逐层成长同样按层数取 1/10）。\n   队长原 6 行没有同触发/同 kind 的行（行1/行2 是瞬发常驻 32/388），不合并。D134 进队长有官方先例\n   （161123/141081，目标 5），154 进队长有官方 151021#2，D134 + (None) + 154 + 目标 5 有 live 自制\n   139995#6；前置 12 在本角色队长行 3–5 已上线（口径 A4 列名「pre12 希尔媞」，但都是瞬发行）。\n   **持续块 + 前置 12 的组合在 live 队长表没有先例**（1.4.1049 全表扫描：pre12 只出现在 149989#3–#5、\n   149999#10、129986#3，全是瞬发；设计稿引的「169989 队长持续行 D4 + pre12」已不存在）——前置 puller\n   与持续块各自解析，C7050 风险低，但须真机打开角色页 / 队长页并确认只在风共鸣 Fever 中生效。\n3. 技能 DSL 两档（``rare5/wind_spgirl_campus$wind_spgirl_campus_{1,2}``）——层数贡献封顶 10（口径 A5）：\n   风共鸣 ∧ Fever 支里 ``BindConditionAccumulationVariable(-17, 14998905, DCUnique 14998902, 1, 上限)``\n   的上限 2147483647→10。原生取 ``min(层数/1, 上限)``（ActionEvaluator.as case 101）；官方先例\n   blackflower_wiz_smr22 两档技能同为 ``Bind(-17, vid, DCUnique 11, 1, 10)``。另外两处 Bind（非共鸣 /\n   非 Fever 支）上限本就是 0，不动。超出 10 层的逐层成长由第 2 条的队长两行承担（口径 A5「视为已合并」）。\n   技能削韧保留（口径 B5：两支互斥，实际 28）。\n4. 文案：``desc_override_wind_spgirl_campus`` 第 4 行注明队长也给 2 层心得、追加第 6 行「每层心得\n   +2.5%/+2.5%」（按裁决不写「可无限累积」）；``desc_override_wind_spgirl_campus_3`` 第 7 行改为\n   「+8%、+5%（最多10层）」；技能描述 5 处（action_skill 两档 c1、character_text c5/c7、服务端\n   character_text [5]/[7]）在「每层额外增加10倍」后加「（最多10层）」。\n\n生成器已同步：``wf_celtie_fever_abilities``（GAIN_BONUS_LIMIT/STRENGTH）、``wf_celtie_fever_leader``\n（gain_growth_row，队长 6→8 行）、``wf_celtie_skill_growth``（GAIN_MAX_LAYERS=10）、\n``wf_campus_panel_text``（_CELTIE active/leader/a3）；测试断言生成器输出 == :func:`revise` 输出。\n\n本模块只读 ``read()`` 给的 live 值并返回新值；不写 live store / assets / .cdn / 候选包，不发布，不 git。\n"
+"""希尔媞·校园 149989 ``wind_spgirl_campus``：2026-09-27 平衡调整第二批——「星风心得」无上限成长。
+
+依据：``${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md`` A1–A5（作者已拍板），
+设计稿 ``growth/growth_design.json`` id=149989（按当前 live 1.4.1049 重读、重推；行号与设计稿一致）。
+
+星风心得（固有 14998902，上限 2147483647）由风队在 Fever 中每次施技获得 3 层（队长 629 给 2 层、
+能力3 629 给 1 层），只增不减。改前它在三处无上限地放大伤害：能力3 两条 D134 行（每层风队能力伤害 /
+攻击力各 +25%，c102 (None)），以及技能 DSL 的倍率（每层 +10 倍，Bind 上限 2147483647）。
+
+改动（其余行、树节点逐字保留）：
+
+1. ``ability:1499893`` #6 / #7（能力3，整键仅主位）——有上限的弱化版（口径 A3）：
+   c102 (None)→10（最多计 10 层；官方 1611231..6 blackflower_wiz_smr22 同为 D134 + 限 10），
+   c113/c114：#6 能力伤害 25000→8000（+8%/层，上限 +80%），#7 攻击力 25000→5000（+5%/层，上限 +50%）。
+2. ``leader_ability:149989`` 追加 #6 / #7——把原两行的无上限成长搬进队长（口径 A3），行形 =
+   ``[CODE, '0', ''] + 改前能力行[5:]``（列号 −2），c111/c112 25000→2500（放缓 1/10，口径 A2：
+   按实际步数计，这两行每层心得一步；3 分钟 Fever 中风队施技约 13–20 次、每次 +3 层 ⇒ 约 40–60 层，
+   仅队长 629 的 2 层也有 26–40 层 ⇒ ≥30 ⇒ 1/10。设计稿按「每层固有＝低频」标签取 1/5，口径 A2
+   「不按事件名称」不采用；同批 hibiki / kyle / magnus / nephtim 的逐层成长同样按层数取 1/10）。
+   队长原 6 行没有同触发/同 kind 的行（行1/行2 是瞬发常驻 32/388），不合并。D134 进队长有官方先例
+   （161123/141081，目标 5），154 进队长有官方 151021#2，D134 + (None) + 154 + 目标 5 有 live 自制
+   139995#6；前置 12 在本角色队长行 3–5 已上线（口径 A4 列名「pre12 希尔媞」，但都是瞬发行）。
+   **持续块 + 前置 12 的组合在 live 队长表没有先例**（1.4.1049 全表扫描：pre12 只出现在 149989#3–#5、
+   149999#10、129986#3，全是瞬发；设计稿引的「169989 队长持续行 D4 + pre12」已不存在）——前置 puller
+   与持续块各自解析，C7050 风险低，但须真机打开角色页 / 队长页并确认只在风共鸣 Fever 中生效。
+3. 技能 DSL 两档（``rare5/wind_spgirl_campus$wind_spgirl_campus_{1,2}``）——层数贡献封顶 10（口径 A5）：
+   风共鸣 ∧ Fever 支里 ``BindConditionAccumulationVariable(-17, 14998905, DCUnique 14998902, 1, 上限)``
+   的上限 2147483647→10。原生取 ``min(层数/1, 上限)``（ActionEvaluator.as case 101）；官方先例
+   blackflower_wiz_smr22 两档技能同为 ``Bind(-17, vid, DCUnique 11, 1, 10)``。另外两处 Bind（非共鸣 /
+   非 Fever 支）上限本就是 0，不动。超出 10 层的逐层成长由第 2 条的队长两行承担（口径 A5「视为已合并」）。
+   技能削韧保留（口径 B5：两支互斥，实际 28）。
+4. 文案：``desc_override_wind_spgirl_campus`` 第 4 行注明队长也给 2 层心得、追加第 6 行「每层心得
+   +2.5%/+2.5%」（按裁决不写「可无限累积」）；``desc_override_wind_spgirl_campus_3`` 第 7 行改为
+   「+8%、+5%（最多10层）」；技能描述 5 处（action_skill 两档 c1、character_text c5/c7、服务端
+   character_text [5]/[7]）在「每层额外增加10倍」后加「（最多10层）」。
+
+生成器已同步：``wf_celtie_fever_abilities``（GAIN_BONUS_LIMIT/STRENGTH）、``wf_celtie_fever_leader``
+（gain_growth_row，队长 6→8 行）、``wf_celtie_skill_growth``（GAIN_MAX_LAYERS=10）、
+``wf_campus_panel_text``（_CELTIE active/leader/a3）；测试断言生成器输出 == :func:`revise` 输出。
+
+本模块只读 ``read()`` 给的 live 值并返回新值；不写 live store / assets / .cdn / 候选包，不发布，不 git。
+"""
 from __future__ import annotations
 
 from copy import deepcopy

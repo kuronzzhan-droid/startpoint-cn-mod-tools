@@ -1,6 +1,31 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-'\nWF 数据包 完全解密 —— **单文件、零依赖(仅标准库)**。\n\n一个脚本同时做两件事:\n  (1) 复原每个加密哈希文件的原始逻辑路径\n  (2) 按客户端逻辑解密内容,建成逻辑路径目录树\n\n**不 import wf_mod_tool / 不读 DataCatalog / PathList / mod-tools 任何文件**。\n唯一必须的外部数据 = 路径表 `.pathlist`(提取工具留下的无扩展名逻辑路径清单)。\n其余输入都是数据包本身(要解密的对象),voiceLines 目录可选(补语音名)。\n\n哈希(AssetPathTools.getHashedPath):\n  文件名 = SHA1( 规范化([/\\\\]+->/,去开头/)(逻辑路径+扩展名) + SALT )\n  存储位置 = 文件名[:2]/文件名[2:] ;前缀 store(upload/bundle/... )只决定文件夹,不进哈希。\n\n内容混淆(fileFaker.converter / FileReader,全部内联实现):\n  混淆PNG(头3字节+0x20) · MP3(首字节0xff->0x7f/明文ID3) · zlib+AMF3->json ·\n  orderedmap(含嵌套表)->csv · ATF/OGG/HTML/XML/JPEG 原样。\n\n用法:\n  python wf_decrypt_all.py --base <download production> --bundle <bundle production> \\\n      --pathlist <.pathlist> --voice <角色语音目录(可选)> --out ${WF_ROOT}\\wf-decrypted --workers 16\n  # --base 不填会自动在脚本上层目录里找 WorldFlipper/dummy/download/production\n  # --only-bundle 只做 bundle ; --limit N 小样验证 ; --no-skip 不跳过已存在\n所有参数都有默认值,可直接 `python wf_decrypt_all.py` 运行。\n'
+"""
+WF 数据包 完全解密 —— **单文件、零依赖(仅标准库)**。
+
+一个脚本同时做两件事:
+  (1) 复原每个加密哈希文件的原始逻辑路径
+  (2) 按客户端逻辑解密内容,建成逻辑路径目录树
+
+**不 import wf_mod_tool / 不读 DataCatalog / PathList / mod-tools 任何文件**。
+唯一必须的外部数据 = 路径表 `.pathlist`(提取工具留下的无扩展名逻辑路径清单)。
+其余输入都是数据包本身(要解密的对象),voiceLines 目录可选(补语音名)。
+
+哈希(AssetPathTools.getHashedPath):
+  文件名 = SHA1( 规范化([/\\\\]+->/,去开头/)(逻辑路径+扩展名) + SALT )
+  存储位置 = 文件名[:2]/文件名[2:] ;前缀 store(upload/bundle/... )只决定文件夹,不进哈希。
+
+内容混淆(fileFaker.converter / FileReader,全部内联实现):
+  混淆PNG(头3字节+0x20) · MP3(首字节0xff->0x7f/明文ID3) · zlib+AMF3->json ·
+  orderedmap(含嵌套表)->csv · ATF/OGG/HTML/XML/JPEG 原样。
+
+用法:
+  python wf_decrypt_all.py --base <download production> --bundle <bundle production> \\
+      --pathlist <.pathlist> --voice <角色语音目录(可选)> --out ${WF_ROOT}\\wf-decrypted --workers 16
+  # --base 不填会自动在脚本上层目录里找 WorldFlipper/dummy/download/production
+  # --only-bundle 只做 bundle ; --limit N 小样验证 ; --no-skip 不跳过已存在
+所有参数都有默认值,可直接 `python wf_decrypt_all.py` 运行。
+"""
 from __future__ import annotations
 
 from wf.paths import root_path

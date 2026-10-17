@@ -1,5 +1,45 @@
 # -*- coding: utf-8 -*-
-'官方羁绊武器 8 把：强化 Lv0→120 生成器（只读 live）。\n\n作者 0929：「官方的羁绊武器按照一定比例设计120级属性，满级强化需要消耗深渊币和羁绊证50个，刃值为280%的满级到不超过400%，\n不足280%的按一定比例提升」「不足280%的也要按照到280%的比例降低不是全部到400%」「风格参考官方强化前后变化，机兵、普莉莉艾」。\n设计与取证：``${WF_ROOT}/out/羁绊武器强化-20260929/设计.md`` + ``design.json``。\n\n## 规则（一个统一倍率）\n\n- 每条刃行 Lv120 总值 = 满破本体值 × 400/280（0.001% 四舍五入），刃合计封顶 400%：280%→400%、210%→300%、140%→200%，\n  不足 280% 的不拉到 400%；高于 280% 的（现无）按封顶截断。HP（杜兰德尔）同倍率，只有刃被封顶。触发/条件/次数上限/目标不动。\n- 风格照官方机兵/普·莉莉艾：名字加「·改」（Lv1 起）、Lv70 起换重绘的新图标、说明原文、Lv99 起粉框、白值不加（作者 0929「白值不加」：Lv120 只强化词条，HP/ATK 保持本体；状态表仍按官方键形 98/99/120 写 0,0）；\n  强化行 = 本体行克隆，只改强度，四段 A/B/C/D 同效果成长（份额 32/20/32/16，bp (24,48)(24,24)(48,48)(2,24)）。\n- 成本（满级 Lv0→120，6 阶 69/70/98/99/119/120，一份 = 1 级）：**羁绊证恰 50**（Lv70/99/120 单级节点 10/15/25，商店价格列 c11=2），\n  **深渊币 1494**（每级 12、节点 30；深渊武装每把 3735 的 40%；约 9.6 次深渊满通关）。\n- 纯数据：不需要新客户端补丁能力；服务端只增 ``equipment_enhancement_shop.json`` 48 键，``src/`` 不改。\n\n## 官方基线\n\n8 把的 equipment / ability_soul / equipment_status 行冻结在 ``assets/bond-weapons/official_baseline.json``\n（官方 <=1.4.54，不能取 store；这 8 个键官方与 live 逐字节相同）。运行时断言 live 同键与冻结值逐格一致。\n\n## 美术源（assets/bond-weapons/）\n\n``<stem>.png`` = 官方原图（20×20，取自官方 item/sprite_sheet 图集，门禁的对照物，不入 store）；``<stem>_lv120.png`` = 按官方机兵/莉莉艾幅度\n重绘的觉醒图（入 store 为 item/equipment/mod/bond/<stem>_lv120.png）；``bond_weapon_{banner,header}.png`` 由 ``wf_bond_weapon_banner.py``\n用这 8 张觉醒图合成。图标门（icon_problems）任一张缺/不合格 ⇒ 整批 ENH c4 退回本体图标路径；横幅与图标不一致\n（图标改了没重出横幅）⇒ banner_stale_problems 拒绝暂存。stage 把源图 sha256 写进 report.json，交付前与画图单元的 manifest 核对。\n\n## 用法（全部只读 live；stage 只写 <workdir>）\n\n    python mod-tools/wf_bond_weapon_enhance.py check                 # 体检：逐把 刃值前后/HP·ATK/成本 + problems\n    python mod-tools/wf_bond_weapon_enhance.py table [--json]        # 只输出逐把表\n    python mod-tools/wf_bond_weapon_enhance.py stage <workdir>       # 写 <workdir>/{plan.json,stage/common/**,stage/server/**}\n    python mod-tools/wf_bond_weapon_enhance.py stage <workdir> --icons base   # 分享包退路：ENH c4 保持本体图标路径、不带 8 张独立 PNG\n\n``check`` 与 stage 的 report.json 都带 ``needs_attention``（白值口径 C3、深渊币价 C7、独立 PNG 图标对编成框 b 补丁的依赖、真机冒烟）\n和 ``status_alternatives``（白值三种口径逐把对照）：这些是发布前要人看一眼的事，不是生成器能替作者定的。\n\n暂存产物按 ``${WF_ROOT}/out/武器扭蛋-20260928/publish/apply_gacha.py`` 合同：plan.json = tables{逻辑名:{changed,live_sha256,staged_sha256}}、\nfiles{}、server{文件名:{live_sha256,...}}、deleted{}；只有新键与新文件，其余键逐字节等于 live。\n'
+"""官方羁绊武器 8 把：强化 Lv0→120 生成器（只读 live）。
+
+作者 0929：「官方的羁绊武器按照一定比例设计120级属性，满级强化需要消耗深渊币和羁绊证50个，刃值为280%的满级到不超过400%，
+不足280%的按一定比例提升」「不足280%的也要按照到280%的比例降低不是全部到400%」「风格参考官方强化前后变化，机兵、普莉莉艾」。
+设计与取证：``${WF_ROOT}/out/羁绊武器强化-20260929/设计.md`` + ``design.json``。
+
+## 规则（一个统一倍率）
+
+- 每条刃行 Lv120 总值 = 满破本体值 × 400/280（0.001% 四舍五入），刃合计封顶 400%：280%→400%、210%→300%、140%→200%，
+  不足 280% 的不拉到 400%；高于 280% 的（现无）按封顶截断。HP（杜兰德尔）同倍率，只有刃被封顶。触发/条件/次数上限/目标不动。
+- 风格照官方机兵/普·莉莉艾：名字加「·改」（Lv1 起）、Lv70 起换重绘的新图标、说明原文、Lv99 起粉框、白值不加（作者 0929「白值不加」：Lv120 只强化词条，HP/ATK 保持本体；状态表仍按官方键形 98/99/120 写 0,0）；
+  强化行 = 本体行克隆，只改强度，四段 A/B/C/D 同效果成长（份额 32/20/32/16，bp (24,48)(24,24)(48,48)(2,24)）。
+- 成本（满级 Lv0→120，6 阶 69/70/98/99/119/120，一份 = 1 级）：**羁绊证恰 50**（Lv70/99/120 单级节点 10/15/25，商店价格列 c11=2），
+  **深渊币 1494**（每级 12、节点 30；深渊武装每把 3735 的 40%；约 9.6 次深渊满通关）。
+- 纯数据：不需要新客户端补丁能力；服务端只增 ``equipment_enhancement_shop.json`` 48 键，``src/`` 不改。
+
+## 官方基线
+
+8 把的 equipment / ability_soul / equipment_status 行冻结在 ``assets/bond-weapons/official_baseline.json``
+（官方 <=1.4.54，不能取 store；这 8 个键官方与 live 逐字节相同）。运行时断言 live 同键与冻结值逐格一致。
+
+## 美术源（assets/bond-weapons/）
+
+``<stem>.png`` = 官方原图（20×20，取自官方 item/sprite_sheet 图集，门禁的对照物，不入 store）；``<stem>_lv120.png`` = 按官方机兵/莉莉艾幅度
+重绘的觉醒图（入 store 为 item/equipment/mod/bond/<stem>_lv120.png）；``bond_weapon_{banner,header}.png`` 由 ``wf_bond_weapon_banner.py``
+用这 8 张觉醒图合成。图标门（icon_problems）任一张缺/不合格 ⇒ 整批 ENH c4 退回本体图标路径；横幅与图标不一致
+（图标改了没重出横幅）⇒ banner_stale_problems 拒绝暂存。stage 把源图 sha256 写进 report.json，交付前与画图单元的 manifest 核对。
+
+## 用法（全部只读 live；stage 只写 <workdir>）
+
+    python mod-tools/wf_bond_weapon_enhance.py check                 # 体检：逐把 刃值前后/HP·ATK/成本 + problems
+    python mod-tools/wf_bond_weapon_enhance.py table [--json]        # 只输出逐把表
+    python mod-tools/wf_bond_weapon_enhance.py stage <workdir>       # 写 <workdir>/{plan.json,stage/common/**,stage/server/**}
+    python mod-tools/wf_bond_weapon_enhance.py stage <workdir> --icons base   # 分享包退路：ENH c4 保持本体图标路径、不带 8 张独立 PNG
+
+``check`` 与 stage 的 report.json 都带 ``needs_attention``（白值口径 C3、深渊币价 C7、独立 PNG 图标对编成框 b 补丁的依赖、真机冒烟）
+和 ``status_alternatives``（白值三种口径逐把对照）：这些是发布前要人看一眼的事，不是生成器能替作者定的。
+
+暂存产物按 ``${WF_ROOT}/out/武器扭蛋-20260928/publish/apply_gacha.py`` 合同：plan.json = tables{逻辑名:{changed,live_sha256,staged_sha256}}、
+files{}、server{文件名:{live_sha256,...}}、deleted{}；只有新键与新文件，其余键逐字节等于 live。
+"""
 from __future__ import annotations
 
 import argparse

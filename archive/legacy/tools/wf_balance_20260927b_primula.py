@@ -1,4 +1,27 @@
-'普莉姆拉·浴衣（169992 blackflower_wiz_yukata，暗）：2026-09-27 平衡调整第二批（Down / 削韧）。\n\n口径（${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md，作者已拍板）：\n\n- B.1 技能每次施放单目标总削韧 ≤30（严格口径；作者选「严格按 30」，普莉姆拉在多降的 5 名里）。\n  两档技能树（``blackflower_wiz_yukata_1`` / ``_2``，按 live 1.4.1049 读取）结构相同：\n  「紫百合花园」判定区（寿命 160 帧、最小间隔 20 帧、Some 上限 8 ⇒ 单目标 8 段）每段 p13 2 = 16；\n  「烟花」终结判定区（``CalculatedUsingMaxNumOfHits 1``）p13 20 = 20；合计 36。\n  只改烟花 CreateNormalAttack 的 p13 ``{20,20}`` → ``{14,14}``：36 → 30（复核意见 B1-P95 修正 (a)\n  「普莉姆拉 20→14」）。花园 8×2 与倍率（含夜百合 vlv）不动。\n- B.6 DSL 只改 CreateNormalAttack 的 p13（每个 SLv 的 {min,max} 同改），其余逐字保留；\n  整树 AMF3 往返一致并过四道 DSL 门禁。\n\n文案：技能描述（action_skill c1 / character_text / 服务端 character_text）与面板都不写削韧数值 ⇒ 无文案同步。\n\n生成器：``wf_seasonal7_kit_primula.compose_tree`` 的烟花 CreateNormalAttack 原样继承官方\n``blackflower_wiz_smr22`` 的 p12（数组下标 13）=20；已在 kit 里加一条 ``log.setp(…, 12, _slv(20), _slv(14))``\n（常量 ``FINALE_DETOUGHNESS``）。设计镜像 ``work/character_packs/seasonal7-20260916/revision-20260916/primula/\nprimula_tree_{1,2}.json``（kit 门禁以它为原型）由 :func:`sync_mirrors` 幂等同步。测试断言\nkit 拼装（含特效改址）== 镜像 == :func:`revise` 输出。\n\n纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件（``sync_mirrors(write=True)`` 只写设计镜像）；\n候选回写、发布由批次暂存脚本统一做（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md，第二批 b 后缀）。\n'
+"""普莉姆拉·浴衣（169992 blackflower_wiz_yukata，暗）：2026-09-27 平衡调整第二批（Down / 削韧）。
+
+口径（${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md，作者已拍板）：
+
+- B.1 技能每次施放单目标总削韧 ≤30（严格口径；作者选「严格按 30」，普莉姆拉在多降的 5 名里）。
+  两档技能树（``blackflower_wiz_yukata_1`` / ``_2``，按 live 1.4.1049 读取）结构相同：
+  「紫百合花园」判定区（寿命 160 帧、最小间隔 20 帧、Some 上限 8 ⇒ 单目标 8 段）每段 p13 2 = 16；
+  「烟花」终结判定区（``CalculatedUsingMaxNumOfHits 1``）p13 20 = 20；合计 36。
+  只改烟花 CreateNormalAttack 的 p13 ``{20,20}`` → ``{14,14}``：36 → 30（复核意见 B1-P95 修正 (a)
+  「普莉姆拉 20→14」）。花园 8×2 与倍率（含夜百合 vlv）不动。
+- B.6 DSL 只改 CreateNormalAttack 的 p13（每个 SLv 的 {min,max} 同改），其余逐字保留；
+  整树 AMF3 往返一致并过四道 DSL 门禁。
+
+文案：技能描述（action_skill c1 / character_text / 服务端 character_text）与面板都不写削韧数值 ⇒ 无文案同步。
+
+生成器：``wf_seasonal7_kit_primula.compose_tree`` 的烟花 CreateNormalAttack 原样继承官方
+``blackflower_wiz_smr22`` 的 p12（数组下标 13）=20；已在 kit 里加一条 ``log.setp(…, 12, _slv(20), _slv(14))``
+（常量 ``FINALE_DETOUGHNESS``）。设计镜像 ``work/character_packs/seasonal7-20260916/revision-20260916/primula/
+primula_tree_{1,2}.json``（kit 门禁以它为原型）由 :func:`sync_mirrors` 幂等同步。测试断言
+kit 拼装（含特效改址）== 镜像 == :func:`revise` 输出。
+
+纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件（``sync_mirrors(write=True)`` 只写设计镜像）；
+候选回写、发布由批次暂存脚本统一做（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md，第二批 b 后缀）。
+"""
 from __future__ import annotations
 
 from copy import deepcopy

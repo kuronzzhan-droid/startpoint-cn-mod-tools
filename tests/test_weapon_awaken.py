@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
-'武器觉醒与新掉落构建器门禁（设计 ${WF_ROOT}/out/武器觉醒与新掉落-20260928/设计.md §5.6、§6.5、§6.6、§7、§8.3）。\n\nlive（store / assets）只读；暂存只写临时目录。图标用合成源图 + 合成 manifest/approved（真图由图标单元\n画在 mod-tools/assets/weapon-awaken/，另有一组用例拿真交付件核对 manifest 与门禁）。live 已上线某条边后再跑，\n断言按 live 状态分支，仍然成立；图集/嵌套表/门禁另有合成数据用例保证有牙。\n'
+"""武器觉醒与新掉落构建器门禁（设计 ${WF_ROOT}/out/武器觉醒与新掉落-20260928/设计.md §5.6、§6.5、§6.6、§7、§8.3）。
+
+live（store / assets）只读；暂存只写临时目录。图标用合成源图 + 合成 manifest/approved（真图由图标单元
+画在 mod-tools/assets/weapon-awaken/，另有一组用例拿真交付件核对 manifest 与门禁）。live 已上线某条边后再跑，
+断言按 live 状态分支，仍然成立；图集/嵌套表/门禁另有合成数据用例保证有牙。
+"""
 from __future__ import annotations
 
 from external_sources import client_patch_path, require_external_source

@@ -1,4 +1,29 @@
-'克劳斯「蚀水狩阵」（129997 claude_wolf_assassin_ex）：2026-09-27 平衡调整第二批（Down / 削韧）。\n\n口径（${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md，作者已拍板）B.2：强化弹射每级削韧上限 15 / 20 / 25，\n尽量正好顶到上限。设计稿 down_design.json 129997（按 live 1.4.1048 写；本模块按 live 1.4.1049 重读，结构与数值一致）：\n\n- PF 覆盖树（leader 129997#0 kind 722 → power_flip_action ``claude_wolf_assassin_ex_pf`` → lv1/lv2/lv3）= 官方辅助段 ＋\n  按 Wait 串联的「淬毒爪击」判定区（每爪 CalculatedUsingMaxNumOfHits 3，onHit 一条 CreateNormalAttack p13=3 + ACPoison），\n  Lv1/Lv2/Lv3 = 1/3/5 爪；Lv3 另有开头一个场地固定点（-1）判定区 1 段 × p13 1。\n  ⇒ 9 / 27 / 46。\n- 设计稿：只改 Lv2/Lv3 爪 p13 3→1.5 得 9 / 13.5 / 23.5（Lv2、Lv3 都低于上限）。本模块按口径「尽量正好顶到上限」：\n  Lv1 9 ≤ 15 不动；Lv2 爪 p13 3→2.2（9 段 × 2.2 = 19.8；Lv2 全部 9 段同一 p13，正好 20 需要 20/9 的无限小数，\n  取一位小数的最大值）；Lv3 爪 p13 3→1.6（15 × 1.6 + 1 = 25，正好顶格；开头 1 段 p13=1 不动）。\n- 他的「每次 PF 水队技能充能」成长属于充能（口径 A.6/表二「其他充能的都暂时不动」），本模块不读不改。\n- B.6：只改 CreateNormalAttack 的 p13（SLv 的 {min,max} 同改），其余逐字保留；整树 AMF3 往返一致（连 int/float 类型）\n  并过四道 DSL 门禁。\n\n候选：``work/character_packs/claude_wolf_assassin_ex``（active.json base_package_owners 引用）。候选 manifest 0.1.0 → 0.1.1。\n候选打开时有 2 条既有漂移（技能两档 DSL：候选文件与 live 逐字节相同、manifest 哈希未重封），与 PF 树无关，按已审漂移放行。\n候选只认领 power_flip_action 表，PF 三档 DSL 从未进包（build_claw_pf 等直写 live）：暂存回写会把本次改的 Lv2/Lv3 两棵\n作为新 root 条目加进候选（``RevisionCandidate.finish`` 的新增分支，before_sha256=None），Lv1 不变、仍只在 live。\n\n纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md）。\n生成器：无可同步的源码常量。包内 ``build_claw_pf.py`` 从 wt26 母本克隆爪击（p13=3 继承母本、脚本里没有常量），其后\n``restore_pf_support.py`` / ``patch_poison_*`` / ``patch_detonate_v3.py`` 等一次性补丁又加了辅助段、毒与 Lv3 开头判定区，\n它的输出早已不等于 live，且 main() 直写 live store，禁止重跑。本模块是这批 PF 数值的唯一真源。\n'
+"""克劳斯「蚀水狩阵」（129997 claude_wolf_assassin_ex）：2026-09-27 平衡调整第二批（Down / 削韧）。
+
+口径（${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md，作者已拍板）B.2：强化弹射每级削韧上限 15 / 20 / 25，
+尽量正好顶到上限。设计稿 down_design.json 129997（按 live 1.4.1048 写；本模块按 live 1.4.1049 重读，结构与数值一致）：
+
+- PF 覆盖树（leader 129997#0 kind 722 → power_flip_action ``claude_wolf_assassin_ex_pf`` → lv1/lv2/lv3）= 官方辅助段 ＋
+  按 Wait 串联的「淬毒爪击」判定区（每爪 CalculatedUsingMaxNumOfHits 3，onHit 一条 CreateNormalAttack p13=3 + ACPoison），
+  Lv1/Lv2/Lv3 = 1/3/5 爪；Lv3 另有开头一个场地固定点（-1）判定区 1 段 × p13 1。
+  ⇒ 9 / 27 / 46。
+- 设计稿：只改 Lv2/Lv3 爪 p13 3→1.5 得 9 / 13.5 / 23.5（Lv2、Lv3 都低于上限）。本模块按口径「尽量正好顶到上限」：
+  Lv1 9 ≤ 15 不动；Lv2 爪 p13 3→2.2（9 段 × 2.2 = 19.8；Lv2 全部 9 段同一 p13，正好 20 需要 20/9 的无限小数，
+  取一位小数的最大值）；Lv3 爪 p13 3→1.6（15 × 1.6 + 1 = 25，正好顶格；开头 1 段 p13=1 不动）。
+- 他的「每次 PF 水队技能充能」成长属于充能（口径 A.6/表二「其他充能的都暂时不动」），本模块不读不改。
+- B.6：只改 CreateNormalAttack 的 p13（SLv 的 {min,max} 同改），其余逐字保留；整树 AMF3 往返一致（连 int/float 类型）
+  并过四道 DSL 门禁。
+
+候选：``work/character_packs/claude_wolf_assassin_ex``（active.json base_package_owners 引用）。候选 manifest 0.1.0 → 0.1.1。
+候选打开时有 2 条既有漂移（技能两档 DSL：候选文件与 live 逐字节相同、manifest 哈希未重封），与 PF 树无关，按已审漂移放行。
+候选只认领 power_flip_action 表，PF 三档 DSL 从未进包（build_claw_pf 等直写 live）：暂存回写会把本次改的 Lv2/Lv3 两棵
+作为新 root 条目加进候选（``RevisionCandidate.finish`` 的新增分支，before_sha256=None），Lv1 不变、仍只在 live。
+
+纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md）。
+生成器：无可同步的源码常量。包内 ``build_claw_pf.py`` 从 wt26 母本克隆爪击（p13=3 继承母本、脚本里没有常量），其后
+``restore_pf_support.py`` / ``patch_poison_*`` / ``patch_detonate_v3.py`` 等一次性补丁又加了辅助段、毒与 Lv3 开头判定区，
+它的输出早已不等于 live，且 main() 直写 live store，禁止重跑。本模块是这批 PF 数值的唯一真源。
+"""
 from __future__ import annotations
 
 from collections import Counter

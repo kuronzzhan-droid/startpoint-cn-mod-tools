@@ -1,5 +1,43 @@
 # -*- coding: utf-8 -*-
-'水属性两名的能力伤害倍率：杰拉尔 129992 ``unicorn_lancer_rose`` 与 见岛勇希(泳装) 129991\n``psychic_yuki_swim``——2026-09-27 作者「杰拉尔和夏勇希的能力伤害倍率都降低一些」（纯函数）。\n\n口径（主会话定）：只降**造成能力伤害的那一下的攻击倍率**，×0.8；能力伤害加成类 buff\n（388 AbilityDamage、695 独立乘区能力伤害等）一律不动。三个倍数 ×0.8 都是整数，不需要取整。\n\n杰拉尔（3 处，= 该角色全部能力伤害攻击，见 :func:`audit` 的全量核对）：\n\n1. 能力1 kind 629 誓约之枪追击：能力 DSL ``…/ability_skill/unicorn_lancer_rose_oath_strike$…``，\n   根头 tree[10]=102（damage-type-rules ``segment_override("ability")``，按能力伤害结算），\n   唯一一处 CreateNormalAttack p6 每段倍率 45 → 36；629 行本身 c51/c52=0 不带倍率。\n   文案 custom_ability_string ``change_skill_unicorn_lancer_rose_oath_strike``「45倍」→「36倍」。\n2. 能力3 行3（水属性角色发动技能 → 最近敌人 kind353 NearestEnemyDamageByAttackBlue）\n   c51/c52 1000000 → 800000（10 → 8 倍）。\n3. 能力5 行1（水共鸣 技能Hit、CT1秒 → 全体 kind252 EnemyDamageByAttackBlue）\n   c51/c52 1500000 → 1200000（15 → 12 倍）。\n\n勇希（1 处）：能力2 行3（水共鸣 每 75 连击 → 全体 kind252）c51/c52 1000000 → 800000（10 → 8 倍）。\n\n核实范围（全部只读、全部进 BEFORE）：两人的队长 + 6 个能力键全部行的内容块、全部 629 调用的 DSL、\n技能 DSL 两档、杰拉尔 722 强化弹射覆盖 DSL 三档。技能/PF DSL 根头 tree[10]=0 且所有 CreateHitArea\np24（node[24]）=0 ⇒ 按技能/PF 结算，不是能力伤害；词条表瞬发行里造成伤害的 kind（251-286 / 316-387\nEnemyDamageBy*、208-210 / 719 比例与定值伤害）只有上面列出的\n（杰拉尔 2 行 + 1 条 629、勇希 1 行）。出现任何未审查的能力伤害来源 ⇒ 拒绝。\n\n面板：两人都没有 ``desc_override_*`` 覆盖行，能力面板由客户端按行数据自动生成（wf_describe：\n「…能力伤害·依攻击水 800%(8倍)」），不新增覆盖；只有 629 行的文案键需要改数字。\n\n生成器：``wf_water_balance_20260924`` 同步（STRIKE 倍率 36 与 STRIKE_TEXT、``yuki_rows`` 的 252 行\n800000、``gerald_rows("1299925")`` 行1 1200000）；勇希 kit ``wf_seasonal7_kit_yuki.build`` 在改版方案\n锁定行之上调用同一个 ``yuki_rows``。:func:`revise_gerald` 运行时断言 strike DSL / 文案 == 生成器，\n其余一致性由测试断言。能力3 行3（kind353）没有可重跑的跟踪生成器：它来自未跟踪的历史 staging kit\n``work/character_packs/_ulr_scripts/kit_rows.py``（整体早已落后 live，不可重跑），本模块是这一行的真源；\n``wf_gerald_resonance`` 对 1299925 的哈希闸门对三行现状与新倍率都拒绝（fail closed，不会回退）。\n\n接口见 ``${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md``（多角色 ⇒ :data:`UNITS`）。每个 revise 只经\n``read`` 读 live，开头按该单元的 BEFORE 摘要校验（漂移即抛 :class:`WaterAbilityBalanceError`），不改\n``read`` 的返回对象。不写 live store / assets / .cdn / 候选包，不发布，不 git。\n'
+"""水属性两名的能力伤害倍率：杰拉尔 129992 ``unicorn_lancer_rose`` 与 见岛勇希(泳装) 129991
+``psychic_yuki_swim``——2026-09-27 作者「杰拉尔和夏勇希的能力伤害倍率都降低一些」（纯函数）。
+
+口径（主会话定）：只降**造成能力伤害的那一下的攻击倍率**，×0.8；能力伤害加成类 buff
+（388 AbilityDamage、695 独立乘区能力伤害等）一律不动。三个倍数 ×0.8 都是整数，不需要取整。
+
+杰拉尔（3 处，= 该角色全部能力伤害攻击，见 :func:`audit` 的全量核对）：
+
+1. 能力1 kind 629 誓约之枪追击：能力 DSL ``…/ability_skill/unicorn_lancer_rose_oath_strike$…``，
+   根头 tree[10]=102（damage-type-rules ``segment_override("ability")``，按能力伤害结算），
+   唯一一处 CreateNormalAttack p6 每段倍率 45 → 36；629 行本身 c51/c52=0 不带倍率。
+   文案 custom_ability_string ``change_skill_unicorn_lancer_rose_oath_strike``「45倍」→「36倍」。
+2. 能力3 行3（水属性角色发动技能 → 最近敌人 kind353 NearestEnemyDamageByAttackBlue）
+   c51/c52 1000000 → 800000（10 → 8 倍）。
+3. 能力5 行1（水共鸣 技能Hit、CT1秒 → 全体 kind252 EnemyDamageByAttackBlue）
+   c51/c52 1500000 → 1200000（15 → 12 倍）。
+
+勇希（1 处）：能力2 行3（水共鸣 每 75 连击 → 全体 kind252）c51/c52 1000000 → 800000（10 → 8 倍）。
+
+核实范围（全部只读、全部进 BEFORE）：两人的队长 + 6 个能力键全部行的内容块、全部 629 调用的 DSL、
+技能 DSL 两档、杰拉尔 722 强化弹射覆盖 DSL 三档。技能/PF DSL 根头 tree[10]=0 且所有 CreateHitArea
+p24（node[24]）=0 ⇒ 按技能/PF 结算，不是能力伤害；词条表瞬发行里造成伤害的 kind（251-286 / 316-387
+EnemyDamageBy*、208-210 / 719 比例与定值伤害）只有上面列出的
+（杰拉尔 2 行 + 1 条 629、勇希 1 行）。出现任何未审查的能力伤害来源 ⇒ 拒绝。
+
+面板：两人都没有 ``desc_override_*`` 覆盖行，能力面板由客户端按行数据自动生成（wf_describe：
+「…能力伤害·依攻击水 800%(8倍)」），不新增覆盖；只有 629 行的文案键需要改数字。
+
+生成器：``wf_water_balance_20260924`` 同步（STRIKE 倍率 36 与 STRIKE_TEXT、``yuki_rows`` 的 252 行
+800000、``gerald_rows("1299925")`` 行1 1200000）；勇希 kit ``wf_seasonal7_kit_yuki.build`` 在改版方案
+锁定行之上调用同一个 ``yuki_rows``。:func:`revise_gerald` 运行时断言 strike DSL / 文案 == 生成器，
+其余一致性由测试断言。能力3 行3（kind353）没有可重跑的跟踪生成器：它来自未跟踪的历史 staging kit
+``work/character_packs/_ulr_scripts/kit_rows.py``（整体早已落后 live，不可重跑），本模块是这一行的真源；
+``wf_gerald_resonance`` 对 1299925 的哈希闸门对三行现状与新倍率都拒绝（fail closed，不会回退）。
+
+接口见 ``${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md``（多角色 ⇒ :data:`UNITS`）。每个 revise 只经
+``read`` 读 live，开头按该单元的 BEFORE 摘要校验（漂移即抛 :class:`WaterAbilityBalanceError`），不改
+``read`` 的返回对象。不写 live store / assets / .cdn / 候选包，不发布，不 git。
+"""
 from __future__ import annotations
 
 from copy import deepcopy

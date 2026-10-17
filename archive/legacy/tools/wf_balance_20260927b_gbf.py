@@ -1,5 +1,38 @@
 # -*- coding: utf-8 -*-
-"GBF 双人 2026-09-27 平衡调整第二批：索利兹 129986 ``soriz`` / 冈达葛萨 129987 ``ghandagoza``。\n\n口径：``${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md``（作者已拍板），设计稿\n``growth/growth_design.json``（129986 / 129987）、``growth/down_design.json``；live 按 1.4.1049 重读重推。\n\n**索利兹 129986**（候选 ``gbf-soriz-20260919``）\n\n1. 无上限成长（口径 A）：能力3 ``1299863`` #1-#3「三羽乌（固有 12998601，上限 99，永久）每层 → 自身\n   攻击力 +100% / 强化弹射伤害 +100% / 独立乘区强化弹射伤害 +3%」，c102 = ``(None)`` 不设上限。\n   - 三行按口径 A3 原样搬进队长 ``leader_ability:129986``（行 = ``[队长 c0, '0', ''] + 能力行[5:]``），\n     只把每层强度放缓 1/5：20% / 20% / 0.5%（0.6% 按复核 C09 取 0.5%）。队长原 9 行里没有同触发\n     （during 134 / 三羽乌）的行 ⇒ 不合并，新起 #9-#11，共 12 行。\n   - 能力3 原位换封顶版：c102 → 10（最多计 10 层），每层 15% / 10% / 1%（= 150% / 100% / 10%）。\n   - 放缓档：3 分钟触发约 23–27 次（技能 7–9 发、进 Fever 5–6 次、欧根/仁援护 11–12 次），落 15–30 档 ⇒ 1/5。\n2. Down（口径 B3）：三棵援护 629（欧根 CT15 秒 / 仁 CT15 秒 / 双人合击每次 Fever 至多 1 次，消耗合击预备）\n   ``CreateNormalAttack`` p13 30 → 3。\n3. Down（口径 B2）：Fever 特殊 PF（722 覆盖 ``override_soriz_fever_special_lv1-3``）的 Fever 分支\n   11 段 + 终结段 p13 5/5/6.25（合计 60/60/75）→ 每级正好顶到 15/20/25：\n   lv1 1.25×11 + 1.25、lv2 1.5×11 + 3.5、lv3 2×11 + 3。非 Fever 分支（官方 special 原树副本，15/20/25）不动。\n4. 面板：队长第 2 行插入队长侧三羽乌成长；能力3 首行拆为「获得」与「每层」两行并写封顶，且按\n   主位限制槽规则每行加 `` <icon id='main'>  ``（整键 c1=false，覆盖串接管后客户端不再自画 Ⓜ）。\n\n**冈达葛萨 129987**（候选 ``gbf-ghandagoza-20260919``）\n\n5. Down（口径 B4 全队 ≤50%）：能力4 ``1299874`` #0 全队(水) 眩晕蓄积（瞬发 51）c51/c52 300000 → 50000；\n   面板 ``desc_override_ghandagoza_4`` 第 1 行「＋300%」→「＋50%」。成长（瓦解上限 5 / 背水按当前 HP）不动。\n\n生成器：``wf_gbf_kit_soriz``（CROWS_GROWTH / ASSIST_TOUGHNESS / PF_FEVER_TOUGHNESS、``derive`` 搬行）与\n``wf_gbf_kit_ghandagoza``（行与面板读设计稿）；设计镜像 ``design/soriz.json`` / ``design/ghandagoza.json``\n由 :func:`sync_mirrors` 幂等同步。测试断言生成器输出 == :func:`revise` 输出。\n\n接口见 ``${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md``（多角色 ``UNITS``）。本模块只读 ``read()``\n给的 live 值并返回新值；不写 live store / assets / .cdn / 候选包，不发布，不 git。\n"
+"""GBF 双人 2026-09-27 平衡调整第二批：索利兹 129986 ``soriz`` / 冈达葛萨 129987 ``ghandagoza``。
+
+口径：``${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md``（作者已拍板），设计稿
+``growth/growth_design.json``（129986 / 129987）、``growth/down_design.json``；live 按 1.4.1049 重读重推。
+
+**索利兹 129986**（候选 ``gbf-soriz-20260919``）
+
+1. 无上限成长（口径 A）：能力3 ``1299863`` #1-#3「三羽乌（固有 12998601，上限 99，永久）每层 → 自身
+   攻击力 +100% / 强化弹射伤害 +100% / 独立乘区强化弹射伤害 +3%」，c102 = ``(None)`` 不设上限。
+   - 三行按口径 A3 原样搬进队长 ``leader_ability:129986``（行 = ``[队长 c0, '0', ''] + 能力行[5:]``），
+     只把每层强度放缓 1/5：20% / 20% / 0.5%（0.6% 按复核 C09 取 0.5%）。队长原 9 行里没有同触发
+     （during 134 / 三羽乌）的行 ⇒ 不合并，新起 #9-#11，共 12 行。
+   - 能力3 原位换封顶版：c102 → 10（最多计 10 层），每层 15% / 10% / 1%（= 150% / 100% / 10%）。
+   - 放缓档：3 分钟触发约 23–27 次（技能 7–9 发、进 Fever 5–6 次、欧根/仁援护 11–12 次），落 15–30 档 ⇒ 1/5。
+2. Down（口径 B3）：三棵援护 629（欧根 CT15 秒 / 仁 CT15 秒 / 双人合击每次 Fever 至多 1 次，消耗合击预备）
+   ``CreateNormalAttack`` p13 30 → 3。
+3. Down（口径 B2）：Fever 特殊 PF（722 覆盖 ``override_soriz_fever_special_lv1-3``）的 Fever 分支
+   11 段 + 终结段 p13 5/5/6.25（合计 60/60/75）→ 每级正好顶到 15/20/25：
+   lv1 1.25×11 + 1.25、lv2 1.5×11 + 3.5、lv3 2×11 + 3。非 Fever 分支（官方 special 原树副本，15/20/25）不动。
+4. 面板：队长第 2 行插入队长侧三羽乌成长；能力3 首行拆为「获得」与「每层」两行并写封顶，且按
+   主位限制槽规则每行加 `` <icon id='main'>  ``（整键 c1=false，覆盖串接管后客户端不再自画 Ⓜ）。
+
+**冈达葛萨 129987**（候选 ``gbf-ghandagoza-20260919``）
+
+5. Down（口径 B4 全队 ≤50%）：能力4 ``1299874`` #0 全队(水) 眩晕蓄积（瞬发 51）c51/c52 300000 → 50000；
+   面板 ``desc_override_ghandagoza_4`` 第 1 行「＋300%」→「＋50%」。成长（瓦解上限 5 / 背水按当前 HP）不动。
+
+生成器：``wf_gbf_kit_soriz``（CROWS_GROWTH / ASSIST_TOUGHNESS / PF_FEVER_TOUGHNESS、``derive`` 搬行）与
+``wf_gbf_kit_ghandagoza``（行与面板读设计稿）；设计镜像 ``design/soriz.json`` / ``design/ghandagoza.json``
+由 :func:`sync_mirrors` 幂等同步。测试断言生成器输出 == :func:`revise` 输出。
+
+接口见 ``${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md``（多角色 ``UNITS``）。本模块只读 ``read()``
+给的 live 值并返回新值；不写 live store / assets / .cdn / 候选包，不发布，不 git。
+"""
 from __future__ import annotations
 
 from copy import deepcopy

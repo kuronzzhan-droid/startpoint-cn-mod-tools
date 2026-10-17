@@ -1,6 +1,34 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-'\n从 FileReader 的哈希算法 + wf-extracted/.pathlist + 主数据表(ordermap) + voiceLines.json,\n复原**下载包(production/) 与 bundle 包(APK 内 bundle.zip)** 每个加密哈希文件的原始逻辑路径。\n\n哈希(pinball/asset/path/AssetPathTools.getHashedPath):\n    规范化   = 把 [/\\\\]+ 合并成 /,去掉开头的 /\n    文件名   = SHA1( 规范化(逻辑路径 + 扩展名) + SALT )\n    存储位置 = 文件名[:2] / 文件名[2:]\n  前缀 store 只决定文件夹,不进哈希:\n    下载包 upload / medium_upload / android_upload\n    bundle包 bundle / medium_bundle / small_bundle   (APK assets/bundle.zip 解出来的)\n\n来源(按贡献):\n  1. .pathlist   —— 提取工具留下的无扩展名逻辑路径清单(含 voice/words、故事表情等)。\n  2. ordermap    —— 解密所有 .orderedmap 主表,提取单元格里的路径引用。\n  3. voiceLines  —— ${WF_ROOT}\\角色语音\\<code>\\voiceLines.json 键 = character/<code>/voice/<key>.mp3。\n  4. 同族交叉    —— 把某 key 的 (tail,ext) 套到同族所有 key。\n  5. bundle 索引 —— bundle_<amf|encrypt|copy|compress|png|atf>.filelist(哈希命名的索引文件)直接命名。\n\n每条命中都由 SHA1 精确校验(零误报)。\n\n用法:\n  python mod-tools/wf_recover_pathlist.py\n  # 可选 --base <production目录> --bundle <bundle production目录> --pathlist ... --voice ... --out ...\n输出(默认 mod-tools/):\n  WF_PATHLIST_recovered.csv   store,hash_path,logical_path   (每个物理文件一行,含 bundle)\n  WF_PATHLIST_recovered.txt   去重逻辑路径\n  WF_PATHLIST_uncovered.csv   仍未复原的哈希\n'
+"""
+从 FileReader 的哈希算法 + wf-extracted/.pathlist + 主数据表(ordermap) + voiceLines.json,
+复原**下载包(production/) 与 bundle 包(APK 内 bundle.zip)** 每个加密哈希文件的原始逻辑路径。
+
+哈希(pinball/asset/path/AssetPathTools.getHashedPath):
+    规范化   = 把 [/\\\\]+ 合并成 /,去掉开头的 /
+    文件名   = SHA1( 规范化(逻辑路径 + 扩展名) + SALT )
+    存储位置 = 文件名[:2] / 文件名[2:]
+  前缀 store 只决定文件夹,不进哈希:
+    下载包 upload / medium_upload / android_upload
+    bundle包 bundle / medium_bundle / small_bundle   (APK assets/bundle.zip 解出来的)
+
+来源(按贡献):
+  1. .pathlist   —— 提取工具留下的无扩展名逻辑路径清单(含 voice/words、故事表情等)。
+  2. ordermap    —— 解密所有 .orderedmap 主表,提取单元格里的路径引用。
+  3. voiceLines  —— ${WF_ROOT}\\角色语音\\<code>\\voiceLines.json 键 = character/<code>/voice/<key>.mp3。
+  4. 同族交叉    —— 把某 key 的 (tail,ext) 套到同族所有 key。
+  5. bundle 索引 —— bundle_<amf|encrypt|copy|compress|png|atf>.filelist(哈希命名的索引文件)直接命名。
+
+每条命中都由 SHA1 精确校验(零误报)。
+
+用法:
+  python mod-tools/wf_recover_pathlist.py
+  # 可选 --base <production目录> --bundle <bundle production目录> --pathlist ... --voice ... --out ...
+输出(默认 mod-tools/):
+  WF_PATHLIST_recovered.csv   store,hash_path,logical_path   (每个物理文件一行,含 bundle)
+  WF_PATHLIST_recovered.txt   去重逻辑路径
+  WF_PATHLIST_uncovered.csv   仍未复原的哈希
+"""
 from __future__ import annotations
 
 from wf.paths import root_path

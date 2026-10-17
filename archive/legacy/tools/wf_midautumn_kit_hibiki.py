@@ -1,5 +1,70 @@
 # -*- coding: utf-8 -*-
-"中秋批次 kit：澄波响 169988 ``psychic_teleport_moon``（暗 · 特殊型 PF 主 C）—— rework1。\n\n作者 2026-09-20/21 把她的队长技与能力 2/3/5 重写（``rework1/author-request.md`` 第 30 行\n＋ 09-21 答复），目标面板 = ``rework1/panel/hibiki.json``，引擎落法 = ``rework1/panel/_deviations.json``，\n逐行映射与零先例退路见施工单 ``rework1/impl/hibiki.md``。本轮三条轴线：\n\n- **贯通循环**（沿用）：722 专属 PF → 全队长贯通 → 贯通中 PF 大幅增伤 → 再 PF。\n- **回响成长**（本轮放开）：固有「回响」上限 5 → **99**（作者「不设置上限」的官方写法）；\n  每层给自身 PF 伤害 ＋25%（槽 3）与自身攻击力 ＋25%（槽 4，见偏离 D-13），\n  独立乘区 ＋5%／层（封顶 5 层，作者原话「最大 25%」）与全队暗攻 ＋15%／层（封顶 5 层）不变。\n- **PF 追击**（本轮新增）：「暗属性角色发动技能时」与「冲刺时（CT 1.5 秒）」各挂一行队长 629，\n  指向新建的 ``ability_skill_psychic_teleport_moon_pf`` 树 —— 官方 ``special_lv3`` 的命中块\n  整块搬出（去掉 ``SetPowerFilpSuppress`` / ``NotifyPowerflipEnd`` 两条 PF 生命周期命令，\n  斩铁 ``samurai_robot_plum`` 的现成做法），根头 ``tree[10]=3`` ⇒ **通用伤害池**取\n  「强化弹射伤害 ＋X%」而不是「技能伤害 ＋X%」。引擎能做到的边界见 :data:`INVOKE_BTA`。\n\n面板：队长块与 6 个能力槽**全部**由 ``desc_override_*`` 接管（凯尔／罗尔夫 rework1 同款），\n逐行对齐 ``rework1/panel/hibiki.json``；作者要求「能力 5 的词条写在队长技里」＝冲刺 422 行\n物理留在能力表（写进队长表 ＝ C7050），文案挪进队长块。\n\n反馈轮 1（作者 09-21 真机）：「能力 3 没带主位限制」。槽 3 的 c1 一直是 ``false``（整键单值，\nlive 1.4.974 已是如此），缺的是**面板那个 Ⓜ**：``desc_override`` 会盖掉客户端逐行画的主位图标，\n所以主位键必须自己在每行前面写 ``MAIN_ICON``（本批 magnus / fluffy / kuro / stinel 同款做法，\nlive 先例 ``desc_override_ginovi_3``）。本轮把 ``MAIN_ONLY_SLOTS`` 做成 c1 与图标的唯一真源。\n\n反馈轮 3（作者 09-21 真机，「澄波响去掉浮游效果」）：撤浮游 ＝ 引擎里的状态 ``ACFlying``，\n只出现在 722 三档共用的 P1 supporter 辅助增益块（借道 :func:`wf_seasonal7_kit_philia.pf_support_block`，\n菲莉亚同一批反馈也在改这个函数，本模块不碰那个文件）里的一条 ``CreateCondition``。\n``build_pf_tree`` 接受该块的两种合法形态：donor 仍是官方原始三件套时用 :func:`strip_ac_flying`\n自己删 1 条；共享函数已经在源头删过时（两件套）不重复删——两条路径终态相同，\n``ACAttackPoint`` / ``ACPiercing`` 原样保留、绑定与参数不动，形态漂移（既非三件套也非两件套）\n当场炸。技能两档、629 追击树本来就不含 ACFlying，:func:`build` 里做了一次全包汇总断言兜底。\n文案同步：``PANEL_LEADER`` 第 1 行与 ``CAS_TEXTS[CAS_PF]`` 删掉「、浮游」；\n队长/词条行数据本轮零变化（row_diff 应为空）。\n\n2026-09-27 第二批平衡（``${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md`` A/B 节，\n修订模块 ``wf_balance_20260927b_hibiki.py``，本文件与它逐格一致）：\n\n- 回响每层的两条无上限成长（槽 3 #1 PF 伤害、槽 4 #2 攻击力，c102=99＝固有上限 99）按口径 A.3\n  搬进队长（队长 10 → 12 行，``[CODE,'0',''] + 能力行[5:]``），3 分钟回响约 99 层 ⇒ ≥30 次 ⇒ ×1/10：\n  每层 25% → 2.5%；能力原位换成封顶 10 层的弱化版（PF 伤害 10%/层、攻击力 5%/层）。\n- 队长 #6（下方注释的 L7：全等级 PF 累计命中每 4 次自身攻击）3 分钟约 30–75 次 ⇒ ×1/10：50% → 5%，仍不限次。\n- 629 PF 追击树（冲刺 CT 1.5 秒 / 暗属性角色发动技能无 CT ⇒ 口径 B.3「CT ≤3 秒每次 ≤1」）：\n  两段 ``CreateNormalAttack`` 的 p13 6.25 → 0.25（3 + 1 段 ＝ 每次 1）。\n- 跨角色 donor：队长 L0（722）的 live donor 菲莉亚 ``159996#3`` 被同批 ``wf_balance_20260927b_philia``\n  改 c49/c50 50000 → 7000；L0 已按 live 值钉死 donor 全部非空列，本行输出不变、不再随菲莉亚漂移。\n\n2026-09-27 第三轮平衡（成长复核，修订模块 ``wf_balance_20260927c_hibiki.py``，本文件与它逐格一致）：\n作者「砍到4/5，或者7/10」「可以砍到2/3」「数值尽量取5的倍数」⇒ 按原值 ×2/3 向上取 5 的倍数回调：\n队长 #6 累计命中每 4 次自身攻击 5% → 35%（原 50%）；队长两条回响每层 2.5% → 20%（原 25%）。\n能力槽 3/槽 4 的封顶版（10%/5% × 10 层）不动。\n\n落地内容\n    - ``unique_condition[16998801]``「回响」（donor 官方 ``7``「加热」；c4 上限 **99**，禁 ``(None)``）\n      与它的 48×48 图标（alpha 取官方图标外框）；\n    - 队长 9 行、词条 6 键 18 条：官方/live donor + 逐格改，每行过 ``wf_client_legality`` 三件套\n      并与本模块登记的 ``wf_describe`` 回读逐字核对；\n    - ``custom_ability_string`` 10 键：722 的 c82 串、两条 629 的条目串、队长块 + 6 槽面板接管；\n    - ``action_skill`` 两档（名称/描述由 tables 写 TEXTS，这里改图标 c2 与能量 c4/c5/c6）；\n    - 技能 DSL 两档（本轮未改）、722 三档、**新增 1 棵 629 PF 追击树**；\n    - character c9–c16 语音路由与 ``switched_action_skill[psychic_teleport_moon_voice_ready]``；\n    - ``B/pixel/hibiki/install.json`` 里的像素/特效成品（缺文件静默跳过）。\n\n不碰：立绘、像素成品 PNG、语音音频、live store / ``assets/`` / ``.cdn`` / 设备 / 存档。\n由 ``python mod-tools/wf_midautumn_build.py --char hibiki --step kit`` 调用 :func:`build`。\n"
+"""中秋批次 kit：澄波响 169988 ``psychic_teleport_moon``（暗 · 特殊型 PF 主 C）—— rework1。
+
+作者 2026-09-20/21 把她的队长技与能力 2/3/5 重写（``rework1/author-request.md`` 第 30 行
+＋ 09-21 答复），目标面板 = ``rework1/panel/hibiki.json``，引擎落法 = ``rework1/panel/_deviations.json``，
+逐行映射与零先例退路见施工单 ``rework1/impl/hibiki.md``。本轮三条轴线：
+
+- **贯通循环**（沿用）：722 专属 PF → 全队长贯通 → 贯通中 PF 大幅增伤 → 再 PF。
+- **回响成长**（本轮放开）：固有「回响」上限 5 → **99**（作者「不设置上限」的官方写法）；
+  每层给自身 PF 伤害 ＋25%（槽 3）与自身攻击力 ＋25%（槽 4，见偏离 D-13），
+  独立乘区 ＋5%／层（封顶 5 层，作者原话「最大 25%」）与全队暗攻 ＋15%／层（封顶 5 层）不变。
+- **PF 追击**（本轮新增）：「暗属性角色发动技能时」与「冲刺时（CT 1.5 秒）」各挂一行队长 629，
+  指向新建的 ``ability_skill_psychic_teleport_moon_pf`` 树 —— 官方 ``special_lv3`` 的命中块
+  整块搬出（去掉 ``SetPowerFilpSuppress`` / ``NotifyPowerflipEnd`` 两条 PF 生命周期命令，
+  斩铁 ``samurai_robot_plum`` 的现成做法），根头 ``tree[10]=3`` ⇒ **通用伤害池**取
+  「强化弹射伤害 ＋X%」而不是「技能伤害 ＋X%」。引擎能做到的边界见 :data:`INVOKE_BTA`。
+
+面板：队长块与 6 个能力槽**全部**由 ``desc_override_*`` 接管（凯尔／罗尔夫 rework1 同款），
+逐行对齐 ``rework1/panel/hibiki.json``；作者要求「能力 5 的词条写在队长技里」＝冲刺 422 行
+物理留在能力表（写进队长表 ＝ C7050），文案挪进队长块。
+
+反馈轮 1（作者 09-21 真机）：「能力 3 没带主位限制」。槽 3 的 c1 一直是 ``false``（整键单值，
+live 1.4.974 已是如此），缺的是**面板那个 Ⓜ**：``desc_override`` 会盖掉客户端逐行画的主位图标，
+所以主位键必须自己在每行前面写 ``MAIN_ICON``（本批 magnus / fluffy / kuro / stinel 同款做法，
+live 先例 ``desc_override_ginovi_3``）。本轮把 ``MAIN_ONLY_SLOTS`` 做成 c1 与图标的唯一真源。
+
+反馈轮 3（作者 09-21 真机，「澄波响去掉浮游效果」）：撤浮游 ＝ 引擎里的状态 ``ACFlying``，
+只出现在 722 三档共用的 P1 supporter 辅助增益块（借道 :func:`wf_seasonal7_kit_philia.pf_support_block`，
+菲莉亚同一批反馈也在改这个函数，本模块不碰那个文件）里的一条 ``CreateCondition``。
+``build_pf_tree`` 接受该块的两种合法形态：donor 仍是官方原始三件套时用 :func:`strip_ac_flying`
+自己删 1 条；共享函数已经在源头删过时（两件套）不重复删——两条路径终态相同，
+``ACAttackPoint`` / ``ACPiercing`` 原样保留、绑定与参数不动，形态漂移（既非三件套也非两件套）
+当场炸。技能两档、629 追击树本来就不含 ACFlying，:func:`build` 里做了一次全包汇总断言兜底。
+文案同步：``PANEL_LEADER`` 第 1 行与 ``CAS_TEXTS[CAS_PF]`` 删掉「、浮游」；
+队长/词条行数据本轮零变化（row_diff 应为空）。
+
+2026-09-27 第二批平衡（``${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md`` A/B 节，
+修订模块 ``wf_balance_20260927b_hibiki.py``，本文件与它逐格一致）：
+
+- 回响每层的两条无上限成长（槽 3 #1 PF 伤害、槽 4 #2 攻击力，c102=99＝固有上限 99）按口径 A.3
+  搬进队长（队长 10 → 12 行，``[CODE,'0',''] + 能力行[5:]``），3 分钟回响约 99 层 ⇒ ≥30 次 ⇒ ×1/10：
+  每层 25% → 2.5%；能力原位换成封顶 10 层的弱化版（PF 伤害 10%/层、攻击力 5%/层）。
+- 队长 #6（下方注释的 L7：全等级 PF 累计命中每 4 次自身攻击）3 分钟约 30–75 次 ⇒ ×1/10：50% → 5%，仍不限次。
+- 629 PF 追击树（冲刺 CT 1.5 秒 / 暗属性角色发动技能无 CT ⇒ 口径 B.3「CT ≤3 秒每次 ≤1」）：
+  两段 ``CreateNormalAttack`` 的 p13 6.25 → 0.25（3 + 1 段 ＝ 每次 1）。
+- 跨角色 donor：队长 L0（722）的 live donor 菲莉亚 ``159996#3`` 被同批 ``wf_balance_20260927b_philia``
+  改 c49/c50 50000 → 7000；L0 已按 live 值钉死 donor 全部非空列，本行输出不变、不再随菲莉亚漂移。
+
+2026-09-27 第三轮平衡（成长复核，修订模块 ``wf_balance_20260927c_hibiki.py``，本文件与它逐格一致）：
+作者「砍到4/5，或者7/10」「可以砍到2/3」「数值尽量取5的倍数」⇒ 按原值 ×2/3 向上取 5 的倍数回调：
+队长 #6 累计命中每 4 次自身攻击 5% → 35%（原 50%）；队长两条回响每层 2.5% → 20%（原 25%）。
+能力槽 3/槽 4 的封顶版（10%/5% × 10 层）不动。
+
+落地内容
+    - ``unique_condition[16998801]``「回响」（donor 官方 ``7``「加热」；c4 上限 **99**，禁 ``(None)``）
+      与它的 48×48 图标（alpha 取官方图标外框）；
+    - 队长 9 行、词条 6 键 18 条：官方/live donor + 逐格改，每行过 ``wf_client_legality`` 三件套
+      并与本模块登记的 ``wf_describe`` 回读逐字核对；
+    - ``custom_ability_string`` 10 键：722 的 c82 串、两条 629 的条目串、队长块 + 6 槽面板接管；
+    - ``action_skill`` 两档（名称/描述由 tables 写 TEXTS，这里改图标 c2 与能量 c4/c5/c6）；
+    - 技能 DSL 两档（本轮未改）、722 三档、**新增 1 棵 629 PF 追击树**；
+    - character c9–c16 语音路由与 ``switched_action_skill[psychic_teleport_moon_voice_ready]``；
+    - ``B/pixel/hibiki/install.json`` 里的像素/特效成品（缺文件静默跳过）。
+
+不碰：立绘、像素成品 PNG、语音音频、live store / ``assets/`` / ``.cdn`` / 设备 / 存档。
+由 ``python mod-tools/wf_midautumn_build.py --char hibiki --step kit`` 调用 :func:`build`。
+"""
 from __future__ import annotations
 
 import copy

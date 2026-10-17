@@ -1,4 +1,21 @@
-'十五名小动物（wf_miniboss_roster.ROSTER，含 139996 机枪魔块·雷）：2026-09-27 作者确认的技能槽修订。\n\n规则（作者 2026-09-27 逐条确认）：\n1. 能力 1-6 里条件触发（instant_trigger c27≠0）的「技能槽+X%」（instant_content 211）：\n   强度 c51/c52 → 5000（5%），CT c35 → 900 帧（15 秒）；原本就是 5% 的只改 CT；限次 c34 原样保留\n   （Sec-2600Li 复活加槽 c34=2 保留，CT 同样写 900）。\n2. 能力里的技能充能速度（instant 35 c51/c52、during 3 c113/c114）高于 5% 的降到 5%；\n   本来 ≤5% 的（含按层每层 2.5%/3%）不动。\n3. 开局加槽（211 且 c27=0）与队长技全部不动。\n\n共 31 个能力键 / 40 行 / 97 格，外加对应的 31 条 ``desc_override_<code>_N`` 面板（只改数值与 CT，格式照旧）。\n\n纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件；候选回写、发布由批次暂存脚本统一做\n（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md）。\n生成器 wf_miniboss_water/wind/fire/other.py 与面板 wf_miniboss_text.TEXTS 已同步：\n``build_abilities`` / ``ability_panel_rows`` 的输出与 ``revise()`` 逐键相同，revise 运行时也会核对，\n不一致即拒绝（重跑 wf_miniboss_ability_revision 不会回退本次改动）。\n'
+"""十五名小动物（wf_miniboss_roster.ROSTER，含 139996 机枪魔块·雷）：2026-09-27 作者确认的技能槽修订。
+
+规则（作者 2026-09-27 逐条确认）：
+1. 能力 1-6 里条件触发（instant_trigger c27≠0）的「技能槽+X%」（instant_content 211）：
+   强度 c51/c52 → 5000（5%），CT c35 → 900 帧（15 秒）；原本就是 5% 的只改 CT；限次 c34 原样保留
+   （Sec-2600Li 复活加槽 c34=2 保留，CT 同样写 900）。
+2. 能力里的技能充能速度（instant 35 c51/c52、during 3 c113/c114）高于 5% 的降到 5%；
+   本来 ≤5% 的（含按层每层 2.5%/3%）不动。
+3. 开局加槽（211 且 c27=0）与队长技全部不动。
+
+共 31 个能力键 / 40 行 / 97 格，外加对应的 31 条 ``desc_override_<code>_N`` 面板（只改数值与 CT，格式照旧）。
+
+纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件；候选回写、发布由批次暂存脚本统一做
+（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md）。
+生成器 wf_miniboss_water/wind/fire/other.py 与面板 wf_miniboss_text.TEXTS 已同步：
+``build_abilities`` / ``ability_panel_rows`` 的输出与 ``revise()`` 逐键相同，revise 运行时也会核对，
+不一致即拒绝（重跑 wf_miniboss_ability_revision 不会回退本次改动）。
+"""
 from __future__ import annotations
 
 from copy import deepcopy

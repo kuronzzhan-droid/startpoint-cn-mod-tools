@@ -1,6 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-'wf_rogue_rewards.py — 深渊连战奖励体系:深渊代币 + 15 把专属武装。\n\n代币:克隆官方「激战代币」(item 2370007,23列)→ **2370099「深渊代币」**\n  (图标暂复用激战代币;通关每轮由 rogue_event.json 掉落,后续接兑换商店)。\n专属武装:每属性 2 把 + 通用 3 把 = 15 键(8000101-8000115),装备元数据\n  从既有供体行构建,词条只取经过验证的官方模板首行。\n同步:assets/equipment_max_level.json / equipment_element.json / equipment_lookup.json /\n  equipment_ids.json / item_ids.json(后两个=邮件校验,静态 import 须重启服务端)。\n\n用法(项目根,默认 dry-run):\n  python mod-tools/wf_rogue_rewards.py            # dry-run:只打印计划\n  python mod-tools/wf_rogue_rewards.py --write --publish\n★ 2026-09-28 起 --write/--publish 失败关闭(legacy_write_blockers):本入口只写 item/equipment/\n  equipment_status/ability_soul/rush_event 五张表,且写的是**未拆分的满额魂珠行**;觉醒拆分上线后\n  (equipment_enhancement_ability 已有 15 把的强化行)会与强化行叠加翻倍,629 InvokeSkill 行需要的\n  custom_ability_string 文案键(缺 = 详情页 C8601)与 DSL 程序(缺 = 进战斗预载失败)它也不写。\n  改武器词条走暂存脚本(先例 ${WF_ROOT}/out/深渊雷光武器-20260928/stage_thunder_light.py:生成器复算 →\n  wf_abyss_weapon_split 拆分 → 只重打目标键 + 文案键 + DSL → apply)。\n'
+"""wf_rogue_rewards.py — 深渊连战奖励体系:深渊代币 + 15 把专属武装。
+
+代币:克隆官方「激战代币」(item 2370007,23列)→ **2370099「深渊代币」**
+  (图标暂复用激战代币;通关每轮由 rogue_event.json 掉落,后续接兑换商店)。
+专属武装:每属性 2 把 + 通用 3 把 = 15 键(8000101-8000115),装备元数据
+  从既有供体行构建,词条只取经过验证的官方模板首行。
+同步:assets/equipment_max_level.json / equipment_element.json / equipment_lookup.json /
+  equipment_ids.json / item_ids.json(后两个=邮件校验,静态 import 须重启服务端)。
+
+用法(项目根,默认 dry-run):
+  python mod-tools/wf_rogue_rewards.py            # dry-run:只打印计划
+  python mod-tools/wf_rogue_rewards.py --write --publish
+★ 2026-09-28 起 --write/--publish 失败关闭(legacy_write_blockers):本入口只写 item/equipment/
+  equipment_status/ability_soul/rush_event 五张表,且写的是**未拆分的满额魂珠行**;觉醒拆分上线后
+  (equipment_enhancement_ability 已有 15 把的强化行)会与强化行叠加翻倍,629 InvokeSkill 行需要的
+  custom_ability_string 文案键(缺 = 详情页 C8601)与 DSL 程序(缺 = 进战斗预载失败)它也不写。
+  改武器词条走暂存脚本(先例 ${WF_ROOT}/out/深渊雷光武器-20260928/stage_thunder_light.py:生成器复算 →
+  wf_abyss_weapon_split 拆分 → 只重打目标键 + 文案键 + DSL → apply)。
+"""
 import argparse
 import copy
 import hashlib

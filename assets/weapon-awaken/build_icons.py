@@ -1,5 +1,26 @@
 #!/usr/bin/env python
-'武器觉醒与新掉落：官方风格材料图标（设计稿 ${WF_ROOT}/out/武器觉醒与新掉落-20260928/设计.md §6）。\n\n每张 c3 缩略图是下面手摆的 20×20 像素格（字符 → 调色板），c4 小图标 = c3 ×2 最近邻（40×40）。\n★5 彩虹件（rainbow=True；目前没有交付件，参考稿见 RAINBOW_REFERENCE）的像素格摆的是「面」：面字符的颜色由锥形彩虹渐变算出\n（照官方 ★5 星铁钢实测：色相绕 (10,10) 转、亮度只由面决定，见 RAINBOW_* 与 rainbow_rgb），其余字符仍是定色。\n不读网络、不读 store、无随机数：同一份源码跑几次，输出像素逐字节相同（--check 回读核对）。\n\n规范（§6.2，门禁在 gate() 里，测试 mod-tools/tests/test_weapon_awaken_icons.py 固化）：\n  20×20 透明画布；alpha 只有 0/255；包围盒长边不小于稀有度下限（★3 14 / ★4 16 / ★5 19，代币与券 19）；\n  主体外描边 = 物件主色压暗（不是纯黑）：最大通道 ≥40、饱和度 ≥0.4、明度 0.2–0.5，主体有彩像素至少 20% 落在\n  描边色相 ±45° 内；前两种描边色占比 ≥ 0.9；色数 ≤ 17；孤立杂色 ≤ 0.10；左上受光；c4 恰好等于 c3 ×2 最近邻。\n  描边各阈值与构建器 wf_weapon_awaken.py 的 icon_problems 逐项相同，测试核对两边一致。\n  彩虹件（只许 ★5）与构建器同口径豁免三项：色数、描边前两色占比、描边色相占比（渐变描边几十种颜色、各 1–2 像素，\n  「最常见的描边色」只是并列里随便挑的一个，这两项对它没有意义；官方 ★5 星铁钢本身 183 色、占比 0.04）。\n  代替它们的是更严的逐像素门禁：彩虹件描边的每一个像素都必须是主色相压暗（最大通道 ≥40、饱和度 ≥0.4、明度 0.2–0.5）。\n  其余门禁（alpha、包围盒、杂色、描边主色压暗、受光、c4）照常。\n\n用法：\n  python mod-tools/assets/weapon-awaken/build_icons.py            # 写 icons/ 与 manifest.json\n  python mod-tools/assets/weapon-awaken/build_icons.py --check    # 只核对：像素与源码一致、门禁全过\n只写本目录；不碰 store、.cdn、item_icon 图集与五重 / PARADOX 的源图（交接件放 icons/five-boss-v2-handoff/）。\n'
+"""武器觉醒与新掉落：官方风格材料图标（设计稿 ${WF_ROOT}/out/武器觉醒与新掉落-20260928/设计.md §6）。
+
+每张 c3 缩略图是下面手摆的 20×20 像素格（字符 → 调色板），c4 小图标 = c3 ×2 最近邻（40×40）。
+★5 彩虹件（rainbow=True；目前没有交付件，参考稿见 RAINBOW_REFERENCE）的像素格摆的是「面」：面字符的颜色由锥形彩虹渐变算出
+（照官方 ★5 星铁钢实测：色相绕 (10,10) 转、亮度只由面决定，见 RAINBOW_* 与 rainbow_rgb），其余字符仍是定色。
+不读网络、不读 store、无随机数：同一份源码跑几次，输出像素逐字节相同（--check 回读核对）。
+
+规范（§6.2，门禁在 gate() 里，测试 mod-tools/tests/test_weapon_awaken_icons.py 固化）：
+  20×20 透明画布；alpha 只有 0/255；包围盒长边不小于稀有度下限（★3 14 / ★4 16 / ★5 19，代币与券 19）；
+  主体外描边 = 物件主色压暗（不是纯黑）：最大通道 ≥40、饱和度 ≥0.4、明度 0.2–0.5，主体有彩像素至少 20% 落在
+  描边色相 ±45° 内；前两种描边色占比 ≥ 0.9；色数 ≤ 17；孤立杂色 ≤ 0.10；左上受光；c4 恰好等于 c3 ×2 最近邻。
+  描边各阈值与构建器 wf_weapon_awaken.py 的 icon_problems 逐项相同，测试核对两边一致。
+  彩虹件（只许 ★5）与构建器同口径豁免三项：色数、描边前两色占比、描边色相占比（渐变描边几十种颜色、各 1–2 像素，
+  「最常见的描边色」只是并列里随便挑的一个，这两项对它没有意义；官方 ★5 星铁钢本身 183 色、占比 0.04）。
+  代替它们的是更严的逐像素门禁：彩虹件描边的每一个像素都必须是主色相压暗（最大通道 ≥40、饱和度 ≥0.4、明度 0.2–0.5）。
+  其余门禁（alpha、包围盒、杂色、描边主色压暗、受光、c4）照常。
+
+用法：
+  python mod-tools/assets/weapon-awaken/build_icons.py            # 写 icons/ 与 manifest.json
+  python mod-tools/assets/weapon-awaken/build_icons.py --check    # 只核对：像素与源码一致、门禁全过
+只写本目录；不碰 store、.cdn、item_icon 图集与五重 / PARADOX 的源图（交接件放 icons/five-boss-v2-handoff/）。
+"""
 from __future__ import annotations
 
 import argparse

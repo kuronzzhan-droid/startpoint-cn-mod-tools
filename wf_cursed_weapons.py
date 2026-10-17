@@ -1,5 +1,59 @@
 # -*- coding: utf-8 -*-
-'诅咒武器 29 把：腾讯文档「诅咒武器专题意见征集」提案 → 武器数据（纯函数生成器）。\n\n作者口径（2026-09-27 首轮，0928 修订）：\n- 把表里的武器全部做出来，图标仿官方 20×20 像素风；\n- **未强化（本体，含满破）只有正面数值，而且很弱**（满破值 = 设计值 × BASE_SCALE）；\n- **觉醒分级（0928「每个等级也要设计区分数值」，满破锚定）**：本体数值行觉醒 0 = 满破值 × AWAKEN_FLOOR（20%），\n  每觉醒 1 级 +20% 满破值，觉醒 4（满破）不变 ⇒ 预算、强化行、DSL、120 级终值都不动；\n- **强化 1 级起诅咒全额生效**；**强化到 120 级为最终数值**；\n- 强化材料来自五重决战（深界结晶 10000145 / 五王心核 10000147 / 终式武装图纸 10000144）；\n- **数值预算（0928 追加）**：基线 = 死亡使者合计 500% 刃；有诅咒也不能让刃合计超过 1000%，乘区不超过 50%；\n  不要脸的提案压到常规深渊水准（≈500–600% 刃）。:func:`weapon_budget` 按 120 级 + 满破的行/DSL 计算，``build`` 进 problems；\n- **评分审查 0928**（作者「按表改吧，拍板项也按方案做」）：按 ${WF_ROOT}/out/诅咒武器评分审查-20260928/诅咒武器调整建议.xlsx 调数值；\n- **诅咒负面一律强制赋予**（作者 0928「角色免疫也会生效」）：能力表计时状态没有强制付与列，诅咒状态走 629 DSL\n  CreateCondition forceApply（命中率 1）或固有状态 c10=true；能力表诅咒行不再用瞬发 19/219/688 与负值计时状态；\n- **「无法获得能量」**（作者 0928）= 计时固有状态 + 持续 423 回槽拦截规则码 :data:`GAUGE_LOCK`（78，只放行开局槽）。\n\n数据面（全部新键，不改任何已有键）：\n\n- 客户端：``item`` / ``equipment`` / ``equipment_status``（嵌套）/ ``ability_soul`` / ``equipment_enhancement`` /\n  ``equipment_enhancement_ability`` / ``equipment_enhancement_status``（嵌套）/ ``equipment_enhancement_shop``（每把 6 阶）/\n  ``equipment_enhancement_shop_category``（新类目 6「诅咒武器·觉醒」）/\n  ``unique_condition``（诅咒与计时用固有状态）/ ``custom_ability_string``（629 行文案）+ 新 ability_skill DSL。\n- 服务端：``equipment_ids`` / ``equipment_lookup`` / ``equipment_max_level`` / ``equipment_element`` / ``item_ids`` /\n  ``item_sale`` / ``equipment_enhancement_shop``。\n- 获取：作者 0928 起诅咒武器不可兑换，本体只从武器扭蛋 990003 抽取（每把 0.3%，250 点可兑换），\n  **不再**上架五重商店（原 990099003–031 已撤下，见 wf_weapon_gacha.py）；本生成器不产出任何 boss_coin_shop 行。\n\n机制约束（反编译实证，写在这里防回退）：\n\n1. 攻击力加成总和在 ``NormalAttackCalculator.totalAttackPoint`` 被钳到 ≥ -50%（boot_ffc6 STAT_MODIFIER_ATTACK_POINT_MIN）；\n   单次伤害最终 ``max(floor(dmg), 1)``。所以「攻击 -9999% / 伤害归零」用 **独立乘区伤害 -100%**（723/421）表达，\n   「输出 -99%」同理用独立乘区 -99%。\n2. 装备词条 = 本体 concat 强化；同 slot 取 learn ≤ 当前等级最高一行 ⇒ 每行独占一个 slot；\n   「只在 120 级生效」= learn=max=120 的行；「强化 1 级起全额」= learn=1、max=120、两端同值。\n   本体行随觉醒等级 1→5 在 power1→first_max 线性插值（``AbilityPowerValue.resolve``：觉醒 N = p1 + (fm − p1) × N/4；\n   ElapsedTime 等触发阈值同样插值）。\n3. 629 InvokeSkill 在 ability_soul（c67/c68）与强化表（c70/c71）解析器里都有分支；装备词条的 DSL 走\n   ``BattleCharacterLogic.resolvePathCollection`` → ``equipment.getCurrentAbility()`` 正式预载。\n   string_id 必须写进 custom_ability_string（缺键 C8601）。DSL 不带任何特效路径（杜绝 C8016）。\n4. 玩家侧 DSL 的 CreateWindAttack / CreateGravitationalField / CreateFlood 在 MemberImpl 直接 throw ⇒ 风场推人、重力、\n   淹水物理做不了（第 12、15 条按偏差记录）。\n5. 「能力/被动回槽禁止」= 持续 423 GaugeGainRestriction：装备两表的解析只有客户端补丁 equipment-rules 认（1047 读到 C7050），\n   ``build`` 按 ``client_capabilities`` 拦截（默认 1047 基线），本机已装补丁时显式传 ``PATCHED_CLIENT_CAPABILITIES``。\n6. 带 mul 的 CreateCondition 必须带非空唯一键串（基诺维吞噬同款坑）。\n7. DSL 解自己挂的锁：DeleteCondition 必须带锁的键串，cancelableKind 选得中锁（不可驱散的锁写 1；写 0 删不掉，\n   1.4.1057 剑舞圆环连击上限从未解除），``own_lock_delete_problems`` 拦截。\n8. 根头或判定区 buffTargetAs ≥100（133 = 按强化弹射 Lv3 结算）需要 damage-type-rules-v1，``dsl_capabilities`` 进 capability 门禁；\n   按强化弹射段结算的 629 命中算真实 PF 命中，不能再用「强化弹射命中」类触发（183 与对应等级的 180-182、15-17，\n   见 wf_battle_rules.PF_SEGMENT_HIT_TRIGGERS）触发（自我连锁），``pf_echo_trigger_problems`` 拦截。\n9. 按层数读/消耗固有状态（持续 134/207、前置 144/199、瞬发 525/526、瞬发前置 1/2/3、DSL ConsumeUniqueCondition）\n   要求该固有叠层上限 c4 >1：``Condition.get_accumulatable() = maxAccumulation > 1``，上限 1 时层数恒 0、消耗为空操作\n   （第三轮复审：6 把武器的门禁因此静默失效）。``unique_accumulation_problems`` 拦截；已知未修的在 ``ACCUMULATION_CAP_PENDING``。\n\n接口：:func:`build` 只经 ``read`` 读 live（见 :class:`LiveReader`），返回全部新增内容；不写盘、不发布、不 git。\n'
+"""诅咒武器 29 把：腾讯文档「诅咒武器专题意见征集」提案 → 武器数据（纯函数生成器）。
+
+作者口径（2026-09-27 首轮，0928 修订）：
+- 把表里的武器全部做出来，图标仿官方 20×20 像素风；
+- **未强化（本体，含满破）只有正面数值，而且很弱**（满破值 = 设计值 × BASE_SCALE）；
+- **觉醒分级（0928「每个等级也要设计区分数值」，满破锚定）**：本体数值行觉醒 0 = 满破值 × AWAKEN_FLOOR（20%），
+  每觉醒 1 级 +20% 满破值，觉醒 4（满破）不变 ⇒ 预算、强化行、DSL、120 级终值都不动；
+- **强化 1 级起诅咒全额生效**；**强化到 120 级为最终数值**；
+- 强化材料来自五重决战（深界结晶 10000145 / 五王心核 10000147 / 终式武装图纸 10000144）；
+- **数值预算（0928 追加）**：基线 = 死亡使者合计 500% 刃；有诅咒也不能让刃合计超过 1000%，乘区不超过 50%；
+  不要脸的提案压到常规深渊水准（≈500–600% 刃）。:func:`weapon_budget` 按 120 级 + 满破的行/DSL 计算，``build`` 进 problems；
+- **评分审查 0928**（作者「按表改吧，拍板项也按方案做」）：按 ${WF_ROOT}/out/诅咒武器评分审查-20260928/诅咒武器调整建议.xlsx 调数值；
+- **诅咒负面一律强制赋予**（作者 0928「角色免疫也会生效」）：能力表计时状态没有强制付与列，诅咒状态走 629 DSL
+  CreateCondition forceApply（命中率 1）或固有状态 c10=true；能力表诅咒行不再用瞬发 19/219/688 与负值计时状态；
+- **「无法获得能量」**（作者 0928）= 计时固有状态 + 持续 423 回槽拦截规则码 :data:`GAUGE_LOCK`（78，只放行开局槽）。
+
+数据面（全部新键，不改任何已有键）：
+
+- 客户端：``item`` / ``equipment`` / ``equipment_status``（嵌套）/ ``ability_soul`` / ``equipment_enhancement`` /
+  ``equipment_enhancement_ability`` / ``equipment_enhancement_status``（嵌套）/ ``equipment_enhancement_shop``（每把 6 阶）/
+  ``equipment_enhancement_shop_category``（新类目 6「诅咒武器·觉醒」）/
+  ``unique_condition``（诅咒与计时用固有状态）/ ``custom_ability_string``（629 行文案）+ 新 ability_skill DSL。
+- 服务端：``equipment_ids`` / ``equipment_lookup`` / ``equipment_max_level`` / ``equipment_element`` / ``item_ids`` /
+  ``item_sale`` / ``equipment_enhancement_shop``。
+- 获取：作者 0928 起诅咒武器不可兑换，本体只从武器扭蛋 990003 抽取（每把 0.3%，250 点可兑换），
+  **不再**上架五重商店（原 990099003–031 已撤下，见 wf_weapon_gacha.py）；本生成器不产出任何 boss_coin_shop 行。
+
+机制约束（反编译实证，写在这里防回退）：
+
+1. 攻击力加成总和在 ``NormalAttackCalculator.totalAttackPoint`` 被钳到 ≥ -50%（boot_ffc6 STAT_MODIFIER_ATTACK_POINT_MIN）；
+   单次伤害最终 ``max(floor(dmg), 1)``。所以「攻击 -9999% / 伤害归零」用 **独立乘区伤害 -100%**（723/421）表达，
+   「输出 -99%」同理用独立乘区 -99%。
+2. 装备词条 = 本体 concat 强化；同 slot 取 learn ≤ 当前等级最高一行 ⇒ 每行独占一个 slot；
+   「只在 120 级生效」= learn=max=120 的行；「强化 1 级起全额」= learn=1、max=120、两端同值。
+   本体行随觉醒等级 1→5 在 power1→first_max 线性插值（``AbilityPowerValue.resolve``：觉醒 N = p1 + (fm − p1) × N/4；
+   ElapsedTime 等触发阈值同样插值）。
+3. 629 InvokeSkill 在 ability_soul（c67/c68）与强化表（c70/c71）解析器里都有分支；装备词条的 DSL 走
+   ``BattleCharacterLogic.resolvePathCollection`` → ``equipment.getCurrentAbility()`` 正式预载。
+   string_id 必须写进 custom_ability_string（缺键 C8601）。DSL 不带任何特效路径（杜绝 C8016）。
+4. 玩家侧 DSL 的 CreateWindAttack / CreateGravitationalField / CreateFlood 在 MemberImpl 直接 throw ⇒ 风场推人、重力、
+   淹水物理做不了（第 12、15 条按偏差记录）。
+5. 「能力/被动回槽禁止」= 持续 423 GaugeGainRestriction：装备两表的解析只有客户端补丁 equipment-rules 认（1047 读到 C7050），
+   ``build`` 按 ``client_capabilities`` 拦截（默认 1047 基线），本机已装补丁时显式传 ``PATCHED_CLIENT_CAPABILITIES``。
+6. 带 mul 的 CreateCondition 必须带非空唯一键串（基诺维吞噬同款坑）。
+7. DSL 解自己挂的锁：DeleteCondition 必须带锁的键串，cancelableKind 选得中锁（不可驱散的锁写 1；写 0 删不掉，
+   1.4.1057 剑舞圆环连击上限从未解除），``own_lock_delete_problems`` 拦截。
+8. 根头或判定区 buffTargetAs ≥100（133 = 按强化弹射 Lv3 结算）需要 damage-type-rules-v1，``dsl_capabilities`` 进 capability 门禁；
+   按强化弹射段结算的 629 命中算真实 PF 命中，不能再用「强化弹射命中」类触发（183 与对应等级的 180-182、15-17，
+   见 wf_battle_rules.PF_SEGMENT_HIT_TRIGGERS）触发（自我连锁），``pf_echo_trigger_problems`` 拦截。
+9. 按层数读/消耗固有状态（持续 134/207、前置 144/199、瞬发 525/526、瞬发前置 1/2/3、DSL ConsumeUniqueCondition）
+   要求该固有叠层上限 c4 >1：``Condition.get_accumulatable() = maxAccumulation > 1``，上限 1 时层数恒 0、消耗为空操作
+   （第三轮复审：6 把武器的门禁因此静默失效）。``unique_accumulation_problems`` 拦截；已知未修的在 ``ACCUMULATION_CAP_PENDING``。
+
+接口：:func:`build` 只经 ``read`` 读 live（见 :class:`LiveReader`），返回全部新增内容；不写盘、不发布、不 git。
+"""
 from __future__ import annotations
 
 import copy

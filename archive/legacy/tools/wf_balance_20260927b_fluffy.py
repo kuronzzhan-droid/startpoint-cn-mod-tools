@@ -1,5 +1,30 @@
 # -*- coding: utf-8 -*-
-'2026-09-27 平衡第二批：芙拉菲「圆月下的捣糕之约」149987 ``combat_animal_moon``（风）的键级修订。\n\n口径 = ``${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md``（A 无上限成长 / B Down），\n设计参考 = ``growth/growth_design.json`` designs[149987]、``growth/down_design.json`` characters[149987]。\n设计稿按 live 1.4.1048 写；本模块按 live 1.4.1049 重读（本角色两版逐字相同，候选 ma-fluffy 与 live 逐字相同）。\n\n改动（其余行、其余列、其余节点逐字保留）：\n\n1. **队长 L#4/L#5**（风共鸣：每 1 次强化弹射 → 风队攻击力 / 技能伤害，不限次）：c49/c50 20000 → 2000。\n   3 分钟约 30–45 次 PF（中值 35）⇒ 口径 A.2「按实际次数、≥30 取 1/10」。设计稿（按事件标签）写的 1/5（→4000）\n   已被口径「不按事件名称」取代。\n2. **队长 L#9**（风共鸣：连击每达 250 → 自身技能伤害，不限次）：100000 → 20000。3 分钟约 15–30 次（中值 20）⇒ 1/5。\n3. **队长 L#12**（风共鸣：每 3 次强化弹射 → 风队技能伤害独立乘区 694，不限次）：5000 → 1000。约 10–15 次 ⇒ 1/5。\n   同触发的 L#10（35 充能速度）/ L#11（245 技能槽上限）是「充能」，口径 A.6 与作者「其他充能的都暂时不动」⇒ 原样。\n4. **面板**：队长 desc_override 第 3/4/6 行数值同步（只改数字，其余逐字）。\n5. **Down**：技能两档 ``combat_animal_moon_1/_2`` 八连重击 8 条 CreateNormalAttack p13 6.25 → 1.5\n   （每次施放 10×1.3636 ＋ 8×1.5 ＋ 1×1.3636 = 27，原 65；精准连击与裂地不动）；\n   629 树 ``ability_skill_combat_animal_moon``（队长 L#8 CT 6 秒、能力3 #2 CT 12 秒，均 > 3 秒 ⇒ 每次 ≤3）\n   全部 11 条 CreateNormalAttack（执行 19 段）p13 → 0.15 ⇒ 每次 2.85（原 65）。\n   「每 5 次 Lv3 强化弹射免费发动技能」的 CT 按作者原话不动；1.5 批为斩铁 donor 钉的 A1#1 c6=202 不涉及。\n\n生成器 ``wf_midautumn_kit_fluffy``：``BALANCE_B`` / LEADER / CAS_TEXTS / graft_tree / build_invoke_tree 已同步，\n测试断言生成器输出 == :func:`revise` 输出。设计镜像（design/fluffy.json 的 rework1.leader_ability.rows ＋\nrework1.balance_20260927b、rework1/panel/fluffy.json）由 :func:`sync_mirrors` 幂等同步。\n本模块只读 ``read()``；不写 live store / assets / .cdn / 候选包，不发布，不 git。\n'
+"""2026-09-27 平衡第二批：芙拉菲「圆月下的捣糕之约」149987 ``combat_animal_moon``（风）的键级修订。
+
+口径 = ``${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md``（A 无上限成长 / B Down），
+设计参考 = ``growth/growth_design.json`` designs[149987]、``growth/down_design.json`` characters[149987]。
+设计稿按 live 1.4.1048 写；本模块按 live 1.4.1049 重读（本角色两版逐字相同，候选 ma-fluffy 与 live 逐字相同）。
+
+改动（其余行、其余列、其余节点逐字保留）：
+
+1. **队长 L#4/L#5**（风共鸣：每 1 次强化弹射 → 风队攻击力 / 技能伤害，不限次）：c49/c50 20000 → 2000。
+   3 分钟约 30–45 次 PF（中值 35）⇒ 口径 A.2「按实际次数、≥30 取 1/10」。设计稿（按事件标签）写的 1/5（→4000）
+   已被口径「不按事件名称」取代。
+2. **队长 L#9**（风共鸣：连击每达 250 → 自身技能伤害，不限次）：100000 → 20000。3 分钟约 15–30 次（中值 20）⇒ 1/5。
+3. **队长 L#12**（风共鸣：每 3 次强化弹射 → 风队技能伤害独立乘区 694，不限次）：5000 → 1000。约 10–15 次 ⇒ 1/5。
+   同触发的 L#10（35 充能速度）/ L#11（245 技能槽上限）是「充能」，口径 A.6 与作者「其他充能的都暂时不动」⇒ 原样。
+4. **面板**：队长 desc_override 第 3/4/6 行数值同步（只改数字，其余逐字）。
+5. **Down**：技能两档 ``combat_animal_moon_1/_2`` 八连重击 8 条 CreateNormalAttack p13 6.25 → 1.5
+   （每次施放 10×1.3636 ＋ 8×1.5 ＋ 1×1.3636 = 27，原 65；精准连击与裂地不动）；
+   629 树 ``ability_skill_combat_animal_moon``（队长 L#8 CT 6 秒、能力3 #2 CT 12 秒，均 > 3 秒 ⇒ 每次 ≤3）
+   全部 11 条 CreateNormalAttack（执行 19 段）p13 → 0.15 ⇒ 每次 2.85（原 65）。
+   「每 5 次 Lv3 强化弹射免费发动技能」的 CT 按作者原话不动；1.5 批为斩铁 donor 钉的 A1#1 c6=202 不涉及。
+
+生成器 ``wf_midautumn_kit_fluffy``：``BALANCE_B`` / LEADER / CAS_TEXTS / graft_tree / build_invoke_tree 已同步，
+测试断言生成器输出 == :func:`revise` 输出。设计镜像（design/fluffy.json 的 rework1.leader_ability.rows ＋
+rework1.balance_20260927b、rework1/panel/fluffy.json）由 :func:`sync_mirrors` 幂等同步。
+本模块只读 ``read()``；不写 live store / assets / .cdn / 候选包，不发布，不 git。
+"""
 from __future__ import annotations
 
 from copy import deepcopy

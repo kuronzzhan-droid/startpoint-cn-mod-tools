@@ -1,4 +1,14 @@
-'雷皇女 莉莉丝（139997 resistance_princess_ex）：2026-09-27 作者确认的平衡修订。\n\n直击相关的词条全部换成强化弹射（PF）口径；能力1 的冲刺间隔缩短行换成\n「自身能力伤害累计 10 次（CT 5 秒）→ 立即发动 PF Lv3 剑段」：629 载荷 + 配对 248（计 1 次 PF 发动）。\n技能两档「降低全体敌人雷耐性」的元素由 live 的水（2）改为雷（3），以 live 为准只动这一格。\n\n纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件；候选回写、发布由批次暂存脚本统一做\n（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md）。\n本角色没有可重跑的生成器：``work/character_packs/resistance_princess_ex/build_workspace.py`` 是禁止重跑的\n历史 kit（L1276-1281），本模块是这批行的唯一真源。\n'
+"""雷皇女 莉莉丝（139997 resistance_princess_ex）：2026-09-27 作者确认的平衡修订。
+
+直击相关的词条全部换成强化弹射（PF）口径；能力1 的冲刺间隔缩短行换成
+「自身能力伤害累计 10 次（CT 5 秒）→ 立即发动 PF Lv3 剑段」：629 载荷 + 配对 248（计 1 次 PF 发动）。
+技能两档「降低全体敌人雷耐性」的元素由 live 的水（2）改为雷（3），以 live 为准只动这一格。
+
+纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件；候选回写、发布由批次暂存脚本统一做
+（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md）。
+本角色没有可重跑的生成器：``work/character_packs/resistance_princess_ex/build_workspace.py`` 是禁止重跑的
+历史 kit（L1276-1281），本模块是这批行的唯一真源。
+"""
 from __future__ import annotations
 
 from copy import deepcopy

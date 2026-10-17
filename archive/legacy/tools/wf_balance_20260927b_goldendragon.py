@@ -1,4 +1,25 @@
-'拉夫马诺「我乃圣龙王！」（151159 golden_dragon_jr，重做的官方光龙）：2026-09-27 平衡调整第二批（Down / 削韧）。\n\n口径（${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md，作者已拍板）B.1：技能每次施放单目标总削韧 ≤30。\n设计稿 down_design.json 151159（按 live 1.4.1048 写；本模块按 live 1.4.1049 重读，数值与设计稿一致）：\n\n- 两档技能 ``golden_dragon_jr_1`` / ``_2`` 同构：Wait(55) 的减益判定区（无 CreateNormalAttack，削韧 0）＋\n  Wait(100) 的伤害判定区（场地固定点 -1，寿命 120、CalculatedUsingMaxNumOfHits 8），onHit 一条\n  CreateNormalAttack p13=15 ⇒ 8 × 15 = 120。官方原版同名 DSL 是单段 15；重做（2026-08-05\n  rework_golden_dragon_v2_skill）把单段改成 8 段时没调每段削韧，总量变成原版的 8 倍。\n- p13 15 → 2：120 → 16（回到官方原版 15 / ★5 进化技 P50≈16 的水平）。两档写同一组数字（沿用重做时\n  「前后一致」）。\n- B.6：只改 CreateNormalAttack 的 p13（SLv 的 {min,max} 同改），其余逐字保留；整树 AMF3 往返一致\n  （连 int/float 类型）并过四道 DSL 门禁。\n\n无 flow 包（官方路径被 store 覆写的 reworked_official 角色，不受 flow 管）⇒ ``PACKAGES = []``，只走 wf_publish 裸表边。\n设计稿风险提示：merge_official / wf_enhancement_* 这类以官方为基线的工具可能把它当作偏离官方的值回滚或误报；\n另与暗龙 261089 曾同属 1.4.288 一包——本模块只返回本角色两棵技能树，不碰暗龙的键。\n\n纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md）。\n生成器：无。``mod-tools/work/rework_golden_dragon_v2_skill.py``（gitignored 一次性直写 live 的重做脚本）只改判定区寿命/\n段数/倍率，p13=15 继承自官方单段树，脚本里没有 p13 常量；它带改前形状校验（寿命 25、1 段），对今天的 live 会拒绝重跑。\n'
+"""拉夫马诺「我乃圣龙王！」（151159 golden_dragon_jr，重做的官方光龙）：2026-09-27 平衡调整第二批（Down / 削韧）。
+
+口径（${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md，作者已拍板）B.1：技能每次施放单目标总削韧 ≤30。
+设计稿 down_design.json 151159（按 live 1.4.1048 写；本模块按 live 1.4.1049 重读，数值与设计稿一致）：
+
+- 两档技能 ``golden_dragon_jr_1`` / ``_2`` 同构：Wait(55) 的减益判定区（无 CreateNormalAttack，削韧 0）＋
+  Wait(100) 的伤害判定区（场地固定点 -1，寿命 120、CalculatedUsingMaxNumOfHits 8），onHit 一条
+  CreateNormalAttack p13=15 ⇒ 8 × 15 = 120。官方原版同名 DSL 是单段 15；重做（2026-08-05
+  rework_golden_dragon_v2_skill）把单段改成 8 段时没调每段削韧，总量变成原版的 8 倍。
+- p13 15 → 2：120 → 16（回到官方原版 15 / ★5 进化技 P50≈16 的水平）。两档写同一组数字（沿用重做时
+  「前后一致」）。
+- B.6：只改 CreateNormalAttack 的 p13（SLv 的 {min,max} 同改），其余逐字保留；整树 AMF3 往返一致
+  （连 int/float 类型）并过四道 DSL 门禁。
+
+无 flow 包（官方路径被 store 覆写的 reworked_official 角色，不受 flow 管）⇒ ``PACKAGES = []``，只走 wf_publish 裸表边。
+设计稿风险提示：merge_official / wf_enhancement_* 这类以官方为基线的工具可能把它当作偏离官方的值回滚或误报；
+另与暗龙 261089 曾同属 1.4.288 一包——本模块只返回本角色两棵技能树，不碰暗龙的键。
+
+纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md）。
+生成器：无。``mod-tools/work/rework_golden_dragon_v2_skill.py``（gitignored 一次性直写 live 的重做脚本）只改判定区寿命/
+段数/倍率，p13=15 继承自官方单段树，脚本里没有 p13 常量；它带改前形状校验（寿命 25、1 段），对今天的 live 会拒绝重跑。
+"""
 from __future__ import annotations
 
 from collections import Counter

@@ -1,5 +1,65 @@
 # -*- coding: utf-8 -*-
-'战斗图集(layer0 / layer1)预算预检 —— 发布前拦 `U_1d93f4`。\n\n## 为什么需要它\n\n客户端进战斗时把这一局要用的所有精灵表打进**两张 4096×4096 图集**\n(`layer0_null` / `layer1_null`)。装不下就在\n`MaxRectsPacker.allocateRectangle` 直接\n`throw "Failed to allocate packing rectangle: size exceeded."` ——\n玩家看到的是 `U_1d93f4`,房主崩 → 整个房间散。\n\n2026-09-09 灰服五重三人房真机复发过一次;2026-09-17 的资源体量审计用客户端\n真打包器实测:**9 个最重历史自制角色占主位的三人房已经吃到 86.3%**,\n再让任一批新角色上协力就溢出(96.5%–110.4%)。而**发布链上没有任何一道闸门\n看图集总量** —— flow preflight 只查包自洽、manifest、三层声明。这个模块补这一道。\n\n## 判据来源(全部逐行核对过反编译客户端,不是估算)\n\n`弹国服/scripts/pinball/loading/battle/BattleStartProductionViewService.as`:\n\n* `setupTextureAtlas` → `pack(name, target, 4096, 4096, ...)`,\n  `StarlingAtlasBuilder(..., 4096, 4096, 2, ...)` ⇒ **两张 4096×4096,margin = 2**。\n  折算单张占用必须用 `(w+2)×(h+2)`。\n* `autoDistribute` 的 `spriteSheet` 分支决定一张精灵表归哪一层(见 `SPRITE_SHEET_LAYERS`)。\n* `autoDistribute` 的 `image` 分支里 `character/.+/ui/` 落 `packingTarget1` ⇒\n  **角色 UI 图进 layer1**,不进 layer0。\n* 每张精灵表**整张入箱**,是一个 `ceil(frameW)×ceil(frameH)` 的矩形,不是逐帧。\n\n「谁会被加载」另有一层判据(`BattleCharacterLogic.resolvePathCollection`):\n只加 `pixelart` 动画、四张 UI 图(`cutin_skill_chain` / `battle_member_status` /\n`battle_control_board` / `square`)和 `skill_cutin`(走 `addCharacter`,**不进任何图集**)。\n`pixelart/special_sprite_sheet` 只在扭蛋入队演出与角色菜单用,**战斗不加载**。\n\n多人房把三队编成合并进**同一张** layer0(`BattleAssetPathCollectionBuilder.addMultiQuest`),\n路径集合去重 ⇒ 三人房最多 18 个不同角色同时压在一张图集上。所以判断「会不会炸」\n必须问「那一局房间里出现了哪些不同角色」,不是「哪一关」。\n\n## 本工具做什么\n\n1. 量出**一个角色包(或一组角色)进战斗会带的纹理**,分 layer0 / layer1 列清单与占用。\n2. **场景模拟**:本包 + live 最重的 N 个自制角色 + 五重连战底座,用客户端打包器\n   的 1:1 移植(`pack()`,与 `${WF_ROOT}/out/atlas_probe_20260909/packer.py` 同一份实现)\n   实跑装箱 —— **不是面积比估算**。按面积 0.85 估会误判,真实失败点在 14.7–16.0 Mpx 之间。\n3. 超阈值(默认 90%)或直接溢出就以非 0 退出码返回,并打印卡在哪一张。\n\n## 名册 `atlas_budget_roster.json`\n\n场景里的 live 角色、boss 底座、共享件的**纹理清单**来自 2026-09-17 审计产物\n(见该文件 `sources` 字段),**尺寸默认每次运行都从当前 store 重新量**;\n`--dims roster` 用名册里冻结的 09-17 尺寸(离线/测试用)。\n\n名册还带两组 `golden_formations`:审计实测过的一 FITS 一 OVERFLOW 编队,\n连同期望值一起冻结,`--self-check` 会重放它们 —— 打包器实现一变就报红。\n\n## 退出码\n\n* 0 = 通过\n* 1 = 超阈值 / 溢出 / self-check 与黄金值不符\n* 2 = 用法或数据错误\n\n最后一行永远是一行稳定 JSON(`sort_keys`),给脚本解析用。\n'
+"""战斗图集(layer0 / layer1)预算预检 —— 发布前拦 `U_1d93f4`。
+
+## 为什么需要它
+
+客户端进战斗时把这一局要用的所有精灵表打进**两张 4096×4096 图集**
+(`layer0_null` / `layer1_null`)。装不下就在
+`MaxRectsPacker.allocateRectangle` 直接
+`throw "Failed to allocate packing rectangle: size exceeded."` ——
+玩家看到的是 `U_1d93f4`,房主崩 → 整个房间散。
+
+2026-09-09 灰服五重三人房真机复发过一次;2026-09-17 的资源体量审计用客户端
+真打包器实测:**9 个最重历史自制角色占主位的三人房已经吃到 86.3%**,
+再让任一批新角色上协力就溢出(96.5%–110.4%)。而**发布链上没有任何一道闸门
+看图集总量** —— flow preflight 只查包自洽、manifest、三层声明。这个模块补这一道。
+
+## 判据来源(全部逐行核对过反编译客户端,不是估算)
+
+`弹国服/scripts/pinball/loading/battle/BattleStartProductionViewService.as`:
+
+* `setupTextureAtlas` → `pack(name, target, 4096, 4096, ...)`,
+  `StarlingAtlasBuilder(..., 4096, 4096, 2, ...)` ⇒ **两张 4096×4096,margin = 2**。
+  折算单张占用必须用 `(w+2)×(h+2)`。
+* `autoDistribute` 的 `spriteSheet` 分支决定一张精灵表归哪一层(见 `SPRITE_SHEET_LAYERS`)。
+* `autoDistribute` 的 `image` 分支里 `character/.+/ui/` 落 `packingTarget1` ⇒
+  **角色 UI 图进 layer1**,不进 layer0。
+* 每张精灵表**整张入箱**,是一个 `ceil(frameW)×ceil(frameH)` 的矩形,不是逐帧。
+
+「谁会被加载」另有一层判据(`BattleCharacterLogic.resolvePathCollection`):
+只加 `pixelart` 动画、四张 UI 图(`cutin_skill_chain` / `battle_member_status` /
+`battle_control_board` / `square`)和 `skill_cutin`(走 `addCharacter`,**不进任何图集**)。
+`pixelart/special_sprite_sheet` 只在扭蛋入队演出与角色菜单用,**战斗不加载**。
+
+多人房把三队编成合并进**同一张** layer0(`BattleAssetPathCollectionBuilder.addMultiQuest`),
+路径集合去重 ⇒ 三人房最多 18 个不同角色同时压在一张图集上。所以判断「会不会炸」
+必须问「那一局房间里出现了哪些不同角色」,不是「哪一关」。
+
+## 本工具做什么
+
+1. 量出**一个角色包(或一组角色)进战斗会带的纹理**,分 layer0 / layer1 列清单与占用。
+2. **场景模拟**:本包 + live 最重的 N 个自制角色 + 五重连战底座,用客户端打包器
+   的 1:1 移植(`pack()`,与 `${WF_ROOT}/out/atlas_probe_20260909/packer.py` 同一份实现)
+   实跑装箱 —— **不是面积比估算**。按面积 0.85 估会误判,真实失败点在 14.7–16.0 Mpx 之间。
+3. 超阈值(默认 90%)或直接溢出就以非 0 退出码返回,并打印卡在哪一张。
+
+## 名册 `atlas_budget_roster.json`
+
+场景里的 live 角色、boss 底座、共享件的**纹理清单**来自 2026-09-17 审计产物
+(见该文件 `sources` 字段),**尺寸默认每次运行都从当前 store 重新量**;
+`--dims roster` 用名册里冻结的 09-17 尺寸(离线/测试用)。
+
+名册还带两组 `golden_formations`:审计实测过的一 FITS 一 OVERFLOW 编队,
+连同期望值一起冻结,`--self-check` 会重放它们 —— 打包器实现一变就报红。
+
+## 退出码
+
+* 0 = 通过
+* 1 = 超阈值 / 溢出 / self-check 与黄金值不符
+* 2 = 用法或数据错误
+
+最后一行永远是一行稳定 JSON(`sort_keys`),给脚本解析用。
+"""
 from __future__ import annotations
 
 import argparse

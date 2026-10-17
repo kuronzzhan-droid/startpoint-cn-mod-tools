@@ -1,5 +1,51 @@
 #!/usr/bin/env python
-"PARADOX Lv200 蓝金强化框：把官方粉色强化框逐像素染成蓝金（作者 0928「粉色框染色成蓝金色」）。\n\n输出两张图，同一个 recolor()：\n- mod-tools/assets/paradox/paradox_frame_bluegold.png（144×144 不透明，72×72 结果 ×2 最近邻），\n  由补丁 equipment-enhanced-look 的 enhanced_frame_override_ 键在 Lv200 缩略图上替换粉框；\n- mod-tools/assets/paradox/paradox_party_frame_bluegold.png（72×72 RGBA，原尺寸），\n  由补丁 equipment-enhanced-party-frame 的 enhanced_party_frame_override_ 键在编成装备槽替换粉框。\n  源图是官方 party_equipment_rainbow_enhanced（图集 (2008,3771) 72×72，圆角：24 个 α=0、46 个半透明），\n  α 逐像素照抄官方；补丁把它归一到 72×72 再套 rarity 容器的矩阵（≈2.028 倍 = 146×146，双线性），与粉图同样柔和。\n结构（边框明暗、内缘、菱格）逐像素保留，每个像素保持原 OKLab 亮度，只换色相/彩度。\n官方原图 item_rainbow_enhanced / party_equipment_rainbow_enhanced 取自 APK 图集\n（坐标见 ${WF_ROOT}/out/PARADOX-20260928/lv200-frame/official/manifest.json），\n不入仓库；三版换色对比与评审在 ${WF_ROOT}/out/PARADOX-20260928/lv200-frame/v2/。\n用法：python mod-tools/assets/paradox/build_frame_bluegold.py [--preview]\n\nStrategy A: dye the official pink enhanced frame blue-gold by hue remap.\n\nInput : ../../official/item_rainbow_enhanced.png (72x72, official, untouched)\nOutput: frame_72.png, frame_144.png (x2 NEAREST), preview.png\n\nOnly colour changes. Every output pixel keeps the OKLab lightness L of the\nsource pixel, so the diamond lattice, the border shading and the soft inner\nedge survive exactly as luminance modulation. Structure is not redrawn.\n\nHow the colour is changed\n  The official texture is a pink border layer composited over a rainbow\n  interior layer with a 2 px soft ring (weights ~0.7 / ~0.3). Each pixel is\n  split back into (border colour P, interior colour I, weight m); for pure\n  border / interior pixels this is the pixel itself. P and I are recoloured\n  separately in OKLCH. Gold and blue are near-complementary, so an a/b blend\n  in the ring would turn grey/olive: ring pixels take the dominant layer's hue\n  (outer ring -> light gold; inner ring -> lavender-blue, mirroring the\n  official cyan -> violet lean) with the layer chromas blended by m.\n  Finally every pixel takes the source pixel's OKLab L.\n\n  border   pink/magenta (h~325)       -> warm gold (h ~80 amber .. ~90 yellow,\n                                         by lightness), 0.92 of the gamut edge\n  interior yellow-green (h 100..132)  -> pale gold (h 86..90)\n           green (h ~146)             -> narrow neutral seam (only 5 deg wide)\n           cyan/teal (h 160..205)     -> clear sky blue (h 224..240)\n           blue (h 205..245)          -> royal blue (h 240..256)\n  Interior chroma is max(source C, gamut-relative C * 1.12), clipped to the\n  gamut, so the pastel look and relative saturation survive at every L.\n\nDeterministic: pure numpy float64, no randomness; run twice -> same sha256.\nUsage: python recolor.py\n"
+"""PARADOX Lv200 蓝金强化框：把官方粉色强化框逐像素染成蓝金（作者 0928「粉色框染色成蓝金色」）。
+
+输出两张图，同一个 recolor()：
+- mod-tools/assets/paradox/paradox_frame_bluegold.png（144×144 不透明，72×72 结果 ×2 最近邻），
+  由补丁 equipment-enhanced-look 的 enhanced_frame_override_ 键在 Lv200 缩略图上替换粉框；
+- mod-tools/assets/paradox/paradox_party_frame_bluegold.png（72×72 RGBA，原尺寸），
+  由补丁 equipment-enhanced-party-frame 的 enhanced_party_frame_override_ 键在编成装备槽替换粉框。
+  源图是官方 party_equipment_rainbow_enhanced（图集 (2008,3771) 72×72，圆角：24 个 α=0、46 个半透明），
+  α 逐像素照抄官方；补丁把它归一到 72×72 再套 rarity 容器的矩阵（≈2.028 倍 = 146×146，双线性），与粉图同样柔和。
+结构（边框明暗、内缘、菱格）逐像素保留，每个像素保持原 OKLab 亮度，只换色相/彩度。
+官方原图 item_rainbow_enhanced / party_equipment_rainbow_enhanced 取自 APK 图集
+（坐标见 ${WF_ROOT}/out/PARADOX-20260928/lv200-frame/official/manifest.json），
+不入仓库；三版换色对比与评审在 ${WF_ROOT}/out/PARADOX-20260928/lv200-frame/v2/。
+用法：python mod-tools/assets/paradox/build_frame_bluegold.py [--preview]
+
+Strategy A: dye the official pink enhanced frame blue-gold by hue remap.
+
+Input : ../../official/item_rainbow_enhanced.png (72x72, official, untouched)
+Output: frame_72.png, frame_144.png (x2 NEAREST), preview.png
+
+Only colour changes. Every output pixel keeps the OKLab lightness L of the
+source pixel, so the diamond lattice, the border shading and the soft inner
+edge survive exactly as luminance modulation. Structure is not redrawn.
+
+How the colour is changed
+  The official texture is a pink border layer composited over a rainbow
+  interior layer with a 2 px soft ring (weights ~0.7 / ~0.3). Each pixel is
+  split back into (border colour P, interior colour I, weight m); for pure
+  border / interior pixels this is the pixel itself. P and I are recoloured
+  separately in OKLCH. Gold and blue are near-complementary, so an a/b blend
+  in the ring would turn grey/olive: ring pixels take the dominant layer's hue
+  (outer ring -> light gold; inner ring -> lavender-blue, mirroring the
+  official cyan -> violet lean) with the layer chromas blended by m.
+  Finally every pixel takes the source pixel's OKLab L.
+
+  border   pink/magenta (h~325)       -> warm gold (h ~80 amber .. ~90 yellow,
+                                         by lightness), 0.92 of the gamut edge
+  interior yellow-green (h 100..132)  -> pale gold (h 86..90)
+           green (h ~146)             -> narrow neutral seam (only 5 deg wide)
+           cyan/teal (h 160..205)     -> clear sky blue (h 224..240)
+           blue (h 205..245)          -> royal blue (h 240..256)
+  Interior chroma is max(source C, gamut-relative C * 1.12), clipped to the
+  gamut, so the pastel look and relative saturation survive at every L.
+
+Deterministic: pure numpy float64, no randomness; run twice -> same sha256.
+Usage: python recolor.py
+"""
 from __future__ import annotations
 
 from wf.paths import root_path

@@ -1,5 +1,76 @@
 # -*- coding: utf-8 -*-
-'武器觉醒与新掉落：只读 live 的数据构建器 + 分边暂存（stage-e1 / stage-e2 / stage-e3）。\n\n设计稿 ``${WF_ROOT}/out/武器觉醒与新掉落-20260928/设计.md``：§2.5 觉醒数据、§4.2 分工、§5 物品/商店/价格、\n§5.6 本构建器、§6.4–§6.6 图标与图集、§7 发布顺序。作者 0928 定稿：诅咒武器 5910101–5910129 与 PARADOX\n5920001 只能用重复本体或「禁忌星铁」10000311 觉醒（1 个 = 1 级，锻造石 25/级照旧）；新掉落「深界王币」\n10000310（五重每局 10–15，由五重线在 rewards.ts 实现，本线不改）；五重商店 032 = 王币×1、033 = 王币×10、\n新增 034 = 王币×500 → 禁忌星铁×1；旧囤货不转换。\n\n## 三条边（发布顺序 E1 → E2 → 五重线掉落 → E3，一条边一个子命令）\n\nE1 图标文件（``stage-e1``）\n  ``item_icon/sprite_sheet.png`` 与 ``item_icon/sprite_sheet.atlas.amf3.deflate``（**必须同一条边**），\n  以及各道具 c3 独立 PNG。图集只追加新名字的子纹理（本线自有名字允许原位换像素），旧条目逐键、\n  旧像素逐字节不动，不扩画布；c4 = c3×2 最近邻。源图与交付合同在 ``mod-tools/assets/weapon-awaken/``\n  （图标单元的 ``build_icons.py`` 生成 ``icons/*.png`` 与 ``manifest.json``）：每张图的逻辑路径、c3/c4\n  解码后 RGBA sha256 必须与 manifest 逐项一致，否则拒绝。PARADOX 两件（设计 §6.4 归我方）用重画版：\n  c3 换新逻辑名 ``*_v2``，c4 是 ``item_icon/materials/mod/paradox/*`` 专属子纹理。\n  **作者确认预览**（设计 §6.5 第 3 步、§7 第 2 步）登记在 ``approved.json``（``approve`` 子命令写，\n  记每张图的 c3 RGBA sha256）；要发的图没登记或像素已变 → blocked「待作者确认预览」。\nE2 道具与觉醒数据（``stage-e2``）\n  ``master/item/item.orderedmap``：新行 10000310/10000311（23 列；禁忌星铁 c6=1，**不能是 6**），\n  已上线新图的 10000144–147（c3/c4 改指 _v2）与 10000301/302（c3/c4 **同一条边**改指重画版）；\n  ``master/reward/event/additional_reward.orderedmap`` 的 ``[590010000][5]``（嵌套表，只加内层键 5）；\n  ``master/string/custom_ability_string.orderedmap`` 30 条 ``awakening_material_<装备ID>`` = ``10000311``；\n  ``master/string/ui_string.orderedmap`` 两键「星铁钢」→「觉醒素材」。\n  服务端 ``item_ids/item_lookup/item_sale`` 追加两道具；``equipment_awakening_material.json`` 的\n  ``materialByEquipment`` 与 CAS 键逐项对齐，``rarityOverrides`` 按 live 装备表 c11 重建（凡 c11 ≠ floor(id/1e6)\n  都要登记，多余的删掉；文件由服务端白名单单元创建，这里只做键级拼接）。``check`` 同样跑这两道门禁。\nE3 五重商店（``stage-e3``）\n  ``master/shop/boss_coin_shop.orderedmap`` 032/033 改价、新增 034（行由 ``wf_weapon_gacha`` 的同一组函数\n  生成，两边永远一致）；服务端 ``boss_coin_shop.json["99"]`` 与 ``boss_coin_shop_item_category_map.json``。\n  前提含五重掉落已发王币（``wf_weapon_gacha.five_boss_drop_live``：src/ 与 out/multi/five-boss 都有 10000310，\n  或核实后传 ``--drop-live``），未上线 = blocked，``wf_weapon_gacha`` 同样暂缓 032–034；\n  ``--stage-node-c9`` 时另改 ``boss_battle_stage_node[1][99]`` c9 10000146→10000310（须五重线同意）。\n\nE4 作者 0928 晚修订（``stage-e4``，E1–E3 上线之后）\n  E1/E2/E3 按 live 重算的差集合成一条边，外加武器扭蛋注意事项正文（``wf_weapon_gacha`` 的 rich text）：\n  禁忌星铁图回到紫灰锭（37a2d165 的像素，非彩虹件；图集子纹理原位换像素 + c3 独立 PNG）；\n  ``custom_ability_string`` 的 ``rarity_frame_override_<星铁 c3>`` = PARADOX Lv200 蓝金框（客户端补丁换 ★5 彩虹底框）；\n  「PARADOX」只留在武器名里，其余文案写「悖论武器」（禁忌星铁说明、034 说明、扭蛋说明）；\n  034 = 王币 ×500 + 五王心核 ×5 + 深渊觉醒核 ×10，每人限购 60（c28/c29 与服务端 stock）；\n  990099002 深界连战凭证 c13 4 → 5（金框 → 彩虹框，与道具 c17 一致）。\n\n## 纪律\n\n1. **只读 live**：从不写 store、``.cdn``、``assets/``，不调用 wf_publish。暂存只写\n   ``<workdir>/stage/{common,server}/**`` 与计划文件（合同同 ``wf_weapon_gacha``：tables/files/server/deleted，\n   每项带 live_sha256；服务端 JSON 全部文本级拼接，别人的 WIP 逐字节不动）。\n2. **幂等**：构建目标态，与 live 逐键比较；已上线后再跑得空计划。\n3. **顺序门禁**：一条边的前提（E1 需作者确认预览；E2 需 E1 的图已上线；E3 需 E2 的道具行、E1 的商品图\n   与五重掉落）——\n   - live 已满足 → ``plan.json``（唯一可 apply 的计划）；\n   - 只能靠 ``--after <前一条边 workdir>`` 满足 → ``plan.pending.json``（附 requires：前一条边落地后的 sha），\n     前一条边上线后重跑本边才得到 ``plan.json``；\n   - 不满足（例如图还没画）→ ``plan.blocked.json``（附 blocked 原因），只供审阅。\n   ``problems``（违反合同）非空时一律拒绝，什么都不写。\n\n用法::\n\n    python mod-tools/wf_weapon_awaken.py check [--art-dir DIR] [--drop-live]\n    python mod-tools/wf_weapon_awaken.py approve --by 作者 --evidence "<作者原话/时间>" [--art-dir DIR] [--only STEM ...]\n    python mod-tools/wf_weapon_awaken.py stage-e1 <workdir> [--art-dir DIR]\n    python mod-tools/wf_weapon_awaken.py stage-e2 <workdir> [--after <E1 workdir>]\n    python mod-tools/wf_weapon_awaken.py stage-e3 <workdir> [--after <E1 workdir> --after <E2 workdir>] [--stage-node-c9]\n        [--drop-live]\n    python mod-tools/wf_weapon_awaken.py stage-e4 <workdir> [--art-dir DIR] [--drop-live]\n\n``approve`` 只在作者看过预览并确认后运行：它把当前通过门禁、且与 manifest 一致的图的 c3 sha 写进\n``approved.json``；图再改就要重新确认。\n\n退出码：0 = plan.json，3 = plan.pending.json，4 = plan.blocked.json，2 = problems 拒绝。\n'
+"""武器觉醒与新掉落：只读 live 的数据构建器 + 分边暂存（stage-e1 / stage-e2 / stage-e3）。
+
+设计稿 ``${WF_ROOT}/out/武器觉醒与新掉落-20260928/设计.md``：§2.5 觉醒数据、§4.2 分工、§5 物品/商店/价格、
+§5.6 本构建器、§6.4–§6.6 图标与图集、§7 发布顺序。作者 0928 定稿：诅咒武器 5910101–5910129 与 PARADOX
+5920001 只能用重复本体或「禁忌星铁」10000311 觉醒（1 个 = 1 级，锻造石 25/级照旧）；新掉落「深界王币」
+10000310（五重每局 10–15，由五重线在 rewards.ts 实现，本线不改）；五重商店 032 = 王币×1、033 = 王币×10、
+新增 034 = 王币×500 → 禁忌星铁×1；旧囤货不转换。
+
+## 三条边（发布顺序 E1 → E2 → 五重线掉落 → E3，一条边一个子命令）
+
+E1 图标文件（``stage-e1``）
+  ``item_icon/sprite_sheet.png`` 与 ``item_icon/sprite_sheet.atlas.amf3.deflate``（**必须同一条边**），
+  以及各道具 c3 独立 PNG。图集只追加新名字的子纹理（本线自有名字允许原位换像素），旧条目逐键、
+  旧像素逐字节不动，不扩画布；c4 = c3×2 最近邻。源图与交付合同在 ``mod-tools/assets/weapon-awaken/``
+  （图标单元的 ``build_icons.py`` 生成 ``icons/*.png`` 与 ``manifest.json``）：每张图的逻辑路径、c3/c4
+  解码后 RGBA sha256 必须与 manifest 逐项一致，否则拒绝。PARADOX 两件（设计 §6.4 归我方）用重画版：
+  c3 换新逻辑名 ``*_v2``，c4 是 ``item_icon/materials/mod/paradox/*`` 专属子纹理。
+  **作者确认预览**（设计 §6.5 第 3 步、§7 第 2 步）登记在 ``approved.json``（``approve`` 子命令写，
+  记每张图的 c3 RGBA sha256）；要发的图没登记或像素已变 → blocked「待作者确认预览」。
+E2 道具与觉醒数据（``stage-e2``）
+  ``master/item/item.orderedmap``：新行 10000310/10000311（23 列；禁忌星铁 c6=1，**不能是 6**），
+  已上线新图的 10000144–147（c3/c4 改指 _v2）与 10000301/302（c3/c4 **同一条边**改指重画版）；
+  ``master/reward/event/additional_reward.orderedmap`` 的 ``[590010000][5]``（嵌套表，只加内层键 5）；
+  ``master/string/custom_ability_string.orderedmap`` 30 条 ``awakening_material_<装备ID>`` = ``10000311``；
+  ``master/string/ui_string.orderedmap`` 两键「星铁钢」→「觉醒素材」。
+  服务端 ``item_ids/item_lookup/item_sale`` 追加两道具；``equipment_awakening_material.json`` 的
+  ``materialByEquipment`` 与 CAS 键逐项对齐，``rarityOverrides`` 按 live 装备表 c11 重建（凡 c11 ≠ floor(id/1e6)
+  都要登记，多余的删掉；文件由服务端白名单单元创建，这里只做键级拼接）。``check`` 同样跑这两道门禁。
+E3 五重商店（``stage-e3``）
+  ``master/shop/boss_coin_shop.orderedmap`` 032/033 改价、新增 034（行由 ``wf_weapon_gacha`` 的同一组函数
+  生成，两边永远一致）；服务端 ``boss_coin_shop.json["99"]`` 与 ``boss_coin_shop_item_category_map.json``。
+  前提含五重掉落已发王币（``wf_weapon_gacha.five_boss_drop_live``：src/ 与 out/multi/five-boss 都有 10000310，
+  或核实后传 ``--drop-live``），未上线 = blocked，``wf_weapon_gacha`` 同样暂缓 032–034；
+  ``--stage-node-c9`` 时另改 ``boss_battle_stage_node[1][99]`` c9 10000146→10000310（须五重线同意）。
+
+E4 作者 0928 晚修订（``stage-e4``，E1–E3 上线之后）
+  E1/E2/E3 按 live 重算的差集合成一条边，外加武器扭蛋注意事项正文（``wf_weapon_gacha`` 的 rich text）：
+  禁忌星铁图回到紫灰锭（37a2d165 的像素，非彩虹件；图集子纹理原位换像素 + c3 独立 PNG）；
+  ``custom_ability_string`` 的 ``rarity_frame_override_<星铁 c3>`` = PARADOX Lv200 蓝金框（客户端补丁换 ★5 彩虹底框）；
+  「PARADOX」只留在武器名里，其余文案写「悖论武器」（禁忌星铁说明、034 说明、扭蛋说明）；
+  034 = 王币 ×500 + 五王心核 ×5 + 深渊觉醒核 ×10，每人限购 60（c28/c29 与服务端 stock）；
+  990099002 深界连战凭证 c13 4 → 5（金框 → 彩虹框，与道具 c17 一致）。
+
+## 纪律
+
+1. **只读 live**：从不写 store、``.cdn``、``assets/``，不调用 wf_publish。暂存只写
+   ``<workdir>/stage/{common,server}/**`` 与计划文件（合同同 ``wf_weapon_gacha``：tables/files/server/deleted，
+   每项带 live_sha256；服务端 JSON 全部文本级拼接，别人的 WIP 逐字节不动）。
+2. **幂等**：构建目标态，与 live 逐键比较；已上线后再跑得空计划。
+3. **顺序门禁**：一条边的前提（E1 需作者确认预览；E2 需 E1 的图已上线；E3 需 E2 的道具行、E1 的商品图
+   与五重掉落）——
+   - live 已满足 → ``plan.json``（唯一可 apply 的计划）；
+   - 只能靠 ``--after <前一条边 workdir>`` 满足 → ``plan.pending.json``（附 requires：前一条边落地后的 sha），
+     前一条边上线后重跑本边才得到 ``plan.json``；
+   - 不满足（例如图还没画）→ ``plan.blocked.json``（附 blocked 原因），只供审阅。
+   ``problems``（违反合同）非空时一律拒绝，什么都不写。
+
+用法::
+
+    python mod-tools/wf_weapon_awaken.py check [--art-dir DIR] [--drop-live]
+    python mod-tools/wf_weapon_awaken.py approve --by 作者 --evidence "<作者原话/时间>" [--art-dir DIR] [--only STEM ...]
+    python mod-tools/wf_weapon_awaken.py stage-e1 <workdir> [--art-dir DIR]
+    python mod-tools/wf_weapon_awaken.py stage-e2 <workdir> [--after <E1 workdir>]
+    python mod-tools/wf_weapon_awaken.py stage-e3 <workdir> [--after <E1 workdir> --after <E2 workdir>] [--stage-node-c9]
+        [--drop-live]
+    python mod-tools/wf_weapon_awaken.py stage-e4 <workdir> [--art-dir DIR] [--drop-live]
+
+``approve`` 只在作者看过预览并确认后运行：它把当前通过门禁、且与 manifest 一致的图的 c3 sha 写进
+``approved.json``；图再改就要重新确认。
+
+退出码：0 = plan.json，3 = plan.pending.json，4 = plan.blocked.json，2 = problems 拒绝。
+"""
 from __future__ import annotations
 
 import argparse

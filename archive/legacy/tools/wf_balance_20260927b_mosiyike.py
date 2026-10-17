@@ -1,4 +1,28 @@
-'墨斯伊克「自由之羽」（149997 mosiyike）：2026-09-27 平衡调整第二批（Down / 削韧）。\n\n口径（${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md，作者已拍板）B.2：强化弹射每级削韧上限 15 / 20 / 25，\n尽量正好顶到上限。设计稿 down_design.json 149997（按 live 1.4.1048 写；本模块按 live 1.4.1049 重读，结构与数值一致）：\n\n- PF 覆盖树（leader 149997#0 kind 722 → power_flip_action ``mosiyike_pf`` → lv1/lv2/lv3）= 官方辅助段（无攻击）＋\n  撞敌后按 Wait 错开发射的自走风刃（每发 CreateHitArea 1 段，onHit 一条 CreateNormalAttack p13=5），\n  Lv1/Lv2/Lv3 = 2/5/10 发 ⇒ 10/25/50。\n- 本模块：Lv1 10 ≤ 15 不动；Lv2 每发 p13 5→4（25→20）；Lv3 每发 5→2.5（50→25）⇒ 10/20/25，Lv2/Lv3 正好顶到上限。\n  与设计稿的差异：设计稿三档统一 5→2.5 得 5/12.5/25，Lv1/Lv2 低于上限（Lv1 本来就在上限内却被砍半）；\n  按口径 B.2「尽量正好顶到上限」取 10/20/25（同批白、莉莉丝、克劳斯同一取法）。若要回到设计稿，只改 ``PF_PLAN``\n  （Lv1 5→2.5、Lv2 5→2.5）与包内 build_pf.py 的 ``DETOUGHNESS``。\n- B.6：只改 CreateNormalAttack 的 p13（SLv 的 {min,max} 同改），其余逐字保留；整树 AMF3 往返一致（连 int/float 类型）\n  并过四道 DSL 门禁。\n\n候选：``work/character_packs/mosiyike``（active.json base_package_owners 引用）。候选 manifest 0.1.0 → 0.1.1。\n候选打开时有 29 条既有漂移（技能两档 DSL、护盾特效 5 件、语音 18 条、服务端镜像 3 件）：common 的 26 件与 live\n逐字节相同，服务端镜像里本角色 149997 的行与 assets 相同——都是候选文件已跟到 live、manifest 哈希未重封，\n与本次 PF 树无关，按已审漂移放行（``REVIEWED_DRIFT``，值 = 候选文件 sha256）。PF 三档在候选里与 manifest、live 三者一致。\n\n纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md）。\n生成器：``work/character_packs/mosiyike/build_pf.py`` 的纯函数 ``build_level(level)`` 与 live 三档逐节点相同，是现行生成源；\n已同步 ``DETOUGHNESS = {1: 5, 2: 4, 3: 2.5}``（每发风刃 p13，经 ``wave()`` 传入），测试断言生成器输出 == 本模块输出。\n该脚本 main() 会写包，禁止运行，只改源码。\n'
+"""墨斯伊克「自由之羽」（149997 mosiyike）：2026-09-27 平衡调整第二批（Down / 削韧）。
+
+口径（${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md，作者已拍板）B.2：强化弹射每级削韧上限 15 / 20 / 25，
+尽量正好顶到上限。设计稿 down_design.json 149997（按 live 1.4.1048 写；本模块按 live 1.4.1049 重读，结构与数值一致）：
+
+- PF 覆盖树（leader 149997#0 kind 722 → power_flip_action ``mosiyike_pf`` → lv1/lv2/lv3）= 官方辅助段（无攻击）＋
+  撞敌后按 Wait 错开发射的自走风刃（每发 CreateHitArea 1 段，onHit 一条 CreateNormalAttack p13=5），
+  Lv1/Lv2/Lv3 = 2/5/10 发 ⇒ 10/25/50。
+- 本模块：Lv1 10 ≤ 15 不动；Lv2 每发 p13 5→4（25→20）；Lv3 每发 5→2.5（50→25）⇒ 10/20/25，Lv2/Lv3 正好顶到上限。
+  与设计稿的差异：设计稿三档统一 5→2.5 得 5/12.5/25，Lv1/Lv2 低于上限（Lv1 本来就在上限内却被砍半）；
+  按口径 B.2「尽量正好顶到上限」取 10/20/25（同批白、莉莉丝、克劳斯同一取法）。若要回到设计稿，只改 ``PF_PLAN``
+  （Lv1 5→2.5、Lv2 5→2.5）与包内 build_pf.py 的 ``DETOUGHNESS``。
+- B.6：只改 CreateNormalAttack 的 p13（SLv 的 {min,max} 同改），其余逐字保留；整树 AMF3 往返一致（连 int/float 类型）
+  并过四道 DSL 门禁。
+
+候选：``work/character_packs/mosiyike``（active.json base_package_owners 引用）。候选 manifest 0.1.0 → 0.1.1。
+候选打开时有 29 条既有漂移（技能两档 DSL、护盾特效 5 件、语音 18 条、服务端镜像 3 件）：common 的 26 件与 live
+逐字节相同，服务端镜像里本角色 149997 的行与 assets 相同——都是候选文件已跟到 live、manifest 哈希未重封，
+与本次 PF 树无关，按已审漂移放行（``REVIEWED_DRIFT``，值 = 候选文件 sha256）。PF 三档在候选里与 manifest、live 三者一致。
+
+纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md）。
+生成器：``work/character_packs/mosiyike/build_pf.py`` 的纯函数 ``build_level(level)`` 与 live 三档逐节点相同，是现行生成源；
+已同步 ``DETOUGHNESS = {1: 5, 2: 4, 3: 2.5}``（每发风刃 p13，经 ``wave()`` 传入），测试断言生成器输出 == 本模块输出。
+该脚本 main() 会写包，禁止运行，只改源码。
+"""
 from __future__ import annotations
 
 from collections import Counter

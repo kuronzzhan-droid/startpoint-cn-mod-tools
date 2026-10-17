@@ -1,5 +1,51 @@
 # -*- coding: utf-8 -*-
-'武器扭蛋 990003：只读 live 的数据构建器 + 暂存（stage）。\n\n设计稿：``${WF_ROOT}/out/武器扭蛋-20260928/设计.md``（§2 卡池行、§3 池子与概率、§4 券、\n§5 五重商店、§6 兑换、§10 W2/W3、§12.2 测试）。本文件是 W2 的实现，池子逻辑迁自设计目录的\n``design/build_pool_draft.py``（结果与 ``pool_draft.json`` 逐行一致）。\n\n## 产物\n\n客户端（common 层，只动本池自有键）：\n  - ``master/gacha/gacha.orderedmap`` 键 990003（47 列）；\n  - ``master/gacha/gacha_feature_content.orderedmap`` 外层键 990003（缺它 C2032）；\n  - 4 张新 raw_outer 嵌套表 ``master/gacha_odds/cnmod_weapon_gacha_{rarity,3,4,5}.orderedmap``，\n    内层每行各自 zlib（与服务端 odds 逐行同序同值，行由 ``wf_gacha_odds_sync.odds_line`` 生成）；\n  - ``master/rich_text/rich_text_html.orderedmap`` 键 ``rich_text/cnmod_weapon_gacha_note``（空值）+\n    正文 ``rich_text/cnmod_weapon_gacha_note.html.deflate``（raw deflate，照 990001/990002 先例）；\n  - ``master/item/item.orderedmap`` 券 999019/999020（23 列，图标复用图集里官方装备券的子纹理）；\n  - ``master/shop/boss_coin_shop.orderedmap`` 990099032/033（50 列，模板 990099002）与 990099034\n    （禁忌星铁），删除诅咒本体 990099003–031（发布时要 ``--allow-key-deletion``）。\n    **价格（武器觉醒与新掉落 0928，设计 ${WF_ROOT}/out/武器觉醒与新掉落-20260928/设计.md §5.4/§5.5）**：\n    032 = 深界王币 ×1、033 = 深界王币 ×10、034 = 深界王币 ×500 + 五王心核 ×5 + 深渊觉醒核 ×10 → 禁忌星铁 ×1\n    （作者 0928 晚改价，每人限购 60：客户端 c29 max_frequency / c28 单次上限、服务端 stock 同值）；c9 = 6/5/4。\n    王币 10000310 / 禁忌星铁 10000311 的道具行与图标由 ``wf_weapon_awaken.py`` 的边 E1/E2 上线；\n    它们还没上线、或五重掉落还没发王币（设计 §7 第 7 步；``five_boss_drop_live``，核实后可传 ``--drop-live``）时，\n    本构建器**暂缓**这三个商品（既不写回旧价，也不提前写新价），摘要里报出原因。\n    ``wf_weapon_awaken.py stage-e3`` 用同一组函数产出同样的目标行；\n  - 横幅 ``dynamic/gacha_list_banner/cnmod_weapon_gacha.png``（common）与封面\n    ``dynamic/gacha_banner/cnmod_weapon_gacha.png``（**medium 层**），源图在 ``mod-tools/assets/weapon-gacha/``，\n    缺图时照样暂存其余内容并在摘要里报出。\n服务端（``assets/``，全部**文本级拼接**，别人的 WIP 逐字节不动）：\n  ``gacha.json`` +990003、``boss_coin_shop.json["99"]`` −003..031 +032/033、\n  ``boss_coin_shop_item_category_map.json`` 同步、``item_sale/item_lookup/item_ids`` +999019/999020、\n  镜像 ``cdndata/gacha.json``、``cdndata/gacha_feature_content.json`` +990003。\n\n## 两条纪律\n\n1. **只读 live。** 本文件从不写 store、``.cdn``、``assets/``，也不调用 wf_publish。\n   ``stage <workdir>`` 只写 ``<workdir>/stage/**`` 与 ``<workdir>/plan.json``（诅咒武器\n   ``apply_fix.py`` 的合同），落 live 与铸边由调用方完成。\n2. **幂等。** 构建的是「目标态」，暂存时与 live 逐键比较：已经一致的键不进 plan，\n   live 已上线后再跑只会得到空 plan。\n\n用法::\n\n    python mod-tools/wf_weapon_gacha.py check            # 只读体检：摘要 + problems\n    python mod-tools/wf_weapon_gacha.py stage <workdir>  # problems 非空时拒绝\n    （两者都可加 ``--drop-live``：已核实五重掉落发王币，032–034 才会上架）\n'
+"""武器扭蛋 990003：只读 live 的数据构建器 + 暂存（stage）。
+
+设计稿：``${WF_ROOT}/out/武器扭蛋-20260928/设计.md``（§2 卡池行、§3 池子与概率、§4 券、
+§5 五重商店、§6 兑换、§10 W2/W3、§12.2 测试）。本文件是 W2 的实现，池子逻辑迁自设计目录的
+``design/build_pool_draft.py``（结果与 ``pool_draft.json`` 逐行一致）。
+
+## 产物
+
+客户端（common 层，只动本池自有键）：
+  - ``master/gacha/gacha.orderedmap`` 键 990003（47 列）；
+  - ``master/gacha/gacha_feature_content.orderedmap`` 外层键 990003（缺它 C2032）；
+  - 4 张新 raw_outer 嵌套表 ``master/gacha_odds/cnmod_weapon_gacha_{rarity,3,4,5}.orderedmap``，
+    内层每行各自 zlib（与服务端 odds 逐行同序同值，行由 ``wf_gacha_odds_sync.odds_line`` 生成）；
+  - ``master/rich_text/rich_text_html.orderedmap`` 键 ``rich_text/cnmod_weapon_gacha_note``（空值）+
+    正文 ``rich_text/cnmod_weapon_gacha_note.html.deflate``（raw deflate，照 990001/990002 先例）；
+  - ``master/item/item.orderedmap`` 券 999019/999020（23 列，图标复用图集里官方装备券的子纹理）；
+  - ``master/shop/boss_coin_shop.orderedmap`` 990099032/033（50 列，模板 990099002）与 990099034
+    （禁忌星铁），删除诅咒本体 990099003–031（发布时要 ``--allow-key-deletion``）。
+    **价格（武器觉醒与新掉落 0928，设计 ${WF_ROOT}/out/武器觉醒与新掉落-20260928/设计.md §5.4/§5.5）**：
+    032 = 深界王币 ×1、033 = 深界王币 ×10、034 = 深界王币 ×500 + 五王心核 ×5 + 深渊觉醒核 ×10 → 禁忌星铁 ×1
+    （作者 0928 晚改价，每人限购 60：客户端 c29 max_frequency / c28 单次上限、服务端 stock 同值）；c9 = 6/5/4。
+    王币 10000310 / 禁忌星铁 10000311 的道具行与图标由 ``wf_weapon_awaken.py`` 的边 E1/E2 上线；
+    它们还没上线、或五重掉落还没发王币（设计 §7 第 7 步；``five_boss_drop_live``，核实后可传 ``--drop-live``）时，
+    本构建器**暂缓**这三个商品（既不写回旧价，也不提前写新价），摘要里报出原因。
+    ``wf_weapon_awaken.py stage-e3`` 用同一组函数产出同样的目标行；
+  - 横幅 ``dynamic/gacha_list_banner/cnmod_weapon_gacha.png``（common）与封面
+    ``dynamic/gacha_banner/cnmod_weapon_gacha.png``（**medium 层**），源图在 ``mod-tools/assets/weapon-gacha/``，
+    缺图时照样暂存其余内容并在摘要里报出。
+服务端（``assets/``，全部**文本级拼接**，别人的 WIP 逐字节不动）：
+  ``gacha.json`` +990003、``boss_coin_shop.json["99"]`` −003..031 +032/033、
+  ``boss_coin_shop_item_category_map.json`` 同步、``item_sale/item_lookup/item_ids`` +999019/999020、
+  镜像 ``cdndata/gacha.json``、``cdndata/gacha_feature_content.json`` +990003。
+
+## 两条纪律
+
+1. **只读 live。** 本文件从不写 store、``.cdn``、``assets/``，也不调用 wf_publish。
+   ``stage <workdir>`` 只写 ``<workdir>/stage/**`` 与 ``<workdir>/plan.json``（诅咒武器
+   ``apply_fix.py`` 的合同），落 live 与铸边由调用方完成。
+2. **幂等。** 构建的是「目标态」，暂存时与 live 逐键比较：已经一致的键不进 plan，
+   live 已上线后再跑只会得到空 plan。
+
+用法::
+
+    python mod-tools/wf_weapon_gacha.py check            # 只读体检：摘要 + problems
+    python mod-tools/wf_weapon_gacha.py stage <workdir>  # problems 非空时拒绝
+    （两者都可加 ``--drop-live``：已核实五重掉落发王币，032–034 才会上架）
+"""
 from __future__ import annotations
 
 import argparse

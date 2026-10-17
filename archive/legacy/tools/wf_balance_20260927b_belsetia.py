@@ -1,4 +1,31 @@
-'贝尔赛蒂亚（129952 dimension_witch_smr20_ex，水）：2026-09-27 平衡调整第二批（Down / 削韧）。\n\n口径（${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md，作者已拍板）：\n\n- B.3 能力调用技能（kind 629）每次单目标削韧 ≤3；触发 CT ≤3 秒的每次 ≤1。\n  「宙域穿刺」629 由能力3 ``1299523#1``（0 基；整键主位 c1=false）调用：trigger 2（PowerFlip）累计 3 次\n  （c30/c31=300000），限 10 次（c34），行 CT c35=0，puller 空（按 live 1.4.1049 读取核对）。\n  行 CT 虽为 0，但触发事件是「强化弹射累计 3 次」：每次发动之间至少隔 3 次完整的强化弹射\n  （每次都要重新蓄 PF 槽并播完 PF 动作），实际间隔远大于 3 秒，且整场至多 10 次 ⇒ 适用「每次 ≤3」。\n  与第二批同口径先例一致：斩铁 629（行 CT 0、自身施技）、水灵幽魂/拉比 629（行 CT 0、每次 PF）都按\n  事件自身间隔判定。若主会话/作者改按「行 CT 字面值 0 ≤3 秒」判定，只需把 ``PIERCE_P13[1]`` 改成 0.125（=1）。\n  穿刺树唯一的判定区 ``CalculatedUsingMaxNumOfHits 8``，onHit 里唯一的 CreateNormalAttack p13\n  ``{1,1}`` → ``{0.25,0.25}``：每次 8 → 2（设计稿 down_design.json 129952 行1：p13 1→0.25，8→2）。\n- B.6 DSL 只改 CreateNormalAttack 的 p13（每个 SLv 的 {min,max} 同改），其余逐字保留；\n  整树 AMF3 往返一致并过四道 DSL 门禁。\n- 能力4 ``1299524#2`` 的 629「无明幽环」（自身施技，单段 p13 1 ⇒ 每次 1）在口径以内，设计稿「不改」，本模块不读不改。\n\n文案：629 文案串 ``ability_skill_witch_ex_pierce`` 与面板（客户端自动生成）都不写削韧数值 ⇒ 无文案同步。\n\n生成器：穿刺树由候选包内 ``work/character_packs/thunder_witch_ex/build_workspace.py``\n``build_ability_skill_tree(1)`` 生成（CreateNormalAttack 的 p13 写死为 ``_mm(1, 1)``，今 live == 该函数输出），\n该文件是禁止重跑、且不在本工作单元可改范围内的包内 kit ⇒ 源码常量同步列入 needed_edits_elsewhere\n（``_mm(1, 1)`` → ``_mm(0.25, 0.25)``，只动 which == 1 分支 onHit 那一处）。测试用 AST 读取该常量，\n断言生成器与本模块输出只差这一处 p13（同步后则逐字相同）。\n\n纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件；候选回写、发布由批次暂存脚本统一做\n（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md，第二批 b 后缀）。\n'
+"""贝尔赛蒂亚（129952 dimension_witch_smr20_ex，水）：2026-09-27 平衡调整第二批（Down / 削韧）。
+
+口径（${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md，作者已拍板）：
+
+- B.3 能力调用技能（kind 629）每次单目标削韧 ≤3；触发 CT ≤3 秒的每次 ≤1。
+  「宙域穿刺」629 由能力3 ``1299523#1``（0 基；整键主位 c1=false）调用：trigger 2（PowerFlip）累计 3 次
+  （c30/c31=300000），限 10 次（c34），行 CT c35=0，puller 空（按 live 1.4.1049 读取核对）。
+  行 CT 虽为 0，但触发事件是「强化弹射累计 3 次」：每次发动之间至少隔 3 次完整的强化弹射
+  （每次都要重新蓄 PF 槽并播完 PF 动作），实际间隔远大于 3 秒，且整场至多 10 次 ⇒ 适用「每次 ≤3」。
+  与第二批同口径先例一致：斩铁 629（行 CT 0、自身施技）、水灵幽魂/拉比 629（行 CT 0、每次 PF）都按
+  事件自身间隔判定。若主会话/作者改按「行 CT 字面值 0 ≤3 秒」判定，只需把 ``PIERCE_P13[1]`` 改成 0.125（=1）。
+  穿刺树唯一的判定区 ``CalculatedUsingMaxNumOfHits 8``，onHit 里唯一的 CreateNormalAttack p13
+  ``{1,1}`` → ``{0.25,0.25}``：每次 8 → 2（设计稿 down_design.json 129952 行1：p13 1→0.25，8→2）。
+- B.6 DSL 只改 CreateNormalAttack 的 p13（每个 SLv 的 {min,max} 同改），其余逐字保留；
+  整树 AMF3 往返一致并过四道 DSL 门禁。
+- 能力4 ``1299524#2`` 的 629「无明幽环」（自身施技，单段 p13 1 ⇒ 每次 1）在口径以内，设计稿「不改」，本模块不读不改。
+
+文案：629 文案串 ``ability_skill_witch_ex_pierce`` 与面板（客户端自动生成）都不写削韧数值 ⇒ 无文案同步。
+
+生成器：穿刺树由候选包内 ``work/character_packs/thunder_witch_ex/build_workspace.py``
+``build_ability_skill_tree(1)`` 生成（CreateNormalAttack 的 p13 写死为 ``_mm(1, 1)``，今 live == 该函数输出），
+该文件是禁止重跑、且不在本工作单元可改范围内的包内 kit ⇒ 源码常量同步列入 needed_edits_elsewhere
+（``_mm(1, 1)`` → ``_mm(0.25, 0.25)``，只动 which == 1 分支 onHit 那一处）。测试用 AST 读取该常量，
+断言生成器与本模块输出只差这一处 p13（同步后则逐字相同）。
+
+纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件；候选回写、发布由批次暂存脚本统一做
+（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md，第二批 b 后缀）。
+"""
 from __future__ import annotations
 
 from copy import deepcopy

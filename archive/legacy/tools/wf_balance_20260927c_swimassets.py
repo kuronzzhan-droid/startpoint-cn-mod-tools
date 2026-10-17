@@ -1,5 +1,55 @@
 # -*- coding: utf-8 -*-
-'泳装希尔媞 149996 ``wind_spgirl_swim`` 灰版资源补齐：13 条语音 + 剧情横幅（2026-09-27 第三轮 extra5 批次）。\n\n作者原话（2026-09-27 本会话，主会话逐字转述）：「对方补了资源」，附对方的四角色参考交付包\n``four-character-author-handoff-v2.zip``（``HANDOFF_SHA256``，resource_tail 1.4.121）。此前作者对灰服三角色的要求：\n「把这版替换我本地的,然后一并纳入调整」——核心导入已在本地 1.4.1054 完成（``wf_balance_20260927b_gray3``，\ncommit 183092fa），当时 ``gray3.NOT_IN_ARCHIVE["149996"]`` 记为「泳装语音未导入」（灰链 1.4.88 重编码版）。\n\n## 导入什么（``FILES``，14 个，逐个钉 sha256）\n交付包 ``<角色目录>/handoff/cdn/<tier>/<logical>`` 是灰服 CDN 存储态字节（MP3 帧头 0x7F、PNG 魔数小写 ``png``），\n``handoff/decoded/<logical>`` 是标准 MP3/PNG（``DECODED_SHA256``；``extract`` 时核对 ``wf_assets`` 解码 == decoded）。\n主会话逐文件比对（与 live 不同或 live 没有）后，泳装希尔媞只有这 14 个：\n- common 13 条语音：``voice/ally/{evolution,join}``、``voice/battle/{battle_start,outhole,power_flip,skill,win}_{0,1}``、\n  ``voice/battle/skill_ready``。与灰链归档 1.4.87→1.4.88 边（``GRAY_CHAIN_ZIP``）里的同名成员逐字节相同。\n- medium 1 张 ``ui/episode_banner_0.png``（live 没有；同样来自灰链 1.4.88）。\n交付包其余文件与 live 相同（主会话比对），不导入。\n\n## 实测结论（``revise`` 每次从钉住的来源字节重算，写进 notes）\n- **13 条语音的音频帧与 live 逐字节相同**：去掉 ID3v2 标签后 sha256 相同，帧数/码率/时长全同（MPEG-1 Layer III、\n  96 kbps CBR、44.1 kHz、单声道）。差异只在 ID3v2 标签尾部的零填充（live 恒 2048 字节，灰版 1941–2039 字节，\n  文件小 9–107 字节）；标签头与 TIT2 帧逐字节相同。所以「灰链 1.4.88 重编码」实际只是去掉部分标签填充，\n  导入后听感零变化，只让字节与灰服对齐。\n- 存储态严格校验（``mp3_facts``）：``wf_assets.mp3_encode(mp3_decode(x)) == x``（mp3_encode 的口径：CBR、\n  逐帧覆盖到文件尾），且探测 tail = 0。\n- 语音引用：``character_speech[149996]`` 的 kind 2 行 voice_path = ``ally/join``、kind 1 行 = ``ally/evolution``\n  （客户端 ``GeneralCharacterLogic.resolveVoicePath`` = ``character/<string_id>/voice/<相对路径>`` + ``.mp3``）；\n  11 条 battle 语音不在任何表里，是 ``CharacterShortVoiceLogic`` 的固定名/序号探测（win_/battle_start_/skill_/\n  power_flip_/outhole_ 序号池 + skill_ready）。string_id = character c0 = ``wind_spgirl_swim``。表不改。\n- 剧情横幅：解码 430×215 RGBA（8 bit），与 live 全部 502 张官方 ``episode_banner_0`` 同尺寸（``OFFICIAL_BANNER``），\n  存储态魔数与官方同为小写 ``png``。**没有任何表引用它**：live 2111 张 master 表（WF_PATHLIST_recovered 2116 条里\n  store 有的全部）递归解包后没有 ``episode_banner`` 字样；客户端 ``CharacterBaseImpl.getEpisodeBannerImagePath``\n  （as:206-209）按 image_prefix（character c8）硬编码 ``_0``，只有角色剧情列表（EpisodeCharacterSelect）和主页剧情\n  气泡用；149996 没有角色剧情（character_quest 无 1499960x 键）⇒ 导入后也不会显示，属休眠资源。\n  ``wf_character_requirements`` 把 episode_banner 归 excluded（不在 37 项硬门里）。\n\n## 交付包没带、未导入（notes.not_in_handoff）\n灰链 1.4.88 还同样去掉了 6 条 home 语音（``voice/home/{alk_niisama,…}``）的标签填充（音频帧同样与 live 相同），\n但交付包 v2 没带（对方导出器按通用名 ``home_0..9`` 探测，漏掉 speech 表注册的自定义名；报告 voice_counts 为空）。\n要逐字节对齐，可从灰链归档 1.4.88 取（``HOME_NOT_IN_HANDOFF`` 记了两边 sha256）；本模块不导入。\n\n## 返回（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md）\n只有 ``files``：``{"<tier>:<logical>": "<HANDOFF_ROOT 下解出文件的绝对路径>"}``（14 个），外加\n``notes.file_sha256``（钉住字节；extra5 ``stage_batch`` 暂存后复核）。其余标准键全空。PACKAGES = []（无 flow 包，\nextra5 ``BarePlan``）。BEFORE = 14 个目标路径的 live ``file_sha256``（banner 为 None），任一漂移即拒绝；\n导入后再跑也会拒绝（fail closed）。另读三处只做门禁、不锁摘要：character_speech / character 两行（语音与横幅路径的\n引用），character_quest 1499960{1,2,3}（必须不存在）。\n\n源文件：``HANDOFF_ROOT``（默认仓库 ``work/gray3/handoff_v2``，``/work/`` 已 gitignore）下有就读它，没有就从钉哈希的\n``HANDOFF`` 压缩包直读；``files`` 输出只认 ``HANDOFF_ROOT``（先跑 ``python mod-tools/wf_balance_20260927c_swimassets.py extract``）。\n\n纯函数：``revise`` 只读 ``read()`` 与钉住哈希的来源，不写任何文件；不写 live/assets/.cdn/候选，不发布，不 git。\n'
+"""泳装希尔媞 149996 ``wind_spgirl_swim`` 灰版资源补齐：13 条语音 + 剧情横幅（2026-09-27 第三轮 extra5 批次）。
+
+作者原话（2026-09-27 本会话，主会话逐字转述）：「对方补了资源」，附对方的四角色参考交付包
+``four-character-author-handoff-v2.zip``（``HANDOFF_SHA256``，resource_tail 1.4.121）。此前作者对灰服三角色的要求：
+「把这版替换我本地的,然后一并纳入调整」——核心导入已在本地 1.4.1054 完成（``wf_balance_20260927b_gray3``，
+commit 183092fa），当时 ``gray3.NOT_IN_ARCHIVE["149996"]`` 记为「泳装语音未导入」（灰链 1.4.88 重编码版）。
+
+## 导入什么（``FILES``，14 个，逐个钉 sha256）
+交付包 ``<角色目录>/handoff/cdn/<tier>/<logical>`` 是灰服 CDN 存储态字节（MP3 帧头 0x7F、PNG 魔数小写 ``png``），
+``handoff/decoded/<logical>`` 是标准 MP3/PNG（``DECODED_SHA256``；``extract`` 时核对 ``wf_assets`` 解码 == decoded）。
+主会话逐文件比对（与 live 不同或 live 没有）后，泳装希尔媞只有这 14 个：
+- common 13 条语音：``voice/ally/{evolution,join}``、``voice/battle/{battle_start,outhole,power_flip,skill,win}_{0,1}``、
+  ``voice/battle/skill_ready``。与灰链归档 1.4.87→1.4.88 边（``GRAY_CHAIN_ZIP``）里的同名成员逐字节相同。
+- medium 1 张 ``ui/episode_banner_0.png``（live 没有；同样来自灰链 1.4.88）。
+交付包其余文件与 live 相同（主会话比对），不导入。
+
+## 实测结论（``revise`` 每次从钉住的来源字节重算，写进 notes）
+- **13 条语音的音频帧与 live 逐字节相同**：去掉 ID3v2 标签后 sha256 相同，帧数/码率/时长全同（MPEG-1 Layer III、
+  96 kbps CBR、44.1 kHz、单声道）。差异只在 ID3v2 标签尾部的零填充（live 恒 2048 字节，灰版 1941–2039 字节，
+  文件小 9–107 字节）；标签头与 TIT2 帧逐字节相同。所以「灰链 1.4.88 重编码」实际只是去掉部分标签填充，
+  导入后听感零变化，只让字节与灰服对齐。
+- 存储态严格校验（``mp3_facts``）：``wf_assets.mp3_encode(mp3_decode(x)) == x``（mp3_encode 的口径：CBR、
+  逐帧覆盖到文件尾），且探测 tail = 0。
+- 语音引用：``character_speech[149996]`` 的 kind 2 行 voice_path = ``ally/join``、kind 1 行 = ``ally/evolution``
+  （客户端 ``GeneralCharacterLogic.resolveVoicePath`` = ``character/<string_id>/voice/<相对路径>`` + ``.mp3``）；
+  11 条 battle 语音不在任何表里，是 ``CharacterShortVoiceLogic`` 的固定名/序号探测（win_/battle_start_/skill_/
+  power_flip_/outhole_ 序号池 + skill_ready）。string_id = character c0 = ``wind_spgirl_swim``。表不改。
+- 剧情横幅：解码 430×215 RGBA（8 bit），与 live 全部 502 张官方 ``episode_banner_0`` 同尺寸（``OFFICIAL_BANNER``），
+  存储态魔数与官方同为小写 ``png``。**没有任何表引用它**：live 2111 张 master 表（WF_PATHLIST_recovered 2116 条里
+  store 有的全部）递归解包后没有 ``episode_banner`` 字样；客户端 ``CharacterBaseImpl.getEpisodeBannerImagePath``
+  （as:206-209）按 image_prefix（character c8）硬编码 ``_0``，只有角色剧情列表（EpisodeCharacterSelect）和主页剧情
+  气泡用；149996 没有角色剧情（character_quest 无 1499960x 键）⇒ 导入后也不会显示，属休眠资源。
+  ``wf_character_requirements`` 把 episode_banner 归 excluded（不在 37 项硬门里）。
+
+## 交付包没带、未导入（notes.not_in_handoff）
+灰链 1.4.88 还同样去掉了 6 条 home 语音（``voice/home/{alk_niisama,…}``）的标签填充（音频帧同样与 live 相同），
+但交付包 v2 没带（对方导出器按通用名 ``home_0..9`` 探测，漏掉 speech 表注册的自定义名；报告 voice_counts 为空）。
+要逐字节对齐，可从灰链归档 1.4.88 取（``HOME_NOT_IN_HANDOFF`` 记了两边 sha256）；本模块不导入。
+
+## 返回（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md）
+只有 ``files``：``{"<tier>:<logical>": "<HANDOFF_ROOT 下解出文件的绝对路径>"}``（14 个），外加
+``notes.file_sha256``（钉住字节；extra5 ``stage_batch`` 暂存后复核）。其余标准键全空。PACKAGES = []（无 flow 包，
+extra5 ``BarePlan``）。BEFORE = 14 个目标路径的 live ``file_sha256``（banner 为 None），任一漂移即拒绝；
+导入后再跑也会拒绝（fail closed）。另读三处只做门禁、不锁摘要：character_speech / character 两行（语音与横幅路径的
+引用），character_quest 1499960{1,2,3}（必须不存在）。
+
+源文件：``HANDOFF_ROOT``（默认仓库 ``work/gray3/handoff_v2``，``/work/`` 已 gitignore）下有就读它，没有就从钉哈希的
+``HANDOFF`` 压缩包直读；``files`` 输出只认 ``HANDOFF_ROOT``（先跑 ``python mod-tools/wf_balance_20260927c_swimassets.py extract``）。
+
+纯函数：``revise`` 只读 ``read()`` 与钉住哈希的来源，不写任何文件；不写 live/assets/.cdn/候选，不发布，不 git。
+"""
 from __future__ import annotations
 
 import argparse

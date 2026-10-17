@@ -1,5 +1,14 @@
 # -*- coding: utf-8 -*-
-'五重决战 v2：把 wf_five_boss_v2.py --stage 的暂存结果写入 live 并本地发布（铸一条裸表边）。\n\n流程与诅咒武器批次的 apply_fix 同构（${WF_ROOT}/out/诅咒武器-20260927/apply_fix.py）：\n  pending 必须为空、链尾等于 <from>、每个暂存对象的 live 哈希与暂存时一致（防并发改表）\n  → 备份 → 写 live → pending=本批逻辑路径 → wf_publish --list 预检 → 发布 → flow 账本重锚\n  → 清 pending → 核验（live==暂存、未触及顶层键逐字节不变、get_path 三档 HTTP==本地归档且 CRC 通过）。\n\n用法：python mod-tools/wf_five_boss_v2_publish.py <workdir> <from_version> <to_version> "<摘要>"\n本脚本只做本地发布；公开链/分享包/灰服投递不在这里。\n'
+"""五重决战 v2：把 wf_five_boss_v2.py --stage 的暂存结果写入 live 并本地发布（铸一条裸表边）。
+
+流程与诅咒武器批次的 apply_fix 同构（${WF_ROOT}/out/诅咒武器-20260927/apply_fix.py）：
+  pending 必须为空、链尾等于 <from>、每个暂存对象的 live 哈希与暂存时一致（防并发改表）
+  → 备份 → 写 live → pending=本批逻辑路径 → wf_publish --list 预检 → 发布 → flow 账本重锚
+  → 清 pending → 核验（live==暂存、未触及顶层键逐字节不变、get_path 三档 HTTP==本地归档且 CRC 通过）。
+
+用法：python mod-tools/wf_five_boss_v2_publish.py <workdir> <from_version> <to_version> "<摘要>"
+本脚本只做本地发布；公开链/分享包/灰服投递不在这里。
+"""
 from __future__ import annotations
 
 import contextlib

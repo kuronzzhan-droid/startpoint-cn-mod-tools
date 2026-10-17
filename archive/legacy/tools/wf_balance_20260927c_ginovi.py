@@ -1,5 +1,48 @@
 # -*- coding: utf-8 -*-
-"基诺维「破契的黑翼」169999 ``ginovi``（暗）：2026-09-27 平衡第三轮（c，成长复核）。\n\n口径 = 主会话 ``growth_c_spec.md``（作者原话：成长「砍到4/5，或者7/10」「可以砍到2/3」「数值尽量取5的倍数」；\n默认选择 D1/D3），数值表 = ``reeval_full.json`` table.rows 的 169999 一行。本角色不在技能倍率撤封顶名单里。\n\n队长 ``leader_ability:169999`` #6/#7/#8：暗共鸣 + trigger 235 ConditionKeepFramePiercing（自身每保持贯穿 90 帧＝1.5 秒\n一跳，c32=(None) 不限次）→ 暗属性全队 攻击力 32 / 技能伤害 34 / 能力伤害 388。第二批（``wf_balance_20260927b_ginovi``，\n1.4.1051 已发布）把每跳 25% 砍到 2.5%；本轮回调：触发很频繁（3 分钟约 84 跳）、基础充足 ⇒ 下限 2/3：\n25×2/3=16.7，不低于 2/3 的 5 的倍数只有 20%（D1：取 20%，不用 17.5%）⇒ c49/c50 2500 → 20000。\n面板 ``desc_override_ginovi`` 原第 4 行（拆行后第 5 行）三处「＋2.5%」→「＋20%」。\n\n面板拆行（主会话第三轮追加 B = 口径 5 扩展：一行挤两种数据条件的按数据条件拆行）：原第 3 行\n「常态冲刺冷却时间延长，冲刺效果强化；暗属性共鸣时，弹射后冲刺冷却时间缩短（3秒）」按「；」拆两行，文字不改：\n\n- 「常态冲刺冷却时间延长，冲刺效果强化」= 能力1 ``1699991`` #2–#7（during 422 DashParameter；前置 42 仅队长、\n  无共鸣；#2–#6 常驻：速度 / 高度上限 / 蓄力 / 回拉 / 冷却倍率 +83.3%，#7 疾走中冷却补偿）；\n- 「暗属性共鸣时，弹射后冲刺冷却时间缩短（3秒）」= 队长 #5（暗编成≥6 + 触发 6 BallFlip → 31 ConditionSwift 180 帧）。\n\n两组前置不同（一组无共鸣、一组带暗共鸣）⇒ 两种数据条件，按口径 5 拆行；依据只读核对（:func:`split_basis_problems`，\n不符即拒绝）。能力1 ``1699991`` 因此进 :data:`BEFORE`（只读，不返回）。\n\n不动：其余 8 行队长行（722、629 ×4、疾走、开局技能槽、死印乘区）；第二批的削韧（技能/629/PF 本体 p13）；\n不新增共鸣前置（D3，本来就带暗共鸣）。\n\n技能强化文案（作者原话「角色调整时技能都强化效果只在队长技或者能力里面按照格式写就行,技能里面不要重复描述强化后的\n效果,规范并简化描述做了吗」；主会话口径 R1–R4）：\n\n- 强化条目 ``change_skill_ginovi``（能力1 ``1699991`` #1 kind 536，旗号 1，前置 暗≥6 共鸣，c70 = 本串）按官方格式\n  「为『掠影协奏』追加「…」」重写，定性不写数字（原「直接攻击变为3次」「1层」）⇒「直接攻击分为多次」「不可消除的「死印」」，\n  内容不变（旗号 1 开支：额外 ACAttackPoint、ACAdditionalDirectAttack(3)、额外护盾与 ACFixedSpeed、最近敌人 ACUnique\n  1699901「死印」、首次（DCUnique 169998 计数）血契）。\n- 能力1 面板 ``desc_override_ginovi_1`` 第 2 行（描述同一 536 行）=「暗属性共鸣时，」+ 同一条目（原文带数字且与条目不一致：\n  缺「为」、血契后半句）；第 1 行逐字。\n- 技能说明（action_skill 两档 c1、character_text c5/c7）本来就只写技能本体，不改；数据行与 DSL 一格不动（R4）。\n\n生成器 ``work/character_packs/ginovi/build_workspace.py``（kit-v3 的 ``write_m3_leader_rows``）：只改源码常量\n``PIERCING_BUFF`` 与 ``DESC_OVERRIDE_LINES['desc_override_ginovi']``（第 3 行拆成 [2]/[3]，贯穿行移到 [4]），\n测试断言生成器输出 == :func:`revise` 输出。\nkit-v3 影子表是构建产物，本模块不重建（重建会写包，需主会话执行）。\n\n接口见 ``${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md``：:func:`revise` 只经 ``read`` 读 live，\n开头按 :data:`BEFORE` 摘要校验（漂移即抛 :class:`GinoviBalanceError`，fail closed），不改 ``read`` 的返回对象。\n本模块不写 live store / assets / .cdn / 候选包，不发布，不 git。\n"
+"""基诺维「破契的黑翼」169999 ``ginovi``（暗）：2026-09-27 平衡第三轮（c，成长复核）。
+
+口径 = 主会话 ``growth_c_spec.md``（作者原话：成长「砍到4/5，或者7/10」「可以砍到2/3」「数值尽量取5的倍数」；
+默认选择 D1/D3），数值表 = ``reeval_full.json`` table.rows 的 169999 一行。本角色不在技能倍率撤封顶名单里。
+
+队长 ``leader_ability:169999`` #6/#7/#8：暗共鸣 + trigger 235 ConditionKeepFramePiercing（自身每保持贯穿 90 帧＝1.5 秒
+一跳，c32=(None) 不限次）→ 暗属性全队 攻击力 32 / 技能伤害 34 / 能力伤害 388。第二批（``wf_balance_20260927b_ginovi``，
+1.4.1051 已发布）把每跳 25% 砍到 2.5%；本轮回调：触发很频繁（3 分钟约 84 跳）、基础充足 ⇒ 下限 2/3：
+25×2/3=16.7，不低于 2/3 的 5 的倍数只有 20%（D1：取 20%，不用 17.5%）⇒ c49/c50 2500 → 20000。
+面板 ``desc_override_ginovi`` 原第 4 行（拆行后第 5 行）三处「＋2.5%」→「＋20%」。
+
+面板拆行（主会话第三轮追加 B = 口径 5 扩展：一行挤两种数据条件的按数据条件拆行）：原第 3 行
+「常态冲刺冷却时间延长，冲刺效果强化；暗属性共鸣时，弹射后冲刺冷却时间缩短（3秒）」按「；」拆两行，文字不改：
+
+- 「常态冲刺冷却时间延长，冲刺效果强化」= 能力1 ``1699991`` #2–#7（during 422 DashParameter；前置 42 仅队长、
+  无共鸣；#2–#6 常驻：速度 / 高度上限 / 蓄力 / 回拉 / 冷却倍率 +83.3%，#7 疾走中冷却补偿）；
+- 「暗属性共鸣时，弹射后冲刺冷却时间缩短（3秒）」= 队长 #5（暗编成≥6 + 触发 6 BallFlip → 31 ConditionSwift 180 帧）。
+
+两组前置不同（一组无共鸣、一组带暗共鸣）⇒ 两种数据条件，按口径 5 拆行；依据只读核对（:func:`split_basis_problems`，
+不符即拒绝）。能力1 ``1699991`` 因此进 :data:`BEFORE`（只读，不返回）。
+
+不动：其余 8 行队长行（722、629 ×4、疾走、开局技能槽、死印乘区）；第二批的削韧（技能/629/PF 本体 p13）；
+不新增共鸣前置（D3，本来就带暗共鸣）。
+
+技能强化文案（作者原话「角色调整时技能都强化效果只在队长技或者能力里面按照格式写就行,技能里面不要重复描述强化后的
+效果,规范并简化描述做了吗」；主会话口径 R1–R4）：
+
+- 强化条目 ``change_skill_ginovi``（能力1 ``1699991`` #1 kind 536，旗号 1，前置 暗≥6 共鸣，c70 = 本串）按官方格式
+  「为『掠影协奏』追加「…」」重写，定性不写数字（原「直接攻击变为3次」「1层」）⇒「直接攻击分为多次」「不可消除的「死印」」，
+  内容不变（旗号 1 开支：额外 ACAttackPoint、ACAdditionalDirectAttack(3)、额外护盾与 ACFixedSpeed、最近敌人 ACUnique
+  1699901「死印」、首次（DCUnique 169998 计数）血契）。
+- 能力1 面板 ``desc_override_ginovi_1`` 第 2 行（描述同一 536 行）=「暗属性共鸣时，」+ 同一条目（原文带数字且与条目不一致：
+  缺「为」、血契后半句）；第 1 行逐字。
+- 技能说明（action_skill 两档 c1、character_text c5/c7）本来就只写技能本体，不改；数据行与 DSL 一格不动（R4）。
+
+生成器 ``work/character_packs/ginovi/build_workspace.py``（kit-v3 的 ``write_m3_leader_rows``）：只改源码常量
+``PIERCING_BUFF`` 与 ``DESC_OVERRIDE_LINES['desc_override_ginovi']``（第 3 行拆成 [2]/[3]，贯穿行移到 [4]），
+测试断言生成器输出 == :func:`revise` 输出。
+kit-v3 影子表是构建产物，本模块不重建（重建会写包，需主会话执行）。
+
+接口见 ``${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md``：:func:`revise` 只经 ``read`` 读 live，
+开头按 :data:`BEFORE` 摘要校验（漂移即抛 :class:`GinoviBalanceError`，fail closed），不改 ``read`` 的返回对象。
+本模块不写 live store / assets / .cdn / 候选包，不发布，不 git。
+"""
 from __future__ import annotations
 
 from copy import deepcopy

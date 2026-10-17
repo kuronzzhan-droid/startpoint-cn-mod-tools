@@ -1,5 +1,45 @@
 # -*- coding: utf-8 -*-
-'2026-09-27 平衡批次：冰雪罗尔夫 179999 ``black_wolf_knight_wt26``（火）的键级修订（纯函数）。\n\n作者 2026-09-27 确认的规格：\n\n1. **超级Fever 加门槛**。超级Fever 没有独立状态，就是两档技能 DSL\n   （``rare5/black_wolf_knight_wt26$black_wolf_knight_wt26_1/_2``，两档逐字相同）里\n   ``ConditionalsFeverMode`` 的 Fever 分支：``AddFeverPoint 200`` ＋ ``FindAllSubjects(0,33)``\n   全队攻/PF/技伤/直击/能伤 +350%（600 帧）＋ ``ChangeFieldAssets`` 换六色 Fever 条。\n   现在把这整套包进 ``ConditionalsChangeSkillFlag(1, then, ["Block", []])``：旗号 1 由能力 3\n   ``1799993#4``（kind 536 ChangeSkillFlag，前置 202 仅主位 ＋ 火·编成≥6）打开，此前 DSL 没读它。\n   旗号为假时 Fever 中施放不再触发超级Fever、不加 Fever 槽；非 Fever 部分（护盾/再生/增伤/贯通）照旧。\n   分支形状按项目先例：then/else 都是 ``["Block", …]``，else 写空 Block\n   （不写 ``["DoNothing"]``，那是 IfTargetNotFound 的枚举，塞进表达式位 ⇒ F1009）。\n2. **新增回复**（同在旗号为真的 Fever 分支内，每次 Fever 中施放都执行）：\n   在超级Fever 三件之后追加一个全队 ``FindAllSubjects(0, 33)``（技能里现有的全队写法），块内\n   ``CreateRatioHeal(0, 2, 5%)``（p1=2 ⇒ ``RatioHealKind.UseHealeesMaximumHealthPoint``，按受疗者\n   **自己的**最大生命值；ActionEvaluator.as:3208-3215、RatioHealCalculator.as case 1）＋\n   ``CreateCondition(0, ACRegeneration(600 帧, 每跳 53))``（每 120 帧一跳、首跳第 30 帧 ⇒ 5 跳合计 265，\n   ≈罗尔夫 Lv100 生命 3295 的 8%）。官方先例：``asahina_mikuru_1`` 的 ``FindAllSubjects(0,33)``\n   块内正是 CreateRatioHeal(0,2,…) ＋ CreateCondition(0, ACRegeneration)；无特攻的\n   CreateRatioHeal 形状 ``[] / [{0,0}] / GenericHealHitEffect`` 取 ``alk_1anv_1``。\n   再生叠加规则：条件 ID ＝ 来源 ＋ 命中率 ＋ 时长 ＋ 叠加上限 ＋ 内容值（``ConditionId_Impl_``：\n   ``REG-<每跳值>``）⇒ 同一技能重复施放是同一 ID，只刷新不叠层；与顶层给体力最低者的\n   ``ACRegeneration(600,100)`` 内容值不同 ⇒ 两条并存（``getTotalRegeneration`` 求和），不互相覆盖。\n3. **文案**：能力 3 第 5 行 c70 现指 ``superfever_desc_wt26``（不在命名空间）→ 新建\n   ``change_skill_black_wolf_knight_wt26`` 并改指。技能强化条目（536）按裁决 §3 不写数字与时间\n   （``wf_midautumn_kitlib.panel_problems(skill_flag=True)``），所以新文案＝原说明去掉「350%(10秒)」\n   ＋追加回复与再生；数字（350%/10秒/5%）写进技能描述。技能描述 5 处（action_skill 两档 c1、\n   character_text c5/c7、服务端 cdndata/character_text.json [5]/[7]）把「Fever状态中使用时：…」\n   改为注明「火属性共鸣时，自身在主位且于Fever状态中使用」并追加回复与再生。\n4. 候选包 ``black_wolf_knight_wt26`` 不含这两棵技能 DSL（manifest ``skills={}``）⇒ 放进\n   ``new_programs``；CAS 新键由暂存脚本写进候选认领。候选与 live 的既有漂移（``1799991#1``\n   c30/c31/c49）不动，见 ``notes.open_points``。候选服务端镜像 character_text 179999 行是换皮前\n   旧文（11/12 列与 live 不同，:data:`CANDIDATE_STALE_SERVER_MIRROR`）；暂存整行替换，会顺带把\n   [5]/[7] 以外 9 列刷回 live 值，同样记进 ``notes.open_points``。\n\n接口见 ``${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md``：:func:`revise` 只经 ``read`` 读 live，\n开头按 :data:`BEFORE` 摘要校验（漂移即抛 :class:`RolfWt26BalanceError`，fail closed），不改 ``read``\n的返回对象。本角色没有 kit 生成器（技能树由 1.4.3xx 一次性装配脚本落盘），无生成器一致性要求。\n本模块不写 live store / assets / .cdn / 候选包，不发布，不 git。\n'
+"""2026-09-27 平衡批次：冰雪罗尔夫 179999 ``black_wolf_knight_wt26``（火）的键级修订（纯函数）。
+
+作者 2026-09-27 确认的规格：
+
+1. **超级Fever 加门槛**。超级Fever 没有独立状态，就是两档技能 DSL
+   （``rare5/black_wolf_knight_wt26$black_wolf_knight_wt26_1/_2``，两档逐字相同）里
+   ``ConditionalsFeverMode`` 的 Fever 分支：``AddFeverPoint 200`` ＋ ``FindAllSubjects(0,33)``
+   全队攻/PF/技伤/直击/能伤 +350%（600 帧）＋ ``ChangeFieldAssets`` 换六色 Fever 条。
+   现在把这整套包进 ``ConditionalsChangeSkillFlag(1, then, ["Block", []])``：旗号 1 由能力 3
+   ``1799993#4``（kind 536 ChangeSkillFlag，前置 202 仅主位 ＋ 火·编成≥6）打开，此前 DSL 没读它。
+   旗号为假时 Fever 中施放不再触发超级Fever、不加 Fever 槽；非 Fever 部分（护盾/再生/增伤/贯通）照旧。
+   分支形状按项目先例：then/else 都是 ``["Block", …]``，else 写空 Block
+   （不写 ``["DoNothing"]``，那是 IfTargetNotFound 的枚举，塞进表达式位 ⇒ F1009）。
+2. **新增回复**（同在旗号为真的 Fever 分支内，每次 Fever 中施放都执行）：
+   在超级Fever 三件之后追加一个全队 ``FindAllSubjects(0, 33)``（技能里现有的全队写法），块内
+   ``CreateRatioHeal(0, 2, 5%)``（p1=2 ⇒ ``RatioHealKind.UseHealeesMaximumHealthPoint``，按受疗者
+   **自己的**最大生命值；ActionEvaluator.as:3208-3215、RatioHealCalculator.as case 1）＋
+   ``CreateCondition(0, ACRegeneration(600 帧, 每跳 53))``（每 120 帧一跳、首跳第 30 帧 ⇒ 5 跳合计 265，
+   ≈罗尔夫 Lv100 生命 3295 的 8%）。官方先例：``asahina_mikuru_1`` 的 ``FindAllSubjects(0,33)``
+   块内正是 CreateRatioHeal(0,2,…) ＋ CreateCondition(0, ACRegeneration)；无特攻的
+   CreateRatioHeal 形状 ``[] / [{0,0}] / GenericHealHitEffect`` 取 ``alk_1anv_1``。
+   再生叠加规则：条件 ID ＝ 来源 ＋ 命中率 ＋ 时长 ＋ 叠加上限 ＋ 内容值（``ConditionId_Impl_``：
+   ``REG-<每跳值>``）⇒ 同一技能重复施放是同一 ID，只刷新不叠层；与顶层给体力最低者的
+   ``ACRegeneration(600,100)`` 内容值不同 ⇒ 两条并存（``getTotalRegeneration`` 求和），不互相覆盖。
+3. **文案**：能力 3 第 5 行 c70 现指 ``superfever_desc_wt26``（不在命名空间）→ 新建
+   ``change_skill_black_wolf_knight_wt26`` 并改指。技能强化条目（536）按裁决 §3 不写数字与时间
+   （``wf_midautumn_kitlib.panel_problems(skill_flag=True)``），所以新文案＝原说明去掉「350%(10秒)」
+   ＋追加回复与再生；数字（350%/10秒/5%）写进技能描述。技能描述 5 处（action_skill 两档 c1、
+   character_text c5/c7、服务端 cdndata/character_text.json [5]/[7]）把「Fever状态中使用时：…」
+   改为注明「火属性共鸣时，自身在主位且于Fever状态中使用」并追加回复与再生。
+4. 候选包 ``black_wolf_knight_wt26`` 不含这两棵技能 DSL（manifest ``skills={}``）⇒ 放进
+   ``new_programs``；CAS 新键由暂存脚本写进候选认领。候选与 live 的既有漂移（``1799991#1``
+   c30/c31/c49）不动，见 ``notes.open_points``。候选服务端镜像 character_text 179999 行是换皮前
+   旧文（11/12 列与 live 不同，:data:`CANDIDATE_STALE_SERVER_MIRROR`）；暂存整行替换，会顺带把
+   [5]/[7] 以外 9 列刷回 live 值，同样记进 ``notes.open_points``。
+
+接口见 ``${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md``：:func:`revise` 只经 ``read`` 读 live，
+开头按 :data:`BEFORE` 摘要校验（漂移即抛 :class:`RolfWt26BalanceError`，fail closed），不改 ``read``
+的返回对象。本角色没有 kit 生成器（技能树由 1.4.3xx 一次性装配脚本落盘），无生成器一致性要求。
+本模块不写 live store / assets / .cdn / 候选包，不发布，不 git。
+"""
 from __future__ import annotations
 
 import copy

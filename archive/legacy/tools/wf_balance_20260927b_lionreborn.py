@@ -1,4 +1,36 @@
-'玛格诺斯「燎原之炎」（119996 lion_swordman_reborn）：2026-09-27 平衡调整第二批（Down / 削韧）。\n\n口径（${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md，作者已拍板）与设计稿 down_design.json 119996\n（设计稿按 live 1.4.1048 写；本模块按 live 1.4.1049 重读、重算，行号与数值与设计稿所引一致）：\n\n1. B.4 眩晕蓄积（瞬发 kind 51）自身 ≤100%：能力5 行2（``1199965#1``，0 基）「永恒之火（固有 119996）≥1 时\n   自身眩晕蓄积 600%」c51/c52 600000→100000。前置（188）、行1（Fever 点 200%）与 c1 都不动。\n   能力5 没有 desc_override（面板由客户端按数值自动生成），无文案要同步。\n2. B.2 强化弹射每级削韧 ≤15/20/25，尽量正好顶到上限：PF 覆盖树（leader 119996#4 kind 722 →\n   power_flip_action ``lion_swordman_reborn_pf`` → lv1/lv2/lv3）= 开头剑士扫击（球锚定 body[1]，\n   最多 3/4/5 段，p13 1.5/2/3）+ 撞敌后特殊爆裂（参考点判定区，最小间隔 7 帧、寿命 40、Some 3/4/4，p13 5/5/6.25）。\n   剑士扫击 p13 → 0：19.5/28/40 → 15/20/25（爆裂段本身就是特殊 PF 每级上限，正好顶格）。\n3. B.1 技能每次施放单目标总削韧 ≤30（严格口径，燎原在作者点名的 5 名里）：两档技能树同构 =\n   猛击地面 1 段 × 10（官方 lion_swordman_playable 111129 母本原值）+ 爆炸 8 段 × 1.0 + 灼烧领域\n   （寿命 840 / 间隔 50 → 17，Some 16）16 段 × 1.0 = 34。\n   本模块只降 MOD 追加的 24 段：p13 1.0 → 0.8（官方 17–40 段技能每段削韧 P50 = 0.8，设计稿官方基线），\n   34 → 10 + 6.4 + 12.8 = 29.2 ≤ 30；官方母本的猛击 10 不动。\n   复核 B1-P95 给的「10→7.5 或 24 段 1→0.85」是按 P95≈32 算的（31.5 / 30.4），不满足本批 ≤30，未采用。\n4. B.6 DSL 只改 CreateNormalAttack 的 p13（每个 SLv 的 {min,max} 同改），其余逐字保留；整树 AMF3 往返一致\n   （连 int/float 类型）并过四道 DSL 门禁。\n\n无 flow 包（``work/character_packs/lion_swordman_reborn`` 存在，但未被 .cdn/cn/character-releases/active.json\n引用）⇒ ``PACKAGES = []``，改完只走 wf_publish 裸表边。\n\n纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md）。\n生成源（包内历史 kit，禁止重跑，只同步了源码常量）：\n- ``work/character_packs/lion_swordman_reborn/build_pf.py`` ``KNIGHT[*]["c1"]``（剑士扫击 p13）1.5/2/3 → 0.0，\n  ``spin_hit_area(level)`` 与本模块输出的 PF body[1] 逐节点相同（测试断言）。\n- ``work/character_packs/lion_swordman_reborn/build_skill_dsl.py`` ``TICK_DETOUGHNESS``（爆炸 / 领域每段 p13）\n  1.0 → 0.8；``build_field`` 与输出逐节点相同，``build_blast`` 除两条特效路径（该脚本之后被特效族搬家到\n  ``skill_unique/lion_swordman_reborn/zenith_explosion/``，改前就不等）外逐节点相同。\n- ``apply_m_batch.py``（能力5 眩晕蓄积行的原始写入者）是一次性直写 live 的迁移脚本、不幂等，不是生成器，未改。\n'
+"""玛格诺斯「燎原之炎」（119996 lion_swordman_reborn）：2026-09-27 平衡调整第二批（Down / 削韧）。
+
+口径（${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md，作者已拍板）与设计稿 down_design.json 119996
+（设计稿按 live 1.4.1048 写；本模块按 live 1.4.1049 重读、重算，行号与数值与设计稿所引一致）：
+
+1. B.4 眩晕蓄积（瞬发 kind 51）自身 ≤100%：能力5 行2（``1199965#1``，0 基）「永恒之火（固有 119996）≥1 时
+   自身眩晕蓄积 600%」c51/c52 600000→100000。前置（188）、行1（Fever 点 200%）与 c1 都不动。
+   能力5 没有 desc_override（面板由客户端按数值自动生成），无文案要同步。
+2. B.2 强化弹射每级削韧 ≤15/20/25，尽量正好顶到上限：PF 覆盖树（leader 119996#4 kind 722 →
+   power_flip_action ``lion_swordman_reborn_pf`` → lv1/lv2/lv3）= 开头剑士扫击（球锚定 body[1]，
+   最多 3/4/5 段，p13 1.5/2/3）+ 撞敌后特殊爆裂（参考点判定区，最小间隔 7 帧、寿命 40、Some 3/4/4，p13 5/5/6.25）。
+   剑士扫击 p13 → 0：19.5/28/40 → 15/20/25（爆裂段本身就是特殊 PF 每级上限，正好顶格）。
+3. B.1 技能每次施放单目标总削韧 ≤30（严格口径，燎原在作者点名的 5 名里）：两档技能树同构 =
+   猛击地面 1 段 × 10（官方 lion_swordman_playable 111129 母本原值）+ 爆炸 8 段 × 1.0 + 灼烧领域
+   （寿命 840 / 间隔 50 → 17，Some 16）16 段 × 1.0 = 34。
+   本模块只降 MOD 追加的 24 段：p13 1.0 → 0.8（官方 17–40 段技能每段削韧 P50 = 0.8，设计稿官方基线），
+   34 → 10 + 6.4 + 12.8 = 29.2 ≤ 30；官方母本的猛击 10 不动。
+   复核 B1-P95 给的「10→7.5 或 24 段 1→0.85」是按 P95≈32 算的（31.5 / 30.4），不满足本批 ≤30，未采用。
+4. B.6 DSL 只改 CreateNormalAttack 的 p13（每个 SLv 的 {min,max} 同改），其余逐字保留；整树 AMF3 往返一致
+   （连 int/float 类型）并过四道 DSL 门禁。
+
+无 flow 包（``work/character_packs/lion_swordman_reborn`` 存在，但未被 .cdn/cn/character-releases/active.json
+引用）⇒ ``PACKAGES = []``，改完只走 wf_publish 裸表边。
+
+纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md）。
+生成源（包内历史 kit，禁止重跑，只同步了源码常量）：
+- ``work/character_packs/lion_swordman_reborn/build_pf.py`` ``KNIGHT[*]["c1"]``（剑士扫击 p13）1.5/2/3 → 0.0，
+  ``spin_hit_area(level)`` 与本模块输出的 PF body[1] 逐节点相同（测试断言）。
+- ``work/character_packs/lion_swordman_reborn/build_skill_dsl.py`` ``TICK_DETOUGHNESS``（爆炸 / 领域每段 p13）
+  1.0 → 0.8；``build_field`` 与输出逐节点相同，``build_blast`` 除两条特效路径（该脚本之后被特效族搬家到
+  ``skill_unique/lion_swordman_reborn/zenith_explosion/``，改前就不等）外逐节点相同。
+- ``apply_m_batch.py``（能力5 眩晕蓄积行的原始写入者）是一次性直写 live 的迁移脚本、不幂等，不是生成器，未改。
+"""
 from __future__ import annotations
 
 from collections import Counter

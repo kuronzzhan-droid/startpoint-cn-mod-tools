@@ -1,5 +1,26 @@
 # -*- coding: utf-8 -*-
-'2026-09-27 平衡批次：夏琳 139992 ``artificialeye_sniper_moon`` 的键级修订（纯函数）。\n\n作者 2026-09-27 确认的规格（目标选「雷属性全队」）：\n\n1. 技能 DSL 两档：顶层在队友护盾 ``FindAllSubjects(5,35,[3])`` 之后插入\n   ``CreateBarrier(-17, 0.1, GenericBarrierHitEffect)``——自身护盾＝自身最大 HP 10%\n   （官方先例 alice_smr20 / woman_knight_1anv 顶层 -17 写法；BarrierCalculator 按受盾者自己的最大 HP 算）。\n2. 技能 DSL 两档：强化分支（``ConditionalsChangeSkillFlag(1)``）里两个 ``ConditionalsProbability``\n   各删掉 ``ACStun`` 分支，剩麻痹 / 中毒 / 迟缓三支，权重仍写 25（评估器按相对权重，和 75 ⇒ 每支 1/3）。\n   ``ACStun`` 转成 Stunify，``fit()`` 只允许挂成员，挂敌人被静默丢弃——原分支是死格。\n3. 能力 1（``1399921``）追加第 3 条：官方 ``1310014#0``（fox_oracle_4，kind 53 StunWinceSlayer\n   ＝眩晕畏缩特攻＝对虚弱中敌人的追击伤害，独立乘区）全队 target 5 Yellow，c51/c52＝20000，\n   带雷共鸣前置（c6=2、c9/c10=600000、c11=Yellow）；不写面板覆盖（客户端自动生成）。\n4. ``custom_ability_string:change_skill_artificialeye_sniper_moon`` 去掉「、使敌人更容易进入DOWN」。\n5. 技能描述四处同步（action_skill 两档 c1、character_text c5/c7、服务端 character_text [5]/[7]）：\n   在「护盾值为其最大生命值25%」后插入「，同时为自身赋予护盾，护盾值为自身最大生命值10%」。\n\n接口见 ``${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md``：:func:`revise` 只经 ``read`` 读 live，\n开头按 :data:`BEFORE` 摘要校验（漂移即抛 :class:`CharleneBalanceError`，fail closed），不改 ``read`` 的返回对象。\n生成器 ``wf_midautumn_kit_charlene`` 已同步修改，``tests/test_balance_20260927_charlene.py`` 断言两者输出一致。\n本模块不写 live store / assets / .cdn / 候选包，不发布，不 git。\n'
+"""2026-09-27 平衡批次：夏琳 139992 ``artificialeye_sniper_moon`` 的键级修订（纯函数）。
+
+作者 2026-09-27 确认的规格（目标选「雷属性全队」）：
+
+1. 技能 DSL 两档：顶层在队友护盾 ``FindAllSubjects(5,35,[3])`` 之后插入
+   ``CreateBarrier(-17, 0.1, GenericBarrierHitEffect)``——自身护盾＝自身最大 HP 10%
+   （官方先例 alice_smr20 / woman_knight_1anv 顶层 -17 写法；BarrierCalculator 按受盾者自己的最大 HP 算）。
+2. 技能 DSL 两档：强化分支（``ConditionalsChangeSkillFlag(1)``）里两个 ``ConditionalsProbability``
+   各删掉 ``ACStun`` 分支，剩麻痹 / 中毒 / 迟缓三支，权重仍写 25（评估器按相对权重，和 75 ⇒ 每支 1/3）。
+   ``ACStun`` 转成 Stunify，``fit()`` 只允许挂成员，挂敌人被静默丢弃——原分支是死格。
+3. 能力 1（``1399921``）追加第 3 条：官方 ``1310014#0``（fox_oracle_4，kind 53 StunWinceSlayer
+   ＝眩晕畏缩特攻＝对虚弱中敌人的追击伤害，独立乘区）全队 target 5 Yellow，c51/c52＝20000，
+   带雷共鸣前置（c6=2、c9/c10=600000、c11=Yellow）；不写面板覆盖（客户端自动生成）。
+4. ``custom_ability_string:change_skill_artificialeye_sniper_moon`` 去掉「、使敌人更容易进入DOWN」。
+5. 技能描述四处同步（action_skill 两档 c1、character_text c5/c7、服务端 character_text [5]/[7]）：
+   在「护盾值为其最大生命值25%」后插入「，同时为自身赋予护盾，护盾值为自身最大生命值10%」。
+
+接口见 ``${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md``：:func:`revise` 只经 ``read`` 读 live，
+开头按 :data:`BEFORE` 摘要校验（漂移即抛 :class:`CharleneBalanceError`，fail closed），不改 ``read`` 的返回对象。
+生成器 ``wf_midautumn_kit_charlene`` 已同步修改，``tests/test_balance_20260927_charlene.py`` 断言两者输出一致。
+本模块不写 live store / assets / .cdn / 候选包，不发布，不 git。
+"""
 from __future__ import annotations
 
 import copy

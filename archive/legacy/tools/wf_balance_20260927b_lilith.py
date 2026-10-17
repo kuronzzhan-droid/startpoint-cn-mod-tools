@@ -1,4 +1,29 @@
-'雷皇女 莉莉丝（139997 resistance_princess_ex）：2026-09-27 平衡调整第二批（Down / 削韧）。\n\n口径（${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md，作者已拍板）：\n\n- B.2 强化弹射每级削韧上限 15 / 20 / 25，尽量正好顶到上限。\n  PF 覆盖树（leader 139997#0 kind 722 → power_flip_action ``resistance_princess_ex_pf`` → lv1/lv2/lv3）\n  由三段组成：body[1] 球锚定剑段 ``CreateHitArea``（最多 3/4/5 段）、碰撞后拳段（3/4/6 段，每段 0.5）、\n  格斗终结（10.5/13/17）。只改剑段 ``CreateNormalAttack`` 的 p13：\n  Lv1 1.5→1（16.5→15）、Lv2 2→1.25（23→20）、Lv3 3→1（35→25）。拳段与终结不动。\n  设计稿（down_design.json）Lv2 写的是 →1（得 19）；口径「尽量正好顶到上限」＋任务「按树结构能顶就顶」\n  ⇒ Lv2 剑 4 段取 1.25，正好 20。\n- B.3 能力调用技能（kind 629）每次 ≤3，触发 CT ≤3 秒的每次 ≤1。\n  突袭 629 由能力1 ``1399971#2`` 调用（trigger 144 自身能力伤害累计 10 次，CT c35=300 帧＝5 秒，\n  按 live 1.4.1049 读取核对）⇒ 上限 3。突袭树 5 段 p13 3→0.5：15→2.5。\n  突袭树是第一批（wf_balance_20260927_lilith.py）从 PF Lv3 剑段派生的输出，本批在其 live 结果上只改 p13，\n  两边不要求同值（第二批方案复核：「不需要和突袭树取同值」）。\n- B.6 DSL 只改 CreateNormalAttack 的 p13（每个 SLv 的 {min,max} 同改），其余逐字保留；\n  整树 AMF3 往返一致并过四道 DSL 门禁。\n\n纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件；候选回写、发布由批次暂存脚本统一做\n（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md，第二批 b 后缀）。\n生成源：PF 三档树由 ``work/character_packs/resistance_princess_ex/build_pf.py`` 一次性拼装\n（fighter 官方拳段 ＋ 杰拉德 live PF 剑段整块克隆），源码里没有 p13 常量可改；该脚本与\n``build_workspace.py`` 都是禁止重跑的历史 kit（重跑会用杰拉德 live 剑段/旧 build 产物回退本批）。\n突袭树的生成器是第一批模块，它按 BEFORE 摘要 fail closed，不会在新 live 上重跑回退。\n'
+"""雷皇女 莉莉丝（139997 resistance_princess_ex）：2026-09-27 平衡调整第二批（Down / 削韧）。
+
+口径（${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md，作者已拍板）：
+
+- B.2 强化弹射每级削韧上限 15 / 20 / 25，尽量正好顶到上限。
+  PF 覆盖树（leader 139997#0 kind 722 → power_flip_action ``resistance_princess_ex_pf`` → lv1/lv2/lv3）
+  由三段组成：body[1] 球锚定剑段 ``CreateHitArea``（最多 3/4/5 段）、碰撞后拳段（3/4/6 段，每段 0.5）、
+  格斗终结（10.5/13/17）。只改剑段 ``CreateNormalAttack`` 的 p13：
+  Lv1 1.5→1（16.5→15）、Lv2 2→1.25（23→20）、Lv3 3→1（35→25）。拳段与终结不动。
+  设计稿（down_design.json）Lv2 写的是 →1（得 19）；口径「尽量正好顶到上限」＋任务「按树结构能顶就顶」
+  ⇒ Lv2 剑 4 段取 1.25，正好 20。
+- B.3 能力调用技能（kind 629）每次 ≤3，触发 CT ≤3 秒的每次 ≤1。
+  突袭 629 由能力1 ``1399971#2`` 调用（trigger 144 自身能力伤害累计 10 次，CT c35=300 帧＝5 秒，
+  按 live 1.4.1049 读取核对）⇒ 上限 3。突袭树 5 段 p13 3→0.5：15→2.5。
+  突袭树是第一批（wf_balance_20260927_lilith.py）从 PF Lv3 剑段派生的输出，本批在其 live 结果上只改 p13，
+  两边不要求同值（第二批方案复核：「不需要和突袭树取同值」）。
+- B.6 DSL 只改 CreateNormalAttack 的 p13（每个 SLv 的 {min,max} 同改），其余逐字保留；
+  整树 AMF3 往返一致并过四道 DSL 门禁。
+
+纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件；候选回写、发布由批次暂存脚本统一做
+（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md，第二批 b 后缀）。
+生成源：PF 三档树由 ``work/character_packs/resistance_princess_ex/build_pf.py`` 一次性拼装
+（fighter 官方拳段 ＋ 杰拉德 live PF 剑段整块克隆），源码里没有 p13 常量可改；该脚本与
+``build_workspace.py`` 都是禁止重跑的历史 kit（重跑会用杰拉德 live 剑段/旧 build 产物回退本批）。
+突袭树的生成器是第一批模块，它按 BEFORE 摘要 fail closed，不会在新 live 上重跑回退。
+"""
 from __future__ import annotations
 
 from copy import deepcopy

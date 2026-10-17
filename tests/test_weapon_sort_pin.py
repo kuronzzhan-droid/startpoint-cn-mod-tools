@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-'装备列表置顶数据工具 wf_weapon_sort_pin（方案 ${WF_ROOT}/out/武器置顶-20260928/方案.md「目标顺序」与 B「数据」）。\n\nlive（store）只读；暂存只写临时目录。live 已上线这 46 行后再跑，断言按 live 状态分支，仍然成立；\n门禁另有合成 live（多一行 / 少装备 / 重复序号）用例保证有牙。\n'
+"""装备列表置顶数据工具 wf_weapon_sort_pin（方案 ${WF_ROOT}/out/武器置顶-20260928/方案.md「目标顺序」与 B「数据」）。
+
+live（store）只读；暂存只写临时目录。live 已上线这 46 行后再跑，断言按 live 状态分支，仍然成立；
+门禁另有合成 live（多一行 / 少装备 / 重复序号）用例保证有牙。
+"""
 from __future__ import annotations
 
 import hashlib

@@ -1,4 +1,42 @@
-'贝尔赛蒂亚（129952 dimension_witch_smr20_ex，水）：作者 2026-09-27 小重做（与克劳斯同批）。\n\n作者原话（聊天，2026-09-27）：「水魔女的能力4的额外技能改成每直击50次触发,ct10s并且移动到能力3,能力4和5去掉主位限制」。\n作者对选择题 ④ 的确认：能力4 与能力6 都去掉主位限制（能力5 本来就不限主位）。\n\n落点（行号 0 基 ``#n``；live 链尾 1.4.1051，含第二批穿刺削韧）：\n\n1. 环爆 629「无明幽环」行 ``1299524#2`` 整行移到能力3 ``1299523`` 末尾（成为 ``#2``）：\n   c0 ``dimension_witch_smr20_ex_4`` → ``_3``；触发 c27 23（自身发动技能）→ 20（MemberDirectAttack）；\n   c28 puller ``0``（自身计数，与同键 ``#0`` 的「直击 6 次 → 252」同一取数方式）不变；\n   c30/c31 100000 → 5000000（1 次 = 100000 ⇒ 50 次）；c35 CT 0 → 600 帧（10 秒）；\n   c1 ``false``、c2 ``special``、c34 ``(None)``、c39 ``(None)``、c47 629、c70/c71 原样。\n   629 文案键 ``ability_skill_witch_ex_ring`` 不含槽位号、候选 manifest 已认领 ⇒ 不改名（改名要重认领且受 MAX_PATH 约束）。\n   能力3 整键 c1=false（主位限定），629 只在主位生效 ⇒ 满足「629 副位禁」（wf_midautumn_kit_kyle/rolf/fluffy 同规则）。\n2. 能力4 ``1299524`` 移走 629 后剩 ``#0/#1``（143 → 391/394）：c1 false → true（两行都无 202 前置）。\n3. 能力6 ``1299526`` ``#0/#1``（持有增益 → 46 DirectAttack3 自身 / 410 水队直击独立乘区）：c1 false → true（无 202）。\n4. 能力5 ``1299525`` 本就三行 c1=true、无 202 ⇒ 不改；本模块只读取并核对这一前提（fail closed）。\n5. 环爆树 ``ability_skill_witch_ex_ring``：**不改、不返回**，削韧保持每次 1。只读核对：唯一判定区对单一目标只命中\n   1 次（``CalculatedUsingMaxNumOfHits 1`` + ``Some(1)``），onHit 里唯一的 CreateNormalAttack p13 ``{1,1}`` ⇒ 每次 1；\n   第二批口径 B.3：629 每次 ≤3，触发 CT ≤3 秒（180 帧）的 ≤1；新触发行 CT 600 帧 > 180 ⇒ 上限 3，1 ≤ 3 合规\n   （即使 CT 以后缩到 ≤180 帧，1 也不超 B.3 的快档上限 1）。\n   复核裁定（major）：任务书要求「调到合计 ≤3 的最大值」，其前提「第二批已把环爆树 p13 1→0.25」不成立——第二批改的是\n   **穿刺**树（8 段 p13 1→0.25，8→2），环爆树第二批「不读不改」（wf_balance_20260927b_belsetia notes.ring_unchanged），\n   live 一直是 p13 1。取 3 等于把 Down 上调到 3 倍，作者没有要求，且与本批「不希望频繁眩晕 boss」的方向相反；B.3 只是\n   上限，不要求顶格 ⇒ 默认保持 1。若作者确认要 3：恢复树改写（p13 ``{1,1}``→``{3,3}``，``dsl`` 返回该树并过四道门禁），\n   生成器 ``build_ability_skill_tree(2)`` p13 同改 ``_mm(3, 3)``。\n\n面板：水魔女六个能力槽都没有 desc_override 键，面板由客户端按行自动生成（本模块开头确认这些键在 live 仍不存在，\n存在即拒绝）；629 文案串与技能描述（action_skill / character_text / 服务端 character_text）都不写环爆的触发条件或削韧\n⇒ 无文案同步。\n\n生成器：``work/character_packs/thunder_witch_ex/build_workspace.py`` 已同步（只改源码常量，不运行）：\n``TRIG_DIRECT50_CD``、``build_ability_rows`` 环爆记录移到 ``AB_KEY[3]``（``SID[3]``）、能力4/6 unisonable ``true``、\n``stage_kit`` 的 PRECEDENT ``(AB_KEY[4],2)`` → ``(AB_KEY[3],2)``；``build_ability_skill_tree(2)`` 保持 p13 ``_mm(1, 1)``。\n测试断言生成器能力行 == :func:`revise` 输出、环爆树 == live。\n\n纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件；候选回写、发布由批次暂存脚本统一做\n（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md，第二批 b 后缀）。\n'
+"""贝尔赛蒂亚（129952 dimension_witch_smr20_ex，水）：作者 2026-09-27 小重做（与克劳斯同批）。
+
+作者原话（聊天，2026-09-27）：「水魔女的能力4的额外技能改成每直击50次触发,ct10s并且移动到能力3,能力4和5去掉主位限制」。
+作者对选择题 ④ 的确认：能力4 与能力6 都去掉主位限制（能力5 本来就不限主位）。
+
+落点（行号 0 基 ``#n``；live 链尾 1.4.1051，含第二批穿刺削韧）：
+
+1. 环爆 629「无明幽环」行 ``1299524#2`` 整行移到能力3 ``1299523`` 末尾（成为 ``#2``）：
+   c0 ``dimension_witch_smr20_ex_4`` → ``_3``；触发 c27 23（自身发动技能）→ 20（MemberDirectAttack）；
+   c28 puller ``0``（自身计数，与同键 ``#0`` 的「直击 6 次 → 252」同一取数方式）不变；
+   c30/c31 100000 → 5000000（1 次 = 100000 ⇒ 50 次）；c35 CT 0 → 600 帧（10 秒）；
+   c1 ``false``、c2 ``special``、c34 ``(None)``、c39 ``(None)``、c47 629、c70/c71 原样。
+   629 文案键 ``ability_skill_witch_ex_ring`` 不含槽位号、候选 manifest 已认领 ⇒ 不改名（改名要重认领且受 MAX_PATH 约束）。
+   能力3 整键 c1=false（主位限定），629 只在主位生效 ⇒ 满足「629 副位禁」（wf_midautumn_kit_kyle/rolf/fluffy 同规则）。
+2. 能力4 ``1299524`` 移走 629 后剩 ``#0/#1``（143 → 391/394）：c1 false → true（两行都无 202 前置）。
+3. 能力6 ``1299526`` ``#0/#1``（持有增益 → 46 DirectAttack3 自身 / 410 水队直击独立乘区）：c1 false → true（无 202）。
+4. 能力5 ``1299525`` 本就三行 c1=true、无 202 ⇒ 不改；本模块只读取并核对这一前提（fail closed）。
+5. 环爆树 ``ability_skill_witch_ex_ring``：**不改、不返回**，削韧保持每次 1。只读核对：唯一判定区对单一目标只命中
+   1 次（``CalculatedUsingMaxNumOfHits 1`` + ``Some(1)``），onHit 里唯一的 CreateNormalAttack p13 ``{1,1}`` ⇒ 每次 1；
+   第二批口径 B.3：629 每次 ≤3，触发 CT ≤3 秒（180 帧）的 ≤1；新触发行 CT 600 帧 > 180 ⇒ 上限 3，1 ≤ 3 合规
+   （即使 CT 以后缩到 ≤180 帧，1 也不超 B.3 的快档上限 1）。
+   复核裁定（major）：任务书要求「调到合计 ≤3 的最大值」，其前提「第二批已把环爆树 p13 1→0.25」不成立——第二批改的是
+   **穿刺**树（8 段 p13 1→0.25，8→2），环爆树第二批「不读不改」（wf_balance_20260927b_belsetia notes.ring_unchanged），
+   live 一直是 p13 1。取 3 等于把 Down 上调到 3 倍，作者没有要求，且与本批「不希望频繁眩晕 boss」的方向相反；B.3 只是
+   上限，不要求顶格 ⇒ 默认保持 1。若作者确认要 3：恢复树改写（p13 ``{1,1}``→``{3,3}``，``dsl`` 返回该树并过四道门禁），
+   生成器 ``build_ability_skill_tree(2)`` p13 同改 ``_mm(3, 3)``。
+
+面板：水魔女六个能力槽都没有 desc_override 键，面板由客户端按行自动生成（本模块开头确认这些键在 live 仍不存在，
+存在即拒绝）；629 文案串与技能描述（action_skill / character_text / 服务端 character_text）都不写环爆的触发条件或削韧
+⇒ 无文案同步。
+
+生成器：``work/character_packs/thunder_witch_ex/build_workspace.py`` 已同步（只改源码常量，不运行）：
+``TRIG_DIRECT50_CD``、``build_ability_rows`` 环爆记录移到 ``AB_KEY[3]``（``SID[3]``）、能力4/6 unisonable ``true``、
+``stage_kit`` 的 PRECEDENT ``(AB_KEY[4],2)`` → ``(AB_KEY[3],2)``；``build_ability_skill_tree(2)`` 保持 p13 ``_mm(1, 1)``。
+测试断言生成器能力行 == :func:`revise` 输出、环爆树 == live。
+
+纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件；候选回写、发布由批次暂存脚本统一做
+（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md，第二批 b 后缀）。
+"""
 from __future__ import annotations
 
 from copy import deepcopy

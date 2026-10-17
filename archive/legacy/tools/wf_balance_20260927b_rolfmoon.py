@@ -1,5 +1,36 @@
 # -*- coding: utf-8 -*-
-'2026-09-27 平衡第二批：罗尔夫「不落幕的安可」149986 ``black_wolf_knight_moon``（风）的键级修订。\n\n口径 = ``${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md``（A 无上限成长 / B Down），\n设计参考 = ``growth/growth_design.json`` designs[149986] ＋ critic C08、``growth/down_design.json``。\n设计稿按 live 1.4.1048 写；本模块按 live 1.4.1049 重读（本角色 1.4.1048→1049 无变化，候选与 live 逐字相同）。\n\n改动（其余行、其余列、其余节点逐字保留）：\n\n1. **队长 L#3/L#4**（风共鸣：风队每 100 次直击 → 风队攻击力 / 直击伤害，trigger 20，不限次）：\n   c49/c50 100000 → 20000（+100% → +20%）。3 分钟约 20 次（区间 10–30）⇒ 口径 A.2 的 15–30 档取 1/5。\n   已在队长技 ⇒ 原位放缓（A.3）。\n2. **能力6 A6#3**（前置 42 队长承载：同一触发 → 风队直击独立乘区 693，不限次）：c51/c52 10000 → 2000\n   （+10% → +2%，同频 1/5）。693 队长表零先例（生成器 FORBIDDEN_LEADER_KINDS），本来就是能力行＋前置 42 承载，原位放缓。\n3. **能力3 A3#1/#2**（速度固定每持续 60 帧，trigger 246，不限次，自身攻击力 / 直击伤害 +50%）：\n   无上限成长只给队长——trigger 246 在官方与 live 自制队长表都是 0 行（口径 A.4 / 复核 C08）⇒ **不进队长表**，\n   改为 **能力6 追加 A6#5/#6**：原行整行搬过去，c0/c1/c2 换成能力6 键值、c6 前置 42（持有者为队长），\n   强度 50000 → 5000（+50% → +5%；3 分钟约 70–110 次 ⇒ ≥30 取 1/10）。原行没有共鸣前置，承载行也不加。\n   能力3 原位换成**有上限版本**（设计稿 replacement）：D214「持有最大速度固定时」自身攻击力 / 直击伤害 +100%\n   （行形 = 官方 D214 donor 1411892#0，同本角色 A2#0；持有即生效、不叠层；官方自身持续带 160/150）。\n   队长表仍 7 行。\n4. **面板**：队长 desc_override 第 5 行数值同步、原能力3 读秒那句（数值 5%）移进队长面板第 6 行；\n   能力3 desc_override 第 2 行换成「自身处于最大速度固定状态时：自身攻击力＋100%、直击伤害＋100%」。\n   能力6 desc_override 只写碰撞回槽（承载行一向不进能力6 面板），不动。\n5. **Down**：629 追击树 ``ability_skill_wolf_moon_encore``（A3#4 触发，CT 300 帧 = 5 秒 > 3 秒 ⇒ 每次 ≤3）\n   两条 CreateNormalAttack 的 p13：斩击 10 → 1.5、爆击 1 → 0.1（×10 段）⇒ 每次 20 → 2.5。\n   正常技能两档（每次 20）不动。\n\n生成器 ``wf_midautumn_kit_rolf``：LEADER / PLAN[3] / PLAN[6] / EXPECT / PANEL_* / ``retune_encore_detoughness``\n已同步（``BALANCE_B`` / ``ENCORE_DETOUGHNESS``），测试断言生成器输出 == :func:`revise` 输出。\n设计镜像（design/rolf.json 的 plan_rework1 计数 ＋ rework1.balance_20260927b、rework1/panel/rolf.json）由\n:func:`sync_mirrors` 幂等同步。本模块只读 ``read()``；不写 live store / assets / .cdn / 候选包，不发布，不 git。\n'
+"""2026-09-27 平衡第二批：罗尔夫「不落幕的安可」149986 ``black_wolf_knight_moon``（风）的键级修订。
+
+口径 = ``${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md``（A 无上限成长 / B Down），
+设计参考 = ``growth/growth_design.json`` designs[149986] ＋ critic C08、``growth/down_design.json``。
+设计稿按 live 1.4.1048 写；本模块按 live 1.4.1049 重读（本角色 1.4.1048→1049 无变化，候选与 live 逐字相同）。
+
+改动（其余行、其余列、其余节点逐字保留）：
+
+1. **队长 L#3/L#4**（风共鸣：风队每 100 次直击 → 风队攻击力 / 直击伤害，trigger 20，不限次）：
+   c49/c50 100000 → 20000（+100% → +20%）。3 分钟约 20 次（区间 10–30）⇒ 口径 A.2 的 15–30 档取 1/5。
+   已在队长技 ⇒ 原位放缓（A.3）。
+2. **能力6 A6#3**（前置 42 队长承载：同一触发 → 风队直击独立乘区 693，不限次）：c51/c52 10000 → 2000
+   （+10% → +2%，同频 1/5）。693 队长表零先例（生成器 FORBIDDEN_LEADER_KINDS），本来就是能力行＋前置 42 承载，原位放缓。
+3. **能力3 A3#1/#2**（速度固定每持续 60 帧，trigger 246，不限次，自身攻击力 / 直击伤害 +50%）：
+   无上限成长只给队长——trigger 246 在官方与 live 自制队长表都是 0 行（口径 A.4 / 复核 C08）⇒ **不进队长表**，
+   改为 **能力6 追加 A6#5/#6**：原行整行搬过去，c0/c1/c2 换成能力6 键值、c6 前置 42（持有者为队长），
+   强度 50000 → 5000（+50% → +5%；3 分钟约 70–110 次 ⇒ ≥30 取 1/10）。原行没有共鸣前置，承载行也不加。
+   能力3 原位换成**有上限版本**（设计稿 replacement）：D214「持有最大速度固定时」自身攻击力 / 直击伤害 +100%
+   （行形 = 官方 D214 donor 1411892#0，同本角色 A2#0；持有即生效、不叠层；官方自身持续带 160/150）。
+   队长表仍 7 行。
+4. **面板**：队长 desc_override 第 5 行数值同步、原能力3 读秒那句（数值 5%）移进队长面板第 6 行；
+   能力3 desc_override 第 2 行换成「自身处于最大速度固定状态时：自身攻击力＋100%、直击伤害＋100%」。
+   能力6 desc_override 只写碰撞回槽（承载行一向不进能力6 面板），不动。
+5. **Down**：629 追击树 ``ability_skill_wolf_moon_encore``（A3#4 触发，CT 300 帧 = 5 秒 > 3 秒 ⇒ 每次 ≤3）
+   两条 CreateNormalAttack 的 p13：斩击 10 → 1.5、爆击 1 → 0.1（×10 段）⇒ 每次 20 → 2.5。
+   正常技能两档（每次 20）不动。
+
+生成器 ``wf_midautumn_kit_rolf``：LEADER / PLAN[3] / PLAN[6] / EXPECT / PANEL_* / ``retune_encore_detoughness``
+已同步（``BALANCE_B`` / ``ENCORE_DETOUGHNESS``），测试断言生成器输出 == :func:`revise` 输出。
+设计镜像（design/rolf.json 的 plan_rework1 计数 ＋ rework1.balance_20260927b、rework1/panel/rolf.json）由
+:func:`sync_mirrors` 幂等同步。本模块只读 ``read()``；不写 live store / assets / .cdn / 候选包，不发布，不 git。
+"""
 from __future__ import annotations
 
 from copy import deepcopy

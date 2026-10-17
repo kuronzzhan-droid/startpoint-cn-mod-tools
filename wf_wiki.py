@@ -1,4 +1,7 @@
-'Export the current MOD character catalog as a portable, read-only website.\n\npython -X utf8 mod-tools/wf_wiki.py --output ${WF_ROOT}/out/MOD角色Wiki/site\n'
+"""Export the current MOD character catalog as a portable, read-only website.
+
+python -X utf8 mod-tools/wf_wiki.py --output ${WF_ROOT}/out/MOD角色Wiki/site
+"""
 from __future__ import annotations
 
 import argparse

@@ -1,5 +1,39 @@
 # -*- coding: utf-8 -*-
-"基诺维「破契的黑翼」169999 ``ginovi``（暗）：2026-09-27 平衡调整第二批（无上限成长 + Down/削韧）。\n\n口径：``${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md``（作者已拍板），\n设计稿 growth_design.json / down_design.json 的 169999 条目 + critic G1/R6/F1；数值按 live 1.4.1049 重读重推。\n\n一、无上限成长（口径 A.1–A.3、A.7）\n  队长 ``leader_ability:169999`` 行 7/8/9（0 基 #6/#7/#8）：暗共鸣 + trigger 235 ConditionKeepFramePiercing\n  （自身每保持贯穿 90 帧＝1.5 秒触发一次，c32=(None) 不限次）→ 暗属性全队 攻击力 32 / 技能伤害 34 / 能力伤害 388。\n  成长本来就在队长 ⇒ 原位放缓，只改 c49/c50：25000 → 2500（每跳 25% → 2.5%）。\n  频率（按实际次数分档，A.2）：技能 750 帧贯穿 ⇒ 每次施放 8 跳；开局暗共鸣技能槽 100%（能力1 +50%、队长行10 +50%）\n  立即首发，之后每 18–25 秒一发 ⇒ 3 分钟持有贯穿约 108–144 秒 ≈ 72–96 跳；即使只放 4 次也有 32 跳 ≥30 ⇒ ×1/10。\n  三行 kind 不同（32/34/388）不合并；仍无上限（c32 保持 (None)）。面板 ``desc_override_ginovi`` 第 4 行三处\n  「＋25%」→「＋2.5%」，按裁决「无上限就写到效果为止」不加「可无限累积」。\n\n二、Down / 削韧（口径 B.1–B.3、B.6：只改 CreateNormalAttack p13，其余节点逐字保留）\n  1. 技能两档 ``rare5/ginovi$ginovi_1/_2``（两档逐字相同）：尾部跟球判定区（寿命 750 帧、最小间隔 60、\n     每目标硬帽 Some 12）内唯一的 CNA p13 20 → 2.5：每次施放单目标 240 → 30（B.1 ≤30）。\n  2. 629「夜鸦裂空」``ability_skill_ginovi_pf_lv1/2/3``（队长 #1/#2/#3，trigger 180/181/182，CT c33=36 帧＝0.6 秒）：\n     CT ≤3 秒 ⇒ 每次 ≤1（B.3「按当前 live 的实际触发 CT 核对」）。设计稿 p13 20→0.3（1.5/2.1/2.7）只满足 ≤3，\n     这里再按同一比例收到 0.1：5/7/9 段 = 0.5/0.7/0.9（原 100/140/180）。见 ``notes.open_points`` 备选。\n  3. 629「黑羽斩」``ability_skill_ginovi_dash``（队长 #4，trigger 4 冲刺，CT c33=20 帧＝0.33 秒）：p13 20 → 0.25（单段）。\n  4. PF 本体 ``power_flip/action/override/ginovi_pf$ginovi_pf_lv3``（队长 #0 kind 722 → power_flip_action\n     ``ginovi_pf``）：碰撞后 10 个单段判定区 p13 3 → 2.5：30 → 25（B.2 正好顶到 Lv3 上限，复核 R6）。\n     Lv1 4×3=12（≤15）、Lv2 6×3=18（≤20）不动，只读核对。夜鸦裂空是技能伤害归属的 629，按 R6 另算。\n  直击判定次数 +3（技能 ACAdditionalDirectAttack）按 B.5 不动。\n\n生成器：``work/character_packs/ginovi/build_workspace.py``（critic G1）只改源码常量——\n``PIERCING_BUFF``、``DESC_OVERRIDE_LINES['desc_override_ginovi']`` 第 4 行、``SKILL_AURA_DETOUGHNESS`` /\n``DASH_BLADE_DETOUGHNESS`` / ``BLACKFEATHER_DETOUGHNESS`` / ``PF_BODY_DETOUGHNESS``；测试断言生成器输出 ==\n:func:`revise` 输出。本角色没有设计镜像 JSON。\n\n接口见 ``${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md``（第二批 b 后缀）：:func:`revise` 只经 ``read``\n读 live，开头按 :data:`BEFORE` 摘要校验（漂移即抛 :class:`GinoviBalanceError`，fail closed），不改 ``read``\n的返回对象。本模块不写 live store / assets / .cdn / 候选包，不发布，不 git。\n"
+"""基诺维「破契的黑翼」169999 ``ginovi``（暗）：2026-09-27 平衡调整第二批（无上限成长 + Down/削韧）。
+
+口径：``${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md``（作者已拍板），
+设计稿 growth_design.json / down_design.json 的 169999 条目 + critic G1/R6/F1；数值按 live 1.4.1049 重读重推。
+
+一、无上限成长（口径 A.1–A.3、A.7）
+  队长 ``leader_ability:169999`` 行 7/8/9（0 基 #6/#7/#8）：暗共鸣 + trigger 235 ConditionKeepFramePiercing
+  （自身每保持贯穿 90 帧＝1.5 秒触发一次，c32=(None) 不限次）→ 暗属性全队 攻击力 32 / 技能伤害 34 / 能力伤害 388。
+  成长本来就在队长 ⇒ 原位放缓，只改 c49/c50：25000 → 2500（每跳 25% → 2.5%）。
+  频率（按实际次数分档，A.2）：技能 750 帧贯穿 ⇒ 每次施放 8 跳；开局暗共鸣技能槽 100%（能力1 +50%、队长行10 +50%）
+  立即首发，之后每 18–25 秒一发 ⇒ 3 分钟持有贯穿约 108–144 秒 ≈ 72–96 跳；即使只放 4 次也有 32 跳 ≥30 ⇒ ×1/10。
+  三行 kind 不同（32/34/388）不合并；仍无上限（c32 保持 (None)）。面板 ``desc_override_ginovi`` 第 4 行三处
+  「＋25%」→「＋2.5%」，按裁决「无上限就写到效果为止」不加「可无限累积」。
+
+二、Down / 削韧（口径 B.1–B.3、B.6：只改 CreateNormalAttack p13，其余节点逐字保留）
+  1. 技能两档 ``rare5/ginovi$ginovi_1/_2``（两档逐字相同）：尾部跟球判定区（寿命 750 帧、最小间隔 60、
+     每目标硬帽 Some 12）内唯一的 CNA p13 20 → 2.5：每次施放单目标 240 → 30（B.1 ≤30）。
+  2. 629「夜鸦裂空」``ability_skill_ginovi_pf_lv1/2/3``（队长 #1/#2/#3，trigger 180/181/182，CT c33=36 帧＝0.6 秒）：
+     CT ≤3 秒 ⇒ 每次 ≤1（B.3「按当前 live 的实际触发 CT 核对」）。设计稿 p13 20→0.3（1.5/2.1/2.7）只满足 ≤3，
+     这里再按同一比例收到 0.1：5/7/9 段 = 0.5/0.7/0.9（原 100/140/180）。见 ``notes.open_points`` 备选。
+  3. 629「黑羽斩」``ability_skill_ginovi_dash``（队长 #4，trigger 4 冲刺，CT c33=20 帧＝0.33 秒）：p13 20 → 0.25（单段）。
+  4. PF 本体 ``power_flip/action/override/ginovi_pf$ginovi_pf_lv3``（队长 #0 kind 722 → power_flip_action
+     ``ginovi_pf``）：碰撞后 10 个单段判定区 p13 3 → 2.5：30 → 25（B.2 正好顶到 Lv3 上限，复核 R6）。
+     Lv1 4×3=12（≤15）、Lv2 6×3=18（≤20）不动，只读核对。夜鸦裂空是技能伤害归属的 629，按 R6 另算。
+  直击判定次数 +3（技能 ACAdditionalDirectAttack）按 B.5 不动。
+
+生成器：``work/character_packs/ginovi/build_workspace.py``（critic G1）只改源码常量——
+``PIERCING_BUFF``、``DESC_OVERRIDE_LINES['desc_override_ginovi']`` 第 4 行、``SKILL_AURA_DETOUGHNESS`` /
+``DASH_BLADE_DETOUGHNESS`` / ``BLACKFEATHER_DETOUGHNESS`` / ``PF_BODY_DETOUGHNESS``；测试断言生成器输出 ==
+:func:`revise` 输出。本角色没有设计镜像 JSON。
+
+接口见 ``${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md``（第二批 b 后缀）：:func:`revise` 只经 ``read``
+读 live，开头按 :data:`BEFORE` 摘要校验（漂移即抛 :class:`GinoviBalanceError`，fail closed），不改 ``read``
+的返回对象。本模块不写 live store / assets / .cdn / 候选包，不发布，不 git。
+"""
 from __future__ import annotations
 
 from copy import deepcopy

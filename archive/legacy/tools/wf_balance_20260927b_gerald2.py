@@ -1,5 +1,55 @@
 # -*- coding: utf-8 -*-
-"杰拉德「月耀守护」149999 ``white_wolf_gerald``（光）：2026-09-27 第二批追加（作者 09-27 追加）。\n\n注意：杰拉德（149999 光，白狼骑士）≠ 杰拉尔（129992 水，unicorn_lancer_rose）。\n\n作者原话（2026-09-27，回答第二批的两个待定项）：「杰拉德我是把他的共鸣时强化技能效果造成敌人当前生命值\n百分比伤害且随着技能释放次数每次造成的敌方当前最大生命值不断提高最开始是敌方当前生命值5%,然后是6%-7%以此类推\n当敌方生命值低于最大生命值的5%斩杀放到队长技描述为固定伤害,基诺维不要影响他当前能力的效果,跑」。\n\n按 live 1.4.1051 推导（第二批 ``wf_balance_20260927b_gerald_wolf`` 已发布：队长行7–10 放缓、PF Lv3 削韧、\n技能两档时空侵蚀 Bind 上限 2147483647→10）。行号 0 基（``#n``）。\n\nA. 技能强化（kind 536 ChangeSkillFlag，光属性共鸣前置）在队长技：**live 已如此，无需搬行**。\n   09-25 修订（``wf_gerald_cast_growth.relocate``，manifest snapshot ``skill_enhancement_moved_to_leader``）\n   已把它从能力3 搬到队长末行：``leader_ability:149999#11`` = ``[black_wolf_knight, 0, '']`` + 536、\n   前置 kind 2 光·编成≥6（c7/c8=600000，c9 White）、c68 ``change_skill_white_wolf_gerald``。六个能力键\n   （1499991–1499996）里 0 条 536 ⇒ 能力里没有可删的行，队长 12 行不变，不返回 leader/ability。\n   本模块逐格核对这行与「能力里无 536」（fail closed）。强化分支（``ConditionalsChangeSkillFlag(1)``）只在\n   杰拉德当队长且光属性共鸣时打开；比例伤害、逐次成长与斩杀都只在这支里 ⇒ 「无上限只留在队长技」已成立。\nB. 撤回第二批的封顶：技能两档强化分支 ``BindConditionAccumulationVariable(-17, 360, [DCUnique, 14999903], 1, 上限)``\n   的上限 10 → ``2147483647.0``（浮点，与第二批改前逐字相同；AMF3 29 位整数放不下 ⇒ 编码为 double，\n   整棵树重编码与第二批改前 live 原始字节同哈希 8d323968…/f27b8a14…）。第 n 次强化施技打当前生命值\n   5%+1%×(n−1)，不再封顶。计数固有 14999903「时空侵蚀」（c3 99999999 帧、c4 2147483647）本来就没封，不动。\nC. 斩杀：**已存在，不动**。同一分支 ``FindNearSubjects(-18, 1, 49, DoNothing, 301)`` →\n   ``ConditionalsHealthPointRatioOf(301, 5, 成长比例伤害, CreateRatioAttack(301, 1, 100%))``：原生 HP 条件\n   第一分支为「≥最大生命值 5%」，第二分支严格「<5%」时打当前生命值 100%（``wf_gerald_percent_skill``\n   09-25 写入）。本模块逐节点核对（fail closed）。\nD. 文案「固定伤害」：它是 ``CreateRatioAttack``（不吃攻击力/增伤、绕过抗性）⇒ 统一称固定伤害。\n   - 队长 536 行 c68 指向 ``change_skill_white_wolf_gerald``（已在本角色命名空间，候选已认领）⇒ 原键改写为\n     无数字版（裁决「技能强化条目不写数字与秒数」，``panel_problems(skill_flag=True)``）。**不写**\n     「光属性共鸣时，」前缀：队长面板按行自动生成，客户端已按前置 kind 2 拼出「光属性共鸣」\n     （ui_string ``ability_description_instant_trigger_kind_member_element_unified`` = ``::element_full::共鸣``；\n     官方同形队长 536 行 dryad_hw23 121189#2 前置 2 Blue≥6，其文案也不带条件），写了会重复。\n   - 数字写进技能描述 5 处（action_skill 两档 c1、character_text c5/c7、服务端 cdndata/character_text.json\n     [5]/[7]，参照 ``wf_balance_20260927_rolfwt26``）：在原描述末尾追加「／强化后：…」一段，沿用本角色描述的\n     「／」分段风格；数字从技能树读出并核对（5% 起、每次 +1%、低于最大生命值 5% 斩杀）。\n   - 队长面板 ``desc_override_black_wolf_knight`` 在 live 不存在（自动生成）⇒ 保持自动生成；存在即拒绝。\n     原描述/文案里没有「当前生命值百分比伤害」之类说法需要替换（本模块核对）。\n\n基诺维：作者「不要影响他当前能力的效果」⇒ 不重跑 ``build_workspace.py kit-v3``（不属本单元，本模块不读不写）。\n\n生成器：``wf_gerald_cast_growth.py`` 同步——``COUNTER_CAP = 2147483647.0``（恢复不封顶）、``ENHANCEMENT_TEXT``\n改为本模块 :data:`NEW_CAS_TEXT`；对施技成长前的技能树重跑 ``rewrite()`` == 本模块输出（测试断言，连类型）。\n``wf_gerald_percent_skill`` / ``wf_gerald_percent_revision`` 按旧源 sha256 fail closed，不写这些格子；\n技能描述/character_text 没有现行生成器（09-03 v3 一次性装配），本模块是现行唯一写入源。\n\n候选（work/character_packs/white_wolf_gerald，manifest 0.20260927）：本模块读取的键与 live 逐字相同、零哈希漂移；\n只有服务端镜像 character_text 149999 行是旧文（见 :data:`CANDIDATE_STALE_SERVER_MIRROR`），暂存整行替换后一致。\n\n纯函数：只转换 ``read()`` 给出的 live 输入，不写 live store / assets / .cdn / 候选包；接口见\n``${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md``（第二批 b 后缀）。\n"
+"""杰拉德「月耀守护」149999 ``white_wolf_gerald``（光）：2026-09-27 第二批追加（作者 09-27 追加）。
+
+注意：杰拉德（149999 光，白狼骑士）≠ 杰拉尔（129992 水，unicorn_lancer_rose）。
+
+作者原话（2026-09-27，回答第二批的两个待定项）：「杰拉德我是把他的共鸣时强化技能效果造成敌人当前生命值
+百分比伤害且随着技能释放次数每次造成的敌方当前最大生命值不断提高最开始是敌方当前生命值5%,然后是6%-7%以此类推
+当敌方生命值低于最大生命值的5%斩杀放到队长技描述为固定伤害,基诺维不要影响他当前能力的效果,跑」。
+
+按 live 1.4.1051 推导（第二批 ``wf_balance_20260927b_gerald_wolf`` 已发布：队长行7–10 放缓、PF Lv3 削韧、
+技能两档时空侵蚀 Bind 上限 2147483647→10）。行号 0 基（``#n``）。
+
+A. 技能强化（kind 536 ChangeSkillFlag，光属性共鸣前置）在队长技：**live 已如此，无需搬行**。
+   09-25 修订（``wf_gerald_cast_growth.relocate``，manifest snapshot ``skill_enhancement_moved_to_leader``）
+   已把它从能力3 搬到队长末行：``leader_ability:149999#11`` = ``[black_wolf_knight, 0, '']`` + 536、
+   前置 kind 2 光·编成≥6（c7/c8=600000，c9 White）、c68 ``change_skill_white_wolf_gerald``。六个能力键
+   （1499991–1499996）里 0 条 536 ⇒ 能力里没有可删的行，队长 12 行不变，不返回 leader/ability。
+   本模块逐格核对这行与「能力里无 536」（fail closed）。强化分支（``ConditionalsChangeSkillFlag(1)``）只在
+   杰拉德当队长且光属性共鸣时打开；比例伤害、逐次成长与斩杀都只在这支里 ⇒ 「无上限只留在队长技」已成立。
+B. 撤回第二批的封顶：技能两档强化分支 ``BindConditionAccumulationVariable(-17, 360, [DCUnique, 14999903], 1, 上限)``
+   的上限 10 → ``2147483647.0``（浮点，与第二批改前逐字相同；AMF3 29 位整数放不下 ⇒ 编码为 double，
+   整棵树重编码与第二批改前 live 原始字节同哈希 8d323968…/f27b8a14…）。第 n 次强化施技打当前生命值
+   5%+1%×(n−1)，不再封顶。计数固有 14999903「时空侵蚀」（c3 99999999 帧、c4 2147483647）本来就没封，不动。
+C. 斩杀：**已存在，不动**。同一分支 ``FindNearSubjects(-18, 1, 49, DoNothing, 301)`` →
+   ``ConditionalsHealthPointRatioOf(301, 5, 成长比例伤害, CreateRatioAttack(301, 1, 100%))``：原生 HP 条件
+   第一分支为「≥最大生命值 5%」，第二分支严格「<5%」时打当前生命值 100%（``wf_gerald_percent_skill``
+   09-25 写入）。本模块逐节点核对（fail closed）。
+D. 文案「固定伤害」：它是 ``CreateRatioAttack``（不吃攻击力/增伤、绕过抗性）⇒ 统一称固定伤害。
+   - 队长 536 行 c68 指向 ``change_skill_white_wolf_gerald``（已在本角色命名空间，候选已认领）⇒ 原键改写为
+     无数字版（裁决「技能强化条目不写数字与秒数」，``panel_problems(skill_flag=True)``）。**不写**
+     「光属性共鸣时，」前缀：队长面板按行自动生成，客户端已按前置 kind 2 拼出「光属性共鸣」
+     （ui_string ``ability_description_instant_trigger_kind_member_element_unified`` = ``::element_full::共鸣``；
+     官方同形队长 536 行 dryad_hw23 121189#2 前置 2 Blue≥6，其文案也不带条件），写了会重复。
+   - 数字写进技能描述 5 处（action_skill 两档 c1、character_text c5/c7、服务端 cdndata/character_text.json
+     [5]/[7]，参照 ``wf_balance_20260927_rolfwt26``）：在原描述末尾追加「／强化后：…」一段，沿用本角色描述的
+     「／」分段风格；数字从技能树读出并核对（5% 起、每次 +1%、低于最大生命值 5% 斩杀）。
+   - 队长面板 ``desc_override_black_wolf_knight`` 在 live 不存在（自动生成）⇒ 保持自动生成；存在即拒绝。
+     原描述/文案里没有「当前生命值百分比伤害」之类说法需要替换（本模块核对）。
+
+基诺维：作者「不要影响他当前能力的效果」⇒ 不重跑 ``build_workspace.py kit-v3``（不属本单元，本模块不读不写）。
+
+生成器：``wf_gerald_cast_growth.py`` 同步——``COUNTER_CAP = 2147483647.0``（恢复不封顶）、``ENHANCEMENT_TEXT``
+改为本模块 :data:`NEW_CAS_TEXT`；对施技成长前的技能树重跑 ``rewrite()`` == 本模块输出（测试断言，连类型）。
+``wf_gerald_percent_skill`` / ``wf_gerald_percent_revision`` 按旧源 sha256 fail closed，不写这些格子；
+技能描述/character_text 没有现行生成器（09-03 v3 一次性装配），本模块是现行唯一写入源。
+
+候选（work/character_packs/white_wolf_gerald，manifest 0.20260927）：本模块读取的键与 live 逐字相同、零哈希漂移；
+只有服务端镜像 character_text 149999 行是旧文（见 :data:`CANDIDATE_STALE_SERVER_MIRROR`），暂存整行替换后一致。
+
+纯函数：只转换 ``read()`` 给出的 live 输入，不写 live store / assets / .cdn / 候选包；接口见
+``${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md``（第二批 b 后缀）。
+"""
 from __future__ import annotations
 
 from copy import deepcopy

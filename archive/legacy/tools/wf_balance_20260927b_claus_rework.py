@@ -1,4 +1,70 @@
-"克劳斯「蚀水狩阵」（129997 claude_wolf_assassin_ex）：作者 2026-09-27 小重做（在第二批 live 1.4.1051 之上）。\n\n作者原话（聊天，已授权）：技能描述带「引爆」但实际没有，面板与效果不一致 → 小重做：\n技能给 5 个攻击力提升效果、每个 +100%；对范围内敌人 25 倍按直击计算并附加 2 层淬毒；敌方水耐性 -10%；\n队长特殊强化弹射保留辅助段、泡泡增多、每个泡泡打 15 次、按直击计算；淬毒上限仍 20；\n队长新增「敌人每 2 层淬毒，水属性角色直击判定 +1（满 20 层每人直击打 10 下）」；\n能力2 PF 淬毒写简单：发动强化弹射固定额外 3 层；能力3 强化弹射直击乘区 → 对中毒敌人 +15%，只写一行；\n能力面板写「强化中毒」。作者对方案问题的选择：①队长直击 +N 照原话做，接受首领更频繁虚弱与 Lv3 连发；\n②泡泡命中计入连击（incrementCombo 保持 true）；③能力3 用 PoisonSlayer 类（instant 117）只写一行。\n主会话确认的默认值：泡泡 2/4/6 个、每个 15 段、每级 PF 总倍率不变、削韧按 15/20/25 重摊；\n技能 _2 满级 25 倍、_1 按比例 16.67 倍、buffTargetAs=4、削韧每段 2；技能命中另写一条 ACUnique 2 层、删能力6 行3；\n水耐性 -0.15 → -0.10；5 个攻击 buff 给水属性主队（沿用现有选择器 113 [2]），用 5 个不同区分键；\n能力2 三行合一；能力面板「强化中毒：技能与强化弹射附加的中毒伤害大幅提升」；技能描述 8 处统一去掉「引爆」。\n\n施工依据：主会话调研与方案（research[]/design.claus.plan/critique.issues，按其中的节点路径施工并落实复核修正）；\n接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md（第二批 b 后缀，口径 D 节）。\n\n改动总表（所有预像按 live 1.4.1051 锁定，见 BEFORE；漂移一律拒绝）：\n\n1. 技能两档 DSL（rare5/claude_wolf_assassin_ex_1/_2）：\n   - 判定区（-18 跟球 Circle 200、600 帧、10 段、Some 10）tree[24] buffTargetAs 0 → 4（按直击乘区结算）。\n   - onHit CreateNormalAttack p6 每段倍率：_2 [1.5→1.75] → [15/7→2.5]（满级 10 段合计 25 倍）；\n     _1 [7/6] → [5/3]（按 _1/_2 原比例 ×25/17.5，合计 16.67 倍）。削韧 p13=2（10 段 20 ≤ 30）、Fever 2.5 不动。\n   - onHit 末尾追加一条 CreateCondition(命中对象, ACUnique(129997, 2 层))，照官方 ice_dragon_1/_2 的写法。\n     单独一条：unique 表的 cancelable/forceApply 会覆盖整条命令；「每个敌人每次施放只 +2 层」依赖\n     unique_condition 129997 c10 force_apply='false'（重付与闸门），revise() 对 c10 做 fail-closed 检查。\n   - 3 个 FindAllSubjects(3,113,[2]) 空键 ACAttackPoint(1200, 0.6) → 1 个 FindAllSubjects(3,113,[2]) 内 5 条\n     ACAttackPoint(1200, 1.0)，区分键 攻撃力アップ1..5（官方 ruin_lady_meteor23_1 同写法，2 键）。\n     条件 ID 规则（ConditionId_Impl_.as:23-69）：键非空时 ID = D//<来源>/<构造名>/<键>，5 键 → 5 个独立条件；\n     同次施放的去重哈希（ActionEvaluator.as:3285-3308/5251）也含区分键，所以 5 条不会被合并。\n   - FindAllSubjects(4,49) 的 ACToleranceOfElement 水 -0.15 → -0.1（forceApply 不改）。\n2. PF 三档 DSL（power_flip/…/claude_wolf_assassin_ex_pf_lv1/2/3）：辅助段、Lv3 开场全屏 1 段、Suppress 20 原样；\n   泡泡（爪击）1/3/5 → 2/4/6 个（深拷最后一个泡泡、嵌套 Wait 再加一层，间隔 7/7/6 帧），\n   NotifyPowerflipEnd 跟着后移到「最后一个泡泡 +18」：t19/33/43 → t26/40/49。\n   每个泡泡：寿命 20 → 72 帧，CalculatedUsingMaxNumOfHits 3 → 15，硬封顶 None → Some 15，buffTargetAs 4 不动；\n   onHit 的 ShakeCamera 1 移到 onCreate（每个泡泡震一次，免得每目标 90 段就震 90 次）；ACPoison 原样。\n   每段按「每级 PF 每目标总量守恒」重摊：倍率 11/60、0.1625、7/36（总 5.5/9.75/17.5 不变）；\n   削韧 0.5、0.3333、0.2666（总 15 / 19.998 / 23.994+开场 1=24.994，≤ 15/20/25）；Fever 0.6、0.9、1.0（总 18/54/90 不变）；\n   incrementCombo 保持 true（作者选择②）。Lv1/Lv2 辅助段 CreateCondition p5 的整数 6 → true（签名为 Boolean，\n   Lv3 与 wt26 母本都是 true；运行时 Boolean(6)=true，行为等价）。\n3. 队长 leader_ability 129997 追加第 10 行（下标 9）：形状照 live 校园奈芙 169989 下标 7\n   （T77 每 10 帧 → 629，09-27 卡顿修复后的参数），前置沿用本表水共鸣门（c4..c10 与本表下标 7 相同），\n   c68 = ``claude_wolf_assassin_ex_poison_hits``、c69 = 新 ability_skill DSL。\n   DSL：FindAllSubjects(10, 49 全体敌人) → BindConditionAccumulationVariable(10, vid1, DCUnique 129997, 除数 2, 上限 9)\n   → FindAllSubjects(11, 113 [2] 水属性主队) → CreateCondition(11, ACAdditionalDirectAttack(20 帧,\n   段数 1 + vlv(vid1), 直击伤害 +1.0, 1), 隐形, 强制付与, 每个敌人都付与(p6=true), 空键)。\n   段数 = floor(1 + min(层/2, 9))：0–1 层 1 段、2 层 2 段 …… 18 层起 10 段（作者括号「满 20 层每人直击打 10 下」）。\n   直击伤害 +1.0 与能力3 行4 DirectAttack2 的 +100% 相同：≥4 层顶替 DA2（先比段数）也不丢 +100%。\n4. 能力2 1299972：行1-3（trigger 63/64/65 → 413 淬毒 1/3/5 层）合成一行：以行1 为模板，trigger 63 → 2（发动强化弹射，\n   任意档），强度 → 300000（3 层）；行4（每层淬毒特攻 +50%，限 20）原样。4 行 → 2 行。\n5. 能力3 1299973：删行6-8（trigger 63/64/65 → 713 直击独立乘区 +15/45/75%）；新增一行＝行4 克隆\n   （常驻、前置 202 主位、对象水队）只改 c47 201 → 117（ConditionSlayer(Poison, All)）、c51/c52 → 15000（+15%）。8 行 → 6 行。\n6. 能力6 1299976：删行3（技能发动 → 413 淬毒 2 层；技能 DSL 自带 2 层后避免双倍）。行4/行5（技能发动时 100 倍/30 倍\n   能力伤害）保留。5 行 → 4 行。\n7. 面板与描述：新 CAS ``claude_wolf_assassin_ex_poison_hits``（队长 629 行文案）；\n   新 CAS ``desc_override_claude_wolf_assassin_ex_2``（整槽接管能力2 面板，3 行、换行分行、非主位不带图标）；\n   技能描述 8 处（action_skill 两档 c1、character_text c5/c7/c9、服务端 cdndata/character_text.json [5]/[7]/[9]）统一，\n   去掉「3 个」「引爆」。选择器仍是 113 [2]（只给主队水属性角色），描述按实际写「赋予水属性角色」而不是「全体队友」。\n\n候选：``work/character_packs/claude_wolf_assassin_ex``（manifest 0.1.1 → 0.1.2）。已审漂移同第二批（技能两档 DSL\n候选 == live、manifest 未重封；本次回写会把它们重封）。PF Lv1 与新 629 DSL 以新 root 进包。\n生成器：无可同步常量。包内 build_claw_pf.py / restore_pf_support.py / patch_* 等是 0818–0820 的一次性直写 live 脚本，\n输出早已不等于 live，禁止重跑；第二批 ``wf_balance_20260927b_klaus.py`` 锁的是 1.4.1049 预像，本次之后在新 live 上\n会 fail closed（设计如此，不要重跑、不要改）。本模块是这批数值的唯一真源。\n\n纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件。\n"
+"""克劳斯「蚀水狩阵」（129997 claude_wolf_assassin_ex）：作者 2026-09-27 小重做（在第二批 live 1.4.1051 之上）。
+
+作者原话（聊天，已授权）：技能描述带「引爆」但实际没有，面板与效果不一致 → 小重做：
+技能给 5 个攻击力提升效果、每个 +100%；对范围内敌人 25 倍按直击计算并附加 2 层淬毒；敌方水耐性 -10%；
+队长特殊强化弹射保留辅助段、泡泡增多、每个泡泡打 15 次、按直击计算；淬毒上限仍 20；
+队长新增「敌人每 2 层淬毒，水属性角色直击判定 +1（满 20 层每人直击打 10 下）」；
+能力2 PF 淬毒写简单：发动强化弹射固定额外 3 层；能力3 强化弹射直击乘区 → 对中毒敌人 +15%，只写一行；
+能力面板写「强化中毒」。作者对方案问题的选择：①队长直击 +N 照原话做，接受首领更频繁虚弱与 Lv3 连发；
+②泡泡命中计入连击（incrementCombo 保持 true）；③能力3 用 PoisonSlayer 类（instant 117）只写一行。
+主会话确认的默认值：泡泡 2/4/6 个、每个 15 段、每级 PF 总倍率不变、削韧按 15/20/25 重摊；
+技能 _2 满级 25 倍、_1 按比例 16.67 倍、buffTargetAs=4、削韧每段 2；技能命中另写一条 ACUnique 2 层、删能力6 行3；
+水耐性 -0.15 → -0.10；5 个攻击 buff 给水属性主队（沿用现有选择器 113 [2]），用 5 个不同区分键；
+能力2 三行合一；能力面板「强化中毒：技能与强化弹射附加的中毒伤害大幅提升」；技能描述 8 处统一去掉「引爆」。
+
+施工依据：主会话调研与方案（research[]/design.claus.plan/critique.issues，按其中的节点路径施工并落实复核修正）；
+接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md（第二批 b 后缀，口径 D 节）。
+
+改动总表（所有预像按 live 1.4.1051 锁定，见 BEFORE；漂移一律拒绝）：
+
+1. 技能两档 DSL（rare5/claude_wolf_assassin_ex_1/_2）：
+   - 判定区（-18 跟球 Circle 200、600 帧、10 段、Some 10）tree[24] buffTargetAs 0 → 4（按直击乘区结算）。
+   - onHit CreateNormalAttack p6 每段倍率：_2 [1.5→1.75] → [15/7→2.5]（满级 10 段合计 25 倍）；
+     _1 [7/6] → [5/3]（按 _1/_2 原比例 ×25/17.5，合计 16.67 倍）。削韧 p13=2（10 段 20 ≤ 30）、Fever 2.5 不动。
+   - onHit 末尾追加一条 CreateCondition(命中对象, ACUnique(129997, 2 层))，照官方 ice_dragon_1/_2 的写法。
+     单独一条：unique 表的 cancelable/forceApply 会覆盖整条命令；「每个敌人每次施放只 +2 层」依赖
+     unique_condition 129997 c10 force_apply='false'（重付与闸门），revise() 对 c10 做 fail-closed 检查。
+   - 3 个 FindAllSubjects(3,113,[2]) 空键 ACAttackPoint(1200, 0.6) → 1 个 FindAllSubjects(3,113,[2]) 内 5 条
+     ACAttackPoint(1200, 1.0)，区分键 攻撃力アップ1..5（官方 ruin_lady_meteor23_1 同写法，2 键）。
+     条件 ID 规则（ConditionId_Impl_.as:23-69）：键非空时 ID = D//<来源>/<构造名>/<键>，5 键 → 5 个独立条件；
+     同次施放的去重哈希（ActionEvaluator.as:3285-3308/5251）也含区分键，所以 5 条不会被合并。
+   - FindAllSubjects(4,49) 的 ACToleranceOfElement 水 -0.15 → -0.1（forceApply 不改）。
+2. PF 三档 DSL（power_flip/…/claude_wolf_assassin_ex_pf_lv1/2/3）：辅助段、Lv3 开场全屏 1 段、Suppress 20 原样；
+   泡泡（爪击）1/3/5 → 2/4/6 个（深拷最后一个泡泡、嵌套 Wait 再加一层，间隔 7/7/6 帧），
+   NotifyPowerflipEnd 跟着后移到「最后一个泡泡 +18」：t19/33/43 → t26/40/49。
+   每个泡泡：寿命 20 → 72 帧，CalculatedUsingMaxNumOfHits 3 → 15，硬封顶 None → Some 15，buffTargetAs 4 不动；
+   onHit 的 ShakeCamera 1 移到 onCreate（每个泡泡震一次，免得每目标 90 段就震 90 次）；ACPoison 原样。
+   每段按「每级 PF 每目标总量守恒」重摊：倍率 11/60、0.1625、7/36（总 5.5/9.75/17.5 不变）；
+   削韧 0.5、0.3333、0.2666（总 15 / 19.998 / 23.994+开场 1=24.994，≤ 15/20/25）；Fever 0.6、0.9、1.0（总 18/54/90 不变）；
+   incrementCombo 保持 true（作者选择②）。Lv1/Lv2 辅助段 CreateCondition p5 的整数 6 → true（签名为 Boolean，
+   Lv3 与 wt26 母本都是 true；运行时 Boolean(6)=true，行为等价）。
+3. 队长 leader_ability 129997 追加第 10 行（下标 9）：形状照 live 校园奈芙 169989 下标 7
+   （T77 每 10 帧 → 629，09-27 卡顿修复后的参数），前置沿用本表水共鸣门（c4..c10 与本表下标 7 相同），
+   c68 = ``claude_wolf_assassin_ex_poison_hits``、c69 = 新 ability_skill DSL。
+   DSL：FindAllSubjects(10, 49 全体敌人) → BindConditionAccumulationVariable(10, vid1, DCUnique 129997, 除数 2, 上限 9)
+   → FindAllSubjects(11, 113 [2] 水属性主队) → CreateCondition(11, ACAdditionalDirectAttack(20 帧,
+   段数 1 + vlv(vid1), 直击伤害 +1.0, 1), 隐形, 强制付与, 每个敌人都付与(p6=true), 空键)。
+   段数 = floor(1 + min(层/2, 9))：0–1 层 1 段、2 层 2 段 …… 18 层起 10 段（作者括号「满 20 层每人直击打 10 下」）。
+   直击伤害 +1.0 与能力3 行4 DirectAttack2 的 +100% 相同：≥4 层顶替 DA2（先比段数）也不丢 +100%。
+4. 能力2 1299972：行1-3（trigger 63/64/65 → 413 淬毒 1/3/5 层）合成一行：以行1 为模板，trigger 63 → 2（发动强化弹射，
+   任意档），强度 → 300000（3 层）；行4（每层淬毒特攻 +50%，限 20）原样。4 行 → 2 行。
+5. 能力3 1299973：删行6-8（trigger 63/64/65 → 713 直击独立乘区 +15/45/75%）；新增一行＝行4 克隆
+   （常驻、前置 202 主位、对象水队）只改 c47 201 → 117（ConditionSlayer(Poison, All)）、c51/c52 → 15000（+15%）。8 行 → 6 行。
+6. 能力6 1299976：删行3（技能发动 → 413 淬毒 2 层；技能 DSL 自带 2 层后避免双倍）。行4/行5（技能发动时 100 倍/30 倍
+   能力伤害）保留。5 行 → 4 行。
+7. 面板与描述：新 CAS ``claude_wolf_assassin_ex_poison_hits``（队长 629 行文案）；
+   新 CAS ``desc_override_claude_wolf_assassin_ex_2``（整槽接管能力2 面板，3 行、换行分行、非主位不带图标）；
+   技能描述 8 处（action_skill 两档 c1、character_text c5/c7/c9、服务端 cdndata/character_text.json [5]/[7]/[9]）统一，
+   去掉「3 个」「引爆」。选择器仍是 113 [2]（只给主队水属性角色），描述按实际写「赋予水属性角色」而不是「全体队友」。
+
+候选：``work/character_packs/claude_wolf_assassin_ex``（manifest 0.1.1 → 0.1.2）。已审漂移同第二批（技能两档 DSL
+候选 == live、manifest 未重封；本次回写会把它们重封）。PF Lv1 与新 629 DSL 以新 root 进包。
+生成器：无可同步常量。包内 build_claw_pf.py / restore_pf_support.py / patch_* 等是 0818–0820 的一次性直写 live 脚本，
+输出早已不等于 live，禁止重跑；第二批 ``wf_balance_20260927b_klaus.py`` 锁的是 1.4.1049 预像，本次之后在新 live 上
+会 fail closed（设计如此，不要重跑、不要改）。本模块是这批数值的唯一真源。
+
+纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件。
+"""
 from __future__ import annotations
 
 from copy import deepcopy

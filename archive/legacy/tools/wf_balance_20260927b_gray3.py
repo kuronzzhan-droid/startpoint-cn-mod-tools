@@ -1,5 +1,74 @@
 # -*- coding: utf-8 -*-
-'灰服三角色导入：墨斯伊克 149997 / 希耶提 149995 / 希尔媞「千刃共振」泳装 149996（2026-09-27 平衡批次）。\n\n作者原话（2026-09-27，聊天）：「对方灰服调整过的角色，把这版替换我本地的，然后一并纳入调整」。\n\n来源：灰服 CDN 增量包 ``pinball-1.4.121-1.4.131-1-author-three-characters-data.zip``（灰链 1.4.121→1.4.131，\n161 个成员，``ARCHIVE_SHA256``；成员名 ``production/<root>/<xx>/<sha1(逻辑路径+盐) 余 38 位>``，\nroot：upload=common、medium_upload=medium、android_upload=android、ios_upload=ios）。成员逐个钉 sha256\n（``GRAY_FILES``），读到的字节不符即拒绝。读取顺序：``GRAY_ROOT``（默认仓库 ``work/gray3/production``，\n``/work/`` 已 gitignore、不随会话清理；``extract`` 子命令从钉哈希的原压缩包解出）里有就读它，没有就直接从\n``ARCHIVE`` 读成员；``files`` 输出要落地路径，只认 ``GRAY_ROOT``。151 个成员由哈希反查表认出；其余 4 个未识别成员 = 泳装希尔媞新特效族\n``battle/effect/skill_unique/wind_spgirl_swim/wind_spgirl_swim.{parts,timeline,atlas}.amf3.deflate`` 与\n``….png``——由灰版技能 DSL 的 ShowEffect 路径 + 预载器 ``<目录>/<目录名>.png/.atlas`` 规则算 sha1 反查命中；\n与灰方 1.4.88 审计记录（patch-audit.json ``x_effect.members``）的 sha256 逐一相同。\n\n## 键级替换，绝不整表\n压缩包里 11 张表是灰链整表：其他角色的行与我方不同（例如 ability 142 键、leader 27 键、action_skill 20 键，\n另有灰方独有 159991 等、我方独有 129986/129987 等，见夹具 ``other_character_diff``）。本模块只取三名角色\n自己的外层键（``startswith(cid)``、``== code``、``startswith(code + "_")``；与 live 同名键集合逐表一致，见\n``EXPECTED_KEYS``），灰值 ≠ live 值的键才返回。\n\n## 返回（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md，多角色 ``UNITS``）\n标准键 ability/leader/cas/text/action/dsl/server_text/new_programs/notes，另有新键（主会话扩展暂存脚本）：\n- ``files``：``{"<tier>:<logical>": "<GRAY_ROOT 下解出文件的绝对路径>"}``，tier ∈ common/medium/android，\n  只列与 live 字节不同或 live 缺的文件。ios 层 6 个 cut-in ATF 我方没有该根，忽略。技能 DSL 走 ``dsl``（树），\n  其 AMF3 负载与压缩包逐字节相同（``GRAY_DSL_AMF3_SHA256``）。\n- ``presentation_table``：``{(logical, outer): rows | {inner: rows}}``——立绘定位三表：character_image、\n  full_shot_image_attribute 为嵌套（候选 codec raw_outer，字节用 ``encode_presentation``），trimmed_image 为平表。\n- ``nested_table``：非立绘的嵌套表键（本次为空；character_status 三人与灰版相同）。\n- ``server_character``：恒为空（灰版 character 行与我方相同，assets/cdndata/character.json 无需同步）。\n读取另需两个 read 种类（暂存脚本扩展）：``nested_table``：(logical, outer) → {inner: csv rows}；\n``file_sha256``：(tier, logical) → live 文件 sha256（缺失为 None）。\n\n## 美术分两步：希耶提灰版美术单独拍板（``ART_DECISION``；作者 2026-09-27 已接受）\n美术 = medium/android 层与 ``character/<code>/`` 下的文件 + 立绘定位三表（``is_art``）；``battle/effect`` 特效是\nDSL 依赖，不算美术。希耶提灰版觉醒立绘脸锚 y=874（官方 p10-p90 418-646）、两槽脸锚不同高、cut-in 上/左边不透明——\n正是作者 1.4.447 实机否决过的构图（``ART_REVIEW``，对比图在 ``work/gray3/review/``），而且会让希耶提包内 4 条\n构图/边缘/生成器一致性测试变红。所以 ``UNITS`` 里的希耶提只导入表/DSL/文案（与美术无依赖），美术和定位行放进\n``notes.art``（status = deferred，列出延后的文件与定位行）；作者看图接受后，暂存单独的 ``ART_UNITS``\n（只查美术输入基线，核心导入之后仍可跑），并在同一单元按作者签字改/退役那 4 条包测试。泳装希尔媞的灰版美术\n沿用我方定位行、脸锚落在脸上，cut-in 边缘与我方同样不透明（非回退），随核心一起导入；墨斯伊克美术与我方逐字节相同。\n\n**作者 2026-09-27 已拍板接受希耶提灰版美术**（``ART_DECISION["149995"]`` = accepted，原话见该处注释）。核心导入\n已在 1.4.1054 发布，本模块的 ``UNITS`` 因此不能再跑（BEFORE fail closed）；美术由第三轮 extra5 批次的\n``wf_balance_20260927c_seofonart``（包装 ``ART_UNITS``）单独暂存，包内 4 条测试按作者决定对灰版 27 个文件的 sha256 豁免。\n\n## 压缩包之外、被压缩包内容引用的依赖（从灰链归档补齐）\n压缩包只带表、技能 DSL、UI/像素/特效资产；不带 ability_skill DSL、custom_ability_string、立绘定位三表、\nPF 覆盖树、语音。其中两处是压缩包内容的硬依赖，从本地灰链归档\n``work/codex_out/gray-audit-20260830/gray/assets/asset-patch/active``（灰链 ≤1.4.93 快照）取回并核对：\n- 灰版 ``1499966#3`` 是 kind 629，调用 ``ability_skill_wind_spgirl_swim_whirlwind``：程序（西微「风怒龙卷＋」\n  满强化本体移植）与文案「额外发动「旋风」」live 都没有。取灰链 1.4.87→1.4.88 边的原字节，\n  sha256 = 灰方 1.4.88 审计 ``output_sha256``（``WHIRLWIND_DEFLATE_SHA256``）；文案取 1.4.92 的 custom_ability_string。\n  灰版 149996 的表行自 1.4.93 起未变（与压缩包逐格相同），CT 60 帧 = 灰方审计 ``invoke_cooldown_frames``。\n- 希耶提立绘换成灰版后 PNG 尺寸变了（_0 1774×1769→1659×1535，_1 1741×1772→1632×1681）：character_image\n  的 pngW/pngH 必须等于 PNG 实际尺寸。灰链 1.4.91→1.4.92 的定位行 W/H 与压缩包 PNG 逐一相等（同一批美术），\n  连同 trimmed_image（含 skill_cutin_0 显示偏移）与 full_shot_image_attribute 脸锚一起取回（只随希耶提美术导入；作者 09-27 接受后由 seofonart 暂存）。泳装/墨斯伊克的定位行灰版与我方相同。\n其余压缩包外差异不导入，只报告（notes.not_in_archive）：墨斯伊克 PF 覆盖树（灰链 1.4.85 把倍率 12.5/8.28/6.44\n降到 7.5/6.0/4.5，p13 仍为 5；我方 live 还叠了第二批 p13 5/4/2.5）、泳装希尔媞 19 条语音（灰链 1.4.88 重编码）、\n希耶提「剑界回响」629 树（灰链 = 我方第二批之前的 p13 2.0）。\n\n## 与第二批（1.4.1051）的关系\n只有泳装希尔媞 A4（``1499964``）被覆盖：第二批 B4 把「每 77 连击自身眩晕蓄积 +25%（限 101）」改成「自身直击 +20%（限 5）」，\n灰版就是改前那一行。导入后 live 1499964 的摘要 == ``wf_balance_20260927b_swimceltie.BEFORE``：第二批泳装模块\n因此重新「可应用」——gray3 之后禁止重跑它（会把 B4 静默叠回灰版行）；A4 归任务 B。\n墨斯伊克 PF 削韧（B2）与希耶提回响 p13（B3）不在压缩包里，第二批结果保留。\n三方比对（我方最后一次发给灰的分享包 mosiyike0820 / lion0823 / trio0825 = 灰方起点）：除 1499964 外，所有差异格\n都是「灰方改、我方未改」，导入不会回退我方其他改动。\n\n纯函数：``revise`` 只读 ``read()`` 与钉住哈希的灰方来源，不写任何文件；不写 live/assets/.cdn/候选，不发布，不 git。\n'
+"""灰服三角色导入：墨斯伊克 149997 / 希耶提 149995 / 希尔媞「千刃共振」泳装 149996（2026-09-27 平衡批次）。
+
+作者原话（2026-09-27，聊天）：「对方灰服调整过的角色，把这版替换我本地的，然后一并纳入调整」。
+
+来源：灰服 CDN 增量包 ``pinball-1.4.121-1.4.131-1-author-three-characters-data.zip``（灰链 1.4.121→1.4.131，
+161 个成员，``ARCHIVE_SHA256``；成员名 ``production/<root>/<xx>/<sha1(逻辑路径+盐) 余 38 位>``，
+root：upload=common、medium_upload=medium、android_upload=android、ios_upload=ios）。成员逐个钉 sha256
+（``GRAY_FILES``），读到的字节不符即拒绝。读取顺序：``GRAY_ROOT``（默认仓库 ``work/gray3/production``，
+``/work/`` 已 gitignore、不随会话清理；``extract`` 子命令从钉哈希的原压缩包解出）里有就读它，没有就直接从
+``ARCHIVE`` 读成员；``files`` 输出要落地路径，只认 ``GRAY_ROOT``。151 个成员由哈希反查表认出；其余 4 个未识别成员 = 泳装希尔媞新特效族
+``battle/effect/skill_unique/wind_spgirl_swim/wind_spgirl_swim.{parts,timeline,atlas}.amf3.deflate`` 与
+``….png``——由灰版技能 DSL 的 ShowEffect 路径 + 预载器 ``<目录>/<目录名>.png/.atlas`` 规则算 sha1 反查命中；
+与灰方 1.4.88 审计记录（patch-audit.json ``x_effect.members``）的 sha256 逐一相同。
+
+## 键级替换，绝不整表
+压缩包里 11 张表是灰链整表：其他角色的行与我方不同（例如 ability 142 键、leader 27 键、action_skill 20 键，
+另有灰方独有 159991 等、我方独有 129986/129987 等，见夹具 ``other_character_diff``）。本模块只取三名角色
+自己的外层键（``startswith(cid)``、``== code``、``startswith(code + "_")``；与 live 同名键集合逐表一致，见
+``EXPECTED_KEYS``），灰值 ≠ live 值的键才返回。
+
+## 返回（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md，多角色 ``UNITS``）
+标准键 ability/leader/cas/text/action/dsl/server_text/new_programs/notes，另有新键（主会话扩展暂存脚本）：
+- ``files``：``{"<tier>:<logical>": "<GRAY_ROOT 下解出文件的绝对路径>"}``，tier ∈ common/medium/android，
+  只列与 live 字节不同或 live 缺的文件。ios 层 6 个 cut-in ATF 我方没有该根，忽略。技能 DSL 走 ``dsl``（树），
+  其 AMF3 负载与压缩包逐字节相同（``GRAY_DSL_AMF3_SHA256``）。
+- ``presentation_table``：``{(logical, outer): rows | {inner: rows}}``——立绘定位三表：character_image、
+  full_shot_image_attribute 为嵌套（候选 codec raw_outer，字节用 ``encode_presentation``），trimmed_image 为平表。
+- ``nested_table``：非立绘的嵌套表键（本次为空；character_status 三人与灰版相同）。
+- ``server_character``：恒为空（灰版 character 行与我方相同，assets/cdndata/character.json 无需同步）。
+读取另需两个 read 种类（暂存脚本扩展）：``nested_table``：(logical, outer) → {inner: csv rows}；
+``file_sha256``：(tier, logical) → live 文件 sha256（缺失为 None）。
+
+## 美术分两步：希耶提灰版美术单独拍板（``ART_DECISION``；作者 2026-09-27 已接受）
+美术 = medium/android 层与 ``character/<code>/`` 下的文件 + 立绘定位三表（``is_art``）；``battle/effect`` 特效是
+DSL 依赖，不算美术。希耶提灰版觉醒立绘脸锚 y=874（官方 p10-p90 418-646）、两槽脸锚不同高、cut-in 上/左边不透明——
+正是作者 1.4.447 实机否决过的构图（``ART_REVIEW``，对比图在 ``work/gray3/review/``），而且会让希耶提包内 4 条
+构图/边缘/生成器一致性测试变红。所以 ``UNITS`` 里的希耶提只导入表/DSL/文案（与美术无依赖），美术和定位行放进
+``notes.art``（status = deferred，列出延后的文件与定位行）；作者看图接受后，暂存单独的 ``ART_UNITS``
+（只查美术输入基线，核心导入之后仍可跑），并在同一单元按作者签字改/退役那 4 条包测试。泳装希尔媞的灰版美术
+沿用我方定位行、脸锚落在脸上，cut-in 边缘与我方同样不透明（非回退），随核心一起导入；墨斯伊克美术与我方逐字节相同。
+
+**作者 2026-09-27 已拍板接受希耶提灰版美术**（``ART_DECISION["149995"]`` = accepted，原话见该处注释）。核心导入
+已在 1.4.1054 发布，本模块的 ``UNITS`` 因此不能再跑（BEFORE fail closed）；美术由第三轮 extra5 批次的
+``wf_balance_20260927c_seofonart``（包装 ``ART_UNITS``）单独暂存，包内 4 条测试按作者决定对灰版 27 个文件的 sha256 豁免。
+
+## 压缩包之外、被压缩包内容引用的依赖（从灰链归档补齐）
+压缩包只带表、技能 DSL、UI/像素/特效资产；不带 ability_skill DSL、custom_ability_string、立绘定位三表、
+PF 覆盖树、语音。其中两处是压缩包内容的硬依赖，从本地灰链归档
+``work/codex_out/gray-audit-20260830/gray/assets/asset-patch/active``（灰链 ≤1.4.93 快照）取回并核对：
+- 灰版 ``1499966#3`` 是 kind 629，调用 ``ability_skill_wind_spgirl_swim_whirlwind``：程序（西微「风怒龙卷＋」
+  满强化本体移植）与文案「额外发动「旋风」」live 都没有。取灰链 1.4.87→1.4.88 边的原字节，
+  sha256 = 灰方 1.4.88 审计 ``output_sha256``（``WHIRLWIND_DEFLATE_SHA256``）；文案取 1.4.92 的 custom_ability_string。
+  灰版 149996 的表行自 1.4.93 起未变（与压缩包逐格相同），CT 60 帧 = 灰方审计 ``invoke_cooldown_frames``。
+- 希耶提立绘换成灰版后 PNG 尺寸变了（_0 1774×1769→1659×1535，_1 1741×1772→1632×1681）：character_image
+  的 pngW/pngH 必须等于 PNG 实际尺寸。灰链 1.4.91→1.4.92 的定位行 W/H 与压缩包 PNG 逐一相等（同一批美术），
+  连同 trimmed_image（含 skill_cutin_0 显示偏移）与 full_shot_image_attribute 脸锚一起取回（只随希耶提美术导入；作者 09-27 接受后由 seofonart 暂存）。泳装/墨斯伊克的定位行灰版与我方相同。
+其余压缩包外差异不导入，只报告（notes.not_in_archive）：墨斯伊克 PF 覆盖树（灰链 1.4.85 把倍率 12.5/8.28/6.44
+降到 7.5/6.0/4.5，p13 仍为 5；我方 live 还叠了第二批 p13 5/4/2.5）、泳装希尔媞 19 条语音（灰链 1.4.88 重编码）、
+希耶提「剑界回响」629 树（灰链 = 我方第二批之前的 p13 2.0）。
+
+## 与第二批（1.4.1051）的关系
+只有泳装希尔媞 A4（``1499964``）被覆盖：第二批 B4 把「每 77 连击自身眩晕蓄积 +25%（限 101）」改成「自身直击 +20%（限 5）」，
+灰版就是改前那一行。导入后 live 1499964 的摘要 == ``wf_balance_20260927b_swimceltie.BEFORE``：第二批泳装模块
+因此重新「可应用」——gray3 之后禁止重跑它（会把 B4 静默叠回灰版行）；A4 归任务 B。
+墨斯伊克 PF 削韧（B2）与希耶提回响 p13（B3）不在压缩包里，第二批结果保留。
+三方比对（我方最后一次发给灰的分享包 mosiyike0820 / lion0823 / trio0825 = 灰方起点）：除 1499964 外，所有差异格
+都是「灰方改、我方未改」，导入不会回退我方其他改动。
+
+纯函数：``revise`` 只读 ``read()`` 与钉住哈希的灰方来源，不写任何文件；不写 live/assets/.cdn/候选，不发布，不 git。
+"""
 from __future__ import annotations
 
 import argparse

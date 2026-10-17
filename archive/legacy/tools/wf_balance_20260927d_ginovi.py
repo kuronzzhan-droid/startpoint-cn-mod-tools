@@ -1,5 +1,54 @@
 # -*- coding: utf-8 -*-
-'基诺维「破契的黑翼」169999 ``ginovi``（暗）：2026-09-27 平衡第四轮（d）——技能「掠影协奏」吞噬协力球。\n\n作者原话（2026-09-27）：「基诺维的技能能不能添加效果扣除协力球100%生命值,每消灭一个协力球自身攻击力+50%」。\n主会话可行性调研（扣血有友伤钳位只能打到 1HP ⇒ 真消灭只能用原生 ``RemoveMultiball``）呈给作者后，作者选择题四项：\n\n- 吃球范围 =「只吃角色召唤球（推荐）」：只吃角色技能召唤的有生命协力球（校园奈芙光/暗球、暗系召唤者的球等）；\n  不吃炸弹球、关卡 NPC 协力角色、kind=1 非生物投射球（魔女火球等），也不吃碧安卡幼龙 1199891。\n- 叠加方式 =「每次施放覆盖，上限9个（推荐）」：每次施放按本次吃掉的个数，每个自身攻击力 +50%，最多 9 个（+450%），\n  持续 750 帧（12.5 秒，与技能其余增益一致）；再施放覆盖为新个数（引擎默认降为新值并刷新时长）；\n  0 个球时不执行、不覆盖已有加成。\n- 生效档位 =「技能本体就有（推荐）」：技能 / 技能＋ 两档、强化 / 非强化两支都生效（节点放在\n  ``ConditionalsChangeSkillFlag`` 之前）；技能说明写吞噬效果（本体效果），不写进强化条目。\n- 奈芙联动 =「保留联动，真机看强度（推荐）」：奈芙的球 1699891/1699892 在白名单内，奈芙队长第 6 行不改。\n\nDSL（签名按 ``wf_dsl_sig`` 核对）::\n\n    ConditionalsMultiballNumber(DEVOUR_IDS, [], 1, Block[\n        MultiballNumberVariable(DEVOUR_VARIABLE, False, DEVOUR_IDS, [], 1, 9),   # V = min(个数, 9)；先数后删\n        RemoveMultiball(False, DEVOUR_IDS),                                      # 基诺维自己不召球 ⇒ 第一参 False\n        CreateCondition(-17, [ACAttackPoint 750 帧 × 0.5·V], …, "ginovi_devour", None, False, 3, …),\n    ], Block[])\n\n陷阱（测试逐条锁）：\n\n1. 键串必须非空且树内唯一：ConditionSlot 合并键 gid 用不乘 mul 的内容算，强化支固定 +50%\n   （``SKILL_ATTACK_UP_EXTRA``，750 帧，键串空）与本节点同形；键串空 ⇒ 同 gid，后到的强化支把 0.5×N 整条覆盖成\n   +50%（静默失效）。官方带 mul 的 CreateCondition（katana_ghost_wt22 / estateguild_leader）键串都非空。\n2. ID 表语义不一致：``RemoveMultiball`` 的 [] 被转成 null = 全部；``MultiballNumberVariable`` /\n   ``ConditionalsMultiballNumber`` 的 [] = 一个都不匹配 ⇒ 三处同一份非空 :data:`DEVOUR_IDS`（给了 ID 表时炸弹球永不匹配）。\n3. 先数后删（删后待发 / 入场中的球已销毁，计数不全）。\n4. 不进 TargetMate 作用域（联机跨机只许治疗/状态）；目标 -17（自身）、付与种类 3。\n\n:data:`DEVOUR_IDS` = :func:`scan_devour_ids` 对 live 的扫描结果（测试对 live 重扫断言相等）：live\n``action_skill`` / ``ability`` / ``leader_ability`` 引用的 ``battle/action/skill/action/**`` DSL（= 可玩角色的技能与\n629 能力技能）里 ``CreateSummonsMultiball`` 用到的 ID，取 live ``multiball`` 表 c25 == 0（有生命 SummonsMultiball，\nisLivingKind）的，排除 1199891。敌方 DSL（boss_kadomatsu 召 202001，路径 battle/action/enemy/**）、炸弹\n（1001–1006，CreateBombMultiball）、关卡 NPC（不是技能召唤）自然不在内；kind=1 的 3110021–23 / 3310101–02 被 c25 滤掉。\n\n技能说明（action_skill 两档 c1、character_text c5/c7、服务端 cdndata/character_text.json [5]/[7]，六处一致）\n末尾追加「；吞噬场上被召唤的协力球，赋予自身攻击力提升效果【效果随吞噬数量提升[最大9个]】」（官方「【效果随…提升[最大N]】」句式，上限照写，\n定性无数字）；强化条目 ``change_skill_ginovi`` 与能力面板不动。\n\n生成器 ``work/character_packs/ginovi/build_workspace.py``：常量 ``DEVOUR_*`` + ``skill_devour_multiballs()`` 插在\n``m4_skill_root()`` 的 ``ConditionalsChangeSkillFlag`` 之前，``CT_SKILL_DESC`` 同步；测试断言生成器输出 == :func:`revise`\n输出。kit 重建会写包，本模块不运行。\n\n接口见 ``${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md``：:func:`revise` 只经 ``read`` 读 live，开头按\n:data:`BEFORE` 摘要校验（漂移即抛 :class:`GinoviDevourError`，fail closed），不改 ``read`` 的返回对象。\n本模块不写 live store / assets / .cdn / 候选包，不发布，不 git。\n'
+"""基诺维「破契的黑翼」169999 ``ginovi``（暗）：2026-09-27 平衡第四轮（d）——技能「掠影协奏」吞噬协力球。
+
+作者原话（2026-09-27）：「基诺维的技能能不能添加效果扣除协力球100%生命值,每消灭一个协力球自身攻击力+50%」。
+主会话可行性调研（扣血有友伤钳位只能打到 1HP ⇒ 真消灭只能用原生 ``RemoveMultiball``）呈给作者后，作者选择题四项：
+
+- 吃球范围 =「只吃角色召唤球（推荐）」：只吃角色技能召唤的有生命协力球（校园奈芙光/暗球、暗系召唤者的球等）；
+  不吃炸弹球、关卡 NPC 协力角色、kind=1 非生物投射球（魔女火球等），也不吃碧安卡幼龙 1199891。
+- 叠加方式 =「每次施放覆盖，上限9个（推荐）」：每次施放按本次吃掉的个数，每个自身攻击力 +50%，最多 9 个（+450%），
+  持续 750 帧（12.5 秒，与技能其余增益一致）；再施放覆盖为新个数（引擎默认降为新值并刷新时长）；
+  0 个球时不执行、不覆盖已有加成。
+- 生效档位 =「技能本体就有（推荐）」：技能 / 技能＋ 两档、强化 / 非强化两支都生效（节点放在
+  ``ConditionalsChangeSkillFlag`` 之前）；技能说明写吞噬效果（本体效果），不写进强化条目。
+- 奈芙联动 =「保留联动，真机看强度（推荐）」：奈芙的球 1699891/1699892 在白名单内，奈芙队长第 6 行不改。
+
+DSL（签名按 ``wf_dsl_sig`` 核对）::
+
+    ConditionalsMultiballNumber(DEVOUR_IDS, [], 1, Block[
+        MultiballNumberVariable(DEVOUR_VARIABLE, False, DEVOUR_IDS, [], 1, 9),   # V = min(个数, 9)；先数后删
+        RemoveMultiball(False, DEVOUR_IDS),                                      # 基诺维自己不召球 ⇒ 第一参 False
+        CreateCondition(-17, [ACAttackPoint 750 帧 × 0.5·V], …, "ginovi_devour", None, False, 3, …),
+    ], Block[])
+
+陷阱（测试逐条锁）：
+
+1. 键串必须非空且树内唯一：ConditionSlot 合并键 gid 用不乘 mul 的内容算，强化支固定 +50%
+   （``SKILL_ATTACK_UP_EXTRA``，750 帧，键串空）与本节点同形；键串空 ⇒ 同 gid，后到的强化支把 0.5×N 整条覆盖成
+   +50%（静默失效）。官方带 mul 的 CreateCondition（katana_ghost_wt22 / estateguild_leader）键串都非空。
+2. ID 表语义不一致：``RemoveMultiball`` 的 [] 被转成 null = 全部；``MultiballNumberVariable`` /
+   ``ConditionalsMultiballNumber`` 的 [] = 一个都不匹配 ⇒ 三处同一份非空 :data:`DEVOUR_IDS`（给了 ID 表时炸弹球永不匹配）。
+3. 先数后删（删后待发 / 入场中的球已销毁，计数不全）。
+4. 不进 TargetMate 作用域（联机跨机只许治疗/状态）；目标 -17（自身）、付与种类 3。
+
+:data:`DEVOUR_IDS` = :func:`scan_devour_ids` 对 live 的扫描结果（测试对 live 重扫断言相等）：live
+``action_skill`` / ``ability`` / ``leader_ability`` 引用的 ``battle/action/skill/action/**`` DSL（= 可玩角色的技能与
+629 能力技能）里 ``CreateSummonsMultiball`` 用到的 ID，取 live ``multiball`` 表 c25 == 0（有生命 SummonsMultiball，
+isLivingKind）的，排除 1199891。敌方 DSL（boss_kadomatsu 召 202001，路径 battle/action/enemy/**）、炸弹
+（1001–1006，CreateBombMultiball）、关卡 NPC（不是技能召唤）自然不在内；kind=1 的 3110021–23 / 3310101–02 被 c25 滤掉。
+
+技能说明（action_skill 两档 c1、character_text c5/c7、服务端 cdndata/character_text.json [5]/[7]，六处一致）
+末尾追加「；吞噬场上被召唤的协力球，赋予自身攻击力提升效果【效果随吞噬数量提升[最大9个]】」（官方「【效果随…提升[最大N]】」句式，上限照写，
+定性无数字）；强化条目 ``change_skill_ginovi`` 与能力面板不动。
+
+生成器 ``work/character_packs/ginovi/build_workspace.py``：常量 ``DEVOUR_*`` + ``skill_devour_multiballs()`` 插在
+``m4_skill_root()`` 的 ``ConditionalsChangeSkillFlag`` 之前，``CT_SKILL_DESC`` 同步；测试断言生成器输出 == :func:`revise`
+输出。kit 重建会写包，本模块不运行。
+
+接口见 ``${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md``：:func:`revise` 只经 ``read`` 读 live，开头按
+:data:`BEFORE` 摘要校验（漂移即抛 :class:`GinoviDevourError`，fail closed），不改 ``read`` 的返回对象。
+本模块不写 live store / assets / .cdn / 候选包，不发布，不 git。
+"""
 from __future__ import annotations
 
 from copy import deepcopy

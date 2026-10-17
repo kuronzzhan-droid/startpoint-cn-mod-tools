@@ -1,4 +1,33 @@
-'杰拉尔（129992 unicorn_lancer_rose，水；不是光杰拉德 149999）：2026-09-27 平衡调整第二批（Down / 削韧）。\n\n口径（${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md，作者已拍板）：\n\n- B.1 技能每次施放单目标总削韧 ≤30（严格口径；作者选「严格按 30」，杰拉尔在多降的 5 名里）。\n  两档技能树（``unicorn_lancer_rose_1`` / ``_2``，按 live 1.4.1049 读取）结构相同，三段伤害：\n  「鱼叉突进」判定区（球锚定 -18、``CalculatedUsingMaxNumOfHits 12``）p13 1.5 = 18；\n  「连突」判定区（8 段）p13 1 = 8；「收尾」判定区（1 段）p13 10 = 10；合计 36。\n  只改鱼叉 CreateNormalAttack 的 p13 ``{1.5,1.5}`` → ``{1,1}``：18 → 12，合计 36 → 30。\n  复核意见 B1-P95 (a) 写的「杰拉尔 10→7」只到 33（18+8+7），不满足 ≤30；要单改收尾须 10→4（−60%），\n  而鱼叉 1.5→1 把多段段位与连突段统一到每段 1、收尾保留原母本（251002 unicorn_lancer_1）的 10，\n  改动幅度最小（本段 −33%）。倍率、连击加成、对决、浮游等节点一律不动。\n- B.6 DSL 只改 CreateNormalAttack 的 p13（每个 SLv 的 {min,max} 同改），其余逐字保留；\n  整树 AMF3 往返一致并过四道 DSL 门禁。\n- 1.5 批（4980e206 ``wf_balance_20260927_waterab``）只改了能力伤害倍率（629 追击 45→36、能力5 252 15→12）\n  与追击树，本模块不读不改那些键 ⇒ 不回退。1.5 批把这两棵技能树列为只读审计输入（``GERALD_BEFORE`` 摘要与本模块\n  ``BEFORE`` 相同 ⇒ 1.5 批没改过它们）；本批发布后它的 revise() 会对新 live fail closed——1.5 批已发布、不再重跑，属预期。\n\n文案：技能描述（action_skill c1 / character_text / 服务端 character_text「合计60/75倍」）与面板都不写削韧数值\n⇒ 无文案同步。\n\n生成器：mod-tools 里没有能重现今 live 技能树的生成器。首建 kit ``work/character_packs/_ulr_scripts/kit_dsl.py``\n（``slv(1.5)`` 鱼叉 p13）是 09-06 v1 历史构建脚本，其输出与今 live 已不同（倍率、连击加成、浮游都被后续修订改过），\n不作为同步目标；后续修订 ``wf_gerald_r2_data.revise_tree`` / ``wf_gerald_self_flying_fix.fix_tree`` 都按\n1.4.764 / 1.4.768 树哈希 fail closed（测试断言它们拒绝本模块输出，重跑不会回退）；``wf_water_balance_20260924``\n与 ``wf_balance_20260927_waterab`` 不碰技能树。本模块是这批技能 p13 的唯一真源。\n\n纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件；候选回写、发布由批次暂存脚本统一做\n（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md，第二批 b 后缀）。\n'
+"""杰拉尔（129992 unicorn_lancer_rose，水；不是光杰拉德 149999）：2026-09-27 平衡调整第二批（Down / 削韧）。
+
+口径（${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md，作者已拍板）：
+
+- B.1 技能每次施放单目标总削韧 ≤30（严格口径；作者选「严格按 30」，杰拉尔在多降的 5 名里）。
+  两档技能树（``unicorn_lancer_rose_1`` / ``_2``，按 live 1.4.1049 读取）结构相同，三段伤害：
+  「鱼叉突进」判定区（球锚定 -18、``CalculatedUsingMaxNumOfHits 12``）p13 1.5 = 18；
+  「连突」判定区（8 段）p13 1 = 8；「收尾」判定区（1 段）p13 10 = 10；合计 36。
+  只改鱼叉 CreateNormalAttack 的 p13 ``{1.5,1.5}`` → ``{1,1}``：18 → 12，合计 36 → 30。
+  复核意见 B1-P95 (a) 写的「杰拉尔 10→7」只到 33（18+8+7），不满足 ≤30；要单改收尾须 10→4（−60%），
+  而鱼叉 1.5→1 把多段段位与连突段统一到每段 1、收尾保留原母本（251002 unicorn_lancer_1）的 10，
+  改动幅度最小（本段 −33%）。倍率、连击加成、对决、浮游等节点一律不动。
+- B.6 DSL 只改 CreateNormalAttack 的 p13（每个 SLv 的 {min,max} 同改），其余逐字保留；
+  整树 AMF3 往返一致并过四道 DSL 门禁。
+- 1.5 批（4980e206 ``wf_balance_20260927_waterab``）只改了能力伤害倍率（629 追击 45→36、能力5 252 15→12）
+  与追击树，本模块不读不改那些键 ⇒ 不回退。1.5 批把这两棵技能树列为只读审计输入（``GERALD_BEFORE`` 摘要与本模块
+  ``BEFORE`` 相同 ⇒ 1.5 批没改过它们）；本批发布后它的 revise() 会对新 live fail closed——1.5 批已发布、不再重跑，属预期。
+
+文案：技能描述（action_skill c1 / character_text / 服务端 character_text「合计60/75倍」）与面板都不写削韧数值
+⇒ 无文案同步。
+
+生成器：mod-tools 里没有能重现今 live 技能树的生成器。首建 kit ``work/character_packs/_ulr_scripts/kit_dsl.py``
+（``slv(1.5)`` 鱼叉 p13）是 09-06 v1 历史构建脚本，其输出与今 live 已不同（倍率、连击加成、浮游都被后续修订改过），
+不作为同步目标；后续修订 ``wf_gerald_r2_data.revise_tree`` / ``wf_gerald_self_flying_fix.fix_tree`` 都按
+1.4.764 / 1.4.768 树哈希 fail closed（测试断言它们拒绝本模块输出，重跑不会回退）；``wf_water_balance_20260924``
+与 ``wf_balance_20260927_waterab`` 不碰技能树。本模块是这批技能 p13 的唯一真源。
+
+纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件；候选回写、发布由批次暂存脚本统一做
+（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md，第二批 b 后缀）。
+"""
 from __future__ import annotations
 
 from copy import deepcopy

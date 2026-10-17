@@ -1,4 +1,8 @@
-'Incrementally export native character pixel previews for an existing public Wiki.\n\nOnly writes media/pixels/* and data/pixel-previews.{json,js}; never edits game data.\npython -X utf8 mod-tools/wf_wiki_pixels.py --output ${WF_ROOT}/out/MOD角色Wiki/site\n'
+"""Incrementally export native character pixel previews for an existing public Wiki.
+
+Only writes media/pixels/* and data/pixel-previews.{json,js}; never edits game data.
+python -X utf8 mod-tools/wf_wiki_pixels.py --output ${WF_ROOT}/out/MOD角色Wiki/site
+"""
 from __future__ import annotations
 
 import argparse

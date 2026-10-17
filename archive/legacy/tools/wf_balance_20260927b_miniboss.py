@@ -1,4 +1,38 @@
-'五名小动物 2026-09-27 第二批（Down / 削韧）修订：Sec-2600Li、机枪魔块·雷、水灵幽魂、风暴恶魔拉比、炎枪见习兵。\n\n口径：${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md（作者 2026-09-27 拍板），设计稿 growth/down_design.json\n（基于 live 1.4.1048；本模块按 live 1.4.1049 重读、重算）。\n\n1. 技能每次施放单目标总削韧 ≤30（B1）：只改 CreateNormalAttack 的 p13（node[13]，SLv 的 {min,max} 同改），其余节点逐字保留。\n   - Sec-2600Li lv2：p13 1→0.75、1.5→1.1，40→29.8（复核 B1-P95 给定值；lv1 31.5 口径未点名，不动）。\n   - 机枪魔块·雷 lv2：两段冲击波 p13 5→3，42→30（复核 C3，漏列补上）；弹幕 p13=1 与 lv1（21）不动。\n   - 水灵幽魂 lv1/lv2：p13 1→0.5、10→5，51/60→25.5/30。\n   - 风暴恶魔拉比 lv2：p13 1→0.65，46→29.9（复核 C4）；lv1（24）不动。\n   - 炎枪见习兵 lv1/lv2：p13 1→0.6，48→28.8。\n2. 能力调用技能（kind 629）每次 ≤3，触发 CT ≤3 秒的每次 ≤1（B3「按当前 live 的实际触发 CT 核对，\n   CT ≤3 秒的一律 ≤1」）。live 触发核对：两名 629 行都是 PowerFlipLv1/2/3（trigger 63/64/65，阈值 1），\n   CT c35=0 帧、限次 (None) ⇒ CT ≤3 秒 ⇒ 每次 ≤1。设计稿 p13 0.15 / 0.25（1.05/2.7/2.7、1/2/3）只满足 ≤3，\n   这里按基诺维夜鸦裂空同法（设计稿同一比例再收，三级比例不变）：\n   - 水灵幽魂人魂 7/18/18 → 0.35/0.9/0.9（p13 1→0.05，设计稿 0.15 的 1/3）；\n   - 拉比爪刃 4/8/12 → 0.32/0.64/0.96（p13 1→0.08，设计稿 0.25 的约 1/3，取两位小数且 ≤1）。\n   revise 按 live CT 现算每次上限（≤180 帧＝3 秒 → 1，否则 3）并核对改后值；触发列、CT、限次或程序路径\n   一旦变动即拒绝（fail closed）。\n3. 眩晕蓄积（B4）：Sec 能力1 行1 自身 150%→100%（c51/c52 150000→100000）；面板保持小动物单行格式。\n   拉比能力5 行2 自身 50% 保留（本模块不读不改）。\n\n单目标削韧口径（detoughness，与设计稿官方基线同一口径）：Repeat 乘次数；判定区命中数取 CalculatedUsingMaxNumOfHits，\n或「寿命÷最小间隔+1」，再与 Some 上限取小；NWay/AShaped 扇面对单目标按 1 个判定区计；只认判定区 onHit（node[23]）\n内的 CreateNormalAttack。遇到条件分支或其他未审形状即拒绝（fail closed）。\n这个口径不看 CreateHitArea p16 eliminatedOnHit（命中即移除，ActionHitArea.as:496-518）：水灵幽魂的人魂判定区\n（Single、p16=true）实际对单目标只命中 1 次，引擎实值低于口径值（见 :func:`engine_detoughness` 与 notes）。\n口径值是上界，按它封顶保证实值也不超。\n\n纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件；候选回写、发布由批次暂存脚本统一做\n（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md，第二批 b 后缀）。\n生成器：能力与面板由 wf_miniboss_other.security / wf_miniboss_text.TEXTS 生成，已同步（revise 运行时核对\n``build_abilities`` / ``ability_panel_rows`` 与本次输出逐键相同，不一致即拒绝）。技能与 629 DSL 在 wf_miniboss_* 里\n没有生成器（kit 声明「retain installed DSL bytes」），本模块是这批 DSL 数值的唯一真源。\n'
+"""五名小动物 2026-09-27 第二批（Down / 削韧）修订：Sec-2600Li、机枪魔块·雷、水灵幽魂、风暴恶魔拉比、炎枪见习兵。
+
+口径：${WF_ROOT}/out/平衡调整批次-20260927/batch2/第二批施工口径.md（作者 2026-09-27 拍板），设计稿 growth/down_design.json
+（基于 live 1.4.1048；本模块按 live 1.4.1049 重读、重算）。
+
+1. 技能每次施放单目标总削韧 ≤30（B1）：只改 CreateNormalAttack 的 p13（node[13]，SLv 的 {min,max} 同改），其余节点逐字保留。
+   - Sec-2600Li lv2：p13 1→0.75、1.5→1.1，40→29.8（复核 B1-P95 给定值；lv1 31.5 口径未点名，不动）。
+   - 机枪魔块·雷 lv2：两段冲击波 p13 5→3，42→30（复核 C3，漏列补上）；弹幕 p13=1 与 lv1（21）不动。
+   - 水灵幽魂 lv1/lv2：p13 1→0.5、10→5，51/60→25.5/30。
+   - 风暴恶魔拉比 lv2：p13 1→0.65，46→29.9（复核 C4）；lv1（24）不动。
+   - 炎枪见习兵 lv1/lv2：p13 1→0.6，48→28.8。
+2. 能力调用技能（kind 629）每次 ≤3，触发 CT ≤3 秒的每次 ≤1（B3「按当前 live 的实际触发 CT 核对，
+   CT ≤3 秒的一律 ≤1」）。live 触发核对：两名 629 行都是 PowerFlipLv1/2/3（trigger 63/64/65，阈值 1），
+   CT c35=0 帧、限次 (None) ⇒ CT ≤3 秒 ⇒ 每次 ≤1。设计稿 p13 0.15 / 0.25（1.05/2.7/2.7、1/2/3）只满足 ≤3，
+   这里按基诺维夜鸦裂空同法（设计稿同一比例再收，三级比例不变）：
+   - 水灵幽魂人魂 7/18/18 → 0.35/0.9/0.9（p13 1→0.05，设计稿 0.15 的 1/3）；
+   - 拉比爪刃 4/8/12 → 0.32/0.64/0.96（p13 1→0.08，设计稿 0.25 的约 1/3，取两位小数且 ≤1）。
+   revise 按 live CT 现算每次上限（≤180 帧＝3 秒 → 1，否则 3）并核对改后值；触发列、CT、限次或程序路径
+   一旦变动即拒绝（fail closed）。
+3. 眩晕蓄积（B4）：Sec 能力1 行1 自身 150%→100%（c51/c52 150000→100000）；面板保持小动物单行格式。
+   拉比能力5 行2 自身 50% 保留（本模块不读不改）。
+
+单目标削韧口径（detoughness，与设计稿官方基线同一口径）：Repeat 乘次数；判定区命中数取 CalculatedUsingMaxNumOfHits，
+或「寿命÷最小间隔+1」，再与 Some 上限取小；NWay/AShaped 扇面对单目标按 1 个判定区计；只认判定区 onHit（node[23]）
+内的 CreateNormalAttack。遇到条件分支或其他未审形状即拒绝（fail closed）。
+这个口径不看 CreateHitArea p16 eliminatedOnHit（命中即移除，ActionHitArea.as:496-518）：水灵幽魂的人魂判定区
+（Single、p16=true）实际对单目标只命中 1 次，引擎实值低于口径值（见 :func:`engine_detoughness` 与 notes）。
+口径值是上界，按它封顶保证实值也不超。
+
+纯函数：只转换 ``read()`` 给出的 live 输入，不写任何文件；候选回写、发布由批次暂存脚本统一做
+（接口见 ${WF_ROOT}/out/平衡调整批次-20260927/module_contract.md，第二批 b 后缀）。
+生成器：能力与面板由 wf_miniboss_other.security / wf_miniboss_text.TEXTS 生成，已同步（revise 运行时核对
+``build_abilities`` / ``ability_panel_rows`` 与本次输出逐键相同，不一致即拒绝）。技能与 629 DSL 在 wf_miniboss_* 里
+没有生成器（kit 声明「retain installed DSL bytes」），本模块是这批 DSL 数值的唯一真源。
+"""
 from __future__ import annotations
 
 from collections import Counter
