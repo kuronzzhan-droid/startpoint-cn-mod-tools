@@ -5498,7 +5498,10 @@ async function cwOpen(o){ // o={key,line} 编辑现有行 | {dstKey} 组装新�
       else if(fname==='kind'&&bname==='instant_precontent')ed={el:selEditor(i,smallOpts('precontent'),true)};
       else if(fname==='kind'&&bname==='opening')ed={el:selEditor(i,smallOpts('opening'),true)};
       else if(fname==='target')ed={el:selEditor(i,smallOpts('target'),true)};
-      else if(fname==='trigger_puller')ed={el:selEditor(i,smallOpts('puller'),true)};
+      else if(fname==='trigger_puller'){
+        const pullerKind=(bname==='instant_trigger'||bname==='during_accumulation_trigger')?'instant_puller':'during_puller';
+        ed={el:selEditor(i,smallOpts(pullerKind),true)};
+      }
       else if(fname==='element')ed={el:selEditor(i,smallOpts('element'),true)};
       else if(fname==='multiply_trigger')ed={el:selEditor(i,smallOpts('multiply'),true)};
       else if(/character_groups/.test(fname))ed=groupsEditor(i);

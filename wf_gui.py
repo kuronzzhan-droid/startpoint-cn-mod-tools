@@ -1389,6 +1389,8 @@ def composer_meta() -> dict:
     small = {
         "target": {str(k): v for k, v in wf_describe.TARGET_CN.items()},
         "puller": {str(k): v for k, v in wf_describe.PULLER_CN.items()},
+        "instant_puller": {str(k): v for k, v in wf_describe.INSTANT_PULLER_CN.items()},
+        "during_puller": {str(k): v for k, v in wf_describe.DURING_PULLER_CN.items()},
         "element": {str(k): v for k, v in wf_describe.ELEMENT_CN.items()},
         "precontent": {str(k): v for k, v in wf_describe.PRECONTENT_CN.items()},
         "multiply": {str(k): v for k, v in wf_describe.MULTIPLY_CN.items()},
@@ -1400,7 +1402,7 @@ def composer_meta() -> dict:
                        for tok in m["character_groups_seen"]},
             "categories": list(m["category_strings"].keys()),
             "usage": m["usage_counts"], "unique_conditions": ucs,
-            "note": "数值单位:强度类 1000=1%;阈值 100000=1次/层;帧×100000;60帧=1秒"}
+            "note": "数值单位:强度类1000=1%;阈值100000=1次/层;内容frame为100000=1帧;cooltime为原始帧;instant_delay为原始秒"}
 
 
 def composer_row(key: str, line: int, as_key: str = "") -> dict:
@@ -2298,6 +2300,7 @@ CHAR_FIELD_MAP = {
     "name": ("text", 0), "name_en": ("text", 1), "description": ("text", 2),
     "title": ("text", 3), "skill_name": ("text", 4), "skill_desc": ("text", 5),
     "skill_plus_name": ("text", 6), "skill_plus_desc": ("text", 7),
+    "skill_plusplus_name": ("text", 8), "skill_plusplus_desc": ("text", 9),
     "leader_title": ("text", 10), "cv": ("text", 11),
 }
 
@@ -2312,7 +2315,8 @@ RACE_TOKENS = ("Human", "Beast", "Element", "Machine", "Undead",
                "Mystery", "Dragon", "Devil", "Plants", "Aquatic")
 # 资料页技能字段 → action_skill 级别/列(技能名＋=级别2;＋＋级别3 资料页未暴露不动)
 _SKILL_TEXT_SYNC = {"1": ("skill_name", "skill_desc"),
-                    "2": ("skill_plus_name", "skill_plus_desc")}
+                    "2": ("skill_plus_name", "skill_plus_desc"),
+                    "3": ("skill_plusplus_name", "skill_plusplus_desc")}
 
 
 def _char_json_paths() -> tuple[Path, Path]:
