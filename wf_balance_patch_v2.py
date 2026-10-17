@@ -30,7 +30,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 MOD_DIR = Path(__file__).resolve().parent
-ROOT = MOD_DIR.parent
+ROOT = MOD_DIR
 pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_mod_tool as core  # noqa: E402
 import wf_quest_lib as qlib  # noqa: E402
@@ -91,8 +91,8 @@ def pad(row: list[str], n: int) -> list[str]:
 
 
 def load_roster() -> dict[str, dict]:
-    ch = json.loads((ROOT / "assets/cdndata/character.json").read_text(encoding="utf-8"))
-    tx = json.loads((ROOT / "assets/cdndata/character_text.json").read_text(encoding="utf-8"))
+    ch = json.loads((core.resolve_cdndata_dir() / "character.json").read_text(encoding="utf-8"))
+    tx = json.loads((core.resolve_cdndata_dir() / "character_text.json").read_text(encoding="utf-8"))
     roster = {}
     for cid, rows in ch.items():
         r = core.normalize_row_length(rows[0], 37)
@@ -298,7 +298,7 @@ def main() -> None:
         skill_path[k] = " ".join(f[2] for _lv, f in ent if len(f) > 2)
 
     use = Counter()
-    ch_all = json.loads((ROOT / "assets/cdndata/character.json").read_text(encoding="utf-8"))
+    ch_all = json.loads((core.resolve_cdndata_dir() / "character.json").read_text(encoding="utf-8"))
     for rows in ch_all.values():
         r = core.normalize_row_length(rows[0], 37)
         for x in set(a for a in (r[19 + i] for i in range(6)) if a and a != "(None)"):

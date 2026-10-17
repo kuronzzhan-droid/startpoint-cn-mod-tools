@@ -115,6 +115,13 @@ class RerollSeasonTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
         self.db = make_db(Path(self.tmp.name) / "t.db")
+        # These unit cases use an isolated server fixture, never a parent checkout.
+        self.server = Path(self.tmp.name) / "server"
+        (self.server / "assets").mkdir(parents=True)
+        self.cdn = self.server / ".cdn" / "cn"
+        self.cdn.mkdir(parents=True)
+        self.enterContext(mock.patch.object(reroll.core, "resolve_server_dir", return_value=self.server))
+        self.enterContext(mock.patch.object(reroll.core, "resolve_cdn_root", return_value=self.cdn))
 
     def tearDown(self) -> None:
         self.db.close()
@@ -172,7 +179,8 @@ class RerollSeasonTest(unittest.TestCase):
             if int(row["rushEventRound"]) > expect.get(folder, 0):
                 expect[folder] = int(row["rushEventRound"])
         wanted = ",".join(f"{f}:{expect[f]}" for f in sorted(expect))
-        self.assertEqual(reroll.season_fingerprint("700099"), wanted)
+        with mock.patch.object(reroll.core, "resolve_server_dir", return_value=quest.parents[1]):
+            self.assertEqual(reroll.season_fingerprint("700099"), wanted)
         self.assertTrue(wanted, "700099 至少要有一个多轮 folder,否则这条断言是空的")
 
     def test_fingerprint_of_unknown_event_is_empty(self) -> None:

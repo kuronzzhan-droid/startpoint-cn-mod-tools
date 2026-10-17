@@ -16,7 +16,7 @@ from collections import Counter
 from pathlib import Path
 
 MOD_DIR = Path(__file__).resolve().parent
-ROOT = MOD_DIR.parent
+ROOT = MOD_DIR
 pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_mod_tool as core  # noqa: E402
 import wf_describe  # noqa: E402
@@ -77,8 +77,8 @@ def fam_terms_hit(name: str, fam: str) -> bool:
 
 def main() -> None:
     store = core.require_active_store()
-    ch = json.loads((ROOT / "assets/cdndata/character.json").read_text(encoding="utf-8"))
-    tx = json.loads((ROOT / "assets/cdndata/character_text.json").read_text(encoding="utf-8"))
+    ch = json.loads((core.resolve_cdndata_dir() / "character.json").read_text(encoding="utf-8"))
+    tx = json.loads((core.resolve_cdndata_dir() / "character_text.json").read_text(encoding="utf-8"))
     ab = core.load_table(core.ABILITY_LOGICAL, store)
     parsed = {k: core.read_csv_lines(t) for k, t in ab.text_rows().items()}
     lead = core.load_table(LEADER_LOGICAL, store)
@@ -233,6 +233,7 @@ def main() -> None:
         c["scale"] = round(min(SCALE_CAP, max(1.0, tgt / c["total"])), 2) if c["total"] > 0 else SCALE_CAP
 
     fire.sort(key=lambda c: (-c["rar"], c["icid"]))
+    OUT_JSON.parent.mkdir(parents=True, exist_ok=True)
     OUT_JSON.write_text(json.dumps(fire, ensure_ascii=False, indent=1), encoding="utf-8")
 
     print(f"火系角色 {len(fire)},基线组刃值(降序): {base_totals},头部锚点 {anchor}")

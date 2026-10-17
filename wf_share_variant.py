@@ -44,7 +44,7 @@ from pathlib import Path
 from typing import Callable, Iterable, Sequence
 
 MOD_DIR = Path(__file__).resolve().parent
-ROOT = MOD_DIR.parent
+ROOT = MOD_DIR
 pass  # Imports resolve from this checkout/package, not external source copies.
 
 import wf_enhancement_policy as policy_mod  # noqa: E402
@@ -805,14 +805,14 @@ def main(argv: list[str] | None = None) -> int:
                         help="不校验「Rank P5b 四 boss/990002/五称号/资深商店/"
                              "15 武器/700099 模式行齐全」"
                              "(只在故意发局部内容包时用)")
-    parser.add_argument("--cdn", help="CDN 根(默认 WF_CDN_DIR 或 <repo>/.cdn/cn)")
-    parser.add_argument("--repo-root", help="仓库根(默认按脚本位置)")
+    parser.add_argument("--cdn", help="CDN 根(默认统一 CDN/服务端配置)")
+    parser.add_argument("--repo-root", help="服务端根(默认 WF_SERVER 或本地路径档案)")
     parser.add_argument("--force", action="store_true", help="build:覆盖已存在的非空变体目录")
     parser.add_argument("--json", action="store_true", help="输出 JSON 报告")
     args = parser.parse_args(argv)
 
     cdn_root = Path(args.cdn).resolve() if args.cdn else _default_cdn()
-    repo_root = Path(args.repo_root).resolve() if args.repo_root else ROOT
+    repo_root = Path(args.repo_root).resolve() if args.repo_root else core.resolve_server_dir()
     try:
         report = build(
             cdn_root, repo_root, tag=args.tag,
@@ -843,10 +843,7 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def _default_cdn() -> Path:
-    try:
-        return Path(core.resolve_cdn_root_lax())
-    except Exception:
-        return ROOT / ".cdn" / "cn"
+    return core.resolve_cdn_root()
 
 
 if __name__ == "__main__":

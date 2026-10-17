@@ -14,7 +14,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 MOD_DIR = Path(__file__).resolve().parent
-ROOT = MOD_DIR.parent
+ROOT = MOD_DIR
 pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_mod_tool as core  # noqa: E402
 import wf_describe  # noqa: E402
@@ -42,8 +42,8 @@ def is_sig(row):
 
 def main() -> None:
     store = core.require_active_store()
-    ch = json.loads((ROOT / "assets/cdndata/character.json").read_text(encoding="utf-8"))
-    tx = json.loads((ROOT / "assets/cdndata/character_text.json").read_text(encoding="utf-8"))
+    ch = json.loads((core.resolve_cdndata_dir() / "character.json").read_text(encoding="utf-8"))
+    tx = json.loads((core.resolve_cdndata_dir() / "character_text.json").read_text(encoding="utf-8"))
     ab = core.load_table(core.ABILITY_LOGICAL, store)
     parsed = {k: core.read_csv_lines(t) for k, t in ab.text_rows().items()}
     wf_describe._load()
@@ -207,6 +207,7 @@ def main() -> None:
                 aj.append({"dst": c["id"], "dst_name": c["name"], "el": el,
                            "src_aid": m["aid"], "src_line": m["line"],
                            "src_owner": m["owner"], "desc": m["desc"][:60]})
+    (ROOT / "logs").mkdir(parents=True, exist_ok=True)
     (ROOT / "logs" / "unique_assign.json").write_text(
         json.dumps(aj, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"分发 JSON → logs/unique_assign.json ({len(aj)} 条)")

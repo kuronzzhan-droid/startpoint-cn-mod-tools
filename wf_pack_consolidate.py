@@ -59,11 +59,11 @@ ORIGIN_CN = {"legacy": "常规增量", "patch": "asset-patch", "anchored": "锚�
 
 
 def _resolve_dirs(cdn: str | None = None, repo_root: str | None = None) -> tuple[Path, Path]:
-    root = Path(repo_root).resolve() if repo_root else Path(__file__).resolve().parent.parent
+    root = Path(repo_root).resolve() if repo_root else core.resolve_server_dir()
     if cdn:
         cdn_root = Path(cdn).resolve()
     else:
-        cdn_root = core.resolve_cdn_root_lax(legacy_root=root / ".cdn" / "cn")
+        cdn_root = core.resolve_cdn_root(legacy_root=root / ".cdn" / "cn" if repo_root else None)
     return cdn_root, root
 
 
@@ -483,8 +483,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--drop-entry", action="append", default=[], metavar="xx/38hex",
                         help="entry 级排除:直接给 store 相对路径或完整成员名,可重复")
     parser.add_argument("--base", default=DEFAULT_BASE, help="mod 链起点(默认 1.4.54)")
-    parser.add_argument("--cdn", help="CDN 根(默认 WF_CDN_DIR 或 <repo>/.cdn/cn)")
-    parser.add_argument("--repo-root", help="仓库根(默认按脚本位置)")
+    parser.add_argument("--cdn", help="CDN 根(默认统一 CDN/服务端配置)")
+    parser.add_argument("--repo-root", help="服务端根(默认 WF_SERVER 或本地路径档案)")
     parser.add_argument("--force", action="store_true", help="build:覆盖已存在的非空输出目录")
     parser.add_argument("--json", action="store_true", help="list:输出 JSON")
     args = parser.parse_args(argv)

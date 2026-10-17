@@ -314,7 +314,7 @@ def _resolve_android_build_tools(
 
 
 def _repository_root() -> Path:
-    return Path(__file__).resolve().parents[1]
+    return Path(__file__).resolve().parent
 
 
 def _repo_ffdec(repo_root: Path) -> Path | None:

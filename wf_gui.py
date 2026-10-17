@@ -15,8 +15,8 @@ WF 单机版 · 本地网页修改器 (GUI)
 
 环境变量(可选):
   WF_STORE         目标 upload 目录(或 profiles/local.json；不自动扫描数据包)
-  WF_CDNDATA       服务端 assets/cdndata 目录(①层;独立部署必配,默认取仓库根布局)
-  WF_CDN_DIR       服务端 .cdn/cn 目录(发布目标;独立部署必配,默认取仓库根布局)
+  WF_CDNDATA       服务端 assets/cdndata 目录(①层;缺省由已配置 WF_SERVER 派生)
+  WF_CDN_DIR       CDN 根(发布目标;缺省由已配置 WF_SERVER 派生)
   WF_ADB           adb.exe 完整路径
   WF_ADB_PORT      模拟器 adb 端口(默认 16384 = MuMu 12)
   WF_PKG           游戏包名(默认 com.leiting.wf,雷霆国服)
@@ -67,7 +67,13 @@ except ValueError as error:
     raise SystemExit(str(error)) from None
 # ①层 cdndata:独立部署时用 WF_CDNDATA 指向服务端 assets/cdndata
 CDNDATA = (core._require_existing_directory(_PROFILE.cdndata, label="WF_CDNDATA / profile cdndata")
-           if _PROFILE and _PROFILE.cdndata else ROOT / "assets" / "cdndata")
+           if _PROFILE and _PROFILE.cdndata else None)
+
+
+def _cdndata_dir() -> Path:
+    return CDNDATA if CDNDATA is not None else core.resolve_cdndata_dir()
+
+
 WORK_DIR = Path(__file__).resolve().parent / "work"
 PENDING_FILE = WORK_DIR / "sync_pending.json"
 
@@ -121,9 +127,9 @@ def load_characters() -> list[dict]:
     global _char_cache
     if _char_cache is not None:
         return _char_cache
-    chars = json.loads((CDNDATA / "character.json").read_text(encoding="utf-8"))
+    chars = json.loads((_cdndata_dir() / "character.json").read_text(encoding="utf-8"))
     try:
-        texts = json.loads((CDNDATA / "character_text.json").read_text(encoding="utf-8"))
+        texts = json.loads((_cdndata_dir() / "character_text.json").read_text(encoding="utf-8"))
     except Exception:
         texts = {}
 
@@ -2320,7 +2326,8 @@ _SKILL_TEXT_SYNC = {"1": ("skill_name", "skill_desc"),
 
 
 def _char_json_paths() -> tuple[Path, Path]:
-    return CDNDATA / "character.json", CDNDATA / "character_text.json"
+    cdndata = _cdndata_dir()
+    return cdndata / "character.json", cdndata / "character_text.json"
 
 
 # ---- 改星级后的存档校正 ----
@@ -2336,7 +2343,10 @@ def _resolve_save_database() -> Path:
     )
 
 
-SAVE_DB = _resolve_save_database()
+try:
+    SAVE_DB = _resolve_save_database()
+except core.ServerDirNotConfiguredError:
+    SAVE_DB = None
 MAX_OVER_LIMITS = {1: 12, 2: 10, 3: 8, 4: 6, 5: 4}
 CHARACTER_EXP_CAPS = {
     1: [11416, 15820, 21477, 28538, 37241, 49481, 66600, 91180, 125223, 170928, 216633, 262338, 308043],
@@ -2352,10 +2362,13 @@ def _clamp_save_for_rarity(cid: str, rarity: int, apply: bool) -> str:
     apply=False 只预览。返回日志串(空=没有需要校正的行)。"""
     mx = MAX_OVER_LIMITS.get(rarity)
     caps = CHARACTER_EXP_CAPS.get(rarity)
-    if mx is None or not caps or not SAVE_DB.exists():
+    if mx is None or not caps:
+        return ""
+    database = SAVE_DB if SAVE_DB is not None else _resolve_save_database()
+    if not database.exists():
         return ""
     try:
-        con = sqlite3.connect(str(SAVE_DB), timeout=10)
+        con = sqlite3.connect(str(database), timeout=10)
         try:
             rows = con.execute(
                 "SELECT player_id, over_limit_step, exp FROM players_characters WHERE id=?",
@@ -2397,8 +2410,8 @@ def get_char_fields(cid: str) -> dict:
 
 
 def _server_char_json_path() -> Path:
-    """服务端逻辑用的简化表 assets/character.json(邮件发放/admin 校验),cdndata 的兄弟文件。"""
-    return CDNDATA.parent / "character.json"
+    """服务端逻辑用的简化表；独立 cdndata 不隐含服务端写入授权。"""
+    return core.resolve_server_dir() / "assets" / "character.json"
 
 
 def save_char_fields(cid: str, edits: dict, dry_run: bool) -> dict:
@@ -2408,6 +2421,7 @@ def save_char_fields(cid: str, edits: dict, dry_run: bool) -> dict:
     服务端简化表 assets/character.json(name/rarity/element,邮件/校验用,重启服务端生效)。
     """
     mp, tp = _char_json_paths()
+    sp = _server_char_json_path()  # Resolve all write roots before action_skill can write.
     master = json.loads(mp.read_text(encoding="utf-8"))
     text = json.loads(tp.read_text(encoding="utf-8"))
     if cid not in master:
@@ -2514,7 +2528,6 @@ def save_char_fields(cid: str, edits: dict, dry_run: bool) -> dict:
             log.append(f"⚠ action_skill 同步失败(游戏内技能名/描述不会变): {e}")
 
     # ---- 服务端简化表 assets/character.json(name/rarity/element) ----
-    sp = _server_char_json_path()
     server = None
     if sp.exists() and any(f in norm for f in ("name", "rarity", "element")):
         try:
@@ -5589,18 +5602,19 @@ def save_char_image_pos(cid: str, level: str, fs: dict | None, attr: dict | None
 
 
 def _resolve_server_url() -> str:
-    return wf_server_auth.resolve_server_url(ROOT)
+    return wf_server_auth.resolve_server_url(core.resolve_server_dir())
 
 
-SERVER_URL = _resolve_server_url()
+SERVER_URL: str | None = None  # Optional override; server settings are resolved on use.
 
 
 def _server_call(path: str, post: bool = False) -> dict:
-    headers = wf_server_auth.admin_bearer_headers(ROOT)
+    server_root = core.resolve_server_dir()
+    headers = wf_server_auth.admin_bearer_headers(server_root)
     if post:
         headers["Content-Type"] = "application/json"
     req = urllib.request.Request(
-        SERVER_URL + path,
+        (SERVER_URL or wf_server_auth.resolve_server_url(server_root)) + path,
         data=b"{}" if post else None,
         headers=headers,
         method="POST" if post else "GET")
@@ -5609,12 +5623,14 @@ def _server_call(path: str, post: bool = False) -> dict:
 
 
 def server_ping() -> dict:
+    url = SERVER_URL
     try:
+        url = url or _resolve_server_url()
         d = _server_call("/api/mod-admin/ping")
-        return {"online": True, "url": SERVER_URL, **d}
+        return {"online": True, "url": url, **d}
     except Exception as exc:
         # 字段名用 detail 而非 error:离线是正常状态,不能触发前端 api() 的统一报错
-        return {"online": False, "url": SERVER_URL, "detail": str(exc)}
+        return {"online": False, "url": url, "detail": str(exc)}
 
 
 def server_push() -> dict:
@@ -5817,15 +5833,20 @@ BSHOP_ROW_WIDTH = 50
 BSHOP_COLS = {"name": 6, "desc": 10, "icon": 12, "cost_id": 17, "cost_amount": 18,
               "available_from": 25, "available_until": 26,
               "reward_type": 32, "reward_id": 33, "reward_count": 34}
-SERVER_ASSETS = CDNDATA.parent  # assets/
+SERVER_ASSETS: Path | None = None  # Optional explicit override for offline callers.
+
+
+def _server_assets() -> Path:
+    return SERVER_ASSETS if SERVER_ASSETS is not None else core.resolve_server_dir() / "assets"
 
 
 def _bshop_server_paths() -> tuple[Path, Path]:
-    return SERVER_ASSETS / "boss_coin_shop.json", SERVER_ASSETS / "boss_coin_shop_item_category_map.json"
+    assets = _server_assets()
+    return assets / "boss_coin_shop.json", assets / "boss_coin_shop_item_category_map.json"
 
 
 def _bshop_cdn_path() -> Path:
-    return CDNDATA / "boss_coin_shop.json"
+    return _cdndata_dir() / "boss_coin_shop.json"
 
 
 def shop_categories() -> dict:
@@ -6063,9 +6084,9 @@ def save_shop_item(cat: str, iid: str, edits: dict, clone_from: str, dry_run: bo
     written = None
     if not dry_run:
         # ② 层 + cdndata 镜像 + 服务端两 json,全部备份后写
+        cp = _bshop_cdn_path()
         parsed[iid] = [row]
         written = str(_write_with_backup_ml(om, parsed, log, ".bak-wfmod-shop-"))
-        cp = _bshop_cdn_path()
         cdn = json.loads(cp.read_text(encoding="utf-8")) if cp.exists() else {}
         cdn[iid] = [row]
         _write_json_asset_file(cp, cdn, "cdndata/boss_coin_shop.json", ".bak-wfmod-shop-")
@@ -6141,7 +6162,7 @@ def _rj_load_table(spec: dict) -> core.OrderedMap:
 
 
 def _rj_cdn_path(spec: dict) -> Path:
-    return CDNDATA / spec["file"]
+    return _cdndata_dir() / spec["file"]
 
 
 def _rj_dump_rows(rows: list[list[str]], indent: str = "") -> str:
@@ -6411,8 +6432,8 @@ def weapon_clone(src: str, new_id: str, new_name: str, new_desc: str,
     wa_rows = wa.text_rows()
     has_wa = src in wa_rows
 
-    ids_p = SERVER_ASSETS / "equipment_ids.json"
-    lookup_p = SERVER_ASSETS / "equipment_lookup.json"
+    ids_p = _server_assets() / "equipment_ids.json"
+    lookup_p = _server_assets() / "equipment_lookup.json"
     lookup = json.loads(lookup_p.read_text(encoding="utf-8"))
     src_lk = lookup.get(src, {})
     log = [f"equipment[{new_id}] 克隆自 {src}({src_name}): 名={row[1]!r} 图标沿用 {row[6]}",
@@ -6495,7 +6516,7 @@ def quest_clone(src_node: str, src_rank: str, mode: str, new_name: str,
     if new_name:
         c[2] = new_name
 
-    sj_p = SERVER_ASSETS / "boss_battle_quest.json"
+    sj_p = _server_assets() / "boss_battle_quest.json"
     sj = json.loads(sj_p.read_text(encoding="utf-8"))
     if qid in sj:
         raise ValueError(f"quest id {qid} 已在服务端 boss_battle_quest.json(数据不一致,先排查)")
@@ -6786,7 +6807,7 @@ def _rogue_join(row: list[str], like) -> object:
 
 
 def _rogue_asset_path(name: str) -> str:
-    return os.path.join(ROOT, "assets", name)
+    return os.fspath(core.resolve_server_dir() / "assets" / name)
 
 
 def _rogue_run(script: str, args: list[str]) -> dict:
@@ -7027,37 +7048,7 @@ def rogue_tower() -> dict:
 
 def _rogue_reload_server() -> None:
     """通知服务端热重载 mod assets(奖励/掉落改动即时生效,不必重启)。"""
-    import urllib.request
-    token = ""
-    try:
-        with open(os.path.join(ROOT, ".env"), encoding="utf-8") as fh:
-            for line in fh:
-                if line.startswith("CN_ADMIN_TOKEN"):
-                    token = line.split("=", 1)[1].strip().strip(chr(34))
-                    break
-    except Exception:
-        pass
-    # 服务端可能只绑在 LAN 网卡上:127.0.0.1 之外再探本机全部 IPv4;
-    # 远程 GUI 场景用 WF_RELOAD_HOST 显式指定。
-    hosts = ["127.0.0.1"]
-    try:
-        import socket
-        hosts += [ip for ip in socket.gethostbyname_ex(socket.gethostname())[2]
-                  if not ip.startswith("127.")]
-    except Exception:
-        pass
-    if os.environ.get("WF_RELOAD_HOST"):
-        hosts.insert(0, os.environ["WF_RELOAD_HOST"])
-    for host in hosts:
-        try:
-            req = urllib.request.Request(
-                f"http://{host}:8001/api/mod-admin/reload_assets", data=b"", method="POST")
-            if token:
-                req.add_header("Authorization", f"Bearer {token}")
-            urllib.request.urlopen(req, timeout=5).read()
-            return
-        except Exception:
-            continue
+    _server_call("/api/mod-admin/reload_assets", post=True)
 
 
 def rogue_rewards(body: dict | None = None) -> dict:

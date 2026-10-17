@@ -62,12 +62,13 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.dirname(os.path.abspath(__file__))
 pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_rogue_save as rsave     # noqa: E402  (mumu_sh / WF_PACKAGE / WF_ACTIVITY / DB_PATH)
+import wf_mod_tool as core
 import wf_server_auth             # noqa: E402  (resolve_server_url / admin_bearer_headers)
 
-BUILD = os.path.join(ROOT, "mod-tools", "wf_rogue_build.py")
+BUILD = os.path.join(ROOT, "wf_rogue_build.py")
 PROGRESS_TABLES = (
     "players_rush_events",
     "players_rush_events_played_parties",
@@ -88,7 +89,7 @@ def now_ms() -> int:
 
 def deployed_rounds(event: str) -> int:
     """线上已部署的爬塔轮数(数服务端 json 里 folder 1 的 quest 条目)。"""
-    path = os.path.join(ROOT, "assets", "rush_event_quest.json")
+    path = core.resolve_server_dir() / "assets" / "rush_event_quest.json"
     try:
         with open(path, encoding="utf-8") as fh:
             data = json.load(fh)
@@ -134,7 +135,7 @@ def season_fingerprint(event: str) -> str:
     读不到表就返回空串:空指纹和服务端「表为空」算出来的一样,
     最坏结果是服务端下次 ensureRushSeason 再换一期,不会写坏数据。
     """
-    path = os.path.join(ROOT, "assets", "rush_event_quest.json")
+    path = core.resolve_server_dir() / "assets" / "rush_event_quest.json"
     try:
         with open(path, encoding="utf-8") as fh:
             data = json.load(fh)
@@ -226,7 +227,8 @@ def rollover_via_server(event: str, source: str = "reroll-cli",
     :param timeout: 单次请求超时(秒)。结算要读榜+发邮件,给宽一点。
     :returns: {"ok": bool, "status": int|None, "body": dict|None, "error": str|None}
     """
-    base = (server or wf_server_auth.resolve_server_url(Path(ROOT))).rstrip("/")
+    server_root = core.resolve_server_dir()
+    base = (server or wf_server_auth.resolve_server_url(server_root)).rstrip("/")
     url = f"{base}/api/rush-leaderboard/{int(event)}/season/rollover?source={source}"
     # ⚠ 必须**显式**带 Content-Type: application/json + 一个合法的 JSON 体。
     # 病因不是「没有 Content-Type」——urllib 在 `data=` 非 None 时会自己补一个
@@ -240,7 +242,7 @@ def rollover_via_server(event: str, source: str = "reroll-cli",
     headers = {
         "Accept": "application/json",
         "Content-Type": "application/json",
-        **wf_server_auth.admin_bearer_headers(Path(ROOT)),
+        **wf_server_auth.admin_bearer_headers(server_root),
     }
     request = urllib.request.Request(url, data=b"{}", method="POST", headers=headers)
     try:
@@ -286,11 +288,12 @@ def current_season_via_server(event: str, server: str | None = None,
               `ok=True, season=None` = 服务端答了、但台账里还没有这个事件
               (没人开过第 1 关);`ok=False` = 没问到(服务端没起 / token 不对)。
     """
-    base = (server or wf_server_auth.resolve_server_url(Path(ROOT))).rstrip("/")
+    server_root = core.resolve_server_dir()
+    base = (server or wf_server_auth.resolve_server_url(server_root)).rstrip("/")
     url = f"{base}/api/rush-leaderboard/{int(event)}/settlement"
     headers = {
         "Accept": "application/json",
-        **wf_server_auth.admin_bearer_headers(Path(ROOT)),
+        **wf_server_auth.admin_bearer_headers(server_root),
     }
     request = urllib.request.Request(url, method="GET", headers=headers)
     try:
@@ -415,6 +418,11 @@ def main() -> int:
     ap.add_argument("--apply", action="store_true", help="真执行(默认 dry-run 预览)")
     args = ap.parse_args()
 
+    server_root = core.resolve_server_dir()
+    if args.apply:
+        core.resolve_cdn_root()
+    database_path = rsave.DB_PATH or os.fspath(rsave.resolve_database_path(server_root=server_root))
+
     seed = args.seed if args.seed is not None else random.SystemRandom().randrange(1, 10 ** 8)
     print(f"种子 = {seed}(复现同一座塔:--seed {seed})", flush=True)
 
@@ -423,7 +431,7 @@ def main() -> int:
         print(f"[WARN] 轮数 {dep} → {args.rounds}:服务端 json 内容会变,"
               "发布后须重启服务端(start-cn.bat)", flush=True)
 
-    db = sqlite3.connect(rsave.DB_PATH, timeout=15)
+    db = sqlite3.connect(database_path, timeout=15)
     db.execute("PRAGMA busy_timeout=15000")
     try:
         # 预检放在**任何破坏性动作之前**,这样这条提示还来得及按 Ctrl+C。

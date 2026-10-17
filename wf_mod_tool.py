@@ -605,6 +605,19 @@ def resolve_server_dir(profile_id: str | None = None) -> Path:
     raise ServerDirNotConfiguredError("服务端未配置：请设置 WF_SERVER 或 profiles/local.json 的 paths.server")
 
 
+def resolve_cdndata_dir(profile_id: str | None = None) -> Path:
+    """资料镜像取显式 cdndata；否则只从已配置服务端派生。"""
+    profile = resolve_profile(profile_id)
+    if profile and profile.cdndata:
+        return _require_existing_directory(
+            profile.cdndata, label="WF_CDNDATA / profile cdndata"
+        )
+    return _require_existing_directory(
+        resolve_server_dir(profile_id) / "assets" / "cdndata",
+        label="configured server assets/cdndata",
+    )
+
+
 def parse_index(raw: bytes) -> tuple[list[str], list[tuple[int, int]], int]:
     if len(raw) < 8:
         raise ValueError("file is too small for orderedmap")

@@ -432,11 +432,11 @@ def verify_squash(cdn_root: Path, repo_root: Path, base: str, tag: str) -> list[
 # ------------------------------------------------------------------- 命令
 
 def _resolve_dirs(args) -> tuple[Path, Path]:
-    repo_root = Path(args.repo_root).resolve() if args.repo_root else Path(__file__).resolve().parent.parent
+    repo_root = Path(args.repo_root).resolve() if args.repo_root else core.resolve_server_dir()
     if args.cdn:
         cdn_root = Path(args.cdn).resolve()
     else:
-        cdn_root = core.resolve_cdn_root_lax(legacy_root=repo_root / ".cdn" / "cn")
+        cdn_root = core.resolve_cdn_root(legacy_root=repo_root / ".cdn" / "cn" if args.repo_root else None)
     return cdn_root, repo_root
 
 
@@ -678,8 +678,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--tag", default=time.strftime("squash%m%d"),
                         help="合集 tag,纯 [a-z0-9](默认 squashMMDD)")
     parser.add_argument("--max-zip-mib", type=int, default=5, help="单 zip 上限 MiB(CI 门禁 5)")
-    parser.add_argument("--cdn", help="CDN 根(默认 WF_CDN_DIR 或 <repo>/.cdn/cn)")
-    parser.add_argument("--repo-root", help="仓库根(默认按脚本位置)")
+    parser.add_argument("--cdn", help="CDN 根(默认统一 CDN/服务端配置)")
+    parser.add_argument("--repo-root", help="服务端根(默认 WF_SERVER 或本地路径档案)")
     parser.add_argument("--dry-run", action="store_true", help="build:staging+校验后回滚")
     parser.add_argument("--yes", action="store_true", help="retire:真正移动文件")
     parser.add_argument("--receipt", help="undo:回执 json 路径")

@@ -49,7 +49,9 @@
 服务器必须显式配置，`resolve_server_dir()` 不会返回工具仓或其父目录。
 CDN 可直接指定 `cdn_dir`，或者从显式 `server` 的 `.env` 中读取 `CDN_DIR` 并加上 `cn`，再检查 `<server>/.cdn/cn`。
 未配置时，严格 CDN 解析器报错；为兼容离线模块导入，`resolve_cdn_root_lax()` 只返回本仓 `.cdn/cn` 占位路径，不创建目录，也不选择兄弟仓。
-GUI 的未配置 cdndata 占位路径同样限制在本仓 `assets/cdndata`。
+`resolve_cdndata_dir()` 优先使用显式 `WF_CDNDATA` / profile cdndata；未配置时必须先解析显式 server，再使用 `<server>/assets/cdndata`，目录须存在。GUI 只在访问资料镜像时解析它，未配置 server 不阻止仅配置 store 的离线导入；任何服务端资产写入仍要求显式 server。
+
+`wf_offline_store.resolve_store_roots()` 默认使用同一 store 解析链；调用方显式传入 `profiles_path` 时，保留旧文件格式及相对该文件布局解析的 API 合同，用于离线 fixture 和兼容工具。`wf_story_export` 同样在运行命令时解析配置的 store，不猜测父目录里的数据包。
 
 仅两项具备本仓默认值：`output` 为 `work/m0`，`pathlist` 为 `WF_PATHLIST_recovered.txt`。
 `root_path()` 无显式根时使用本仓 `work/external`，供离线导入和相对路径定位；这不会把外部输入标成已配置。

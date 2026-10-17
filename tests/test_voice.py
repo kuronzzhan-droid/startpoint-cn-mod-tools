@@ -119,6 +119,24 @@ class VoiceTests(unittest.TestCase):
             ):
                 self.assertEqual(expected.resolve(), wf_voice.find_ffmpeg())
 
+    def test_invalid_ffmpeg_environment_never_falls_back(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            for value in ("", "  ", "relative/ffmpeg.exe", str(Path(td) / "missing"), td):
+                with self.subTest(value=value), mock.patch.dict(
+                    os.environ, {"WF_FFMPEG": value}, clear=True
+                ), mock.patch.object(
+                    wf_voice.shutil, "which", return_value=str(Path(td) / "path-ffmpeg.exe")
+                ) as finder:
+                    with self.assertRaisesRegex(ValueError, "WF_FFMPEG"):
+                        wf_voice.find_ffmpeg()
+                    finder.assert_not_called()
+
+    def test_ffmpeg_discovery_does_not_scan_private_tool_folders(self) -> None:
+        with mock.patch.dict(os.environ, {}, clear=True), mock.patch.object(
+            wf_voice.shutil, "which", return_value=None
+        ), mock.patch.object(Path, "rglob", side_effect=AssertionError("must not scan")):
+            self.assertIsNone(wf_voice.find_ffmpeg())
+
     def test_transcode_uses_strict_cbr_flags_and_atomic_output(self) -> None:
         captured = []
 

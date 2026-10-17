@@ -147,12 +147,11 @@ def _archives_inside(result: Any, cdn_root: Path) -> bool:
 
 
 def _repo_root() -> Path:
-    return Path(__file__).resolve().parent.parent
+    return core.project_root()
 
 
 def _live_cdn_root() -> Path:
-    override = os.environ.get("WF_CDN_DIR")
-    return Path(override) if override else _repo_root() / ".cdn" / "cn"
+    return core.resolve_cdn_root()
 
 
 # ---------------------------------------------------------------------------
@@ -247,7 +246,7 @@ def backfill_server_mana_board_after_publish(
     if not _archives_inside(result, _live_cdn_root()):
         return None
     return sync_server_mana_board(
-        Path(package_dir), _repo_root() / "assets", apply=True
+        Path(package_dir), core.resolve_server_dir() / "assets", apply=True
     )
 
 
@@ -286,7 +285,7 @@ def _master_gate_stores(profile_id: str) -> tuple[Path, ...]:
     candidates = [profile.store]
     if profile.fallback is not None:
         candidates.append(profile.fallback)
-    return tuple(path for path in candidates if path.is_dir())
+    return tuple(path for path in candidates if path is not None and path.is_dir())
 
 
 # APK 内置 bundle 是 CDN 之外的第二个资产来源:客户端
@@ -305,7 +304,7 @@ def _bundle_asset_tails() -> frozenset[str]:
     if cached is not None:
         return cached
     tails: set[str] = set()
-    repo_root = Path(__file__).resolve().parent.parent
+    repo_root = _repo_root()
     candidates = [repo_root / "弹国服" / "bundle.zip"]
     env_apk = os.environ.get("WF_APK")
     if env_apk:
@@ -796,7 +795,7 @@ def run_command(
         workspace = workspace_module.load_workspace(args.workspace)
         workspace_path = str(workspace.root)
         if command == "mana-board":
-            server_root = args.server_root or (_repo_root() / "assets")
+            server_root = args.server_root or (core.resolve_server_dir() / "assets")
             report = sync_server_mana_board(
                 workspace.package_dir, server_root, apply=args.apply,
             )

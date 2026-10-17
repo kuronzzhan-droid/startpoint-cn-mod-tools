@@ -246,11 +246,13 @@ class PublishHookTest(unittest.TestCase):
         result = SimpleNamespace(
             committed=True, archive_paths=(self.temp / "common.zip",),
         )
-        self.assertIsNone(
-            flow.backfill_server_mana_board_after_publish(
-                result, self.workspace.package_dir
+        from unittest.mock import patch
+        with patch.object(flow, "_live_cdn_root", return_value=self.temp / "configured-cdn"):
+            self.assertIsNone(
+                flow.backfill_server_mana_board_after_publish(
+                    result, self.workspace.package_dir
+                )
             )
-        )
 
 
 if __name__ == "__main__":

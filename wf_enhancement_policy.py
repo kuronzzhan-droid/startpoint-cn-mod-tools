@@ -49,7 +49,7 @@ from pathlib import Path
 from typing import Callable, Iterable
 
 MOD_DIR = Path(__file__).resolve().parent
-ROOT = MOD_DIR.parent
+ROOT = MOD_DIR
 pass  # Imports resolve from this checkout/package, not external source copies.
 
 import wf_quest_lib as quest  # noqa: E402
@@ -805,15 +805,12 @@ def chain_sources(
 def _resolve_cdn(cdn: str | None) -> Path:
     if cdn:
         return Path(cdn).resolve()
-    try:
-        return Path(core.resolve_cdn_root_lax())
-    except Exception:
-        return ROOT / ".cdn" / "cn"
+    return core.resolve_cdn_root()
 
 
 def cmd_audit(args: argparse.Namespace) -> int:
     cdn_root = _resolve_cdn(args.cdn)
-    repo_root = Path(args.repo_root).resolve() if args.repo_root else ROOT
+    repo_root = Path(args.repo_root).resolve() if args.repo_root else core.resolve_server_dir()
     baseline = OfficialBaseline(cdn_root, official_tail=args.official_tail)
     sources, meta = chain_sources(cdn_root, repo_root, since=args.since)
     verdicts, summary = plan_content_only(
@@ -857,8 +854,8 @@ def cmd_baseline(args: argparse.Namespace) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--cdn", help="CDN 根(默认 WF_CDN_DIR 或 <repo>/.cdn/cn)")
-    parser.add_argument("--repo-root", help="仓库根(默认按脚本位置)")
+    parser.add_argument("--cdn", help="CDN 根(默认统一 CDN/服务端配置)")
+    parser.add_argument("--repo-root", help="服务端根(默认 WF_SERVER 或本地路径档案)")
     parser.add_argument("--official-tail", default=OFFICIAL_TAIL,
                         help=f"官方链尾版本(默认 {OFFICIAL_TAIL},之后的边全是我们发的)")
     sub = parser.add_subparsers(dest="command", required=True)
