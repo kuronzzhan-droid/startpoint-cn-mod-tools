@@ -11,9 +11,6 @@ from pathlib import Path
 import time
 import unicodedata
 
-MODEL = path("asr_model")
-
-
 def normalized(text):
     return ''.join(x for x in unicodedata.normalize('NFKC', text) if x.isalnum())
 
@@ -28,7 +25,7 @@ def comparison(expected, recognized, reading):
         requires_review=(source != actual and a != b))
 
 
-def transcribe_available(plan, recordings, output, model, reading):
+def transcribe_available(plan, recordings, output, model, reading, *, model_snapshot=None):
     completed=0
     for line in plan:
         role, slot=line['role'], line['slot']
@@ -57,7 +54,8 @@ def transcribe_available(plan, recordings, output, model, reading):
             comparison=comparison(line['ja'],transcript,reading),
             expected_pronunciation=line.get('tts_text',line['ja']),
             pronunciation_comparison=comparison(line.get('tts_text',line['ja']),transcript,reading),
-            model='faster-whisper-large-v3',model_snapshot=str(MODEL),
+            model='faster-whisper-large-v3',
+            model_snapshot=str(model_snapshot) if model_snapshot is not None else None,
             language=info.language,independent_of_provider_subtitles=True,
             human_listening_review=False)
         target.parent.mkdir(parents=True,exist_ok=True)
@@ -80,11 +78,13 @@ def main():
         raise SystemExit('ASR output outside assigned evidence directory')
     from faster_whisper import WhisperModel
     import pyopenjtalk
-    model=WhisperModel(str(MODEL),device='cuda',compute_type='float16',local_files_only=True)
+    model_snapshot = path("asr_model")
+    model=WhisperModel(str(model_snapshot),device='cuda',compute_type='float16',local_files_only=True)
     reading=lambda text:pyopenjtalk.g2p(text,kana=True)
     plan=json.loads(a.plan.read_bytes());deadline=time.monotonic()+a.watch_seconds
     while True:
-        count=transcribe_available(plan,a.recordings,a.output,model,reading)
+        count=transcribe_available(plan,a.recordings,a.output,model,reading,
+                                   model_snapshot=model_snapshot)
         if count==len(plan) or time.monotonic()>=deadline:
             print(json.dumps(dict(completed=count,expected=len(plan))),flush=True)
             return
