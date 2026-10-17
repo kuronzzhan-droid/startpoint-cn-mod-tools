@@ -15,6 +15,30 @@ BOARD_RULE = "按能力槽推定：能力 1–3 归一板，能力 4–6 归二�
 AWAKE_KIND = {"1": "觉醒替换", "2": "觉醒追加"}
 
 
+BLOCK_CN = {"precondition1": "前置1", "precondition2": "前置2", "precondition3": "前置3",
+            "instant_trigger": "瞬发触发", "instant_precontent": "瞬发前置效果", "instant_delay": "瞬发延迟",
+            "instant_content": "瞬发效果", "during_accumulation_trigger": "持续累积触发",
+            "during_trigger": "持续触发", "even_if_owner_dead": "倒下仍生效", "during_content": "持续效果",
+            "opening": "开幕"}
+
+
+def column_labels(kind: str) -> list[dict]:
+    """Per-column labels from ability_enum_map.json (block base + field offset)."""
+    layout = wf_describe.layout(kind)
+    fields = wf_describe.enum_map()["block_fields"]
+    labels: dict[int, dict] = {}
+    for name, note in layout.get("head", []):
+        labels[int(name[1:])] = {"block": "基础", "field": note.split(" ")[0], "note": note}
+    blocks = sorted(layout["blocks"].items(), key=lambda item: item[1])
+    for i, (block, start) in enumerate(blocks):
+        end = blocks[i + 1][1] if i + 1 < len(blocks) else int(layout.get("ncols", start + 1))
+        known = {int(o): (f, n) for o, f, n in fields.get("precondition" if block.startswith("precondition") else block, [])}
+        for column in range(int(start), int(end)):
+            field, note = known.get(column - int(start), (f"+{column - int(start)}", ""))
+            labels[column] = {"block": BLOCK_CN.get(block, block), "field": field, "note": note}
+    return [labels.get(i, {"block": "", "field": "", "note": ""}) for i in range(int(layout.get("ncols", 0)))]
+
+
 def _official_status(source: StudioSource, cid: str, row: list[str]) -> str:
     official = source.table("character", True)
     if not official:
@@ -114,5 +138,5 @@ def character_detail(source: StudioSource, cid: str) -> dict | None:
         "describeNote": "中文描述由 wf_describe 按数据行语义生成，不是游戏客户端原文；有覆盖文案时优先显示覆盖文案。",
         "sources": [source.citation(name) for name in ("character", "text", "ability", "leader", "skill", "strings")],
         "raw": {"character": row, "characterText": text},
-        "layout": {"ability": wf_describe.layout("ability")["blocks"]},
+        "columns": {"ability": column_labels("ability"), "leader_ability": column_labels("leader_ability")},
     }

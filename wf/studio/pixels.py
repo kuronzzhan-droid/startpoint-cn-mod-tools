@@ -42,7 +42,7 @@ SLOTS = (
     ("dead", "死亡"),
 )
 SLOT_LABEL = dict(SLOTS)
-KIND_LABEL = {"loop": "循环", "once": "播放一次停在末帧", "pass": "播放一次后交给下一动作", "stop": "停在末帧"}
+KIND_LABEL = {"loop": "循环", "once": "单次（once）", "pass": "过渡（pass）", "stop": "停住（stop）"}
 
 
 def _read(source: StudioSource, code: str, name: str) -> bytes | None:
