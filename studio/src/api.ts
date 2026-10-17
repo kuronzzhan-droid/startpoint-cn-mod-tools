@@ -276,3 +276,208 @@ export const api = {
       `/api/patches/${encodeURIComponent(archive)}/members`,
     ),
 };
+
+// ---------------------------------------------------------------------------
+// M3.2 draft workspace (writes only work/studio-drafts/<cid>/, guarded by token)
+
+export interface DraftCheck {
+  level: "error" | "warn" | "info";
+  code: string;
+  message: string;
+}
+
+export interface DraftFile {
+  logical: string;
+  root: "common" | "medium" | "android";
+  draft: string;
+  sha256: string;
+  size: number;
+  encoding: string;
+  storeSha256?: string;
+  base: { sha256: string | null; layer: string | null };
+  approximate: boolean;
+  note?: string;
+}
+
+export interface DraftChange {
+  id: string;
+  kind: "portrait" | "pixel_action" | "voice_line";
+  title: string;
+  createdAt: string;
+  target: Record<string, string>;
+  params: Record<string, any>;
+  files: DraftFile[];
+  pending: { logical: string; reason: string; value?: unknown }[];
+  checks: DraftCheck[];
+}
+
+export interface Changeset {
+  schema: string;
+  characterId: string;
+  code: string;
+  baseView: string;
+  createdAt: string;
+  updatedAt: string;
+  savedAt: string | null;
+  revision: number;
+  savedRevision: number | null;
+  changes: DraftChange[];
+}
+
+export interface DraftStatus {
+  state: "clean" | "dirty" | "saved";
+  label: string;
+  changes: number;
+  savedAt?: string | null;
+}
+
+export interface DraftAction {
+  id: string;
+  label: string;
+  enabled: boolean;
+  note: string;
+}
+
+export interface DraftView {
+  characterId: string;
+  changeset: Changeset | null;
+  status: DraftStatus;
+  actions: DraftAction[];
+}
+
+export interface IconGroupSpec {
+  anchor: [number, number];
+  factor: number;
+}
+
+export interface CropTemplate {
+  face: [number, number];
+  squareHeight: number;
+  groups: Record<string, IconGroupSpec>;
+  cutin: { center: [number, number]; height: number; anchor: [number, number] };
+  backdrop: { inner: [number, number, number]; outer: [number, number, number] } | null;
+}
+
+export interface PortraitSource {
+  path?: string;
+  file?: string;
+  size: [number, number];
+  originalSize?: [number, number];
+  trim?: [number, number, number, number];
+  hasAlpha?: boolean;
+  template: CropTemplate;
+}
+
+export interface PortraitInfo {
+  form: string;
+  geometry: { characterImage: string | null; fullShotAttribute: string | null; face: [number, number] | null };
+  current: PortraitSource | null;
+  upload: PortraitSource | null;
+  groups: { name: string; label: string; slots: string[]; anchor: [number, number]; factor: number }[];
+  slotSizes: Record<string, [number, number]>;
+  shapeSlots: string[];
+  shapeLabels: Record<string, string>;
+  slotUse: Record<string, string>;
+  notes: string[];
+}
+
+export interface VoiceLine {
+  voice: string | null;
+  speechRow: number | null;
+  kind: string;
+  subtitle: string;
+  label: string;
+  path?: string;
+  present?: boolean;
+  layer?: string | null;
+  durationSeconds?: number | null;
+  loudness?: number;
+  draft?: { id: string; file: string; durationSeconds: number; checks: DraftCheck[]; sourceName: string };
+}
+
+export interface VoiceLines {
+  characterId: string;
+  code: string;
+  lines: VoiceLine[];
+  format: string;
+  note: string;
+}
+
+export interface PixelBudget {
+  current: { width: number; height: number; share: number };
+  estimate: { width: number; height: number; share: number; px: number } | null;
+  loadedInBattle: boolean;
+  officialShareMax: number;
+  officialShareMedian: number;
+  method: string;
+}
+
+export interface PixelCheckResult {
+  dryRun: true;
+  checks: DraftCheck[];
+  budget: PixelBudget;
+  originalTotalFrames: number | null;
+  frameBox: [number, number];
+}
+
+export interface WriteResult {
+  change?: DraftChange;
+  changeset: Changeset;
+  status: DraftStatus;
+}
+
+function token(): string {
+  return document.querySelector<HTMLMetaElement>('meta[name="wf-studio-token"]')?.content ?? "";
+}
+
+async function post<T>(url: string, body: unknown): Promise<T> {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-WF-Studio-Token": token() },
+    body: JSON.stringify(body),
+  });
+  const data = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
+  if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+  return data as T;
+}
+
+const draftListeners = new Set<(cid: string) => void>();
+export function onDraftChange(listener: (cid: string) => void): () => void {
+  draftListeners.add(listener);
+  return () => draftListeners.delete(listener);
+}
+function notify<T>(cid: string, promise: Promise<T>): Promise<T> {
+  return promise.then((value) => {
+    draftListeners.forEach((listener) => listener(cid));
+    return value;
+  });
+}
+
+export function fileToBase64(file: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).replace(/^data:[^,]*,/, ""));
+    reader.onerror = () => reject(reader.error ?? new Error("读取文件失败"));
+    reader.readAsDataURL(file);
+  });
+}
+
+export const drafts = {
+  hasToken: () => token() !== "",
+  get: (cid: string) => get<DraftView>(`/api/drafts/${cid}`),
+  fileUrl: (cid: string, path: string, version = "") =>
+    `/api/drafts/${cid}/file?path=${encodeURIComponent(path)}${version ? "&v=" + version : ""}`,
+  portraitInfo: (cid: string, form: string) => get<PortraitInfo>(`/api/characters/${cid}/portrait/${form}`),
+  maskUrl: (slot: string) => `/api/studio/masks/${slot}.png`,
+  voiceLines: (cid: string) => get<VoiceLines>(`/api/characters/${cid}/voice`),
+  uploadPortrait: (cid: string, form: string, png: string) =>
+    post<{ upload: PortraitSource; info: PortraitInfo }>(`/api/drafts/${cid}/portrait/${form}/source`, { png }),
+  savePortrait: (cid: string, body: { form: string; source: string; template: CropTemplate; atf: boolean }) =>
+    notify(cid, post<WriteResult>(`/api/drafts/${cid}/portrait`, body)),
+  checkPixel: (cid: string, body: unknown) => post<PixelCheckResult>(`/api/drafts/${cid}/pixel`, { ...(body as object), dryRun: true }),
+  savePixel: (cid: string, body: unknown) => notify(cid, post<WriteResult>(`/api/drafts/${cid}/pixel`, body)),
+  saveVoice: (cid: string, body: { voice: string; audio: string; filename: string }) =>
+    notify(cid, post<WriteResult>(`/api/drafts/${cid}/voice`, body)),
+  revert: (cid: string, change: string) => notify(cid, post<WriteResult>(`/api/drafts/${cid}/changes/${change}/revert`, {})),
+  save: (cid: string) => notify(cid, post<WriteResult>(`/api/drafts/${cid}/save`, {})),
+};

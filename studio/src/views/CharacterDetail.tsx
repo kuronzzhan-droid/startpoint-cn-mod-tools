@@ -3,7 +3,11 @@ import { AbilityGroup, AbilityRow, api, CharacterDetail, ColumnLabel } from "../
 import { href } from "../router";
 import { Avatar, ElementBadge, Notice, OriginBadge, Rarity, StatusStrip } from "./common";
 import { AssetsTab } from "./AssetsTab";
+import { ChangesPanel, useDraft } from "./Changes";
+import { PixelImport } from "./PixelImport";
 import { PixelPlayer } from "./PixelPlayer";
+import { PortraitEditor } from "./PortraitEditor";
+import { VoiceTab } from "./VoiceTab";
 
 const TABS: { id: string; label: string }[] = [
   { id: "board1", label: "一板" },
@@ -12,12 +16,17 @@ const TABS: { id: string; label: string }[] = [
   { id: "skill", label: "技能" },
   { id: "pixel", label: "像素小人" },
   { id: "assets", label: "全套资源" },
+  { id: "portrait", label: "换立绘" },
+  { id: "pixel-import", label: "换像素" },
+  { id: "voice", label: "换语音" },
+  { id: "changes", label: "本次修改" },
 ];
 
 export function CharacterDetailView({ id, tab }: { id: string; tab?: string }) {
   const [detail, setDetail] = useState<CharacterDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const active = TABS.some((t) => t.id === tab) ? tab! : "board1";
+  const draft = useDraft(id);
 
   useEffect(() => {
     setDetail(null);
@@ -51,13 +60,16 @@ export function CharacterDetailView({ id, tab }: { id: string; tab?: string }) {
           <span class="char-id" title={"代码名 " + detail.code}>ID {detail.id} · {detail.code}</span>
         </div>
       </header>
-      <StatusStrip />
+      <StatusStrip draft={draft.view?.status ?? null} checks={draft.view?.changeset?.changes.flatMap((c) => c.checks) ?? []} />
       <nav class="tabs" role="tablist" aria-label="角色内容">
         {TABS.map((t) => (
           <a role="tab" aria-selected={active === t.id} class={active === t.id ? "active" : ""}
             href={href({ work: "content", shop: "characters", id, tab: t.id })}>
             {t.label}
             {t.id === "board3" ? <span class="count">{awakeCount}</span> : null}
+            {t.id === "changes" && draft.view?.status.changes ? (
+              <span class={"count " + (draft.view.status.state === "saved" ? "" : "dirty")}>{draft.view.status.changes}</span>
+            ) : null}
           </a>
         ))}
       </nav>
@@ -67,6 +79,14 @@ export function CharacterDetailView({ id, tab }: { id: string; tab?: string }) {
         <SkillTab detail={detail} />
       ) : active === "assets" ? (
         <AssetsTab characterId={detail.id} />
+      ) : active === "portrait" ? (
+        <PortraitEditor characterId={detail.id} />
+      ) : active === "pixel-import" ? (
+        <PixelImport characterId={detail.id} />
+      ) : active === "voice" ? (
+        <VoiceTab characterId={detail.id} />
+      ) : active === "changes" ? (
+        <ChangesPanel characterId={detail.id} />
       ) : (
         <PixelPlayer characterId={detail.id} />
       )}

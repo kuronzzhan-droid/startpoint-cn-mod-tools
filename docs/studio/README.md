@@ -1,6 +1,6 @@
-# 编辑台（studio）第一版：只读浏览
+# 编辑台（studio）：只读浏览 + 草稿替换（M3.2）
 
-日期：2026-10-17。分支 `refactor/m3-studio`。本版只读：不保存、不生成、不导出、不应用、不发布，也不写任何游戏表。
+日期：2026-10-17。分支 `refactor/m3-studio`。M3.1 只读；M3.2 起可以把立绘、像素、语音替换进**草稿**（`work/studio-drafts/<角色ID>/`，已被 gitignore）。仍然不生成、不导出、不应用、不发布，也不写任何游戏表、store、补丁链或服务器。
 
 ## 启动
 
@@ -88,3 +88,60 @@ python -m wf.studio            # 打开 http://127.0.0.1:8790/
 - 特效只按 DSL 引用推出 parts/timeline/贴图/atlas 及 `_end` 段；ResolveByElement 按角色属性派生；未解析 flatomo 内部引用的其它贴图。
 - 后端单进程、内存缓存不失效；改了 active 目录需重启。
 - 测试：`tests/test_studio.py`（路由表；有真实视图时检查角色列表与 111183 像素数据，否则跳过）。
+
+## M3.2「换得了」：草稿替换
+
+### 写入接口与守卫
+
+- 只有 `POST /api/drafts/...` 会写盘，且只写 `work/studio-drafts/<cid>/`（`WF_STUDIO_DRAFTS` 可改根）。
+- 每个进程生成随机令牌：注入到页面 `<meta name="wf-studio-token">`，同时写到 `work/studio-drafts/.session.json` 给本机 agent 用；请求头 `X-WF-Studio-Token`。
+- `Host` 必须是本机回环 + 本端口（防 DNS rebinding）；浏览器带的 `Origin` 必须同源（`--allow-origin` 可加 Vite 开发地址）；`Sec-Fetch-Site: cross-site` 直接拒绝；只收 `application/json`，上限 96 MB。
+- 服务只允许监听回环地址。
+
+| 方法 | 路径 | 作用 |
+|---|---|---|
+| GET | `/api/drafts/<cid>` | changeset + 保存状态 + 五个动作的接通情况 |
+| GET | `/api/drafts/<cid>/file?path=` | 读草稿内文件 |
+| GET | `/api/characters/<cid>/portrait/<0\|1>` | 立绘槽信息、默认裁剪模板、槽尺寸、形状蒙版槽 |
+| GET | `/api/studio/masks/<slot>.png` | 官方统计形状蒙版（首次约 10 秒，缓存到 `_cache/`） |
+| GET | `/api/characters/<cid>/voice` | 可替换的台词与语音 |
+| GET | `/api/studio/schema` | `schemas/studio-draft.schema.json` |
+| POST | `/api/drafts/<cid>/portrait/<form>/source` | 上传新立绘（去掉全透明边后存到 `sources/`） |
+| POST | `/api/drafts/<cid>/portrait` | `portraitRequest` → 派生全部 UI 图进草稿 |
+| POST | `/api/drafts/<cid>/pixel` | `pixelRequest`（`dryRun: true` 只检查） |
+| POST | `/api/drafts/<cid>/voice` | `voiceRequest` → 游戏规格 MP3 |
+| POST | `/api/drafts/<cid>/changes/<id>/revert` | 撤销一项 |
+| POST | `/api/drafts/<cid>/save` | 「保存」：整份 schema 校验 + 逐文件哈希复核 |
+
+同一套操作的命令行：`python -m wf.studio.draft <list|show|schema|validate|portrait-info|portrait|pixel|voice-lines|voice|revert|save>`，输出一行 JSON。请求体和草稿结构都在 `schemas/studio-draft.schema.json`（`portraitRequest` / `pixelRequest` / `voiceRequest` / `change`），每项改动写入前按 schema 校验。
+
+### 草稿格式
+
+`changeset.json`：`revision` 每次增删 +1，`savedRevision` 等于它才算「已保存」。每项 `change` 有 `files`（逻辑路径、CDN 根、草稿文件、SHA-256、存储态 SHA-256、被替换的原文件哈希与来源层、是否近似）、`pending`（生成时还要写的表行/打包产物，草稿不写）和 `checks`。同一目标（同一立绘槽、同一动作、同一句语音）再次保存会替换旧项并清掉旧文件。
+
+### 立绘（换立绘）
+
+- 上传 PNG 或对当前立绘重新裁剪。编辑器把生产派生代码 `wf.chars.support.images.make_icons / make_cutin` 的参数画成框：脸锚（两眼中点，与 `full_shot_image_attribute` 同语义）、基准框高、6 组图标框（锚点 + 倍数）、skill_cutin 框；拖脸锚时全部框跟着走。为此给 `make_icons` 加了可选的 `icon_factors`（不传时行为不变）。
+- 预览：浏览器按同一参数实时裁剪并套官方统计蒙版（当前视图「官方原版」角色同名图标 alpha 逐像素中位数，与 `wf.chars.support.masks` 同口径）。保存后由后端用生产代码派生：full_shot（仅上传时）、10 个图标、skill_cutin PNG、**skill_cutin ATF（wf_atf 按原 ATF 的 mip 数重编）**、illustration_setting_sprite_sheet（只重画本槽格子），并跑 `wf_ui_derive_gate.derived_icon_problems`。
+- 139985 当前立绘用默认模板重派生，与现有图标肉眼几乎一致（脸锚取自三张定位表）。
+- 近似 / 未验证：图标构图（标 ≈）；illustration sheet 用 fit 整图而非官方海报构图；ATF 未上真机；上传立绘的默认脸锚只是统计起点，必须手动拖到眼睛；三张定位表只记目标行。
+
+### 像素（换像素）
+
+- 逐帧 PNG（按文件名排序）或精灵图网格切分；每帧停留帧数与锚点（默认脚底中心 = 逐帧底边中位数）；和原动作同时钟并排播放、锚点对齐。
+- 检查：帧尺寸 ≤ 帧框（256²）、必须有透明背景、总时长与原动作不同时提示（生成要平移后续帧号）、可见高度比原动作大 1.6 倍以上提示；图集预算用客户端 MaxRects 移植（`wf_atlas_budget_check.pack`）把其它动作的原区域与新帧一起装箱，估算新 sprite_sheet 尺寸与 layer0 占用，对比官方角色中位 0.17% / 最大 1.09%。
+- 草稿只存源帧和参数；重新装箱 sprite_sheet、改写 atlas 和时间轴属于「生成」，列在 `pending`。
+
+### 语音（换语音）
+
+- 列出 character_speech 注册的台词和固定名战斗语音；只能替换已有路径。
+- 上传任意 ffmpeg 能读的音频 → 两遍 loudnorm（主页 −14 / 战斗 −12.8 / 技能 −13.1 LUFS）→ 44.1kHz 单声道 96k CBR，再用 `wf_assets.mp3_encode` 做存储态校验（VBR 拒绝）；草稿存标准 MP3，A/B 试听，超过官方同类最长时长提示。ffmpeg 取 PATH 或 `WF_FFMPEG`。
+
+### 本次修改
+
+角色页「本次修改」列出全部草稿改动（缩略图、检查、替换文件表、待生成项），逐项撤销。五个动作：只有「保存」接通；「生成」「导出」显示「待接入 wf deliver（M1 分支）」；「应用」「发布」未接入。状态三栏的保存状态读草稿，检查结果只汇总草稿检查（规则条目仍未执行）。
+
+### 测试与截图
+
+- `tests/test_studio_drafts.py`：守卫（Host/Origin/令牌/类型/大小）、真实 HTTP 往返、schema 自检与正反例、草稿往返（替换、篡改检测、撤销、路径越界）、ffmpeg 转码规格、精灵图切分与锚点、真实视图上的像素往返。
+- 截图在仓库外 `m3-studio-shots/m32-*.png`（Edge 无头）。
