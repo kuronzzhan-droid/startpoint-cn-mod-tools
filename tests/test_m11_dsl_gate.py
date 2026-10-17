@@ -133,9 +133,11 @@ def test_wait_argument_count_does_not_hide_notify_callback(params):
     assert source == frozen
 
 
-def test_wait_with_an_additional_effect_callback_is_not_removed():
+@pytest.mark.parametrize("effect", [
+    ["Command", ["ShakeCamera", 1]], {"command": "ShakeCamera", "args": [1]},
+])
+def test_wait_with_an_additional_effect_callback_is_not_removed(effect):
     notify = ["Command", ["NotifyPowerflipEnd", 0]]
-    effect = ["Command", ["ShakeCamera", 1]]
     source = ["Event", ["Wait", 10, "*", notify, effect]]
     assert sanitize_for_629(source) == ["Event", ["Wait", 10, "*", ["Block", []], effect]]
 

@@ -22,7 +22,7 @@ def _body(node):
             if wrapper in node:
                 return _body(node[wrapper])
         for key in ("command", "name", "type"):
-            if isinstance(node.get(key), str) and node[key] in PF_COMMANDS | {"Wait"}:
+            if isinstance(node.get(key), str) and node[key] not in {"Command", "Event", "Block"}:
                 args = node.get("args", [])
                 return [node[key], *(args if isinstance(args, list) else [args])]
     return None
