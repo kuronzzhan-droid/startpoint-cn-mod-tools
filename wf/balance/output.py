@@ -45,6 +45,7 @@ def write_result(recipe, result, output, verification):
         "member_count": len(result.files), "operation_count": len(result.changes),
         "cell_count": sum(len(change["cells"]) for change in result.changes),
         "touched_keys": result.touched_keys, "view_verification": verification,
+        "warnings": result.warnings, "dsl_gate": result.dsl_gate, "ownership": result.ownership,
         "archive": archive_name, "sha256": hashlib.sha256(archive_path.read_bytes()).hexdigest(),
         "installed_bytes": sum(map(len, result.files.values())), "changeset": "changeset.json"}
     (output / "balance-report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", "utf-8")

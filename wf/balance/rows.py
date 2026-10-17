@@ -31,10 +31,28 @@ def split_leaf(text: str, table: str) -> list[list[str]]:
 
 
 def join_leaf(original: str, rows: list[list[str]]) -> str:
+    separators = []
+    quoted, index = False, 0
+    while index < len(original):
+        char = original[index]
+        if char == '"':
+            if quoted and original[index:index + 2] == '""':
+                index += 2
+                continue
+            quoted = not quoted
+        elif not quoted and char in "\r\n":
+            separator = "\r\n" if original[index:index + 2] == "\r\n" else char
+            separators.append(separator)
+            index += len(separator)
+            continue
+        index += 1
+    if len(set(separators)) > 1:
+        raise ValueError("mixed CSV record separators cannot be edited losslessly")
+    separator = separators[0] if separators else "\n"
     output = io.StringIO(newline="")
-    csv.writer(output, lineterminator="\n").writerows(rows)
+    csv.writer(output, lineterminator=separator).writerows(rows)
     result = output.getvalue()
-    return result if original.endswith("\n") else result.rstrip("\n")
+    return result if original.endswith(separator) else result[:-len(separator)]
 
 
 def column_index(table: str, column: int | str, space: str = "ability") -> int:

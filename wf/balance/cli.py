@@ -26,7 +26,9 @@ def main(argv=None):
         result = apply_recipe(recipe, view)
         verification = verify()
         report = {"status": "满足", "mode": "dry-run", "members": len(result.files),
-                  "touched_keys": result.touched_keys, "operations": len(result.changes)}
+                  "touched_keys": result.touched_keys, "operations": len(result.changes),
+                  "warnings": result.warnings, "dsl_gate": result.dsl_gate,
+                  "ownership": result.ownership}
         if args.write:
             output = args.output or REPOSITORY / "work/m1/balance" / recipe["id"]
             report = write_result(recipe, result, output, verification)

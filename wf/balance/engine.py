@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import copy
 import hashlib
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import wf_mod_tool as codec
 import wf_quest_lib as nodes
@@ -12,6 +12,8 @@ import wf_client_legality as legality
 from wf.view.base149 import member
 from .recipe import validate_recipe
 from .rows import TABLES, WIDTHS, column_index, join_leaf, split_leaf, unison_eligible
+from .inputs import require_version
+from .ownership import check_owner, owner_index
 
 
 @dataclass
@@ -21,6 +23,13 @@ class BalanceResult:
     before_sha256: dict[str, str]
     changes: list[dict]
     touched_keys: dict[str, list[str]]
+    warnings: list[dict] = field(default_factory=list)
+    dsl_gate: dict = field(default_factory=dict)
+
+    @property
+    def ownership(self):
+        return {f"{change['table']}/{change['key']}": change["owners"]
+                for change in self.changes if "owners" in change}
 
 
 def _sha(data: bytes) -> str:
@@ -77,7 +86,25 @@ def _edit_rows(operation: dict, rows: list[list[str]], location: str) -> list[li
 def apply_recipe(recipe: dict, view) -> BalanceResult:
     """Validate all old cells in memory; failure produces no files or mutation."""
     validate_recipe(recipe)
+    require_version(getattr(view, "effective_tip", getattr(view, "tip", None)), recipe["from_version"])
+    for operation in recipe["operations"]:
+        table = operation["table"]
+        if table == "custom_ability_string" or (table == "action_skill" and any(
+                column_index(table, cell["column"]) in (0, 1) for cell in operation["cells"])):
+            raise ValueError(f"{table}/{operation['key']}: visible text edits require wf text for rules and synchronization")
+    result = _apply_operations(recipe, view, owner_index(view))
+    from wf.dsl.gate import check_629_actions
+    overrides = {result.logical_paths[name]: raw for name, raw in result.files.items()}
+    result.dsl_gate = check_629_actions(view.read_raw, overrides=overrides, changed_logicals=set(overrides))
+    if result.dsl_gate["status"] == "问题":
+        raise ValueError(f"balance 629 gate blocked: {result.dsl_gate['findings']}")
+    return result
+
+
+def _apply_operations(recipe: dict, view, owners=None) -> BalanceResult:
+    """Encoding core; the only legacy caller is the digest-pinned 223 verifier."""
     raw_tables, originals, tables, touched, changes = {}, {}, {}, {}, []
+    warnings = []
     for operation in recipe["operations"]:
         table = operation["table"]
         logical, key = TABLES[table], operation["key"]
@@ -88,6 +115,7 @@ def apply_recipe(recipe: dict, view) -> BalanceResult:
         location = f"{table}/{key}"
         if key not in tables[logical]:
             raise ValueError(f"{location}: missing key, refusing fallback or replacement")
+        key_owners = check_owner(operation, owners) if owners is not None else None
         node = tables[logical][key]
         level = operation.get("level")
         if table == "action_skill":
@@ -100,6 +128,7 @@ def apply_recipe(recipe: dict, view) -> BalanceResult:
                 raise ValueError(f"{location}: level only applies to action_skill")
             leaf = node
         rows = split_leaf(leaf, table)
+        _assert_equal(join_leaf(leaf, rows), leaf, f"{location} original CSV roundtrip")
         unison_before = unison_eligible(rows) if table == "ability" else None
         updated = _edit_rows(operation, rows, location)
         value = join_leaf(leaf, updated)
@@ -109,9 +138,16 @@ def apply_recipe(recipe: dict, view) -> BalanceResult:
             node[level] = value
         touched.setdefault(logical, set()).add(key)
         change = copy.deepcopy(operation)
+        if key_owners is not None:
+            change["owners"] = key_owners
         if table == "ability":
             change["unison_before"] = unison_before
             change["unison_after"] = unison_eligible(updated)
+            if change["unison_before"] != change["unison_after"]:
+                warning = {"code": "unison-eligibility-changed", "table": table, "key": key,
+                           "before": change["unison_before"], "after": change["unison_after"],
+                           "message": "首行 c1 变化导致合击资格改变，请审阅。"}
+                warnings.append(warning)
         changes.append(change)
 
     files, paths, before = {}, {}, {}
@@ -140,4 +176,4 @@ def apply_recipe(recipe: dict, view) -> BalanceResult:
         name = member(logical)
         files[name], paths[name], before[name] = encoded, logical, _sha(raw)
     return BalanceResult(files, paths, before, changes,
-                         {logical: sorted(keys) for logical, keys in touched.items()})
+                         {logical: sorted(keys) for logical, keys in touched.items()}, warnings)

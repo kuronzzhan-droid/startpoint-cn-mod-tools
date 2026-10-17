@@ -11,6 +11,7 @@ import wf_quest_lib as nodes
 from wf.balance import apply_recipe, column_index, load_recipe, split_leaf, unison_eligible, validate_recipe
 from wf.balance.output import write_result
 from wf.balance.rows import TABLES, join_leaf
+from wf.balance.ownership import CHARACTER
 from wf.rules.instant_content import fill_instant_content_defaults
 from wf.view.base149 import member
 
@@ -40,7 +41,14 @@ def operation(table="ability", key="1001", row=0, row_count=1, cells=None, **kwa
 
 class MemoryView:
     def __init__(self, tables):
+        self.tip = "1.4.222"
         self.raw = {TABLES[name]: nodes.build_node(value) for name, value in tables.items()}
+        row = valid_row("unused")
+        self.raw.setdefault(TABLES["ability"], nodes.build_node({"unused": join_leaf("", [row])}))
+        self.raw.setdefault(TABLES["leader_ability"], nodes.build_node({"unused": join_leaf("", [row[:1] + row[3:]])}))
+        character = [""] * 25
+        character[0], character[8], character[17], character[19] = "hero", "hero", "100", "1001"
+        self.raw[CHARACTER] = nodes.build_node({"100": join_leaf("", [character])})
 
     def read_raw(self, logical):
         return self.raw[logical], "fixture"
@@ -120,13 +128,12 @@ def test_action_skill_zero_tier_is_not_a_game_level():
         validate_recipe(recipe(edit))
 
 
-def test_custom_text_is_whole_cell_asserted_and_csv_escaped():
+def test_custom_text_requires_synchronized_text_command():
     view = MemoryView({"custom_ability_string": {"desc_override_hero": '"旧文本,50%"\n'}})
     edit = operation("custom_ability_string", "desc_override_hero",
                      cells=[{"column": "c0", "old": "旧文本,50%", "new": "新文本,20%\n第二行"}])
-    result = apply_recipe(recipe(edit), view)
-    assert split_leaf(changed_leaf(result, "custom_ability_string", "desc_override_hero"),
-                      "custom_ability_string") == [["新文本,20%\n第二行"]]
+    with pytest.raises(ValueError, match="wf text"):
+        apply_recipe(recipe(edit), view)
 
 
 def test_wrong_old_cell_rejects_entire_batch_without_mutating_view():
@@ -226,6 +233,7 @@ def test_output_contract_and_refuse_overwrite(tmp_path):
     changeset = json.loads((output / "changeset.json").read_text("utf-8"))
     assert changeset["schema"] == "wf-change-set/1"
     assert report["operation_count"] == report["cell_count"] == 1
+    assert report["ownership"] == {"ability/1001": ["100"]}
     item = changeset["members"][0]
     assert item["root"] == "common"
     assert hashlib.sha256((output / item["source"]).read_bytes()).hexdigest() == item["sha256"]

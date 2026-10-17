@@ -52,6 +52,7 @@
         "row_count": {"type": "integer", "minimum": 1},
         "column_space": {"enum": ["ability", "native"]},
         "group": {"type": "string"},
+        "shared_ok": {"type": "boolean"},
         "note": {"type": "string"},
         "cells": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/cell"}}
       },
