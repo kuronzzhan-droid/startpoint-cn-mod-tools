@@ -1,0 +1,116 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""Compile explicit SHA-locked PNG specifications into WF storage bytes."""
+
+from __future__ import annotations
+
+import hashlib
+import io
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Mapping, Sequence
+
+from PIL import Image, UnidentifiedImageError
+
+import wf_assets
+
+
+@dataclass(frozen=True)
+class BannerSpec:
+    source_name: str
+    source_sha256: str
+    logical_path: str
+    size: tuple[int, int]
+
+
+@dataclass(frozen=True)
+class BannerCompilation:
+    files: Mapping[str, bytes]
+    report: Mapping[str, object]
+
+
+def _sha(raw: bytes) -> str:
+    return hashlib.sha256(raw).hexdigest()
+
+
+def _load_rgba(raw: bytes, label: str) -> Image.Image:
+    try:
+        with Image.open(io.BytesIO(raw)) as image:
+            image.load()
+            if image.mode != "RGBA":
+                raise ValueError(f"{label} must be RGBA; actual={image.mode}")
+            return image.copy()
+    except UnidentifiedImageError as exc:
+        raise ValueError(f"{label} is not a valid PNG") from exc
+
+
+def compile_banners(
+    source_dir: Path, specs: Sequence[BannerSpec]
+) -> BannerCompilation:
+    """Encode explicit SHA-locked PNG sources and prove decoded pixel identity."""
+
+    source_dir = Path(source_dir)
+    names = [spec.source_name for spec in specs]
+    logicals = [spec.logical_path for spec in specs]
+    if (
+        not specs
+        or len(names) != len(set(names))
+        or len(logicals) != len(set(logicals))
+    ):
+        raise ValueError("banner specs must have unique source names and logical paths")
+
+    files: dict[str, bytes] = {}
+    source_hashes: dict[str, str] = {}
+    output_hashes: dict[str, str] = {}
+    readback: dict[str, dict[str, object]] = {}
+    for spec in specs:
+        source = source_dir / spec.source_name
+        if not source.is_file():
+            raise ValueError(f"banner source is missing: {spec.source_name}")
+        raw = source.read_bytes()
+        actual_sha = _sha(raw)
+        if actual_sha != spec.source_sha256:
+            raise ValueError(
+                f"banner source SHA-256 drift: {spec.source_name}; "
+                f"expected={spec.source_sha256}, actual={actual_sha}"
+            )
+        source_image = _load_rgba(raw, spec.source_name)
+        if source_image.size != spec.size:
+            raise ValueError(
+                f"banner source dimensions drift: {spec.source_name}; "
+                f"expected={spec.size}, actual={source_image.size}"
+            )
+        source_pixels = source_image.tobytes()
+        stored = wf_assets.png_encode(raw)
+        if not stored.startswith(wf_assets.PNG_FAKE):
+            raise ValueError(f"banner WF storage signature is absent: {spec.source_name}")
+        decoded_raw = wf_assets.png_decode(stored)
+        decoded = _load_rgba(decoded_raw, f"decoded {spec.source_name}")
+        if decoded.size != spec.size or decoded.tobytes() != source_pixels:
+            raise ValueError(f"banner decoded pixel readback drift: {spec.source_name}")
+        files[spec.logical_path] = stored
+        source_hashes[spec.source_name] = actual_sha
+        output_hashes[spec.logical_path] = _sha(stored)
+        readback[spec.logical_path] = {
+            "width": decoded.width,
+            "height": decoded.height,
+            "mode": decoded.mode,
+            "pixel_sha256": _sha(decoded.tobytes()),
+            "decoded_png_sha256": _sha(decoded_raw),
+        }
+
+    return BannerCompilation(files, {
+        "schema_version": 1,
+        "status": "compiled_wf_storage_banners",
+        "payload_count": len(files),
+        "source_sha256": source_hashes,
+        "output_sha256": output_hashes,
+        "decoded_readback": readback,
+        "logical_paths": sorted(files),
+        "package_manifest_eligible": True,
+        "writes_live": False,
+        "formal_workspace_written": False,
+    })
+
+
+__all__ = ['BannerSpec', 'BannerCompilation', 'compile_banners']

@@ -20,7 +20,7 @@ except ImportError:
     compile_special = None
 
 
-TARGET = "character/cnmod_thunder_dragon_ascendant/pixelart"
+TARGET = "character/synthetic_target/pixelart"
 
 
 class SpecialPixelArtCompileTests(unittest.TestCase):

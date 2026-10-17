@@ -22,8 +22,8 @@ except ImportError:
     compile_full_normal = None
 
 
-SOURCE = "character/thunder_dragon/pixelart"
-TARGET = "character/cnmod_thunder_dragon_ascendant/pixelart"
+SOURCE = "character/synthetic_source/pixelart"
+TARGET = "character/synthetic_target/pixelart"
 SEQUENCES = (
     ("neutral", "loop", 1, 2),
     ("walk_back", "loop", 3, 26),
