@@ -1362,12 +1362,24 @@ def _repo_paths(profile_id: str) -> tuple[Path, character_pack.LiveRoots, Path]:
         raise ReleaseError("character release is CN-only")
     import wf_mod_tool as core
 
-    repo_root = Path(__file__).resolve().parent.parent
     profile = core.resolve_profile("cn")
-    if profile is None or profile.id != "cn" or not Path(profile.store).is_dir():
+    if profile is None or profile.id != "cn":
         raise ReleaseError("active CN profile/store is unavailable")
-    store = Path(profile.store).resolve()
-    cdn_root = Path(os.environ.get("WF_CDN_DIR", repo_root / ".cdn" / "cn")).resolve()
+    # The character-release tool can live below ``tools/`` rather than directly
+    # under the server repository.  Resolve both authorities through the active
+    # profile instead of deriving them from this module's nesting depth.
+    repo_root = core.resolve_server_dir("cn").resolve()
+    try:
+        active_store = core.resolve_active_store(profile=profile)
+    except ValueError as exc:
+        raise ReleaseError(str(exc)) from exc
+    if active_store is None or not Path(active_store).is_dir():
+        raise ReleaseError("active CN profile/store is unavailable")
+    store = Path(active_store).resolve()
+    try:
+        cdn_root = core.resolve_cdn_root("cn").resolve()
+    except ValueError as exc:
+        raise ReleaseError(str(exc)) from exc
     live_roots = character_pack.LiveRoots(
         common=store,
         medium=store.parent / "medium_upload",

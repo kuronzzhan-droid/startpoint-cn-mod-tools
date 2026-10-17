@@ -1798,7 +1798,7 @@ class _WindowsOwnedApi:
             return _WindowsRelativeOpenContract(
                 access=(
                     self.FILE_LIST_DIRECTORY | self.FILE_ADD_FILE
-                    | self.FILE_ADD_SUBDIRECTORY | self.FILE_DELETE_CHILD
+                    | self.FILE_ADD_SUBDIRECTORY
                     | self.FILE_READ_ATTRIBUTES | self.FILE_WRITE_ATTRIBUTES
                     | self.FILE_TRAVERSE | self.DELETE | self.SYNCHRONIZE
                 ),
