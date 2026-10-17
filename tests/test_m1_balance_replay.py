@@ -6,7 +6,10 @@ import pytest
 
 from wf.balance import apply_recipe, load_recipe
 from wf.balance.inputs import open_inputs
+from wf.balance.rows import TABLES, split_leaf
 from wf.paths import REPOSITORY
+import wf_quest_lib as nodes
+from wf.view.base149 import member
 
 RECIPE = REPOSITORY / "recipes/balance/balance1017-223.yml"
 GOLDEN = {
@@ -38,3 +41,20 @@ def test_223_yaml_rebuild_matches_all_three_original_member_hashes():
     assert {name: hashlib.sha256(data).hexdigest() for name, data in result.files.items()} == GOLDEN
     assert verification["active_zip_count"] == 85
     assert verification["store_member_count"] == 0
+
+
+@pytest.mark.skipif(not (REPOSITORY / "profiles/local.json").exists(), reason="需要本机只读历史输入 profile")
+def test_real_action_skill_third_tier_can_be_edited_without_changing_other_tiers():
+    document = load_recipe(RECIPE)
+    view, verify = open_inputs(document, RECIPE)
+    table = view.load(TABLES["action_skill"])
+    key = next(key for key, tiers in table.items() if "3" in tiers)
+    old = split_leaf(table[key]["3"], "action_skill")[0][0]
+    document["operations"] = [{"op": "set_cells", "character": "read-only-fixture",
+        "table": "action_skill", "key": key, "level": "3", "row": 0, "row_count": 1,
+        "cells": [{"column": "c0", "old": old, "new": old + "测试"}]}]
+    result = apply_recipe(document, view)
+    after = nodes.parse_node(result.files[member(TABLES["action_skill"])])[key]
+    assert split_leaf(after["3"], "action_skill")[0][0] == old + "测试"
+    assert after["1"] == table[key]["1"] and after["2"] == table[key]["2"]
+    verify()

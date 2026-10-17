@@ -24,7 +24,7 @@ cells:
   - {column: c51, old: '10000', new: '20000'} # 实际 leader c49
 ```
 
-`set_cells` 支持 ability、leader_ability、action_skill 和 custom_ability_string。action_skill 必须用字符串 `level: '0'`、`'1'` 或 `'2'` 指定档位；文本在原 CSV 单元格上完整断言并重新转义。能力多行叶先按 CSV 行解析，再寻址；直接按逗号切分得到的 125n+1 字段不可当作一行修改。合击资格只看第一行 c1 是否为 `true`，报告记录改动前后资格。
+`set_cells` 支持 ability、leader_ability、action_skill 和 custom_ability_string。action_skill 必须用字符串 `level: '1'`、`'2'` 或 `'3'` 指定档位，目标角色实际缺少该档时拒绝修改；文本在原 CSV 单元格上完整断言并重新转义。能力多行叶先按 CSV 行解析，再寻址；直接按逗号切分得到的 125n+1 字段不可当作一行修改。合击资格只看第一行 c1 是否为 `true`，报告记录改动前后资格。
 
 `insert_row` 和 `delete_row` 用于能力/队长行：必须覆盖该行全部 126/124 个单元格。插入每格 `old: null`，删除每格 `new: null`；`row_count` 锁定当前行数，避免不知情地增删错位。关联效果可使用相同的 `group` 字段说明意图。
 

@@ -47,7 +47,7 @@
         "character": {"type": "string", "minLength": 1},
         "table": {"enum": ["ability", "leader_ability", "action_skill", "custom_ability_string"]},
         "key": {"type": "string", "minLength": 1},
-        "level": {"enum": ["0", "1", "2"]},
+        "level": {"enum": ["1", "2", "3"]},
         "row": {"type": "integer", "minimum": 0},
         "row_count": {"type": "integer", "minimum": 1},
         "column_space": {"enum": ["ability", "native"]},

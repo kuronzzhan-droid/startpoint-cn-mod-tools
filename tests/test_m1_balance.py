@@ -103,15 +103,21 @@ def test_only_first_ability_row_controls_unison_pool():
     assert change["unison_before"] is False and change["unison_after"] is True
 
 
-@pytest.mark.parametrize("level", ["0", "1", "2"])
+@pytest.mark.parametrize("level", ["1", "2", "3"])
 def test_action_skill_exact_level_is_edited(level):
-    levels = {key: f"skill {key},description {key},400\n" for key in ("0", "1", "2")}
+    levels = {key: f"skill {key},description {key},400\n" for key in ("1", "2", "3")}
     view = MemoryView({"action_skill": {"hero": levels}})
     edit = operation("action_skill", "hero", level=level,
                      cells=[{"column": "c2", "old": "400", "new": "350"}])
     after = changed_leaf(apply_recipe(recipe(edit), view), "action_skill", "hero")
     assert after[level] == f"skill {level},description {level},350\n"
     assert all(after[key] == levels[key] for key in levels if key != level)
+
+
+def test_action_skill_zero_tier_is_not_a_game_level():
+    edit = operation("action_skill", "hero", level="0")
+    with pytest.raises(ValueError, match="'0' is not one of"):
+        validate_recipe(recipe(edit))
 
 
 def test_custom_text_is_whole_cell_asserted_and_csv_escaped():
