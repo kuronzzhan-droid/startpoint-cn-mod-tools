@@ -2504,10 +2504,11 @@ class TowerHpTargetCase(unittest.TestCase):
             bl = q.load_table("master/battle/boss/boss_level.orderedmap")
         except FileNotFoundError:
             self.skipTest("store 不可用")
-        fields = [rb.deep_hp_anchor_field(r, 30) for r in range(25, 31)]
-        self.assertEqual(len(set(fields)), 6)
+        fields = [rb.deep_hp_anchor_field(r, 30) for r in range(26, 31)]
+        self.assertIsNone(rb.deep_hp_anchor_field(25, 30))
+        self.assertEqual(len(set(fields)), 5)
         refs = rb.code_referenced_bosses(gb)
-        for r, field in zip(range(25, 31), fields):
+        for r, field in zip(range(26, 31), fields):
             bosses, _ = rb._zone_pick(field)
             self.assertTrue(bosses, field)
             got = rb.floor_native_hp(bosses, 100, sb)

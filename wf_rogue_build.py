@@ -54,9 +54,8 @@ from dataclasses import dataclass, replace
 from datetime import date
 from pathlib import Path
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# 本脚本所在目录:主仓 = ROOT/mod-tools,平铺导出仓 = 仓根。工具自带的数据文件
-# (rogue_*.json / work/)一律以此为基准,两种布局都能找到。
+# 工具数据始终属于本 checkout；服务端写入在 main 的 --write 分支显式解析。
+ROOT = os.path.dirname(os.path.abspath(__file__))
 MOD_DIR = os.path.dirname(os.path.abspath(__file__))
 pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_quest_lib as q          # noqa: E402
@@ -64,6 +63,10 @@ import wf_chain_build as cb       # noqa: E402
 import wf_dsl                     # noqa: E402
 import wf_dsl_sig                 # noqa: E402
 import wf_rogue_bundle as rbb      # noqa: E402
+from wf.rules.rogue_lineage import (  # noqa: E402
+    checked_mix_terrain_compatibility, native_bundle_field_index,
+    standard_funnel_boss_references,
+)
 
 EVENT_ID = "700099"
 TOKEN_ID = "2370099"
@@ -126,7 +129,9 @@ def _hp_scale_safe(bosses: list[str]) -> bool:
 
 
 def _pool_safe(bosses: list[str]) -> bool:
-    """候选池 boss 级黑名单总闸(C8016 崩 + 血量级别错配)。"""
+    """候选池总闸，排除崩溃、不可击杀及血量级别错配的 Boss。"""
+    if "shark_score_event" in bosses:
+        return False
     return _c8016_safe(bosses) and _hp_scale_safe(bosses)
 
 
@@ -1540,9 +1545,18 @@ def code_referenced_bosses(gb_t: dict | None = None) -> dict:
     except Exception as e:
         print(f"[WARN] BossAlive 扫描失败({e});本轮不发深渊法阵")
         degraded = True
+    standard_links = set()
+    try:
+        standard_links = standard_funnel_boss_references(
+            _tbl(STANDARD_FUNNEL), cells, rbb._decoded_store_tree)
+        hard.update(code for _kind, code in standard_links)
+    except Exception as exc:
+        print(f"[WARN] Standard Funnel 反向引用扫描失败({exc});拒绝未经证明的克隆")
+        degraded = True
     codes = set(gb)
     result = {"hard": frozenset(hard & codes),
               "soft": frozenset((soft - hard) & codes),
+              "standard_identity_references": frozenset(code for _, code in standard_links),
               "degraded": degraded}
     if gb_t is None:
         _CODE_REFS = result
@@ -1562,12 +1576,15 @@ def identity_locked_boss_reason(
     codes = sorted({str(code) for code in bosses if str(code)})
     if not codes:
         return None
+    if "shark_score_event" in codes:
+        return "shark_score_event 是不可击杀的计分活动族，不能用于击杀通关塔"
     refs = (code_referenced_bosses() if code_references is None
             else code_references)
     if refs.get("degraded"):
         return (f"identity-locked 判据扫描降级，拒绝改名/异地搬运:"
                 f"{','.join(codes)}")
-    hard = frozenset(map(str, refs.get("hard") or ()))
+    hard = (frozenset(map(str, refs.get("hard") or ()))
+            | frozenset(map(str, refs.get("standard_identity_references") or ())))
     hits = sorted(set(codes) & hard)
     if not hits:
         return None
@@ -2913,14 +2930,10 @@ WARMUP_TARGET_DPS = 600_000.0
 MAX_DPS_DOWN_JITTER = 0.15
 STANDARD_C86_LIMITS = (0.9, 1.1)
 
-# 30 层塔的深层硬锚。正式池经“只留最高 quest rank”后仅剩 eye + 妄羊3/4，
-# 不足 6 个安全 general_boss 领域载体；全库约束匹配证明最小扩池是再纳入：
-#   - score_event_shark（独立 score-event 来源，但放进塔后仍由 event_quest logic 驱动）；
-#   - 妄羊1/2 的低 quest-rank field（boss_level 在塔内 lv100 可完整解析）。
-# 六层均为已知曲线/绝对 HP 证据、代号互异，c86 解落在 3.90~7.07。c36=true
-# 只会禁属性免疫，不会禁普通 StartBuffField 领域；载体门禁仍在 main 内逐层复核。
+# 30 层塔 r26~30 的深层硬锚。r25 回到常规候选池。
+# 计分鲨鱼没有传伤链，禁止作为击杀目标；保留 eye 与妄羊1~4。
+# 领域与 HP 通道仍由主流程逐层复核，候选不足时不可绕过安全门禁。
 DEEP_HP_ANCHOR_FIELDS_30 = (
-    "score_event_shark",
     "eye_dragon_multibattle",
     "raid_alter_sheep_materia1",
     "raid_alter_sheep_materia2",
@@ -3005,10 +3018,10 @@ def configured_target_dps(r: int, n: int, hp_base: float, hp_growth: float,
 
 
 def deep_hp_anchor_field(r: int, n: int) -> str | None:
-    """返回 30 层成品塔 r25~30 的绝对 HP / 领域载体锚；其它塔高不强套。"""
+    """返回 30 层塔 r26~30 的安全硬锚；r25 回到常规可击杀候选池。"""
     if n != 30:
         return None
-    first = 25
+    first = 26
     return DEEP_HP_ANCHOR_FIELDS_30[r - first] if first <= r <= 30 else None
 
 
@@ -3561,6 +3574,24 @@ def _resistance_totals_by_target(picks: list[dict], key: str) -> dict[int, float
     return totals
 
 
+def damage_resistance_totals(picks: list[dict]) -> dict[int, float]:
+    """按实际落表结果合计关卡、一次性和叠层三种伤害抗性。
+
+    同一来源先沿用其编译合并规则；不同来源在客户端 ConditionSlot 中
+    相加。不能只分别判断各来源是否达到 100%，否则会漏放 90%+40%。
+    """
+    totals = _resistance_totals_by_target(picks, "damage_resistance")
+    for constructor, value in _stacked_resistance_totals(picks).items():
+        kind = STACKED_DAMAGE_AC_KIND.get(constructor)
+        if kind is not None:
+            totals[kind] = totals.get(kind, 0.0) + value
+    for kind, value in merge_conds(picks):
+        if kind in {"0", "1", "2", "3"}:
+            target = int(kind)
+            totals[target] = totals.get(target, 0.0) + float(value)
+    return totals
+
+
 def immunity_axes(picks: list[dict]) -> tuple[set[str], set[int]]:
     """返回跨诅咒合并后的(完全免疫伤害类型,高阻断属性)。
 
@@ -3572,23 +3603,8 @@ def immunity_axes(picks: list[dict]) -> tuple[set[str], set[int]]:
     specificDamageResistance 均固定为 0，能绕过两轴；这些集合服务于 NormalAttack
     常规输出路的设计门禁，不宣称战斗在机制上绝对无解。
     """
-    damage_total = _resistance_totals_by_target(picks, "damage_resistance")
-    for constructor, value in _stacked_resistance_totals(picks).items():
-        kind = STACKED_DAMAGE_AC_KIND.get(constructor)
-        if kind is not None:
-            # 两种条件的 ID 不同，但 ConditionSlot 的四个 resistance getter 会把
-            # 它们相加；必须跨“一次性/叠层”后再判是否封死该伤害类型。
-            damage_total[kind] = damage_total.get(kind, 0.0) + float(value)
-    damage = {str(kind) for kind, value in damage_total.items()
+    damage = {str(kind) for kind, value in damage_resistance_totals(picks).items()
               if value >= 1.0 - 1e-12}
-    for kind, value in merge_conds(picks):
-        if kind not in {"0", "1", "2", "3"}:
-            continue
-        try:
-            if float(value) >= 1.0 - 1e-12:
-                damage.add(kind)
-        except (TypeError, ValueError):
-            pass
     elements = {int(element) for element, value in
                 _resistance_totals_by_target(picks, "element_resistance").items()
                 if 1 <= int(element) <= 6
@@ -4133,6 +4149,9 @@ def _curse_pool(t: int, rng, *, stack_layers: int = 50,
 def apply_picks(out: dict, picks: list[dict], combo: str | None = None) -> dict:
     """把一组诅咒条目合成效果包。**降档闸改了 picks 之后重算走同一条路**,
     保证 hp/atk/conds/desc 永远与 picks 一致(不会出现"文案写×2.6、落表 1.4")。"""
+    why = curse_conflict(picks)
+    if why:
+        raise ValueError(f"诅咒效果包未过组合门禁:{why}")
     out.update({"conds": [], "damage_resistance": [], "element_resistance": [],
                 "stacked_resistance": [],
                 "hp": 1.0, "atk": 1.0, "tp": None, "fever": None,
@@ -5535,6 +5554,10 @@ def main() -> int:
     ap.add_argument("--check-quest-path", metavar="FILE",
                     help="--check 用指定 quest 表文件(如 .bak 备份)代替 store 现状")
     args = ap.parse_args()
+    # Validate the external write target before any store or forged DSL write.
+    # Imports and dry-runs remain available without a configured server.
+    import wf_mod_tool as core
+    server_root = str(core.resolve_server_dir()) if args.write else None
 
     if args.normalize and (args.normalize_min <= 0
                            or args.normalize_max < args.normalize_min
@@ -6247,6 +6270,26 @@ def main() -> int:
         return {"field": f, "bosses": bosses, "thumb": thumb_map.get(f, ""),
                 "bgm": fc[1], "label": "塔·" + ",".join(bosses)}
 
+    mix_bundles_by_level = {}
+
+    def mix_compatibility(source_field, target_field, bosses, round_no):
+        level = resolve_level(bosses, want_level(round_no), sb_t, gv_t,
+                              gb_t, prefer_max=want_max)
+        if level is None:
+            return rbb.CompatibilityResult(False, "LEVEL_UNRESOLVED",
+                                           "donor has no usable level", source_field, target_field)
+        level = int(level)
+        if level not in mix_bundles_by_level:
+            # Read the unmodified official view once, before any generated
+            # field can become evidence for a later mix. Different level
+            # leaves can carry different actions, so each needs its own proof.
+            mix_bundles_by_level[level] = native_bundle_field_index(
+                build_native_bundle_catalog(level))
+        strict, safe_set = load_transplant_policy()
+        return checked_mix_terrain_compatibility(
+            source_field, target_field, mix_bundles_by_level[level],
+            strict_transplant=strict, transplant_safe=safe_set)
+
     def mix_pick(r: int, pin_terrain: str | None = None,
                  pin_boss: str | None = None) -> dict | None:
         """模块化拼接层:地形楼层 × 另一楼层的 boss 组,独立随机。
@@ -6321,7 +6364,7 @@ def main() -> int:
             # 时 --mix 最终必失败。先在同一实体槽数内优先安全 donor，不放宽名单。
             strict, safe_set = load_transplant_policy()
             portable = [e for e in cands
-                        if (not strict or all(b in safe_set for b in e[2]))
+                        if mix_compatibility(e[0], terrain[0], e[2], r).ok
                         and not any(is_special_boss(b, special_bosses) for b in e[2])]
             # ⚠ 无条件收窄到白名单会让拼接层塌缩。rogue_special_bosses.json 的
             # transplant_safe 去掉杂鱼后**只剩 3 个去重键**(treant /
@@ -6333,7 +6376,9 @@ def main() -> int:
             # 自己的老家场地、不做跨地形移植,2026-07-28 那三次崩溃的防线不动。
             portable_fresh = [e for e in portable
                               if all(_quota_left(k) for k in name_keys(e[2]))]
-            if portable_fresh:
+            if pin_terrain and portable:
+                cands = portable_fresh or portable
+            elif portable_fresh:
                 cands = portable_fresh
             elif portable and not any(
                     all(_quota_left(k) for k in name_keys(e[2])) for e in cands):
@@ -6380,12 +6425,17 @@ def main() -> int:
                     "thumb": thumb_map.get(sf, ""),
                     "bgm": (cb._cols(_sline)[1] if _sline else None),
                     "label": "原味·" + ",".join(sorted(set(sbosses)))}
-        strict, safe_set = load_transplant_policy()
-        unsafe = strict and not all(b in safe_set for b in sbosses)
-        if (unsafe or any(is_special_boss(b, special_bosses) for b in sbosses))                 and not pin_terrain:
-            # 原味保护:名单 boss 不拆解,整层直用它的老家场地(诅咒照常在外层叠加)
-            if not pin_boss:
-                tower.append(terrain)               # 地形没用上,归还池子
+        compatibility = mix_compatibility(sf, tf, sbosses, r)
+        if not compatibility.ok:
+            tower[:] = pool_before
+            if pin_terrain:
+                print(f"[ERR] 第{r}战钉选组合拒绝:"
+                      f"{compatibility.reason}:{compatibility.detail}")
+                return None
+            if not pin_boss and src_e in tower:
+                tower.remove(src_e)
+            log(f"[地形门禁] round={r} {sf}->{tf} reject="
+                f"{compatibility.reason}:{compatibility.detail}; 回退原味")
             return {"field": sf, "bosses": sbosses, "thumb": thumb_map.get(sf, ""),
                     "bgm": (cb._cols(_sline)[1] if _sline else None),
                     "label": "原味·" + ",".join(sorted(set(sbosses)))}
@@ -6630,9 +6680,15 @@ def main() -> int:
                 # Whole-field fallback (preserve_mix=False) remains legal.
                 identity_block = identity_locked_boss_reason(
                     bosses, code_references=code_refs)
+                target_field = str(current["_mix_terrain_entry"][0])
+                source_entry = pick.get("_mix_boss_entry")
+                source_field = (str(source_entry[0]) if source_entry
+                                else str(pick.get("field") or ""))
+                compatibility = mix_compatibility(
+                    source_field, target_field, bosses, r)
                 if (identity_block
                         or len(bosses) != int(current.get("_mix_slot_count") or 0)
-                        or (strict and not all(b in safe_set for b in bosses))
+                        or not compatibility.ok
                         or any(is_special_boss(b, special_bosses) for b in bosses)):
                     return "transplant"
             if (args.rounds == 30 and is_deep_round(r, args.rounds)
@@ -7705,7 +7761,7 @@ def main() -> int:
     print("[OK] ②层五表已写入(rush_event / folder / quest / event_list / correction)")
 
     # 服务端 json
-    quest_json_path = os.path.join(ROOT, "assets", "rush_event_quest.json")
+    quest_json_path = os.path.join(server_root, "assets", "rush_event_quest.json")
     with open(quest_json_path, encoding="utf-8") as fh:
         quest_json = json.load(fh)
     tmpl_entry = quest_json[f"{TEMPLATE_EVENT}001"]
@@ -7731,7 +7787,7 @@ def main() -> int:
     with open(quest_json_path, "w", encoding="utf-8", newline="\n") as fh:
         json.dump(quest_json, fh, ensure_ascii=False, indent=1)
 
-    folder_json_path = os.path.join(ROOT, "assets", "rush_event_quest_folder.json")
+    folder_json_path = os.path.join(server_root, "assets", "rush_event_quest_folder.json")
     with open(folder_json_path, encoding="utf-8") as fh:
         folder_json = json.load(fh)
     # 保留自定义通关奖励(2026-07-28 起服务端 json 的 700099 奖励由用户定制,
@@ -7749,7 +7805,7 @@ def main() -> int:
     if args.publish:
         r = subprocess.run([sys.executable, os.path.join(MOD_DIR, "wf_publish.py"),
                             "--tables", pub_tables],
-                           cwd=ROOT)
+                           cwd=server_root)
         print(f"[PUBLISH] wf_publish 退出码 {r.returncode}")
         if r.returncode != 0:
             print("[ERR] 发布失败:表已写入 store 但 CDN 未更新,勿清进度/勿重启客户端,"
