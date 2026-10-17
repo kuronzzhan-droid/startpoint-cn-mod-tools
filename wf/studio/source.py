@@ -7,6 +7,7 @@ from ``WikiSource``. All reads are in-memory; nothing is written.
 """
 from __future__ import annotations
 
+import os
 import re
 import threading
 import zlib
@@ -64,6 +65,7 @@ class StudioSource:
         self._trees: dict[str, object] = {}
         self._baseline = None
         self.baseline_error: str | None = None
+        self.chain = None  # ChainResult when built from a chain manifest
 
     # -- identity -------------------------------------------------------
     @property
@@ -77,8 +79,12 @@ class StudioSource:
 
     def describe(self) -> dict:
         extras = [Path(p).name for p in self.view.zips if Path(p).parent != Path(self.view.active)]
+        chain = None
+        if self.chain is not None:
+            chain = {"manifest": str(self.chain.manifest), "resolved": len(self.chain.zips),
+                     "missing": self.chain.missing}
         return {"version": self.version, "tip": self.view.tip, "zipCount": len(self.view.zips),
-                "memberCount": len(self.view.index), "extraZips": extras,
+                "memberCount": len(self.view.index), "extraZips": extras, "chain": chain,
                 "officialBaseline": self.baseline_error is None and self._baseline is not None,
                 "officialBaselineError": self.baseline_error}
 
@@ -156,11 +162,48 @@ class StudioSource:
         return {"logical": logical, "source": origin}
 
 
-def build_source(*, tip: int | None = None, extra_zips=(), extra_lists=()) -> StudioSource:
+def default_chain_settings() -> tuple[Path | None, list[Path]]:
+    """Chain manifest + ZIP search dirs from env/profile; None when not configured."""
+    from wf.paths import _profile, configured, root_path
+    manifest = path("studio_chain_manifest") if configured("studio_chain_manifest") else None
+    raw = os.environ.get("WF_STUDIO_ZIP_DIRS")
+    if raw:
+        dirs = [Path(p) for p in raw.split(os.pathsep) if p]
+    else:
+        config, _ = _profile()
+        listed = config.get("studio_zip_dirs")
+        if listed:
+            dirs = [p if p.is_absolute() else root_path(p) for p in map(Path, listed)]
+        else:
+            root = root_path()
+            dirs = sorted(root.glob("rel*")) + [root / "out"] if root.is_dir() else []
+    return manifest, [d for d in dirs if d.is_dir()]
+
+
+def build_source(*, tip: int | None = None, extra_zips=(), extra_lists=(), chain_manifest=None,
+                 search_dirs=None, use_default_chain: bool = True) -> StudioSource:
     tip = int(tip) if tip else newest_tip()
-    extras = [Path(p) for p in extra_zips] + read_extra_list(extra_lists)
+    chain = None
+    if chain_manifest is None and use_default_chain:
+        chain_manifest, default_dirs = default_chain_settings()
+        search_dirs = default_dirs if search_dirs is None else search_dirs
+    if chain_manifest is not None:
+        from .chain import resolve_chain
+        if search_dirs is None:
+            search_dirs = default_chain_settings()[1]
+        chain = resolve_chain(Path(chain_manifest), search_dirs, after_tip=tip)
+    extras = list(chain.zips if chain else []) + [Path(p) for p in extra_zips] + read_extra_list(extra_lists)
     missing = [str(p) for p in extras if not p.is_file()]
     if missing:
         raise FileNotFoundError("额外补丁 ZIP 不存在: " + ", ".join(missing))
-    view = HistoricalView(tip=tip, extra_zips=extras)
-    return StudioSource(view)
+    # De-duplicate by file name (an extras list may repeat chain ZIPs); keep the first.
+    unique, seen = [], set()
+    for archive in extras:
+        key = Path(archive).name.lower()
+        if key not in seen:
+            seen.add(key)
+            unique.append(Path(archive))
+    view = HistoricalView(tip=tip, extra_zips=unique)
+    source = StudioSource(view)
+    source.chain = chain
+    return source

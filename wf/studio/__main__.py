@@ -18,13 +18,21 @@ def main(argv=None) -> int:
                         help="在 active 链之后按顺序叠加的补丁 ZIP，可重复")
     parser.add_argument("--extra-zips-file", action="append", default=[], metavar="TXT",
                         help="每行一个 ZIP 路径的清单文件，可重复；按出现顺序叠加")
+    parser.add_argument("--chain-manifest", type=Path, metavar="JSON",
+                        help="补丁链清单 manifest.json；TIP 之后的已启用边按 archive_integrity 在搜索目录中找 ZIP"
+                             "（默认读 profile 的 paths.studio_chain_manifest）")
+    parser.add_argument("--zip-dir", action="append", type=Path, metavar="DIR",
+                        help="查找补丁 ZIP 的目录（可重复；默认 profile 的 studio_zip_dirs，否则 wf_root 下 rel* 与 out）")
+    parser.add_argument("--no-chain", action="store_true", help="不按清单自动叠加，只用 active 与 --extra-zip")
     parser.add_argument("--static", type=Path, default=DEFAULT_STATIC, help="前端构建目录")
     parser.add_argument("--warm", action="store_true", help="启动时预先加载角色列表")
     args = parser.parse_args(argv)
 
     if sys.stdout and hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    source = build_source(tip=args.tip, extra_zips=args.extra_zip, extra_lists=args.extra_zips_file)
+    source = build_source(tip=args.tip, extra_zips=args.extra_zip, extra_lists=args.extra_zips_file,
+                          chain_manifest=args.chain_manifest, search_dirs=args.zip_dir,
+                          use_default_chain=not args.no_chain)
     app = StudioApp(source)
     if args.warm:
         app.character_list()
@@ -32,6 +40,11 @@ def main(argv=None) -> int:
     server = serve(app, host=args.host, port=args.port, static_root=args.static)
     print(f"编辑台（只读）: http://{args.host}:{args.port}/  视图 {info['version']}  "
           f"ZIP {info['zipCount']} 个，额外叠加 {len(info['extraZips'])} 个", flush=True)
+    if info.get("chain"):
+        chain = info["chain"]
+        print(f"补丁链清单 {chain['manifest']}：找到 {chain['resolved']} 个 ZIP，缺 {len(chain['missing'])} 个", flush=True)
+        for item in chain["missing"]:
+            print(f"  缺少 {item['version']} {item['name']}", flush=True)
     if not (args.static / "index.html").is_file():
         print(f"提示：前端未构建（{args.static}），请在 studio/ 下运行 npm run build", flush=True)
     try:

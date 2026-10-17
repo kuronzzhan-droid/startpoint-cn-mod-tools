@@ -23,7 +23,7 @@ def _members(archive: Path) -> list[str] | None:
 
 
 def patch_chain(source: StudioSource) -> dict:
-    location = manifest_path()
+    location = source.chain.manifest if source.chain is not None else manifest_path()
     manifest = json.loads(location.read_text("utf-8")) if location.is_file() else {"patches": []}
     active = Path(source.view.active)
     in_view = {Path(p).name for p in source.view.zips}
@@ -40,7 +40,7 @@ def patch_chain(source: StudioSource) -> dict:
             "archiveSize": entry.get("archive_size"), "createdAt": entry.get("created_at"),
             "changes": entry.get("changes", []), "fileCount": len(entry.get("files", []) or []),
             "presentInActive": bool(file and file.is_file()), "inView": archive in in_view,
-            "origin": "清单登记",
+            "origin": "清单登记" if archive in in_view or not entry.get("enabled") else "清单登记（视图未找到 ZIP）",
         })
     # ZIPs that the view reads but the manifest does not list (local edges or extras).
     for archive in source.view.zips:
@@ -68,7 +68,8 @@ def patch_chain(source: StudioSource) -> dict:
 
     patches.sort(key=order, reverse=True)
     return {"cdnVersion": manifest.get("cdn_version"), "viewVersion": source.version,
-            "manifest": "kulo assets/asset-patch/manifest.json", "count": len(patches), "patches": patches,
+            "manifest": str(location.relative_to(path("root"))) if location.is_relative_to(path("root")) else location.name,
+            "missing": source.chain.missing if source.chain is not None else [], "count": len(patches), "patches": patches,
             "note": "只读：列出补丁链与视图实际叠加的 ZIP；本版不生成、不导出、不应用、不发布补丁。"}
 
 
