@@ -27,7 +27,7 @@ import wf_mod_tool as core  # noqa: E402
 from . import specs as specs_mod  # noqa: E402
 from .specs import SeasonalSpec  # noqa: E402
 
-ROOT = Path(os.environ.get("WF_S7_ROOT") or core.project_root())
+ROOT = Path(os.environ["WF_S7_ROOT"]).expanduser().resolve() if os.environ.get("WF_S7_ROOT") else core.project_root()
 ROOT_NAMES = ("common", "medium", "android", "server")
 CLIENT_ROOTS = ("common", "medium", "android")
 STORE_ROOT_MAP = {"upload": "common", "medium": "medium", "android": "android",

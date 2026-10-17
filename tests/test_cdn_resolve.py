@@ -1,10 +1,5 @@
 # -*- coding: utf-8 -*-
-"""CDN 根四级解析链(core.resolve_cdn_root)回归:T2 两仓独立的接入契约。
-
-层级:WF_CDN_DIR env > profile.cdn_dir > 服务端识别(WF_SERVER_DIR/profile.server_dir
-→ 复读服务端 .env 的 CDN_DIR,缺省 <server>/.cdn/cn)> 嵌套遗留兜底。
-显式配置不合法=硬报错;派生候选不合法=顺延;全部落空=报完整尝试清单。
-"""
+"""显式 CDN / server 接入契约；缺少配置不能扫描目录。"""
 from __future__ import annotations
 
 import os
@@ -33,7 +28,7 @@ class _ResolveBase(unittest.TestCase):
         self.env = mock.patch.dict(os.environ, {}, clear=False)
         self.env.start()
         self.addCleanup(self.env.stop)
-        for key in ("WF_CDN_DIR", "WF_SERVER_DIR"):
+        for key in ("WF_CDN_DIR", "WF_SERVER", "WF_SERVER_DIR", "WF_PROFILE", "WF_PATHS_PROFILE"):
             os.environ.pop(key, None)
         patcher = mock.patch.object(core, "load_profiles", return_value={})
         patcher.start()
@@ -47,10 +42,12 @@ class _ResolveBase(unittest.TestCase):
         self.addCleanup(patcher2.stop)
 
     def _use_profile(self, entry: dict) -> None:
-        mock.patch.object(
+        patcher = mock.patch.object(
             core, "load_profiles",
             return_value={"active": "cn", "profiles": {"cn": {"store": ".", **entry}}},
-        ).start()
+        )
+        patcher.start()
+        self.addCleanup(patcher.stop)
 
 
 class ResolveCdnRootTest(_ResolveBase):
@@ -107,17 +104,19 @@ class ResolveCdnRootTest(_ResolveBase):
         self._use_profile({"server_dir": str(server)})
         self.assertEqual(server / ".cdn" / "cn", core.resolve_cdn_root())
 
-    def test_legacy_nested_fallback(self) -> None:
+    def test_legacy_root_requires_explicit_argument(self) -> None:
         legacy = make_cdn(self.fake_project / ".cdn" / "cn")
-        self.assertEqual(legacy, core.resolve_cdn_root())
+        with self.assertRaisesRegex(ValueError, "未配置"):
+            core.resolve_cdn_root()
+        self.assertEqual(legacy, core.resolve_cdn_root(legacy_root=legacy))
 
     def test_all_missing_reports_tried_list(self) -> None:
         # No explicit override: exercise discovery exhaustion, not invalid configuration.
         with self.assertRaises(ValueError) as ctx:
             core.resolve_cdn_root()
         message = str(ctx.exception)
-        self.assertIn("已尝试", message)
-        self.assertIn("嵌套遗留", message)
+        self.assertIn("profiles/local.json", message)
+        self.assertIn("未配置", message)
 
     def test_lax_falls_back_to_legacy_path(self) -> None:
         resolved = core.resolve_cdn_root_lax()
@@ -125,7 +124,7 @@ class ResolveCdnRootTest(_ResolveBase):
 
 
 class ResolveServerDirTest(_ResolveBase):
-    """resolve_server_dir:WF_SERVER_DIR > profile.server_dir > 嵌套遗留。"""
+    """resolve_server_dir 必须有显式配置，旧环境别名仍可兼容。"""
 
     def test_env_wins(self) -> None:
         server = self.root / "srv"
@@ -139,8 +138,9 @@ class ResolveServerDirTest(_ResolveBase):
         self._use_profile({"server_dir": str(server)})
         self.assertEqual(server, core.resolve_server_dir())
 
-    def test_legacy_fallback(self) -> None:
-        self.assertEqual(self.fake_project, core.resolve_server_dir())
+    def test_unconfigured_server_fails(self) -> None:
+        with self.assertRaisesRegex(ValueError, "WF_SERVER"):
+            core.resolve_server_dir()
 
 
 if __name__ == "__main__":

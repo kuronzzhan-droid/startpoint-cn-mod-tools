@@ -11,7 +11,7 @@ from wf.paths import path, root_path
 def test_profile_and_environment_precedence(tmp_path):
     profile = tmp_path / "paths.json"
     profile.write_text(json.dumps({"wf_root": "data", "paths": {"store": "store131"}}))
-    with patch.dict(os.environ, {"WF_PROFILE": str(profile)}, clear=True):
+    with patch.dict(os.environ, {"WF_PATHS_PROFILE": str(profile)}, clear=True):
         assert root_path() == tmp_path / "data"
         assert path("store", "aa") == tmp_path / "data/store131/aa"
         with patch.dict(os.environ, {"WF_ROOT": str(tmp_path / "other"),

@@ -45,11 +45,14 @@ from pathlib import Path
 
 import wf_mod_tool as core
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = core.project_root()
 CDN_ROOT = core.resolve_cdn_root_lax()
-# asset-patch 是 main 时代的服务端仓内机制;独立布局下按 WF_SERVER_DIR 定位
-_SERVER_DIR = core.resolve_server_dir()
-ASSET_PATCH_ACTIVE = _SERVER_DIR / "assets" / "asset-patch" / "active"
+# 纯离线 catalog 不需要服务端；未配置时不纳入外根，坏配置仍失败。
+try:
+    _SERVER_DIR = core.resolve_server_dir()
+except core.ServerDirNotConfiguredError:
+    _SERVER_DIR = None
+ASSET_PATCH_ACTIVE = _SERVER_DIR / "assets" / "asset-patch" / "active" if _SERVER_DIR else None
 
 OFFICIAL_TARGET = "1.4.54"
 BASELINE_LABEL = "cn-1.4.54"
@@ -3415,6 +3418,8 @@ def cmd_heal_layers(args: argparse.Namespace) -> int:
 
 
 def cmd_relocate_foreign(args: argparse.Namespace) -> int:
+    if ASSET_PATCH_ACTIVE is None:
+        raise core.ServerDirNotConfiguredError("迁移 asset-patch 需要显式配置 WF_SERVER")
     actions, issues = relocate_foreign_archives(
         Path(args.cdn_root), ASSET_PATCH_ACTIVE, apply=args.apply,
     )

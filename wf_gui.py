@@ -14,7 +14,7 @@ WF 单机版 · 本地网页修改器 (GUI)
 浏览器: http://127.0.0.1:8765/
 
 环境变量(可选):
-  WF_TARGET_STORE  目标 upload 目录(默认按 profiles.json / 项目根目录查找)
+  WF_STORE         目标 upload 目录(或 profiles/local.json；不自动扫描数据包)
   WF_CDNDATA       服务端 assets/cdndata 目录(①层;独立部署必配,默认取仓库根布局)
   WF_CDN_DIR       服务端 .cdn/cn 目录(发布目标;独立部署必配,默认取仓库根布局)
   WF_ADB           adb.exe 完整路径
@@ -60,16 +60,14 @@ import wf_boss  # noqa: E402      Boss 数值 + 副本列表(Boss·副本页)
 from wf.config import database as wf_database_paths
 import wf_server_auth  # noqa: E402  服务端管理 API 地址与 Bearer 认证
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = core.project_root()
 try:
     _PROFILE = core.resolve_profile(os.environ.get("WF_PROFILE"))
 except ValueError as error:
     raise SystemExit(str(error)) from None
 # ①层 cdndata:独立部署时用 WF_CDNDATA 指向服务端 assets/cdndata
-_ENV_CDNDATA = os.environ.get("WF_CDNDATA")
-CDNDATA = (Path(_ENV_CDNDATA) if _ENV_CDNDATA
-           else _PROFILE.cdndata if _PROFILE and _PROFILE.cdndata
-           else ROOT / "assets" / "cdndata")
+CDNDATA = (core._require_existing_directory(_PROFILE.cdndata, label="WF_CDNDATA / profile cdndata")
+           if _PROFILE and _PROFILE.cdndata else ROOT / "assets" / "cdndata")
 WORK_DIR = Path(__file__).resolve().parent / "work"
 PENDING_FILE = WORK_DIR / "sync_pending.json"
 
@@ -95,7 +93,7 @@ def resolve_store() -> Path:
         raise SystemExit(str(error)) from None
     if store:
         return store
-    raise SystemExit("未找到 WorldFlipper/dummy/.../upload,请设置 WF_TARGET_STORE 或配置 mod-tools/profiles.json")
+    raise SystemExit(core.TARGET_STORE_HINT)
 
 
 TARGET_STORE = resolve_store()

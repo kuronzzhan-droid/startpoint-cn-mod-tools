@@ -55,14 +55,14 @@ import zlib
 from pathlib import Path
 
 TOOL_DIR = Path(__file__).resolve().parent
-ROOT = TOOL_DIR.parent
 pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_mod_tool as core  # noqa: E402
 
+ROOT = core.project_root()
 CDN_ROOT = core.resolve_cdn_root_lax()
 CDN_COMMON_DIFF = CDN_ROOT / "archive-common-diff"
 CDN_COMMON_FULL = CDN_ROOT / "archive-common-full"
-PACKS = core.project_root() / "work" / "character_packs"
+PACKS = ROOT / "work" / "character_packs"
 
 _EDGE = re.compile(r"^pinball-(\d+\.\d+\.\d+)-(\d+\.\d+\.\d+)-(\d+)-")
 
