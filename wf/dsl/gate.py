@@ -81,7 +81,7 @@ def check_629_actions(read_raw, *, overrides=None, changed_logicals=None):
                     old = table(ACTION_SKILL, original=True)
                 except (FileNotFoundError, KeyError):
                     old = {}
-                skill_keys = {key for key, value in skills.items() if old.get(key) != value}
+                skill_keys = {key for key in old.keys() | skills.keys() if old.get(key) != skills.get(key)}
         except (FileNotFoundError, KeyError, ValueError, TypeError, IndexError, zlib.error) as error:
             problem(f"629 gate cannot read action_skill: {error}")
 

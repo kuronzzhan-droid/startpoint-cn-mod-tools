@@ -46,8 +46,13 @@ def _forbidden(node):
     body = _body(node)
     if body and body[0] in PF_COMMANDS:
         return body[0]
-    if body and body[0] == "Wait" and any(_only_notify(arg) for arg in body[1:]):
-        return "Wait(NotifyPowerflipEnd only)"
+    if body and body[0] == "Wait":
+        callbacks = [arg for arg in body[1:] if (
+            isinstance(arg, list) and arg and isinstance(arg[0], str)
+            and arg[0] in {"Block", "Command", "Event", "NotifyPowerflipEnd"})
+            or isinstance(arg, dict) and _body(arg)]
+        if callbacks and all(_only_notify(arg) for arg in callbacks):
+            return "Wait(NotifyPowerflipEnd only)"
     return None
 
 

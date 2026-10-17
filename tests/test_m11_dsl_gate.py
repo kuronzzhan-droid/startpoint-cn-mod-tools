@@ -92,6 +92,15 @@ def test_unchanged_unsafe_table_key_does_not_block_independent_balance_edit():
     assert report["checked_programs"] == []
 
 
+def test_deleting_referenced_skill_is_not_skipped_as_an_unrelated_change():
+    raw = data()
+    raw[ABILITY] = nodes.build_node({"1001": ability("")})
+    raw[ACTION_SKILL] = nodes.build_node({"test": {"1": csv_row([""] * 7 + [ROOT.removesuffix(DSL_SUFFIX)])}})
+    report = run(raw, {ACTION_SKILL: nodes.build_node({})})
+    assert report["status"] == "问题"
+    assert any("missing action_skill: test" in f["message"] for f in report["findings"])
+
+
 def test_missing_selected_subprogram_and_missing_callers_block():
     raw = data()
     report = run(raw, {ROOT: dsl(["Run", CHILD.removesuffix(DSL_SUFFIX)])})
@@ -108,6 +117,13 @@ def test_wait_argument_count_does_not_hide_notify_callback(params):
     assert forbidden_629(source)[0]["command"] == "Wait(NotifyPowerflipEnd only)"
     assert sanitize_for_629(source) == ["Block", []]
     assert source == frozen
+
+
+def test_wait_with_an_additional_effect_callback_is_not_removed():
+    notify = ["Command", ["NotifyPowerflipEnd", 0]]
+    effect = ["Command", ["ShakeCamera", 1]]
+    source = ["Event", ["Wait", 10, "*", notify, effect]]
+    assert sanitize_for_629(source) == ["Event", ["Wait", 10, "*", ["Block", []], effect]]
 
 
 @pytest.mark.parametrize("source", [
