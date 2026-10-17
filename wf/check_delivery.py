@@ -52,6 +52,8 @@ def check_delivery(document, directory):
         raise ValueError("upstream patch-manifest version mismatch")
     if {entry["layer"] for entry in upstream["archives"]} != {"common", "medium", "android"}:
         raise ValueError("upstream manifest must provide all three layers")
+    layered_hashes, empty_layers = {}, set()
+    roots = {"common": "upload", "medium": "medium_upload", "android": "android_upload"}
     for entry in upstream["archives"]:
         target = (upstream_path.parent / entry["relativePath"]).resolve()
         if not target.is_relative_to(upstream_path.parent):
@@ -59,6 +61,24 @@ def check_delivery(document, directory):
         raw = target.read_bytes()
         if len(raw) != entry["bytes"] or hashlib.sha256(raw).hexdigest() != entry["sha256"]:
             raise ValueError(f"upstream archive integrity mismatch: {entry['relativePath']}")
+        with zipfile.ZipFile(target) as archive:
+            names = [item.filename for item in archive.infolist() if not item.is_dir()]
+            if len(names) != len(set(names)) or archive.testzip() is not None:
+                raise ValueError("upstream duplicate member or CRC mismatch")
+            if names == [".empty"] and archive.read(".empty") == b"":
+                if entry["layer"] in empty_layers:
+                    raise ValueError("upstream repeats empty layer marker")
+                empty_layers.add(entry["layer"])
+                continue
+            prefix = "production/" + roots[entry["layer"]] + "/"
+            for name in names:
+                if not name.startswith(prefix) or name in layered_hashes:
+                    raise ValueError("upstream member layer or duplication mismatch")
+                layered_hashes[name] = hashlib.sha256(archive.read(name)).hexdigest()
+    if layered_hashes != hashes or any(
+            name.startswith("production/" + roots[layer] + "/")
+            for layer in empty_layers for name in layered_hashes):
+        raise ValueError("upstream members differ from legacy members")
     _, raw = local_read(document["requires"])
     from wf.deliver.changeset import validate_document
     validate_document(json.loads(raw), "requires.schema.json")

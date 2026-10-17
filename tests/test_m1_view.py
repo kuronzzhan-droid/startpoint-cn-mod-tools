@@ -188,3 +188,17 @@ def test_disabled_authoring_placeholder_is_not_a_chain_edge(tmp_path, monkeypatc
     edge = patch(active, "1.4.131", "1.4.132", {"a": b"value"})
     write_manifest(manifest, [edge, {"enabled": False, "version": "<由所有者分配>"}])
     assert view(store, manifest).read_raw("a")[0] == b"value"
+
+
+def test_auto_discovery_excludes_delivery_drafts(tmp_path, monkeypatch):
+    active, store, manifest = setup_view(tmp_path, monkeypatch)
+    edge = patch(active, "1.4.131", "1.4.132", {"a": b"official"})
+    write_manifest(manifest, [edge])
+    draft = dict(edge, archive=edge["archive"].replace("test", "draft"), local_test_only=True)
+    write_manifest(active / "manifest-entry-1.4.132.json", [draft])
+    from wf.view.chain import resolve_chain
+    assert resolve_chain(manifest, [active], "1.4.131", "1.4.132")[0]["names"] == [edge["archive"]]
+    # Explicit input remains an explicit choice and must still detect conflicts.
+    with pytest.raises(ValueError, match="ambiguous"):
+        resolve_chain(manifest, [active], "1.4.131", "1.4.132",
+                      [active / "manifest-entry-1.4.132.json"])

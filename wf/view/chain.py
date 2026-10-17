@@ -41,7 +41,8 @@ def manifest_entries(manifest, directories, manifests=None):
     files = {Path(manifest)}
     if manifests is None:
         for directory in directories:
-            files.update(directory.glob("manifest*.json"))
+            files.update(path for path in directory.glob("manifest*.json")
+                         if not path.name.startswith("manifest-entry-"))
     else:
         files.update(manifests)
     entries = []

@@ -1,5 +1,6 @@
 import copy
 import json
+import zipfile
 
 import pytest
 
@@ -54,6 +55,33 @@ def test_check_rejects_upstream_only_corruption(delivery):
     path = manifest.parent / entry["relativePath"]
     path.write_bytes(b"broken")
     with pytest.raises(ValueError, match="upstream archive integrity"):
+        check_delivery(doc, directory)
+
+
+@pytest.mark.parametrize("fault", ["content", "missing", "extra", "wrong-layer"])
+def test_layered_members_must_equal_legacy_even_with_valid_hashes(delivery, fault):
+    directory, doc = delivery
+    manifest = directory / doc["upstream_manifest"]
+    upstream = json.loads(manifest.read_text("utf-8"))
+    entry = next(x for x in upstream["archives"] if x["layer"] == "common")
+    path = manifest.parent / entry["relativePath"]
+    with zipfile.ZipFile(path) as archive:
+        contents = {name: archive.read(name) for name in archive.namelist()}
+    name = next(iter(contents))
+    if fault == "content":
+        contents[name] = b"different"
+    elif fault == "missing":
+        contents = {".empty": b""}
+    elif fault == "extra":
+        contents[name[:-1] + ("0" if name[-1] != "0" else "1")] = b"extra"
+    else:
+        contents = {name.replace("/upload/", "/medium_upload/"): contents[name]}
+    with zipfile.ZipFile(path, "w") as archive:
+        for name, raw in contents.items():
+            archive.writestr(name, raw)
+    entry.update(bytes=path.stat().st_size, sha256=sha256(path.read_bytes()))
+    manifest.write_text(json.dumps(upstream), "utf-8")
+    with pytest.raises(ValueError, match="upstream member"):
         check_delivery(doc, directory)
 
 
