@@ -74,3 +74,30 @@ python -B -m pytest -q tests/test_m01_balance_lock.py tests/test_m01_halloween_m
 重跑显式配置 `WF_ROOT`、`WF_KULO`、`WF_STORE131`，设置 `WF_OUTPUT=<本worktree>/work/m0.1/recipes`。完整构建 run 为 `historical221-m01` 与 `current222-m01`，所有产物在 `work/m0.1/recipes/`。日志分别为 `work/m0.1/balance-build-final.log`、`halloween221-build.log`、`halloween-current-build.log`、`halloween221-kit-final.log`、`halloween-current-kit-final.log`。
 
 Python 启动时禁写 bytecode，配方写入审计限制在本 worktree；TEMP/TMP 与 ffmpeg 输出/cwd 都在本地 `work/`。ffmpeg 子进程不继承 Python 审计，现有边界检查和环境净化仍保留，不能把它描述成 OS 沙箱。期望 ZIP 只在独立比较阶段读取，没有作为生成输入；本次没有改写期望值。
+
+## 末轮源码冻结后的影响复核
+
+在消费者修复 `ec6779d` 与后续审计记录合入后，以 `16c7999f7b891ad41b955023d0145c84180ced1f` 的源码核对最终配方影响。完整机器证据为 [recipe-final-impact.json](recipe-final-impact.json)，记录 57 个万圣运行模块的当前 SHA-256、改变的函数 AST、实际使用的 JSON 辅助函数摘要，以及末轮产物重读结果。这里的 57 项是运行时加载模块清单，不把“被导入”当作“所有函数都被执行”。
+
+将这些模块与 `0a0b335` 后的改动取交集，只得到三个文件：
+
+| 文件 | 发生的变更与实际配方调用 | 结论 |
+| --- | --- | --- |
+| `wf_describe.py` | H1 描述修复已经由前述最后一轮四角色 kit 复验覆盖。本次再次核实它、`ability_enum_map.json` 和词条条件 Markdown 的内容与 `4be4106` 完全一致，没有后续描述变动。 | 沿用已完成的 kit 重放证据。 |
+| `wf_mod_tool.py` | 函数 AST 比较仅新增 `resolve_cdndata_dir()`。万圣配方仍使用显式历史 viewstore、localsrv 输入与原有表编解码函数，不调用此新增解析器。 | 原构建函数未变，不需要重新生成图像或语音。 |
+| `wf_character_pack.py` | 变更限于 `PackTransaction.__init__` 的内建 codec 覆盖门禁，以及 `_WindowsOwnedApi.relative_open_contract` 的目录访问权限。配方实际使用 `load_server_json_mirror`、`merge_server_json_object`、`package_server_mana_board_rows`，三个函数 AST 与 `0a0b335` 相同；最终 ZIP 由 `wf/view/character_pack.py` 的独立成员合并器生成，不建立 `PackTransaction`。 | 两项事务改动不进入这两种万圣配方的执行路径。 |
+
+`wf_character_flow` 的 server/CDN 与发布后回灌、`wf_release`、GUI、rogue/分析入口、offline 入口均不在万圣加载清单中。独立 `wf_voice.find_ffmpeg()` 的修复也不影响配方；万圣完整构建使用 `wf.chars.halloween.voice.to_mp3()`，其源码与已复验版本一致。蒙版读取、像素与立绘生成路径均未改动，因此没有无理由重复完整构建或重新编码图像/语音。
+
+平衡配方另做了一次**当前源码的内存重算**，没有覆盖现有 ZIP。先从锁定输入生成三份表字节，再读取原 223 交付比较，结果仍为 **3/3 相同**，未改 DSL。此次记录 41 个加载模块与 182 个本仓 Python 调用项；其中 `wf_enhancement_policy` 只因 `wf_character_revision` 的类型依赖而导入，不调用新的 CDN/服务端解析入口。`PackTransaction` 和 `_WindowsOwnedApi` 的类定义会在导入期间执行，发生改动的两个方法均没有被调用。复核脚本与原始内存计算报告仅留在 ignored `work/m0.1/final_recipe_impact.py`、`final-balance-evaluation.json`。
+
+随后逐个重新打开现有 ZIP，检查 CRC 并读取所有成员，与只读原交付再比一次：
+
+| 末轮重读对象 | 结果 |
+| --- | --- |
+| 223 现有本地产物对原 223 | 3/3 相同 |
+| 历史 221 现有 11 包对原 221 | 310/310 相同 |
+| 当前 222 现有 11 包对「原 221 + 原 222 修复」 | 310/310 相同 |
+| 当前 222 对原 221 | 309/310 相同；唯一 PF3 修复成员仍与原 222 相同 |
+
+机器证据保存全部 23 个本地 ZIP 的当前大小/SHA-256，以及每组完整成员比较向量的摘要；逐成员原始证据仍见前述三个 replay JSON。原 NPZ 本次只读复核仍为 9,485 字节及 `abccd9513b0a555aa721a0287d5fa219c108fb502fa7b39eed115bd7bece0dba`，**没有重算蒙版**。这些结论是本地源码、历史输入和产物字节层面的验证，没有执行设备、真实服务端写入或发布。
