@@ -1,0 +1,8 @@
+{
+  "wf_root": "../work/external",
+  "paths": {
+    "store": "wf-store",
+    "kulo": "startpoint-cn-kulo",
+    "runtimes": "runtimes"
+  }
+}

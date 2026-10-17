@@ -27,3 +27,8 @@ Thumbs.db
 # 生成物:路径复原 CSV / 全量导出目录
 *.csv
 export/
+
+# Local M0 paths and validation artifacts
+profiles/local.json
+.pytest_cache/
+!archive/legacy/**/*.bak*
