@@ -35,8 +35,12 @@ def scan_text(text: str, name: str) -> list[dict]:
         return findings
     try:
         tree = ast.parse(text)
-    except SyntaxError:
-        return findings  # Syntax is covered separately by the Python test suite.
+    except SyntaxError as error:
+        # Archived Python is outside pytest collection too: never silently
+        # bypass import-path inspection when a candidate cannot be parsed.
+        findings.append({"path": name, "line": error.lineno or 1,
+                         "rule": "unparseable-python"})
+        return findings
     assignments: dict[str, list[ast.AST]] = {}
     path_aliases = {"sys.path"}
     for node in ast.walk(tree):

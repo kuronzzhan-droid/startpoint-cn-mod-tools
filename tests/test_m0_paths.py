@@ -36,6 +36,7 @@ def test_path_gate_rejects_variants_and_absolute_imports():
     assert scan_text("P='/machine/tools'\nsys.path.insert(0, P)", "x.py")
     assert scan_text("import sys\nsys.path.append('/machine/tools')", "x.py")
     assert scan_text("from sys import path\npath.insert(0, '/machine/tools')", "x.py")
+    assert scan_text("if broken syntax:\n  pass", "x.py")[0]["rule"] == "unparseable-python"
     assert not scan_text("sys.path.insert(0, str(Path(__file__).parent))", "x.py")
 
 
