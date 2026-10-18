@@ -8,6 +8,8 @@
 
 `data_surface` 提供 requires 扫描入口：`kinds`、`dsl_nodes`、`unique_prefixes`、`unique_ids`、`tables` 和语义 `selectors`。`tables` 只用于整表出现即需要能力的情况；通用 ability 表不在这里，否则会误把所有角色判断为依赖所有扩展。逐补丁归档声明不重复挂这些入口，内容优先引用语义能力。C 层角色机制名称属于矩阵数据，不凭名称推断客户端能力。
 
+M2.1 中带 `kinds` 的声明必须同时给出 `allowed_tables`、`allowed_blocks`，扫描按真实表布局核对解析位置，非法位置直接报问题。角色专用 #1/#5/#6/#7/#15/#32/#55/#65 及晒伤语义能力为 C 层（需要 APK），其 `character_ids` 与角色引用闭包用于确定受影响内容；缺少归属输入时保留 partial。`inferenceNotes` 记录候选表缺基线而按全表扫描的保守处理。
+
 ## APK 能力输入
 
 ```text
