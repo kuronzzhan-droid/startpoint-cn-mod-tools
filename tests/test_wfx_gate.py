@@ -128,7 +128,9 @@ class CheckTests(unittest.TestCase):
                    22: "wfx:22:6:-0.5:1:a", 23: "wfx:23:0:50000:1:a", 30: "wfx:30:127:0:0:a",
                    31: "wfx:31:127:-0.01:0:a", 40: "wfx:40:0:-0.3:0:a", 50: "wfx:50:0:15:1:a",
                    51: "wfx:51:0:0:1:a", 52: "wfx:52:0:1:1:a"}
-        self.assertEqual(set(wfx_registry.effect_codes()), set(samples))
+        planned = {code for code, effect in wfx_registry.effect_codes().items()
+                   if wfx_registry.capabilities()[effect["capability"]]["status"] == "planned"}
+        self.assertEqual(planned, set(samples))
         for code, sid in samples.items():
             rows = {"unique_condition": {str(UID): unique_text(sid, max_acc="99")}}
             for profile in G.load_profiles():

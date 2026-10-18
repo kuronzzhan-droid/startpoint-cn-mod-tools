@@ -129,10 +129,10 @@ def load_profiles(path: Path = PROFILES_PATH) -> dict[str, ClientProfile]:
         unknown = sorted(set(names) - set(catalog))
         if unknown:
             raise GateError(f"档案 {name} 声明了注册表里没有的 capability: {unknown}")
-        planned = sorted(item for item in names if catalog[item]["status"] != "shipped")
-        if planned:
-            raise GateError(
-                f"档案 {name} 声明了尚无客户端实现（status=planned）的 capability: {planned}")
+        from wf.wfx_semantics import candidate_profile_problems
+        problems = candidate_profile_problems(entry, names, catalog)
+        if problems:
+            raise GateError(f"档案 {name}：" + "；".join(problems))
         profiles[name] = ClientProfile(name, frozenset(names), str(entry.get("description", "")))
     default = data.get("default_publish_profile")
     if default not in profiles:

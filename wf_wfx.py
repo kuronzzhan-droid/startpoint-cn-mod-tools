@@ -5,7 +5,7 @@
 
     wfx:<code>:<arg>:<value>:<flags>:<label>
 
-- code / arg / flags：十进制非负整数，无前导 0（客户端 split(":") 后 convert_i）；
+- code / arg：十进制非负整数；flags 按效果码规则允许 int32（码28/29含负数）；
 - value：十进制数，无指数、无多余的 0（客户端 convert_d）；规范写法由 format_value 产出，
   解码只认规范写法，避免同一效果出现两种 sid；
 - label：只为唯一性与可读性，[A-Za-z0-9_]，不含 ':'/','。
@@ -13,8 +13,7 @@
 码 20 按作者裁决 #2（2026-09-28）并入官方独立乘区池：arg = 池号 + 属性组（damage_pool_arg），
 不是码 21–23 的伤害掩码；以 wfx 开头但不是登记前缀的 sid（含首尾空白）一律按写错拒绝。
 
-批 1（B1-0）时**没有任何客户端消费这些效果码**：wfx-* capability 在注册表里是 planned，
-client_profiles.json 的任何档案都不许声明它们，所以 wfx_gate 会在所有现有档案上拒绝 wfx 行。
+旧批1码仍为 planned；v35e 已登记效果按固定离线客户端证据检查，不代表设备验证。
 """
 from __future__ import annotations
 
@@ -28,6 +27,8 @@ from typing import Any, Iterable
 
 pass  # Imports resolve from this checkout/package, not external source copies.
 import wfx_registry  # noqa: E402
+from wf.wfx_semantics import (effect_arg_problems, flags_rule,
+                              hidden_icon_capability, integer_problems, uses_pin)
 
 
 class WfxError(ValueError):
@@ -110,7 +111,7 @@ class WfxSpec:
 
     @property
     def pin(self) -> bool:
-        return bool(self.flags & PIN_BIT)
+        return uses_pin(_registry(), self.code) and bool(self.flags & PIN_BIT)
 
     @property
     def effect(self) -> dict[str, Any] | None:
@@ -144,8 +145,18 @@ def parse_sid(sid: str) -> WfxSpec:
     _head, code, arg, value, flags, label = parts
     if not _VALUE_RE.fullmatch(value) or value == "-0":
         raise WfxError(f"value={value!r} 不是规范十进制写法（无指数、无尾随 0）")
-    return WfxSpec(_parse_uint(code, "code"), _parse_uint(arg, "arg"), Decimal(value),
-                   _parse_uint(flags, "flags"), label)
+    code_value = _parse_uint(code, "code")
+    rule = flags_rule(_registry(), code_value)
+    if rule is None:
+        flag_value = _parse_uint(flags, "flags")
+    else:
+        if not re.fullmatch(r"0|-?[1-9][0-9]*", flags):
+            raise WfxError(f"flags={flags!r} 须为规范十进制整数")
+        flag_value = int(flags)
+        problems = integer_problems(flag_value, rule, "flags")
+        if problems:
+            raise WfxError("；".join(problems))
+    return WfxSpec(code_value, _parse_uint(arg, "arg"), Decimal(value), flag_value, label)
 
 
 def _range_of(code: int) -> dict[str, Any] | None:
@@ -270,11 +281,17 @@ def spec_problems(spec: WfxSpec) -> list[str]:
         where = (f"号段 {band['from']}–{band['to']}（{band['label']}，批 {band['batch']}）"
                  if band else "任何号段之外")
         return [f"效果码 {spec.code} 未定义（{where}）"]
-    problems = _arg_problems(effect["arg"], spec.arg)
+    problems = effect_arg_problems(effect, spec.arg)
+    if problems is None:
+        problems = _arg_problems(effect["arg"], spec.arg)
     problems += _value_problems(effect["value"], spec.value)
-    known = registry["flags"]["known_mask"]
-    if spec.flags & ~known:
-        problems.append(f"flags={spec.flags} 含未定义位（只允许 {known}：bit0=pin）")
+    rule = flags_rule(registry, spec.code)
+    if rule is not None:
+        problems += integer_problems(spec.flags, rule, "flags")
+    else:
+        known = registry["flags"]["known_mask"]
+        if spec.flags & ~known:
+            problems.append(f"flags={spec.flags} 含未定义位（只允许 {known}：bit0=pin）")
     if not re.fullmatch(registry["sid"]["label_pattern"], spec.label or ""):
         problems.append(f"label={spec.label!r} 须匹配 {registry['sid']['label_pattern']}")
     return [f"码 {spec.code}（{effect['label']}）：{text}" for text in problems]
@@ -291,9 +308,13 @@ def decode_sid(sid: str) -> WfxSpec:
 
 def encode_sid(code: int, arg: int, value: Any, flags: int = 0, label: str = "") -> str:
     """生成规范 sid；不合法即抛 WfxError（写盘前的唯一入口）。"""
-    for name, number in (("code", code), ("arg", arg), ("flags", flags)):
+    for name, number in (("code", code), ("arg", arg)):
         if type(number) is not int or number < 0 or number > _INT32_MAX:
             raise WfxError(f"{name}={number!r} 须为 int32 范围内的非负整数")
+    rule = flags_rule(_registry(), code)
+    problems = integer_problems(flags, rule or {}, "flags")
+    if problems:
+        raise WfxError("；".join(problems))
     spec = WfxSpec(code, arg, Decimal(format_value(value)), flags, label)
     problems = spec_problems(spec)
     if problems:
@@ -307,9 +328,14 @@ def required_capabilities(spec: WfxSpec) -> list[str]:
     effect = spec.effect
     if effect is not None:
         names.append(effect["capability"])
-    for bit, entry in _registry()["flags"]["bits"].items():
-        if spec.flags & (1 << int(bit)):
-            names.append(entry["capability"])
+    registry = _registry()
+    if uses_pin(registry, spec.code):
+        for bit, entry in registry["flags"]["bits"].items():
+            if spec.flags & (1 << int(bit)):
+                names.append(entry["capability"])
+    hidden = hidden_icon_capability(registry, spec.sid)
+    if hidden:
+        names.append(hidden)
     return wfx_registry.capability_closure(names)
 
 
