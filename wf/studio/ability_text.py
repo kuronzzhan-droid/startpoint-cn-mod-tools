@@ -78,6 +78,7 @@ def apply_text(state, cid, sections, *, shared_ok=False):
     from wf.balance.ownership import owner_index
     import wf_quest_lib as codec
     from wf.text.model import cells
+    from .text_panel import custom_owners
 
     workspace = workspace_for(state)
     document = workspace.read(cid)
@@ -91,7 +92,8 @@ def apply_text(state, cid, sections, *, shared_ok=False):
             recipients.setdefault(owner, {})["action_skill"] = copy.deepcopy(sections["action_skill"])
     for section in ("custom_ability_string", "desc_override"):
         for key, change in sections.get(section, {}).items():
-            owners = sorted(owner for owner in all_characters if key in workspace.custom_keys(owner))
+            # Same owners as scanning every character's custom_keys, prefiltered.
+            owners = sorted(custom_owners(workspace, [key])[key])
             shared[section + "/" + key] = owners
             for owner in owners:
                 recipients.setdefault(owner, {}).setdefault(section, {})[key] = change

@@ -145,7 +145,9 @@ class AbilityEditor:
                     entries.append({"table": table, "key": key, "slot": slot, "level": level,
                                     "rows": rows, "owners": sorted(owners[table].get(key, set())),
                                     "descriptions": [describe(row, table) for row in rows]})
-            return {"characterId": cid, "entries": entries,
+            slots = {"ability": list(character[19:25]), "leader_ability": character[17],
+                     "action_skill": character[8], "leaderName": character[18]}
+            return {"characterId": cid, "entries": entries, "slots": slots,
                     "checks": with_metadata(state.checks, "balance"), "runtime": "未执行"}
         except (ValueError, KeyError, OSError, TypeError) as exc:
             raise DraftError(str(exc)) from exc
@@ -200,6 +202,62 @@ class AbilityEditor:
                     "before": {"cells": before, "description": describe(before, table)},
                     "after": {"cells": after, "description": describe(after, table)}, "owners": owners,
                     "checks": with_metadata(state.checks, "balance"), "runtime": "未执行"}
+        except (ValueError, KeyError, OSError, TypeError) as exc:
+            raise DraftError(str(exc)) from exc
+
+    def text_panel(self, cid, text=None, *, light=False):
+        """Panel text of the current draft state (optionally with proposed values); never writes.
+
+        ``light`` skips the original-view document and owner scan (used for live lint).
+        """
+        from .ability_text import load_mirrors, workspace_for
+        from .text_panel import custom_owners, panel
+        try:
+            state, _ = self._state(cid)
+            load_mirrors(state, **self.inputs)
+            workspace = workspace_for(state)
+            document = workspace.read(cid)
+            base_document, owners = None, {}
+            if not light:
+                base = EditState(self.source)
+                load_mirrors(base, **self.inputs)
+                base_document = workspace_for(base).read(cid)
+                keys = [*document["desc_override"], *document["custom_ability_string"]]
+                owners = custom_owners(workspace, keys)
+                owners[document["skill_key"]] = sorted(
+                    owner_index(state)["action_skill"].get(document["skill_key"], set()))
+            return panel(document, owners=owners, base_document=base_document,
+                         character=state.character(cid), text=text)
+        except (ValueError, KeyError, OSError, TypeError) as exc:
+            raise DraftError(str(exc)) from exc
+
+    def key_search(self, table, query="", cid=None, limit=40, names=None):
+        """Existing keys of a table with all owners; draft-created keys included for ``cid``."""
+        try:
+            if table not in {"ability", "leader_ability", "action_skill"}:
+                raise ValueError("unsupported ability table")
+            state = self._state(cid)[0] if cid else EditState(self.source)
+            owners = owner_index(state)[table]
+            names = names or {}
+            terms = [t for t in str(query or "").lower().split() if t]
+            results = []
+            for key, node in state.table(TABLES[table]).items():
+                leaf = node.get("1") if isinstance(node, dict) else node
+                if not isinstance(leaf, str) or not leaf:
+                    continue
+                rows = split_leaf(leaf, table)
+                descriptions = [describe(row, table) or "" for row in rows]
+                held = sorted(owners.get(key, set()))
+                haystack = " ".join([key, *held, *(names.get(o, "") for o in held), *descriptions]).lower()
+                if terms and not all(t in haystack for t in terms):
+                    continue
+                results.append({"key": key, "rows": len(rows),
+                                "levels": sorted(node, key=int) if isinstance(node, dict) else None,
+                                "owners": [{"id": o, "name": names.get(o, "")} for o in held],
+                                "descriptions": descriptions[:4]})
+            exact = [r for r in results if r["key"].lower() in terms]
+            rest = [r for r in results if r["key"].lower() not in terms]
+            return {"table": table, "total": len(results), "results": (exact + rest)[:limit]}
         except (ValueError, KeyError, OSError, TypeError) as exc:
             raise DraftError(str(exc)) from exc
 
