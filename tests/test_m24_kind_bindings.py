@@ -63,7 +63,6 @@ def test_registry_requires_explicit_pairs_and_consistent_indexes(registry):
 def test_ex_ability_participates_in_629_reference_discovery(registry):
     import csv
     import io
-    from wf.dsl.references import ability_references
     from test_m2_requirements import leaf
 
     logical = "master/ex_boost/ex_ability.orderedmap"
@@ -72,7 +71,6 @@ def test_ex_ability_participates_in_629_reference_discovery(registry):
     text = leaf(cells)
     signals = list(table_signals(logical, ("x",), text, registry=registry))
     assert ("program", "battle/test$main") in signals
-    assert list(ability_references(logical, {"x": text}))[0]["action"] == "battle/test$main"
     assert requirements_for_signals([s for s in signals if s[0] == "kind_site"], registry) == [
         "official.kind629.invoke_skill@1"]
 

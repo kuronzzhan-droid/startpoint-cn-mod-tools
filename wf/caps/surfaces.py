@@ -1,4 +1,9 @@
 """Shared matching for declared data surfaces, separate from SWF support."""
+from wf.dsl.references import ABILITY_TABLES as DSL_ABILITY_TABLES
+
+# Capability inspection covers all five SWF parsers. Keep this extension local
+# to that inspection: historical DSL recipes pin their original four tables.
+ABILITY_TABLES = {**DSL_ABILITY_TABLES, "master/ex_boost/ex_ability.orderedmap": "ex_ability"}
 
 
 def kind_bindings(surface):

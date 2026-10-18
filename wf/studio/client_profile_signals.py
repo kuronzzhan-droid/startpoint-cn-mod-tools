@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 
-from wf.dsl.references import ABILITY_TABLES
+from wf.caps.surfaces import ABILITY_TABLES
 
 ABILITY_PATHS = {table: logical for logical, table in ABILITY_TABLES.items()}
 CONTENT_BLOCKS = {"instant_content", "during_content"}

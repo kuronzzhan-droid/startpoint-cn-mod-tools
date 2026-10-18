@@ -6,9 +6,10 @@ import io
 import re
 
 from wfx_registry import patch_kinds_borrowing_uid_column
-from wf.dsl.references import ABILITY_TABLES, program_logical
+from wf.dsl.references import program_logical
 from wf.view.layout import EM, col
 from .signals_v35 import character_signals, custom_signals, unique_signals
+from .surfaces import ABILITY_TABLES
 
 UNIQUE = "master/character/unique_condition.orderedmap"
 PF = "master/skill/power_flip_action.orderedmap"

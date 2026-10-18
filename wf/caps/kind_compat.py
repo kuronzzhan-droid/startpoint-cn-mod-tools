@@ -3,7 +3,7 @@ from wf.rules.catalog import result
 
 
 def _sites(required):
-    from wf.dsl.references import ABILITY_TABLES
+    from .surfaces import ABILITY_TABLES
 
     sites = list(required.get("kindSites", []))
     incomplete = []
