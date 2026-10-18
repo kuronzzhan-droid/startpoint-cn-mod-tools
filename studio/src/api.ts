@@ -137,6 +137,7 @@ export interface PixelFamily {
   columns: number;
   cellCount: number;
   anchor: { x: number; y: number };
+  frameBox?: { width: number; height: number; cropX: number; cropY: number };
   scale: number;
   fps: number;
   actions: PixelAction[];
@@ -301,7 +302,7 @@ export interface DraftFile {
 
 export interface DraftChange {
   id: string;
-  kind: "portrait" | "pixel_action" | "voice_line" | "ability_edit";
+  kind: "portrait" | "pixel_action" | "pixel_family" | "voice_line" | "ability_edit";
   title: string;
   createdAt: string;
   target: Record<string, string>;
@@ -764,4 +765,132 @@ export const deliveries = {
   fileUrl: (name: string, path: string) => `/api/deliveries/${encodeURIComponent(name)}/file?path=${encodeURIComponent(path)}`,
   build: (cid: string, body: { from: string; to: string; provides?: string }) =>
     notify(cid, post<BuildResult>(`/api/drafts/${cid}/build`, body)),
+};
+
+// ---------------------------------------------------------------------------
+// 像素工坊（拆解 / 母本映射 / 程序化动作 / 画板）
+
+export type PaletteGroup = "body" | "fx" | "template" | "outline";
+
+export interface WorkshopCell {
+  key: number;
+  cell: number;
+  start: number;
+  frames: number;
+  region: number;
+  fx: number;
+  fy: number;
+  w: number;
+  h: number;
+  dy: number;
+  dx: number;
+  bbox: [number, number, number, number] | null;
+  alphaPx: number;
+}
+
+export interface WorkshopAction {
+  name: string;
+  kind: string;
+  begin: number;
+  end: number;
+  totalFrames: number;
+  universal: boolean;
+  cells: WorkshopCell[];
+}
+
+export interface WorkshopRegion {
+  id: number;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  rotated: boolean;
+  keys: number[];
+  actions: string[];
+  alphaPx: number;
+}
+
+export interface WorkshopFamily {
+  family: "pixelart" | "special";
+  sheet: { width: number; height: number; fill: number; layer0Px: number; share: number };
+  frame: { name: string; x: number; y: number; scale: number; smoothing: boolean };
+  origin: [number, number];
+  keys: number;
+  regions: WorkshopRegion[];
+  actions: WorkshopAction[];
+  unusedKeys: number[];
+  unusedRegions: number[];
+  duplicateRegions: number[][];
+  points: number;
+  sounds: number;
+  checks: DraftCheck[];
+}
+
+export interface PaletteColor {
+  hex: string;
+  rgb: [number, number, number];
+  count: number;
+  regions: number;
+  luma: number;
+  group: PaletteGroup;
+  actions: string[];
+  families: string[];
+}
+
+export interface WorkshopAnalysis {
+  characterId: string;
+  name: string;
+  code: string;
+  state: "view" | "draft";
+  families: WorkshopFamily[];
+  palette: PaletteColor[];
+  groupLabels: Record<PaletteGroup, string>;
+  universalRanges: Record<string, Record<string, [number, number]>>;
+  notes: string[];
+}
+
+export interface ColorPair { from: string; to: string; group?: string }
+
+export interface RemapResult {
+  dryRun?: boolean;
+  base: { id: string; code: string; name: string };
+  families: { family: string; changedPixels: number; renamedEntries: number; sheet: [number, number]; checks: DraftCheck[]; mappingUsed: number; mappingSize: number }[];
+  changes?: DraftChange[];
+  status?: DraftStatus;
+}
+
+export type BaseImageSpec = { cell: { family: string; key: number } } | { png: string };
+
+export interface GeneratedFrame { png: string; duration: number; dy: number; note: string; bbox: [number, number, number, number] }
+
+export interface GenerateResult {
+  action: string;
+  label?: string;
+  totalFrames?: number;
+  frames: GeneratedFrame[];
+  bases?: Record<string, BaseImageSpec>;
+  change?: DraftChange;
+  status?: DraftStatus;
+}
+
+export const GENERATE_ACTIONS: { id: string; label: string }[] = [
+  { id: "walk_front", label: "向前移动" }, { id: "walk_back", label: "向后移动" }, { id: "kachidoki", label: "胜利" },
+  { id: "into_coffin", label: "倒下入棺" }, { id: "ghost_raise", label: "幽灵升起" },
+  { id: "ghost_neutral", label: "幽灵待机" }, { id: "revive", label: "复活" },
+];
+
+export const workshop = {
+  analyze: (cid: string, state: "view" | "draft" = "view") =>
+    get<WorkshopAnalysis>(`/api/characters/${cid}/pixel-workshop?state=${state}`),
+  cellUrl: (cid: string, family: string, key: number, state: "view" | "draft" = "view", stamp = "") =>
+    `/api/characters/${cid}/pixel-workshop/cell/${family}/${key}.png?state=${state}${stamp ? "&v=" + stamp : ""}`,
+  bases: (cid: string) => get<{ bases: Record<string, BaseImageSpec> }>(`/api/characters/${cid}/pixel-workshop/bases`),
+  draftPixels: (cid: string) => get<PixelMeta & { draftRevision: number }>(`/api/drafts/${cid}/pixels`),
+  draftSheetUrl: (cid: string, family: string, revision: number) => `/api/drafts/${cid}/pixels/${family}.png?v=${revision}`,
+  remap: (cid: string, body: { base: string; mapping: ColorPair[]; families?: string[]; groups?: Record<string, PaletteGroup>; dryRun?: boolean }) =>
+    body.dryRun ? post<RemapResult>(`/api/drafts/${cid}/pixel-remap`, body)
+      : notify(cid, post<RemapResult>(`/api/drafts/${cid}/pixel-remap`, body)),
+  generate: (cid: string, body: { action: string; bases?: Record<string, BaseImageSpec>; totalFrames?: number; save?: boolean }) =>
+    body.save ? notify(cid, post<GenerateResult>(`/api/drafts/${cid}/pixel-generate`, body))
+      : post<GenerateResult>(`/api/drafts/${cid}/pixel-generate`, body),
 };

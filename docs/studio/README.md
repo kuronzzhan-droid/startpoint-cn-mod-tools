@@ -267,3 +267,33 @@ python -m wf.studio --provides work/studio-provides/v34-x86.json --server-dir <�
 - 换键：能力 1–6、队长技、技能卡片右上「换键…」。挂现有键（检索、持有者、共享确认）或复制当前键为新键（逐格 null 旧值断言）。换队长技键时提示同步 character c18 / character_text c10，可在对话框里一并改队长名（走 wf text）。
 - 性能：custom 文本持有者用「名称是键的子串或键出现在能力行」做必要条件预筛，再逐个调用原 `custom_keys`，结果与全表扫描相同（`tests/test_studio_m4c_text.py`），`apply_text` 同样改用它。
 - 截图在仓库外 `m4c-shots/`（139985）。
+
+## M6a：像素工坊
+
+角色页「像素工坊」标签，四个子页；右上「数据」可切换「当前视图 / 草稿态」（草稿态 = 把草稿里的整族映射与逐动作替换按生成时同一个编译器合成后再拆解）。所有写入只进草稿，生成仍走 `draft build` / 交付桥。
+
+- **拆解**：两族（pixelart / special）每个动作一条时间轴，图块宽度 ∝ 停留帧数；每张图标出端点帧号、停留帧数、dy（可见底边相对原点的下沉，正 = 往下）；被多个端点复用的图集区域标 `R编号`。点图看 fx/fy、可见尺寸、帧框包围盒、图集区域与全部复用位置。另列复用区域、逐像素重复区域（打包器没去重）、无动作引用区域；调色板按「本体 / 描边 / 特效 / 入棺幽灵模板」分组（启发：在待机/走路出现 = 本体，只在入棺/幽灵/复活出现 = 模板，近黑 = 描边），分组可改，记在本机浏览器。坑位检查：走路帧近乎全透明（瞬移式走路）、脚底/横心漂移、明显超大的帧、frame.scale ≠ 6、原点 ≠ (−128,−128)、layer0 预算与填充率、未去重、带 sounds、缺必需动作（special 缺 special_land/special_pose 记为错误）。
+- **母本映射**：检索母本角色，左右两边调色板、逐色映射表（可锁分组：本体只映射到本体色、特效只映射到特效色；「自动建议」按同组明度排名；可自定义颜色），预览母本与映射后同步播放（单个动作或全部动作）。保存 = `pixel_family` 改动：母本整族四件按精确 RGB→RGB 改色（只动 alpha>0 像素，alpha 原样），atlas 条目名与 frame.name 的 `character/<母本>/` 前缀换成本角色，timeline 逐字节照搬（区间、锚点、frame.scale、帧时长全保留）。草稿保存四件文件（PNG + `amf3-deflate`），并记录母本四件 SHA-256 与映射表；生成时后端按母本 + 映射表重算，与草稿逐字节（sheet 逐像素）核对，母本变化或草稿被改都拒绝。
+- **程序化动作**：从正面 / 背面 / 躺倒三张底图（可点本角色现有帧，或上传 PNG）按官方配方合成 walk_front、walk_back、kachidoki、into_coffin、ghost_raise、ghost_neutral、revive；与现有动作同钟对照播放。帧为 256² 帧框、原点 (128,128)，左 = 128 − w//2，上 = 128 − h + dy，编译后 fx = −(128 − w//2)、fy = −(128 − h + dy)；整套动作按本角色待机帧 dy 中位数对齐地线（`ground`）。总长默认等于本角色该动作的现有总长，官方端点按比例缩放。保存 = 现有 `pixel_action`。
+- **画板**：选族与动作槽，把该动作每张图还原成 256² 帧逐帧编辑：铅笔 / 橡皮 / 填充 / 吸管、撤销、洋葱皮（前 30% / 后 15%）、复制帧、删除帧、整帧上下移 1px（改 dy）、改停留帧数；调色板锁定为本角色（草稿态）颜色，可另加颜色并提示。视图默认是本动作可见范围外扩，可切换整帧。保存 = `pixel_action`（锚点为帧框原点）。
+- 生成时同一动作里逐像素相同的新帧共用一个图集区域（官方图集同样复用）。
+
+| 方法 | 路径 | 作用 |
+|---|---|---|
+| GET | `/api/characters/<cid>/pixel-workshop?state=view\|draft` | 拆解结果 |
+| GET | `/api/characters/<cid>/pixel-workshop/cell/<族>/<端点>.png?state=&trim=` | 单张图（默认裁掉透明边） |
+| GET | `/api/characters/<cid>/pixel-workshop/suggest?base=<母本>` | 同组按明度排名的映射建议 |
+| GET | `/api/characters/<cid>/pixel-workshop/bases` | 程序化动作的默认底图 |
+| GET | `/api/drafts/<cid>/pixels`、`/api/drafts/<cid>/pixels/<族>.png` | 草稿态像素（与「像素小人」同格式） |
+| POST | `/api/drafts/<cid>/pixel-remap` | `pixelRemapRequest`（`dryRun` 只检查） |
+| POST | `/api/drafts/<cid>/pixel-generate` | `pixelGenerateRequest`（`save: true` 才写草稿） |
+
+命令行（输出一行 JSON）：
+
+```powershell
+python -m wf.studio.draft pixel-analyze 139985 --brief [--draft] [--suggest-base 111007]
+python -m wf.studio.draft pixel-remap 139985 --base 111007 --suggest [--mapping map.json] [--family pixelart] [--dry-run]
+python -m wf.studio.draft pixel-generate 139985 --action walk_front [--front pixelart:2 | --front front.png] [--save] [--out-dir 预览目录]
+```
+
+近似与未做：调色板分组是启发式；程序化动作的旋转（胜利 12°/−16°/6°）用最近邻、火花位置由 md5 确定，入棺/幽灵/复活的半透明淡入淡出是近似，官方入棺实为升空消散；躺倒缺省用正面顺时针转 90° 代替；画板没有选区/镜像/多层；预览里半透明像素的改色走浏览器 canvas（可能有 1 级舍入），以后端结果为准。未上真机。测试：`tests/test_studio_pixel_workshop.py`。截图在仓库外 `m6a-shots/`。

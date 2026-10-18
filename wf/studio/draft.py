@@ -105,6 +105,30 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--anchor", help="统一锚点 x,y；默认脚底中心（逐帧底边中位数）")
     p.add_argument("--dry-run", action="store_true", help="只检查不写草稿")
 
+    p = sub.add_parser("pixel-analyze", help="像素工坊·拆解：逐动作帧表、dy/fy、复用图、调色板分组、坑位")
+    p.add_argument("cid")
+    p.add_argument("--brief", action="store_true", help="省略逐帧明细与区域表，只给动作摘要、调色板与检查")
+    p.add_argument("--draft", action="store_true", help="分析草稿态（把草稿里的像素改动编译进去）")
+    p.add_argument("--suggest-base", help="同时给出把这个母本映射到本角色调色板的建议表")
+    p = sub.add_parser("pixel-remap", help="像素工坊·母本映射：母本整族逐色映射，替换本角色整族（pixelRemapRequest）")
+    p.add_argument("cid")
+    p.add_argument("--request", help="完整 pixelRemapRequest JSON")
+    p.add_argument("--base", help="母本角色 ID")
+    p.add_argument("--mapping", help="映射表 JSON：[{from,to}] 或 {\"#src\": \"#dst\"}")
+    p.add_argument("--suggest", action="store_true", help="用同组按明度排名的建议表（可与 --mapping 合并，--mapping 优先）")
+    p.add_argument("--family", action="append", choices=("pixelart", "special"), help="只替换这几族（可重复）")
+    p.add_argument("--dry-run", action="store_true")
+    p = sub.add_parser("pixel-generate", help="像素工坊·程序化动作（pixelGenerateRequest）")
+    p.add_argument("cid")
+    p.add_argument("--request", help="完整 pixelGenerateRequest JSON")
+    p.add_argument("--action", choices=("walk_back", "walk_front", "kachidoki", "into_coffin", "ghost_raise",
+                                        "ghost_neutral", "revive"))
+    for name in ("front", "back", "liedown"):
+        p.add_argument(f"--{name}", help=f"{name} 底图：PNG 路径，或 pixelart:<端点帧号> 取本角色现有帧")
+    p.add_argument("--total", type=int, help="动作总帧数（默认本角色现有总长）")
+    p.add_argument("--save", action="store_true", help="写进草稿（pixel_action）；不加只预览")
+    p.add_argument("--out-dir", type=Path, help="预览时把逐帧 PNG 写到这个目录")
+
     p = sub.add_parser("voice-lines", help="列出可替换的语音台词")
     p.add_argument("cid")
     p = sub.add_parser("voice", help="上传音频替换一条语音")
@@ -201,6 +225,8 @@ def run(args) -> dict:
                        "origin": {"mode": "sheet" if args.sheet else "frames", "grid": args.grid or ""}}
         result = ops.pixel_save(args.cid, request)
         return result if result.get("dryRun") else _brief(result)
+    if args.command.startswith("pixel-"):
+        return _pixel_workshop(args, ops)
     if args.command == "voice-lines":
         return ops.voice_lines(args.cid)
     if args.command == "voice":
@@ -208,6 +234,72 @@ def run(args) -> dict:
         if args.loudness is not None:
             request["loudness"] = args.loudness
         return _brief(ops.voice_save(args.cid, request))
+    raise DraftError(f"未知命令 {args.command}")
+
+
+def _pixel_workshop(args, ops) -> dict:
+    from .pixel_workshop_ops import PixelWorkshop
+    workshop = PixelWorkshop(ops)
+    if args.command == "pixel-analyze":
+        result = workshop.analyze(args.cid, draft=args.draft)
+        if args.brief:
+            for family in result["families"]:
+                family.pop("regions", None)
+                family["actions"] = [{k: v for k, v in a.items() if k != "cells"} | {"images": len(a["cells"])}
+                                     for a in family["actions"]]
+        if args.suggest_base:
+            result["suggestions"] = workshop.suggest(args.cid, args.suggest_base)["suggestions"]
+        return result
+    if args.command == "pixel-remap":
+        if args.request:
+            request = _load_json(args.request)
+        else:
+            if not args.base:
+                raise DraftError("需要 --base 或 --request")
+            mapping: dict[str, str] = {}
+            if args.suggest:
+                mapping.update({m["from"]: m["to"] for m in workshop.suggest(args.cid, args.base)["suggestions"]})
+            if args.mapping:
+                given = _load_json(args.mapping)
+                mapping.update(given if isinstance(given, dict) else {m["from"]: m["to"] for m in given})
+            request = {"base": args.base, "mapping": [{"from": k, "to": v} for k, v in sorted(mapping.items())],
+                       "dryRun": args.dry_run}
+            if args.family:
+                request["families"] = args.family
+        result = workshop.remap(args.cid, request)
+        if result.get("dryRun"):
+            return result
+        return {"status": result["status"], "families": result["families"],
+                "changes": [{"id": c["id"], "title": c["title"], "files": [f["logical"] for f in c["files"]]}
+                            for c in result["changes"]]}
+    if args.command == "pixel-generate":
+        if args.request:
+            request = _load_json(args.request)
+        else:
+            if not args.action:
+                raise DraftError("需要 --action 或 --request")
+            bases = {}
+            for name in ("front", "back", "liedown"):
+                value = getattr(args, name)
+                if not value:
+                    continue
+                if ":" in value and value.split(":", 1)[0] in ("pixelart", "special") and value.split(":", 1)[1].isdigit():
+                    family, key = value.split(":", 1)
+                    bases[name] = {"cell": {"family": family, "key": int(key)}}
+                else:
+                    bases[name] = {"png": _b64(Path(value))}
+            request = {"action": args.action, "bases": bases, "save": args.save}
+            if args.total:
+                request["totalFrames"] = args.total
+        result = workshop.generate(args.cid, request)
+        if args.out_dir and not request.get("save"):
+            args.out_dir.mkdir(parents=True, exist_ok=True)
+            for index, frame in enumerate(result["frames"]):
+                (args.out_dir / f"{request['action']}_{index:02d}.png").write_bytes(base64.b64decode(frame["png"]))
+        frames = [{k: v for k, v in f.items() if k != "png"} for f in result["frames"]]
+        if request.get("save"):
+            return {**_brief(result), "frames": frames}
+        return {**result, "frames": frames}
     raise DraftError(f"未知命令 {args.command}")
 
 

@@ -59,8 +59,8 @@
         "sha256": {"$ref": "#/$defs/sha256", "description": "草稿文件（标准格式）的 SHA-256"},
         "size": {"type": "integer", "minimum": 1},
         "encoding": {
-          "enum": ["png", "mp3", "atf-deflate"],
-          "description": "png/mp3 为标准格式，交付时由 wf_assets.png_encode / mp3_encode 转成存储态；atf-deflate 已是游戏字节"
+          "enum": ["png", "mp3", "atf-deflate", "amf3-deflate"],
+          "description": "png/mp3 为标准格式，交付时由 wf_assets.png_encode / mp3_encode 转成存储态；atf-deflate / amf3-deflate（像素 atlas/frame/timeline）已是游戏字节"
         },
         "storeSha256": {"$ref": "#/$defs/sha256", "description": "按存储态编码后的 SHA-256（png/mp3 才有）"},
         "base": {
@@ -249,13 +249,18 @@
       },
       "anyOf": [{"required": ["operations"], "properties": {"operations": {"minItems": 1}}}, {"required": ["text"]}]
     },
+    "hexColor": {"type": "string", "pattern": "^#[0-9a-fA-F]{6}$"},
+    "colorPair": {"type": "object", "additionalProperties": false, "required": ["from", "to"], "properties": {"from": {"$ref": "#/$defs/hexColor"}, "to": {"$ref": "#/$defs/hexColor"}, "group": {"type": "string"}}},
+    "pixelRemapRequest": {"type": "object", "additionalProperties": false, "required": ["base"], "description": "像素工坊·母本映射：用母本角色的整族四件（时间轴区间、锚点、frame.scale 原样）按精确 RGB→RGB 表改色，atlas/frame 名前缀换成本角色，替换本角色整族。确定性。", "properties": {"base": {"$ref": "#/$defs/characterId", "description": "母本角色 ID"}, "families": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["pixelart", "special"]}, "description": "默认母本有的全部族"}, "mapping": {"type": "array", "items": {"$ref": "#/$defs/colorPair"}, "description": "母本颜色 → 新颜色；未列出的颜色保持母本原色"}, "groups": {"type": "object", "additionalProperties": {"enum": ["body", "fx", "template", "outline"]}, "description": "界面上调整后的分组（只记录，不影响结果）"}, "dryRun": {"type": "boolean", "default": false}}},
+    "pixelBaseImage": {"type": "object", "additionalProperties": false, "oneOf": [{"required": ["cell"]}, {"required": ["png"]}], "properties": {"cell": {"type": "object", "additionalProperties": false, "required": ["family", "key"], "properties": {"family": {"enum": ["pixelart", "special"]}, "key": {"type": "integer", "minimum": 1}}}, "png": {"type": "string", "description": "base64 PNG（透明背景，会裁掉透明边）"}}},
+    "pixelGenerateRequest": {"type": "object", "additionalProperties": false, "required": ["action"], "description": "像素工坊·程序化动作：从正面/背面/躺倒三张底图按官方配方合成一个动作；save=true 时作为 pixel_action 写进草稿（帧 256²，锚点 128,128）。", "properties": {"action": {"enum": ["walk_back", "walk_front", "kachidoki", "into_coffin", "ghost_raise", "ghost_neutral", "revive"]}, "bases": {"type": "object", "additionalProperties": false, "properties": {"front": {"$ref": "#/$defs/pixelBaseImage"}, "back": {"$ref": "#/$defs/pixelBaseImage"}, "liedown": {"$ref": "#/$defs/pixelBaseImage"}}, "description": "缺省：正面=待机首张，背面=walk_back 首张，躺倒=正面顺时针转 90°（近似）"}, "totalFrames": {"type": "integer", "minimum": 1, "maximum": 3600, "description": "缺省 = 本角色该动作的现有总长"}, "ground": {"type": "integer", "minimum": -32, "maximum": 32, "description": "地线：整套动作的脚底下沉（缺省 = 本角色待机帧 dy 中位数）"}, "save": {"type": "boolean", "default": false}}},
     "change": {
       "type": "object",
       "additionalProperties": false,
       "required": ["id", "kind", "title", "createdAt", "target", "params", "files", "pending", "checks"],
       "properties": {
         "id": {"type": "string", "pattern": "^c-[0-9a-f]{12}$"},
-        "kind": {"enum": ["portrait", "pixel_action", "voice_line", "ability_edit"]},
+        "kind": {"enum": ["portrait", "pixel_action", "pixel_family", "voice_line", "ability_edit"]},
         "title": {"type": "string", "minLength": 1},
         "createdAt": {"$ref": "#/$defs/timestamp"},
         "target": {"type": "object"},
@@ -344,7 +349,8 @@
                          }}
             }
           }
-        }
+        },
+        {"if": {"properties": {"kind": {"const": "pixel_family"}}}, "then": {"properties": {"target": {"type": "object", "additionalProperties": false, "required": ["family"], "properties": {"family": {"enum": ["pixelart", "special"]}}}, "params": {"type": "object", "additionalProperties": false, "required": ["mode", "base", "mapping"], "properties": {"mode": {"const": "remap"}, "base": {"type": "object", "additionalProperties": false, "required": ["characterId", "code", "files"], "properties": {"characterId": {"$ref": "#/$defs/characterId"}, "code": {"$ref": "#/$defs/code"}, "files": {"type": "object", "minProperties": 4, "maxProperties": 4, "additionalProperties": {"$ref": "#/$defs/sha256"}}}}, "mapping": {"type": "array", "items": {"$ref": "#/$defs/colorPair"}}, "changedPixels": {"type": "integer", "minimum": 0}, "renamedEntries": {"type": "integer", "minimum": 0}, "groups": {"type": "object"}}}, "files": {"minItems": 4, "maxItems": 4}, "pending": {"maxItems": 0}}}}
       ]
     }
   }

@@ -89,6 +89,9 @@ class StudioApp:
         ]
         from .ability_routes import AbilityRoutes
         self.routes.extend(AbilityRoutes(self, server_dir).routes())
+        from .pixel_routes import PixelRoutes
+        self.pixel_workshop = PixelRoutes(self)
+        self.routes.extend(self.pixel_workshop.routes())
         from .deliver_routes import DeliverRoutes
         self.deliveries = DeliverRoutes(self, server_dir, default_provides=default_provides)
         self.routes.extend(self.deliveries.routes())

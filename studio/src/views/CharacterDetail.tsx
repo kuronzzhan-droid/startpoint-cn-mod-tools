@@ -6,6 +6,7 @@ import { AssetsTab } from "./AssetsTab";
 import { ChangesPanel, useDraft } from "./Changes";
 import { PixelImport } from "./PixelImport";
 import { PixelPlayer } from "./PixelPlayer";
+import { PixelWorkshop } from "./PixelWorkshop";
 import { PortraitEditor } from "./PortraitEditor";
 import { VoiceTab } from "./VoiceTab";
 import { useDeliveries } from "./Delivery";
@@ -23,6 +24,7 @@ const TABS: { id: string; label: string }[] = [
   { id: "assets", label: "全套资源" },
   { id: "portrait", label: "换立绘" },
   { id: "pixel-import", label: "换像素" },
+  { id: "workshop", label: "像素工坊" },
   { id: "voice", label: "换语音" },
   { id: "changes", label: "本次修改" },
 ];
@@ -95,6 +97,8 @@ export function CharacterDetailView({ id, tab }: { id: string; tab?: string }) {
         <PortraitEditor characterId={detail.id} />
       ) : active === "pixel-import" ? (
         <PixelImport characterId={detail.id} />
+      ) : active === "workshop" ? (
+        <PixelWorkshop characterId={detail.id} />
       ) : active === "voice" ? (
         <VoiceTab characterId={detail.id} />
       ) : active === "changes" ? (

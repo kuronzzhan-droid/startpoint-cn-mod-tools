@@ -9,6 +9,7 @@ import { PatchManager } from "./views/PatchManager";
 import { LookupPanel } from "./views/LookupPanel";
 import "./styles.css";
 import "./m4.css";
+import "./workshop.css";
 
 function App() {
   const route = useRoute();

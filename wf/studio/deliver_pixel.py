@@ -8,7 +8,7 @@ from PIL import Image
 
 from wf_pixelart_vfx import frame_index, restore_frame
 
-from .deliver_media import MediaResult, encode_png, encode_tree, png, require_raw, tree
+from .deliver_media import MediaResult, draft_file, encode_png, encode_tree, png, require_raw, tree
 from .deliver_pixel_pack import budget_check, repack
 from .drafts import DraftError, sha256
 
@@ -48,14 +48,15 @@ def _append_pack(original, images, maximum):
     return repack(original, [reserved], [reserved], images, maximum)
 
 
-def _compile_family(source, store, changeset, family, changes):
+def _compile_family(source, store, changeset, family, changes, original=None):
     result = MediaResult()
     cid, code = changeset["characterId"], changeset["code"]
     base = f"character/{code}/pixelart/"
     sheet_name = "sprite_sheet" if family == "pixelart" else "special_sprite_sheet"
     paths = [base + sheet_name + ".png", base + sheet_name + ".atlas.amf3.deflate",
              base + family + ".frame.amf3.deflate", base + family + ".timeline.amf3.deflate"]
-    original = [require_raw(source, "common", name) for name in paths]
+    if original is None:
+        original = [require_raw(source, "common", name) for name in paths]
     sheet, atlas, frame, timeline = png(original[0]), tree(original[1]), tree(original[2]), tree(original[3])
     keys, entries = frame_index(atlas, frame["name"])
     sequences = timeline.get("sequences", [])
@@ -118,7 +119,17 @@ def _compile_family(source, store, changeset, family, changes):
         result.assertions.append({"kind": "pixel_action", "family": family, "action": action,
                                   "old": copy.deepcopy(old), "value": copy.deepcopy(target_by_name[action])})
     retained = [entry for entry in target_entries.values() if not any(entry is new for new in new_entries)] + foreign
-    packed, positions = repack(sheet, atlas, retained, [item[0] for item in prepared], maximum)
+    # Identical new frames share one atlas region (official sheets reuse regions too).
+    unique, slots, seen = [], [], {}
+    for item in prepared:
+        image = item[0]
+        signature = (image.size, image.tobytes())
+        if signature not in seen:
+            seen[signature] = len(unique)
+            unique.append(image)
+        slots.append(seen[signature])
+    packed, unique_positions = repack(sheet, atlas, retained, unique, maximum)
+    positions = [unique_positions[slot] for slot in slots]
     for entry, (x, y) in zip(new_entries, positions):
         entry.update(x=x, y=y)
     target_atlas = [target_entries[k] for k in sorted(target_entries)] + foreign
@@ -151,14 +162,61 @@ def _verify_untouched(old_sheet, old_atlas, frame, old_timeline, new_sheet, new_
                 raise DraftError("问题：未替换动作帧逐字节回读不一致")
 
 
+def compile_family_replacement(source, store, changeset, change) -> MediaResult:
+    """Whole-family remap: rebuild from the base character and the mapping, then
+    require the draft files to match the rebuild exactly (determinism + drift)."""
+    from .pixel_workshop import family_paths, normalize_mapping, read_family_raw, remap_family
+    result = MediaResult()
+    cid, code = changeset["characterId"], changeset["code"]
+    family, params = change["target"]["family"], change["params"]
+    if params.get("mode") != "remap":
+        raise DraftError(f"问题：不支持的整族替换方式 {params.get('mode')}")
+    base = params["base"]
+    base_raws = read_family_raw(source, base["code"], family)
+    if base_raws is None:
+        raise DraftError(f"问题：母本 {base['characterId']} 缺 {family} 像素族")
+    for logical, raw in zip(family_paths(base["code"], family), base_raws):
+        if sha256(raw) != base["files"].get(logical):
+            raise DraftError(f"问题：母本文件已变化（{logical}），请重新映射")
+    rebuilt = remap_family(base_raws, base["code"], code, normalize_mapping(params["mapping"]))
+    paths = family_paths(code, family)
+    by_logical = {entry["logical"]: entry for entry in change["files"]}
+    if set(by_logical) != set(paths):
+        raise DraftError("问题：整族替换必须正好包含四件文件")
+    for index, logical in enumerate(paths):
+        stored = draft_file(source, store, cid, by_logical[logical])
+        if index == 0:
+            if png(stored).tobytes() != rebuilt["sheet"].convert("RGBA").tobytes():
+                raise DraftError("问题：草稿 sprite_sheet 与按母本 + 映射表重算的结果不一致")
+        elif stored != rebuilt["stored"][index]:
+            raise DraftError(f"问题：草稿 {logical} 与按母本重算的结果不一致")
+        result.members["common", logical] = stored
+    result.assertions.append({"kind": "pixel_family", "family": family, "base": base["characterId"],
+                              "mapping": len(params["mapping"])})
+    return result
+
+
 def compile_pixels(source, store, changeset: dict) -> MediaResult:
+    from .pixel_workshop import family_paths
     result = MediaResult()
     for family in ("pixelart", "special"):
+        replaced = [c for c in changeset["changes"]
+                    if c["kind"] == "pixel_family" and c["target"]["family"] == family]
         changes = [c for c in changeset["changes"]
                    if c["kind"] == "pixel_action" and c["target"]["family"] == family]
+        if len(replaced) > 1:
+            raise DraftError(f"问题：{family} 有多个整族替换")
+        original = None
+        if replaced:
+            part = compile_family_replacement(source, store, changeset, replaced[0])
+            result.members.update(part.members)
+            result.assertions.extend(part.assertions)
+            original = [part.members["common", logical] for logical in family_paths(changeset["code"], family)]
+            if not changes:
+                result.checks.append(budget_check(family, png(original[0])))
         if not changes:
             continue
-        part = _compile_family(source, store, changeset, family, changes)
+        part = _compile_family(source, store, changeset, family, changes, original=original)
         result.members.update(part.members)
         result.assertions.extend(part.assertions)
         result.checks.extend(part.checks)

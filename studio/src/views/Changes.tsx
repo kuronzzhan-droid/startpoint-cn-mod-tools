@@ -33,7 +33,7 @@ export function ChecksList({ checks, empty }: { checks: DraftCheck[]; empty?: st
   );
 }
 
-const KIND_LABEL: Record<string, string> = { portrait: "立绘 / UI", pixel_action: "像素动作", voice_line: "语音", ability_edit: "词条" };
+const KIND_LABEL: Record<string, string> = { portrait: "立绘 / UI", pixel_action: "像素动作", pixel_family: "像素整族", voice_line: "语音", ability_edit: "词条" };
 
 function size(bytes: number): string {
   if (bytes < 1024) return bytes + " B";

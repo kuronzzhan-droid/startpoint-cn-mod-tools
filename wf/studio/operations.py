@@ -139,7 +139,8 @@ class DraftOps:
                 raise DraftError(f"第 {index + 1} 帧缺少 png")
             frames.append(decode_frame(item["png"], index))
         durations = [int(item["duration"]) for item in request["frames"]]
-        result = self.pixels.check(info["code"], request["family"], request["action"], frames, durations)
+        result = self._pixel_importer(cid, request["family"]).check(
+            info["code"], request["family"], request["action"], frames, durations)
         for index, (image, item) in enumerate(zip(frames, request["frames"])):
             x, y = item["anchor"]
             if not (-image.width <= x <= image.width * 2 and -image.height <= y <= image.height * 2):
@@ -176,6 +177,18 @@ class DraftOps:
             "checks": result["checks"],
         }
         return self._commit(cid, info["code"], "pixel_action", built)
+
+    def _pixel_importer(self, cid: str, family: str) -> PixelImporter:
+        """Check new frames against the draft's whole-family replacement when one exists."""
+        changeset = self.store.load(cid)
+        replaced = [c for c in (changeset or {}).get("changes", [])
+                    if c["kind"] == "pixel_family" and c["target"]["family"] == family]
+        if not replaced:
+            return self.pixels
+        from .deliver_pixel import compile_pixels
+        from .pixel_workshop_ops import _Overlay
+        members = compile_pixels(self.source, self.store, {**changeset, "changes": replaced}).members
+        return PixelImporter(_Overlay(self.source, members))
 
     # -- voice ----------------------------------------------------------
     def voice_lines(self, cid: str) -> dict:
