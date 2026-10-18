@@ -51,9 +51,10 @@ class EditState:
         return rows[0]
 
     def validate_rows(self, table, key, leaf):
-        if table not in WIDTHS:
+        if table not in {*WIDTHS, "action_skill"}:
             return
-        list(table_signals(TABLES[table], (key,), leaf, registry=self.registry))
+        if table in WIDTHS:
+            list(table_signals(TABLES[table], (key,), leaf, registry=self.registry))
         for index, row in enumerate(split_leaf(leaf, table)):
             problems = wf_client_legality.client_legality_problems(table, row)
             if problems:
@@ -80,6 +81,7 @@ def _skill_structure(state, cid, operation, document, owners):
         incoming = _new_rows(operation, [operation["cells"]])[0]
         if len(incoming) != len(records[0]):
             raise ValueError("action_skill 插入档位列数必须与现有档位相同")
+        state.validate_rows("action_skill", f"{key}/{level}", join_leaf("", [incoming]))
         records.insert(index, incoming)
     else:
         if index >= len(records):
@@ -97,6 +99,9 @@ def _skill_structure(state, cid, operation, document, owners):
                 raise ValueError("action_skill move target is out of range or unchanged")
             records.insert(target, records.pop(index))
             state.checks.append(result("ability.row-order", "待验证", "技能档位顺序已改变；请核对技能等级与能量"))
+    if kind in {"insert_row", "delete_row"}:
+        from .ability_references import tier_reference_check
+        state.checks.append(tier_reference_check(state, key, owners, len(levels), len(records), kind))
     document[key] = {str(i + 1): join_leaf(node.get(str(i + 1), node[levels[-1]]), [record])
                      for i, record in enumerate(records)}
     state.write_table(TABLES["action_skill"], document)
@@ -191,6 +196,8 @@ def _attach(state, cid, operation):
     if table == "action_skill":
         previous_width = _skill_key_shape(state.table(logical)[operation["old_key"]])
         _skill_key_shape(target[key], previous_width)
+        for level, leaf in target[key].items():
+            state.validate_rows(table, f"{key}/{level}", leaf)
     old_leaf = state.table(CHARACTER)[cid]
     character[column] = key
     characters = state.table(CHARACTER)

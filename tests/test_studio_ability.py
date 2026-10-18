@@ -12,6 +12,13 @@ from wf.studio.drafts import DraftError, DraftStore, schema_errors
 from test_m1_balance import valid_row
 
 
+def skill_row(name="斩击", energy="100"):
+    row = [""] * 24
+    row[:9] = [name, "攻击敌人", "skill/icon", "true", energy, energy, "1", "skill/program", "0"]
+    row[16] = "(None)"
+    return row
+
+
 class Source:
     version = "1.4.233"
 
@@ -26,7 +33,7 @@ class Source:
             TABLES["ability"]: {"1001": join_leaf("\r\n", self.rows),
                                 "untouched": join_leaf("", [valid_row("untouched")])},
             TABLES["leader_ability"]: {"100": join_leaf("\r\n", [valid_row()[:1] + valid_row()[3:]])},
-            TABLES["action_skill"]: {"hero": {str(i): join_leaf("\r\n", [["斩击" + "+"*(i-1), "攻击敌人", "100"]])
+            TABLES["action_skill"]: {"hero": {str(i): join_leaf("\r\n", [skill_row("斩击" + "+"*(i-1))])
                                                 for i in (1, 2, 3)}},
         }
         self.raw = {logical: codec.build_node(value) for logical, value in self.tables.items()}
