@@ -1,5 +1,5 @@
 import { ComponentChildren } from "preact";
-import { useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { api, DeliverySummary, DraftCheck, DraftStatus, Origin } from "../api";
 import { RuleChips } from "./rules";
 
@@ -73,10 +73,24 @@ export function Notice({ kind = "info", children }: { kind?: "info" | "warn" | "
 export function Drawer({ title, wide, onClose, children }: {
   title: ComponentChildren; wide?: boolean; onClose: () => void; children: ComponentChildren;
 }) {
+  const panel = useRef<HTMLElement>(null);
+  const close = useRef(onClose);
+  close.current = onClose;
+  // Focus the drawer once; Esc closes it even after the focused control inside was removed (e.g. 撤销).
+  useEffect(() => {
+    panel.current?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" || event.defaultPrevented) return;
+      if ((event.target as HTMLElement)?.closest?.(".modal")) return;
+      event.preventDefault();
+      close.current();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
   return (
-    <div class="drawer-backdrop" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-      onKeyDown={(e) => { if (e.key === "Escape") { e.stopPropagation(); onClose(); } }}>
-      <aside class={"drawer" + (wide ? " wide" : "")} role="dialog" aria-modal="true" aria-label={typeof title === "string" ? title : "抽屉"}>
+    <div class="drawer-backdrop" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <aside ref={panel} tabIndex={-1} class={"drawer" + (wide ? " wide" : "")} role="dialog" aria-modal="true" aria-label={typeof title === "string" ? title : "抽屉"}>
         <header class="drawer-head">
           <h2>{title}</h2>
           <span class="spacer" />

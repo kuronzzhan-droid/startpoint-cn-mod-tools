@@ -1,18 +1,42 @@
+import { ComponentChildren } from "preact";
 import { useEffect, useState } from "preact/hooks";
-import { DraftChange, DraftCheck, drafts, DraftView, onDraftChange } from "../api";
+import { DeliveryApi, deliveries, DraftChange, DraftCheck, drafts, DraftView, onDraftChange } from "../api";
 import { Notice } from "./common";
 import { DeliveryPanel } from "./Delivery";
 
+/** One draft namespace behind 「本次修改」: a character draft, or a boss draft (own API, own listener key). */
+export interface DraftSubject {
+  /** API id of the draft (character id, or boss quest selector). */
+  id: string;
+  /** Listener key used by onDraftChange (characters: the id itself). */
+  key: string;
+  get: () => Promise<DraftView>;
+  save: () => Promise<unknown>;
+  revert: (change: string) => Promise<unknown>;
+  deliveries: DeliveryApi;
+}
+
+export function characterSubject(cid: string): DraftSubject {
+  return {
+    id: cid, key: cid, deliveries,
+    get: () => drafts.get(cid), save: () => drafts.save(cid), revert: (change) => drafts.revert(cid, change),
+  };
+}
+
 /** Draft state of one character, refreshed whenever any editor writes. */
 export function useDraft(cid: string): { view: DraftView | null; error: string | null; reload: () => void } {
+  return useDraftOf(characterSubject(cid));
+}
+
+export function useDraftOf(subject: DraftSubject): { view: DraftView | null; error: string | null; reload: () => void } {
   const [view, setView] = useState<DraftView | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const reload = () => drafts.get(cid).then((v) => { setView(v); setError(null); }, (e: Error) => setError(e.message));
+  const reload = () => subject.get().then((v) => { setView(v); setError(null); }, (e: Error) => setError(e.message));
   useEffect(() => {
     setView(null);
     reload();
-    return onDraftChange((changed) => { if (changed === cid) reload(); });
-  }, [cid]);
+    return onDraftChange((changed) => { if (changed === subject.key) reload(); });
+  }, [subject.key]);
   return { view, error, reload };
 }
 
@@ -40,9 +64,15 @@ function size(bytes: number): string {
   return (bytes / 1024 / 1024).toFixed(2) + " MB";
 }
 
-/** 「本次修改」：草稿里的全部改动，逐项撤销；保存 / 生成 / 导出接通，应用 / 发布不开放。 */
-export function ChangesPanel({ characterId, scratch }: { characterId: string; scratch?: boolean }) {
-  const { view, error } = useDraft(characterId);
+/** 「本次修改」：草稿里的全部改动，逐项撤销；保存 / 生成 / 导出接通，应用 / 发布不开放。
+ * Boss drafts pass their own `subject`, `renderChange`, `emptyText` and `techNote`. */
+export function ChangesPanel({ characterId, scratch, subject, renderChange, emptyText, techNote }: {
+  characterId: string; scratch?: boolean; subject?: DraftSubject;
+  renderChange?: (change: DraftChange, actions: { busy: boolean; onRevert: () => void }) => ComponentChildren;
+  emptyText?: ComponentChildren; techNote?: ComponentChildren;
+}) {
+  const target = subject ?? characterSubject(characterId);
+  const { view, error } = useDraftOf(target);
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<{ kind: "info" | "error"; text: string } | null>(null);
   const [panel, setPanel] = useState<"generate" | "export" | null>(null);
@@ -82,7 +112,7 @@ export function ChangesPanel({ characterId, scratch }: { characterId: string; sc
               <button class={a.id === "save" || a.id === "generate" ? "primary" : ""} title={reason ?? a.note}
                 disabled={!a.enabled || busy !== null || !!reason}
                 onClick={() => {
-                  if (a.id === "save") run("save", () => drafts.save(characterId), "已保存：整份草稿通过 schema 校验，文件哈希逐个复核一致。");
+                  if (a.id === "save") run("save", () => target.save(), subject ? "已保存：草稿通过 schema 校验，并按当前视图重放复核了检查。" : "已保存：整份草稿通过 schema 校验，文件哈希逐个复核一致。");
                   else if (a.id === "generate" || a.id === "export") setPanel(panel === a.id ? null : a.id);
                 }}>
                 {busy === "save" && a.id === "save" ? "保存中……" : a.label}
@@ -96,30 +126,35 @@ export function ChangesPanel({ characterId, scratch }: { characterId: string; sc
         <Notice kind="warn">页面里没有写入令牌（不是由 python -m wf.studio 提供的页面），所有写入都会被拒绝。</Notice>
       ) : null}
       {message ? <Notice kind={message.kind === "error" ? "error" : "info"}>{message.text}</Notice> : null}
-      {panel ? <DeliveryPanel characterId={characterId} mode={panel} view={view} onMode={setPanel} /> : null}
+      {panel ? <DeliveryPanel characterId={target.id} mode={panel} view={view} onMode={setPanel} api={target.deliveries} /> : null}
       <p class="hint">
         草稿只记录「要把什么换成什么」，不改游戏数据、测试服或补丁链；「生成」只在本机写一个交付目录。
         {view.changeset ? ` 基于资源版本 ${view.changeset.baseView}，第 ${view.changeset.revision} 次修改。` : ""}
       </p>
       <details class="tech">
         <summary>技术细节</summary>
-        <p class="small">草稿目录 <span class="mono">work/studio-drafts/{characterId}/</span>：文件 + changeset.json（结构见
-          <span class="mono"> schemas/studio-draft.schema.json</span>；agent 可用 <span class="mono">python -m wf.studio.draft</span> 走同一套操作）。
-          生成写 <span class="mono">work/studio-deliveries/</span>。</p>
+        {techNote ?? (
+          <p class="small">草稿目录 <span class="mono">work/studio-drafts/{characterId}/</span>：文件 + changeset.json（结构见
+            <span class="mono"> schemas/studio-draft.schema.json</span>；agent 可用 <span class="mono">python -m wf.studio.draft</span> 走同一套操作）。
+            生成写 <span class="mono">work/studio-deliveries/</span>。</p>
+        )}
       </details>
       {!changes.length ? (
-        <Notice>{scratch
+        <Notice>{emptyText ?? (scratch
           ? "还没有改动。草稿角色只做像素：在「像素」里换色、生成动作、画板，或整族导入现成的小人。"
-          : "还没有改动。可以在「能力」「技能」「文案」改词条和文字，或在「立绘」「像素」「语音」里替换资源。"}</Notice>
+          : "还没有改动。可以在「能力」「技能」「文案」改词条和文字，或在「立绘」「像素」「语音」里替换资源。")}</Notice>
       ) : (
         <ol class="change-list">
-          {changes.map((change) => (
-            <ChangeItem change={change} characterId={characterId} busy={busy === change.id}
-              onRevert={() => {
-                if (!confirm(`撤销「${change.title}」？草稿里这一项${change.kind === "ability_edit" ? "的全部词条操作" : "的文件"}会被删除${change.kind === "ability_edit" ? "" : "（上传的源文件保留）"}。`)) return;
-                run(change.id, () => drafts.revert(characterId, change.id), `已撤销：${change.title}`);
-              }} />
-          ))}
+          {changes.map((change) => {
+            const onRevert = () => {
+              if (change.kind === "boss") {
+                if (!confirm(`撤销「${change.title}」？这份副本草稿里的全部操作（共 ${(change.params.requests ?? []).length} 步）会一起删除。`)) return;
+              } else if (!confirm(`撤销「${change.title}」？草稿里这一项${change.kind === "ability_edit" ? "的全部词条操作" : "的文件"}会被删除${change.kind === "ability_edit" ? "" : "（上传的源文件保留）"}。`)) return;
+              run(change.id, () => target.revert(change.id), `已撤销：${change.title}`);
+            };
+            return renderChange ? renderChange(change, { busy: busy === change.id, onRevert })
+              : <ChangeItem change={change} characterId={characterId} busy={busy === change.id} onRevert={onRevert} />;
+          })}
         </ol>
       )}
     </div>

@@ -7,6 +7,7 @@ from types import SimpleNamespace
 from wf.boss.identity import safe_id
 
 from .boss import BossEditor, BossDraftStore
+from .boss_catalog import draft_summary, enrich_listing, options, template_sources
 from .deliver_routes import DeliverRoutes, DELIVERIES
 
 
@@ -40,14 +41,23 @@ class BossRoutes:
         self.deliveries = BossDeliveries(proxy, server_dir, root=DELIVERIES / "boss",
                                         default_provides=default_provides)
 
-    def listing(self, query):
+    def _read_only(self, build):
         from wf.boss.reader import BossReader
         from .server import json_response
         from .drafts import DraftError
         try:
-            return json_response(BossReader(self.app.source).list())
+            return json_response(build(BossReader(self.app.source)))
         except (ValueError, KeyError, OSError, TypeError) as exc:
             raise DraftError(str(exc)) from exc
+
+    def listing(self, query):
+        return self._read_only(lambda reader: enrich_listing(reader, reader.list()))
+
+    def templates(self, query):
+        return self._read_only(template_sources)
+
+    def options(self, query):
+        return self._read_only(options)
 
     def show(self, query, quest):
         from .server import json_response
@@ -55,7 +65,21 @@ class BossRoutes:
 
     def drafts(self, query):
         from .server import json_response
-        return json_response({"drafts": self.store.characters(), "subjectKind": "boss"})
+        entries = [draft_summary(entry, self.store.load(entry["characterId"])) for entry in self.store.characters()]
+        return json_response({"drafts": entries, "subjectKind": "boss"})
+
+    def draft(self, query, quest):
+        """Same shape as a character draft view (保存 / 生成 / 导出 actions)."""
+        from .drafts import DraftError, status
+        from .operations import ACTIONS
+        from .server import json_response
+        try:
+            identity = self.editor.canonical(quest)
+        except ValueError as exc:
+            raise DraftError(str(exc)) from exc
+        changeset = self.store.load(identity)
+        return json_response({"characterId": identity, "questId": identity, "subjectKind": "boss",
+                              "changeset": changeset, "status": status(changeset), "actions": ACTIONS})
 
     def edit(self, query, body, quest="new"):
         from .server import json_response
@@ -77,6 +101,9 @@ class BossRoutes:
         return [
             ("GET", re.compile(r"^/api/boss$"), self.listing),
             ("GET", re.compile(r"^/api/boss/drafts$"), self.drafts),
+            ("GET", re.compile(r"^/api/boss/templates$"), self.templates),
+            ("GET", re.compile(r"^/api/boss/options$"), self.options),
+            ("GET", re.compile(r"^/api/boss/drafts/(?P<quest>[^/]+)$"), self.draft),
             *self.deliveries.routes(),
             ("GET", re.compile(r"^/api/boss/(?P<quest>[^/]+)$"), self.show),
             ("POST", re.compile(r"^/api/boss/drafts$"), self.edit),

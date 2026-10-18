@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "preact/hooks";
-import { BuildJob, BuildResult, deliveries, DeliveryDetail, DeliverySummary, DraftView, onDraftChange } from "../api";
+import { BuildJob, BuildResult, deliveries, DeliveryApi, DeliveryDetail, DeliverySummary, DraftView, onDraftChange } from "../api";
 import { Notice } from "./common";
 import { RuleChips, ruleCounts, RuleList } from "./rules";
 
@@ -10,20 +10,21 @@ function size(bytes: number | null | undefined): string {
   return (bytes / 1024 / 1024).toFixed(2) + " MB";
 }
 
-/** Latest delivery for a character (refreshed after any draft write or build). */
-export function useDeliveries(cid: string): { list: DeliverySummary[] | null; reload: () => void } {
+/** Latest delivery for a character or boss draft (refreshed after any draft write or build). */
+export function useDeliveries(cid: string, api: DeliveryApi = deliveries): { list: DeliverySummary[] | null; reload: () => void } {
   const [list, setList] = useState<DeliverySummary[] | null>(null);
-  const reload = () => deliveries.list(cid).then((r) => setList(r.deliveries), () => setList([]));
+  const reload = () => api.list(cid).then((r) => setList(r.deliveries), () => setList([]));
   useEffect(() => {
     setList(null);
     reload();
-    return onDraftChange((changed) => { if (changed === cid) reload(); });
-  }, [cid]);
+    return onDraftChange((changed) => { if (changed === api.key(cid)) reload(); });
+  }, [cid, api]);
   return { list, reload };
 }
 
-export function DeliveryPanel({ characterId, mode, view, onMode }: {
+export function DeliveryPanel({ characterId, mode, view, onMode, api = deliveries }: {
   characterId: string; mode: "generate" | "export"; view: DraftView; onMode: (m: "generate" | "export") => void;
+  api?: DeliveryApi;
 }) {
   const [picked, setPicked] = useState<string | null>(null);
   return (
@@ -33,9 +34,9 @@ export function DeliveryPanel({ characterId, mode, view, onMode }: {
         <button class={mode === "export" ? "on" : ""} onClick={() => onMode("export")}>导出</button>
       </nav>
       {mode === "generate" ? (
-        <GenerateForm characterId={characterId} view={view} onBuilt={(name) => { setPicked(name); onMode("export"); }} />
+        <GenerateForm characterId={characterId} view={view} api={api} onBuilt={(name) => { setPicked(name); onMode("export"); }} />
       ) : (
-        <ExportView characterId={characterId} picked={picked} onPick={setPicked} revision={view.changeset?.revision ?? null} />
+        <ExportView characterId={characterId} picked={picked} onPick={setPicked} revision={view.changeset?.revision ?? null} api={api} />
       )}
     </section>
   );
@@ -43,7 +44,9 @@ export function DeliveryPanel({ characterId, mode, view, onMode }: {
 
 const STAGE_STATE: Record<string, string> = { waiting: "等待", running: "进行中", done: "完成", failed: "失败", cancelled: "已取消" };
 
-function GenerateForm({ characterId, view, onBuilt }: { characterId: string; view: DraftView; onBuilt: (name: string) => void }) {
+function GenerateForm({ characterId, view, onBuilt, api }: {
+  characterId: string; view: DraftView; onBuilt: (name: string) => void; api: DeliveryApi;
+}) {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [provides, setProvides] = useState("");
@@ -54,9 +57,9 @@ function GenerateForm({ characterId, view, onBuilt }: { characterId: string; vie
   const poll = useRef<number | undefined>(undefined);
 
   useEffect(() => {
-    deliveries.defaults().then((d) => { setFrom(d.from); setTo(d.to); setNote(d.note); if (d.provides) setProvides(d.provides); }, (e: Error) => setError(e.message));
+    api.defaults().then((d) => { setFrom(d.from); setTo(d.to); setNote(d.note); if (d.provides) setProvides(d.provides); }, (e: Error) => setError(e.message));
     // Resume a build that is still running (page reloaded or tab switched).
-    deliveries.list(characterId).then((r) => {
+    api.list(characterId).then((r) => {
       const running = r.jobs?.find((j) => j.state === "running");
       if (running) follow(running);
     }, () => undefined);
@@ -68,11 +71,11 @@ function GenerateForm({ characterId, view, onBuilt }: { characterId: string; vie
     window.clearTimeout(poll.current);
     if (current.state !== "running") {
       setCancelling(false);
-      deliveries.finished(characterId);
+      api.finished(characterId);
       return;
     }
     poll.current = window.setTimeout(() => {
-      deliveries.job(current.name).then(follow, (e: Error) => { setError(e.message); setJob(null); });
+      api.job(current.name).then(follow, (e: Error) => { setError(e.message); setJob(null); });
     }, 700);
   };
 
@@ -83,14 +86,14 @@ function GenerateForm({ characterId, view, onBuilt }: { characterId: string; vie
     setError(null);
     setJob(null);
     try {
-      follow(await deliveries.start(characterId, { from, to, ...(provides.trim() ? { provides: provides.trim() } : {}) }));
+      follow(await api.start(characterId, { from, to, ...(provides.trim() ? { provides: provides.trim() } : {}) }));
     } catch (e) {
       setError((e as Error).message);
     }
   };
   const cancel = async () => {
     setCancelling(true);
-    try { await deliveries.cancel(characterId); } catch (e) { setError((e as Error).message); setCancelling(false); }
+    try { await api.cancel(characterId); } catch (e) { setError((e as Error).message); setCancelling(false); }
   };
   const result = job && job.state !== "running" ? job.result : null;
 
@@ -135,7 +138,9 @@ export function InfoTip({ text }: { text: string }) {
 }
 
 function BuildResultCard({ result, onOpen }: { result: BuildResult; onOpen: () => void }) {
-  const checks = [...(result.checks ?? []), ...(result.compat ?? [])];
+  // compat is the status string; the per-item compat results are compatChecks.
+  const compat = result.compatChecks ?? (Array.isArray(result.compat) ? result.compat : []);
+  const checks = [...(result.checks ?? []), ...compat];
   return (
     <div class={"build-result " + (result.ok ? "ok" : "bad")}>
       <header>
@@ -151,15 +156,17 @@ function BuildResultCard({ result, onOpen }: { result: BuildResult; onOpen: () =
         <p class="small">prepush：{result.prepush.status}（exit {result.prepush.exit_code}）
           {result.prepush.limitations?.length ? <span class="muted"> · {result.prepush.limitations.join("；")}</span> : null}</p>
       ) : null}
+      {typeof result.compat === "string" ? <p class="small">兼容检查（客户端能力）：{result.compat}</p> : null}
+      {result.draftChecks?.length ? <p class="small">草稿规则（编译时重放）：<RuleChips counts={ruleCounts(result.draftChecks)} /></p> : null}
       <p class="small muted">实测：{result.deviceValidation}。检查通过只代表文件与静态能力证据，不代表真机生效。</p>
     </div>
   );
 }
 
-function ExportView({ characterId, picked, onPick, revision }: {
-  characterId: string; picked: string | null; onPick: (name: string) => void; revision: number | null;
+function ExportView({ characterId, picked, onPick, revision, api }: {
+  characterId: string; picked: string | null; onPick: (name: string) => void; revision: number | null; api: DeliveryApi;
 }) {
-  const { list } = useDeliveries(characterId);
+  const { list } = useDeliveries(characterId, api);
   useEffect(() => {
     if (!picked && list && list.length) onPick(list[0].name);
   }, [list]);
@@ -179,24 +186,24 @@ function ExportView({ characterId, picked, onPick, revision }: {
           </li>
         ))}
       </ul>
-      {picked ? <DeliveryDetailView name={picked} /> : null}
+      {picked ? <DeliveryDetailView name={picked} api={api} /> : null}
     </div>
   );
 }
 
-function DeliveryDetailView({ name }: { name: string }) {
+function DeliveryDetailView({ name, api }: { name: string; api: DeliveryApi }) {
   const [detail, setDetail] = useState<DeliveryDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   useEffect(() => {
     setDetail(null);
-    deliveries.detail(name).then(setDetail, (e: Error) => setError(e.message));
-  }, [name]);
+    api.detail(name).then(setDetail, (e: Error) => setError(e.message));
+  }, [name, api]);
   if (error) return <Notice kind="error">{error}</Notice>;
   if (!detail) return <div class="loading small">正在读取交付……</div>;
   const report = detail.report ?? detail.error;
   const req = detail.requires?.requires ?? {};
-  const file = (path: string) => deliveries.fileUrl(name, path);
+  const file = (path: string) => api.fileUrl(name, path);
   const main = detail.files.filter((f) => !f.path.startsWith("delivery/validation/") && !f.path.startsWith("delivery/patches/"));
   return (
     <div class="delivery-detail">
