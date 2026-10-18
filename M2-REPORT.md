@@ -86,3 +86,65 @@ JUnit包含子测试的累计计数为 tests=6602、skipped=357、failures=0、e
 按主题提交：注册表/provides `ee12dbd`，觉醒信号 `4838338`，APK输入错误处理 `20a2bb4`，矩阵 `a27f6c6` 与合击/确定性修复 `359789a`，文案规范 `48851ee` 与人工边界说明 `6a54ff6`，注册证据严格校验 `c1ab25d`，内容依赖推导 `7e67f78`，兼容检查及CLI集成 `39807af`。本报告与最终验收摘要另作文档提交。
 
 所有结论属于本地代码、文件和静态证据验证；未操作设备、服务器、安装、发布或push。
+
+## M2.1
+
+日期：2026-10-18。执行上级目录的《M2.1-任务书.md》与《M2-审查意见.md》，任务基线 `1b01ffd`，最终源码与测试冻结于 `ec92fe4`。本节记录修订后的行为与验收；上方保留 M2 的历史记录。所有代码、临时文件、日志和验收产物仅写当前 worktree，其他目录只读；未 push、部署、安装或操作设备，不依赖 1.4.234。
+
+### 审查项逐项落实
+
+| 项目 | 当前行为 | 反证与适用检查 |
+|---|---|---|
+| H1 武器表 | 按布局有无列读取 `awake_kind`，ability_soul 和 equipment_enhancement_ability 均可推导 | 两张表正常/缺引用测试；真实诅咒武器 150→151 公开 deliver 验收 |
+| H2 非法表 | 有 kind 的声明必须具备 `allowed_tables`、`allowed_blocks`；422/423/424/724 放入队长、武器魂、装备强化表直接报问题 | 四种 kind × 三张非法表，schema 缺约束，CLI 非零退出和出包前阻断 |
+| H3(a) declared | 与 resolved/partial 一样核对扫描成员；兼容命令从 requires 所在目录打开声明 ZIP 核对成员摘要，API 必须提供归档目录 | 无扫描、空扫描、摘要变化、重复、错层、越界路径、缺 ZIP、合法归档正例 |
+| H3(b) 方法证据 | 注册表已有 SHA 而输入缺失或不符时判问题；只有注册表明确 null/待补的方法可待验证 | 全部缺失、部分缺失、手写空 methods、能力/补丁记录不一致、已有待补条目正例 |
+| M1 角色专用 | #1/#5/#6/#7/#15/#32/#55/#65 及晒伤语义能力归 C 层（需要 APK）；用 character_ids、角色内容和引用闭包推导 | 直接角色改动、能力/覆盖文案引用、无归属输入 partial、未变行及文案数字不误命中；#32 与矩阵一致 |
+| M2 非法块 | kind 在不支持的解析块出现时直接报问题 | 422/423/424/419/724/722 错块反例，合法布局正例 |
+| M3 覆盖边界 | 原 13 条 automatic 改 partial，boundary 明言“仅列举写法”；倍率仅检查明确伤害上下文 | Fever/共鸣/开战等列举边界，持续时间、层数、速度倍数不误报，真实伤害倍率仍报 |
+| M4 生效文本 | 按服务端源码语义，p5b 以角色键整行覆盖 base，与客户端 c5/c7/c9 对照；单角色及全表使用同一实现 | p5b 优先、base 被遮蔽、短行不回填、缺镜像待验证、显式 null/非法行拒绝、139985 历史反例 |
+| M5 技能文本 | c0 单独执行名称规则；各实际档位 c1 比较非数值写法，保留引号内效果名称数字 | 合法 +/++ 名称、c0 违规、数值递进、效果名称变化、孤立技能与镜像跨档差异 |
+| 低项 | 424 selector 与信号统一，移除硬编码；423 只要求 #31，矩阵标签同步；缺基线写 inferenceNotes；多余未登记方法给 warnings | selector 通路、#30 不再推导、缺基线说明、额外方法告警且不用于证明能力 |
+
+文案共 58 条规则：47 条 partial，11 条人工或原数据语义核对。零命中不能作为全面通过；完整镜像缺失也不会被当作空镜像或一致。`resolved` 仅说明当前已登记信号与引用推导完成，方法匹配也仍是静态证据。
+
+实现按职责拆为 `character_requirements.py`、`scan_binding.py`、`prepush_rewards.py`、`effective.py` 和 `skill_checks.py`，未把新增逻辑堆入单一大文件。新反证主要在 `tests/test_m2_1_capability_surfaces.py`、`tests/test_m2_1_character_requirements.py` 与 `tests/test_m21_*.py`，并修正旧测试将队长表422、缺方法SHA当可接受的断言。
+
+### 掉落奖励与 1.4.233 真实回放
+
+规则 `delivery.reward-keys` 已登记。`prepush_companion.check_server_rewards` 对本次服务端四类奖励文件（score/rare 及各自 `_cnmod`）做有效覆盖，读取候选客户端基础表和 `_cnmod` 表，核对组键、子位置，以及 score 对 rare 组和可返回子索引的引用。`_cnmod` 删除覆盖后露出的基础行同样检查。
+
+按 `(table, group, position)` 判行身份：新增子行缺键 ERROR；已存在的子行，包括本次修改的存量行，缺键 WARN。结果写入标准 findings 与 `companion_reward_keys`（执行标志、服务端目标、行数、基线完整性），ERROR 影响交付退出码；`check_delivery` 回读同一条规则，并区分未执行、待验证和问题。
+
+只读核对 `kpr233/assets/asset-patch/manifest.json`、ghmain 提交 `1aa5ec7d98bf7e1af70f55a285b04d25fff48934` 和 `rel233/shipped` 后，确认修复行是 **score_reward/12100088/4** 与 **rare_score_reward/12199320/1**。233 包 SHA-256：`7c648747f7f1747a05968296d843036afa0da5362ae7b7d31e657f3092fc2f34`。
+
+manifest 证明这两张客户端表在233前最后修改来自220，之后到232未再改写。回放核对220原包9/11及233包的manifest摘要；服务端前置为 `226ae91a^`（完整提交 `df99b73c1712f0059cad884daa1b0e0ab983419a`），后置为 `1aa5ec7d` 的完整两个 `_cnmod` 文件，共220行。
+
+| 候选客户端视图 | ERROR | WARN |
+|---|---:|---:|
+| 233修复前的奖励表 | 4 | 0 |
+| 叠加233 shipped修复包 | 0 | 0 |
+
+四项 ERROR 分别是 score 子行、rare 组引用、rare 子行引用及 rare 自身子行缺失。记录为 `work/m2_1/reward_233_acceptance.json`，同目录保存可重跑脚本；没有把组键存在当作全部子行存在，也没有用234替代233修复。
+
+### 真实武器、文案和历史字节验收
+
+- **真实诅咒武器150→151**：从历史源 ZIP 提取 equipment_enhancement_ability，使用截取至150的manifest、19个基线ZIP及store131，公开 `python -B -m wf deliver` 退出0，未使用基线豁免；requires 为 resolved、0 unresolved，识别强化行5910107的官方629；1/1成员逐字节一致，历史源复验未变。证据 `work/m2_1/cursed151/acceptance.json`、`source.json` 及 `delivery/`。源ZIP SHA为 `40619e12f923be88fce2d2528cd92cfd342bf1f8d4741cdf028a52416c2ea8e6`。prepush无ERROR，但既有kulo #35因快照缺少 `out/routes/cn/asset.js` 未执行，状态如实保留待验证。
+- **139985迟缓文案**：明确指定manifest重建1.4.227客户端，对照准备的rank增量：客户端“对迟缓效果中的敌人追加雷属性伤害”，增量“对迟缓效果中的敌人伤害提升”。c5/c7准确报告2项问题，修齐后0项。证据 `work/m2_1/text-139985-probe.json`；原rank增量SHA为 `7f98778b3c54382683492646ab279d2b2629270fd8ef224dbee90da3c3e65664`。这是历史客户端与准备增量的比较，不是完整历史服务端镜像或部署证明。
+- **223**：3/3成员逐字节一致，证据 `work/m2_1/acceptance/223.json`。
+- **221**：11个ZIP的310/310成员逐字节一致，差异0；旧manifest语义一致，上游固定schema通过。证据 `work/m2_1/acceptance/221.json`。ZIP容器摘要可不同，此项验证成员字节；也不表示旧221风险PF3通过公开deliver门禁。
+- **赛瑞斯209**：完整v34静态匹配，去除#87–89明确阻断；正负结果位于 `work/m2_1/acceptance/`。
+
+### 最终验证与本地提交
+
+全量命令：`python -B -m pytest --basetemp=work/m2_1/full-tmp --junitxml=work/m2_1/pytest-full.xml`。最终退出码、终端计数、含子测试的JUnit计数、耗时和产物SHA见 [M2.1结构化验收摘要](docs/m2/validation-m2.1.json)。
+
+最终全量为 **4080 passed、354 skipped、26 warnings，exit 0**；pytest计时367.11秒，外层耗时369.13秒。354项跳过主要为未配置的外部客户端补丁源码与live store，不作为通过项；26条警告为既有路径环境变量别名弃用提示。冻结后只补本报告、摘要和最终文档扫描，没有修改已验证的生产源码。
+
+JUnit含子测试累计6700项、skipped357、failures0、errors0，与终端主测试口径分别记录。最终能力声明检查退出0，路径扫描2097个文本文件、**0命中**，提交卫生检查及 `git diff --check` 均退出0。
+
+独立复核覆盖全部审查项，并补掉了显式null镜像回退与423矩阵标签两处边界。能力全量检查、路径扫描及提交卫生均执行；日志留在 `work/m2_1/`。临时运行脚本和原始数据证据不入库，只提交代码、测试、长期接口文档与本验收摘要。
+
+本地主题提交：M3 `313fda8`；H1/H2/M2与低项 `1f6b9f3`、`70c9f05`；H3 `468001a`；结果回读 `3fd56c5`；奖励对照 `692ee2c`；M1 `06bb12e`；M4/M5 `31e8821`、`ff8bf89`；文档 `b7d160b`、`d96f568`；423矩阵口径 `969d652`。本报告及结构化摘要另作本地文档提交。
+
+首轮全量在 `969d652` 为4079 passed、354 skipped、1 failed：旧管线配置测试仍断言无方法SHA可提供#110能力，与H3修订不符。`ec92fe4` 保留归档号去重和不继承base的断言，新增缺方法SHA必须进入unresolved的问题断言；相关42项检查通过后重新执行全量。首轮失败日志、JUnit和退出记录完整保留为 `work/m2_1/pytest-full-first*`，未用定向通过代替最终全量结果。
