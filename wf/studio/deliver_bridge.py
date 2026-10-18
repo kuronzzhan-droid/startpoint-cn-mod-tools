@@ -46,6 +46,14 @@ def _draft(store, cid, source):
         raise DraftError("草稿复核失败：" + "；".join(errors[:8]))
     if changeset["characterId"] != cid or changeset["baseView"] != source.version:
         raise DraftError("草稿角色或基线版本与 --from 不一致，请在目标视图重建草稿")
+    if changeset.get("subjectKind") == "boss":
+        from .boss import _identity, BossDraftStore
+        if not isinstance(store, BossDraftStore):
+            raise DraftError("副本交付必须使用独立 BossDraftStore 命名空间")
+        _identity(changeset, cid, source.version)
+        return changeset
+    if any(change["kind"] == "boss" for change in changeset["changes"]):
+        raise DraftError("副本草稿必须使用独立 boss 命名空间")
     rows = source.table("character").get(cid)
     if not rows or not rows[0] or rows[0][0] != changeset["code"]:
         raise DraftError("草稿代码名与来源视图角色不一致")
@@ -54,6 +62,11 @@ def _draft(store, cid, source):
 
 def compile_draft(source, store, changeset, *, server_dir=None):
     """Pure compilation: return stored client bytes and asserted server mirrors."""
+    if changeset.get("subjectKind") == "boss":
+        from .boss import compile_boss
+        boss = compile_boss(source, store, changeset, server_dir=server_dir)
+        return ({("common", logical): raw for logical, raw in boss["client"].items()},
+                boss["servers"], boss["server_before"], boss["changes"], boss["checks"])
     from .deliver_media import compile_media
     media = compile_media(source, store, changeset)
     members = dict(media.members)

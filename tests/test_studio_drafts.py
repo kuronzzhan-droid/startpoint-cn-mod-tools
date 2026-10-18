@@ -231,7 +231,8 @@ def test_route_verbs():
     app = StudioApp(_FakeSource())
     verbs = {verb for verb, _, _ in app.routes}
     assert verbs == {"GET", "POST"}
-    assert all(pattern.pattern.startswith("^/api/drafts/") for verb, pattern, _ in app.routes if verb == "POST")
+    assert all(pattern.pattern.startswith(("^/api/drafts/", "^/api/boss/drafts"))
+               for verb, pattern, _ in app.routes if verb == "POST")
 
 
 # -- conversions -----------------------------------------------------------

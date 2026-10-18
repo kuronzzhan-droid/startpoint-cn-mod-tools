@@ -145,6 +145,15 @@ def run(args) -> dict:
         return run_build(args, store)
 
     ops = _ops(args)
+    if args.command == "boss":
+        from .boss import BossEditor, BossDraftStore
+        editor = BossEditor(ops.source, store=BossDraftStore(store.root / "boss"), server_dir=args.server_dir)
+        if args.request:
+            request = _load_json(args.request)
+            return editor.preview(args.cid, request) if args.preview else editor.apply(args.cid, request)
+        if args.preview or args.cid == "new":
+            raise DraftError("boss new / --preview 需要 --request")
+        return editor.read(args.cid)
     if args.command.startswith("ability"):
         from .draft_commands import run_ability
         return run_ability(args, ops.source, store)

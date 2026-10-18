@@ -92,6 +92,9 @@ class StudioApp:
         from .deliver_routes import DeliverRoutes
         self.deliveries = DeliverRoutes(self, server_dir, default_provides=default_provides)
         self.routes.extend(self.deliveries.routes())
+        from .boss_routes import BossRoutes
+        self.boss = BossRoutes(self, server_dir, default_provides)
+        self.routes.extend(self.boss.routes())
 
     # -- dispatch -------------------------------------------------------
     def dispatch(self, method: str, path: str, query: dict[str, list[str]], body=None) -> Response | None:
