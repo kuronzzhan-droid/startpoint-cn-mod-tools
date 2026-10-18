@@ -1,4 +1,4 @@
-"""Read gameplay evidence for each new or modified character, using immutable inputs."""
+"""Read gameplay evidence for the selected modified or complete character roster."""
 from __future__ import annotations
 import json
 from wf.paths import REPOSITORY
@@ -26,7 +26,8 @@ def scan_characters(src, server_assets):
 
     chars = src.characters()
     for c in chars:
-        mod_codes.add(T["character"][c["id"]][0][0])
+        if c["origin"] != "official":
+            mod_codes.add(T["character"][c["id"]][0][0])
 
     tree_cache: dict[str, dict | None] = {}
 
@@ -194,7 +195,7 @@ def scan_characters(src, server_assets):
             if s.startswith("hidden_"):
                 apk.add("hidden_固有隐藏(APK#58)")
             if s.startswith("wfx:"):
-                apk.add("WFX框架(未上)")
+                apk.add("WFX客户端扩展（需注册能力核对）")
         if CHARGE_CAP_UNIQUE in rec["uniques"]:
             apk.add("充能上限固有13999010(APK#53)")
         if rec["uniques"] & KYLE_UNIQUES:

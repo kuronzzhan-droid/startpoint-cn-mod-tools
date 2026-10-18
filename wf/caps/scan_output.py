@@ -65,7 +65,7 @@ def write_matrix(out, names, target: Path):
                 b.append("722/419 PF覆盖")
             if r["markers"]:
                 b.append("DSL:" + "/".join(sorted(r["markers"])))
-            w.writerow([r["id"], r["name"], r["title"], {"new": "new", "modified": "modified"}[r["origin"]],
+            w.writerow([r["id"], r["name"], r["title"], r["origin"],
                         pf_cell(r), "是" if any(o["lv4"] for o in r["pf_overrides"]) else "否",
                         ";".join(fever) or "无", "是(Lv120)" if r["overlimit"] else "否", awake_cell(r),
                         ";".join(r["apk"]) or "无", ";".join(b) or "无",

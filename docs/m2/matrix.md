@@ -2,6 +2,10 @@
 
 `python -B -m wf caps scan --tip 1.4.N --output work/m2/matrix/N` 使用 M1 的 manifest 依赖链和当前 PathConfig，扫描每个新增或改过的角色，导出稳定能力 ID 矩阵。无需 `wf.studio`，也不会导入外部脚本。人工维护的 C 层名称在 `data/layer_c_names.json`。
 
+M2.2 增加 `--all-characters`：保留未改动官方角色，并对每个角色调用与交付共用的 `requires` 推导，沿能力、队长技、技能、切换技能、PF、固有状态和 DSL 引用闭包逐项取证。默认扫描范围不变；原先 108 行属于新增或修改子集，不能代表全角色。省略 `--tip` 时按所选 manifest 自动取得最高启用链尾，断链仍会报错。
+
+`--apk-bundle <APK>` 可显式补充 CDN/store 中不存在的 APK 内置资源；它只在主视图缺失成员时读取 `assets/bundle.zip`，不会覆盖补丁数据。输出 `evidence.apk_bundle` 保存 APK、bundle 和实际读取成员的 SHA-256；扫描结束复核 APK 未变化。未提供 APK 或 bundle 中仍无引用资源时继续记为未解析，不推定官方资源存在。完整兼容报告见 [v34 与 v35e 对照](compat-v34-v35.md)。
+
 ## 输入和输出
 
 路径优先使用显式参数，其次使用现有配置：

@@ -25,7 +25,11 @@ def run_scan(args):
 
     output = local_output(args.output)
     source = ScanSource(ManifestView(args.tip, store=args.store, manifest=args.manifest,
-                                    search_dirs=args.zip_dir, lock=args.lock), args.official_cdn)
+                                    search_dirs=args.zip_dir, lock=args.lock), args.official_cdn,
+                        all_characters=args.all_characters)
+    if args.apk_bundle:
+        from .scan_bundle import BundleFallbackView
+        source.view = BundleFallbackView(source.view, args.apk_bundle)
     server_assets = args.server_assets or path("kulo", "assets")
     names_raw = args.names.read_bytes()
     names = json.loads(names_raw)
@@ -45,8 +49,14 @@ def run_scan(args):
     registry = load_registry()
     rows = [project_character(r, names, registry, unison_abilities=source.unison_abilities(r["id"]))
             for r in raw]
+    if args.all_characters:
+        from .roster_requirements import CharacterRequirements, merge_requirements
+        inference = CharacterRequirements(source, registry)
+        rows = [merge_requirements(row, inference.infer(row["id"]), registry) for row in rows]
     capability_ids = sorted({c for r in rows for c in r["capabilities"]})
     evidence = source.evidence()
+    if args.apk_bundle:
+        evidence["apk_bundle"] = source.view.bundle_evidence()
     comparison = None
     if args.reference:
         ref_raw = args.reference.read_bytes()
@@ -55,11 +65,13 @@ def run_scan(args):
     lock = source.verify()
     if args.names.read_bytes() != names_raw:
         raise ValueError("C-layer names changed while scanning")
-    document = {"schema": "wf-capability-matrix/1", "tip": args.tip, "character_count": len(rows),
+    document = {"schema": "wf-capability-matrix/1", "tip": source.view.tip, "character_count": len(rows),
                 "capability_ids": capability_ids, "characters": rows,
                 "evidence": evidence, "names_sha256": hashlib.sha256(names_raw).hexdigest(),
-                "scan_complete": not evidence["missing_dsl"] and not any(r["unregistered_mechanisms"] for r in rows),
-                "scope": "非官方角色；官方身份与四张战斗表比较；服务端输入为显式当前快照，非历史回放"}
+                "scan_complete": not evidence["missing_dsl"] and not any(r["unregistered_mechanisms"] or
+                    r.get("requires", {}).get("unresolved") for r in rows),
+                "scope": ("全角色（包含未改动官方角色）" if args.all_characters else "新增或改动角色") +
+                         "；官方身份与四张战斗表比较；服务端输入为显式当前快照，非历史回放"}
     output.mkdir(parents=True, exist_ok=True)
     for name, value in (("matrix.json", document), ("scan_raw.json", raw), ("view.lock.json", lock),
                         ("comparison.json", comparison)):
@@ -67,7 +79,7 @@ def run_scan(args):
             local_output(output / name).write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", "utf-8")
     write_capability_matrix(rows, capability_ids, local_output(output / "matrix.csv"))
     write_matrix(raw, names, local_output(output / "角色机制矩阵.csv"))
-    print(json.dumps({"tip": args.tip, "characters": len(rows), "capabilities": len(capability_ids),
+    print(json.dumps({"tip": source.view.tip, "characters": len(rows), "capabilities": len(capability_ids),
                       "zip_count": len(source.view.zips), "output": str(output),
                       "scan_complete": document["scan_complete"],
                       "reference_differences": comparison["difference_count"] if comparison else None}, ensure_ascii=False))
@@ -78,7 +90,9 @@ def main(argv=None):
     parser = argparse.ArgumentParser(prog="wf caps")
     commands = parser.add_subparsers(dest="command", required=True)
     scan = commands.add_parser("scan", help="导出角色 × 已注册能力 CSV/JSON")
-    scan.add_argument("--tip", required=True)
+    scan.add_argument("--tip", help="目标链尾；省略时从已配置 manifest 自动选择最高启用链尾")
+    scan.add_argument("--all-characters", action="store_true", help="包含未改动的官方角色；默认仍为新增或改动角色")
+    scan.add_argument("--apk-bundle", type=Path, help="CDN/store缺资源时显式读取此APK的assets/bundle.zip")
     scan.add_argument("--output", "--out", type=Path, required=True)
     scan.add_argument("--store", type=Path)
     scan.add_argument("--manifest", type=Path)

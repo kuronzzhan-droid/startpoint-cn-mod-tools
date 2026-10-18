@@ -31,8 +31,9 @@ def edge_versions(name):
 
 
 class ScanSource:
-    def __init__(self, view, official_root=None):
+    def __init__(self, view, official_root=None, *, all_characters=False):
         self.view = view
+        self.all_characters = all_characters
         root = official_root or configured_path("official_cdn") or path("kulo", ".cdn/cn")
         self.baseline = OfficialBaseline(Path(root), write_cache=False)
         self._tables, self._trees, self._server = {}, {}, {}
@@ -91,7 +92,7 @@ class ScanSource:
                 live, base = self.table(name), self.table(name, True)
                 if origin == "official" and any(live.get(k) != base.get(k) for k in keys if k not in ("", "(None)")):
                     origin = "modified"
-            if origin == "official":
+            if origin == "official" and not getattr(self, "all_characters", False):
                 continue
             text = self.table("text").get(cid, [[]])[0]
             result.append({"id": cid, "name": text[0] if text else row[0],
