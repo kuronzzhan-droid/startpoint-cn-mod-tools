@@ -297,3 +297,34 @@ python -m wf.studio.draft pixel-generate 139985 --action walk_front [--front pix
 ```
 
 近似与未做：调色板分组是启发式；程序化动作的旋转（胜利 12°/−16°/6°）用最近邻、火花位置由 md5 确定，入棺/幽灵/复活的半透明淡入淡出是近似，官方入棺实为升空消散；躺倒缺省用正面顺时针转 90° 代替；画板没有选区/镜像/多层；预览里半透明像素的改色走浏览器 canvas（可能有 1 级舍入），以后端结果为准。未上真机。测试：`tests/test_studio_pixel_workshop.py`。截图在仓库外 `m6a-shots/`。
+
+### 草稿角色（还没有游戏 ID）
+
+「角色工坊」旁新增「草稿角色」：新建时填名字、属性、母本（代码名或 ID，必须有像素族）。草稿放在 `work/studio-drafts/scratch-<slug>/`（gitignore），changeset 多一段 `scratch`（名字、属性、母本、绑定状态），占位代码 `scratch_<slug>`，不写任何表行。草稿角色只承载像素改动。
+
+- 「当前视图」= 母本整族四件改名到占位代码（区间、锚点、frame.scale 来自母本）；像素工坊四页照常可用（母本映射可以用别的角色当母本、程序化动作、画板都写进这份草稿）。
+- **导入像素集**：文件夹或 zip，按文件名识别 `sprite_sheet.png / .atlas / pixelart.frame / .timeline`（special 同构）；可带映射表 JSON（`{"base": 母本代码或 ID, "mapping": {"#src": "#dst"}}` 或 `[{from,to}]`，包里名字含 remap/mapping/palette 的 JSON 自动识别）。atlas/frame 前缀改成本草稿代码，存为 `pixel_family`（mode=import，草稿文件即内容）。有映射表时逐端点对照「母本 + 映射表」：一致的是映射，不一致的按动作列为手绘。区间与母本不同、缺必需动作、frame.scale ≠ 6 会提示；端点越界、四件不全、frame.name 不是 `character/<代码>/pixelart/<族>` 直接拒绝。导入对真实角色同样可用。
+- **绑定到角色 ID**：目标 ID 必须在当前视图角色表里。全部像素改动改名到该角色代码后写进 `work/studio-drafts/<ID>/`（同族同动作的旧改动被替换）；母本映射类改动按母本 + 映射表用新代码重算并逐字节核对。草稿角色记下 `boundTo`，不能重复绑定。
+- **生成**：草稿角色永远不生成交付。`draft build scratch-…` 与界面「生成」都拒绝并说明：未绑定时提示先绑定，已绑定时提示对绑定的角色 build。
+
+| 方法 | 路径 | 作用 |
+|---|---|---|
+| GET | `/api/scratch` | 草稿角色列表 |
+| POST | `/api/drafts/scratch` | 新建（`scratchCreateRequest`；写接口一律在 `/api/drafts/` 下） |
+| GET | `/api/scratch/<sid>` | 草稿角色信息 |
+| GET | `/api/characters/<sid>/pixels`、`…/pixels/<族>.png` | 母本改名后的「当前视图」 |
+| POST | `/api/drafts/<cid 或 sid>/pixel-import` | `pixelImportRequest`（`dryRun` 只检查） |
+| POST | `/api/drafts/<sid>/bind` | `scratchBindRequest`（`dryRun` 只预览） |
+| POST | `/api/drafts/<sid>/build` | 一律拒绝（说明原因） |
+
+像素工坊各接口、草稿读写（读取 / 保存 / 撤销 / 帧保存）都接受 `scratch-<slug>`。命令行：
+
+```powershell
+python -m wf.studio.draft scratch-new --name 水杰拉德 --element 水 --base black_wolf_knight_wt23 --slug gerald-water
+python -m wf.studio.draft pixel-import scratch-gerald-water --dir <离线像素文件夹> [--remap remap.json] [--dry-run]
+python -m wf.studio.draft pixel-analyze scratch-gerald-water --brief --draft
+python -m wf.studio.draft scratch-bind scratch-gerald-water --cid <角色ID> [--dry-run]
+python -m wf.studio.draft scratch-list | scratch-show <sid>
+```
+
+测试：`tests/test_studio_scratch.py`。

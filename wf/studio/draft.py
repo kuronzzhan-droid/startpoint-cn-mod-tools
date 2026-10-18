@@ -129,6 +129,29 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--save", action="store_true", help="写进草稿（pixel_action）；不加只预览")
     p.add_argument("--out-dir", type=Path, help="预览时把逐帧 PNG 写到这个目录")
 
+    p = sub.add_parser("pixel-import", help="导入现成 pixelart/special 四件（文件夹或 zip）+ 可选映射表，作为整族替换进草稿")
+    p.add_argument("cid", help="角色 ID 或草稿角色 scratch-<slug>")
+    src = p.add_mutually_exclusive_group(required=True)
+    src.add_argument("--dir", type=Path, help="含四件文件的文件夹（递归按文件名识别）")
+    src.add_argument("--zip", type=Path, help="含四件文件的 zip")
+    p.add_argument("--remap", type=Path, help="映射表 JSON：{base, mapping} 或纯 mapping（省略时识别包里的 *remap*.json）")
+    p.add_argument("--family", action="append", choices=("pixelart", "special"))
+    p.add_argument("--name", help="导入来源名称（记进改动标题）")
+    p.add_argument("--dry-run", action="store_true")
+    p = sub.add_parser("scratch-new", help="新建草稿角色（没有游戏 ID；只承载像素）")
+    p.add_argument("--name", required=True)
+    p.add_argument("--element", required=True, choices=("火", "水", "雷", "风", "光", "暗"))
+    p.add_argument("--base", required=True, help="母本角色 ID 或代码名（提供帧区间/锚点/frame.scale）")
+    p.add_argument("--slug", help="目录名 scratch-<slug>；缺省由名字或母本生成")
+    p.add_argument("--note", default="")
+    sub.add_parser("scratch-list", help="列出草稿角色")
+    p = sub.add_parser("scratch-show", help="草稿角色信息与改动")
+    p.add_argument("cid")
+    p = sub.add_parser("scratch-bind", help="把草稿角色绑定到真实角色 ID（改名前缀后写进该角色草稿）")
+    p.add_argument("cid", help="scratch-<slug>")
+    p.add_argument("--cid", dest="target", required=True, help="真实角色 ID（必须在当前视图角色表里）")
+    p.add_argument("--dry-run", action="store_true")
+
     p = sub.add_parser("voice-lines", help="列出可替换的语音台词")
     p.add_argument("cid")
     p = sub.add_parser("voice", help="上传音频替换一条语音")
@@ -223,9 +246,10 @@ def run(args) -> dict:
                        "frames": [{"png": _png_b64(f), "duration": d, "anchor": anchor}
                                   for f, d in zip(frames, durations)],
                        "origin": {"mode": "sheet" if args.sheet else "frames", "grid": args.grid or ""}}
-        result = ops.pixel_save(args.cid, request)
+        from .scratch import ops_for
+        result = ops_for(ops, args.cid).pixel_save(args.cid, request)
         return result if result.get("dryRun") else _brief(result)
-    if args.command.startswith("pixel-"):
+    if args.command.startswith("pixel-") or args.command.startswith("scratch-"):
         return _pixel_workshop(args, ops)
     if args.command == "voice-lines":
         return ops.voice_lines(args.cid)
@@ -238,8 +262,31 @@ def run(args) -> dict:
 
 
 def _pixel_workshop(args, ops) -> dict:
+    from . import scratch
     from .pixel_workshop_ops import PixelWorkshop
-    workshop = PixelWorkshop(ops)
+    if args.command == "scratch-new":
+        return scratch.create(ops, {"name": args.name, "element": args.element, "base": args.base,
+                                    **({"slug": args.slug} if args.slug else {}), "note": args.note})
+    if args.command == "scratch-list":
+        return {"scratch": scratch.listing(ops)}
+    if args.command == "scratch-show":
+        return scratch.describe(ops, args.cid)
+    if args.command == "scratch-bind":
+        return scratch.bind(ops, args.cid, {"characterId": args.target, "dryRun": args.dry_run})
+    if args.command == "pixel-import":
+        found = scratch.read_bundle(directory=args.dir if args.dir else None,
+                                    zip_bytes=args.zip.read_bytes() if args.zip else None)
+        request = {"files": {}, "dryRun": args.dry_run, "name": args.name or (args.dir or args.zip).name}
+        if args.remap:
+            request["remap"] = _load_json(args.remap)
+        if args.family:
+            request["families"] = args.family
+        result = scratch.import_set(ops, args.cid, request, found=found)
+        if result.get("dryRun"):
+            return result
+        return {"status": result["status"], "families": result["families"],
+                "changes": [{"id": c["id"], "title": c["title"]} for c in result["changes"]]}
+    workshop = PixelWorkshop(scratch.ops_for(ops, args.cid))
     if args.command == "pixel-analyze":
         result = workshop.analyze(args.cid, draft=args.draft)
         if args.brief:

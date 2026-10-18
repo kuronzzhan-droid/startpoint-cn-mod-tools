@@ -894,3 +894,68 @@ export const workshop = {
     body.save ? notify(cid, post<GenerateResult>(`/api/drafts/${cid}/pixel-generate`, body))
       : post<GenerateResult>(`/api/drafts/${cid}/pixel-generate`, body),
 };
+
+// ---------------------------------------------------------------------------
+// 草稿角色（scratch：还没有游戏 ID，只承载像素）
+
+export interface ScratchMeta {
+  name: string;
+  element: string;
+  slug: string;
+  base: { characterId: string | null; code: string; name?: string };
+  note?: string;
+  boundTo: { characterId: string; code: string; at: string; changes: string[] } | null;
+}
+
+export interface ScratchInfo {
+  characterId: string;
+  code: string;
+  baseView: string;
+  scratch: ScratchMeta;
+  status: DraftStatus;
+  changes: { id: string; kind: string; title: string }[];
+  buildable: false;
+  note: string;
+}
+
+export interface ImportFamilyResult {
+  family: string;
+  sourceCode: string;
+  endpoints: number;
+  sheet: [number, number];
+  actions: string[];
+  checks: DraftCheck[];
+  provenance: { base: string; comparable: boolean; endpoints?: number; matchingEndpoints?: number; differingByAction?: Record<string, number> } | null;
+}
+
+export interface ImportResult {
+  dryRun?: boolean;
+  characterId: string;
+  families: ImportFamilyResult[];
+  remap?: { base: string | null; colors: number } | null;
+  changes?: DraftChange[];
+  status?: DraftStatus;
+}
+
+export interface BindResult {
+  dryRun?: boolean;
+  from: string;
+  characterId: string;
+  code: string;
+  name: string;
+  renamed: string;
+  changes: { kind: string; title: string }[];
+  created?: string[];
+}
+
+export const scratchApi = {
+  list: () => get<{ scratch: ScratchInfo[]; elements: string[] }>("/api/scratch"),
+  get: (sid: string) => get<ScratchInfo>(`/api/scratch/${sid}`),
+  create: (body: { name: string; element: string; base: string; slug?: string; note?: string }) =>
+    post<ScratchInfo>("/api/drafts/scratch", body),
+  importSet: (cid: string, body: { files?: Record<string, string>; zip?: string; remap?: unknown; name?: string; dryRun?: boolean }) =>
+    body.dryRun ? post<ImportResult>(`/api/drafts/${cid}/pixel-import`, body)
+      : notify(cid, post<ImportResult>(`/api/drafts/${cid}/pixel-import`, body)),
+  bind: (sid: string, body: { characterId: string; dryRun?: boolean }) =>
+    body.dryRun ? post<BindResult>(`/api/drafts/${sid}/bind`, body) : notify(sid, post<BindResult>(`/api/drafts/${sid}/bind`, body)),
+};

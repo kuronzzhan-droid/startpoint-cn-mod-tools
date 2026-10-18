@@ -72,8 +72,9 @@ class PixelWorkshop:
     # -- remap ------------------------------------------------------------
     def remap(self, cid: str, request: dict) -> dict:
         validate(request, "pixelRemapRequest")
+        from .scratch import resolve_character
         target = self.ops.character(cid)
-        base = self.ops.character(str(request["base"]))
+        base = resolve_character(self.ops, str(request["base"]))
         mapping = normalize_mapping(request.get("mapping") or [])
         families = request.get("families") or [f for f in FAMILY_FILES
                                                if read_family_raw(self.source, base["code"], f) is not None]
@@ -159,7 +160,7 @@ class PixelWorkshop:
                           for k, v in normalize_mapping(request.get("mapping") or []).items()),
                          key=lambda m: m["from"])
         built = {
-            "title": f"像素整族 {family}：母本 {base['name'] or base['id']}（{base['id']}）逐色映射 {len(mapping)} 色",
+            "title": f"像素整族 {family}：母本 {base['name'] or base['code']}（{base['id'] or base['code']}）逐色映射 {len(mapping)} 色",
             "target": {"family": family},
             "params": {"mode": "remap",
                        "base": {"characterId": base["id"], "code": base["code"],
@@ -172,8 +173,10 @@ class PixelWorkshop:
         return self.ops._commit(cid, target["code"], "pixel_family", built)
 
     def suggest(self, cid: str, base_cid: str) -> dict:
+        from .scratch import resolve_character
         mine = self.analyze(cid)  # the character's own (view) palette is the colour target
-        base = self.analyze(base_cid)
+        ref = resolve_character(self.ops, base_cid)
+        base = {"palette": analyze(self.source, ref["code"])["palette"]}
         return {"suggestions": suggest_mapping(base["palette"], mine["palette"])}
 
     # -- generate ---------------------------------------------------------

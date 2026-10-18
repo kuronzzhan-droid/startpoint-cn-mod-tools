@@ -169,6 +169,8 @@ def compile_family_replacement(source, store, changeset, change) -> MediaResult:
     result = MediaResult()
     cid, code = changeset["characterId"], changeset["code"]
     family, params = change["target"]["family"], change["params"]
+    if params.get("mode") == "import":
+        return _compile_import(source, store, changeset, change)
     if params.get("mode") != "remap":
         raise DraftError(f"问题：不支持的整族替换方式 {params.get('mode')}")
     base = params["base"]
@@ -193,6 +195,32 @@ def compile_family_replacement(source, store, changeset, change) -> MediaResult:
         result.members["common", logical] = stored
     result.assertions.append({"kind": "pixel_family", "family": family, "base": base["characterId"],
                               "mapping": len(params["mapping"])})
+    return result
+
+
+def _compile_import(source, store, changeset, change) -> MediaResult:
+    """Imported family: the draft files are the content; names must carry this character's code."""
+    from .pixel_workshop import decode_family, family_paths
+    result = MediaResult()
+    cid, code, family = changeset["characterId"], changeset["code"], change["target"]["family"]
+    paths = family_paths(code, family)
+    by_logical = {entry["logical"]: entry for entry in change["files"]}
+    if set(by_logical) != set(paths):
+        raise DraftError("问题：导入的整族替换必须正好包含本角色的四件文件（草稿角色未绑定？）")
+    stored = [draft_file(source, store, cid, by_logical[logical]) for logical in paths]
+    data = decode_family(stored)
+    prefix = f"character/{code}/"
+    if not data["frame"].get("name", "").startswith(prefix) or any(
+            isinstance(e, dict) and not str(e.get("n", "")).startswith(prefix) for e in data["atlas"]):
+        raise DraftError(f"问题：导入集的 atlas/frame 名前缀不是 {prefix}")
+    for key, entry in data["entries"].items():
+        try:
+            restore_frame(data["sheet"], entry)
+        except ValueError as exc:
+            raise DraftError(f"问题：导入集端点 {key} 越界：{exc}") from None
+    result.members.update({("common", logical): raw for logical, raw in zip(paths, stored)})
+    result.assertions.append({"kind": "pixel_family", "family": family, "mode": "import",
+                              "source": change["params"]["source"].get("name")})
     return result
 
 

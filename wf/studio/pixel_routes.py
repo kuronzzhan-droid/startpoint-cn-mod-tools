@@ -1,13 +1,18 @@
-"""HTTP routes for 像素工坊 (analysis, remap, procedural actions, draft-state preview)."""
+"""HTTP routes for 像素工坊 (analysis, remap, procedural actions, import, draft-state preview)
+and 草稿角色 (scratch characters: create, list, pixel save, bind, build refusal)."""
 from __future__ import annotations
 
 import io
 import re
 import threading
 
+from . import scratch
 from .drafts import DraftError
 from .pixel_workshop_ops import PixelWorkshop
 from .pixels import FAMILIES, SLOTS, build_family
+
+CID = r"(?P<cid>\d+|scratch-[a-z0-9][a-z0-9-]{0,47})"
+SID = r"(?P<cid>scratch-[a-z0-9][a-z0-9-]{0,47})"
 
 
 class PixelRoutes:
@@ -18,40 +23,79 @@ class PixelRoutes:
         self._json, self._error, self._response = json_response, error, Response
         self._lock = threading.Lock()
         self._draft_cache: dict[str, tuple[tuple, dict, dict]] = {}
+        self._scratch: dict[tuple, PixelWorkshop] = {}
 
     def routes(self):
         return [
-            ("GET", re.compile(r"^/api/characters/(?P<cid>\d+)/pixel-workshop$"), self.analyze),
-            ("GET", re.compile(r"^/api/characters/(?P<cid>\d+)/pixel-workshop/cell/(?P<family>pixelart|special)/"
+            ("GET", re.compile(rf"^/api/characters/{CID}/pixel-workshop$"), self.analyze),
+            ("GET", re.compile(rf"^/api/characters/{CID}/pixel-workshop/cell/(?P<family>pixelart|special)/"
                                r"(?P<key>\d+)\.png$"), self.cell),
-            ("GET", re.compile(r"^/api/characters/(?P<cid>\d+)/pixel-workshop/suggest$"), self.suggest),
-            ("GET", re.compile(r"^/api/characters/(?P<cid>\d+)/pixel-workshop/bases$"), self.bases),
-            ("GET", re.compile(r"^/api/drafts/(?P<cid>\d+)/pixels$"), self.draft_meta),
-            ("GET", re.compile(r"^/api/drafts/(?P<cid>\d+)/pixels/(?P<family>pixelart|special)\.png$"), self.draft_sheet),
-            ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/pixel-remap$"), self.remap),
-            ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/pixel-generate$"), self.generate),
+            ("GET", re.compile(rf"^/api/characters/{CID}/pixel-workshop/suggest$"), self.suggest),
+            ("GET", re.compile(rf"^/api/characters/{CID}/pixel-workshop/bases$"), self.bases),
+            ("GET", re.compile(rf"^/api/characters/{SID}/pixels$"), self.scratch_meta),
+            ("GET", re.compile(rf"^/api/characters/{SID}/pixels/(?P<family>pixelart|special)\.png$"), self.scratch_sheet),
+            ("GET", re.compile(rf"^/api/drafts/{CID}/pixels$"), self.draft_meta),
+            ("GET", re.compile(rf"^/api/drafts/{CID}/pixels/(?P<family>pixelart|special)\.png$"), self.draft_sheet),
+            ("POST", re.compile(rf"^/api/drafts/{CID}/pixel-remap$"), self.remap),
+            ("POST", re.compile(rf"^/api/drafts/{CID}/pixel-generate$"), self.generate),
+            ("POST", re.compile(rf"^/api/drafts/{CID}/pixel-import$"), self.import_set),
+            # -- 草稿角色 --
+            ("GET", re.compile(r"^/api/scratch$"), self.scratch_list),
+            # Every write route lives under /api/drafts/ (guard invariant).
+            ("POST", re.compile(r"^/api/drafts/scratch$"), self.scratch_create),
+            ("GET", re.compile(rf"^/api/scratch/{SID}$"), self.scratch_describe),
+            ("POST", re.compile(rf"^/api/drafts/{SID}/pixel$"), self.scratch_pixel_save),
+            ("POST", re.compile(rf"^/api/drafts/{SID}/bind$"), self.scratch_bind),
+            ("POST", re.compile(rf"^/api/drafts/{SID}/build$"), self.scratch_build),
         ]
 
+    # -- which workshop -----------------------------------------------------
+    def shop(self, cid) -> PixelWorkshop:
+        if not scratch.is_scratch(cid):
+            return self.workshop
+        changeset = self.app.ops.store.load(cid)
+        if not changeset or "scratch" not in changeset:
+            raise DraftError(f"没有草稿角色 {cid}")
+        key = (cid, changeset["createdAt"], changeset["scratch"]["base"]["code"])
+        with self._lock:
+            if key not in self._scratch:
+                self._scratch = {k: v for k, v in self._scratch.items() if k[0] != cid}
+                self._scratch[key] = PixelWorkshop(scratch.ScratchDraftOps(self.app.ops, cid))
+            return self._scratch[key]
+
+    # -- workshop -------------------------------------------------------------
     def analyze(self, query, cid):
         draft = (query.get("state") or ["view"])[0] == "draft"
-        return self._json(self.workshop.analyze(cid, draft=draft))
+        return self._json(self.shop(cid).analyze(cid, draft=draft))
 
     def cell(self, query, cid, family, key):
         trimmed = (query.get("trim") or ["1"])[0] != "0"
         draft = (query.get("state") or ["view"])[0] == "draft"
-        image = self.workshop.cell_image(cid, family, int(key), trimmed=trimmed, draft=draft)
+        image = self.shop(cid).cell_image(cid, family, int(key), trimmed=trimmed, draft=draft)
         out = io.BytesIO()
         image.save(out, "PNG")
-        return self._response(200, out.getvalue(), "image/png", "no-store" if draft else None)
+        return self._response(200, out.getvalue(), "image/png",
+                              "no-store" if draft or scratch.is_scratch(cid) else None)
 
     def suggest(self, query, cid):
         base = (query.get("base") or [""])[0]
-        if not base.isdigit():
-            raise DraftError("需要 base=母本角色 ID")
-        return self._json(self.workshop.suggest(cid, base))
+        if not re.fullmatch(r"[0-9]{1,9}|[a-z0-9_]+", base):
+            raise DraftError("需要 base=母本角色 ID 或代码名")
+        return self._json(self.shop(cid).suggest(cid, base))
 
     def bases(self, query, cid):
-        return self._json({"bases": self.workshop.default_bases(cid)})
+        return self._json({"bases": self.shop(cid).default_bases(cid)})
+
+    def _families(self, source, code):
+        families, sheets = [], {}
+        for stem, sheet, label in FAMILIES:
+            if source.raw(f"character/{code}/pixelart/{sheet}.png") is None:
+                continue
+            meta, png = build_family(source, code, stem, sheet)
+            sheets[stem] = png
+            families.append({**meta, "label": label})
+        present = {a["name"] for f in families for a in f.get("actions", [])}
+        return families, sheets, [{"name": n, "label": l, "present": n in present} for n, l in SLOTS]
 
     def _draft_family(self, cid):
         changeset = self.app.ops.store.load(cid)
@@ -60,24 +104,16 @@ class PixelRoutes:
             cached = self._draft_cache.get(cid)
             if cached and cached[0] == revision:
                 return cached[1], cached[2]
-        overlay = self.workshop.draft_source(cid)
+        shop = self.shop(cid)
+        overlay = shop.draft_source(cid)
         if overlay is None:
             return None, None
-        code = self.app.ops.character(cid)["code"]
-        families, sheets = [], {}
-        for stem, sheet, label in FAMILIES:
-            built = build_family(overlay, code, stem, sheet) if overlay.raw(
-                f"character/{code}/pixelart/{sheet}.png") is not None else None
-            if built is None:
-                continue
-            meta, png = built
-            sheets[stem] = png
-            families.append({**meta, "label": label})
-        present = {a["name"] for f in families for a in f.get("actions", [])}
+        code = shop.ops.character(cid)["code"]
+        families, sheets, slots = self._families(overlay, code)
         meta = {"characterId": cid, "code": code, "families": families, "draftRevision": revision[1],
                 "draftStamp": "".join(ch for ch in f"{revision[0]}{revision[1]}{revision[2]}" if ch.isalnum()),
-                "slots": [{"name": n, "label": l, "present": n in present} for n, l in SLOTS],
-                "note": "草稿态：把草稿里的像素改动（整族映射 + 逐动作替换）按生成时同一编译器合成后播放。"}
+                "slots": slots,
+                "note": "草稿态：把草稿里的像素改动（整族映射/导入 + 逐动作替换）按生成时同一编译器合成后播放。"}
         with self._lock:
             self._draft_cache[cid] = (revision, meta, sheets)
         return meta, sheets
@@ -92,8 +128,46 @@ class PixelRoutes:
             return self._error(404, "草稿里没有这一族像素")
         return self._response(200, sheets[family], "image/png", "no-store")
 
+    def scratch_meta(self, query, cid):
+        shop = self.shop(cid)
+        code = shop.ops.character(cid)["code"]
+        families, _, slots = self._families(shop.source, code)
+        base = shop.ops.meta["base"]
+        return self._json({"characterId": cid, "code": code, "families": families, "slots": slots,
+                           "note": f"草稿角色的「当前视图」= 母本 {base['code']} 整族（区间、锚点、frame.scale）"
+                                   f"改名到占位代码 {code}。"})
+
+    def scratch_sheet(self, query, cid, family):
+        shop = self.shop(cid)
+        _, sheets, _ = self._families(shop.source, shop.ops.character(cid)["code"])
+        if family not in sheets:
+            return self._error(404, "母本没有这一族像素")
+        return self._response(200, sheets[family], "image/png", "no-store")
+
     def remap(self, query, body, cid):
-        return self._json(self.workshop.remap(cid, body))
+        return self._json(self.shop(cid).remap(cid, body))
 
     def generate(self, query, body, cid):
-        return self._json(self.workshop.generate(cid, body))
+        return self._json(self.shop(cid).generate(cid, body))
+
+    def import_set(self, query, body, cid):
+        return self._json(scratch.import_set(self.app.ops, cid, body))
+
+    # -- 草稿角色 ---------------------------------------------------------------
+    def scratch_list(self, query):
+        return self._json({"scratch": scratch.listing(self.app.ops), "elements": list(scratch.ELEMENTS)})
+
+    def scratch_create(self, query, body):
+        return self._json(scratch.create(self.app.ops, body))
+
+    def scratch_describe(self, query, cid):
+        return self._json(scratch.describe(self.app.ops, cid))
+
+    def scratch_pixel_save(self, query, body, cid):
+        return self._json(self.shop(cid).ops.pixel_save(cid, body))
+
+    def scratch_bind(self, query, body, cid):
+        return self._json(scratch.bind(self.app.ops, cid, body))
+
+    def scratch_build(self, query, body, cid):
+        raise DraftError(scratch.build_refusal(self.app.ops.store, cid))

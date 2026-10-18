@@ -6,6 +6,7 @@ import { CharacterList } from "./views/CharacterList";
 import { CharacterDetailView } from "./views/CharacterDetail";
 import { BossPlaceholder } from "./views/BossPlaceholder";
 import { PatchManager } from "./views/PatchManager";
+import { ScratchDetail, ScratchList } from "./views/ScratchView";
 import { LookupPanel } from "./views/LookupPanel";
 import "./styles.css";
 import "./m4.css";
@@ -70,6 +71,9 @@ function App() {
           <a role="tab" class={route.shop === "characters" ? "active" : ""} href={href({ work: "content", shop: "characters" })}>
             角色工坊
           </a>
+          <a role="tab" class={route.shop === "scratch" ? "active" : ""} href={href({ work: "content", shop: "scratch" })}>
+            草稿角色
+          </a>
           <a role="tab" class={route.shop === "boss" ? "active" : ""} href={href({ work: "content", shop: "boss" })}>
             BOSS工坊
           </a>
@@ -81,6 +85,8 @@ function App() {
             <PatchManager archive={route.archive} />
           ) : route.shop === "boss" ? (
             <BossPlaceholder />
+          ) : route.shop === "scratch" ? (
+            route.id ? <ScratchDetail id={route.id} tab={route.tab} /> : <ScratchList />
           ) : route.id ? (
             <CharacterDetailView id={route.id} tab={route.tab} />
           ) : (

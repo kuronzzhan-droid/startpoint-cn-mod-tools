@@ -146,10 +146,13 @@ def build_draft(cid: str, *, from_version: str, to_version: str, out: Path,
                 store: DraftStore | None = None, provides: Path | None = None,
                 allow_unknown_client: bool = False, **options) -> dict:
     """Everything generated lives under out/{inputs,delivery}; inputs stay read-only."""
+    store = store or DraftStore()
+    from .scratch import build_refusal, is_scratch
+    if is_scratch(cid) or "scratch" in (store.load(cid) or {}):
+        raise DraftError(build_refusal(store, cid))
     out = local_output(out)
     if out.exists() and (not out.is_dir() or any(out.iterdir())):
         raise DraftError(f"交付输出目录必须为空：{out}")
-    store = store or DraftStore()
     draft_dir = store.directory(cid).resolve()
     if out.is_relative_to(draft_dir) or draft_dir.is_relative_to(out):
         raise DraftError("交付目录与草稿目录不能互相包含")

@@ -20,7 +20,7 @@ from pathlib import Path
 REPOSITORY = Path(__file__).resolve().parents[2]
 SCHEMA_PATH = REPOSITORY / "schemas" / "studio-draft.schema.json"
 SCHEMA_ID = "wf-studio-draft/1"
-_CID = re.compile(r"^[0-9]{1,9}$")
+_CID = re.compile(r"^([0-9]{1,9}|scratch-[a-z0-9][a-z0-9-]{0,47})$")
 _SAFE_REL = re.compile(r"^(files|sources)/[A-Za-z0-9_./\-]+$")
 
 
@@ -110,6 +110,8 @@ class DraftStore:
 
     def load_or_new(self, cid: str, code: str, base_view: str) -> dict:
         current = self.load(cid)
+        if current is None and cid.startswith("scratch-"):
+            raise DraftError(f"没有草稿角色 {cid}（先「新建草稿角色」）")
         if current is not None:
             if current.get("code") != code:
                 raise DraftError(f"草稿代码名 {current.get('code')} 与当前视图 {code} 不一致")
@@ -204,6 +206,25 @@ class DraftStore:
             self._write(cid, changeset)
             return changeset
 
+    def create(self, cid: str, changeset: dict) -> dict:
+        """新建一份空草稿（草稿角色用）；已存在就拒绝。"""
+        with self._lock:
+            if self.load(cid) is not None:
+                raise DraftError(f"草稿 {cid} 已存在")
+            self._write(cid, changeset)
+            return changeset
+
+    def update_scratch(self, cid: str, meta: dict) -> dict:
+        with self._lock:
+            changeset = self.load(cid)
+            if changeset is None or "scratch" not in changeset:
+                raise DraftError(f"没有草稿角色 {cid}")
+            changeset["scratch"] = meta
+            changeset["updatedAt"] = now()
+            changeset["revision"] += 1
+            self._write(cid, changeset)
+            return changeset
+
     def characters(self) -> list[dict]:
         result = []
         if self.root.is_dir():
@@ -211,9 +232,12 @@ class DraftStore:
                 if folder.is_dir() and _CID.match(folder.name):
                     changeset = self.load(folder.name)
                     if changeset:
-                        result.append({"characterId": folder.name, "code": changeset["code"],
-                                       "changes": len(changeset["changes"]),
-                                       "updatedAt": changeset["updatedAt"], "savedAt": changeset["savedAt"]})
+                        item = {"characterId": folder.name, "code": changeset["code"],
+                                "changes": len(changeset["changes"]),
+                                "updatedAt": changeset["updatedAt"], "savedAt": changeset["savedAt"]}
+                        if "scratch" in changeset:
+                            item["scratch"] = changeset["scratch"]
+                        result.append(item)
         return result
 
     def discard_all(self, cid: str) -> None:

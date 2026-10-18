@@ -75,8 +75,8 @@ class StudioApp:
             ("GET", re.compile(r"^/api/patches/(?P<archive>[^/]+\.zip)/members$"), self.patch_files),
             # -- draft workspace (M3.2) --
             ("GET", re.compile(r"^/api/drafts$"), self.draft_index),
-            ("GET", re.compile(r"^/api/drafts/(?P<cid>\d+)$"), self.draft),
-            ("GET", re.compile(r"^/api/drafts/(?P<cid>\d+)/file$"), self.draft_file),
+            ("GET", re.compile(r"^/api/drafts/(?P<cid>\d+|scratch-[a-z0-9][a-z0-9-]{0,47})$"), self.draft),
+            ("GET", re.compile(r"^/api/drafts/(?P<cid>\d+|scratch-[a-z0-9][a-z0-9-]{0,47})/file$"), self.draft_file),
             ("GET", re.compile(r"^/api/characters/(?P<cid>\d+)/portrait/(?P<form>[01])$"), self.portrait_info),
             ("GET", re.compile(r"^/api/characters/(?P<cid>\d+)/voice$"), self.voice_lines),
             ("GET", re.compile(r"^/api/studio/masks/(?P<slot>[a-z0-9_]+)\.png$"), self.mask),
@@ -85,8 +85,8 @@ class StudioApp:
             ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/portrait$"), self.portrait_save),
             ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/pixel$"), self.pixel_save),
             ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/voice$"), self.voice_save),
-            ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/changes/(?P<change>c-[0-9a-f]{12})/revert$"), self.revert),
-            ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/save$"), self.save),
+            ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+|scratch-[a-z0-9][a-z0-9-]{0,47})/changes/(?P<change>c-[0-9a-f]{12})/revert$"), self.revert),
+            ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+|scratch-[a-z0-9][a-z0-9-]{0,47})/save$"), self.save),
         ]
         from .ability_routes import AbilityRoutes
         self.routes.extend(AbilityRoutes(self, server_dir).routes())

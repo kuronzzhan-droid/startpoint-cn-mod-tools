@@ -3,6 +3,7 @@ import { useEffect, useState } from "preact/hooks";
 export type Route =
   | { work: "content"; shop: "characters"; id?: string; tab?: string }
   | { work: "content"; shop: "boss" }
+  | { work: "content"; shop: "scratch"; id?: string; tab?: string }
   | { work: "patches"; archive?: string };
 
 export function parse(hash: string): Route {
@@ -11,6 +12,7 @@ export function parse(hash: string): Route {
   if (parts[0] === "character" && parts[1])
     return { work: "content", shop: "characters", id: parts[1], tab: parts[2] };
   if (parts[0] === "patches") return { work: "patches", archive: parts[1] };
+  if (parts[0] === "scratch") return { work: "content", shop: "scratch", id: parts[1], tab: parts[2] };
   if (parts[0] === "content" && parts[1] === "boss") return { work: "content", shop: "boss" };
   if (parts[0] === "content" && parts[1] === "characters" && parts[2])
     return { work: "content", shop: "characters", id: parts[2], tab: parts[3] };
@@ -20,6 +22,7 @@ export function parse(hash: string): Route {
 export function href(route: Route): string {
   if (route.work === "patches") return "#/patches" + (route.archive ? "/" + encodeURIComponent(route.archive) : "");
   if (route.shop === "boss") return "#/content/boss";
+  if (route.shop === "scratch") return "#/scratch" + (route.id ? "/" + route.id + (route.tab ? "/" + route.tab : "") : "");
   if (route.id) return `#/content/characters/${route.id}` + (route.tab ? "/" + route.tab : "");
   return "#/content/characters";
 }

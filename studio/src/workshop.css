@@ -63,3 +63,9 @@
 @media (max-width: 900px) {
   .ws-detail-grid, .ws-map-grid { grid-template-columns: 1fr; }
 }
+.ws-search { position: relative; display: inline-flex; flex-direction: column; gap: 4px; }
+.ws-new .toolbar input { min-width: 120px; }
+.ws-scratch-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.ws-scratch-card { display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); color: inherit; text-decoration: none; }
+.ws-scratch-card:hover { border-color: var(--accent); }
