@@ -210,6 +210,9 @@ def apply_operation(state, cid, requested):
     operation = copy.deepcopy(requested)
     if operation.get("character", cid) != cid:
         raise ValueError("operation character must match the draft character")
+    if operation["table"] == "leader_ability" and any(name in operation for name in ("cells", "rows")):
+        if "column_space" not in operation:
+            raise ValueError("leader_ability 列空间不明确：必须显式给出 column_space；模板推荐 native")
     operation["character"] = cid
     if operation["op"] == "attach_key":
         _attach(state, cid, operation)

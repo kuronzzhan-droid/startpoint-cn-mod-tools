@@ -51,9 +51,10 @@ def templates(source, table="ability", block="instant_content", kind=None):
             row = fill_instant_content_defaults(table, row)
         state = "满足" if precedents else "待验证"
         entries.append({"kind": value, **options[value], "status": state, "selectable": True,
-                        "defaults": row, "columnSpace": "native", "precedentCount": len(precedents),
+                        "defaults": row, "columnSpace": "native", "column_space": "native",
+                        "precedentCount": len(precedents),
                         "precedents": [{"key": key, "row": index} for key, index, _ in precedents[:10]],
                         "checks": [result("ability.precedent", state,
                             "默认值来自当前视图先例，需核对引用对象" if precedents else "没有当前视图先例；允许选择，参数和运行时效果待验证")]})
-    return {"table": table, "block": block, "options": entries,
+    return {"table": table, "block": block, "column_space": "native", "options": entries,
             "note": "默认值不自动写入草稿；无先例不代表非法，实际行仍执行解析与能力声明规则。"}
