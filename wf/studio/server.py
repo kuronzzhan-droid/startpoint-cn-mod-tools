@@ -91,6 +91,9 @@ class StudioApp:
         from .ability_routes import AbilityRoutes
         from .capability_routes import routes as capability_routes
         self.routes.extend(capability_routes())
+        from .client_profile_view import ClientProfileView
+        self.client_profiles = ClientProfileView(self)
+        self.routes.extend(self.client_profiles.routes())
         self.abilities = AbilityRoutes(self, server_dir)
         self.routes.extend(self.abilities.routes())
         from .pixel_routes import PixelRoutes
@@ -160,6 +163,7 @@ class StudioApp:
         from . import perf
         from .ability_engine import EditState
         perf.registry()
+        self.client_profiles.prewarm()
         self.character_list()
         editor = self.abilities.editor()
         state = EditState(self.source)
