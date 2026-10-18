@@ -87,6 +87,8 @@ def compile_draft(source, store, changeset, *, server_dir=None):
         checks.extend(ability["checks"])
     if not members:
         raise DraftError("草稿没有生成客户端成员")
+    from wf.text.draft import check_compiled_text
+    checks.extend(check_compiled_text(source, members))
     if any(c.get("level") == "error" or c.get("blocking") for c in checks):
         raise DraftError("草稿规则检查存在问题：" + json.dumps(checks, ensure_ascii=False))
     return members, servers, server_before, changes, checks
@@ -183,7 +185,8 @@ def build_draft(cid: str, *, from_version: str, to_version: str, out: Path,
     write_json(out / "delivery/delivery-manifest.json", manifest)
     checks, compat = _checks(out / "delivery", provides, allow_unknown_client)
     compat_status = compatibility_status(provides, compat)
-    failed = (bool(manifest["prepush"]["exit_code"]) or any(r["blocking"] for r in checks + compat)
+    failed = (bool(manifest["prepush"]["exit_code"]) or any(r.get("blocking") for r in checks + compat)
+              or any(r.get("blocking") or r.get("level") == "error" for r in compiled[4])
               or (provides is None and not allow_unknown_client))
     result = {"ok": not failed, "characterId": cid, "from": from_version, "to": to_version,
               "draftRevision": changeset["revision"], "changeset": str(filename),

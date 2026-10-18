@@ -6,7 +6,7 @@ import wf_quest_lib as codec
 
 from test_boss_model import csv_row
 from test_boss_rules_preload import View
-from test_studio_boss_checks import fixture_editor, request
+from test_studio_boss_checks import encoded, fixture_editor, request
 from test_studio_deliver_bridge import case, build
 from wf.boss import schema as s
 from wf.rules.boss_atlas import atlas_check
@@ -77,8 +77,16 @@ def test_bare_and_qualified_id_share_one_draft(tmp_path):
     assert editor.read("1006001")["changeset"] == editor.read("hard_multi:1006/1")["changeset"]
 
 
-def test_acknowledgment_is_explicit_persisted_and_not_inherited(tmp_path, monkeypatch):
+def test_acknowledgment_persists_only_for_same_element_and_enemy_scope(tmp_path, monkeypatch):
     editor = fixture_editor(tmp_path)
+    raw = editor.source.view
+    rows = codec.parse_node(raw.files[s.GENERAL_BOSS])
+    for tier, text in rows["org"].items():
+        values = s.parse_rows(text)[0]
+        values[111] = "battle/action/unproven"
+        rows["org"][tier] = csv_row(values)
+    raw.files[s.GENERAL_BOSS] = codec.build_node(rows)
+    raw.files["battle/action/unproven.action.dsl.amf3.deflate"] = encoded(["SpawnFunnel", ["Zako", "summon"]])
     original = boss._context
     seen = []
 
@@ -88,11 +96,16 @@ def test_acknowledgment_is_explicit_persisted_and_not_inherited(tmp_path, monkey
         return value
 
     monkeypatch.setattr(boss, "_context", context)
-    draft = editor.apply("new", request(acknowledgePreload=True))["changeset"]
+    changed = request(parameters={"recommendedElement": 2})
+    assert not editor.preview("new", changed)["ok"]
+    seen.clear()
+    draft = editor.apply("new", {**changed, "acknowledgePreload": True})["changeset"]
     assert draft["changes"][0]["params"]["requests"][0]["acknowledgePreload"] is True
     boss.compile_boss(editor.source, editor.store, draft, server_dir=editor.server_dir)
     assert all(seen)
-    editor.preview(draft["characterId"], {"operation": "edit", "parameters": {"hpMultiplier": 2}})
+    assert editor.preview(draft["characterId"], {"operation": "edit", "parameters": {"hpMultiplier": 2}})["ok"]
+    assert seen[-1] is True
+    assert not editor.preview(draft["characterId"], {"operation": "edit", "parameters": {"recommendedElement": 3}})["ok"]
     assert seen[-1] is False
     assert not editor.preview("new", request(acknowledgePreload="true"))["ok"]
 

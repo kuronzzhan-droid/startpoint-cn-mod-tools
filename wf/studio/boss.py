@@ -30,7 +30,7 @@ def _requests(draft):
     return copy.deepcopy(changes[0]["params"]["requests"]) if changes else []
 
 
-def _context(state, created, document, baseline, requests):
+def _context(state, created, document, baseline, requests, acknowledgment=False):
     from wf.boss.atlas import encounter_budget
     new_ids, existing_ids = {}, {}
     def paths(node, prefix=()):
@@ -45,7 +45,7 @@ def _context(state, created, document, baseline, requests):
             existing_ids[logical] = list(paths(codec.parse_node(state.original[logical]))) if logical in state.original else []
     supplied = next((req["atlasBudget"] for req in reversed(requests) if "atlasBudget" in req), None)
     return {"custom_content": created, "new_ids": new_ids, "existing_ids": existing_ids,
-            "acknowledgePreload": requests[-1].get("acknowledgePreload") is True,
+            "acknowledgePreload": acknowledgment,
             "atlas_budget": encounter_budget(state, document,
                 source_quest=baseline.get("quest", {}).get("id"), supplied=supplied)}
 
@@ -56,16 +56,32 @@ def _replay(source, quest, requests, *, server_dir=None, reserved=()):
     from .source import StudioSource
     state = BossEditState(source, server_dir=server_dir)
     affected, created, allocation = [], False, None
+    preload_approvals = {}
     for index, request in enumerate(requests):
         validate(request, "bossRequest")
         if request["operation"] == "create_shared":
             if index or quest not in ("new", str(int(request.get("ids", {}).get("event", "0")) * 1000 + 1)):
                 raise ValueError("create_shared must be the first operation in a new boss draft")
             allocation = create_shared(state, request, reserved=reserved)
-            quest, affected, created = allocation["quest"], [allocation["quest"]], True
+            quest, touched, created = allocation["quest"], [allocation["quest"]], True
             request["ids"] = {key: allocation[key] for key in ("event", "node")}
         else:
-            affected.extend(edit_parameters(state, quest, request))
+            touched = edit_parameters(state, quest, request)
+        affected.extend(touched)
+        for identifier in touched:
+            current = BossReader(StudioSource(state)).show(identifier)
+            # Confirmations belong to the same element and enemy resource rows.
+            # HP/BGM edits preserve that scope; changed attributes/tiers do not.
+            scope = (current["quest"]["fields"].get("recommended_element"),
+                     [(e.get("table"), e.get("code"), e.get("path"), e.get("row"))
+                      for e in current.get("enemies", [])])
+            key = current["quest"]["selector"]
+            previous_scope, approved = preload_approvals.get(key, (None, False))
+            if scope != previous_scope:
+                approved = False
+            if "acknowledgePreload" in request:
+                approved = request["acknowledgePreload"] is True
+            preload_approvals[key] = (scope, approved)
     if not requests:
         return state, quest, [], None
     # Reward checks use all four server baselines, and the actual candidate tables.
@@ -80,7 +96,8 @@ def _replay(source, quest, requests, *, server_dir=None, reserved=()):
         baseline = before.show(requests[0].get("sourceQuest", "hard_multi:1006/1")) if created else before.show(identifier)
         checks.extend(check_boss(document, view=state, baseline=baseline,
                                  server_changes=state.servers, server_before=state.server_original,
-                                 context=_context(state, created, document, baseline, requests)))
+                                 context=_context(state, created, document, baseline, requests,
+                                                  preload_approvals[document["quest"]["selector"]][1])))
     blocking = [entry for entry in checks if entry.get("blocking")]
     if blocking:
         raise ValueError("boss rules rejected the candidate: " + "; ".join(entry["message"] for entry in blocking))

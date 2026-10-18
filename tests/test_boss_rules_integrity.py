@@ -104,13 +104,13 @@ def test_shop_checks_missing_client_and_category_map_from_actual_server_ids():
     assert "C8601" in shop_check(doc, view, {}, server)["issues"][0]
 
 
-def test_atlas_uses_actual_png_dimensions_but_never_promotes_estimate_to_proof():
+def test_atlas_blocks_padded_area_exceeding_capacity_without_claiming_runtime_proof():
     png = b'\x89png\r\n\x1a\n' + b'\x00\x00\x00\x0dIHDR' + struct.pack('>II', 4096, 4096)
     view = View(files={"sheet.png": png})
     result = atlas_check(view, {"atlas_budget": {"parties": [["sheet.png"]] * 3}})
     assert result["padded_pixels"] == 4098 ** 2
     assert result["near_historical_failure"] is True
-    assert result["status"] == "待验证" and not result["blocking"]
+    assert result["status"] == "问题" and result["blocking"]
     assert result["runtime_executed"] is False
 
 
