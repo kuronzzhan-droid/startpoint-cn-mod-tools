@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import { BuildJob, BuildResult, deliveries, DeliveryApi, DeliveryDetail, DeliverySummary, DraftView, onDraftChange } from "../api";
 import { Notice } from "./common";
 import { RuleChips, ruleCounts, RuleList } from "./rules";
+import { useClientProfile } from "../clientProfile";
+import { MissingCapabilities, ProfileBadge } from "./ClientProfile";
 
 function size(bytes: number | null | undefined): string {
   if (bytes == null) return "—";
@@ -57,7 +59,7 @@ function GenerateForm({ characterId, view, onBuilt, api }: {
   const poll = useRef<number | undefined>(undefined);
 
   useEffect(() => {
-    api.defaults().then((d) => { setFrom(d.from); setTo(d.to); setNote(d.note); if (d.provides) setProvides(d.provides); }, (e: Error) => setError(e.message));
+    api.defaults().then((d) => { setFrom(d.from); setTo(d.to); setNote(d.note); }, (e: Error) => setError(e.message));
     // Resume a build that is still running (page reloaded or tab switched).
     api.list(characterId).then((r) => {
       const running = r.jobs?.find((j) => j.state === "running");
@@ -79,6 +81,8 @@ function GenerateForm({ characterId, view, onBuilt, api }: {
     }, 700);
   };
 
+  const profile = useClientProfile();
+  const custom = provides.trim();
   const base = view.changeset?.baseView;
   const mismatch = !!base && !!from && base !== from;
   const busy = job?.state === "running";
@@ -86,7 +90,9 @@ function GenerateForm({ characterId, view, onBuilt, api }: {
     setError(null);
     setJob(null);
     try {
-      follow(await api.start(characterId, { from, to, ...(provides.trim() ? { provides: provides.trim() } : {}) }));
+      // The selected profile always travels with the request; a typed evidence file replaces it (never both).
+      follow(await api.start(characterId, { from, to, ...(custom ? { provides: custom }
+        : profile.selected ? { clientProfile: profile.selected } : {}) }));
     } catch (e) {
       setError((e as Error).message);
     }
@@ -100,7 +106,7 @@ function GenerateForm({ characterId, view, onBuilt, api }: {
   return (
     <div class="generate-form">
       <p class="small muted">
-        把已保存的草稿打成本地测试补丁：编译草稿 → 分包与清单（每包 ≤5 MiB）→ 兼容检查（没有客户端能力清单时判为不通过）→ 交付检查。
+        把已保存的草稿打成本地测试补丁：编译草稿 → 分包与清单（每包 ≤5 MiB）→ 兼容检查（按目标客户端的能力证据）→ 交付检查。
         全部写到 <span class="mono">work/studio-deliveries/</span> 新目录，不改测试服、不改草稿。{note}
         <InfoTip text="技术细节：内容寻址变更集 + wf deliver（两种 manifest、requires 推导、prepush）+ wf check + compat。" />
       </p>
@@ -108,16 +114,24 @@ function GenerateForm({ characterId, view, onBuilt, api }: {
         <label>来源版本 <input class="mono" value={from} onInput={(e) => setFrom((e.target as HTMLInputElement).value)} size={9} /></label>
         <span aria-hidden="true">→</span>
         <label>目标版本 <input class="mono" value={to} onInput={(e) => setTo((e.target as HTMLInputElement).value)} size={9} /></label>
-        <button type="submit" class="primary" disabled={busy || !from || !to}>{busy ? `生成中…… ${Math.round(job?.seconds ?? 0)}s` : "生成本地交付"}</button>
+        <button type="submit" class="primary" disabled={busy || !from || !to || (!custom && !profile.selected && !profile.error)}>{busy ? `生成中…… ${Math.round(job?.seconds ?? 0)}s` : "生成本地交付"}</button>
         {busy ? <button type="button" onClick={cancel} disabled={cancelling}>{cancelling ? "取消中……" : "取消"}</button> : null}
       </form>
+      <div class="profile-line">
+        <span class="small">兼容检查按目标客户端</span>
+        {custom ? <span class="profile-badge none">自定义能力清单</span> : <ProfileBadge id={profile.selected} title={profile.info?.description} />}
+        <span class="small muted">{custom ? "（已填自定义清单，不按页面顶部的目标客户端检查）"
+          : profile.error ? `客户端档案读取失败（${profile.error}），生成时由后端用默认档案`
+          : `${profile.info?.packageName ?? ""}${profile.info?.versionCode ? " · versionCode " + profile.info.versionCode : ""} · 在页面顶部「目标客户端」切换`}</span>
+      </div>
       <details>
-        <summary>目标客户端能力清单（默认用启动时 --provides 指定的那份；留空则交付判为「兼容未确认」，不通过）</summary>
-        <input class="mono wide-input" placeholder="例如 work/…/v34-provides.json 的绝对路径" value={provides}
+        <summary>高级：改用自定义能力清单（wf apk provides 的输出；填了就不按目标客户端检查）</summary>
+        <input class="mono wide-input" placeholder="例如 work/…/my-provides.json 的绝对路径" value={provides}
           onInput={(e) => setProvides((e.target as HTMLInputElement).value)} />
       </details>
       {mismatch ? <Notice kind="warn">草稿基于视图 {base}，来源版本填的是 {from}：生成会拒绝（草稿必须在来源视图上制作）。</Notice> : null}
       {view.status.state !== "saved" ? <Notice kind="warn">草稿有未保存的修订，请先保存。</Notice> : null}
+      {busy && job ? <p class="small muted">正在按 {job.clientProfile ? <ProfileBadge id={job.clientProfile} /> : "自定义能力清单"} 检查。</p> : null}
       {job ? (
         <ol class="build-stages" aria-label="生成进度">
           {job.stages.map((s) => (
@@ -146,6 +160,7 @@ function BuildResultCard({ result, onOpen }: { result: BuildResult; onOpen: () =
       <header>
         <strong>{result.ok ? "生成完成" : "生成失败"}</strong>
         <span class="mono small">{result.from} → {result.to}</span>
+        <span class="small">目标客户端 <ProfileBadge id={result.clientProfile} title={result.clientProfile ? undefined : "这次生成用的是自定义能力清单或没有客户端证据"} /></span>
         {result.seconds !== undefined ? <span class="small muted">{result.seconds}s</span> : null}
         {checks.length ? <RuleChips counts={ruleCounts(checks)} /> : null}
         <span class="spacer" />
@@ -157,6 +172,7 @@ function BuildResultCard({ result, onOpen }: { result: BuildResult; onOpen: () =
           {result.prepush.limitations?.length ? <span class="muted"> · {result.prepush.limitations.join("；")}</span> : null}</p>
       ) : null}
       {typeof result.compat === "string" ? <p class="small">兼容检查（客户端能力）：{result.compat}</p> : null}
+      <MissingCapabilities checks={compat} profile={result.clientProfile} />
       {result.draftChecks?.length ? <p class="small">草稿规则（编译时重放）：<RuleChips counts={ruleCounts(result.draftChecks)} /></p> : null}
       <p class="small muted">实测：{result.deviceValidation}。检查通过只代表文件与静态能力证据，不代表真机生效。</p>
     </div>
@@ -215,6 +231,8 @@ function DeliveryDetailView({ name, api }: { name: string; api: DeliveryApi }) {
         </button>
       </div>
       {report && !report.ok ? <Notice kind="error">生成失败：{report.error ?? "检查或 prepush 未通过，见下方结果"}</Notice> : null}
+      <div class="profile-line"><span class="small">兼容检查按目标客户端</span> <ProfileBadge id={report?.clientProfile} /></div>
+      <MissingCapabilities checks={detail.compat ?? []} profile={report?.clientProfile} />
       <div class="status-strip compact">
         <div><span class="label">保存状态</span><span class="value">草稿修订 {report?.draftRevision ?? "—"}</span></div>
         <div><span class="label">检查结果</span><span class="value"><RuleChips counts={ruleCounts([...(detail.check ?? []), ...(detail.compat ?? [])])} /></span></div>

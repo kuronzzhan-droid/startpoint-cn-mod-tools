@@ -7,6 +7,10 @@ import {
 import { Notice } from "./common";
 import { RuleChips, ruleCounts, RuleList } from "./rules";
 import {
+  CapRequirement, describeRequirement, kindCaps, lookupCaps, RowQuery, useCaps, useClientProfile, useRowCaps, verdict,
+} from "../clientProfile";
+import { CapChip } from "./ClientProfile";
+import {
   buildRequest, deleteRow, EMPTY_PENDING, entryId, insertRow, isAwake, moveRow, Pending, pendingCount, setCell,
   sharedId, tierLocked, tierOps, touches, workingRows,
 } from "./abilityModel";
@@ -139,7 +143,9 @@ export function PendingBar() {
   const blocking = checks.some((c) => c.blocking || c.status === "问题") || textProblems.length > 0;
   const needShared = ws ? unconfirmedShared(ws) : [];
   const needTierConfirm = !!ws && tierOps(ws.pending).length > 0 && !ws.pending.tierConfirmed;
-  const ready = !!ws && count > 0 && !blocking && !needShared.length && !needTierConfirm && !ws.checking
+  const profileWarn = usePendingProfileWarnings(ws);
+  const needProfileConfirm = profileWarn.items.length > 0 && !profileWarn.acknowledged;
+  const ready = !!ws && count > 0 && !blocking && !needShared.length && !needTierConfirm && !needProfileConfirm && !ws.checking
     && !ws.linting && !ws.committing;
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -164,12 +170,14 @@ export function PendingBar() {
             <button onClick={ws.discard} disabled={ws.committing} title="放弃全部未写入修改">放弃</button>
             <button class="primary" onClick={() => ws.commit()} disabled={!ready}
               title={needShared.length ? "共享键需先勾选确认" : needTierConfirm ? "技能档位引用需先勾选确认"
-                : blocking ? "检查有「问题」，先修正" : "写入草稿（Ctrl+S）"}>
+                : blocking ? "检查有「问题」，先修正" : needProfileConfirm ? "目标客户端不支持其中的改动，先勾选确认"
+                : "写入草稿（Ctrl+S）"}>
               {ws.committing ? "写入中……" : "写入草稿 Ctrl+S"}
             </button>
           </div>
           {needShared.length ? <p class="small warn-text">共享键 {needShared.join("、")} 需要在对应卡片上勾选确认（会影响其它角色）。</p> : null}
           {needTierConfirm ? <p class="small warn-text">技能档位插入/删除/移动：到「技能」页核对档位引用后勾选确认。</p> : null}
+          <PendingProfileWarning warn={profileWarn} />
           {textProblems.length ? (
             <ul class="inline-problems">{textProblems.map((t) => <li>文案问题：{t}</li>)}</ul>
           ) : null}
@@ -319,6 +327,7 @@ function KeyEditorBody(props: KeyEditorProps & { ws: AbilityWorkspace; entry: Ab
   const hiddenCount = rows.length - visible.length;
   const structural = table !== "action_skill";
   const locked = tierLocked(ws.pending, table, entry.key);
+  const caps = useRowCaps(ws.cid, rows.map((cells, index) => ({ id: String(index), table, key: entry.key, level: entry.level, cells })));
   const update = (fn: (p: Pending) => Pending) => ws.update(fn);
 
   const move = (from: number, dir: -1 | 1) => {
@@ -360,6 +369,7 @@ function KeyEditorBody(props: KeyEditorProps & { ws: AbilityWorkspace; entry: Ab
         {visible.map(({ row, index }, pos) => (
           <EffectCard key={entryId(table, entry.key, entry.level) + ":" + index + ":" + rows.length}
             ws={ws} entry={entry} rows={rows} index={index} row={row} columns={props.columns} locked={locked}
+            caps={caps.results[String(index)]}
             base={props.baseRows[index]} sameShape={props.baseRows.length === rows.length}
             first={pos === 0} last={pos === visible.length - 1} structural={structural}
             onMove={(dir) => move(index, dir)}
@@ -385,9 +395,10 @@ function KeyEditorBody(props: KeyEditorProps & { ws: AbilityWorkspace; entry: Ab
   );
 }
 
-function EffectCard({ ws, entry, rows, index, row, columns, base, sameShape, first, last, structural, locked, onMove, onDelete, onCell }: {
+function EffectCard({ ws, entry, rows, index, row, columns, base, sameShape, first, last, structural, locked, caps, onMove, onDelete, onCell }: {
   ws: AbilityWorkspace; entry: AbilityEntry; rows: string[][]; index: number; row: string[]; columns: ColumnLabel[];
   base?: string[]; sameShape: boolean; first: boolean; last: boolean; structural: boolean; locked?: boolean;
+  caps?: CapRequirement;
   onMove: (dir: -1 | 1) => void; onDelete: () => void; onCell: (col: number, value: string) => void;
 }) {
   const after = afterDescription(ws, entry, index, row);
@@ -413,6 +424,7 @@ function EffectCard({ ws, entry, rows, index, row, columns, base, sameShape, fir
         {awake ? <span class="tag awake">觉醒 c3={row[3]} Lv{row[4]}</span> : null}
         {changedCols.length ? <span class="pill warnpill">{changedCols.length} 格与改动前不同</span> : null}
         {isNew && entry.table !== "action_skill" ? <span class="tag">结构已变</span> : null}
+        <CapChip req={caps} what={`${entry.table}/${entry.key}${entry.level ? "#" + entry.level : ""} 第 ${index + 1} 行需要的客户端能力：`} />
         <span class="spacer" />
         {structural ? (
           <span class="card-tools">
@@ -609,6 +621,7 @@ function TemplatePicker({ table, rows, awake, onClose, onPick }: {
   const [at, setAt] = useState(rows.length);
   const search = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
+  const kinds = useCaps(`kinds:${table}:${block}`, () => kindCaps(table, block));
 
   useEffect(() => {
     setList(null);
@@ -664,7 +677,7 @@ function TemplatePicker({ table, rows, awake, onClose, onPick }: {
                 <li role="option" aria-selected={i === cursor} class={i === cursor ? "on" : ""}
                   onClick={() => setCursor(i)} onDblClick={() => onPick(o.defaults, at)}>
                   <span class="mono kind">{o.kind}</span>
-                  <span class="kind-name">{o.cn || o.en}</span>
+                  <span class="kind-name">{o.cn || o.en} <CapChip req={kinds?.kinds[o.kind]} what={`kind ${o.kind}（${block}）`} /></span>
                   <span class={"rs " + (o.precedentCount ? "rs-ok" : "rs-warn")}>{o.precedentCount ? `先例 ${o.precedentCount}` : "待验证"}</span>
                 </li>
               ))}
@@ -681,6 +694,7 @@ function TemplatePicker({ table, rows, awake, onClose, onPick }: {
                   <Notice kind="warn">没有当前视图先例：仍可选择，参数和运行时效果「待验证」。默认行只填了区块 kind 与必需的默认值。</Notice>
                 )}
                 {awake ? <p class="small warn-text">三板插入的是普通行；觉醒替换/追加需要自己填 c3/c4。</p> : null}
+                <KindProfileNote req={kinds?.kinds[selected.kind]} kind={selected.kind} />
                 <details>
                   <summary>默认行中非空的列（{selected.defaults.filter((v) => v !== "" && v !== "(None)").length}）</summary>
                   <p class="mono small defaults">
@@ -702,4 +716,86 @@ function TemplatePicker({ table, rows, awake, onClose, onPick }: {
       </div>
     </div>
   );
+}
+
+// ---------------------------------------------------------------------------
+// 目标客户端：未写入改动里需要目标客户端没有的能力 → 写入前明确提示并要求确认
+
+interface ProfileWarnItem { id: string; label: string; req: CapRequirement; text: string }
+
+function usePendingProfileWarnings(ws: AbilityWorkspace | null) {
+  const profile = useClientProfile();
+  const queries: { q: RowQuery; label: string }[] = [];
+  if (ws?.state) {
+    for (const entry of ws.state.entries) {
+      if (!touches(ws.pending, entry.table, entry.key)) continue;
+      const original = new Set(entry.rows.map((r) => JSON.stringify(r)));
+      workingRows(entry, ws.pending).forEach((cells, index) => {
+        if (original.has(JSON.stringify(cells))) return;
+        const where = entry.table === "leader_ability" ? "队长技" : entry.table === "ability" ? "能力" : `技能 档 ${entry.level}`;
+        queries.push({ q: { id: `${entryId(entry.table, entry.key, entry.level)}:${index}`, table: entry.table, key: entry.key,
+          level: entry.level, cells }, label: `${where} ${entry.key} 第 ${index + 1} 行` });
+      });
+    }
+  }
+  const rows = useRowCaps(ws?.cid ?? "", queries.map((x) => x.q));
+  const customKeys = (ws?.pending.custom ?? []).filter((c) => c.section === "custom_ability_string").map((c) => c.key);
+  const custom = useCaps<CapRequirement[]>(customKeys.length ? "custom:" + customKeys.join(",") : null,
+    () => Promise.all(customKeys.map((key) => lookupCaps({ customKey: key }))));
+  const items: ProfileWarnItem[] = [];
+  const consider = (id: string, label: string, req: CapRequirement | undefined) => {
+    const v = verdict(req, profile);
+    if (!req || v.kind === "none" || v.kind === "ok" || (v.kind === "needs" && v.satisfied)) return;
+    items.push({ id, label, req, text: v.label });
+  };
+  for (const x of queries) consider(x.q.id, x.label, rows.results[x.q.id]);
+  customKeys.forEach((key, i) => consider("custom:" + key, `配置文本 ${key}`, custom?.[i]));
+  const signature = profile.selected + "|" + items.map((i) => i.id + "=" + i.text).join(",");
+  const [ack, setAck] = useState("");
+  return { items, profile, acknowledged: ack === signature, acknowledge: (on: boolean) => setAck(on ? signature : "") };
+}
+
+function PendingProfileWarning({ warn }: { warn: ReturnType<typeof usePendingProfileWarnings> }) {
+  if (!warn.items.length) return null;
+  const { profile } = warn;
+  const needs = (profile.profiles?.profiles ?? []).map((p) => p.id)
+    .filter((id) => warn.items.every((i) => i.req.requiredClientProfiles.includes(id)));
+  const selectedMissing = (i: ProfileWarnItem) => i.req.profiles[profile.selected ?? ""]?.missing ?? [];
+  return (
+    <div class="profile-warn" role="alert">
+      <strong>目标客户端 {profile.label(profile.selected)} 不支持这次修改里的 {warn.items.length} 处</strong>
+      <ul>
+        {warn.items.map((i) => (
+          <li class="small"><span class="cap-chip miss" title={describeRequirement(i.req, profile)}>{i.text}</span> {i.label}：
+            {selectedMissing(i).map((m) => m.title ?? m.id ?? m.message).join("、")
+              || i.req.placement.join("；") || i.req.unsupported.join("；")}
+            {selectedMissing(i).length
+              ? <span class="muted">（缺补丁 {[...new Set(selectedMissing(i).flatMap((m) => m.missingPatches))].map((n) => "#" + n).join(" ")}）</span> : null}
+          </li>
+        ))}
+      </ul>
+      <p class="small">写进草稿本身不会坏，但按 {profile.label(profile.selected)} 生成会被兼容检查拦下，装 {profile.label(profile.selected)} 的玩家用不了。
+        {needs.length ? <> 能满足的客户端：{needs.map((id) => profile.label(id)).join("、")}。</> : " 没有已登记的客户端档案满足。"}</p>
+      <label class="check small">
+        <input type="checkbox" checked={warn.acknowledged} onChange={(e) => warn.acknowledge((e.target as HTMLInputElement).checked)} />
+        我知道：这份改动只发给装了 {needs.length ? needs.map((id) => profile.label(id)).join(" / ") : "支持它的客户端"} 的玩家，仍写入草稿
+      </label>
+    </div>
+  );
+}
+
+function KindProfileNote({ req, kind }: { req: CapRequirement | undefined; kind: string }) {
+  const profile = useClientProfile();
+  const v = verdict(req, profile);
+  if (!req || v.kind === "none") return null;
+  const caps = req.capabilities.filter((c) => !c.official);
+  const names = caps.map((c) => `${c.title}（补丁 ${c.patches.map((n) => "#" + n).join(" ") || "无编号"}）`).join("、");
+  if (v.kind === "bad") return <Notice kind="error">kind {kind} {v.label}：{v.reason}</Notice>;
+  if (v.kind === "needs" && !v.satisfied) {
+    return (
+      <Notice kind="warn">kind {kind} 需要客户端能力 {names}，当前目标客户端 {profile.label(profile.selected)} 没有：
+        插入后写入草稿前会再提示，按 {profile.label(profile.selected)} 生成会被兼容检查拦下。能满足的是 {profile.label(v.profile)}。</Notice>
+    );
+  }
+  return <p class="small muted">需要客户端扩展：{names}。{v.kind === "ok" ? `${profile.label(profile.profiles?.defaultClientProfile)} 已有。` : `目标客户端 ${profile.label(profile.selected)} 已有。`}</p>;
 }

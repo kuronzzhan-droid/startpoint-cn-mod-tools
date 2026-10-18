@@ -8,9 +8,11 @@ import { BossWorkshop } from "./views/boss/BossWorkshop";
 import { PatchManager } from "./views/PatchManager";
 import { ScratchDetail, ScratchList } from "./views/ScratchView";
 import { LookupPanel } from "./views/LookupPanel";
+import { ClientProfilePicker } from "./views/ClientProfile";
 import "./styles.css";
 import "./m4.css";
 import "./workshop.css";
+import "./profile.css";
 
 function App() {
   const route = useRoute();
@@ -43,6 +45,7 @@ function App() {
           <a class={route.work === "patches" ? "active" : ""} href="#/patches">补丁管理</a>
         </nav>
         <div class="topbar-right">
+          <ClientProfilePicker />
           <button class={"lookup-toggle" + (lookupOpen ? " on" : "")} onClick={() => setLookupOpen(!lookupOpen)}
             title="随时可用的词条速查（Ctrl+K）">
             词条速查

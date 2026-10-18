@@ -508,6 +508,10 @@ export interface RuleResult {
   evidence_nature?: string;
   source?: string;
   character?: string;
+  /** capability.* results: capability ID, its client patches and the ones the target client lacks. */
+  id?: string;
+  patches?: number[];
+  missing_patches?: number[];
 }
 
 export type AbilityTable = "ability" | "leader_ability" | "action_skill";
@@ -745,6 +749,9 @@ export interface DeliveryDefaults {
   outRoot: string;
   serverDir: string | null;
   provides: string | null;
+  /** Client profile the backend would use when the request names none (client_profiles.json default). */
+  clientProfile?: string | null;
+  defaultClientProfile?: string;
   note: string;
 }
 
@@ -766,6 +773,8 @@ export interface BuildResult {
   compatChecks?: RuleResult[];
   /** Draft rule results replayed at compile time (boss drafts: five-state boss rules). */
   draftChecks?: RuleResult[];
+  /** Client profile the delivery was checked against (null: explicit provides file or none). */
+  clientProfile?: string | null;
   deviceValidation: string;
 }
 
@@ -780,6 +789,7 @@ export interface BuildJob {
   stages: { id: string; label: string; state: "waiting" | "running" | "done" | "failed" | "cancelled" }[];
   seconds: number;
   result: BuildResult | null;
+  clientProfile?: string | null;
 }
 
 export interface DeliverySummary {
@@ -823,6 +833,9 @@ export const ability = {
     get<KeySearchResult>(`/api/studio/ability/keys?table=${table}&q=${encodeURIComponent(q)}&cid=${cid}&limit=40`),
 };
 
+/** 生成请求：clientProfile = 页面顶部选的目标客户端；provides 只在填了自定义能力清单时发送。 */
+export interface BuildRequest { from: string; to: string; provides?: string; clientProfile?: string }
+
 /** 「生成」/「导出」 endpoints of one draft namespace (characters at /api, boss drafts at /api/boss). */
 export interface DeliveryApi {
   /** Draft-change listener key of a draft id (characters: the id itself). */
@@ -830,7 +843,7 @@ export interface DeliveryApi {
   defaults: () => Promise<DeliveryDefaults>;
   list: (cid: string) => Promise<{ root: string; deliveries: DeliverySummary[]; running: Record<string, string>; jobs: BuildJob[] }>;
   job: (name: string) => Promise<BuildJob>;
-  start: (cid: string, body: { from: string; to: string; provides?: string }) => Promise<BuildJob>;
+  start: (cid: string, body: BuildRequest) => Promise<BuildJob>;
   cancel: (cid: string) => Promise<{ name: string; cancelling: boolean; note: string }>;
   /** Tell listeners (status strip, export list) that a job finished. */
   finished: (cid: string) => Promise<null>;
@@ -855,7 +868,7 @@ export function deliveryApi(prefix: string, key: (cid: string) => string = (cid)
 
 export const deliveries = {
   ...deliveryApi("/api"),
-  build: (cid: string, body: { from: string; to: string; provides?: string }) =>
+  build: (cid: string, body: BuildRequest) =>
     notify(cid, post<BuildResult>(`/api/drafts/${cid}/build`, body)),
 };
 

@@ -12,6 +12,7 @@ import { AbilityProvider, KeyEditor, PendingBar, useAbilityWorkspace, useWorkspa
 import { pendingCount } from "./abilityModel";
 import { AttachControl, SkillTiers, slotOf } from "./KeyTools";
 import { TextTab } from "./TextTab";
+import { CharacterProfileBadge, ProgramCapChip } from "./ClientProfile";
 
 // Seven groups (C1): 能力（一板/二板/三板）｜技能｜文案｜立绘｜像素（预览/单动作替换/工坊/整族导入）｜语音;
 // 本次修改 and 资源 open as header drawers.
@@ -83,7 +84,7 @@ export function CharacterDetailView({ id, tab, sub }: { id: string; tab?: string
             </a>
             <a class="header-btn" href={href(link("assets"))} title="这个角色的全部资源文件（立绘、小人、语音、特效……）">资源</a>
           </div>
-          <span class="char-meta"><OriginBadge origin={detail.origin} /> <span class="char-id" title={"代码名 " + detail.code}>ID {detail.id}</span></span>
+          <span class="char-meta"><CharacterProfileBadge cid={detail.id} /> <OriginBadge origin={detail.origin} /> <span class="char-id" title={"代码名 " + detail.code}>ID {detail.id}</span></span>
         </div>
       </header>
       <StatusStrip draft={draft.view?.status ?? null} checks={draft.view?.changeset?.changes.flatMap((c) => c.checks) ?? []}
@@ -222,7 +223,7 @@ function AbilityCard({ title, table, group, rows, columns, awake, filter }: {
           <ul>
             {group.relatedPrograms.map((p) => (
               <li>
-                <strong>{p.kind}</strong> <code>{p.program}</code> · 节点 {p.commandCount}
+                <strong>{p.kind}</strong> <code>{p.program}</code> · 节点 {p.commandCount} <ProgramCapChip path={p.program} />
                 {p.warning ? <span class="error-text"> {p.warning}</span> : null}
               </li>
             ))}
@@ -252,6 +253,7 @@ function SkillTab({ detail, onText }: { detail: CharacterDetail; onText: () => v
             <h3>{s.name || "（无名称）"}</h3>
             <span class="tag">{s.label}</span>
             <span class="muted key">{s.gaugeLabel}：{s.gauge ?? "—"}</span>
+            <ProgramCapChip path={s.program} />
             <span class="spacer" />
             {s.kind === "main" && s.level === "1" ? <AttachControl table="action_skill" slot={0} title="技能" /> : null}
           </header>

@@ -4,6 +4,8 @@ import { Notice } from "./common";
 import { editedLocations, useWorkspace } from "./AbilityEditor";
 import { setCustom, setSkillText, sharedId, tierOps } from "./abilityModel";
 import { InfoTip } from "./Delivery";
+import { lookupCaps, useCaps } from "../clientProfile";
+import { CapChip } from "./ClientProfile";
 
 // 文案：技能名/描述（每档）、覆盖文案（按槽）、技能强化等关联文本、队长名。
 // Reads GET /api/characters/<cid>/text (draft state, both server mirrors). Edits join the
@@ -218,6 +220,7 @@ function CustomEditor({ field, original, owners, label, slot }: {
         <span class="mono small" title="文本键">{field.key}</span>
         {label ? <span class={"tag" + (creating ? " pendingpill" : "")}>{label}</span> : null}
         {shared ? <span class="pill bad" title={"持有者：" + owners.join("、")}>{owners.length} 个角色共用</span> : null}
+        <TextCapChip section={section} keyName={field.key} />
         {creating ? (
           <button class="ghost small-btn" onClick={() => ws.update((p) => ({ ...p, custom: p.custom.filter((c) => !(c.section === section && c.key === field.key)) }))}>
             取消新建</button>
@@ -400,4 +403,12 @@ function LeaderName({ panel }: { panel: TextPanel }) {
       </div>
     </article>
   );
+}
+
+/** 「v34 即可」 / 「需要 v35e」 for a client-only text key (desc_override or a wfx_* configuration string). */
+function TextCapChip({ section, keyName }: { section: "desc_override" | "custom_ability_string"; keyName: string }) {
+  const override = section === "desc_override";
+  const req = useCaps(`text:${section}:${override ? "" : keyName}`,
+    () => lookupCaps(override ? { selector: "text.desc_override" } : { customKey: keyName }));
+  return <CapChip req={req} what={override ? "覆盖文案（desc_override）需要的客户端能力：" : `配置文本 ${keyName} 需要的客户端能力：`} />;
 }

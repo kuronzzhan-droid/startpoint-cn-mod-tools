@@ -1,0 +1,61 @@
+/* 目标客户端：顶部选择器、档案徽标、行内能力标记、缺能力清单 */
+.profile-picker { position: relative; display: flex; align-items: center; }
+.profile-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+.profile-toggle.on { border-color: var(--accent); }
+.profile-toggle.alt { border-color: #7048e8; }
+.profile-badge {
+  display: inline-block; font-size: 11px; font-weight: 600; line-height: 18px; padding: 0 7px; border-radius: 999px;
+  color: var(--accent); background: var(--accent-soft); border: 1px solid currentColor; white-space: nowrap;
+}
+.profile-badge.alt { color: #7048e8; background: rgba(112, 72, 232, 0.1); }
+.profile-badge.none { color: var(--muted); background: var(--surface-2); }
+.profile-badge + .profile-badge { margin-left: 4px; }
+.profile-pop {
+  position: absolute; right: 0; top: calc(100% + 8px); width: min(460px, 92vw); z-index: 30;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+}
+.profile-pop h3 { margin-bottom: 4px; }
+.profile-pop p { margin: 6px 0; }
+.profile-options { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.profile-option {
+  display: flex; gap: 8px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--border);
+  border-radius: 8px; cursor: pointer;
+}
+.profile-option.on { border-color: var(--accent); background: var(--accent-soft); }
+.profile-option.off { opacity: 0.6; cursor: not-allowed; }
+.profile-option input { margin-top: 3px; }
+.profile-option-body { display: flex; flex-direction: column; gap: 2px; }
+.profile-option-head { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+.cap-chip {
+  display: inline-block; font-size: 11px; line-height: 18px; padding: 0 7px; border-radius: 999px; white-space: nowrap;
+  border: 1px solid currentColor; cursor: help; vertical-align: middle;
+}
+.cap-chip.ok { color: var(--muted); border-style: dashed; }
+.cap-chip.needs { color: #7048e8; background: rgba(112, 72, 232, 0.08); }
+.cap-chip.miss { color: var(--danger); background: rgba(201, 42, 75, 0.08); font-weight: 600; }
+.cap-chip.bad { color: var(--danger); border-style: dashed; }
+button.cap-chip { cursor: pointer; font-weight: inherit; }
+button.cap-chip.miss { font-weight: 600; }
+.cap-chip-wrap { position: relative; display: inline-block; vertical-align: middle; }
+.cap-pop {
+  position: absolute; left: 0; top: calc(100% + 4px); z-index: 25; width: max-content; max-width: min(460px, 80vw);
+  white-space: pre-wrap; text-align: left; font-size: 12px; font-weight: normal; line-height: 1.6; color: var(--text);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+}
+
+.missing-caps { margin: 8px 0; padding: 8px 10px; border: 1px solid var(--danger); border-radius: 8px; background: var(--surface); }
+.missing-caps h5 { margin: 0 0 6px; font-size: 13px; color: var(--danger); }
+.missing-caps ul { margin: 0; padding-left: 18px; }
+.missing-caps li { margin: 4px 0; }
+.missing-caps .tag { margin-right: 3px; }
+.missing-caps .profile-badge { margin-left: 3px; }
+
+.profile-line { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 6px 0; }
+.profile-warn { margin: 8px 0; padding: 8px 10px; border: 1px solid var(--danger); border-radius: 8px; }
+.profile-warn ul { margin: 4px 0; padding-left: 18px; }
+.profile-warn strong { color: var(--danger); }
+.char-card .cap-chip { margin-top: 2px; }
+.filters .profile-filter { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; }
