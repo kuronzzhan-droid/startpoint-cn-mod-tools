@@ -17,6 +17,25 @@ def unknown_client_check(allowed):
                   blocking=not allowed)
 
 
+def write_compatibility(directory, requirements, provides, *, allow_unknown_client=False,
+                        client_profile=None):
+    from wf.caps.compat import check_compat
+    from wf.caps.profiles import read_client
+    from .changeset import write_json
+    if provides is None:
+        checks = [unknown_client_check(allow_unknown_client)]
+    else:
+        evidence = read_client(provides)
+        write_json(directory / "provides.json", evidence)
+        checks = check_compat(requirements, evidence, delivery_dir=directory)
+    write_json(directory / "compat.json", {"schema": "wf-check-results/1", "results": checks})
+    declaration = {"status": compatibility_status(provides, checks),
+                   "allow_unknown_client": allow_unknown_client, "report": "compat.json"}
+    if client_profile is not None:
+        declaration["client_profile"] = client_profile
+    return declaration
+
+
 def readback_compatibility(document, directory, local_read, requirements):
     declaration = document.get("client_compatibility")
     if declaration is None:

@@ -12,7 +12,11 @@ from .dsl_gate import check_candidate
 from .manifests import write_manifests
 
 
-def build_delivery(changeset: Path, out: Path, **prepush_options) -> dict:
+def build_delivery(changeset: Path, out: Path, *, provides=None, client_profile=None,
+                   allow_unknown_client=False, **prepush_options) -> dict:
+    from wf.caps.profiles import resolve_client
+    provides, selected_profile = resolve_client(provides, client_profile,
+                                               allow_unknown_client=allow_unknown_client)
     doc, members, server = load_changeset(changeset)
     out = local_output(out)
     if out.exists() and any(out.iterdir()):
@@ -65,6 +69,10 @@ def build_delivery(changeset: Path, out: Path, **prepush_options) -> dict:
         delivery["prepush"].update(status="问题", exit_code=2, limitations=[str(exc)])
         write_json(out / "delivery-manifest.json", delivery)
         raise
+    from .client_compatibility import write_compatibility
+    delivery["client_compatibility"] = write_compatibility(
+        out, requirements, provides, allow_unknown_client=allow_unknown_client,
+        client_profile=selected_profile)
     validate_document(delivery, "delivery-manifest.schema.json")
     write_json(out / "delivery-manifest.json", delivery)
     # Snapshot copies and logs remain auditable, but are not installation artifacts.

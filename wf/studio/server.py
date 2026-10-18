@@ -89,6 +89,8 @@ class StudioApp:
             ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+|scratch-[a-z0-9][a-z0-9-]{0,47})/save$"), self.save),
         ]
         from .ability_routes import AbilityRoutes
+        from .capability_routes import routes as capability_routes
+        self.routes.extend(capability_routes())
         self.abilities = AbilityRoutes(self, server_dir)
         self.routes.extend(self.abilities.routes())
         from .pixel_routes import PixelRoutes

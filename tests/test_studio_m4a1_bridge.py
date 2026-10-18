@@ -53,7 +53,7 @@ def test_noop_draft_does_not_emit_delivery(case, monkeypatch):
 
 
 @pytest.mark.parametrize("allow", [False, True])
-def test_unknown_client_requires_explicit_cli_override(case, monkeypatch, capsys, allow):
+def test_default_profile_and_explicit_unknown_client_override(case, monkeypatch, capsys, allow):
     real_build = bridge.build_draft
     def local_build(cid, **options):
         options.update(store=case[0], baseline_view=case[2])
@@ -63,25 +63,32 @@ def test_unknown_client_requires_explicit_cli_override(case, monkeypatch, capsys
             "--to", "1.4.133", "--out", str(case[-1])]
     if allow:
         args.append("--allow-unknown-client")
-    assert main(args) == (0 if allow else 1)
+    assert main(args) == 0
     result = json.loads(capsys.readouterr().out)["result"]
-    assert result["ok"] is allow and result["compat"] == "未确认"
+    assert result["ok"] and result["compat"] == ("未确认" if allow else "满足")
+    assert result["clientProfile"] == (None if allow else "test-v34")
     report = json.loads((case[-1] / "build-report.json").read_text("utf-8"))
-    assert report["ok"] is allow and report["allowUnknownClient"] is allow
+    assert report["ok"] and report["allowUnknownClient"] is allow
     manifest = json.loads((case[-1] / "delivery/delivery-manifest.json").read_text("utf-8"))
-    assert manifest["client_compatibility"] == {
-        "status": "未确认", "allow_unknown_client": allow, "report": "compat.json"}
+    expected = {"status": "未确认" if allow else "满足", "allow_unknown_client": allow, "report": "compat.json"}
+    if not allow:
+        expected["client_profile"] = "test-v34"
+    assert manifest["client_compatibility"] == expected
     from wf.check import main as check_main
-    assert check_main([str(case[-1] / "delivery/delivery-manifest.json")]) == (0 if allow else 1)
+    assert check_main([str(case[-1] / "delivery/delivery-manifest.json")]) == 0
     checks = json.loads((case[-1] / "delivery/check.json").read_text("utf-8"))["results"]
-    assert next(r for r in checks if r["rule"] == "capability.unknown")["blocking"] is (not allow)
+    assert not any(r["blocking"] for r in checks)
+    if allow:
+        assert next(r for r in checks if r["rule"] == "capability.unknown")["status"] == "待验证"
 
 
 def test_explicit_override_cannot_bypass_missing_capability(case, monkeypatch):
     from wf.rules.catalog import result
+    from wf.caps.profiles import resolve_client
     monkeypatch.setattr(bridge, "_checks", lambda *a: ([], [
         result("capability.missing", "问题", "缺少 desc_override", blocking=True)]))
-    assert not build(case, provides=case[-1].parent / "provides.json", allow_unknown_client=True)["ok"]
+    provides, _ = resolve_client()
+    assert not build(case, provides=provides, allow_unknown_client=True)["ok"]
 
 
 def test_provided_client_runs_real_compat(case):

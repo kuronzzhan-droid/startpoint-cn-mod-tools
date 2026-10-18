@@ -22,6 +22,8 @@ def main(argv=None):
     parser.add_argument("--view-lock", type=Path)
     parser.add_argument("--no-baseline-i-know", action="store_true", help="显式放弃缺失的客户端基线检查并留痕；不豁免服务端摘要或 DSL 门禁")
     parser.add_argument("--pathlist", type=Path)
+    parser.add_argument("--client-profile", help="目标客户端档案；默认 test-v34")
+    parser.add_argument("--provides", type=Path, help="显式目标客户端能力证据；若同时选档案，证据必须相符")
     args = parser.parse_args(argv)
     try:
         result = build_delivery(args.changeset, args.out or REPOSITORY / "work/m1/deliver" / args.changeset.stem,
@@ -29,11 +31,13 @@ def main(argv=None):
             baseline_zips=args.baseline_zip, pathlist=args.pathlist,
             baseline_manifest=args.baseline_manifest, baseline_manifests=args.baseline_manifest_extra,
             baseline_zip_dirs=args.baseline_zip_dir, base_version=args.base_version,
-            view_lock=args.view_lock, no_baseline_i_know=args.no_baseline_i_know)
+            view_lock=args.view_lock, no_baseline_i_know=args.no_baseline_i_know,
+            client_profile=args.client_profile, provides=args.provides)
     except (ValueError, OSError, KeyError) as exc:
         parser.exit(2, f"wf deliver: {exc}\n")
     print(json.dumps(result, ensure_ascii=False, indent=2))
-    return int(result["prepush"]["exit_code"] or 0)
+    return int(result["prepush"]["exit_code"] or
+               (result["client_compatibility"]["status"] in {"问题", "未确认"}))
 
 
 if __name__ == "__main__":

@@ -53,9 +53,13 @@ def test_readback_keeps_unresolved_pending_and_rejects_array_metadata(tmp_path):
     delivery = build_delivery(source, out, no_baseline_i_know=True)
     filename = out / "requires.json"
     required = json.loads(filename.read_text("utf-8"))
+    original = filename.read_bytes()
     required["requires"]["unresolved"] = [{"logical_path": "missing", "key": None,
                                           "referenced_by": {"logical_path": "caller"}}]
     filename.write_text(json.dumps(required), "utf-8")
+    with pytest.raises(ValueError, match="compatibility report contradicts"):
+        check_delivery(delivery, out)
+    filename.write_bytes(original)
     result = next(r for r in check_delivery(delivery, out) if r["rule"] == "capability.resolution")
     assert result["status"] == "待验证" and result["unresolved"]
     (out / delivery["upstream_manifest"]).write_text("[]", "utf-8")

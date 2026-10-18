@@ -85,11 +85,14 @@ class DeliverRoutes:
     # -- handlers --------------------------------------------------------
     def defaults(self, query):
         from .server import json_response
+        from wf.caps.profiles import profile_options, resolve_client
+        provides, selected = resolve_client(self.default_provides)
         version = self.app.source.version
         return json_response({"from": version, "to": next_version(version),
                               "outRoot": self.display_root(),
                               "serverDir": str(self.server_dir) if self.server_dir else None,
-                              "provides": str(self.default_provides) if self.default_provides else None,
+                              "provides": str(provides) if provides else None,
+                              "clientProfile": selected, **profile_options(),
                               "note": "来源版本取当前视图末端；目标版本默认 +1，只是本地测试候选，不代表正式版本分配。"})
 
     def build(self, query, body, cid):
@@ -101,7 +104,13 @@ class DeliverRoutes:
         for value in (from_version, to_version):
             if not VERSION.fullmatch(value):
                 raise DraftError(f"版本无效：{value}")
-        provides = body.get("provides") or self.default_provides
+        from wf.caps.profiles import resolve_client
+        try:
+            explicit = body.get("provides") or (None if body.get("clientProfile") else self.default_provides)
+            provides, selected = resolve_client(explicit,
+                                               body.get("clientProfile"))
+        except ValueError as exc:
+            raise DraftError(str(exc)) from exc
         if provides is not None:
             provides = Path(str(provides))
             if not provides.is_file():
@@ -114,6 +123,7 @@ class DeliverRoutes:
             self.running[cid] = name
             cancel = self._cancel[name] = threading.Event()
             job = self.jobs[name] = {"name": name, "characterId": cid, "from": from_version, "to": to_version,
+                                     "clientProfile": selected,
                                      "state": "running", "stage": None, "stages": [
                                          {"id": s, "label": label, "state": "waiting"} for s, label in STAGES],
                                      "startedAt": time.time(), "seconds": 0, "result": None}
@@ -140,8 +150,10 @@ class DeliverRoutes:
         out = self.root / name
         started = time.time()
         try:
+            selected = self.jobs[name].get("clientProfile")
             result = build_draft(cid, from_version=from_version, to_version=to_version, out=out,
-                                 store=self.app.ops.store, provides=provides,
+                                 store=self.app.ops.store, provides=None if selected else provides,
+                                 client_profile=selected,
                                  progress=self._progress(name), cancel=cancel, **self.baseline_options())
             result = {**result, "name": name, "seconds": round(time.time() - started, 1)}
             state = "ok" if result.get("ok") else "failed"

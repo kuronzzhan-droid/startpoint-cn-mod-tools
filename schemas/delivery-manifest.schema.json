@@ -115,6 +115,7 @@
       "properties": {
         "status": {"enum": ["满足", "问题", "待验证", "未确认"]},
         "allow_unknown_client": {"type": "boolean"},
+        "client_profile": {"type": "string", "minLength": 1},
         "report": {"const": "compat.json"}
       },
       "required": ["status", "allow_unknown_client", "report"],

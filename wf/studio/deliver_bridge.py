@@ -168,8 +168,11 @@ def _checks(delivery, provides, allow_unknown_client=False, progress=None, cance
                               json.loads(evidence), delivery_dir=delivery)
     write_json(delivery / "compat.json", {"schema": "wf-check-results/1", "results": compat})
     manifest = json.loads((delivery / "delivery-manifest.json").read_text("utf-8"))
+    selected = manifest.get("client_compatibility", {}).get("client_profile")
     manifest["client_compatibility"] = {"status": compatibility_status(provides, compat),
         "allow_unknown_client": allow_unknown_client, "report": "compat.json"}
+    if selected is not None:
+        manifest["client_compatibility"]["client_profile"] = selected
     validate_document(manifest, "delivery-manifest.schema.json")
     write_json(delivery / "delivery-manifest.json", manifest)
     _step(progress, cancel, "check")
@@ -180,7 +183,8 @@ def _checks(delivery, provides, allow_unknown_client=False, progress=None, cance
 
 def build_draft(cid: str, *, from_version: str, to_version: str, out: Path,
                 store: DraftStore | None = None, provides: Path | None = None,
-                allow_unknown_client: bool = False, progress=None, cancel=None, **options) -> dict:
+                allow_unknown_client: bool = False, client_profile=None,
+                progress=None, cancel=None, **options) -> dict:
     """Everything generated lives under out/{inputs,delivery}; inputs stay read-only.
 
     ``progress(stage)`` is called when a stage of :data:`STAGES` starts; ``cancel`` (an Event)
@@ -190,6 +194,9 @@ def build_draft(cid: str, *, from_version: str, to_version: str, out: Path,
     from .scratch import build_refusal, is_scratch
     if is_scratch(cid) or "scratch" in (store.load(cid) or {}):
         raise DraftError(build_refusal(store, cid))
+    from wf.caps.profiles import resolve_client
+    provides, selected_profile = resolve_client(provides, client_profile,
+                                               allow_unknown_client=allow_unknown_client)
     out = local_output(out)
     if out.exists() and (not out.is_dir() or any(out.iterdir())):
         raise DraftError(f"交付输出目录必须为空：{out}")
@@ -205,7 +212,11 @@ def build_draft(cid: str, *, from_version: str, to_version: str, out: Path,
     filename = _stage(out, changeset, source, compiled, to_version)
     _step(progress, cancel, "deliver")
     options["baseline_view"] = baseline
-    manifest = build_delivery(filename, out / "delivery", **options)
+    manifest = build_delivery(filename, out / "delivery", provides=provides,
+                              client_profile=selected_profile,
+                              allow_unknown_client=allow_unknown_client, **options)
+    if selected_profile is not None:
+        manifest["client_compatibility"]["client_profile"] = selected_profile
     write_json(out / "delivery/draft-checks.json", compiled[4])
     manifest["draft_checks"] = "draft-checks.json"
     write_json(out / "delivery/delivery-manifest.json", manifest)
@@ -219,6 +230,7 @@ def build_draft(cid: str, *, from_version: str, to_version: str, out: Path,
               "delivery": str(out / "delivery"), "prepush": manifest["prepush"],
               "checks": checks, "compat": compat_status, "compatChecks": compat,
               "draftChecks": compiled[4],
+              "clientProfile": selected_profile,
               "allowUnknownClient": allow_unknown_client, "deviceValidation": "未执行"}
     write_json(out / "build-report.json", result)
     # The extra check/compat artifacts are included in the final delivery checksum list.
