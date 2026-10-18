@@ -25,6 +25,7 @@ def main(argv=None) -> int:
                         help="查找补丁 ZIP 的目录（可重复；默认 profile 的 studio_zip_dirs，否则 wf_root 下 rel* 与 out）")
     parser.add_argument("--no-chain", action="store_true", help="不按清单自动叠加，只用 active 与 --extra-zip")
     parser.add_argument("--static", type=Path, default=DEFAULT_STATIC, help="前端构建目录")
+    parser.add_argument("--server-dir", type=Path, help="文本编辑所需的只读服务端镜像根目录")
     parser.add_argument("--warm", action="store_true", help="启动时预先加载角色列表")
     parser.add_argument("--allow-origin", action="append", default=[], metavar="URL",
                         help="额外允许写入的 Origin（例如 Vite 开发服务器 http://127.0.0.1:5173），可重复")
@@ -35,7 +36,7 @@ def main(argv=None) -> int:
     source = build_source(tip=args.tip, extra_zips=args.extra_zip, extra_lists=args.extra_zips_file,
                           chain_manifest=args.chain_manifest, search_dirs=args.zip_dir,
                           use_default_chain=not args.no_chain)
-    app = StudioApp(source)
+    app = StudioApp(source, server_dir=args.server_dir)
     if args.warm:
         app.character_list()
     info = source.describe()

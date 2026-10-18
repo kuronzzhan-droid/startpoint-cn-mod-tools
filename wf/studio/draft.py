@@ -40,7 +40,17 @@ def _png_b64(image) -> str:
 def _ops(args):
     from .operations import DraftOps
     from .source import build_source
-    source = build_source(tip=args.tip, extra_lists=args.extra_zips_file, use_default_chain=not args.no_chain)
+    if args.manifest:
+        from wf.view import ManifestView
+        from .source import StudioSource
+        if not args.tip:
+            raise DraftError("--manifest 需要 --tip 指定精确来源版本")
+        if args.extra_zips_file:
+            raise DraftError("manifest 视图不能叠加未经清单锁定的 --extra-zips-file")
+        source = StudioSource(ManifestView(f"1.4.{args.tip}", store=args.store, manifest=args.manifest,
+                                          search_dirs=args.zip_dir, manifests=args.manifest_extra))
+    else:
+        source = build_source(tip=args.tip, extra_lists=args.extra_zips_file, use_default_chain=not args.no_chain)
     return DraftOps(source, store=DraftStore(args.drafts) if args.drafts else None)
 
 
@@ -49,12 +59,15 @@ def _load_json(path: str):
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="python -m wf.studio.draft", description="编辑台草稿命令行（只写草稿）")
+    parser = argparse.ArgumentParser(prog="python -m wf.studio.draft", description="编辑台草稿与本地交付命令行")
     parser.add_argument("--drafts", type=Path, help="草稿根目录（默认 work/studio-drafts 或 WF_STUDIO_DRAFTS）")
     parser.add_argument("--tip", type=int, help="视图 TIP 小版本号")
     parser.add_argument("--extra-zips-file", action="append", default=[], metavar="TXT")
     parser.add_argument("--no-chain", action="store_true")
+    from .draft_commands import source_arguments, add_commands
+    source_arguments(parser)
     sub = parser.add_subparsers(dest="command", required=True)
+    add_commands(sub)
 
     sub.add_parser("list", help="列出有草稿的角色")
     p = sub.add_parser("show", help="输出某角色的 changeset")
@@ -127,8 +140,14 @@ def run(args) -> dict:
     if args.command == "save":
         changeset = store.save(args.cid)
         return {"status": status(changeset), "savedAt": changeset["savedAt"]}
+    if args.command == "build":
+        from .draft_commands import run_build
+        return run_build(args, store)
 
     ops = _ops(args)
+    if args.command.startswith("ability"):
+        from .draft_commands import run_ability
+        return run_ability(args, ops.source, store)
     if args.command == "portrait-info":
         if args.upload:
             return ops.portrait_upload(args.cid, args.form, _b64(args.upload))
@@ -206,7 +225,7 @@ def main(argv=None) -> int:
     args = build_parser().parse_args(argv)
     try:
         result = run(args)
-    except DraftError as exc:
+    except (DraftError, ValueError, OSError, KeyError) as exc:
         print(json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False))
         return 1
     ok = not (isinstance(result, dict) and result.get("ok") is False)
