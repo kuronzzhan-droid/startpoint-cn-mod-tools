@@ -50,7 +50,7 @@ def error(status: int, message: str) -> Response:
 class StudioApp:
     """Request handlers bound to one :class:`StudioSource`."""
 
-    def __init__(self, source: StudioSource, *, drafts=None, server_dir=None):
+    def __init__(self, source: StudioSource, *, drafts=None, server_dir=None, default_provides=None):
         self.source = source
         self.pixels = PixelCache(source)
         self.assets = AssetIndex(source)
@@ -90,7 +90,7 @@ class StudioApp:
         from .ability_routes import AbilityRoutes
         self.routes.extend(AbilityRoutes(self, server_dir).routes())
         from .deliver_routes import DeliverRoutes
-        self.deliveries = DeliverRoutes(self, server_dir)
+        self.deliveries = DeliverRoutes(self, server_dir, default_provides=default_provides)
         self.routes.extend(self.deliveries.routes())
 
     # -- dispatch -------------------------------------------------------

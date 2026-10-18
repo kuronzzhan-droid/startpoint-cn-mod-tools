@@ -238,3 +238,14 @@ action_skill 的结构编辑按客户端档位处理：`level` 指源/插入档�
 | GET | `/api/deliveries/<名>/file?path=` | 读取交付目录内文件（限目录内） |
 
 生成沿用编辑台视图的补丁链清单与已解析 ZIP 所在目录作为基线（`ManifestView` 按清单重新锁定），只接受已保存草稿；未提供 provides 时兼容检查为「未执行」。应用/发布按钮保持禁用。
+
+### 默认客户端能力清单(`--provides`)
+
+M4a.1 起，没有客户端能力清单的交付会判为「兼容未确认」，不通过。启动编辑台时给一份 `wf apk provides` 的输出，「生成」就会默认带上它：
+
+```powershell
+python -m wf apk provides <v34 APK> --output work/studio-provides/v34-x86.json
+python -m wf.studio --provides work/studio-provides/v34-x86.json --server-dir <服务端镜像根>
+```
+
+页面上仍然可以改成别的 provides 文件；留空时交付不通过。

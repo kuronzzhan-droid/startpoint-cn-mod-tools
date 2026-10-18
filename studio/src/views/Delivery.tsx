@@ -52,7 +52,7 @@ function GenerateForm({ characterId, view, onBuilt }: { characterId: string; vie
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    deliveries.defaults().then((d) => { setFrom(d.from); setTo(d.to); setNote(d.note); }, (e: Error) => setError(e.message));
+    deliveries.defaults().then((d) => { setFrom(d.from); setTo(d.to); setNote(d.note); if (d.provides) setProvides(d.provides); }, (e: Error) => setError(e.message));
   }, []);
   useEffect(() => {
     if (!busy) return;
@@ -81,7 +81,7 @@ function GenerateForm({ characterId, view, onBuilt }: { characterId: string; vie
     <div class="generate-form">
       <p class="small muted">
         把已保存的草稿编译成内容寻址变更集，再跑现有 <span class="mono">wf deliver</span>（≤5 MiB 分包、两种 manifest、requires 推导、prepush）、
-        <span class="mono">wf check</span>，给了 provides 时再跑兼容检查。全部写到 <span class="mono">work/studio-deliveries/</span> 新目录；
+        <span class="mono">wf check</span> 和兼容检查（没有客户端能力清单时交付判为不通过）。全部写到 <span class="mono">work/studio-deliveries/</span> 新目录；
         不改 store、补丁链、测试服或草稿。{note}
       </p>
       <form class="version-row" onSubmit={(e) => { e.preventDefault(); if (!busy) build(); }}>
@@ -91,7 +91,7 @@ function GenerateForm({ characterId, view, onBuilt }: { characterId: string; vie
         <button type="submit" class="primary" disabled={busy || !from || !to}>{busy ? `生成中…… ${elapsed}s` : "生成本地交付"}</button>
       </form>
       <details>
-        <summary>可选：目标客户端 provides.json（不填则兼容检查「未执行」）</summary>
+        <summary>目标客户端能力清单 provides.json（默认用启动时 --provides 指定的那份；留空则交付判为「兼容未确认」，不通过）</summary>
         <input class="mono wide-input" placeholder="例如 work/…/v34-provides.json 的绝对路径" value={provides}
           onInput={(e) => setProvides((e.target as HTMLInputElement).value)} />
       </details>

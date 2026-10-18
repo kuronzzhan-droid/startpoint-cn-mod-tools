@@ -26,6 +26,8 @@ def main(argv=None) -> int:
     parser.add_argument("--no-chain", action="store_true", help="不按清单自动叠加，只用 active 与 --extra-zip")
     parser.add_argument("--static", type=Path, default=DEFAULT_STATIC, help="前端构建目录")
     parser.add_argument("--server-dir", type=Path, help="文本编辑所需的只读服务端镜像根目录")
+    parser.add_argument("--provides", type=Path, metavar="JSON",
+                        help="生成交付时默认使用的客户端能力清单（wf apk provides 的输出）")
     parser.add_argument("--warm", action="store_true", help="启动时预先加载角色列表")
     parser.add_argument("--allow-origin", action="append", default=[], metavar="URL",
                         help="额外允许写入的 Origin（例如 Vite 开发服务器 http://127.0.0.1:5173），可重复")
@@ -36,7 +38,9 @@ def main(argv=None) -> int:
     source = build_source(tip=args.tip, extra_zips=args.extra_zip, extra_lists=args.extra_zips_file,
                           chain_manifest=args.chain_manifest, search_dirs=args.zip_dir,
                           use_default_chain=not args.no_chain)
-    app = StudioApp(source, server_dir=args.server_dir)
+    if args.provides is not None and not args.provides.is_file():
+        parser.error(f"--provides 文件不存在：{args.provides}")
+    app = StudioApp(source, server_dir=args.server_dir, default_provides=args.provides)
     if args.warm:
         app.character_list()
     info = source.describe()

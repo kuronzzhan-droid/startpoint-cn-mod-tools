@@ -39,8 +39,9 @@ def next_version(version: str) -> str:
 
 
 class DeliverRoutes:
-    def __init__(self, app, server_dir=None, root: Path | None = None):
+    def __init__(self, app, server_dir=None, root: Path | None = None, default_provides=None):
         self.app, self.server_dir = app, server_dir
+        self.default_provides = Path(default_provides) if default_provides is not None else None
         self.root = Path(root) if root is not None else DELIVERIES
         self._lock = threading.Lock()
         self.running: dict[str, str] = {}
@@ -72,7 +73,7 @@ class DeliverRoutes:
         return json_response({"from": version, "to": next_version(version),
                               "outRoot": "work/studio-deliveries",
                               "serverDir": str(self.server_dir) if self.server_dir else None,
-                              "provides": None,
+                              "provides": str(self.default_provides) if self.default_provides else None,
                               "note": "来源版本取当前视图末端；目标版本默认 +1，只是本地测试候选，不代表正式版本分配。"})
 
     def build(self, query, body, cid):
@@ -84,7 +85,7 @@ class DeliverRoutes:
         for value in (from_version, to_version):
             if not VERSION.fullmatch(value):
                 raise DraftError(f"版本无效：{value}")
-        provides = body.get("provides")
+        provides = body.get("provides") or self.default_provides
         if provides is not None:
             provides = Path(str(provides))
             if not provides.is_file():

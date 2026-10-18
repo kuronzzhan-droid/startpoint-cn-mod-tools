@@ -587,6 +587,7 @@ export interface DeliveryDefaults {
   to: string;
   outRoot: string;
   serverDir: string | null;
+  provides: string | null;
   note: string;
 }
 
