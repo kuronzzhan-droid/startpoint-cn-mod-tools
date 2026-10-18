@@ -247,7 +247,7 @@ export interface PatchChain {
   note: string;
 }
 
-async function get<T>(url: string): Promise<T> {
+export async function get<T>(url: string): Promise<T> {
   const response = await fetch(url);
   const body = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
   if (!response.ok) throw new Error(body.error || `HTTP ${response.status}`);
@@ -308,7 +308,7 @@ export interface DraftFile {
 
 export interface DraftChange {
   id: string;
-  kind: "portrait" | "pixel_action" | "pixel_family" | "voice_line" | "ability_edit";
+  kind: "portrait" | "pixel_action" | "pixel_family" | "voice_line" | "ability_edit" | "boss";
   title: string;
   createdAt: string;
   target: Record<string, string>;
@@ -439,7 +439,7 @@ function token(): string {
   return document.querySelector<HTMLMetaElement>('meta[name="wf-studio-token"]')?.content ?? "";
 }
 
-async function post<T>(url: string, body: unknown): Promise<T> {
+export async function post<T>(url: string, body: unknown): Promise<T> {
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json", "X-WF-Studio-Token": token() },
@@ -460,6 +460,10 @@ function notify<T>(cid: string, promise: Promise<T>): Promise<T> {
     draftListeners.forEach((listener) => listener(cid));
     return value;
   });
+}
+/** Tell every draft listener that the draft behind `key` changed (boss drafts use "boss:<quest>"). */
+export function notifyDraft<T>(key: string, promise: Promise<T>): Promise<T> {
+  return notify(key, promise);
 }
 
 export function fileToBase64(file: Blob): Promise<string> {
@@ -756,7 +760,12 @@ export interface BuildResult {
   delivery?: string;
   prepush?: { status: string; exit_code: number; limitations?: string[] };
   checks?: RuleResult[];
-  compat?: RuleResult[];
+  /** Status string in build-report.json (e.g. 「满足」/「未确认」); older results carried the list here. */
+  compat?: RuleResult[] | string;
+  /** Per-item compat results (build-report.json compatChecks). */
+  compatChecks?: RuleResult[];
+  /** Draft rule results replayed at compile time (boss drafts: five-state boss rules). */
+  draftChecks?: RuleResult[];
   deviceValidation: string;
 }
 
@@ -814,18 +823,38 @@ export const ability = {
     get<KeySearchResult>(`/api/studio/ability/keys?table=${table}&q=${encodeURIComponent(q)}&cid=${cid}&limit=40`),
 };
 
-export const deliveries = {
-  defaults: () => get<DeliveryDefaults>("/api/deliveries/defaults"),
-  list: (cid: string) => get<{ root: string; deliveries: DeliverySummary[]; running: Record<string, string>; jobs: BuildJob[] }>(
-    `/api/deliveries?cid=${cid}`),
-  job: (name: string) => get<BuildJob>(`/api/deliveries/jobs/${encodeURIComponent(name)}`),
-  start: (cid: string, body: { from: string; to: string; provides?: string }) =>
-    post<BuildJob>(`/api/drafts/${cid}/build`, { ...body, background: true }),
-  cancel: (cid: string) => post<{ name: string; cancelling: boolean; note: string }>(`/api/drafts/${cid}/build/cancel`, {}),
+/** 「生成」/「导出」 endpoints of one draft namespace (characters at /api, boss drafts at /api/boss). */
+export interface DeliveryApi {
+  /** Draft-change listener key of a draft id (characters: the id itself). */
+  key: (cid: string) => string;
+  defaults: () => Promise<DeliveryDefaults>;
+  list: (cid: string) => Promise<{ root: string; deliveries: DeliverySummary[]; running: Record<string, string>; jobs: BuildJob[] }>;
+  job: (name: string) => Promise<BuildJob>;
+  start: (cid: string, body: { from: string; to: string; provides?: string }) => Promise<BuildJob>;
+  cancel: (cid: string) => Promise<{ name: string; cancelling: boolean; note: string }>;
   /** Tell listeners (status strip, export list) that a job finished. */
-  finished: (cid: string) => notify(cid, Promise.resolve(null)),
-  detail: (name: string) => get<DeliveryDetail>(`/api/deliveries/${encodeURIComponent(name)}`),
-  fileUrl: (name: string, path: string) => `/api/deliveries/${encodeURIComponent(name)}/file?path=${encodeURIComponent(path)}`,
+  finished: (cid: string) => Promise<null>;
+  detail: (name: string) => Promise<DeliveryDetail>;
+  fileUrl: (name: string, path: string) => string;
+}
+
+export function deliveryApi(prefix: string, key: (cid: string) => string = (cid) => cid): DeliveryApi {
+  const id = (cid: string) => encodeURIComponent(cid);
+  return {
+    key,
+    defaults: () => get<DeliveryDefaults>(`${prefix}/deliveries/defaults`),
+    list: (cid) => get(`${prefix}/deliveries?cid=${id(cid)}`),
+    job: (name) => get<BuildJob>(`${prefix}/deliveries/jobs/${encodeURIComponent(name)}`),
+    start: (cid, body) => post<BuildJob>(`${prefix}/drafts/${id(cid)}/build`, { ...body, background: true }),
+    cancel: (cid) => post(`${prefix}/drafts/${id(cid)}/build/cancel`, {}),
+    finished: (cid) => notify(key(cid), Promise.resolve(null)),
+    detail: (name) => get<DeliveryDetail>(`${prefix}/deliveries/${encodeURIComponent(name)}`),
+    fileUrl: (name, path) => `${prefix}/deliveries/${encodeURIComponent(name)}/file?path=${encodeURIComponent(path)}`,
+  };
+}
+
+export const deliveries = {
+  ...deliveryApi("/api"),
   build: (cid: string, body: { from: string; to: string; provides?: string }) =>
     notify(cid, post<BuildResult>(`/api/drafts/${cid}/build`, body)),
 };

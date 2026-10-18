@@ -373,6 +373,7 @@ table.voice-table tr.has-draft { background: var(--accent-soft); }
 .subnav a.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 .subnav a.empty:not(.on) { opacity: 0.45; border-style: dashed; }
 .drawer-backdrop { position: fixed; inset: 0; background: rgba(15, 20, 30, 0.35); z-index: 40; display: flex; justify-content: flex-end; }
+.drawer:focus { outline: none; }
 .drawer { width: min(760px, 100vw); height: 100%; background: var(--bg); box-shadow: -8px 0 24px rgba(0, 0, 0, 0.18);
   display: flex; flex-direction: column; }
 .drawer.wide { width: min(1120px, 100vw); }
