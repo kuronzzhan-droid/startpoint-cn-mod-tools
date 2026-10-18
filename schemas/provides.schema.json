@@ -28,7 +28,7 @@
   "$defs": {
     "hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "methods": {"type": "array", "items": {"type": "object", "required": ["patch", "abc", "label", "sha256", "status", "source"], "properties": {
-      "patch": {"type": "integer", "minimum": 1},
+      "patch": {"type": ["integer", "null"], "minimum": 1},
       "abc": {"type": ["string", "null"]}, "label": {"type": ["string", "null"]},
       "sha256": {"anyOf": [{"$ref": "#/$defs/hash"}, {"type": "null"}]},
       "status": {"enum": ["已记录", "待补"]}, "source": {"type": "string"}

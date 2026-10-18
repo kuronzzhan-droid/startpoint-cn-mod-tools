@@ -1611,5 +1611,29 @@
       ],
       "basis": "v35/run5/apk-patches-additions/131-wfx-hidden-unique-icons/README.md"
     }
+  ],
+  "method_capabilities": [
+    {
+      "id": "client.equipment.gauge_gain_rules@1",
+      "methods": [
+        {
+          "patch": null,
+          "abc": "boot_ffc6",
+          "label": "AbilitySoulValues$/parseAt106",
+          "sha256": "09dab4df4529e9b0272315b616fa9ea4e1882401a9ceadb40be2b5ee515c40ab",
+          "status": "已记录",
+          "source": "wf/apk/data/equipment-rules-r3-methods.json"
+        },
+        {
+          "patch": null,
+          "abc": "boot_ffc6",
+          "label": "EquipmentEnhancementAbilityValues$/parseAt109",
+          "sha256": "dd651c1588b171de60b3617ac33d165d22c726337ee6848caddd88dc0f331577",
+          "status": "已记录",
+          "source": "wf/apk/data/equipment-rules-r3-methods.json"
+        }
+      ],
+      "basis": "wf/apk/data/equipment-rules-r3-methods.json"
+    }
   ]
 }

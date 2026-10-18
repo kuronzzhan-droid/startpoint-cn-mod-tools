@@ -15,7 +15,7 @@ def test_final_evidence_covers_every_new_patch_and_semantic_capability():
     new = derive_provides(v35e_evidence(), registry=registry)
     old_ids, new_ids = ({c['id'] for c in p['provides']} for p in (old, new))
     assert old_ids < new_ids
-    assert len(old_ids) == 141 and len(new_ids - old_ids) == 37
+    assert len(old_ids) == 142 and len(new_ids - old_ids) == 37
     assert {p['number'] for p in new['patches']} == set(range(1, 132))
     assert new['unresolved'] == new['warnings'] == []
     catalog = json.loads((REPOSITORY / 'wfx_registry.json').read_text('utf-8'))

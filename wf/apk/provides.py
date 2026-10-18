@@ -12,6 +12,47 @@ def _key(method):
     return method.get("patch"), method.get("abc"), method.get("label")
 
 
+def _standalone(record, registry, unresolved):
+    """Recognize explicitly recorded methods without inventing archive numbers."""
+    found = {}
+    rows = record.get("method_capabilities", [])
+    if not isinstance(rows, list):
+        raise ValueError("method_capabilities must be an array")
+    seen = set()
+    for row in rows:
+        if not isinstance(row, dict) or not isinstance(row.get("id"), str):
+            raise ValueError("method capability requires an explicit ID")
+        cid = row["id"]
+        if cid in seen:
+            raise ValueError(f"duplicate method capability: {cid}")
+        seen.add(cid)
+        cap = registry.get(cid)
+        provider = cap["provided_by"] if cap else {}
+        if provider.get("patches") or not provider.get("methods"):
+            unresolved.append({"id": cid, "reason": "未登记独立方法能力，未推导能力"})
+            continue
+        if record.get("swf_sha256") not in provider.get("swf_sha256", []):
+            unresolved.append({"id": cid, "reason": "SWF 不在该独立方法能力的已核实清单中"})
+            continue
+        methods = row.get("methods", [])
+        if not isinstance(methods, list) or not all(isinstance(m, dict) for m in methods):
+            raise ValueError(f"{cid}: methods must be an array of objects")
+        actual = {_key(m): m for m in methods}
+        if len(actual) != len(methods):
+            raise ValueError(f"{cid}: duplicate method evidence")
+        expected = provider["methods"]
+        if set(actual) != {_key(m) for m in expected} or any(
+                actual[_key(m)].get("sha256") not in accepted_hashes(m, record["swf_sha256"])
+                for m in expected if _key(m) in actual):
+            unresolved.append({"id": cid, "reason": "缺少或不匹配独立方法 SHA-256，不能提供此能力"})
+            continue
+        found[cid] = [{**{k: v for k, v in m.items() if k != "accepted_variants"},
+                       "sha256": actual[_key(m)]["sha256"], "status": "已记录",
+                       "source": actual[_key(m)].get("source", row.get("basis", "显式方法记录"))}
+                      for m in expected]
+    return found
+
+
 def _patches(record: dict, registry: dict) -> tuple[dict, list, list]:
     if not isinstance(record.get("patches"), list):
         raise ValueError("patch summary must contain a patches array")
@@ -75,18 +116,27 @@ def _patches(record: dict, registry: dict) -> tuple[dict, list, list]:
 def derive_provides(record: dict, source: dict | None = None, registry: dict | None = None) -> dict:
     registry = load_registry() if registry is None else registry
     patches, unresolved, warnings = _patches(record, registry)
+    standalone = _standalone(record, registry, unresolved)
     capabilities = []
     for cid, capability in sorted(registry.items()):
         numbers = capability["provided_by"]["patches"]
+        methods = [m for n in numbers if n in patches for m in patches[n]["methods"]]
+        basis = "所需补丁全部由输入记录提供；方法核对状态逐项保留"
         if not numbers:
-            if capability["layer"] != "B" or record.get("official_systems") is not True:
+            if capability["provided_by"]["methods"]:
+                if cid not in standalone:
+                    continue
+                methods = standalone[cid]
+                basis = "已核实 SWF 及独立方法 SHA-256 全部匹配；未分配或推断补丁归档号"
+            elif capability["layer"] == "B" and record.get("official_systems") is True:
+                basis = "官方系统由输入明确声明"
+            else:
                 continue
         elif not all(n in patches for n in numbers):
             continue
         capabilities.append({"id": cid, "title": capability["title"], "layer": capability["layer"],
                              "patches": list(numbers),
-                             "methods": [m for n in numbers for m in patches[n]["methods"]],
-                             "basis": "官方系统由输入明确声明" if not numbers else "所需补丁全部由输入记录提供；方法核对状态逐项保留"})
+                             "methods": methods, "basis": basis})
     return {"schema": "wf-apk-provides/1", "source": source or {"kind": "patch-record", "basis": record.get("basis", "显式输入摘要"), "swf_sha256": record.get("swf_sha256")},
             "patches": [patches[n] for n in sorted(patches)], "provides": capabilities, "unresolved": unresolved,
             "warnings": warnings,

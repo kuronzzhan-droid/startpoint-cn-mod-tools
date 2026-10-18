@@ -58,11 +58,12 @@
       "description": "v34-r4 O8–O12 r2 测试客户端本地签名产物；静态能力证据，不声明安装或部署",
       "package_name": "com.leiting.wt",
       "versionCode": 1008002,
-      "provides": "work/m2_2/test-v34-provides.json",
+      "provides": "work/m2_3/test-v34-provides.json",
       "provides_fallback": "wf/apk/data/test-v34-provides.json",
       "capabilities": [
         "damage-type-rules-v1",
         "dash-parameter-v1",
+        "equipment-gauge-gain-rules-v1",
         "gauge-gain-rules-v1",
         "kyubi-fever-ratio-v1",
         "kyubi-panel-description-override-v1",
@@ -100,11 +101,22 @@
           "kyubi-pf-initial-combo-v1": [
             1
           ]
+        },
+        "swf_path": "${WF_ROOT}/v34-r4-20261016/v34.swf",
+        "capability_methods": {
+          "equipment-gauge-gain-rules-v1": {
+            "capability_id": "client.equipment.gauge_gain_rules@1",
+            "source": "wf/apk/data/equipment-rules-r3-methods.json",
+            "methods": [
+              "AbilitySoulValues$/parseAt106",
+              "EquipmentEnhancementAbilityValues$/parseAt109"
+            ]
+          }
         }
       },
       "update_rule": "只根据新产物完整SHA与方法证据更新；版本名、默认档案不证明部署",
-      "provides_sha256": "71be3c38e58254f7a20a900ae837220780f104b1aad9dee859b784668c72aebc",
-      "provides_fallback_sha256": "47735748fa4ae594e01b5aecbe65e8f27fb4abf0b34bdc63426b26b014fd566f",
+      "provides_sha256": "e690b0442e7c569ba5667da9008ab8b56bca72aa6c842eb589278bce447c1ae7",
+      "provides_fallback_sha256": "774aa403a042eca84b5f05f6700732487dd2f617a4b9930cf59a1b4216bc5ca5",
       "m2_capabilities": [
         "client.apk.patch001@1",
         "client.apk.patch002@1",
@@ -220,6 +232,7 @@
         "client.charge.cap@1",
         "client.direct.parameters@1",
         "client.dual_form@1",
+        "client.equipment.gauge_gain_rules@1",
         "client.fever.items@1",
         "client.kind422.dash@1",
         "client.kind423.gauge_source_limit@1",
@@ -253,7 +266,7 @@
       "description": "v35e/run5 测试客户端本地签名产物；静态能力证据，不声明安装或部署",
       "package_name": "com.leiting.wt",
       "versionCode": 1008003,
-      "provides": "work/m2_2/test-v35e-provides.json",
+      "provides": "work/m2_3/test-v35e-provides.json",
       "provides_fallback": "wf/apk/data/test-v35e-provides.json",
       "capabilities": [
         "ability-resistance-v1",
@@ -265,6 +278,7 @@
         "direct-base-v1",
         "direct-merge-v1",
         "dual-form-uid-v1",
+        "equipment-gauge-gain-rules-v1",
         "equipment-rules-data-v1",
         "fever-items-v2",
         "fever-voice-v1",
@@ -312,11 +326,22 @@
           "kyubi-pf-initial-combo-v1": [
             1
           ]
+        },
+        "swf_path": "${WF_ROOT}/v35-generic-20261018/run5/v35e.swf",
+        "capability_methods": {
+          "equipment-gauge-gain-rules-v1": {
+            "capability_id": "client.equipment.gauge_gain_rules@1",
+            "source": "wf/apk/data/equipment-rules-r3-methods.json",
+            "methods": [
+              "AbilitySoulValues$/parseAt106",
+              "EquipmentEnhancementAbilityValues$/parseAt109"
+            ]
+          }
         }
       },
       "update_rule": "只根据新产物完整SHA与方法证据更新；版本名、默认档案不证明部署",
-      "provides_sha256": "0e80c17df5b461edae255f9799f2cdfa51e6f5a9135e996ccd449e6e164a1065",
-      "provides_fallback_sha256": "3d25b15508b074021303e53d9fcd470e8af1711b9e574bd32e5cef5aef4a081b",
+      "provides_sha256": "bef5a72516d7cf97258ec8eeee41013f31b481def99ea24db58af5498ad83de1",
+      "provides_fallback_sha256": "5763f9082a2767f073647ddd69d4d2e7bab3b4d63399273c2d2e28d9ef3938fc",
       "m2_capabilities": [
         "client.ability.resistance@1",
         "client.ability.visuals@1",
@@ -459,6 +484,7 @@
         "client.dual_form.uid@1",
         "client.dual_form@1",
         "client.element.adaptive@1",
+        "client.equipment.gauge_gain_rules@1",
         "client.equipment.rules_data@1",
         "client.fever.items@1",
         "client.fever.items@2",

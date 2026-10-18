@@ -29,8 +29,12 @@ def validate_capability(document: dict) -> dict:
         if key in observed:
             raise ValueError(f"{document['id']}: duplicate method evidence")
         observed.add(key)
-        if method["patch"] not in provider["patches"]:
+        standalone = not provider["patches"] and method["patch"] is None
+        if not standalone and method["patch"] not in provider["patches"]:
             raise ValueError(f"{document['id']}: method refers to an undeclared patch")
+        if standalone and (not provider.get("swf_sha256") or not method["sha256"]
+                           or not method["abc"] or not method["label"]):
+            raise ValueError(f"{document['id']}: standalone methods require a pinned SWF and complete method evidence")
         if method["sha256"] is None and method["status"] != "待补":
             raise ValueError(f"{document['id']}: null method hash must be marked 待补")
         variants = method.get("accepted_variants", [])
@@ -43,7 +47,7 @@ def validate_capability(document: dict) -> dict:
         raise ValueError(f"{document['id']}: patches lack method evidence or explicit null: {sorted(missing)}")
     if provider["patches"] and not provider["methods"]:
         raise ValueError(f"{document['id']}: patch evidence must include a method or explicit null")
-    if document["layer"] == "B" and provider["patches"]:
+    if document["layer"] == "B" and (provider["patches"] or provider["methods"]):
         raise ValueError(f"{document['id']}: an official B-layer system cannot require an APK patch")
     return document
 

@@ -15,6 +15,7 @@
       "required": ["patches", "match", "methods", "status", "basis"],
       "properties": {
         "patches": {"type": "array", "uniqueItems": true, "items": {"type": "integer", "minimum": 1}},
+        "swf_sha256": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[0-9a-f]{64}$"}},
         "match": {"const": "all"},
         "methods": {"type": "array", "items": {"$ref": "#/$defs/method"}},
         "status": {"enum": ["已记录", "待补", "官方系统"]},
@@ -55,7 +56,7 @@
       "type": "object", "additionalProperties": false,
       "required": ["patch", "abc", "label", "sha256", "status", "source"],
       "properties": {
-        "patch": {"type": "integer", "minimum": 1},
+        "patch": {"type": ["integer", "null"], "minimum": 1},
         "abc": {"type": ["string", "null"]},
         "label": {"type": ["string", "null"]},
         "sha256": {"anyOf": [{"type": "string", "pattern": "^[0-9a-f]{64}$"}, {"type": "null"}]},
