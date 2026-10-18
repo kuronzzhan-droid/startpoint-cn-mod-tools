@@ -44,6 +44,16 @@ def test_inherited_method_updates_require_final_swf_and_final_method():
     assert key not in {c['id'] for c in derive_provides(stale_method)['provides']}
 
 
+def test_hidden_icons_require_both_final_filter_and_original_filtered_count():
+    record = v35e_evidence()
+    key = 'client.wfx.hidden_unique_icons@1'
+    cap = load_registry()[key]
+    assert cap['provided_by']['patches'] == [58, 131]
+    assert any(m['label'] == 'MemberImpl/getTotalConditions' for m in cap['provided_by']['methods'])
+    record['patches'] = [p for p in record['patches'] if p['number'] != 58]
+    assert key not in {c['id'] for c in derive_provides(record)['provides']}
+
+
 def test_fallbacks_are_bound_to_profile_and_actual_signed_package_hashes():
     config = json.loads((REPOSITORY / 'client_profiles.json').read_text('utf-8'))
     assert config['default_client_profile'] == 'test-v34'

@@ -315,8 +315,8 @@
         }
       },
       "update_rule": "只根据新产物完整SHA与方法证据更新；版本名、默认档案不证明部署",
-      "provides_sha256": "e2caba527e91c69a5e0d68a3cf0679976c07ae5fbff9b9c3bf3625b0c9ace2ee",
-      "provides_fallback_sha256": "9febbd065db2a343bbe5b9a536bcdeee841d057da600d11b1ea956dfc27df5b4",
+      "provides_sha256": "0e80c17df5b461edae255f9799f2cdfa51e6f5a9135e996ccd449e6e164a1065",
+      "provides_fallback_sha256": "3d25b15508b074021303e53d9fcd470e8af1711b9e574bd32e5cef5aef4a081b",
       "m2_capabilities": [
         "client.ability.resistance@1",
         "client.ability.visuals@1",

@@ -39,9 +39,11 @@
 | fever-voice-v1 | client.fever.voice@1 | 126 |
 | dual-form-uid-v1 | client.dual_form.uid@1 | 128 |
 | equipment-rules-data-v1 | client.equipment.rules_data@1 | 129 |
-| wfx-hidden-unique-icons-v1 | client.wfx.hidden_unique_icons@1 | 131 |
+| wfx-hidden-unique-icons-v1 | client.wfx.hidden_unique_icons@1 | 58、131 |
 
 此外登记完整 112–131 逐归档能力。127 是既有准备语音入口的通用化，没有虚构第 18 项 run5 语义能力。新增 17 项语义能力均含方法 SHA、数据入口、allowed_tables、参数表单、规则、golden、A 层和来源。
+
+隐藏图标新能力同时要求旧 58 和新 131：58 的 `getTotalConditions` 原方法 SHA 证明分页计数仍调用过滤后的列表，131 证明最终隐藏过滤器。仅证明过滤器的摘要不能声明完整图标及数量能力。
 
 `wfx_registry.json` 保留原先尚未实现的 planned 效果码和 `wfx-core-v1`，新增的十个码 24–29、60–62、71 标记为 `local_candidate`。不把查询底座标成包含 pin 防驱散的 wfx-core。28/29 使用有符号 int32 flags；24/26 的 flags 为数值上限；各码先按 `effect_flags_overrides` 校验，不能套用全局 pin 位规则。run5 草稿里 direct-base 的历史 run4 SHA 保留，最终可消费客户端由 `integration_evidence` 的 v35e SWF/签名 APK 精确绑定。
 
