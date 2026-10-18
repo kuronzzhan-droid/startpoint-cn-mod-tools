@@ -59,6 +59,21 @@ def manifest_entries(manifest, directories, manifests=None):
     return entries
 
 
+def manifest_tip(manifest, directories, base_version, manifests=None):
+    """Use the highest enabled manifest version; never fall back across a gap."""
+    versions = [base_version]
+    for entry in manifest_entries(manifest, directories, manifests):
+        if entry.get("enabled", True) is False:
+            continue
+        target = entry.get("version")
+        if target is not None:
+            version(target)  # Invalid enabled versions must not be silently skipped.
+            versions.append(target)
+    tip = max(versions, key=version)
+    resolve_chain(manifest, directories, base_version, tip, manifests)
+    return tip
+
+
 def resolve_chain(manifest, directories, base_version, tip, manifests=None):
     lower, upper = version(base_version), version(tip)
     if upper < lower:

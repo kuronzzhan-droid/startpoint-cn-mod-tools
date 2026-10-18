@@ -116,7 +116,7 @@ def main(argv=None):
     parser.add_argument("--json", type=Path)
     parser.add_argument("--requires", type=Path)
     parser.add_argument("--provides", type=Path)
-    parser.add_argument("--tip", help="boss 只读视图版本；选择 quest 时默认 1.4.236")
+    parser.add_argument("--tip", help="boss 只读视图版本；默认跟随 manifest 最高启用版本的完整依赖链")
     parser.add_argument("--base-version", default="1.4.131")
     parser.add_argument("--manifest", type=Path)
     parser.add_argument("--extra-manifest", type=Path, action="append", default=[])

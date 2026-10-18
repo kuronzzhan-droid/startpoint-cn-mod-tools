@@ -24,7 +24,7 @@ def check_inputs(args):
                 if reader is None:
                     from wf.boss.reader import BossReader
                     from wf.view.manifest import ManifestView
-                    view = ManifestView(args.tip or "1.4.236", base_version=args.base_version,
+                    view = ManifestView(args.tip, base_version=args.base_version,
                                         manifest=args.manifest, store=args.store, search_dirs=args.zip_dir,
                                         manifests=args.extra_manifest, lock=args.lock)
                     reader = BossReader(view)

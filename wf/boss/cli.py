@@ -14,7 +14,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(prog="wf boss")
     parser.add_argument("action", choices=("list", "show"))
     parser.add_argument("quest", nargs="?")
-    parser.add_argument("--tip", default="1.4.236")
+    parser.add_argument("--tip", help="默认读取 manifest 最高启用版本的完整依赖链")
     parser.add_argument("--base-version", default="1.4.131")
     parser.add_argument("--manifest", type=Path)
     parser.add_argument("--extra-manifest", type=Path, action="append", default=[])
@@ -33,7 +33,7 @@ def main(argv=None):
     result = reader.list() if args.action == "list" else reader.show(args.quest)
     view.verify()
     if args.write_lock:
-        view.save_lock(args.write_lock)
+        view.save_lock(local_output(args.write_lock))
     text = json.dumps(result, ensure_ascii=False, indent=2) + "\n"
     if args.json:
         target = local_output(args.json)

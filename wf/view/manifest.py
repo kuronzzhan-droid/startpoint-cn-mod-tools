@@ -9,7 +9,7 @@ import re
 import zipfile
 
 from .base149 import HistoricalView, member
-from .chain import digest, resolve_archives, resolve_chain
+from .chain import digest, manifest_tip, resolve_archives, resolve_chain
 from .config import view_config
 from .safety import local_output
 
@@ -28,6 +28,8 @@ class ManifestView(HistoricalView):
         self.store, self.manifest, self.search_dirs, self.manifests = view_config(
             store=store, manifest=manifest, search_dirs=search_dirs, manifests=manifests)
         self.active = self.manifest.parent / "active"
+        if tip is None:
+            tip = manifest_tip(self.manifest, self.search_dirs, base_version, self.manifests)
         self.tip, self.base_version = tip, base_version
         self.edges = resolve_chain(self.manifest, self.search_dirs, base_version, tip, self.manifests)
         self.zips, self.zip_records = resolve_archives(self.edges, self.search_dirs)
