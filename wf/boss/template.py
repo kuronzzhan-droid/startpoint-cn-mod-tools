@@ -5,7 +5,8 @@ import copy
 
 from wf.view.base149 import row, join
 from .edit_state import leaf
-from .parameters import QUESTS, FIELD_DATA, ZONE, columns, find_quest, apply_values, leaves, validate_bgm
+from .parameters import (QUESTS, FIELD_DATA, ZONE, columns, find_quest, apply_values,
+                         leaves, validate_bgm, require_encounter)
 
 EVENT = "master/quest/event/hard_multi_event.orderedmap"
 FOLDER = "master/quest/event/event_folder_events.orderedmap"
@@ -64,6 +65,7 @@ def allocate(state, requested=None, reserved=()):
 def template_rows(state, request, ids):
     """Pure generation, also used to compare historical 143–145 cells."""
     kind, _, _, encounter = find_quest(state, request.get("sourceQuest", "hard_multi:1006/1"))
+    require_encounter(kind, encounter)
     values = row(state.table(QUEST)["1006"]["1"])
     source_fd = encounter[columns(kind)["fieldData"][0]]
     fd = row(state.table(FIELD_DATA)[source_fd])

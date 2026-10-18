@@ -7,6 +7,7 @@ import wf_quest_lib as codec
 
 from wf.view.base149 import row, join
 from .edit_state import leaf
+from .schema import cell
 
 QUESTS = {
     "boss_battle": "master/quest/boss_battle_quest.orderedmap",
@@ -47,6 +48,11 @@ def columns(kind):
             "attackMultiplier": list(range(100 + offset, 103 + offset)),
             "restrictedElement": [68 + offset], "recommendedElement": [72 + offset],
             "bgm": [110 + offset], "fieldData": [109 + offset], "reward": [70 + offset]}
+
+
+def require_encounter(kind, values):
+    if kind == "boss_battle" and cell(values, 122).lower() == "true":
+        raise ValueError("BothBoss 入口自身不是战斗内容，禁止参数编辑或作为模板来源；请选 maps 指向的隐藏关")
 
 
 def number(value):
@@ -96,6 +102,7 @@ def apply_values(values, kind, parameters):
 
 def edit_parameters(state, quest, request):
     kind, logical, path, values = find_quest(state, quest)
+    require_encounter(kind, values)
     parameters = request.get("parameters", {})
     tier_values = request.get("tiers")
     if not parameters and not tier_values:
@@ -109,6 +116,8 @@ def edit_parameters(state, quest, request):
             raise ValueError("the selected boss group is not a five-tier encounter")
         targets = [(path[:-1] + (str(i),), row(group[str(i)]), {**parameters, **extra})
                    for i, extra in enumerate(tier_values, 1)]
+    for _, before, _ in targets:
+        require_encounter(kind, before)
     changed_ids = []
     for target, before, params in targets:
         after = apply_values(before, kind, params)

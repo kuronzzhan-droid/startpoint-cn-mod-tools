@@ -93,6 +93,9 @@ class BossReader(BossTables):
         quest["source"] = self.citation(quest["table"], quest["path"])
         quest["field_sources"] = {name: {"column": column, "source": quest["source"]}
                                   for name, column in s.QUEST_COLUMNS[quest["kind"]].items()}
+        quest["field_sources_semantics"] = {
+            "granularity": "whole_leaf", "column_origin_verified": False,
+            "note": "field_sources 按字段列位展示整叶来源，不是单格首次引入层或单格最后变更层。"}
         fd_id = quest["fields"]["field_data"]
         fd = record(self, s.FIELD_DATA, [fd_id])
         fd_row = fd["row"] if fd else []
@@ -110,5 +113,31 @@ class BossReader(BossTables):
                   "rewards": reward, "shops": shops(self, entrance, reward, quest), "routing": routing(self, quest),
                   "source_semantics": "leaf 表示该完整 CSV 叶子最后语义变更的层；不声明每格首次引入层。"
                                       "table_layer 是整表载入层，scope=table 时叶子变更层未核验。"}
+        if result["routing"]["kind"] == "BothBoss":
+            scope = {"kind": "entrance_only", "label": "入口自身，非战斗内容", "combat_content": False}
+            result["content_scope"] = scope
+            result["terrain"]["content_scope"] = scope
+            for enemy in result["enemies"]:
+                enemy["content_scope"] = scope
+            result["routing"]["hidden_quests"] = self._hidden_quests(result["routing"]["maps"])
         self._details[key] = result
         return copy.deepcopy(result)
+
+    def _hidden_quests(self, maps):
+        targets = {}
+        quests = {q["id"]: q for q in self._index() if q["kind"] == "boss_battle"}
+        for entry in maps:
+            for column in range(11, 15):
+                identity = s.cell(entry["row"], column)
+                if not s.present(identity):
+                    continue
+                if identity not in targets:
+                    quest = quests.get(identity)
+                    targets[identity] = {"id": identity, "missing": quest is None, "map_refs": []}
+                    if quest:
+                        targets[identity].update(selector=quest["selector"], name=quest["name"],
+                                                 hidden=quest["fields"].get("hidden") == "true",
+                                                 field_data=quest["fields"]["field_data"],
+                                                 source=self.citation(quest["table"], quest["path"]))
+                targets[identity]["map_refs"].append({"map": entry["path"][-1], "column": column})
+        return list(targets.values())
