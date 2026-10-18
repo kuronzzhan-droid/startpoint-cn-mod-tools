@@ -71,6 +71,10 @@ def test_unknown_client_requires_explicit_cli_override(case, monkeypatch, capsys
     manifest = json.loads((case[-1] / "delivery/delivery-manifest.json").read_text("utf-8"))
     assert manifest["client_compatibility"] == {
         "status": "未确认", "allow_unknown_client": allow, "report": "compat.json"}
+    from wf.check import main as check_main
+    assert check_main([str(case[-1] / "delivery/delivery-manifest.json")]) == (0 if allow else 1)
+    checks = json.loads((case[-1] / "delivery/check.json").read_text("utf-8"))["results"]
+    assert next(r for r in checks if r["rule"] == "capability.unknown")["blocking"] is (not allow)
 
 
 def test_explicit_override_cannot_bypass_missing_capability(case, monkeypatch):
@@ -88,3 +92,14 @@ def test_provided_client_runs_real_compat(case):
     result = build(case, provides=provides)
     assert result["ok"] and result["compat"] == "满足"
     assert result["compatChecks"]
+
+
+def test_budget_warning_survives_delivery_readback(case, monkeypatch):
+    warning = {"code": "studio.pixel.budget", "state": "待验证", "blocking": False,
+               "message": "三人房 layer0 需要验证", "layer0Pixels": 500000}
+    monkeypatch.setattr(bridge, "compile_draft", lambda *a, **kw: (
+        {("common", "test.bin"): b"new"}, {}, {}, [], [warning]))
+    result = build(case, allow_unknown_client=True)
+    assert result["ok"] and result["draftChecks"] == [warning]
+    assert next(r for r in result["checks"] if r["rule"] == "studio.pixel.budget")["status"] == "待验证"
+    assert json.loads((case[-1] / "delivery/draft-checks.json").read_text("utf-8")) == [warning]

@@ -109,6 +109,7 @@
       "additionalProperties": false
     },
     "dsl_gate": {"const": "dsl-629.json"},
+    "draft_checks": {"const": "draft-checks.json"},
     "client_compatibility": {
       "type": "object",
       "properties": {

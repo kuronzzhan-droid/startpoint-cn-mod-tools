@@ -8,6 +8,7 @@ from pathlib import Path
 from wf.deliver.baseline import resolve_baseline
 from wf.deliver.build import build_delivery
 from wf.deliver.changeset import member_name, sha256, validate_document, write_json
+from wf.deliver.client_compatibility import compatibility_status, unknown_client_check
 from wf.paths import path
 from wf.view.safety import local_output
 
@@ -122,12 +123,8 @@ def _stage(out, changeset, source, compiled, to_version):
 
 def _checks(delivery, provides, allow_unknown_client=False):
     from wf.check import check_file
-    from wf.rules.catalog import result
-    results = check_file(delivery / "delivery-manifest.json")
-    write_json(delivery / "check.json", {"schema": "wf-check-results/1", "results": results})
     if provides is None:
-        compat = [result("capability.unknown", "待验证", "未提供目标客户端 provides.json，兼容性未确认",
-                         blocking=not allow_unknown_client)]
+        compat = [unknown_client_check(allow_unknown_client)]
     else:
         from wf.caps.compat import check_compat
         evidence = Path(provides).read_bytes()
@@ -135,6 +132,13 @@ def _checks(delivery, provides, allow_unknown_client=False):
         compat = check_compat(json.loads((delivery / "requires.json").read_text("utf-8")),
                               json.loads(evidence), delivery_dir=delivery)
     write_json(delivery / "compat.json", {"schema": "wf-check-results/1", "results": compat})
+    manifest = json.loads((delivery / "delivery-manifest.json").read_text("utf-8"))
+    manifest["client_compatibility"] = {"status": compatibility_status(provides, compat),
+        "allow_unknown_client": allow_unknown_client, "report": "compat.json"}
+    validate_document(manifest, "delivery-manifest.schema.json")
+    write_json(delivery / "delivery-manifest.json", manifest)
+    results = check_file(delivery / "delivery-manifest.json")
+    write_json(delivery / "check.json", {"schema": "wf-check-results/1", "results": results})
     return results, compat
 
 
@@ -157,19 +161,18 @@ def build_draft(cid: str, *, from_version: str, to_version: str, out: Path,
     filename = _stage(out, changeset, source, compiled, to_version)
     options["baseline_view"] = baseline
     manifest = build_delivery(filename, out / "delivery", **options)
-    checks, compat = _checks(out / "delivery", provides, allow_unknown_client)
-    compat_status = ("未确认" if provides is None else "问题" if any(r["blocking"] for r in compat)
-                     else "待验证" if any(r["status"] not in ("满足", "不适用") for r in compat) else "满足")
-    manifest["client_compatibility"] = {"status": compat_status,
-        "allow_unknown_client": allow_unknown_client, "report": "compat.json"}
-    validate_document(manifest, "delivery-manifest.schema.json")
+    write_json(out / "delivery/draft-checks.json", compiled[4])
+    manifest["draft_checks"] = "draft-checks.json"
     write_json(out / "delivery/delivery-manifest.json", manifest)
+    checks, compat = _checks(out / "delivery", provides, allow_unknown_client)
+    compat_status = compatibility_status(provides, compat)
     failed = (bool(manifest["prepush"]["exit_code"]) or any(r["blocking"] for r in checks + compat)
               or (provides is None and not allow_unknown_client))
     result = {"ok": not failed, "characterId": cid, "from": from_version, "to": to_version,
               "draftRevision": changeset["revision"], "changeset": str(filename),
               "delivery": str(out / "delivery"), "prepush": manifest["prepush"],
               "checks": checks, "compat": compat_status, "compatChecks": compat,
+              "draftChecks": compiled[4],
               "allowUnknownClient": allow_unknown_client, "deviceValidation": "未执行"}
     write_json(out / "build-report.json", result)
     # The extra check/compat artifacts are included in the final delivery checksum list.

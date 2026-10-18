@@ -175,4 +175,7 @@ def check_delivery(document, directory):
     checks.append(result("delivery.prepush", gate["status"], "自动 prepush 的实际结果",
                          blocking=gate["status"] == "问题", exit_code=gate["exit_code"], limitations=gate["limitations"]))
     checks.append(reward_results(report))
+    from wf.deliver.client_compatibility import readback_compatibility, readback_draft_checks
+    checks.extend(readback_compatibility(document, directory, local_read, requirements))
+    checks.extend(readback_draft_checks(document, local_read))
     return checks
