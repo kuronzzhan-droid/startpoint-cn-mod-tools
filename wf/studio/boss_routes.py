@@ -4,11 +4,19 @@ from __future__ import annotations
 import re
 from types import SimpleNamespace
 
+from wf.boss.identity import safe_id
+
 from .boss import BossEditor, BossDraftStore
 from .deliver_routes import DeliverRoutes, DELIVERIES
 
 
 class BossDeliveries(DeliverRoutes):
+    name_pattern = re.compile(r"^(?:[0-9]{1,9}|(?:boss_battle|hard_multi|practice)_[0-9_]+)-[0-9.]+-to-[0-9.]+-[0-9]{8}-[0-9]{6}$")
+
+    def output_identity(self, cid):
+        self.app.ops.store.directory(cid)
+        return safe_id(cid)
+
     def baseline_options(self):
         options = super().baseline_options()
         view = self.app.source.view
@@ -18,7 +26,8 @@ class BossDeliveries(DeliverRoutes):
 
     def routes(self):
         return [(verb, re.compile(pattern.pattern.replace("/api/drafts/", "/api/boss/drafts/")
-                                 .replace("/api/deliveries", "/api/boss/deliveries")), handler)
+                                 .replace("/api/deliveries", "/api/boss/deliveries")
+                                 .replace(r"(?P<cid>\d+)", r"(?P<cid>[^/]+)")), handler)
                 for verb, pattern, handler in super().routes()]
 
 
@@ -68,10 +77,10 @@ class BossRoutes:
         return [
             ("GET", re.compile(r"^/api/boss$"), self.listing),
             ("GET", re.compile(r"^/api/boss/drafts$"), self.drafts),
-            ("GET", re.compile(r"^/api/boss/(?P<quest>\d+)$"), self.show),
-            ("POST", re.compile(r"^/api/boss/drafts$"), self.edit),
-            ("POST", re.compile(r"^/api/boss/drafts/(?P<quest>\d+)$"), self.edit),
-            ("POST", re.compile(r"^/api/boss/drafts/(?P<quest>\d+)/save$"), self.save),
-            ("POST", re.compile(r"^/api/boss/drafts/(?P<quest>\d+)/changes/(?P<change>c-[0-9a-f]{12})/revert$"), self.revert),
             *self.deliveries.routes(),
+            ("GET", re.compile(r"^/api/boss/(?P<quest>[^/]+)$"), self.show),
+            ("POST", re.compile(r"^/api/boss/drafts$"), self.edit),
+            ("POST", re.compile(r"^/api/boss/drafts/(?P<quest>[^/]+)$"), self.edit),
+            ("POST", re.compile(r"^/api/boss/drafts/(?P<quest>[^/]+)/save$"), self.save),
+            ("POST", re.compile(r"^/api/boss/drafts/(?P<quest>[^/]+)/changes/(?P<change>c-[0-9a-f]{12})/revert$"), self.revert),
         ]

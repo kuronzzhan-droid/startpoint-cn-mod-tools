@@ -39,6 +39,16 @@ def next_version(version: str) -> str:
 
 
 class DeliverRoutes:
+    name_pattern = NAME
+
+    def output_identity(self, cid):
+        self.app.ops.store.directory(cid)
+        return cid
+
+    def display_root(self):
+        root = self.root.resolve()
+        return root.relative_to(REPOSITORY.resolve()).as_posix() if root.is_relative_to(REPOSITORY.resolve()) else str(root)
+
     def __init__(self, app, server_dir=None, root: Path | None = None, default_provides=None):
         self.app, self.server_dir = app, server_dir
         self.default_provides = Path(default_provides) if default_provides is not None else None
@@ -71,7 +81,7 @@ class DeliverRoutes:
         from .server import json_response
         version = self.app.source.version
         return json_response({"from": version, "to": next_version(version),
-                              "outRoot": "work/studio-deliveries",
+                              "outRoot": self.display_root(),
                               "serverDir": str(self.server_dir) if self.server_dir else None,
                               "provides": str(self.default_provides) if self.default_provides else None,
                               "note": "来源版本取当前视图末端；目标版本默认 +1，只是本地测试候选，不代表正式版本分配。"})
@@ -90,10 +100,11 @@ class DeliverRoutes:
             provides = Path(str(provides))
             if not provides.is_file():
                 raise DraftError(f"provides 文件不存在：{provides}")
+        output_id = self.output_identity(cid)
         with self._lock:
             if cid in self.running:
                 raise DraftError(f"角色 {cid} 已在生成中（{self.running[cid]}），请稍候")
-            name = f"{cid}-{from_version}-to-{to_version}-{time.strftime('%Y%m%d-%H%M%S')}"
+            name = f"{output_id}-{from_version}-to-{to_version}-{time.strftime('%Y%m%d-%H%M%S')}"
             self.running[cid] = name
         out = self.root / name
         started = time.time()
@@ -118,16 +129,22 @@ class DeliverRoutes:
     def listing(self, query):
         from .server import json_response
         cid = (query.get("cid") or [""])[0]
+        cid = self.output_identity(cid) if cid else ""
         items = []
         if self.root.is_dir():
             for folder in sorted(self.root.iterdir(), reverse=True):
-                if not folder.is_dir() or not NAME.fullmatch(folder.name):
+                if not folder.is_dir() or not self.name_pattern.fullmatch(folder.name):
                     continue
                 if cid and not folder.name.startswith(cid + "-"):
                     continue
                 report = _read_json(folder / "build-report.json") or _read_json(folder / "studio-build-error.json")
                 counts: dict[str, int] = {}
-                for item in (report or {}).get("checks", []) + (report or {}).get("compat", []):
+                checks = (report or {}).get("checks", [])
+                compat = (report or {}).get("compatChecks", (report or {}).get("compat", []))
+                entries = (checks if isinstance(checks, list) else []) + (compat if isinstance(compat, list) else [])
+                for item in entries:
+                    if not isinstance(item, dict):
+                        continue
                     counts[item.get("status", "?")] = counts.get(item.get("status", "?"), 0) + 1
                 items.append({"name": folder.name, "ok": bool(report and report.get("ok")),
                               "error": report.get("error") if report else "没有 build-report.json（生成可能中断）",
@@ -136,11 +153,11 @@ class DeliverRoutes:
                               "draftRevision": report.get("draftRevision") if report else None,
                               "prepush": (report.get("prepush") or {}).get("status") if report else None,
                               "counts": counts})
-        return json_response({"root": "work/studio-deliveries", "deliveries": items,
+        return json_response({"root": self.display_root(), "deliveries": items,
                               "running": dict(self.running)})
 
     def _folder(self, name: str) -> Path:
-        if not NAME.fullmatch(name):
+        if not self.name_pattern.fullmatch(name):
             raise DraftError("交付目录名无效")
         folder = (self.root / name).resolve()
         if not folder.is_relative_to(self.root.resolve()) or not folder.is_dir():

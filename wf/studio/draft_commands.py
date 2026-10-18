@@ -18,7 +18,7 @@ def source_arguments(parser):
 
 def add_commands(sub):
     p = sub.add_parser("boss", help="读取、编辑副本草稿；new 按暗凛模板新建共同决战")
-    p.add_argument("cid", help="副本ID或 new")
+    p.add_argument("cid", help="副本 ID、kind:path 选择器或 new")
     p.add_argument("--request", type=Path, help="bossRequest JSON")
     p.add_argument("--preview", action="store_true")
     p = sub.add_parser("ability", help="读取或编辑词条草稿（与 HTTP API 使用相同请求）")

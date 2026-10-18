@@ -9,38 +9,14 @@ from wf.boss.template import create_shared, REWARD_FILES
 from wf.rules.catalog import result
 import wf_quest_lib as codec
 
-from .drafts import DraftStore, DraftError, default_root, new_change_id, now, status, validate
-
-
-class BossDraftStore(DraftStore):
-    def __init__(self, root=None):
-        super().__init__(root if root is not None else default_root() / "boss")
-
-    def load(self, cid):
-        try:
-            draft = super().load(cid)
-        except (ValueError, OSError, TypeError) as exc:
-            raise DraftError(f"无法读取副本草稿：{exc}") from exc
-        if draft is not None:
-            validate(draft)
-            if (draft.get("subjectKind") != "boss" or draft.get("characterId") != cid
-                    or draft.get("code") != f"boss_{cid}"):
-                raise DraftError("boss draft identity / namespace mismatch")
-            if any(change["kind"] != "boss" or change["target"]["quest"] != cid for change in draft["changes"]):
-                raise DraftError("boss draft contains a foreign change target")
-        return draft
-
-    def load_or_new(self, cid, code, base_view):
-        draft = super().load_or_new(cid, code, base_view)
-        if draft.get("subjectKind", "boss") != "boss":
-            raise DraftError("boss and character draft namespaces cannot be mixed")
-        draft["subjectKind"] = "boss"
-        return draft
+from .drafts import DraftError, new_change_id, now, status, validate
+from .boss_store import BossDraftStore
+from wf.boss.identity import safe_id
 
 
 def _identity(draft, quest, version):
     if draft and (draft.get("subjectKind") != "boss" or draft["characterId"] != quest
-                  or draft["code"] != f"boss_{quest}" or draft["baseView"] != version):
+                  or draft["code"] != f"boss_{safe_id(quest)}" or draft["baseView"] != version):
         raise ValueError("boss draft identity or source version mismatch")
     if draft and any(change["kind"] != "boss" or change["target"]["quest"] != quest
                      for change in draft["changes"]):
@@ -135,6 +111,11 @@ class BossEditor:
         return {"quests": quests, "nodes": nodes}
 
     def _state(self, quest, extra=None):
+        if quest != "new":
+            safe_id(quest)
+        if ":" in quest:
+            from wf.boss.reader import BossReader
+            quest = BossReader(self.source).find(quest)["selector"]
         draft = None if quest == "new" else self.store.load(quest)
         _identity(draft, quest, self.source.version)
         requests = _requests(draft)
@@ -181,7 +162,7 @@ class BossEditor:
                           "files": [], "pending": [],
                           "checks": [{"level": "warn" if c["status"] in {"待验证", "问题"} else "info",
                                       "code": c["rule"], "message": c["message"]} for c in checks]}
-                draft = self.store.put_change(identity, f"boss_{identity}", self.source.version, change)
+                draft = self.store.put_change(identity, f"boss_{safe_id(identity)}", self.source.version, change)
             return {"ok": True, "questId": identity, "allocation": allocation,
                     "change": change, "changeset": draft, "status": status(draft), "checks": checks,
                     "runtime": "未执行"}

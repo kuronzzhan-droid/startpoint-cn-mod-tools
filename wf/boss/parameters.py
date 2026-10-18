@@ -129,5 +129,5 @@ def edit_parameters(state, quest, request):
         if "bgm" in params:
             validate_bgm(state, params["bgm"])
         state.set_leaf(logical, target, join(after))
-        changed_ids.append(str(quest) if kind == "practice" else after[0])
+        changed_ids.append(f"{kind}:{'/'.join(target)}")
     return changed_ids

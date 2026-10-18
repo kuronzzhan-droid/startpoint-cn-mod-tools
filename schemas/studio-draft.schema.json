@@ -9,7 +9,7 @@
   "properties": {
     "schema": {"const": "wf-studio-draft/1"},
     "subjectKind": {"enum": ["character", "boss"], "description": "旧角色草稿可省略；boss 使用独立草稿目录，characterId 为兼容容器中的副本 ID"},
-    "characterId": {"$ref": "#/$defs/characterId"},
+    "characterId": {"type": "string"},
     "code": {"$ref": "#/$defs/code"},
     "baseView": {"type": "string", "pattern": "^1\\.4\\.[0-9]+$", "description": "草稿基于的视图资源版本"},
     "createdAt": {"$ref": "#/$defs/timestamp"},
@@ -21,6 +21,11 @@
                       "description": "最近一次「保存」通过时的 revision；等于 revision 才算已保存"},
     "changes": {"type": "array", "items": {"$ref": "#/$defs/change"}}
   },
+  "allOf": [{
+    "if": {"required": ["subjectKind"], "properties": {"subjectKind": {"const": "boss"}}},
+    "then": {"properties": {"characterId": {"$ref": "#/$defs/bossId"}}},
+    "else": {"properties": {"characterId": {"$ref": "#/$defs/characterId"}}}
+  }],
   "$defs": {
     "bossParameters": {
       "type": "object", "additionalProperties": false,
@@ -53,6 +58,7 @@
          "then": {"not": {"required": ["tiers"]}}}
       ]
     },
+    "bossId": {"type": "string", "pattern": "^(?:[0-9]{1,9}|boss_battle:[0-9]{1,9}(?:/[0-9]{1,9}/[0-9]{1,9})?|hard_multi:[0-9]{1,9}(?:/[0-9]{1,9})?|practice:[0-9]{1,9})$"},
     "characterId": {"type": "string", "pattern": "^[0-9]{1,9}$"},
     "code": {"type": "string", "pattern": "^[a-z0-9_]+$"},
     "timestamp": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}"},
@@ -301,7 +307,7 @@
           "if": {"properties": {"kind": {"const": "boss"}}},
           "then": {"properties": {
             "target": {"type": "object", "additionalProperties": false, "required": ["quest"],
-                       "properties": {"quest": {"$ref": "#/$defs/characterId"}}},
+                       "properties": {"quest": {"$ref": "#/$defs/bossId"}}},
             "params": {"type": "object", "additionalProperties": false, "required": ["requests", "inputs"],
               "properties": {
                 "requests": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/bossRequest"}},

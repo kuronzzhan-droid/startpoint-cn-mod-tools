@@ -94,8 +94,12 @@ def compile_draft(source, store, changeset, *, server_dir=None):
 
 def _stage(out, changeset, source, compiled, to_version):
     members, servers, server_before, changes, checks = compiled
-    doc = {"schema": "wf-change-set/1", "id": f"studio-{changeset['characterId']}-{to_version}",
-           "name": f"编辑台草稿 {changeset['characterId']}", "slug": f"studio-{changeset['characterId']}",
+    identity = changeset["characterId"]
+    if changeset.get("subjectKind") == "boss":
+        from wf.boss.identity import safe_id
+        identity = "boss-" + safe_id(identity).replace("_", "-")
+    doc = {"schema": "wf-change-set/1", "id": f"studio-{identity}-{to_version}",
+           "name": f"编辑台草稿 {changeset['characterId']}", "slug": f"studio-{identity}",
            "from_version": source.version, "to_version": to_version,
            "created_at": changeset["updatedAt"][:10], "local_test_only": True,
            "members": [], "server_changes": [], "changes": changes}

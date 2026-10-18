@@ -17,7 +17,7 @@ def main(argv=None):
     parser.add_argument("--tip", default="1.4.236")
     parser.add_argument("--base-version", default="1.4.131")
     parser.add_argument("--manifest", type=Path)
-    parser.add_argument("--extra-manifest", type=Path, action="append")
+    parser.add_argument("--extra-manifest", type=Path, action="append", default=[])
     parser.add_argument("--store", type=Path)
     parser.add_argument("--zip-dir", type=Path, action="append")
     parser.add_argument("--lock", type=Path)

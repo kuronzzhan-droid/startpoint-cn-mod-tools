@@ -69,8 +69,10 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
     add_commands(sub)
 
-    sub.add_parser("list", help="列出有草稿的角色")
+    p = sub.add_parser("list", help="列出有草稿的角色或副本")
+    p.add_argument("--boss", action="store_true", help="使用独立副本草稿目录")
     p = sub.add_parser("show", help="输出某角色的 changeset")
+    p.add_argument("--boss", action="store_true", help="使用独立副本草稿目录")
     p.add_argument("cid")
     p = sub.add_parser("schema", help="输出 JSON Schema（可只取一个 $defs）")
     p.add_argument("--def", dest="ref")
@@ -114,15 +116,20 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--loudness", type=float)
 
     p = sub.add_parser("revert", help="撤销草稿里的一项改动")
+    p.add_argument("--boss", action="store_true", help="使用独立副本草稿目录")
     p.add_argument("cid")
     p.add_argument("change")
     p = sub.add_parser("save", help="保存：整体校验 + 文件哈希复核")
+    p.add_argument("--boss", action="store_true", help="使用独立副本草稿目录")
     p.add_argument("cid")
     return parser
 
 
 def run(args) -> dict:
     store = DraftStore(args.drafts) if args.drafts else DraftStore()
+    if getattr(args, "boss", False) and args.command != "build":
+        from .boss import BossDraftStore
+        store = BossDraftStore(store.root / "boss")
     if args.command == "list":
         return {"drafts": store.characters()}
     if args.command == "show":
