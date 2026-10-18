@@ -4,7 +4,7 @@ import { api, Meta } from "./api";
 import { href, useRoute } from "./router";
 import { CharacterList } from "./views/CharacterList";
 import { CharacterDetailView } from "./views/CharacterDetail";
-import { BossPlaceholder } from "./views/BossPlaceholder";
+import { BossWorkshop } from "./views/boss/BossWorkshop";
 import { PatchManager } from "./views/PatchManager";
 import { ScratchDetail, ScratchList } from "./views/ScratchView";
 import { LookupPanel } from "./views/LookupPanel";
@@ -79,7 +79,7 @@ function App() {
           {route.work === "patches" ? (
             <PatchManager archive={route.archive} />
           ) : route.shop === "boss" ? (
-            <BossPlaceholder />
+            <BossWorkshop quest={route.quest} tab={route.tab} wizard={route.wizard} source={route.source} />
           ) : route.shop === "scratch" ? (
             route.id ? <ScratchDetail id={route.id} tab={route.tab} sub={route.sub} /> : <ScratchList />
           ) : route.id ? (

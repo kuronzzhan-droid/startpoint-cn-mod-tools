@@ -179,7 +179,10 @@ python -m wf.studio.draft revert hard_multi:1006/1 c-0123456789ab --boss
 |---|---|---|
 | GET | `/api/boss` | 副本列表及分组 |
 | GET | `/api/boss/<quest>` | 当前候选详情、草稿、检查和 `runtime` |
-| GET | `/api/boss/drafts` | 独立副本草稿列表 |
+| GET | `/api/boss/drafts` | 独立副本草稿列表；每项附 `status`、`requestCount`，新建草稿附 `created`（名称、模板来源、分配） |
+| GET | `/api/boss/drafts/<quest>` | 与角色草稿同形的草稿视图：`changeset`、`status`、`actions`（保存 / 生成 / 导出可用，应用 / 发布不开放） |
+| GET | `/api/boss/templates` | 新建共同决战的模板来源白名单及排除原因 |
+| GET | `/api/boss/options` | 当前视图可选的 BGM 组（`battle_bgm_group` 键）和场景（`field` 键） |
 | POST | `/api/boss/drafts` | `create_shared` 新草稿 |
 | POST | `/api/boss/drafts/<quest>` | `edit`；新草稿也通过此接口继续修改 |
 | POST | 上述两个修改地址加 `?preview=true` | 只预览同一请求 |
@@ -193,7 +196,19 @@ python -m wf.studio.draft revert hard_multi:1006/1 c-0123456789ab --boss
 
 全部请求检查回环 Host 及端口。POST 还要求 `X-WF-Studio-Token`、`Content-Type: application/json`；浏览器 Origin 必须同源或属于明确配置的允许来源，拒绝 `Sec-Fetch-Site: cross-site`。本机非浏览器调用可省略 Origin。会话令牌由服务写入草稿根 `.session.json` 并注入页面 meta。守卫失败为 403，错误内容类型为 415，非法 JSON、schema、选择器或参数为 400。
 
-修改预览 `ok=false` 返回 400。生成接口可能以 HTTP 200 返回 `ok=false` 和错误报告，调用方必须读取 JSON 的 `ok`、`error`、`checks`、`compatChecks`，不能仅以 HTTP 状态判断交付成功。服务端异常与检查失败不会被标成设备验证通过。
+`/api/boss` 的每个 `items` 项另附 `recommendedElement`、`restrictedElement`（quest 原值）、`fieldData`、`bothBoss` 与 `mode`，`groups` 附 `mode`，顶层附 `modes`（含分组依据）。`mode` 只用于界面分组：`main_lord` 是场景以 `mod_mainboss_` 命名的领主战节点（命名归类），`five` 是领主战节点 99，`other` 是全部由隐藏关组成的领主战组（锚点），阶段链的隐藏关随所在组归类；它不改变选择器和规则。
+
+修改预览 `ok=false` 返回 400。被规则阻断时 `checks[0]` 仍是 `boss.inputs` 汇总，其后附上全部五态结果（含未阻断项），界面据此标出阻断规则；每条结果带 `quest`（所属副本选择器），五档修改可以区分档位。生成接口可能以 HTTP 200 返回 `ok=false` 和错误报告，调用方必须读取 JSON 的 `ok`、`error`、`checks`、`compatChecks`，不能仅以 HTTP 状态判断交付成功。服务端异常与检查失败不会被标成设备验证通过。
+
+## 编辑台界面
+
+编辑内容 → BOSS工坊。路由：`#/content/boss` 总览，`#/content/boss/q/<URL 编码选择器>[/encounter|rewards|params|changes]` 副本详情，`#/content/boss/new[/<模板来源>]` 新建共同决战。
+
+- 总览按模式分组（主线领主战 / 官方领主战 / 共同决战 / 五重决战 / 练习木人 / 其他），卡片显示 boss 名、副本属性、档数与等级范围、来源层（官方原版或补丁版本，完整来源在悬停提示）。可按名字 / quest ID / 场景搜索，按属性、来源、有无草稿筛选；`/` 聚焦搜索，回车打开第一个结果，方向键在卡片间移动。本地新建、尚未进补丁的共同决战单列。
+- 详情三栏：左列同组难度（五档、五重的隐藏关等），中间「遭遇」（入口、关卡数值、场地与波次、敌人档位与站位）、「奖励与商店」（score / rare 原值、商店分类、商品、武器），右列检查。来源以小标签显示，悬停给出整叶来源语义；原始列号收在「技术细节」。
+- 「调整参数」只发送改过的字段，约 0.6 秒后调用预览接口；右列显示五态结果，有阻断时「写入草稿」不可用。改属性得到 C8016「待验证」时须勾选确认（写入 `acknowledgePreload`）；「问题」（已知缺垫片或黑名单）不能确认放行。叶子恰为 1–5 的领主战组可「五档一起改」，草稿挂在第 1 档。BothBoss 入口（五重 1099001 等）只读并说明原因；五重隐藏关可改但提示构建器会覆盖。
+- 新建共同决战向导：左列白名单来源，中间名称与难度（默认 Lv100、HP ×1.5、攻击 ×1.3、限定 / 副本属性取来源属性），右列预检；预检结果显示将分配的活动 / quest / 目录节点 / zone / 奖励组（保存时重新分配）。写入后跳到新草稿的「本次修改」。
+- 「本次修改」抽屉与角色工坊同一套保存 / 生成 / 导出：生成在后台跑、显示阶段进度，结果写 `work/studio-deliveries/boss/`；导出列出这一副本的交付。真机一栏始终「未记录」。
 
 ## 五态规则与证据边界
 
@@ -232,4 +247,4 @@ python -m wf.studio.draft build hard_multi:1006/1 --boss --from 1.4.236 --to 1.4
 
 ## 维护与验证入口
 
-读模型与来源测试见 `tests/test_boss_model.py`；规则测试见 `tests/test_boss_rules_*.py`；接口、身份、独立存储、请求校验与 CLI 路由见 `tests/test_studio_boss_routes.py`；草稿重放、二次编辑、五档、摘要漂移和 ID 互斥见 `tests/test_studio_boss_drafts.py`；候选规则及交付连接见 `tests/test_studio_boss_checks.py`。新增规则应保留证据来源与五态语义，并通过同一候选编译链验证。
+读模型与来源测试见 `tests/test_boss_model.py`；规则测试见 `tests/test_boss_rules_*.py`；接口、身份、独立存储、请求校验与 CLI 路由见 `tests/test_studio_boss_routes.py`；草稿重放、二次编辑、五档、摘要漂移和 ID 互斥见 `tests/test_studio_boss_drafts.py`；候选规则及交付连接见 `tests/test_studio_boss_checks.py`；界面所用的分组、模板白名单、选项、草稿视图与阻断预览的完整结果见 `tests/test_studio_boss_ui_glue.py`。叶子来源历史按「同一不可变视图对象 + 同一 ZIP 列表与 store」缓存，编辑台每次预览不再重解析全部历史表；草稿叠层（带 `changes`）从不共享缓存。新增规则应保留证据来源与五态语义，并通过同一候选编译链验证。
