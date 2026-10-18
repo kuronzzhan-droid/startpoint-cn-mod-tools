@@ -45,6 +45,13 @@
         "operation": {"enum": ["edit", "create_shared"]},
         "sourceQuest": {"type": "string", "pattern": "^(?:(?:boss_battle|hard_multi|practice):)?[0-9]+(?:/[0-9]+)*$"},
         "name": {"type": "string", "minLength": 1, "maxLength": 80},
+          "acknowledgePreload": {"type": "boolean", "description": "显式接受本次操作未证明的预载风险；不豁免已知故障"},
+          "atlasBudget": {"type": "object", "additionalProperties": false,
+            "required": ["parties"], "properties": {
+              "parties": {"type": "array", "minItems": 3, "maxItems": 3,
+                "items": {"type": "array", "items": {"type": "string", "minLength": 1}}},
+              "enemy_sheets": {"type": "array", "items": {"type": "string", "minLength": 1}}
+            }},
         "parameters": {"$ref": "#/$defs/bossParameters"},
         "tiers": {"type": "array", "minItems": 5, "maxItems": 5, "items": {"$ref": "#/$defs/bossParameters"}},
         "ids": {"type": "object", "additionalProperties": false, "required": ["event"],

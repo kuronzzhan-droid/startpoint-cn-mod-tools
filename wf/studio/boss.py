@@ -30,7 +30,8 @@ def _requests(draft):
     return copy.deepcopy(changes[0]["params"]["requests"]) if changes else []
 
 
-def _context(state, created):
+def _context(state, created, document, baseline, requests):
+    from wf.boss.atlas import encounter_budget
     new_ids, existing_ids = {}, {}
     def paths(node, prefix=()):
         if isinstance(node, dict):
@@ -42,7 +43,11 @@ def _context(state, created):
             logical = change["table"]
             new_ids.setdefault(logical, []).append("/".join(change["path"]))
             existing_ids[logical] = list(paths(codec.parse_node(state.original[logical]))) if logical in state.original else []
-    return {"custom_content": created, "choice_count": 1, "new_ids": new_ids, "existing_ids": existing_ids}
+    supplied = next((req["atlasBudget"] for req in reversed(requests) if "atlasBudget" in req), None)
+    return {"custom_content": created, "new_ids": new_ids, "existing_ids": existing_ids,
+            "acknowledgePreload": requests[-1].get("acknowledgePreload") is True,
+            "atlas_budget": encounter_budget(state, document,
+                source_quest=baseline.get("quest", {}).get("id"), supplied=supplied)}
 
 
 def _replay(source, quest, requests, *, server_dir=None, reserved=()):
@@ -75,7 +80,7 @@ def _replay(source, quest, requests, *, server_dir=None, reserved=()):
         baseline = before.show(requests[0].get("sourceQuest", "hard_multi:1006/1")) if created else before.show(identifier)
         checks.extend(check_boss(document, view=state, baseline=baseline,
                                  server_changes=state.servers, server_before=state.server_original,
-                                 context=_context(state, created)))
+                                 context=_context(state, created, document, baseline, requests)))
     blocking = [entry for entry in checks if entry.get("blocking")]
     if blocking:
         raise ValueError("boss rules rejected the candidate: " + "; ".join(entry["message"] for entry in blocking))
@@ -110,12 +115,31 @@ class BossEditor:
                     nodes.append(request["ids"]["node"])
         return {"quests": quests, "nodes": nodes}
 
+    def canonical(self, quest):
+        """One identity for every existing quest; newly allocated drafts keep IDs."""
+        if quest == "new":
+            return quest
+        safe_id(quest)
+        from wf.boss.reader import BossReader
+        reader = BossReader(self.source)
+        try:
+            selected = reader.find(quest)
+        except ValueError:
+            draft = self.store.load(quest)
+            requests = _requests(draft)
+            if requests and requests[0]["operation"] == "create_shared":
+                return quest
+            raise
+        canonical = selected["selector"]
+        # Preserve an old ID-named draft while routing both spellings to it.
+        if selected["id"] != canonical and self.store.load(selected["id"]) is not None:
+            if self.store.load(canonical) is not None:
+                raise DraftError(f"副本 {canonical} 已有两份别名草稿，请先解决重复草稿")
+            return selected["id"]
+        return canonical
+
     def _state(self, quest, extra=None):
-        if quest != "new":
-            safe_id(quest)
-        if ":" in quest:
-            from wf.boss.reader import BossReader
-            quest = BossReader(self.source).find(quest)["selector"]
+        quest = self.canonical(quest)
         draft = None if quest == "new" else self.store.load(quest)
         _identity(draft, quest, self.source.version)
         requests = _requests(draft)

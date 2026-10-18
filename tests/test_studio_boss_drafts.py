@@ -73,8 +73,8 @@ def five_tier_editor(tmp_path):
 def test_five_tiers_apply_base_parameters_and_per_tier_overrides(tmp_path):
     editor = five_tier_editor(tmp_path)
     tiers = [{"level": 20 * index, "hpMultiplier": index} for index in range(1, 6)]
-    editor.apply("1080001", {"operation": "edit", "parameters": {"attackMultiplier": 1.2}, "tiers": tiers})
-    result = compile_saved(editor, "1080001")
+    applied = editor.apply("1080001", {"operation": "edit", "parameters": {"attackMultiplier": 1.2}, "tiers": tiers})
+    result = compile_saved(editor, applied["questId"])
     group = codec.parse_node(result["client"][s.QUEST_TABLES["boss_battle"]])["1"]["80"]
     for index in range(1, 6):
         cells = s.parse_rows(group[str(index)])[0]
@@ -143,9 +143,9 @@ def test_no_change_request_never_creates_a_draft(tmp_path):
 def test_reversed_edits_cannot_stage_an_empty_delivery(tmp_path):
     editor = fixture_editor(tmp_path)
     for level in (90, 100):
-        editor.apply("1006001", {"operation": "edit", "parameters": {"level": level}})
-    saved = editor.store.save("1006001")
-    result = compile_saved(editor, "1006001")
+        applied = editor.apply("1006001", {"operation": "edit", "parameters": {"level": level}})
+    saved = editor.store.save(applied["questId"])
+    result = compile_saved(editor, applied["questId"])
     raw = editor.source.view
     def read_member(name):
         return next((data, "fixture") for logical, data in raw.files.items() if member(logical) == name)
