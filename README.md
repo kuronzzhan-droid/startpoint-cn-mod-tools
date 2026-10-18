@@ -159,6 +159,7 @@ mod-tools/
 - **[CN-Mod字段手册.md](CN-Mod字段手册.md)** — 最重要:全字段语义、枚举、单位、各表结构、CN/global 差异、安全规则。
 - **[词条条件代码全表.md](词条条件代码全表.md)** — 真实列图 + 全枚举名(配 `ability_enum_map.json`;被 wf_describe 运行时读取)。
 - [API.md](API.md) — 网页修改器的 HTTP API 契约。
+- [副本工坊后端](docs/studio/boss.md) — M5 副本读模型、参数草稿、共同决战模板、API / CLI 与本地交付。
 - [WF_mod_tool_usage.md](WF_mod_tool_usage.md) — 命令行 recipe 用法。
 
 分析与方案(docs/):

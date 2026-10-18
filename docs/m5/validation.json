@@ -1,0 +1,307 @@
+{
+  "schema": "wf-m5-acceptance/1",
+  "code_revision": "ffb6ec2cf21c7d97bc87cf0a74f43d41bbe3a119",
+  "baseline": "1.4.236",
+  "scope": "local implementation, offline tests and package roundtrip; no deployment or device validation",
+  "pytest": {
+    "exit_code": 0,
+    "tests": 4755,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 354,
+    "passed": 4401,
+    "warnings": 26,
+    "seconds": 686.82,
+    "junit_case_nodes": 4755,
+    "count_source": "pytest terminal summary"
+  },
+  "path_scan": {
+    "scanned_text_files": 2217,
+    "findings": [],
+    "count": 0
+  },
+  "hygiene": {
+    "exit_code": 0,
+    "mode": "--all"
+  },
+  "inventory": {
+    "counts": {
+      "five_boss": 39,
+      "main_lord": 45,
+      "shared_custom": 27,
+      "practice": 114
+    },
+    "total_list_quests": 471,
+    "groups": 123,
+    "associated_weapon_count": 108
+  },
+  "target_show_count": 225,
+  "target_missing_enemies": [],
+  "weapons_added_145_to_146": 54,
+  "template_reconstruction": {
+    "schema": "wf-boss-template-reconstruction/1",
+    "tip": "1.4.145",
+    "sourceQuest": "1081005",
+    "template": "hard_multi:1006/1",
+    "identity": {
+      "event": "2081",
+      "quest": "2081001",
+      "node": "5",
+      "zone": "mod_mainboss_org_hard",
+      "fieldData": "mod_mainboss_org_hard",
+      "reward": "11000935"
+    },
+    "comparisons": {
+      "quest": {
+        "equal": true,
+        "cells": 130,
+        "differences": []
+      },
+      "event": {
+        "equal": false,
+        "cells": 26,
+        "differences": [
+          {
+            "column": 0,
+            "generated": "studio_shared_2081",
+            "historical": "hard_multi_mainboss_mod_mainboss_org"
+          },
+          {
+            "column": 4,
+            "generated": "quest/event/banner/hard_multi/hard_multi_event_steam_robot_dark",
+            "historical": "quest/event/banner/hard_multi/mod_mainboss_org"
+          },
+          {
+            "column": 5,
+            "generated": "quest/event/bossbattle_banner/hard_multi/hard_multi_event_steam_robot_dark",
+            "historical": "quest/event/bossbattle_banner/hard_multi/mod_mainboss_org"
+          },
+          {
+            "column": 6,
+            "generated": "quest/event/animation_background/hard_multi/hard_multi_steam_robot_dark/background",
+            "historical": "quest/event/animation_background/hard_multi/mod_mainboss_org/background"
+          },
+          {
+            "column": 7,
+            "generated": "quest/event/logo/hard_multi/steam_robot_dark/steam_robot_dark_logo",
+            "historical": "quest/event/logo/hard_multi/mod_mainboss_org"
+          }
+        ]
+      },
+      "eventFolder": {
+        "equal": true,
+        "cells": 3,
+        "differences": []
+      },
+      "fieldData": {
+        "equal": true,
+        "cells": 3,
+        "differences": []
+      },
+      "zone": {
+        "equal": true,
+        "rows": 1
+      }
+    }
+  },
+  "roundtrip": {
+    "schema": "wf-boss-delivery-roundtrip/1",
+    "ok": true,
+    "archives": 1,
+    "members": 7,
+    "max_archive_bytes": 638783,
+    "preserved_compressed_leaves": 16934,
+    "preserved_server_values": 150,
+    "server_targets": [
+      "assets/hard_multi_event_quest.json",
+      "assets/rare_score_reward_cnmod.json",
+      "assets/score_reward_cnmod.json"
+    ],
+    "quest": "2100001",
+    "zone": "studio_shared_2100",
+    "wave_count": 1,
+    "checks": true,
+    "deviceValidation": "未执行"
+  },
+  "delivery_hashes": {
+    "files": 23,
+    "mismatches": []
+  },
+  "delivery": {
+    "ok": true,
+    "compat": "满足",
+    "prepush_exit_code": 0,
+    "prepush_status": "待验证",
+    "prepush_levels": {
+      "WARN": 43,
+      "INFO": 10
+    },
+    "local_contract": {
+      "chain_checked": true,
+      "pre_and_post_hashes_checked": true,
+      "server_pre_hashes_checked": true,
+      "server_post_hashes_checked": true,
+      "no_baseline_i_know": false,
+      "errors": []
+    },
+    "blocking": [],
+    "states": {
+      "满足": 11,
+      "待验证": 1,
+      "不适用": 72,
+      "未执行": 3
+    },
+    "unverified": [
+      {
+        "rule": "delivery.prepush",
+        "status": "待验证"
+      },
+      {
+        "rule": "art.atlas-budget",
+        "status": "未执行"
+      },
+      {
+        "rule": "boss.trial-link",
+        "status": "未执行"
+      },
+      {
+        "rule": "capability.unknown",
+        "status": "未执行"
+      }
+    ]
+  },
+  "negative_cases": {
+    "missing_c7": {
+      "preview_rejected": true,
+      "compile_rejected": true
+    },
+    "missing_reward": {
+      "preview_rejected": true,
+      "compile_rejected": true
+    },
+    "missing_shims": {
+      "preview_rejected": true,
+      "compile_rejected": true
+    },
+    "event_collision": {
+      "preview_rejected": true,
+      "compile_rejected": null
+    },
+    "node_collision": {
+      "preview_rejected": true,
+      "compile_rejected": null
+    }
+  },
+  "historical": {
+    "223": {
+      "member_count": 3,
+      "different_members": 0
+    },
+    "221": {
+      "archive_count": 11,
+      "member_count": 310,
+      "different_members": 0,
+      "legacy_manifest_semantic_equal": true,
+      "layered_members_byte_equal": 310,
+      "archives_equal_without_dos_timestamps": 11
+    }
+  },
+  "limitations": [
+    "kulo#35 server-compiled chain checker not executed; independent delivery chain assertions executed",
+    "three-party atlas inputs and indirect resource closure incomplete; PNG estimate is a lower bound",
+    "existing prepush warnings retained; no runtime or device validation",
+    "221 member bytes equal; ZIP container comparison normalizes DOS timestamps"
+  ],
+  "receipts": [
+    {
+      "path": "work/m5/pytest-full.xml",
+      "sha256": "65cc3cf92eefc8bafc29e1719ccc0d3a8eab0984778fbff8f44c0312a5563dd6",
+      "bytes": 809938
+    },
+    {
+      "path": "work/m5/pytest-full.log",
+      "sha256": "1a1159076a396e06e921f35bdb5aafaa011490052e963336c67d43d1122ad76a",
+      "bytes": 59244
+    },
+    {
+      "path": "work/m5/hygiene-final.log",
+      "sha256": "e4216e7abeca380dc8b92e0833d0f14a51d3da369b9b9366b8c4be585f8a25e1",
+      "bytes": 24
+    },
+    {
+      "path": "work/m5/path-scan.json",
+      "sha256": "92c75a0c3ec76c1d8dfeff5a715cc748ab14ece9d9bfa34b81c581b8b310ce70",
+      "bytes": 70
+    },
+    {
+      "path": "work/m5/evidence/replay221.json",
+      "sha256": "080682285c992479b76f4de6c45e20066cac1cd90eea387f0c3627332df6f975",
+      "bytes": 105909
+    },
+    {
+      "path": "work/m5/evidence/replay223.json",
+      "sha256": "3cb87e12ac4cb9d2e131c718d824ff58b33fcc532a7b74f582a2740fd2b6642d",
+      "bytes": 1522
+    },
+    {
+      "path": "work/m5/evidence/boss-reader-236-final.json",
+      "sha256": "ff25154dfef9530ad25946f8700ac07b288c40a65c0dab9abf15902e041f339a",
+      "bytes": 193876
+    },
+    {
+      "path": "work/m5/evidence/boss-reader-236-final.lock.json",
+      "sha256": "9925b8a580ab77829c3f42a9636ad0a97f2b5567253331c0580efb00e7b03457",
+      "bytes": 34618
+    },
+    {
+      "path": "work/m5/evidence/boss-cli-smoke-236.json",
+      "sha256": "f86afca74910de95678ffdbb90d290d18b4222dd0f6ed9bd17ed6905b9bb9855",
+      "bytes": 5573
+    },
+    {
+      "path": "work/m5/acceptance/reconstruction145.json",
+      "sha256": "7a5dd1f593ec26a07e3d46f119f2b3c6c46924bff4930e40bdf1394aa3cab1ef",
+      "bytes": 1874
+    },
+    {
+      "path": "work/m5/evidence/boss-parameters-preview-236.json",
+      "sha256": "2c442fa44a15920a1849bb57783f17786a599609021cb2ae48390dc22f5fbc92",
+      "bytes": 8659
+    },
+    {
+      "path": "work/m5/acceptance/roundtrip-final-v2.json",
+      "sha256": "c3a799c58571cb8db1188e80eefd35a74c7b701d9bf47f7e981ad989795edebd",
+      "bytes": 491
+    },
+    {
+      "path": "work/m5/acceptance/unpacked-final-v2.lock.json",
+      "sha256": "3bb5c976ca0f0801e42eb6abb96473ffe8079dc2c3adca884181bf3a042af787",
+      "bytes": 24585
+    },
+    {
+      "path": "work/m5/acceptance/sha256sums-final-v2.json",
+      "sha256": "3b936746edd21d421fffa2dec80af49c86ab58f03bf5bfdeb2a009baf30ed479",
+      "bytes": 40
+    },
+    {
+      "path": "work/m5/acceptance/new-shared-final-v2/build-report.json",
+      "sha256": "6b2ea5dcdfbac4460db810130bcb55de7756db0b7c63bf36570b4e4a4c2529a6",
+      "bytes": 39860
+    },
+    {
+      "path": "work/m5/acceptance/new-shared-final-v2/delivery/delivery-manifest.json",
+      "sha256": "3f49e98f3491328e45bc3c3e36d2db40e4d1bd05146cf278ecd2f0b387d07e64",
+      "bytes": 1954
+    },
+    {
+      "path": "work/m5/rules-evidence/negative-candidates.json",
+      "sha256": "0c912e4390a735764d017b6c08508764e2751b6ebe0b9d4c6a998f35010585d8",
+      "bytes": 49336
+    },
+    {
+      "path": "work/m5/rules-evidence/atlas-template-evidence.json",
+      "sha256": "97b863c1e4044d0e8208f0c9b17cf2befebdc759e62d9c55efc0bb75c0d456a3",
+      "bytes": 29295
+    }
+  ]
+}
