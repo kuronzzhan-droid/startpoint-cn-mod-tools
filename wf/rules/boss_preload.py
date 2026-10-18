@@ -24,13 +24,15 @@ def walk(value):
 
 
 def recommended(document):
+    quest = document.get("quest", {})
+    indexes = {"boss_battle": 72, "hard_multi": 73, "hard_multi_event": 73, "practice": 73}
+    if quest.get("kind") in indexes and len(cells(quest)) > indexes[quest["kind"]]:
+        return cell(quest, indexes[quest["kind"]])
     value = fields(document)
     for key in ("recommended_element", "recommendedElement", "battle_recommended_element"):
         if key in value:
             return value[key]
-    quest = document.get("quest", {})
-    indexes = {"boss_battle": 72, "hard_multi_event": 73, "practice": 73}
-    return cell(quest, indexes[quest["kind"]]) if quest.get("kind") in indexes else None
+    return None
 
 
 def tier(node, level):
@@ -124,6 +126,8 @@ def preload_check(document, *, view=None, baseline=None):
     funnels = evidence.view.table(FUNNEL)
     problems, pending, proofs, checked = [], [], [], set()
     for enemy in document.get("enemies", []):
+        if enemy.get("kind") == "zako":
+            continue
         code = enemy.get("code")
         if code in checked:
             continue

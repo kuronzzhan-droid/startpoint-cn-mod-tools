@@ -9,6 +9,8 @@ from .catalog import result
 
 def _waves(document):
     terrain = document.get("terrain") or {}
+    if terrain.get("missing") is True:
+        return None
     return terrain.get("waves", terrain.get("layers"))
 
 
@@ -59,7 +61,7 @@ def terrain_checks(document):
         for token in ("GATE", "TRANSIT"):
             if index < len(waves) - 1 and not counts[token]:
                 issues.append(f"非末层 {label} 缺 {token}")
-            elif index == len(waves) - 1 and counts[token]:
+            elif len(waves) > 1 and index == len(waves) - 1 and counts[token]:
                 issues.append(f"末层 {label} 不应保留 {token}")
         if zone_names is not None and label not in zone_names:
             issues.append(f"地形层 {label} 没有同名 zone 行")

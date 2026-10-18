@@ -60,6 +60,9 @@ def check_file(filename):
     try:
         document = read_document(filename)
         schema = document.get("schema") if isinstance(document, dict) else None
+        if schema == "wf-boss/1":
+            from wf.rules.boss import check_boss
+            return check_boss(document)
         if schema in SCHEMAS:
             schema_name, scope = SCHEMAS[schema]
         elif isinstance(document, dict) and "requires" in document and document.get("schemaVersion") == 2:
@@ -107,12 +110,21 @@ def check_file(filename):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="wf check")
-    parser.add_argument("target", help="文件，或 dsl / rules / caps / compat / text")
+    parser.add_argument("target", help="文件，或 dsl / rules / caps / compat / text / boss")
     parser.add_argument("files", nargs="*", type=Path)
     parser.add_argument("--kind", type=int, help="DSL 调用 kind；能力动作用 629")
     parser.add_argument("--json", type=Path)
     parser.add_argument("--requires", type=Path)
     parser.add_argument("--provides", type=Path)
+    parser.add_argument("--tip", help="boss 只读视图版本；选择 quest 时默认 1.4.236")
+    parser.add_argument("--base-version", default="1.4.131")
+    parser.add_argument("--manifest", type=Path)
+    parser.add_argument("--extra-manifest", type=Path, action="append")
+    parser.add_argument("--store", type=Path)
+    parser.add_argument("--zip-dir", type=Path, action="append")
+    parser.add_argument("--lock", type=Path)
+    parser.add_argument("--baseline", type=Path, help="boss 属性变化前的 wf-boss/1 快照")
+    parser.add_argument("--context", type=Path, help="boss 自制内容/选门/三人图集等设计上下文 JSON")
     args = parser.parse_args(argv)
     if args.target == "rules":
         document = catalog()
@@ -128,6 +140,17 @@ def main(argv=None):
             results = [result("input", "问题", str(error), blocking=True)]
         document = {"schema": "wf-check-results/1", "results": results}
         failed = any(entry["blocking"] for entry in results)
+    elif args.target == "boss":
+        if not args.files:
+            parser.error("wf check boss 需要副本 ID、kind:path 或 wf-boss/1 快照文件")
+        from wf.rules.boss_cli import check_inputs
+        try:
+            files = check_inputs(args)
+        except (ValueError, OSError, TypeError, KeyError) as error:
+            files = [{"file": "boss inputs", "results": [result("input", "问题", str(error), blocking=True)]}]
+        document = {"schema": "wf-check-results/1", "files": files}
+        failed = any(r["blocking"] for f in files for r in f["results"])
+        failed |= any(all(r["status"] in {"未执行", "不适用"} for r in f["results"]) for f in files)
     elif args.target in {"caps", "text"}:
         if args.target == "caps":
             from wf.caps.registry import load_registry

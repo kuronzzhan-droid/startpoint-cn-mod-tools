@@ -32,7 +32,7 @@ class CandidateView:
     """Accept both prepush View and ManifestView without changing either."""
 
     def __init__(self, view):
-        self.view = view
+        self.view = getattr(view, "view", view)
 
     def raw(self, logical):
         try:

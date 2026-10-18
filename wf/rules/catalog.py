@@ -10,7 +10,7 @@ def catalog():
     from wf.text.standard import rule_catalog
     document = json.loads(Path(__file__).with_name("catalog.json").read_text(encoding="utf-8"))
     document["rules"].extend(rule_catalog()["rules"])
-    document["version"] = "2.0.0"
+    document["version"] = "2.1.0"
     return document
 
 

@@ -79,3 +79,9 @@ def test_single_player_practice_does_not_require_nine_coffins():
     doc["terrain"]["waves"][0]["objects"] = [o for o in doc["terrain"]["waves"][0]["objects"]
                                                 if o["type"] != "COFFIN"]
     assert terrain_checks(doc)[1]["status"] == "满足"
+
+
+def test_official_single_wave_transit_is_unused_and_not_rejected():
+    doc = snapshot()
+    doc["terrain"]["waves"][0]["objects"].append({"type": "TRANSIT"})
+    assert terrain_checks(doc)[1]["status"] == "满足"
