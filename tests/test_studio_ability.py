@@ -161,11 +161,19 @@ def test_templates_allow_zero_precedent_and_schema_demands_assertions(tmp_path):
     assert schema_errors(request, "abilityRequest")
 
 
-def test_registered_kind_wrong_table_or_block_is_problem(tmp_path):
+def test_draft_save_accepts_official_instant_422_despite_patch_number_collision(tmp_path):
     ed = editor(tmp_path)
-    for table, key, count, column, kind in [("leader_ability", "100", 1, 45, "724"),
-                                           ("ability", "1001", 2, 47, "422")]:
-        request = op(table=table, key=key, count=count, cells=[{"column": column, "old": "0", "new": kind}])
-        with pytest.raises(DraftError, match="问题:.*(allowed_tables|allowed_blocks)"):
-            ed.apply("139985", {"operations": [request]})
+    request = op(cells=[{"column": 47, "old": "0", "new": "422"}])
+    ed.apply("139985", {"operations": [request]})
+    raw = compiled(ed)["client"][TABLES["ability"]]
+    assert split_leaf(codec.parse_node(raw)["1001"], "ability")[0][47] == "422"
+    assert len(ed.store.load("139985")["changes"]) == 1
+
+
+def test_draft_save_preserves_existing_client_legality_guard_for_leader_724(tmp_path):
+    ed = editor(tmp_path)
+    request = op(table="leader_ability", key="100", count=1,
+                 cells=[{"column": 45, "old": "0", "new": "724"}])
+    with pytest.raises(DraftError, match=r"LeaderAbilityValues\$/parseAt45"):
+        ed.apply("139985", {"operations": [request]})
     assert ed.store.load("139985") is None

@@ -23,14 +23,13 @@ from pathlib import Path
 from wf.dsl.references import DSL_SUFFIX, program_logical
 
 from .drafts import DraftError
+from .client_profile_signals import (ABILITY_PATHS, CONTENT_BLOCKS, candidate_kinds,
+                                     distinct_signals, kind_site, kind_sites, signature)
 
 REPOSITORY = Path(__file__).resolve().parents[2]
 COMPAT_REPORT = REPOSITORY / "docs" / "m2" / "compat-v34-v35.json"
-ROW_TABLES = {"ability": "master/ability/ability.orderedmap",
-              "leader_ability": "master/ability/leader_ability.orderedmap",
-              "action_skill": "master/skill/action_skill.orderedmap"}
+ROW_TABLES = {**ABILITY_PATHS, "action_skill": "master/skill/action_skill.orderedmap"}
 LOOKUP_PARAMS = ("kind", "unique", "dsl", "selector", "customKey", "capability")
-CONTENT_BLOCKS = {"instant_content", "during_content"}
 SATISFIED = {"静态证据满足", "能力满足，方法待补"}
 MAX_STEPS = 400
 NOTE = "只比较已登记能力与离线方法证据；没有命中不证明未知写法有效，也不代表装机实测。"
@@ -100,8 +99,8 @@ class ClientProfileView:
         return self._default
 
     # -- capability sets → per-profile comparison ------------------------
-    def compat(self, ids, partial=False) -> dict:
-        key = tuple(sorted(set(ids))), bool(partial)
+    def compat(self, ids, partial=False, *, sites=()) -> dict:
+        key = tuple(sorted(set(ids))), bool(partial), tuple(sorted(signature(site) for site in sites))
         with self._lock:
             if key in self._compat:
                 return self._compat[key]
@@ -113,7 +112,8 @@ class ClientProfileView:
                     "requires": {"clientCapabilities": list(key[0]), "clientPatches": [f"#{n}" for n in patches],
                                  "serverFeatures": [], "serverRestart": False, "restartReasons": [],
                                  "minServerVersion": None,
-                                 "capabilityResolution": "partial" if partial else "resolved"}}
+                                 "capabilityResolution": "partial" if partial else "resolved",
+                                 "kindSites": [json.loads(site) for site in key[2]]}}
         result = {}
         for name, client in self.clients().items():
             if client["document"] is None:
@@ -137,6 +137,7 @@ class ClientProfileView:
         cid = check.get("id")
         cap = registry.get(cid) if cid else None
         return {"id": cid, "rule": check.get("rule"), "message": check.get("message"),
+                "status": check.get("status"), "site": check.get("site"),
                 "title": cap["title"] if cap else None,
                 "patches": check.get("patches", cap["provided_by"]["patches"] if cap else []),
                 "missingPatches": check.get("missing_patches", [])}
@@ -144,7 +145,8 @@ class ClientProfileView:
     def describe_ids(self, ids, *, unsupported=(), signals=(), references=(), placement=()) -> dict:
         registry = self.registry()
         ids = sorted(set(ids))
-        compat = self.compat(ids, bool(unsupported))
+        signals = list(signals)
+        compat = self.compat(ids, bool(unsupported), sites=kind_sites(signals))
         capabilities = [{"id": cid, "title": registry[cid]["title"] if cid in registry else cid,
                          "layer": registry.get(cid, {}).get("layer"),
                          "official": registry.get(cid, {}).get("layer") == "B",
@@ -161,7 +163,7 @@ class ClientProfileView:
 
     def describe_signals(self, signals, *, references=(), placement=()) -> dict:
         from wf.caps.query import requirements_for_signals
-        signals = list(dict.fromkeys(signals))
+        signals = distinct_signals(signals)
         unsupported = [v for k, v in signals if k == "unsupported"]
         ids = requirements_for_signals([s for s in signals if s[0] != "unsupported"], self.registry())
         return self.describe_ids(ids, unsupported=unsupported, signals=signals, references=references,
@@ -171,7 +173,17 @@ class ClientProfileView:
     def marker_signals(self, query) -> list:
         """Same parameters and signal mapping as ``wf.caps.query.query_requirements``."""
         from wf.caps.signals_v35 import custom_signals, unique_signals
-        signals = [("kinds", v) for v in query.get("kind", [])]
+        table = (query.get("table") or [None])[0]
+        block = (query.get("block") or [None])[0]
+        if table or block:
+            if not table or not block:
+                raise DraftError("按位置查询 kind 必须同时给出 table 与 block")
+            try:
+                signals = [("kind_site", kind_site(table, block, v)) for v in query.get("kind", [])]
+            except ValueError as exc:
+                raise DraftError(str(exc)) from exc
+        else:
+            signals = [("kinds", v) for v in query.get("kind", [])]
         dsl = query.get("dsl", [])
         signals += [("dsl_nodes", v) for v in dsl]
         signals += [("selectors", v) for v in (*dsl, *query.get("selector", []))]
@@ -191,9 +203,6 @@ class ClientProfileView:
         while queue and steps < MAX_STEPS:
             steps += 1
             kind, value = queue.popleft()
-            if kind == "kind_site":
-                signals.append(("kinds", str(value["kind"])))
-                continue
             if kind == "program":
                 target = program_logical(value)
                 if target is None and str(value).startswith("battle/"):
@@ -277,7 +286,10 @@ class ClientProfileView:
         trail = (key,) if level in (None, "") else (key, str(level))
         placement, first = [], []
         try:
-            first = list(table_signals(ROW_TABLES[table], trail, _csv(cells), registry=self.registry()))
+            first = [(signal, {**value, "logical_path": ROW_TABLES[table], "key": "/".join(trail)})
+                     if signal == "kind_site" else (signal, value)
+                     for signal, value in table_signals(ROW_TABLES[table], trail, _csv(cells),
+                                                        registry=self.registry())]
         except ValueError as exc:
             placement.append(str(exc).removeprefix("问题: "))
         signals, references = self.close(first)
@@ -330,6 +342,9 @@ class ClientProfileView:
             ids = sorted({c["id"] for c in result["capabilities"]} | set(explicit))
             result = self.describe_ids(ids, unsupported=result["unsupported"],
                                        signals=[(s["kind"], s["value"]) for s in result["signals"]])
+        if any(kind == "kinds" for kind, _ in signals):
+            result["note"] = ("未指定表/块的 kind 查询仅检索能力目录；返回档案只比较目录能力，"
+                              "不证明该 kind 在具体表/块受支持。" + NOTE)
         return json_response(result)
 
     def program(self, query):
@@ -360,23 +375,11 @@ class ClientProfileView:
         if block not in CONTENT_BLOCKS:
             # Trigger/precondition kinds are other enums; registered kinds only describe content blocks.
             return json_response({"table": table, "block": block, "kinds": {}, "note": NOTE})
-        registry = self.registry()
-        fits, elsewhere = {}, {}
-        for cid, cap in registry.items():
-            surface = cap["data_surface"]
-            for kind in surface.get("kinds", []):
-                tables, blocks = surface.get("allowed_tables") or [], surface.get("allowed_blocks") or []
-                ok = (not tables or table in tables) and (not blocks or block in blocks)
-                (fits if ok else elsewhere).setdefault(str(kind), []).append(
-                    cid if ok else f"{'/'.join(tables) or '任意表'} · {'/'.join(blocks) or '任意区块'}")
-        result = {kind: self.describe_ids(ids) for kind, ids in fits.items()}
-        for kind, places in elsewhere.items():
-            if kind not in fits:
-                # wf.caps.facts judges kinds by number: a row here would fail requires derivation at 「生成」,
-                # even when this block's enum gives the number another (official) meaning.
-                result[kind] = {**self.describe_ids([]), "placement": [
-                    f"生成时的能力推导会拦下：注册表只在 {'；'.join(sorted(set(places)))} 登记了 kind {kind}，"
-                    f"{table}.{block} 不在其中。若这个区块的同号 kind 是另一个枚举项，属于按编号判断的误报，需要后端确认"]}
+        try:
+            result = {kind: self.describe_signals([("kind_site", kind_site(table, block, kind))])
+                      for kind in candidate_kinds(self.registry())}
+        except ValueError as exc:
+            raise DraftError(str(exc)) from exc
         return json_response({"table": table, "block": block, "kinds": result, "note": NOTE})
 
     def character_compat(self, query):
