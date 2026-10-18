@@ -61,3 +61,17 @@ def test_wrong_snapshot_schema_is_input_error(tmp_path, capsys):
     path.write_text('{}', encoding='utf-8')
     assert main(["boss", str(path)]) == 1
     assert json.loads(capsys.readouterr().out)["files"][0]["results"][0]["rule"] == "input"
+
+
+def test_cli_does_not_auto_discover_unrequested_manifests(monkeypatch, capsys):
+    from wf.rules import boss_cli
+    captured = []
+
+    def check_inputs(args):
+        captured.append(args.extra_manifest)
+        return [{"file": "1", "results": [{"blocking": False, "status": "满足"}]}]
+
+    monkeypatch.setattr(boss_cli, "check_inputs", check_inputs)
+    assert main(["boss", "1"]) == 0
+    capsys.readouterr()
+    assert captured == [[]]

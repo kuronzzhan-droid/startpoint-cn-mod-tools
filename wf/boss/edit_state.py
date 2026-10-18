@@ -12,7 +12,7 @@ from wf.deliver.json_merge import _json_spans
 
 
 def digest(raw):
-    return hashlib.sha256(raw).hexdigest()
+    return hashlib.sha256(raw).hexdigest() if raw is not None else None
 
 
 def leaf(tree, path, default=None):
@@ -115,18 +115,19 @@ class BossEditState:
             if not filename.is_file():
                 if required:
                     raise ValueError(f"missing server input: {target}")
-                raw = b"{}\n"
+                raw = None
             else:
                 raw = filename.read_bytes()
             self.server_original[target] = raw
-        return json.loads(self.servers.get(target, self.server_original[target]))
+        raw = self.servers.get(target, self.server_original[target])
+        return json.loads(raw) if raw is not None else {}
 
     def set_server_keys(self, target, updates, *, new=False, required=True):
         current = self.server(target, required=required)
         if new and set(updates) & set(current):
             raise ValueError(f"server ID collision: {target}: {sorted(set(updates) & set(current))}")
         raw = self.servers.get(target, self.server_original[target])
-        self.servers[target] = merge_keys(raw, updates)
+        self.servers[target] = merge_keys(raw if raw is not None else b"{}\n", updates)
 
     def snapshot(self):
         return {"client": {k: digest(v) for k, v in sorted(self.original.items())},

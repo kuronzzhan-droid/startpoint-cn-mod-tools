@@ -314,7 +314,7 @@
                 "inputs": {"type": "object", "additionalProperties": false, "required": ["client", "server"],
                   "properties": {
                     "client": {"type": "object", "additionalProperties": {"$ref": "#/$defs/sha256"}},
-                    "server": {"type": "object", "additionalProperties": {"$ref": "#/$defs/sha256"}}
+                    "server": {"type": "object", "additionalProperties": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]}}
                   }}
               }},
             "files": {"maxItems": 0}, "pending": {"maxItems": 0}
