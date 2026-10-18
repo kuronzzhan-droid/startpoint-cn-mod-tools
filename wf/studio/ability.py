@@ -53,6 +53,7 @@ def _replay(source, cid, requests, *, server_dir=None, server_text=None, server_
                 op.get("shared_ok") is True for op in text_ops)
             apply_text(state, cid, sections, shared_ok=explicit_shared)
     state.client = {key: value for key, value in state.client.items() if value != state.original[key]}
+    state.servers = {key: value for key, value in state.servers.items() if value != state.server_original[key]}
     if requests and not state.client:
         raise ValueError("词条操作互相抵消或没有实际改动")
     if requests:
@@ -106,7 +107,7 @@ def compile_ability_operations(source, store, changeset, server_dir=None):
     _guard_inputs(state, changeset)
     return {"client": state.client, "servers": state.servers,
             "before": {key: sha256(state.original[key]) for key in state.client},
-            "server_before": {key: sha256(raw) for key, raw in state.server_original.items()},
+            "server_before": {key: sha256(state.server_original[key]) for key in state.servers},
             "changes": state.changes, "checks": state.checks}
 
 
