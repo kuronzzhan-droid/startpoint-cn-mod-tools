@@ -7,6 +7,7 @@ import re
 
 from wf.dsl.references import ABILITY_TABLES, program_logical
 from wf.view.layout import EM, col
+from .signals_v35 import character_signals, custom_signals, unique_signals
 
 UNIQUE = "master/character/unique_condition.orderedmap"
 PF = "master/skill/power_flip_action.orderedmap"
@@ -40,11 +41,13 @@ def table_signals(logical, trail, text, *, registry=None):
         yield "selectors", "character_status.level>100"
     if logical == STRINGS and trail[-1].startswith("desc_override_"):
         yield "selectors", "text.desc_override"
+    if logical == STRINGS:
+        yield from custom_signals(trail[-1])
     if logical == UNIQUE:
         yield "unique_ids", str(trail[-1])
         for row in rows(text):
             if row:
-                yield "unique_string", row[0]
+                yield from unique_signals(row[0], trail[-1])
     for index, row in enumerate(rows(text)):
         if not row:
             continue
@@ -103,7 +106,11 @@ def table_signals(logical, trail, text, *, registry=None):
             if "awake_kind" in heads and row[heads["awake_kind"]] in {"1", "2"}:
                 yield "selectors", "ability.awake-row"
             yield "optional_ref", (STRINGS, "desc_override_" + row[0])
+            if name in {"ability", "leader_ability"}:
+                prefix = "wfx_adaptive_" if name == "ability" else "wfx_unlock_"
+                yield "optional_ref", (STRINGS, prefix + trail[0])
         elif logical == CHARACTER:
+            yield from character_signals(trail[0], row)
             if len(row) > 5 and "ModDualForm" in row[5].split(","):
                 yield "selectors", "character.tag=ModDualForm"
             for position, target in [(8, SKILL), (14, "master/skill/switched_action_skill.orderedmap"),
@@ -114,9 +121,11 @@ def table_signals(logical, trail, text, *, registry=None):
             if len(row) > 14 and row[14].endswith("_voice_ready"):
                 yield "selectors", "voice.skill_ready_alt"
         elif logical in {SKILL, "master/skill/switched_action_skill.orderedmap"}:
-            if len(row) > 7 and row[7] not in {"", "(None)"}:
-                yield "program", row[7]
+            position = 7 if logical == SKILL else 0
+            if len(row) > position and row[position] not in {"", "(None)"}:
+                yield "program", row[position]
         elif logical == PF:
+            yield "optional_ref", (STRINGS, "wfx_snapcombo_" + trail[0])
             for value in row:
                 if program_logical(value):
                     yield "program", value

@@ -60,7 +60,17 @@
         "label": {"type": ["string", "null"]},
         "sha256": {"anyOf": [{"type": "string", "pattern": "^[0-9a-f]{64}$"}, {"type": "null"}]},
         "status": {"enum": ["已记录", "待补"]},
-        "source": {"type": "string", "minLength": 1}
+        "source": {"type": "string", "minLength": 1},
+        "accepted_variants": {"type": "array", "items": {
+          "type": "object", "additionalProperties": false,
+          "required": ["sha256", "swf_sha256", "source", "reason"],
+          "properties": {
+            "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "swf_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "source": {"type": "string", "minLength": 1},
+            "reason": {"type": "string", "minLength": 1}
+          }
+        }}
       },
       "allOf": [{"if": {"properties": {"sha256": {"type": "null"}}}, "then": {"properties": {"status": {"const": "待补"}}}}]
     }

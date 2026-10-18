@@ -33,6 +33,11 @@ def validate_capability(document: dict) -> dict:
             raise ValueError(f"{document['id']}: method refers to an undeclared patch")
         if method["sha256"] is None and method["status"] != "待补":
             raise ValueError(f"{document['id']}: null method hash must be marked 待补")
+        variants = method.get("accepted_variants", [])
+        if len({v["swf_sha256"] for v in variants}) != len(variants):
+            raise ValueError(f"{document['id']}: duplicate method variant SWF")
+        if variants and method["sha256"] is None:
+            raise ValueError(f"{document['id']}: pending method cannot have accepted variants")
     missing = set(provider["patches"]) - {method["patch"] for method in provider["methods"]}
     if missing:
         raise ValueError(f"{document['id']}: patches lack method evidence or explicit null: {sorted(missing)}")

@@ -73,6 +73,12 @@ def infer_requirements(members, *, declared=(), read_raw=None, server=None, regi
 
     def signals(values, context):
         for kind, value in values:
+            if kind == "unsupported":
+                entry = {"logical_path": context["logical_path"], "key": context.get("key"),
+                         "referenced_by": {**context, "reason": value}}
+                if entry not in unresolved:
+                    unresolved.append(entry)
+                continue
             if kind in {"ref", "optional_ref"}:
                 logical, key = value
                 if key in {"", "(None)"}:

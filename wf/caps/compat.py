@@ -5,6 +5,7 @@ import re
 
 from wf.deliver.changeset import validate_document
 from wf.rules.catalog import result
+from .method_evidence import accepted_hashes, selected_method_hash
 
 
 def check_compat(requires, provides, *, registry=None, delivery_dir=None):
@@ -83,8 +84,9 @@ def check_compat(requires, provides, *, registry=None, delivery_dir=None):
                 pending.append(method["label"])
             elif recorded is None:
                 missing.append(method["label"])
-            elif recorded != method["sha256"]:
-                mismatches.append({"method": method["label"], "expected": method["sha256"], "actual": recorded})
+            elif recorded not in accepted_hashes(method, provides["source"].get("swf_sha256")):
+                mismatches.append({"method": method["label"], "expected": selected_method_hash(
+                    method, provides["source"].get("swf_sha256")), "actual": recorded})
         if missing:
             results.append(result("capability.method-hash", "问题", f"{cap['title']} 缺少注册表要求的方法 SHA-256",
                                   blocking=True, id=cap_id, missing_methods=missing))
