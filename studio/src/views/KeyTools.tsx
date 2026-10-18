@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { ability, AbilityEntry, AbilityTable, AttachOp, KeySearchResult, RuleResult } from "../api";
 import { Notice } from "./common";
 import { useWorkspace } from "./AbilityEditor";
-import { attachFor, Pending, setAttach, sharedId, tierOps } from "./abilityModel";
+import { attachFor, Pending, setAttach, sharedId, tierOps, workingRows } from "./abilityModel";
 
 // ---------------------------------------------------------------------------
 // attach_key: 换键（挂现有键 / 复制为新键）on ability 1–6, leader (slot 0), skill (slot 0)
@@ -54,7 +54,13 @@ function AttachDialog({ table, slot, current, title, onClose }: {
   const [cursor, setCursor] = useState(0);
   const [confirmShared, setConfirmShared] = useState(false);
   const [newKey, setNewKey] = useState(current && current !== "(None)" ? current + "_m" : "");
-  const [leaderName, setLeaderName] = useState(ws.state?.slots?.leaderName ?? "");
+  // wf text asserts the old leader name against character_text c10 (not the c18 copy).
+  const oldLeaderName = ws.state?.slots?.leaderNameText ?? ws.state?.slots?.leaderName ?? "";
+  const [leaderName, setLeaderName] = useState(oldLeaderName);
+  // Unwritten edits on the current key: carry them into the copy (default) or write them first.
+  const carried = ws.pending.ops.filter((o) => o.table === table && o.key === current);
+  const [carry, setCarry] = useState(true);
+  const [exists, setExists] = useState<{ key: string; found: boolean } | null>(null);
   const search = useRef<HTMLInputElement>(null);
   const seq = useRef(0);
 
@@ -69,14 +75,23 @@ function AttachDialog({ table, slot, current, title, onClose }: {
     return () => clearTimeout(timer);
   }, [query, mode]);
   useEffect(() => setConfirmShared(false), [cursor, mode]);
+  // Duplicate check for a new key: exact lookup of that name, not the last search page.
+  useEffect(() => {
+    if (mode !== "new" || !/^[A-Za-z0-9_]+$/.test(newKey)) { setExists(null); return; }
+    const timer = setTimeout(() => {
+      ability.keys(table, newKey, ws.cid).then((r) => setExists({ key: newKey, found: r.exact === newKey }), () => setExists(null));
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [newKey, mode]);
 
   const items = (result?.results ?? []).filter((r) => r.key !== current);
   const selected = items[cursor];
   const others = selected ? selected.owners.filter((o) => o.id !== ws.cid) : [];
   const currentEntries = ws.state?.entries.filter((e) => e.table === table && e.key === current) ?? [];
-  const newExists = mode === "new" && !!newKey && (result?.results ?? []).some((r) => r.key === newKey);
+  const newExists = mode === "new" && !!newKey && exists?.key === newKey && exists.found;
   const keyPattern = /^[A-Za-z0-9_]+$/;
-  const canNew = mode === "new" && keyPattern.test(newKey) && newKey !== current && currentEntries.length > 0;
+  const canNew = mode === "new" && keyPattern.test(newKey) && newKey !== current && currentEntries.length > 0
+    && exists?.key === newKey && !exists.found && (!carried.length || carry);
   const canExisting = mode === "existing" && !!selected && (!others.length || confirmShared);
 
   const confirm = () => {
@@ -88,13 +103,16 @@ function AttachDialog({ table, slot, current, title, onClose }: {
       owners = selected.owners.map((o) => o.id);
     } else {
       if (!canNew) return;
-      op = { op: "attach_key", table, key: newKey, slot, old_key: current, column_space: "native", ...newRows(table, currentEntries) };
+      // Copy the rows as they will be after the unwritten edits, and drop those edits from the old key.
+      const source = currentEntries.map((e) => ({ ...e, rows: workingRows(e, ws.pending) }));
+      op = { op: "attach_key", table, key: newKey, slot, old_key: current, column_space: "native", ...newRows(table, source) };
     }
+    const moving = mode === "new" && carried.length > 0;
     ws.update((p: Pending) => {
-      let next = setAttach(p, table, slot, op, owners);
+      let next = moving ? { ...p, ops: p.ops.filter((o) => !(o.table === table && o.key === current)) } : p;
+      next = setAttach(next, table, slot, op, owners);
       if (others.length && mode === "existing") next = { ...next, sharedOk: { ...next.sharedOk, [sharedId(table, op.key)]: true } };
-      const oldName = ws.state?.slots?.leaderName ?? "";
-      if (table === "leader_ability") next = { ...next, leaderName: leaderName !== oldName ? { old: oldName, new: leaderName } : null };
+      if (table === "leader_ability") next = { ...next, leaderName: leaderName !== oldLeaderName ? { old: oldLeaderName, new: leaderName } : null };
       return next;
     });
     onClose();
@@ -175,13 +193,21 @@ function AttachDialog({ table, slot, current, title, onClose }: {
               每格以「新键不存在」断言写入，然后挂到本槽；原键保留给其它持有者。新键名只用字母、数字、下划线。</p>
             {newKey && !keyPattern.test(newKey) ? <p class="error-text small">键名含不允许的字符。</p> : null}
             {newExists ? <p class="error-text small">已有同名键；请改名或改用「挂现有键」。</p> : null}
+            {carried.length ? (
+              <div class="shared-confirm">
+                <p>当前键 <span class="mono">{current}</span> 上有 {carried.length} 处未写入的修改。</p>
+                <label class="check"><input type="checkbox" checked={carry} onChange={(e) => setCarry((e.target as HTMLInputElement).checked)} />
+                  把这些修改带到新键（旧键保持原样，不影响其它持有者）</label>
+                {!carry ? <p class="small warn-text">不带过去就要先写入或放弃这些修改，再复制为新键。</p> : null}
+              </div>
+            ) : null}
             <p class="small warn-text">关联的覆盖文案（desc_override_*）按键名/引用查找，新键可能不再带出原来的覆盖文案，写入后到「文案」页核对。</p>
           </div>
         )}
         {table === "leader_ability" ? (
           <div class="leader-sync">
             <p class="warn-text small">换队长技键后要同步队长名：character c18 与 character_text c10（两份服务端镜像随 wf text 同步）。后端会标「待验证」提醒。</p>
-            <label>队长名（character_text c10 → 同步 c18）
+            <label>队长名<InfoTipInline text="写入 character_text c10，并同步 character c18 与两份服务端镜像" />
               <input class="wide-input" value={leaderName} onInput={(e) => setLeaderName((e.target as HTMLInputElement).value)} /></label>
           </div>
         ) : null}
@@ -229,6 +255,10 @@ function newRows(table: AbilityTable, entries: AbilityEntry[]): Pick<AttachOp, "
   return { rows: entries[0].rows.map(cells) };
 }
 
+function InfoTipInline({ text }: { text: string }) {
+  return <span class="info-tip" title={text} aria-label={text}>ⓘ</span>;
+}
+
 // ---------------------------------------------------------------------------
 // Skill tiers: insert (copy a tier) / delete, with the backend's reference report
 
@@ -246,18 +276,18 @@ export function SkillTiers() {
   const sid = sharedId("action_skill", key);
 
   const insertAfter = (index: number) => ws.update((p) => ({
-    ...p, tierConfirmed: false, ops: [...p.ops, {
+    ...p, tierConfirmed: false, tierRisk: false, ops: [...p.ops, {
       op: "insert_row", table: "action_skill", key, level: String(index + 2), row: 0, row_count: tiers.length,
       column_space: "native", cells: tiers[index].rows[0].map((v, i) => ({ column: "c" + i, old: null, new: v })),
     }],
   }));
   const remove = (index: number) => ws.update((p) => ({
-    ...p, tierConfirmed: false, ops: [...p.ops, {
+    ...p, tierConfirmed: false, tierRisk: false, ops: [...p.ops, {
       op: "delete_row", table: "action_skill", key, level: String(index + 1), row: 0, row_count: tiers.length,
       column_space: "native", cells: tiers[index].rows[0].map((v, i) => ({ column: "c" + i, old: v, new: null })),
     }],
   }));
-  const cancel = () => ws.update((p) => ({ ...p, tierConfirmed: false, ops: p.ops.filter((o) => !(o.table === "action_skill" && o.op !== "set_cells")) }));
+  const cancel = () => ws.update((p) => ({ ...p, tierConfirmed: false, tierRisk: false, ops: p.ops.filter((o) => !(o.table === "action_skill" && o.op !== "set_cells")) }));
 
   const projected = tiers.map((t) => ({ label: `档 ${t.level}`, name: t.rows[0]?.[0] ?? "", from: t.level }));
   for (const op of pending) {
@@ -266,6 +296,7 @@ export function SkillTiers() {
     if (op.op === "delete_row") projected.splice(at, 1);
   }
   const reference = (ws.check?.checks ?? []).find((c) => c.rule === "ability.skill-tier-references") as TierReference | undefined;
+  const missingTiers = Object.entries(reference?.missingUnawakenedTiers ?? {}).filter(([, tiers]) => tiers.length);
 
   return (
     <article class="ability tier-panel">
@@ -300,10 +331,17 @@ export function SkillTiers() {
               确认修改共享技能键（shared_ok）</label>
           ) : null}
           {reference ? <TierReferences check={reference} /> : <p class="small muted">{ws.checking ? "正在试算档位引用……" : "试算未返回档位引用（见下方检查问题）。"}</p>}
+          {missingTiers.length ? (
+            <label class="check confirm-line danger-line">
+              <input type="checkbox" checked={ws.pending.tierRisk}
+                onChange={(e) => ws.update((p) => ({ ...p, tierRisk: (e.target as HTMLInputElement).checked, tierConfirmed: false }))} />
+              我明白：未觉醒的玩家会缺第 {[...new Set(missingTiers.flatMap(([, t]) => t))].join("、")} 档（技能进化到那里时取不到档位）
+            </label>
+          ) : null}
           <label class="check confirm-line">
-            <input type="checkbox" checked={ws.pending.tierConfirmed} disabled={!reference}
+            <input type="checkbox" checked={ws.pending.tierConfirmed} disabled={!reference || (missingTiers.length > 0 && !ws.pending.tierRisk)}
               onChange={(e) => ws.update((p) => ({ ...p, tierConfirmed: (e.target as HTMLInputElement).checked }))} />
-            我已核对默认档位、玛纳节点与觉醒引用（后端标「待验证」，不读取玩家存档）
+            我已核对默认档位、玛纳节点与觉醒引用（不读取玩家存档）
           </label>
         </div>
       ) : null}

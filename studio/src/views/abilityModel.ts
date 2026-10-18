@@ -31,10 +31,12 @@ export interface Pending {
   owners: Record<string, string[]>;
   /** Skill-tier insert/delete references reviewed by the user. */
   tierConfirmed: boolean;
+  /** Second confirmation when the result leaves unawakened players without a tier they can reach. */
+  tierRisk: boolean;
 }
 
 export const EMPTY_PENDING: Pending = {
-  ops: [], text: [], custom: [], attach: [], leaderName: null, sharedOk: {}, owners: {}, tierConfirmed: false,
+  ops: [], text: [], custom: [], attach: [], leaderName: null, sharedOk: {}, owners: {}, tierConfirmed: false, tierRisk: false,
 };
 
 export function isTierOp(op: AbilityOp): boolean {

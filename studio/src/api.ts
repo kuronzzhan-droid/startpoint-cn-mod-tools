@@ -126,6 +126,8 @@ export interface PixelAction {
   end: number;
   totalFrames: number;
   cells: PixelCell[];
+  /** Frames past the last atlas endpoint (no image there). */
+  overflow?: number;
 }
 
 export interface PixelFamily {
@@ -141,6 +143,8 @@ export interface PixelFamily {
   scale: number;
   fps: number;
   actions: PixelAction[];
+  /** Sequences that start past the last atlas endpoint (nothing to play). */
+  unplayable?: string[];
 }
 
 export interface PixelMeta {
@@ -516,7 +520,10 @@ export interface AbilitySlots {
   ability: string[];
   leader_ability: string;
   action_skill: string;
+  /** character c18 (synced copy) */
   leaderName: string;
+  /** character_text c10 — what wf text asserts as the old leader name */
+  leaderNameText?: string | null;
 }
 
 export interface AbilityState {
@@ -823,6 +830,7 @@ export interface WorkshopAction {
   totalFrames: number;
   universal: boolean;
   cells: WorkshopCell[];
+  overflow?: number;
 }
 
 export interface WorkshopRegion {

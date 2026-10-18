@@ -24,7 +24,7 @@ from PIL import Image
 from wf_pixelart_vfx import restore_frame
 
 from .deliver_media import png, read_root
-from .drafts import DraftError, now, sha256, validate
+from .drafts import DraftError, new_change_id, now, sha256, validate
 from .operations import DraftOps
 from .pixel_workshop import (FAMILY_FILES, SPECIAL_REQUIRED, SQUAD_REQUIRED, UNIVERSAL_RANGES, decode_family,
                              family_paths, normalize_mapping, read_family_raw, remap_family)
@@ -462,8 +462,7 @@ def bind(ops: DraftOps, sid: str, request: dict) -> dict:
                 if base_raws is None:
                     raise DraftError(f"母本 {params['base']['code']} 缺 {family}")
                 expected = remap_family(base_raws, params["base"]["code"], code, normalize_mapping(params["mapping"]))
-                if (png(expected["stored"][0]).tobytes() != png(rebuilt["stored"][0]).tobytes()
-                        or expected["stored"][1:] != rebuilt["stored"][1:]):
+                if not same_family(expected["stored"], rebuilt["stored"]):
                     raise DraftError(f"{family} 母本映射与草稿不一致（母本变了？），请在草稿角色里重新映射")
             plan.append(("pixel_family", change, family, rebuilt, params))
         elif change["kind"] == "pixel_action":
@@ -479,8 +478,12 @@ def bind(ops: DraftOps, sid: str, request: dict) -> dict:
                "notes": notes}
     if request.get("dryRun"):
         return {"dryRun": True, **summary}
-    make = ops._file_maker(cid)
-    created = []
+    # Stage everything in memory first (every read and check happens before the first write),
+    # then write files, commit all changes as one revision and record boundTo; any failure
+    # restores overwritten files, removes new ones and puts the previous target changeset back.
+    staged: dict[str, bytes] = {}
+    make = ops._file_maker(cid, writer=lambda relative, data: staged.__setitem__(relative, data))
+    built_changes = []
     for kind, change, family, rebuilt, params in plan:
         if kind == "pixel_family":
             paths = family_paths(code, family)
@@ -492,21 +495,59 @@ def bind(ops: DraftOps, sid: str, request: dict) -> dict:
                      "files": files, "pending": [], "checks": change["checks"]}
         else:
             frames = []
-            for frame in change["params"]["frames"]:
+            folder = f"files/pixel/{family}/{change['target']['action']}/{sid}"  # never a target's own frame path
+            for index, frame in enumerate(change["params"]["frames"]):
                 data = ops.store.read_file(sid, frame["file"])
                 if data is None or sha256(data) != frame["sha256"]:
                     raise DraftError(f"草稿帧缺失或被改动：{frame['file']}")
-                ops.store.write_file(cid, frame["file"], data)
-                frames.append(dict(frame))
+                relative = f"{folder}/frame_{index:03d}.png"
+                staged[relative] = data
+                frames.append({**frame, "file": relative})
             params = {**copy.deepcopy(change["params"]), "frames": frames}
             pending = [{**p, "logical": p["logical"].replace(f"character/{old}/", f"character/{code}/")}
                        for p in change["pending"]]
             built = {"title": change["title"] + f"（来自 {sid}）", "target": change["target"], "params": params,
                      "files": [], "pending": pending, "checks": change["checks"]}
-        created.append(ops._commit(cid, code, kind, built)["change"]["id"])
-    meta = {**meta, "boundTo": {"characterId": cid, "code": code, "at": now(), "changes": created}}
-    ops.store.update_scratch(sid, meta)
+        built_changes.append({"id": new_change_id(), "kind": kind, "title": built["title"], "createdAt": now(),
+                              "target": built["target"], "params": built["params"], "files": built["files"],
+                              "pending": built["pending"], "checks": built["checks"]})
+    for item in built_changes:
+        validate(item, "change")
+    store = ops.store
+    with store._lock:
+        previous = store.load(cid)
+        backups = {relative: store.read_file(cid, relative) for relative in staged}
+        committed = False
+        try:
+            for relative, data in staged.items():
+                store.write_file(cid, relative, data)
+            _, dropped = store.put_changes(cid, code, ops.source.version, built_changes)
+            committed = True
+            created = [item["id"] for item in built_changes]
+            store.update_scratch(sid, {**meta, "boundTo": {"characterId": cid, "code": code, "at": now(),
+                                                           "changes": created}})
+        except Exception:
+            if committed:
+                store.restore(cid, previous)
+            for relative, data in backups.items():
+                if data is None:
+                    target = store.resolve(cid, relative)
+                    if target.is_file():
+                        target.unlink()
+                else:
+                    store.write_file(cid, relative, data)
+            raise
+        store.prune(cid, dropped)
     return {**summary, "created": created, "draft": ops.draft(cid)["status"]}
+
+
+def same_family(a: list[bytes], b: list[bytes]) -> bool:
+    """Same family content: sheet pixels and size, atlas/frame/timeline trees (encoder bytes may differ)."""
+    from .deliver_media import tree
+    first, second = png(a[0]), png(b[0])
+    if first.size != second.size or first.tobytes() != second.tobytes():
+        return False
+    return all(x == y or tree(x) == tree(y) for x, y in zip(a[1:], b[1:]))
 
 
 BUILD_REFUSAL = ("草稿角色 {sid} 还没有绑定游戏角色 ID，不能生成交付：先「绑定到角色 ID」"

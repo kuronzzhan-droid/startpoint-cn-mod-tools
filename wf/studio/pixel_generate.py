@@ -5,7 +5,8 @@
 * 走路 walk_front/walk_back：内容几乎不变，交替下沉 dy=+1，底行左右摆 1px（裙摆）。
   端点 8/14/20/26、32/38/44/50（每张 6 帧）。
 * 胜利 kachidoki：原姿 → 倾斜 12° 起跳 → 最高点 -16° + 金白火花 → 落地 6°。
-  端点 116/122/152/158；客户端读 begin+18 当举手帧（落在最高点那张）。
+  端点 116/122/152/158；客户端读 begin+18（动作第 19 帧）当举手帧，必须落在最高点那张：
+  总长不是 48 时按比例缩放端点后再校正（起跳图 ≤ 第 18 帧、最高点图 ≥ 第 19 帧），总长至少 20。
 * 入棺 into_coffin：本体逐步变淡 → 躺倒。
 * 揭起 ghost_raise：躺倒垫底（同一地线），幽灵逐渐显形并升起到 dy=-12。
 * 幽灵待机 ghost_neutral：幽灵 = 本体明度三档映射白/灰蓝（150/90 分档），底行收成中央波尾；
@@ -40,6 +41,7 @@ RECIPES = {
     "ghost_neutral": {"base": "front", "total": 161, "ends": [30, 50, 60, 80, 110, 130, 161]},
     "revive": {"base": "front", "total": 42, "ends": [6, 12, 18, 24, 30, 42]},
 }
+KACHIDOKI_READ = 19  # begin + 18: the client's raised-hand frame (1-based within the action)
 LABELS = {"walk_back": "向后移动", "walk_front": "向前移动", "kachidoki": "胜利", "into_coffin": "倒下入棺",
           "ghost_raise": "幽灵升起", "ghost_neutral": "幽灵待机", "revive": "复活"}
 
@@ -75,6 +77,18 @@ def scaled_ends(ends: list[int], total: int, wanted: int) -> list[int]:
         result.append(value)
         previous = value
     return result
+
+
+def kachidoki_ends(ends: list[int], total: int) -> list[int]:
+    """Keep the client's begin+18 frame on the apex image after scaling (A10)."""
+    if total < KACHIDOKI_READ + 1:
+        raise DraftError(f"胜利动作至少 {KACHIDOKI_READ + 1} 帧：客户端读第 {KACHIDOKI_READ} 帧（begin+18）当举手帧，"
+                         "要落在最高点那张，之后还要留落地帧")
+    first, lean, apex, end = ends
+    lean = min(lean, KACHIDOKI_READ - 1)
+    first = max(1, min(first, lean - 1))
+    apex = max(apex, KACHIDOKI_READ)
+    return [first, lean, apex, end]
 
 
 def with_alpha(image: Image.Image, factor: float) -> Image.Image:
@@ -179,6 +193,8 @@ def generate(action: str, bases: dict[str, Image.Image], total: int | None = Non
     recipe = RECIPES[action]
     total = total or recipe["total"]
     ends = scaled_ends(recipe["ends"], recipe["total"], total)
+    if action == "kachidoki":
+        ends = kachidoki_ends(ends, total)
     frames: list[tuple[Image.Image, int, str]] = []
     if action in ("walk_back", "walk_front"):
         sprite = _need(bases, recipe["base"], action)

@@ -160,6 +160,41 @@ class DraftStore:
             self._prune(cid, changeset, dropped)
             return changeset
 
+    def put_changes(self, cid: str, code: str, base_view: str, changes: list[dict]) -> tuple[dict, list[dict]]:
+        """Add several changes as one revision (same-target changes are replaced).
+
+        Returns (changeset, dropped); the caller prunes ``dropped`` files with :meth:`prune`
+        once the surrounding operation succeeded, so a rollback still finds them.
+        """
+        for change in changes:
+            validate(change, "change")
+        with self._lock:
+            changeset = self.load_or_new(cid, code, base_view)
+            kept, dropped = [], []
+            for item in changeset["changes"]:
+                (dropped if any(self.same_target(item, c) for c in changes) else kept).append(item)
+            changeset["changes"] = kept + list(changes)
+            changeset["updatedAt"] = now()
+            changeset["revision"] += 1
+            self._write(cid, changeset)
+            return changeset, dropped
+
+    def prune(self, cid: str, dropped: list[dict]) -> None:
+        with self._lock:
+            changeset = self.load(cid)
+            if changeset is not None:
+                self._prune(cid, changeset, dropped)
+
+    def restore(self, cid: str, changeset: dict | None) -> None:
+        """Put back a changeset read earlier (rollback); None removes the changeset file."""
+        with self._lock:
+            if changeset is None:
+                path = self.directory(cid) / "changeset.json"
+                if path.is_file():
+                    path.unlink()
+            else:
+                self._write(cid, changeset)
+
     def revert(self, cid: str, change_id: str) -> dict:
         with self._lock:
             changeset = self.load(cid)

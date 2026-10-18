@@ -66,10 +66,11 @@ class DraftOps:
         return codes or [c["code"] for c in items]
 
     # -- helpers ----------------------------------------------------------
-    def _file_maker(self, cid: str):
+    def _file_maker(self, cid: str, writer=None):
+        """Draft file entries; ``writer(relative, data)`` stages a file instead of writing it now."""
         def make(logical: str, root: str, data: bytes, encoding: str, *, approximate: bool, note: str = "") -> dict:
             relative = f"files/{ROOT_DIR[root]}/{logical}"
-            self.store.write_file(cid, relative, data)
+            (writer or (lambda rel, raw: self.store.write_file(cid, rel, raw)))(relative, data)
             from .deliver_media import read_root
             base_raw = read_root(self.source, root, logical)
             entry = {"logical": logical, "root": root, "draft": relative, "sha256": sha256(data), "size": len(data),

@@ -258,8 +258,16 @@ class AbilityEditor:
                     entries.append({"table": table, "key": key, "slot": slot, "level": level,
                                     "rows": rows, "owners": sorted(owners[table].get(key, set())),
                                     "descriptions": [describe(row, table) for row in rows]})
+            # wf text asserts the leader name against character_text c10 (character c18 is synced from it).
+            from wf.text.model import CHARACTER_TEXT, cells
+            try:
+                text_leaf = state.table(CHARACTER_TEXT).get(cid)
+            except (KeyError, FileNotFoundError):
+                text_leaf = None
+            text_row = cells(text_leaf) if isinstance(text_leaf, str) else []
             slots = {"ability": list(character[19:25]), "leader_ability": character[17],
-                     "action_skill": character[8], "leaderName": character[18]}
+                     "action_skill": character[8], "leaderName": character[18],
+                     "leaderNameText": text_row[10] if len(text_row) > 10 else None}
             return {"characterId": cid, "entries": entries, "slots": slots,
                     "checks": with_metadata(state.checks, "balance"), "runtime": "未执行"}
         except (ValueError, KeyError, OSError, TypeError) as exc:

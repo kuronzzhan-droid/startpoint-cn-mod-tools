@@ -222,10 +222,12 @@ def compile_family_replacement(source, store, changeset, change) -> MediaResult:
         raise DraftError("问题：整族替换必须正好包含四件文件")
     for index, logical in enumerate(paths):
         stored = draft_file(source, store, cid, by_logical[logical])
+        # Content, not encoder bytes: re-encoding an AMF3 tree or PNG may change bytes only.
         if index == 0:
-            if png(stored).tobytes() != rebuilt["sheet"].convert("RGBA").tobytes():
+            actual, expected = png(stored), rebuilt["sheet"].convert("RGBA")
+            if actual.size != expected.size or actual.tobytes() != expected.tobytes():
                 raise DraftError("问题：草稿 sprite_sheet 与按母本 + 映射表重算的结果不一致")
-        elif stored != rebuilt["stored"][index]:
+        elif stored != rebuilt["stored"][index] and tree(stored) != tree(rebuilt["stored"][index]):
             raise DraftError(f"问题：草稿 {logical} 与按母本重算的结果不一致")
         result.members["common", logical] = stored
     result.assertions.append({"kind": "pixel_family", "family": family, "base": base["characterId"],

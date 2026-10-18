@@ -169,7 +169,7 @@ def analyze_family(data: dict, family: str) -> dict:
             })
         actions.append({"name": sequence["name"], "kind": sequence.get("kind"), "begin": sequence["begin"],
                         "end": sequence["end"], "totalFrames": sequence["end"] - sequence["begin"] + 1,
-                        "cells": cells,
+                        "cells": cells, "overflow": max(0, sequence["end"] - max(keys[-1], sequence["begin"] - 1)),
                         "universal": UNIVERSAL_RANGES[family].get(sequence["name"]) ==
                                      (sequence["begin"], sequence["end"])})
     unused_keys = [k for k in keys if k not in used_keys]
@@ -295,6 +295,12 @@ def _traps(family: str, info: dict) -> list[dict]:
         checks.append({"level": level, "code": "workshop.atlas_budget",
                        "message": f"sprite_sheet {info['sheet']['width']}×{info['sheet']['height']}，layer0 (w+2)(h+2)="
                                   f"{layer0} px，{text}；填充率 {info['sheet']['fill'] * 100:.1f}%。三人房共享 layer0"})
+    overflow = [a for a in info["actions"] if a.get("overflow")]
+    if overflow:
+        checks.append({"level": "warn", "code": "workshop.range_overflow",
+                       "message": "动作区间超出图集最后一个端点（多出的帧取不到图，客户端会显示空白）："
+                                  + "，".join(f"{a['name']} {a['begin']}–{a['end']} 多 {a['overflow']} 帧"
+                                             for a in overflow)})
     if info["duplicateRegions"]:
         extra = sum(len(ids) - 1 for ids in info["duplicateRegions"])
         checks.append({"level": "warn", "code": "workshop.no_dedup",
