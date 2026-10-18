@@ -22,6 +22,8 @@ def allocate(state, requested=None, reserved=()):
     """Reserve a free event/quest/node/reward/zone block from the actual view."""
     used_quests = {r[0] for table in QUESTS.values() for _, text in leaves(state.table(table))
                    if (r := row(text))}
+    server_keys = {key for target in (*REWARD_FILES, "assets/hard_multi_event_quest.json")
+                   for key in state.server(target, required=False)}
     events = state.table(EVENT)
     folders = state.table(FOLDER).get("2", {})
     if not folders:
@@ -47,11 +49,13 @@ def allocate(state, requested=None, reserved=()):
         zone = f"studio_shared_{event}"
         reward = str(12200000 + int(event))
         conflicts = []
-        for label, occupied in (("event", event in events), ("quest", quest in used_quests or quest in reserved),
+        for label, occupied in (("event", event in events),
+                                ("quest", quest in used_quests or quest in reserved or quest in server_keys),
                                 ("node", node in folders or node in reserved_nodes), ("zone", zone in state.table(ZONE)),
                                 ("field_data", zone in state.table(FIELD_DATA)),
                                 ("score_reward", reward in state.table(SCORE)),
-                                ("rare_score_reward", reward in state.table(RARE))):
+                                ("rare_score_reward", reward in state.table(RARE)),
+                                ("server_reward", reward in server_keys)):
             if occupied:
                 conflicts.append(label)
         if not conflicts:
@@ -112,6 +116,9 @@ def clone_rewards(state, ids):
     source_group = row(state.table(QUEST)["1006"]["1"])[71]
     score = copy.deepcopy(state.table(SCORE)[source_group])
     files = {target: state.server(target, required=False) for target in REWARD_FILES}
+    collisions = [target for target, values in files.items() if ids["reward"] in values]
+    if collisions:
+        raise ValueError(f"server reward ID collision: {ids['reward']}: {', '.join(collisions)}")
     merged = {**files["assets/score_reward.json"], **files["assets/score_reward_cnmod.json"]}
     if source_group not in merged:
         raise ValueError(f"server score_reward group is absent: {source_group}")
