@@ -31,6 +31,13 @@
       "required": ["kinds", "dsl_nodes", "unique_prefixes", "unique_ids", "tables", "selectors"],
       "properties": {
         "kinds": {"type": "array", "uniqueItems": true, "items": {"type": "integer", "minimum": 0}},
+        "kind_bindings": {"type": "array", "uniqueItems": true, "items": {
+          "type": "object", "additionalProperties": false, "required": ["block", "kind"],
+          "properties": {
+            "block": {"enum": ["instant_content", "during_content"]},
+            "kind": {"type": "integer", "minimum": 0}
+          }
+        }},
         "allowed_tables": {"$ref": "#/$defs/strings"},
         "allowed_blocks": {"$ref": "#/$defs/strings"},
         "character_ids": {"$ref": "#/$defs/strings"},
@@ -41,7 +48,7 @@
         "selectors": {"$ref": "#/$defs/strings"}
       },
       "allOf": [{"if": {"properties": {"kinds": {"minItems": 1}}},
-                 "then": {"required": ["allowed_tables", "allowed_blocks"]}}]
+                 "then": {"required": ["allowed_tables", "allowed_blocks", "kind_bindings"]}}]
     },
     "form": {"type": "object", "required": ["label", "fields", "note"], "properties": {"label": {"type": "string"}, "fields": {"type": "array"}, "note": {"type": "string"}}},
     "describe": {"type": "object", "required": ["template", "channel"], "properties": {"template": {"type": "string"}, "channel": {"type": "string"}}},

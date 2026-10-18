@@ -19,7 +19,9 @@ python -m wf check compat --requires <交付目录/requires.json> --provides wor
 
 归档的 111 项补丁不等同 111 个自动检测器。角色专用 #1/#5/#6/#7/#15/#32/#55/#65 与晒伤语义能力归 C 层（需要 APK），按注册表 `character_ids` 和角色的实际引用闭包识别。涉及能力、技能、固有、PF、覆盖文案或 DSL 等角色内容但缺少归属基线时保留 `partial`，不会漏掉角色专用补丁后宣称 resolved。纯性能、UI、原生平台等没有内容触发信号的条目仍需显式声明 `capabilities`。
 
-注册表的 `allowed_tables` 和 `allowed_blocks` 限定扩展 kind 的解析位置。422/423/424/724 出现在队长、武器魂或装备强化表，以及 kind 放错客户端解析块时直接报问题。缺少候选表基线时，`inferenceNotes` 明示按整张候选表保守扫描；kind423 仅硬依赖实现补丁 #31，不要求性能补丁 #30。
+注册表通过 `allowed_tables` 与 `kind_bindings` 中明确的 `(block, kind)` 选择依赖；`kinds`、`allowed_blocks` 是受校验的目录索引。instant 419/422/423/424 不产生 PF 或补丁依赖；during 422/424 分别要求 #3/#20；during 423 在角色能力表要求 #31，在两张武器表要求独立 R3，不要求 #30；instant 724 要求 #4。PF 只有 instant 722 / during 419 会跟进 override 引用。五张能力表包含 `ex_ability`。
+
+具体位置是否支持，统一由 `wf apk kinds` 的真实 SWF 分支证据决定。两个编号相同但块不同的效果各自核对，不能因另一块登记了补丁而拒绝官方效果。`requires.kindSites` 记录表、块、kind、叶键与行号；交付在出 ZIP 前复用 `check_kind_sites`，编辑台也以完整位置作为缓存键的一部分。旧证据缺表或块时保留阻断的待验证，不再按编号补猜。缺少候选表基线时，`inferenceNotes` 明示按整张候选表保守扫描。
 
 `requires.capabilityEvidence` 包含每项命中的逻辑路径、叶键、信号和值；`clientPatches` 是所需归档补丁号的并集。注册表以外的显式能力 ID、损坏表和损坏 DSL 会报问题。查不到所需引用时保留 `unresolved` 并标 `partial`，不能用空列表宣称没有依赖。有效但本仓尚未登记的未来玩法不在这份注册表的证明范围内。
 

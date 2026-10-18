@@ -15,6 +15,9 @@ server:
 data_surface:
   allowed_tables: [ability, leader_ability, ability_soul, equipment_enhancement_ability, ex_ability]
   allowed_blocks: [instant_content, during_content]
+  kind_bindings:
+  - {block: instant_content, kind: 722}
+  - {block: during_content, kind: 419}
   kinds:
   - 722
   - 419

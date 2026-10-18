@@ -39,6 +39,14 @@ def build_delivery(changeset: Path, out: Path, *, provides=None, client_profile=
     # Parse and derive before creating archives; malformed capability data must
     # never produce an apparently complete deliverable.
     requirements = requirements_document(doc, members, ["pending.zip"], read_raw=read_raw, server=server)
+    if provides is not None:
+        from wf.caps.kind_compat import check_kind_sites
+        from wf.caps.profiles import read_client
+        from wf.caps.registry import load_registry
+        kind_checks = check_kind_sites(requirements["requires"], read_client(provides), load_registry())
+        blocked = [check for check in kind_checks if check["blocking"]]
+        if blocked:
+            raise ValueError("问题: " + "; ".join(check["message"] for check in blocked))
     records = write_archives(out, members, lambda seq:
         f"pinball-{doc['from_version']}-{doc['to_version']}-{seq}-{doc['slug']}.zip")
     requirements["pack"]["archives"] = [record["name"] for record in records]

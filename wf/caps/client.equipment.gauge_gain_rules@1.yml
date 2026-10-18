@@ -33,6 +33,8 @@ data_surface:
   - equipment_enhancement_ability
   allowed_blocks:
   - during_content
+  kind_bindings:
+  - {block: during_content, kind: 423}
   kinds:
   - 423
   dsl_nodes: []

@@ -4,35 +4,43 @@ from wf.rules.catalog import result
 
 def _sites(required):
     from wf.dsl.references import ABILITY_TABLES
-    from .facts import KIND_BLOCKS
 
     sites = list(required.get("kindSites", []))
+    incomplete = []
     # Pre-M2.3 requires already recorded concrete table/kind evidence. Retain
     # its checks on read-back rather than silently trusting the old registry.
     for entry in required.get("capabilityEvidence", []):
         for evidence in entry["evidence"]:
             table = ABILITY_TABLES.get(evidence["logical_path"])
             kind = str(evidence["value"])
-            block = evidence.get("block", KIND_BLOCKS.get(kind))
-            if evidence["signal"] == "kinds" and table and block:
+            if evidence["signal"] != "kinds":
+                continue
+            block = evidence.get("block")
+            if not table or not block:
+                incomplete.append(evidence)
+            else:
                 site = {"logical_path": evidence["logical_path"], "key": evidence.get("key", ""),
                         "row": evidence.get("row", 0), "table": table, "block": block, "kind": kind}
                 if not any(all(existing.get(k) == v for k, v in site.items()) for existing in sites):
                     sites.append(site)
-    return sites
+    return sites, incomplete
 
 
 def check_kind_sites(required, provides, registry):
-    sites = _sites(required)
+    sites, incomplete = _sites(required)
+    checks = []
+    if incomplete:
+        checks.append(result("capability.kind-evidence", "待验证",
+                             "旧 kind 证据缺少表或块，不能按编号猜测；请重新推导内容依赖",
+                             blocking=True, evidence=incomplete))
     if not sites:
-        return []
+        return checks
     from wf.apk.kinds import inspect_provides, kind_supported
     try:
         report = inspect_provides(provides, registry=registry)
     except (OSError, ValueError, KeyError, RuntimeError) as error:
-        return [result("capability.kind-evidence", "待验证",
-                       f"无法核对真实 SWF 的 kind 分支：{error}", blocking=True)]
-    checks = []
+        return checks + [result("capability.kind-evidence", "待验证",
+                               f"无法核对真实 SWF 的 kind 分支：{error}", blocking=True)]
     for mismatch in report.get("mismatches", []):
         checks.append(result("capability.kind-registry", "问题",
                              "注册表 allowed_tables 与真实 SWF 的 kind 分支不一致",

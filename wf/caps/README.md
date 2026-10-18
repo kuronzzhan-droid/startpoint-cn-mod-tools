@@ -6,9 +6,11 @@
 
 `provided_by.patches` 是必须全部满足的归档号。`methods` 的 SHA-256 指向方法的 **code 字节**，不是整个方法记录、P-code 文本或 SWF 的摘要。方法定位键是 `(patch, abc, label)`；哈希缺失保留 `null` 和「待补」，不填示例哈希。资源类 #79/#82/#86 与原生平台 #97–100 没有 SWF 方法证据，正是这类显式缺口。`server.required` 和 `server.features` 描述另需配合的服务端功能，不代表服务端已部署。
 
-`data_surface` 提供 requires 扫描入口：`kinds`、`dsl_nodes`、`unique_prefixes`、`unique_ids`、`tables` 和语义 `selectors`。`tables` 只用于整表出现即需要能力的情况；通用 ability 表不在这里，否则会误把所有角色判断为依赖所有扩展。逐补丁归档声明不重复挂这些入口，内容优先引用语义能力。C 层角色机制名称属于矩阵数据，不凭名称推断客户端能力。
+`data_surface` 提供 requires 扫描入口：`kind_bindings`、`dsl_nodes`、`unique_prefixes`、`unique_ids`、`tables` 和语义 `selectors`。`kinds` 只保留为无上下文的目录查询索引，不能凭编号判断行依赖或客户端支持。`tables` 只用于整表出现即需要能力的情况；通用 ability 表不在这里，否则会误把所有角色判断为依赖所有扩展。逐补丁归档声明不重复挂这些入口，内容优先引用语义能力。C 层角色机制名称属于矩阵数据，不凭名称推断客户端能力。
 
-带 `kinds` 的声明必须同时给出 `allowed_tables`、`allowed_blocks`，扫描按表、块和 kind 共同选择能力。同一 kind 可由不同能力扩展到不同表；角色表的 423 使用 #31，武器魂及装备强化的 423 使用 `client.equipment.gauge_gain_rules@1`（equipment-rules R3）。`requires.kindSites` 保留实际行位置；兼容检查从目标档案的真实 SWF 核对分支。旧 requires 的 `capabilityEvidence` 中已记录的 kind 也会执行该检查，不能因缺少新字段而绕过。R3 规则掩码借用的列不作为固有状态引用。角色专用 #1/#5/#6/#7/#15/#32/#55/#65 及晒伤语义能力为 C 层（需要 APK），其 `character_ids` 与角色引用闭包用于确定受影响内容；缺少归属输入时保留 partial。`inferenceNotes` 记录候选表缺基线而按全表扫描的保守处理。
+带 `kinds` 的声明必须同时给出 `allowed_tables`、`allowed_blocks` 和显式配对的 `kind_bindings`，例如 `[{block: instant_content, kind: 722}, {block: during_content, kind: 419}]`。校验保证两种索引与配对一致；扫描通过共享 `surfaces.matches_kind` 按表及准确配对选择能力，不取编号与块的笛卡尔积。instant 419/422/423/424 是官方独立效果，不推导 PF 或补丁依赖。during 422/424 分别使用 #3/#20；during 423 在角色表使用 #31，在武器魂及装备强化表使用 `client.equipment.gauge_gain_rules@1`（equipment-rules R3）；instant 724 使用 #4。
+
+`requires.kindSites` 保留五张能力表（含 `ex_ability`）的实际行位置；支持与否由目标档案真实 SWF 的 `(table, block, kind)` 分支决定，注册表不承担放置拒绝。公开交付在生成 ZIP 前复用相同检查，编辑台缓存也保存完整位置身份。旧 requires 的 `capabilityEvidence` 如果保留表和块，仍执行真实分支检查；缺表或块时阻断为待验证并要求重新推导，不按编号猜测。R3 规则掩码借用的列不作为固有状态引用。角色专用 #1/#5/#6/#7/#15/#32/#55/#65 及晒伤语义能力为 C 层（需要 APK），其 `character_ids` 与角色引用闭包用于确定受影响内容；缺少归属输入时保留 partial。`inferenceNotes` 记录候选表缺基线而按全表扫描的保守处理。
 
 无数字归档号的独立方法能力使用 `provided_by.patches: []`、`methods.patch: null`，同时必须有完整方法 SHA 和 `provided_by.swf_sha256` 白名单。R3 只绑定 test-v34/test-v35e 的实际 SWF；摘要输入必须显式包含 `method_capabilities`，缺方法、哈希不符或 SWF 不在白名单均不能提供该能力。`patch: null` 表示未分配归档号，与 `sha256: null` 的方法证据待补不同。
 

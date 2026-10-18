@@ -22,6 +22,13 @@ def validate_capability(document: dict) -> dict:
     errors = list(_validator().iter_errors(document))
     if errors:
         raise ValueError("invalid capability: " + "; ".join(error.message for error in errors))
+    surface = document["data_surface"]
+    bindings = surface.get("kind_bindings", [])
+    if ({binding["kind"] for binding in bindings} != set(surface["kinds"])
+            or {binding["block"] for binding in bindings} != set(surface.get("allowed_blocks", []))):
+        raise ValueError(f"{document['id']}: kind_bindings must agree with kinds and allowed_blocks indexes")
+    if bindings and not surface.get("allowed_tables"):
+        raise ValueError(f"{document['id']}: kind_bindings require nonempty allowed_tables")
     provider = document["provided_by"]
     observed = set()
     for method in provider["methods"]:

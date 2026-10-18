@@ -34,6 +34,8 @@ server:
 data_surface:
   allowed_tables: [ability]
   allowed_blocks: [instant_content]
+  kind_bindings:
+  - {block: instant_content, kind: 724}
   kinds:
   - 724
   dsl_nodes: []

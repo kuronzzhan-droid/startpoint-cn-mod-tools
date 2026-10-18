@@ -179,5 +179,6 @@ def test_actual_voice_rotation_suffixes(name, expected, registry):
 @pytest.mark.parametrize("kind,wrong_block", [(422, "instant_content"), (423, "instant_content"),
     (424, "instant_content"), (419, "instant_content"), (724, "during_content"), (722, "during_content")])
 def test_kind_numbers_from_the_wrong_enum_block_do_not_invent_capabilities(kind, wrong_block, registry):
-    with pytest.raises(ValueError, match=f"问题: .*kind {kind}.*{wrong_block}"):
-        infer_requirements({"a": payload(ABILITY, {"1": ability(kind, block=wrong_block)})}, registry=registry)
+    result = infer_requirements({"a": payload(ABILITY, {"1": ability(kind, block=wrong_block)})}, registry=registry)
+    assert result["clientCapabilities"] == []
+    assert result["kindSites"][0]["block"] == wrong_block  # Real SWF support is checked separately.

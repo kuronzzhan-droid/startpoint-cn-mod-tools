@@ -58,6 +58,8 @@ server:
 data_surface:
   allowed_tables: [ability]
   allowed_blocks: [during_content]
+  kind_bindings:
+  - {block: during_content, kind: 424}
   kinds:
   - 424
   dsl_nodes: []

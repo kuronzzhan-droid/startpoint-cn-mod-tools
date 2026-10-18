@@ -13,6 +13,7 @@ ABILITY_TABLES = {
     "master/ability/leader_ability.orderedmap": "leader_ability",
     "master/ability/ability_soul.orderedmap": "ability_soul",
     "master/equipment_enhancement/equipment_enhancement_ability.orderedmap": "equipment_enhancement_ability",
+    "master/ex_boost/ex_ability.orderedmap": "ex_ability",
 }
 DSL_SUFFIX = ".action.dsl.amf3.deflate"
 PROGRAM = re.compile(r"^battle/[A-Za-z0-9_./-]+\$[A-Za-z0-9_.-]+$")

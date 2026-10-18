@@ -91,7 +91,7 @@ def registry_mismatches(tables, registry, available) -> list[dict]:
     Two capabilities may supply the same kind in disjoint tables (423/R3).
     Unprovided extensions must not be required of an older client profile.
     """
-    from wf.caps.facts import KIND_BLOCKS
+    from wf.caps.surfaces import kind_bindings
 
     groups = {}
     for cap_id in sorted(available):
@@ -99,15 +99,10 @@ def registry_mismatches(tables, registry, available) -> list[dict]:
         if cap is None:
             continue
         surface = cap["data_surface"]
-        for value in surface["kinds"]:
-            kind = str(value)
-            blocks = surface.get("allowed_blocks", [])
-            if kind in KIND_BLOCKS:
-                blocks = [block for block in blocks if block == KIND_BLOCKS[kind]]
-            for block in blocks:
-                group = groups.setdefault((kind, block), {"tables": set(), "capabilities": []})
-                group["tables"].update(surface.get("allowed_tables", []))
-                group["capabilities"].append(cap_id)
+        for block, kind in kind_bindings(surface):
+            group = groups.setdefault((kind, block), {"tables": set(), "capabilities": []})
+            group["tables"].update(surface.get("allowed_tables", []))
+            group["capabilities"].append(cap_id)
     mismatches = []
     for (kind, block), group in sorted(groups.items()):
         actual = {table for table, blocks in tables.items()

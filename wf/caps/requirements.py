@@ -12,6 +12,7 @@ from wf_dsl import parse_dsl
 from wf.dsl.references import DSL_SUFFIX, program_logical
 
 from .facts import dsl_signals, leaves, table_signals
+from .surfaces import matches_kind, matches_signal
 
 
 def parse_table(raw, logical):
@@ -79,9 +80,7 @@ def infer_requirements(members, *, declared=(), read_raw=None, server=None, regi
                     kind_sites.append(site)
                 for cap_id, cap in registry.items():
                     surface = cap["data_surface"]
-                    if (value["kind"] in {str(k) for k in surface["kinds"]}
-                            and value["table"] in surface["allowed_tables"]
-                            and value["block"] in surface["allowed_blocks"]):
+                    if matches_kind(surface, value):
                         add(cap_id, site, "kinds", value["kind"])
                 continue
             if kind == "unsupported":
@@ -119,10 +118,7 @@ def infer_requirements(members, *, declared=(), read_raw=None, server=None, regi
                 continue
             for cap_id, cap in registry.items():
                 surface = cap["data_surface"]
-                match = str(value) in {str(item) for item in surface.get(kind, [])}
-                if kind == "unique_string":
-                    match = any(str(value).startswith(prefix) for prefix in surface.get("unique_prefixes", []))
-                if match:
+                if matches_signal(surface, kind, value):
                     add(cap_id, context, kind, value)
 
     def scan_dsl(logical, context=None):

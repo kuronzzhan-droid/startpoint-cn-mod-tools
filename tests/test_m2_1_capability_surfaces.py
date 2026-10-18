@@ -1,4 +1,4 @@
-"""Reject unsupported table/block surfaces and exercise both weapon layouts."""
+"""Select table/block dependencies; concrete parser support is a binary gate."""
 from copy import deepcopy
 import hashlib
 import json
@@ -15,17 +15,19 @@ from test_m2_requirements import ABILITY, ability, payload
 @pytest.mark.parametrize("logical,table", list(ABILITY_TABLES.items())[1:])
 @pytest.mark.parametrize("kind,block", [(422, "during_content"), (423, "during_content"),
     (424, "during_content"), (724, "instant_content")])
-def test_patch_kinds_reject_unpatched_table_parsers(logical, table, kind, block):
+def test_patch_kinds_only_select_dependencies_in_the_declared_table(logical, table, kind, block):
     if kind == 423 and table in {"ability_soul", "equipment_enhancement_ability"}:
         result = infer_requirements({"a": payload(logical, {"x": ability(kind, table=table, block=block)})})
         assert "client.equipment.gauge_gain_rules@1" in result["clientCapabilities"]
         assert "client.kind423.gauge_source_limit@1" not in result["clientCapabilities"]
         return
-    with pytest.raises(ValueError, match=f"问题: .*kind {kind}.*allowed_tables.*{table}"):
-        infer_requirements({"a": payload(logical, {"x": ability(kind, table=table, block=block)})})
+    result = infer_requirements({"a": payload(logical, {"x": ability(kind, table=table, block=block)})})
+    assert result["clientCapabilities"] == []
+    assert result["kindSites"][0]["table"] == table
 
 
-@pytest.mark.parametrize("logical,table", list(ABILITY_TABLES.items())[2:])
+@pytest.mark.parametrize("logical,table", [(p, t) for p, t in ABILITY_TABLES.items()
+                                         if t in {"ability_soul", "equipment_enhancement_ability"}])
 def test_weapon_layout_without_awake_kind_follows_unique(logical, table):
     members = {"a": payload(logical, {"x": ability(0, table=table, unique="99881")}),
                "u": payload(UNIQUE, {"99881": "hidden_weapon,0"})}
@@ -50,8 +52,11 @@ def test_selector_is_data_driven():
     cap = registry["client.kind424.damage_convert@1"]
     assert "dsl.buffTargetAs.convert" in cap["data_surface"]["selectors"]
     cap["data_surface"]["allowed_tables"] = ["ability_soul"]
-    with pytest.raises(ValueError, match="allowed_tables"):
-        infer_requirements({"a": payload(ABILITY, {"x": ability(424)})}, registry=registry)
+    result = infer_requirements({"a": payload(ABILITY, {"x": ability(424)})}, registry=registry)
+    assert result["clientCapabilities"] == []
+    weapon = next(p for p, t in ABILITY_TABLES.items() if t == "ability_soul")
+    result = infer_requirements({"a": payload(weapon, {"x": ability(424, table="ability_soul")})}, registry=registry)
+    assert result["clientCapabilities"] == [cap["id"]]
 
 
 def test_schema_rejects_untyped_surface_constraints():
@@ -64,11 +69,12 @@ def test_schema_rejects_untyped_surface_constraints():
         validate_capability(cap)
 
 
-@pytest.mark.parametrize("table,block", [("leader_ability", "during_content"), ("ability", "instant_content")])
+@pytest.mark.parametrize("table,block", [("leader_ability", "during_content"), ("ability", "during_content")])
 def test_deliver_cli_reports_problem_for_invalid_kind_surface(tmp_path, capsys, table, block):
     from wf.deliver.cli import main
     logical = next(p for p, name in ABILITY_TABLES.items() if name == table)
-    raw, _ = payload(logical, {"x": ability(422, table=table, block=block)})
+    kind = 422 if table == "leader_ability" else 724
+    raw, _ = payload(logical, {"x": ability(kind, table=table, block=block)})
     (tmp_path / "table.bin").write_bytes(raw)
     doc = {"schema": "wf-change-set/1", "id": "invalid-kind", "name": "invalid kind",
            "from_version": "1.4.150", "to_version": "1.4.151", "slug": "invalid-kind",

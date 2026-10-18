@@ -16,8 +16,6 @@ SKILL = "master/skill/action_skill.orderedmap"
 STRINGS = "master/string/custom_ability_string.orderedmap"
 CHARACTER = "master/character/character.orderedmap"
 BTA = {101, 102, 104, 131, 132, 133}
-KIND_BLOCKS = {"422": "during_content", "423": "during_content", "424": "during_content",
-               "419": "during_content", "724": "instant_content", "722": "instant_content", "629": "instant_content"}
 
 
 def leaves(value, trail=()):
@@ -65,25 +63,10 @@ def table_signals(logical, trail, text, *, registry=None):
             block = {"0": "instant_content", "1": "during_content"}.get(trigger)
             if block:
                 kind = row[col(name, block, "kind")]
-                if registry is None:
-                    from .registry import load_registry
-                    registry = load_registry()
-                surfaces = [cap["data_surface"] for cap in registry.values()
-                            if kind in {str(k) for k in cap["data_surface"]["kinds"]}]
-                # Different implementations may extend the same kind to disjoint
-                # tables. Match a complete surface, not every capability in turn.
-                for field, actual in (("allowed_tables", name), ("allowed_blocks", block)):
-                    if surfaces:
-                        allowed = sorted({item for surface in surfaces for item in surface[field]})
-                        surfaces = [surface for surface in surfaces if actual in surface[field]]
-                        if not surfaces:
-                            raise ValueError(f"问题: {logical}/{'/'.join(trail)}/{index}: kind {kind} "
-                                             f"{field}={allowed}, actual={actual}")
-                if KIND_BLOCKS.get(kind, block) != block:
-                    raise ValueError(f"问题: {logical}/{'/'.join(trail)}/{index}: kind {kind} "
-                                     f"requires {KIND_BLOCKS[kind]}, actual={block}")
+                # Registry surfaces select dependencies. Only the selected
+                # client's real SWF can decide whether a concrete site exists.
                 yield "kind_site", {"table": name, "block": block, "kind": kind, "row": index}
-                if kind in {"722", "419"}:
+                if (block, kind) in {("instant_content", "722"), ("during_content", "419")}:
                     levels = row[col(name, block, "powerflip_override.levels")]
                     if "4" in [v.strip() for v in levels.split(",")]:
                         yield "selectors", "pf.forLevels=4"

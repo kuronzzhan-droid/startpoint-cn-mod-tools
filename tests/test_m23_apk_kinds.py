@@ -65,6 +65,7 @@ def _fixture_swf(*, equipment_r3):
 def _registry():
     def cap(tables):
         return {"data_surface": {"kinds": [423], "allowed_tables": tables,
+                                 "kind_bindings": [{"block": "during_content", "kind": 423}],
                                  "allowed_blocks": ["during_content"]}}
     return {"base423": cap(["ability"]),
             "r3": cap(["ability_soul", "equipment_enhancement_ability"])}

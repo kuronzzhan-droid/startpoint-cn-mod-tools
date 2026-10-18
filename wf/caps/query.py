@@ -3,15 +3,14 @@ from .compat import check_compat
 from .profiles import load_profiles, read_client, resolve_client
 from .registry import load_registry
 from .signals_v35 import custom_signals, unique_signals
+from .surfaces import matches_signal
 
 
 def requirements_for_signals(signals, registry):
     ids = []
     for cid, cap in registry.items():
         surface = cap["data_surface"]
-        if any(any(str(value).startswith(prefix) for prefix in surface["unique_prefixes"])
-               if kind == "unique_string" else str(value) in {str(v) for v in surface.get(kind, [])}
-               for kind, value in signals):
+        if any(matches_signal(surface, kind, value) for kind, value in signals):
             ids.append(cid)
     return ids
 
@@ -58,4 +57,6 @@ def query_requirements(*, kinds=(), unique_strings=(), dsl_markers=(), selectors
             "selectedCompatible": reports.get(selected, {}).get("compatible", False),
             "recognized": bool(ids) and not unsupported, "unsupported": unsupported,
             "signals": [{"kind": k, "value": v} for k, v in signals],
-            "note": "仅比较已登记能力与离线方法证据；无命中不证明未知标记有效，也不代表设备验收。"}
+            "note": ("无表/块的 kind 编号仅查询能力目录，兼容结果不证明该编号在任何具体位置有效。"
+                     if kinds else "") +
+                    "仅比较已登记能力与离线方法证据；无命中不证明未知标记有效，也不代表设备验收。"}
