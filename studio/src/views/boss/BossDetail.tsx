@@ -121,7 +121,7 @@ export function BossDetail({ quest, tab }: { quest: string; tab?: string }) {
           checks={checks}
           state={active === "params" ? (preview.state === "running" ? "running" : undefined) : undefined}
           note={active === "params"
-            ? preview.state === "invalid" ? "输入有问题，先改正：" + (preview.note ?? "") : "未执行：还没有改动。改了数值会自动预检。"
+            ? doc.routing.kind === "BothBoss" ? "入口只读，不做预检。" : preview.state === "invalid" ? "输入有问题，先改正：" + (preview.note ?? "") : "未执行：还没有改动。改了数值会自动预检。"
             : changes.length ? "这份草稿没有检查结果。" : "未执行：这一关还没有草稿。到「调整参数」改动后会自动预检。"}>
           {active !== "params" && read.checks.length ? <p class="small muted">按当前视图重放草稿得到的结果。</p> : null}
         </ChecksPanel>
