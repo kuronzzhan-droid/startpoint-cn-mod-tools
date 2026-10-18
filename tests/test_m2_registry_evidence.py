@@ -39,10 +39,13 @@ def test_pipeline_records_do_not_inherit_base_and_merge_shared_archive(tmp_path)
         {"name": "110 / O10", "status": "enabled"},
         {"name": "110 / O11", "status": "enabled"},
         {"name": "111 / O12", "status": "disabled"}]}), encoding="utf-8")
+    parsed, _ = evidence.read_evidence(path)
+    assert [p["number"] for p in parsed["patches"]] == [110]
+    assert parsed["patches"][0]["methods"] == []
     result = build_provides(path)
-    assert [p["number"] for p in result["patches"]] == [110]
-    assert all(m["sha256"] is None for m in result["patches"][0]["methods"])
-    assert not any(c["id"] == "client.overlimit.lv120@1" for c in result["provides"])
+    assert result["patches"] == result["provides"] == []
+    assert [p["patch"] for p in result["unresolved"]] == [110]
+    assert result["unresolved"][0]["status"] == "问题"
 
 
 def test_known_swf_alone_does_not_prove_asset_or_native_entries(tmp_path, monkeypatch):
