@@ -25,7 +25,7 @@ def check_boss(document, *, view=None, baseline=None, server_changes=None,
     if not isinstance(document, dict) or not isinstance(document.get("quest"), dict):
         raise ValueError("boss check requires a BossReader.show document with quest")
     context = context or {}
-    checks = [*terrain_checks(document), concurrent_positions(document), enemy_level_check(document),
+    checks = [*terrain_checks(document, view=view), concurrent_positions(document), enemy_level_check(document),
               preload_check(document, view=view, baseline=baseline, context=context), choice_check(context),
               both_route_check(document, view, context), time_check(document, context),
               reward_check(view, server_changes, server_before),

@@ -2,9 +2,14 @@
 from __future__ import annotations
 
 from .catalog import result
+from .boss_references import missing_combat_references
 
 
 def enemy_level_check(document):
+    dangling = missing_combat_references(document)
+    if dangling:
+        return result("boss.enemy-level", "问题", "战斗资源引用不闭合，无法读取活动敌人档位",
+                      blocking=True, issues=dangling)
     enemies = document.get("enemies")
     terrain = document.get("terrain") or {}
     if enemies is None or terrain.get("missing") or "waves" not in terrain:

@@ -2,6 +2,7 @@
 from copy import deepcopy
 
 from wf.rules.boss_terrain import concurrent_positions, terrain_checks
+from wf.rules.boss_references import GENERAL, STATES
 
 
 def snapshot(waves=1):
@@ -93,3 +94,48 @@ def test_native_numbered_wall_tokens_satisfy_boundary_geometry():
         if obj["type"] == "WALL":
             obj["type"] = "WALL1"
     assert terrain_checks(doc)[1]["status"] == "满足"
+
+
+class RoutineView:
+    def __init__(self, positions):
+        self.states = {"crab_100": {"1": {str(index): [""] * 50 + [name]
+                                       for index, name in enumerate(positions)}}}
+
+    def table(self, logical):
+        return self.states if logical == STATES else None
+
+
+def routine_snapshot(waves=1):
+    doc = snapshot(waves)
+    doc["enemies"][0].update(table=GENERAL, path=["a", "100"], row=[""] * 42 + ["crab_100"])
+    return doc
+
+
+def test_selected_native_band_routine_positions_are_required_in_same_layer():
+    doc = routine_snapshot(2)
+    doc["terrain"]["waves"][1]["objects"].append({"type": "CUSTOM_POSITION", "name": "p4"})
+    check = terrain_checks(doc, view=RoutineView(["p0", "p4"]))[1]
+    assert check["blocking"]
+    assert any("层 0" in issue and "crab_100" in issue and "p4" in issue for issue in check["issues"])
+    doc["terrain"]["waves"][0]["objects"].append({"type": "CUSTOM_POSITION", "name": "p4"})
+    assert terrain_checks(doc, view=RoutineView(["p0", "p4"]))[1]["status"] == "满足"
+
+
+def test_missing_referenced_routine_is_a_problem_but_missing_view_is_pending():
+    doc = routine_snapshot()
+    assert terrain_checks(doc)[1]["status"] == "待验证"
+    view = RoutineView(["p0"])
+    view.states.clear()
+    check = terrain_checks(doc, view=view)[1]
+    assert check["status"] == "问题" and check["blocking"]
+    assert "缺失 routine" in check["issues"][0]
+
+
+def test_explicit_dangling_combat_references_are_blocking_not_unexecuted():
+    from wf.rules.boss_levels import enemy_level_check
+    for key in ("field_data", "field", "zone", "terrain"):
+        doc = snapshot()
+        doc[key] = {"id": "absent", "missing": True}
+        checks = [*terrain_checks(doc), enemy_level_check(doc)]
+        assert all(check["status"] == "问题" and check["blocking"] for check in checks), key
+        assert all(key in check["issues"][0] for check in checks)

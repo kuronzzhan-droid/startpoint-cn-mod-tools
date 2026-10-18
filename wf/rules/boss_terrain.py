@@ -5,6 +5,7 @@ from collections import Counter
 import re
 
 from .boss_common import EMPTY, cell, cells, wave_name
+from .boss_references import missing_combat_references, routine_positions
 from .catalog import result
 
 
@@ -15,7 +16,11 @@ def _waves(document):
     return terrain.get("waves", terrain.get("layers"))
 
 
-def terrain_checks(document):
+def terrain_checks(document, *, view=None):
+    dangling = missing_combat_references(document)
+    if dangling:
+        return [result(rule, "问题", "战斗资源引用不闭合", blocking=True, issues=dangling)
+                for rule in ("boss.multiwave-field", "boss.terrain-layers")]
     waves = _waves(document)
     if waves is None:
         return [result(rule, "未执行", "缺少已解码地形，不能从 zone 行数推断波次")
@@ -35,7 +40,7 @@ def terrain_checks(document):
                        blocking=True, waves=len(waves), missing=missing)
     else:
         multi = result("boss.multiwave-field", "满足", "实际多波地形与 field c7/c8 已核对", waves=len(waves))
-    issues, incomplete = [], []
+    required, issues, incomplete = routine_positions(document, view)
     names = [str(w.get("name", "")) for w in waves]
     if len(set(names)) != len(names):
         issues.append("地形 objectgroup 层名重复")
@@ -74,6 +79,10 @@ def terrain_checks(document):
             name = enemy.get("position_name")
             if name not in EMPTY and name not in positions:
                 issues.append(f"层 {label} 敌人 {enemy.get('code')} 引用不存在的站位 {name}")
+        for (wave, code, routine), needed in required.items():
+            if wave == label:
+                for name in sorted(needed - set(positions)):
+                    issues.append(f"层 {label} 敌人 {code} routine {routine} c50 引用不存在的站位 {name}")
     if zone_names is None:
         incomplete.append("缺少 zone 波次行，未验证地形层引用闭合")
     state = "问题" if issues else "待验证" if incomplete else "满足"
