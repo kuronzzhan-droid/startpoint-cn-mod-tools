@@ -28,6 +28,22 @@ class SwfAbc:
         path = Path(path)
         self.path = path
         signature, version, _declared, body = swftags.load_swf(str(path))
+        self._read_body(signature, version, body)
+
+    @classmethod
+    def from_bytes(cls, raw: bytes, *, source: str | Path):
+        """Read one immutable SWF snapshot, including an APK member, in memory."""
+        if len(raw) < 8 or raw[:3] not in {b"FWS", b"CWS"}:
+            raise AsmError("expected an FWS or CWS SWF")
+        body = zlib.decompress(raw[8:]) if raw[:3] == b"CWS" else raw[8:]
+        if struct.unpack_from("<I", raw, 4)[0] != len(body) + 8:
+            raise AsmError("SWF declared length differs from the decoded bytes")
+        obj = cls.__new__(cls)
+        obj.path = Path(source)
+        obj._read_body(raw[:3], raw[3], body)
+        return obj
+
+    def _read_body(self, signature, version, body):
         self.signature = signature
         self.version = version
         self.body = body

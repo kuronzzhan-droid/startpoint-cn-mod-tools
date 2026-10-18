@@ -13,7 +13,7 @@ server:
   features: []
   note: 无额外服务端改动要求
 data_surface:
-  allowed_tables: [ability, leader_ability, ability_soul, equipment_enhancement_ability]
+  allowed_tables: [ability, leader_ability, ability_soul, equipment_enhancement_ability, ex_ability]
   allowed_blocks: [instant_content, during_content]
   kinds:
   - 722
