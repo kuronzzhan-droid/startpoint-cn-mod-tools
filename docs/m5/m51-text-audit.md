@@ -6,7 +6,7 @@ D3/D4 新增检查在 1.4.227–1.4.229 各命中 17 项能力队长前置问题
 
 ## 输入与判定范围
 
-- 只读 manifest：`D:/WF/ghmain/assets/asset-patch/manifest.json`；本次 `cdn_version=1.4.237`。以 `work/m5/evidence/view-config-236.json` 为基础，仅在工作区中的审计配置补入 `D:/WF/rel237/shipped` 并跟随当前链尾。
+- 只读 manifest 沿用 `work/m5/evidence/view-config-236.json` 的 `manifest` 配置；本次 `cdn_version=1.4.237`。仅在工作区中的审计配置补入 237 的 `shipped` ZIP 目录并跟随当前链尾。确切输入路径保存在忽略的 `work/m51/text/view-config.json`，输入摘要见机器报告。
 - 存储基线为 store131，逐视图依赖链、ZIP SHA-256、已读取的 store 成员 SHA-256、文本表 SHA-256 均保存在 JSON。每个视图调用 verify，服务端输入也前后核验，manifest 原字节前后相等。
 - 每版全表扫描包括继承的官方/旧文本、孤立覆盖键与所有实际技能档位；未把历史问题算作该版本新引入。另从 1.4.226 对比起累计追踪 227 起修改的覆盖串和技能字段，报告此集合中的当前问题数。跨档规则也跟踪所属技能位置，因此“变动位置数”不是角色数。
 - 只有 1.4.232 和 1.4.237 提供了该版本 `shipped/server/character_text.json` 与 `character_text_rank_p5b.json` 两份完整本地镜像；其余版本服务端检查为未执行。1.4.227 的 patch.json 不是完整镜像，未冒充历史全表。没有服务器或设备验证。
