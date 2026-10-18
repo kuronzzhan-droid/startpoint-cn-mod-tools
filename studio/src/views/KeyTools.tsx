@@ -214,8 +214,9 @@ export function SkillTiers() {
   if (!tiers.length) return null;
   const key = tiers[0].key;
   const pending = tierOps(ws.pending);
-  const locked = ws.pending.text.length > 0 || ws.pending.attach.some((a) => a.table === "action_skill")
-    ? "技能文本或技能键有未写入修改，档位结构需另起一次写入。" : pending.length ? "一次只改一处档位结构；写入或放弃后再继续。" : null;
+  const cellEdits = ws.pending.ops.some((o) => o.table === "action_skill" && o.op === "set_cells");
+  const locked = ws.pending.text.length > 0 || ws.pending.attach.some((a) => a.table === "action_skill") || cellEdits
+    ? "技能文本、技能格或技能键有未写入修改，档位结构需另起一次写入。" : pending.length ? "一次只改一处档位结构；写入或放弃后再继续。" : null;
   const shared = tiers[0].owners.length > 1;
   const sid = sharedId("action_skill", key);
 

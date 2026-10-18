@@ -57,6 +57,38 @@ class PixelWorkshop:
         return {"characterId": cid, "name": info["name"], "state": "draft" if state != "view" else "view",
                 **self._analysis[cache]}
 
+    def action_frames(self, cid: str, family: str, action: str, *, draft: bool = True) -> dict:
+        """Raw RGBA of every image of one action (drawing board input; no browser canvas decode).
+
+        Each frame is the restored frame box, cropped to the bounding box of non-zero
+        bytes (RGB of fully transparent pixels kept), base64 of the raw RGBA bytes.
+        """
+        from .deliver_pixel import frame_box
+        from .pixel_workshop import _cells, _sequences
+        code = self.ops.character(cid)["code"]
+        source, state = self._state(cid, draft)
+        raws = read_family_raw(source, code, family)
+        if raws is None:
+            raise DraftError(f"{cid} 没有 {family} 像素族")
+        data = decode_family(raws)
+        sequence = next((s for s in _sequences(data["timeline"]) if s["name"] == action), None)
+        if sequence is None:
+            raise DraftError(f"{family} 没有动作 {action}")
+        frames = []
+        for key, start, held in _cells(data["keys"], sequence):
+            image = restore_frame(data["sheet"], data["entries"][key])
+            box = image.getbbox(alpha_only=False)
+            crop = image.crop(box) if box else None
+            frames.append({"key": key, "start": start, "duration": held, "box": list(box) if box else None,
+                           "rgba": base64.b64encode(crop.tobytes()).decode("ascii") if crop else ""})
+        frame = data["frame"]
+        return {"characterId": cid, "family": family, "action": action,
+                "state": "draft" if state != "view" else "view",
+                "frameBox": list(frame_box(data["entries"], data["keys"])),
+                "origin": [-frame.get("x", 0), -frame.get("y", 0)],
+                "totalFrames": sequence["end"] - sequence["begin"] + 1, "frames": frames,
+                "note": "原始 RGBA（不经浏览器 canvas 解码）；box 外全部字节为 0"}
+
     def cell_image(self, cid: str, family: str, key: int, *, trimmed: bool = True, draft: bool = True) -> Image.Image:
         code = self.ops.character(cid)["code"]
         source, _ = self._state(cid, draft)

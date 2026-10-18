@@ -13,6 +13,50 @@ from .deliver_pixel_pack import budget_check, repack
 from .drafts import DraftError, sha256
 
 
+def slot_problems(timeline: dict, keys: list[int], action: str, total: int) -> list[str]:
+    """Timeline rules one action replacement must satisfy (compile, save and dryRun share them)."""
+    sequences = timeline.get("sequences", []) or []
+    by_name = {s.get("name"): s for s in sequences}
+    if len(by_name) != len(sequences):
+        return ["原像素时间轴有重复动作槽"]
+    sequence = by_name.get(action)
+    if sequence is None:
+        return [f"原图集没有 {action} 动作槽：编辑台只替换已有动作，不能新增动作槽"]
+    problems = []
+    length = sequence["end"] - sequence["begin"] + 1
+    if total != length and sequence["end"] != max(s["end"] for s in sequences):
+        problems.append(f"非末尾动作 {action} 必须保持原总时长 {length} 帧（现在 {total} 帧）："
+                        "只有末尾动作能改总长；请重新分配各帧停留帧数")
+    new_end = sequence["begin"] + total - 1
+    outside = [key for key in keys if sequence["end"] < key <= new_end]
+    if outside:
+        problems.append(f"末尾动作加长会覆盖序列外的原图集端点：{outside}")
+    if any(s["name"] != action and s["begin"] <= sequence["end"] and s["end"] >= sequence["begin"]
+           for s in sequences):
+        problems.append("原时间轴动作槽重叠，不能保证其它动作槽逐字节不变")
+    return problems
+
+
+def frame_box(entries: dict, keys: list[int]) -> tuple[int, int]:
+    first = entries[keys[0]]
+    return int(first.get("fw", first["w"])), int(first.get("fh", first["h"]))
+
+
+def frame_problems(image: Image.Image, anchor, frame: dict, box: tuple[int, int]) -> list[str]:
+    """Per-frame geometry rules of compile (size, transparent background, anchor keeps pixels in the box)."""
+    fw, fh = box
+    if image.width > fw or image.height > fh:
+        return [f"帧 {image.width}×{image.height} 超过帧框 {fw}×{fh}"]
+    if image.getchannel("A").getextrema()[0] == 255:
+        return ["帧必须有透明背景"]
+    origin = -float(frame.get("x", 0)), -float(frame.get("y", 0))
+    dx, dy = (round(origin[i] - float(anchor[i])) for i in (0, 1))
+    visible = image.getchannel("A").getbbox()
+    if visible and (visible[0] + dx < 0 or visible[1] + dy < 0 or visible[2] + dx > fw or visible[3] + dy > fh):
+        return ["锚点使可见像素超出帧框"]
+    return []
+
+
 def _prepared_frames(store, cid, change, frame, first):
     fw, fh = int(first.get("fw", first["w"])), int(first.get("fh", first["h"]))
     origin = -float(frame.get("x", 0)), -float(frame.get("y", 0))
@@ -22,14 +66,12 @@ def _prepared_frames(store, cid, change, frame, first):
         if raw is None or sha256(raw) != item["sha256"]:
             raise DraftError(f"问题：像素源帧 SHA-256 不符：{item['file']}")
         image = png(raw)
-        if image.size != (item["width"], item["height"]) or image.width > fw or image.height > fh:
-            raise DraftError("问题：像素源帧尺寸与草稿或官方帧框不一致")
-        if image.getchannel("A").getextrema()[0] == 255:
-            raise DraftError("问题：像素源帧必须有透明背景")
+        if image.size != (item["width"], item["height"]):
+            raise DraftError("问题：像素源帧尺寸与草稿记录不一致")
+        problems = frame_problems(image, item["anchor"], frame, (fw, fh))
+        if problems:
+            raise DraftError("问题：像素" + problems[0])
         dx, dy = (round(origin[i] - float(item["anchor"][i])) for i in (0, 1))
-        box = image.getchannel("A").getbbox()
-        if box and (box[0] + dx < 0 or box[1] + dy < 0 or box[2] + dx > fw or box[3] + dy > fh):
-            raise DraftError("问题：像素锚点使可见像素超出官方帧框")
         canvas = Image.new("RGBA", (fw, fh))
         canvas.paste(image, (dx, dy))
         box = canvas.getchannel("A").getbbox() or (0, 0, 1, 1)
@@ -73,16 +115,9 @@ def _compile_family(source, store, changeset, family, changes, original=None):
         if change["params"]["originalTotalFrames"] != length:
             raise DraftError(f"问题：像素动作旧时长断言失败：{action}")
         frames = _prepared_frames(store, cid, change, frame, entries[keys[0]])
-        total = sum(item[2] for item in frames)
-        if total != length and sequence["end"] != max(s["end"] for s in sequences):
-            raise DraftError("问题：非末尾动作必须保持原总时长，否则会改动其它动作槽；可重新分配各帧时长")
-        new_end = sequence["begin"] + total - 1
-        outside = [key for key in keys if sequence["end"] < key <= new_end]
-        if outside:
-            raise DraftError(f"问题：末尾动作加长会覆盖序列外的原图集端点：{outside}")
-        if any(s["name"] != action and s["begin"] <= sequence["end"] and s["end"] >= sequence["begin"]
-               for s in sequences):
-            raise DraftError("问题：原时间轴动作槽重叠，不能保证其它动作槽逐字节不变")
+        problems = slot_problems(timeline, keys, action, sum(item[2] for item in frames))
+        if problems:
+            raise DraftError("问题：" + problems[0])
         groups.append((change, frames))
         prepared.extend(frames)
     maximum = 4094 if family == "pixelart" else 4096

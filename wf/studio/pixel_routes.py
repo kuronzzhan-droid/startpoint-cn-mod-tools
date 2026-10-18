@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import re
+import struct
 import threading
 
 from . import scratch
@@ -24,6 +25,7 @@ class PixelRoutes:
         self._lock = threading.Lock()
         self._draft_cache: dict[str, tuple[tuple, dict, dict]] = {}
         self._scratch: dict[tuple, PixelWorkshop] = {}
+        self._raw: dict[int, tuple[bytes, bytes]] = {}
 
     def routes(self):
         return [
@@ -36,6 +38,10 @@ class PixelRoutes:
             ("GET", re.compile(rf"^/api/characters/{SID}/pixels/(?P<family>pixelart|special)\.png$"), self.scratch_sheet),
             ("GET", re.compile(rf"^/api/drafts/{CID}/pixels$"), self.draft_meta),
             ("GET", re.compile(rf"^/api/drafts/{CID}/pixels/(?P<family>pixelart|special)\.png$"), self.draft_sheet),
+            ("GET", re.compile(rf"^/api/characters/{CID}/pixels/(?P<family>pixelart|special)\.rgba$"), self.view_rgba),
+            ("GET", re.compile(rf"^/api/drafts/{CID}/pixels/(?P<family>pixelart|special)\.rgba$"), self.draft_rgba),
+            ("GET", re.compile(rf"^/api/characters/{CID}/pixel-workshop/action/(?P<family>pixelart|special)/"
+                               r"(?P<action>[a-z_]+)$"), self.action_frames),
             ("POST", re.compile(rf"^/api/drafts/{CID}/pixel-remap$"), self.remap),
             ("POST", re.compile(rf"^/api/drafts/{CID}/pixel-generate$"), self.generate),
             ("POST", re.compile(rf"^/api/drafts/{CID}/pixel-import$"), self.import_set),
@@ -128,21 +134,72 @@ class PixelRoutes:
             return self._error(404, "草稿里没有这一族像素")
         return self._response(200, sheets[family], "image/png", "no-store")
 
+    def _scratch_families(self, cid, shop):
+        """Grid sheets of a scratch character's view (base family renamed), cached per workshop."""
+        cache = getattr(shop, "_scratch_grid", None)
+        if cache is None:
+            with self._lock:
+                cache = getattr(shop, "_scratch_grid", None)
+                if cache is None:
+                    cache = self._families(shop.source, shop.ops.character(cid)["code"])
+                    shop._scratch_grid = cache
+        return cache
+
     def scratch_meta(self, query, cid):
         shop = self.shop(cid)
         code = shop.ops.character(cid)["code"]
-        families, _, slots = self._families(shop.source, code)
+        families, _, slots = self._scratch_families(cid, shop)
         base = shop.ops.meta["base"]
         return self._json({"characterId": cid, "code": code, "families": families, "slots": slots,
-                           "note": f"草稿角色的「当前视图」= 母本 {base['code']} 整族（区间、锚点、frame.scale）"
+                           "note": f"草稿角色的「当前视图」= 母本 {base['code']} 整族（时间轴区间、锚点、显示倍率）"
                                    f"改名到占位代码 {code}。"})
 
     def scratch_sheet(self, query, cid, family):
         shop = self.shop(cid)
-        _, sheets, _ = self._families(shop.source, shop.ops.character(cid)["code"])
+        _, sheets, _ = self._scratch_families(cid, shop)
         if family not in sheets:
             return self._error(404, "母本没有这一族像素")
         return self._response(200, sheets[family], "image/png", "no-store")
+
+    # -- raw RGBA (the browser never decodes pixel data through a canvas) -----
+    def _rgba(self, png: bytes) -> bytes:
+        """Grid sheet PNG → 8-byte header (uint32 LE width, height) + raw RGBA bytes."""
+        with self._lock:
+            hit = self._raw.get(id(png))
+            if hit and hit[0] is png:
+                return hit[1]
+        from PIL import Image
+        image = Image.open(io.BytesIO(png))
+        image.load()
+        image = image.convert("RGBA")
+        body = struct.pack("<II", image.width, image.height) + image.tobytes()
+        with self._lock:
+            if len(self._raw) > 24:
+                self._raw.clear()
+            self._raw[id(png)] = (png, body)
+        return body
+
+    def view_rgba(self, query, cid, family):
+        if scratch.is_scratch(cid):
+            shop = self.shop(cid)
+            sheets = self._scratch_families(cid, shop)[1]
+        else:
+            code = self.app._code(cid)
+            sheets = {family: self.app.pixels.sheet(code, family)} if code else {}
+        if not sheets.get(family):
+            return self._error(404, "该角色没有这一组像素资源")
+        return self._response(200, self._rgba(sheets[family]), "application/octet-stream",
+                              "no-store" if scratch.is_scratch(cid) else None)
+
+    def draft_rgba(self, query, cid, family):
+        _, sheets = self._draft_family(cid)
+        if not sheets or family not in sheets:
+            return self._error(404, "草稿里没有这一族像素")
+        return self._response(200, self._rgba(sheets[family]), "application/octet-stream", "no-store")
+
+    def action_frames(self, query, cid, family, action):
+        draft = (query.get("state") or ["draft"])[0] == "draft"
+        return self._json(self.shop(cid).action_frames(cid, family, action, draft=draft))
 
     def remap(self, query, body, cid):
         return self._json(self.shop(cid).remap(cid, body))

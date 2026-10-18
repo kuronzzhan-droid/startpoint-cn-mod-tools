@@ -404,6 +404,40 @@ def _draft_raws(store, sid: str, change: dict, code: str, family: str) -> list[b
     return raws
 
 
+def _auto_families(ops: DraftOps, base: dict, changeset: dict, code: str) -> tuple[list, list[str]]:
+    """A family with only per-action edits still needs the base family (the scratch's view) on the target.
+
+    Without it the target keeps its own four files and the new actions land on the
+    target's atlas: preview and delivery would disagree. Bind therefore adds a
+    whole-family remap with an empty mapping (= the base, renamed) for such families.
+    """
+    replaced = {c["target"]["family"] for c in changeset["changes"] if c["kind"] == "pixel_family"}
+    needed = sorted({c["target"]["family"] for c in changeset["changes"] if c["kind"] == "pixel_action"} - replaced)
+    plan, notes = [], []
+    for family in needed:
+        if base["code"] == code:
+            notes.append(f"{family}：绑定目标就是母本 {code}，草稿角色看到的就是它自己的整族，不需要补整族替换")
+            continue
+        base_raws = read_family_raw(ops.source, base["code"], family)
+        if base_raws is None:
+            raise DraftError(f"母本 {base['code']} 缺 {family}，无法把逐动作改动带到 {code}")
+        rebuilt = remap_family(base_raws, base["code"], code, {})
+        label = base.get("name") or base["code"]
+        message = (f"草稿角色的 {family} 只有逐动作改动：绑定时自动补「母本 {label} 原色整族」，"
+                   f"否则未改的动作会是 {code} 自己的原图")
+        params = {"mode": "remap", "auto": "bind",
+                  "base": {"characterId": base["characterId"], "code": base["code"],
+                           "files": {logical: sha256(raw)
+                                     for logical, raw in zip(family_paths(base["code"], family), base_raws)}},
+                  "mapping": [], "changedPixels": 0, "renamedEntries": rebuilt["renamedEntries"]}
+        pseudo = {"title": f"像素整族 {family}：母本 {label}（{base['characterId'] or base['code']}）原色整族（绑定时自动补）",
+                  "target": {"family": family}, "auto": True,
+                  "checks": [{"level": "info", "code": "workshop.bind_auto_family", "message": message}]}
+        plan.append(("pixel_family", pseudo, family, rebuilt, params))
+        notes.append(message)
+    return plan, notes
+
+
 def bind(ops: DraftOps, sid: str, request: dict) -> dict:
     validate(request, "scratchBindRequest")
     scratch = ScratchDraftOps(ops, sid)
@@ -436,9 +470,13 @@ def bind(ops: DraftOps, sid: str, request: dict) -> dict:
             plan.append(("pixel_action", change, change["target"]["family"], None, None))
         else:
             raise DraftError(f"草稿角色只应有像素改动，遇到 {change['kind']}")
+    auto, notes = _auto_families(ops, meta["base"], changeset, code)
+    plan[:0] = auto
     summary = {"from": sid, "characterId": cid, "code": code, "name": target["name"],
                "renamed": f"character/{old}/ → character/{code}/",
-               "changes": [{"kind": kind, "title": change["title"]} for kind, change, *_ in plan]}
+               "changes": [{"kind": kind, "title": change["title"], **({"auto": True} if change.get("auto") else {})}
+                           for kind, change, *_ in plan],
+               "notes": notes}
     if request.get("dryRun"):
         return {"dryRun": True, **summary}
     make = ops._file_maker(cid)

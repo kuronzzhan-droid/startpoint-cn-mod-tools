@@ -23,6 +23,11 @@ def _replay(source, cid, requests, *, server_dir=None, server_text=None, server_
         for op in operations:
             if op.get("character", cid) != cid:
                 raise ValueError("operation character must match the draft character")
+        tier_keys = {op["key"] for op in operations if op["table"] == "action_skill"
+                     and op["op"] in {"insert_row", "delete_row", "move_row"}}
+        if any(op["table"] == "action_skill" and op["op"] == "set_cells" and op["key"] in tier_keys
+               for op in operations):
+            raise ValueError("技能档位插入/删除/移动必须单独写入：同一次请求里不能再改该技能的格子（档号会错位）")
         numeric, action = split_operations(operations)
         text_ops = [op for op in operations if op["op"] == "set_cells" and op["table"] == "action_skill"
                     and any(str(c["column"]) in {"0", "1", "c0", "c1"} for c in op["cells"])]

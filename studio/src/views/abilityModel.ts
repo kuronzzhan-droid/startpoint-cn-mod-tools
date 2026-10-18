@@ -105,9 +105,16 @@ export function workingRows(entry: AbilityEntry, pending: Pending): string[][] {
   return rows;
 }
 
+/** Skill tier insert/delete/move pending on this key: tier cells are locked until written or undone. */
+export function tierLocked(p: Pending, table: string, key: string): boolean {
+  return table === "action_skill" && tierOps(p).some((o) => o.key === key);
+}
+
 export function setCell(p: Pending, entry: AbilityEntry, rows: string[][], row: number, column: number, value: string): Pending {
   const current = rows[row]?.[column] ?? "";
   if (current === value) return p;
+  // Cell edits after a pending tier insert/delete would be replayed against the shifted tiers.
+  if (tierLocked(p, entry.table, entry.key)) return p;
   if (entry.table === "action_skill" && column < 2) {
     const name = (column === 0 ? "c0" : "c1") as "c0" | "c1";
     const original = entry.rows[0]?.[column] ?? "";

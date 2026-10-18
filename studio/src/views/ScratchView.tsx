@@ -249,7 +249,8 @@ function BindPanel({ info, onDone }: { info: ScratchInfo; onDone: () => void }) 
         <section class="pixel-check">
           <h4>{preview.dryRun ? "将要绑定" : "已绑定"}：{preview.name}（{preview.characterId} · <span class="mono">{preview.code}</span>）</h4>
           <p class="small mono">{preview.renamed}</p>
-          <ul>{preview.changes.map((c) => <li class="small">{c.kind} · {c.title}</li>)}</ul>
+          <ul>{preview.changes.map((c) => <li class="small">{c.auto ? <span class="tag">自动补</span> : null} {c.title}</li>)}</ul>
+          {preview.notes?.length ? <ul class="checks">{preview.notes.map((n) => <li class="check-info"><span>{n}</span></li>)}</ul> : null}
           {!preview.dryRun ? <a href={href({ work: "content", shop: "characters", id: preview.characterId, tab: "changes" })}>去 {preview.characterId} 的「本次修改」→</a> : null}
         </section>
       ) : null}

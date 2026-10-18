@@ -879,7 +879,53 @@ export const GENERATE_ACTIONS: { id: string; label: string }[] = [
   { id: "ghost_neutral", label: "幽灵待机" }, { id: "revive", label: "复活" },
 ];
 
+/** One action's images as raw RGBA (backend-decoded; never read back through a canvas). */
+export interface ActionFrames {
+  characterId: string;
+  family: string;
+  action: string;
+  state: "view" | "draft";
+  frameBox: [number, number];
+  origin: [number, number];
+  totalFrames: number;
+  frames: { key: number; start: number; duration: number; box: [number, number, number, number] | null; rgba: string }[];
+  note: string;
+}
+
+/** Raw RGBA image: 8-byte little-endian header (width, height) + width*height*4 bytes. */
+export interface RawImage { width: number; height: number; data: Uint8ClampedArray }
+
+export async function fetchRaw(url: string): Promise<RawImage> {
+  const response = await fetch(url);
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
+    throw new Error(body.error || `HTTP ${response.status}`);
+  }
+  const buffer = await response.arrayBuffer();
+  const view = new DataView(buffer);
+  const width = view.getUint32(0, true), height = view.getUint32(4, true);
+  return { width, height, data: new Uint8ClampedArray(buffer, 8, width * height * 4) };
+}
+
+export function base64ToBytes(text: string): Uint8Array {
+  const binary = atob(text);
+  const out = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) out[i] = binary.charCodeAt(i);
+  return out;
+}
+
+export function bytesToBase64(bytes: Uint8Array): string {
+  let binary = "";
+  const step = 0x8000;
+  for (let i = 0; i < bytes.length; i += step) binary += String.fromCharCode(...bytes.subarray(i, i + step));
+  return btoa(binary);
+}
+
 export const workshop = {
+  actionFrames: (cid: string, family: string, action: string, state: "view" | "draft" = "draft") =>
+    get<ActionFrames>(`/api/characters/${cid}/pixel-workshop/action/${family}/${action}?state=${state}`),
+  sheetRaw: (cid: string, family: string, state: "view" | "draft", stamp: string | number = "") =>
+    fetchRaw(state === "draft" ? `/api/drafts/${cid}/pixels/${family}.rgba?v=${stamp}` : `/api/characters/${cid}/pixels/${family}.rgba`),
   analyze: (cid: string, state: "view" | "draft" = "view") =>
     get<WorkshopAnalysis>(`/api/characters/${cid}/pixel-workshop?state=${state}`),
   cellUrl: (cid: string, family: string, key: number, state: "view" | "draft" = "view", stamp = "") =>
@@ -944,7 +990,9 @@ export interface BindResult {
   code: string;
   name: string;
   renamed: string;
-  changes: { kind: string; title: string }[];
+  changes: { kind: string; title: string; auto?: boolean }[];
+  /** e.g. a family with only per-action edits gets the base family added automatically. */
+  notes?: string[];
   created?: string[];
 }
 

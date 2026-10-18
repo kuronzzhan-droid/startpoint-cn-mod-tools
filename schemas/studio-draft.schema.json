@@ -155,6 +155,7 @@
       "required": ["duration", "anchor"],
       "properties": {
         "png": {"type": "string", "description": "base64 PNG（API 请求里用）"},
+        "rgba": {"type": "string", "description": "base64 原始 RGBA 字节（width×height×4，不经浏览器 canvas；API 请求里用，需同时给 width/height）"},
         "file": {"$ref": "#/$defs/draftPath", "description": "草稿内的帧文件（changeset 里用）"},
         "sha256": {"$ref": "#/$defs/sha256", "description": "帧文件 SHA-256（changeset 里用）"},
         "duration": {"type": "integer", "minimum": 1, "maximum": 600, "description": "停留帧数（60fps）"},
@@ -172,7 +173,17 @@
         "action": {"type": "string", "pattern": "^[a-z_]+$"},
         "frames": {"type": "array", "minItems": 1, "maxItems": 240, "items": {"$ref": "#/$defs/pixelFrame"}},
         "dryRun": {"type": "boolean", "default": false},
-        "origin": {"type": "object", "description": "来源说明，例如 {\"mode\":\"sheet\",\"columns\":4,\"rows\":2}"}
+        "origin": {"type": "object", "description": "来源说明，例如 {\"mode\":\"sheet\",\"columns\":4,\"rows\":2}"},
+        "sheet": {
+          "type": "object", "additionalProperties": false, "required": ["png", "columns", "rows"],
+          "description": "整张精灵图由后端按网格切帧（不经浏览器 canvas）；此时 frames 只给 duration/anchor，顺序与切出的帧一致",
+          "properties": {
+            "png": {"type": "string"},
+            "columns": {"type": "integer", "minimum": 1, "maximum": 64},
+            "rows": {"type": "integer", "minimum": 1, "maximum": 64},
+            "count": {"type": "integer", "minimum": 1, "description": "只取前 N 格；省略时跳过全透明格"}
+          }
+        }
       }
     },
     "voiceRequest": {
@@ -356,7 +367,7 @@
             }
           }
         },
-        {"if": {"properties": {"kind": {"const": "pixel_family"}}}, "then": {"properties": {"target": {"type": "object", "additionalProperties": false, "required": ["family"], "properties": {"family": {"enum": ["pixelart", "special"]}}}, "params": {"type": "object", "additionalProperties": false, "required": ["mode"], "properties": {"mode": {"enum": ["remap", "import"]}, "base": {"type": "object", "additionalProperties": false, "required": ["characterId", "code"], "properties": {"characterId": {"anyOf": [{"$ref": "#/$defs/characterId"}, {"type": "null"}]}, "code": {"$ref": "#/$defs/code"}, "files": {"type": "object", "minProperties": 4, "maxProperties": 4, "additionalProperties": {"$ref": "#/$defs/sha256"}}}}, "mapping": {"type": "array", "items": {"$ref": "#/$defs/colorPair"}}, "source": {"type": "object", "description": "导入来源：名称、原代码前缀、原四件 SHA-256"}, "provenance": {"type": "object", "description": "导入集与「母本 + 映射表」逐端点对照结果"}, "changedPixels": {"type": "integer", "minimum": 0}, "renamedEntries": {"type": "integer", "minimum": 0}, "groups": {"type": "object"}}, "allOf": [{"if": {"properties": {"mode": {"const": "remap"}}}, "then": {"required": ["base", "mapping"], "properties": {"base": {"required": ["files"]}}}, "else": {"required": ["source"]}}]}, "files": {"minItems": 4, "maxItems": 4}, "pending": {"maxItems": 0}}}}
+        {"if": {"properties": {"kind": {"const": "pixel_family"}}}, "then": {"properties": {"target": {"type": "object", "additionalProperties": false, "required": ["family"], "properties": {"family": {"enum": ["pixelart", "special"]}}}, "params": {"type": "object", "additionalProperties": false, "required": ["mode"], "properties": {"mode": {"enum": ["remap", "import"]}, "base": {"type": "object", "additionalProperties": false, "required": ["characterId", "code"], "properties": {"characterId": {"anyOf": [{"$ref": "#/$defs/characterId"}, {"type": "null"}]}, "code": {"$ref": "#/$defs/code"}, "files": {"type": "object", "minProperties": 4, "maxProperties": 4, "additionalProperties": {"$ref": "#/$defs/sha256"}}}}, "mapping": {"type": "array", "items": {"$ref": "#/$defs/colorPair"}}, "source": {"type": "object", "description": "导入来源：名称、原代码前缀、原四件 SHA-256"}, "provenance": {"type": "object", "description": "导入集与「母本 + 映射表」逐端点对照结果"}, "changedPixels": {"type": "integer", "minimum": 0}, "renamedEntries": {"type": "integer", "minimum": 0}, "groups": {"type": "object"}, "auto": {"enum": ["bind"], "description": "自动补的整族替换：bind = 草稿角色只有逐动作改动，绑定时补母本原色整族"}}, "allOf": [{"if": {"properties": {"mode": {"const": "remap"}}}, "then": {"required": ["base", "mapping"], "properties": {"base": {"required": ["files"]}}}, "else": {"required": ["source"]}}]}, "files": {"minItems": 4, "maxItems": 4}, "pending": {"maxItems": 0}}}}
       ]
     }
   }

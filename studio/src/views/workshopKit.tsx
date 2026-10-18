@@ -1,7 +1,7 @@
 // Shared helpers for 像素工坊: sheet loading, a 60 fps clock, a small stage that
 // draws one action of a family (optionally from a recoloured sheet), recolouring.
 import { useEffect, useRef, useState } from "preact/hooks";
-import { api, PixelAction, PixelFamily, PixelMeta, workshop } from "../api";
+import { api, PixelAction, PixelFamily, PixelMeta, RawImage, workshop } from "../api";
 
 export type Drawable = HTMLImageElement | HTMLCanvasElement;
 
@@ -36,10 +36,13 @@ export function luma(hex: string): number {
   return 0.299 * ((v >> 16) & 255) + 0.587 * ((v >> 8) & 255) + 0.114 * (v & 255);
 }
 
-/** Pixel meta + loaded grid sheets, for the view or for the draft (falls back to the view). */
-export function useFamilies(cid: string | null, state: "view" | "draft", refresh = 0) {
+/** Pixel meta + loaded grid sheets, for the view or for the draft (falls back to the view).
+ *  `withRaw` also fetches the backend-decoded RGBA of each grid sheet: pixel data must never be
+ *  read back from a canvas (premultiplied alpha changes the RGB of semi-transparent pixels). */
+export function useFamilies(cid: string | null, state: "view" | "draft", refresh = 0, withRaw = false) {
   const [meta, setMeta] = useState<(PixelMeta & { draftRevision?: number; draftStamp?: string }) | null>(null);
   const [sheets, setSheets] = useState<Record<string, HTMLImageElement>>({});
+  const [raws, setRaws] = useState<Record<string, RawImage>>({});
   const [source, setSource] = useState<"view" | "draft">("view");
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
@@ -58,19 +61,31 @@ export function useFamilies(cid: string | null, state: "view" | "draft", refresh
         }
       } else data = await api.pixels(cid);
       const loaded: Record<string, HTMLImageElement> = {};
-      for (const f of data.families) {
-        if (f.error) continue;
+      const raw: Record<string, RawImage> = {};
+      const stamp = data.draftStamp ?? data.draftRevision ?? 0;
+      await Promise.all(data.families.filter((f) => !f.error).map(async (f) => {
         loaded[f.family] = await loadImage(from === "draft"
-          ? workshop.draftSheetUrl(cid, f.family, data.draftStamp ?? data.draftRevision ?? 0) : api.pixelSheetUrl(cid, f.family));
-      }
+          ? workshop.draftSheetUrl(cid, f.family, stamp) : api.pixelSheetUrl(cid, f.family));
+        if (withRaw) raw[f.family] = await workshop.sheetRaw(cid, f.family, from, stamp);
+      }));
       if (!alive) return;
       setMeta(data);
       setSheets(loaded);
+      setRaws(raw);
       setSource(from);
     })().catch((e: Error) => alive && setError(e.message));
     return () => { alive = false; };
-  }, [cid, state, refresh]);
-  return { meta, sheets, source, error };
+  }, [cid, state, refresh, withRaw]);
+  return { meta, sheets, raws, source, error };
+}
+
+/** Display-only canvas of raw RGBA (written with putImageData, never read back). */
+export function canvasFromRaw(raw: RawImage): HTMLCanvasElement {
+  const canvas = document.createElement("canvas");
+  canvas.width = raw.width;
+  canvas.height = raw.height;
+  canvas.getContext("2d")!.putImageData(new ImageData(new Uint8ClampedArray(raw.data), raw.width, raw.height), 0, 0);
+  return canvas;
 }
 
 /** Shared 60 fps timeline clock (ticks = timeline frames). */
@@ -141,21 +156,16 @@ export function ActionStage({ family, sheet, action, tick, zoom = 3, label, crop
   );
 }
 
-/** Visible content box shared by all cells of a family (for tighter previews). */
-export function contentCrop(family: PixelFamily, sheet: Drawable | undefined, pad = 3) {
+/** Visible content box shared by all cells of a family (for tighter previews), from raw RGBA. */
+export function contentCrop(family: PixelFamily, sheet: RawImage | undefined, pad = 3) {
   if (!sheet) return undefined;
-  const canvas = document.createElement("canvas");
-  canvas.width = sheet.width;
-  canvas.height = sheet.height;
-  const ctx = canvas.getContext("2d")!;
-  ctx.drawImage(sheet, 0, 0);
-  const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  const data = sheet.data;
   let x0 = family.cellWidth, y0 = family.cellHeight, x1 = 0, y1 = 0;
   for (let i = 0; i < family.cellCount; i++) {
     const ox = (i % family.columns) * family.cellWidth, oy = Math.floor(i / family.columns) * family.cellHeight;
     for (let y = 0; y < family.cellHeight; y++)
       for (let x = 0; x < family.cellWidth; x++)
-        if (data[((oy + y) * canvas.width + ox + x) * 4 + 3]) {
+        if (data[((oy + y) * sheet.width + ox + x) * 4 + 3]) {
           if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
         }
   }
@@ -165,24 +175,19 @@ export function contentCrop(family: PixelFamily, sheet: Drawable | undefined, pa
   return { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
 }
 
-/** Exact RGB→RGB recolour (alpha untouched), mirroring the backend remap. */
-export function recolor(sheet: Drawable, mapping: Map<number, number>): HTMLCanvasElement {
-  const canvas = document.createElement("canvas");
-  canvas.width = sheet.width;
-  canvas.height = sheet.height;
-  const ctx = canvas.getContext("2d")!;
-  ctx.drawImage(sheet, 0, 0);
-  if (!mapping.size) return canvas;
-  const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const d = image.data;
-  for (let i = 0; i < d.length; i += 4) {
-    if (!d[i + 3]) continue;
-    const to = mapping.get((d[i] << 16) | (d[i + 1] << 8) | d[i + 2]);
-    if (to === undefined) continue;
-    d[i] = (to >> 16) & 255; d[i + 1] = (to >> 8) & 255; d[i + 2] = to & 255;
+/** Exact RGB→RGB recolour (alpha untouched) on raw RGBA, mirroring the backend remap (recolor in
+ *  pixel_workshop.py). Works on the backend-decoded bytes, so semi-transparent pixels match too. */
+export function recolorRaw(sheet: RawImage, mapping: Map<number, number>): RawImage {
+  const d = new Uint8ClampedArray(sheet.data);
+  if (mapping.size) {
+    for (let i = 0; i < d.length; i += 4) {
+      if (!d[i + 3]) continue;
+      const to = mapping.get((d[i] << 16) | (d[i + 1] << 8) | d[i + 2]);
+      if (to === undefined) continue;
+      d[i] = (to >> 16) & 255; d[i + 1] = (to >> 8) & 255; d[i + 2] = to & 255;
+    }
   }
-  ctx.putImageData(image, 0, 0);
-  return canvas;
+  return { width: sheet.width, height: sheet.height, data: d };
 }
 
 export function familyOf(meta: PixelMeta | null, name: string): PixelFamily | undefined {

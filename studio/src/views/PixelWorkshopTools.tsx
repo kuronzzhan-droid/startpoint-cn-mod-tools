@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import {
-  BaseImageSpec, DraftCheck, drafts, GENERATE_ACTIONS, GeneratedFrame, PaletteGroup, PixelAction, PixelFamily,
-  WorkshopAnalysis, workshop,
+  ActionFrames, base64ToBytes, BaseImageSpec, bytesToBase64, DraftCheck, drafts, GENERATE_ACTIONS, GeneratedFrame,
+  PaletteGroup, PixelAction, WorkshopAnalysis, workshop,
 } from "../api";
 import { ChecksList } from "./Changes";
 import { Notice } from "./common";
@@ -170,29 +170,34 @@ function FrameStage({ image, crop, zoom }: { image: CanvasImageSource; crop: { x
 
 // ---------------------------------------------------------------------------
 // 画板
+//
+// Frame pixels are the backend's raw RGBA (GET …/pixel-workshop/action/<family>/<action>):
+// canvases only display them (putImageData, never getImageData/toDataURL), and saving sends the
+// raw bytes back (pixelFrame.rgba). Untouched pixels — including semi-transparent shadow and
+// ghost pixels — therefore stay byte-identical; a save without edits compiles to the same frames.
 
 type Tool = "pencil" | "eraser" | "fill" | "picker";
 const TOOL_LABEL: Record<Tool, string> = { pencil: "铅笔", eraser: "橡皮", fill: "填充", picker: "吸管" };
-type BoardFrame = { data: ImageData; duration: number };
+type BoardFrame = { id: number; data: Uint8ClampedArray; duration: number };
+type Box = { x: number; y: number; w: number; h: number };
 
-function frameFromSheet(family: PixelFamily, sheet: CanvasImageSource, cell: number): ImageData {
-  const canvas = document.createElement("canvas");
-  canvas.width = BOX; canvas.height = BOX;
-  const ctx = canvas.getContext("2d")!;
-  const box = family.frameBox ?? { cropX: 0, cropY: 0, width: BOX, height: BOX };
-  ctx.drawImage(sheet, (cell % family.columns) * family.cellWidth, Math.floor(cell / family.columns) * family.cellHeight,
-    family.cellWidth, family.cellHeight, box.cropX, box.cropY, family.cellWidth, family.cellHeight);
-  return ctx.getImageData(0, 0, BOX, BOX);
+let frameSerial = 0;
+
+function expandFrame(frame: ActionFrames["frames"][number], width: number, height: number): Uint8ClampedArray {
+  const out = new Uint8ClampedArray(width * height * 4);
+  if (!frame.box || !frame.rgba) return out;
+  const [x0, y0, x1, y1] = frame.box;
+  const src = base64ToBytes(frame.rgba);
+  const w = x1 - x0;
+  for (let y = y0; y < y1; y++) out.set(src.subarray((y - y0) * w * 4, (y - y0 + 1) * w * 4), (y * width + x0) * 4);
+  return out;
 }
 
-function cloneData(data: ImageData): ImageData {
-  return new ImageData(new Uint8ClampedArray(data.data), data.width, data.height);
-}
-
-function toCanvas(data: ImageData): HTMLCanvasElement {
+/** Display-only canvas (putImageData; the board never reads pixels back from a canvas). */
+function toCanvas(data: Uint8ClampedArray, width: number, height: number): HTMLCanvasElement {
   const canvas = document.createElement("canvas");
-  canvas.width = data.width; canvas.height = data.height;
-  canvas.getContext("2d")!.putImageData(data, 0, 0);
+  canvas.width = width; canvas.height = height;
+  canvas.getContext("2d")!.putImageData(new ImageData(new Uint8ClampedArray(data), width, height), 0, 0);
   return canvas;
 }
 
@@ -202,6 +207,7 @@ export function DrawingBoard({ characterId, analysis, groups, refresh, onSaved }
   const fam = useFamilies(characterId, "draft", refresh);
   const [familyName, setFamilyName] = useState("pixelart");
   const [actionName, setActionName] = useState("neutral");
+  const [source, setSource] = useState<ActionFrames | null>(null);
   const [frames, setFrames] = useState<BoardFrame[]>([]);
   const [index, setIndex] = useState(0);
   const [tool, setTool] = useState<Tool>("pencil");
@@ -210,41 +216,48 @@ export function DrawingBoard({ characterId, analysis, groups, refresh, onSaved }
   const [onion, setOnion] = useState(true);
   const [full, setFull] = useState(false);
   const [version, setVersion] = useState(0);
-  const [undo, setUndo] = useState<{ index: number; data: ImageData }[]>([]);
+  // Undo records name the frame by id, so copying/deleting frames cannot redirect them to another frame.
+  const [undo, setUndo] = useState<{ id: number; data: Uint8ClampedArray }[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<{ kind: "info" | "error"; text: string } | null>(null);
   const [checks, setChecks] = useState<DraftCheck[] | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const ref = useRef<HTMLCanvasElement>(null);
   const drawing = useRef(false);
 
   const family = familyOf(fam.meta, familyName);
   const action: PixelAction | undefined = family?.actions.find((a) => a.name === actionName);
-  const sheet = family ? fam.sheets[family.family] : undefined;
-  const origin = family ? [(family.frameBox?.cropX ?? 0) + family.anchor.x, (family.frameBox?.cropY ?? 0) + family.anchor.y] : [128, 128];
+  const W = source?.frameBox[0] ?? BOX, H = source?.frameBox[1] ?? BOX;
+  const origin = source?.origin ?? [W / 2, H / 2];
 
-  const [actionBox, setActionBox] = useState({ x: 0, y: 0, w: BOX, h: BOX });
+  const [actionBox, setActionBox] = useState<Box>({ x: 0, y: 0, w: BOX, h: BOX });
   useEffect(() => {
-    if (!family || !action || !sheet) { setFrames([]); return; }
-    const loaded = action.cells.map((c) => ({ data: frameFromSheet(family, sheet, c.cell), duration: c.frames }));
-    // View = this action's visible union (+ origin), padded; fixed while drawing.
-    let x0 = origin[0], y0 = origin[1], x1 = origin[0], y1 = origin[1];
-    for (const f of loaded) {
-      const d = f.data.data;
-      for (let y = 0; y < BOX; y++) for (let x = 0; x < BOX; x++) if (d[(y * BOX + x) * 4 + 3]) {
-        if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+    if (!family || !action) { setFrames([]); setSource(null); return; }
+    let alive = true;
+    setLoadError(null);
+    workshop.actionFrames(characterId, familyName, actionName, fam.source).then((data) => {
+      if (!alive) return;
+      const [w, h] = data.frameBox;
+      const loaded = data.frames.map((f) => ({ id: ++frameSerial, data: expandFrame(f, w, h), duration: f.duration }));
+      // View = this action's visible union (+ origin), padded; fixed while drawing.
+      let x0 = data.origin[0], y0 = data.origin[1], x1 = x0, y1 = y0;
+      for (const f of data.frames) {
+        if (!f.box) continue;
+        x0 = Math.min(x0, f.box[0]); y0 = Math.min(y0, f.box[1]); x1 = Math.max(x1, f.box[2] - 1); y1 = Math.max(y1, f.box[3] - 1);
       }
-    }
-    const pad = 10, minSide = 40;
-    let w = x1 - x0 + 1 + pad * 2, h = y1 - y0 + 1 + pad * 2;
-    const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
-    w = Math.max(w, minSide); h = Math.max(h, minSide);
-    const x = Math.max(0, Math.min(BOX - w, Math.round(cx - w / 2))), y = Math.max(0, Math.min(BOX - h, Math.round(cy - h / 2)));
-    setActionBox({ x, y, w: Math.min(BOX, w), h: Math.min(BOX, h) });
-    setFrames(loaded);
-    setIndex(0); setUndo([]); setChecks(null);
-  }, [family, action, sheet]);
+      const pad = 10, minSide = 40;
+      const bw = Math.max(x1 - x0 + 1 + pad * 2, minSide), bh = Math.max(y1 - y0 + 1 + pad * 2, minSide);
+      const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+      const x = Math.max(0, Math.min(w - bw, Math.round(cx - bw / 2))), y = Math.max(0, Math.min(h - bh, Math.round(cy - bh / 2)));
+      setActionBox({ x, y, w: Math.min(w, bw), h: Math.min(h, bh) });
+      setSource(data);
+      setFrames(loaded);
+      setIndex(0); setUndo([]); setChecks(null);
+    }, (e: Error) => { if (alive) setLoadError(e.message); });
+    return () => { alive = false; };
+  }, [family, action, fam.source, characterId]);
 
-  const view = full || !family ? { x: 0, y: 0, w: BOX, h: BOX } : actionBox;
+  const view = full || !source ? { x: 0, y: 0, w: W, h: H } : actionBox;
   const zoom = Math.max(2, Math.min(16, Math.floor(Math.min(560 / view.w, 460 / view.h))));
   const [draftPalette, setDraftPalette] = useState<string[] | null>(null);
   useEffect(() => {
@@ -260,9 +273,9 @@ export function DrawingBoard({ characterId, analysis, groups, refresh, onSaved }
     const ctx = canvas.getContext("2d")!;
     ctx.imageSmoothingEnabled = false;
     paintChecker(ctx, canvas.width, canvas.height, zoom * 2);
-    const draw = (data: ImageData, alpha: number) => {
+    const draw = (data: Uint8ClampedArray, alpha: number) => {
       ctx.globalAlpha = alpha;
-      ctx.drawImage(toCanvas(data), view.x, view.y, view.w, view.h, 0, 0, canvas.width, canvas.height);
+      ctx.drawImage(toCanvas(data, W, H), view.x, view.y, view.w, view.h, 0, 0, canvas.width, canvas.height);
       ctx.globalAlpha = 1;
     };
     if (onion && frames.length > 1) {
@@ -287,15 +300,18 @@ export function DrawingBoard({ characterId, analysis, groups, refresh, onSaved }
     const rect = canvas.getBoundingClientRect();
     const x = view.x + Math.floor(((e.clientX - rect.left) * (canvas.width / rect.width)) / zoom);
     const y = view.y + Math.floor(((e.clientY - rect.top) * (canvas.height / rect.height)) / zoom);
-    return x >= 0 && y >= 0 && x < BOX && y < BOX ? [x, y] : null;
+    return x >= 0 && y >= 0 && x < W && y < H ? [x, y] : null;
   };
-  const pushUndo = () => setUndo((u) => [...u.slice(-49), { index, data: cloneData(frames[index].data) }]);
+  const pushUndo = () => {
+    const current = frames[index];
+    if (current) setUndo((u) => [...u.slice(-49), { id: current.id, data: new Uint8ClampedArray(current.data) }]);
+  };
   const apply = (e: PointerEvent, first: boolean) => {
     const p = pointAt(e);
     const current = frames[index];
     if (!p || !current) return;
-    const d = current.data.data;
-    const at = (p[1] * BOX + p[0]) * 4;
+    const d = current.data;
+    const at = (p[1] * W + p[0]) * 4;
     if (tool === "picker") {
       if (!d[at + 3]) return;
       const hex = intToHex((d[at] << 16) | (d[at + 1] << 8) | d[at + 2]);
@@ -313,12 +329,12 @@ export function DrawingBoard({ characterId, analysis, groups, refresh, onSaved }
       if (!first) return;
       const target = [d[at], d[at + 1], d[at + 2], d[at + 3]].join(",");
       const stack = [p];
-      const seen = new Uint8Array(BOX * BOX);
+      const seen = new Uint8Array(W * H);
       while (stack.length) {
         const [x, y] = stack.pop()!;
-        if (x < 0 || y < 0 || x >= BOX || y >= BOX || seen[y * BOX + x]) continue;
-        seen[y * BOX + x] = 1;
-        const i = (y * BOX + x) * 4;
+        if (x < 0 || y < 0 || x >= W || y >= H || seen[y * W + x]) continue;
+        seen[y * W + x] = 1;
+        const i = (y * W + x) * 4;
         if ([d[i], d[i + 1], d[i + 2], d[i + 3]].join(",") !== target) continue;
         write(i);
         stack.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
@@ -328,21 +344,35 @@ export function DrawingBoard({ characterId, analysis, groups, refresh, onSaved }
   };
   const nudge = (dy: number) => {
     pushUndo();
-    const src = frames[index].data.data;
+    const src = frames[index].data;
     const out = new Uint8ClampedArray(src.length);
-    for (let y = 0; y < BOX; y++) {
+    for (let y = 0; y < H; y++) {
       const ty = y + dy;
-      if (ty < 0 || ty >= BOX) continue;
-      out.set(src.subarray(y * BOX * 4, (y + 1) * BOX * 4), ty * BOX * 4);
+      if (ty < 0 || ty >= H) continue;
+      out.set(src.subarray(y * W * 4, (y + 1) * W * 4), ty * W * 4);
     }
     const next = [...frames];
-    next[index] = { ...frames[index], data: new ImageData(out, BOX, BOX) };
+    next[index] = { ...frames[index], data: out };
     setFrames(next);
+  };
+  const undoLast = () => {
+    const stack = [...undo];
+    while (stack.length) {
+      const last = stack.pop()!;
+      const at = frames.findIndex((f) => f.id === last.id);
+      if (at < 0) continue; // that frame was deleted
+      const next = [...frames];
+      next[at] = { ...next[at], data: last.data };
+      setFrames(next); setUndo(stack); setIndex(at);
+      return;
+    }
+    setUndo([]);
   };
   const total = frames.reduce((n, f) => n + f.duration, 0);
   const request = () => ({
     family: familyName, action: actionName, origin: { mode: "board", from: fam.source },
-    frames: frames.map((f) => ({ png: toCanvas(f.data).toDataURL("image/png").replace(/^data:[^,]*,/, ""), duration: f.duration, anchor: origin })),
+    frames: frames.map((f) => ({ rgba: bytesToBase64(new Uint8Array(f.data.buffer, f.data.byteOffset, f.data.byteLength)),
+      width: W, height: H, duration: f.duration, anchor: origin })),
   });
   const save = async (dry: boolean) => {
     setBusy(dry ? "check" : "save"); setMessage(null);
@@ -357,6 +387,10 @@ export function DrawingBoard({ characterId, analysis, groups, refresh, onSaved }
     } catch (e) { setMessage({ kind: "error", text: (e as Error).message }); }
     finally { setBusy(null); }
   };
+  const setDuration = (value: string) => {
+    const v = Math.max(1, Math.min(600, Math.round(Number(value) || 1)));
+    const next = [...frames]; next[index] = { ...next[index], duration: v }; setFrames(next);
+  };
 
   if (fam.error) return <Notice kind="error">{fam.error}</Notice>;
   if (!fam.meta) return <div class="loading">正在读取像素帧……</div>;
@@ -366,29 +400,26 @@ export function DrawingBoard({ characterId, analysis, groups, refresh, onSaved }
       <div class="toolbar">
         <label>像素族
           <select value={familyName} onChange={(e) => setFamilyName((e.target as HTMLSelectElement).value)}>
-            {fam.meta.families.filter((f) => !f.error).map((f) => <option value={f.family}>{f.family}</option>)}
+            {fam.meta.families.filter((f) => !f.error).map((f) => <option value={f.family}>{f.label}</option>)}
           </select>
         </label>
-        <label>动作槽
+        <label>动作
           <select value={actionName} onChange={(e) => setActionName((e.target as HTMLSelectElement).value)}>
-            {family?.actions.map((a) => <option value={a.name}>{a.name} · {a.totalFrames} 帧</option>)}
+            {family?.actions.map((a) => <option value={a.name}>{a.label} · {a.totalFrames} 帧</option>)}
           </select>
         </label>
-        <span class="small muted">{fam.source === "draft" ? "草稿态帧" : "当前视图帧"} · 帧框 256² · 原点 ({origin.join(", ")}) · 总 {total} 帧{action && total !== action.totalFrames ? <span class="warn-text">（原 {action.totalFrames}；只有末尾动作能改总时长）</span> : null}</span>
+        <span class="small muted" title={`帧框 ${W}×${H} · 定位原点 (${origin.join(", ")})`}>{fam.source === "draft" ? "草稿里的帧" : "当前帧"} · 共 {total} 帧
+          {action && total !== action.totalFrames ? <span class="warn-text">（原 {action.totalFrames}；只有末尾动作能改总长）</span> : null}</span>
       </div>
       {message ? <Notice kind={message.kind === "error" ? "error" : "info"}>{message.text}</Notice> : null}
+      {loadError ? <Notice kind="error">读取动作帧失败：{loadError}</Notice> : null}
       <div class="ws-board-main">
         <div>
           <div class="toolbar ws-tools">
             {(Object.keys(TOOL_LABEL) as Tool[]).map((t) => <button class={tool === t ? "primary" : ""} onClick={() => setTool(t)}>{TOOL_LABEL[t]}</button>)}
-            <button onClick={() => {
-              const last = undo[undo.length - 1];
-              if (!last) return;
-              const next = [...frames]; next[last.index] = { ...next[last.index], data: last.data };
-              setFrames(next); setUndo(undo.slice(0, -1)); setIndex(last.index);
-            }} disabled={!undo.length}>撤销</button>
+            <button onClick={undoLast} disabled={!undo.length}>撤销</button>
             <label class="check small"><input type="checkbox" checked={onion} onChange={(e) => setOnion((e.target as HTMLInputElement).checked)} />洋葱皮</label>
-            <label class="check small"><input type="checkbox" checked={full} onChange={(e) => setFull((e.target as HTMLInputElement).checked)} />整帧 256²</label>
+            <label class="check small"><input type="checkbox" checked={full} onChange={(e) => setFull((e.target as HTMLInputElement).checked)} />整帧</label>
           </div>
           <canvas ref={ref} class="pixel-canvas ws-board-canvas" aria-label="画板"
             onPointerDown={(e) => { drawing.current = true; (e.target as HTMLCanvasElement).setPointerCapture(e.pointerId); apply(e as unknown as PointerEvent, true); }}
@@ -396,13 +427,9 @@ export function DrawingBoard({ characterId, analysis, groups, refresh, onSaved }
             onPointerUp={() => { drawing.current = false; }} />
         </div>
         <aside class="ws-board-side">
-          <h5>调色板（锁定为本角色颜色）</h5>
-          <div class="ws-board-palette">
-            {palette.map((hex) => (
-              <button class={"ws-swatch big" + (hex === color ? " on" : "")} style={{ background: hex }}
-                title={`${hex}${groups[hex] ? " · " + groups[hex] : " · 新增"}`} onClick={() => { setColor(hex); if (tool === "eraser" || tool === "picker") setTool("pencil"); }} />
-            ))}
-          </div>
+          <h5>调色板 <span class="muted small">（本角色现有颜色；新增颜色会单独列出）</span></h5>
+          <BoardPalette palette={palette} groups={groups} custom={custom} color={color}
+            onPick={(hex) => { setColor(hex); if (tool === "eraser" || tool === "picker") setTool("pencil"); }} />
           <div class="small">当前 <span class="ws-swatch" style={{ background: color }} /> <span class="mono">{color}</span>
             <label class="small"> 添加颜色 <input type="color" onChange={(e) => {
               const v = (e.target as HTMLInputElement).value;
@@ -413,13 +440,17 @@ export function DrawingBoard({ characterId, analysis, groups, refresh, onSaved }
           {custom.length ? <p class="small warn-text">新增 {custom.length} 色不在本角色调色板里：{custom.join(" ")}</p> : null}
           <h5>当前帧 {index + 1}/{frames.length}</h5>
           <div class="save-row">
-            <button onClick={() => nudge(-1)} title="整帧上移 1px（离地，dy−1）">上移 1px</button>
-            <button onClick={() => nudge(1)} title="整帧下移 1px（下沉，dy+1）">下移 1px</button>
+            <button onClick={() => nudge(-1)} title="整帧上移 1 像素（离地）">上移 1px</button>
+            <button onClick={() => nudge(1)} title="整帧下移 1 像素（下沉）">下移 1px</button>
           </div>
-          <label class="small">停留<input type="number" min={1} max={600} value={frames[index]?.duration ?? 1}
-            onInput={(e) => { const v = Math.max(1, Number((e.target as HTMLInputElement).value)); const next = [...frames]; next[index] = { ...next[index], duration: v }; setFrames(next); }} />帧</label>
+          <label class="small">停留<input type="number" min={1} max={600} step={1} value={frames[index]?.duration ?? 1}
+            onInput={(e) => setDuration((e.target as HTMLInputElement).value)} />帧</label>
           <div class="save-row">
-            <button onClick={() => { const next = [...frames]; next.splice(index + 1, 0, { data: cloneData(frames[index].data), duration: frames[index].duration }); setFrames(next); setIndex(index + 1); }}>复制本帧</button>
+            <button onClick={() => {
+              const next = [...frames];
+              next.splice(index + 1, 0, { id: ++frameSerial, data: new Uint8ClampedArray(frames[index].data), duration: frames[index].duration });
+              setFrames(next); setIndex(index + 1);
+            }}>复制本帧</button>
             <button onClick={() => { if (frames.length < 2) return; const next = frames.filter((_, i) => i !== index); setFrames(next); setIndex(Math.max(0, index - 1)); }} disabled={frames.length < 2}>删除本帧</button>
           </div>
         </aside>
@@ -427,21 +458,47 @@ export function DrawingBoard({ characterId, analysis, groups, refresh, onSaved }
       <div class="filmstrip ws-board-strip">
         {frames.map((f, i) => (
           <button class={"film" + (i === index ? " on" : "")} onClick={() => setIndex(i)}>
-            <BoardThumb data={f.data} view={view} version={version} />
+            <BoardThumb data={f.data} size={[W, H]} view={view} version={version} />
             <span class="small mono">#{i + 1} · {f.duration}f</span>
           </button>
         ))}
       </div>
       <div class="save-row">
         <button onClick={() => save(true)} disabled={busy !== null || !frames.length || !drafts.hasToken()}>{busy === "check" ? "检查中……" : "检查（不写草稿）"}</button>
-        <button class="primary" onClick={() => save(false)} disabled={busy !== null || !frames.length || !drafts.hasToken()}>{busy === "save" ? "保存中……" : `保存到草稿（${familyName}/${actionName}）`}</button>
+        <button class="primary" onClick={() => save(false)} disabled={busy !== null || !frames.length || !drafts.hasToken()}>{busy === "save" ? "保存中……" : `保存到草稿（${action?.label ?? actionName}）`}</button>
       </div>
       {checks ? <ChecksList checks={checks} empty="没有提示。" /> : null}
     </div>
   );
 }
 
-function BoardThumb({ data, view, version }: { data: ImageData; view: { x: number; y: number; w: number; h: number }; version: number }) {
+/** Palette grouped like the breakdown page (本体 / 描边 / 特效 / 入棺幽灵 / 新增). */
+function BoardPalette({ palette, groups, custom, color, onPick }: {
+  palette: string[]; groups: Record<string, PaletteGroup>; custom: string[]; color: string; onPick: (hex: string) => void;
+}) {
+  const order: [PaletteGroup | "custom", string][] = [["body", "本体"], ["outline", "描边"], ["fx", "特效"], ["template", "入棺/幽灵"], ["custom", "新增"]];
+  const of = (hex: string): PaletteGroup | "custom" => (custom.includes(hex) ? "custom" : groups[hex] ?? "fx");
+  return (
+    <div class="ws-board-palette-groups">
+      {order.map(([g, label]) => {
+        const colors = palette.filter((hex) => of(hex) === g);
+        if (!colors.length) return null;
+        return (
+          <div class="ws-board-pgroup">
+            <span class="small muted">{label}</span>
+            <div class="ws-board-palette">
+              {colors.map((hex) => (
+                <button class={"ws-swatch big" + (hex === color ? " on" : "")} style={{ background: hex }} title={hex} onClick={() => onPick(hex)} />
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function BoardThumb({ data, size, view, version }: { data: Uint8ClampedArray; size: [number, number]; view: Box; version: number }) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const canvas = ref.current;
@@ -451,7 +508,7 @@ function BoardThumb({ data, view, version }: { data: ImageData; view: { x: numbe
     const ctx = canvas.getContext("2d")!;
     ctx.imageSmoothingEnabled = false;
     paintChecker(ctx, canvas.width, canvas.height, 4);
-    ctx.drawImage(toCanvas(data), view.x, view.y, view.w, view.h, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(toCanvas(data, size[0], size[1]), view.x, view.y, view.w, view.h, 0, 0, canvas.width, canvas.height);
   }, [data, view, version]);
   return <canvas ref={ref} class="pixel-canvas" />;
 }

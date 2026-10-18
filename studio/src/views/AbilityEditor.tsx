@@ -8,7 +8,7 @@ import { Notice } from "./common";
 import { RuleChips, ruleCounts, RuleList } from "./rules";
 import {
   buildRequest, deleteRow, EMPTY_PENDING, entryId, insertRow, isAwake, moveRow, Pending, pendingCount, setCell,
-  sharedId, tierOps, touches, workingRows,
+  sharedId, tierLocked, tierOps, touches, workingRows,
 } from "./abilityModel";
 
 // ---------------------------------------------------------------------------
@@ -301,6 +301,7 @@ function KeyEditorBody(props: KeyEditorProps & { ws: AbilityWorkspace; entry: Ab
     .filter(({ row }) => props.filter === "all" || table !== "ability" || (props.filter === "awake") === isAwake(row));
   const hiddenCount = rows.length - visible.length;
   const structural = table !== "action_skill";
+  const locked = tierLocked(ws.pending, table, entry.key);
   const update = (fn: (p: Pending) => Pending) => ws.update(fn);
 
   const move = (from: number, dir: -1 | 1) => {
@@ -334,10 +335,13 @@ function KeyEditorBody(props: KeyEditorProps & { ws: AbilityWorkspace; entry: Ab
       {blockingHere.length ? (
         <ul class="inline-problems">{blockingHere.map((c) => <li>问题：{c.message}</li>)}</ul>
       ) : null}
-      <ol class="effect-cards">
+      {locked ? (
+        <Notice kind="warn">档位插入/删除还没写入：先在「技能档位」写入或撤销，再改档位里的格子（否则改动会落到挪动后的错档）。</Notice>
+      ) : null}
+      <ol class={"effect-cards" + (locked ? " locked" : "")}>
         {visible.map(({ row, index }, pos) => (
           <EffectCard key={entryId(table, entry.key, entry.level) + ":" + index + ":" + rows.length}
-            ws={ws} entry={entry} rows={rows} index={index} row={row} columns={props.columns}
+            ws={ws} entry={entry} rows={rows} index={index} row={row} columns={props.columns} locked={locked}
             base={props.baseRows[index]} sameShape={props.baseRows.length === rows.length}
             first={pos === 0} last={pos === visible.length - 1} structural={structural}
             onMove={(dir) => move(index, dir)}
@@ -363,9 +367,9 @@ function KeyEditorBody(props: KeyEditorProps & { ws: AbilityWorkspace; entry: Ab
   );
 }
 
-function EffectCard({ ws, entry, rows, index, row, columns, base, sameShape, first, last, structural, onMove, onDelete, onCell }: {
+function EffectCard({ ws, entry, rows, index, row, columns, base, sameShape, first, last, structural, locked, onMove, onDelete, onCell }: {
   ws: AbilityWorkspace; entry: AbilityEntry; rows: string[][]; index: number; row: string[]; columns: ColumnLabel[];
-  base?: string[]; sameShape: boolean; first: boolean; last: boolean; structural: boolean;
+  base?: string[]; sameShape: boolean; first: boolean; last: boolean; structural: boolean; locked?: boolean;
   onMove: (dir: -1 | 1) => void; onDelete: () => void; onCell: (col: number, value: string) => void;
 }) {
   const after = afterDescription(ws, entry, index, row);
@@ -410,7 +414,7 @@ function EffectCard({ ws, entry, rows, index, row, columns, base, sameShape, fir
       <div class="field-grid">
         {filled.map(({ v, i }) => (
           <CellInput label={label(i)} index={i} value={v} problem={problemCols.has(i)} base={sameShape && base ? base[i] ?? "" : undefined}
-            text={entry.table === "action_skill" && i < 2} onCommit={(value) => onCell(i, value)} />
+            text={entry.table === "action_skill" && i < 2} disabled={locked} onCommit={(value) => onCell(i, value)} />
         ))}
       </div>
       <details class="raw-advanced">
@@ -426,7 +430,7 @@ function EffectCard({ ws, entry, rows, index, row, columns, base, sameShape, fir
                   <td>{entry.table === "action_skill" ? (i < 2 ? "文本" : "") : l?.block ?? ""}</td>
                   <td title={l?.note ?? ""}>{entry.table === "action_skill" ? skillField(i) : l?.field ?? ""}</td>
                   <td><CellInput bare index={i} value={v} base={sameShape && base ? base[i] ?? "" : undefined}
-                    text={entry.table === "action_skill" && i < 2} onCommit={(value) => onCell(i, value)} /></td>
+                    text={entry.table === "action_skill" && i < 2} disabled={locked} onCommit={(value) => onCell(i, value)} /></td>
                 </tr>
               );
             })}
@@ -448,9 +452,9 @@ function columnLabel(table: AbilityTable, columns: ColumnLabel[], i: number): st
   return `${l.block}·${l.field}`;
 }
 
-function CellInput({ label, index, value, base, text, bare, problem, onCommit }: {
+function CellInput({ label, index, value, base, text, bare, problem, disabled, onCommit }: {
   label?: string; index: number; value: string; base?: string; text?: boolean; bare?: boolean; problem?: boolean;
-  onCommit: (v: string) => void;
+  disabled?: boolean; onCommit: (v: string) => void;
 }) {
   const [local, setLocal] = useState(value);
   useEffect(() => setLocal(value), [value]);
@@ -458,6 +462,7 @@ function CellInput({ label, index, value, base, text, bare, problem, onCommit }:
   const commit = () => { if (local !== value) onCommit(local); };
   const input = (
     <input class={"cell" + (changed ? " changed" : "") + (text ? " text" : "") + (problem ? " problem" : "")} value={local} aria-label={label || `c${index}`}
+      disabled={disabled}
       title={changed ? `原版：${base === "" ? "（空）" : base}` : text ? "玩家可见文本：按 wf text 面板规则检查" : `c${index}`}
       onInput={(e) => setLocal((e.target as HTMLInputElement).value)}
       onBlur={commit}

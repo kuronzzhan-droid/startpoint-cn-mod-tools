@@ -19,7 +19,7 @@ from . import voice as voice_mod
 from .assets import AssetIndex
 from .characters import list_characters
 from .drafts import DraftError, DraftStore, new_change_id, now, sha256, status, validate
-from .pixel_import import PixelImporter, decode_frame
+from .pixel_import import PixelImporter, request_frames
 from .portrait import GROUP_LABEL as GROUP_LABELS, GROUPS as GROUP_SPECS, SHAPE_LABEL as SHAPE_LABELS
 from .portrait import SLOT_USE as SLOT_USES, PortraitService
 
@@ -133,14 +133,11 @@ class DraftOps:
     def pixel_save(self, cid: str, request: dict) -> dict:
         validate(request, "pixelRequest")
         info = self.character(cid)
-        frames = []
-        for index, item in enumerate(request["frames"]):
-            if "png" not in item:
-                raise DraftError(f"第 {index + 1} 帧缺少 png")
-            frames.append(decode_frame(item["png"], index))
+        frames = request_frames(request)
         durations = [int(item["duration"]) for item in request["frames"]]
         result = self._pixel_importer(cid, request["family"]).check(
-            info["code"], request["family"], request["action"], frames, durations)
+            info["code"], request["family"], request["action"], frames, durations,
+            anchors=[item["anchor"] for item in request["frames"]])
         for index, (image, item) in enumerate(zip(frames, request["frames"])):
             x, y = item["anchor"]
             if not (-image.width <= x <= image.width * 2 and -image.height <= y <= image.height * 2):

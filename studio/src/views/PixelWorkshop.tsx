@@ -5,7 +5,7 @@ import {
 } from "../api";
 import { ChecksList } from "./Changes";
 import { Notice } from "./common";
-import { ActionStage, contentCrop, hexToInt, luma, recolor, useClock, useFamilies } from "./workshopKit";
+import { ActionStage, canvasFromRaw, contentCrop, hexToInt, luma, recolorRaw, useClock, useFamilies } from "./workshopKit";
 import { DrawingBoard, ProceduralActions } from "./PixelWorkshopTools";
 
 const SUBTABS = [
@@ -257,7 +257,7 @@ function Remap({ analysis, groups, onSaved }: { analysis: WorkshopAnalysis; grou
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<{ kind: "info" | "error"; text: string } | null>(null);
   const baseGroups = useGroups(baseId ?? "none", base?.palette);
-  const fam = useFamilies(baseId, "view");
+  const fam = useFamilies(baseId, "view", 0, true);
 
   useEffect(() => { api.characters().then((r) => setRoster(r.characters)); }, []);
   useEffect(() => {
@@ -273,16 +273,17 @@ function Remap({ analysis, groups, onSaved }: { analysis: WorkshopAnalysis; grou
     for (const [from, to] of Object.entries(mapping)) if (to && to !== from) m.set(hexToInt(from), hexToInt(to));
     return m;
   }, [mapping]);
+  // Recolour the backend-decoded RGBA; canvases are display-only (never read back).
   const remapped = useMemo(() => {
     const out: Record<string, HTMLCanvasElement> = {};
-    for (const [name, sheet] of Object.entries(fam.sheets)) out[name] = recolor(sheet, map);
+    for (const [name, raw] of Object.entries(fam.raws)) out[name] = canvasFromRaw(recolorRaw(raw, map));
     return out;
-  }, [fam.sheets, map]);
+  }, [fam.raws, map]);
   const crops = useMemo(() => {
     const out: Record<string, ReturnType<typeof contentCrop>> = {};
-    for (const f of fam.meta?.families ?? []) if (!f.error) out[f.family] = contentCrop(f, fam.sheets[f.family]);
+    for (const f of fam.meta?.families ?? []) if (!f.error) out[f.family] = contentCrop(f, fam.raws[f.family]);
     return out;
-  }, [fam.meta, fam.sheets]);
+  }, [fam.meta, fam.raws]);
 
   const hits = query.trim()
     ? roster.filter((c) => (c.id + c.name + (c.title ?? "") + c.code).toLowerCase().includes(query.trim().toLowerCase())).slice(0, 12)

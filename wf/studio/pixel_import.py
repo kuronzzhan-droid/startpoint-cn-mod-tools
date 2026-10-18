@@ -4,9 +4,11 @@
 ``sprite_sheet.png / .atlas / .timeline`` 要重新装箱并改时间轴帧号，属于
 「生成」（wf deliver），这里只做能在草稿阶段判定的检查：
 
-* 帧尺寸不能超过该族帧框（官方 256×256）；必须有透明背景；
-* 总时长与原动作不一致 → 生成时要平移后续动作帧号（客户端有按固定帧号取图的
-  动作，例如 kachidoki 读 begin+18），提示；
+* 与「生成」同一套规则（``deliver_pixel.slot_problems`` / ``frame_problems``），
+  保存与 dryRun 遇到就阻断，不会出现「存得进、生成不了」：帧不能超过帧框、必须有
+  透明背景、锚点不能把可见像素推出帧框；只能替换已有动作槽，不能新增；只有末尾
+  动作能改总长（非末尾动作改总长会挤动其它动作槽）；
+* 帧可以是 PNG、原始 RGBA（画板用，不经浏览器 canvas）或整张精灵图由后端切帧；
 * 图集预算：把本族其它动作的帧（裁空白后）与新帧一起，用客户端 MaxRects 打包器
   的 1:1 移植（``wf_atlas_budget_check.pack``）估算新 sprite_sheet 尺寸，再折算
   战斗 layer0（4096²，margin 2）占用。special 族战斗不加载，只报尺寸。
@@ -41,6 +43,41 @@ def decode_frame(text: str, index: int) -> Image.Image:
     if image.format != "PNG":
         raise DraftError(f"第 {index + 1} 帧需要 PNG")
     return image.convert("RGBA")
+
+
+def decode_rgba(text: str, width, height, index: int) -> Image.Image:
+    """Raw RGBA bytes (no browser canvas round trip: semi-transparent RGB stays exact)."""
+    try:
+        raw = base64.b64decode(text, validate=True)
+    except (binascii.Error, ValueError):
+        raise DraftError(f"第 {index + 1} 帧 rgba 不是合法 base64") from None
+    if not isinstance(width, int) or not isinstance(height, int) or width < 1 or height < 1:
+        raise DraftError(f"第 {index + 1} 帧 rgba 需要 width/height")
+    if len(raw) != width * height * 4:
+        raise DraftError(f"第 {index + 1} 帧 rgba 长度 {len(raw)} ≠ {width}×{height}×4")
+    return Image.frombytes("RGBA", (width, height), raw)
+
+
+def request_frames(request: dict) -> list[Image.Image]:
+    """Frames of a pixelRequest: per-frame PNG / raw RGBA, or one sheet split by the backend."""
+    frames = request["frames"]
+    sheet = request.get("sheet")
+    if sheet:
+        if any("png" in item or "rgba" in item for item in frames):
+            raise DraftError("给了整张精灵图时，frames 只填停留帧数和锚点")
+        images = split_sheet(decode_frame(sheet["png"], 0), sheet["columns"], sheet["rows"], sheet.get("count"))
+        if len(images) != len(frames):
+            raise DraftError(f"精灵图切出 {len(images)} 帧，请求给了 {len(frames)} 帧的停留帧数/锚点")
+        return images
+    out = []
+    for index, item in enumerate(frames):
+        if "rgba" in item:
+            out.append(decode_rgba(item["rgba"], item.get("width"), item.get("height"), index))
+        elif "png" in item:
+            out.append(decode_frame(item["png"], index))
+        else:
+            raise DraftError(f"第 {index + 1} 帧缺少 png / rgba")
+    return out
 
 
 def split_sheet(sheet: Image.Image, columns: int, rows: int, count: int | None = None) -> list[Image.Image]:
@@ -78,7 +115,9 @@ class PixelImporter:
         return {"image": image, "frame": frame, "keys": keys, "entries": entries, "timeline": timeline,
                 "sheet": f"character/{code}/pixelart/{sheet}.png"}
 
-    def check(self, code: str, family: str, action: str, frames: list[Image.Image], durations: list[int]) -> dict:
+    def check(self, code: str, family: str, action: str, frames: list[Image.Image], durations: list[int],
+              anchors: list | None = None) -> dict:
+        from .deliver_pixel import frame_box, frame_problems, slot_problems
         data = self.family_frames(code, family)
         checks: list[dict] = []
         if data is None:
@@ -86,29 +125,17 @@ class PixelImporter:
         frame = data["frame"]
         sequences = {s.get("name"): s for s in data["timeline"].get("sequences", [])}
         sequence = sequences.get(action)
-        box_w, box_h = 256, 256
-        first = data["entries"][data["keys"][0]]
-        box_w, box_h = int(first.get("fw", first["w"])), int(first.get("fh", first["h"]))
-        original_total = None
-        if sequence is None:
-            checks.append({"level": "warn", "code": "pixel.new_slot",
-                           "message": f"原图集没有 {action} 动作：生成时要新增时间轴序列，客户端是否读取以动作槽表为准"})
-        else:
-            original_total = sequence["end"] - sequence["begin"] + 1
+        box_w, box_h = frame_box(data["entries"], data["keys"])
+        original_total = None if sequence is None else sequence["end"] - sequence["begin"] + 1
         total = sum(durations)
-        if original_total is not None and total != original_total:
-            checks.append({"level": "warn", "code": "pixel.duration_changed",
-                           "message": f"总时长 {total} 帧 ≠ 原动作 {original_total} 帧：生成时要平移后续动作的帧号"
-                                      "（客户端按固定帧号取图的动作，如 kachidoki 读 begin+18，需要复核）"})
+        # Same rules as 生成 (compile): a save that passes here also compiles.
+        for problem in slot_problems(data["timeline"], data["keys"], action, total):
+            checks.append({"level": "error", "code": "pixel.slot", "message": problem})
         for i, image in enumerate(frames):
-            if image.width > box_w or image.height > box_h:
-                checks.append({"level": "error", "code": "pixel.frame_too_large",
-                               "message": f"第 {i + 1} 帧 {image.width}×{image.height} 超过帧框 {box_w}×{box_h}"})
-            alpha = image.getchannel("A")
-            if alpha.getextrema()[0] == 255:
-                checks.append({"level": "error", "code": "pixel.no_alpha",
-                               "message": f"第 {i + 1} 帧没有透明背景"})
-            elif alpha.getbbox() is None:
+            anchor = anchors[i] if anchors else (-frame.get("x", 0), -frame.get("y", 0))
+            for problem in frame_problems(image, anchor, frame, (box_w, box_h)):
+                checks.append({"level": "error", "code": "pixel.frame", "message": f"第 {i + 1} 帧：{problem}"})
+            if image.getchannel("A").getbbox() is None:
                 checks.append({"level": "warn", "code": "pixel.empty_frame", "message": f"第 {i + 1} 帧全透明"})
         sizes = {f.size for f in frames}
         if len(sizes) > 1:
