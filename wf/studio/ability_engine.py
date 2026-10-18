@@ -203,6 +203,12 @@ def _attach(state, cid, operation):
     characters = state.table(CHARACTER)
     characters[cid] = join_leaf(old_leaf, [character])
     state.write_table(CHARACTER, characters)
+    if table == "leader_ability":
+        state.checks.append(result("ability.leader-name-sync", "待验证",
+            "队长技键已改变；请同步 character c18 和 character_text c10 的队长名，"
+            "并核对两份服务端文本镜像。", character=cid, oldKey=operation["old_key"], newKey=key,
+            targets=[{"table": "character", "key": cid, "column": 18},
+                     {"table": "character_text", "key": cid, "column": 10}]))
     state.changes.append({**operation, "character": cid, "owners": owners})
 
 
