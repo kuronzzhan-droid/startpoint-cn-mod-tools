@@ -1,0 +1,91 @@
+{
+  "schema": "wf-m2.2-validation/1",
+  "scope": "v35e/run5 local worktree only",
+  "source_commit": "afa362dda963575744271c38c332f52417ea449e",
+  "pytest": {
+    "exit_code": 0,
+    "passed": 4641,
+    "skipped": 354,
+    "warnings": 26,
+    "junit": {
+      "tests": 7372,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 357
+    },
+    "elapsed_seconds": 666.47,
+    "command": "python -B -m pytest --basetemp=work/m2_2/full-tmp --junitxml=work/m2_2/pytest-full.xml",
+    "log": "work/m2_2/pytest-full.log",
+    "log_sha256": "db90db71d62e0e011f76cfa1beec7c555d07d2bdc0a774de40aaa0ba46b9ade2",
+    "junit_sha256": "1ebaeb2c91fd3564901ad3fd4392b1fc0567b2ffa16ef5199b4de9270d7dbaa6"
+  },
+  "registry": {
+    "count": 178,
+    "new_patch_capabilities": 20,
+    "new_semantic_capabilities": 17,
+    "check_exit_code": 0
+  },
+  "path_scan": {
+    "scanned_text_files": 2318,
+    "findings": [],
+    "count": 0
+  },
+  "hygiene_exit_code": 0,
+  "historical": {
+    "223": {
+      "members_equal": 3,
+      "report": "work/m2_2/history/replay223.json",
+      "sha256": "8833840e5380d63d58bc4310f16cac18b4491bc847fde56740fe86c48ec80c73"
+    },
+    "221": {
+      "archives": 11,
+      "members_equal": 310,
+      "different_members": 0,
+      "layered_members_equal": 310,
+      "containers_equal_excluding_dos_times": 11,
+      "report": "work/m2_2/history/replay221.json",
+      "sha256": "0470da52b8bd2879dc45140d934f04ec1568ed320f07c1d9b616ac6d2e5d1ba6"
+    }
+  },
+  "compatibility": {
+    "tip": "1.4.238",
+    "characters": 602,
+    "summary": {
+      "test-v34": {
+        "静态证据满足": 596,
+        "能力满足，方法待补": 2,
+        "缺能力": 4
+      },
+      "test-v35e": {
+        "静态证据满足": 600,
+        "能力满足，方法待补": 2
+      }
+    },
+    "report": "docs/m2/compat-v34-v35.json",
+    "report_sha256": "847ae6d809420134fe5087fcf2051b85e2406ddb02388746377e464d62b4403f"
+  },
+  "counterexample": {
+    "fixture": "wfx_pf4_123",
+    "default_test_v34_exit_code": 1,
+    "test_v35e_exit_code": 0,
+    "missing": "client.pf.lv4_data@1",
+    "artifacts": "work/m2_2/pytest-m22-final/test_v35_changeset_default_blo0"
+  },
+  "boundaries": {
+    "push": false,
+    "server_access": false,
+    "device_access": false,
+    "m4_integrate_access": false,
+    "methods_pending": [
+      79,
+      82,
+      86,
+      97,
+      98,
+      99,
+      100
+    ],
+    "weapon_issue_rows": 8,
+    "weapon_issue_keys": 7
+  }
+}
