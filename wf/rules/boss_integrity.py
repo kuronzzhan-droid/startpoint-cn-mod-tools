@@ -10,7 +10,7 @@ from .catalog import result
 def choice_check(context):
     count = context.get("choice_count")
     if count is None:
-        return result("boss.choice-folder", "未执行", "未提供选门设计意图，不能把同轮 quest 自动解释为并列选择")
+        return result("boss.choice-folder", "未执行", "本期未接入选门编辑；未提供选门设计意图，不能把同轮 quest 自动解释为并列选择")
     if count <= 1:
         return result("boss.choice-folder", "不适用", "未设计并列选门")
     valid = context.get("choice_level") == "folder"
@@ -127,10 +127,12 @@ def shop_check(document, view, server_changes, server_before):
         return result("boss.shop-sync", "不适用", "此副本没有关联领主币商店商品")
     paths = ("assets/boss_coin_shop.json", "assets/boss_coin_shop_item_category_map.json")
     files = {**(server_before or {}), **(server_changes or {})}
-    if view is None or any(path not in files for path in paths):
-        return result("boss.shop-sync", "未执行", "需客户端主表、服务端商品与 category_map 三份实际输入")
-    server, category_map = [json.loads(files[path] or b"{}") for path in paths]
+    if view is None:
+        return result("boss.shop-sync", "未执行", "需客户端商品、分类主表的实际输入")
+    pending = [f"缺少服务端输入 {path}" for path in paths if path not in files]
+    server, category_map = [json.loads(files.get(path) or b"{}") for path in paths]
     table = CandidateView(view).table("master/shop/boss_coin_shop.orderedmap") or {}
+    category_table = CandidateView(view).table("master/shop/boss_coin_shop_category.orderedmap") or {}
     product_ids = {str(shop.get("id")) for shop in shops if isinstance(shop, dict) and shop.get("row")}
     categories = {str(shop.get("id")) for shop in shops if shop.get("products") is not None}
     for category in categories:
@@ -138,18 +140,22 @@ def shop_check(document, view, server_changes, server_before):
     for shop in shops:
         product_ids.update(str(product.get("id", product.get("path", [None])[0]))
                            for product in shop.get("products", []))
-    if not product_ids:
+    categories.update(str(cell(table.get(identity), 0)) for identity in product_ids
+                      if cell(table.get(identity), 0) not in EMPTY)
+    issues = [f"分类 {category} 缺客户端 boss_coin_shop_category 同号行"
+              for category in sorted(categories) if not cells(category_table.get(category))]
+    if not product_ids and not issues:
         return result("boss.shop-sync", "待验证", "已读商店关联，但缺少商品 ID，未执行三处逐键核对")
-    issues = []
     for identity in sorted(product_ids):
         row = cells(table.get(identity))
         if not row:
             issues.append(f"商品 {identity} 缺客户端 boss_coin_shop 行（C8601）")
             continue
         category = str(row[0])
-        if identity not in server.get(category, {}):
+        if paths[0] in files and identity not in server.get(category, {}):
             issues.append(f"商品 {identity} 缺服务端分类 {category} 商品行")
-        if str(category_map.get(identity)) != category:
+        if paths[1] in files and str(category_map.get(identity)) != category:
             issues.append(f"商品 {identity} category_map 不指向分类 {category}")
-    return result("boss.shop-sync", "问题" if issues else "满足", "关联商品客户端、服务端与 category_map 三处逐键核对",
-                  blocking=bool(issues), checked_products=len(product_ids), issues=issues)
+    return result("boss.shop-sync", "问题" if issues else "待验证" if pending else "满足",
+                  "关联商品、分类同号行、服务端与 category_map 逐键核对",
+                  blocking=bool(issues), checked_products=len(product_ids), issues=issues, limitations=pending)

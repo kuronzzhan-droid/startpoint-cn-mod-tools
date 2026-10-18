@@ -46,6 +46,7 @@ def test_common_battle_prerequisite_is_blocking():
 
 def test_choice_uses_explicit_intent_and_folder_boundary():
     assert choice_check({})["status"] == "未执行"
+    assert "本期未接入" in choice_check({})["message"]
     assert choice_check({"choice_count": 3, "choice_level": "quest"})["blocking"]
     assert choice_check({"choice_count": 3, "choice_level": "folder"})["status"] == "满足"
 
@@ -90,7 +91,8 @@ def test_reward_check_reuses_m21_new_vs_existing_rows_and_baseline_evidence():
 
 def test_shop_checks_missing_client_and_category_map_from_actual_server_ids():
     row = ["99"] + [""] * 49
-    view = View({"master/shop/boss_coin_shop.orderedmap": {"99001": row}})
+    view = View({"master/shop/boss_coin_shop.orderedmap": {"99001": row},
+                 "master/shop/boss_coin_shop_category.orderedmap": {"99": ["category"]}})
     doc = {"shops": [{"id": "99", "products": [{"path": ["99001"], "row": row}]}]}
     server = {"assets/boss_coin_shop.json": '{"99":{"99001":{}}}',
               "assets/boss_coin_shop_item_category_map.json": '{"99001":99}'}
@@ -127,3 +129,18 @@ def test_enemy_level_ignores_inactive_zone_and_distinguishes_unknown_kind():
     assert enemy_level_check(doc)["status"] == "待验证"
     doc["enemies"][1]["missing"] = True
     assert enemy_level_check(doc)["blocking"]
+
+
+def test_missing_same_number_shop_category_blocks_with_or_without_server_input():
+    row = ["99"] + [""] * 49
+    view = View({"master/shop/boss_coin_shop.orderedmap": {"99001": row},
+                 "master/shop/boss_coin_shop_category.orderedmap": {"98": ["wrong category"]}})
+    doc = {"shops": [{"id": "99", "products": [{"path": ["99001"], "row": row}]}]}
+    server = {"assets/boss_coin_shop.json": '{"99":{"99001":{}}}',
+              "assets/boss_coin_shop_item_category_map.json": '{"99001":99}'}
+    for baseline in ({}, server):
+        check = shop_check(doc, view, {}, baseline)
+        assert check["status"] == "问题" and check["blocking"]
+        assert any("分类 99" in issue and "boss_coin_shop_category" in issue for issue in check["issues"])
+    view.tables["master/shop/boss_coin_shop_category.orderedmap"]["99"] = ["category"]
+    assert shop_check(doc, view, {}, server)["status"] == "满足"
