@@ -230,3 +230,56 @@ M2.2 的“8 行、7 键 kind423 表范围问题”是误报，原结论在本�
 能力声明全量检查 exit 0；路径扫描 **2327 个文本文件、0 命中**；提交卫生 `check-hygiene.sh --all` 及 `git diff --check` 通过。全量测试与产物验收的子进程显式使用 `stdin=DEVNULL`，临时目录在当前 worktree。完整计数、方法摘要、8 行及缺能力反证、历史产物摘要见 [M2.3 结构化验收](docs/m2/validation-m2.3.json)，原始证据在 `work/m2_3/`。
 
 本地主题提交：R3 登记 `16f5e1e`；真实 SWF 检查 `55daeec`；按表推导与兼容门禁 `82d03ef`；报告更正及验收摘要另作本地文档提交。本次只验证实际方法字节、静态分支与工具行为，未执行设备战斗、服务端或部署验收。
+
+## M2.4：按解析块区分官方效果与补丁 kind
+
+日期：2026-10-19。工作分支 `refactor/m5-boss`，起点 `9ed3b7c`，最终功能源码冻结于 `843b30c`。只写当前 worktree；其他输入只读，未触碰 m4-integrate、服务器或设备，未 push。临时脚本、测试缓存和完整验收证据均在忽略的 `work/m2_4/`。
+
+### 实现与反证
+
+七项有 kind 的能力声明共登记八个明确的 `kind_bindings` 配对。`kinds`、`allowed_blocks` 仅保留受校验的目录索引，依赖选择统一调用 `surfaces.matches_kind`，不再把编号与所有块组合。删除 `KIND_BLOCKS`；实际支持性统一按目标档案 SHA 绑定的真实 SWF 的 `(table, block, kind)` 核对。旧证据缺表或块时阻断为待验证，要求重新推导，不按编号猜测。
+
+| 使用位置 | 推导与两档真实 SWF 结果 |
+|---|---|
+| instant 422 / 423 / 424 | 官方 DamageCut 效果，全五表支持，无补丁依赖 |
+| instant 419 | 官方 NearestEnemyConditionResistanceGreen，全五表支持，不推导 PF 依赖 |
+| ability during 422 | #3，满足 |
+| ability during 423 | #31，不要求 #30，满足 |
+| 武器魂 / 装备强化 during 423 | 独立 R3，满足 |
+| 队长 / ex_ability during 423 | 实际 SWF 无分支，问题并阻断 |
+| ability during 424 / instant 724 | 分别 #20 / #4，满足；其他表无对应分支 |
+| during 419 / instant 722 | 官方 PF override，全五表支持；只有这两个配对跟进 PF 引用与 Lv4 等级 |
+| during 722 | 实际 SWF 不支持，不伪造 PF 依赖 |
+
+`ex_ability` 已加入共享五表入口及 629 引用发现。公开交付在写 ZIP 前复用 `check_kind_sites`，保留非法位置与不可读 SWF 的阻断边界。编辑台保留结构化 `kind_site`，行查询、带位置 lookup 和 kind 选项统一调用核心匹配及 `check_compat`；缓存键包含完整表、块与 kind。同样为空能力集合的官方 instant 423 与非法 leader during 423 不再共用缓存。无表/块的编号查询明确标为能力目录检索。
+
+新增反证先在旧实现复现七项失败，再修复通过；旧测试中把官方 instant 当非法块的断言已更正。定向回归覆盖配对约束、旧证据缺块、ex 的能力引用、公开交付前置拒绝、编辑台缓存及草稿保存，全部代码和测试纳入下述全量运行。独立只读复核未发现阻断性问题。
+
+### 五表全量正向对照
+
+store131 实际混有早期 MOD，不能整体称为官方。逐 CSV 行比对固定官方 CDN 1.4.54：store 中 6,111 行与官方相同，59 行同位置被改写，3,332 行新增。因此除完整 store131 外，另独立扫描固定官方归档的全部五表。
+
+| 能力表 | store131 全部行 | 固定官方归档全部行 |
+|---|---:|---:|
+| ability | 5,815 | 3,974 |
+| leader_ability | 1,759 | 1,107 |
+| ability_soul | 1,247 | 918 |
+| equipment_enhancement_ability | 618 | 108 |
+| ex_ability | 63 | 63 |
+| 合计 | 9,502 | 6,170 |
+
+两份语料分别在 test-v34、test-v35e 执行同一 `infer_requirements` / `check_compat`，四次整表批量检查覆盖 31,344 个档案与行组合，均为 resolved、unresolved 0、问题 0、blocking 0、待验证 0。逐行表/键/行号/摘要和能力证据全部保留，没有抽样；问题列表为空。9,493 / 6,162 条 active instant/during 行逐站点检查；另外 9 / 8 条 trigger=2 opening 行单独核对真实 opening 分支，34 次判断全部支持，未将无 content kindSite 的行隐去。
+
+两档公开 `wf apk kinds` 均 exit 0，各读取五表、50 个实际 parseAt 方法，注册表不一致 0。15 组人工反证乘两档共 30 次检查全部通过断言。store131 的 279 个引用闭包成员与官方的 18 个成员前后字节一致。完整证据、两 SWF SHA 和输入表 SHA 见 [M2.4 结构化验收](docs/m2/validation-m2.4.json)；原始逐行报告在 `work/m2_4/official_audit/`。
+
+### 最终检查与历史字节
+
+全量 `python -B -m pytest --basetemp=work/m2_4/full-final-tmp --junitxml=work/m2_4/pytest-full.xml`：**4710 passed、354 skipped、26 warnings，exit 0**；pytest 计时 813.25 秒，外层耗时 817.20 秒。JUnit 含子测试累计 7441 项、跳过 357、失败 0、错误 0。跳过项沿用外部输入和平台条件，不计作已验证；警告为既有路径环境变量别名弃用提示。日志、退出码与摘要在 `work/m2_4/`。
+
+223 固定输入内存重放 **3/3 成员一致**。221 只读复用 M2.2 已重建 package，使用当前归档及双清单层重封装：**11 包、310/310 成员逐字节一致、差异 0**，分层回读 310/310 一致；排除 DOS 时间字段后 11/11 容器一致，完整容器 SHA 为 0/11 相等，不声称整 ZIP 字节一致。本轮未重生成母图或音频，也不表示旧 221 通过当前公开交付门禁。历史回放调用链不经过新增的 `build_delivery` 前置门禁，已记录后置源码变更复核；新门禁由公开 CLI 负向测试覆盖。
+
+第一轮全量发现共享表清单扩展使旧历史 DSL 检查读取锁外 ex 成员，主动中止并保留日志。修复后只让能力推导使用五表，历史 DSL 保持原四表锁定范围；相关 54 项回归通过，再从头完成上列全量。该修复未放宽锁，也未跳过失败用例。
+
+能力声明全量检查 exit 0；路径扫描 **2347 个文本文件、0 命中**；`check-hygiene.sh --all` 与 `git diff --check` 通过。所有检查子进程关闭 stdin，临时目录限制在当前 worktree。
+
+本地主题提交：核心表块绑定与交付门禁 `d05dce8`；编辑台缓存查询 `1275e5e`；历史锁范围兼容修复 `843b30c`；本节与结构化验收另作文档提交。全部结论是本地数据、真实方法字节与静态兼容验证，不包含设备战斗、安装、服务器、发布或部署验证。
