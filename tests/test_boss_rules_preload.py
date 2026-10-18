@@ -4,7 +4,7 @@ import zlib
 
 import wf_dsl
 
-from wf.rules.boss_preload import FUNNEL, GENERAL, preload_check, tier
+from wf.rules.boss_preload import DslEvidence, FUNNEL, GENERAL, preload_check, tier
 
 
 class View:
@@ -89,3 +89,54 @@ def test_party_restriction_alone_does_not_change_enemy_attribute():
 def test_preload_reads_same_first_native_band_as_client():
     assert tier({"100": "first", "49": "later"}, 10) == ["first"]
     assert tier({"49": "only"}, 100) == []
+
+
+def test_unproven_attribute_change_requires_explicit_acknowledgment():
+    before, after = documents()
+    for view in (None, View()):
+        if view:
+            view.tables[GENERAL] = {}
+        blocked = preload_check(after, baseline=before, view=view)
+        assert blocked["status"] == "待验证" and blocked["blocking"]
+        assert preload_check(after, baseline=before, view=view,
+                             context={"acknowledgePreload": "true"})["blocking"]
+        waived = preload_check(after, baseline=before, view=view,
+                               context={"acknowledgePreload": True})
+        assert waived["status"] == "待验证" and not waived["blocking"]
+        assert waived["acknowledgment"] == {
+            "acknowledgePreload": True, "scope": "unproven-preload-only"}
+
+
+def test_zako_summoning_stays_blocked_until_explicit_acknowledgment():
+    before, after = documents()
+    view = View()
+    view.put("battle/action/summon.action.dsl.amf3.deflate", ["SpawnFunnel", ["Zako", "eye"]])
+    check = preload_check(after, baseline=before, view=view)
+    assert check["status"] == "待验证" and check["blocking"]
+    assert any("Zako" in item for item in check["limitations"])
+
+
+def test_known_c8016_family_cannot_be_waived_or_declared_safe_without_view():
+    before, after = documents()
+    before["enemies"][0]["code"] = after["enemies"][0]["code"] = "arch_evil_multi"
+    check = preload_check(after, baseline=before, context={"acknowledgePreload": True})
+    assert check["status"] == "问题" and check["blocking"]
+    assert "C8016_BLOCKED_BOSS_PREFIXES" in check["issues"][0]
+    assert preload_check(before, baseline=before)["status"] == "不适用"
+
+
+def test_acknowledgment_cannot_waive_a_proven_missing_shim():
+    before, after = documents()
+    check = preload_check(after, baseline=before, view=View(), context={"acknowledgePreload": True})
+    assert check["status"] == "问题" and check["blocking"]
+
+
+def test_closure_splits_comma_references_in_roots_and_nested_programs():
+    view = View()
+    view.put("battle/action/root.action.dsl.amf3.deflate", [
+        "battle/action/summon,battle/action/extra"])
+    view.put("battle/action/extra.action.dsl.amf3.deflate", ["Wait", 1])
+    evidence = DslEvidence(view)
+    found = evidence.closure(["battle/action/root, battle/action/funnel"])
+    assert set(found) == {"battle/action/root", "battle/action/funnel", "battle/action/summon", "battle/action/extra"}
+    assert not evidence.missing

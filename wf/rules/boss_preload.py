@@ -13,6 +13,12 @@ FUNNEL = "master/battle/boss/funnel/general_funnel.orderedmap"
 ELEMENT_NODES = {"ResolveByElement": 2, "CreateNormalAttack": 2}
 
 
+def programs(value):
+    """Action cells and DSL references may contain comma-separated programs."""
+    return [part.strip() for part in str(value).split(",")
+            if part.strip().startswith("battle/action/")]
+
+
 def walk(value):
     yield value
     if isinstance(value, dict):
@@ -69,7 +75,7 @@ class DslEvidence:
         return self.tree(program if program.endswith(suffix) else program + suffix)
 
     def closure(self, roots):
-        found, queue = {}, list(roots)
+        found, queue = {}, [program for root in roots for program in programs(root)]
         while queue:
             program = queue.pop()
             if program in found:
@@ -78,8 +84,8 @@ class DslEvidence:
                 raise ValueError("boss DSL closure exceeds 800 programs")
             tree = self.dsl(program)
             found[program] = tree
-            queue.extend(n for n in walk(tree) if isinstance(n, str)
-                         and n.startswith("battle/action/") and n not in found)
+            queue.extend(program for value in walk(tree) if isinstance(value, str)
+                         for program in programs(value) if program not in found)
         return found
 
     def fired_slots(self, row):
@@ -113,15 +119,25 @@ def _enemy_changed(document, baseline):
                for e in document.get("enemies", []))
 
 
-def preload_check(document, *, view=None, baseline=None):
+def preload_check(document, *, view=None, baseline=None, context=None):
     rule = "boss.element-preload"
     if baseline is None:
         return result(rule, "未执行", "缺少属性修改前快照，不能断言召唤物预载不受影响")
     changed = recommended(document) != recommended(baseline) or _enemy_changed(document, baseline)
     if not changed:
         return result(rule, "不适用", "推荐属性及已知敌人属性未变；编队限定属性不等于敌方属性")
+    acknowledged = (context or {}).get("acknowledgePreload") is True
+    acknowledgment = {"acknowledgePreload": acknowledged, "scope": "unproven-preload-only"}
+    from wf_rogue_build import C8016_BLOCKED_BOSS_PREFIXES
+    blocked = sorted({str(enemy.get("code")) for enemy in document.get("enemies", [])
+                      if str(enemy.get("code", "")).startswith(C8016_BLOCKED_BOSS_PREFIXES)})
+    if blocked:
+        return result(rule, "问题", "属性变化涉及已知 C8016 黑名单敌人，确认不能替代修复", blocking=True,
+                      issues=[f"{code} 命中 wf_rogue_build.C8016_BLOCKED_BOSS_PREFIXES（C8016）"
+                              for code in blocked], acknowledgment=acknowledgment)
     if view is None:
-        return result(rule, "待验证", "属性发生变化，缺少候选 DSL/marker 资源，预载垫片尚未验证")
+        return result(rule, "待验证", "属性发生变化，缺少候选 DSL/marker 资源，预载垫片尚未验证",
+                      blocking=not acknowledged, acknowledgment=acknowledgment)
     evidence = DslEvidence(view)
     general = evidence.view.table(GENERAL) or {}
     funnels = evidence.view.table(FUNNEL)
@@ -139,9 +155,9 @@ def preload_check(document, *, view=None, baseline=None):
             continue
         roots = [s for s in str(cell(row, 109, "")).split(",") if s not in EMPTY]
         actions = {i - 110: program for i, program in enumerate(row) if 111 <= i <= 160 and program not in EMPTY}
-        programs = evidence.closure([*roots, *actions.values()])
+        closure = evidence.closure([*roots, *actions.values()])
         spawned = set()
-        for tree in programs.values():
+        for tree in closure.values():
             for node in walk(tree):
                 if isinstance(node, list) and len(node) > 1 and node[0] == "SpawnFunnel" \
                         and isinstance(node[1], list) and len(node[1]) > 1:
@@ -165,7 +181,8 @@ def preload_check(document, *, view=None, baseline=None):
                 expected = _expected(tree, element)
                 if expected is None:
                     continue
-                matches = [slot for slot, action in actions.items() if evidence.dsl(action) == expected]
+                matches = [slot for slot, action in actions.items()
+                           if any(evidence.dsl(program) == expected for program in programs(action))]
                 idle = [slot for slot in matches if fired is not None and slot not in fired]
                 if not matches or fired is not None and not idle:
                     problems.append(f"{code}/{funnel}/{program} 缺少未触发槽位中的固定属性 {element} 预载垫片（C8016）")
@@ -178,4 +195,6 @@ def preload_check(document, *, view=None, baseline=None):
     pending.extend(f"缺少候选资源 {path}" for path in sorted(evidence.missing))
     state = "问题" if problems else "待验证" if pending else "满足"
     return result(rule, state, "属性改动后按实际 DSL、固定属性替换和 marker 空槽核对召唤物预载",
-                  blocking=bool(problems), issues=problems, limitations=pending, proofs=proofs)
+                  blocking=bool(problems) or bool(pending) and not acknowledged,
+                  issues=problems, limitations=pending, proofs=proofs,
+                  acknowledgment=acknowledgment)

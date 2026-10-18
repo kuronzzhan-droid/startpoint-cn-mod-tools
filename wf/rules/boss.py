@@ -19,13 +19,14 @@ def check_boss(document, *, view=None, baseline=None, server_changes=None,
     semantics as M2.1. ``baseline`` is the before snapshot for element changes.
     ``context`` supplies authoring intent, never a substitute for resource
     checks: custom_content, choice_count/choice_level, new_ids/existing_ids and
-    atlas_budget (three party PNG path lists and enemy_sheets).
+    atlas_budget (three party PNG path lists and enemy_sheets), and an explicit
+    acknowledgePreload=True waiver for unproven (never known-bad) preloads.
     """
     if not isinstance(document, dict) or not isinstance(document.get("quest"), dict):
         raise ValueError("boss check requires a BossReader.show document with quest")
     context = context or {}
     checks = [*terrain_checks(document), concurrent_positions(document), enemy_level_check(document),
-              preload_check(document, view=view, baseline=baseline), choice_check(context),
+              preload_check(document, view=view, baseline=baseline, context=context), choice_check(context),
               both_route_check(document, view, context), time_check(document, context),
               reward_check(view, server_changes, server_before),
               shop_check(document, view, server_changes, server_before),
