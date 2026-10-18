@@ -15,6 +15,12 @@ from test_studio_deliver_media import (
 )
 
 
+def _atf_with_mips(raw, count):
+    pairs = wf_atf.parse_atf(raw)["pairs"][:count]
+    body = b"".join(bytes(8) + len(pair).to_bytes(4, "big") + pair + bytes(4) for pair in pairs)
+    return raw[:8] + (4 + len(body)).to_bytes(4, "big") + raw[12:15] + bytes((count,)) + body
+
+
 @pytest.mark.parametrize("suffix,root", [
     ("square_0.png", "medium"), ("skill_cutin_0.png", "medium"),
     ("full_shot_1440_1920_0.png", "medium"), ("skill_cutin_0.atf.deflate", "android"),
@@ -38,8 +44,8 @@ def test_portrait_rejects_draft_atf_that_differs_from_reference(portrait, differ
     reference = bytearray(wf_atf.inflate(source.files["android", logical]))
     pixels = standard_png(Image.new("RGBA", (8, 4), (30, 50, 60, 255)))
     if difference == "mips":
-        reference[15] -= 1
-        candidate = wf_atf.build_cutin_atf(pixels, bytes(reference))
+        reference = _atf_with_mips(bytes(reference), reference[15] - 1)
+        candidate = wf_atf.build_cutin_atf(pixels, reference)
     else:
         candidate = bytearray(wf_atf.build_cutin_atf(pixels, bytes(reference)))
         candidate[12] = 0x85  # Parser accepts the flag; delivery must still match it exactly.
@@ -54,8 +60,7 @@ def test_portrait_accepts_matching_draft_atf_and_reference_mip_count(portrait):
     source, store, build = portrait
     logical = PREFIX + "ui/skill_cutin_0.atf.deflate"
     reference = bytearray(wf_atf.inflate(source.files["android", logical]))
-    reference[15] = 2
-    reference = wf_atf.build_cutin_atf(standard_png(Image.new("RGBA", (8, 4))), bytes(reference))
+    reference = _atf_with_mips(bytes(reference), 2)
     source.files["android", logical] = wf_atf.deflate(reference)
     change = build()
     candidate = wf_atf.deflate(wf_atf.build_cutin_atf(
@@ -66,6 +71,20 @@ def test_portrait_accepts_matching_draft_atf_and_reference_mip_count(portrait):
     change["files"].pop()
     generated = compile_media(source, store, changeset([change])).members["android", logical]
     assert wf_atf.parse_atf(wf_atf.inflate(generated))["mips"] == 2
+
+
+@pytest.mark.parametrize("rewrite_length", [False, True])
+def test_portrait_rejects_truncated_atf_even_when_metadata_matches(portrait, rewrite_length):
+    source, store, build = portrait
+    logical = PREFIX + "ui/skill_cutin_0.atf.deflate"
+    raw = bytearray(wf_atf.inflate(source.files["android", logical])[:16])
+    if rewrite_length:
+        raw[8:12] = (4).to_bytes(4, "big")
+    change = build()
+    change["files"].append(file_entry(source, store, logical, wf_atf.deflate(bytes(raw)),
+                                      "android", "atf-deflate"))
+    with pytest.raises(DraftError, match="ATF"):
+        compile_media(source, store, changeset([change]))
 
 
 def test_portrait_unchanged_tables_do_not_rollback_intermediate_other_character(portrait):
