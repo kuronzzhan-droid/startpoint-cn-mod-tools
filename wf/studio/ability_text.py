@@ -11,6 +11,11 @@ from wf.text.model import CHARACTER, CHARACTER_TEXT, SERVER_TARGETS, TextWorkspa
 from . import perf
 
 
+def codec_parse(raw):
+    import wf_quest_lib as codec
+    return codec.parse_node(raw)
+
+
 class _ReadWorkspace(TextWorkspace):
     """wf text workspace over an EditState whose tables come from the shared parse cache.
 
@@ -20,7 +25,8 @@ class _ReadWorkspace(TextWorkspace):
     def table(self, logical):
         if logical not in self.tables:
             raw, _ = self.view.read_raw(logical)
-            parsed = perf.parsed(raw, shared=True)
+            edited = logical in getattr(self.view, "client", {})
+            parsed = codec_parse(raw) if edited else perf.parsed(raw, shared=True)
             if not isinstance(parsed, dict):
                 raise ValueError(f"text table is not an orderedmap: {logical}")
             self.raw[logical], self.tables[logical] = raw, parsed

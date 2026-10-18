@@ -335,5 +335,3 @@ def document_value(document, surface, key, extra):
     if surface in ("desc_override", "custom_ability_string"):
         return document[surface].get(key)
     return document["action_skill"].get(extra["tier"], {}).get(extra["field"])
-
-

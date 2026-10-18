@@ -50,8 +50,15 @@ class EditState:
         return self.client.get(logical, self.original[logical]), "draft-memory"
 
     def table(self, logical):
-        """A mutable parse of the current table (structural copy of a cached parse)."""
-        return perf.parsed(self.read_raw(logical)[0])
+        """A mutable parse of the current table.
+
+        View tables come from the shared parse cache (structural copy); tables this overlay
+        already rewrote are parsed directly, so intermediate edit states never fill the cache.
+        """
+        raw = self.read_raw(logical)[0]
+        if logical in self.client:
+            return codec.parse_node(raw)
+        return perf.parsed(raw)
 
     def write_table(self, logical, table):
         raw = self.read_raw(logical)[0]

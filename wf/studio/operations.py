@@ -288,11 +288,11 @@ PORTRAIT_NOTES = [
     "三张定位表（character_image / trimmed_image / full_shot_image_attribute）只记目标行，生成时由 wf deliver 写。",
 ]
 ACTIONS = [
-    {"id": "save", "label": "保存", "enabled": True, "note": "整体 schema 校验 + 文件哈希复核，写入草稿 changeset.json"},
+    {"id": "save", "label": "保存", "enabled": True, "note": "整份草稿校验一遍、逐个文件核对后存好"},
     {"id": "generate", "label": "生成", "enabled": True,
-     "note": "本地交付：编译草稿并运行 wf deliver / check（写 work/studio-deliveries/）"},
+     "note": "在本机打出测试补丁：编译草稿、分包、检查（在后台跑，可取消）"},
     {"id": "export", "label": "导出", "enabled": True,
-     "note": "查看/下载已生成交付：ZIP、清单、requires.json、检查结果"},
-    {"id": "apply", "label": "应用", "enabled": False, "note": "未接入：应用到测试服不在编辑台范围，需人工走发布流程"},
-    {"id": "publish", "label": "发布", "enabled": False, "note": "未接入：编辑台不发布"},
+     "note": "查看、下载已经生成的补丁包和检查结果"},
+    {"id": "apply", "label": "应用", "enabled": False, "note": "不在编辑台：放到测试服要走发布流程"},
+    {"id": "publish", "label": "发布", "enabled": False, "note": "编辑台不发布"},
 ]
