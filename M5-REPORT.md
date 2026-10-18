@@ -119,3 +119,47 @@ python -B scripts/check_no_hardcoded_paths.py --json work/m5/path-scan.json
 - APK provides 来自仓内 v34 静态补丁证据，只用于声明匹配；没有声明本次 APK、真机或三人房运行成功。通用规则目录中不属于本期参数 / 模板操作的试炼 esdl 等检查同样保留真实状态。
 
 所有原始证据和日志在 `work/m5/`，可在本机复核；本地提交仅含实现、回归测试、接口文档和去机器路径的验收摘要。
+
+## M5.1：审查修复与文案规则
+
+本节对应 `M5.1-任务书.md` 与 `M5-审查意见.md`，在 `63625fc` 基线上完成。全部写入限定本 worktree，外部输入只读；未访问 `m4-integrate`，没有 push、服务器操作、设备操作或原文修订。新增运行证据位于忽略的 `work/m51/`，不覆盖 M5 原验收材料。实现按主题拆分并完成本地提交；接口更新见[副本工坊文档](docs/studio/boss.md)，验收机器摘要见 [M5.1 validation](docs/m5/m51-validation.json)。
+
+| 项目 | 最终行为 | 反证与证据 |
+|---|---|---|
+| H1 | 属性变化后的 C8016 待验证默认阻断；显式 `acknowledgePreload=true` 留在请求与检查记录中，仅豁免同一推荐属性及敌人资源行范围的未证明风险。已知问题、黑名单不能豁免；逗号 DSL 引用逐个遍历；交付失败判定包含草稿 checks | `test_boss_rules_preload.py`、`test_boss_rules_real.py`、`test_m51_boss_studio.py`；真实大恶魔 1/12/1 推荐 c72 `4(暗)→5(光)` 预览 `ok=false` |
+| H2 | 按实际选中档位 c42 routine 收集 state c50，并逐层与 CUSTOM_POSITION 求差 | `test_boss_rules_terrain.py`、`test_boss_rules_real.py`；真实寄居蟹 1/10/3 等级 70→100 缺 p4 被拦，官方 1/10/4 带 p4 满足 |
+| M1 | BothBoss 路由入口拒绝编辑及模板来源，入口敌人/地形标「入口自身，非战斗内容」，列出隐藏关 | `test_boss_entry_boundaries.py`；真实 1099001 两条编辑路径拒绝，maps 对应 16 个去重隐藏关 |
+| M2 | 草稿自动传入候选遭遇 PNG 面积下界，可补三队清单；去重加边距面积 `>4096²` 直接阻断；对照历史最大值报警 | `test_m51_boss_studio.py`、`test_boss_rules_integrity.py`；包含恰好容量、超限、自动收集及预览/编译反证 |
+| M3 | 自动分配排除客户端、其它草稿、四奖励 JSON 和 hard_multi_event_quest 键；base/cnmod 奖励同键均拦 | `test_boss_server_allocation.py`；真实输入共 3,895 个服务端占用键，正常顺延分配 |
+| L1 | 商店增加 boss_coin_shop_category 同号行核验，缺少服务端输入也不能掩盖已知缺行 | `test_boss_rules_integrity.py` 的分类缺行反证 |
+| L2 | 推荐属性同步实际有效服务端 quest 的 element；缺键阻断；新模板同样带 element | `test_boss_server_parameters.py`；真实 1012001 同步后，254 个无关服务端 value 原文逐字节不变 |
+| L3 | field_data、field、zone、地形与引用 routine 悬空均判问题 | `test_boss_rules_terrain.py`；缺失引用和无关完整对象成对反证 |
+| L4 | 两个 boss CLI 默认跟随 manifest 最高启用版本的完整依赖链，缺链拒绝；write-lock 走 local_output | `test_m51_boss_cli.py`；新链尾、禁用条目、缺链及外部输出路径反证 |
+| L5 | 模板名称拒绝换行、单双/弯引号及 `::`，回读重放同样生效 | `test_boss_name_validation.py`；保留合法逗号的允许反证 |
+| L6 | 已有副本两种写法归到同一 selector 草稿；新建草稿的合法 hard_multi 别名也归到同一分配 ID | `test_m51_boss_studio.py`、`test_m51_boss_aliases.py`；错误类型、错误难度、事件号不匹配、基线歧义均拒绝 |
+| L7 | 读模型增加 field_sources_semantics，文档明确逐字段位置附的是整叶来源 | `test_boss_entry_boundaries.py`；明确 `column_origin_verified=false` |
+| L8 | 编辑台不再伪造 choice_count=1，choice-folder 明确「本期未接入」并保持未执行 | `test_boss_rules_integrity.py`、`test_m51_boss_studio.py`；外部显式设计上下文的独立 checker 仍可使用 |
+| D3 | 根据真实槽行 c0 精确关联 desc_override；全部覆盖串检查「自身为队长时」，草稿编译回读实际字节 | `test_m51_text_rules.py`、`test_m51_text_bridge.py`；无后缀键 `desc_override_lady_android_halloween` 注入禁语会阻断 |
+| D4 | 禁止觉醒双值、字面Ⓜ和多效果压行；整槽主位限制逐非空行检查精确前1后2空格图标 | `test_m51_text_rules.py`；含多行漏图标、错误空格、混合主位槽、属性/姓名枚举允许反证 |
+
+真实 236 全量地形/routine 回归覆盖 471 关：地形规则 471 项满足，多波规则 18 项满足、453 项不适用，新增阻断 0。H1/H2 另经真实 BossEditor.preview 验证，均为 `ok=false`；没有把规则单测冒充 API 预览或真机结果。
+
+图集实读结果：官方共同决战 1006 收集 7 张、809,210 px；五重隐藏关 1099031 收集 18 张、5,847,162 px；奥格 1/81/5 收集 9 张、4,165,717 px。以上均为当前候选可解析直接资源及动作引用的**下界**，状态为待验证。特殊敌人、召唤属性变体及三队完整技能/PF闭包仍有缺口。历史对照来自 1.4.210：随机三人房最大 14.61Mpx、失败区间 15.2–16.2Mpx；1099031 来源会明确报警。历史数字不是当前通过阈值，也不是本次三人房运行结果。
+
+文案依据明确禁止 `X%（觉醒后 Y%）`：相关列是词条低/满级，不能解释为觉醒前后。按照任务指定三份作者记录落实，完整报告见 [1.4.227–1.4.237 文案只读审计](docs/m5/m51-text-audit.md)。本次扫描全部 11 个版本，仅出报告：227–229 各有 17 项 D3/D4 命中，从 230 起消失；230–237 新增规则命中为 0。237 其他既有客户端规则仍有 61 项命中，其中 32 项位于 227 起改过文本，不能宣称所有文案规则已通过。完整服务端镜像仅在 232/237 可得，其余版本如实标未执行。
+
+139985 的实际精确覆盖键在全部 11 个版本都被查到；当前原文为「雷属性共鸣时……」，没有「自身为队长时」。测试中的禁语是人为注入反证，未修改任何源文本。报告列出 56 组重点问题全文与槽位证据，保留逐版本全量结果与输入摘要。
+
+历史字节回归均使用本轮当前实现重新执行：223 的 3/3 成员一致；221 从原表、母图及原已批准音频重建四角色，再经当前交付器重归档，11 包、310/310 成员逐字节一致，三层回读 310/310 一致。221 容器仅在排除 DOS 时间字段后 11/11 一致，不声称完整 ZIP SHA 相等；历史旧 221 的字节兼容性不等于通过当前公开交付门禁。
+
+最终全量 pytest **exit 0：4,485 passed、354 skipped、26 warnings，562.50 秒**，基于 `6ff50c8` 运行。跳过项保留项目原有外部输入条件；警告为旧路径环境变量弃用提示。路径扫描 **0 项**，`git diff --check` 通过。此前一轮仅因审计报告中的机器绝对路径未满足卫生检查而失败，该行已改为本地配置引用，定向 5 项及本轮完整重跑全部通过。
+
+详细统计、输入保留边界与证据摘要记录在 `docs/m5/m51-validation.json`。本地复现命令：
+
+```powershell
+python -B -m pytest --basetemp work/m51/full-verified-tmp --junitxml work/m51/pytest-full-final.xml -o cache_dir=work/m51/pytest-cache
+python -B scripts/check_no_hardcoded_paths.py --json work/m51/path-scan-final.json
+python -B work/m51/history/run_historical223.py
+python -B work/m51/history/run_historical221.py
+python -B work/m51/history/verify_historical221.py
+```

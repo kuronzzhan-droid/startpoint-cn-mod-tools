@@ -25,6 +25,7 @@
 
 - `scope=leaf` 的 `layer` 表示整条 CSV 叶子最后发生语义变化的层，不表示每个字段首次引入的版本。
 - `table_layer` 仅表示整表最终载入层；`scope=table` 表示尚未核验叶子的变化层。
+- `field_sources` 虽按字段列位展示，来源仍是整叶来源，不是单格首次引入层或单格最后变更层；`field_sources_semantics` 明确给出 `granularity=whole_leaf` 和 `column_origin_verified=false`。
 - 本地候选变化标为 `boss-draft`。同表内未改的叶子保留其来源，不将整表都归为草稿新增。
 - 共同决战到原领主商店的 `_hard` 场景命名关联标为 `association.kind=field_family_inference`。这是命名推断，不是客户端外键。
 
@@ -37,6 +38,8 @@ python -m wf check boss hard_multi:1006/1 --tip 1.4.236 --manifest inputs/manife
 ```
 
 `wf boss` 支持重复 `--zip-dir`、重复 `--extra-manifest`、`--base-version`、`--lock` 与 `--write-lock`；输出前调用视图验证。`wf check boss` 还接受保存的 `wf-boss/1` JSON、`--baseline` 和 `--context`。只有快照而没有实际视图时，依赖资源或服务器的规则会保持「未执行」或「待验证」。清单、锁、ZIP 和 store 必须来自同一条经摘要核验的版本链；文件名相同不代表内容相同。
+
+省略 `--tip` 时，两条命令都选择 manifest 最高启用版本并核验它到基线的完整依赖链；缺链或缺包即失败，不退回旧版本。`--write-lock` 与 JSON 输出均受 `local_output` 限制，只能写当前 checkout。
 
 ## 字段列位与来源
 
@@ -62,6 +65,8 @@ python -m wf check boss hard_multi:1006/1 --tip 1.4.236 --manifest inputs/manife
 | `BothBoss` / 隐藏关标记 | c122 / c123 | 不按此映射解释 |
 
 `scene` 修改的是所引用 `field_data` 的 c0（`field` 键）；`field_data` c1 是地形，c2 是 zone。编辑会为该副本派生独立 `field_data`，避免改动其他共用者。HP/攻击倍率同时设置表内的三个对应修正，不修改全局敌人基础数值或等级表。属性整数采用客户端原生枚举 0–5；`restrictedElement: null` 写为 `(None)`。限定属性与推荐属性是不同字段。
+
+改变 `recommendedElement` 会同步实际有效的服务端 quest 键的 `element`。领主战先找 `_cnmod` 覆盖键、再找本体键；共同决战使用 `hard_multi_event_quest.json`。缺少该键会拒绝编辑。木人没有此服务端归属。客户端推荐枚举与敌人 c0 枚举不同，不应互换数值。
 
 共同决战服务器行由客户端 quest 行导出，写入交付内 `assets/hard_multi_event_quest.json` 的新 quest 键：c71 对应 `scoreRewardGroupId`，c2 对应 `name`，c72 对应 `clearRewardId`，c85–c88 对应 B/A/S/S+ 时间（秒乘 1000），c94–c97 对应角色经验、玛纳、等级点、经验池奖励。转换实现见 [`wf/boss/template.py`](../../wf/boss/template.py)。服务端 JSON 按键合并，未改键的值保留。
 
@@ -90,6 +95,14 @@ python -m wf.studio.draft validate work/boss/edit.json --def bossRequest
 ```
 
 等级为 1–999 的整数；实际敌人必须存在客户端可以选取的等级档，否则规则阻断。倍率须为有限正数且不超过 2147483647。`bgm` 必须是当前视图 `master/battle/asset/battle_bgm_group.orderedmap` 的有效键；客户端根据该组解析普通战斗、首领和过渡音乐，单独存在音频文件不能替代 BGM 组。尚未被现有关卡引用的有效组也可选择。`scene` 是当前 `field` 的有效键。任意写入 `fieldData`、奖励键或 CSV 列号不在请求接口中。
+
+换档后除初始站位 c41 外，还沿选中 c42 routine 收集 `general_boss_state` c50 站位，与该波次 `CUSTOM_POSITION` 求差，缺任一个即阻断。`field_data`、field、zone、地形、已引用 routine 等悬空引用判为「问题」。
+
+`both_boss=true` 的路由入口（例如五重 1099001）不能编辑参数、参与五档修改或作为 `sourceQuest`。其 `show` 的 `content_scope`、敌人与地形标为「入口自身，非战斗内容」；`routing.hidden_quests` 列出 maps 指向的真正隐藏关。
+
+改推荐/敌方属性后，C8016 证据为「待验证」默认阻断。请求可显式附带 `"acknowledgePreload": true` 接受此次操作未证明的预载风险；该值保存在 `params.requests`，检查结果保留 `acknowledgment`、状态仍为「待验证」。确认只在推荐属性与所选敌人资源行保持相同的范围内复用；仅改 HP/BGM 无需重复确认，改变属性或敌人档位资源后必须重新显式确认。已证明缺垫片及 C8016 黑名单故障不接受免责。
+
+每次预览和编译都自动收集实际候选遭遇的敌方、场景及动作引用 PNG，作为图集面积下界。可附带 `atlasBudget: {"parties": [["character/.../sprite_sheet.png"], [], []], "enemy_sheets": []}` 补三队清单；补充清单不能移除自动收集项。去重加边距面积 `>4096²` 为「问题」并阻断；面积未超限仍待验证，不证明运行时装箱或三人房成功。报告对照 1.4.210 的历史随机房最大 14.61Mpx、失败区间 15.2–16.2Mpx，并单列来源为 1099031 的历史风险；历史数字不是当前通用通过阈值。
 
 五档编辑仅适用于叶子恰好为 `1`–`5` 的领主战分组。公共 `parameters` 先应用，每档 `tiers` 再覆盖对应参数；数组必须恰好五项：
 
@@ -122,7 +135,7 @@ python -m wf.studio.draft validate work/boss/edit.json --def bossRequest
 
 模板自动执行以下一致性操作：
 
-- 分配空闲事件 ID、quest ID、入口节点、`field_data`、zone 和奖励组；同时排除现有视图与其他未交付的新草稿占用。默认从事件 2100 起找空位，quest 为 `event × 1000 + 1`。
+- 分配空闲事件 ID、quest ID、入口节点、`field_data`、zone 和奖励组；同时排除现有视图、四份服务端奖励 JSON、`hard_multi_event_quest.json` 与其他未交付的新草稿占用。奖励本体表与覆盖表同键都拒绝。默认从事件 2100 起找空位，quest 为 `event × 1000 + 1`。
 - 在终始之战目录 `event_folder_events/2` 下增加 `13,event,node` 入口，其中 13 是 `HardMultiEvent` 类型。
 - 清理继承的前置条件，将 quest/event 开始时间设为 `2000-01-01 00:00:00`，结束时间为空。
 - 克隆暗凛 score / rare 奖励及对应服务器键，重写新奖励引用。服务器输入同时读取普通表与 `_cnmod` 覆盖表；模板出现多个 rare 组时明确拒绝，避免错误推断分配。
@@ -132,11 +145,15 @@ python -m wf.studio.draft validate work/boss/edit.json --def bossRequest
 
 `edit` 不接受 `name`、`sourceQuest`、`ids`；`create_shared` 不接受 `tiers`。新建后可继续 `edit`，编译始终从原来源重放「创建＋后续编辑」，属性变化预加载检查仍相对原遭遇进行。
 
+模板 `name` 禁止换行、单双引号、弯引号及 `::`，避免把未核验 CSV/富文本分隔写入名称。`boss.choice-folder` 的规则函数可读取外部设计上下文，但编辑台本期未接入 folder 编辑，结果明确为「未执行」，不计为已接入功能。
+
 ## 独立草稿与 CLI
 
 副本使用 `BossDraftStore`，默认路径为 `work/studio-drafts/boss/`；角色草稿仍在角色自己的命名空间。`--drafts` 或 `WF_STUDIO_DRAFTS` 指定的是共同根目录，副本存储再追加 `boss/`。例如 selector `hard_multi:1006/1` 对应目录 `boss/hard_multi_1006_1/`，不把 `:` 或 `/` 直接用于目录名。
 
 草稿 `subjectKind="boss"`；为兼容交付格式，身份字段仍名为 `characterId`，其值在副本草稿中代表副本身份。`code`、目标 selector、命名空间和 `baseView` 必须一致；角色与副本混用或手工篡改身份会拒绝。
+
+对基线已有副本，裸 ID 与完整 selector 均规范到同一 selector 草稿；保存、撤销和交付请使用响应 `questId`。已有旧裸 ID 草稿会继续由两个别名共同访问；若旧数据已同时存在两份别名草稿则拒绝继续编辑，不自动合并冲突。尚未进入基线的新建草稿继续使用所分配的 quest ID；`hard_multi:event/1` 与 `hard_multi:questId` 别名也会归到该草稿，并核验事件号推导及基线歧义。
 
 每个副本保存一个可重放的 boss change，`params.requests` 记录操作序列，`params.inputs.client/server` 记录实际读取输入的 SHA-256。再次编辑先重放并复核旧摘要，编译也重复此验证；来源版本、客户端表或服务端镜像漂移不能静默通过。`files` 与 `pending` 为空，实际表和服务器字节在编译时生成。撤销这个 change 撤销整个操作序列，不是单独撤销序列中的一步。
 
