@@ -142,3 +142,13 @@ def test_existing_event_or_folder_id_rejected_in_editor_preview(tmp_path):
     for ids in ({"event": "2081"}, {"event": "2100", "node": "4"}):
         preview = editor.preview("new", request(ids=ids))
         assert not preview["ok"] and "collision" in preview["checks"][0]["message"]
+
+
+def test_level_without_native_enemy_band_blocks_preview_and_compile(tmp_path):
+    editor = fixture_editor(tmp_path)
+    preview = editor.preview("new", request(parameters={"level": 999}))
+    assert not preview["ok"] and "U_3be147" in preview["checks"][0]["message"]
+    draft = editor.apply("new", request())["changeset"]
+    draft["changes"][0]["params"]["requests"][0]["parameters"] = {"level": 999}
+    with pytest.raises(ValueError, match="U_3be147"):
+        compile_boss(editor.source, editor.store, draft, server_dir=editor.server_dir)

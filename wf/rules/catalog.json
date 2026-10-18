@@ -24,6 +24,7 @@
     {"id":"boss.custom-time","title":"自制内容起始日期固定2000年","scope":["boss"],"evidence_nature":"作者规范","source":"wf-custom-server-time-trap：2026-09-01历史事故；不声明服务端当前时间","requirement":"自制quest和活动start=2000-01-01 00:00:00，end=(None)，避免受服务端自定义时间隐藏。","checker":"boss","revision":"2026-10-18：M5 接入实际数据检查，保留运行时边界"},
     {"id":"boss.shop-sync","title":"领主币商店三处同步","scope":["boss"],"evidence_nature":"真机实锤","source":"wf-boss-coin-shop-custom-product：C8601及category_map事故","requirement":"客户端boss_coin_shop、服务端商品JSON与item_category_map逐键核对；cdndata镜像不替代服务端实际读取表。","checker":"boss","revision":"2026-10-18：M5 接入实际数据检查，保留运行时边界"},
     {"id":"boss.visible-prerequisites","title":"共同决战不设前置以免活动页隐藏","scope":["boss"],"evidence_nature":"源码推断","source":"wf-mainboss-battle-pilot-20261006；当前制作流程总结 §5","requirement":"自制共同决战quest c7–c16全部清空/None，不继承官方1006前置；官方活动原有解锁条件不强制改写。","checker":"boss","revision":"2026-10-18：M5 接入实际数据检查，保留运行时边界"},
-    {"id":"boss.unique-ids","title":"新副本键不与来源视图撞号","scope":["boss"],"evidence_nature":"作者规范","source":"M5任务书 §3、§4","requirement":"新增quest/zone/入口键与来源占用键逐项对照；已有键编辑走旧值断言，不视为新增。","checker":"boss","revision":"2026-10-18：M5 接入实际数据检查，保留运行时边界"}
+    {"id":"boss.unique-ids","title":"新副本键不与来源视图撞号","scope":["boss"],"evidence_nature":"作者规范","source":"M5任务书 §3、§4","requirement":"新增quest/zone/入口键与来源占用键逐项对照；已有键编辑走旧值断言，不视为新增。","checker":"boss","revision":"2026-10-18：M5 接入实际数据检查，保留运行时边界"},
+    {"id":"boss.enemy-level","title":"任务等级须具有可读取的敌人档位","scope":["boss"],"evidence_nature":"源码推断","source":"GeneralEnemySourceHelper.getSurjectivity；wf.boss.enemies 原生键序；既有 prepush_level U_3be147","requirement":"活动地形波次内的已映射敌人必须存在首个原生键>=任务等级的行；缺档阻断，未知类型待验证，zone孤儿行不当活动敌人。","checker":"boss","revision":"2026-10-18：M5 参数编辑补上候选等级档门禁"}
   ]
 }

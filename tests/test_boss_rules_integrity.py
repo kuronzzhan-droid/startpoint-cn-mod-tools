@@ -4,6 +4,7 @@ import struct
 
 from wf.deliver.prepush_rewards import SERVER_REWARD_PATHS
 from wf.rules.boss_atlas import atlas_check
+from wf.rules.boss_levels import enemy_level_check
 from wf.rules.boss_integrity import (both_route_check, choice_check, collision_check, prerequisite_check,
                                     reward_check, shop_check, time_check)
 
@@ -109,3 +110,20 @@ def test_atlas_uses_actual_png_dimensions_but_never_promotes_estimate_to_proof()
     assert result["near_historical_failure"] is True
     assert result["status"] == "待验证" and not result["blocking"]
     assert result["runtime_executed"] is False
+
+
+def test_partial_atlas_context_lists_each_missing_party():
+    png = b'\x89png\r\n\x1a\n' + b'\x00\x00\x00\x0dIHDR' + struct.pack('>II', 100, 100)
+    view = View(files={"boss.png": png})
+    result = atlas_check(view, {"atlas_budget": {"parties": [[], [], []], "enemy_sheets": ["boss.png"]}})
+    assert not result["party_coverage_complete"]
+    assert len(result["limitations"]) == 3
+
+
+def test_enemy_level_ignores_inactive_zone_and_distinguishes_unknown_kind():
+    doc = {"terrain": {"waves": [{"name": "0"}]},
+           "enemies": [{"wave": "1", "code": "inactive", "missing": True},
+                       {"wave": "0", "code": "active", "missing": None}]}
+    assert enemy_level_check(doc)["status"] == "待验证"
+    doc["enemies"][1]["missing"] = True
+    assert enemy_level_check(doc)["blocking"]

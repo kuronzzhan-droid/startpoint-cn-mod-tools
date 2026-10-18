@@ -5,6 +5,7 @@ from .boss_atlas import atlas_check
 from .boss_integrity import (both_route_check, choice_check, collision_check, prerequisite_check,
                              reward_check, shop_check, time_check)
 from .boss_preload import preload_check
+from .boss_levels import enemy_level_check
 from .boss_terrain import concurrent_positions, terrain_checks
 from .catalog import catalog, result
 
@@ -23,7 +24,7 @@ def check_boss(document, *, view=None, baseline=None, server_changes=None,
     if not isinstance(document, dict) or not isinstance(document.get("quest"), dict):
         raise ValueError("boss check requires a BossReader.show document with quest")
     context = context or {}
-    checks = [*terrain_checks(document), concurrent_positions(document),
+    checks = [*terrain_checks(document), concurrent_positions(document), enemy_level_check(document),
               preload_check(document, view=view, baseline=baseline), choice_check(context),
               both_route_check(document, view, context), time_check(document, context),
               reward_check(view, server_changes, server_before),

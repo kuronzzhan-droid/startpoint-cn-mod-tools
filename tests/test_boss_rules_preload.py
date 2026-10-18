@@ -4,7 +4,7 @@ import zlib
 
 import wf_dsl
 
-from wf.rules.boss_preload import FUNNEL, GENERAL, preload_check
+from wf.rules.boss_preload import FUNNEL, GENERAL, preload_check, tier
 
 
 class View:
@@ -84,3 +84,8 @@ def test_party_restriction_alone_does_not_change_enemy_attribute():
     before, after = documents()
     after["quest"]["fields"] = {"recommended_element": "0", "restriction": "1"}
     assert preload_check(after, baseline=before, view=View())["status"] == "不适用"
+
+
+def test_preload_reads_same_first_native_band_as_client():
+    assert tier({"100": "first", "49": "later"}, 10) == ["first"]
+    assert tier({"49": "only"}, 100) == []

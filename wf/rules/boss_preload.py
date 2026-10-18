@@ -38,7 +38,8 @@ def recommended(document):
 def tier(node, level):
     if not isinstance(node, dict):
         return cells(node)
-    keys = sorted((int(k), k) for k in node if str(k).isdigit())
+    # GeneralEnemySourceHelper scans the ordered-map's native key order.
+    keys = [(int(k), k) for k in node if str(k).isdigit()]
     for number, key in keys:
         if number >= int(level or 1):
             return cells(node[key])
