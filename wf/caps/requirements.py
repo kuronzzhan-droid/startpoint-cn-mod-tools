@@ -43,7 +43,7 @@ def infer_requirements(members, *, declared=(), read_raw=None, server=None, regi
             raise ValueError(f"capability table/DSL must use common root: {logical}")
         if root == "common":
             candidate[logical] = raw
-    hits, unresolved, notes = {}, [], []
+    hits, unresolved, notes, kind_sites = {}, [], [], []
     changed = {}
     visited, tables = set(), {}
 
@@ -73,6 +73,17 @@ def infer_requirements(members, *, declared=(), read_raw=None, server=None, regi
 
     def signals(values, context):
         for kind, value in values:
+            if kind == "kind_site":
+                site = {**context, **value}
+                if site not in kind_sites:
+                    kind_sites.append(site)
+                for cap_id, cap in registry.items():
+                    surface = cap["data_surface"]
+                    if (value["kind"] in {str(k) for k in surface["kinds"]}
+                            and value["table"] in surface["allowed_tables"]
+                            and value["block"] in surface["allowed_blocks"]):
+                        add(cap_id, site, "kinds", value["kind"])
+                continue
             if kind == "unsupported":
                 entry = {"logical_path": context["logical_path"], "key": context.get("key"),
                          "referenced_by": {**context, "reason": value}}
@@ -166,7 +177,8 @@ def infer_requirements(members, *, declared=(), read_raw=None, server=None, regi
     return {"clientCapabilities": sorted(hits), "clientPatches": [f"#{n}" for n in patches],
             "serverFeatures": features, "capabilityResolution": "partial" if unresolved else "resolved",
             "capabilityEvidence": [{"id": cap_id, "evidence": evidence} for cap_id, evidence in sorted(hits.items())],
-            "unresolved": unresolved, "scannedMembers": scanned, "inferenceNotes": notes}
+            "unresolved": unresolved, "scannedMembers": scanned, "inferenceNotes": notes,
+            "kindSites": kind_sites}
 
 
 def requirements_document(doc, members, archives, *, read_raw=None, server=None, registry=None):

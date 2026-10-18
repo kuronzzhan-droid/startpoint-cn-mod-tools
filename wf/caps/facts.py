@@ -5,6 +5,7 @@ import csv
 import io
 import re
 
+from wfx_registry import patch_kinds_borrowing_uid_column
 from wf.dsl.references import ABILITY_TABLES, program_logical
 from wf.view.layout import EM, col
 from .signals_v35 import character_signals, custom_signals, unique_signals
@@ -67,18 +68,21 @@ def table_signals(logical, trail, text, *, registry=None):
                 if registry is None:
                     from .registry import load_registry
                     registry = load_registry()
-                for cap in registry.values():
-                    surface = cap["data_surface"]
-                    if kind not in {str(k) for k in surface["kinds"]}:
-                        continue
-                    for field, actual in (("allowed_tables", name), ("allowed_blocks", block)):
-                        if field in surface and actual not in surface[field]:
+                surfaces = [cap["data_surface"] for cap in registry.values()
+                            if kind in {str(k) for k in cap["data_surface"]["kinds"]}]
+                # Different implementations may extend the same kind to disjoint
+                # tables. Match a complete surface, not every capability in turn.
+                for field, actual in (("allowed_tables", name), ("allowed_blocks", block)):
+                    if surfaces:
+                        allowed = sorted({item for surface in surfaces for item in surface[field]})
+                        surfaces = [surface for surface in surfaces if actual in surface[field]]
+                        if not surfaces:
                             raise ValueError(f"问题: {logical}/{'/'.join(trail)}/{index}: kind {kind} "
-                                             f"{field}={surface[field]}, actual={actual}")
+                                             f"{field}={allowed}, actual={actual}")
                 if KIND_BLOCKS.get(kind, block) != block:
                     raise ValueError(f"问题: {logical}/{'/'.join(trail)}/{index}: kind {kind} "
                                      f"requires {KIND_BLOCKS[kind]}, actual={block}")
-                yield "kinds", kind
+                yield "kind_site", {"table": name, "block": block, "kind": kind, "row": index}
                 if kind in {"722", "419"}:
                     levels = row[col(name, block, "powerflip_override.levels")]
                     if "4" in [v.strip() for v in levels.split(",")]:
@@ -94,6 +98,9 @@ def table_signals(logical, trail, text, *, registry=None):
                     elif skill not in {"", "(None)"}:
                         yield "ref", (SKILL, skill)
             for block_name in layout["blocks"]:
+                block_kind = row[int(layout["blocks"][block_name])]
+                if (block_name, block_kind) in patch_kinds_borrowing_uid_column():
+                    continue  # R3/423 carries a rule mask here, not a unique-condition reference.
                 fields = EM["block_fields"]["precondition" if block_name.startswith("precondition") else block_name]
                 for offset, field, _ in fields:
                     if field == "unique_condition_id":

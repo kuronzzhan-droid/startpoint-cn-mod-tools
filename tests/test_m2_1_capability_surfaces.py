@@ -16,6 +16,11 @@ from test_m2_requirements import ABILITY, ability, payload
 @pytest.mark.parametrize("kind,block", [(422, "during_content"), (423, "during_content"),
     (424, "during_content"), (724, "instant_content")])
 def test_patch_kinds_reject_unpatched_table_parsers(logical, table, kind, block):
+    if kind == 423 and table in {"ability_soul", "equipment_enhancement_ability"}:
+        result = infer_requirements({"a": payload(logical, {"x": ability(kind, table=table, block=block)})})
+        assert "client.equipment.gauge_gain_rules@1" in result["clientCapabilities"]
+        assert "client.kind423.gauge_source_limit@1" not in result["clientCapabilities"]
+        return
     with pytest.raises(ValueError, match=f"问题: .*kind {kind}.*allowed_tables.*{table}"):
         infer_requirements({"a": payload(logical, {"x": ability(kind, table=table, block=block)})})
 

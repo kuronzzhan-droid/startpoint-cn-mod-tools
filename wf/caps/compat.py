@@ -52,7 +52,8 @@ def check_compat(requires, provides, *, registry=None, delivery_dir=None):
         needed = cap["provided_by"]["patches"]
         missing_patches = sorted(set(needed) - patches)
         entry = available.get(cap_id)
-        patch_label = ", ".join(f"#{number}" for number in needed) or "官方客户端系统"
+        patch_label = ", ".join(f"#{number}" for number in needed) or (
+            "官方客户端系统" if cap["layer"] == "B" else "独立方法能力")
         if entry is None or missing_patches:
             results.append(result("capability.missing", "问题", f"缺 {cap['title']}（{cap_id}）；需要 {patch_label}",
                                   blocking=True, id=cap_id, patches=needed, missing_patches=missing_patches))
@@ -62,6 +63,11 @@ def check_compat(requires, provides, *, registry=None, delivery_dir=None):
                                   blocking=True, id=cap_id, patches=needed))
             continue
         expected = cap["provided_by"]["methods"]
+        allowed_swfs = cap["provided_by"].get("swf_sha256", [])
+        if allowed_swfs and provides["source"].get("swf_sha256") not in allowed_swfs:
+            results.append(result("capability.method-hash", "问题", f"{cap['title']} 不属于此 SWF 的已登记能力",
+                                  blocking=True, id=cap_id))
+            continue
         actual = {(m["patch"], m["abc"], m["label"]): m.get("sha256") for m in entry["methods"]}
         if len(actual) != len(entry["methods"]):
             raise ValueError(f"duplicate method evidence: {cap_id}")
@@ -72,7 +78,8 @@ def check_compat(requires, provides, *, registry=None, delivery_dir=None):
                 if method["patch"] != number or key in recorded:
                     raise ValueError(f"invalid or duplicate patch method evidence: {cap_id}")
                 recorded[key] = method.get("sha256")
-        if actual != recorded:
+        if (needed and actual != recorded) or (not needed and set(actual) != {
+                (m["patch"], m["abc"], m["label"]) for m in expected}):
             results.append(result("capability.method-hash", "问题", f"{cap['title']} 能力方法哈希与补丁方法记录不一致",
                                   blocking=True, id=cap_id))
             continue
@@ -97,6 +104,8 @@ def check_compat(requires, provides, *, registry=None, delivery_dir=None):
             results.append(result("capability.provided", "待验证" if pending else "满足",
                                   f"{cap['title']}：能力与补丁记录匹配" + ("；部分方法哈希待补" if pending else ""),
                                   id=cap_id, pending_methods=pending, basis=entry["basis"]))
+    from .kind_compat import check_kind_sites
+    results.extend(check_kind_sites(required, provides, registry))
     if not results:
         results.append(result("capability.provided", "满足", "已扫描的变更内容未使用已登记客户端扩展能力"))
     return results

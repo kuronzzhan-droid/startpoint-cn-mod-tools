@@ -117,6 +117,18 @@
             "additionalProperties": false
           }
         },
+        "kindSites": {"type": "array", "items": {
+          "type": "object", "required": ["logical_path", "key", "table", "block", "kind", "row"],
+          "properties": {
+            "logical_path": {"type": "string", "minLength": 1},
+            "key": {"type": "string", "minLength": 1},
+            "via": {"type": "string"},
+            "table": {"type": "string", "minLength": 1},
+            "block": {"enum": ["instant_content", "during_content"]},
+            "kind": {"type": "string"},
+            "row": {"type": "integer", "minimum": 0}
+          }, "additionalProperties": false
+        }},
         "inferenceNotes": {"type": "array", "items": {"type": "object", "required": ["logical_path", "reason", "detail"]}},
         "unresolved": {"type": "array", "items": {"type": "object", "required": ["logical_path", "key", "referenced_by"]}},
         "scannedMembers": {"type": "array", "items": {
