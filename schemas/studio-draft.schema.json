@@ -185,13 +185,77 @@
         "loudness": {"type": "number", "minimum": -30, "maximum": -6, "description": "目标积分响度 LUFS；默认按语音类别取官方中位"}
       }
     },
+    "abilityCell": {
+      "type": "object", "additionalProperties": false, "required": ["column", "old", "new"],
+      "properties": {
+        "column": {"oneOf": [{"type": "integer", "minimum": 0}, {"type": "string", "pattern": "^c[0-9]+$"}]},
+        "old": {"type": ["string", "null"]}, "new": {"type": ["string", "null"]}
+      }
+    },
+    "abilityCells": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/abilityCell"}},
+    "abilityNewRows": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/abilityCells"}},
+    "abilityOperation": {
+      "type": "object", "additionalProperties": false, "required": ["op", "table", "key"],
+      "properties": {
+        "op": {"enum": ["set_cells", "insert_row", "delete_row", "move_row", "attach_key"]},
+        "table": {"enum": ["ability", "leader_ability", "action_skill"]},
+        "key": {"type": "string", "minLength": 1}, "character": {"$ref": "#/$defs/characterId"},
+        "level": {"enum": ["1", "2", "3"]},
+        "row": {"type": "integer", "minimum": 0}, "row_count": {"type": "integer", "minimum": 1},
+        "to_row": {"type": "integer", "minimum": 0},
+        "column_space": {"enum": ["ability", "native"]}, "cells": {"$ref": "#/$defs/abilityCells"},
+        "shared_ok": {"type": "boolean"}, "group": {"type": "string"}, "note": {"type": "string"},
+        "slot": {"type": "integer", "minimum": 0, "maximum": 6}, "old_key": {"type": "string"},
+        "rows": {"$ref": "#/$defs/abilityNewRows"},
+        "levels": {"type": "object", "minProperties": 1, "propertyNames": {"enum": ["1", "2", "3"]},
+                   "additionalProperties": {"$ref": "#/$defs/abilityNewRows"}}
+      },
+      "allOf": [
+        {"if": {"properties": {"op": {"const": "attach_key"}}},
+         "then": {"required": ["slot", "old_key"], "not": {"anyOf": [{"required": ["row"]}, {"required": ["row_count"]}, {"required": ["cells"]}, {"required": ["level"]}, {"required": ["to_row"]}]}},
+         "else": {"required": ["row", "row_count", "cells"], "not": {"anyOf": [{"required": ["slot"]}, {"required": ["old_key"]}, {"required": ["rows"]}, {"required": ["levels"]}]}}},
+        {"if": {"properties": {"op": {"const": "move_row"}}}, "then": {"required": ["to_row"]}, "else": {"not": {"required": ["to_row"]}}},
+        {"if": {"properties": {"op": {"enum": ["set_cells", "move_row"]}}},
+         "then": {"properties": {"cells": {"items": {"properties": {"old": {"type": "string"}, "new": {"type": "string"}}}}}}},
+        {"if": {"properties": {"op": {"const": "insert_row"}}},
+         "then": {"properties": {"cells": {"items": {"properties": {"old": {"type": "null"}, "new": {"type": "string"}}}}}}},
+        {"if": {"properties": {"op": {"const": "delete_row"}}},
+         "then": {"properties": {"cells": {"items": {"properties": {"old": {"type": "string"}, "new": {"type": "null"}}}}}}},
+        {"if": {"properties": {"table": {"const": "action_skill"}, "op": {"enum": ["set_cells", "insert_row", "delete_row", "move_row"]}}},
+         "then": {"required": ["level"]}, "else": {"not": {"required": ["level"]}}}
+      ]
+    },
+    "abilityTextPair": {
+      "type": "object", "additionalProperties": false, "required": ["old", "new"],
+      "properties": {"old": {"type": "string"}, "new": {"type": "string"}}
+    },
+    "abilityText": {
+      "type": "object", "additionalProperties": false, "minProperties": 1,
+      "properties": {
+        "action_skill": {"type": "object", "minProperties": 1, "propertyNames": {"enum": ["1", "2", "3"]},
+          "additionalProperties": {"type": "object", "minProperties": 1, "propertyNames": {"enum": ["c0", "c1"]},
+                                   "additionalProperties": {"$ref": "#/$defs/abilityTextPair"}}},
+        "character_text": {"type": "object", "minProperties": 1, "propertyNames": {"pattern": "^[0-9]+$"},
+                           "additionalProperties": {"$ref": "#/$defs/abilityTextPair"}},
+        "custom_ability_string": {"type": "object", "minProperties": 1, "additionalProperties": {"$ref": "#/$defs/abilityTextPair"}},
+        "desc_override": {"type": "object", "minProperties": 1, "additionalProperties": {"$ref": "#/$defs/abilityTextPair"}}
+      }
+    },
+    "abilityRequest": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "operations": {"type": "array", "items": {"$ref": "#/$defs/abilityOperation"}},
+        "text": {"$ref": "#/$defs/abilityText"}, "shared_ok": {"type": "boolean"}
+      },
+      "anyOf": [{"required": ["operations"], "properties": {"operations": {"minItems": 1}}}, {"required": ["text"]}]
+    },
     "change": {
       "type": "object",
       "additionalProperties": false,
       "required": ["id", "kind", "title", "createdAt", "target", "params", "files", "pending", "checks"],
       "properties": {
         "id": {"type": "string", "pattern": "^c-[0-9a-f]{12}$"},
-        "kind": {"enum": ["portrait", "pixel_action", "voice_line"]},
+        "kind": {"enum": ["portrait", "pixel_action", "voice_line", "ability_edit"]},
         "title": {"type": "string", "minLength": 1},
         "createdAt": {"$ref": "#/$defs/timestamp"},
         "target": {"type": "object"},
@@ -201,6 +265,22 @@
         "checks": {"type": "array", "items": {"$ref": "#/$defs/check"}}
       },
       "allOf": [
+        {
+          "if": {"properties": {"kind": {"const": "ability_edit"}}},
+          "then": {
+            "properties": {
+              "target": {"type": "object", "additionalProperties": false, "required": ["character"],
+                         "properties": {"character": {"$ref": "#/$defs/characterId"}}},
+              "params": {"type": "object", "additionalProperties": false, "required": ["requests", "inputSha256"],
+                         "properties": {
+                           "requests": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/abilityRequest"}},
+                           "inputSha256": {"type": "object", "minProperties": 1,
+                                           "additionalProperties": {"$ref": "#/$defs/sha256"}}
+                         }},
+              "files": {"maxItems": 0}, "pending": {"maxItems": 0}
+            }
+          }
+        },
         {
           "if": {"properties": {"kind": {"const": "portrait"}}},
           "then": {
@@ -215,6 +295,12 @@
                            "sourceSize": {"type": "array", "items": {"type": "integer"}, "minItems": 2, "maxItems": 2},
                            "trim": {"type": "array", "items": {"type": "integer"}, "minItems": 4, "maxItems": 4},
                            "tableRows": {"type": "object"},
+                           "tableBefore": {"type": "object", "additionalProperties": false,
+                             "patternProperties": {"^(character_image|trimmed_image|full_shot_image_attribute)$": {
+                               "type": "object", "additionalProperties": false, "required": ["value", "sha256"],
+                               "properties": {"value": {"type": ["string", "null"]},
+                                              "sha256": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]}}
+                             }}},
                            "sourceFile": {"$ref": "#/$defs/draftPath"},
                            "atf": {"type": "boolean"}
                          }}
