@@ -275,3 +275,43 @@ def test_portrait_saving_two_forms_has_no_shared_file_collision(portrait, monkey
     for item in built:
         assert set(item["params"]["tableBefore"]) == set(TABLES)
         assert all(sha256(store.read_file(CID, f["draft"])) == f["sha256"] for f in item["files"])
+
+
+def test_portrait_source_uses_exact_roots_despite_shadow_assets(portrait, monkeypatch):
+    from wf.studio.operations import DraftOps
+    from wf.studio.portrait import PortraitService, default_template
+    source, store, _ = portrait
+    full = PREFIX + "ui/full_shot_1440_1920_0.png"
+    sheet = PREFIX + "ui/illustration_setting_sprite_sheet.png"
+    atlas = PREFIX + "ui/illustration_setting_sprite_sheet.atlas.amf3.deflate"
+    atf = PREFIX + "ui/skill_cutin_0.atf.deflate"
+    # All four same-logical wrong-root copies would previously shadow the
+    # production roots or make reference parsing fail.
+    source.files["common", full] = encode_png(Image.new("RGBA", (4, 4)))
+    source.files["common", sheet] = encode_png(Image.new("RGBA", (2, 2)))
+    source.files["medium", atlas] = b"wrong-atlas-root"
+    source.files["common", atf] = b"wrong-atf-root"
+    source.files["android", atf] = wf_atf.deflate(wf_atf.build_cutin_atf(
+        standard_png(Image.new("RGBA", (8, 4)))))
+    class Assets:
+        def read(self, logical):
+            return source.raw(logical)
+        def locate(self, logical):
+            return "test"
+    service = PortraitService(source, Assets(), store)
+    assert service.view_full_shot(CODE, "0")[0].size == (8, 8)
+    assert service.rebuild_sheet(CODE, "0", Image.new("RGBA", (8, 8))).size == (18, 8)
+    monkeypatch.setattr(service, "masks", lambda _: {})
+    monkeypatch.setattr(service, "render", lambda master, template, masks, role:
+                        {slot: Image.new("RGBA", size, (1, 2, 3, 255))
+                         for slot, size in gate.OFFICIAL_ICON_SIZES.items()})
+    monkeypatch.setattr(gate, "derived_icon_problems", lambda *a, **k: [])
+    ops = DraftOps(source, store=store, assets=Assets())
+    built = service.build_change(cid=CID, code=CODE, element="", request={
+        "form": "0", "source": "current", "atf": True,
+        "template": default_template(Image.new("RGBA", (8, 8)), [4, 4])},
+        official_codes=[], make_file=ops._file_maker(CID))
+    assert not [c for c in built["checks"] if c["level"] == "error"]
+    assert any(f["logical"] == atf and f["root"] == "android" for f in built["files"])
+    result = compile_media(source, store, changeset([{**built, "kind": "portrait"}]))
+    assert result.members["medium", full] == source.files["medium", full]

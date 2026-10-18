@@ -26,6 +26,7 @@ import wf_ui_derive_gate as gate
 from wf.chars.support import images
 
 from .drafts import DraftError, sha256
+from .deliver_media import read_root
 
 FULL_SHOT = "ui/full_shot_1440_1920_{form}.png"
 CUTIN = "ui/skill_cutin_{form}.png"
@@ -203,7 +204,7 @@ class PortraitService:
 
     # -- sources --------------------------------------------------------
     def view_full_shot(self, code: str, form: str) -> tuple[Image.Image, bytes] | None:
-        raw = self.assets.read(f"character/{code}/" + FULL_SHOT.format(form=form))
+        raw = read_root(self.source, "medium", f"character/{code}/" + FULL_SHOT.format(form=form))
         return (decode_png(raw), raw) if raw is not None else None
 
     def upload_source(self, cid: str, form: str, png: bytes) -> dict:
@@ -266,8 +267,8 @@ class PortraitService:
     def rebuild_sheet(self, code: str, form: str, full: Image.Image) -> Image.Image | None:
         """Redraw only this form's cells of illustration_setting_sprite_sheet (approximate fit)."""
         prefix = f"character/{code}/"
-        raw_sheet = self.assets.read(prefix + SHEET)
-        raw_atlas = self.assets.read(prefix + SHEET_ATLAS)
+        raw_sheet = read_root(self.source, "medium", prefix + SHEET)
+        raw_atlas = read_root(self.source, "common", prefix + SHEET_ATLAS)
         if raw_sheet is None or raw_atlas is None:
             return None
         sheet = decode_png(raw_sheet).convert("RGBA")
@@ -341,7 +342,7 @@ class PortraitService:
                                    note=f"{SLOT_USE.get(slot, '')}；生产派生 make_icons/make_cutin，取景为模板参数"))
         if request.get("atf", True):
             atf_logical = prefix + CUTIN_ATF.format(form=form)
-            ref = self.assets.read(atf_logical)
+            ref = read_root(self.source, "android", atf_logical)
             try:
                 atf = wf_atf.deflate(wf_atf.build_cutin_atf(png_bytes(icons["skill_cutin"]),
                                                             wf_atf.inflate(ref) if ref else None))
