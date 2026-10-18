@@ -17,7 +17,9 @@ python -m wf check compat --requires <交付目录/requires.json> --provides wor
 
 能力表依据本仓枚举布局读取真实 kind、固有 ID、PF override 和觉醒字段，124/126 列分别定位。角色行继续追踪技能、切换技能、队长技和六个能力槽；能力引用的固有字符串、PF 表、技能档和 DSL 递归跟进。`desc_override_` 只认键，PF Lv4 只认等级声明，文案中出现数字 424 或文字 `hidden_` 不会产生对应能力。DSL 识别 ACUnique/DCUnique、伤害类型转换标志及程序引用。语音轮换识别实际 `skill_ready_alt_1` 至 `_5`、`matched_skill_ready_alt_1` 至 `_5` 路径，以及角色的 `_voice_ready` 切换技能标记。
 
-归档的 111 项补丁不等同 111 个自动检测器。性能、UI、原生平台补丁，以及仍按文档映射的角色专用补丁（如九尾连击快照、特定角色旧准备语音和私有视觉预载），没有通用数据触发信号的条目需在变更集中显式声明 `capabilities`。矩阵把这些文档映射单独标明来源；不能据矩阵徽章推定任意内容片段都能自动识别该补丁。
+归档的 111 项补丁不等同 111 个自动检测器。角色专用 #1/#5/#6/#7/#15/#32/#55/#65 与晒伤语义能力归 C 层（需要 APK），按注册表 `character_ids` 和角色的实际引用闭包识别。涉及能力、技能、固有、PF、覆盖文案或 DSL 等角色内容但缺少归属基线时保留 `partial`，不会漏掉角色专用补丁后宣称 resolved。纯性能、UI、原生平台等没有内容触发信号的条目仍需显式声明 `capabilities`。
+
+注册表的 `allowed_tables` 和 `allowed_blocks` 限定扩展 kind 的解析位置。422/423/424/724 出现在队长、武器魂或装备强化表，以及 kind 放错客户端解析块时直接报问题。缺少候选表基线时，`inferenceNotes` 明示按整张候选表保守扫描；kind423 仅硬依赖实现补丁 #31，不要求性能补丁 #30。
 
 `requires.capabilityEvidence` 包含每项命中的逻辑路径、叶键、信号和值；`clientPatches` 是所需归档补丁号的并集。注册表以外的显式能力 ID、损坏表和损坏 DSL 会报问题。查不到所需引用时保留 `unresolved` 并标 `partial`，不能用空列表宣称没有依赖。有效但本仓尚未登记的未来玩法不在这份注册表的证明范围内。
 

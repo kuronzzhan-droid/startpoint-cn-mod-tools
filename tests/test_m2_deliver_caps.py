@@ -28,7 +28,8 @@ def test_deliver_infers_override_and_readback_rejects_scan_digest_tampering(tmp_
     required = json.loads((out / "requires.json").read_text("utf-8"))
     assert required["requires"]["clientCapabilities"] == ["client.text.desc_override@1"]
     assert required["requires"]["clientPatches"] == ["#2"]
-    assert required["requires"]["capabilityResolution"] == "resolved"
+    assert required["requires"]["capabilityResolution"] == "partial"
+    assert required["requires"]["unresolved"]  # No character ownership baseline in this fixture.
     required["requires"]["capabilityResolution"] = resolution
     (out / "requires.json").write_text(json.dumps(required), "utf-8")
     check_delivery(delivery, out)

@@ -13,6 +13,28 @@ def _object(raw, label):
     return value
 
 
+def reward_results(report):
+    evidence = report.get("companion_reward_keys", {})
+    if not isinstance(evidence, dict):
+        raise ValueError("prepush companion_reward_keys must be an object")
+    findings = [f for f in report["findings"]
+                if f.get("fid", "").startswith("companion.reward_key:")]
+    errors = any(f.get("level") == "ERROR" for f in findings)
+    warnings = any(f.get("level") == "WARN" for f in findings)
+    if errors:
+        state, message = "问题", "新增服务端奖励行缺少候选客户端奖励键"
+    elif warnings:
+        state, message = "待验证", "存量服务端奖励行缺少候选客户端奖励键"
+    elif evidence.get("executed") is not True:
+        state, message = "未执行", "缺少服务端奖励键对照的执行证据"
+    elif evidence.get("server_baseline_complete") is not True:
+        state, message = "待验证", "奖励键对照的服务端基线不完整"
+    else:
+        state, message = "满足", "本次服务端奖励行与候选客户端奖励键已核对"
+    return result("delivery.reward-keys", state, message, blocking=errors,
+                  findings=findings, evidence=evidence)
+
+
 def check_delivery(document, directory):
     previous = tuple(map(int, document["from_version"].split(".")))
     target = tuple(map(int, document["to_version"].split(".")))
@@ -152,4 +174,5 @@ def check_delivery(document, directory):
         raise ValueError("prepush status ignores unexecuted checks")
     checks.append(result("delivery.prepush", gate["status"], "自动 prepush 的实际结果",
                          blocking=gate["status"] == "问题", exit_code=gate["exit_code"], limitations=gate["limitations"]))
+    checks.append(reward_results(report))
     return checks
