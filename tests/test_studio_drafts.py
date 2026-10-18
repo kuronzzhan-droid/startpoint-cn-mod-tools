@@ -268,8 +268,8 @@ def test_sheet_split_and_anchor():
 
 
 # -- real view (skipped when the layered view is not configured) ------------
-@pytest.fixture(scope="module")
-def real_ops(tmp_path_factory):
+@pytest.fixture()
+def real_ops(tmp_path):
     try:
         from wf.studio.source import build_source
         source = build_source()
@@ -278,7 +278,13 @@ def real_ops(tmp_path_factory):
     from wf.studio.operations import DraftOps
     if source.table("character").get("139985") is None:
         pytest.skip("139985 not in view")
-    return DraftOps(source, store=D.DraftStore(tmp_path_factory.mktemp("drafts")))
+    return DraftOps(source, store=D.DraftStore(tmp_path / "drafts"))
+
+
+def test_real_ops_missing_character_skips(tmp_path, monkeypatch):
+    monkeypatch.setattr("wf.studio.source.build_source", _FakeSource)
+    with pytest.raises(pytest.skip.Exception, match="139985 not in view"):
+        real_ops.__wrapped__(tmp_path)
 
 
 def _png_b64(image):

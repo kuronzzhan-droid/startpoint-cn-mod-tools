@@ -47,14 +47,33 @@ def test_route_table_dispatch():
     assert missing.status == 404 and "error" in json.loads(missing.body)
 
 
-@pytest.fixture(scope="module")
-def real_app():
+@pytest.fixture()
+def real_app(tmp_path):
     try:
         from wf.studio.source import build_source
         source = build_source()
     except (FileNotFoundError, OSError, KeyError) as exc:
         pytest.skip(f"real layered view unavailable: {exc}")
-    return StudioApp(source)
+    if source.table("character").get("111183") is None:
+        pytest.skip("111183 not in the configured real layered view")
+    from wf.studio.drafts import DraftStore
+    return StudioApp(source, drafts=DraftStore(tmp_path / "drafts"))
+
+
+def test_real_app_missing_view_skips(tmp_path, monkeypatch):
+    def missing():
+        raise FileNotFoundError("missing fixture archive")
+    monkeypatch.setattr("wf.studio.source.build_source", missing)
+    with pytest.raises(pytest.skip.Exception, match="missing fixture archive"):
+        real_app.__wrapped__(tmp_path)
+
+
+def test_real_app_programming_error_is_not_skipped(tmp_path, monkeypatch):
+    def broken():
+        raise ImportError("broken source import")
+    monkeypatch.setattr("wf.studio.source.build_source", broken)
+    with pytest.raises(ImportError, match="broken source import"):
+        real_app.__wrapped__(tmp_path)
 
 
 def test_real_character_list_nonempty(real_app):

@@ -71,6 +71,8 @@ class StudioSource:
     @property
     def version(self) -> str:
         top = self.view.tip
+        if isinstance(top, str):
+            return top  # ManifestView already binds a complete version string.
         for archive in self.view.zips:
             versions = edge_versions(Path(archive).name)
             if versions:
@@ -164,13 +166,13 @@ class StudioSource:
 
 def default_chain_settings() -> tuple[Path | None, list[Path]]:
     """Chain manifest + ZIP search dirs from env/profile; None when not configured."""
-    from wf.paths import _profile, configured, root_path
+    from wf.paths import profile_data, configured, root_path
     manifest = path("studio_chain_manifest") if configured("studio_chain_manifest") else None
     raw = os.environ.get("WF_STUDIO_ZIP_DIRS")
     if raw:
         dirs = [Path(p) for p in raw.split(os.pathsep) if p]
     else:
-        config, _ = _profile()
+        config, _ = profile_data()
         listed = config.get("studio_zip_dirs")
         if listed:
             dirs = [p if p.is_absolute() else root_path(p) for p in map(Path, listed)]
