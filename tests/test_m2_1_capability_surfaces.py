@@ -1,5 +1,7 @@
 """Reject unsupported table/block surfaces and exercise both weapon layouts."""
 from copy import deepcopy
+import hashlib
+import json
 
 import pytest
 
@@ -52,3 +54,26 @@ def test_schema_rejects_untyped_surface_constraints():
     cap["data_surface"]["allowed_blocks"] = "during_content"
     with pytest.raises(ValueError, match="invalid capability"):
         validate_capability(cap)
+    del cap["data_surface"]["allowed_blocks"]
+    with pytest.raises(ValueError, match="allowed_blocks"):
+        validate_capability(cap)
+
+
+@pytest.mark.parametrize("table,block", [("leader_ability", "during_content"), ("ability", "instant_content")])
+def test_deliver_cli_reports_problem_for_invalid_kind_surface(tmp_path, capsys, table, block):
+    from wf.deliver.cli import main
+    logical = next(p for p, name in ABILITY_TABLES.items() if name == table)
+    raw, _ = payload(logical, {"x": ability(422, table=table, block=block)})
+    (tmp_path / "table.bin").write_bytes(raw)
+    doc = {"schema": "wf-change-set/1", "id": "invalid-kind", "name": "invalid kind",
+           "from_version": "1.4.150", "to_version": "1.4.151", "slug": "invalid-kind",
+           "created_at": "2026-10-18", "local_test_only": True, "members": [
+               {"root": "common", "logical_path": logical, "source": "table.bin",
+                "sha256": hashlib.sha256(raw).hexdigest(), "before_sha256": None}]}
+    source = tmp_path / "changeset.json"
+    source.write_text(json.dumps(doc), encoding="utf-8")
+    with pytest.raises(SystemExit) as error:
+        main([str(source), "--out", str(tmp_path / "delivery"), "--no-baseline-i-know"])
+    assert error.value.code == 2
+    assert "问题" in capsys.readouterr().err
+    assert not list((tmp_path / "delivery").glob("*.zip"))

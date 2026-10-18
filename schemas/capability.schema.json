@@ -38,7 +38,9 @@
         "unique_ids": {"$ref": "#/$defs/strings"},
         "tables": {"$ref": "#/$defs/strings"},
         "selectors": {"$ref": "#/$defs/strings"}
-      }
+      },
+      "allOf": [{"if": {"properties": {"kinds": {"minItems": 1}}},
+                 "then": {"required": ["allowed_tables", "allowed_blocks"]}}]
     },
     "form": {"type": "object", "required": ["label", "fields", "note"], "properties": {"label": {"type": "string"}, "fields": {"type": "array"}, "note": {"type": "string"}}},
     "describe": {"type": "object", "required": ["template", "channel"], "properties": {"template": {"type": "string"}, "channel": {"type": "string"}}},
