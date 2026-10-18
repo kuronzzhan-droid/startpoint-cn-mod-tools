@@ -142,10 +142,26 @@ class BossEditor:
         try:
             selected = reader.find(quest)
         except ValueError:
-            draft = self.store.load(quest)
+            identity = quest
+            if quest.startswith("hard_multi:"):
+                path = quest.split(":", 1)[1].split("/")
+                if len(path) == 2:
+                    if path[1] != "1":
+                        raise
+                    identity = str(int(path[0]) * 1000 + 1)
+                else:
+                    identity = str(int(path[0]))
+            elif not quest.isdigit():
+                raise
+            # An ambiguous or other-kind baseline ID cannot become a new draft.
+            if any(item["id"] == identity for item in reader.list()["items"]):
+                raise
+            draft = self.store.load(identity)
             requests = _requests(draft)
             if requests and requests[0]["operation"] == "create_shared":
-                return quest
+                event = requests[0].get("ids", {}).get("event")
+                if event is not None and str(int(event) * 1000 + 1) == identity:
+                    return identity
             raise
         canonical = selected["selector"]
         # Preserve an old ID-named draft while routing both spellings to it.
