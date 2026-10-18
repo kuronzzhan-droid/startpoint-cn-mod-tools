@@ -145,13 +145,14 @@ def mp3_decode(data: bytes) -> bytes:
 
 
 def mp3_probe(data: bytes, sig: int) -> dict:
-    """逐帧探测(只读):{frames, bitrates, srates, end(帧流覆盖末位), tail(其后字节数)}。
+    """逐帧探测(只读):{frames, bitrates, srates, channels, end(帧流覆盖末位), tail(其后字节数)}。
     与 _mp3_convert 同一走帧逻辑,用于量化"转换到底覆盖了多少"。"""
     pos, n = 0, len(data)
     sig_b = (sig >> 3) & 0xFF
     frames = 0
     bitrates: set[int] = set()
     srates: set[int] = set()
+    channels: set[int] = set()
     while pos + 4 <= n:
         b0 = data[pos]
         if b0 == 0x49:
@@ -185,10 +186,11 @@ def mp3_probe(data: bytes, sig: int) -> dict:
             frames += 1
             bitrates.add(bitrate)
             srates.add(srate)
+            channels.add(1 if header >> 6 & 3 == 3 else 2)
             pos += int(144 * bitrate / srate + padding + 2e-10)
             continue
         break
-    return {"frames": frames, "bitrates": bitrates, "srates": srates,
+    return {"frames": frames, "bitrates": bitrates, "srates": srates, "channels": channels,
             "end": pos, "tail": n - pos}
 
 
