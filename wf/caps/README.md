@@ -8,14 +8,20 @@
 
 `data_surface` 提供 requires 扫描入口：`kinds`、`dsl_nodes`、`unique_prefixes`、`unique_ids`、`tables` 和语义 `selectors`。`tables` 只用于整表出现即需要能力的情况；通用 ability 表不在这里，否则会误把所有角色判断为依赖所有扩展。逐补丁归档声明不重复挂这些入口，内容优先引用语义能力。C 层角色机制名称属于矩阵数据，不凭名称推断客户端能力。
 
-M2.1 中带 `kinds` 的声明必须同时给出 `allowed_tables`、`allowed_blocks`，扫描按真实表布局核对解析位置，非法位置直接报问题。角色专用 #1/#5/#6/#7/#15/#32/#55/#65 及晒伤语义能力为 C 层（需要 APK），其 `character_ids` 与角色引用闭包用于确定受影响内容；缺少归属输入时保留 partial。`inferenceNotes` 记录候选表缺基线而按全表扫描的保守处理。
+带 `kinds` 的声明必须同时给出 `allowed_tables`、`allowed_blocks`，扫描按表、块和 kind 共同选择能力。同一 kind 可由不同能力扩展到不同表；角色表的 423 使用 #31，武器魂及装备强化的 423 使用 `client.equipment.gauge_gain_rules@1`（equipment-rules R3）。`requires.kindSites` 保留实际行位置；兼容检查从目标档案的真实 SWF 核对分支。旧 requires 的 `capabilityEvidence` 中已记录的 kind 也会执行该检查，不能因缺少新字段而绕过。R3 规则掩码借用的列不作为固有状态引用。角色专用 #1/#5/#6/#7/#15/#32/#55/#65 及晒伤语义能力为 C 层（需要 APK），其 `character_ids` 与角色引用闭包用于确定受影响内容；缺少归属输入时保留 partial。`inferenceNotes` 记录候选表缺基线而按全表扫描的保守处理。
+
+无数字归档号的独立方法能力使用 `provided_by.patches: []`、`methods.patch: null`，同时必须有完整方法 SHA 和 `provided_by.swf_sha256` 白名单。R3 只绑定 test-v34/test-v35e 的实际 SWF；摘要输入必须显式包含 `method_capabilities`，缺方法、哈希不符或 SWF 不在白名单均不能提供该能力。`patch: null` 表示未分配归档号，与 `sha256: null` 的方法证据待补不同。
 
 ## APK 能力输入
 
 ```text
 python -m wf apk provides <APK、SWF、构建记录或摘要文件> --output work/m2/provides.json
 python -m wf check compat --requires <requires.json> --provides work/m2/provides.json
+python -m wf apk kinds --profile test-v34
+python -m wf apk kinds --profile test-v35e --output work/m2_3/test-v35e-kinds.json
 ```
+
+`apk kinds` 输出五张能力类表的各块 kind 集合、方法标签、code SHA 和 SWF SHA。档案通过 `evidence.swf_path` 定位本地文件，实际文件必须匹配 `evidence.swf_sha256`；也可用 `--swf` 显式指定同摘要的 SWF/APK。读取器在内存解析 APK 的 SWF，不提取到外部目录。注册表按该档案提供能力的同 kind、同块表范围合并后比对真实分支，不一致返回非零。缺少真实产物时兼容检查保留阻断的待验证结果；旧反编译源码仅作参考。基础客户端方法体夹具验证了两张武器表不会凭版本标签或字符串常量误报 423 支持。
 
 `wf/apk/data/v34-evidence.json` 仅收录可审计的摘要和归档映射，不含 APK、SWF 或游戏成员。它来自 v34 的 #1–101 方法保留报告、#102–107 实际 `final_pcode` 和 #108–111 r2 实际方法记录；原始文档的摘要同时保留，不能只靠文件名或版本号认出一个客户端。
 

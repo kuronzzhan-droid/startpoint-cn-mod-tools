@@ -41,20 +41,24 @@
 
 额外对8张角色相关类型表的全部行及全部技能/PF DSL引用执行完整 requires 扫描，同时覆盖无角色引用的固有状态、配置字符串和技能/PF。全表闭包 `resolved`、未解析引用0；识别到 13 个去重 v35e 信号，其中无角色归属 0 个。完整信号、能力及归属清单见 JSON 的 `global_content_scan`。
 
-## 附加武器表检查的既有问题
+## 附加武器表检查：M2.3 更正误报
 
-两张武器表另外逐行执行当前 kind 合法性检查，发现以下 **8行、7个表键** 的存量行把 kind423 放在不支持的表。它们不是 v35e 专属能力，也不在602角色闭包的兼容结论中；本任务未改数据或放宽规则。这些是当前静态注册规则的发现，尚未设备确认。因此不能把角色扫描结果扩写为全部游戏内容安全。行号从0开始。
+M2.2 将下列 **8 行、7 个表键** 的 kind 423 判为表范围问题，是**误报**。当时的判断依据来自装备规则补丁前的基础客户端反编译快照 `decompile-complete-20261014`；该快照不能代表 test-v34/test-v35e 的实际 SWF。装备规则 **equipment-rules R3 / equipment-gauge-gain-rules-v1** 已为武器魂及装备强化表增加 `during_content` 的 423 分支。
 
-| 表 | 键 | 行 | 现有规则问题 |
+M2.3 重新读取两个档案绑定的真实 SWF，并按稳定方法名定位 `AbilitySoulValues$/parseAt106`（本次 body 38944）与 `EquipmentEnhancementAbilityValues$/parseAt109`（本次 body 40666）。两者均有 `pushstring "423"; ifne`，匹配后构造 `GaugeGainRestriction`、读取目标与规则参数并返回。两个 SWF 中对应方法的 code 字节一致，哈希分别为 `09dab4df4529e9b0272315b616fa9ea4e1882401a9ceadb40be2b5ee515c40ab`、`dd651c1588b171de60b3617ac33d165d22c726337ee6848caddd88dc0f331577`；完整证据见 [R3 方法记录](../../wf/apk/data/equipment-rules-r3-methods.json)。
+
+以下 8 行在 v34/v35e 上均有正常解析分支，并已逐行通过能力依赖与真实 SWF 的静态兼容检查。423 借用 `unique_condition_id` 列保存规则掩码，不能将其中的 `78` 等规则值误当成固有状态引用。角色表原有的 423 仍依赖 #31；两张武器表推导为独立能力 `client.equipment.gauge_gain_rules@1`。删除档案中的 R3 后会报缺能力。行号从 0 开始；此结论是实际方法体的静态证据，未进行设备运行验收。原 M2.2 JSON 的 `weapon_table_issues` 保留为历史记录，当前更正及验证见 [M2.3 验收摘要](validation-m2.3.json)。
+
+| 表 | 键 | 行 | v34 / v35e 复核 |
 |---|---|---:|---|
-| `master/ability/ability_soul.orderedmap` | 5920001 | 23 | kind423 仅允许 ability 表 |
-| `master/ability/ability_soul.orderedmap` | 5921001 | 23 | kind423 仅允许 ability 表 |
-| `master/ability/ability_soul.orderedmap` | 5922001 | 23 | kind423 仅允许 ability 表 |
-| `master/ability/ability_soul.orderedmap` | 5923001 | 23 | kind423 仅允许 ability 表 |
-| `master/equipment_enhancement/equipment_enhancement_ability.orderedmap` | 5910113 | 6 | kind423 仅允许 ability 表 |
-| `master/equipment_enhancement/equipment_enhancement_ability.orderedmap` | 5910122 | 10 | kind423 仅允许 ability 表 |
-| `master/equipment_enhancement/equipment_enhancement_ability.orderedmap` | 5910122 | 11 | kind423 仅允许 ability 表 |
-| `master/equipment_enhancement/equipment_enhancement_ability.orderedmap` | 5910125 | 5 | kind423 仅允许 ability 表 |
+| `master/ability/ability_soul.orderedmap` | 5920001 | 23 | R3 与真实 423 分支满足 |
+| `master/ability/ability_soul.orderedmap` | 5921001 | 23 | R3 与真实 423 分支满足 |
+| `master/ability/ability_soul.orderedmap` | 5922001 | 23 | R3 与真实 423 分支满足 |
+| `master/ability/ability_soul.orderedmap` | 5923001 | 23 | R3 与真实 423 分支满足 |
+| `master/equipment_enhancement/equipment_enhancement_ability.orderedmap` | 5910113 | 6 | R3 与真实 423 分支满足 |
+| `master/equipment_enhancement/equipment_enhancement_ability.orderedmap` | 5910122 | 10 | R3 与真实 423 分支满足 |
+| `master/equipment_enhancement/equipment_enhancement_ability.orderedmap` | 5910122 | 11 | R3 与真实 423 分支满足 |
+| `master/equipment_enhancement/equipment_enhancement_ability.orderedmap` | 5910125 | 5 | R3 与真实 423 分支满足 |
 
 ## 全部 v35e 专属能力
 

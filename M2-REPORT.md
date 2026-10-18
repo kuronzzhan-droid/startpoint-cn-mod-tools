@@ -193,3 +193,40 @@ v35e必需的4位为贝尔赛蒂亚129952、克劳斯129997、凯尔139990、莫
 能力声明全量检查exit0；最终路径扫描2318个文本文件、0命中；提交卫生与 `git diff --check` 通过。初次WFX集成测试在并行登记尚未完成时出现reduce枚举收集错误，登记完成后重跑106 passed、1 skipped、291 subtests，并纳入最终全量；未将中间失败当作通过。
 
 本地主题提交：全角色扫描 `29ba964`；WFX参数/候选档案 `fc32116`；累计登记与产物证据 `b342652`；隐藏计数证据 `9fdaa19`；类型信号/方法版本 `98a56e5`；档案门禁/只读接口 `afa362d`；全角色报告 `1c616e2`。本节和结构化验收另作最终本地文档提交。没有push、merge、发布或安装。
+
+## M2.3：装备规则 R3 登记与真实 SWF kind 检查
+
+日期：2026-10-18。工作分支 `refactor/m5-boss`，任务起点 `25bc1cd`。只写当前 worktree，外部输入只读；未访问 m4-integrate、服务器或设备，未 push。临时脚本、日志与历史验收产物放在忽略的 `work/m2_3/`，不纳入版本控制。
+
+### 误报更正与能力登记
+
+M2.2 的“8 行、7 键 kind423 表范围问题”是误报，原结论在本节及 [兼容报告更正](docs/m2/compat-v34-v35.md) 中替换。旧依据 `decompile-complete-20261014` 来自装备补丁之前的基础客户端。实际 test-v34/test-v35e 的武器魂与装备强化 `during_content` 均有 423 分支；本次重新读取真实 SWF，并对原 8 行逐行执行两档案兼容检查，全部静态满足。
+
+新增 `client.equipment.gauge_gain_rules@1`，对应 **equipment-rules R3 / equipment-gauge-gain-rules-v1**。只给 test-v34/test-v35e 登记；角色 ability 的 423 保持 `client.kind423.gauge_source_limit@1` / #31。R3 没有可核实的数字归档号，因此不编造归档号，使用独立方法能力：`patches=[]`、`methods.patch=null`，配合完整 SWF 白名单和两份实际 code SHA。方法 code 在两档 SWF 中逐字节相同：
+
+| 方法 | 本次 body | code SHA-256 |
+|---|---:|---|
+| `AbilitySoulValues$/parseAt106` | 38944 | `09dab4df4529e9b0272315b616fa9ea4e1882401a9ceadb40be2b5ee515c40ab` |
+| `EquipmentEnhancementAbilityValues$/parseAt109` | 40666 | `dd651c1588b171de60b3617ac33d165d22c726337ee6848caddd88dc0f331577` |
+
+完整观察在 [R3 方法证据](wf/apk/data/equipment-rules-r3-methods.json)，不含 SWF 产物。实际分支读取目标及复用参数列，构造 `GaugeGainRestriction` 后返回。423 在该列存的是规则掩码；复用既有 `patch_kinds_borrowing_uid_column()` 修复掩码 78 被误读成固有状态 ID 的相关误报，并有单测反证。
+
+### 实现与反证
+
+`wf apk kinds --profile test-v34`、`--profile test-v35e` 均实际执行 **exit 0**。输出 **5 张能力类表、50 个 parseAt 方法**的 kind 集合、标签、body 与 code SHA；按档案实际提供的能力聚合同 kind/块的 `allowed_tables`，两档案均无不一致。真实方法检查另外确认官方 419/722/629 支持 ex_ability，已补齐对应两个官方能力声明。读取器复用仓内 SWF/ABC/ASM 实现，记录任务指定 vendor 的来源摘要，不依赖反编译文本；APK 内 SWF 直接在内存读取。
+
+内容推导按表、块、kind 选依赖，新增 `requires.kindSites` 保留实际行位置。兼容检查必须读取与 provides/档案完整 SHA 绑定的真实 SWF；缺文件时阻断为待验证，实际无分支时阻断为问题。独立复核发现旧 requires 缺少新字段会漏检，已从旧 `capabilityEvidence` 还原表/块/kind；缺字段、空数组、旧证据无 table/block/row 三种情况均复验阻断。
+
+- 两档案分别去掉 R3 后重验原 8 行，**16/16** 均明确报 `capability.missing`，没有用注册表声明替代档案能力。
+- 缺方法、伪方法 SHA、非白名单 SWF、借用 #31、重复方法等反证均通过。
+- 基础版本的完整 FWS/ABC 方法体夹具经真实读取器及 CLI 验证，两武器表均不列出 423；含 R3 的正例列出。已查官方档案、v35 输入链及 v34 输入目录，未找到来源可靠的 R3 前基础 SWF。最早可确认的 v33 实读已含两处 423，不冒充负对照；查找记录为 `work/m2_3/base-client-kinds.json`。
+
+### 验收结果与边界
+
+功能源码冻结于 `82d03ef`。全量命令 `python -B -m pytest --basetemp=work/m2_3/full-tmp --junitxml=work/m2_3/pytest-full.xml`：**4674 passed、354 skipped、26 warnings，exit 0**，外层耗时 **768.68 秒**。JUnit 含子测试累计 7405 项、跳过 357、失败 0、错误 0，与终端主测试口径分开记录。跳过项主要为既有外部输入及平台条件，不计作通过；警告为既有路径环境变量别名弃用提示。定向兼容/编辑器回归 84 passed，R3 登记相关 38 passed，SWF 读取相关 15 passed，最终均纳入整轮。
+
+历史 223 本轮固定输入内存重放 **3/3 成员一致**；221 只读复用 M2.2 已完整重建的 package，调用本轮归档及双清单层重新封装，**11 包、310/310 成员逐字节一致、差异 0**，分层回读 310/310 一致，排除 DOS 时间字段后 11/11 容器一致。221 本轮未重新生成母图或音频；不声称完整 ZIP SHA 相等，也不表示旧 221 通过当前公开交付门禁。
+
+能力声明全量检查 exit 0；路径扫描 **2327 个文本文件、0 命中**；提交卫生 `check-hygiene.sh --all` 及 `git diff --check` 通过。全量测试与产物验收的子进程显式使用 `stdin=DEVNULL`，临时目录在当前 worktree。完整计数、方法摘要、8 行及缺能力反证、历史产物摘要见 [M2.3 结构化验收](docs/m2/validation-m2.3.json)，原始证据在 `work/m2_3/`。
+
+本地主题提交：R3 登记 `16f5e1e`；真实 SWF 检查 `55daeec`；按表推导与兼容门禁 `82d03ef`；报告更正及验收摘要另作本地文档提交。本次只验证实际方法字节、静态分支与工具行为，未执行设备战斗、服务端或部署验收。
