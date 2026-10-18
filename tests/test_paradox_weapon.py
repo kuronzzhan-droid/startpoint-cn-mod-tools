@@ -485,6 +485,12 @@ class ParadoxTests(unittest.TestCase):
         rows = W.growth_pair("32", W.T_SELF, 100, 50)
         self.assertEqual([(e.learn, e.maxlvl) for e in rows], [(1, 119), (120, 120)])
 
+    def test_soul_item_usable_by_every_element(self):
+        # 魂珠道具行模板 8000101 是火属性日文行；PARADOX 魂珠须全属性可装、中文说明（1.4.234 前只能火属性装）
+        row = self.out["flat"][P.ITEM][P.ID][0]
+        self.assertEqual(row[12], "0,3,2,1,4,5")
+        self.assertEqual(row[5], "能力魂珠")
+
     def test_materials(self):
         # 新材料照五重材料行克隆：只换 c0–c5 与开始时间；c3/c4 是重画版（c4 = 图集里 PARADOX 专属子纹理，由 wf_weapon_awaken E1 追加）
         items = self.out["flat"][P.ITEM]

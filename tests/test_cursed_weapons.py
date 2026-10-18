@@ -89,6 +89,14 @@ class CursedWeaponTests(unittest.TestCase):
         for logical in (W.ITEM, W.EQUIPMENT, W.SOUL, W.ENH, W.EA):
             self.assertEqual(sorted(self.out["flat"][logical]), sorted(w.id for w in self.ws), logical)
 
+    def test_soul_item_elements_follow_weapon(self):
+        # 魂珠道具行 c12 = 可装备属性：通用/多属性门控 → 全属性，单属性 → 该属性；c5 中文（模板 8000101 是火属性日文行）
+        for w in self.ws:
+            row = self.out["flat"][W.ITEM][w.id][0]
+            code = w.element_code()
+            self.assertEqual(row[12], "0,3,2,1,4,5" if code == -1 else str(code), w.id)
+            self.assertEqual(row[5], "能力魂珠", w.id)
+
     def test_base_is_positive_only(self):
         dsl = self.out["dsl"]
         for w in self.ws:

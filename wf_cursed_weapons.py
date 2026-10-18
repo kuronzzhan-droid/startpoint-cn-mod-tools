@@ -171,6 +171,15 @@ PF3_BTA = BR.segment_override("pf3")
 
 ELEMENT_GROUP = {"fire": "Red", "water": "Blue", "thunder": "Yellow", "wind": "Green", "light": "White", "dark": "Black"}
 ELEMENT_CODE = {"fire": 0, "water": 1, "thunder": 2, "wind": 3, "light": 4, "dark": 5}   # equipment_element.json（0 基）
+#: 能力魂珠道具行 c12：官方全属性写法（131 件同此）；单属性写该属性码。c5 = 官方中文说明。
+SOUL_ITEM_ALL_ELEMENTS = "0,3,2,1,4,5"
+SOUL_ITEM_DESCRIPTION = "能力魂珠"
+
+
+def soul_item_elements(element_code: int) -> str:
+    """equipment_element 码 → 魂珠道具 c12（-1 = 通用/多属性门控 → 全属性）。"""
+    return SOUL_ITEM_ALL_ELEMENTS if element_code == -1 else str(element_code)
+
 
 
 class CursedWeaponError(RuntimeError):
@@ -2600,6 +2609,9 @@ def build(read: LiveReader, *, client_capabilities: Iterable[str] = BASE_CLIENT_
         # item（同键魂珠物品行，缺了 ItemLogic 取空崩）
         row = list(item_tpl)
         row[0], row[1], row[2], row[3] = f"mod_cursed_{wid}", wid, f"{w.name}魂珠", w.icon
+        # c5 说明 / c12 可装备属性：模板 8000101 是火属性日文行，不能原样留（1.4.234 前诅咒魂珠全被锁成只有火属性能装）
+        row[5] = SOUL_ITEM_DESCRIPTION
+        row[12] = soul_item_elements(w.element_code())
         flat[ITEM][wid] = [row]
         # equipment
         row = list(equip_tpl)

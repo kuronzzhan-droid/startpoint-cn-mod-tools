@@ -697,6 +697,7 @@ def build(read: W.LiveReader, *, allow_existing: bool = False,
 
     row = W._template(read, ITEM, "8000101", 23)
     row[0], row[1], row[2], row[3] = f"mod_{SLUG}_{ID}", ID, f"{NAME}魂珠", ICON
+    row[5], row[12] = W.SOUL_ITEM_DESCRIPTION, W.soul_item_elements(-1)   # 通用：全属性（模板 8000101 是火）
     flat[ITEM][ID] = [row]
     row = W._template(read, EQUIPMENT, "8000101", 16)
     W._require(row[2] == "0" and row[8] == "5" and row[11] == "5", "equipment 模板列义漂移")

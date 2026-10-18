@@ -1694,6 +1694,7 @@ class TestMasterChanges(unittest.TestCase):
                 expected[1] = spec.id
                 expected[2] = f"{spec.name}魂珠"
                 expected[3] = f"{rewards.IMAGE_PREFIX}/{spec.image_slug}"
+                expected[5] = "能力魂珠"
                 expected[12] = (
                     str(spec.element) if spec.element >= 0 else "0,3,2,1,4,5"
                 )

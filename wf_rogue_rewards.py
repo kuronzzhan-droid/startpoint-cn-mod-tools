@@ -774,6 +774,7 @@ def build_ability_soul_item_leaf(
     row[1] = spec.id
     row[2] = f"{spec.name}魂珠"
     row[3] = f"{IMAGE_PREFIX}/{spec.image_slug}"
+    row[5] = "能力魂珠"   # 官方中文说明；部分 donor 行是日文「アビリティソウル」
     row[12] = (
         str(spec.element) if spec.element >= 0 else ABILITY_SOUL_ALL_ELEMENTS
     )
