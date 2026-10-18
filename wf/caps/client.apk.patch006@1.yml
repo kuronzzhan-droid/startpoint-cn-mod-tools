@@ -1,7 +1,7 @@
 schema: wf-capability/1
 id: client.apk.patch006@1
 title: 夏日白 Fever 语音路由
-layer: A
+layer: C
 provided_by:
   patches:
   - 6
@@ -32,6 +32,7 @@ server:
   features: []
   note: 无额外服务端改动要求
 data_surface:
+  character_ids: ['149990']
   kinds: []
   dsl_nodes: []
   unique_prefixes: []

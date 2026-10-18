@@ -44,6 +44,7 @@ def infer_requirements(members, *, declared=(), read_raw=None, server=None, regi
         if root == "common":
             candidate[logical] = raw
     hits, unresolved, notes = {}, [], []
+    changed = {}
     visited, tables = set(), {}
 
     def add(cap_id, context, signal, value):
@@ -121,6 +122,7 @@ def infer_requirements(members, *, declared=(), read_raw=None, server=None, regi
         signals(dsl_signals(tree), {"logical_path": logical, "sha256": hashlib.sha256(raw).hexdigest()})
 
     for logical, raw in candidate.items():
+        changed[logical] = set() if logical.endswith(".orderedmap") else None
         if re.search(r"(?:^|/)(?:matched_)?skill_ready_alt_?[1-5](?:[./]|$)", logical):
             signals([("selectors", "voice.skill_ready_alt")], {"logical_path": logical})
         if logical.endswith(".orderedmap"):
@@ -134,10 +136,18 @@ def infer_requirements(members, *, declared=(), read_raw=None, server=None, regi
             for trail, text in leaves(data):
                 if old.get(trail) == text:
                     continue
+                changed[logical].add(trail)
                 signals(table_signals(logical, trail, text, registry=registry),
                         {"logical_path": logical, "key": "/".join(trail)})
         elif logical.endswith(DSL_SUFFIX):
             scan_dsl(logical)
+    from .character_requirements import character_requirements
+    affected, incomplete = character_requirements({p: keys for p, keys in changed.items() if keys != set()},
+                                                 read=read, table=table, registry=registry)
+    unresolved.extend(entry for entry in incomplete if entry not in unresolved)
+    for cid, evidence in affected:
+        for context in evidence:
+            signals([("character_ids", cid)], context)
     for target, raw in (server or {}).items():
         if target.endswith("character_overlimit.json"):
             data = json.loads(raw)

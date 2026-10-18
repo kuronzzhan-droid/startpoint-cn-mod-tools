@@ -9,7 +9,7 @@ import zlib
 import pytest
 import wf_quest_lib as nodes
 from wf_dsl import encode_amf3
-from wf.caps.facts import UNIQUE, PF, STRINGS
+from wf.caps.facts import CHARACTER, UNIQUE, PF, STRINGS
 from wf.caps.registry import load_registry
 from wf.caps.requirements import infer_requirements, requirements_document
 from wf.deliver.changeset import validate_document
@@ -83,7 +83,7 @@ def test_pf4_is_from_levels_and_changed_keys_only(registry):
 
 def test_unique_references_follow_baseline_strings_and_missing_is_partial(registry):
     members = {"a": payload(ABILITY, {"1": ability(0, unique="99881")})}
-    base = {UNIQUE: nodes.build_node({"99881": "fever:items:test,0"})}
+    base = {UNIQUE: nodes.build_node({"99881": "fever:items:test,0"}), CHARACTER: nodes.build_node({})}
     result = infer_requirements(members, read_raw=base.__getitem__, registry=registry)
     assert "client.fever.items@1" in result["clientCapabilities"]
     assert result["capabilityResolution"] == "resolved"

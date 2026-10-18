@@ -1,7 +1,7 @@
 schema: wf-capability/1
 id: client.apk.patch055@1
 title: 凯尔 PF 静默标记
-layer: A
+layer: C
 provided_by:
   patches:
   - 55
@@ -20,6 +20,7 @@ server:
   features: []
   note: 无额外服务端改动要求
 data_surface:
+  character_ids: ['139990']
   kinds: []
   dsl_nodes: []
   unique_prefixes: []

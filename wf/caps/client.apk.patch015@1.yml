@@ -1,7 +1,7 @@
 schema: wf-capability/1
 id: client.apk.patch015@1
 title: 杰拉尔/特克托/斩铁准备音
-layer: A
+layer: C
 provided_by:
   patches:
   - 15
@@ -32,6 +32,7 @@ server:
   features: []
   note: 无额外服务端改动要求
 data_surface:
+  character_ids: ['129992', '139993', '159998']
   kinds: []
   dsl_nodes: []
   unique_prefixes: []
