@@ -53,6 +53,7 @@ def source():
     compressor = zlib.compressobj(wbits=-15)
     encoded = compressor.compress(wf_dsl.encode_amf3(tree)) + compressor.flush()
     return Source({s.QUEST_TABLES["hard_multi"]: {"2081": {"1": quest}},
+                   "master/battle/asset/battle_bgm_group.orderedmap": {"bgm": "2,,bgm/test/normal,,bgm/test/boss"},
                    s.EVENT: {"2081": row(26, {2: "共同决战", 16: "coin"})},
                    s.EVENT_FOLDER_EVENTS: {"2": {"4": "13,2081,4"}},
                    s.EVENT_FOLDER: {"2": "终始之战"},

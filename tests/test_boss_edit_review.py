@@ -6,7 +6,7 @@ import pytest
 import wf_quest_lib as codec
 from wf.boss import schema as s
 from wf.boss.edit_state import BossEditState, merge_keys
-from wf.boss.parameters import apply_values, edit_parameters
+from wf.boss.parameters import apply_values, edit_parameters, BGM_GROUP
 from wf.boss.template import allocate, clone_rewards, template_rows
 from test_boss_model import Source, csv_row, row, source
 
@@ -59,6 +59,24 @@ def test_template_rejects_bgm_missing_from_view(tmp_path):
     ids = allocate(state)
     with pytest.raises(ValueError, match="BGM|bgm"):
         template_rows(state, {"parameters": {"bgm": "no_such_bgm"}}, ids)
+
+
+def test_existing_unused_bgm_group_is_accepted(tmp_path):
+    state = edit_state(tmp_path)
+    state.base.files[BGM_GROUP] = codec.build_node({"bgm": "2,,bgm/test/current", "unused": "2,,bgm/test/unused"})
+    edit_parameters(state, "hard_multi:1006/1", {"parameters": {"bgm": "unused"}})
+    values = s.parse_rows(state.table(s.QUEST_TABLES["hard_multi"])["1006"]["1"])[0]
+    assert values[111] == "unused"
+    assert template_rows(state, {"parameters": {"bgm": "unused"}}, allocate(state))["quest"][111] == "unused"
+
+
+def test_existing_audio_cannot_substitute_for_missing_bgm_group(tmp_path):
+    state = edit_state(tmp_path)
+    state.base.files["bgm/audio_only.mp3"] = b"existing audio bytes"
+    with pytest.raises(ValueError, match="BGM group"):
+        edit_parameters(state, "hard_multi:1006/1", {"parameters": {"bgm": "audio_only"}})
+    with pytest.raises(ValueError, match="BGM group"):
+        template_rows(state, {"parameters": {"bgm": "audio_only"}}, allocate(state))
 
 
 def test_scene_edit_accepts_namespaced_selector_and_repeat_edit(tmp_path):

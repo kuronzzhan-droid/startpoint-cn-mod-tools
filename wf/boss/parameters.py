@@ -16,6 +16,7 @@ QUESTS = {
 FIELD_DATA = "master/battle/field_data.orderedmap"
 ZONE = "master/battle/zone.orderedmap"
 FIELD = "master/battle/field.orderedmap"
+BGM_GROUP = "master/battle/asset/battle_bgm_group.orderedmap"
 
 
 def leaves(node, path=()):
@@ -59,10 +60,10 @@ def number(value):
 
 
 def validate_bgm(state, value):
-    known = {r[columns(k)["bgm"][0]] for k, table in QUESTS.items()
-             for _, text in leaves(state.table(table)) if len(r := row(text)) > columns(k)["bgm"][0]}
-    if value not in known and state.raw(f"bgm/{value}.mp3") is None:
-        raise ValueError(f"BGM is absent from this view: {value}")
+    # BattleQuestBaseImpl.getBgmGroup resolves this value through the master,
+    # whose row then selects the actual normal / boss / transition audio.
+    if value not in state.table(BGM_GROUP):
+        raise ValueError(f"BGM group is absent from this view: {value}")
 
 
 def apply_values(values, kind, parameters):
@@ -82,7 +83,7 @@ def apply_values(values, kind, parameters):
                 text = str(value)
         elif key == "bgm":
             if not isinstance(value, str) or not value or ".." in value or "\\" in value:
-                raise ValueError("bgm requires an existing logical BGM name")
+                raise ValueError("bgm requires an existing BGM group ID")
             text = value
         else:
             text = number(value)

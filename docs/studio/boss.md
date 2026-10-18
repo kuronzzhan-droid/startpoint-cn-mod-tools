@@ -57,7 +57,7 @@ python -m wf check boss hard_multi:1006/1 --tip 1.4.236 --manifest inputs/manife
 | 敌人等级 `level` | c106 | c107 |
 | 难度 rank | c107 | c108 |
 | `field_data` | c109 | c110 |
-| BGM `bgm` | c110 | c111 |
+| BGM 组 `bgm` | c110 | c111 |
 | 时间限制 | c111 | c112 |
 | `BothBoss` / 隐藏关标记 | c122 / c123 | 不按此映射解释 |
 
@@ -74,7 +74,7 @@ python -m wf.studio.draft schema --def bossRequest
 python -m wf.studio.draft validate work/boss/edit.json --def bossRequest
 ```
 
-已有副本可修改等级、HP/攻击倍率、限定/推荐属性、现有 BGM 和现有场景：
+已有副本可修改等级、HP/攻击倍率、限定/推荐属性、现有 BGM 组和现有场景：
 
 ```json
 {
@@ -89,7 +89,7 @@ python -m wf.studio.draft validate work/boss/edit.json --def bossRequest
 }
 ```
 
-等级为 1–999 的整数；实际敌人必须存在客户端可以选取的等级档，否则规则阻断。倍率须为有限正数且不超过 2147483647。`bgm` 是现有逻辑 BGM 名，`scene` 是当前 `field` 的有效键。任意写入 `fieldData`、奖励键或 CSV 列号不在请求接口中。
+等级为 1–999 的整数；实际敌人必须存在客户端可以选取的等级档，否则规则阻断。倍率须为有限正数且不超过 2147483647。`bgm` 必须是当前视图 `master/battle/asset/battle_bgm_group.orderedmap` 的有效键；客户端根据该组解析普通战斗、首领和过渡音乐，单独存在音频文件不能替代 BGM 组。尚未被现有关卡引用的有效组也可选择。`scene` 是当前 `field` 的有效键。任意写入 `fieldData`、奖励键或 CSV 列号不在请求接口中。
 
 五档编辑仅适用于叶子恰好为 `1`–`5` 的领主战分组。公共 `parameters` 先应用，每档 `tiers` 再覆盖对应参数；数组必须恰好五项：
 
@@ -118,7 +118,7 @@ python -m wf.studio.draft validate work/boss/edit.json --def bossRequest
 }
 ```
 
-模板以官方暗凛 `hard_multi:1006/1` 的 quest/event 结构为骨架，从 `sourceQuest` 复制遭遇的 `field_data`、zone、名称及 BGM；未指定 `sourceQuest` 时默认暗凛本身。默认等级 100、HP ×1.5、攻击 ×1.3，限定属性和推荐属性默认取遭遇的推荐属性。它复制已有敌人机制，不生成新 AI、美术、武器或商店；事件美术仍继承模板。
+模板以官方暗凛 `hard_multi:1006/1` 的 quest/event 结构为骨架，从 `sourceQuest` 复制遭遇的 `field_data`、zone、名称及 BGM 组；未指定 `sourceQuest` 时默认暗凛本身。默认等级 100、HP ×1.5、攻击 ×1.3，限定属性和推荐属性默认取遭遇的推荐属性。它复制已有敌人机制，不生成新 AI、美术、武器或商店；事件美术仍继承模板。
 
 模板自动执行以下一致性操作：
 
