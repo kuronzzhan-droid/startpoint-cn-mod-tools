@@ -57,6 +57,30 @@ def run_prepush(out, doc, records, server_changes, *, baseline=None, members=Non
     if not report_file.is_file():
         write_json(report_file, {"findings": [], "notes": ["prepush did not create findings"], "since": doc["from_version"]})
     findings = json.loads(report_file.read_text("utf-8"))
+    from .prepush_base import Report, View
+    from .prepush_companion import check_server_rewards
+    from .prepush_rewards import SERVER_REWARD_PATHS
+    server_before = {}
+    if server_dir is not None:
+        for rel in SERVER_REWARD_PATHS:
+            source = Path(server_dir) / rel
+            server_before[rel] = source.read_bytes() if source.is_file() else None
+    rewards = Report(set())
+    reward_view = View([*before, *candidates], store)
+    try:
+        findings["companion_reward_keys"] = check_server_rewards(
+            reward_view, rewards, server_changes, server_before)
+    finally:
+        for archive in reward_view._zf.values():
+            archive.close()
+    findings.setdefault("findings", []).extend(f.__dict__ for f in rewards.items)
+    if findings["companion_reward_keys"]["server_targets"]:
+        with (out / "prepush.log").open("a", encoding="utf-8") as log:
+            log.write(f"\n[服务端奖励键] ERROR {rewards.count('ERROR')} WARN {rewards.count('WARN')}\n")
+            for finding in rewards.items:
+                log.write(f"  {finding.level} {finding.msg}\n")
+    if rewards.count("ERROR"):
+        code = 1
     local_errors = chain_errors([p.name for p in [*before, *candidates]], doc["to_version"])
     local_errors += verify_client(doc, members or {}, baseline, base_store=base_store, archives=candidates)
     assertions = json.loads((out / "assert-box.json").read_text("utf-8"))

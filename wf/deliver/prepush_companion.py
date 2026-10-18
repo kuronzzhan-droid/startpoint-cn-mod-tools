@@ -2,11 +2,77 @@
 from __future__ import annotations
 
 from .prepush_base import *
+from .prepush_rewards import (SERVER_REWARD_PATHS, REWARD_TABLES, client_rewards,
+                              merged_rewards, reward_groups, reward_rows)
 
 ITEM = "master/item/item.orderedmap"
 ITEM_QUEST_SEARCH = "master/search/item_quest_search.orderedmap"
 EII = "master/battle/item/executable_instant_item.orderedmap"
 EII_LEVEL = "master/battle/item/executable_instant_item_level.orderedmap"
+
+
+def check_server_rewards(view, rep, server_changes, server_before):
+    """Validate changed reward files against the actual candidate client tables.
+
+    A row is identified by (table, group, position). Existing rows remain WARN,
+    including edited rows; newly introduced identities are ERROR. The baseline
+    includes both base and _cnmod files so overrides do not invent new rows.
+    """
+    targets = sorted(set(server_changes) & set(SERVER_REWARD_PATHS))
+    evidence = {"executed": True, "server_targets": targets, "checked_rows": 0,
+                "server_baseline_complete": all(p in server_before for p in SERVER_REWARD_PATHS)
+                if targets else True}
+    if not targets:
+        return evidence
+    before = dict(server_before)
+    after = {**before, **server_changes}
+    clients = {name: client_rewards(view, name) for name in REWARD_TABLES}
+    effective = {name: merged_rewards(after, name) for name in REWARD_TABLES}
+    previous = {name: merged_rewards(before, name)[0] for name in REWARD_TABLES}
+
+    def require(name, group, position, level, target, origin):
+        group = str(group)
+        client_group = clients[name].get(group)
+        if position is None:
+            present = isinstance(client_group, dict) and bool(client_group)
+        else:
+            present = isinstance(client_group, dict) and position in client_group
+        if not present:
+            key = group if position is None else f"{group}/{position}"
+            rep.add(level, "companion", f"companion.reward_key:{target}:{origin}:{name}:{key}",
+                    f"服务端 {target} 奖励行 {origin} 引用的客户端 {name} 键 {key} 不存在",
+                    ["候选视图包含本次客户端包和 _cnmod 合并表；存量行 WARN，新增行 ERROR"])
+
+    for name in REWARD_TABLES:
+        groups, sources = effective[name]
+        relevant = set()
+        for target in targets:
+            if target in (f"assets/{name}.json", f"assets/{name}_cnmod.json"):
+                relevant.update(reward_groups(server_changes[target], target))
+                relevant.update(reward_groups(before.get(target), target))
+        for group in sorted(relevant):
+            if group not in groups:
+                continue
+            target = sources[group]
+            # A base edit masked by an unchanged _cnmod group has no runtime change.
+            if target not in targets and groups[group] == previous[name].get(group):
+                continue
+            old_rows = reward_rows(previous[name].get(group, []), name)
+            for position, entry in reward_rows(groups[group], name).items():
+                evidence["checked_rows"] += 1
+                level = "WARN" if position in old_rows else "ERROR"
+                origin = f"{group}/{position}"
+                require(name, group, position, level, target, origin)
+                if name == "score_reward" and entry.get("type") == 1:
+                    rare_group = entry.get("id")
+                    if rare_group is None:
+                        raise ValueError(f"{target}:{origin}: rare pool lacks id")
+                    require("rare_score_reward", rare_group, None, level, target, origin)
+                    # The server emits rare index + 1, not just the group id.
+                    rare_entries = effective["rare_score_reward"][0].get(str(rare_group), [])
+                    for rare_position in reward_rows(rare_entries, "rare_score_reward"):
+                        require("rare_score_reward", rare_group, rare_position, level, target, origin)
+    return evidence
 
 
 def check_companion(args, view: View, old: View | None, rep: Report, allow_iqs: set[str]):
