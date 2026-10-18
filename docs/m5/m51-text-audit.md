@@ -49,7 +49,7 @@ D3/D4 新增检查在 1.4.227–1.4.229 各命中 17 项能力队长前置问题
 
 规则目录 `wf/rules/text_standard.json` 升级为 1.2.0，共60条：49条部分检查，11条保留人工语义核对。作者依据按任务指定读取：
 
-- `C:/Users/12101/.claude/projects/D--WF-startpoint-cn/memory/wf-leader-override-text-rules.md`：固定文案禁止「自身为队长时」和 `X%（觉醒后 Y%）`；低/满级列不是觉醒前后；整槽主位限制每行使用精确 icon，禁字面Ⓜ和多条效果压行。
+- 作者经验记录 wf-leader-override-text-rules：固定文案禁止「自身为队长时」和 `X%（觉醒后 Y%）`；低/满级列不是觉醒前后；整槽主位限制每行使用精确 icon，禁字面Ⓜ和多条效果压行。
 - `.../wf-panel-text-standard-1017.md`：覆盖键是 `desc_override_<c0>`，并规定面板术语、乘区和技能说明边界。
 - `.../wf-skill-enhance-text-rule.md`：强化说明在队长/能力中定性表达，不向技能本体重复写入；本任务沿用已有对应检查。
 
