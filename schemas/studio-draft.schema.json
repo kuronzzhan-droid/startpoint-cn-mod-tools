@@ -8,6 +8,7 @@
   "required": ["schema", "characterId", "code", "baseView", "createdAt", "updatedAt", "savedAt", "revision", "savedRevision", "changes"],
   "properties": {
     "schema": {"const": "wf-studio-draft/1"},
+    "subjectKind": {"enum": ["character", "boss"], "description": "旧角色草稿可省略；boss 使用独立草稿目录，characterId 为兼容容器中的副本 ID"},
     "characterId": {"$ref": "#/$defs/characterId"},
     "code": {"$ref": "#/$defs/code"},
     "baseView": {"type": "string", "pattern": "^1\\.4\\.[0-9]+$", "description": "草稿基于的视图资源版本"},
@@ -21,6 +22,37 @@
     "changes": {"type": "array", "items": {"$ref": "#/$defs/change"}}
   },
   "$defs": {
+    "bossParameters": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "level": {"type": "integer", "minimum": 1, "maximum": 999},
+        "hpMultiplier": {"type": "number", "exclusiveMinimum": 0, "maximum": 2147483647},
+        "attackMultiplier": {"type": "number", "exclusiveMinimum": 0, "maximum": 2147483647},
+        "restrictedElement": {"type": ["integer", "null"], "minimum": 0, "maximum": 5},
+        "recommendedElement": {"type": "integer", "minimum": 0, "maximum": 5},
+        "bgm": {"type": "string", "minLength": 1},
+        "scene": {"type": "string", "minLength": 1}
+      }
+    },
+    "bossRequest": {
+      "type": "object", "additionalProperties": false, "required": ["operation"],
+      "properties": {
+        "operation": {"enum": ["edit", "create_shared"]},
+        "sourceQuest": {"type": "string", "pattern": "^(?:(?:boss_battle|hard_multi|practice):)?[0-9]+(?:/[0-9]+)*$"},
+        "name": {"type": "string", "minLength": 1, "maxLength": 80},
+        "parameters": {"$ref": "#/$defs/bossParameters"},
+        "tiers": {"type": "array", "minItems": 5, "maxItems": 5, "items": {"$ref": "#/$defs/bossParameters"}},
+        "ids": {"type": "object", "additionalProperties": false, "required": ["event"],
+          "properties": {"event": {"type": "string", "pattern": "^[2-9][0-9]{3}$"},
+                         "node": {"type": "string", "pattern": "^[1-9][0-9]*$"}}}
+      },
+      "allOf": [
+        {"if": {"properties": {"operation": {"const": "edit"}}},
+         "then": {"not": {"anyOf": [{"required": ["ids"]}, {"required": ["sourceQuest"]}, {"required": ["name"]}]}}},
+        {"if": {"properties": {"operation": {"const": "create_shared"}}},
+         "then": {"not": {"required": ["tiers"]}}}
+      ]
+    },
     "characterId": {"type": "string", "pattern": "^[0-9]{1,9}$"},
     "code": {"type": "string", "pattern": "^[a-z0-9_]+$"},
     "timestamp": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}"},
@@ -255,7 +287,7 @@
       "required": ["id", "kind", "title", "createdAt", "target", "params", "files", "pending", "checks"],
       "properties": {
         "id": {"type": "string", "pattern": "^c-[0-9a-f]{12}$"},
-        "kind": {"enum": ["portrait", "pixel_action", "voice_line", "ability_edit"]},
+        "kind": {"enum": ["portrait", "pixel_action", "voice_line", "ability_edit", "boss"]},
         "title": {"type": "string", "minLength": 1},
         "createdAt": {"$ref": "#/$defs/timestamp"},
         "target": {"type": "object"},
@@ -265,6 +297,23 @@
         "checks": {"type": "array", "items": {"$ref": "#/$defs/check"}}
       },
       "allOf": [
+        {
+          "if": {"properties": {"kind": {"const": "boss"}}},
+          "then": {"properties": {
+            "target": {"type": "object", "additionalProperties": false, "required": ["quest"],
+                       "properties": {"quest": {"$ref": "#/$defs/characterId"}}},
+            "params": {"type": "object", "additionalProperties": false, "required": ["requests", "inputs"],
+              "properties": {
+                "requests": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/bossRequest"}},
+                "inputs": {"type": "object", "additionalProperties": false, "required": ["client", "server"],
+                  "properties": {
+                    "client": {"type": "object", "additionalProperties": {"$ref": "#/$defs/sha256"}},
+                    "server": {"type": "object", "additionalProperties": {"$ref": "#/$defs/sha256"}}
+                  }}
+              }},
+            "files": {"maxItems": 0}, "pending": {"maxItems": 0}
+          }}
+        },
         {
           "if": {"properties": {"kind": {"const": "ability_edit"}}},
           "then": {
