@@ -97,7 +97,7 @@ def test_catalog_covers_every_section_and_cannot_claim_semantics_pass():
     for rule in rules:
         if rule["implementation"]["mode"] != "automatic":
             assert states[rule["id"]] == "待验证"
-        if not rule["implementation"]["check"] and not rule["implementation"]["patterns"]:
+        if not any(rule["implementation"].get(key) for key in ("check", "patterns", "document_check")):
             assert rule["implementation"]["mode"] == "review"
     assert all(entry["state"] == "不适用" for entry in coverage(set()))
     assert all("未做自动判定" in entry["boundary"] for entry in coverage({"desc_override"}) if entry["mode"] == "review")

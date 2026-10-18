@@ -24,6 +24,7 @@ def test_unlisted_wording_cannot_receive_satisfied_coverage(text, rule):
     "速度提升至2倍，对敌人造成火属性伤害",
     "对敌人造成火属性伤害／持续时间和层数上限变为2倍",
     "自身速度变为1.5倍",
+    "持续时间合计2倍",
 ])
 def test_duration_stack_speed_multipliers_are_not_damage(text):
     assert not any(f["rule"] == "text.standard.skill-damage-numbers"

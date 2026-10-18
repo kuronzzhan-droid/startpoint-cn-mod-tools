@@ -180,5 +180,10 @@ def fever_items(text, key):
     return [] if "Fever模式中，场上的加速箭头变为随机道具" in text else [text]
 
 
+def skill_name(text, key):
+    from .rules import normalized
+    return _matches(r"之核(?:[+＋]*|[）)】」』])?$|[「『【][^」』】]*之核[」』】]", normalized(text))
+
+
 CHECKS = {name: value for name, value in list(globals().items())
           if callable(value) and not name.startswith("_") and name not in {"unquote"}}

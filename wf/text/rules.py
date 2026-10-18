@@ -72,6 +72,8 @@ def check_character(document: dict) -> list[dict]:
                         "技能与关联强化出现相同效果名；需核对是强化差值还是重复描述", key=key, labels=overlap)
     from .standard import check_document
     findings.extend(check_document(document))
+    from .effective import compare_document
+    findings.extend(compare_document(document))
     if not findings:
         add("text.style", "满足", document["character_id"], "已检查恒真条件、命名和可证明的重复强化；语义效果仍需设计者核对")
     return findings

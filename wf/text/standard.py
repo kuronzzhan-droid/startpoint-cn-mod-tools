@@ -18,7 +18,7 @@ def check_entry(key, text, *, surface="desc_override", location=None):
     """Return proven violations only. Use coverage() for nonautomatic obligations."""
     if not isinstance(text, str):
         raise ValueError(f"{key}: text must be a string")
-    if surface not in {"desc_override", "action_skill", "custom_ability_string"}:
+    if surface not in {"desc_override", "action_skill", "action_skill_name", "custom_ability_string"}:
         raise ValueError(f"unsupported standard text surface: {surface}")
     findings = []
     for rule in rule_catalog()["rules"]:
@@ -39,6 +39,9 @@ def check_entry(key, text, *, surface="desc_override", location=None):
 
 def coverage(surfaces, findings=()):
     """Every clause receives an explicit state; regex absence proves no semantics."""
+    surfaces = set(surfaces)
+    if "action_skill" in surfaces:
+        surfaces.add("action_skill_name")
     failing = {finding["rule"] for finding in findings if finding["state"] == "问题"}
     records = []
     for rule in rule_catalog()["rules"]:
@@ -62,9 +65,13 @@ def check_document(document):
             surfaces.add(surface)
             findings.extend(check_entry(key, text, surface=surface))
     for tier, pair in document.get("action_skill", {}).items():
-        surfaces.add("action_skill")
+        surfaces.update(("action_skill", "action_skill_name"))
+        findings.extend(check_entry(f"{document.get('skill_key', '')}.{tier}", pair["c0"],
+                                   surface="action_skill_name", location=f"action_skill.{tier}.c0"))
         findings.extend(check_entry(f"{document.get('skill_key', '')}.{tier}", pair["c1"],
                                    surface="action_skill", location=f"action_skill.{tier}.c1"))
+    from .skill_checks import check_tiers
+    findings.extend(check_tiers(document.get("skill_key", ""), document.get("action_skill", {})))
     pending = [entry["rule"] for entry in coverage(surfaces, findings) if entry["state"] == "待验证"]
     if pending:
         findings.append({"rule": "text.standard.coverage", "state": "待验证", "location": document["character_id"],

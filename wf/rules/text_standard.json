@@ -2,7 +2,7 @@
   "version": "1.1.0",
   "standard": "MOD 角色面板文案规范 v1（草案）",
   "source_sha256": "304696b1ffe2702c60d204bfa3f1caae9a327127dfc759a92ee18a76cc321663",
-  "scope_note": "§1—8和§10只检查desc_override；§9检查action_skill。官方自动生成能力和非覆盖custom文本不套本规范。全表扫描包含继承文本和无角色归属的键，问题不等同该版本新引入。",
+  "scope_note": "§1—8和§10只检查desc_override；§9检查action_skill c1与档位一致性；c0按名称规则检查，保留升级后缀。官方自动生成能力和非覆盖custom文本不套本规范。全表扫描包含继承文本和无角色归属的键，问题不等同该版本新引入。",
   "evidence_note": "作者规范是格式约定；官方模板引用只表示规范如此引用，未冒充本次独立真机或模板语料验证。",
   "rules": [
     {
@@ -888,7 +888,7 @@
       "implementation": {
         "check": null,
         "patterns": [
-          "合计\\d+(?:\\.\\d+)?\\s*倍",
+          "合计\\d+(?:\\.\\d+)?\\s*倍[（(][^）)\\n]*[）)](?:[火水雷风光暗]属性)?伤害",
           "\\d+(?:\\.\\d+)?\\s*倍(?:的)?(?:[火水雷风光暗]属性)?(?:技能|能力|直接攻击|强化弹射)?伤害",
           "伤害(?:倍率)?(?:变为|提升至|提高至|为)?\\s*\\d+(?:\\.\\d+)?\\s*倍",
           "\\d+\\s*段(?:[^，。／\\n]{0,12})?(?:伤害|倍率|×)"
@@ -1181,6 +1181,47 @@
           "技能充能速度上限(?:变为|增加到|提高到)"
         ],
         "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.skill-name",
+      "title": "技能名称不得采用「…之核」",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §8",
+      "requirement": "技能名称不得采用「…之核」",
+      "checker": "text",
+      "revision": "2026-10-18：补充名称和跨档检查",
+      "surfaces": [
+        "action_skill_name"
+      ],
+      "implementation": {
+        "check": "skill_name",
+        "patterns": [],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.skill-tier-wording",
+      "title": "技能各档描述采用同一套写法，允许持续、层数等数值差异",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §9",
+      "requirement": "技能各档描述采用同一套写法，允许持续、层数等数值差异",
+      "checker": "text",
+      "revision": "2026-10-18：补充名称和跨档检查",
+      "surfaces": [
+        "action_skill"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [],
+        "mode": "partial",
+        "document_check": "skill_tiers"
       }
     }
   ]

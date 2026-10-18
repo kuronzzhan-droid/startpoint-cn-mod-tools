@@ -18,7 +18,7 @@ def test_audit_includes_unowned_overrides_and_all_tiers(workspace, tmp_path):
     assert result["state"] == "问题"
     orphan = [f for f in result["findings"] if "orphan" in f["location"]]
     assert {f["rule"] for f in orphan} >= {"text.standard.term-pf", "text.standard.no-final-stop"}
-    assert result["checked_entries"] == 11  # 2 override + 3 client + 3 base + 3 rank.
+    assert result["checked_entries"] == 20  # 2 override + 6 client + 6 base + 6 rank.
     assert len([r for r in result["server_mirrors"] if r["state"] == "满足"]) == 2
     assert all(len(value) == 64 for value in result["sources"].values())
     path = write_report(result, tmp_path / "audit.json")
