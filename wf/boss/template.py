@@ -68,6 +68,12 @@ def allocate(state, requested=None, reserved=()):
 
 def template_rows(state, request, ids):
     """Pure generation, also used to compare historical 143–145 cells."""
+    name = request.get("name")
+    if name is not None:
+        if not isinstance(name, str) or not 1 <= len(name) <= 80:
+            raise ValueError("name must contain 1..80 characters")
+        if any(char in name for char in "\r\n\v\f\x1c\x1d\x1e\x85\u2028\u2029\"'“”‘’") or "::" in name:
+            raise ValueError("name 不得包含换行、引号或 ::")
     kind, _, _, encounter = find_quest(state, request.get("sourceQuest", "hard_multi:1006/1"))
     require_encounter(kind, encounter)
     values = row(state.table(QUEST)["1006"]["1"])
@@ -77,8 +83,8 @@ def template_rows(state, request, ids):
     fd[2] = ids["zone"]
     values[0] = ids["quest"]
     values[2:4] = encounter[2:4]
-    if request.get("name"):
-        values[2] = request["name"] + " ::quest_rank::"
+    if name is not None:
+        values[2] = name + " ::quest_rank::"
     values[5:7] = [START, "(None)"]
     values[7:17] = ["(None)", "", "", "", "(None)", "(None)", "", "", "", "(None)"]
     element = int(encounter[columns(kind)["recommendedElement"][0]])
