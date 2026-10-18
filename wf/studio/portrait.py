@@ -89,6 +89,11 @@ def trim_transparent(image: Image.Image) -> tuple[Image.Image, list[int]]:
     return rgba.crop(box), list(box)
 
 
+def suggested_backdrop(element: str) -> dict:
+    inner, outer = BACKDROPS.get(element, ([110, 110, 130], [40, 40, 55]))
+    return {"inner": inner, "outer": outer}
+
+
 def default_template(image: Image.Image, face: list[float] | None, element: str = "") -> dict:
     width, height = image.size
     if face is None:
@@ -96,14 +101,14 @@ def default_template(image: Image.Image, face: list[float] | None, element: str 
         face = [round(width * 0.502), round(height * 0.187)]
     square = round(height * 0.24, 1)
     head = square / 1.25
-    inner, outer = BACKDROPS.get(element, ([110, 110, 130], [40, 40, 55]))
     return {
         "face": [round(float(face[0]), 1), round(float(face[1]), 1)],
         "squareHeight": square,
         "groups": {name: {"anchor": list(spec["anchor"]), "factor": spec["factor"]} for name, spec in GROUPS.items()},
         "cutin": {"center": [round(float(face[0]), 1), round(float(face[1]), 1)],
                   "height": round(512 * head / 207, 1), "anchor": [0.51, 0.44]},
-        "backdrop": {"inner": inner, "outer": outer},
+        # 官方图标是透明底；元素渐变只作为作者手动打开底色时的起始色。
+        "backdrop": None,
     }
 
 
@@ -226,8 +231,46 @@ class PortraitService:
         self.store.write_file(cid, f"sources/portrait_{form}.json", json.dumps(meta).encode("utf-8"))
         return {"file": relative, **meta}
 
+    def current_backdrop(self, code: str, form: str) -> tuple[bool, dict | None]:
+        """Sample the backdrop of the character's existing square icon.
+
+        Returns (found, backdrop). backdrop is None when the existing icon has a
+        transparent background, so a recrop keeps the game's current look instead
+        of a synthetic element gradient.
+        """
+        logical = f"character/{code}/ui/square_{form}.png"
+        raw = None
+        for root in ("medium", "common"):
+            raw = read_root(self.source, root, logical)
+            if raw is not None:
+                break
+        if raw is None:
+            return False, None
+        icon = decode_png(raw).convert("RGBA")
+        pixels = np.asarray(icon, dtype=np.float64)
+        h, w = pixels.shape[:2]
+        band = max(2, round(min(w, h) * 0.06))
+        ring = np.concatenate([pixels[:band].reshape(-1, 4), pixels[-band:].reshape(-1, 4),
+                               pixels[:, :band].reshape(-1, 4), pixels[:, -band:].reshape(-1, 4)])
+        # Official icons are cut out on a transparent canvas; the character only
+        # touches some edges, so any real share of transparent border pixels means
+        # the icon has no painted backdrop.
+        if (ring[:, 3] < 128).mean() > 0.05:
+            return True, None
+        # The radial template is lighter in the middle; sample the top-centre strip
+        # (usually background above the head) for inner and the corners for outer.
+        top = pixels[:band, w // 3: 2 * w // 3].reshape(-1, 4)
+        c = band * 2
+        corners = np.concatenate([pixels[:c, :c].reshape(-1, 4), pixels[:c, -c:].reshape(-1, 4),
+                                  pixels[-c:, :c].reshape(-1, 4), pixels[-c:, -c:].reshape(-1, 4)])
+        def mean_rgb(block):
+            opaque = block[block[:, 3] >= 128]
+            return [int(round(v)) for v in (opaque if len(opaque) else block)[:, :3].mean(axis=0)]
+        return True, {"inner": mean_rgb(top), "outer": mean_rgb(corners)}
+
     def source_info(self, cid: str, code: str, form: str, element: str) -> dict:
         geometry = self.current_geometry(cid, form)
+        found, backdrop = self.current_backdrop(code, form)
         current = self.view_full_shot(code, form)
         info = {"form": form, "geometry": geometry, "current": None, "upload": None}
         if current is not None:
@@ -238,6 +281,10 @@ class PortraitService:
             info["current"] = {"path": f"character/{code}/" + FULL_SHOT.format(form=form),
                                "size": list(image.size), "originalSize": list(current[0].size), "trim": trim,
                                "template": default_template(image, face, element)}
+            info["current"]["suggestedBackdrop"] = suggested_backdrop(element)
+            if found:
+                info["current"]["template"]["backdrop"] = backdrop
+                info["current"]["backdropSource"] = "取自现有 square 图标" if backdrop else "现有图标是透明底"
         uploaded = self.store.read_file(cid, f"sources/portrait_{form}.png")
         if uploaded is not None:
             meta_raw = self.store.read_file(cid, f"sources/portrait_{form}.json")
@@ -245,6 +292,9 @@ class PortraitService:
             image = decode_png(uploaded)
             info["upload"] = {"file": f"sources/portrait_{form}.png", "size": list(image.size), **meta,
                               "template": default_template(image, None, element)}
+            info["upload"]["suggestedBackdrop"] = suggested_backdrop(element)
+            if found:
+                info["upload"]["template"]["backdrop"] = backdrop
         return info
 
     # -- render ---------------------------------------------------------

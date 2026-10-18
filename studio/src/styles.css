@@ -307,6 +307,7 @@ input[type=number] { width: 72px; border: 1px solid var(--border); border-radius
 .preview.wide { max-width: 330px; }
 .preview.on { box-shadow: 0 0 0 2px var(--accent); }
 .preview canvas { display: block; background: repeating-conic-gradient(#e9ecf1 0% 25%, #f7f8fa 0% 50%) 50% / 12px 12px; }
+.preview .game-icon { display: block; margin-top: 4px; opacity: .9; border: 1px dashed var(--border); }
 .preview figcaption { display: flex; flex-direction: column; align-items: center; text-align: center; }
 .checks { list-style: none; padding: 0; margin: 6px 0; display: flex; flex-direction: column; gap: 3px; font-size: 13px; }
 .checks li { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }

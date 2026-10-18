@@ -92,6 +92,8 @@ export function PortraitEditor({ characterId }: { characterId: string }) {
   }, [info?.shapeSlots.join()]);
 
   const active = info ? (source === "upload" ? info.upload : info.current) : null;
+  // character/<code> 目录，用来并排显示游戏里现在的图标。
+  const gameDir = info?.current?.path ? info.current.path.split("/").slice(0, 2).join("/") : null;
   const imageUrl = !info || !active ? null
     : source === "upload" ? drafts.fileUrl(characterId, active.file!, String(stamp)) : api.assetUrl(active.path!);
   const offset = source === "current" && active?.trim ? active.trim : [0, 0, 0, 0];
@@ -320,10 +322,10 @@ export function PortraitEditor({ characterId }: { characterId: string }) {
                 <div class="small muted">{info.groups.find((g) => g.name === sel.id)?.label ?? "skill_cutin（1024×512，内容贴左、右侧渐隐）"}</div>
               </div>
             ) : null}
-            <h4>图标底色</h4>
+            <h4>图标底色 {active?.backdropSource ? <span class="small muted">（默认{active.backdropSource}）</span> : null}</h4>
             <div class="param-grid">
               <label class="check"><input type="checkbox" checked={template.backdrop === null}
-                onChange={(e) => { const t = clone(template); t.backdrop = (e.target as HTMLInputElement).checked ? null : { inner: [110, 110, 130], outer: [40, 40, 55] }; setTemplate(t); }} />透明底</label>
+                onChange={(e) => { const t = clone(template); t.backdrop = (e.target as HTMLInputElement).checked ? null : (active?.suggestedBackdrop ?? { inner: [110, 110, 130], outer: [40, 40, 55] }); setTemplate(t); }} />透明底</label>
               {template.backdrop ? (
                 <>
                   <label>内<input type="color" value={hex(template.backdrop.inner)}
@@ -352,6 +354,11 @@ export function PortraitEditor({ characterId }: { characterId: string }) {
                 style={{ borderColor: COLORS[g.name] }}>
                 <canvas ref={(el) => { canvases.current[slot] = el; }} data-slot={slot}
                   style={{ width: Math.min(info.slotSizes[slot][0], 140) + "px" }} />
+                {gameDir ? (
+                  <img class="game-icon" src={api.assetUrl(`${gameDir}/ui/${slot}_${form}.png`)} alt="" loading="lazy"
+                    title="游戏里现在的图标" style={{ width: Math.min(info.slotSizes[slot][0], 140) / 2 + "px" }}
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                ) : null}
                 <figcaption>
                   <span class="mono small">{slot}</span>
                   <span class="small muted">{info.slotSizes[slot].join("×")} · {info.shapeLabels[slot] ?? "满框"} · {info.slotUse[slot]}</span>

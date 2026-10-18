@@ -365,6 +365,8 @@ export interface PortraitSource {
   originalSize?: [number, number];
   trim?: [number, number, number, number];
   hasAlpha?: boolean;
+  backdropSource?: string;
+  suggestedBackdrop?: { inner: [number, number, number]; outer: [number, number, number] };
   template: CropTemplate;
 }
 
