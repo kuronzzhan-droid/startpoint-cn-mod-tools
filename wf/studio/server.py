@@ -303,14 +303,17 @@ def make_handler(app: StudioApp, static_root: Path, guard: WriteGuard):
             pass
 
         def _send(self, response: Response, head: bool = False):
-            self.send_response(response.status)
-            self.send_header("Content-Type", response.content_type)
-            self.send_header("Content-Length", str(len(response.body)))
-            self.send_header("Cache-Control", response.cache or (
-                "no-store" if response.content_type.startswith("application/json") else "max-age=600"))
-            self.end_headers()
-            if not head:
-                self.wfile.write(response.body)
+            try:
+                self.send_response(response.status)
+                self.send_header("Content-Type", response.content_type)
+                self.send_header("Content-Length", str(len(response.body)))
+                self.send_header("Cache-Control", response.cache or (
+                    "no-store" if response.content_type.startswith("application/json") else "max-age=600"))
+                self.end_headers()
+                if not head:
+                    self.wfile.write(response.body)
+            except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+                self.close_connection = True  # the browser navigated away; nothing to report
 
         def _static(self, path: str) -> Response:
             relative = path.lstrip("/") or "index.html"

@@ -153,6 +153,8 @@ export interface PixelMeta {
   families: PixelFamily[];
   slots: { name: string; label: string; present: boolean }[];
   note: string;
+  /** draft endpoint: no pixel changes in the draft (show the view instead) */
+  empty?: boolean;
 }
 
 export interface AssetRoot {
@@ -892,6 +894,8 @@ export interface PaletteColor {
   hex: string;
   rgb: [number, number, number];
   count: number;
+  /** pixels of this colour that are fully opaque (0 = only on semi-transparent pixels) */
+  opaque?: number;
   regions: number;
   luma: number;
   group: PaletteGroup;
@@ -1068,4 +1072,7 @@ export const scratchApi = {
       : notify(cid, post<ImportResult>(`/api/drafts/${cid}/pixel-import`, body)),
   bind: (sid: string, body: { characterId: string; dryRun?: boolean }) =>
     body.dryRun ? post<BindResult>(`/api/drafts/${sid}/bind`, body) : notify(sid, post<BindResult>(`/api/drafts/${sid}/bind`, body)),
+  rename: (sid: string, body: { name?: string; element?: string }) =>
+    notify(sid, post<ScratchInfo>(`/api/drafts/${sid}/scratch-rename`, body)),
+  remove: (sid: string) => post<{ deleted: string }>(`/api/drafts/${sid}/scratch-delete`, {}),
 };

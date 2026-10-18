@@ -262,7 +262,7 @@ function InfoTipInline({ text }: { text: string }) {
 // ---------------------------------------------------------------------------
 // Skill tiers: insert (copy a tier) / delete, with the backend's reference report
 
-export function SkillTiers() {
+export function SkillTiers({ onText }: { onText?: () => void }) {
   const ws = useWorkspace();
   if (!ws?.state) return null;
   const tiers = ws.state.entries.filter((e) => e.table === "action_skill").sort((a, b) => Number(a.level) - Number(b.level));
@@ -329,10 +329,15 @@ export function SkillTiers() {
         ))}
       </ol>
       {locked && !pending.length ? <p class="small muted">{locked}</p> : null}
+      {new Set(tiers.map((t) => t.rows[0]?.[0])).size < tiers.length ? (
+        <p class="small warn-text">有档位同名（新插入的档沿用上一档的名字）：到文案页给它改名，比如加「＋」。
+          {onText ? <button class="link" onClick={onText}>去文案页 →</button> : null}</p>
+      ) : null}
       {pending.length ? (
         <div class="tier-pending">
           <p><strong>未写入：</strong>{pending.map((op) => op.op === "insert_row" ? `在第 ${op.level} 档位置插入（复制前一档）`
             : op.op === "move_row" ? `档 ${op.level} 移到第 ${(op.to_row ?? 0) + 1} 档` : `删除档 ${op.level}`).join("；")}
+            {pending.some((op) => op.op === "insert_row") ? "。新档沿用上一档的名字和描述，写入后到文案页改名（技能文字要另起一次写入）。" : ""}
             → 结果 {projected.length} 档：{projected.map((p) => `${p.label}「${p.name}」`).join(" / ")}
             <button class="ghost small-btn" onClick={cancel}>撤销</button></p>
           {shared ? (

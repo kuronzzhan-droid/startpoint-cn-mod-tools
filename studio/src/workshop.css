@@ -69,3 +69,5 @@
 .ws-scratch-card { display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius); color: inherit; text-decoration: none; }
 .ws-scratch-card:hover { border-color: var(--accent); }
+.ws-swatch-row .tag, .tag { white-space: nowrap; }
+.ws-subtabs .ws-legend[open] { flex-basis: 100%; order: 3; }

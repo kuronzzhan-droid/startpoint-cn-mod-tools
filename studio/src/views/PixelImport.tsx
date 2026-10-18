@@ -261,8 +261,8 @@ export function PixelImport({ characterId }: { characterId: string }) {
   return (
     <div class="pixel-import">
       <p class="hint">
-        按动作槽导入新帧：逐帧 PNG 或精灵图网格切分；每帧可设停留帧数（60fps）和锚点（脚底中心）。草稿只存源帧和参数，
-        重新装箱 sprite_sheet / 改写 atlas 与时间轴属于「生成」（待接入 wf deliver，M1 分支）。
+        替换一个动作：上传逐帧 PNG，或一张精灵图按网格切开；每帧设停留帧数（60 帧 = 1 秒）和定位点（脚底中心）。
+        草稿只存这些帧和参数，「生成」时再把它们装进图集。只有最后一个动作能改总长，不能新增动作。
       </p>
       <div class="toolbar">
         <label>像素族
@@ -298,7 +298,7 @@ export function PixelImport({ characterId }: { characterId: string }) {
       {message ? <Notice kind={message.kind === "error" ? "error" : "info"}>{message.text}</Notice> : null}
       <div class="compare">
         <figure>
-          <figcaption><strong>原版</strong> <span class="muted small">{action ? `${action.label} · ${action.totalFrames} 帧 · ${action.cells.length} 张图` : "（原图集没有这个动作）"}</span></figcaption>
+          <figcaption><strong>改动前</strong> <span class="muted small">{action ? `${action.label} · ${action.totalFrames} 帧 · ${action.cells.length} 张图` : "（原图集没有这个动作）"}</span></figcaption>
           <canvas ref={left} class="pixel-canvas" data-side="original" />
         </figure>
         <figure>

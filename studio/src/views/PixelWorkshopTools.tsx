@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import {
   ActionFrames, base64ToBytes, BaseImageSpec, bytesToBase64, DraftCheck, drafts, GENERATE_ACTIONS, GeneratedFrame,
-  PaletteGroup, PixelAction, WorkshopAnalysis, workshop,
+  PaletteColor, PaletteGroup, PixelAction, WorkshopAnalysis, workshop,
 } from "../api";
 import { ChecksList } from "./Changes";
 import { Notice } from "./common";
+import { InfoTip } from "./Delivery";
 import { ActionStage, familyOf, hexToInt, intToHex, loadImage, paintChecker, readAsDataUrl, useClock, useFamilies } from "./workshopKit";
 
 const BOX = 256;
@@ -77,15 +78,16 @@ export function ProceduralActions({ characterId, refresh, onSaved }: { character
 
   return (
     <div class="ws-generate">
-      <p class="hint">按官方配方从三张底图合成动作（零 API）：走路 = 交替下沉 1px + 底行摆 1px；胜利 = 原姿 → 倾斜 12° 起跳 → 最高点 −16° + 金白火花 → 落地 6°；
-        幽灵 = 明度三档白/灰蓝 + 底部波尾，悬浮 12px；入棺 = 本体渐隐 → 躺倒；复活 = 幽灵下落 → 交叠 → 全白闪 → 本体。
-        帧是 256² 帧框、原点 (128,128)，fy = −(128 − h + dy)。底图默认取草稿态（有母本映射时就是映射后的颜色）。</p>
+      <p class="hint">按官方小人的做法，从正面 / 背面 / 躺倒三张底图自动合成动作，不调用任何外部服务：
+        走路 = 上下轻晃 1 像素、裙摆左右摆；胜利 = 起跳 → 最高点带火花 → 落地（客户端第 19 帧取举手画面，会落在最高点）；
+        幽灵 = 变成白蓝色、悬浮；入棺 = 渐隐后躺倒；复活 = 幽灵落下 → 闪白 → 恢复。底图默认用草稿里的样子（换过色就是换色后的颜色）。
+        <InfoTip text="技术细节：每帧 256×256 帧框、定位原点 (128,128)，fy = −(128 − h + dy)；端点按官方比例缩放，胜利动作保证 begin+18 落在最高点那张。" /></p>
       <div class="ws-bases">
         {(["front", "back", "liedown"] as Slot[]).map((slot) => (
           <div class={"ws-base" + (active === slot ? " on" : "")} onClick={() => setActive(slot)}>
             <strong class="small">{SLOT_LABEL[slot]}</strong>
             {bases[slot] ? <img src={bases[slot]!.url} alt="" /> : <span class="muted small">{slot === "liedown" ? "未选：用正面转 90°" : "未选"}</span>}
-            <span class="mono small muted">{bases[slot] && "cell" in bases[slot]!.spec ? `端点 ${(bases[slot]!.spec as { cell: { key: number } }).cell.key}` : bases[slot] ? "上传" : ""}</span>
+            <span class="small muted">{bases[slot] && "cell" in bases[slot]!.spec ? "现有画面" : bases[slot] ? "上传" : ""}</span>
             <label class="upload-btn small">上传 PNG
               <input type="file" accept="image/png" onChange={async (e) => {
                 const file = (e.target as HTMLInputElement).files?.[0];
@@ -97,10 +99,10 @@ export function ProceduralActions({ characterId, refresh, onSaved }: { character
           </div>
         ))}
         <div class="ws-cellpick">
-          <span class="small muted">点下面的现有帧，设为「{SLOT_LABEL[active]}」底图（pixelart 每个图集区域一张）：</span>
+          <span class="small muted">点下面的现有画面，设为「{SLOT_LABEL[active]}」底图：</span>
           <div class="ws-cellpick-list">
             {uniqueCells.map((key) => (
-              <button title={"端点 " + key} onClick={() => setBases({ ...bases, [active]: {
+              <button title={"图集端点 " + key} onClick={() => setBases({ ...bases, [active]: {
                 spec: { cell: { family: "pixelart", key } }, url: workshop.cellUrl(characterId, "pixelart", key, "draft") } })}>
                 <img src={workshop.cellUrl(characterId, "pixelart", key, "draft")} alt="" />
               </button>
@@ -138,9 +140,8 @@ export function ProceduralActions({ characterId, refresh, onSaved }: { character
             {frames.map((f, i) => (
               <div class={"film" + (i === genIndex ? " on" : "")} title={f.note}>
                 <FrameStage image={f.img} crop={genCrop} zoom={2} />
-                <span class="small mono">{f.duration}f · dy{f.dy > 0 ? "+" : ""}{f.dy}</span>
+                <span class="small mono" title={`停留 ${f.duration} 帧 · 下沉 dy ${f.dy} · fy ${-(f.bbox[1])}`}>{f.duration} 帧 · ↓{f.dy > 0 ? "+" : ""}{f.dy}</span>
                 <span class="small muted ws-note">{f.note}</span>
-                <span class="small mono muted">fy {-(f.bbox[1])}</span>
               </div>
             ))}
           </div>
@@ -259,11 +260,12 @@ export function DrawingBoard({ characterId, analysis, groups, refresh, onSaved }
 
   const view = full || !source ? { x: 0, y: 0, w: W, h: H } : actionBox;
   const zoom = Math.max(2, Math.min(16, Math.floor(Math.min(560 / view.w, 460 / view.h))));
-  const [draftPalette, setDraftPalette] = useState<string[] | null>(null);
+  const [draftPalette, setDraftPalette] = useState<PaletteColor[] | null>(null);
   useEffect(() => {
-    workshop.analyze(characterId, "draft").then((a) => setDraftPalette(a.palette.map((p) => p.hex)), () => setDraftPalette(null));
+    workshop.analyze(characterId, "draft").then((a) => setDraftPalette(a.palette), () => setDraftPalette(null));
   }, [characterId, refresh]);
-  const palette = useMemo(() => [...(draftPalette ?? analysis.palette.map((p) => p.hex)), ...custom], [draftPalette, analysis.palette, custom]);
+  const palette = useMemo(() => [...(draftPalette ?? analysis.palette).map((p) => p.hex), ...custom], [draftPalette, analysis.palette, custom]);
+  const counts = useMemo(() => Object.fromEntries((draftPalette ?? analysis.palette).map((p) => [p.hex, p.count])), [draftPalette, analysis.palette]);
 
   useEffect(() => {
     const canvas = ref.current;
@@ -428,7 +430,7 @@ export function DrawingBoard({ characterId, analysis, groups, refresh, onSaved }
         </div>
         <aside class="ws-board-side">
           <h5>调色板 <span class="muted small">（本角色现有颜色；新增颜色会单独列出）</span></h5>
-          <BoardPalette palette={palette} groups={groups} custom={custom} color={color}
+          <BoardPalette palette={palette} groups={groups} custom={custom} color={color} counts={counts}
             onPick={(hex) => { setColor(hex); if (tool === "eraser" || tool === "picker") setTool("pencil"); }} />
           <div class="small">当前 <span class="ws-swatch" style={{ background: color }} /> <span class="mono">{color}</span>
             <label class="small"> 添加颜色 <input type="color" onChange={(e) => {
@@ -472,16 +474,25 @@ export function DrawingBoard({ characterId, analysis, groups, refresh, onSaved }
   );
 }
 
-/** Palette grouped like the breakdown page (本体 / 描边 / 特效 / 入棺幽灵 / 新增). */
-function BoardPalette({ palette, groups, custom, color, onPick }: {
-  palette: string[]; groups: Record<string, PaletteGroup>; custom: string[]; color: string; onPick: (hex: string) => void;
+/** Palette grouped like the breakdown page (本体 / 描边 / 特效 / 入棺幽灵 / 新增); colours used by fewer
+ *  than 10 pixels (edge / semi-transparent blends) are folded away until asked for. */
+function BoardPalette({ palette, groups, custom, color, counts, onPick }: {
+  palette: string[]; groups: Record<string, PaletteGroup>; custom: string[]; color: string; counts: Record<string, number>;
+  onPick: (hex: string) => void;
 }) {
+  const [showTiny, setShowTiny] = useState(false);
   const order: [PaletteGroup | "custom", string][] = [["body", "本体"], ["outline", "描边"], ["fx", "特效"], ["template", "入棺/幽灵"], ["custom", "新增"]];
   const of = (hex: string): PaletteGroup | "custom" => (custom.includes(hex) ? "custom" : groups[hex] ?? "fx");
+  const tiny = (hex: string) => !custom.includes(hex) && (counts[hex] ?? 0) < 10 && hex !== color;
+  const hidden = palette.filter(tiny).length;
   return (
     <div class="ws-board-palette-groups">
+      {hidden ? (
+        <label class="check small"><input type="checkbox" checked={showTiny} onChange={(e) => setShowTiny((e.target as HTMLInputElement).checked)} />
+          显示 {hidden} 个零星色（不到 10 个像素）</label>
+      ) : null}
       {order.map(([g, label]) => {
-        const colors = palette.filter((hex) => of(hex) === g);
+        const colors = palette.filter((hex) => of(hex) === g && (showTiny || !tiny(hex)));
         if (!colors.length) return null;
         return (
           <div class="ws-board-pgroup">

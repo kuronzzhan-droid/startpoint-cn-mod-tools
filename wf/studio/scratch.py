@@ -124,8 +124,16 @@ def ops_for(ops: DraftOps, cid: str) -> DraftOps:
 # ---------------------------------------------------------------------------
 # 新建 / 列表
 
+def _check_name(name: str) -> str:
+    name = str(name).strip()
+    if len(name) < 2 or re.fullmatch(r"[\d\W_]+", name):
+        raise DraftError("名字至少两个字，且不能只有数字或符号（例如「水杰拉德」）")
+    return name
+
+
 def create(ops: DraftOps, request: dict) -> dict:
     validate(request, "scratchCreateRequest")
+    request = {**request, "name": _check_name(request["name"])}
     base = resolve_character(ops, request["base"])
     if not any(read_family_raw(ops.source, base["code"], f) is not None for f in FAMILY_FILES):
         raise DraftError(f"母本 {base['code']} 没有像素族，不能当母本")
@@ -156,6 +164,33 @@ def describe(ops: DraftOps, sid: str) -> dict:
             "changes": [{"id": c["id"], "kind": c["kind"], "title": c["title"]} for c in changeset["changes"]],
             "buildable": False,
             "note": "草稿角色没有游戏 ID、不写表；绑定到真实角色 ID 后才能生成交付。"}
+
+
+def rename(ops: DraftOps, sid: str, request: dict) -> dict:
+    """Change a scratch character's display name / element (the folder and placeholder code stay)."""
+    changeset = ops.store.load(sid) if is_scratch(sid) else None
+    if not changeset or not changeset.get("scratch"):
+        raise DraftError(f"没有草稿角色 {sid}")
+    meta = dict(changeset["scratch"])
+    if "name" in request:
+        meta["name"] = _check_name(request["name"])
+    if "element" in request:
+        if request["element"] not in ELEMENTS:
+            raise DraftError(f"属性只能是 {'、'.join(ELEMENTS)}")
+        meta["element"] = request["element"]
+    if meta == changeset["scratch"]:
+        raise DraftError("没有要改的内容")
+    ops.store.update_scratch(sid, meta)
+    return describe(ops, sid)
+
+
+def delete(ops: DraftOps, sid: str) -> dict:
+    """Delete a scratch character's whole draft folder (its bound target drafts stay)."""
+    changeset = ops.store.load(sid) if is_scratch(sid) else None
+    if not changeset or not changeset.get("scratch"):
+        raise DraftError(f"没有草稿角色 {sid}")
+    ops.store.discard_all(sid)
+    return {"deleted": sid, "boundTo": changeset["scratch"].get("boundTo")}
 
 
 def listing(ops: DraftOps) -> list[dict]:

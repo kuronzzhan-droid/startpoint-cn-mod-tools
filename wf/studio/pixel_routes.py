@@ -52,6 +52,8 @@ class PixelRoutes:
             ("GET", re.compile(rf"^/api/scratch/{SID}$"), self.scratch_describe),
             ("POST", re.compile(rf"^/api/drafts/{SID}/pixel$"), self.scratch_pixel_save),
             ("POST", re.compile(rf"^/api/drafts/{SID}/bind$"), self.scratch_bind),
+            ("POST", re.compile(rf"^/api/drafts/{SID}/scratch-rename$"), self.scratch_rename),
+            ("POST", re.compile(rf"^/api/drafts/{SID}/scratch-delete$"), self.scratch_delete),
             ("POST", re.compile(rf"^/api/drafts/{SID}/build$"), self.scratch_build),
         ]
 
@@ -125,7 +127,11 @@ class PixelRoutes:
 
     def draft_meta(self, query, cid):
         meta, _ = self._draft_family(cid)
-        return self._json(meta) if meta else self._error(404, "草稿里没有像素改动")
+        if meta:
+            return self._json(meta)
+        # Not an error: the page then shows the view (no console 404 on every workshop visit).
+        return self._json({"characterId": cid, "empty": True, "families": [], "slots": [],
+                           "note": "草稿里没有像素改动：显示当前视图"})
 
     def draft_sheet(self, query, cid, family):
         _, sheets = self._draft_family(cid)
@@ -224,6 +230,16 @@ class PixelRoutes:
 
     def scratch_bind(self, query, body, cid):
         return self._json(scratch.bind(self.app.ops, cid, body))
+
+    def scratch_rename(self, query, body, cid):
+        return self._json(scratch.rename(self.app.ops, cid, body))
+
+    def scratch_delete(self, query, body, cid):
+        result = scratch.delete(self.app.ops, cid)
+        with self._lock:
+            self._scratch = {k: v for k, v in self._scratch.items() if k[0] != cid}
+            self._draft_cache.pop(cid, None)
+        return self._json(result)
 
     def scratch_build(self, query, body, cid):
         raise DraftError(scratch.build_refusal(self.app.ops.store, cid))

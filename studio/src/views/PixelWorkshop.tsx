@@ -5,16 +5,44 @@ import {
 } from "../api";
 import { ChecksList } from "./Changes";
 import { Notice } from "./common";
+import { InfoTip } from "./Delivery";
 import { ActionStage, canvasFromRaw, contentCrop, hexToInt, luma, recolorRaw, useClock, useFamilies } from "./workshopKit";
 import { DrawingBoard, ProceduralActions } from "./PixelWorkshopTools";
 
-const SUBTABS = [
-  { id: "breakdown", label: "拆解" },
-  { id: "remap", label: "母本映射" },
-  { id: "generate", label: "程序化动作" },
-  { id: "board", label: "画板" },
+export type WorkshopSub = "breakdown" | "remap" | "generate" | "board";
+export const WORKSHOP_SUBS: { id: WorkshopSub; label: string; hint: string }[] = [
+  { id: "breakdown", label: "拆解", hint: "逐动作看每张图、复用和调色板" },
+  { id: "remap", label: "母本换色", hint: "拿一个官方小人当母本，按颜色表整套换色" },
+  { id: "generate", label: "程序化动作", hint: "从正面/背面底图自动合成走路、胜利、幽灵等动作" },
+  { id: "board", label: "画板", hint: "逐帧手改一个动作" },
 ];
 const GROUPS: PaletteGroup[] = ["body", "outline", "fx", "template"];
+const ACTION_LABEL: Record<string, string> = {
+  neutral: "待机", walk_front: "向前移动", walk_back: "向后移动", skill_ready: "技能准备", kachidoki: "胜利",
+  into_coffin: "倒下入棺", ghost_raise: "幽灵升起", ghost_neutral: "幽灵待机", revive: "复活",
+  special_land: "特殊登场", special_pose: "特殊姿势",
+};
+const KIND_LABEL: Record<string, string> = { loop: "循环", once: "单次", pass: "过渡", stop: "停住" };
+const TINY = 10;
+
+/** Plain-language legend for the pixel pages (technical names stay in tooltips). */
+export function PixelLegend() {
+  return (
+    <details class="ws-legend">
+      <summary>看图说明</summary>
+      <dl>
+        <dt>一张图</dt><dd>图集里的一个画面。时间轴上它接着上一张播放，一直显示到它的「结束帧号」。</dd>
+        <dt>停留 N 帧</dt><dd>这张图显示多久；60 帧 = 1 秒。</dd>
+        <dt>下沉</dt><dd>脚底比定位点低多少像素：正数往下沉，负数离地。（技术名 dy）</dd>
+        <dt>R12</dt><dd>图集里的第 12 块区域；同一块被几个动作共用时才标出来。</dd>
+        <dt>循环 / 单次 / 过渡 / 停住</dt><dd>动作的播放方式（loop / once / pass / stop）。</dd>
+        <dt>战斗大图集</dt><dd>战斗时三名队员的小人拼进同一张 4096×4096 大图，每人占（宽+2）×（高+2）。（技术名 layer0）</dd>
+        <dt>通用区间</dt><dd>官方角色都一样的动作帧号范围；不一样的会标出来。</dd>
+        <dt>定位点</dt><dd>角色在战场上的站位原点，红色十字。</dd>
+      </dl>
+    </details>
+  );
+}
 const GROUP_LABEL: Record<PaletteGroup, string> = { body: "本体", outline: "描边", fx: "特效", template: "入棺/幽灵模板" };
 
 function storageGet<T>(key: string, fallback: T): T {
@@ -46,8 +74,8 @@ export function useGroups(cid: string, palette: PaletteColor[] | undefined) {
   return { groups, set, reset, edited: Object.keys(overrides).length };
 }
 
-export function PixelWorkshop({ characterId }: { characterId: string }) {
-  const [sub, setSub] = useState(() => storageGet("wf-workshop-sub", "breakdown"));
+/** One workshop page (拆解 / 母本换色 / 程序化动作 / 画板); the 像素 group shows the sub navigation. */
+export function PixelWorkshop({ characterId, sub }: { characterId: string; sub: WorkshopSub }) {
   const [state, setState] = useState<"view" | "draft">("view");
   const [analysis, setAnalysis] = useState<WorkshopAnalysis | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -56,24 +84,23 @@ export function PixelWorkshop({ characterId }: { characterId: string }) {
     setError(null);
     workshop.analyze(characterId, state).then(setAnalysis, (e: Error) => setError(e.message));
   }, [characterId, state, refresh]);
-  const pick = (id: string) => { setSub(id); storageSet("wf-workshop-sub", id); };
   const groups = useGroups(characterId, analysis?.palette);
   const bump = () => setRefresh((n) => n + 1);
 
   return (
     <div class="workshop">
-      <nav class="ws-subtabs" role="tablist" aria-label="像素工坊">
-        {SUBTABS.map((t) => (
-          <button role="tab" aria-selected={sub === t.id} class={sub === t.id ? "on" : ""} onClick={() => pick(t.id)}>{t.label}</button>
-        ))}
-        <span class="spacer" />
-        <label class="small">数据
-          <select value={state} onChange={(e) => setState((e.target as HTMLSelectElement).value as "view" | "draft")}>
-            <option value="view">当前视图</option>
-            <option value="draft">草稿态（含草稿里的像素改动）</option>
-          </select>
-        </label>
-      </nav>
+      {sub === "breakdown" ? (
+        <div class="ws-subtabs">
+          <label class="small">看哪份数据
+            <select value={state} onChange={(e) => setState((e.target as HTMLSelectElement).value as "view" | "draft")}>
+              <option value="view">改动前（当前视图）</option>
+              <option value="draft">草稿里的样子（含像素改动）</option>
+            </select>
+          </label>
+          <span class="spacer" />
+          <PixelLegend />
+        </div>
+      ) : null}
       {error ? <Notice kind="error">像素工坊读取失败：{error}</Notice> : null}
       {!analysis && !error ? <div class="loading">正在拆解像素图集……</div> : null}
       {analysis && sub === "breakdown" ? <Breakdown analysis={analysis} groups={groups} /> : null}
@@ -107,9 +134,10 @@ function Breakdown({ analysis, groups }: { analysis: WorkshopAnalysis; groups: R
           </button>
         ))}
         <span class="muted small">
-          图集 {family.sheet.width}×{family.sheet.height} · 填充 {(family.sheet.fill * 100).toFixed(1)}% ·
-          {family.family === "pixelart" ? ` layer0 ${family.sheet.layer0Px} px · ` : " 战斗不加载 · "}
-          端点 {family.keys} 个 · 区域 {family.regions.length} 个 · frame.scale {family.frame.scale} · 原点 ({family.origin.join(", ")})
+          <span title={`sprite_sheet ${family.sheet.width}×${family.sheet.height}，填充 ${(family.sheet.fill * 100).toFixed(1)}%`}>图集 {family.sheet.width}×{family.sheet.height}</span> ·
+          {family.family === "pixelart" ? <span title="战斗大图集 layer0：(宽+2)×(高+2)"> 战斗大图集占 {family.sheet.layer0Px} 像素 · </span> : " 战斗不加载 · "}
+          <span title={`atlas 端点 ${family.keys} 个，区域 ${family.regions.length} 个，frame.scale ${family.frame.scale}，原点 (${family.origin.join(", ")})`}>
+            {family.keys} 张图 · 显示倍率 ×{family.frame.scale}</span>
         </span>
         <label class="small">每帧宽<select value={scale} onChange={(e) => setScale(Number((e.target as HTMLSelectElement).value))}>
           {[1, 2, 3, 4, 6].map((v) => <option value={v}>{v}px</option>)}</select></label>
@@ -128,14 +156,12 @@ function Breakdown({ analysis, groups }: { analysis: WorkshopAnalysis; groups: R
             <div class="ws-cell-detail">
               <img class="ws-big" src={workshop.cellUrl(analysis.characterId, family.family, cell.key, analysis.state)} alt="" />
               <table class="compare-table"><tbody>
-                <tr><th>动作 / 端点</th><td>{picked!.action} · 端点帧 {cell.key}（覆盖 {cell.key - cell.frames + 1}–{cell.key} 中属于本动作的 {cell.frames} 帧）</td></tr>
-                <tr><th>动作内起点</th><td>第 {cell.start} 帧起，停留 {cell.frames} 帧</td></tr>
-                <tr><th>可见尺寸</th><td>{cell.w}×{cell.h}（像素 {cell.alphaPx}）</td></tr>
-                <tr><th>fx / fy</th><td>{cell.fx} / {cell.fy}</td></tr>
-                <tr><th>dy（下沉）/ dx（横心）</th><td>{cell.dy} / {cell.dx}</td></tr>
-                <tr><th>帧框包围盒</th><td>{cell.bbox ? cell.bbox.join(", ") : "空"}</td></tr>
-                <tr><th>图集区域</th><td>R{region.id} @ ({region.x}, {region.y}) {region.w}×{region.h}{region.rotated ? " · 旋转 90°" : ""}</td></tr>
-                <tr><th>复用</th><td>{region.keys.length > 1 ? `端点 ${region.keys.join(", ")}（${region.actions.join("、")}）` : "只此一处"}</td></tr>
+                <tr><th>动作</th><td>{ACTION_LABEL[picked!.action] ?? picked!.action} · 从动作第 {cell.start} 帧起，停留 {cell.frames} 帧</td></tr>
+                <tr><th>可见尺寸</th><td>{cell.w}×{cell.h}（{cell.alphaPx} 个可见像素）</td></tr>
+                <tr><th>下沉 / 横向偏移</th><td>{cell.dy} / {cell.dx} <span class="muted small">（dy / dx）</span></td></tr>
+                <tr><th>共用</th><td>{region.keys.length > 1 ? `和 ${region.actions.join("、")} 共用同一块图` : "只此一处"}</td></tr>
+                <tr><th>技术细节</th><td class="small mono">端点 {cell.key} · fx {cell.fx} / fy {cell.fy} · 包围盒 {cell.bbox ? cell.bbox.join(", ") : "空"} ·
+                  R{region.id} @ ({region.x}, {region.y}) {region.w}×{region.h}{region.rotated ? " 旋转 90°" : ""}</td></tr>
               </tbody></table>
             </div>
           ) : <p class="muted small">点时间轴上的任意一张图看明细。</p>}
@@ -168,10 +194,12 @@ function ActionRow({ cid, state, family, action, scale, reuse, picked, onPick }:
   return (
     <div class="ws-row">
       <div class="ws-row-head">
-        <strong>{action.name}</strong>
-        <span class="mono small">{action.begin}–{action.end} · {action.totalFrames} 帧 · {action.kind}</span>
+        <strong>{ACTION_LABEL[action.name] ?? action.name}</strong>
+        <span class="mono small muted">{action.name}</span>
+        <span class="small" title={`时间轴帧 ${action.begin}–${action.end}`}>{action.totalFrames} 帧 · {KIND_LABEL[action.kind] ?? action.kind}</span>
         <span class={"small " + (action.universal ? "muted" : "warn-text")}>{action.universal ? "通用区间" : "非通用区间"}</span>
         <span class="small muted">{action.cells.length} 张图</span>
+        {action.overflow ? <span class="small warn-text" title="区间超出图集最后一个端点，多出的帧取不到图">越界 {action.overflow} 帧</span> : null}
       </div>
       <div class="ws-strip">
         {action.cells.map((c: WorkshopCell) => {
@@ -179,12 +207,12 @@ function ActionRow({ cid, state, family, action, scale, reuse, picked, onPick }:
           const on = picked?.action === action.name && picked.key === c.key;
           return (
             <button class={"ws-cell" + (on ? " on" : "") + (shared ? " shared" : "")} style={{ width: Math.max(30, c.frames * scale) + "px" }}
-              title={`端点 ${c.key} · 停留 ${c.frames} · dy ${c.dy} · fy ${c.fy} · ${c.w}×${c.h} · R${c.region}`}
+              title={`结束帧号 ${c.key} · 停留 ${c.frames} 帧 · 下沉 ${c.dy}（dy；fy ${c.fy}）· ${c.w}×${c.h} · 区域 R${c.region}`}
               onClick={() => onPick(c.key)}>
               <img src={workshop.cellUrl(cid, family.family, c.key, state)} alt="" />
               <span class="mono">{c.key}</span>
               <span class="mono">{c.frames}f</span>
-              <span class={"mono" + (c.dy ? " warn-text" : "")}>dy{c.dy > 0 ? "+" : ""}{c.dy}</span>
+              <span class={"mono" + (c.dy ? " warn-text" : "")} title="下沉（dy）">↓{c.dy > 0 ? "+" : ""}{c.dy}</span>
               {shared ? <span class="mono ws-reg">R{c.region}</span> : null}
             </button>
           );
@@ -195,13 +223,19 @@ function ActionRow({ cid, state, family, action, scale, reuse, picked, onPick }:
 }
 
 function PalettePanel({ analysis, groups }: { analysis: WorkshopAnalysis; groups: ReturnType<typeof useGroups> }) {
+  const [showTiny, setShowTiny] = useState(false);
+  const tiny = analysis.palette.filter((p) => p.count < TINY);
   return (
     <section class="ws-panel">
       <h4>调色板（{analysis.palette.length} 色）</h4>
       <p class="muted small">{analysis.notes[2]} {groups.edited ? <button class="link" onClick={groups.reset}>恢复启发分组（已改 {groups.edited} 色）</button> : null}</p>
+      {tiny.length ? (
+        <label class="check small"><input type="checkbox" checked={showTiny} onChange={(e) => setShowTiny((e.target as HTMLInputElement).checked)} />
+          显示 {tiny.length} 个零星色（不到 {TINY} 个像素，多是描边/半透明过渡色）</label>
+      ) : null}
       <div class="ws-palette-groups">
         {GROUPS.map((g) => {
-          const colors = analysis.palette.filter((p) => groups.groups[p.hex] === g);
+          const colors = analysis.palette.filter((p) => groups.groups[p.hex] === g && (showTiny || p.count >= TINY));
           return (
             <div class="ws-pgroup">
               <h5>{GROUP_LABEL[g]} <span class="muted small">{colors.length}</span></h5>
@@ -210,6 +244,7 @@ function PalettePanel({ analysis, groups }: { analysis: WorkshopAnalysis; groups
                   <span class="ws-swatch" style={{ background: p.hex }} />
                   <span class="mono small">{p.hex}</span>
                   <span class="small muted">{p.count}px</span>
+                  {p.opaque === 0 ? <span class="tag" title="这个颜色只出现在半透明像素上">仅半透明</span> : null}
                   <select class="small" value={groups.groups[p.hex]} aria-label={"分组 " + p.hex}
                     onChange={(e) => groups.set(p.hex, (e.target as HTMLSelectElement).value as PaletteGroup)}>
                     {GROUPS.map((o) => <option value={o}>{GROUP_LABEL[o]}</option>)}
@@ -311,8 +346,9 @@ function Remap({ analysis, groups, onSaved }: { analysis: WorkshopAnalysis; grou
 
   return (
     <div class="ws-remap">
-      <p class="hint">母本映射：选一个官方同模板小人当母本，按精确 RGB→RGB 表逐像素改色，整族（时间轴区间、锚点、frame.scale、帧时长）原样照搬，
-        atlas 条目名与 frame.name 改成本角色前缀。不在表里的颜色保持母本原色。同一张表永远得到同一组像素（生成时后端按母本重算并逐字节核对）。</p>
+      <p class="hint">母本换色：挑一个官方小人当母本，照着颜色表把它整套小人一个颜色一个颜色地换掉，动作、帧数、站位全部照搬；
+        表里没有的颜色保持原样。同一张表永远得到同样的结果，生成时会按母本重算再核对一遍。
+        <InfoTip text="技术细节：精确 RGB→RGB 逐像素改色，alpha 不变；timeline 逐字节照搬，atlas 条目名与 frame.name 改成本角色前缀；生成时按母本+映射表重算并比对。" /></p>
       <div class="toolbar">
         <label>母本
           <input type="search" placeholder="名字 / ID / 代码名" value={query} onInput={(e) => setQuery((e.target as HTMLInputElement).value)} />
@@ -412,14 +448,15 @@ function Remap({ analysis, groups, onSaved }: { analysis: WorkshopAnalysis; grou
           <div class="save-row">
             <button onClick={() => run(true)} disabled={busy !== null || !drafts.hasToken()}>{busy === "check" ? "检查中……" : "检查（不写草稿）"}</button>
             <button class="primary" onClick={() => run(false)} disabled={busy !== null || !drafts.hasToken()}>
-              {busy === "save" ? "保存中……" : "保存到草稿（替换本角色整族）"}</button>
+              {busy === "save" ? "保存中……" : "保存到草稿（替换这个角色的整套小人）"}</button>
           </div>
           {result ? (
             <section class="pixel-check">
               <h4>{result.dryRun ? "检查结果" : "已写入"}</h4>
               {result.families.map((f) => (
                 <div>
-                  <p class="small"><strong>{f.family}</strong>：改色 {f.changedPixels} px，改名 {f.renamedEntries} 条 atlas，图集 {f.sheet.join("×")}，映射表命中 {f.mappingUsed}/{f.mappingSize} 色</p>
+                  <p class="small"><strong>{f.family === "pixelart" ? "基础动作" : "特殊动作"}</strong>：改了 {f.changedPixels} 个像素，颜色表用上 {f.mappingUsed}/{f.mappingSize} 色，图集 {f.sheet.join("×")}
+                    <InfoTip text={`atlas 改名 ${f.renamedEntries} 条（${f.family}）`} /></p>
                   <ChecksList checks={f.checks} empty="没有提示。" />
                 </div>
               ))}

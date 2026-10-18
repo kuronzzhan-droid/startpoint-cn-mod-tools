@@ -23,10 +23,9 @@ export function ChecksList({ checks, empty }: { checks: DraftCheck[]; empty?: st
   return (
     <ul class="checks">
       {checks.map((c) => (
-        <li class={"check-" + c.level}>
+        <li class={"check-" + c.level} title={c.code}>
           <span class="check-level">{LEVEL_LABEL[c.level]}</span>
           <span>{c.message}</span>
-          <span class="mono muted small">{c.code}</span>
         </li>
       ))}
     </ul>
@@ -42,7 +41,7 @@ function size(bytes: number): string {
 }
 
 /** 「本次修改」：草稿里的全部改动，逐项撤销；保存 / 生成 / 导出接通，应用 / 发布不开放。 */
-export function ChangesPanel({ characterId }: { characterId: string }) {
+export function ChangesPanel({ characterId, scratch }: { characterId: string; scratch?: boolean }) {
   const { view, error } = useDraft(characterId);
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<{ kind: "info" | "error"; text: string } | null>(null);
@@ -99,13 +98,19 @@ export function ChangesPanel({ characterId }: { characterId: string }) {
       {message ? <Notice kind={message.kind === "error" ? "error" : "info"}>{message.text}</Notice> : null}
       {panel ? <DeliveryPanel characterId={characterId} mode={panel} view={view} onMode={setPanel} /> : null}
       <p class="hint">
-        草稿目录 <span class="mono">work/studio-drafts/{characterId}/</span>：文件 + changeset.json（结构见
-        <span class="mono"> schemas/studio-draft.schema.json</span>，agent 可用 <span class="mono">python -m wf.studio.draft</span> 走同一套操作）。
-        草稿不写任何游戏表、store、补丁链或服务器；生成只写 <span class="mono">work/studio-deliveries/</span>。
-        {view.changeset ? ` 基于视图 ${view.changeset.baseView}，修订 ${view.changeset.revision}。` : ""}
+        草稿只记录「要把什么换成什么」，不改游戏数据、测试服或补丁链；「生成」只在本机写一个交付目录。
+        {view.changeset ? ` 基于资源版本 ${view.changeset.baseView}，第 ${view.changeset.revision} 次修改。` : ""}
       </p>
+      <details class="tech">
+        <summary>技术细节</summary>
+        <p class="small">草稿目录 <span class="mono">work/studio-drafts/{characterId}/</span>：文件 + changeset.json（结构见
+          <span class="mono"> schemas/studio-draft.schema.json</span>；agent 可用 <span class="mono">python -m wf.studio.draft</span> 走同一套操作）。
+          生成写 <span class="mono">work/studio-deliveries/</span>。</p>
+      </details>
       {!changes.length ? (
-        <Notice>这个角色还没有草稿改动。可以在「一板/二板/三板/技能」改词条，或在「换立绘」「换像素」「换语音」里替换资源。</Notice>
+        <Notice>{scratch
+          ? "还没有改动。草稿角色只做像素：在「像素」里换色、生成动作、画板，或整族导入现成的小人。"
+          : "还没有改动。可以在「能力」「技能」「文案」改词条和文字，或在「立绘」「像素」「语音」里替换资源。"}</Notice>
       ) : (
         <ol class="change-list">
           {changes.map((change) => (

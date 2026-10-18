@@ -205,15 +205,18 @@ def _palette(families: dict[str, dict]) -> list[dict]:
                     pixels = np.asarray(restored[cell["key"]])
                     mask = pixels[..., 3] > 0
                     colors = Counter(map(tuple, pixels[mask][:, :3].tolist()))
-                    region_colors[region] = colors
+                    opaque = Counter(map(tuple, pixels[pixels[..., 3] == 255][:, :3].tolist()))
+                    region_colors[region] = (colors, opaque)
                 first = region not in counted_regions
                 counted_regions.add(region)
-                for rgb, count in region_colors[region].items():
-                    item = seen.setdefault(rgb, {"count": 0, "actions": set(), "families": set(), "regions": 0})
+                colors, opaque = region_colors[region]
+                for rgb, count in colors.items():
+                    item = seen.setdefault(rgb, {"count": 0, "opaque": 0, "actions": set(), "families": set(), "regions": 0})
                     item["actions"].add(action["name"])
                     item["families"].add(family)
                     if first:  # pixel counts per distinct atlas region, not per reuse
                         item["count"] += count
+                        item["opaque"] += opaque.get(rgb, 0)
                         item["regions"] += 1
     palette = []
     for rgb, item in seen.items():
@@ -226,7 +229,8 @@ def _palette(families: dict[str, dict]) -> list[dict]:
             group = "template"
         else:
             group = "fx"
-        palette.append({"hex": hexrgb(rgb), "rgb": list(rgb), "count": item["count"], "regions": item["regions"],
+        palette.append({"hex": hexrgb(rgb), "rgb": list(rgb), "count": item["count"], "opaque": item["opaque"],
+                        "regions": item["regions"],
                         "luma": round(luma(rgb), 1), "group": group,
                         "actions": sorted(actions), "families": sorted(item["families"])})
     order = {"body": 0, "outline": 1, "fx": 2, "template": 3}
@@ -293,8 +297,9 @@ def _traps(family: str, info: dict) -> list[dict]:
         else:
             level, text = "info", "在官方范围内"
         checks.append({"level": level, "code": "workshop.atlas_budget",
-                       "message": f"sprite_sheet {info['sheet']['width']}×{info['sheet']['height']}，layer0 (w+2)(h+2)="
-                                  f"{layer0} px，{text}；填充率 {info['sheet']['fill'] * 100:.1f}%。三人房共享 layer0"})
+                       "message": f"图集 {info['sheet']['width']}×{info['sheet']['height']}，在战斗大图集（layer0）里占 "
+                                  f"(宽+2)×(高+2) = {layer0} 像素，{text}；填充率 {info['sheet']['fill'] * 100:.1f}%。"
+                                  "三人房的队员共用这张大图"})
     overflow = [a for a in info["actions"] if a.get("overflow")]
     if overflow:
         checks.append({"level": "warn", "code": "workshop.range_overflow",

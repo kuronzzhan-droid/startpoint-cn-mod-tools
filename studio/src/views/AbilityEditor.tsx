@@ -99,6 +99,12 @@ export function useAbilityWorkspace(cid: string, enabled = true): AbilityWorkspa
     return () => clearTimeout(timer);
   }, [pending.custom, pending.text, pending.leaderName]);
 
+  useEffect(() => {
+    if (!message || message.kind !== "info") return;
+    const timer = setTimeout(() => setMessage(null), 4000);
+    return () => clearTimeout(timer);
+  }, [message]);
+
   const ws: AbilityWorkspace = {
     cid, state, error, pending, check, checking, committing, message, lint, linting,
     update: (fn) => { setMessage(null); setPending((p) => fn(p)); },
@@ -110,7 +116,7 @@ export function useAbilityWorkspace(cid: string, enabled = true): AbilityWorkspa
       try {
         await ability.apply(cid, buildRequest(pending, state.entries));
         setPending(EMPTY_PENDING);
-        setMessage({ kind: "info", text: "已写入草稿（work/studio-drafts）。到「本次修改」保存后即可生成。" });
+        setMessage({ kind: "info", text: "已写入草稿。到右上角「本次修改」保存后即可生成。" });
       } catch (e) {
         setMessage({ kind: "error", text: (e as Error).message });
       } finally {
@@ -152,7 +158,7 @@ export function PendingBar() {
         <>
           <div class="pending-head">
             <strong>未写入 {count} 项</strong>
-            <span class="small muted">（只在内存试算，写入后进草稿 changeset）</span>
+            <span class="small muted">（只是试算，写入后才进草稿）</span>
             {ws.checking ? <span class="small muted">检查中……</span> : <RuleChips counts={ruleCounts(checks)} />}
             <span class="spacer" />
             <button onClick={ws.discard} disabled={ws.committing} title="放弃全部未写入修改">放弃</button>
@@ -162,15 +168,15 @@ export function PendingBar() {
               {ws.committing ? "写入中……" : "写入草稿 Ctrl+S"}
             </button>
           </div>
-          {needShared.length ? <p class="small warn-text">共享键 {needShared.join("、")} 需要在对应卡片上勾选「确认修改共享键」。</p> : null}
-          {needTierConfirm ? <p class="small warn-text">技能档位插入/删除：到「技能」页核对默认档位、玛纳节点与觉醒引用后勾选确认。</p> : null}
+          {needShared.length ? <p class="small warn-text">共享键 {needShared.join("、")} 需要在对应卡片上勾选确认（会影响其它角色）。</p> : null}
+          {needTierConfirm ? <p class="small warn-text">技能档位插入/删除/移动：到「技能」页核对档位引用后勾选确认。</p> : null}
           {textProblems.length ? (
             <ul class="inline-problems">{textProblems.map((t) => <li>文案问题：{t}</li>)}</ul>
           ) : null}
           {ws.check ? <PendingChanges changes={ws.check.changes} /> : null}
           {ws.check ? (
             <details class="pending-rules" open={blocking}>
-              <summary>五态检查（{checks.length} 条）</summary>
+              <summary>检查结果（{checks.length} 条）</summary>
               <RuleList checks={checks} />
             </details>
           ) : null}
@@ -325,21 +331,22 @@ function KeyEditorBody(props: KeyEditorProps & { ws: AbilityWorkspace; entry: Ab
   return (
     <div class={"key-editor" + (pendingHere ? " has-pending" : "")}>
       <div class="key-meta">
-        <span class="small muted">{table === "leader_ability" ? "队长技表 124 列" : table === "ability" ? "能力表 126 列" : `action_skill 档 ${entry.level}`}</span>
+        <span class="small muted" title={table === "leader_ability" ? "队长技表 124 列" : table === "ability" ? "能力表 126 列" : "action_skill"}>
+          {table === "leader_ability" ? "队长技" : table === "ability" ? "能力" : `技能 档 ${entry.level}`}</span>
         {draftChanged ? <span class="pill warnpill" title="草稿里已有这个键的修改（未生成）">草稿已改</span> : null}
         {pendingHere ? <span class="pill pendingpill">未写入</span> : null}
-        {shared ? <span class="pill bad" title={"持有者：" + entry.owners.join("、")}>共享键 · {entry.owners.length} 个角色</span> : null}
+        {shared ? <span class="pill bad" title={"持有者：" + entry.owners.join("、")}>{entry.owners.length} 个角色共用</span> : null}
       </div>
       {shared ? (
         <div class="shared-confirm">
           <p>
-            这个键同时属于 <span class="mono">{entry.owners.join("、")}</span>。
-            修改会影响所有持有者{table === "action_skill" ? "（技能文本会同步到每个持有者）" : ""}，后端要求显式确认（shared_ok）。
+            这个键同时属于 <span class="mono">{entry.owners.join("、")}</span>：
+            修改会影响所有这些角色{table === "action_skill" ? "（技能文本也会同步）" : ""}，需要确认。不想影响别人就用右上角「换键…」复制成新键。
           </p>
           <label class="check">
             <input type="checkbox" checked={!!ws.pending.sharedOk[sid]}
               onChange={(e) => update((p) => ({ ...p, sharedOk: { ...p.sharedOk, [sid]: (e.target as HTMLInputElement).checked } }))} />
-            确认修改共享键（shared_ok）
+            确认一起修改（共享键）
           </label>
         </div>
       ) : null}
@@ -404,7 +411,7 @@ function EffectCard({ ws, entry, rows, index, row, columns, base, sameShape, fir
       <header>
         <span class="row-no">{entry.table === "action_skill" ? `档 ${entry.level}` : `效果 ${index + 1}`}</span>
         {awake ? <span class="tag awake">觉醒 c3={row[3]} Lv{row[4]}</span> : null}
-        {changedCols.length ? <span class="pill warnpill">{changedCols.length} 格不同于原版</span> : null}
+        {changedCols.length ? <span class="pill warnpill">{changedCols.length} 格与改动前不同</span> : null}
         {isNew && entry.table !== "action_skill" ? <span class="tag">结构已变</span> : null}
         <span class="spacer" />
         {structural ? (
@@ -420,16 +427,17 @@ function EffectCard({ ws, entry, rows, index, row, columns, base, sameShape, fir
       {problems.length ? <ul class="inline-problems">{problems.map((c) => <li>问题：{c.message}</li>)}</ul> : null}
       {entry.table === "ability" && index === 0 ? (
         changedCols.includes(1) || ws.pending.ops.some((o) => o.key === entry.key && o.row === 0 && o.cells.some((c) => c.column === "c1"))
-          ? <p class="warn-text small">首行 c1（unisonable）已改：合击资格可能变化，检查会标「待验证」，请审阅。</p> : null
+          ? <p class="warn-text small">第一行的「可合击」已改：合击资格可能变化，检查会标「待验证」，请核对。</p> : null
       ) : null}
       <div class="field-grid">
         {filled.map(({ v, i }) => (
-          <CellInput label={label(i)} index={i} value={v} problem={problemCols.has(i)} base={sameShape && base ? base[i] ?? "" : undefined}
+          <CellInput label={label(i)} hint={columnHint(entry.table, columns, i)} index={i} value={v} problem={problemCols.has(i)}
+            base={sameShape && base ? base[i] ?? "" : undefined}
             text={entry.table === "action_skill" && i < 2} disabled={locked} onCommit={(value) => onCell(i, value)} />
         ))}
       </div>
       <details class="raw-advanced">
-        <summary>高级：全部 {row.length} 列（含空列，按区块/字段标注）</summary>
+        <summary>全部 {row.length} 列（含空列）</summary>
         <table class="raw-table">
           <thead><tr><th>列</th><th>区块</th><th>字段</th><th>值</th></tr></thead>
           <tbody>
@@ -452,19 +460,53 @@ function EffectCard({ ws, entry, rows, index, row, columns, base, sameShape, fir
   );
 }
 
+// action_skill columns (client ActionSkillValues): c0..c8, c9–c15 auto-play area, c16–c23 after a skill flag.
+const SKILL_FIELDS: Record<number, string> = {
+  0: "技能名（在文案页改）", 1: "技能描述（在文案页改）", 2: "图标", 3: "可合击", 4: "技能等级 1 所需能量",
+  5: "满技能等级所需能量", 6: "技能连锁强度", 7: "技能程序", 8: "自动释放条件（0 总是 / 1 范围内）",
+  9: "自动释放范围形状", 16: "技能标记后的自动释放条件", 17: "技能标记后的范围形状",
+};
+
 function skillField(i: number): string {
-  return i === 0 ? "技能名（玩家可见）" : i === 1 ? "技能文案（玩家可见）" : "";
+  if (SKILL_FIELDS[i]) return SKILL_FIELDS[i];
+  if (i >= 10 && i <= 15) return `自动释放范围参数 ${i - 9}`;
+  if (i >= 18) return `标记后范围参数 ${i - 17}`;
+  return "";
+}
+
+// Plain names for the column field tokens (the raw name stays in the tooltip).
+const FIELD_WORDS: Record<string, string> = {
+  kind: "类型", threshold: "阈值", power: "Lv1 值", first_max: "满级值", character_groups: "角色组", trigger_puller: "来源",
+  target: "对象", strength: "强度", frame: "帧数", number: "次数", string_id: "文本键", unisonable: "可合击",
+  awake_kind: "觉醒类型", awake_level: "觉醒等级", trigger: "触发方式", instant_delay: "延迟（秒）", cooltime: "冷却",
+  element: "属性", limit: "上限", trigger_limit: "触发上限", unique_condition_id: "固有状态", multiball_group_id: "多球组",
+  cancelable: "可驱散", initial_multiply: "初始倍率", max_accumulation: "累积上限", flip_limit: "弹射次数上限",
+  power_flip_limit: "PF 次数上限", powerflip_override: "强化弹射覆盖", id: "ID", levels: "等级", description_id: "说明键",
+};
+
+function friendlyField(field: string): string {
+  return field.split(".").map((part) => {
+    if (FIELD_WORDS[part]) return FIELD_WORDS[part];
+    const m = part.match(/^([a-z_]+?)(\d+)$/);
+    if (m && FIELD_WORDS[m[1]]) return m[1] === "power" ? `Lv${m[2]} 值` : FIELD_WORDS[m[1]] + m[2];
+    return part;
+  }).join("·");
 }
 
 function columnLabel(table: AbilityTable, columns: ColumnLabel[], i: number): string {
   if (table === "action_skill") return skillField(i);
   const l = columns[i];
   if (!l) return `c${i}`;
-  return `${l.block}·${l.field}`;
+  return `${l.block}·${friendlyField(l.field)}`;
 }
 
-function CellInput({ label, index, value, base, text, bare, problem, disabled, onCommit }: {
-  label?: string; index: number; value: string; base?: string; text?: boolean; bare?: boolean; problem?: boolean;
+function columnHint(table: AbilityTable, columns: ColumnLabel[], i: number): string {
+  const l = table === "action_skill" ? null : columns[i];
+  return `第 ${i} 列（c${i}）` + (l ? ` · ${l.field}${l.note ? " — " + l.note : ""}` : "");
+}
+
+function CellInput({ label, hint, index, value, base, text, bare, problem, disabled, onCommit }: {
+  label?: string; hint?: string; index: number; value: string; base?: string; text?: boolean; bare?: boolean; problem?: boolean;
   disabled?: boolean; onCommit: (v: string) => void;
 }) {
   const [local, setLocal] = useState(value);
@@ -474,7 +516,7 @@ function CellInput({ label, index, value, base, text, bare, problem, disabled, o
   const input = (
     <input class={"cell" + (changed ? " changed" : "") + (text ? " text" : "") + (problem ? " problem" : "")} value={local} aria-label={label || `c${index}`}
       disabled={disabled}
-      title={changed ? `原版：${base === "" ? "（空）" : base}` : text ? "玩家可见文本：按 wf text 面板规则检查" : `c${index}`}
+      title={changed ? `改动前：${base === "" ? "（空）" : base}` : text ? "玩家可见文本：在「文案」页改" : `c${index}`}
       onInput={(e) => setLocal((e.target as HTMLInputElement).value)}
       onBlur={commit}
       onKeyDown={(e) => {
@@ -485,7 +527,7 @@ function CellInput({ label, index, value, base, text, bare, problem, disabled, o
   if (bare) return input;
   return (
     <label class={"field" + (text ? " wide" : "")}>
-      <span class="field-label"><span class="mono">c{index}</span> {label}</span>
+      <span class="field-label" title={hint ?? `第 ${index} 列（c${index}）`}>{label || `第 ${index} 列`}</span>
       {input}
     </label>
   );
@@ -524,7 +566,7 @@ function RowDescription({ ws, entry, index, after, draftDiffers }: {
     <div class="row-desc">
       {preview && preview.before.description !== preview.after.description ? (
         <div class="before-after">
-          <div><span class="ba-label">原版</span>{preview.before.description ?? "（无此行）"}</div>
+          <div><span class="ba-label">改动前</span>{preview.before.description ?? "（无此行）"}</div>
           <div><span class="ba-label after">草稿</span>{preview.after.description ?? "（删除）"}</div>
         </div>
       ) : null}

@@ -53,12 +53,9 @@ export function useFamilies(cid: string | null, state: "view" | "draft", refresh
       let data: PixelMeta & { draftRevision?: number; draftStamp?: string };
       let from: "view" | "draft" = "view";
       if (state === "draft") {
-        try {
-          data = await workshop.draftPixels(cid);
-          from = "draft";
-        } catch {
-          data = await api.pixels(cid);
-        }
+        const draft = await workshop.draftPixels(cid).catch(() => null);
+        if (draft && !draft.empty) { data = draft; from = "draft"; }
+        else data = await api.pixels(cid);
       } else data = await api.pixels(cid);
       const loaded: Record<string, HTMLImageElement> = {};
       const raw: Record<string, RawImage> = {};
