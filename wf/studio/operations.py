@@ -70,7 +70,8 @@ class DraftOps:
         def make(logical: str, root: str, data: bytes, encoding: str, *, approximate: bool, note: str = "") -> dict:
             relative = f"files/{ROOT_DIR[root]}/{logical}"
             self.store.write_file(cid, relative, data)
-            base_raw = self.assets.read(logical)
+            from .deliver_media import read_root
+            base_raw = read_root(self.source, root, logical)
             entry = {"logical": logical, "root": root, "draft": relative, "sha256": sha256(data), "size": len(data),
                      "encoding": encoding,
                      "base": {"sha256": sha256(base_raw) if base_raw is not None else None,

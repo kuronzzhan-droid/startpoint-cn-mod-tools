@@ -332,6 +332,9 @@ class PortraitService:
         if source_kind == "upload":
             files.append(make_file(prefix + FULL_SHOT.format(form=form), "medium", png_bytes(master), "png",
                                    approximate=False, note="上传立绘去掉全透明边后原样使用"))
+        else:
+            files.append(make_file(prefix + FULL_SHOT.format(form=form), "medium", wf_assets.png_decode(found[1]),
+                                   "png", approximate=False, note="重裁图标时保留原 full_shot 字节及其基线断言"))
         for slot, image in icons.items():
             logical = prefix + f"ui/{slot}_{form}.png"
             files.append(make_file(logical, "medium", png_bytes(image), "png", approximate=True,
@@ -351,10 +354,11 @@ class PortraitService:
                            "message": "未重编 skill_cutin ATF：真机战斗只读安卓根 ATF，不读 PNG，换了 PNG 技能发动画面不会变"})
         sheet = self.rebuild_sheet(code, form, master)
         if sheet is not None:
-            files.append(make_file(prefix + SHEET, "medium", png_bytes(sheet), "png", approximate=True,
-                                   note=f"只重画 _{form} 的格子（fit 整图，未按官方构图重裁）；atlas 不变"))
+            # Both forms share one texture. Compile it once from both form drafts
+            # at delivery time, instead of letting the second save overwrite the
+            # first change's source file and invalidate its recorded hash.
             checks.append({"level": "info", "code": "portrait.sheet_approx",
-                           "message": "立绘切换图集 illustration_setting_sprite_sheet 已按 fit 整图重画本槽格子，"
+                           "message": "生成时统一合成两个立绘槽的 illustration_setting_sprite_sheet；本槽按 fit 整图重画，"
                                       "官方是按海报构图重裁（zoom≈0.95），属近似"})
         else:
             checks.append({"level": "warn", "code": "portrait.sheet_missing",
@@ -389,6 +393,8 @@ class PortraitService:
                                "message": "当前视图缺 character_image 行，无法换算脸锚"})
         params = {"source": source_kind, "template": template, "sourceSize": [int(v) for v in source_size],
                   "trim": [int(v) for v in trim], "tableRows": rows, "atf": bool(request.get("atf", True))}
+        from .deliver_portrait import snapshot_geometry
+        params["tableBefore"] = snapshot_geometry(self.source, cid, code, form)
         if source_kind == "upload":
             params["sourceFile"] = f"sources/portrait_{form}.png"
         return {"target": {"form": form}, "params": params, "files": files, "pending": pending, "checks": checks,
