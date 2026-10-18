@@ -117,6 +117,15 @@ class TextWorkspace:
 
     def read(self, cid: str) -> dict:
         cid = str(cid)
+        # An explicitly present null/invalid rank row replaces base on the
+        # server; it must not be mistaken for an absent overlay character.
+        for target, document in self.server_docs.items():
+            if cid not in document:
+                continue
+            rows = document[cid]
+            if (not isinstance(rows, list) or not rows or not isinstance(rows[0], list)
+                    or any(not isinstance(value, str) for value in rows[0])):
+                raise ValueError(f"malformed server mirror: {target}:{cid}")
         char = cells(self.table(CHARACTER)[cid])
         text = cells(self.table(CHARACTER_TEXT)[cid])
         skill = self.table(ACTION_SKILL).get(char[8])

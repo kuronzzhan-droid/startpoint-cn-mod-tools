@@ -37,6 +37,18 @@ def test_rank_replaces_whole_row_instead_of_filling_from_base(workspace):
     assert sum(f["state"] == "问题" for f in effective_findings(doc)) == 3
 
 
+@pytest.mark.parametrize("target", [SERVER_TARGET, RANK_TARGET])
+@pytest.mark.parametrize("invalid", [None, [], {}, [None], [[None]]])
+def test_explicit_malformed_mirror_row_cannot_fall_back_to_base(workspace, target, invalid):
+    path = workspace.server_paths[target]
+    data = json.loads(path.read_bytes())
+    data["1"] = invalid
+    path.write_text(json.dumps(data), "utf-8")
+    current = TextWorkspace(workspace.view, workspace.server_path, workspace.rank_path)
+    with pytest.raises(ValueError, match="malformed server mirror"):
+        current.read("1")
+
+
 @pytest.mark.parametrize("missing", [SERVER_TARGET, RANK_TARGET])
 def test_incomplete_mirror_inputs_cannot_pass(workspace, missing):
     doc = workspace.read("1")
