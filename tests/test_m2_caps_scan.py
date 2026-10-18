@@ -51,6 +51,18 @@ def test_pf4_and_fever_are_separate_from_official_pf(monkeypatch, tmp_path):
     assert projected["layer_c"]["mech"] == ["独有名字"]
 
 
+def test_kind423_matrix_does_not_require_performance_patch30(monkeypatch, tmp_path):
+    from wf.caps.registry import load_registry
+    source, _ = source_for(monkeypatch, tmp_path, kind="423", unique="ordinary")
+    registry = load_registry()
+    record = scan_characters(source, tmp_path)[0]
+    projected = project_character(record, {}, registry)
+    assert "client.kind423.gauge_source_limit@1" in projected["capabilities"]
+    assert "client.apk.patch030@1" not in projected["capabilities"]
+    assert all("#30" not in label for label in record["apk"])
+    assert registry["client.kind423.gauge_source_limit@1"]["provided_by"]["patches"] == [31]
+
+
 @pytest.mark.parametrize("levels", ["1,2,3", "14", "", "40"])
 def test_non_lv4_values_do_not_claim_pf4(monkeypatch, tmp_path, levels):
     source, _ = source_for(monkeypatch, tmp_path, levels=levels)

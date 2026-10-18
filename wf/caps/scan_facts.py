@@ -3,7 +3,7 @@ from __future__ import annotations
 
 SYSTEM_KINDS = {  # (block, kind) -> 能力名
     ("during", "422"): "kind422冲刺参数(APK#03)",
-    ("during", "423"): "kind423回槽来源限制(APK#31/#30)",
+    ("during", "423"): "kind423回槽来源限制(APK#31)",
     ("during", "424"): "kind424伤害类型转换(APK#20)",
     ("instant", "724"): "kind724 Fever比例(APK#04)",
 }
