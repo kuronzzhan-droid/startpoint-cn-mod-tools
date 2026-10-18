@@ -14,7 +14,7 @@ def rule_catalog():
     return json.loads((Path(__file__).parents[1] / "rules/text_standard.json").read_text("utf-8"))
 
 
-def check_entry(key, text, *, surface="desc_override", location=None):
+def check_entry(key, text, *, surface="desc_override", location=None, slots=()):
     """Return proven violations only. Use coverage() for nonautomatic obligations."""
     if not isinstance(text, str):
         raise ValueError(f"{key}: text must be a string")
@@ -29,11 +29,19 @@ def check_entry(key, text, *, surface="desc_override", location=None):
         searchable = unquote(text) if rule["id"].split(".")[-1].startswith("term-") else text
         matches = [match[0] for pattern in spec["patterns"] for match in re.finditer(pattern, searchable)]
         if spec["check"]:
-            matches.extend(CHECKS[spec["check"]](text, key))
+            if spec["check"] == "main_icon":
+                from .markup import main_icon
+                matches.extend(main_icon(text, key, slots))
+            elif spec["check"] == "leader_relocation":
+                if any(slot.get("kind") == "ability" for slot in slots):
+                    matches.extend(CHECKS[spec["check"]](text, key))
+            else:
+                matches.extend(CHECKS[spec["check"]](text, key))
         if matches:
             findings.append({"rule": rule["id"], "state": "问题", "location": location or f"{surface}.{key}",
                 "message": rule["requirement"], "evidence_nature": rule["evidence_nature"],
-                "source": rule["source"], "evidence": {"text": text, "matches": list(dict.fromkeys(matches))}})
+                "source": rule["source"], "evidence": {"text": text, "matches": list(dict.fromkeys(matches)),
+                    **({"slots": list(slots)} if slots else {})}})
     return findings
 
 
@@ -63,7 +71,8 @@ def check_document(document):
     for surface in ("desc_override",):
         for key, text in document.get(surface, {}).items():
             surfaces.add(surface)
-            findings.extend(check_entry(key, text, surface=surface))
+            findings.extend(check_entry(key, text, surface=surface,
+                                       slots=document.get("override_slots", {}).get(key, ())))
     for tier, pair in document.get("action_skill", {}).items():
         surfaces.update(("action_skill", "action_skill_name"))
         findings.extend(check_entry(f"{document.get('skill_key', '')}.{tier}", pair["c0"],

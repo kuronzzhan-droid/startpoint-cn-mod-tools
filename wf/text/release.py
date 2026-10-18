@@ -20,10 +20,13 @@ def audit_workspace(workspace: TextWorkspace):
     for cid, leaf in workspace.table(CHARACTER).items():
         row = cells(leaf)
         owners.setdefault(row[8], []).append(cid)
+    from .slots import override_slots
+    slots = override_slots(workspace)
 
     def add(key, text, surface, location, source, **details):
         surfaces.add(surface)
-        found = check_entry(key, text, surface=surface, location=location)
+        found = check_entry(key, text, surface=surface, location=location,
+                            slots=slots.get(key, ()) if surface == "desc_override" else ())
         index = len(entries) + 1
         for finding in found:
             finding.update(entry=index, **details)
@@ -45,7 +48,9 @@ def audit_workspace(workspace: TextWorkspace):
 
     for key, leaf in workspace.table(CUSTOM).items():
         if key.startswith("desc_override_"):
-            add(key, custom_text(leaf), "desc_override", f"desc_override.{key}", CUSTOM)
+            add(key, custom_text(leaf), "desc_override", f"desc_override.{key}", CUSTOM,
+                slots=slots.get(key, []), character_ids=sorted({cid for slot in slots.get(key, [])
+                                                              for cid in slot["character_ids"]}))
     for key, tiers in workspace.table(ACTION_SKILL).items():
         if not isinstance(tiers, dict):
             raise ValueError(f"action_skill[{key}] is not a tier table")

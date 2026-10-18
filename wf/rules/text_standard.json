@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "standard": "MOD 角色面板文案规范 v1（草案）",
   "source_sha256": "304696b1ffe2702c60d204bfa3f1caae9a327127dfc759a92ee18a76cc321663",
   "scope_note": "§1—8和§10只检查desc_override；§9检查action_skill c1与档位一致性；c0按名称规则检查，保留升级后缀。官方自动生成能力和非覆盖custom文本不套本规范。全表扫描包含继承文本和无角色归属的键，问题不等同该版本新引入。",
@@ -223,14 +223,14 @@
       ],
       "evidence_nature": "作者规范",
       "source": "面板文案规范 v1 §2",
-      "requirement": "主位限制能力每行开头保留主位图标；文字不再写主位时",
+      "requirement": "整槽主位限制（ability每行c1=false）的每个非空行须精确以 <icon id='main'>  开头（前1、后2个半角空格）；混合限制槽保留语义核对，已有图标仍检查精确格式",
       "checker": "text",
       "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
       "surfaces": [
         "desc_override"
       ],
       "implementation": {
-        "check": null,
+        "check": "main_icon",
         "patterns": [
           "(?:处于|身处)?主位时"
         ],
@@ -239,13 +239,13 @@
     },
     {
       "id": "text.standard.leader-slot",
-      "title": "队长槽不写「自身为队长时」",
+      "title": "覆盖文案不写「自身为队长时」",
       "scope": [
         "text"
       ],
       "evidence_nature": "作者规范",
       "source": "面板文案规范 v1 §2",
-      "requirement": "队长槽不写「自身为队长时」；无法仅从键名确定队长槽时须结合角色表核对",
+      "requirement": "所有desc_override不写「自身为队长时」；槽位按desc_override_<槽行c0>精确关联，不凭_leader/_ls或数字后缀猜测",
       "checker": "text",
       "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
       "surfaces": [
@@ -566,7 +566,7 @@
       ],
       "evidence_nature": "作者规范",
       "source": "面板文案规范 v1 §4",
-      "requirement": "覆盖文案只写满级数值，不写两档或觉醒后",
+      "requirement": "固定覆盖文案只写单一满级数值，禁止X%（觉醒后 Y%）双值；低级/满级列不是觉醒前后",
       "checker": "text",
       "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
       "surfaces": [
@@ -575,6 +575,7 @@
       "implementation": {
         "check": null,
         "patterns": [
+          "\\d+(?:\\.\\d+)?%\\s*[（(]觉醒后\\s*[+\\-]?\\d+(?:\\.\\d+)?%[）)]",
           "觉醒后",
           "\\d+(?:\\.\\d+)?%\\s*[/／→]\\s*[+\\-]?\\d+(?:\\.\\d+)?%"
         ],
@@ -1223,6 +1224,62 @@
         "mode": "partial",
         "document_check": "skill_tiers"
       }
+    },
+    {
+      "id": "text.standard.literal-main-icon",
+      "title": "禁止字面「Ⓜ」；主位图标使用规定的icon标记",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §2",
+      "requirement": "禁止字面「Ⓜ」；主位图标使用规定的icon标记",
+      "checker": "text",
+      "revision": "2026-10-18：M5.1 对照 wf-leader-override-text-rules 补齐",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [
+          "Ⓜ"
+        ],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.compressed-lines",
+      "title": "覆盖文案禁止用「／」把多条效果记录挤在一行；名称和属性等枚举不算记录分隔",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §2",
+      "requirement": "覆盖文案禁止用「／」把多条效果记录挤在一行；自动检查分隔符两侧均含效果词或增减数值的写法，名称和属性等枚举不算记录分隔",
+      "checker": "text",
+      "revision": "2026-10-18：M5.1 对照 wf-leader-override-text-rules 补齐",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": "compressed_lines",
+        "patterns": [],
+        "mode": "partial"
+      }
+    }
+  ],
+  "author_rules_sources": [
+    {
+      "name": "wf-leader-override-text-rules",
+      "sha256": "d98cefa4d344a14447ee79b60734583bf5741a3a4fe93f90e44cd4a2b7941e3c"
+    },
+    {
+      "name": "wf-panel-text-standard-1017",
+      "sha256": "2d32c8fc15e6db28552787e19bad278d1feee5cbaf514172ab69247654b3fc10"
+    },
+    {
+      "name": "wf-skill-enhance-text-rule",
+      "sha256": "e6a03301a4091c230118e7ea54fa959ddc470896338c5bd4c3096140073ebd43"
     }
   ]
 }

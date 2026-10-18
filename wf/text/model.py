@@ -139,6 +139,12 @@ class TextWorkspace:
                     raise ValueError(f"action_skill[{char[8]}][{tier}] lacks c0/c1")
                 tiers[tier] = {"c0": fields[0], "c1": fields[1]}
         customs = {key: custom_text(self.table(CUSTOM)[key]) for key in self.custom_keys(cid)}
+        from .slots import override_slots
+        slots = override_slots(self, cid)
+        # A slot c0 can be unrelated to the character/skill name. Exact client
+        # lookup wins over name-based convenience discovery.
+        customs.update({key: custom_text(self.table(CUSTOM)[key]) for key in slots
+                        if key in self.table(CUSTOM)})
         sources = {logical: sha256(raw) for logical, raw in sorted(self.raw.items())}
         sources.update({target: sha256(raw) for target, raw in self.server_raws.items()})
         snapshot = sha256(json.dumps(sources, sort_keys=True).encode())
@@ -149,6 +155,7 @@ class TextWorkspace:
                 "action_skill": tiers,
                 "custom_ability_string": {k: v for k, v in customs.items() if not k.startswith("desc_override_")},
                 "desc_override": {k: v for k, v in customs.items() if k.startswith("desc_override_")},
+                "override_slots": slots,
                 "server_character_text": server_rows,
                 "server_character_text_rank_p5b": self.server_docs.get(RANK_TARGET, {}).get(cid),
                 "sources": sources, "snapshot_sha256": snapshot}

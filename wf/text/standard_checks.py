@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import re
 
+from .markup import compressed_lines
+
 NUMBER = r"\d+(?:\.\d+)?"
 
 
@@ -34,12 +36,12 @@ def prefix_order(text, key):
 
 
 def leader_slot(text, key):
-    return _matches(r"自身为队长时", text) if re.search(r"_(?:leader|ls)$", key) else []
+    # The author forbids this redundant condition in every fixed override,
+    # including unowned keys. Exact slot evidence is supplied by the caller.
+    return _matches(r"自身为队长时", text)
 
 
 def leader_relocation(text, key):
-    if not re.search(r"_[1-6]$", key):
-        return []
     return _matches(r"(?:担任|作为)队长(?:时)?|[^，。\s「」]{1,12}为队长时", text)
 
 

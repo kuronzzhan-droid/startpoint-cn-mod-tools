@@ -59,7 +59,8 @@ from wf.text.standard import check_entry, coverage, rule_catalog
     ("charge-cap", "自身技能充能速度上限变为1000%", "hero", "desc_override"),
 ])
 def test_each_implemented_rule_has_a_counterexample(rule, bad, key, surface):
-    results = check_entry(key, bad, surface=surface)
+    results = check_entry(key, bad, surface=surface,
+                          slots=[{"kind": "ability"}] if rule == "leader-relocation" else ())
     assert any(f["rule"] == "text.standard." + rule and f["state"] == "问题" for f in results)
 
 
@@ -137,7 +138,8 @@ def test_unrelated_automatic_ability_strings_are_outside_panel_scope():
 
 def test_leader_substring_in_character_name_is_not_treated_as_a_slot():
     text = "泽赫尔为队长时，强化自身冲刺：威力提升"
-    findings = check_entry("desc_override_guildknight_leader_tavern_3", text)
+    findings = check_entry("desc_override_guildknight_leader_tavern_3", text,
+                           slots=[{"kind": "ability"}])
     assert any(f["rule"] == "text.standard.leader-relocation" for f in findings)
     assert not any(f["rule"] == "text.standard.leader-relocation" for f in
                    check_entry("desc_override_guildknight_leader_tavern", text))
