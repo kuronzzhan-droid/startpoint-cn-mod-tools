@@ -166,16 +166,18 @@ python -m wf.studio.draft build 139985 --from 1.4.233 --to 1.4.234 --out work/m4
 
 - `inputs/changeset.json`、内容寻址的 `inputs/blobs/`、原草稿快照与编译检查，可再次由 `wf deliver` 消费。
 - `delivery/` 包含 ≤5 MiB ZIP、旧/上游两种 manifest、三层归档、`requires.json`、prepush、奖励键对照、前后摘要断言脚本、基线锁和校验和。
-- 自动回读 `wf check` 结果到 `delivery/check.json`；提供 `--provides` 时执行能力和方法摘要匹配到 `delivery/compat.json`。缺能力或 prepush 问题会使 CLI 非零退出；未提供 provides 时兼容检查明确标为「未执行」。
-- `build-report.json` 汇总状态、版本、草稿修订和产物路径。检查通过属于文件与静态能力证据；`deviceValidation` 固定为「未执行」。
+- 自动回读 `wf check` 结果到 `delivery/check.json`；提供 `--provides` 时执行能力和方法摘要匹配到 `delivery/compat.json`。缺能力或 prepush 问题会使 CLI 非零退出；缺少 provides 时 `build-report.ok=false`、`compat="未确认"`，CLI 非零退出。
+- 只有显式 `--allow-unknown-client` 才允许缺少 provides 的本地交付。此时兼容性仍为「未确认」，例外记录在交付清单 `client_compatibility.allow_unknown_client` 和报告 `allowUnknownClient`；该参数不能跳过已提供客户端的真实缺能力错误。对最终清单重跑 `wf check` 会保留同一门禁。
+- `build-report.json` 汇总状态、版本、草稿修订和产物路径。`compat` 是状态字符串，逐项结果在 `compatChecks`；原始编译检查在 `draftChecks` 和 `delivery/draft-checks.json`，像素预算、技能档位引用等「待验证」也进入最终 `checks`。检查通过属于文件与静态能力证据；`deviceValidation` 固定为「未执行」。
+- 客户端成员按精确 CDN 根与基线逐字节比较，服务端 changes 按基线摘要比较；相同成员全部剔除，包括定位表、illustration atlas、frame 和文本镜像。纯无变化草稿拒绝生成空交付。
 
 ### 媒体编译约束
 
-立绘覆盖指定形态的 full_shot、十个图标、cutin PNG 与安卓根 ATF。两个形态共用的 illustration sheet 在编译时合并重画，保留原 atlas；不会因保存第二形态而覆盖第一形态的草稿文件。三张定位表的目标叶子和整表摘要在编辑时捕获，编译时先断言再写。旧 M3 草稿若缺少 `tableBefore`，需在同一来源视图重新保存裁剪。
+立绘覆盖指定形态的 full_shot、十个图标、cutin PNG 与安卓根 ATF。全部目标必须在精确根存在，缺槽报错；草稿 ATF 的尺寸、mip 数、完整格式字段须与参考 ATF 一致，并检查声明长度与各 mip 的实际内容。两个形态共用的 illustration sheet 在编译时合并重画，保留原 atlas；不会因保存第二形态而覆盖第一形态的草稿文件。三张定位表的目标叶子和整表摘要在编辑时捕获，编译时先断言再写。旧 M3 草稿若缺少 `tableBefore`，需在同一来源视图重新保存裁剪。
 
-像素按动作槽分组编译，保留官方 atlas 格式、frame.scale 与锚点。原图集区域保留，新帧放入追加区域；未替换槽的 atlas 记录、时间轴与像素保持不变。客户端要求动作时间轴连续，因此会影响其它动作区间的时长改动报「问题」，需保持原总时长；同总时长可以重分配每帧时长。实际输出图集宽高均不得超过 4096。草稿源帧摘要不符、未知槽、无效时长或预算超限也会报「问题」。
+像素按动作槽分组编译，保留官方 atlas 格式、frame.scale 与锚点。被替换槽独占的旧区域清零并优先回收装箱；未替换槽与其它 atlas 条目的坐标和像素保持不变。末槽按时间轴帧号判断，只有末槽可改总时长，且加长不得覆盖序列外旧端点；其它槽可在原总时长内重分配逐帧时长。pixelart 宽高上限为 4094，包含 layer0 margin 后不得超过 4096；special 上限为 4096。pixelart 实际占用按 `(w+2)(h+2)` 计算，超过官方最大 **184260 px**（247×738 加 margin）报「待验证」，超过 **1000000 px** 报「问题」并阻断。三人房共享图集，单角色预算检查不代表编队运行已经验证。
 
-语音仅替换当前角色已存在的路径；生成前再次检查标准 MP3 与存储态往返，拒绝 VBR、半转换、错误根和草稿摘要漂移。新增台词不在 M4a 范围。
+语音仅替换当前角色已存在的路径；生成前逐帧检查 **44.1 kHz 单声道**、标准 MP3 与存储态往返，拒绝 VBR、半转换、混合采样率/声道、错误根和草稿摘要漂移。编码与 ATF 解析错误均映射为 `DraftError`。新增台词不在 M4a 范围。
 
 ### 词条 API 与 CLI
 
@@ -200,13 +202,15 @@ python -m wf.studio.draft build 139985 --from 1.4.233 --to 1.4.234 --out work/m4
 }
 ```
 
-每格必须提供 `old`/`new`；结构操作要断言整行及 `row_count`。插入格的 old 为 null，删除格的 new 为 null；移动格的 old/new 均为原值，并提供 `to_row`。能力列默认用 126 列空间，队长技自动映射到 124 列；可用 `column_space: "native"` 指定表自身列号。首行 c1 引起合击资格变化会提示待验证；共享键列出全部所有者，必须显式 `shared_ok: true`。
+每格必须提供 `old`/`new`；结构操作要断言整行及 `row_count`。插入格的 old 为 null，删除格的 new 为 null；移动格的 old/new 均为原值，并提供 `to_row`。能力列默认用 126 列空间；队长技列操作必须显式给出 `column_space`：`native` 为自身 124 列，`ability` 为映射前的 126 列。模板接口在顶层和每个选项均回显推荐的 `column_space: "native"`，缺少声明或列空间不匹配会报错。首行 c1 引起合击资格变化会提示待验证；共享键列出全部所有者，必须显式 `shared_ok: true`。
 
-`attach_key` 提供 `old_key` 和新 `key`；挂现有键时确认共享归属，建新键时提供带逐格 null 旧值的 `rows`（技能用 `levels`）。已有键不会被无条件覆盖。能力声明中不允许的表或块会报问题；枚举中没有先例的 kind 保留可编辑并标「待验证」。
+`attach_key` 提供 `old_key` 和新 `key`；挂现有键时确认共享归属，建新键时提供带逐格 null 旧值的 `rows`（技能用 `levels`）。已有键不会被无条件覆盖。换队长技键后显式提示同步 `character c18`、`character_text c10` 及两份服务端文本镜像。能力声明中不允许的表或块会报问题；枚举中没有先例的 kind 保留可编辑并标「待验证」。
 
 一个请求内先处理数值与结构操作，最后处理可见文本。技能挂接与后续 c0/c1 文本编辑应拆成两次请求；同档同文本列在一次请求内只允许出现一次，连续 A→B→C 也分次提交。技能文本请求需要同时给出全部已有档位的断言，沿用 `wf text` 的跨档一致性检查。
 
-action_skill 的结构编辑按客户端档位处理：`level` 指源/插入档，`row=0`，`row_count` 为现有档数，移动的 `to_row` 为目标档位零基序号。插删后平移后续档位，保留 1–3 档；不会生成无法同步玩家文案的多行技能叶子。技能 c0/c1 及覆盖文案走 `wf text` 规则，服务端 `character_text.json` 与 `character_text_rank_p5b.json` 同步生成在交付 `server/` 下，原文件保持只读。配置中文解释由 `wf_describe` 产生，不会写入玩家文案。
+action_skill 的结构编辑按客户端档位处理：`level` 指源/插入档，`row=0`，`row_count` 为现有档数，移动的 `to_row` 为目标档位零基序号。插删后平移后续档位，保留 1–3 档；不会生成无法同步玩家文案的多行技能叶子。插入/删除一律报「待验证」，列出全部共享所有者的默认等级、玛纳技能强化/进化节点与觉醒来源；缺引用表会显式标出，不读取玩家存档。技能进化档位与数值 SLv 分开说明。新档经 `client_legality` 检查 24 列及客户端实际解析的字段。技能 c0/c1 及覆盖文案走 `wf text` 规则，两份服务端文本镜像仅在字节发生变化时生成于交付 `server/` 下，原文件保持只读。配置中文解释由 `wf_describe` 产生，不会写入玩家文案。
+
+所有 HTTP 请求均先校验回环 Host，包括草稿 GET/HEAD 和会话 HTML；POST 继续要求 Origin、令牌及 JSON 请求体检查。
 
 ### 验证
 
