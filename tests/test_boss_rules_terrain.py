@@ -85,3 +85,11 @@ def test_official_single_wave_transit_is_unused_and_not_rejected():
     doc = snapshot()
     doc["terrain"]["waves"][0]["objects"].append({"type": "TRANSIT"})
     assert terrain_checks(doc)[1]["status"] == "满足"
+
+
+def test_native_numbered_wall_tokens_satisfy_boundary_geometry():
+    doc = snapshot()
+    for obj in doc["terrain"]["waves"][0]["objects"]:
+        if obj["type"] == "WALL":
+            obj["type"] = "WALL1"
+    assert terrain_checks(doc)[1]["status"] == "满足"

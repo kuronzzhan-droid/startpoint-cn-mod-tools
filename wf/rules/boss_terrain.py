@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from collections import Counter
+import re
 
 from .boss_common import EMPTY, cell, cells, wave_name
 from .catalog import result
@@ -47,6 +48,8 @@ def terrain_checks(document):
             incomplete.append(f"层 {label} 缺少原始 objects")
             continue
         counts = Counter(o.get("type") for o in objects)
+        counts["WALL"] = sum(count for token, count in counts.items()
+                             if isinstance(token, str) and re.fullmatch(r"WALL\d*", token))
         for token in ("BOUNDS", "WALL", "RETURN_LANE_GUIDE", "CUSTOM_POSITION"):
             if not counts[token]:
                 issues.append(f"层 {label} 缺 {token}（C14102）")
