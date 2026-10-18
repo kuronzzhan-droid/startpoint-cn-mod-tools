@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 from pathlib import Path
+import weakref
 import zipfile
 
 import wf_quest_lib as codec
@@ -14,11 +15,29 @@ def _semantics(text):
     return parse_rows(text)
 
 
+# Leaf histories of one immutable layered view (same object, same ZIP list and
+# store) are identical for every reader, so the studio's per-request readers
+# share them instead of re-parsing every historical table version each time.
+# Draft overlays (``changes``) and views without a ZIP list never share.
+_SHARED_HISTORIES = weakref.WeakKeyDictionary()
+
+
+def _histories_for(view):
+    if hasattr(view, "changes") or not hasattr(view, "zips"):
+        return {}
+    key = (tuple(str(path) for path in view.zips), str(getattr(view, "store", "")))
+    try:
+        return _SHARED_HISTORIES.setdefault(view, {}).setdefault(key, {})
+    except TypeError:  # not weak-referenceable: keep a private cache
+        return {}
+
+
 class BossTables:
     def __init__(self, source):
         self.source = source
         self.view = getattr(source, "view", source)
-        self.tables, self.raw_cache, self.histories = {}, {}, {}
+        self.tables, self.raw_cache = {}, {}
+        self.histories = _histories_for(self.view)
         self._archive_members = None
         self._parent_tables = None
 

@@ -14,6 +14,14 @@ from .boss_store import BossDraftStore
 from wf.boss.identity import safe_id
 
 
+class BossRulesRejected(ValueError):
+    """Blocking rule results; preview still shows every five-state result."""
+
+    def __init__(self, message, checks, allocation=None):
+        super().__init__(message)
+        self.checks, self.allocation = checks, allocation
+
+
 def _identity(draft, quest, version):
     if draft and (draft.get("subjectKind") != "boss" or draft["characterId"] != quest
                   or draft["code"] != f"boss_{safe_id(quest)}" or draft["baseView"] != version):
@@ -94,13 +102,16 @@ def _replay(source, quest, requests, *, server_dir=None, reserved=()):
     for identifier in dict.fromkeys(affected):
         document = candidate.show(identifier)
         baseline = before.show(requests[0].get("sourceQuest", "hard_multi:1006/1")) if created else before.show(identifier)
-        checks.extend(check_boss(document, view=state, baseline=baseline,
-                                 server_changes=state.servers, server_before=state.server_original,
-                                 context=_context(state, created, document, baseline, requests,
-                                                  preload_approvals[document["quest"]["selector"]][1])))
+        results = check_boss(document, view=state, baseline=baseline,
+                             server_changes=state.servers, server_before=state.server_original,
+                             context=_context(state, created, document, baseline, requests,
+                                              preload_approvals[document["quest"]["selector"]][1]))
+        # Five-tier edits check five quests; each result names the quest it belongs to.
+        checks.extend({**entry, "quest": document["quest"]["selector"]} for entry in results)
     blocking = [entry for entry in checks if entry.get("blocking")]
     if blocking:
-        raise ValueError("boss rules rejected the candidate: " + "; ".join(entry["message"] for entry in blocking))
+        raise BossRulesRejected("boss rules rejected the candidate: " + "; ".join(entry["message"] for entry in blocking),
+                                checks, allocation)
     return state, quest, checks, allocation
 
 
@@ -203,8 +214,12 @@ class BossEditor:
                     "changes": state.changes, "serverTargets": sorted(state.servers),
                     "checks": checks, "runtime": "未执行"}
         except (ValueError, KeyError, OSError, TypeError) as exc:
-            return {"ok": False, "questId": quest, "checks": [
-                result("boss.inputs", "问题", str(exc), blocking=True)], "runtime": "未执行"}
+            # The summary stays first; rule rejections also carry every result
+            # so the editor can show which rule blocks and what still passes.
+            rules = exc.checks if isinstance(exc, BossRulesRejected) else []
+            allocation = exc.allocation if isinstance(exc, BossRulesRejected) else None
+            return {"ok": False, "questId": quest, "allocation": allocation, "checks": [
+                result("boss.inputs", "问题", str(exc), blocking=True), *rules], "runtime": "未执行"}
 
     def apply(self, quest, request):
         try:
