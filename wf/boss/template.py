@@ -112,6 +112,7 @@ def template_rows(state, request, ids):
 def server_quest(values):
     """Same fields consumed by the existing hard_multi_event_quest server table."""
     return {"scoreRewardGroupId": int(values[71]), "name": values[2], "clearRewardId": int(values[72]),
+            "element": int(values[73]),
             **{name: int(values[col]) * scale for name, col, scale in (
                 ("bRankTime", 85, 1000), ("aRankTime", 86, 1000), ("sRankTime", 87, 1000),
                 ("sPlusRankTime", 88, 1000), ("characterExpReward", 94, 1),

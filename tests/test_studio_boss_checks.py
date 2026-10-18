@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+import json
 import zlib
 
 import pytest
@@ -9,6 +10,7 @@ import wf_dsl
 import wf_quest_lib as codec
 
 from wf.boss import schema as s
+from wf.boss.template import server_quest
 from wf.rules.boss_preload import FUNNEL
 from wf.studio.boss import BossDraftStore, BossEditor, compile_boss
 from wf.studio.source import StudioSource
@@ -45,7 +47,8 @@ def fixture_editor(tmp_path):
     objects += [{"type": "CUSTOM_POSITION", "name": "p0"}] + [{"type": "COFFIN"}] * 9
     raw.files["battle/terrain/test.amf3.deflate"] = encoded(
         {"layers": [{"type": "objectgroup", "name": "0", "objects": objects}]})
-    (server / "assets/hard_multi_event_quest.json").write_text('{}', encoding='utf-8')
+    (server / "assets/hard_multi_event_quest.json").write_text(
+        json.dumps({"1006001": server_quest(row)}), encoding="utf-8")
     return BossEditor(StudioSource(raw), store=BossDraftStore(tmp_path / "drafts"), server_dir=server)
 
 

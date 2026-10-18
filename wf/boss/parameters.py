@@ -8,6 +8,7 @@ import wf_quest_lib as codec
 from wf.view.base149 import row, join
 from .edit_state import leaf
 from .schema import cell
+from .server_parameters import sync_recommended_element
 
 QUESTS = {
     "boss_battle": "master/quest/boss_battle_quest.orderedmap",
@@ -121,6 +122,9 @@ def edit_parameters(state, quest, request):
     changed_ids = []
     for target, before, params in targets:
         after = apply_values(before, kind, params)
+        element_column = columns(kind)["recommendedElement"][0]
+        if after[element_column] != before[element_column]:
+            sync_recommended_element(state, kind, before[0], int(after[element_column]))
         if "scene" in params:
             scene = params["scene"]
             if scene not in state.table(FIELD):

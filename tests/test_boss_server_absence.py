@@ -36,7 +36,8 @@ def test_missing_optional_reward_files_survive_real_delivery_assertions(tmp_path
     assertions["files"] = [entry for entry in assertions["files"] if entry["kind"] == "server"]
     actual = {entry["target"]: entry["before_sha256"] for entry in assertions["files"]}
     assert all(actual[target] is None for target in absent)
-    assert actual["assets/hard_multi_event_quest.json"] == digest(b"{}")
+    assert actual["assets/hard_multi_event_quest.json"] == digest(
+        (editor.server_dir / "assets/hard_multi_event_quest.json").read_bytes())
     assert verify(assertions, phase="pre", manifest={"cdn_version": "1.4.236"},
                   server_dir=editor.server_dir) == []
     assert all(not (editor.server_dir / target).exists() for target in absent)
