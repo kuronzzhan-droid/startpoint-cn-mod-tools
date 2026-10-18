@@ -162,7 +162,7 @@ class DraftOps:
                            "width": image.width, "height": image.height})
         base = f"character/{info['code']}/pixelart/"
         sheet = "sprite_sheet" if family == "pixelart" else "special_sprite_sheet"
-        reason = f"生成时把 {action} 的新帧与其它动作一起重新装箱、改写时间轴（wf deliver，M1 分支）"
+        reason = f"生成时编译 {action} 新帧与时间轴并保留其它动作槽（wf deliver）"
         built = {
             "title": f"像素 {family}/{action}（{len(stored)} 帧）",
             "target": {"family": family, "action": action},
@@ -216,7 +216,7 @@ class DraftOps:
         return {"characterId": cid, "code": code, "lines": result,
                 "format": "44.1kHz · 单声道 · 96kbps CBR（官方 40/40 抽样）",
                 "note": "台词来自 character_speech（主页/入队/觉醒）与固定名战斗语音；只替换已有路径，"
-                        "新增台词需要改 speech 表（M3.3）。"}
+                        "新增台词需要改 speech 表（M4c）。"}
 
     def voice_save(self, cid: str, request: dict) -> dict:
         validate(request, "voiceRequest")
@@ -226,7 +226,7 @@ class DraftOps:
             raise DraftError("语音路径无效")
         known = {line["voice"] for line in self.voice_lines(cid)["lines"] if line["voice"]}
         if voice not in known:
-            raise DraftError(f"{voice} 不是这个角色已有的语音路径（新增台词需要改 speech 表，M3.3）")
+            raise DraftError(f"{voice} 不是这个角色已有的语音路径（新增台词需要改 speech 表，M4c）")
         audio = b64(request["audio"], "音频")
         if not audio:
             raise DraftError("音频为空")
@@ -278,8 +278,10 @@ PORTRAIT_NOTES = [
 ]
 ACTIONS = [
     {"id": "save", "label": "保存", "enabled": True, "note": "整体 schema 校验 + 文件哈希复核，写入草稿 changeset.json"},
-    {"id": "generate", "label": "生成", "enabled": False, "note": "待接入 wf deliver（M1 分支）"},
-    {"id": "export", "label": "导出", "enabled": False, "note": "待接入 wf deliver（M1 分支）"},
+    {"id": "generate", "label": "生成", "enabled": False,
+     "note": "CLI 已支持 python -m wf.studio.draft build；前端待接线"},
+    {"id": "export", "label": "导出", "enabled": False,
+     "note": "CLI 已支持 python -m wf.studio.draft build；前端待接线"},
     {"id": "apply", "label": "应用", "enabled": False, "note": "未接入：应用到测试服需要先生成补丁"},
     {"id": "publish", "label": "发布", "enabled": False, "note": "未接入：编辑台不发布"},
 ]
