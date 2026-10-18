@@ -9,6 +9,7 @@ from PIL import Image
 from wf_pixelart_vfx import frame_index, restore_frame
 
 from .deliver_media import MediaResult, encode_png, encode_tree, png, require_raw, tree
+from .deliver_pixel_pack import budget_check, repack
 from .drafts import DraftError, sha256
 
 
@@ -42,36 +43,9 @@ def _prepared_frames(store, cid, change, frame, first):
 
 
 def _append_pack(original, images, maximum):
-    """Append below or beside the original rectangle; its pixels never move."""
-    candidates = []
-    widths = sorted({original.width, 128, 256, 512, 1024, 2048, maximum})
-    for width in widths:
-        if width < original.width or width > maximum:
-            continue
-        for beside in (False, True):
-            left, top = (original.width + 1, 1) if beside else (1, original.height + 1)
-            x, y, row = left, top, 0
-            positions = []
-            for image in images:
-                if x + image.width + 1 > width:
-                    x, y, row = left, y + row + 1, 0
-                if x + image.width + 1 > width or y + image.height + 1 > maximum:
-                    break
-                positions.append((x, y))
-                x += image.width + 1
-                row = max(row, image.height)
-            else:
-                actual_w = max(original.width, max(x + im.width + 1 for (x, y), im in zip(positions, images)))
-                actual_h = max(original.height, max(y + im.height + 1 for (x, y), im in zip(positions, images)))
-                candidates.append((actual_w * actual_h, actual_w, actual_h, positions))
-    if not candidates:
-        raise DraftError("问题：像素图集预算超过 4096²（包含战斗图集 margin），不能生成")
-    _, width, height, positions = min(candidates, key=lambda c: c[:3])
-    packed = Image.new("RGBA", (width, height))
-    packed.paste(original, (0, 0))
-    for image, point in zip(images, positions):
-        packed.paste(image, point)
-    return packed, positions
+    """Compatibility helper for callers that reserve the entire old sheet."""
+    reserved = {"x": 0, "y": 0, "w": original.width, "h": original.height}
+    return repack(original, [reserved], [reserved], images, maximum)
 
 
 def _compile_family(source, store, changeset, family, changes):
@@ -98,20 +72,25 @@ def _compile_family(source, store, changeset, family, changes):
         if change["params"]["originalTotalFrames"] != length:
             raise DraftError(f"问题：像素动作旧时长断言失败：{action}")
         frames = _prepared_frames(store, cid, change, frame, entries[keys[0]])
-        if sum(item[2] for item in frames) != length and sequence != sequences[-1]:
+        total = sum(item[2] for item in frames)
+        if total != length and sequence["end"] != max(s["end"] for s in sequences):
             raise DraftError("问题：非末尾动作必须保持原总时长，否则会改动其它动作槽；可重新分配各帧时长")
+        new_end = sequence["begin"] + total - 1
+        outside = [key for key in keys if sequence["end"] < key <= new_end]
+        if outside:
+            raise DraftError(f"问题：末尾动作加长会覆盖序列外的原图集端点：{outside}")
         if any(s["name"] != action and s["begin"] <= sequence["end"] and s["end"] >= sequence["begin"]
                for s in sequences):
             raise DraftError("问题：原时间轴动作槽重叠，不能保证其它动作槽逐字节不变")
-        groups.append((change, frames, len(prepared)))
+        groups.append((change, frames))
         prepared.extend(frames)
     maximum = 4094 if family == "pixelart" else 4096
-    packed, positions = _append_pack(sheet, [item[0] for item in prepared], maximum)
     target_timeline = copy.deepcopy(timeline)
     target_by_name = {s["name"]: s for s in target_timeline["sequences"]}
     target_entries = dict(entries)
     foreign = [copy.deepcopy(e) for e in atlas if e not in entries.values()]
-    for change, frames, start in groups:
+    new_entries = []
+    for change, frames in groups:
         action = change["target"]["action"]
         old = by_name[action]
         total = sum(item[2] for item in frames)
@@ -127,22 +106,25 @@ def _compile_family(source, store, changeset, family, changes):
                 del target_entries[endpoint]
         target_by_name[action].update(begin=begin, end=begin + total - 1)
         cursor = begin - 1
-        for index, (image, box, duration, fw, fh) in enumerate(frames):
+        for image, box, duration, fw, fh in frames:
             cursor += duration
-            x, y = positions[start + index]
             entry = copy.deepcopy(entries[keys[bisect_left(keys, old["begin"])]])
-            entry.update(n=frame["name"] + f"{cursor:04d}", x=x, y=y, w=image.width, h=image.height,
+            entry.update(n=frame["name"] + f"{cursor:04d}", x=0, y=0, w=image.width, h=image.height,
                          fx=-box[0], fy=-box[1], fw=fw, fh=fh)
             if "r" in entry:
                 entry["r"] = False
             target_entries[cursor] = entry
+            new_entries.append(entry)
         result.assertions.append({"kind": "pixel_action", "family": family, "action": action,
                                   "old": copy.deepcopy(old), "value": copy.deepcopy(target_by_name[action])})
+    retained = [entry for entry in target_entries.values() if not any(entry is new for new in new_entries)] + foreign
+    packed, positions = repack(sheet, atlas, retained, [item[0] for item in prepared], maximum)
+    for entry, (x, y) in zip(new_entries, positions):
+        entry.update(x=x, y=y)
     target_atlas = [target_entries[k] for k in sorted(target_entries)] + foreign
     outputs = [encode_png(packed), encode_tree(target_atlas), original[2], encode_tree(target_timeline)]
     result.members.update({("common", logical): raw for logical, raw in zip(paths, outputs)})
-    result.checks.append({"state": "满足", "code": "studio.pixel.budget",
-                          "message": f"{family} 实际图集 {packed.width}×{packed.height}，预算 ≤4096²；frame.scale/锚点保留"})
+    result.checks.append(budget_check(family, packed))
     _verify_untouched(sheet, atlas, frame, timeline, packed, target_atlas, target_timeline,
                       {c["target"]["action"] for c in changes})
     return result
