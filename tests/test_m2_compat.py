@@ -46,7 +46,7 @@ def test_deleting_patch_records_cannot_leave_stale_capability_success(registry):
     assert report[0]["status"] == "问题"
 
 
-def test_method_hash_tampering_fails_and_missing_hash_is_pending(registry):
+def test_method_hash_tampering_and_missing_registered_hash_fail(registry):
     value = provided(registry)
     pf4 = next(cap for cap in value["provides"] if cap["id"] == "client.pf.level4@1")
     pf4["methods"] = deepcopy(pf4["methods"])
@@ -57,7 +57,7 @@ def test_method_hash_tampering_fails_and_missing_hash_is_pending(registry):
     pf4["methods"][0]["status"] = "待补"
     value["patches"][0]["methods"][0]["sha256"] = None
     value["patches"][0]["methods"][0]["status"] = "待补"
-    assert check_compat(required([pf4["id"]]), value, registry=registry)[0]["status"] == "待验证"
+    assert check_compat(required([pf4["id"]]), value, registry=registry)[0]["blocking"]
 
 
 def test_partial_and_legacy_empty_requires_are_never_compatible(registry):
@@ -74,7 +74,7 @@ def test_patch_hash_cannot_disagree_with_capability_hash(registry):
 
 
 def test_explicit_patch_only_requirement_cannot_pass_an_empty_client(registry):
-    requirement = required([], capabilityResolution="declared", clientPatches=["#87"])
+    requirement = required([], clientPatches=["#87"])
     results = check_compat(requirement, provided(registry, ()), registry=registry)
     assert any(r["blocking"] and "#87" in r["message"] for r in results)
     assert not any(r["blocking"] for r in check_compat(requirement, provided(registry, (87,)), registry=registry))

@@ -94,12 +94,9 @@ def check_delivery(document, directory):
     if (pack["since"], pack["tail"], pack["archives"]) != (
             document["from_version"], document["to_version"], [a["name"] for a in document["archives"]]):
         raise ValueError("requires input versions or archives differ from delivery")
-    if dependencies["capabilityResolution"] in {"resolved", "partial"}:
-        from wf.deliver.changeset import member_name
-        scanned = dependencies.get("scannedMembers", [])
-        inferred_hashes = {member_name(m["root"], m["logical_path"]): m["sha256"] for m in scanned}
-        if len(scanned) != len(inferred_hashes) or inferred_hashes != hashes:
-            raise ValueError("requires capability scan does not match delivered members")
+    if dependencies["capabilityResolution"] in {"resolved", "partial", "declared"}:
+        from wf.caps.scan_binding import verify_scanned_members
+        verify_scanned_members(dependencies, hashes)
     legacy = _object(local_read(document["legacy_manifest"])[1], "legacy manifest")
     if legacy.get("chain") != [entry["name"] for entry in document["archives"]]:
         raise ValueError("legacy manifest archive chain mismatch")

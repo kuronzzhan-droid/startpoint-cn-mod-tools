@@ -22,6 +22,7 @@
       "methods": {"$ref": "#/$defs/methods"}, "basis": {"type": "string"}
     }}},
     "unresolved": {"type": "array", "items": {"type": "object", "required": ["reason"], "properties": {"reason": {"type": "string"}}}},
+    "warnings": {"type": "array", "items": {"type": "object", "required": ["reason"], "properties": {"reason": {"type": "string"}}}},
     "limitations": {"type": "array", "items": {"type": "string"}}
   },
   "$defs": {

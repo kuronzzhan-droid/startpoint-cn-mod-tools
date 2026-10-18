@@ -122,7 +122,8 @@ def main(argv=None):
             parser.error("wf check compat --requires X --provides Y")
         from wf.caps.compat import check_compat
         try:
-            results = check_compat(read_document(args.requires), read_document(args.provides))
+            results = check_compat(read_document(args.requires), read_document(args.provides),
+                                   delivery_dir=args.requires.parent)
         except (ValueError, OSError, KeyError, TypeError) as error:
             results = [result("input", "问题", str(error), blocking=True)]
         document = {"schema": "wf-check-results/1", "results": results}

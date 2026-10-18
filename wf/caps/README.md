@@ -19,6 +19,6 @@ python -m wf check compat --requires <requires.json> --provides work/m2/provides
 
 完整 APK 通过 SWF 摘要与全部非签名 ZIP 成员摘要匹配。x86 和 arm64 的原生能力分别处理；签名变化不会改变成员摘要。只有 SWF 匹配时仅提供有方法证据的条目，不能据此证明资源表、台座图集或 native/ANE 条目。未知 APK/SWF 明确拒绝，需要调用者提供摘要。
 
-自定义摘要格式为 `schema: wf-apk-summary/1`，包含 `patches` 数组，每项提供 `number`、`status`（`recorded` / `declared` / `applied` / `already_present` / `enabled`）与 `methods`。方法使用声明里的 `patch`、`abc`、`label`、`sha256`。`official_systems: true` 是对 B 层的显式声明；缺少它不会自动给未知客户端补上 B 层。缺失方法 SHA 不从注册表反填为已验证；实际 SHA 与注册表不符则不提供该补丁及依赖它的组合能力。
+自定义摘要格式为 `schema: wf-apk-summary/1`，包含 `patches` 数组，每项提供 `number`、`status`（`recorded` / `declared` / `applied` / `already_present` / `enabled`）与 `methods`。方法使用声明里的 `patch`、`abc`、`label`、`sha256`。`official_systems: true` 是对 B 层的显式声明；缺少它不会自动给未知客户端补上 B 层。缺失方法 SHA 不从注册表反填为已验证；注册表已有 SHA 而输入缺失或不符时，不提供该补丁及依赖它的组合能力，记录问题。只有注册表明确待补的方法可保留待验证；额外未登记方法进入 `warnings`，不用于证明能力。
 
 原始 `patch-list.json` 只是执行配置，因此仅推导其中明确启用的条目，不能推断其 base 已具备其他补丁，也不把配置当作执行结果。v34 的完整构建记录由固定摘要绑定到已收录归档证据，输出明确写明这是记录推导。所有这些证据均属于离线静态层，不代替客户端运行和设备验收。

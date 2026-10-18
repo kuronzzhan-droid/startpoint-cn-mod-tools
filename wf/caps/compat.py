@@ -7,7 +7,7 @@ from wf.deliver.changeset import validate_document
 from wf.rules.catalog import result
 
 
-def check_compat(requires, provides, *, registry=None):
+def check_compat(requires, provides, *, registry=None, delivery_dir=None):
     if registry is None:
         from .registry import load_registry
         registry = load_registry()
@@ -15,6 +15,12 @@ def check_compat(requires, provides, *, registry=None):
     validate_document(provides, "provides.schema.json")
     required = requires["requires"]
     results = []
+    if required["capabilityResolution"] == "declared":
+        from .scan_binding import verify_declared_archives
+        try:
+            verify_declared_archives(requires, delivery_dir)
+        except (ValueError, OSError) as error:
+            results.append(result("capability.scan-members", "问题", str(error), blocking=True))
     if required["capabilityResolution"] not in {"resolved", "declared"} or required.get("unresolved"):
         results.append(result("capability.resolution", "待验证", "内容依赖推导尚不完整，不能确认兼容",
                               blocking=True, unresolved=required.get("unresolved", [])))
@@ -69,15 +75,20 @@ def check_compat(requires, provides, *, registry=None):
             results.append(result("capability.method-hash", "问题", f"{cap['title']} 能力方法哈希与补丁方法记录不一致",
                                   blocking=True, id=cap_id))
             continue
-        mismatches, pending = [], []
+        mismatches, missing, pending = [], [], []
         for method in expected:
             key = (method["patch"], method["abc"], method["label"])
             recorded = actual.get(key)
-            if method.get("sha256") is None or recorded is None:
+            if method.get("sha256") is None and method["status"] == "待补":
                 pending.append(method["label"])
+            elif recorded is None:
+                missing.append(method["label"])
             elif recorded != method["sha256"]:
                 mismatches.append({"method": method["label"], "expected": method["sha256"], "actual": recorded})
-        if mismatches:
+        if missing:
+            results.append(result("capability.method-hash", "问题", f"{cap['title']} 缺少注册表要求的方法 SHA-256",
+                                  blocking=True, id=cap_id, missing_methods=missing))
+        elif mismatches:
             results.append(result("capability.method-hash", "问题", f"{cap['title']} 方法哈希不匹配",
                                   blocking=True, id=cap_id, mismatches=mismatches))
         else:

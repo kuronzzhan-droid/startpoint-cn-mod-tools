@@ -20,7 +20,8 @@ def changeset(tmp_path, raw):
     return filename
 
 
-def test_deliver_infers_override_and_readback_rejects_scan_digest_tampering(tmp_path):
+@pytest.mark.parametrize("resolution", ["resolved", "declared"])
+def test_deliver_infers_override_and_readback_rejects_scan_digest_tampering(tmp_path, resolution):
     source = changeset(tmp_path, nodes.build_node({"desc_override_test": "攻击力提高10%"}))
     out = tmp_path / "delivery"
     delivery = build_delivery(source, out, no_baseline_i_know=True)
@@ -28,6 +29,8 @@ def test_deliver_infers_override_and_readback_rejects_scan_digest_tampering(tmp_
     assert required["requires"]["clientCapabilities"] == ["client.text.desc_override@1"]
     assert required["requires"]["clientPatches"] == ["#2"]
     assert required["requires"]["capabilityResolution"] == "resolved"
+    required["requires"]["capabilityResolution"] = resolution
+    (out / "requires.json").write_text(json.dumps(required), "utf-8")
     check_delivery(delivery, out)
     required["requires"]["scannedMembers"][0]["sha256"] = "0" * 64
     (out / "requires.json").write_text(json.dumps(required), "utf-8")

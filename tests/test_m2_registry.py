@@ -63,10 +63,10 @@ def test_tampered_method_never_provides_matching_capability(registry):
     assert output["unresolved"][0]["patch"] == 88
 
 
-def test_missing_hashes_stay_null_not_filled_from_registry(registry):
+def test_missing_registered_hashes_do_not_provide_capabilities(registry):
     output = derive_provides({"patches": [{"number": 87, "status": "declared"}]}, registry=registry)
-    assert all(m["sha256"] is None and m["status"] == "待补" for m in output["patches"][0]["methods"])
-    assert not any(c["layer"] == "B" for c in output["provides"])
+    assert output["patches"] == output["provides"] == []
+    assert output["unresolved"][0]["status"] == "问题"
 
 
 def test_null_hash_cannot_be_marked_verified(registry):
