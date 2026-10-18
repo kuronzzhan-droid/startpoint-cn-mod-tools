@@ -56,6 +56,8 @@ server:
   features: []
   note: 无额外服务端改动要求
 data_surface:
+  allowed_tables: [ability]
+  allowed_blocks: [during_content]
   kinds:
   - 424
   dsl_nodes: []
@@ -63,7 +65,7 @@ data_surface:
   unique_ids: []
   tables: []
   selectors:
-  - dsl.buffTargetAs=101,102,104,131,132,133
+  - dsl.buffTargetAs.convert
 form:
   label: kind 424 伤害类型转换
   fields:

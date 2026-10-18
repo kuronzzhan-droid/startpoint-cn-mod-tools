@@ -13,7 +13,7 @@ from wf.caps.facts import UNIQUE, PF, STRINGS
 from wf.caps.registry import load_registry
 from wf.caps.requirements import infer_requirements, requirements_document
 from wf.deliver.changeset import validate_document
-from wf.view.layout import col
+from wf.view.layout import EM, col
 
 ABILITY = "master/ability/ability.orderedmap"
 LEADER = "master/ability/leader_ability.orderedmap"
@@ -31,9 +31,14 @@ def leaf(row):
 
 
 def ability(kind, *, table="ability", block="during_content", levels=None, unique=None, unison=False):
-    row = ["0"] * (124 if table == "leader_ability" else 126)
+    layout = EM["layouts"][table]
+    width = max(int(base) + max(int(f[0]) for f in EM["block_fields"][
+        "precondition" if block.startswith("precondition") else block])
+        for block, base in layout["blocks"].items()) + 1
+    row = ["0"] * width
     row[0] = "test"
-    row[3 if table == "leader_ability" else 5] = "1" if block == "during_content" else "0"
+    trigger = next(int(c[1:]) for c, label in layout["head"] if label.split()[0] == "trigger")
+    row[trigger] = "1" if block == "during_content" else "0"
     row[col(table, block, "kind")] = str(kind)
     if levels is not None:
         row[col(table, block, "powerflip_override.id")] = "test_pf"
@@ -55,7 +60,7 @@ def payload(logical, data):
     (424, "during_content", "client.kind424.damage_convert@1"),
     (724, "instant_content", "client.kind724.fever_ratio@1"),
 ])
-@pytest.mark.parametrize("table,logical", [("ability", ABILITY), ("leader_ability", LEADER)])
+@pytest.mark.parametrize("table,logical", [("ability", ABILITY)])
 def test_actual_layouts_and_prose_counterexample(kind, block, expected, table, logical, registry):
     raw, entry = payload(logical, {"1": ability(kind, table=table, block=block)})
     result = infer_requirements({"x": (raw, entry)}, registry=registry)
@@ -174,5 +179,5 @@ def test_actual_voice_rotation_suffixes(name, expected, registry):
 @pytest.mark.parametrize("kind,wrong_block", [(422, "instant_content"), (423, "instant_content"),
     (424, "instant_content"), (419, "instant_content"), (724, "during_content"), (722, "during_content")])
 def test_kind_numbers_from_the_wrong_enum_block_do_not_invent_capabilities(kind, wrong_block, registry):
-    result = infer_requirements({"a": payload(ABILITY, {"1": ability(kind, block=wrong_block)})}, registry=registry)
-    assert result["clientCapabilities"] == []
+    with pytest.raises(ValueError, match=f"问题: .*kind {kind}.*{wrong_block}"):
+        infer_requirements({"a": payload(ABILITY, {"1": ability(kind, block=wrong_block)})}, registry=registry)

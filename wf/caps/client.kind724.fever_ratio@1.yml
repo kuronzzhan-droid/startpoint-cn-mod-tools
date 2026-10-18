@@ -32,6 +32,8 @@ server:
   features: []
   note: 无额外服务端改动要求
 data_surface:
+  allowed_tables: [ability]
+  allowed_blocks: [instant_content]
   kinds:
   - 724
   dsl_nodes: []

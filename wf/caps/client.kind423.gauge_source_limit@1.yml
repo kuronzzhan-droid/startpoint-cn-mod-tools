@@ -4,22 +4,9 @@ title: kind 423 通用回槽来源限制
 layer: A
 provided_by:
   patches:
-  - 30
   - 31
   match: all
   methods:
-  - patch: 30
-    abc: boot_ffc6
-    label: MemberAbilityTotalizerImpl/wfBlocksGauge
-    sha256: c00c039ed5450963581587afefb79a4e0e8185bba082a0f95677263e9a510e37
-    status: 已记录
-    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
-  - patch: 30
-    abc: boot_ffc6
-    label: MemberImpl/applyInstantAbility
-    sha256: 6088e8e59832bca7c260e5f82339395fe1d1fce47c92aa7fa2f0591549052817
-    status: 已记录
-    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
   - patch: 31
     abc: boot_ffc6
     label: AbilitySlotImpl/applyInstant
@@ -129,6 +116,10 @@ server:
   features: []
   note: 无额外服务端改动要求
 data_surface:
+  allowed_tables:
+  - ability
+  allowed_blocks:
+  - during_content
   kinds:
   - 423
   dsl_nodes: []

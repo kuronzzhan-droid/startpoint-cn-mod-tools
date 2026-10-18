@@ -43,7 +43,7 @@ def infer_requirements(members, *, declared=(), read_raw=None, server=None, regi
             raise ValueError(f"capability table/DSL must use common root: {logical}")
         if root == "common":
             candidate[logical] = raw
-    hits, unresolved = {}, []
+    hits, unresolved, notes = {}, [], []
     visited, tables = set(), {}
 
     def add(cap_id, context, signal, value):
@@ -88,7 +88,7 @@ def infer_requirements(members, *, declared=(), read_raw=None, server=None, regi
                     continue
                 for trail, text in leaves(child, (key,)):
                     source = {"logical_path": logical, "key": "/".join(trail), "via": context["logical_path"]}
-                    signals(table_signals(logical, trail, text), source)
+                    signals(table_signals(logical, trail, text, registry=registry), source)
                 continue
             if kind == "program":
                 logical = program_logical(value)
@@ -104,9 +104,6 @@ def infer_requirements(members, *, declared=(), read_raw=None, server=None, regi
                 match = str(value) in {str(item) for item in surface.get(kind, [])}
                 if kind == "unique_string":
                     match = any(str(value).startswith(prefix) for prefix in surface.get("unique_prefixes", []))
-                # The converted damage flag shares kind424's implementation.
-                if kind == "selectors" and value == "dsl.buffTargetAs.convert":
-                    match |= cap_id == "client.kind424.damage_convert@1"
                 if match:
                     add(cap_id, context, kind, value)
 
@@ -132,10 +129,12 @@ def infer_requirements(members, *, declared=(), read_raw=None, server=None, regi
                 old = dict(leaves(parse_table(baseline(logical), logical)))
             except (KeyError, FileNotFoundError):
                 old = {}
+                notes.append({"logical_path": logical, "reason": "baseline-missing",
+                              "detail": "基线缺失；按整张候选表扫描，可能保守地增加能力依赖。"})
             for trail, text in leaves(data):
                 if old.get(trail) == text:
                     continue
-                signals(table_signals(logical, trail, text),
+                signals(table_signals(logical, trail, text, registry=registry),
                         {"logical_path": logical, "key": "/".join(trail)})
         elif logical.endswith(DSL_SUFFIX):
             scan_dsl(logical)
@@ -151,7 +150,7 @@ def infer_requirements(members, *, declared=(), read_raw=None, server=None, regi
     return {"clientCapabilities": sorted(hits), "clientPatches": [f"#{n}" for n in patches],
             "serverFeatures": features, "capabilityResolution": "partial" if unresolved else "resolved",
             "capabilityEvidence": [{"id": cap_id, "evidence": evidence} for cap_id, evidence in sorted(hits.items())],
-            "unresolved": unresolved, "scannedMembers": scanned}
+            "unresolved": unresolved, "scannedMembers": scanned, "inferenceNotes": notes}
 
 
 def requirements_document(doc, members, archives, *, read_raw=None, server=None, registry=None):

@@ -30,6 +30,9 @@
       "required": ["kinds", "dsl_nodes", "unique_prefixes", "unique_ids", "tables", "selectors"],
       "properties": {
         "kinds": {"type": "array", "uniqueItems": true, "items": {"type": "integer", "minimum": 0}},
+        "allowed_tables": {"$ref": "#/$defs/strings"},
+        "allowed_blocks": {"$ref": "#/$defs/strings"},
+        "character_ids": {"$ref": "#/$defs/strings"},
         "dsl_nodes": {"$ref": "#/$defs/strings"},
         "unique_prefixes": {"$ref": "#/$defs/strings"},
         "unique_ids": {"$ref": "#/$defs/strings"},

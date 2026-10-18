@@ -32,7 +32,7 @@ def rows(text):
     return list(csv.reader(io.StringIO(text, newline="")))
 
 
-def table_signals(logical, trail, text):
+def table_signals(logical, trail, text, *, registry=None):
     """Yield (signal type, value), including references for a bounded closure."""
     table = logical.rsplit("/", 1)[-1].removesuffix(".orderedmap")
     yield "tables", table
@@ -61,10 +61,22 @@ def table_signals(logical, trail, text):
             block = {"0": "instant_content", "1": "during_content"}.get(trigger)
             if block:
                 kind = row[col(name, block, "kind")]
-                valid_kind = KIND_BLOCKS.get(kind, block) == block
-                if valid_kind:
-                    yield "kinds", kind
-                if valid_kind and kind in {"722", "419"}:
+                if registry is None:
+                    from .registry import load_registry
+                    registry = load_registry()
+                for cap in registry.values():
+                    surface = cap["data_surface"]
+                    if kind not in {str(k) for k in surface["kinds"]}:
+                        continue
+                    for field, actual in (("allowed_tables", name), ("allowed_blocks", block)):
+                        if field in surface and actual not in surface[field]:
+                            raise ValueError(f"问题: {logical}/{'/'.join(trail)}/{index}: kind {kind} "
+                                             f"{field}={surface[field]}, actual={actual}")
+                if KIND_BLOCKS.get(kind, block) != block:
+                    raise ValueError(f"问题: {logical}/{'/'.join(trail)}/{index}: kind {kind} "
+                                     f"requires {KIND_BLOCKS[kind]}, actual={block}")
+                yield "kinds", kind
+                if kind in {"722", "419"}:
                     levels = row[col(name, block, "powerflip_override.levels")]
                     if "4" in [v.strip() for v in levels.split(",")]:
                         yield "selectors", "pf.forLevels=4"
@@ -88,7 +100,7 @@ def table_signals(logical, trail, text):
                             yield "ref", (UNIQUE, value)
             if index == 0 and "unisonable" in heads and row[heads["unisonable"]] == "true":
                 yield "selectors", "ability.unison-first-row"
-            if row[heads["awake_kind"]] in {"1", "2"}:
+            if "awake_kind" in heads and row[heads["awake_kind"]] in {"1", "2"}:
                 yield "selectors", "ability.awake-row"
             yield "optional_ref", (STRINGS, "desc_override_" + row[0])
         elif logical == CHARACTER:
