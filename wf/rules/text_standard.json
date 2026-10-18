@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "standard": "MOD 角色面板文案规范 v1（草案）",
   "source_sha256": "304696b1ffe2702c60d204bfa3f1caae9a327127dfc759a92ee18a76cc321663",
   "scope_note": "§1—8和§10只检查desc_override；§9检查action_skill。官方自动生成能力和非覆盖custom文本不套本规范。全表扫描包含继承文本和无角色归属的键，问题不等同该版本新引入。",
@@ -62,7 +62,7 @@
       "implementation": {
         "check": "line_stops",
         "patterns": [],
-        "mode": "automatic"
+        "mode": "partial"
       }
     },
     {
@@ -104,7 +104,7 @@
         "patterns": [
           "[火水雷风光暗]属性共鸣(?:中|状态下|的时候)"
         ],
-        "mode": "automatic"
+        "mode": "partial"
       }
     },
     {
@@ -127,7 +127,7 @@
           "(?:非)?Fever(?:中|时|期间)",
           "进入Fever时"
         ],
-        "mode": "automatic"
+        "mode": "partial"
       }
     },
     {
@@ -149,7 +149,7 @@
         "patterns": [
           "战斗开始(?:后|的时候)[，,]"
         ],
-        "mode": "automatic"
+        "mode": "partial"
       }
     },
     {
@@ -298,7 +298,7 @@
           "Power\\s*Flip",
           "强化弹射伤害提升效果"
         ],
-        "mode": "automatic"
+        "mode": "partial"
       }
     },
     {
@@ -321,7 +321,7 @@
           "直击",
           "直接攻击造成的伤害"
         ],
-        "mode": "automatic"
+        "mode": "partial"
       }
     },
     {
@@ -343,7 +343,7 @@
         "patterns": [
           "FEVER|fever"
         ],
-        "mode": "automatic"
+        "mode": "partial"
       }
     },
     {
@@ -365,7 +365,7 @@
         "patterns": [
           "贯通"
         ],
-        "mode": "automatic"
+        "mode": "partial"
       }
     },
     {
@@ -387,7 +387,7 @@
         "patterns": [
           "全体队员|队伍全体角色|全队"
         ],
-        "mode": "automatic"
+        "mode": "partial"
       }
     },
     {
@@ -429,7 +429,7 @@
         "patterns": [
           "技能槽上限"
         ],
-        "mode": "automatic"
+        "mode": "partial"
       }
     },
     {
@@ -451,7 +451,7 @@
         "patterns": [
           "(?<!技能)充能速度"
         ],
-        "mode": "automatic"
+        "mode": "partial"
       }
     },
     {
@@ -495,7 +495,7 @@
         "patterns": [
           "额外乘区|独立乘区|状态特攻乘区"
         ],
-        "mode": "automatic"
+        "mode": "partial"
       }
     },
     {
@@ -888,10 +888,12 @@
       "implementation": {
         "check": null,
         "patterns": [
-          "\\d+(?:\\.\\d+)?\\s*倍",
+          "合计\\d+(?:\\.\\d+)?\\s*倍",
+          "\\d+(?:\\.\\d+)?\\s*倍(?:的)?(?:[火水雷风光暗]属性)?(?:技能|能力|直接攻击|强化弹射)?伤害",
+          "伤害(?:倍率)?(?:变为|提升至|提高至|为)?\\s*\\d+(?:\\.\\d+)?\\s*倍",
           "\\d+\\s*段(?:[^，。／\\n]{0,12})?(?:伤害|倍率|×)"
         ],
-        "mode": "automatic"
+        "mode": "partial"
       }
     },
     {
