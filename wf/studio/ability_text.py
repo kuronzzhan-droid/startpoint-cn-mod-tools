@@ -116,8 +116,14 @@ def apply_text(state, cid, sections, *, shared_ok=False):
             recipients.setdefault(owner, {})["action_skill"] = copy.deepcopy(sections["action_skill"])
     for section in ("custom_ability_string", "desc_override"):
         for key, change in sections.get(section, {}).items():
-            # Same owners as scanning every character's custom_keys, prefiltered.
-            owners = sorted(custom_owners(workspace, [key])[key])
+            if section == "desc_override" and change.get("old") is None:
+                from wf.text.edit import override_owners
+                owners = sorted(override_owners(workspace, key))  # new key: owners of the slot row c0
+                if not owners:
+                    raise ValueError(f"{section}/{key}: 不是本角色任何槽的覆盖键（应为 desc_override_<槽行 c0>）")
+            else:
+                # Same owners as scanning every character's custom_keys, prefiltered.
+                owners = sorted(custom_owners(workspace, [key])[key])
             shared[section + "/" + key] = owners
             for owner in owners:
                 recipients.setdefault(owner, {}).setdefault(section, {})[key] = change

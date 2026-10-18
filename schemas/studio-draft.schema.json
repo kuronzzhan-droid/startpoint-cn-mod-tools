@@ -237,6 +237,11 @@
          "then": {"required": ["level"]}, "else": {"not": {"required": ["level"]}}}
       ]
     },
+    "abilityNewOverride": {
+      "type": "object", "additionalProperties": false, "required": ["old", "new"],
+      "description": "新建覆盖文案 desc_override_<槽行 c0>：old 为 null 断言键不存在",
+      "properties": {"old": {"type": "null"}, "new": {"type": "string", "minLength": 1}}
+    },
     "abilityTextPair": {
       "type": "object", "additionalProperties": false, "required": ["old", "new"],
       "properties": {"old": {"type": "string"}, "new": {"type": "string"}}
@@ -250,7 +255,7 @@
         "character_text": {"type": "object", "minProperties": 1, "propertyNames": {"pattern": "^[0-9]+$"},
                            "additionalProperties": {"$ref": "#/$defs/abilityTextPair"}},
         "custom_ability_string": {"type": "object", "minProperties": 1, "additionalProperties": {"$ref": "#/$defs/abilityTextPair"}},
-        "desc_override": {"type": "object", "minProperties": 1, "additionalProperties": {"$ref": "#/$defs/abilityTextPair"}}
+        "desc_override": {"type": "object", "minProperties": 1, "additionalProperties": {"anyOf": [{"$ref": "#/$defs/abilityTextPair"}, {"$ref": "#/$defs/abilityNewOverride"}]}}
       }
     },
     "abilityRequest": {

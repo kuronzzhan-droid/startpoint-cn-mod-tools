@@ -116,7 +116,7 @@ def _skill_structure(state, cid, operation, document, owners):
                 raise ValueError("action_skill move target is out of range or unchanged")
             records.insert(target, records.pop(index))
             state.checks.append(result("ability.row-order", "待验证", "技能档位顺序已改变；请核对技能等级与能量"))
-    if kind in {"insert_row", "delete_row"}:
+    if kind in {"insert_row", "delete_row", "move_row"}:  # a move re-points every tier reference too
         from .ability_references import tier_reference_check
         state.checks.append(tier_reference_check(state, key, owners, len(levels), len(records), kind))
     document[key] = {str(i + 1): join_leaf(node.get(str(i + 1), node[levels[-1]]), [record])

@@ -15,7 +15,8 @@ export interface TextEdit {
 export interface CustomEdit {
   section: "desc_override" | "custom_ability_string";
   key: string;
-  old: string;
+  /** null = create this desc_override key (it does not exist yet). */
+  old: string | null;
   new: string;
 }
 
@@ -51,10 +52,11 @@ export function attachFor(p: Pending, table: AbilityTable, slot: number): Attach
   return p.attach.find((a) => a.table === table && a.slot === slot);
 }
 
-export function setCustom(p: Pending, section: CustomEdit["section"], key: string, original: string, value: string,
+export function setCustom(p: Pending, section: CustomEdit["section"], key: string, original: string | null, value: string,
   owners: string[]): Pending {
   const custom = p.custom.filter((c) => !(c.section === section && c.key === key));
-  if (value !== original) custom.push({ section, key, old: original, new: value });
+  // A creation (original null) stays pending until written or cancelled, even while empty.
+  if (original === null ? section === "desc_override" : value !== original) custom.push({ section, key, old: original, new: value });
   return { ...p, custom, owners: { ...p.owners, [sharedId(section, key)]: owners } };
 }
 
@@ -177,7 +179,10 @@ export function buildRequest(p: Pending, entries: AbilityEntry[]): AbilityReques
   }
   const request: AbilityRequest = { operations };
   const text: NonNullable<AbilityRequest["text"]> = {};
-  for (const c of p.custom) (text[c.section] ??= {})[c.key] = { old: c.old, new: c.new };
+  for (const c of p.custom) {
+    if (c.section === "desc_override") (text.desc_override ??= {})[c.key] = { old: c.old, new: c.new };
+    else (text.custom_ability_string ??= {})[c.key] = { old: c.old ?? "", new: c.new };
+  }
   if (p.leaderName) text.character_text = { "10": p.leaderName };
   if (Object.keys(text).length) request.text = text;
   // wf text takes one request-level shared_ok for panel strings; the UI requires each shared key confirmed.

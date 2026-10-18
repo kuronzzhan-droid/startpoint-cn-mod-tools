@@ -162,3 +162,16 @@ mark { background: #ffe58f; color: inherit; border-radius: 2px; padding: 0 1px; 
 .effect-cards.locked { opacity: 0.6; }
 .ws-board-palette-groups { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
 .ws-board-pgroup > .small { display: block; margin-bottom: 2px; }
+.slot-override { border-top: 1px dashed var(--border); padding-top: 6px; margin-top: 8px; }
+.slot-override:first-of-type { border-top: 0; }
+.slot-override h4 { margin: 2px 0 4px; color: var(--text); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.slot-override.empty { opacity: 0.85; }
+.main-tag { border-color: var(--accent); color: var(--accent); }
+.panel-preview { margin: 4px 0 2px; padding: 6px 10px; border-radius: 8px; background: #2b2f3a; color: #f4f5f8;
+  font-size: 13px; line-height: 1.6; max-width: 640px; }
+.panel-preview > .small { display: block; color: #aab3c5; margin-bottom: 2px; }
+.panel-line { white-space: pre-wrap; word-break: break-all; }
+.main-badge { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%;
+  background: #e8b43a; color: #2b2f3a; font-size: 10px; font-weight: 700; vertical-align: -2px; }
+.danger-line { color: var(--danger); }
+.link { border: 0; background: none; padding: 0 2px; color: var(--accent); cursor: pointer; font-size: inherit; }

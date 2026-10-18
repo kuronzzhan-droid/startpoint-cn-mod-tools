@@ -287,6 +287,12 @@ export function SkillTiers() {
       column_space: "native", cells: tiers[index].rows[0].map((v, i) => ({ column: "c" + i, old: v, new: null })),
     }],
   }));
+  const move = (index: number, to: number) => ws.update((p) => ({
+    ...p, tierConfirmed: false, tierRisk: false, ops: [...p.ops, {
+      op: "move_row", table: "action_skill", key, level: String(index + 1), row: 0, row_count: tiers.length, to_row: to,
+      column_space: "native", cells: tiers[index].rows[0].map((v, i) => ({ column: "c" + i, old: v, new: v })),
+    }],
+  }));
   const cancel = () => ws.update((p) => ({ ...p, tierConfirmed: false, tierRisk: false, ops: p.ops.filter((o) => !(o.table === "action_skill" && o.op !== "set_cells")) }));
 
   const projected = tiers.map((t) => ({ label: `档 ${t.level}`, name: t.rows[0]?.[0] ?? "", from: t.level }));
@@ -294,6 +300,7 @@ export function SkillTiers() {
     const at = Number(op.level) - 1;
     if (op.op === "insert_row") projected.splice(at, 0, { label: "新档", name: op.cells[0]?.new ?? "", from: null as any });
     if (op.op === "delete_row") projected.splice(at, 1);
+    if (op.op === "move_row" && op.to_row !== undefined) projected.splice(op.to_row, 0, projected.splice(at, 1)[0]);
   }
   const reference = (ws.check?.checks ?? []).find((c) => c.rule === "ability.skill-tier-references") as TierReference | undefined;
   const missingTiers = Object.entries(reference?.missingUnawakenedTiers ?? {}).filter(([, tiers]) => tiers.length);
@@ -305,13 +312,15 @@ export function SkillTiers() {
         <span class="muted key">键 {key} · {tiers.length} 档</span>
         {shared ? <span class="pill bad">共享 · {tiers[0].owners.join("、")}</span> : null}
       </header>
-      <p class="small muted">档位 = 技能进化阶段（默认 1 档，玛纳「技能进化」节点每个 +1，觉醒另计），与数值 SLv 无关。插入复制所选档的全部 {tiers[0].rows[0]?.length ?? 0} 列；
-        插删后服务端镜像的技能名/描述列一起平移。最多 3 档。</p>
+      <p class="small muted">档位 = 技能进化阶段（默认 1 档，玛纳「技能进化」节点每个 +1，觉醒另计），与技能等级无关。插入会复制所选档的全部字段；
+        插入、删除、移动后，服务器上的技能名/描述跟着一起挪。最多 3 档。</p>
       <ol class="tier-list">
         {tiers.map((t, i) => (
           <li>
             <span class="row-no">档 {t.level}</span> <strong>{t.rows[0]?.[0]}</strong>
             <span class="spacer" />
+            <button class="icon" disabled={!!locked || i === 0} onClick={() => move(i, i - 1)} title={`档 ${t.level} 上移`} aria-label="上移">↑</button>
+            <button class="icon" disabled={!!locked || i === tiers.length - 1} onClick={() => move(i, i + 1)} title={`档 ${t.level} 下移`} aria-label="下移">↓</button>
             <button class="small-btn" disabled={!!locked || tiers.length >= 3} onClick={() => insertAfter(i)}
               title={tiers.length >= 3 ? "已达三档上限" : `在档 ${t.level} 之后插入一档（复制档 ${t.level}）`}>在后面插入</button>
             <button class="small-btn danger" disabled={!!locked || tiers.length <= 1} onClick={() => remove(i)}
@@ -322,7 +331,8 @@ export function SkillTiers() {
       {locked && !pending.length ? <p class="small muted">{locked}</p> : null}
       {pending.length ? (
         <div class="tier-pending">
-          <p><strong>未写入：</strong>{pending.map((op) => op.op === "insert_row" ? `在第 ${op.level} 档位置插入（复制前一档）` : `删除档 ${op.level}`).join("；")}
+          <p><strong>未写入：</strong>{pending.map((op) => op.op === "insert_row" ? `在第 ${op.level} 档位置插入（复制前一档）`
+            : op.op === "move_row" ? `档 ${op.level} 移到第 ${(op.to_row ?? 0) + 1} 档` : `删除档 ${op.level}`).join("；")}
             → 结果 {projected.length} 档：{projected.map((p) => `${p.label}「${p.name}」`).join(" / ")}
             <button class="ghost small-btn" onClick={cancel}>撤销</button></p>
           {shared ? (

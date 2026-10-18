@@ -19,7 +19,8 @@ def test_panel_lists_fields_rules_and_effective_server(tmp_path):
     panel = ed.text_panel("139985")
     override = field(panel, "desc_override.desc_override_first")
     assert override["owners"] == ["139985"] and override["base"] == "自身攻击力提升"
-    assert {h["id"] for h in override["house"]} == {"house.tautology", "house.leader-self", "house.core-name"}
+    assert {h["id"] for h in override["house"]} == {"house.tautology", "house.leader-self", "house.core-name",
+                                                   "house.main-icon", "house.awaken-dual", "house.no-slash"}
     assert all(r["requirement"] for r in override["rules"])
     assert {"action_skill.1.c0", "action_skill.3.c1"} <= {f["location"] for f in panel["fields"]}
     assert panel["server"]["effectiveSource"].endswith("character_text_rank_p5b.json")

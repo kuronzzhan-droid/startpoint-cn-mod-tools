@@ -567,10 +567,12 @@ export interface AttachOp {
 }
 
 export interface TextPair { old: string; new: string }
+/** desc_override may also be created: old = null asserts the key does not exist yet. */
+export interface OverridePair { old: string | null; new: string }
 
 /** abilityRequest.text (wf text); skill c0/c1 travel as asserted operations instead. */
 export interface AbilityTextSections {
-  desc_override?: Record<string, TextPair>;
+  desc_override?: Record<string, OverridePair>;
   custom_ability_string?: Record<string, TextPair>;
   character_text?: Record<string, TextPair>;
   action_skill?: Record<string, Record<string, TextPair>>;
@@ -652,10 +654,33 @@ export interface TextField {
   enhancement: boolean;
   tier?: string;
   field?: "c0" | "c1";
+  /** Exact slot label of a desc_override (desc_override_<slot row c0>), or 「未挂接」. */
   slot?: string;
+  /** Slot main-limit: all rows / some rows / none (ability c1 ≠ true). */
+  main?: "all" | "some" | "none";
+  slotKey?: string;
+  /** desc_override key that does not exist yet (being created). */
+  created?: boolean;
   findings: TextFinding[];
+  /** Panel-standard rules this field hits (only hits). */
   rules: TextRuleRecord[];
   house: HouseRuleState[];
+  /** Number of 「问题」 on this field (author rules + wf text findings). */
+  problems: number;
+  standardChecked: number;
+}
+
+export interface OverrideSlot {
+  label: string;
+  table: "ability" | "leader_ability";
+  slot: number;
+  key: string;
+  names: string[];
+  overrideKeys: string[];
+  existing: string[];
+  main: "all" | "some" | "none";
+  owners: string[];
+  rows: number;
 }
 
 export interface TextPanel {
@@ -671,7 +696,9 @@ export interface TextPanel {
     columns: { column: number; label: string; client: string | null; server: string | null; match: boolean }[];
   };
   houseRules: { id: string; title: string; requirement: string; rules: string[] }[];
-  standard: { version: string; name: string; scope: string };
+  standard: { version: string; name: string; scope: string; note?: string };
+  slots: OverrideSlot[];
+  mainIcon: string;
 }
 
 export interface KeySearchResult {

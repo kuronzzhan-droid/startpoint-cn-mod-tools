@@ -1,15 +1,17 @@
 import { useEffect, useRef, useState } from "preact/hooks";
-import { ability, onDraftChange, TextField, TextPanel, TextRuleRecord } from "../api";
+import { ability, onDraftChange, OverrideSlot, TextField, TextPanel, TextRuleRecord } from "../api";
 import { Notice } from "./common";
 import { editedLocations, useWorkspace } from "./AbilityEditor";
 import { setCustom, setSkillText, sharedId, tierOps } from "./abilityModel";
+import { InfoTip } from "./Delivery";
 
-// 文案：desc_override / custom_ability_string / 技能 c0·c1（每档）/ 队长名。
-// Reads GET /api/characters/<cid>/text (draft state, both server mirrors). Edits
-// join the shared pending request (abilityRequest.text / asserted skill ops), so
-// the write still goes through wf text and AbilityEditor.apply.
+// 文案：技能名/描述（每档）、覆盖文案（按槽）、技能强化等关联文本、队长名。
+// Reads GET /api/characters/<cid>/text (draft state, both server mirrors). Edits join the
+// shared pending request; the write still goes through wf text and AbilityEditor.apply.
 
 const STATE_CLASS: Record<string, string> = { 问题: "rs-bad", 待验证: "rs-warn", 未执行: "rs-none", 满足: "rs-ok", 不适用: "rs-na" };
+const MAIN_LABEL: Record<string, string> = { all: "主位限定", some: "部分主位限定", none: "" };
+export const MAIN_ICON = " <icon id='main'>  ";
 
 export function TextTab({ characterId }: { characterId: string }) {
   const ws = useWorkspace();
@@ -25,7 +27,7 @@ export function TextTab({ characterId }: { characterId: string }) {
   if (error) {
     return <Notice kind="error">读取文案失败：{error}{/server_dir|服务端镜像/.test(error) ? "（启动编辑台时需加 --server-dir 指向服务端镜像根）" : ""}</Notice>;
   }
-  if (!panel || !ws) return <div class="loading">正在读取文案与两份服务端镜像……（约 3 秒）</div>;
+  if (!panel || !ws) return <div class="loading">正在读取文案……</div>;
 
   const live = ws.lint;
   const view = (location: string): TextField | undefined =>
@@ -39,13 +41,14 @@ export function TextTab({ characterId }: { characterId: string }) {
     ? "技能档位或技能键有未写入的修改；技能文本请在写入后另起一次修改。" : null;
   const skillShared = panel.skillOwners.length > 1;
   const houseTotals = summarize(panel.fields.map((f) => view(f.location) ?? f));
+  const unattached = overrides.filter((f) => f.slot === "未挂接");
 
   return (
     <div class="board text-tab">
       <p class="hint">
-        写入走 wf text：技能 c0/c1 同时改 action_skill、客户端 character_text 镜像列与两份服务端镜像（character_text.json /
-        character_text_rank_p5b.json，仅生成交付时写入 server/）；desc_override、custom_ability_string 是客户端专属表面。
-        检查依据「{panel.standard.name}」规则 v{panel.standard.version}；「待验证」= 规则只覆盖列举写法，须人工核对，不算通过。
+        改动通过统一的文案检查写入：技能名和描述同时改客户端与两份服务器文本，覆盖文案和技能强化文本只在客户端。
+        「待验证」= 规则只认得列举出的写法，没命中不等于合格，需要人工看。
+        <InfoTip text={`技术细节：wf text；action_skill c0/c1、character_text 镜像列（c4–c10）、server/ 下 character_text.json 与 character_text_rank_p5b.json；desc_override / custom_ability_string 是客户端专属表。检查依据「${panel.standard.name}」v${panel.standard.version}。`} />
         <br />快捷键：Ctrl+Enter 确认当前文本框，Esc 还原，Ctrl+S 写入草稿。
       </p>
       <div class="house-summary" aria-label="作者规则汇总">
@@ -56,16 +59,17 @@ export function TextTab({ characterId }: { characterId: string }) {
         ))}
         {ws.linting ? <span class="small muted">文案检查中……</span> : null}
       </div>
+      <p class="small muted">{panel.standard.note}</p>
 
       <article class="ability">
         <header>
-          <h3>技能文本（每档 c0 名称 / c1 描述）</h3>
-          <span class="muted key">键 {panel.skillKey}</span>
-          {skillShared ? <span class="pill bad">共享 · {panel.skillOwners.join("、")}</span> : null}
+          <h3>技能名与描述</h3>
+          <span class="muted key" title="技能键（action_skill）">键 {panel.skillKey}</span>
+          {skillShared ? <span class="pill bad">与 {panel.skillOwners.length - 1} 个角色共用</span> : null}
         </header>
         {skillLocked ? <Notice kind="warn">{skillLocked}</Notice> : null}
         {skillShared ? <SharedConfirm id={sharedId("action_skill", panel.skillKey)} owners={panel.skillOwners} /> : null}
-        <p class="small muted">各档写法须一致（数值差异可以）；技能描述只写本体，不重复队长技/能力里的强化效果。改任一档都会对全部档位带旧值断言。</p>
+        <p class="small muted">各档写法须一致（数值可以不同）；技能描述只写技能本身，不重复队长技/能力里的强化效果。改任何一档都会核对全部档位的原文。</p>
         <div class="tier-grid">
           {tiers.map((tier) => (
             <section class="tier-text">
@@ -89,24 +93,31 @@ export function TextTab({ characterId }: { characterId: string }) {
 
       <article class="ability">
         <header>
-          <h3>能力 / 队长技覆盖文案（desc_override）</h3>
+          <h3>能力 / 队长技覆盖文案</h3>
           <span class="tag">{overrides.length} 条</span>
+          <InfoTip text="desc_override_<槽里行的 c0>：客户端按这个键找覆盖文案，找到就整槽替换面板描述。" />
         </header>
-        <p class="small muted">覆盖文案替换游戏面板对数据行的自动描述，只写满级数值；一行一条，句末不加句号；队长槽不写「自身为队长时」。</p>
-        {overrides.length ? overrides.map((f) => (
-          <CustomEditor field={view(f.location) ?? f} original={f.value} owners={f.owners} label={f.slot ?? ""} />
-        )) : <Notice>这个角色没有覆盖文案键；面板显示数据行自动描述。新建覆盖键不在本页范围。</Notice>}
+        <p class="small muted">覆盖文案替换面板对数据行的自动描述：只写满级数值（面板只显示一个值）；一行一条效果，句末不加句号；
+          队长槽不写「自身为队长时」；主位限定的槽每一行都要以主位图标开头。</p>
+        {panel.slots.map((slot) => <SlotOverride panel={panel} slot={slot} view={view} />)}
+        {unattached.length ? (
+          <section class="slot-override">
+            <h4>未挂接 <span class="small muted">（没有哪个槽的行对应这个键，面板不会显示）</span></h4>
+            {unattached.map((f) => <CustomEditor field={view(f.location) ?? f} original={f.value} owners={f.owners} label="未挂接" />)}
+          </section>
+        ) : null}
       </article>
 
       <article class="ability">
         <header>
-          <h3>技能强化效果与其它关联文本（custom_ability_string）</h3>
+          <h3>技能强化效果与其它关联文本</h3>
           <span class="tag">{custom.length} 条</span>
+          <InfoTip text="custom_ability_string；change_skill_* 是技能强化效果文本" />
         </header>
-        <p class="small muted">change_skill_* 是技能强化效果文本（强化『技能名』：定性说明，不写数字）。面板规范第 1–8 节只约束 desc_override，这里检查恒真条件、「…之核」命名以及与技能描述的重复。</p>
+        <p class="small muted">技能强化效果写成「强化『技能名』：定性说明」，不写数字。这里检查恒真条件、「…之核」命名和与技能描述的重复。</p>
         {custom.length ? custom.map((f) => (
           <CustomEditor field={view(f.location) ?? f} original={f.value} owners={f.owners} label={f.enhancement ? "技能强化效果" : "关联文本"} />
-        )) : <Notice>没有关联的 custom_ability_string 键。</Notice>}
+        )) : <Notice>没有关联文本。</Notice>}
       </article>
 
       <LeaderName panel={panel} />
@@ -119,6 +130,51 @@ export function TextTab({ characterId }: { characterId: string }) {
       ) : null}
     </div>
   );
+}
+
+/** One slot: its override (exact key desc_override_<row c0>), or a button to create one. */
+function SlotOverride({ panel, slot, view }: { panel: TextPanel; slot: OverrideSlot; view: (location: string) => TextField | undefined }) {
+  const ws = useWorkspace()!;
+  const existing = slot.existing.map((key) => panel.fields.find((f) => f.key === key && f.surface === "desc_override"))
+    .filter(Boolean) as TextField[];
+  const creating = ws.pending.custom.filter((c) => c.section === "desc_override" && c.old === null && slot.overrideKeys.includes(c.key));
+  const newKey = slot.overrideKeys[0];
+  const head = (
+    <h4>
+      {slot.label} <span class="mono small muted" title="词条键">{slot.key}</span>
+      {MAIN_LABEL[slot.main] ? <span class="tag main-tag" title="能力 c1≠true：只在主位生效，面板每行带主位图标">{MAIN_LABEL[slot.main]}</span> : null}
+    </h4>
+  );
+  if (existing.length || creating.length) {
+    return (
+      <section class="slot-override">
+        {head}
+        {existing.map((f) => <CustomEditor field={view(f.location) ?? f} original={f.value} owners={f.owners} label="" slot={slot} />)}
+        {creating.map((c) => (
+          <CustomEditor field={view(`desc_override.${c.key}`) ?? placeholderField(c.key, slot)} original={null}
+            owners={slot.owners} label="新建" slot={slot} />
+        ))}
+      </section>
+    );
+  }
+  return (
+    <section class="slot-override empty">
+      {head}
+      <p class="small muted">没有覆盖文案：面板显示数据行自动描述。</p>
+      {newKey ? (
+        <button class="small-btn" onClick={() => ws.update((p) => setCustom(p, "desc_override", newKey, null,
+          slot.main === "all" ? panel.mainIcon : "", slot.owners))} title={`新键 ${newKey}`}>
+          新建覆盖文案
+        </button>
+      ) : <span class="small muted">这个槽的行没有名字列（c0），不能挂覆盖文案。</span>}
+    </section>
+  );
+}
+
+function placeholderField(key: string, slot: OverrideSlot): TextField {
+  return { surface: "desc_override", location: `desc_override.${key}`, key, value: "", original: null, base: null,
+    owners: slot.owners, enhancement: false, slot: slot.label, findings: [], rules: [], house: [], problems: 0,
+    standardChecked: 0, main: slot.main, created: true };
 }
 
 function summarize(fields: TextField[]): Record<string, string> {
@@ -134,32 +190,67 @@ function SharedConfirm({ id, owners }: { id: string; owners: string[] }) {
   const ws = useWorkspace()!;
   return (
     <div class="shared-confirm">
-      <p>这个键同时属于 <span class="mono">{owners.join("、")}</span>，修改会同步到每个持有者。</p>
+      <p>这段文本同时属于 <span class="mono">{owners.join("、")}</span>，修改会同步到每一个角色。</p>
       <label class="check">
         <input type="checkbox" checked={!!ws.pending.sharedOk[id]}
           onChange={(e) => ws.update((p) => ({ ...p, sharedOk: { ...p.sharedOk, [id]: (e.target as HTMLInputElement).checked } }))} />
-        确认修改共享键（shared_ok）
+        确认一起修改（共享键）
       </label>
     </div>
   );
 }
 
-function CustomEditor({ field, original, owners, label }: { field: TextField; original: string; owners: string[]; label: string }) {
+function CustomEditor({ field, original, owners, label, slot }: {
+  field: TextField; original: string | null; owners: string[]; label: string; slot?: OverrideSlot;
+}) {
   const ws = useWorkspace()!;
   const section = field.surface as "desc_override" | "custom_ability_string";
-  const pendingValue = ws.pending.custom.find((c) => c.section === section && c.key === field.key)?.new;
+  const pending = ws.pending.custom.find((c) => c.section === section && c.key === field.key);
   const shared = owners.length > 1;
+  const creating = original === null;
+  const value = pending?.new ?? original ?? "";
+  const missingIcon = slot?.main === "all" && value.split("\n").some((line) => line.trim() && line.trim() !== "<icon id='main'>" && !line.startsWith(MAIN_ICON));
+  const addIcons = () => value.split("\n")
+    .map((line) => (line.trim() && !line.startsWith(MAIN_ICON) ? MAIN_ICON + line.replace(/^\s*(<icon id='main'>)?\s*/, "") : line)).join("\n");
   return (
     <div class="custom-text">
       <div class="key-meta">
-        <span class="mono small">{field.key}</span>
-        {label ? <span class="tag">{label}</span> : null}
-        {shared ? <span class="pill bad" title={"持有者：" + owners.join("、")}>共享 · {owners.length} 个角色</span> : null}
+        <span class="mono small" title="文本键">{field.key}</span>
+        {label ? <span class={"tag" + (creating ? " pendingpill" : "")}>{label}</span> : null}
+        {shared ? <span class="pill bad" title={"持有者：" + owners.join("、")}>{owners.length} 个角色共用</span> : null}
+        {creating ? (
+          <button class="ghost small-btn" onClick={() => ws.update((p) => ({ ...p, custom: p.custom.filter((c) => !(c.section === section && c.key === field.key)) }))}>
+            取消新建</button>
+        ) : null}
       </div>
       {shared ? <SharedConfirm id={sharedId(section, field.key)} owners={owners} /> : null}
-      <TextFieldEditor field={field} label="" multiline value={pendingValue ?? original} original={original}
+      <TextFieldEditor field={field} label="" multiline value={value} original={original ?? ""}
         edited={editedLocations(ws.pending).has(field.location)}
-        onChange={(value) => ws.update((p) => setCustom(p, section, field.key, original, value, owners))} />
+        onChange={(next) => ws.update((p) => setCustom(p, section, field.key, original, next, owners))} />
+      {missingIcon ? (
+        <p class="small warn-text">主位限定槽：有的行缺主位图标。
+          <button class="link" onClick={() => ws.update((p) => setCustom(p, section, field.key, original, addIcons(), owners))}>给每行补上</button></p>
+      ) : null}
+      {section === "desc_override" && value.trim() ? <PanelPreview text={value} /> : null}
+    </div>
+  );
+}
+
+/** How the client draws the override: one line per row, <icon id='main'> as the Ⓜ badge. */
+export function PanelPreview({ text }: { text: string }) {
+  return (
+    <div class="panel-preview" aria-label="面板预览">
+      <span class="small muted">面板预览</span>
+      {text.split("\n").map((line) => {
+        const parts = line.split("<icon id='main'>");
+        return (
+          <div class="panel-line">
+            {parts.map((part, i) => (
+              <>{i > 0 ? <span class="main-badge" title="主位图标">M</span> : null}{part.replace(/^ +/, (s) => " ".repeat(s.length))}</>
+            ))}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -184,41 +275,39 @@ function TextFieldEditor({ field, label, value, original, multiline, disabled, e
   const changedFromDraft = local !== original;
   const differsFromBase = field.base !== null && field.base !== undefined && field.base !== original;
   const props = {
-    class: "text-input" + (changedFromDraft ? " changed" : "") + (field.house.some((h) => h.state === "问题") && edited ? " problem" : ""),
+    class: "text-input" + (changedFromDraft ? " changed" : "") + (field.problems && edited ? " problem" : ""),
     value: local, disabled, "aria-label": `${label || field.key} ${field.location}`,
     onInput: (e: Event) => onInput((e.target as HTMLInputElement).value),
     onBlur: () => commit(local), onKeyDown: onKey,
   };
   return (
     <div class="text-field">
-      {label ? <span class="field-label"><span class="mono">{field.field}</span> {label}</span> : null}
+      {label ? <span class="field-label">{label}</span> : null}
       {multiline ? <textarea rows={Math.min(8, Math.max(2, local.split("\n").length + 1, Math.ceil(local.length / 64) + 1))} {...props} /> : <input {...props} />}
-      {changedFromDraft ? <p class="small muted was">草稿当前：{original || "（空）"}</p> : null}
-      {differsFromBase ? <p class="small muted was">官方/原版：{field.base || "（空）"}</p> : null}
+      {changedFromDraft && original ? <p class="small muted was">草稿当前：{original}</p> : null}
+      {differsFromBase ? <p class="small muted was" title="当前视图里、这份草稿之前的文本">改动前：{field.base || "（空）"}</p> : null}
       <FieldRules field={field} edited={edited} />
     </div>
   );
 }
 
 function FieldRules({ field, edited }: { field: TextField; edited: boolean }) {
-  const problems = field.findings.filter((f) => f.state === "问题");
-  const reviews = field.findings.filter((f) => f.state === "待验证");
-  const counts: Record<string, number> = {};
-  for (const r of field.rules) counts[r.state] = (counts[r.state] ?? 0) + 1;
+  const houseRules = new Set(field.house.flatMap((h) => h.findings.map((f) => f.rule)));
+  const others = field.findings.filter((f) => (f.state === "问题" || f.state === "待验证") && !houseRules.has(f.rule));
+  const flagged = field.house.filter((h) => h.state !== "满足");
   return (
     <div class={"field-rules" + (edited ? " edited" : "")}>
       <div class="house-row">
-        {field.house.map((h) => (
+        {field.problems ? <span class="rs rs-bad">问题 {field.problems}</span> : <span class="rs rs-ok">未发现问题</span>}
+        {flagged.map((h) => (
           <span class={"house-chip " + (STATE_CLASS[h.state] ?? "")} title={h.requirement}>{h.state} · {h.title}</span>
         ))}
       </div>
-      {problems.length || reviews.length ? <FindingList findings={[...problems, ...reviews]} /> : null}
+      {flagged.length ? <FindingList findings={flagged.flatMap((h) => h.findings)} /> : null}
+      {others.length ? <FindingList findings={others} /> : null}
       {field.rules.length ? (
         <details class="std-rules">
-          <summary>
-            面板规范 {field.rules.length} 条：
-            {["问题", "待验证", "满足"].filter((s) => counts[s]).map((s) => <span class={"rs " + STATE_CLASS[s]}>{s} {counts[s]}</span>)}
-          </summary>
+          <summary>命中面板规范 {field.rules.length} 条</summary>
           <ul>{sortRules(field.rules).map((r) => <RuleLine rule={r} />)}</ul>
         </details>
       ) : null}
@@ -236,7 +325,7 @@ function RuleLine({ rule }: { rule: TextRuleRecord }) {
     <li class={STATE_CLASS[rule.state] ?? ""}>
       <span class="rs-state">{rule.state}</span>
       <span class="rs-msg">{rule.requirement}</span>
-      <span class="mono small muted">{rule.rule} · {rule.source}{rule.state === "待验证" ? " · " + rule.boundary : ""}</span>
+      <span class="mono small muted">{rule.source}</span>
     </li>
   );
 }
@@ -250,7 +339,7 @@ function FindingList({ findings }: { findings: TextField["findings"] }) {
           <strong>{f.message}</strong>
           {f.evidence?.matches?.length ? <span class="small"> —「{f.evidence.matches.join("」「")}」</span> : null}
           {f.evidence?.key ? <span class="small mono"> 关联 {f.evidence.key}</span> : null}
-          <span class="mono small muted"> {f.rule}{f.source ? " · " + f.source : ""}</span>
+          {f.source ? <InfoTip text={`${f.rule} · ${f.source}`} /> : null}
         </li>
       ))}
     </ul>
@@ -264,17 +353,15 @@ function ServerCompare({ panel }: { panel: TextPanel }) {
   return (
     <details class="server-compare" open={mismatches.length > 0}>
       <summary>
-        服务端生效文本对照：生效来源 <span class="mono">{source}</span>
-        {s.rankOverridesBase ? "（p5b 整行覆盖 base）" : s.inBase ? "（仅 base）" : "（两份镜像都没有此角色）"}{" "}
-        {mismatches.length ? <span class="rs rs-bad">不一致 {mismatches.length}</span> : <span class="rs rs-ok">一致</span>}
+        服务器上实际生效的文本 {mismatches.length ? <span class="rs rs-bad">与客户端不一致 {mismatches.length}</span> : <span class="rs rs-ok">与客户端一致</span>}
+        <InfoTip text={`生效来源 ${source}${s.rankOverridesBase ? "（p5b 整行覆盖 base）" : s.inBase ? "（仅 base）" : "（两份镜像都没有此角色）"}。${s.rule}`} />
       </summary>
-      <p class="small muted">{s.rule}。客户端列取 character_text 镜像列（c4–c10）。</p>
       <table class="compare-table">
-        <thead><tr><th>列</th><th>客户端</th><th>服务端生效</th><th /></tr></thead>
+        <thead><tr><th>内容</th><th>客户端</th><th>服务器生效</th><th /></tr></thead>
         <tbody>
           {s.columns.map((c) => (
             <tr class={c.match ? "" : "mismatch"}>
-              <td class="mono small">c{c.column} {c.label}</td>
+              <td class="small" title={`character_text c${c.column}`}>{c.label}</td>
               <td>{c.client ?? <em class="muted">（无）</em>}</td>
               <td>{c.server ?? <em class="muted">（无）</em>}</td>
               <td>{c.match ? <span class="rs rs-ok">一致</span> : <span class="rs rs-bad">不一致</span>}</td>
@@ -298,18 +385,18 @@ function LeaderName({ panel }: { panel: TextPanel }) {
     <article class="ability">
       <header>
         <h3>队长名</h3>
-        <span class="muted key">character_text c10 ↔ character c18</span>
+        <InfoTip text="写入 character_text c10，同时同步 character c18 与两份服务器文本" />
         {mismatch ? <span class="rs rs-bad">两处不一致</span> : <span class="rs rs-ok">一致</span>}
       </header>
-      <p class="small muted">wf text 改 c10 时同步 character c18 与两份服务端镜像。换队长技键后通常要改这里。</p>
+      <p class="small muted">换了队长技之后通常要改这里。</p>
       <div class="text-field">
-        <input class={"text-input" + (local !== current ? " changed" : "")} value={local} aria-label="队长名 character_text c10"
+        <input class={"text-input" + (local !== current ? " changed" : "")} value={local} aria-label="队长名"
           onInput={(e) => setLocal((e.target as HTMLInputElement).value)} onBlur={() => commit(local)}
           onKeyDown={(e) => {
             if (e.key === "Enter") { e.preventDefault(); commit(local); }
             if (e.key === "Escape") { e.stopPropagation(); setLocal(value); }
           }} />
-        {mismatch ? <p class="small warn-text">character c18 当前为「{panel.leaderName.character}」。</p> : null}
+        {mismatch ? <p class="small warn-text">另一处（角色表）当前为「{panel.leaderName.character}」。</p> : null}
       </div>
     </article>
   );

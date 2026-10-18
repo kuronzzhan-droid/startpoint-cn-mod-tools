@@ -347,6 +347,17 @@ class AbilityEditor:
             return workspace_for(base).read(cid)
         return self._once(("base-document", cid, self.source.version, self._mirror_signature()), build)
 
+    def _slots(self, cid, key, state):
+        """Exact override slots of the draft character (desc_override_<slot row c0>)."""
+        from wf.text.model import ABILITY, CUSTOM, LEADER
+        from .text_panel import override_slots
+
+        def build():
+            table = lambda logical: perf.parsed(state.read_raw(logical)[0], shared=True)  # noqa: E731
+            return override_slots(state.character(cid), table(LEADER), table(ABILITY), table(CUSTOM),
+                                  owners=owner_index(state))
+        return self._once(("slots",) + key, build)
+
     def _owners(self, cid, key, state, workspace, document):
         from .text_panel import custom_owners
 
@@ -368,12 +379,13 @@ class AbilityEditor:
             _, _, _, key = self._base(cid)
             state, workspace, document = self._document(cid, key)
             character = state.character(cid)
+            slots = self._slots(cid, key, state)
             if light:
-                return panel(document, owners={}, base_document=None, character=character, text=text)
+                return panel(document, owners={}, base_document=None, character=character, text=text, slots=slots)
 
             def build():
                 return panel(document, owners=self._owners(cid, key, state, workspace, document),
-                             base_document=self._base_document(cid), character=character, text=text)
+                             base_document=self._base_document(cid), character=character, text=text, slots=slots)
             return build() if text else self._once(("panel",) + key, build)
         except (ValueError, KeyError, OSError, TypeError) as exc:
             raise DraftError(str(exc)) from exc

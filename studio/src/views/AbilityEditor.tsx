@@ -201,7 +201,10 @@ export function unconfirmedShared(ws: AbilityWorkspace): string[] {
 /** Proposed panel text as wf text sections for the lint endpoint; null when nothing textual is pending. */
 export function lintSections(p: Pending): AbilityTextSections | null {
   const sections: AbilityTextSections = {};
-  for (const c of p.custom) (sections[c.section] ??= {})[c.key] = { old: c.old, new: c.new };
+  for (const c of p.custom) {
+    if (c.section === "desc_override") (sections.desc_override ??= {})[c.key] = { old: c.old, new: c.new };
+    else (sections.custom_ability_string ??= {})[c.key] = { old: c.old ?? "", new: c.new };
+  }
   for (const t of p.text) ((sections.action_skill ??= {})[t.level] ??= {})[t.column] = { old: t.old, new: t.new };
   if (p.leaderName) sections.character_text = { "10": p.leaderName };
   return Object.keys(sections).length ? sections : null;
@@ -217,9 +220,10 @@ export function editedLocations(p: Pending): Set<string> {
 
 /** 「问题」 on edited fields (wf text findings or editor house rules) block writing. */
 function lintProblems(ws: AbilityWorkspace): string[] {
-  if (!ws.lint) return [];
+  const out: string[] = ws.pending.custom.filter((c) => c.old === null && !c.new.replace(/<icon id='main'>/g, "").trim())
+    .map((c) => `新建覆盖文案 ${c.key} 还是空的`);
+  if (!ws.lint) return out;
   const edited = editedLocations(ws.pending);
-  const out: string[] = [];
   for (const field of ws.lint.fields) {
     if (!edited.has(field.location)) continue;
     for (const h of field.house) if (h.state === "问题") out.push(`${field.location}：${h.title}`);
