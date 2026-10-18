@@ -306,6 +306,7 @@ def make_handler(app: StudioApp, static_root: Path, guard: WriteGuard):
         def _handle(self, method: str):
             parsed = urlparse(self.path)
             try:
+                guard.check_host(self.headers)
                 if parsed.path.startswith("/api/"):
                     body = None
                     if method == "POST":
