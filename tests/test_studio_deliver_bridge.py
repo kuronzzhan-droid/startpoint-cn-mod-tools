@@ -45,7 +45,7 @@ def build(case, **kwargs):
 
 
 def test_bridge_real_delivery_roundtrip_and_local_inputs(case):
-    result = build(case)
+    result = build(case, allow_unknown_client=True)
     assert result["ok"] and result["prepush"]["exit_code"] == 0
     out = case[-1]
     delivery = out / "delivery"
@@ -55,7 +55,8 @@ def test_bridge_real_delivery_roundtrip_and_local_inputs(case):
         assert archive.namelist() == [member_name("common", "test.bin")]
         assert archive.read(archive.namelist()[0]) == b"new"
     assert case[2].read_member(member_name("medium", "test.bin"))[0] == b"untouched other layer"
-    assert result["compat"][0]["status"] == "未执行"
+    assert result["compat"] == "未确认"
+    assert result["compatChecks"][0]["status"] == "待验证"
     for name in ("assert_box.py", "assert-box.json", "requires.json", "compat.json", "check.json", "baseline.lock.json"):
         assert (delivery / name).is_file()
     for line in (delivery / "SHA256SUMS").read_text("utf-8").splitlines():

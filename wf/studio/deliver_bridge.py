@@ -91,6 +91,8 @@ def _stage(out, changeset, source, compiled, to_version):
             before = source.view.read_member(member_name(root, logical))[0]
         except FileNotFoundError:
             before = None
+        if raw == before:
+            continue
         digest = sha256(raw)
         rel = f"blobs/{digest}"
         staged[rel] = raw
@@ -98,10 +100,14 @@ def _stage(out, changeset, source, compiled, to_version):
                                "sha256": digest, "before_sha256": sha256(before) if before is not None else None})
     for target, raw in sorted(servers.items()):
         digest = sha256(raw)
+        if digest == server_before[target]:
+            continue
         rel = f"blobs/{digest}"
         staged[rel] = raw
         doc["server_changes"].append({"target": target, "source": rel, "sha256": digest,
                                      "before_sha256": server_before[target]})
+    if not doc["members"]:
+        raise DraftError("草稿没有与基线不同的客户端成员")
     validate_document(doc, "change-set.schema.json")
     inputs = out / "inputs"
     for rel, raw in staged.items():
@@ -114,13 +120,14 @@ def _stage(out, changeset, source, compiled, to_version):
     return inputs / "changeset.json"
 
 
-def _checks(delivery, provides):
+def _checks(delivery, provides, allow_unknown_client=False):
     from wf.check import check_file
     from wf.rules.catalog import result
     results = check_file(delivery / "delivery-manifest.json")
     write_json(delivery / "check.json", {"schema": "wf-check-results/1", "results": results})
     if provides is None:
-        compat = [result("capability.unknown", "未执行", "未提供目标客户端 provides.json，未确认兼容")]
+        compat = [result("capability.unknown", "待验证", "未提供目标客户端 provides.json，兼容性未确认",
+                         blocking=not allow_unknown_client)]
     else:
         from wf.caps.compat import check_compat
         evidence = Path(provides).read_bytes()
@@ -132,7 +139,8 @@ def _checks(delivery, provides):
 
 
 def build_draft(cid: str, *, from_version: str, to_version: str, out: Path,
-                store: DraftStore | None = None, provides: Path | None = None, **options) -> dict:
+                store: DraftStore | None = None, provides: Path | None = None,
+                allow_unknown_client: bool = False, **options) -> dict:
     """Everything generated lives under out/{inputs,delivery}; inputs stay read-only."""
     out = local_output(out)
     if out.exists() and (not out.is_dir() or any(out.iterdir())):
@@ -149,12 +157,20 @@ def build_draft(cid: str, *, from_version: str, to_version: str, out: Path,
     filename = _stage(out, changeset, source, compiled, to_version)
     options["baseline_view"] = baseline
     manifest = build_delivery(filename, out / "delivery", **options)
-    checks, compat = _checks(out / "delivery", provides)
-    failed = bool(manifest["prepush"]["exit_code"]) or any(r["blocking"] for r in checks + compat)
+    checks, compat = _checks(out / "delivery", provides, allow_unknown_client)
+    compat_status = ("未确认" if provides is None else "问题" if any(r["blocking"] for r in compat)
+                     else "待验证" if any(r["status"] not in ("满足", "不适用") for r in compat) else "满足")
+    manifest["client_compatibility"] = {"status": compat_status,
+        "allow_unknown_client": allow_unknown_client, "report": "compat.json"}
+    validate_document(manifest, "delivery-manifest.schema.json")
+    write_json(out / "delivery/delivery-manifest.json", manifest)
+    failed = (bool(manifest["prepush"]["exit_code"]) or any(r["blocking"] for r in checks + compat)
+              or (provides is None and not allow_unknown_client))
     result = {"ok": not failed, "characterId": cid, "from": from_version, "to": to_version,
               "draftRevision": changeset["revision"], "changeset": str(filename),
               "delivery": str(out / "delivery"), "prepush": manifest["prepush"],
-              "checks": checks, "compat": compat, "deviceValidation": "未执行"}
+              "checks": checks, "compat": compat_status, "compatChecks": compat,
+              "allowUnknownClient": allow_unknown_client, "deviceValidation": "未执行"}
     write_json(out / "build-report.json", result)
     # The extra check/compat artifacts are included in the final delivery checksum list.
     sums = [f"{sha256(p.read_bytes())}  {p.relative_to(out / 'delivery').as_posix()}"

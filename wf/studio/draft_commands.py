@@ -37,6 +37,8 @@ def add_commands(sub):
     p.add_argument("--to", dest="to_version", required=True)
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--provides", type=Path, help="目标客户端能力与方法摘要")
+    p.add_argument("--allow-unknown-client", action="store_true",
+                   help="显式允许缺少 provides 的本地交付；兼容性仍标未确认并在清单留痕")
     p.add_argument("--baseline-manifest", type=Path)
     p.add_argument("--baseline-manifest-extra", type=Path, action="append", default=[])
     p.add_argument("--baseline-zip-dir", type=Path, action="append", default=[])
@@ -75,6 +77,7 @@ def run_build(args, store):
     from .deliver_bridge import build_draft
     return build_draft(args.cid, from_version=args.from_version, to_version=args.to_version,
                        out=args.out, store=store, provides=args.provides,
+                       allow_unknown_client=args.allow_unknown_client,
                        baseline_manifest=args.baseline_manifest or args.manifest,
                        baseline_manifests=args.baseline_manifest_extra or args.manifest_extra,
                        baseline_zip_dirs=args.baseline_zip_dir or args.zip_dir,

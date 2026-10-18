@@ -109,6 +109,16 @@
       "additionalProperties": false
     },
     "dsl_gate": {"const": "dsl-629.json"},
+    "client_compatibility": {
+      "type": "object",
+      "properties": {
+        "status": {"enum": ["满足", "问题", "待验证", "未确认"]},
+        "allow_unknown_client": {"type": "boolean"},
+        "report": {"const": "compat.json"}
+      },
+      "required": ["status", "allow_unknown_client", "report"],
+      "additionalProperties": false
+    },
     "prepush": {
       "type": "object",
       "properties": {
