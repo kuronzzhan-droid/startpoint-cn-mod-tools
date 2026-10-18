@@ -34,7 +34,8 @@ def test_v34_all_recorded_methods_match_and_output_passes_schema(registry):
     document = derive_provides(v34_evidence(), registry=registry)
     validate_document(document, "provides.schema.json")
     assert len(document["patches"]) == 111
-    assert len(document["provides"]) == len(registry)
+    assert {entry["id"] for entry in document["provides"]} == {
+        cid for cid, cap in registry.items() if all(n <= 111 for n in cap["provided_by"]["patches"])}
     assert document["unresolved"] == []
     p = next(p for p in document["patches"] if p["number"] == 109)
     assert p["methods"][0]["sha256"] == "ae683cc1f5574ac7b415c43cf779ea642535cd6a66531aa1ee51a150d1492068"

@@ -37,8 +37,8 @@ def _validate(data: dict[str, Any]) -> None:
     for name, entry in capabilities.items():
         if entry.get("level") not in LEVELS:
             raise RegistryError(f"capability {name} 的 level 不合法: {entry.get('level')!r}")
-        if entry.get("status") not in ("shipped", "planned"):
-            raise RegistryError(f"capability {name} 的 status 必须是 shipped/planned")
+        if entry.get("status") not in ("shipped", "planned", "local_candidate"):
+            raise RegistryError(f"capability {name} 的 status 必须是 shipped/planned/local_candidate")
         for dep in entry.get("depends_on", ()):
             if dep not in capabilities:
                 raise RegistryError(f"capability {name} 依赖未登记的 {dep}")
@@ -72,7 +72,9 @@ def _validate(data: dict[str, Any]) -> None:
             raise RegistryError(f"效果码 {code} 的 capability 未登记")
         if effect.get("arg") not in data.get("arg_kinds", {}):
             raise RegistryError(f"效果码 {code} 的 arg 种类未登记: {effect.get('arg')!r}")
-        if effect.get("reduce") not in ("sum", "prod", "min", "any"):
+        if effect.get("reduce") not in ("sum", "prod", "min", "any",
+                "sum_by_arg_and_per_row_cap", "any_active_threshold_satisfied",
+                "sum_by_arg_at_heal_then_accumulate_30_frames", "per_instance", "sum_per_row"):
             raise RegistryError(f"效果码 {code} 的 reduce 不合法")
         if effect.get("gate") not in ("block", "warn"):
             raise RegistryError(f"效果码 {code} 的 gate 必须是 block/warn")

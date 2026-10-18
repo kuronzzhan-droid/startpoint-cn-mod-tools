@@ -1,0 +1,68 @@
+schema: wf-capability/1
+id: client.fever.voice@1
+title: Fever 语音数据开关
+layer: A
+provided_by:
+  patches:
+  - 126
+  match: all
+  methods:
+  - patch: 126
+    abc: boot_ffc6
+    label: SquadManagerImpl/invokeActionSkill
+    sha256: 01c059afb537bab8f8c45735203b3d44aa53a0688f7bf76b2124e9b788fedcb5
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 126
+    abc: boot_ffc6
+    label: HudMemberStatus/update
+    sha256: 73653cf6cd859df89f878dc7bd2b4b17f6beb38ca754677ec746ae1f8a8cd193
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 126
+    abc: boot_ffc6
+    label: CalculatedBattleCharacterLogic/wfxUsesFeverVoice
+    sha256: 1f0c9f59c5510b65001276df0b92ee2650d6dbdc6025ecaa2f8e2fc4af299063
+    status: 已记录
+    source: v35/run3/release-locks.json
+  status: 已记录
+  basis: v35e/run5累计本地离线证据；哈希为方法code字节；不声明设备验收或部署
+server:
+  required: false
+  features: []
+  note: 通用客户端数据入口；不声明服务端或资源已部署
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors:
+  - custom_ability_string.wfx_fever_voice_
+  allowed_tables:
+  - custom_ability_string
+form:
+  label: Fever 语音数据开关
+  fields:
+  - name: key
+    prefix: wfx_fever_voice_
+    value: '1'
+  note: 需要 test-v35e；实际参数规则以累计登记和对应实现说明为准
+describe:
+  template: 按角色code_name声明Fever语音，旧夏日白149990无需新键
+  channel: 能力说明
+rules:
+- capability.missing
+- capability.method-hash
+- capability.resolution
+preview:
+  label: Fever 语音数据开关
+  status: 待验证
+golden:
+- source: v35/run5/registry-draft.json
+  kind: method-code-sha256
+  note: 最终SWF实际方法与最终release-lock一致；可重复离线验证不等于AIR/Android设备验收
+docs:
+- v35/run5/registry-draft.json
+- docs/m2/v35e-method-audit.json
+- docs/m2/v35e-registration.md

@@ -1,0 +1,57 @@
+schema: wf-capability/1
+id: client.apk.patch113@1
+title: 113 直击基础倍率数据入口
+layer: A
+provided_by:
+  patches:
+  - 113
+  match: all
+  methods:
+  - patch: 113
+    abc: boot_ffc6
+    label: MemberImpl/scheduleDirectAttack
+    sha256: 7f0d02acfc116523f829a639e717fea6e53ce30b61c0f40085082c4b0caf1e07
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 113
+    abc: boot_ffc6
+    label: MemberImpl/wfxDirectFactor
+    sha256: 79b95f994aed7627926763c51b5c320f419225b9c943bea683ec7e1cff33388a
+    status: 已记录
+    source: v35/run4/release-locks.json
+  status: 已记录
+  basis: v35e/run5累计本地离线证据；哈希为方法code字节；不声明设备验收或部署
+server:
+  required: false
+  features: []
+  note: 通用客户端数据入口；不声明服务端或资源已部署
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+  allowed_tables: []
+form:
+  label: 113 直击基础倍率数据入口
+  fields: []
+  note: 需要 test-v35e；实际参数规则以累计登记和对应实现说明为准
+describe:
+  template: 113 直击基础倍率数据入口
+  channel: 能力说明
+rules:
+- capability.missing
+- capability.method-hash
+- capability.resolution
+preview:
+  label: 113 直击基础倍率数据入口
+  status: 待验证
+golden:
+- source: v35/run1/apk-patches-additions/113-direct-base/README.md
+  kind: method-code-sha256
+  note: 最终SWF实际方法与最终release-lock一致；可重复离线验证不等于AIR/Android设备验收
+docs:
+- v35/run1/apk-patches-additions/113-direct-base/README.md
+- docs/m2/v35e-method-audit.json
+- docs/m2/v35e-registration.md

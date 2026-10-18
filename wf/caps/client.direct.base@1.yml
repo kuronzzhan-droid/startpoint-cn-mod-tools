@@ -1,0 +1,164 @@
+schema: wf-capability/1
+id: client.direct.base@1
+title: 直击基础倍率及目标状态层数
+layer: A
+provided_by:
+  patches:
+  - 112
+  - 113
+  - 124
+  - 130
+  match: all
+  methods:
+  - patch: 112
+    abc: boot_ffc6
+    label: ConditionSlot$/wfxSpec
+    sha256: 91ca69969bd16ae753041acdb6982603f6c3dc685c2145bd8cf96c33e369dd12
+    status: 已记录
+    source: v35/run4/release-locks.json
+  - patch: 112
+    abc: boot_ffc6
+    label: ConditionSlot/wfxCollect
+    sha256: fefed63f32ea56ea41805ea450a850ebc2d6bfb11e6a43db58411dc3ed89f1cc
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 112
+    abc: boot_ffc6
+    label: ConditionSlot/wfxRows
+    sha256: 043dc1989b5bced086cb2b10ceba115cf29139c75f6b43fe1a18fe7c1d87bba3
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 112
+    abc: boot_ffc6
+    label: ConditionSlot/wfxSum
+    sha256: 1c2e61835f1933dd81e018e91f101ac48fd871bb1ff7913d909017adee235901
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 113
+    abc: boot_ffc6
+    label: MemberImpl/scheduleDirectAttack
+    sha256: 7f0d02acfc116523f829a639e717fea6e53ce30b61c0f40085082c4b0caf1e07
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 113
+    abc: boot_ffc6
+    label: MemberImpl/wfxDirectFactor
+    sha256: 79b95f994aed7627926763c51b5c320f419225b9c943bea683ec7e1cff33388a
+    status: 已记录
+    source: v35/run4/release-locks.json
+  - patch: 124
+    abc: boot_ffc6
+    label: MemberImpl/wfxDirectFactor
+    sha256: 79b95f994aed7627926763c51b5c320f419225b9c943bea683ec7e1cff33388a
+    status: 已记录
+    source: v35/run4/release-locks.json
+  - patch: 130
+    abc: boot_ffc6
+    label: ConditionSlot$/wfxSpec
+    sha256: 91ca69969bd16ae753041acdb6982603f6c3dc685c2145bd8cf96c33e369dd12
+    status: 已记录
+    source: v35/run4/release-locks.json
+  - patch: 130
+    abc: boot_ffc6
+    label: MemberImpl/wfxDirectFactor
+    sha256: 79b95f994aed7627926763c51b5c320f419225b9c943bea683ec7e1cff33388a
+    status: 已记录
+    source: v35/run4/release-locks.json
+  - patch: 130
+    abc: boot_ffc6
+    label: MemberImpl/wfxDirectTargetUnique
+    sha256: b7570fd1ce5975a904ed665344d2c99d600c87a1d028ad025d494b0439bff13a
+    status: 已记录
+    source: v35/run4/release-locks.json
+  status: 已记录
+  basis: v35e/run5累计本地离线证据；哈希为方法code字节；不声明设备验收或部署
+server:
+  required: false
+  features: []
+  note: 通用客户端数据入口；不声明服务端或资源已部署
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes:
+  - 'wfx:24:'
+  - 'wfx:28:'
+  - 'wfx:29:'
+  unique_ids: []
+  tables: []
+  selectors: []
+  allowed_tables:
+  - unique_condition
+form:
+  label: 直击基础倍率及目标状态层数
+  fields:
+  - name: effect_24
+    label: 直击基础倍率
+    arg_schema:
+      '0': 固定万分比
+      '1': 每连击万分比
+      '2': 目标官方弱体数>=1时固定万分比
+      '3': 每个官方弱体的万分比
+    value:
+      min: -2147483648
+      max: 2147483647
+      integer: true
+      unit: 1/10000
+    flags:
+      type: integer
+      min: 0
+      max: 2147483647
+      meaning: 仅arg3：逐状态弱体个数封顶，0不限；其余arg忽略
+      pin: false
+  - name: effect_28
+    label: 目标固有状态层数达标的直击基础加成
+    arg_schema:
+      min: 0
+      max: 2147483647
+      integer: true
+    value:
+      min: -2147483648
+      max: 2147483647
+      integer: true
+      unit: 1/10000
+    flags:
+      type: integer
+      min: -2147483648
+      max: 2147483647
+      meaning: 目标层数阈值N；N<=0按1
+      pin: false
+  - name: effect_29
+    label: 按目标固有状态层数的直击基础加成
+    arg_schema:
+      min: 0
+      max: 2147483647
+      integer: true
+    value:
+      min: -2147483648
+      max: 2147483647
+      integer: true
+      unit: 1/10000
+    flags:
+      type: integer
+      min: -2147483648
+      max: 2147483647
+      meaning: 单条状态的目标层数封顶cap；cap<=0不封顶
+      pin: false
+  note: 需要 test-v35e；实际参数规则以累计登记和对应实现说明为准
+describe:
+  template: 码24基础/连击/弱体数，码28目标指定固有状态达标、码29目标指定固有状态层数；两次非负钳位，旧凯尔倍率继续相乘
+  channel: 能力说明
+rules:
+- capability.missing
+- capability.method-hash
+- capability.resolution
+preview:
+  label: 直击基础倍率及目标状态层数
+  status: 待验证
+golden:
+- source: v35/run5/registry-draft.json
+  kind: method-code-sha256
+  note: 最终SWF实际方法与最终release-lock一致；可重复离线验证不等于AIR/Android设备验收
+docs:
+- v35/run5/registry-draft.json
+- docs/m2/v35e-method-audit.json
+- docs/m2/v35e-registration.md

@@ -17,6 +17,22 @@ def v34_evidence() -> dict:
     return json.loads((Path(__file__).parent / "data/v34-evidence.json").read_text("utf-8"))
 
 
+def v35e_evidence() -> dict:
+    """Apply only audited method changes to the immutable v34 evidence set."""
+    delta = json.loads((Path(__file__).parent / "data/v35e-evidence.json").read_text("utf-8"))
+    base = v34_evidence()
+    if base["swf_sha256"] != delta["inherits_swf_sha256"]:
+        raise ValueError("v35e evidence inherited SWF identity changed")
+    methods = {(m["patch"], m["abc"], m["label"]): m
+               for patch in base["patches"] for m in patch["methods"]}
+    for update in delta["inherited_method_updates"]:
+        method = methods[(update["patch"], update["abc"], update["label"])]
+        if method["sha256"] != update["before"] or update["classification"] != "intentional":
+            raise ValueError("v35e inherited method update has no matching audited baseline")
+        method.update(sha256=update["after"], source=update["final_source"])
+    return {**delta, "patches": base["patches"] + delta["patches"]}
+
+
 def payload_digest(archive: zipfile.ZipFile) -> str:
     """Signature-independent digest of names and uncompressed member contents."""
     names = archive.namelist()
@@ -40,20 +56,25 @@ def _binary_record(path: Path, data: bytes, known: dict) -> tuple[dict, dict]:
             swf_sha = digest(archive.read(matches[0]))
             payload_sha = payload_digest(archive)
             source["payload_sha256"] = payload_sha
-        artifact = next((a for a in known["artifacts"] if a["payload_sha256"] == payload_sha), None)
     else:
         swf_sha = source["sha256"]
     source["swf_sha256"] = swf_sha
     if swf_sha != known["swf_sha256"]:
+        candidate = v35e_evidence()
+        if swf_sha == candidate["swf_sha256"]:
+            known = candidate
+    if swf_sha != known["swf_sha256"]:
         raise ValueError("unknown APK/SWF digest; provide a method/patch summary record, not a version label")
+    if path.suffix.lower() == ".apk":
+        artifact = next((a for a in known["artifacts"] if a["payload_sha256"] == payload_sha), None)
     record = copy.deepcopy(known)
     if artifact:
         excluded = set(artifact["excluded_patches"])
         record["patches"] = [p for p in record["patches"] if p["number"] not in excluded]
-        source["basis"] = "APK 全部非签名成员摘要与已记录 v34 变体一致；SWF 摘要独立一致"
+        source["basis"] = f"APK 全部非签名成员摘要与已记录 {known['name']} 变体一致；SWF 摘要独立一致"
     else:
         record["patches"] = [p for p in record["patches"] if all(m["sha256"] for m in p["methods"])]
-        source["basis"] = "SWF 摘要与已记录 v34 一致；资源/原生/ANE 条目未由 SWF 证明，已排除"
+        source["basis"] = f"SWF 摘要与已记录 {known['name']} 一致；资源/原生/ANE 条目未由 SWF 证明，已排除"
     return record, source
 
 

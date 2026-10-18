@@ -1,0 +1,62 @@
+schema: wf-capability/1
+id: client.dual_form.uid@1
+title: 双形态动画状态 UID
+layer: A
+provided_by:
+  patches:
+  - 128
+  match: all
+  methods:
+  - patch: 128
+    abc: boot_ffc6
+    label: MemberView/draw
+    sha256: d554f876ffe9149d17797abbf77ac6eb7ee22f4ebf04626c587eb27b6b31dbde
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 128
+    abc: boot_ffc6
+    label: MemberView/wfxDualFormUid
+    sha256: c8f821b6f6aa9b5456507094a6694b8c3ac5f74da7211d8fa0c638f501a460ad
+    status: 已记录
+    source: v35/run3/release-locks.json
+  status: 已记录
+  basis: v35e/run5累计本地离线证据；哈希为方法code字节；不声明设备验收或部署
+server:
+  required: false
+  features: []
+  note: 通用客户端数据入口；不声明服务端或资源已部署
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors:
+  - character_tag.ModDualForm
+  allowed_tables:
+  - character
+form:
+  label: 双形态动画状态 UID
+  fields:
+  - name: tag
+    format: ModDualForm:<uid>
+    default_uid: 22
+  note: 需要 test-v35e；实际参数规则以累计登记和对应实现说明为准
+describe:
+  template: ModDualForm:<uid>指定特殊动画状态，不带参数默认22
+  channel: 能力说明
+rules:
+- capability.missing
+- capability.method-hash
+- capability.resolution
+preview:
+  label: 双形态动画状态 UID
+  status: 待验证
+golden:
+- source: v35/run5/registry-draft.json
+  kind: method-code-sha256
+  note: 最终SWF实际方法与最终release-lock一致；可重复离线验证不等于AIR/Android设备验收
+docs:
+- v35/run5/registry-draft.json
+- docs/m2/v35e-method-audit.json
+- docs/m2/v35e-registration.md

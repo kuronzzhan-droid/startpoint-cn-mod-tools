@@ -13,12 +13,22 @@ provided_by:
     sha256: d8d6141c41bcb2d9290f8cfcfe71d5618e65127a8bab1129779fe30b6924e8ea
     status: 已记录
     source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+    accepted_variants:
+    - sha256: a0821604e1bf62cdcad4ae2a909d888d6b0623f8d96623b6bd6805f283312675
+      swf_sha256: 89461f676b57a059bde58fe5897190db9b61013ae63947401fe1bf87106d6bcf
+      source: v35/run3/release-locks.json
+      reason: 有意更新：run1–run5通用入口叠加，旧路径保持依据见各轮README/verify-report；最终SWF方法摘要已复核
   - patch: 7
     abc: boot_ffc6
     label: HudMemberStatus/update
     sha256: 7858113b678d100259739c4716f0729c9f3dfc75498fd101efc37f9dbaf9e50c
     status: 已记录
     source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+    accepted_variants:
+    - sha256: 73653cf6cd859df89f878dc7bd2b4b17f6beb38ca754677ec746ae1f8a8cd193
+      swf_sha256: 89461f676b57a059bde58fe5897190db9b61013ae63947401fe1bf87106d6bcf
+      source: v35/run3/release-locks.json
+      reason: 有意更新：run1–run5通用入口叠加，旧路径保持依据见各轮README/verify-report；最终SWF方法摘要已复核
   status: 已记录
   basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
 server:
@@ -26,7 +36,8 @@ server:
   features: []
   note: 无额外服务端改动要求
 data_surface:
-  character_ids: ['129992']
+  character_ids:
+  - '129992'
   kinds: []
   dsl_nodes: []
   unique_prefixes: []

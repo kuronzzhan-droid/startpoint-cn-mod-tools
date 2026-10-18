@@ -1,0 +1,63 @@
+schema: wf-capability/1
+id: client.apk.patch130@1
+title: 130 直击基础按目标固有状态层数加成
+layer: A
+provided_by:
+  patches:
+  - 130
+  match: all
+  methods:
+  - patch: 130
+    abc: boot_ffc6
+    label: ConditionSlot$/wfxSpec
+    sha256: 91ca69969bd16ae753041acdb6982603f6c3dc685c2145bd8cf96c33e369dd12
+    status: 已记录
+    source: v35/run4/release-locks.json
+  - patch: 130
+    abc: boot_ffc6
+    label: MemberImpl/wfxDirectFactor
+    sha256: 79b95f994aed7627926763c51b5c320f419225b9c943bea683ec7e1cff33388a
+    status: 已记录
+    source: v35/run4/release-locks.json
+  - patch: 130
+    abc: boot_ffc6
+    label: MemberImpl/wfxDirectTargetUnique
+    sha256: b7570fd1ce5975a904ed665344d2c99d600c87a1d028ad025d494b0439bff13a
+    status: 已记录
+    source: v35/run4/release-locks.json
+  status: 已记录
+  basis: v35e/run5累计本地离线证据；哈希为方法code字节；不声明设备验收或部署
+server:
+  required: false
+  features: []
+  note: 通用客户端数据入口；不声明服务端或资源已部署
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+  allowed_tables: []
+form:
+  label: 130 直击基础按目标固有状态层数加成
+  fields: []
+  note: 需要 test-v35e；实际参数规则以累计登记和对应实现说明为准
+describe:
+  template: 130 直击基础按目标固有状态层数加成
+  channel: 能力说明
+rules:
+- capability.missing
+- capability.method-hash
+- capability.resolution
+preview:
+  label: 130 直击基础按目标固有状态层数加成
+  status: 待验证
+golden:
+- source: v35/run4/apk-patches-additions/130-direct-target-unique/README.md
+  kind: method-code-sha256
+  note: 最终SWF实际方法与最终release-lock一致；可重复离线验证不等于AIR/Android设备验收
+docs:
+- v35/run4/apk-patches-additions/130-direct-target-unique/README.md
+- docs/m2/v35e-method-audit.json
+- docs/m2/v35e-registration.md

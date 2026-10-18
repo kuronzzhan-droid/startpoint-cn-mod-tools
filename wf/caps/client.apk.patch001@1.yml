@@ -13,6 +13,11 @@ provided_by:
     sha256: f04f8ade940fe81b9221c9b0e5fdd848e213dd89eca0c6623ac31b3fb8dc2140
     status: 已记录
     source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+    accepted_variants:
+    - sha256: 6d07497167fbfb8673fc2f8a871045721a4e1776af687951f65478359a83edb7
+      swf_sha256: 89461f676b57a059bde58fe5897190db9b61013ae63947401fe1bf87106d6bcf
+      source: v35/run1/release-locks.json
+      reason: 有意更新：run1–run5通用入口叠加，旧路径保持依据见各轮README/verify-report；最终SWF方法摘要已复核
   - patch: 1
     abc: boot_ffc6
     label: BallImpl/resolveCollisionForPrimaryOrSummons
@@ -26,7 +31,8 @@ server:
   features: []
   note: 无额外服务端改动要求
 data_surface:
-  character_ids: ['139995']
+  character_ids:
+  - '139995'
   kinds: []
   dsl_nodes: []
   unique_prefixes: []

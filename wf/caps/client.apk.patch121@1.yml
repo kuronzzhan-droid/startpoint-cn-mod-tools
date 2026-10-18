@@ -1,0 +1,75 @@
+schema: wf-capability/1
+id: client.apk.patch121@1
+title: 121 已学会能力触发战斗自适应属性
+layer: A
+provided_by:
+  patches:
+  - 121
+  match: all
+  methods:
+  - patch: 121
+    abc: boot_ffc6
+    label: BattleCharacterLogic/getElement
+    sha256: af3bd846acede1a3ace8c1ff2cc7221a3fc28cef44730ed59c9f59d998b1318f
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 121
+    abc: boot_ffc6
+    label: BattleCharacterLogic/getSelfAbilitySlots
+    sha256: fe07e77266e1b8cbb75e501ff32bdccde1e63a875fc11516e3dde34323543f0d
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 121
+    abc: boot_ffc6
+    label: BattleCharacterLogic/wfxPartyRead
+    sha256: 2ca6a43a5c62d35b275e3ad45c2e0f2b9fe3e7c434d11caebd2a50438055f423
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 121
+    abc: boot_ffc6
+    label: BattleCharacterLogic/wfxAdaptiveElement
+    sha256: 505bc3e60962b8ca5953cd63c3014f81ad2eec36714104cdc09431e2e857d2f1
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 121
+    abc: boot_ffc6
+    label: BattleCharacterLogic/wfxAdaptiveSlots
+    sha256: 702e4e51f20a4a492a234646b220bad6329979c2b8b858c97ceaef2f69e79081
+    status: 已记录
+    source: v35/run2/release-locks.json
+  status: 已记录
+  basis: v35e/run5累计本地离线证据；哈希为方法code字节；不声明设备验收或部署
+server:
+  required: false
+  features: []
+  note: 通用客户端数据入口；不声明服务端或资源已部署
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+  allowed_tables: []
+form:
+  label: 121 已学会能力触发战斗自适应属性
+  fields: []
+  note: 需要 test-v35e；实际参数规则以累计登记和对应实现说明为准
+describe:
+  template: 121 已学会能力触发战斗自适应属性
+  channel: 能力说明
+rules:
+- capability.missing
+- capability.method-hash
+- capability.resolution
+preview:
+  label: 121 已学会能力触发战斗自适应属性
+  status: 待验证
+golden:
+- source: v35/run2/apk-patches-additions/121-adaptive-element/README.md
+  kind: method-code-sha256
+  note: 最终SWF实际方法与最终release-lock一致；可重复离线验证不等于AIR/Android设备验收
+docs:
+- v35/run2/apk-patches-additions/121-adaptive-element/README.md
+- docs/m2/v35e-method-audit.json
+- docs/m2/v35e-registration.md

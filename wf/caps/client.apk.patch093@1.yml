@@ -13,6 +13,11 @@ provided_by:
     sha256: ae7218d15898f9b2ebe0d995b070d0088be70548bac6b6176588d5d4c7ebe391
     status: 已记录
     source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+    accepted_variants:
+    - sha256: 911dbe4bf9656e6dfc682c6f24f848e6462e73684c80956deee48808864f8c9b
+      swf_sha256: 89461f676b57a059bde58fe5897190db9b61013ae63947401fe1bf87106d6bcf
+      source: v35/run1/release-locks.json
+      reason: 有意更新：run1–run5通用入口叠加，旧路径保持依据见各轮README/verify-report；最终SWF方法摘要已复核
   status: 已记录
   basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
 server:

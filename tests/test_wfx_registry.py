@@ -111,18 +111,25 @@ class RegistryDerivationTests(unittest.TestCase):
         for name, table in reserved.items():
             self.assertFalse(set(table["occupied"]) & set(table["reserved"]), name)
 
-    def test_effect_codes_are_well_formed_and_all_planned(self):
+    def test_effect_codes_keep_plans_separate_from_v35e_local_evidence(self):
         registry = wfx_registry.load()
         codes = wfx_registry.effect_codes()
-        self.assertEqual([10, 20, 21, 22, 23, 30, 31, 40, 50, 51, 52], sorted(codes))
+        planned_codes = {10, 20, 21, 22, 23, 30, 31, 40, 50, 51, 52}
+        candidate_codes = {24, 25, 26, 27, 28, 29, 60, 61, 62, 71}
+        self.assertEqual(planned_codes | candidate_codes, set(codes))
         for code, effect in codes.items():
             with self.subTest(code=code):
                 band = next(item for item in registry["effect_code_ranges"]
                             if item["from"] <= code <= item["to"])
-                self.assertEqual(1, band["batch"])
                 capability = wfx_registry.capabilities()[effect["capability"]]
-                self.assertEqual("planned", capability["status"])
-                self.assertIn("wfx-core-v1", wfx_registry.capability_closure([effect["capability"]]))
+                if code in planned_codes:
+                    self.assertEqual(1, band["batch"])
+                    self.assertEqual("planned", capability["status"])
+                    self.assertIn("wfx-core-v1", wfx_registry.capability_closure([effect["capability"]]))
+                else:
+                    self.assertEqual("local_candidate", capability["status"])
+                    self.assertEqual(64, len(capability["integration_evidence"]["swf_sha256"]))
+                    self.assertNotIn("wfx-core-v1", wfx_registry.capability_closure([effect["capability"]]))
                 self.assertTrue(effect["hooks"])
         self.assertEqual({"0": "wfx-core-v1"},
                          {bit: entry["capability"] for bit, entry in registry["flags"]["bits"].items()})
@@ -318,7 +325,7 @@ class ClientProfileTests(unittest.TestCase):
         self.profiles = wfx_gate.load_profiles()
 
     def test_the_three_profiles_and_the_default(self):
-        self.assertEqual({"local-mumu", "gray-1047", "official"}, set(self.profiles))
+        self.assertEqual({"local-mumu", "gray-1047", "official", "test-v34", "test-v35e"}, set(self.profiles))
         self.assertEqual("local-mumu", wfx_gate.default_publish_profile())
         self.assertEqual(frozenset(), self.profiles["official"].capabilities)
 
@@ -345,13 +352,13 @@ class ClientProfileTests(unittest.TestCase):
         import wf_cursed_weapons
         self.assertEqual(wf_cursed_weapons.BASE_CLIENT_CAPABILITIES, gray)
 
-    def test_no_current_profile_can_consume_any_wfx_effect(self):
+    def test_only_v35e_profile_can_consume_implemented_wfx_effects(self):
         for code, effect in wfx_registry.effect_codes().items():
             needed = set(wfx_registry.capability_closure([effect["capability"]]))
             for name, profile in self.profiles.items():
                 with self.subTest(code=code, profile=name):
-                    self.assertFalse(needed <= profile.capabilities)
-                    self.assertNotIn(effect["capability"], profile.capabilities)
+                    implemented = wfx_registry.capabilities()[effect["capability"]]["status"] == "local_candidate"
+                    self.assertEqual(name == "test-v35e" and implemented, needed <= profile.capabilities)
         planned = {name for name, entry in wfx_registry.capabilities().items() if entry["status"] == "planned"}
         for name, profile in self.profiles.items():
             self.assertFalse(planned & profile.capabilities, name)

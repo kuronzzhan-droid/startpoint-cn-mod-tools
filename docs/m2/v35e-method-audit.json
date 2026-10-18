@@ -1,0 +1,681 @@
+{
+  "swf_sha256": "89461f676b57a059bde58fe5897190db9b61013ae63947401fe1bf87106d6bcf",
+  "artifacts": [
+    {
+      "kind": "apk",
+      "variant": "x86",
+      "sha256": "aab1f83518f5f2994d5aba409f7b8ce9b889598a2ce2db5de48e6928e5950c26",
+      "payload_sha256": "9c3fbf84b4f7018dfc926ffac1be86854bd63eecde5f44a87f1806a4d788b5de",
+      "excluded_patches": []
+    },
+    {
+      "kind": "apk",
+      "variant": "arm64",
+      "sha256": "160658520dae7e2ea2784bc224e0a360f798e45e6752837e31c6200ba236345b",
+      "payload_sha256": "8043a77a8983d4e91e8428c597025cee0c61337597fa0dcc506fce5f0c91e3d3",
+      "excluded_patches": [
+        97,
+        98,
+        99,
+        100
+      ]
+    }
+  ],
+  "v34_signed_artifacts": [
+    {
+      "kind": "apk",
+      "variant": "x86",
+      "sha256": "eab0a49b2aa22c4827622e58b4b1d419fbea0e7e98022e46dbc75df2ecd44cd5",
+      "payload_sha256": "140bb35d91a2d883269122715a77a53622086b75b7d73fcfbc2f6c41789522dd",
+      "excluded_patches": []
+    },
+    {
+      "kind": "apk",
+      "variant": "arm64",
+      "sha256": "d238e1d3a5d2e851104ac6de08ee00f8d950dcf3add3bbf756b4bae460d9846e",
+      "payload_sha256": "a4c5bf9a0cd3bf0e7ebcdde43c7b2d1f488fa555c07da6409b3d07961a3a26f2",
+      "excluded_patches": [
+        97,
+        98,
+        99,
+        100
+      ]
+    }
+  ],
+  "old_methods_preserved": 913,
+  "old_method_changes": [
+    {
+      "patch": 1,
+      "abc": "boot_ffc6",
+      "label": "ActionEvaluationResolver/<ctor>",
+      "sha256": "f04f8ade940fe81b9221c9b0e5fdd848e213dd89eca0c6623ac31b3fb8dc2140",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "f04f8ade940fe81b9221c9b0e5fdd848e213dd89eca0c6623ac31b3fb8dc2140",
+      "after": "6d07497167fbfb8673fc2f8a871045721a4e1776af687951f65478359a83edb7",
+      "final_source": "v35/run1/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 5,
+      "abc": "boot_ffc6",
+      "label": "ConditionSlot/getOneSideTotalAbilityDamageResistance",
+      "sha256": "ca835a8afbbae9802a6d0a6f118e1b2075f9f0c8795dbb1b6fd61ee1e9f5d420",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "ca835a8afbbae9802a6d0a6f118e1b2075f9f0c8795dbb1b6fd61ee1e9f5d420",
+      "after": "16046a0cff88b9a31fffd45ed4017678fd00573ec21a5e33e0c0610de7e2db75",
+      "final_source": "v35/run1/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 6,
+      "abc": "boot_ffc6",
+      "label": "BattleCharacterLogic/resolveFollowingPathCollection",
+      "sha256": "d8d6141c41bcb2d9290f8cfcfe71d5618e65127a8bab1129779fe30b6924e8ea",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "d8d6141c41bcb2d9290f8cfcfe71d5618e65127a8bab1129779fe30b6924e8ea",
+      "after": "a0821604e1bf62cdcad4ae2a909d888d6b0623f8d96623b6bd6805f283312675",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 6,
+      "abc": "boot_ffc6",
+      "label": "HudMemberStatus/update",
+      "sha256": "7858113b678d100259739c4716f0729c9f3dfc75498fd101efc37f9dbaf9e50c",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "7858113b678d100259739c4716f0729c9f3dfc75498fd101efc37f9dbaf9e50c",
+      "after": "73653cf6cd859df89f878dc7bd2b4b17f6beb38ca754677ec746ae1f8a8cd193",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 6,
+      "abc": "boot_ffc6",
+      "label": "SquadManagerImpl/invokeActionSkill",
+      "sha256": "22ddd65155caa3a2110ec8abc5cc7c6e501f688c5d7847c8fcfa21ae1295293f",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "22ddd65155caa3a2110ec8abc5cc7c6e501f688c5d7847c8fcfa21ae1295293f",
+      "after": "01c059afb537bab8f8c45735203b3d44aa53a0688f7bf76b2124e9b788fedcb5",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 7,
+      "abc": "boot_ffc6",
+      "label": "BattleCharacterLogic/resolveFollowingPathCollection",
+      "sha256": "d8d6141c41bcb2d9290f8cfcfe71d5618e65127a8bab1129779fe30b6924e8ea",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "d8d6141c41bcb2d9290f8cfcfe71d5618e65127a8bab1129779fe30b6924e8ea",
+      "after": "a0821604e1bf62cdcad4ae2a909d888d6b0623f8d96623b6bd6805f283312675",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 7,
+      "abc": "boot_ffc6",
+      "label": "HudMemberStatus/update",
+      "sha256": "7858113b678d100259739c4716f0729c9f3dfc75498fd101efc37f9dbaf9e50c",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "7858113b678d100259739c4716f0729c9f3dfc75498fd101efc37f9dbaf9e50c",
+      "after": "73653cf6cd859df89f878dc7bd2b4b17f6beb38ca754677ec746ae1f8a8cd193",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 8,
+      "abc": "boot_ffc6",
+      "label": "AbilitySummarizer$/summaryAbilities",
+      "sha256": "26d392cb941fbc9a1d7134d4e12aaaa4260179786930513be49f7d1c962ec03c",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "26d392cb941fbc9a1d7134d4e12aaaa4260179786930513be49f7d1c962ec03c",
+      "after": "894b1ce3edc80e1d47e40a8acaa164b9081890fb920024b14c2a206eb6b10dec",
+      "final_source": "v35/run2/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 11,
+      "abc": "boot_ffc6",
+      "label": "BattleCharacterLogic/getAvailableAbilities",
+      "sha256": "9a0fcbbeae31de6293028b437a0716e2d959524544370cf2f7bfa58aef59fd9f",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "9a0fcbbeae31de6293028b437a0716e2d959524544370cf2f7bfa58aef59fd9f",
+      "after": "bb0aff2057665c0a4a1463868942bdd690b665c79b0a86fc2b9fa9a12ebadaad",
+      "final_source": "v35/run2/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 15,
+      "abc": "boot_ffc6",
+      "label": "BattleCharacterLogic/resolveFollowingPathCollection",
+      "sha256": "d8d6141c41bcb2d9290f8cfcfe71d5618e65127a8bab1129779fe30b6924e8ea",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "d8d6141c41bcb2d9290f8cfcfe71d5618e65127a8bab1129779fe30b6924e8ea",
+      "after": "a0821604e1bf62cdcad4ae2a909d888d6b0623f8d96623b6bd6805f283312675",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 15,
+      "abc": "boot_ffc6",
+      "label": "CharacterVoiceLogic/createVoicePathMap",
+      "sha256": "a3f3aa721b20af0547543fb26a0ab4227104248b6aee01289e66fea765dc14d7",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "a3f3aa721b20af0547543fb26a0ab4227104248b6aee01289e66fea765dc14d7",
+      "after": "805998e36e1a816701aa8b751aa40aa88e195afd0b78c32aca649a6a235a2015",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 15,
+      "abc": "boot_ffc6",
+      "label": "HudMemberStatus/update",
+      "sha256": "7858113b678d100259739c4716f0729c9f3dfc75498fd101efc37f9dbaf9e50c",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "7858113b678d100259739c4716f0729c9f3dfc75498fd101efc37f9dbaf9e50c",
+      "after": "73653cf6cd859df89f878dc7bd2b4b17f6beb38ca754677ec746ae1f8a8cd193",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 16,
+      "abc": "boot_ffc6",
+      "label": "BattleCharacterLogic/getAvailableAbilities",
+      "sha256": "9a0fcbbeae31de6293028b437a0716e2d959524544370cf2f7bfa58aef59fd9f",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "9a0fcbbeae31de6293028b437a0716e2d959524544370cf2f7bfa58aef59fd9f",
+      "after": "bb0aff2057665c0a4a1463868942bdd690b665c79b0a86fc2b9fa9a12ebadaad",
+      "final_source": "v35/run2/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 21,
+      "abc": "boot_ffc6",
+      "label": "BattleCharacterLogic/resolvePathCollection",
+      "sha256": "4be465684a1346a539ccdcc65221ea64a875fdc0e3ebcd93bb16d47b185b7e93",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "4be465684a1346a539ccdcc65221ea64a875fdc0e3ebcd93bb16d47b185b7e93",
+      "after": "1635d24840bc0c5e81cff3730159741f783528dd20bd417838c61c60aafbd8db",
+      "final_source": "v35/run2/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 21,
+      "abc": "boot_ffc6",
+      "label": "MemberView/draw",
+      "sha256": "f32bfe1956a9d8b906987ad12d8b349c908f5cbf7b4ac8f76a8a7ae9b7b1bc8e",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "f32bfe1956a9d8b906987ad12d8b349c908f5cbf7b4ac8f76a8a7ae9b7b1bc8e",
+      "after": "d554f876ffe9149d17797abbf77ac6eb7ee22f4ebf04626c587eb27b6b31dbde",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 32,
+      "abc": "boot_ffc6",
+      "label": "BattleCharacterLogic/resolvePathCollection",
+      "sha256": "4be465684a1346a539ccdcc65221ea64a875fdc0e3ebcd93bb16d47b185b7e93",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "4be465684a1346a539ccdcc65221ea64a875fdc0e3ebcd93bb16d47b185b7e93",
+      "after": "1635d24840bc0c5e81cff3730159741f783528dd20bd417838c61c60aafbd8db",
+      "final_source": "v35/run2/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 32,
+      "abc": "cn.mod.InahoAbilityVisuals",
+      "label": "InahoAbilityVisuals$/hit",
+      "sha256": "059ed57a965af38e53d3eff5019be03a4dca66e7193efe2ea6cbb3a6004476fc",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "059ed57a965af38e53d3eff5019be03a4dca66e7193efe2ea6cbb3a6004476fc",
+      "after": "222c889582126fd7c175432656d4cad2e2eca752695872a31103f3b6adcb1cc3",
+      "final_source": "v35/run2/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 32,
+      "abc": "cn.mod.InahoAbilityVisuals",
+      "label": "InahoAbilityVisuals$/preload",
+      "sha256": "c7b3e8879db4e421c24d024a8a8728d2691947607e54f84ad3b835acaf619d16",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "c7b3e8879db4e421c24d024a8a8728d2691947607e54f84ad3b835acaf619d16",
+      "after": "15046c0508ef56fb260ca03e12cc22fef8a5b57b0e779ad70074461faafecfd1",
+      "final_source": "v35/run2/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 32,
+      "abc": "cn.mod.InahoAbilityVisuals",
+      "label": "InahoAbilityVisuals$/shot",
+      "sha256": "5e96be34ca2b05298be3f4e942f7da7d70596b0c8ced94f34a936f1836eef507",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "5e96be34ca2b05298be3f4e942f7da7d70596b0c8ced94f34a936f1836eef507",
+      "after": "ec529cbd0b69317e23117240490cf406a5c41bcd76de8ea9a72dac7454f74143",
+      "final_source": "v35/run2/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 53,
+      "abc": "boot_ffc6",
+      "label": "MemberImpl/getStatModifierSkillGaugeCharging",
+      "sha256": "37fbc1b1aac0037ec9b75147e2bd7411d301be0a37e526e2a2d2075ad0fcda1f",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "37fbc1b1aac0037ec9b75147e2bd7411d301be0a37e526e2a2d2075ad0fcda1f",
+      "after": "cee93bf332e24078ac81a253e376fdac6af9295261c395f7c0d8b51d34578d8f",
+      "final_source": "v35/run1/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 54,
+      "abc": "boot_ffc6",
+      "label": "MemberImpl/scheduleDirectAttack",
+      "sha256": "223640cd78b631640313859bb39410d270696644f058435cd1258c88c9f30576",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "223640cd78b631640313859bb39410d270696644f058435cd1258c88c9f30576",
+      "after": "7f0d02acfc116523f829a639e717fea6e53ce30b61c0f40085082c4b0caf1e07",
+      "final_source": "v35/run1/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 55,
+      "abc": "boot_ffc6",
+      "label": "EnemyImpl/applyAttack",
+      "sha256": "989cd6d4d05f0e88c4073ad3d6107bff66c2e8438247e14097b6144ed56e957e",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "989cd6d4d05f0e88c4073ad3d6107bff66c2e8438247e14097b6144ed56e957e",
+      "after": "40bf00989633add7098e00901d1d76a41f67269b798e170fc03962b8c0062b03",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 56,
+      "abc": "boot_ffc6",
+      "label": "MemberImpl/scheduleDirectAttack",
+      "sha256": "223640cd78b631640313859bb39410d270696644f058435cd1258c88c9f30576",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "223640cd78b631640313859bb39410d270696644f058435cd1258c88c9f30576",
+      "after": "7f0d02acfc116523f829a639e717fea6e53ce30b61c0f40085082c4b0caf1e07",
+      "final_source": "v35/run1/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 58,
+      "abc": "boot_ffc6",
+      "label": "MemberImpl/getConditionsIncludingOuterEnvironments",
+      "sha256": "582e23ac1290798c11380451f6c0cdb7a894eb1719e3ef82dd01f3e34787af31",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "582e23ac1290798c11380451f6c0cdb7a894eb1719e3ef82dd01f3e34787af31",
+      "after": "1a75e43905e12699092cbc05d7469cc273ef45636022e9be94b71f6d0011d41b",
+      "final_source": "v35/run5/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 65,
+      "abc": "boot_ffc6",
+      "label": "BattleCharacterLogic/resolveFollowingPathCollection",
+      "sha256": "d8d6141c41bcb2d9290f8cfcfe71d5618e65127a8bab1129779fe30b6924e8ea",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "d8d6141c41bcb2d9290f8cfcfe71d5618e65127a8bab1129779fe30b6924e8ea",
+      "after": "a0821604e1bf62cdcad4ae2a909d888d6b0623f8d96623b6bd6805f283312675",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 65,
+      "abc": "boot_ffc6",
+      "label": "CharacterVoiceLogic/createVoicePathMap",
+      "sha256": "a3f3aa721b20af0547543fb26a0ab4227104248b6aee01289e66fea765dc14d7",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "a3f3aa721b20af0547543fb26a0ab4227104248b6aee01289e66fea765dc14d7",
+      "after": "805998e36e1a816701aa8b751aa40aa88e195afd0b78c32aca649a6a235a2015",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 65,
+      "abc": "boot_ffc6",
+      "label": "HudMemberStatus/update",
+      "sha256": "7858113b678d100259739c4716f0729c9f3dfc75498fd101efc37f9dbaf9e50c",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "7858113b678d100259739c4716f0729c9f3dfc75498fd101efc37f9dbaf9e50c",
+      "after": "73653cf6cd859df89f878dc7bd2b4b17f6beb38ca754677ec746ae1f8a8cd193",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 87,
+      "abc": "boot_ffc6",
+      "label": "BattleFlipperView/draw",
+      "sha256": "379ac4029668dbf388a33ee321940f77837f1911d14c3f06f19f66c553377375",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "379ac4029668dbf388a33ee321940f77837f1911d14c3f06f19f66c553377375",
+      "after": "f0a8da06784d7b9bf54b73101852ca25f5665c1548e75ce00caa4f2a5bdf6516",
+      "final_source": "v35/run1/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 88,
+      "abc": "boot_ffc6",
+      "label": "MemberImpl/startPowerFlip",
+      "sha256": "0aaa43db85c048dda9784925de22fccc38068f638449fcb59938420f12fc2d6b",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "0aaa43db85c048dda9784925de22fccc38068f638449fcb59938420f12fc2d6b",
+      "after": "030ae3c33da2fe234e174d12fdd251b59251ca36ce2813a5bea1e8fb47cf69b8",
+      "final_source": "v35/run1/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 89,
+      "abc": "boot_ffc6",
+      "label": "BattleFlipperImpl/update",
+      "sha256": "850b7356ba86f981b98d73d4d3619484acf2e7b2b0ff9f4ee8814113b7e9b8f0",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "850b7356ba86f981b98d73d4d3619484acf2e7b2b0ff9f4ee8814113b7e9b8f0",
+      "after": "c95c944a7f4735ef9e9c62a421c8a035a8bbc2894505a6f25af2814a7c3cc57d",
+      "final_source": "v35/run1/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 90,
+      "abc": "boot_ffc6",
+      "label": "YakumonoManagerImpl/deactivate",
+      "sha256": "be565848a5c9bccb1030b57a98799a4fde637418f8601d76009fc45aa3422e9b",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "be565848a5c9bccb1030b57a98799a4fde637418f8601d76009fc45aa3422e9b",
+      "after": "e53793d1c783c0c1bb5e024de944584c8df25ae9ca1cef15ebed57bcee3b3b45",
+      "final_source": "v35/run1/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 91,
+      "abc": "boot_ffc6",
+      "label": "YakumonoManagerImpl/activate",
+      "sha256": "fd64527e90a488f108d36e1efc3b4164cecc10c2b0d575eade511a92d4def037",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "fd64527e90a488f108d36e1efc3b4164cecc10c2b0d575eade511a92d4def037",
+      "after": "c79dc0e57dbb3fb20df1a33249a64a350db6a16cc8605c6f99a20d8e14a30de8",
+      "final_source": "v35/run1/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 92,
+      "abc": "boot_ffc6",
+      "label": "BattleQuestBaseImpl/resolvePathCollectionForDashPanel",
+      "sha256": "6143a756bc032bd52230fa2d42efa799c0ba7b57796759a0848e7a70befceb98",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "6143a756bc032bd52230fa2d42efa799c0ba7b57796759a0848e7a70befceb98",
+      "after": "0fa0d23a96cfb64a81ecfba61ae40f311997ab3ff3f62d5ee88d9b1b9c885a30",
+      "final_source": "v35/run1/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 93,
+      "abc": "boot_ffc6",
+      "label": "BattleQuestBaseImpl/leadingResolvePathCollection",
+      "sha256": "ae7218d15898f9b2ebe0d995b070d0088be70548bac6b6176588d5d4c7ebe391",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "ae7218d15898f9b2ebe0d995b070d0088be70548bac6b6176588d5d4c7ebe391",
+      "after": "911dbe4bf9656e6dfc682c6f24f848e6462e73684c80956deee48808864f8c9b",
+      "final_source": "v35/run1/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 94,
+      "abc": "boot_ffc6",
+      "label": "CharacterVoiceLogic/createVoicePathMap",
+      "sha256": "a3f3aa721b20af0547543fb26a0ab4227104248b6aee01289e66fea765dc14d7",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "a3f3aa721b20af0547543fb26a0ab4227104248b6aee01289e66fea765dc14d7",
+      "after": "805998e36e1a816701aa8b751aa40aa88e195afd0b78c32aca649a6a235a2015",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 95,
+      "abc": "boot_ffc6",
+      "label": "BattleCharacterLogic/resolveFollowingPathCollection",
+      "sha256": "d8d6141c41bcb2d9290f8cfcfe71d5618e65127a8bab1129779fe30b6924e8ea",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "d8d6141c41bcb2d9290f8cfcfe71d5618e65127a8bab1129779fe30b6924e8ea",
+      "after": "a0821604e1bf62cdcad4ae2a909d888d6b0623f8d96623b6bd6805f283312675",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 96,
+      "abc": "boot_ffc6",
+      "label": "HudMemberStatus/update",
+      "sha256": "7858113b678d100259739c4716f0729c9f3dfc75498fd101efc37f9dbaf9e50c",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "7858113b678d100259739c4716f0729c9f3dfc75498fd101efc37f9dbaf9e50c",
+      "after": "73653cf6cd859df89f878dc7bd2b4b17f6beb38ca754677ec746ae1f8a8cd193",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    }
+  ],
+  "new_patch_method_count": 104,
+  "source_manifest": [
+    {
+      "name": "v35/run1/release-locks.json",
+      "sha256": "e1eec80388bbae80146a70b2d648048043699f9b9e0baf2b295d813d0b73d592"
+    },
+    {
+      "name": "v35/run1/verify-report.json",
+      "sha256": "69c7bf9cba084e5f6714790f730cafc082cac46d1f92a1b468e189a41289f452"
+    },
+    {
+      "name": "v35/run1/README.md",
+      "sha256": "15547f6e42582ae1b7dc294773830e4e1b81788d9793c510d4f2ea72c0785cc7"
+    },
+    {
+      "name": "v35/run1/final-pcode/manifest.json",
+      "sha256": "360a2b2d56c58f41a23717efb8830d243df1e0bb43b76d59e4bd45d54140d21e"
+    },
+    {
+      "name": "v35/run2/release-locks.json",
+      "sha256": "1c1b5a51d7908675bb0524b8ed59f7372f01ec30bdedd5ee8742aafcf1897965"
+    },
+    {
+      "name": "v35/run2/verify-report.json",
+      "sha256": "8f3a33edec89653176cfc45bb8a3c9233feb9c3cf70fb7e15b493efcf9f613f3"
+    },
+    {
+      "name": "v35/run2/README.md",
+      "sha256": "aa2b17374cf3a91af47fd9368751c79689a2c10d287b184bf4e3223c375ae650"
+    },
+    {
+      "name": "v35/run2/final-pcode/manifest.json",
+      "sha256": "f4dbdc67ec63674091970b7816133cbe0a416647ddbde59d2f51b16084eef154"
+    },
+    {
+      "name": "v35/run3/release-locks.json",
+      "sha256": "d77973df648aea4da913b47a69be4f0b24cb19ba8f40ced01a447b6efa4dca49"
+    },
+    {
+      "name": "v35/run3/verify-report.json",
+      "sha256": "b35bec2008eb48585e5cc05cf92dfb2739d62026ebe5d295eada45838a93dc65"
+    },
+    {
+      "name": "v35/run3/README.md",
+      "sha256": "ee03de650427f154676c1e8499b77e7185e0ce8a6a075e7dd8fc5e7202689e5f"
+    },
+    {
+      "name": "v35/run3/final-pcode/manifest.json",
+      "sha256": "0f91e43c4749c1dd08a5ff2b5c2a4d6afdc400d343d23396cbdf0a739fefce0f"
+    },
+    {
+      "name": "v35/run4/release-locks.json",
+      "sha256": "b2042d1cef55e64c1a2724a558059dec0aabcdc0894f48faa1456066ad1083b1"
+    },
+    {
+      "name": "v35/run4/verify-report.json",
+      "sha256": "5a4e75f2ac61adaf894b4972e779347d0a99ad5973a066b6083a2258ec7b694e"
+    },
+    {
+      "name": "v35/run4/README.md",
+      "sha256": "17bfc81091773b80e2b96532786fab0967624c9cbc0a4b75c5a70840c698eaaa"
+    },
+    {
+      "name": "v35/run4/final-pcode/manifest.json",
+      "sha256": "c6de07e19ebb267debb3169e5dcf079ba215592570bb50a59c5daf3dda4852cd"
+    },
+    {
+      "name": "v35/run5/release-locks.json",
+      "sha256": "ee43be38823b1db317f018ad1d9b15531ad33ebebed3df323219507c70dacce1"
+    },
+    {
+      "name": "v35/run5/verify-report.json",
+      "sha256": "a1c98d911196aaacc9d3ab1e8e2ae0dc21127259f0562a513df0aa1f37001b80"
+    },
+    {
+      "name": "v35/run5/README.md",
+      "sha256": "5cfa1ed91ed2dad0d552eec97fdfd1d9edd2f251f665125d9883d48cb489eeef"
+    },
+    {
+      "name": "v35/run5/final-pcode/manifest.json",
+      "sha256": "6bb42af2b569437067ff9a6919ca8b65e4d4cf43e0d74f2b6950a3407926b6c5"
+    },
+    {
+      "name": "v35/run5/registry-draft.json",
+      "sha256": "19a31aea267ebca345404eb35fa2b388aebbcc438c467659efbacbeb2e409bd8"
+    },
+    {
+      "name": "v35/run1/apk-patches-additions/112-wfx-effect-query/README.md",
+      "sha256": "d0e4de7f1e5029f94175936b39f82b80f0260302e106ad8fa312cb445bf17b52"
+    },
+    {
+      "name": "v35/run1/apk-patches-additions/113-direct-base/README.md",
+      "sha256": "5d368e2079d51893ad47d14b86e8fefb468f98edd38534c18d5ebc308ec9ca80"
+    },
+    {
+      "name": "v35/run1/apk-patches-additions/114-direct-merge/README.md",
+      "sha256": "49122789b813fb8322f840a128fbaa2fc7fba0ff44452d455ac8621438afa035"
+    },
+    {
+      "name": "v35/run1/apk-patches-additions/115-charge-cap-v2/README.md",
+      "sha256": "ce29eacb69da3f9e98113753959306d9b4c2d14024caaba3e258c07d46a5fa5d"
+    },
+    {
+      "name": "v35/run1/apk-patches-additions/116-ability-resistance/README.md",
+      "sha256": "db6cd2755b060fb66d68758fa40c4f4ef1377f3d48ab37aca6e26d4141b45cc3"
+    },
+    {
+      "name": "v35/run1/apk-patches-additions/117-pf-snapcombo/README.md",
+      "sha256": "97d2fc212c2d0845509fd42872432627813bf264bf00e0bb3fcd1d621ee31bf9"
+    },
+    {
+      "name": "v35/run1/apk-patches-additions/118-pf-lv4-data/README.md",
+      "sha256": "7c182312f7327d9d21e5f7a17e95a881c41f8d70b875b83c193aca116b686bd1"
+    },
+    {
+      "name": "v35/run1/apk-patches-additions/119-fever-items-v2/README.md",
+      "sha256": "5154ae3b0d9113e610b499e1c500669b8e0ed77d5930b2973505a02214ee21e6"
+    },
+    {
+      "name": "v35/run2/apk-patches-additions/120-leader-unlock/README.md",
+      "sha256": "8fa6148ecd3a25462f08c9a2b2380b1acbaeb61d0e6c9fc4624720dd2821a87f"
+    },
+    {
+      "name": "v35/run2/apk-patches-additions/121-adaptive-element/README.md",
+      "sha256": "9f5662efd2c3f086db1be65857c3d1910ebb5996ee4ae53cca27070c70b0b595"
+    },
+    {
+      "name": "v35/run2/apk-patches-additions/122-overflow-heal-damage/README.md",
+      "sha256": "4349cfee98b573d8e22c09ac1dd06cc8072ec24042f3791c85d6be4705779778"
+    },
+    {
+      "name": "v35/run2/apk-patches-additions/123-ability-visuals/README.md",
+      "sha256": "3a5f15f60d3f790f638c7e528feac3ee9787bdbb510b0869d7a2dca02e1001ff"
+    },
+    {
+      "name": "v35/run2/apk-patches-additions/124-direct-factor-clamp/README.md",
+      "sha256": "709118273f9bb186e64b8970247e999a78a1bc55a7801fdfd1cadbf53051d295"
+    },
+    {
+      "name": "v35/run3/apk-patches-additions/125-super-fever/README.md",
+      "sha256": "20503d35b5590d520918ba42688a665378205a73c1dc0aa71e4c9d9f79b9ef68"
+    },
+    {
+      "name": "v35/run3/apk-patches-additions/126-fever-voice/README.md",
+      "sha256": "19be3dc14d906936afaa92fe834a632d3039a7a8dbb74da7f0398f1cef3ae720"
+    },
+    {
+      "name": "v35/run3/apk-patches-additions/127-ready-voice-generic/README.md",
+      "sha256": "310292427c3d6ab11e28c15ca53f9a33a58ad888a135c46a5b346bf26152b620"
+    },
+    {
+      "name": "v35/run3/apk-patches-additions/128-dual-form-uid/README.md",
+      "sha256": "a285a832ab1e46c383f33a3256f1340855248e14185f79952f50326d5f27e094"
+    },
+    {
+      "name": "v35/run3/apk-patches-additions/129-equipment-rules-data/README.md",
+      "sha256": "e0bce8171fcbfb0b040e82be65180903be39337c67f8df1977e15608f9b9415b"
+    },
+    {
+      "name": "v35/run4/apk-patches-additions/130-direct-target-unique/README.md",
+      "sha256": "2adc75d241ec9775fbe55e90418e7fde27628f7c02ae6a916e11ce62b5a06c4b"
+    },
+    {
+      "name": "v35/run5/apk-patches-additions/131-wfx-hidden-unique-icons/README.md",
+      "sha256": "f8d7f826d6f843bbcf60cc6954bdbc5769d7b28b65457ab6b2967e483ac1fe8e"
+    },
+    {
+      "name": "v34/build-report.json",
+      "sha256": "4978a1ee337265fb07cbd830362fa4e2a85807f123e58deae448d9a241dcf4cf"
+    },
+    {
+      "name": "v35/apk/HASHES.txt",
+      "sha256": "376332702469bcd925f107fd0c206e05108a5c684ad4c8f95bd44df4bdc9b4ad"
+    }
+  ],
+  "device_verified": false,
+  "deployed": false,
+  "package_metadata": {
+    "test-v34": {
+      "package_name": "com.leiting.wt",
+      "versionCode": 1008002,
+      "source": "v34/build-report.json#variants"
+    },
+    "test-v35e": {
+      "package_name": "com.leiting.wt",
+      "versionCode": 1008003,
+      "source": "v35/apk/HASHES.txt"
+    }
+  }
+}

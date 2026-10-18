@@ -4,6 +4,7 @@ from __future__ import annotations
 import re
 
 from wf.caps.registry import load_registry
+from wf.caps.method_evidence import accepted_hashes
 from .evidence import read_evidence
 
 
@@ -52,12 +53,13 @@ def _patches(record: dict, registry: dict) -> tuple[dict, list, list]:
         for expected in capability["provided_by"]["methods"]:
             actual = observed.get(_key(expected), {})
             sha = actual.get("sha256")
-            if expected["sha256"] is not None and sha is not None and sha != expected["sha256"]:
+            if expected["sha256"] is not None and sha is not None and sha not in accepted_hashes(expected, record.get("swf_sha256")):
                 mismatch.append(expected["label"])
             if expected["sha256"] is not None and sha is None:
                 missing.append(expected["label"])
-            methods.append(dict(expected, sha256=sha, status="已记录" if sha else "待补",
-                                source=row.get("basis", "显式输入补丁记录")))
+            clean_expected = {k: v for k, v in expected.items() if k != "accepted_variants"}
+            methods.append(dict(clean_expected, sha256=sha, status="已记录" if sha else "待补",
+                                source=actual.get("source", row.get("basis", "显式输入补丁记录"))))
         if mismatch:
             unresolved.append({"patch": n, "reason": "方法哈希不匹配，不能提供此实现版本", "methods": mismatch})
             continue
@@ -85,7 +87,7 @@ def derive_provides(record: dict, source: dict | None = None, registry: dict | N
                              "patches": list(numbers),
                              "methods": [m for n in numbers for m in patches[n]["methods"]],
                              "basis": "官方系统由输入明确声明" if not numbers else "所需补丁全部由输入记录提供；方法核对状态逐项保留"})
-    return {"schema": "wf-apk-provides/1", "source": source or {"kind": "patch-record", "basis": record.get("basis", "显式输入摘要")},
+    return {"schema": "wf-apk-provides/1", "source": source or {"kind": "patch-record", "basis": record.get("basis", "显式输入摘要"), "swf_sha256": record.get("swf_sha256")},
             "patches": [patches[n] for n in sorted(patches)], "provides": capabilities, "unresolved": unresolved,
             "warnings": warnings,
             "limitations": ["静态记录或固定产物匹配不等同设备验收", "客户端能力不证明服务端功能已部署", "null 方法摘要仍为待补，不能当作已验证方法"]}
