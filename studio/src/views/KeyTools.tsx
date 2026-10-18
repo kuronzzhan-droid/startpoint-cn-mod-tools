@@ -135,8 +135,8 @@ function AttachDialog({ table, slot, current, title, onClose }: {
                 {items.map((r, i) => (
                   <li role="option" aria-selected={i === cursor} class={i === cursor ? "on" : ""} onClick={() => setCursor(i)}
                     onDblClick={() => { setCursor(i); }}>
-                    <span class="mono">{r.key}</span>
-                    <span class="kind-name small">{r.owners.length ? r.owners.map((o) => o.name || o.id).join("、") : "无持有者"}</span>
+                    <span class="mono"><Highlight text={r.key} terms={result?.terms ?? []} /></span>
+                    <span class="kind-name small"><Highlight text={r.owners.length ? r.owners.map((o) => o.name || o.id).join("、") : "无持有者"} terms={result?.terms ?? []} /></span>
                     <span class={"rs " + (r.owners.some((o) => o.id !== ws.cid) ? "rs-warn" : "rs-na")}>
                       {r.levels ? `${r.levels.length} 档` : `${r.rows} 行`}
                     </span>
@@ -148,7 +148,11 @@ function AttachDialog({ table, slot, current, title, onClose }: {
                 <div class="picker-detail">
                   <h4 class="mono">{selected.key}</h4>
                   <p class="small">持有者：{selected.owners.length ? selected.owners.map((o) => `${o.name || "?"}（${o.id}）`).join("、") : "无（未挂在任何角色上）"}</p>
-                  <ol class="small">{selected.descriptions.map((d) => <li>{d || "（无法解析）"}</li>)}</ol>
+                  <ol class="small">{selected.descriptions.map((d, i) => (
+                    <li value={(selected.descriptionRows?.[i] ?? i) + 1} class={selected.matches?.includes(selected.descriptionRows?.[i] ?? i) ? "hit" : ""}>
+                      {d ? <Highlight text={d} terms={result?.terms ?? []} /> : "（无法解析）"}</li>
+                  ))}</ol>
+                  {selected.rows > selected.descriptions.length ? <p class="small muted">另有 {selected.rows - selected.descriptions.length} 行未列出。</p> : null}
                   {others.length ? (
                     <div class="shared-confirm">
                       <p>挂上后该键由 {others.length + 1} 个角色共享；之后改它会影响 {others.map((o) => o.name || o.id).join("、")}。</p>
@@ -192,6 +196,27 @@ function AttachDialog({ table, slot, current, title, onClose }: {
       </div>
     </div>
   );
+}
+
+/** Marks every case-insensitive occurrence of the search terms. */
+export function Highlight({ text, terms }: { text: string; terms: string[] }) {
+  const words = terms.filter(Boolean);
+  if (!words.length || !text) return <>{text}</>;
+  const lower = text.toLowerCase();
+  const marks: boolean[] = new Array(text.length).fill(false);
+  for (const w of words) {
+    for (let at = lower.indexOf(w); at >= 0; at = lower.indexOf(w, at + 1)) for (let i = at; i < at + w.length; i++) marks[i] = true;
+  }
+  const parts: preact.ComponentChildren[] = [];
+  let start = 0;
+  for (let i = 1; i <= text.length; i++) {
+    if (i === text.length || marks[i] !== marks[start]) {
+      const piece = text.slice(start, i);
+      parts.push(marks[start] ? <mark>{piece}</mark> : piece);
+      start = i;
+    }
+  }
+  return <>{parts}</>;
 }
 
 function newRows(table: AbilityTable, entries: AbilityEntry[]): Pick<AttachOp, "rows" | "levels"> {

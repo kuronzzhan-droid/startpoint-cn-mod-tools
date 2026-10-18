@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import base64
 import io
+import threading
 
 import wf_assets
 from PIL import Image
@@ -27,11 +28,68 @@ def png_b64(image: Image.Image) -> str:
 
 
 class PixelWorkshop:
+    """Draft-state overlays, analyses, decoded families and thumbnails are cached per state key.
+
+    A state key is ``view`` or ``draft:<cid>:<createdAt>:<revision>:<updatedAt>``; every cache is
+    built once per key even under concurrent requests (per-key lock), and only the newest few
+    draft keys are kept, so two drafts browsed at once no longer evict each other mid-request.
+    """
+
+    KEEP = 6
+
     def __init__(self, ops):
+        from .perf import _LRU
         self.ops = ops
         self.source = ops.source
-        self._analysis: dict[tuple, dict] = {}
-        self._overlays: dict[str, object] = {}
+        self._lock = threading.Lock()
+        self._gates: dict[tuple, threading.Lock] = {}
+        self._cache: dict[tuple, object] = {}       # draft overlays (bounded by KEEP draft keys)
+        self._lru = {"analysis": _LRU(48), "decoded": _LRU(24), "cell": _LRU(6000)}
+        self._drafts: list[str] = []
+
+    def _get(self, key: tuple):
+        store = self._lru.get(key[0])
+        if store is not None:
+            return store.get(key)
+        with self._lock:
+            return self._cache.get(key)
+
+    def _put(self, key: tuple, value):
+        store = self._lru.get(key[0])
+        if store is not None:
+            store.put(key, value)
+        else:
+            with self._lock:
+                self._cache[key] = value
+        return value
+
+    def _once(self, key: tuple, build):
+        """Cached ``build()``; one computation per key even when requests arrive together."""
+        hit = self._get(key)
+        if hit is not None:
+            return hit
+        with self._lock:
+            gate = self._gates.setdefault(key, threading.Lock())
+        with gate:
+            hit = self._get(key)
+            if hit is not None:
+                return hit
+            value = build()
+            if value is not None:
+                self._put(key, value)
+            with self._lock:
+                self._gates.pop(key, None)
+            return value
+
+    def _remember_draft(self, state: str):
+        with self._lock:
+            if state in self._drafts:
+                return
+            self._drafts.append(state)
+            while len(self._drafts) > self.KEEP:
+                old = self._drafts.pop(0)
+                for key in [k for k in self._cache if old in k]:
+                    del self._cache[key]
 
     # -- read -------------------------------------------------------------
     def _state(self, cid: str, draft: bool):
@@ -41,21 +99,30 @@ class PixelWorkshop:
             if changeset and any(c["kind"] in ("pixel_family", "pixel_action") for c in changeset["changes"]):
                 # createdAt too: a discarded and recreated draft restarts its revision count.
                 key = f"draft:{cid}:{changeset['createdAt']}:{changeset['revision']}:{changeset['updatedAt']}"
-                if key not in self._overlays:
-                    self._overlays.clear()
-                    self._overlays[key] = self.draft_source(cid)
-                return self._overlays[key], key
+                overlay = self._once(("overlay", key), lambda: self.draft_source(cid) or False)
+                self._remember_draft(key)
+                if overlay:
+                    return overlay, key
         return self.source, "view"
+
+    def _decoded(self, cid: str, family: str, draft: bool):
+        code = self.ops.character(cid)["code"]
+        source, state = self._state(cid, draft)
+
+        def build():
+            raws = read_family_raw(source, code, family)
+            return False if raws is None else decode_family(raws)
+        data = self._once(("decoded", state, code, family), build)
+        if not data:
+            raise DraftError(f"{cid} 没有 {family} 像素族")
+        return data, state
 
     def analyze(self, cid: str, *, draft: bool = False) -> dict:
         info = self.ops.character(cid)
         code = info["code"]
         source, state = self._state(cid, draft)
-        cache = (code, state)
-        if cache not in self._analysis:
-            self._analysis[cache] = analyze(source, code)
-        return {"characterId": cid, "name": info["name"], "state": "draft" if state != "view" else "view",
-                **self._analysis[cache]}
+        result = self._once(("analysis", code, state), lambda: analyze(source, code))
+        return {"characterId": cid, "name": info["name"], "state": "draft" if state != "view" else "view", **result}
 
     def action_frames(self, cid: str, family: str, action: str, *, draft: bool = True) -> dict:
         """Raw RGBA of every image of one action (drawing board input; no browser canvas decode).
@@ -65,12 +132,7 @@ class PixelWorkshop:
         """
         from .deliver_pixel import frame_box
         from .pixel_workshop import _cells, _sequences
-        code = self.ops.character(cid)["code"]
-        source, state = self._state(cid, draft)
-        raws = read_family_raw(source, code, family)
-        if raws is None:
-            raise DraftError(f"{cid} 没有 {family} 像素族")
-        data = decode_family(raws)
+        data, state = self._decoded(cid, family, draft)
         sequence = next((s for s in _sequences(data["timeline"]) if s["name"] == action), None)
         if sequence is None:
             raise DraftError(f"{family} 没有动作 {action}")
@@ -90,16 +152,21 @@ class PixelWorkshop:
                 "note": "原始 RGBA（不经浏览器 canvas 解码）；box 外全部字节为 0"}
 
     def cell_image(self, cid: str, family: str, key: int, *, trimmed: bool = True, draft: bool = True) -> Image.Image:
-        code = self.ops.character(cid)["code"]
-        source, _ = self._state(cid, draft)
-        raws = read_family_raw(source, code, family)
-        if raws is None:
-            raise DraftError(f"{cid} 没有 {family} 像素族")
-        data = decode_family(raws)
+        data, _ = self._decoded(cid, family, draft)
         if key not in data["entries"]:
             raise DraftError(f"{family} 没有端点帧 {key}")
         image = restore_frame(data["sheet"], data["entries"][key])
         return trim(image) if trimmed else image
+
+    def cell_png(self, cid: str, family: str, key: int, *, trimmed: bool = True, draft: bool = True) -> tuple[bytes, str]:
+        """PNG bytes of one atlas endpoint (thumbnail), cached per state; returns (png, state key)."""
+        _, state = self._decoded(cid, family, draft)
+
+        def build():
+            out = io.BytesIO()
+            self.cell_image(cid, family, key, trimmed=trimmed, draft=draft).save(out, "PNG")
+            return out.getvalue()
+        return self._once(("cell", state, cid, family, key, trimmed), build), state
 
     # -- remap ------------------------------------------------------------
     def remap(self, cid: str, request: dict) -> dict:
@@ -138,9 +205,8 @@ class PixelWorkshop:
                 "changeset": committed[-1]["changeset"], "status": committed[-1]["status"]}
 
     def _palette_has(self, code: str, rgb) -> bool:
-        if (code, "view") not in self._analysis:
-            self._analysis[code, "view"] = analyze(self.source, code)
-        return any(tuple(p["rgb"]) == tuple(rgb) for p in self._analysis[code, "view"]["palette"])
+        result = self._once(("analysis", code, "view"), lambda: analyze(self.source, code))
+        return any(tuple(p["rgb"]) == tuple(rgb) for p in result["palette"])
 
     def _remap_checks(self, cid, code, family, base_raws, rebuilt) -> list[dict]:
         checks = []
@@ -208,7 +274,7 @@ class PixelWorkshop:
         from .scratch import resolve_character
         mine = self.analyze(cid)  # the character's own (view) palette is the colour target
         ref = resolve_character(self.ops, base_cid)
-        base = {"palette": analyze(self.source, ref["code"])["palette"]}
+        base = {"palette": self._once(("analysis", ref["code"], "view"), lambda: analyze(self.source, ref["code"]))["palette"]}
         return {"suggestions": suggest_mapping(base["palette"], mine["palette"])}
 
     # -- generate ---------------------------------------------------------

@@ -28,7 +28,8 @@ def main(argv=None) -> int:
     parser.add_argument("--server-dir", type=Path, help="文本编辑所需的只读服务端镜像根目录")
     parser.add_argument("--provides", type=Path, metavar="JSON",
                         help="生成交付时默认使用的客户端能力清单（wf apk provides 的输出）")
-    parser.add_argument("--warm", action="store_true", help="启动时预先加载角色列表")
+    parser.add_argument("--warm", action="store_true", help="启动时预先加载角色列表（同步）")
+    parser.add_argument("--no-prewarm", action="store_true", help="不在后台预热词条/文案缓存")
     parser.add_argument("--allow-origin", action="append", default=[], metavar="URL",
                         help="额外允许写入的 Origin（例如 Vite 开发服务器 http://127.0.0.1:5173），可重复")
     args = parser.parse_args(argv)
@@ -43,6 +44,15 @@ def main(argv=None) -> int:
     app = StudioApp(source, server_dir=args.server_dir, default_provides=args.provides)
     if args.warm:
         app.character_list()
+    if not args.no_prewarm:
+        import threading
+
+        def prewarm():
+            try:
+                app.prewarm()
+            except Exception as exc:  # noqa: BLE001 - a cold cache is only slower, never wrong
+                print(f"预热缓存失败（不影响使用，首次请求会慢一些）：{type(exc).__name__}: {exc}", flush=True)
+        threading.Thread(target=prewarm, name="studio-prewarm", daemon=True).start()
     info = source.describe()
     if args.host not in ("127.0.0.1", "localhost", "::1"):
         parser.error("编辑台只监听本机回环地址")

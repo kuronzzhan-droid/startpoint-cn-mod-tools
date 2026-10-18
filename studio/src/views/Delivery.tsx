@@ -1,5 +1,5 @@
-import { useEffect, useState } from "preact/hooks";
-import { BuildResult, deliveries, DeliveryDetail, DeliverySummary, DraftView, onDraftChange } from "../api";
+import { useEffect, useRef, useState } from "preact/hooks";
+import { BuildJob, BuildResult, deliveries, DeliveryDetail, DeliverySummary, DraftView, onDraftChange } from "../api";
 import { Notice } from "./common";
 import { RuleChips, ruleCounts, RuleList } from "./rules";
 
@@ -41,67 +41,97 @@ export function DeliveryPanel({ characterId, mode, view, onMode }: {
   );
 }
 
+const STAGE_STATE: Record<string, string> = { waiting: "等待", running: "进行中", done: "完成", failed: "失败", cancelled: "已取消" };
+
 function GenerateForm({ characterId, view, onBuilt }: { characterId: string; view: DraftView; onBuilt: (name: string) => void }) {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [provides, setProvides] = useState("");
   const [note, setNote] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [elapsed, setElapsed] = useState(0);
-  const [result, setResult] = useState<BuildResult | null>(null);
+  const [job, setJob] = useState<BuildJob | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [cancelling, setCancelling] = useState(false);
+  const poll = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     deliveries.defaults().then((d) => { setFrom(d.from); setTo(d.to); setNote(d.note); if (d.provides) setProvides(d.provides); }, (e: Error) => setError(e.message));
-  }, []);
-  useEffect(() => {
-    if (!busy) return;
-    const start = Date.now();
-    const timer = setInterval(() => setElapsed(Math.round((Date.now() - start) / 1000)), 500);
-    return () => clearInterval(timer);
-  }, [busy]);
+    // Resume a build that is still running (page reloaded or tab switched).
+    deliveries.list(characterId).then((r) => {
+      const running = r.jobs?.find((j) => j.state === "running");
+      if (running) follow(running);
+    }, () => undefined);
+    return () => window.clearTimeout(poll.current);
+  }, [characterId]);
+
+  const follow = (current: BuildJob) => {
+    setJob(current);
+    window.clearTimeout(poll.current);
+    if (current.state !== "running") {
+      setCancelling(false);
+      deliveries.finished(characterId);
+      return;
+    }
+    poll.current = window.setTimeout(() => {
+      deliveries.job(current.name).then(follow, (e: Error) => { setError(e.message); setJob(null); });
+    }, 700);
+  };
 
   const base = view.changeset?.baseView;
   const mismatch = !!base && !!from && base !== from;
+  const busy = job?.state === "running";
   const build = async () => {
-    setBusy(true);
     setError(null);
-    setResult(null);
+    setJob(null);
     try {
-      const r = await deliveries.build(characterId, { from, to, ...(provides.trim() ? { provides: provides.trim() } : {}) });
-      setResult(r);
+      follow(await deliveries.start(characterId, { from, to, ...(provides.trim() ? { provides: provides.trim() } : {}) }));
     } catch (e) {
       setError((e as Error).message);
-    } finally {
-      setBusy(false);
     }
   };
+  const cancel = async () => {
+    setCancelling(true);
+    try { await deliveries.cancel(characterId); } catch (e) { setError((e as Error).message); setCancelling(false); }
+  };
+  const result = job && job.state !== "running" ? job.result : null;
 
   return (
     <div class="generate-form">
       <p class="small muted">
-        把已保存的草稿编译成内容寻址变更集，再跑现有 <span class="mono">wf deliver</span>（≤5 MiB 分包、两种 manifest、requires 推导、prepush）、
-        <span class="mono">wf check</span> 和兼容检查（没有客户端能力清单时交付判为不通过）。全部写到 <span class="mono">work/studio-deliveries/</span> 新目录；
-        不改 store、补丁链、测试服或草稿。{note}
+        把已保存的草稿打成本地测试补丁：编译草稿 → 分包与清单（每包 ≤5 MiB）→ 兼容检查（没有客户端能力清单时判为不通过）→ 交付检查。
+        全部写到 <span class="mono">work/studio-deliveries/</span> 新目录，不改测试服、不改草稿。{note}
+        <InfoTip text="技术细节：内容寻址变更集 + wf deliver（两种 manifest、requires 推导、prepush）+ wf check + compat。" />
       </p>
       <form class="version-row" onSubmit={(e) => { e.preventDefault(); if (!busy) build(); }}>
         <label>来源版本 <input class="mono" value={from} onInput={(e) => setFrom((e.target as HTMLInputElement).value)} size={9} /></label>
         <span aria-hidden="true">→</span>
         <label>目标版本 <input class="mono" value={to} onInput={(e) => setTo((e.target as HTMLInputElement).value)} size={9} /></label>
-        <button type="submit" class="primary" disabled={busy || !from || !to}>{busy ? `生成中…… ${elapsed}s` : "生成本地交付"}</button>
+        <button type="submit" class="primary" disabled={busy || !from || !to}>{busy ? `生成中…… ${Math.round(job?.seconds ?? 0)}s` : "生成本地交付"}</button>
+        {busy ? <button type="button" onClick={cancel} disabled={cancelling}>{cancelling ? "取消中……" : "取消"}</button> : null}
       </form>
       <details>
-        <summary>目标客户端能力清单 provides.json（默认用启动时 --provides 指定的那份；留空则交付判为「兼容未确认」，不通过）</summary>
+        <summary>目标客户端能力清单（默认用启动时 --provides 指定的那份；留空则交付判为「兼容未确认」，不通过）</summary>
         <input class="mono wide-input" placeholder="例如 work/…/v34-provides.json 的绝对路径" value={provides}
           onInput={(e) => setProvides((e.target as HTMLInputElement).value)} />
       </details>
       {mismatch ? <Notice kind="warn">草稿基于视图 {base}，来源版本填的是 {from}：生成会拒绝（草稿必须在来源视图上制作）。</Notice> : null}
       {view.status.state !== "saved" ? <Notice kind="warn">草稿有未保存的修订，请先保存。</Notice> : null}
-      {busy ? <p class="small muted">正在锁定来源视图、编译草稿并运行 deliver / check（139985 一条词条约 30 秒）……</p> : null}
+      {job ? (
+        <ol class="build-stages" aria-label="生成进度">
+          {job.stages.map((s) => (
+            <li class={"stage-" + s.state}><span class="stage-dot" aria-hidden="true" />{s.label}<span class="small muted"> · {STAGE_STATE[s.state] ?? s.state}</span></li>
+          ))}
+        </ol>
+      ) : null}
+      {cancelling && busy ? <p class="small muted">当前阶段结束后停止，半成品目录会删除。</p> : null}
       {error ? <Notice kind="error">生成请求失败：{error}</Notice> : null}
-      {result ? <BuildResultCard result={result} onOpen={() => onBuilt(result.name)} /> : null}
+      {job?.state === "cancelled" ? <Notice>已取消生成。</Notice> : null}
+      {result && job?.state !== "cancelled" ? <BuildResultCard result={result} onOpen={() => onBuilt(result.name)} /> : null}
     </div>
   );
+}
+
+export function InfoTip({ text }: { text: string }) {
+  return <span class="info-tip" title={text} aria-label={text} tabIndex={0}>ⓘ</span>;
 }
 
 function BuildResultCard({ result, onOpen }: { result: BuildResult; onOpen: () => void }) {

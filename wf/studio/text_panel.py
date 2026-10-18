@@ -58,6 +58,7 @@ def custom_owners(workspace, keys):
     skill key or a row's c0. Both imply a cheap necessary condition, so only the
     surviving candidates run the exact (slow) ``custom_keys``.
     """
+    from .perf import leaf_tokens
     keys = list(keys)
     characters = workspace.table(CHARACTER)
     leader, ability = workspace.table(LEADER), workspace.table(ABILITY)
@@ -69,9 +70,10 @@ def custom_owners(workspace, keys):
         for table, refs in ((leader, row[17:18]), (ability, row[19:25])):
             for ref in refs:
                 value = table.get(ref, "")
-                tokens |= _record_tokens(value)
                 if isinstance(value, str) and value:
-                    names.update(r[0] for r in csv.reader(io.StringIO(value, newline="")) if r)
+                    found, row_names = leaf_tokens(value)  # memoized per leaf text
+                    tokens |= found
+                    names |= row_names
         names.discard("")
         for key in keys:
             if key in tokens or any(name in key for name in names):

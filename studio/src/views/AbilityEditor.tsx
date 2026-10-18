@@ -38,7 +38,8 @@ export function useWorkspace(): AbilityWorkspace | null {
   return useContext(Ctx);
 }
 
-export function useAbilityWorkspace(cid: string): AbilityWorkspace {
+/** `enabled`: only tabs that show abilities/skills/text need the draft state; it loads on first need. */
+export function useAbilityWorkspace(cid: string, enabled = true): AbilityWorkspace {
   const [state, setState] = useState<AbilityState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<Pending>(EMPTY_PENDING);
@@ -52,13 +53,19 @@ export function useAbilityWorkspace(cid: string): AbilityWorkspace {
   const lintSeq = useRef(0);
 
   const reload = () => ability.state(cid).then((s) => { setState(s); setError(null); }, (e: Error) => setError(e.message));
+  const [wanted, setWanted] = useState(enabled);
+  useEffect(() => { if (enabled) setWanted(true); }, [enabled]);
   useEffect(() => {
     setState(null);
     setPending(EMPTY_PENDING);
     setCheck(null);
+    setWanted(enabled);
+  }, [cid]);
+  useEffect(() => {
+    if (!wanted) return;
     reload();
     return onDraftChange((changed) => { if (changed === cid) reload(); });
-  }, [cid]);
+  }, [cid, wanted]);
 
   // Live dry-run of the pending request (never writes).
   useEffect(() => {

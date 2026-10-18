@@ -146,3 +146,19 @@ button.small-btn.danger:hover { border-color: var(--danger); color: var(--danger
 .rule-list .text-findings { list-style: disc; display: block; padding-left: 18px; }
 .rule-list .text-findings li { display: list-item; }
 .rule-list .text-findings li .mono { display: inline; }
+
+/* -- 2026-10-18 优化：生成进度、检索高亮、锁定、画板调色板分组 ------------------------------ */
+.build-stages { list-style: none; margin: 10px 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.build-stages li { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.build-stages .stage-dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--border); background: var(--surface); }
+.build-stages .stage-running .stage-dot { border-color: var(--accent); background: var(--accent-soft); animation: stage-pulse 1s infinite alternate; }
+.build-stages .stage-done .stage-dot { border-color: var(--ok); background: var(--ok); }
+.build-stages .stage-failed .stage-dot, .build-stages .stage-cancelled .stage-dot { border-color: var(--danger); background: var(--danger); }
+@keyframes stage-pulse { from { opacity: 0.45; } to { opacity: 1; } }
+.info-tip { display: inline-block; margin-left: 4px; color: var(--muted); cursor: help; font-size: 12px; }
+mark { background: #ffe58f; color: inherit; border-radius: 2px; padding: 0 1px; }
+@media (prefers-color-scheme: dark) { mark { background: #6b5a14; } }
+.picker-detail ol li.hit { font-weight: 600; }
+.effect-cards.locked { opacity: 0.6; }
+.ws-board-palette-groups { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.ws-board-pgroup > .small { display: block; margin-bottom: 2px; }

@@ -12,11 +12,18 @@ def _value(query, key, default=None):
 
 class AbilityRoutes:
     def __init__(self, app, server_dir=None):
+        import threading
         self.app, self.server_dir = app, server_dir
+        self._editor = None
+        self._lock = threading.Lock()
 
     def editor(self):
-        from .draft_commands import editor
-        return editor(self.app.source, self.app.ops.store, self.server_dir)
+        """One AbilityEditor per app: its memo (replayed draft state, panel text, key index) is per process."""
+        with self._lock:
+            if self._editor is None:
+                from .draft_commands import editor
+                self._editor = editor(self.app.source, self.app.ops.store, self.server_dir)
+            return self._editor
 
     def read(self, query, cid):
         from .server import json_response

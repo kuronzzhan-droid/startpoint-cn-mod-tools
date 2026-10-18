@@ -670,7 +670,15 @@ export interface TextPanel {
 export interface KeySearchResult {
   table: string;
   total: number;
-  results: { key: string; rows: number; levels: string[] | null; owners: { id: string; name: string }[]; descriptions: string[] }[];
+  /** Lower-cased query terms (for highlighting). */
+  terms?: string[];
+  /** The key whose name equals the whole query, when one exists (duplicate check for new keys). */
+  exact?: string | null;
+  results: {
+    key: string; rows: number; levels: string[] | null; owners: { id: string; name: string }[]; descriptions: string[];
+    /** Row numbers (0-based) of `descriptions`, and those among them that matched a term. */
+    descriptionRows?: number[]; matches?: number[];
+  }[];
 }
 
 export interface TemplateOption {
@@ -716,6 +724,19 @@ export interface BuildResult {
   deviceValidation: string;
 }
 
+/** Background 「生成」 job: stages 编译 / wf deliver / 兼容 / check, cancellable between stages. */
+export interface BuildJob {
+  name: string;
+  characterId: string;
+  from: string;
+  to: string;
+  state: "running" | "ok" | "failed" | "cancelled";
+  stage: string | null;
+  stages: { id: string; label: string; state: "waiting" | "running" | "done" | "failed" | "cancelled" }[];
+  seconds: number;
+  result: BuildResult | null;
+}
+
 export interface DeliverySummary {
   name: string;
   ok: boolean;
@@ -759,8 +780,14 @@ export const ability = {
 
 export const deliveries = {
   defaults: () => get<DeliveryDefaults>("/api/deliveries/defaults"),
-  list: (cid: string) => get<{ root: string; deliveries: DeliverySummary[]; running: Record<string, string> }>(
+  list: (cid: string) => get<{ root: string; deliveries: DeliverySummary[]; running: Record<string, string>; jobs: BuildJob[] }>(
     `/api/deliveries?cid=${cid}`),
+  job: (name: string) => get<BuildJob>(`/api/deliveries/jobs/${encodeURIComponent(name)}`),
+  start: (cid: string, body: { from: string; to: string; provides?: string }) =>
+    post<BuildJob>(`/api/drafts/${cid}/build`, { ...body, background: true }),
+  cancel: (cid: string) => post<{ name: string; cancelling: boolean; note: string }>(`/api/drafts/${cid}/build/cancel`, {}),
+  /** Tell listeners (status strip, export list) that a job finished. */
+  finished: (cid: string) => notify(cid, Promise.resolve(null)),
   detail: (name: string) => get<DeliveryDetail>(`/api/deliveries/${encodeURIComponent(name)}`),
   fileUrl: (name: string, path: string) => `/api/deliveries/${encodeURIComponent(name)}/file?path=${encodeURIComponent(path)}`,
   build: (cid: string, body: { from: string; to: string; provides?: string }) =>

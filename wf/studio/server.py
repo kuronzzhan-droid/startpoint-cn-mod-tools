@@ -89,7 +89,8 @@ class StudioApp:
             ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+|scratch-[a-z0-9][a-z0-9-]{0,47})/save$"), self.save),
         ]
         from .ability_routes import AbilityRoutes
-        self.routes.extend(AbilityRoutes(self, server_dir).routes())
+        self.abilities = AbilityRoutes(self, server_dir)
+        self.routes.extend(self.abilities.routes())
         from .pixel_routes import PixelRoutes
         self.pixel_workshop = PixelRoutes(self)
         self.routes.extend(self.pixel_workshop.routes())
@@ -147,6 +148,22 @@ class StudioApp:
         with self._lock:
             self._lookup = index
         return index
+
+    def prewarm(self) -> None:
+        """Fill the per-process caches (registry, roster, parsed tables, key indexes, reference
+        tokens) so the first 文案 / 换键 request does not pay for them. Safe to run in a thread."""
+        from . import perf
+        from .ability_engine import EditState
+        perf.registry()
+        self.character_list()
+        editor = self.abilities.editor()
+        state = EditState(self.source)
+        for logical in ("master/ability/ability.orderedmap", "master/ability/leader_ability.orderedmap"):
+            for leaf in state.table(logical).values():
+                if isinstance(leaf, str) and leaf:
+                    perf.leaf_tokens(leaf)
+        for table in ("ability", "leader_ability", "action_skill"):
+            editor._key_index(table, None)
 
     # -- handlers -------------------------------------------------------
     def health(self, query) -> Response:

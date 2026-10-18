@@ -77,11 +77,10 @@ class PixelRoutes:
     def cell(self, query, cid, family, key):
         trimmed = (query.get("trim") or ["1"])[0] != "0"
         draft = (query.get("state") or ["view"])[0] == "draft"
-        image = self.shop(cid).cell_image(cid, family, int(key), trimmed=trimmed, draft=draft)
-        out = io.BytesIO()
-        image.save(out, "PNG")
-        return self._response(200, out.getvalue(), "image/png",
-                              "no-store" if draft or scratch.is_scratch(cid) else None)
+        png, state = self.shop(cid).cell_png(cid, family, int(key), trimmed=trimmed, draft=draft)
+        # View thumbnails never change within a process: default caching, like the pixel sheets.
+        cache = "no-store" if state != "view" or scratch.is_scratch(cid) else None
+        return self._response(200, png, "image/png", cache)
 
     def suggest(self, query, cid):
         base = (query.get("base") or [""])[0]
