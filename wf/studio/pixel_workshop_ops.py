@@ -39,7 +39,8 @@ class PixelWorkshop:
         if draft:
             changeset = self.ops.store.load(cid)
             if changeset and any(c["kind"] in ("pixel_family", "pixel_action") for c in changeset["changes"]):
-                key = f"draft:{cid}:{changeset['revision']}"
+                # createdAt too: a discarded and recreated draft restarts its revision count.
+                key = f"draft:{cid}:{changeset['createdAt']}:{changeset['revision']}:{changeset['updatedAt']}"
                 if key not in self._overlays:
                     self._overlays.clear()
                     self._overlays[key] = self.draft_source(cid)

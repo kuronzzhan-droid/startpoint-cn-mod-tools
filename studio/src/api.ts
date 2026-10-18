@@ -885,8 +885,8 @@ export const workshop = {
   cellUrl: (cid: string, family: string, key: number, state: "view" | "draft" = "view", stamp = "") =>
     `/api/characters/${cid}/pixel-workshop/cell/${family}/${key}.png?state=${state}${stamp ? "&v=" + stamp : ""}`,
   bases: (cid: string) => get<{ bases: Record<string, BaseImageSpec> }>(`/api/characters/${cid}/pixel-workshop/bases`),
-  draftPixels: (cid: string) => get<PixelMeta & { draftRevision: number }>(`/api/drafts/${cid}/pixels`),
-  draftSheetUrl: (cid: string, family: string, revision: number) => `/api/drafts/${cid}/pixels/${family}.png?v=${revision}`,
+  draftPixels: (cid: string) => get<PixelMeta & { draftRevision: number; draftStamp: string }>(`/api/drafts/${cid}/pixels`),
+  draftSheetUrl: (cid: string, family: string, stamp: string | number) => `/api/drafts/${cid}/pixels/${family}.png?v=${stamp}`,
   remap: (cid: string, body: { base: string; mapping: ColorPair[]; families?: string[]; groups?: Record<string, PaletteGroup>; dryRun?: boolean }) =>
     body.dryRun ? post<RemapResult>(`/api/drafts/${cid}/pixel-remap`, body)
       : notify(cid, post<RemapResult>(`/api/drafts/${cid}/pixel-remap`, body)),

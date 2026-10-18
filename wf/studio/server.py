@@ -37,6 +37,7 @@ class Response:
     status: int
     body: bytes
     content_type: str = "application/json; charset=utf-8"
+    cache: str | None = None  # explicit Cache-Control (e.g. draft-state images change under one URL)
 
 
 def json_response(value, status: int = 200) -> Response:
@@ -288,7 +289,8 @@ def make_handler(app: StudioApp, static_root: Path, guard: WriteGuard):
             self.send_response(response.status)
             self.send_header("Content-Type", response.content_type)
             self.send_header("Content-Length", str(len(response.body)))
-            self.send_header("Cache-Control", "no-store" if response.content_type.startswith("application/json") else "max-age=600")
+            self.send_header("Cache-Control", response.cache or (
+                "no-store" if response.content_type.startswith("application/json") else "max-age=600"))
             self.end_headers()
             if not head:
                 self.wfile.write(response.body)

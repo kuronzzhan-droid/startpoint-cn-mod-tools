@@ -38,7 +38,7 @@ export function luma(hex: string): number {
 
 /** Pixel meta + loaded grid sheets, for the view or for the draft (falls back to the view). */
 export function useFamilies(cid: string | null, state: "view" | "draft", refresh = 0) {
-  const [meta, setMeta] = useState<(PixelMeta & { draftRevision?: number }) | null>(null);
+  const [meta, setMeta] = useState<(PixelMeta & { draftRevision?: number; draftStamp?: string }) | null>(null);
   const [sheets, setSheets] = useState<Record<string, HTMLImageElement>>({});
   const [source, setSource] = useState<"view" | "draft">("view");
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +47,7 @@ export function useFamilies(cid: string | null, state: "view" | "draft", refresh
     let alive = true;
     setError(null);
     (async () => {
-      let data: PixelMeta & { draftRevision?: number };
+      let data: PixelMeta & { draftRevision?: number; draftStamp?: string };
       let from: "view" | "draft" = "view";
       if (state === "draft") {
         try {
@@ -61,7 +61,7 @@ export function useFamilies(cid: string | null, state: "view" | "draft", refresh
       for (const f of data.families) {
         if (f.error) continue;
         loaded[f.family] = await loadImage(from === "draft"
-          ? workshop.draftSheetUrl(cid, f.family, data.draftRevision ?? 0) : api.pixelSheetUrl(cid, f.family));
+          ? workshop.draftSheetUrl(cid, f.family, data.draftStamp ?? data.draftRevision ?? 0) : api.pixelSheetUrl(cid, f.family));
       }
       if (!alive) return;
       setMeta(data);
