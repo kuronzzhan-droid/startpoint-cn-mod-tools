@@ -43,6 +43,6 @@ def readback_draft_checks(document, local_read):
     checks = json.loads(local_read(document["draft_checks"])[1])
     if not isinstance(checks, list):
         raise ValueError("draft checks must be an array")
-    return [result(c.get("code", "studio.draft"), c.get("state", c.get("status", "待验证")),
+    return [result(c.get("rule", c.get("code", "studio.draft")), c.get("state", c.get("status", "待验证")),
                    c.get("message", "草稿检查"), blocking=bool(c.get("blocking") or c.get("level") == "error"),
                    draft_check=c) for c in checks]

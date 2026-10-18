@@ -94,8 +94,9 @@ def test_provided_client_runs_real_compat(case):
     assert result["compatChecks"]
 
 
-def test_budget_warning_survives_delivery_readback(case, monkeypatch):
-    warning = {"code": "studio.pixel.budget", "state": "待验证", "blocking": False,
+@pytest.mark.parametrize("identifier", ["code", "rule"])
+def test_budget_warning_survives_delivery_readback(case, monkeypatch, identifier):
+    warning = {identifier: "studio.pixel.budget", "state": "待验证", "blocking": False,
                "message": "三人房 layer0 需要验证", "layer0Pixels": 500000}
     monkeypatch.setattr(bridge, "compile_draft", lambda *a, **kw: (
         {("common", "test.bin"): b"new"}, {}, {}, [], [warning]))
