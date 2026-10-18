@@ -84,7 +84,10 @@ def _geometry(source, result, change, cid, code):
         current = result.members.get(("common", logical), raw)
         if value != expected["value"]:
             current = replace_leaf(current, keys, expected["value"], value)
-        result.members["common", logical] = current
+        if current != raw:
+            result.members["common", logical] = current
+        else:
+            result.members.pop(("common", logical), None)
         result.assertions.append({"kind": "portrait_geometry", "logical": logical,
                                   "key": list(keys), "old": expected["value"], "value": value,
                                   "before_sha256": expected["sha256"]})
@@ -125,6 +128,8 @@ def compile_portraits(source, store, changeset: dict) -> MediaResult:
         expected.add(prefix + f"ui/skill_cutin_{form}.png")
         full = prefix + f"ui/full_shot_1440_1920_{form}.png"
         atf_logical = prefix + f"ui/skill_cutin_{form}.atf.deflate"
+        reference = wf_atf.inflate(require_raw(source, "android", atf_logical))
+        reference_info = wf_atf.parse_atf(reference)
         permitted = expected | {full, atf_logical, prefix + SHEET}
         seen = set()
         for entry in change["files"]:
@@ -132,6 +137,7 @@ def compile_portraits(source, store, changeset: dict) -> MediaResult:
             wanted_root = "android" if logical == atf_logical else "medium"
             if logical not in permitted or entry["root"] != wanted_root or logical in seen:
                 raise DraftError(f"问题：立绘草稿含非目标成员、错误根或重复成员：{logical}")
+            require_raw(source, wanted_root, logical)
             stored = draft_file(source, store, cid, entry)
             if logical == full and change["params"]["source"] == "current":
                 original = require_raw(source, "medium", full)
@@ -156,14 +162,18 @@ def compile_portraits(source, store, changeset: dict) -> MediaResult:
         _draw_form(sheet, atlas, form, master)
         cutin = result.members["medium", prefix + f"ui/skill_cutin_{form}.png"]
         if ("android", atf_logical) not in result.members:
-            reference = read_root(source, "android", atf_logical)
             result.members["android", atf_logical] = wf_atf.deflate(wf_atf.build_cutin_atf(
-                wf_assets.png_decode(cutin), wf_atf.inflate(reference) if reference else None))
-        atf = wf_atf.parse_atf(wf_atf.inflate(result.members["android", atf_logical]))
+                wf_assets.png_decode(cutin), reference))
+        atf_raw = wf_atf.inflate(result.members["android", atf_logical])
+        atf = wf_atf.parse_atf(atf_raw)
         if (atf["w"], atf["h"]) != png(cutin).size:
             raise DraftError("问题：cutin PNG 与 Android ATF 尺寸不一致")
+        if (atf["w"], atf["h"], atf["mips"], atf_raw[12]) != (
+                reference_info["w"], reference_info["h"], reference_info["mips"], reference[12]):
+            raise DraftError("问题：Android ATF 尺寸、mip 数或格式与基线参考 ATF 不一致")
     result.members["medium", prefix + SHEET] = encode_png(sheet)
-    result.members["common", prefix + ATLAS] = atlas_raw
+    result.members = {key: raw for key, raw in result.members.items()
+                      if raw != read_root(source, *key)}
     result.checks.append({"state": "满足", "code": "studio.portrait.assets",
                           "message": "立绘、十图标、cutin PNG/Android ATF、切换 atlas 与三表旧值断言已编译"})
     return result

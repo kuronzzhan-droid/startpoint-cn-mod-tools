@@ -31,10 +31,13 @@ class WriteGuard:
         self.hosts = {f"{name}:{port}" for name in LOOPBACK_NAMES}
         self.origins = {f"http://{host}" for host in self.hosts} | set(extra_origins)
 
-    def check(self, headers) -> None:
+    def check_host(self, headers) -> None:
         host = (headers.get("Host") or "").strip().lower()
         if host not in self.hosts:
             raise GuardError(403, "studio_bad_host", f"拒绝：Host {host or '(空)'} 不是本机回环地址")
+
+    def check(self, headers) -> None:
+        self.check_host(headers)
         origin = headers.get("Origin")
         if origin is not None and origin.lower() not in self.origins:
             raise GuardError(403, "studio_cross_origin", f"拒绝跨源写入：{origin}")

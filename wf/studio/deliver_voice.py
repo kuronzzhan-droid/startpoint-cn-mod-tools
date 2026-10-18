@@ -24,9 +24,11 @@ def compile_voices(source, store, changeset: dict) -> MediaResult:
         probe = wf_assets.mp3_probe(stored, 1023)
         if not probe["frames"] or probe["tail"] < 0:
             raise DraftError("问题：语音存储态音频帧不完整")
+        if probe["srates"] != {44100} or probe["channels"] != {1}:
+            raise DraftError("问题：语音必须为 44.1 kHz 单声道 MP3")
         result.members["common", logical] = stored
         result.assertions.append({"kind": "voice_line", "logical": logical,
                                   "before_sha256": sha256(before), "sha256": sha256(stored)})
         result.checks.append({"state": "满足", "code": "studio.voice.stored",
-                              "message": f"{logical}：已有路径、CBR 存储态与逐字节往返通过"})
+                              "message": f"{logical}：已有路径、44.1 kHz 单声道、CBR 存储态与逐字节往返通过"})
     return result

@@ -80,6 +80,8 @@ def portrait(tmp_path, monkeypatch):
         source.files["medium", PREFIX + f"ui/full_shot_1440_1920_{form}.png"] = encode_png(image)
         for slot, size in gate.OFFICIAL_ICON_SIZES.items():
             source.files["medium", PREFIX + f"ui/{slot}_{form}.png"] = encode_png(Image.new("RGBA", size))
+        source.files["android", PREFIX + f"ui/skill_cutin_{form}.atf.deflate"] = wf_atf.deflate(
+            wf_atf.build_cutin_atf(standard_png(Image.new("RGBA", gate.OFFICIAL_ICON_SIZES["skill_cutin"]))))
     source.files["medium", PREFIX + "ui/illustration_setting_sprite_sheet.png"] = encode_png(
         Image.new("RGBA", (18, 8), (9, 8, 7, 255)))
     atlas = [{"n": "full_shot_illustration_setting_" + f, "x": int(f) * 9, "y": 0,
@@ -104,7 +106,8 @@ def test_portrait_both_forms_and_geometry_preserve_unrelated_rows(portrait):
     source, store, build = portrait
     first, second = build(), build("1", (10, 250, 20, 255))
     result = compile_media(source, store, changeset([first, second]))
-    assert len(result.members) == 31  # 2 * (full + 10 icons + cutin + ATF), sheet+atlas, 3 tables.
+    assert len(result.members) == 30  # 2 * (full + 10 icons + cutin + ATF), sheet, 3 changed tables.
+    assert ("common", PREFIX + "ui/illustration_setting_sprite_sheet.atlas.amf3.deflate") not in result.members
     sheet = png(result.members["medium", PREFIX + "ui/illustration_setting_sprite_sheet.png"])
     assert sheet.getpixel((0, 0)) == (255, 10, 20, 255)
     assert sheet.getpixel((9, 0)) == (10, 250, 20, 255)
@@ -152,14 +155,14 @@ def test_portrait_rejects_counterexamples(portrait, mutation, expected):
         compile_media(source, store, doc)
 
 
-def test_portrait_current_keeps_fullshot_bytes_and_compiles_missing_atf(portrait):
+def test_portrait_current_omits_unchanged_fullshot_and_compiles_draft_atf(portrait):
     source, store, build = portrait
     change = build()
     full = PREFIX + "ui/full_shot_1440_1920_0.png"
     change["files"] = [entry for entry in change["files"] if entry["logical"] != full]
     change["params"]["source"] = "current"
     result = compile_media(source, store, changeset([change]))
-    assert result.members["medium", full] == source.files["medium", full]
+    assert ("medium", full) not in result.members
     assert ("android", PREFIX + "ui/skill_cutin_0.atf.deflate") in result.members
 
 
@@ -173,7 +176,8 @@ def test_portrait_current_stored_file_preserves_original_png_signature(portrait)
     change["files"].append(file_entry(source, store, full, original))
     change["params"]["source"] = "current"
     result = compile_media(source, store, changeset([change]))
-    assert result.members["medium", full] == original
+    assert ("medium", full) not in result.members
+    assert source.files["medium", full] == original
 
 
 def mp3_frame(bitrate=7):
@@ -314,4 +318,4 @@ def test_portrait_source_uses_exact_roots_despite_shadow_assets(portrait, monkey
     assert not [c for c in built["checks"] if c["level"] == "error"]
     assert any(f["logical"] == atf and f["root"] == "android" for f in built["files"])
     result = compile_media(source, store, changeset([{**built, "kind": "portrait"}]))
-    assert result.members["medium", full] == source.files["medium", full]
+    assert ("medium", full) not in result.members

@@ -479,6 +479,9 @@ def client_legality_problems(kind: str, row: list[str]) -> list[str]:
     枚举列无空串分支,前置1-3/触发/内容 kind 必须数字;instant_precontent 哨兵 '(None)';
     during_accumulation_trigger 哨兵 '(None)';even_if_owner_dead 必须 true/false;
     瞬发内容 kind 声明 multiply_trigger 时该列必须是 '(None)' 或 0/1/2/3(2026-08-28 实锤)。"""
+    if kind == "action_skill":
+        from wf_client_skill_legality import action_skill_problems
+        return action_skill_problems(row)
     lay = wf_describe.layout(kind)
     B = {k: int(v) for k, v in lay["blocks"].items()}
     enum_map = wf_describe.enum_map()

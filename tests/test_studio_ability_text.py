@@ -9,7 +9,7 @@ from wf.balance.rows import TABLES, join_leaf, split_leaf
 from wf.studio.ability import AbilityEditor, compile_ability_operations
 from wf.studio.drafts import DraftError, DraftStore
 from wf.text.model import CHARACTER, CHARACTER_TEXT, CUSTOM, SERVER_TARGETS
-from test_studio_ability import Source, full
+from test_studio_ability import Source, full, skill_row
 
 
 def setup(tmp_path, *, shared=False):
@@ -97,7 +97,7 @@ def test_mirror_drift_and_foreign_draft_identity_rejected(tmp_path):
 
 def test_skill_tier_delete_insert_move_preserves_one_row_per_tier(tmp_path):
     ed, server = setup(tmp_path)
-    rows = [["斩击" + "+" * (i - 1), "攻击敌人", "100"] for i in (1, 2, 3)]
+    rows = [skill_row("斩击" + "+" * (i - 1)) for i in (1, 2, 3)]
     delete = {"op": "delete_row", "table": "action_skill", "key": "hero", "level": "2",
               "row": 0, "row_count": 3, "cells": full(rows[1], "delete_row")}
     ed.apply("139985", {"operations": [delete]})
@@ -105,7 +105,7 @@ def test_skill_tier_delete_insert_move_preserves_one_row_per_tier(tmp_path):
     assert json.loads(removed["servers"][SERVER_TARGETS[0]])["139985"][0][8:10] == ["", ""]
     preview = ed.row_preview("139985", "action_skill", "hero", level="3")
     assert preview["before"]["cells"] == rows[2] and preview["after"]["cells"] is None
-    new = ["斩击+", "攻击敌人", "150"]
+    new = skill_row("斩击+", "150")
     insert = {**delete, "op": "insert_row", "row_count": 2, "cells": full(new, "insert_row")}
     ed.apply("139985", {"operations": [insert]})
     move = {**delete, "op": "move_row", "to_row": 2, "cells": full(new, "move_row")}

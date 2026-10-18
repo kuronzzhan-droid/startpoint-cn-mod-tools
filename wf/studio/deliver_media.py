@@ -85,11 +85,17 @@ def draft_file(source, store, cid: str, entry: dict) -> bytes:
         png(raw)
         stored = wf_assets.png_encode(raw)
     elif encoding == "mp3":
-        stored = wf_assets.mp3_encode(raw)
+        try:
+            stored = wf_assets.mp3_encode(raw)
+        except ValueError as exc:
+            raise DraftError(f"问题：语音 MP3 无效：{exc}") from exc
         if wf_assets.mp3_decode(stored) != raw:
             raise DraftError("问题：语音存储态往返失败")
     elif encoding == "atf-deflate":
-        wf_atf.parse_atf(wf_atf.inflate(raw))
+        try:
+            wf_atf.parse_atf(wf_atf.inflate(raw))
+        except (ValueError, zlib.error) as exc:
+            raise DraftError(f"问题：ATF 无效：{exc}") from exc
         stored = raw
     else:
         raise DraftError(f"问题：不支持的草稿编码 {encoding}")
