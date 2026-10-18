@@ -8,6 +8,8 @@ import { PixelImport } from "./PixelImport";
 import { PixelPlayer } from "./PixelPlayer";
 import { PortraitEditor } from "./PortraitEditor";
 import { VoiceTab } from "./VoiceTab";
+import { useDeliveries } from "./Delivery";
+import { AbilityProvider, KeyEditor, PendingBar, useAbilityWorkspace, useWorkspace } from "./AbilityEditor";
 
 const TABS: { id: string; label: string }[] = [
   { id: "board1", label: "一板" },
@@ -27,6 +29,8 @@ export function CharacterDetailView({ id, tab }: { id: string; tab?: string }) {
   const [error, setError] = useState<string | null>(null);
   const active = TABS.some((t) => t.id === tab) ? tab! : "board1";
   const draft = useDraft(id);
+  const workspace = useAbilityWorkspace(id);
+  const built = useDeliveries(id);
 
   useEffect(() => {
     setDetail(null);
@@ -40,6 +44,7 @@ export function CharacterDetailView({ id, tab }: { id: string; tab?: string }) {
   const awakeCount = detail.boards.find((b) => b.id === "board3")?.slots.length ?? 0;
 
   return (
+    <AbilityProvider value={workspace}>
     <section class="page detail">
       <BackLink />
       <header class="char-header">
@@ -60,7 +65,9 @@ export function CharacterDetailView({ id, tab }: { id: string; tab?: string }) {
           <span class="char-id" title={"代码名 " + detail.code}>ID {detail.id} · {detail.code}</span>
         </div>
       </header>
-      <StatusStrip draft={draft.view?.status ?? null} checks={draft.view?.changeset?.changes.flatMap((c) => c.checks) ?? []} />
+      <StatusStrip draft={draft.view?.status ?? null} checks={draft.view?.changeset?.changes.flatMap((c) => c.checks) ?? []}
+        build={(built.list ?? []).find((d) => draft.view?.changeset && d.draftRevision === draft.view.changeset.revision
+          && draft.view.status.state === "saved") ?? null} />
       <nav class="tabs" role="tablist" aria-label="角色内容">
         {TABS.map((t) => (
           <a role="tab" aria-selected={active === t.id} class={active === t.id ? "active" : ""}
@@ -90,7 +97,9 @@ export function CharacterDetailView({ id, tab }: { id: string; tab?: string }) {
       ) : (
         <PixelPlayer characterId={detail.id} />
       )}
+      <PendingBar />
     </section>
+    </AbilityProvider>
   );
 }
 
@@ -108,7 +117,8 @@ function BoardTab({ detail, boardId }: { detail: CharacterDetail; boardId: strin
         {detail.describeNote}
       </p>
       {boardId === "board1" ? (
-        <AbilityCard title="队长技" group={detail.leader} rows={detail.leader.rows} columns={detail.columns.leader_ability} />
+        <AbilityCard title="队长技" table="leader_ability" group={detail.leader} rows={detail.leader.rows}
+          columns={detail.columns.leader_ability} filter="all" />
       ) : null}
       {board.slots.length === 0 ? (
         <Notice>
@@ -120,10 +130,12 @@ function BoardTab({ detail, boardId }: { detail: CharacterDetail; boardId: strin
         board.slots.map((group) => (
           <AbilityCard
             title={group.name}
+            table="ability"
             group={group}
-            rows={(group[board.rowsKey] as AbilityRow[]) ?? group.rows}
+            rows={group.rows}
             columns={detail.columns.ability}
             awake={boardId === "board3"}
+            filter={boardId === "board3" ? "awake" : "base"}
           />
         ))
       )}
@@ -131,8 +143,9 @@ function BoardTab({ detail, boardId }: { detail: CharacterDetail; boardId: strin
   );
 }
 
-function AbilityCard({ title, group, rows, columns, awake }: {
-  title: string; group: AbilityGroup; rows: AbilityRow[]; columns: ColumnLabel[]; awake?: boolean;
+function AbilityCard({ title, table, group, rows, columns, awake, filter }: {
+  title: string; table: "ability" | "leader_ability"; group: AbilityGroup; rows: AbilityRow[]; columns: ColumnLabel[];
+  awake?: boolean; filter: "base" | "awake" | "all";
 }) {
   const hasOverride = group.descriptionSource === "游戏面板覆盖文案";
   const empty = !group.key || group.key === "(None)";
@@ -145,23 +158,14 @@ function AbilityCard({ title, group, rows, columns, awake }: {
       </header>
       {hasOverride && !awake ? (
         <div class="override">
-          <span class="label">玩家文案（覆盖）</span>
+          <span class="label">玩家文案（覆盖，desc_override；编辑台暂不改覆盖文案）</span>
           <p>{group.description}</p>
         </div>
       ) : null}
-      {empty ? <p class="muted">{group.description}</p> : null}
-      <ol class="effect-rows">
-        {rows.map((row) => (
-          <li>
-            <div class="effect-text">
-              <span class="row-no">行 {row.index}</span>
-              {row.awake ? <span class="tag awake">{row.awake.kind} Lv{row.awake.level}</span> : null}
-              <span>{row.description || <em class="muted">（无法解析为中文描述）</em>}</span>
-            </div>
-            <RawFields values={row.values} columns={columns} />
-          </li>
-        ))}
-      </ol>
+      {empty ? <p class="muted">{group.description}</p> : (
+        <KeyEditor table={table} keyName={group.key} title={title} columns={columns}
+          baseRows={rows.map((r) => r.values)} filter={filter} />
+      )}
       {group.relatedPrograms.length ? (
         <details class="programs">
           <summary>关联程序 {group.relatedPrograms.length} 个</summary>
@@ -179,40 +183,15 @@ function AbilityCard({ title, group, rows, columns, awake }: {
   );
 }
 
-function RawFields({ values, columns }: { values: string[]; columns: ColumnLabel[] }) {
-  const [showEmpty, setShowEmpty] = useState(false);
-  const filled = values.map((v, i) => ({ v, i })).filter(({ v }) => showEmpty || (v !== "" && v !== "(None)"));
-  return (
-    <details class="raw">
-      <summary>原始字段（{values.length} 列，只读）</summary>
-      <label class="check">
-        <input type="checkbox" checked={showEmpty} onChange={(e) => setShowEmpty((e.target as HTMLInputElement).checked)} />
-        显示空列
-      </label>
-      <table>
-        <thead>
-          <tr><th>列</th><th>区块</th><th>字段</th><th>值</th></tr>
-        </thead>
-        <tbody>
-          {filled.map(({ v, i }) => (
-            <tr class={v === "" || v === "(None)" ? "empty" : ""}>
-              <td class="mono">c{i}</td>
-              <td>{columns[i]?.block ?? ""}</td>
-              <td title={columns[i]?.note ?? ""}>{columns[i]?.field ?? ""}</td>
-              <td class="mono">{v === "" ? "（空）" : v}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </details>
-  );
-}
-
 function SkillTab({ detail }: { detail: CharacterDetail }) {
+  const ws = useWorkspace();
   if (!detail.skills.length) return <Notice>没有找到技能数据（action_skill）。</Notice>;
+  const skillKey = ws?.state?.entries.find((e) => e.table === "action_skill")?.key;
   return (
     <div class="board">
-      <p class="hint">技能文本取自 action_skill 表（玩家可见文案）；程序摘要来自技能 DSL，仅列出节点名称，L2 时间线预览尚未接入。</p>
+      <p class="hint">技能文本取自 action_skill 表（玩家可见文案）；程序摘要来自技能 DSL，仅列出节点名称，L2 时间线预览尚未接入。
+        <br />编辑：c0 技能名 / c1 文案走 wf text 面板规则，并同步两份服务端镜像（生成时写入交付 server/）；改名或文案时每一档都会带旧值断言。
+        档位的插入/删除/移动后端已支持，界面暂未开放。</p>
       {detail.switch ? (
         <Notice>技能切换：{detail.switch.label}（键 {detail.switch.key}）</Notice>
       ) : null}
@@ -230,10 +209,15 @@ function SkillTab({ detail }: { detail: CharacterDetail }) {
             {s.warning ? <p class="error-text">{s.warning}</p> : null}
             <ul class="commands">{s.commands.map((c) => <li class="mono small">{c}</li>)}</ul>
           </details>
-          <details class="raw">
-            <summary>原始字段（{s.raw.length} 列，只读）</summary>
-            <table><tbody>{s.raw.map((v, i) => <tr><td class="mono">c{i}</td><td class="mono">{v === "" ? "（空）" : v}</td></tr>)}</tbody></table>
-          </details>
+          {s.kind === "main" && skillKey ? (
+            <KeyEditor table="action_skill" keyName={skillKey} level={s.level} title={s.label} columns={[]}
+              baseRows={[s.raw]} filter="all" />
+          ) : (
+            <details class="raw">
+              <summary>原始字段（{s.raw.length} 列，只读：{s.kind === "main" ? "正在读取词条键" : "切换形态技能不在 action_skill 编辑范围"}）</summary>
+              <table><tbody>{s.raw.map((v, i) => <tr><td class="mono">c{i}</td><td class="mono">{v === "" ? "（空）" : v}</td></tr>)}</tbody></table>
+            </details>
+          )}
         </article>
       ))}
     </div>

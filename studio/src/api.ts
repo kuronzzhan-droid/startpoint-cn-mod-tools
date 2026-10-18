@@ -301,7 +301,7 @@ export interface DraftFile {
 
 export interface DraftChange {
   id: string;
-  kind: "portrait" | "pixel_action" | "voice_line";
+  kind: "portrait" | "pixel_action" | "voice_line" | "ability_edit";
   title: string;
   createdAt: string;
   target: Record<string, string>;
@@ -480,4 +480,175 @@ export const drafts = {
     notify(cid, post<WriteResult>(`/api/drafts/${cid}/voice`, body)),
   revert: (cid: string, change: string) => notify(cid, post<WriteResult>(`/api/drafts/${cid}/changes/${change}/revert`, {})),
   save: (cid: string) => notify(cid, post<WriteResult>(`/api/drafts/${cid}/save`, {})),
+};
+
+// ---------------------------------------------------------------------------
+// M4: ability draft editing (shared AbilityEditor core) and local delivery
+
+export type RuleState = "满足" | "问题" | "待验证" | "不适用" | "未执行";
+
+export interface RuleResult {
+  rule: string;
+  status: RuleState | string;
+  message: string;
+  blocking: boolean;
+  evidence_nature?: string;
+  source?: string;
+  character?: string;
+}
+
+export type AbilityTable = "ability" | "leader_ability" | "action_skill";
+
+export interface AbilityEntry {
+  table: AbilityTable;
+  key: string;
+  slot: number;
+  level: string | null;
+  rows: string[][];
+  owners: string[];
+  descriptions: (string | null)[];
+}
+
+export interface AbilityState {
+  characterId: string;
+  entries: AbilityEntry[];
+  checks: RuleResult[];
+  runtime: string;
+}
+
+export interface AbilityCellOp {
+  column: string;
+  old: string | null;
+  new: string | null;
+}
+
+export interface AbilityOp {
+  op: "set_cells" | "insert_row" | "delete_row" | "move_row";
+  table: AbilityTable;
+  key: string;
+  level?: string;
+  row: number;
+  row_count: number;
+  to_row?: number;
+  column_space: "native";
+  cells: AbilityCellOp[];
+  shared_ok?: boolean;
+}
+
+export interface AbilityPreviewChange {
+  op?: string;
+  table?: string;
+  key?: string;
+  row?: number;
+  to_row?: number;
+  level?: string;
+  surface?: string;
+  client_old?: string;
+  new?: string;
+  owners?: string[] | Record<string, string[]>;
+  beforeDescription?: string | null;
+  afterDescription?: string | null;
+}
+
+export interface AbilityCheckResult {
+  characterId: string;
+  changes: AbilityPreviewChange[];
+  checks: RuleResult[];
+  runtime: string;
+}
+
+export interface RowPreview {
+  before: { cells: string[] | null; description: string | null };
+  after: { cells: string[] | null; description: string | null };
+  owners: string[];
+  checks: RuleResult[];
+}
+
+export interface TemplateOption {
+  kind: string;
+  en?: string;
+  cn?: string;
+  status: RuleState | string;
+  selectable: boolean;
+  defaults: string[];
+  precedentCount: number;
+  precedents: { key: string; row: number }[];
+}
+
+export interface TemplateList {
+  table: string;
+  block: string;
+  options: TemplateOption[];
+  note: string;
+}
+
+export interface DeliveryDefaults {
+  from: string;
+  to: string;
+  outRoot: string;
+  serverDir: string | null;
+  note: string;
+}
+
+export interface BuildResult {
+  ok: boolean;
+  name: string;
+  characterId: string;
+  from: string;
+  to: string;
+  error?: string;
+  seconds?: number;
+  draftRevision?: number;
+  delivery?: string;
+  prepush?: { status: string; exit_code: number; limitations?: string[] };
+  checks?: RuleResult[];
+  compat?: RuleResult[];
+  deviceValidation: string;
+}
+
+export interface DeliverySummary {
+  name: string;
+  ok: boolean;
+  error: string | null;
+  from: string | null;
+  to: string | null;
+  draftRevision: number | null;
+  prepush: string | null;
+  counts: Record<string, number>;
+}
+
+export interface DeliveryDetail {
+  name: string;
+  path: string;
+  report: BuildResult | null;
+  error: BuildResult | null;
+  archives: { name: string; size: number; sha256: string; members: number; files: string[] }[];
+  members: { root: string; logical: string; sha256: string; before: string | null }[];
+  serverChanges: { target: string; sha256: string }[];
+  requires: any;
+  check: RuleResult[] | null;
+  compat: RuleResult[] | null;
+  files: { path: string; size: number }[];
+  deviceValidation: string;
+}
+
+export const ability = {
+  state: (cid: string) => get<AbilityState>(`/api/characters/${cid}/ability`),
+  rowPreview: (cid: string, table: string, key: string, row: number, level?: string | null) =>
+    get<RowPreview>(`/api/drafts/${cid}/ability/preview?table=${table}&key=${encodeURIComponent(key)}&row=${row}` +
+      (level ? `&level=${level}` : "")),
+  templates: (table: string, block: string) =>
+    cached<TemplateList>(`/api/studio/ability/templates?table=${table}&block=${block}`),
+  check: (cid: string, body: { operations: AbilityOp[] }) => post<AbilityCheckResult>(`/api/drafts/${cid}/ability/check`, body),
+  apply: (cid: string, body: { operations: AbilityOp[] }) => notify(cid, post<WriteResult>(`/api/drafts/${cid}/ability`, body)),
+};
+
+export const deliveries = {
+  defaults: () => get<DeliveryDefaults>("/api/deliveries/defaults"),
+  list: (cid: string) => get<{ root: string; deliveries: DeliverySummary[]; running: Record<string, string> }>(
+    `/api/deliveries?cid=${cid}`),
+  detail: (name: string) => get<DeliveryDetail>(`/api/deliveries/${encodeURIComponent(name)}`),
+  fileUrl: (name: string, path: string) => `/api/deliveries/${encodeURIComponent(name)}/file?path=${encodeURIComponent(path)}`,
+  build: (cid: string, body: { from: string; to: string; provides?: string }) =>
+    notify(cid, post<BuildResult>(`/api/drafts/${cid}/build`, body)),
 };

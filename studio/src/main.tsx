@@ -8,6 +8,7 @@ import { BossPlaceholder } from "./views/BossPlaceholder";
 import { PatchManager } from "./views/PatchManager";
 import { LookupPanel } from "./views/LookupPanel";
 import "./styles.css";
+import "./m4.css";
 
 function App() {
   const route = useRoute();
@@ -51,7 +52,7 @@ function App() {
           当前内容：<strong>测试服链视图</strong>
           {meta ? <> · 资源版本 {meta.source.version}</> : null}
         </span>
-        <span class="pill draftable" title="只写草稿 work/studio-drafts；不生成、不导出、不应用、不发布，不写游戏表">草稿可写</span>
+        <span class="pill draftable" title="只写草稿 work/studio-drafts 与本地交付 work/studio-deliveries；不应用、不发布，不写游戏表">草稿可写</span>
         {meta && meta.source.extraZips.length > 0 ? (
           <span class="muted" title={meta.source.chain ? "清单：" + meta.source.chain.manifest : ""}>
             active 之后叠加 {meta.source.extraZips.length} 个 ZIP

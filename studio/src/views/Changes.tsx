@@ -1,6 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
 import { DraftChange, DraftCheck, drafts, DraftView, onDraftChange } from "../api";
 import { Notice } from "./common";
+import { DeliveryPanel } from "./Delivery";
 
 /** Draft state of one character, refreshed whenever any editor writes. */
 export function useDraft(cid: string): { view: DraftView | null; error: string | null; reload: () => void } {
@@ -32,7 +33,7 @@ export function ChecksList({ checks, empty }: { checks: DraftCheck[]; empty?: st
   );
 }
 
-const KIND_LABEL: Record<string, string> = { portrait: "立绘 / UI", pixel_action: "像素动作", voice_line: "语音" };
+const KIND_LABEL: Record<string, string> = { portrait: "立绘 / UI", pixel_action: "像素动作", voice_line: "语音", ability_edit: "词条" };
 
 function size(bytes: number): string {
   if (bytes < 1024) return bytes + " B";
@@ -40,15 +41,17 @@ function size(bytes: number): string {
   return (bytes / 1024 / 1024).toFixed(2) + " MB";
 }
 
-/** 「本次修改」：草稿里的全部改动，逐项撤销；五个动作只有「保存」接通。 */
+/** 「本次修改」：草稿里的全部改动，逐项撤销；保存 / 生成 / 导出接通，应用 / 发布不开放。 */
 export function ChangesPanel({ characterId }: { characterId: string }) {
   const { view, error } = useDraft(characterId);
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<{ kind: "info" | "error"; text: string } | null>(null);
+  const [panel, setPanel] = useState<"generate" | "export" | null>(null);
 
   if (error) return <Notice kind="error">草稿读取失败：{error}</Notice>;
   if (!view) return <div class="loading">正在读取草稿……</div>;
   const changes = view.changeset?.changes ?? [];
+  const saved = view.status.state === "saved";
 
   const run = async (id: string, action: () => Promise<unknown>, done: string) => {
     setBusy(id);
@@ -63,42 +66,82 @@ export function ChangesPanel({ characterId }: { characterId: string }) {
     }
   };
 
+  const disabledReason = (id: string): string | null => {
+    if (id === "save") return changes.length ? null : "没有草稿改动";
+    if (id === "generate") return !changes.length ? "没有草稿改动" : !saved ? "先保存草稿（生成只认已保存的修订）" : null;
+    return null;
+  };
+
   return (
     <div class="changes">
       <div class="action-bar" role="toolbar" aria-label="五个动作">
-        {view.actions.map((a) => (
-          <div class={"action" + (a.enabled ? "" : " off")}>
-            <button class={a.id === "save" ? "primary" : ""} disabled={!a.enabled || busy !== null || (a.id === "save" && !changes.length)}
-              onClick={() => a.id === "save" && run("save", () => drafts.save(characterId), "已保存：整份草稿通过 schema 校验，文件哈希逐个复核一致。")}>
-              {busy === "save" && a.id === "save" ? "保存中……" : a.label}
-            </button>
-            <span class="small muted">{a.note}</span>
-          </div>
-        ))}
+        {view.actions.map((a) => {
+          const reason = a.enabled ? disabledReason(a.id) : null;
+          const on = (a.id === "generate" || a.id === "export") && panel === a.id;
+          return (
+            <div class={"action" + (a.enabled ? "" : " off") + (on ? " on" : "")}>
+              <button class={a.id === "save" || a.id === "generate" ? "primary" : ""} title={reason ?? a.note}
+                disabled={!a.enabled || busy !== null || !!reason}
+                onClick={() => {
+                  if (a.id === "save") run("save", () => drafts.save(characterId), "已保存：整份草稿通过 schema 校验，文件哈希逐个复核一致。");
+                  else if (a.id === "generate" || a.id === "export") setPanel(panel === a.id ? null : a.id);
+                }}>
+                {busy === "save" && a.id === "save" ? "保存中……" : a.label}
+              </button>
+              <span class="small muted">{reason && a.enabled ? reason : a.note}</span>
+            </div>
+          );
+        })}
       </div>
       {!drafts.hasToken() ? (
         <Notice kind="warn">页面里没有写入令牌（不是由 python -m wf.studio 提供的页面），所有写入都会被拒绝。</Notice>
       ) : null}
       {message ? <Notice kind={message.kind === "error" ? "error" : "info"}>{message.text}</Notice> : null}
+      {panel ? <DeliveryPanel characterId={characterId} mode={panel} view={view} onMode={setPanel} /> : null}
       <p class="hint">
         草稿目录 <span class="mono">work/studio-drafts/{characterId}/</span>：文件 + changeset.json（结构见
         <span class="mono"> schemas/studio-draft.schema.json</span>，agent 可用 <span class="mono">python -m wf.studio.draft</span> 走同一套操作）。
-        草稿不写任何游戏表、store、补丁链或服务器。{view.changeset ? ` 基于视图 ${view.changeset.baseView}，修订 ${view.changeset.revision}。` : ""}
+        草稿不写任何游戏表、store、补丁链或服务器；生成只写 <span class="mono">work/studio-deliveries/</span>。
+        {view.changeset ? ` 基于视图 ${view.changeset.baseView}，修订 ${view.changeset.revision}。` : ""}
       </p>
       {!changes.length ? (
-        <Notice>这个角色还没有草稿改动。可以在「换立绘」「换像素」「换语音」里替换资源。</Notice>
+        <Notice>这个角色还没有草稿改动。可以在「一板/二板/三板/技能」改词条，或在「换立绘」「换像素」「换语音」里替换资源。</Notice>
       ) : (
         <ol class="change-list">
           {changes.map((change) => (
             <ChangeItem change={change} characterId={characterId} busy={busy === change.id}
               onRevert={() => {
-                if (!confirm(`撤销「${change.title}」？草稿里这一项的文件会被删除（上传的源文件保留）。`)) return;
+                if (!confirm(`撤销「${change.title}」？草稿里这一项${change.kind === "ability_edit" ? "的全部词条操作" : "的文件"}会被删除${change.kind === "ability_edit" ? "" : "（上传的源文件保留）"}。`)) return;
                 run(change.id, () => drafts.revert(characterId, change.id), `已撤销：${change.title}`);
               }} />
           ))}
         </ol>
       )}
     </div>
+  );
+}
+
+const OP_TEXT: Record<string, string> = { set_cells: "改格", insert_row: "插入行", delete_row: "删除行", move_row: "移动行", attach_key: "挂键" };
+
+function AbilityOps({ change }: { change: DraftChange }) {
+  const requests: any[] = change.params.requests ?? [];
+  const ops = requests.flatMap((r) => r.operations ?? []);
+  const texts = requests.filter((r) => r.text).length;
+  return (
+    <ol class="ability-ops small">
+      {ops.map((op: any) => (
+        <li>
+          <span class="tag">{OP_TEXT[op.op] ?? op.op}</span>{" "}
+          <span class="mono">{op.table}/{op.key}{op.level ? "#" + op.level : ""}</span>
+          {op.row !== undefined ? ` 行${op.row + 1}` : ""}{op.to_row !== undefined ? ` → 行${op.to_row + 1}` : ""}
+          {op.shared_ok ? <span class="tag">shared_ok</span> : null}
+          {op.op === "set_cells" ? (
+            <span class="mono"> {op.cells.map((c: any) => `${c.column}: ${c.old === "" ? "（空）" : c.old} → ${c.new === "" ? "（空）" : c.new}`).join("；")}</span>
+          ) : null}
+        </li>
+      ))}
+      {texts ? <li>另有 {texts} 个文本段请求</li> : null}
+    </ol>
   );
 }
 
@@ -144,8 +187,9 @@ function ChangeItem({ change, characterId, busy, onRevert }: {
           <span class="small">{change.params.durationSeconds}s（原 {change.params.originalDurationSeconds ?? "—"}s）· 源文件 {change.params.sourceName}</span>
         </div>
       ) : null}
+      {change.kind === "ability_edit" ? <AbilityOps change={change} /> : null}
       <ChecksList checks={change.checks} />
-      <details>
+      {change.kind === "ability_edit" ? null : <details>
         <summary>替换的文件 {change.files.length} 个{change.pending.length ? ` · 待生成 ${change.pending.length} 项` : ""}</summary>
         <table class="files">
           <thead><tr><th>逻辑路径</th><th>根</th><th>大小</th><th>草稿 SHA-256</th><th>原文件</th></tr></thead>
@@ -171,7 +215,7 @@ function ChangeItem({ change, characterId, busy, onRevert }: {
             </ul>
           </>
         ) : null}
-      </details>
+      </details>}
     </li>
   );
 }
