@@ -278,10 +278,10 @@ PORTRAIT_NOTES = [
 ]
 ACTIONS = [
     {"id": "save", "label": "保存", "enabled": True, "note": "整体 schema 校验 + 文件哈希复核，写入草稿 changeset.json"},
-    {"id": "generate", "label": "生成", "enabled": False,
-     "note": "CLI 已支持 python -m wf.studio.draft build；前端待接线"},
-    {"id": "export", "label": "导出", "enabled": False,
-     "note": "CLI 已支持 python -m wf.studio.draft build；前端待接线"},
-    {"id": "apply", "label": "应用", "enabled": False, "note": "未接入：应用到测试服需要先生成补丁"},
+    {"id": "generate", "label": "生成", "enabled": True,
+     "note": "本地交付：编译草稿并运行 wf deliver / check（写 work/studio-deliveries/）"},
+    {"id": "export", "label": "导出", "enabled": True,
+     "note": "查看/下载已生成交付：ZIP、清单、requires.json、检查结果"},
+    {"id": "apply", "label": "应用", "enabled": False, "note": "未接入：应用到测试服不在编辑台范围，需人工走发布流程"},
     {"id": "publish", "label": "发布", "enabled": False, "note": "未接入：编辑台不发布"},
 ]

@@ -89,6 +89,9 @@ class StudioApp:
         ]
         from .ability_routes import AbilityRoutes
         self.routes.extend(AbilityRoutes(self, server_dir).routes())
+        from .deliver_routes import DeliverRoutes
+        self.deliveries = DeliverRoutes(self, server_dir)
+        self.routes.extend(self.deliveries.routes())
 
     # -- dispatch -------------------------------------------------------
     def dispatch(self, method: str, path: str, query: dict[str, list[str]], body=None) -> Response | None:

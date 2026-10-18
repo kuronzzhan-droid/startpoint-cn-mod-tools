@@ -26,6 +26,11 @@ class AbilityRoutes:
         from .server import json_response
         return json_response(self.editor().apply(cid, body))
 
+    def check(self, query, body, cid):
+        """Dry-run an abilityRequest against the current draft; never writes."""
+        from .server import json_response
+        return json_response(self.editor().preview(cid, body))
+
     def preview(self, query, cid):
         from .server import json_response
         key = _value(query, "key")
@@ -51,4 +56,5 @@ class AbilityRoutes:
         return [("GET", re.compile(r"^/api/characters/(?P<cid>\d+)/ability$"), self.read),
                 ("GET", re.compile(r"^/api/drafts/(?P<cid>\d+)/ability/preview$"), self.preview),
                 ("GET", re.compile(r"^/api/studio/ability/templates$"), self.templates),
+                ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/ability/check$"), self.check),
                 ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/ability$"), self.apply)]
