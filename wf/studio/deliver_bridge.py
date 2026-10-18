@@ -15,6 +15,21 @@ from wf.view.safety import local_output
 from .drafts import DraftError, DraftStore, verify
 from .source import StudioSource
 
+# 「生成」 stages reported to progress callbacks (label shown in the editor).
+STAGES = (("media", "编译草稿（媒体与词条）"), ("deliver", "wf deliver（分包与清单）"),
+          ("compat", "兼容检查（客户端能力）"), ("check", "wf check（交付检查）"))
+
+
+class BuildCancelled(DraftError):
+    """The user cancelled a background build between two stages."""
+
+
+def _step(progress, cancel, name):
+    if cancel is not None and cancel.is_set():
+        raise BuildCancelled("已取消生成")
+    if progress is not None:
+        progress(name)
+
 
 def open_baseline(from_version: str, to_version: str, **options):
     """Bind all compilation and prepush reads to the same manifest view."""
@@ -140,8 +155,9 @@ def _stage(out, changeset, source, compiled, to_version):
     return inputs / "changeset.json"
 
 
-def _checks(delivery, provides, allow_unknown_client=False):
+def _checks(delivery, provides, allow_unknown_client=False, progress=None, cancel=None):
     from wf.check import check_file
+    _step(progress, cancel, "compat")
     if provides is None:
         compat = [unknown_client_check(allow_unknown_client)]
     else:
@@ -156,6 +172,7 @@ def _checks(delivery, provides, allow_unknown_client=False):
         "allow_unknown_client": allow_unknown_client, "report": "compat.json"}
     validate_document(manifest, "delivery-manifest.schema.json")
     write_json(delivery / "delivery-manifest.json", manifest)
+    _step(progress, cancel, "check")
     results = check_file(delivery / "delivery-manifest.json")
     write_json(delivery / "check.json", {"schema": "wf-check-results/1", "results": results})
     return results, compat
@@ -163,27 +180,36 @@ def _checks(delivery, provides, allow_unknown_client=False):
 
 def build_draft(cid: str, *, from_version: str, to_version: str, out: Path,
                 store: DraftStore | None = None, provides: Path | None = None,
-                allow_unknown_client: bool = False, **options) -> dict:
-    """Everything generated lives under out/{inputs,delivery}; inputs stay read-only."""
+                allow_unknown_client: bool = False, progress=None, cancel=None, **options) -> dict:
+    """Everything generated lives under out/{inputs,delivery}; inputs stay read-only.
+
+    ``progress(stage)`` is called when a stage of :data:`STAGES` starts; ``cancel`` (an Event)
+    is checked between stages and raises :class:`BuildCancelled`.
+    """
+    store = store or DraftStore()
+    from .scratch import build_refusal, is_scratch
+    if is_scratch(cid) or "scratch" in (store.load(cid) or {}):
+        raise DraftError(build_refusal(store, cid))
     out = local_output(out)
     if out.exists() and (not out.is_dir() or any(out.iterdir())):
         raise DraftError(f"交付输出目录必须为空：{out}")
-    store = store or DraftStore()
     draft_dir = store.directory(cid).resolve()
     if out.is_relative_to(draft_dir) or draft_dir.is_relative_to(out):
         raise DraftError("交付目录与草稿目录不能互相包含")
+    _step(progress, cancel, "media")
     baseline = open_baseline(from_version, to_version, **options)
     source = StudioSource(baseline)
     changeset = _draft(store, cid, source)
     compiled = compile_draft(source, store, changeset, server_dir=options.get("server_dir"))
     baseline.verify()
     filename = _stage(out, changeset, source, compiled, to_version)
+    _step(progress, cancel, "deliver")
     options["baseline_view"] = baseline
     manifest = build_delivery(filename, out / "delivery", **options)
     write_json(out / "delivery/draft-checks.json", compiled[4])
     manifest["draft_checks"] = "draft-checks.json"
     write_json(out / "delivery/delivery-manifest.json", manifest)
-    checks, compat = _checks(out / "delivery", provides, allow_unknown_client)
+    checks, compat = _checks(out / "delivery", provides, allow_unknown_client, progress, cancel)
     compat_status = compatibility_status(provides, compat)
     failed = (bool(manifest["prepush"]["exit_code"]) or any(r.get("blocking") for r in checks + compat)
               or any(r.get("blocking") or r.get("level") == "error" for r in compiled[4])

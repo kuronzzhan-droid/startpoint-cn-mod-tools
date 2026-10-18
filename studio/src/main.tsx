@@ -6,9 +6,11 @@ import { CharacterList } from "./views/CharacterList";
 import { CharacterDetailView } from "./views/CharacterDetail";
 import { BossPlaceholder } from "./views/BossPlaceholder";
 import { PatchManager } from "./views/PatchManager";
+import { ScratchDetail, ScratchList } from "./views/ScratchView";
 import { LookupPanel } from "./views/LookupPanel";
 import "./styles.css";
 import "./m4.css";
+import "./workshop.css";
 
 function App() {
   const route = useRoute();
@@ -48,17 +50,12 @@ function App() {
         </div>
       </header>
       <div class="context-bar">
-        <span>
-          当前内容：<strong>测试服链视图</strong>
+        <span title={meta ? `技术细节：kulo active 补丁链之后再叠加 ${meta.source.extraZips.length} 个补丁 ZIP`
+          + (meta.source.chain ? `（按补丁链清单 ${meta.source.chain.manifest} 找到 ${meta.source.chain.resolved} 个）` : "") : ""}>
+          当前内容：<strong>测试服</strong>
           {meta ? <> · 资源版本 {meta.source.version}</> : null}
         </span>
-        <span class="pill draftable" title="只写草稿 work/studio-drafts 与本地交付 work/studio-deliveries；不应用、不发布，不写游戏表">草稿可写</span>
-        {meta && meta.source.extraZips.length > 0 ? (
-          <span class="muted" title={meta.source.chain ? "清单：" + meta.source.chain.manifest : ""}>
-            active 之后叠加 {meta.source.extraZips.length} 个 ZIP
-            {meta.source.chain ? `（按补丁链清单找到 ${meta.source.chain.resolved} 个）` : ""}
-          </span>
-        ) : null}
+        <span class="pill draftable" title="只写草稿（work/studio-drafts）和本机交付目录（work/studio-deliveries）；不改测试服、不发布、不写游戏数据">只写草稿</span>
         {meta?.source.chain?.missing.length ? (
           <span class="error-text">补丁链缺 {meta.source.chain.missing.length} 个 ZIP，视图不完整</span>
         ) : null}
@@ -68,6 +65,9 @@ function App() {
         <div class="workshop-tabs" role="tablist" aria-label="工坊">
           <a role="tab" class={route.shop === "characters" ? "active" : ""} href={href({ work: "content", shop: "characters" })}>
             角色工坊
+          </a>
+          <a role="tab" class={route.shop === "scratch" ? "active" : ""} href={href({ work: "content", shop: "scratch" })}>
+            草稿角色
           </a>
           <a role="tab" class={route.shop === "boss" ? "active" : ""} href={href({ work: "content", shop: "boss" })}>
             BOSS工坊
@@ -80,8 +80,10 @@ function App() {
             <PatchManager archive={route.archive} />
           ) : route.shop === "boss" ? (
             <BossPlaceholder />
+          ) : route.shop === "scratch" ? (
+            route.id ? <ScratchDetail id={route.id} tab={route.tab} sub={route.sub} /> : <ScratchList />
           ) : route.id ? (
-            <CharacterDetailView id={route.id} tab={route.tab} />
+            <CharacterDetailView id={route.id} tab={route.tab} sub={route.sub} />
           ) : (
             <CharacterList />
           )}

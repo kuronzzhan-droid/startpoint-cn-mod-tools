@@ -3,13 +3,17 @@
 No delivery logic lives here. ``POST /api/drafts/<cid>/build`` calls
 :func:`wf.studio.deliver_bridge.build_draft` with the same manifest baseline the
 editor view was resolved from, writing only under ``work/studio-deliveries/``.
-GET routes list and serve files of those output folders (read-only).
+With ``{"background": true}`` the build runs in a worker thread: the response is the
+job (``GET /api/deliveries/jobs/<name>`` reports the stage — 编译 / wf deliver / check /
+兼容), and ``POST /api/drafts/<cid>/build/cancel`` stops it between stages (the partial
+output folder is removed). GET routes list and serve files of those output folders.
 """
 from __future__ import annotations
 
 import json
 import mimetypes
 import re
+import shutil
 import threading
 import time
 import traceback
@@ -55,6 +59,8 @@ class DeliverRoutes:
         self.root = Path(root) if root is not None else DELIVERIES
         self._lock = threading.Lock()
         self.running: dict[str, str] = {}
+        self.jobs: dict[str, dict] = {}       # name -> public job record (kept for the session)
+        self._cancel: dict[str, threading.Event] = {}
 
     # -- baseline options derived from the editor view ------------------
     def baseline_options(self) -> dict:
@@ -88,7 +94,7 @@ class DeliverRoutes:
 
     def build(self, query, body, cid):
         from .server import json_response
-        from .deliver_bridge import build_draft
+        from .deliver_bridge import STAGES
         version = self.app.source.version
         from_version = str(body.get("from") or version)
         to_version = str(body.get("to") or next_version(from_version))
@@ -106,12 +112,46 @@ class DeliverRoutes:
                 raise DraftError(f"角色 {cid} 已在生成中（{self.running[cid]}），请稍候")
             name = f"{output_id}-{from_version}-to-{to_version}-{time.strftime('%Y%m%d-%H%M%S')}"
             self.running[cid] = name
+            cancel = self._cancel[name] = threading.Event()
+            job = self.jobs[name] = {"name": name, "characterId": cid, "from": from_version, "to": to_version,
+                                     "state": "running", "stage": None, "stages": [
+                                         {"id": s, "label": label, "state": "waiting"} for s, label in STAGES],
+                                     "startedAt": time.time(), "seconds": 0, "result": None}
+        if body.get("background"):
+            threading.Thread(target=self._run, name=f"build-{name}", daemon=True,
+                             args=(cid, name, from_version, to_version, provides, cancel)).start()
+            return json_response(self._public(job))
+        return json_response(self._run(cid, name, from_version, to_version, provides, cancel))
+
+    def _progress(self, name):
+        def report(stage):
+            with self._lock:
+                job = self.jobs[name]
+                for item in job["stages"]:
+                    if item["state"] == "running":
+                        item["state"] = "done"
+                    if item["id"] == stage:
+                        item["state"] = "running"
+                job["stage"] = stage
+        return report
+
+    def _run(self, cid, name, from_version, to_version, provides, cancel):
+        from .deliver_bridge import BuildCancelled, build_draft
         out = self.root / name
         started = time.time()
         try:
             result = build_draft(cid, from_version=from_version, to_version=to_version, out=out,
-                                 store=self.app.ops.store, provides=provides, **self.baseline_options())
+                                 store=self.app.ops.store, provides=provides,
+                                 progress=self._progress(name), cancel=cancel, **self.baseline_options())
             result = {**result, "name": name, "seconds": round(time.time() - started, 1)}
+            state = "ok" if result.get("ok") else "failed"
+        except BuildCancelled as exc:
+            result = {"ok": False, "name": name, "characterId": cid, "from": from_version, "to": to_version,
+                      "cancelled": True, "error": str(exc), "seconds": round(time.time() - started, 1),
+                      "deviceValidation": "未执行"}
+            state = "cancelled"
+            if out.is_dir() and out.resolve().is_relative_to(self.root.resolve()):
+                shutil.rmtree(out, ignore_errors=True)  # partial output of this job only
         except Exception as exc:  # noqa: BLE001 - every failure is reported, never hidden
             detail = {"ok": False, "name": name, "characterId": cid, "from": from_version, "to": to_version,
                       "error": f"{type(exc).__name__}: {exc}", "seconds": round(time.time() - started, 1),
@@ -120,11 +160,42 @@ class DeliverRoutes:
                 traceback.print_exc()
             if out.is_dir():
                 (out / "studio-build-error.json").write_text(json.dumps(detail, ensure_ascii=False, indent=2), "utf-8")
-            result = detail
+            result, state = detail, "failed"
         finally:
             with self._lock:
                 self.running.pop(cid, None)
-        return json_response(result)
+                self._cancel.pop(name, None)
+        with self._lock:
+            job = self.jobs[name]
+            for item in job["stages"]:
+                if item["state"] == "running":
+                    item["state"] = "done" if state == "ok" else state
+            job.update(state=state, seconds=result.get("seconds", 0), result=result)
+        return result
+
+    def _public(self, job):
+        out = {k: v for k, v in job.items() if k != "startedAt"}
+        if job["state"] == "running":
+            out["seconds"] = round(time.time() - job["startedAt"], 1)
+        return out
+
+    def job(self, query, name):
+        from .server import json_response
+        with self._lock:
+            job = self.jobs.get(name)
+            if job is None:
+                raise DraftError("没有这个生成任务（编辑台重启后任务记录会清空，结果见「导出」）")
+            return json_response(self._public(json.loads(json.dumps(job))))
+
+    def cancel(self, query, body, cid):
+        from .server import json_response
+        with self._lock:
+            name = self.running.get(cid)
+            if not name:
+                raise DraftError(f"角色 {cid} 没有正在进行的生成")
+            self._cancel[name].set()
+        return json_response({"name": name, "cancelling": True,
+                              "note": "当前阶段结束后停止；已写出的半成品目录会删除"})
 
     def listing(self, query):
         from .server import json_response
@@ -153,8 +224,10 @@ class DeliverRoutes:
                               "draftRevision": report.get("draftRevision") if report else None,
                               "prepush": (report.get("prepush") or {}).get("status") if report else None,
                               "counts": counts})
+        with self._lock:
+            jobs = [self._public(job) for job in self.jobs.values() if not cid or job["characterId"] == cid]
         return json_response({"root": self.display_root(), "deliveries": items,
-                              "running": dict(self.running)})
+                              "running": dict(self.running), "jobs": jobs})
 
     def _folder(self, name: str) -> Path:
         if not self.name_pattern.fullmatch(name):
@@ -208,6 +281,8 @@ class DeliverRoutes:
     def routes(self):
         return [("GET", re.compile(r"^/api/deliveries$"), self.listing),
                 ("GET", re.compile(r"^/api/deliveries/defaults$"), self.defaults),
+                ("GET", re.compile(r"^/api/deliveries/jobs/(?P<name>[^/]+)$"), self.job),
                 ("GET", re.compile(r"^/api/deliveries/(?P<name>[^/]+)$"), self.detail),
                 ("GET", re.compile(r"^/api/deliveries/(?P<name>[^/]+)/file$"), self.file),
-                ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/build$"), self.build)]
+                ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/build$"), self.build),
+                ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/build/cancel$"), self.cancel)]

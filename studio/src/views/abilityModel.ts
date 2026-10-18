@@ -1,7 +1,7 @@
 // Pending ability edits: an ordered list of asserted operations plus merged
 // skill-text edits. The backend replays the same request (AbilityEditor), so
 // everything here is only a local projection for display.
-import { AbilityEntry, AbilityOp, AbilityTable } from "../api";
+import { AbilityEntry, AbilityOp, AbilityRequest, AbilityTable, AttachOp, TextPair } from "../api";
 
 export interface TextEdit {
   key: string;
@@ -11,13 +11,54 @@ export interface TextEdit {
   new: string;
 }
 
+/** Panel text edited through wf text: desc_override / custom_ability_string (client-only surfaces). */
+export interface CustomEdit {
+  section: "desc_override" | "custom_ability_string";
+  key: string;
+  /** null = create this desc_override key (it does not exist yet). */
+  old: string | null;
+  new: string;
+}
+
 export interface Pending {
   ops: AbilityOp[];
   text: TextEdit[];
+  custom: CustomEdit[];
+  attach: AttachOp[];
+  /** character_text c10 (wf text also syncs character c18 and both server mirrors). */
+  leaderName: TextPair | null;
   sharedOk: Record<string, boolean>; // `${table}/${key}`
+  /** All owners known for keys touched by custom/attach edits (sharedId → owners). */
+  owners: Record<string, string[]>;
+  /** Skill-tier insert/delete references reviewed by the user. */
+  tierConfirmed: boolean;
+  /** Second confirmation when the result leaves unawakened players without a tier they can reach. */
+  tierRisk: boolean;
 }
 
-export const EMPTY_PENDING: Pending = { ops: [], text: [], sharedOk: {} };
+export const EMPTY_PENDING: Pending = {
+  ops: [], text: [], custom: [], attach: [], leaderName: null, sharedOk: {}, owners: {}, tierConfirmed: false, tierRisk: false,
+};
+
+export function isTierOp(op: AbilityOp): boolean {
+  return op.table === "action_skill" && (op.op === "insert_row" || op.op === "delete_row" || op.op === "move_row");
+}
+
+export function tierOps(p: Pending): AbilityOp[] {
+  return p.ops.filter(isTierOp);
+}
+
+export function attachFor(p: Pending, table: AbilityTable, slot: number): AttachOp | undefined {
+  return p.attach.find((a) => a.table === table && a.slot === slot);
+}
+
+export function setCustom(p: Pending, section: CustomEdit["section"], key: string, original: string | null, value: string,
+  owners: string[]): Pending {
+  const custom = p.custom.filter((c) => !(c.section === section && c.key === key));
+  // A creation (original null) stays pending until written or cancelled, even while empty.
+  if (original === null ? section === "desc_override" : value !== original) custom.push({ section, key, old: original, new: value });
+  return { ...p, custom, owners: { ...p.owners, [sharedId(section, key)]: owners } };
+}
 
 export function entryId(table: string, key: string, level?: string | null): string {
   return `${table}/${key}${level ? "#" + level : ""}`;
@@ -45,7 +86,7 @@ function sameTarget(op: AbilityOp, table: string, key: string, level?: string | 
 export function workingRows(entry: AbilityEntry, pending: Pending): string[][] {
   let rows = entry.rows.map((r) => [...r]);
   for (const op of pending.ops) {
-    if (!sameTarget(op, entry.table, entry.key, entry.level)) continue;
+    if (isTierOp(op) || !sameTarget(op, entry.table, entry.key, entry.level)) continue;
     if (op.op === "set_cells") {
       const row = rows[op.row];
       if (row) for (const c of op.cells) row[colIndex(c.column)] = c.new ?? "";
@@ -68,9 +109,16 @@ export function workingRows(entry: AbilityEntry, pending: Pending): string[][] {
   return rows;
 }
 
+/** Skill tier insert/delete/move pending on this key: tier cells are locked until written or undone. */
+export function tierLocked(p: Pending, table: string, key: string): boolean {
+  return table === "action_skill" && tierOps(p).some((o) => o.key === key);
+}
+
 export function setCell(p: Pending, entry: AbilityEntry, rows: string[][], row: number, column: number, value: string): Pending {
   const current = rows[row]?.[column] ?? "";
   if (current === value) return p;
+  // Cell edits after a pending tier insert/delete would be replayed against the shifted tiers.
+  if (tierLocked(p, entry.table, entry.key)) return p;
   if (entry.table === "action_skill" && column < 2) {
     const name = (column === 0 ? "c0" : "c1") as "c0" | "c1";
     const original = entry.rows[0]?.[column] ?? "";
@@ -111,9 +159,10 @@ export function moveRow(p: Pending, entry: AbilityEntry, rows: string[][], from:
 }
 
 /** Build the abilityRequest: numeric/structural ops in order, then skill text with every tier asserted. */
-export function buildRequest(p: Pending, entries: AbilityEntry[]): { operations: AbilityOp[] } {
-  const shared = (table: AbilityTable, key: string) => p.sharedOk[sharedId(table, key)] === true;
-  const operations: AbilityOp[] = p.ops.map((op) => (shared(op.table, op.key) ? { ...op, shared_ok: true } : op));
+export function buildRequest(p: Pending, entries: AbilityEntry[]): AbilityRequest {
+  const shared = (table: string, key: string) => p.sharedOk[sharedId(table, key)] === true;
+  const operations: AbilityRequest["operations"] = p.ops.map((op) => (shared(op.table, op.key) ? { ...op, shared_ok: true } : op));
+  for (const a of p.attach) operations.push(shared(a.table, a.key) ? { ...a, shared_ok: true } : a);
   const textKeys = [...new Set(p.text.map((t) => t.key))];
   for (const key of textKeys) {
     const tiers = entries.filter((e) => e.table === "action_skill" && e.key === key);
@@ -128,13 +177,41 @@ export function buildRequest(p: Pending, entries: AbilityEntry[]): { operations:
         column_space: "native", cells, ...(shared("action_skill", key) ? { shared_ok: true } : {}) });
     }
   }
-  return { operations };
+  const request: AbilityRequest = { operations };
+  const text: NonNullable<AbilityRequest["text"]> = {};
+  for (const c of p.custom) {
+    if (c.section === "desc_override") (text.desc_override ??= {})[c.key] = { old: c.old, new: c.new };
+    else (text.custom_ability_string ??= {})[c.key] = { old: c.old ?? "", new: c.new };
+  }
+  if (p.leaderName) text.character_text = { "10": p.leaderName };
+  if (Object.keys(text).length) request.text = text;
+  // wf text takes one request-level shared_ok for panel strings; the UI requires each shared key confirmed.
+  if (p.custom.some((c) => (p.owners[sharedId(c.section, c.key)] ?? []).length > 1 && shared(c.section, c.key))) {
+    request.shared_ok = true;
+  }
+  return request;
 }
 
 export function pendingCount(p: Pending): number {
-  return p.ops.length + p.text.length;
+  return p.ops.length + p.text.length + p.custom.length + p.attach.length + (p.leaderName ? 1 : 0);
 }
 
 export function touches(p: Pending, table: string, key: string): boolean {
   return p.ops.some((o) => o.table === table && o.key === key) || (table === "action_skill" && p.text.some((t) => t.key === key));
+}
+
+/** Skill c0/c1 per tier (wf text); original is the draft-state value of that tier. */
+export function setSkillText(p: Pending, key: string, level: string, column: "c0" | "c1", original: string, value: string): Pending {
+  const text = p.text.filter((t) => !(t.key === key && t.level === level && t.column === column));
+  if (value !== original) text.push({ key, column, level, old: original, new: value });
+  return { ...p, text };
+}
+
+/** Replace any pending attach on the same slot; null clears it. */
+export function setAttach(p: Pending, table: AbilityTable, slot: number, op: AttachOp | null, owners: string[] = []): Pending {
+  const attach = p.attach.filter((a) => !(a.table === table && a.slot === slot));
+  if (op) attach.push(op);
+  const next = { ...p, attach };
+  if (op) next.owners = { ...p.owners, [sharedId(table, op.key)]: owners };
+  return next;
 }

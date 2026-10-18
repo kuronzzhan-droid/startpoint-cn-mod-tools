@@ -85,13 +85,17 @@ def build_family(source: StudioSource, code: str, stem: str, sheet: str) -> tupl
     out = io.BytesIO()
     sheet_image.save(out, "PNG", optimize=True)
 
-    actions = []
+    actions, unplayable = [], []
     for sequence in timeline.get("sequences", []):
         begin, end = sequence.get("begin"), sequence.get("end")
-        if type(begin) is not int or type(end) is not int or not 1 <= begin <= end <= keys[-1]:
+        if type(begin) is not int or type(end) is not int or not 1 <= begin <= end:
+            continue
+        if begin > keys[-1]:
+            unplayable.append(sequence.get("name", ""))  # no image at all: nothing to play
             continue
         cells, position = [], begin
-        while position <= end:
+        # Frames past the last endpoint have no image (same reading as the workshop breakdown).
+        while position <= min(end, keys[-1]):
             slot = bisect_left(keys, position)
             finish = min(end, keys[slot])
             cells.append({"cell": slot, "frames": finish - position + 1, "start": position - begin})
@@ -99,14 +103,15 @@ def build_family(source: StudioSource, code: str, stem: str, sheet: str) -> tupl
         name = sequence.get("name", "")
         actions.append({"name": name, "label": SLOT_LABEL.get(name, name), "kind": sequence.get("kind"),
                         "kindLabel": KIND_LABEL.get(sequence.get("kind"), sequence.get("kind")),
-                        "begin": begin, "end": end, "totalFrames": end - begin + 1, "cells": cells})
+                        "begin": begin, "end": end, "totalFrames": end - begin + 1, "cells": cells,
+                        "overflow": max(0, end - keys[-1])})
     meta = {
         "family": stem, "cellWidth": cw, "cellHeight": ch, "columns": columns, "cellCount": len(restored),
         "frameBox": {"width": fw, "height": fh, "cropX": box[0], "cropY": box[1]},
         # Origin inside the cropped cell (display anchor).
         "anchor": {"x": -int(frame.get("x", 0)) - box[0], "y": -int(frame.get("y", 0)) - box[1]},
         "scale": frame.get("scale", 1), "smoothing": bool(frame.get("smoothing", False)),
-        "fps": FPS, "actions": actions,
+        "fps": FPS, "actions": actions, "unplayable": unplayable,
         "points": len(timeline.get("points", []) or []), "sounds": len(timeline.get("sounds", []) or []),
     }
     return meta, out.getvalue()

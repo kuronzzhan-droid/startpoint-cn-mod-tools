@@ -11,6 +11,7 @@
     "subjectKind": {"enum": ["character", "boss"], "description": "旧角色草稿可省略；boss 使用独立草稿目录，characterId 为兼容容器中的副本 ID"},
     "characterId": {"type": "string"},
     "code": {"$ref": "#/$defs/code"},
+    "scratch": {"$ref": "#/$defs/scratchMeta"},
     "baseView": {"type": "string", "pattern": "^1\\.4\\.[0-9]+$", "description": "草稿基于的视图资源版本"},
     "createdAt": {"$ref": "#/$defs/timestamp"},
     "updatedAt": {"$ref": "#/$defs/timestamp"},
@@ -24,7 +25,7 @@
   "allOf": [{
     "if": {"required": ["subjectKind"], "properties": {"subjectKind": {"const": "boss"}}},
     "then": {"properties": {"characterId": {"$ref": "#/$defs/bossId"}}},
-    "else": {"properties": {"characterId": {"$ref": "#/$defs/characterId"}}}
+    "else": {"properties": {"characterId": {"anyOf": [{"$ref": "#/$defs/characterId"}, {"$ref": "#/$defs/scratchId"}]}}}
   }],
   "$defs": {
     "bossParameters": {
@@ -104,8 +105,8 @@
         "sha256": {"$ref": "#/$defs/sha256", "description": "草稿文件（标准格式）的 SHA-256"},
         "size": {"type": "integer", "minimum": 1},
         "encoding": {
-          "enum": ["png", "mp3", "atf-deflate"],
-          "description": "png/mp3 为标准格式，交付时由 wf_assets.png_encode / mp3_encode 转成存储态；atf-deflate 已是游戏字节"
+          "enum": ["png", "mp3", "atf-deflate", "amf3-deflate"],
+          "description": "png/mp3 为标准格式，交付时由 wf_assets.png_encode / mp3_encode 转成存储态；atf-deflate / amf3-deflate（像素 atlas/frame/timeline）已是游戏字节"
         },
         "storeSha256": {"$ref": "#/$defs/sha256", "description": "按存储态编码后的 SHA-256（png/mp3 才有）"},
         "base": {
@@ -199,6 +200,7 @@
       "required": ["duration", "anchor"],
       "properties": {
         "png": {"type": "string", "description": "base64 PNG（API 请求里用）"},
+        "rgba": {"type": "string", "description": "base64 原始 RGBA 字节（width×height×4，不经浏览器 canvas；API 请求里用，需同时给 width/height）"},
         "file": {"$ref": "#/$defs/draftPath", "description": "草稿内的帧文件（changeset 里用）"},
         "sha256": {"$ref": "#/$defs/sha256", "description": "帧文件 SHA-256（changeset 里用）"},
         "duration": {"type": "integer", "minimum": 1, "maximum": 600, "description": "停留帧数（60fps）"},
@@ -216,7 +218,17 @@
         "action": {"type": "string", "pattern": "^[a-z_]+$"},
         "frames": {"type": "array", "minItems": 1, "maxItems": 240, "items": {"$ref": "#/$defs/pixelFrame"}},
         "dryRun": {"type": "boolean", "default": false},
-        "origin": {"type": "object", "description": "来源说明，例如 {\"mode\":\"sheet\",\"columns\":4,\"rows\":2}"}
+        "origin": {"type": "object", "description": "来源说明，例如 {\"mode\":\"sheet\",\"columns\":4,\"rows\":2}"},
+        "sheet": {
+          "type": "object", "additionalProperties": false, "required": ["png", "columns", "rows"],
+          "description": "整张精灵图由后端按网格切帧（不经浏览器 canvas）；此时 frames 只给 duration/anchor，顺序与切出的帧一致",
+          "properties": {
+            "png": {"type": "string"},
+            "columns": {"type": "integer", "minimum": 1, "maximum": 64},
+            "rows": {"type": "integer", "minimum": 1, "maximum": 64},
+            "count": {"type": "integer", "minimum": 1, "description": "只取前 N 格；省略时跳过全透明格"}
+          }
+        }
       }
     },
     "voiceRequest": {
@@ -270,6 +282,11 @@
          "then": {"required": ["level"]}, "else": {"not": {"required": ["level"]}}}
       ]
     },
+    "abilityNewOverride": {
+      "type": "object", "additionalProperties": false, "required": ["old", "new"],
+      "description": "新建覆盖文案 desc_override_<槽行 c0>：old 为 null 断言键不存在",
+      "properties": {"old": {"type": "null"}, "new": {"type": "string", "minLength": 1}}
+    },
     "abilityTextPair": {
       "type": "object", "additionalProperties": false, "required": ["old", "new"],
       "properties": {"old": {"type": "string"}, "new": {"type": "string"}}
@@ -283,7 +300,7 @@
         "character_text": {"type": "object", "minProperties": 1, "propertyNames": {"pattern": "^[0-9]+$"},
                            "additionalProperties": {"$ref": "#/$defs/abilityTextPair"}},
         "custom_ability_string": {"type": "object", "minProperties": 1, "additionalProperties": {"$ref": "#/$defs/abilityTextPair"}},
-        "desc_override": {"type": "object", "minProperties": 1, "additionalProperties": {"$ref": "#/$defs/abilityTextPair"}}
+        "desc_override": {"type": "object", "minProperties": 1, "additionalProperties": {"anyOf": [{"$ref": "#/$defs/abilityTextPair"}, {"$ref": "#/$defs/abilityNewOverride"}]}}
       }
     },
     "abilityRequest": {
@@ -294,13 +311,23 @@
       },
       "anyOf": [{"required": ["operations"], "properties": {"operations": {"minItems": 1}}}, {"required": ["text"]}]
     },
+    "scratchId": {"type": "string", "pattern": "^scratch-[a-z0-9][a-z0-9-]{0,47}$", "description": "草稿角色（还没有游戏 ID）的标识，目录 work/studio-drafts/scratch-<slug>/"},
+    "scratchMeta": {"type": "object", "additionalProperties": false, "required": ["name", "element", "slug", "base", "boundTo"], "description": "草稿角色：名字、属性、母本（提供帧区间/锚点/frame.scale）；占位代码 scratch_<slug>，不写任何表行", "properties": {"name": {"type": "string", "minLength": 1, "maxLength": 40}, "element": {"enum": ["火", "水", "雷", "风", "光", "暗"]}, "slug": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,47}$"}, "base": {"type": "object", "additionalProperties": false, "required": ["characterId", "code"], "properties": {"characterId": {"anyOf": [{"$ref": "#/$defs/characterId"}, {"type": "null"}]}, "code": {"$ref": "#/$defs/code"}, "name": {"type": "string"}}}, "note": {"type": "string"}, "boundTo": {"anyOf": [{"type": "null"}, {"type": "object", "additionalProperties": false, "required": ["characterId", "code", "at", "changes"], "properties": {"characterId": {"$ref": "#/$defs/characterId"}, "code": {"$ref": "#/$defs/code"}, "at": {"$ref": "#/$defs/timestamp"}, "changes": {"type": "array", "items": {"type": "string", "pattern": "^c-[0-9a-f]{12}$"}}}}]}}},
+    "scratchCreateRequest": {"type": "object", "additionalProperties": false, "required": ["name", "element", "base"], "description": "新建草稿角色：名字、属性、母本（角色 ID 或代码名，必须有像素族）；slug 缺省由名字/母本生成", "properties": {"name": {"type": "string", "minLength": 1, "maxLength": 40}, "element": {"enum": ["火", "水", "雷", "风", "光", "暗"]}, "base": {"type": "string", "pattern": "^([0-9]{1,9}|[a-z0-9_]+)$"}, "slug": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,40}$"}, "note": {"type": "string", "maxLength": 400}}},
+    "scratchBindRequest": {"type": "object", "additionalProperties": false, "required": ["characterId"], "description": "把草稿角色绑定到真实角色 ID：全部像素改动改名到该角色代码后写进 work/studio-drafts/<ID>/；该 ID 必须在当前视图的角色表里", "properties": {"characterId": {"$ref": "#/$defs/characterId"}, "dryRun": {"type": "boolean", "default": false}}},
+    "pixelImportRequest": {"type": "object", "additionalProperties": false, "description": "导入现成像素族：按文件名识别 sprite_sheet.png / .atlas / pixelart.frame / .timeline（及 special_* 同构），zip 或逐文件 base64；可带映射表（{base, mapping} 或纯 mapping），用于逐端点对照「母本 + 映射表」", "anyOf": [{"required": ["files"]}, {"required": ["zip"]}], "properties": {"files": {"type": "object", "additionalProperties": {"type": "string"}, "description": "文件名（可带相对路径）→ base64"}, "zip": {"type": "string", "description": "base64 zip"}, "remap": {"type": ["object", "array"], "description": "映射表：{\"base\": 代码或ID, \"mapping\": [...] | {...}} 或纯 mapping；省略时识别包里名字含 remap/mapping/palette 的 JSON"}, "families": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["pixelart", "special"]}}, "name": {"type": "string", "maxLength": 80}, "dryRun": {"type": "boolean", "default": false}}},
+    "hexColor": {"type": "string", "pattern": "^#[0-9a-fA-F]{6}$"},
+    "colorPair": {"type": "object", "additionalProperties": false, "required": ["from", "to"], "properties": {"from": {"$ref": "#/$defs/hexColor"}, "to": {"$ref": "#/$defs/hexColor"}, "group": {"type": "string"}}},
+    "pixelRemapRequest": {"type": "object", "additionalProperties": false, "required": ["base"], "description": "像素工坊·母本映射：用母本角色的整族四件（时间轴区间、锚点、frame.scale 原样）按精确 RGB→RGB 表改色，atlas/frame 名前缀换成本角色，替换本角色整族。确定性。", "properties": {"base": {"type": "string", "pattern": "^([0-9]{1,9}|[a-z0-9_]+)$", "description": "母本角色 ID 或代码名"}, "families": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["pixelart", "special"]}, "description": "默认母本有的全部族"}, "mapping": {"type": "array", "items": {"$ref": "#/$defs/colorPair"}, "description": "母本颜色 → 新颜色；未列出的颜色保持母本原色"}, "groups": {"type": "object", "additionalProperties": {"enum": ["body", "fx", "template", "outline"]}, "description": "界面上调整后的分组（只记录，不影响结果）"}, "dryRun": {"type": "boolean", "default": false}}},
+    "pixelBaseImage": {"type": "object", "additionalProperties": false, "oneOf": [{"required": ["cell"]}, {"required": ["png"]}], "properties": {"cell": {"type": "object", "additionalProperties": false, "required": ["family", "key"], "properties": {"family": {"enum": ["pixelart", "special"]}, "key": {"type": "integer", "minimum": 1}}}, "png": {"type": "string", "description": "base64 PNG（透明背景，会裁掉透明边）"}}},
+    "pixelGenerateRequest": {"type": "object", "additionalProperties": false, "required": ["action"], "description": "像素工坊·程序化动作：从正面/背面/躺倒三张底图按官方配方合成一个动作；save=true 时作为 pixel_action 写进草稿（帧 256²，锚点 128,128）。", "properties": {"action": {"enum": ["walk_back", "walk_front", "kachidoki", "into_coffin", "ghost_raise", "ghost_neutral", "revive"]}, "bases": {"type": "object", "additionalProperties": false, "properties": {"front": {"$ref": "#/$defs/pixelBaseImage"}, "back": {"$ref": "#/$defs/pixelBaseImage"}, "liedown": {"$ref": "#/$defs/pixelBaseImage"}}, "description": "缺省：正面=待机首张，背面=walk_back 首张，躺倒=正面顺时针转 90°（近似）"}, "totalFrames": {"type": "integer", "minimum": 1, "maximum": 3600, "description": "缺省 = 本角色该动作的现有总长"}, "ground": {"type": "integer", "minimum": -32, "maximum": 32, "description": "地线：整套动作的脚底下沉（缺省 = 本角色待机帧 dy 中位数）"}, "save": {"type": "boolean", "default": false}}},
     "change": {
       "type": "object",
       "additionalProperties": false,
       "required": ["id", "kind", "title", "createdAt", "target", "params", "files", "pending", "checks"],
       "properties": {
         "id": {"type": "string", "pattern": "^c-[0-9a-f]{12}$"},
-        "kind": {"enum": ["portrait", "pixel_action", "voice_line", "ability_edit", "boss"]},
+        "kind": {"enum": ["portrait", "pixel_action", "pixel_family", "voice_line", "ability_edit", "boss"]},
         "title": {"type": "string", "minLength": 1},
         "createdAt": {"$ref": "#/$defs/timestamp"},
         "target": {"type": "object"},
@@ -406,7 +433,8 @@
                          }}
             }
           }
-        }
+        },
+        {"if": {"properties": {"kind": {"const": "pixel_family"}}}, "then": {"properties": {"target": {"type": "object", "additionalProperties": false, "required": ["family"], "properties": {"family": {"enum": ["pixelart", "special"]}}}, "params": {"type": "object", "additionalProperties": false, "required": ["mode"], "properties": {"mode": {"enum": ["remap", "import"]}, "base": {"type": "object", "additionalProperties": false, "required": ["characterId", "code"], "properties": {"characterId": {"anyOf": [{"$ref": "#/$defs/characterId"}, {"type": "null"}]}, "code": {"$ref": "#/$defs/code"}, "files": {"type": "object", "minProperties": 4, "maxProperties": 4, "additionalProperties": {"$ref": "#/$defs/sha256"}}}}, "mapping": {"type": "array", "items": {"$ref": "#/$defs/colorPair"}}, "source": {"type": "object", "description": "导入来源：名称、原代码前缀、原四件 SHA-256"}, "provenance": {"type": "object", "description": "导入集与「母本 + 映射表」逐端点对照结果"}, "changedPixels": {"type": "integer", "minimum": 0}, "renamedEntries": {"type": "integer", "minimum": 0}, "groups": {"type": "object"}, "auto": {"enum": ["bind"], "description": "自动补的整族替换：bind = 草稿角色只有逐动作改动，绑定时补母本原色整族"}}, "allOf": [{"if": {"properties": {"mode": {"const": "remap"}}}, "then": {"required": ["base", "mapping"], "properties": {"base": {"required": ["files"]}}}, "else": {"required": ["source"]}}]}, "files": {"minItems": 4, "maxItems": 4}, "pending": {"maxItems": 0}}}}
       ]
     }
   }

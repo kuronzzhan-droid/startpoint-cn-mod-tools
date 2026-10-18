@@ -40,25 +40,25 @@ export function StatusStrip({ draft, checks = [], build }: {
   return (
     <div class="status-strip" aria-label="状态">
       <div>
-        <span class="label">保存状态</span>
+        <span class="label">保存</span>
         <span class={"value " + saveClass} title="草稿只写 work/studio-drafts，不写游戏表">{saveLabel}</span>
       </div>
       <div>
-        <span class="label">检查结果</span>
+        <span class="label">检查</span>
         {build ? (
           <span class="value" title={"最近一次生成：" + build.name}>
             {build.ok ? "生成检查" : <span class="error-text">生成失败</span>} <RuleChips counts={build.counts} />
           </span>
         ) : draft && draft.changes ? (
           <span class="value" title="草稿检查（尺寸/蒙版/时长/预算/词条断言）；交付规则在「生成」时执行">
-            草稿检查 {errors} 错误 · {warns} 注意 <span class="state-none">· 交付规则未执行（未生成）</span>
+            {errors} 错误 · {warns} 注意 <span class="state-none">· 还没生成</span>
           </span>
         ) : (
           <span class="value state-none" title="规则条目尚未执行；未执行不等于通过">未执行</span>
         )}
       </div>
       <div>
-        <span class="label">实测情况</span>
+        <span class="label">真机</span>
         <span class="value state-none" title="编辑台不安装、不上真机">未记录</span>
       </div>
     </div>
@@ -67,6 +67,25 @@ export function StatusStrip({ draft, checks = [], build }: {
 
 export function Notice({ kind = "info", children }: { kind?: "info" | "warn" | "error"; children: ComponentChildren }) {
   return <div class={"notice " + kind}>{children}</div>;
+}
+
+/** Right-hand drawer over the page (本次修改 / 资源); Esc or the backdrop closes it. */
+export function Drawer({ title, wide, onClose, children }: {
+  title: ComponentChildren; wide?: boolean; onClose: () => void; children: ComponentChildren;
+}) {
+  return (
+    <div class="drawer-backdrop" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onKeyDown={(e) => { if (e.key === "Escape") { e.stopPropagation(); onClose(); } }}>
+      <aside class={"drawer" + (wide ? " wide" : "")} role="dialog" aria-modal="true" aria-label={typeof title === "string" ? title : "抽屉"}>
+        <header class="drawer-head">
+          <h2>{title}</h2>
+          <span class="spacer" />
+          <button class="ghost" onClick={onClose} aria-label="关闭">关闭 Esc</button>
+        </header>
+        <div class="drawer-body">{children}</div>
+      </aside>
+    </div>
+  );
 }
 
 /** Native square avatar (ui/square_N.png and fallbacks), lazy-loaded; element badge if absent. */

@@ -180,8 +180,10 @@ export function PixelPlayer({ characterId }: { characterId: string }) {
                   <span>{a.label}</span>
                   <span class="muted small mono">{a.name}</span>
                   <span class="muted small">{a.totalFrames} 帧 · {a.kindLabel}</span>
+                  {a.overflow ? <span class="warn-text small" title="动作区间超出图集最后一个端点，多出的帧取不到图">越界 {a.overflow} 帧</span> : null}
                 </button>
               ))}
+              {f.unplayable?.length ? <p class="small warn-text">区间整段在图集之外、无法播放：{f.unplayable.join("、")}</p> : null}
             </div>
           ))}
           <details class="slots">

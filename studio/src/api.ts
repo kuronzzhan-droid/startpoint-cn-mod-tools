@@ -126,6 +126,8 @@ export interface PixelAction {
   end: number;
   totalFrames: number;
   cells: PixelCell[];
+  /** Frames past the last atlas endpoint (no image there). */
+  overflow?: number;
 }
 
 export interface PixelFamily {
@@ -137,9 +139,12 @@ export interface PixelFamily {
   columns: number;
   cellCount: number;
   anchor: { x: number; y: number };
+  frameBox?: { width: number; height: number; cropX: number; cropY: number };
   scale: number;
   fps: number;
   actions: PixelAction[];
+  /** Sequences that start past the last atlas endpoint (nothing to play). */
+  unplayable?: string[];
 }
 
 export interface PixelMeta {
@@ -148,6 +153,8 @@ export interface PixelMeta {
   families: PixelFamily[];
   slots: { name: string; label: string; present: boolean }[];
   note: string;
+  /** draft endpoint: no pixel changes in the draft (show the view instead) */
+  empty?: boolean;
 }
 
 export interface AssetRoot {
@@ -301,7 +308,7 @@ export interface DraftFile {
 
 export interface DraftChange {
   id: string;
-  kind: "portrait" | "pixel_action" | "voice_line" | "ability_edit";
+  kind: "portrait" | "pixel_action" | "pixel_family" | "voice_line" | "ability_edit";
   title: string;
   createdAt: string;
   target: Record<string, string>;
@@ -511,9 +518,20 @@ export interface AbilityEntry {
   descriptions: (string | null)[];
 }
 
+export interface AbilitySlots {
+  ability: string[];
+  leader_ability: string;
+  action_skill: string;
+  /** character c18 (synced copy) */
+  leaderName: string;
+  /** character_text c10 — what wf text asserts as the old leader name */
+  leaderNameText?: string | null;
+}
+
 export interface AbilityState {
   characterId: string;
   entries: AbilityEntry[];
+  slots?: AbilitySlots;
   checks: RuleResult[];
   runtime: string;
 }
@@ -537,6 +555,37 @@ export interface AbilityOp {
   shared_ok?: boolean;
 }
 
+/** attach_key: put an existing (or new, asserted) key on a slot. */
+export interface AttachOp {
+  op: "attach_key";
+  table: AbilityTable;
+  key: string;
+  slot: number;
+  old_key: string;
+  shared_ok?: boolean;
+  column_space?: "native";
+  rows?: AbilityCellOp[][];
+  levels?: Record<string, AbilityCellOp[][]>;
+}
+
+export interface TextPair { old: string; new: string }
+/** desc_override may also be created: old = null asserts the key does not exist yet. */
+export interface OverridePair { old: string | null; new: string }
+
+/** abilityRequest.text (wf text); skill c0/c1 travel as asserted operations instead. */
+export interface AbilityTextSections {
+  desc_override?: Record<string, OverridePair>;
+  custom_ability_string?: Record<string, TextPair>;
+  character_text?: Record<string, TextPair>;
+  action_skill?: Record<string, Record<string, TextPair>>;
+}
+
+export interface AbilityRequest {
+  operations: (AbilityOp | AttachOp)[];
+  text?: AbilityTextSections;
+  shared_ok?: boolean;
+}
+
 export interface AbilityPreviewChange {
   op?: string;
   table?: string;
@@ -546,7 +595,10 @@ export interface AbilityPreviewChange {
   level?: string;
   surface?: string;
   client_old?: string;
+  old?: string;
   new?: string;
+  old_key?: string;
+  slot?: number;
   owners?: string[] | Record<string, string[]>;
   beforeDescription?: string | null;
   afterDescription?: string | null;
@@ -564,6 +616,105 @@ export interface RowPreview {
   after: { cells: string[] | null; description: string | null };
   owners: string[];
   checks: RuleResult[];
+}
+
+export interface TextFinding {
+  rule: string;
+  state: string;
+  location?: string;
+  message: string;
+  source?: string;
+  evidence?: { matches?: string[]; key?: string; text?: string; [k: string]: unknown };
+}
+
+export interface TextRuleRecord {
+  rule: string;
+  state: string;
+  mode: string;
+  requirement: string;
+  boundary: string;
+  source: string;
+  evidence_nature: string;
+}
+
+export interface HouseRuleState {
+  id: string;
+  title: string;
+  requirement: string;
+  state: string;
+  findings: TextFinding[];
+}
+
+export interface TextField {
+  surface: "action_skill" | "desc_override" | "custom_ability_string";
+  location: string;
+  key: string;
+  value: string;
+  original: string | null;
+  base: string | null;
+  owners: string[];
+  enhancement: boolean;
+  tier?: string;
+  field?: "c0" | "c1";
+  /** Exact slot label of a desc_override (desc_override_<slot row c0>), or 「未挂接」. */
+  slot?: string;
+  /** Slot main-limit: all rows / some rows / none (ability c1 ≠ true). */
+  main?: "all" | "some" | "none";
+  slotKey?: string;
+  /** desc_override key that does not exist yet (being created). */
+  created?: boolean;
+  findings: TextFinding[];
+  /** Panel-standard rules this field hits (only hits). */
+  rules: TextRuleRecord[];
+  house: HouseRuleState[];
+  /** Number of 「问题」 on this field (author rules + wf text findings). */
+  problems: number;
+  standardChecked: number;
+}
+
+export interface OverrideSlot {
+  label: string;
+  table: "ability" | "leader_ability";
+  slot: number;
+  key: string;
+  names: string[];
+  overrideKeys: string[];
+  existing: string[];
+  main: "all" | "some" | "none";
+  owners: string[];
+  rows: number;
+}
+
+export interface TextPanel {
+  characterId: string;
+  skillKey: string;
+  snapshot: string;
+  skillOwners: string[];
+  leaderName: { characterText: string | null; character: string | null };
+  fields: TextField[];
+  general: TextFinding[];
+  server: {
+    effectiveSource: string; rankOverridesBase: boolean; inBase: boolean; inRank: boolean; rule: string;
+    columns: { column: number; label: string; client: string | null; server: string | null; match: boolean }[];
+  };
+  houseRules: { id: string; title: string; requirement: string; rules: string[] }[];
+  standard: { version: string; name: string; scope: string; note?: string };
+  slots: OverrideSlot[];
+  mainIcon: string;
+}
+
+export interface KeySearchResult {
+  table: string;
+  total: number;
+  /** Lower-cased query terms (for highlighting). */
+  terms?: string[];
+  /** The key whose name equals the whole query, when one exists (duplicate check for new keys). */
+  exact?: string | null;
+  results: {
+    key: string; rows: number; levels: string[] | null; owners: { id: string; name: string }[]; descriptions: string[];
+    /** Row numbers (0-based) of `descriptions`, and those among them that matched a term. */
+    descriptionRows?: number[]; matches?: number[];
+  }[];
 }
 
 export interface TemplateOption {
@@ -609,6 +760,19 @@ export interface BuildResult {
   deviceValidation: string;
 }
 
+/** Background 「生成」 job: stages 编译 / wf deliver / 兼容 / check, cancellable between stages. */
+export interface BuildJob {
+  name: string;
+  characterId: string;
+  from: string;
+  to: string;
+  state: "running" | "ok" | "failed" | "cancelled";
+  stage: string | null;
+  stages: { id: string; label: string; state: "waiting" | "running" | "done" | "failed" | "cancelled" }[];
+  seconds: number;
+  result: BuildResult | null;
+}
+
 export interface DeliverySummary {
   name: string;
   ok: boolean;
@@ -642,16 +806,273 @@ export const ability = {
       (level ? `&level=${level}` : "")),
   templates: (table: string, block: string) =>
     cached<TemplateList>(`/api/studio/ability/templates?table=${table}&block=${block}`),
-  check: (cid: string, body: { operations: AbilityOp[] }) => post<AbilityCheckResult>(`/api/drafts/${cid}/ability/check`, body),
-  apply: (cid: string, body: { operations: AbilityOp[] }) => notify(cid, post<WriteResult>(`/api/drafts/${cid}/ability`, body)),
+  check: (cid: string, body: AbilityRequest) => post<AbilityCheckResult>(`/api/drafts/${cid}/ability/check`, body),
+  apply: (cid: string, body: AbilityRequest) => notify(cid, post<WriteResult>(`/api/drafts/${cid}/ability`, body)),
+  text: (cid: string) => get<TextPanel>(`/api/characters/${cid}/text`),
+  lint: (cid: string, text: AbilityTextSections) => post<TextPanel>(`/api/drafts/${cid}/text/lint`, { text }),
+  keys: (table: AbilityTable, q: string, cid: string) =>
+    get<KeySearchResult>(`/api/studio/ability/keys?table=${table}&q=${encodeURIComponent(q)}&cid=${cid}&limit=40`),
 };
 
 export const deliveries = {
   defaults: () => get<DeliveryDefaults>("/api/deliveries/defaults"),
-  list: (cid: string) => get<{ root: string; deliveries: DeliverySummary[]; running: Record<string, string> }>(
+  list: (cid: string) => get<{ root: string; deliveries: DeliverySummary[]; running: Record<string, string>; jobs: BuildJob[] }>(
     `/api/deliveries?cid=${cid}`),
+  job: (name: string) => get<BuildJob>(`/api/deliveries/jobs/${encodeURIComponent(name)}`),
+  start: (cid: string, body: { from: string; to: string; provides?: string }) =>
+    post<BuildJob>(`/api/drafts/${cid}/build`, { ...body, background: true }),
+  cancel: (cid: string) => post<{ name: string; cancelling: boolean; note: string }>(`/api/drafts/${cid}/build/cancel`, {}),
+  /** Tell listeners (status strip, export list) that a job finished. */
+  finished: (cid: string) => notify(cid, Promise.resolve(null)),
   detail: (name: string) => get<DeliveryDetail>(`/api/deliveries/${encodeURIComponent(name)}`),
   fileUrl: (name: string, path: string) => `/api/deliveries/${encodeURIComponent(name)}/file?path=${encodeURIComponent(path)}`,
   build: (cid: string, body: { from: string; to: string; provides?: string }) =>
     notify(cid, post<BuildResult>(`/api/drafts/${cid}/build`, body)),
+};
+
+// ---------------------------------------------------------------------------
+// 像素工坊（拆解 / 母本映射 / 程序化动作 / 画板）
+
+export type PaletteGroup = "body" | "fx" | "template" | "outline";
+
+export interface WorkshopCell {
+  key: number;
+  cell: number;
+  start: number;
+  frames: number;
+  region: number;
+  fx: number;
+  fy: number;
+  w: number;
+  h: number;
+  dy: number;
+  dx: number;
+  bbox: [number, number, number, number] | null;
+  alphaPx: number;
+}
+
+export interface WorkshopAction {
+  name: string;
+  kind: string;
+  begin: number;
+  end: number;
+  totalFrames: number;
+  universal: boolean;
+  cells: WorkshopCell[];
+  overflow?: number;
+}
+
+export interface WorkshopRegion {
+  id: number;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  rotated: boolean;
+  keys: number[];
+  actions: string[];
+  alphaPx: number;
+}
+
+export interface WorkshopFamily {
+  family: "pixelart" | "special";
+  sheet: { width: number; height: number; fill: number; layer0Px: number; share: number };
+  frame: { name: string; x: number; y: number; scale: number; smoothing: boolean };
+  origin: [number, number];
+  keys: number;
+  regions: WorkshopRegion[];
+  actions: WorkshopAction[];
+  unusedKeys: number[];
+  unusedRegions: number[];
+  duplicateRegions: number[][];
+  points: number;
+  sounds: number;
+  checks: DraftCheck[];
+}
+
+export interface PaletteColor {
+  hex: string;
+  rgb: [number, number, number];
+  count: number;
+  /** pixels of this colour that are fully opaque (0 = only on semi-transparent pixels) */
+  opaque?: number;
+  regions: number;
+  luma: number;
+  group: PaletteGroup;
+  actions: string[];
+  families: string[];
+}
+
+export interface WorkshopAnalysis {
+  characterId: string;
+  name: string;
+  code: string;
+  state: "view" | "draft";
+  families: WorkshopFamily[];
+  palette: PaletteColor[];
+  groupLabels: Record<PaletteGroup, string>;
+  universalRanges: Record<string, Record<string, [number, number]>>;
+  notes: string[];
+}
+
+export interface ColorPair { from: string; to: string; group?: string }
+
+export interface RemapResult {
+  dryRun?: boolean;
+  base: { id: string; code: string; name: string };
+  families: { family: string; changedPixels: number; renamedEntries: number; sheet: [number, number]; checks: DraftCheck[]; mappingUsed: number; mappingSize: number }[];
+  changes?: DraftChange[];
+  status?: DraftStatus;
+}
+
+export type BaseImageSpec = { cell: { family: string; key: number } } | { png: string };
+
+export interface GeneratedFrame { png: string; duration: number; dy: number; note: string; bbox: [number, number, number, number] }
+
+export interface GenerateResult {
+  action: string;
+  label?: string;
+  totalFrames?: number;
+  frames: GeneratedFrame[];
+  bases?: Record<string, BaseImageSpec>;
+  change?: DraftChange;
+  status?: DraftStatus;
+}
+
+export const GENERATE_ACTIONS: { id: string; label: string }[] = [
+  { id: "walk_front", label: "向前移动" }, { id: "walk_back", label: "向后移动" }, { id: "kachidoki", label: "胜利" },
+  { id: "into_coffin", label: "倒下入棺" }, { id: "ghost_raise", label: "幽灵升起" },
+  { id: "ghost_neutral", label: "幽灵待机" }, { id: "revive", label: "复活" },
+];
+
+/** One action's images as raw RGBA (backend-decoded; never read back through a canvas). */
+export interface ActionFrames {
+  characterId: string;
+  family: string;
+  action: string;
+  state: "view" | "draft";
+  frameBox: [number, number];
+  origin: [number, number];
+  totalFrames: number;
+  frames: { key: number; start: number; duration: number; box: [number, number, number, number] | null; rgba: string }[];
+  note: string;
+}
+
+/** Raw RGBA image: 8-byte little-endian header (width, height) + width*height*4 bytes. */
+export interface RawImage { width: number; height: number; data: Uint8ClampedArray }
+
+export async function fetchRaw(url: string): Promise<RawImage> {
+  const response = await fetch(url);
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
+    throw new Error(body.error || `HTTP ${response.status}`);
+  }
+  const buffer = await response.arrayBuffer();
+  const view = new DataView(buffer);
+  const width = view.getUint32(0, true), height = view.getUint32(4, true);
+  return { width, height, data: new Uint8ClampedArray(buffer, 8, width * height * 4) };
+}
+
+export function base64ToBytes(text: string): Uint8Array {
+  const binary = atob(text);
+  const out = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) out[i] = binary.charCodeAt(i);
+  return out;
+}
+
+export function bytesToBase64(bytes: Uint8Array): string {
+  let binary = "";
+  const step = 0x8000;
+  for (let i = 0; i < bytes.length; i += step) binary += String.fromCharCode(...bytes.subarray(i, i + step));
+  return btoa(binary);
+}
+
+export const workshop = {
+  actionFrames: (cid: string, family: string, action: string, state: "view" | "draft" = "draft") =>
+    get<ActionFrames>(`/api/characters/${cid}/pixel-workshop/action/${family}/${action}?state=${state}`),
+  sheetRaw: (cid: string, family: string, state: "view" | "draft", stamp: string | number = "") =>
+    fetchRaw(state === "draft" ? `/api/drafts/${cid}/pixels/${family}.rgba?v=${stamp}` : `/api/characters/${cid}/pixels/${family}.rgba`),
+  analyze: (cid: string, state: "view" | "draft" = "view") =>
+    get<WorkshopAnalysis>(`/api/characters/${cid}/pixel-workshop?state=${state}`),
+  cellUrl: (cid: string, family: string, key: number, state: "view" | "draft" = "view", stamp = "") =>
+    `/api/characters/${cid}/pixel-workshop/cell/${family}/${key}.png?state=${state}${stamp ? "&v=" + stamp : ""}`,
+  bases: (cid: string) => get<{ bases: Record<string, BaseImageSpec> }>(`/api/characters/${cid}/pixel-workshop/bases`),
+  draftPixels: (cid: string) => get<PixelMeta & { draftRevision: number; draftStamp: string }>(`/api/drafts/${cid}/pixels`),
+  draftSheetUrl: (cid: string, family: string, stamp: string | number) => `/api/drafts/${cid}/pixels/${family}.png?v=${stamp}`,
+  remap: (cid: string, body: { base: string; mapping: ColorPair[]; families?: string[]; groups?: Record<string, PaletteGroup>; dryRun?: boolean }) =>
+    body.dryRun ? post<RemapResult>(`/api/drafts/${cid}/pixel-remap`, body)
+      : notify(cid, post<RemapResult>(`/api/drafts/${cid}/pixel-remap`, body)),
+  generate: (cid: string, body: { action: string; bases?: Record<string, BaseImageSpec>; totalFrames?: number; save?: boolean }) =>
+    body.save ? notify(cid, post<GenerateResult>(`/api/drafts/${cid}/pixel-generate`, body))
+      : post<GenerateResult>(`/api/drafts/${cid}/pixel-generate`, body),
+};
+
+// ---------------------------------------------------------------------------
+// 草稿角色（scratch：还没有游戏 ID，只承载像素）
+
+export interface ScratchMeta {
+  name: string;
+  element: string;
+  slug: string;
+  base: { characterId: string | null; code: string; name?: string };
+  note?: string;
+  boundTo: { characterId: string; code: string; at: string; changes: string[] } | null;
+}
+
+export interface ScratchInfo {
+  characterId: string;
+  code: string;
+  baseView: string;
+  scratch: ScratchMeta;
+  status: DraftStatus;
+  changes: { id: string; kind: string; title: string }[];
+  buildable: false;
+  note: string;
+}
+
+export interface ImportFamilyResult {
+  family: string;
+  sourceCode: string;
+  endpoints: number;
+  sheet: [number, number];
+  actions: string[];
+  checks: DraftCheck[];
+  provenance: { base: string; comparable: boolean; endpoints?: number; matchingEndpoints?: number; differingByAction?: Record<string, number> } | null;
+}
+
+export interface ImportResult {
+  dryRun?: boolean;
+  characterId: string;
+  families: ImportFamilyResult[];
+  remap?: { base: string | null; colors: number } | null;
+  changes?: DraftChange[];
+  status?: DraftStatus;
+}
+
+export interface BindResult {
+  dryRun?: boolean;
+  from: string;
+  characterId: string;
+  code: string;
+  name: string;
+  renamed: string;
+  changes: { kind: string; title: string; auto?: boolean }[];
+  /** e.g. a family with only per-action edits gets the base family added automatically. */
+  notes?: string[];
+  created?: string[];
+}
+
+export const scratchApi = {
+  list: () => get<{ scratch: ScratchInfo[]; elements: string[] }>("/api/scratch"),
+  get: (sid: string) => get<ScratchInfo>(`/api/scratch/${sid}`),
+  create: (body: { name: string; element: string; base: string; slug?: string; note?: string }) =>
+    post<ScratchInfo>("/api/drafts/scratch", body),
+  importSet: (cid: string, body: { files?: Record<string, string>; zip?: string; remap?: unknown; name?: string; dryRun?: boolean }) =>
+    body.dryRun ? post<ImportResult>(`/api/drafts/${cid}/pixel-import`, body)
+      : notify(cid, post<ImportResult>(`/api/drafts/${cid}/pixel-import`, body)),
+  bind: (sid: string, body: { characterId: string; dryRun?: boolean }) =>
+    body.dryRun ? post<BindResult>(`/api/drafts/${sid}/bind`, body) : notify(sid, post<BindResult>(`/api/drafts/${sid}/bind`, body)),
+  rename: (sid: string, body: { name?: string; element?: string }) =>
+    notify(sid, post<ScratchInfo>(`/api/drafts/${sid}/scratch-rename`, body)),
+  remove: (sid: string) => post<{ deleted: string }>(`/api/drafts/${sid}/scratch-delete`, {}),
 };

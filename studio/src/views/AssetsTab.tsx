@@ -17,10 +17,15 @@ export function AssetsTab({ characterId }: { characterId: string }) {
   const [data, setData] = useState<CharacterAssets | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [onlyMissing, setOnlyMissing] = useState(false);
+  // Groups start folded (a character has ~200 files); groups with missing files start open.
+  const [open, setOpen] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     setData(null);
-    api.assets(characterId).then(setData, (e: Error) => setError(e.message));
+    api.assets(characterId).then((d) => {
+      setData(d);
+      setOpen(new Set(d.groups.filter((g) => g.missing).map((g) => g.id)));
+    }, (e: Error) => setError(e.message));
   }, [characterId]);
 
   if (error) return <Notice kind="error">资源清单读取失败：{error}</Notice>;
@@ -37,23 +42,33 @@ export function AssetsTab({ characterId }: { characterId: string }) {
           <input type="checkbox" checked={onlyMissing} onChange={(e) => setOnlyMissing((e.target as HTMLInputElement).checked)} />
           只看缺失
         </label>
-        <span class="toc">
-          {data.groups.map((g) => <a href={`#asset-${g.id}`} onClick={(e) => { e.preventDefault(); document.getElementById(`asset-${g.id}`)?.scrollIntoView({ behavior: "smooth" }); }}>{g.label} {g.present}{g.missing ? `/-${g.missing}` : ""}</a>)}
-        </span>
+        <button class="small-btn" onClick={() => setOpen(new Set(data.groups.map((g) => g.id)))}>全部展开</button>
+        <button class="small-btn" onClick={() => setOpen(new Set())}>全部收起</button>
       </div>
       {data.groups.map((group) => (
-        <AssetGroupView group={group} onlyMissing={onlyMissing} data={data} />
+        <AssetGroupView group={group} onlyMissing={onlyMissing} data={data} open={open.has(group.id) || onlyMissing}
+          onToggle={() => { const next = new Set(open); if (next.has(group.id)) next.delete(group.id); else next.add(group.id); setOpen(next); }} />
       ))}
     </div>
   );
 }
 
-function AssetGroupView({ group, onlyMissing, data }: { group: AssetGroup; onlyMissing: boolean; data: CharacterAssets }) {
+function AssetGroupView({ group, onlyMissing, data, open, onToggle }: {
+  group: AssetGroup; onlyMissing: boolean; data: CharacterAssets; open: boolean; onToggle: () => void;
+}) {
   const items = onlyMissing ? group.items.filter((i) => !i.layer) : group.items;
+  if (!open) {
+    return (
+      <section class="asset-group folded" id={`asset-${group.id}`}>
+        <h3><button class="group-toggle" onClick={onToggle} aria-expanded="false">▸ {group.label}</button>
+          <span class="count">{group.present}</span>{group.missing ? <span class="count bad">缺 {group.missing}</span> : null}</h3>
+      </section>
+    );
+  }
   return (
     <section class="asset-group" id={`asset-${group.id}`}>
       <h3>
-        {group.label}
+        <button class="group-toggle" onClick={onToggle} aria-expanded="true">▾ {group.label}</button>
         <span class="count">{group.present}</span>
         {group.missing ? <span class="count bad">缺 {group.missing}</span> : null}
       </h3>

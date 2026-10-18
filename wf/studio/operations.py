@@ -19,7 +19,7 @@ from . import voice as voice_mod
 from .assets import AssetIndex
 from .characters import list_characters
 from .drafts import DraftError, DraftStore, new_change_id, now, sha256, status, validate
-from .pixel_import import PixelImporter, decode_frame
+from .pixel_import import PixelImporter, request_frames
 from .portrait import GROUP_LABEL as GROUP_LABELS, GROUPS as GROUP_SPECS, SHAPE_LABEL as SHAPE_LABELS
 from .portrait import SLOT_USE as SLOT_USES, PortraitService
 
@@ -66,10 +66,11 @@ class DraftOps:
         return codes or [c["code"] for c in items]
 
     # -- helpers ----------------------------------------------------------
-    def _file_maker(self, cid: str):
+    def _file_maker(self, cid: str, writer=None):
+        """Draft file entries; ``writer(relative, data)`` stages a file instead of writing it now."""
         def make(logical: str, root: str, data: bytes, encoding: str, *, approximate: bool, note: str = "") -> dict:
             relative = f"files/{ROOT_DIR[root]}/{logical}"
-            self.store.write_file(cid, relative, data)
+            (writer or (lambda rel, raw: self.store.write_file(cid, rel, raw)))(relative, data)
             from .deliver_media import read_root
             base_raw = read_root(self.source, root, logical)
             entry = {"logical": logical, "root": root, "draft": relative, "sha256": sha256(data), "size": len(data),
@@ -133,13 +134,11 @@ class DraftOps:
     def pixel_save(self, cid: str, request: dict) -> dict:
         validate(request, "pixelRequest")
         info = self.character(cid)
-        frames = []
-        for index, item in enumerate(request["frames"]):
-            if "png" not in item:
-                raise DraftError(f"第 {index + 1} 帧缺少 png")
-            frames.append(decode_frame(item["png"], index))
+        frames = request_frames(request)
         durations = [int(item["duration"]) for item in request["frames"]]
-        result = self.pixels.check(info["code"], request["family"], request["action"], frames, durations)
+        result = self._pixel_importer(cid, request["family"]).check(
+            info["code"], request["family"], request["action"], frames, durations,
+            anchors=[item["anchor"] for item in request["frames"]])
         for index, (image, item) in enumerate(zip(frames, request["frames"])):
             x, y = item["anchor"]
             if not (-image.width <= x <= image.width * 2 and -image.height <= y <= image.height * 2):
@@ -176,6 +175,18 @@ class DraftOps:
             "checks": result["checks"],
         }
         return self._commit(cid, info["code"], "pixel_action", built)
+
+    def _pixel_importer(self, cid: str, family: str) -> PixelImporter:
+        """Check new frames against the draft's whole-family replacement when one exists."""
+        changeset = self.store.load(cid)
+        replaced = [c for c in (changeset or {}).get("changes", [])
+                    if c["kind"] == "pixel_family" and c["target"]["family"] == family]
+        if not replaced:
+            return self.pixels
+        from .deliver_pixel import compile_pixels
+        from .pixel_workshop_ops import _Overlay
+        members = compile_pixels(self.source, self.store, {**changeset, "changes": replaced}).members
+        return PixelImporter(_Overlay(self.source, members))
 
     # -- voice ----------------------------------------------------------
     def voice_lines(self, cid: str) -> dict:
@@ -277,11 +288,11 @@ PORTRAIT_NOTES = [
     "三张定位表（character_image / trimmed_image / full_shot_image_attribute）只记目标行，生成时由 wf deliver 写。",
 ]
 ACTIONS = [
-    {"id": "save", "label": "保存", "enabled": True, "note": "整体 schema 校验 + 文件哈希复核，写入草稿 changeset.json"},
+    {"id": "save", "label": "保存", "enabled": True, "note": "整份草稿校验一遍、逐个文件核对后存好"},
     {"id": "generate", "label": "生成", "enabled": True,
-     "note": "本地交付：编译草稿并运行 wf deliver / check（写 work/studio-deliveries/）"},
+     "note": "在本机打出测试补丁：编译草稿、分包、检查（在后台跑，可取消）"},
     {"id": "export", "label": "导出", "enabled": True,
-     "note": "查看/下载已生成交付：ZIP、清单、requires.json、检查结果"},
-    {"id": "apply", "label": "应用", "enabled": False, "note": "未接入：应用到测试服不在编辑台范围，需人工走发布流程"},
-    {"id": "publish", "label": "发布", "enabled": False, "note": "未接入：编辑台不发布"},
+     "note": "查看、下载已经生成的补丁包和检查结果"},
+    {"id": "apply", "label": "应用", "enabled": False, "note": "不在编辑台：放到测试服要走发布流程"},
+    {"id": "publish", "label": "发布", "enabled": False, "note": "编辑台不发布"},
 ]

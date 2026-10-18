@@ -37,6 +37,7 @@ class Response:
     status: int
     body: bytes
     content_type: str = "application/json; charset=utf-8"
+    cache: str | None = None  # explicit Cache-Control (e.g. draft-state images change under one URL)
 
 
 def json_response(value, status: int = 200) -> Response:
@@ -74,8 +75,8 @@ class StudioApp:
             ("GET", re.compile(r"^/api/patches/(?P<archive>[^/]+\.zip)/members$"), self.patch_files),
             # -- draft workspace (M3.2) --
             ("GET", re.compile(r"^/api/drafts$"), self.draft_index),
-            ("GET", re.compile(r"^/api/drafts/(?P<cid>\d+)$"), self.draft),
-            ("GET", re.compile(r"^/api/drafts/(?P<cid>\d+)/file$"), self.draft_file),
+            ("GET", re.compile(r"^/api/drafts/(?P<cid>\d+|scratch-[a-z0-9][a-z0-9-]{0,47})$"), self.draft),
+            ("GET", re.compile(r"^/api/drafts/(?P<cid>\d+|scratch-[a-z0-9][a-z0-9-]{0,47})/file$"), self.draft_file),
             ("GET", re.compile(r"^/api/characters/(?P<cid>\d+)/portrait/(?P<form>[01])$"), self.portrait_info),
             ("GET", re.compile(r"^/api/characters/(?P<cid>\d+)/voice$"), self.voice_lines),
             ("GET", re.compile(r"^/api/studio/masks/(?P<slot>[a-z0-9_]+)\.png$"), self.mask),
@@ -84,11 +85,15 @@ class StudioApp:
             ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/portrait$"), self.portrait_save),
             ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/pixel$"), self.pixel_save),
             ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/voice$"), self.voice_save),
-            ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/changes/(?P<change>c-[0-9a-f]{12})/revert$"), self.revert),
-            ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/save$"), self.save),
+            ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+|scratch-[a-z0-9][a-z0-9-]{0,47})/changes/(?P<change>c-[0-9a-f]{12})/revert$"), self.revert),
+            ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+|scratch-[a-z0-9][a-z0-9-]{0,47})/save$"), self.save),
         ]
         from .ability_routes import AbilityRoutes
-        self.routes.extend(AbilityRoutes(self, server_dir).routes())
+        self.abilities = AbilityRoutes(self, server_dir)
+        self.routes.extend(self.abilities.routes())
+        from .pixel_routes import PixelRoutes
+        self.pixel_workshop = PixelRoutes(self)
+        self.routes.extend(self.pixel_workshop.routes())
         from .deliver_routes import DeliverRoutes
         self.deliveries = DeliverRoutes(self, server_dir, default_provides=default_provides)
         self.routes.extend(self.deliveries.routes())
@@ -146,6 +151,22 @@ class StudioApp:
         with self._lock:
             self._lookup = index
         return index
+
+    def prewarm(self) -> None:
+        """Fill the per-process caches (registry, roster, parsed tables, key indexes, reference
+        tokens) so the first 文案 / 换键 request does not pay for them. Safe to run in a thread."""
+        from . import perf
+        from .ability_engine import EditState
+        perf.registry()
+        self.character_list()
+        editor = self.abilities.editor()
+        state = EditState(self.source)
+        for logical in ("master/ability/ability.orderedmap", "master/ability/leader_ability.orderedmap"):
+            for leaf in state.table(logical).values():
+                if isinstance(leaf, str) and leaf:
+                    perf.leaf_tokens(leaf)
+        for table in ("ability", "leader_ability", "action_skill"):
+            editor._key_index(table, None)
 
     # -- handlers -------------------------------------------------------
     def health(self, query) -> Response:
@@ -285,13 +306,17 @@ def make_handler(app: StudioApp, static_root: Path, guard: WriteGuard):
             pass
 
         def _send(self, response: Response, head: bool = False):
-            self.send_response(response.status)
-            self.send_header("Content-Type", response.content_type)
-            self.send_header("Content-Length", str(len(response.body)))
-            self.send_header("Cache-Control", "no-store" if response.content_type.startswith("application/json") else "max-age=600")
-            self.end_headers()
-            if not head:
-                self.wfile.write(response.body)
+            try:
+                self.send_response(response.status)
+                self.send_header("Content-Type", response.content_type)
+                self.send_header("Content-Length", str(len(response.body)))
+                self.send_header("Cache-Control", response.cache or (
+                    "no-store" if response.content_type.startswith("application/json") else "max-age=600"))
+                self.end_headers()
+                if not head:
+                    self.wfile.write(response.body)
+            except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+                self.close_connection = True  # the browser navigated away; nothing to report
 
         def _static(self, path: str) -> Response:
             relative = path.lstrip("/") or "index.html"

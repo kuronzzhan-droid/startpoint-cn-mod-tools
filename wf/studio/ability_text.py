@@ -8,6 +8,30 @@ from wf.balance.rows import column_index
 from wf.text.edit import prepare_edit
 from wf.text.model import CHARACTER, CHARACTER_TEXT, SERVER_TARGETS, TextWorkspace
 
+from . import perf
+
+
+def codec_parse(raw):
+    import wf_quest_lib as codec
+    return codec.parse_node(raw)
+
+
+class _ReadWorkspace(TextWorkspace):
+    """wf text workspace over an EditState whose tables come from the shared parse cache.
+
+    Only for reading (documents, custom keys, owners): the parsed tables are shared, not copied.
+    """
+
+    def table(self, logical):
+        if logical not in self.tables:
+            raw, _ = self.view.read_raw(logical)
+            edited = logical in getattr(self.view, "client", {})
+            parsed = codec_parse(raw) if edited else perf.parsed(raw, shared=True)
+            if not isinstance(parsed, dict):
+                raise ValueError(f"text table is not an orderedmap: {logical}")
+            self.raw[logical], self.tables[logical] = raw, parsed
+        return self.tables[logical]
+
 
 def _retain_separators(before, after):
     from wf.balance.rows import join_leaf, split_leaf
@@ -27,17 +51,23 @@ def load_mirrors(state, server_dir=None, *, server_text=None, server_rank=None):
         paths = tuple(Path(server_dir) / target for target in SERVER_TARGETS)
     if any(path is None for path in paths):
         raise ValueError("文本修改需要显式指定两份服务端镜像（server_dir 或 server_text/server_rank）")
-    # TextWorkspace validates distinct inputs and JSON shape without writing them.
-    workspace = TextWorkspace(state, *map(Path, paths))
-    state.server_original = dict(workspace.server_raws)
-    state.servers = dict(workspace.server_raws)
+    paths = tuple(Path(path) for path in paths)
+    # Same validation as TextWorkspace (distinct inputs, strict JSON), read through the
+    # (path, mtime, size) cache; the files are never written.
+    if len({path.resolve() for path in paths}) != len(paths):
+        raise ValueError("server text mirrors must use distinct input paths")
+    raws = {target: perf.file_bytes(path) for target, path in zip(SERVER_TARGETS, paths)}
+    for raw in raws.values():
+        perf.mirror(raw, shared=True)
+    state.server_original = dict(raws)
+    state.servers = dict(raws)
 
 
 def workspace_for(state):
-    from wf.text.json_patch import parse_mirror
-    workspace = TextWorkspace(state)
+    """Read-only wf text workspace of the state (cached table parses and mirror documents)."""
+    workspace = _ReadWorkspace(state)
     workspace.server_raws = dict(state.servers)
-    workspace.server_docs = {key: parse_mirror(value) for key, value in state.servers.items()}
+    workspace.server_docs = {key: perf.mirror(value, shared=True) for key, value in state.servers.items()}
     workspace.server_raw = workspace.server_raws.get(SERVER_TARGETS[0])
     workspace.server = workspace.server_docs.get(SERVER_TARGETS[0])
     return workspace
@@ -75,9 +105,10 @@ def apply_text(state, cid, sections, *, shared_ok=False):
     same pre-edit client view, and only those computed leaf changes are merged.
     This retains its text validation and byte-preserving JSON patcher.
     """
-    from wf.balance.ownership import owner_index
+    from .ability_engine import owner_index
     import wf_quest_lib as codec
     from wf.text.model import cells
+    from .text_panel import custom_owners
 
     workspace = workspace_for(state)
     document = workspace.read(cid)
@@ -91,7 +122,14 @@ def apply_text(state, cid, sections, *, shared_ok=False):
             recipients.setdefault(owner, {})["action_skill"] = copy.deepcopy(sections["action_skill"])
     for section in ("custom_ability_string", "desc_override"):
         for key, change in sections.get(section, {}).items():
-            owners = sorted(owner for owner in all_characters if key in workspace.custom_keys(owner))
+            if section == "desc_override" and change.get("old") is None:
+                from wf.text.edit import override_owners
+                owners = sorted(override_owners(workspace, key))  # new key: owners of the slot row c0
+                if not owners:
+                    raise ValueError(f"{section}/{key}: 不是本角色任何槽的覆盖键（应为 desc_override_<槽行 c0>）")
+            else:
+                # Same owners as scanning every character's custom_keys, prefiltered.
+                owners = sorted(custom_owners(workspace, [key])[key])
             shared[section + "/" + key] = owners
             for owner in owners:
                 recipients.setdefault(owner, {}).setdefault(section, {})[key] = change

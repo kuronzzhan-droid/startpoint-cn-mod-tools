@@ -69,6 +69,10 @@ export function PixelImport({ characterId }: { characterId: string }) {
   const [frames, setFrames] = useState<Frame[]>([]);
   const [grid, setGrid] = useState({ columns: 4, rows: 1, count: 0 });
   const [sheetFile, setSheetFile] = useState<HTMLImageElement | null>(null);
+  const [sheetUrl, setSheetUrl] = useState<string | null>(null);
+  // Frames split from a sheet are only previews: saving sends the sheet itself and the backend
+  // splits it, so no pixel is ever re-encoded through a browser canvas.
+  const [split, setSplit] = useState<{ columns: number; rows: number; count: number } | null>(null);
   const [selected, setSelected] = useState(0);
   const [tick, setTick] = useState(0);
   const [playing, setPlaying] = useState(true);
@@ -195,6 +199,7 @@ export function PixelImport({ characterId }: { characterId: string }) {
     const sorted = [...files].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
     const urls = await Promise.all(sorted.map(readAsDataUrl));
     adopt(await Promise.all(urls.map(loadImage)), urls);
+    setSplit(null);
     setMessage({ kind: "info", text: `导入 ${sorted.length} 帧（按文件名排序）。` });
   };
   const splitSheet = async () => {
@@ -220,13 +225,19 @@ export function PixelImport({ characterId }: { characterId: string }) {
         if (count ? urls.length < count : any) urls.push(canvas.toDataURL("image/png"));
       }
     adopt(await Promise.all(urls.map(loadImage)), urls);
-    setMessage({ kind: "info", text: `精灵图按 ${columns}×${rows} 切出 ${urls.length} 帧${count ? "" : "（跳过全透明格）"}。` });
+    setSplit({ columns, rows, count });
+    setMessage({ kind: "info", text: `精灵图按 ${columns}×${rows} 切出 ${urls.length} 帧${count ? "" : "（跳过全透明格）"}。保存时由后端按同一网格切帧。` });
   };
-  const request = () => ({
+  const request = () => split && sheetUrl ? {
+    family: familyName, action: actionName,
+    sheet: { png: sheetUrl.replace(/^data:[^,]*,/, ""), columns: split.columns, rows: split.rows, ...(split.count ? { count: split.count } : {}) },
+    frames: frames.map((f) => ({ duration: f.duration, anchor: f.anchor })),
+    origin: { mode: "sheet", columns: split.columns, rows: split.rows },
+  } : {
     family: familyName, action: actionName,
     frames: frames.map((f) => ({ png: f.url.replace(/^data:[^,]*,/, ""), duration: f.duration, anchor: f.anchor })),
-    origin: { mode: sheetFile ? "sheet" : "frames", columns: grid.columns, rows: grid.rows },
-  });
+    origin: { mode: "frames" },
+  };
   const runCheck = async () => {
     setBusy("check"); setMessage(null);
     try { setCheck(await drafts.checkPixel(characterId, request())); }
@@ -250,8 +261,8 @@ export function PixelImport({ characterId }: { characterId: string }) {
   return (
     <div class="pixel-import">
       <p class="hint">
-        按动作槽导入新帧：逐帧 PNG 或精灵图网格切分；每帧可设停留帧数（60fps）和锚点（脚底中心）。草稿只存源帧和参数，
-        重新装箱 sprite_sheet / 改写 atlas 与时间轴属于「生成」（待接入 wf deliver，M1 分支）。
+        替换一个动作：上传逐帧 PNG，或一张精灵图按网格切开；每帧设停留帧数（60 帧 = 1 秒）和定位点（脚底中心）。
+        草稿只存这些帧和参数，「生成」时再把它们装进图集。只有最后一个动作能改总长，不能新增动作。
       </p>
       <div class="toolbar">
         <label>像素族
@@ -271,7 +282,10 @@ export function PixelImport({ characterId }: { characterId: string }) {
           <label class="upload-btn">精灵图
             <input type="file" accept="image/png" onChange={async (e) => {
               const file = (e.target as HTMLInputElement).files?.[0];
-              if (file) setSheetFile(await loadImage(await readAsDataUrl(file)));
+              if (!file) return;
+              const url = await readAsDataUrl(file);
+              setSheetUrl(url);
+              setSheetFile(await loadImage(url));
             }} />
           </label>
           {sheetFile ? <span class="small muted">{sheetFile.naturalWidth}×{sheetFile.naturalHeight}</span> : null}
@@ -284,7 +298,7 @@ export function PixelImport({ characterId }: { characterId: string }) {
       {message ? <Notice kind={message.kind === "error" ? "error" : "info"}>{message.text}</Notice> : null}
       <div class="compare">
         <figure>
-          <figcaption><strong>原版</strong> <span class="muted small">{action ? `${action.label} · ${action.totalFrames} 帧 · ${action.cells.length} 张图` : "（原图集没有这个动作）"}</span></figcaption>
+          <figcaption><strong>改动前</strong> <span class="muted small">{action ? `${action.label} · ${action.totalFrames} 帧 · ${action.cells.length} 张图` : "（原图集没有这个动作）"}</span></figcaption>
           <canvas ref={left} class="pixel-canvas" data-side="original" />
         </figure>
         <figure>
@@ -311,8 +325,8 @@ export function PixelImport({ characterId }: { characterId: string }) {
               <div class={"frame-item" + (i === selected ? " on" : "")} onClick={() => setSelected(i)}>
                 <img src={f.url} alt="" style={{ width: Math.min(64, f.width * 2) + "px" }} />
                 <span class="small mono">#{i + 1} {f.width}×{f.height}</span>
-                <label class="small">停留<input type="number" min={1} max={600} value={f.duration}
-                  onInput={(e) => update(i, { duration: Math.max(1, Number((e.target as HTMLInputElement).value)) })} />帧</label>
+                <label class="small">停留<input type="number" min={1} max={600} step={1} value={f.duration}
+                  onInput={(e) => update(i, { duration: Math.max(1, Math.min(600, Math.round(Number((e.target as HTMLInputElement).value) || 1))) })} />帧</label>
               </div>
             ))}
           </div>

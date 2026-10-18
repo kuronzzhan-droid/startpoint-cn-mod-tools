@@ -7,26 +7,42 @@ import wf_client_legality
 import wf_describe
 import wf_quest_lib as codec
 from wf.balance.engine import _assert_equal, _edit_rows
-from wf.balance.ownership import CHARACTER, check_owner, owner_index
+from wf.balance.ownership import CHARACTER, check_owner
 from wf.balance.rows import TABLES, WIDTHS, column_index, join_leaf, split_leaf, unison_eligible
 from wf.caps.facts import table_signals
-from wf.caps.registry import load_registry
 from wf.rules.catalog import result
 from wf.text.edit import _encode
+
+from . import perf
+
+
+def owner_index(view):
+    """Ownership index of the view's current character table (memoized by its bytes)."""
+    return perf.owners(view)
 
 
 class EditState:
     """A disposable overlay; no method writes the input view or a table file."""
 
     def __init__(self, source):
-        self.view = getattr(source, "view", source)
+        # StudioSource: read through its raw cache instead of reopening the patch ZIPs.
+        self.view = perf.view_for(source)
         self.original = {}
         self.client = {}
         self.changes = []
         self.checks = []
         self.servers = {}
         self.server_original = {}
-        self.registry = load_registry()
+        self.registry = perf.registry()
+
+    def clone(self):
+        """Independent overlay with the same inputs and edits (inputs and leaves are immutable)."""
+        other = EditState.__new__(EditState)
+        other.view, other.registry = self.view, self.registry
+        other.original, other.client = dict(self.original), dict(self.client)
+        other.servers, other.server_original = dict(self.servers), dict(self.server_original)
+        other.changes, other.checks = list(self.changes), list(self.checks)
+        return other
 
     def read_raw(self, logical):
         if logical not in self.original:
@@ -34,7 +50,15 @@ class EditState:
         return self.client.get(logical, self.original[logical]), "draft-memory"
 
     def table(self, logical):
-        return codec.parse_node(self.read_raw(logical)[0])
+        """A mutable parse of the current table.
+
+        View tables come from the shared parse cache (structural copy); tables this overlay
+        already rewrote are parsed directly, so intermediate edit states never fill the cache.
+        """
+        raw = self.read_raw(logical)[0]
+        if logical in self.client:
+            return codec.parse_node(raw)
+        return perf.parsed(raw)
 
     def write_table(self, logical, table):
         raw = self.read_raw(logical)[0]
@@ -99,7 +123,7 @@ def _skill_structure(state, cid, operation, document, owners):
                 raise ValueError("action_skill move target is out of range or unchanged")
             records.insert(target, records.pop(index))
             state.checks.append(result("ability.row-order", "待验证", "技能档位顺序已改变；请核对技能等级与能量"))
-    if kind in {"insert_row", "delete_row"}:
+    if kind in {"insert_row", "delete_row", "move_row"}:  # a move re-points every tier reference too
         from .ability_references import tier_reference_check
         state.checks.append(tier_reference_check(state, key, owners, len(levels), len(records), kind))
     document[key] = {str(i + 1): join_leaf(node.get(str(i + 1), node[levels[-1]]), [record])

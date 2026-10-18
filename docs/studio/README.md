@@ -225,7 +225,7 @@ action_skill 的结构编辑按客户端档位处理：`level` 指源/插入档�
 - 模板选择器：区块 + kind 搜索（编号/中文/英文），有先例/待验证筛选；零先例 kind 标「待验证」仍可选，插入前可选位置；键盘 ↑↓ Enter Esc。
 - 提示就地显示：首行 c1（合击资格）变化、共享键（列出全部持有者，须勾选确认 → `shared_ok`）、错表/错块与缺字段（`问题` 指名的列即使为空也显示并标红）、技能 c0/c1 走 wf text 面板规则（违规条目逐条展示）。技能文本编辑会对每一档带旧值断言并同步两份服务端镜像，启动时需 `--server-dir`。
 - 已写入草稿但与原版不同的行用 `GET .../ability/preview` 显示「原版 / 草稿」描述对照。
-- 未做：desc_override / custom_ability_string 覆盖文案编辑、技能档位插删移、挂新键（后端已支持，界面未开放）。
+- 覆盖文案编辑、技能档位插删、换键见下文 M4c；技能档位「移动」界面未开放。
 
 ### 生成 / 导出
 
@@ -249,3 +249,82 @@ python -m wf.studio --provides work/studio-provides/v34-x86.json --server-dir <�
 ```
 
 页面上仍然可以改成别的 provides 文件；留空时交付不通过。
+
+## M4c：文案、技能档位、换键（前端 + 只读接口）
+
+写入全部沿用 `POST /api/drafts/<cid>/ability`（`abilityRequest`）：数值/结构/`attach_key` 走 `operations`，desc_override、custom_ability_string、队长名 c10 走 `text`（wf text，两份服务端镜像同步，交付语义不变）。新增的只是只读接口：
+
+| 方法 | 路径 | 作用 |
+|---|---|---|
+| GET | `/api/characters/<cid>/text` | 草稿态 wf text 文档：技能每档 c0/c1、desc_override、custom_ability_string 的逐字段规则（面板规范逐条五态 + 作者规则）、原版值、全部持有者；服务端生效文本（p5b 整行覆盖 base）与客户端镜像列 c4–c10 对照；队长名 c10 与 character c18 |
+| POST | `/api/drafts/<cid>/text/lint` | `{text: abilityText}` 投影到草稿文档后跑同一套规则，不写盘（前端实时检查用） |
+| GET | `/api/studio/ability/keys?table=&q=&cid=` | 按键名、持有角色名/ID、中文描述检索现有键，列出全部持有者；带 cid 时包含草稿里新建的键 |
+| GET | `/api/characters/<cid>/ability` | 增加 `slots`（能力 1–6、队长技、技能键、队长名 c18），供 `attach_key` 的 `old_key` 断言 |
+
+- 「文案」页：每个文本框下显示作者规则（不写「生命值100%以下」类恒真条件；desc_override 不写「自身为队长时」；技能描述不重复强化效果；不用「…之核」命名）和面板规范逐条状态（问题/待验证/满足 + 条款原文与覆盖边界）。改过的字段出现「问题」时禁止写入。「自身为队长时」在 wf text 中只对 `_leader/_ls` 与 `_1–_6` 键判定，编辑台对全部 desc_override 额外检查（仅编辑侧门禁，交付检查未改）。
+- 共享的覆盖/技能文本须勾选 shared_ok；wf text 只有请求级 `shared_ok`，前端要求每个共享键都确认后才发送。
+- 「技能」页「技能档位」：在某档后插入（复制该档全部列）或删除；后端试算返回的 `ability.skill-tier-references`（默认档位、玛纳技能进化/SLv 节点、觉醒来源、缺引用表、未觉醒最高档缺档）逐项列出，勾选「已核对」后才能写入。档位结构与技能文本、换技能键不能放在同一次写入。
+- 换键：能力 1–6、队长技、技能卡片右上「换键…」。挂现有键（检索、持有者、共享确认）或复制当前键为新键（逐格 null 旧值断言）。换队长技键时提示同步 character c18 / character_text c10，可在对话框里一并改队长名（走 wf text）。
+- 性能：custom 文本持有者用「名称是键的子串或键出现在能力行」做必要条件预筛，再逐个调用原 `custom_keys`，结果与全表扫描相同（`tests/test_studio_m4c_text.py`），`apply_text` 同样改用它。
+- 截图在仓库外 `m4c-shots/`（139985）。
+
+## M6a：像素工坊
+
+角色页「像素工坊」标签，四个子页；右上「数据」可切换「当前视图 / 草稿态」（草稿态 = 把草稿里的整族映射与逐动作替换按生成时同一个编译器合成后再拆解）。所有写入只进草稿，生成仍走 `draft build` / 交付桥。
+
+- **拆解**：两族（pixelart / special）每个动作一条时间轴，图块宽度 ∝ 停留帧数；每张图标出端点帧号、停留帧数、dy（可见底边相对原点的下沉，正 = 往下）；被多个端点复用的图集区域标 `R编号`。点图看 fx/fy、可见尺寸、帧框包围盒、图集区域与全部复用位置。另列复用区域、逐像素重复区域（打包器没去重）、无动作引用区域；调色板按「本体 / 描边 / 特效 / 入棺幽灵模板」分组（启发：在待机/走路出现 = 本体，只在入棺/幽灵/复活出现 = 模板，近黑 = 描边），分组可改，记在本机浏览器。坑位检查：走路帧近乎全透明（瞬移式走路）、脚底/横心漂移、明显超大的帧、frame.scale ≠ 6、原点 ≠ (−128,−128)、layer0 预算与填充率、未去重、带 sounds、缺必需动作（special 缺 special_land/special_pose 记为错误）。
+- **母本映射**：检索母本角色，左右两边调色板、逐色映射表（可锁分组：本体只映射到本体色、特效只映射到特效色；「自动建议」按同组明度排名；可自定义颜色），预览母本与映射后同步播放（单个动作或全部动作）。保存 = `pixel_family` 改动：母本整族四件按精确 RGB→RGB 改色（只动 alpha>0 像素，alpha 原样），atlas 条目名与 frame.name 的 `character/<母本>/` 前缀换成本角色，timeline 逐字节照搬（区间、锚点、frame.scale、帧时长全保留）。草稿保存四件文件（PNG + `amf3-deflate`），并记录母本四件 SHA-256 与映射表；生成时后端按母本 + 映射表重算，与草稿逐字节（sheet 逐像素）核对，母本变化或草稿被改都拒绝。
+- **程序化动作**：从正面 / 背面 / 躺倒三张底图（可点本角色现有帧，或上传 PNG）按官方配方合成 walk_front、walk_back、kachidoki、into_coffin、ghost_raise、ghost_neutral、revive；与现有动作同钟对照播放。帧为 256² 帧框、原点 (128,128)，左 = 128 − w//2，上 = 128 − h + dy，编译后 fx = −(128 − w//2)、fy = −(128 − h + dy)；整套动作按本角色待机帧 dy 中位数对齐地线（`ground`）。总长默认等于本角色该动作的现有总长，官方端点按比例缩放。保存 = 现有 `pixel_action`。
+- **画板**：选族与动作槽，把该动作每张图还原成 256² 帧逐帧编辑：铅笔 / 橡皮 / 填充 / 吸管、撤销、洋葱皮（前 30% / 后 15%）、复制帧、删除帧、整帧上下移 1px（改 dy）、改停留帧数；调色板锁定为本角色（草稿态）颜色，可另加颜色并提示。视图默认是本动作可见范围外扩，可切换整帧。保存 = `pixel_action`（锚点为帧框原点）。
+- 生成时同一动作里逐像素相同的新帧共用一个图集区域（官方图集同样复用）。
+
+| 方法 | 路径 | 作用 |
+|---|---|---|
+| GET | `/api/characters/<cid>/pixel-workshop?state=view\|draft` | 拆解结果 |
+| GET | `/api/characters/<cid>/pixel-workshop/cell/<族>/<端点>.png?state=&trim=` | 单张图（默认裁掉透明边） |
+| GET | `/api/characters/<cid>/pixel-workshop/suggest?base=<母本>` | 同组按明度排名的映射建议 |
+| GET | `/api/characters/<cid>/pixel-workshop/bases` | 程序化动作的默认底图 |
+| GET | `/api/drafts/<cid>/pixels`、`/api/drafts/<cid>/pixels/<族>.png` | 草稿态像素（与「像素小人」同格式） |
+| POST | `/api/drafts/<cid>/pixel-remap` | `pixelRemapRequest`（`dryRun` 只检查） |
+| POST | `/api/drafts/<cid>/pixel-generate` | `pixelGenerateRequest`（`save: true` 才写草稿） |
+
+命令行（输出一行 JSON）：
+
+```powershell
+python -m wf.studio.draft pixel-analyze 139985 --brief [--draft] [--suggest-base 111007]
+python -m wf.studio.draft pixel-remap 139985 --base 111007 --suggest [--mapping map.json] [--family pixelart] [--dry-run]
+python -m wf.studio.draft pixel-generate 139985 --action walk_front [--front pixelart:2 | --front front.png] [--save] [--out-dir 预览目录]
+```
+
+近似与未做：调色板分组是启发式；程序化动作的旋转（胜利 12°/−16°/6°）用最近邻、火花位置由 md5 确定，入棺/幽灵/复活的半透明淡入淡出是近似，官方入棺实为升空消散；躺倒缺省用正面顺时针转 90° 代替；画板没有选区/镜像/多层；预览里半透明像素的改色走浏览器 canvas（可能有 1 级舍入），以后端结果为准。未上真机。测试：`tests/test_studio_pixel_workshop.py`。截图在仓库外 `m6a-shots/`。
+
+### 草稿角色（还没有游戏 ID）
+
+「角色工坊」旁新增「草稿角色」：新建时填名字、属性、母本（代码名或 ID，必须有像素族）。草稿放在 `work/studio-drafts/scratch-<slug>/`（gitignore），changeset 多一段 `scratch`（名字、属性、母本、绑定状态），占位代码 `scratch_<slug>`，不写任何表行。草稿角色只承载像素改动。
+
+- 「当前视图」= 母本整族四件改名到占位代码（区间、锚点、frame.scale 来自母本）；像素工坊四页照常可用（母本映射可以用别的角色当母本、程序化动作、画板都写进这份草稿）。
+- **导入像素集**：文件夹或 zip，按文件名识别 `sprite_sheet.png / .atlas / pixelart.frame / .timeline`（special 同构）；可带映射表 JSON（`{"base": 母本代码或 ID, "mapping": {"#src": "#dst"}}` 或 `[{from,to}]`，包里名字含 remap/mapping/palette 的 JSON 自动识别）。atlas/frame 前缀改成本草稿代码，存为 `pixel_family`（mode=import，草稿文件即内容）。有映射表时逐端点对照「母本 + 映射表」：一致的是映射，不一致的按动作列为手绘。区间与母本不同、缺必需动作、frame.scale ≠ 6 会提示；端点越界、四件不全、frame.name 不是 `character/<代码>/pixelart/<族>` 直接拒绝。导入对真实角色同样可用。
+- **绑定到角色 ID**：目标 ID 必须在当前视图角色表里。全部像素改动改名到该角色代码后写进 `work/studio-drafts/<ID>/`（同族同动作的旧改动被替换）；母本映射类改动按母本 + 映射表用新代码重算并逐字节核对。草稿角色记下 `boundTo`，不能重复绑定。
+- **生成**：草稿角色永远不生成交付。`draft build scratch-…` 与界面「生成」都拒绝并说明：未绑定时提示先绑定，已绑定时提示对绑定的角色 build。
+
+| 方法 | 路径 | 作用 |
+|---|---|---|
+| GET | `/api/scratch` | 草稿角色列表 |
+| POST | `/api/drafts/scratch` | 新建（`scratchCreateRequest`；写接口一律在 `/api/drafts/` 下） |
+| GET | `/api/scratch/<sid>` | 草稿角色信息 |
+| GET | `/api/characters/<sid>/pixels`、`…/pixels/<族>.png` | 母本改名后的「当前视图」 |
+| POST | `/api/drafts/<cid 或 sid>/pixel-import` | `pixelImportRequest`（`dryRun` 只检查） |
+| POST | `/api/drafts/<sid>/bind` | `scratchBindRequest`（`dryRun` 只预览） |
+| POST | `/api/drafts/<sid>/build` | 一律拒绝（说明原因） |
+
+像素工坊各接口、草稿读写（读取 / 保存 / 撤销 / 帧保存）都接受 `scratch-<slug>`。命令行：
+
+```powershell
+python -m wf.studio.draft scratch-new --name 水杰拉德 --element 水 --base black_wolf_knight_wt23 --slug gerald-water
+python -m wf.studio.draft pixel-import scratch-gerald-water --dir <离线像素文件夹> [--remap remap.json] [--dry-run]
+python -m wf.studio.draft pixel-analyze scratch-gerald-water --brief --draft
+python -m wf.studio.draft scratch-bind scratch-gerald-water --cid <角色ID> [--dry-run]
+python -m wf.studio.draft scratch-list | scratch-show <sid>
+```
+
+测试：`tests/test_studio_scratch.py`。

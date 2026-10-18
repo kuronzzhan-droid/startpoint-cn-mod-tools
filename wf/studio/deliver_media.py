@@ -91,6 +91,9 @@ def draft_file(source, store, cid: str, entry: dict) -> bytes:
             raise DraftError(f"问题：语音 MP3 无效：{exc}") from exc
         if wf_assets.mp3_decode(stored) != raw:
             raise DraftError("问题：语音存储态往返失败")
+    elif encoding == "amf3-deflate":
+        tree(raw)
+        stored = raw
     elif encoding == "atf-deflate":
         try:
             wf_atf.parse_atf(wf_atf.inflate(raw))
@@ -114,7 +117,7 @@ def compile_media(source, store, changeset: dict) -> MediaResult:
         raise DraftError("问题：草稿基线版本与交付视图不一致，请重新保存草稿")
     targets = set()
     for change in changeset["changes"]:
-        if change["kind"] not in {"portrait", "pixel_action", "voice_line"}:
+        if change["kind"] not in {"portrait", "pixel_action", "pixel_family", "voice_line"}:
             continue
         target = change["kind"], tuple(sorted(change["target"].items()))
         if target in targets:

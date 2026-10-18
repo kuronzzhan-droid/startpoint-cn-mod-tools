@@ -6,8 +6,8 @@ import json
 from pathlib import Path
 
 from .json_patch import patch_columns
-from .model import (ACTION_SKILL, CHARACTER, CHARACTER_TEXT, CUSTOM, SERVER_TARGET, SERVER_TARGETS,
-                    TextWorkspace, cells, custom_text, replace_cells, sha256)
+from .model import (ABILITY, ACTION_SKILL, CHARACTER, CHARACTER_TEXT, CUSTOM, LEADER, SERVER_TARGET,
+                    SERVER_TARGETS, TextWorkspace, cells, custom_text, replace_cells, sha256)
 from .rules import check_character
 from wf.view.safety import local_output
 
@@ -18,6 +18,29 @@ def _change(old, operation, location):
     if not isinstance(operation["new"], str) or old != operation["old"]:
         raise ValueError(f"{location}: old-value assertion failed or new value is not text")
     return operation["new"]
+
+
+def override_owners(workspace: TextWorkspace, key: str) -> list[str]:
+    """Characters whose leader/ability rows carry the c0 that ``desc_override_<c0>`` = ``key`` names.
+
+    The client shows ``desc_override_<row c0>`` instead of the generated row text, so these are
+    exactly the characters a new override key would change.
+    """
+    import csv
+    import io
+    owners = []
+    for cid, leaf in workspace.table(CHARACTER).items():
+        row = cells(leaf)
+        for logical, refs in ((LEADER, row[17:18]), (ABILITY, row[19:25])):
+            names = set()
+            for ref in refs:
+                value = workspace.table(logical).get(ref, "")
+                if isinstance(value, str) and value:
+                    names.update(r[0] for r in csv.reader(io.StringIO(value, newline="")) if r)
+            if key in {"desc_override_" + name for name in names if name}:
+                owners.append(cid)
+                break
+    return owners
 
 
 def _replace_row(original, row):
@@ -117,6 +140,23 @@ def prepare_edit(workspace: TextWorkspace, edit: dict) -> dict:
             tables[CHARACTER][cid] = _replace_row(leaf, character)
     for section in ("custom_ability_string", "desc_override"):
         for key, op in edit.get(section, {}).items():
+            if (section == "desc_override" and key not in original[section] and isinstance(op, dict)
+                    and set(op) == {"old", "new"} and op["old"] is None):
+                # New override: old=null asserts the key is absent; it must name a row c0 of this
+                # character's own leader/ability slot, and no other character may share that row.
+                if key in tables[CUSTOM]:
+                    raise ValueError(f"{section}.{key}: old=null but the key already exists")
+                owners = override_owners(workspace, key)
+                if owners != [cid]:
+                    raise ValueError(f"{section}.{key}: a new override must name a row c0 owned only by "
+                                     f"{cid}; owners={owners}")
+                if not isinstance(op["new"], str) or not op["new"].strip():
+                    raise ValueError(f"{section}.{key}: new override text is empty")
+                tables[CUSTOM][key] = replace_cells("", [op["new"]])
+                changes.append({"character_id": cid, "surface": section, "key": key, "old": None,
+                                "new": op["new"], "created": True,
+                                "server_mapping": "client-only surface; character_text.json has no ability-text columns"})
+                continue
             if key not in original[section]:
                 raise ValueError(f"{section}.{key} is not a referenced existing character text")
             owners = [owner for owner in tables[CHARACTER] if key in workspace.custom_keys(owner)]
