@@ -1,5 +1,4 @@
 """Real binary fixtures for boss joins, wave semantics and leaf provenance."""
-import copy
 import csv
 import io
 import json
@@ -117,12 +116,47 @@ def test_native_level_band_order_and_missing_band():
     assert _level_path({"boss": {"80": ""}}, "boss", 100) is None
 
 
+def test_overlay_marks_only_changed_leaves_as_local_draft():
+    original = Source({s.FIELD: {"one": "first", "two": "second"}})
+
+    class Overlay:
+        source = original
+        changes = [{"table": s.FIELD, "path": ["one"]}]
+        client = {s.FIELD: codec.build_node({"one": "changed", "two": "second"})}
+
+        def read_raw(self, logical):
+            return self.client.get(logical, self.source.files.get(logical)), "boss-draft"
+
+    tables = BossTables(Overlay())
+    assert tables.citation(s.FIELD, ["one"])["layer"] == "boss-draft"
+    inherited = tables.citation(s.FIELD, ["two"])
+    assert inherited["layer"] is None and inherited["scope"] == "table"
+    assert inherited["table_layer"] == "boss-draft"
+
+
 def test_missing_references_are_explicit_not_empty_success():
     original = source()
     del original.files[s.FIELD_DATA]
     result = BossReader(original).show("2081001")
     assert result["field_data"]["missing"] and result["zone"]["missing"]
     assert result["terrain"]["missing"] and result["terrain"]["wave_count"] is None
+
+
+@pytest.mark.parametrize("kind,table,position", [("7", "touyakiren_ceo", None), ("9", "water_sphere", 37),
+                                             ("10", "holy_sphere", 37), ("11", "wind_sphere", 38),
+                                             ("12", "thunder_sphere", 39), ("13", "fire_sphere", 38)])
+def test_dedicated_native_bosses_use_their_actual_master(kind, table, position):
+    original = source()
+    original.files[s.ZONE] = codec.build_node({"zone": {"0": row(41, {0: 1, 23: kind, 24: "native"})}})
+    values = {0: 4, 1: "Native boss"}
+    if position is not None:
+        values[position] = "p0"
+    logical = f"master/battle/boss/{table}.orderedmap"
+    original.files[logical] = codec.build_node({"native": {"100": row(80, values)}})
+    enemy = BossReader(original).show("2081001")["enemies"][0]
+    assert enemy["missing"] is False
+    assert enemy["table"] == logical
+    assert enemy["position_name"] == ("p0" if position is not None else None)
 
 
 def test_leaf_origin_tracks_changed_leaf_not_latest_container(tmp_path, monkeypatch):

@@ -7,7 +7,7 @@ import zipfile
 
 import wf_quest_lib as codec
 from wf.view.base149 import member
-from .schema import iter_leaves, parse_rows
+from .schema import get_leaf, iter_leaves, parse_rows
 
 
 def _semantics(text):
@@ -20,6 +20,7 @@ class BossTables:
         self.view = getattr(source, "view", source)
         self.tables, self.raw_cache, self.histories = {}, {}, {}
         self._archive_members = None
+        self._parent_tables = None
 
     def raw_with_origin(self, logical):
         if logical not in self.raw_cache:
@@ -94,6 +95,21 @@ class BossTables:
         raw, table_layer = self.raw_with_origin(logical)
         result = {"logical": logical, "table_layer": table_layer,
                   "table_sha256": hashlib.sha256(raw).hexdigest() if raw is not None else None}
+        if hasattr(self.view, "changes") and hasattr(self.view, "source"):
+            # A studio overlay is not a new origin for every inherited row.
+            if self._parent_tables is None:
+                self._parent_tables = BossTables(self.view.source)
+            inherited = self._parent_tables.citation(logical, path)
+            if logical not in getattr(self.view, "client", {}):
+                return inherited
+            if path is None:
+                return result | {"layer": "boss-draft", "scope": "asset", "local": True}
+            before = get_leaf(self._parent_tables.table(logical), path)
+            after = get_leaf(self.table(logical), path)
+            if before is not None and _semantics(before) == _semantics(after):
+                return inherited | {"table_layer": "boss-draft", "table_sha256": result["table_sha256"]}
+            return result | {"layer": "boss-draft", "scope": "leaf", "leaf_path": list(path),
+                             "local": True, "note": "本地未发布草稿的叶子变更"}
         if path is None:
             return result | {"layer": table_layer, "scope": "asset"}
         leaf_path = tuple(str(p) for p in path)

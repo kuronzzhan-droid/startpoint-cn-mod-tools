@@ -4,6 +4,14 @@ from __future__ import annotations
 from . import schema as s
 from .links import record
 
+# ZoneValues' BossKind discriminants; dedicated native bosses have their own
+# master layouts. ConcertedBoss delegates to GeneralBoss in ZoneSourceValues.
+BOSS_TABLES = {"0": "standard_boss", "1": "general_boss", "2": "kraken", "3": "orochi",
+               "4": "orochi_ex", "5": "orochi_ex_head", "6": "conductor", "7": "touyakiren_ceo",
+               "8": "general_boss", "9": "water_sphere", "10": "holy_sphere",
+               "11": "wind_sphere", "12": "thunder_sphere", "13": "fire_sphere"}
+POSITION_COLUMNS = {"1": 41, "4": 26, "8": 41, "9": 37, "10": 37, "11": 38, "12": 39, "13": 38}
+
 
 def _level_path(table, code, level):
     node = table.get(code)
@@ -43,8 +51,12 @@ def enemies(tables, zone_rows, quest):
 
 
 def _enemy(tables, kind, code, level, mode, wave, slot, zone, column):
-    # Zone boss kind 0 = standard, 1 = general. Zako has its own table.
-    logical = s.GENERAL_ZAKO if kind == "zako" else s.GENERAL_BOSS if kind == "1" else s.STANDARD_BOSS
+    if kind != "zako" and kind not in BOSS_TABLES:
+        return {"kind": "boss", "native_kind": kind, "code": code, "level": level,
+                "mode": mode, "wave": wave, "slot": slot, "missing": None,
+                "position_name": None, "row": [], "source": zone["source"],
+                "limitation": "此原生 boss 类型没有已核对的主表映射"}
+    logical = s.GENERAL_ZAKO if kind == "zako" else f"master/battle/boss/{BOSS_TABLES[kind]}.orderedmap"
     path = _level_path(tables.table(logical), code, level)
     data = record(tables, logical, path) if path else None
     row = data["row"] if data else []
@@ -53,8 +65,9 @@ def _enemy(tables, kind, code, level, mode, wave, slot, zone, column):
               "table": logical, "path": path, "row": row,
               "source": data["source"] if data else tables.citation(logical),
               "zone_source": zone["source"], "zone_column": column,
-              "missing": data is None, "element": s.cell(row, 0) if kind in ("1", "zako") else None,
-              "position_name": s.cell(row, 41) if logical == s.GENERAL_BOSS else None}
+              "missing": data is None, "element": s.cell(row, 0) if kind != "0" else None,
+              "name": s.cell(row, 0 if kind == "0" else 1),
+              "position_name": s.cell(row, POSITION_COLUMNS[kind]) if kind in POSITION_COLUMNS else None}
     if logical == s.GENERAL_BOSS:
         result["boss_level"] = record(tables, s.BOSS_LEVEL, [code])
     return result
