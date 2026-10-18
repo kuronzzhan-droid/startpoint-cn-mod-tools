@@ -10,12 +10,15 @@ import { PortraitEditor } from "./PortraitEditor";
 import { VoiceTab } from "./VoiceTab";
 import { useDeliveries } from "./Delivery";
 import { AbilityProvider, KeyEditor, PendingBar, useAbilityWorkspace, useWorkspace } from "./AbilityEditor";
+import { AttachControl, SkillTiers, slotOf } from "./KeyTools";
+import { TextTab } from "./TextTab";
 
 const TABS: { id: string; label: string }[] = [
   { id: "board1", label: "一板" },
   { id: "board2", label: "二板" },
   { id: "board3", label: "三板（觉醒）" },
   { id: "skill", label: "技能" },
+  { id: "text", label: "文案" },
   { id: "pixel", label: "像素小人" },
   { id: "assets", label: "全套资源" },
   { id: "portrait", label: "换立绘" },
@@ -84,6 +87,8 @@ export function CharacterDetailView({ id, tab }: { id: string; tab?: string }) {
         <BoardTab detail={detail} boardId={active} />
       ) : active === "skill" ? (
         <SkillTab detail={detail} />
+      ) : active === "text" ? (
+        <TextTab characterId={detail.id} />
       ) : active === "assets" ? (
         <AssetsTab characterId={detail.id} />
       ) : active === "portrait" ? (
@@ -149,16 +154,20 @@ function AbilityCard({ title, table, group, rows, columns, awake, filter }: {
 }) {
   const hasOverride = group.descriptionSource === "游戏面板覆盖文案";
   const empty = !group.key || group.key === "(None)";
+  const ws = useWorkspace();
+  const slot = slotOf(table, group.key, ws?.state?.slots, group.slot);
   return (
     <article class="ability">
       <header>
         <h3>{title}</h3>
         <span class="muted key" title="词条键">{empty ? "未配置" : "键 " + group.key}</span>
         <span class="tag">{awake ? "觉醒行" : hasOverride ? "有覆盖文案" : "数据行自动解析"}</span>
+        <span class="spacer" />
+        {awake ? null : <AttachControl table={table} slot={slot} title={title} />}
       </header>
       {hasOverride && !awake ? (
         <div class="override">
-          <span class="label">玩家文案（覆盖，desc_override；编辑台暂不改覆盖文案）</span>
+          <span class="label">玩家文案（覆盖，desc_override；在「文案」页编辑）</span>
           <p>{group.description}</p>
         </div>
       ) : null}
@@ -191,7 +200,8 @@ function SkillTab({ detail }: { detail: CharacterDetail }) {
     <div class="board">
       <p class="hint">技能文本取自 action_skill 表（玩家可见文案）；程序摘要来自技能 DSL，仅列出节点名称，L2 时间线预览尚未接入。
         <br />编辑：c0 技能名 / c1 文案走 wf text 面板规则，并同步两份服务端镜像（生成时写入交付 server/）；改名或文案时每一档都会带旧值断言。
-        档位的插入/删除/移动后端已支持，界面暂未开放。</p>
+        档位插入/删除见下方「技能档位」；完整文案规则与服务端生效文本对照见「文案」页。</p>
+      <SkillTiers />
       {detail.switch ? (
         <Notice>技能切换：{detail.switch.label}（键 {detail.switch.key}）</Notice>
       ) : null}
@@ -201,6 +211,8 @@ function SkillTab({ detail }: { detail: CharacterDetail }) {
             <h3>{s.name || "（无名称）"}</h3>
             <span class="tag">{s.label}</span>
             <span class="muted key">{s.gaugeLabel}：{s.gauge ?? "—"}</span>
+            <span class="spacer" />
+            {s.kind === "main" && s.level === "1" ? <AttachControl table="action_skill" slot={0} title="技能" /> : null}
           </header>
           <p class="skill-text">{s.description || <em class="muted">（无文案）</em>}</p>
           <details class="programs">

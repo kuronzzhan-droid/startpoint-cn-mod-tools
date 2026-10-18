@@ -1,14 +1,14 @@
 import { createContext } from "preact";
 import { useContext, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import {
-  ability, AbilityCheckResult, AbilityEntry, AbilityPreviewChange, AbilityState, AbilityTable, ColumnLabel,
-  drafts, onDraftChange, RowPreview, TemplateOption,
+  ability, AbilityCheckResult, AbilityEntry, AbilityPreviewChange, AbilityState, AbilityTable, AbilityTextSections,
+  ColumnLabel, drafts, onDraftChange, RowPreview, TemplateOption, TextPanel,
 } from "../api";
 import { Notice } from "./common";
 import { RuleChips, ruleCounts, RuleList } from "./rules";
 import {
   buildRequest, deleteRow, EMPTY_PENDING, entryId, insertRow, isAwake, moveRow, Pending, pendingCount, setCell,
-  sharedId, touches, workingRows,
+  sharedId, tierOps, touches, workingRows,
 } from "./abilityModel";
 
 // ---------------------------------------------------------------------------
@@ -23,6 +23,9 @@ export interface AbilityWorkspace {
   checking: boolean;
   committing: boolean;
   message: { kind: "info" | "error"; text: string } | null;
+  /** Live wf text projection of pending panel-text edits (POST text/lint, never writes). */
+  lint: TextPanel | null;
+  linting: boolean;
   update: (fn: (p: Pending) => Pending) => void;
   discard: () => void;
   commit: () => Promise<void>;
@@ -44,6 +47,9 @@ export function useAbilityWorkspace(cid: string): AbilityWorkspace {
   const [committing, setCommitting] = useState(false);
   const [message, setMessage] = useState<AbilityWorkspace["message"]>(null);
   const sequence = useRef(0);
+  const [lint, setLint] = useState<TextPanel | null>(null);
+  const [linting, setLinting] = useState(false);
+  const lintSeq = useRef(0);
 
   const reload = () => ability.state(cid).then((s) => { setState(s); setError(null); }, (e: Error) => setError(e.message));
   useEffect(() => {
@@ -72,8 +78,22 @@ export function useAbilityWorkspace(cid: string): AbilityWorkspace {
     return () => clearTimeout(timer);
   }, [pending, state]);
 
+  // Live per-field wf text rules for pending panel text (desc_override / custom / skill c0,c1 / leader name).
+  useEffect(() => {
+    const sections = lintSections(pending);
+    if (!sections) { setLint(null); setLinting(false); return; }
+    const id = ++lintSeq.current;
+    setLinting(true);
+    const timer = setTimeout(() => {
+      ability.lint(cid, sections).then(
+        (result) => { if (id === lintSeq.current) { setLint(result); setLinting(false); } },
+        () => { if (id === lintSeq.current) { setLint(null); setLinting(false); } });
+    }, 450);
+    return () => clearTimeout(timer);
+  }, [pending.custom, pending.text, pending.leaderName]);
+
   const ws: AbilityWorkspace = {
-    cid, state, error, pending, check, checking, committing, message,
+    cid, state, error, pending, check, checking, committing, message, lint, linting,
     update: (fn) => { setMessage(null); setPending((p) => fn(p)); },
     discard: () => { setPending(EMPTY_PENDING); setMessage({ kind: "info", text: "已放弃未写入的修改。" }); },
     commit: async () => {
@@ -102,9 +122,12 @@ export function PendingBar() {
   const ws = useWorkspace();
   const count = ws ? pendingCount(ws.pending) : 0;
   const checks = ws?.check?.checks ?? [];
-  const blocking = checks.some((c) => c.blocking || c.status === "问题");
+  const textProblems = ws ? lintProblems(ws) : [];
+  const blocking = checks.some((c) => c.blocking || c.status === "问题") || textProblems.length > 0;
   const needShared = ws ? unconfirmedShared(ws) : [];
-  const ready = !!ws && count > 0 && !blocking && !needShared.length && !ws.checking && !ws.committing;
+  const needTierConfirm = !!ws && tierOps(ws.pending).length > 0 && !ws.pending.tierConfirmed;
+  const ready = !!ws && count > 0 && !blocking && !needShared.length && !needTierConfirm && !ws.checking
+    && !ws.linting && !ws.committing;
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s" && count) {
@@ -127,11 +150,16 @@ export function PendingBar() {
             <span class="spacer" />
             <button onClick={ws.discard} disabled={ws.committing} title="放弃全部未写入修改">放弃</button>
             <button class="primary" onClick={() => ws.commit()} disabled={!ready}
-              title={needShared.length ? "共享键需先勾选确认" : blocking ? "检查有「问题」，先修正" : "写入草稿（Ctrl+S）"}>
+              title={needShared.length ? "共享键需先勾选确认" : needTierConfirm ? "技能档位引用需先勾选确认"
+                : blocking ? "检查有「问题」，先修正" : "写入草稿（Ctrl+S）"}>
               {ws.committing ? "写入中……" : "写入草稿 Ctrl+S"}
             </button>
           </div>
           {needShared.length ? <p class="small warn-text">共享键 {needShared.join("、")} 需要在对应卡片上勾选「确认修改共享键」。</p> : null}
+          {needTierConfirm ? <p class="small warn-text">技能档位插入/删除：到「技能」页核对默认档位、玛纳节点与觉醒引用后勾选确认。</p> : null}
+          {textProblems.length ? (
+            <ul class="inline-problems">{textProblems.map((t) => <li>文案问题：{t}</li>)}</ul>
+          ) : null}
           {ws.check ? <PendingChanges changes={ws.check.changes} /> : null}
           {ws.check ? (
             <details class="pending-rules" open={blocking}>
@@ -146,31 +174,78 @@ export function PendingBar() {
   );
 }
 
-function unconfirmedShared(ws: AbilityWorkspace): string[] {
+export function unconfirmedShared(ws: AbilityWorkspace): string[] {
+  const p = ws.pending;
   const keys = new Set<string>();
-  for (const op of ws.pending.ops) keys.add(sharedId(op.table, op.key));
-  for (const t of ws.pending.text) keys.add(sharedId("action_skill", t.key));
+  for (const op of p.ops) keys.add(sharedId(op.table, op.key));
+  for (const t of p.text) keys.add(sharedId("action_skill", t.key));
+  for (const c of p.custom) keys.add(sharedId(c.section, c.key));
+  for (const a of p.attach) keys.add(sharedId(a.table, a.key));
   return [...keys].filter((id) => {
     const [table, key] = id.split("/");
-    const owners = ws.state?.entries.find((e) => e.table === table && e.key === key)?.owners ?? [];
-    return owners.length > 1 && !ws.pending.sharedOk[id];
+    const owners = p.owners[id] ?? ws.state?.entries.find((e) => e.table === table && e.key === key)?.owners ?? [];
+    // Attaching another character's key makes it shared even when this character is not yet an owner.
+    const attaching = p.attach.some((a) => sharedId(a.table, a.key) === id);
+    const shared = attaching ? owners.some((o) => o !== ws.cid) : owners.length > 1;
+    return shared && !p.sharedOk[id];
   });
 }
 
-const OP_LABEL: Record<string, string> = { set_cells: "改格", insert_row: "插入行", delete_row: "删除行", move_row: "移动行" };
+/** Proposed panel text as wf text sections for the lint endpoint; null when nothing textual is pending. */
+export function lintSections(p: Pending): AbilityTextSections | null {
+  const sections: AbilityTextSections = {};
+  for (const c of p.custom) (sections[c.section] ??= {})[c.key] = { old: c.old, new: c.new };
+  for (const t of p.text) ((sections.action_skill ??= {})[t.level] ??= {})[t.column] = { old: t.old, new: t.new };
+  if (p.leaderName) sections.character_text = { "10": p.leaderName };
+  return Object.keys(sections).length ? sections : null;
+}
+
+/** Locations edited in this pending set (wf text location naming). */
+export function editedLocations(p: Pending): Set<string> {
+  const out = new Set<string>();
+  for (const c of p.custom) out.add(`${c.section}.${c.key}`);
+  for (const t of p.text) out.add(`action_skill.${t.level}.${t.column}`);
+  return out;
+}
+
+/** 「问题」 on edited fields (wf text findings or editor house rules) block writing. */
+function lintProblems(ws: AbilityWorkspace): string[] {
+  if (!ws.lint) return [];
+  const edited = editedLocations(ws.pending);
+  const out: string[] = [];
+  for (const field of ws.lint.fields) {
+    if (!edited.has(field.location)) continue;
+    for (const h of field.house) if (h.state === "问题") out.push(`${field.location}：${h.title}`);
+    for (const f of field.findings) {
+      if (f.state === "问题" && !field.house.some((h) => h.findings.some((g) => g.rule === f.rule))) {
+        out.push(`${field.location}：${f.message}`);
+      }
+    }
+  }
+  return out;
+}
+
+const OP_LABEL: Record<string, string> = {
+  set_cells: "改格", insert_row: "插入行", delete_row: "删除行", move_row: "移动行", attach_key: "换键",
+};
 
 function PendingChanges({ changes }: { changes: AbilityPreviewChange[] }) {
   const items = changes.filter((c) => c.op && OP_LABEL[c.op] || c.surface);
+  const label = (c: AbilityPreviewChange) => c.table === "action_skill" && c.op && c.op !== "set_cells" && c.op !== "attach_key"
+    ? OP_LABEL[c.op].replace("行", "档位") : OP_LABEL[c.op!];
   if (!items.length) return null;
   return (
     <details class="pending-changes">
       <summary>试算明细（含草稿已有操作，共 {items.length} 项）</summary>
       <ol>
         {items.map((c) => c.surface ? (
-          <li><span class="tag">文本</span> <span class="mono small">{c.surface}</span> {c.client_old} → <strong>{c.new}</strong></li>
+          <li><span class="tag">文本</span> <span class="mono small">{c.surface}{c.key ? " " + c.key : ""}</span>{" "}
+            {c.client_old ?? c.old} → <strong>{c.new}</strong></li>
+        ) : c.op === "attach_key" ? (
+          <li><span class="tag">换键</span> <span class="mono small">{c.table} 槽{c.slot}：{c.old_key || "（空）"} → {c.key}</span></li>
         ) : (
           <li>
-            <span class="tag">{OP_LABEL[c.op!]}</span> <span class="mono small">{c.table}/{c.key}{c.level ? "#" + c.level : ""} 行{(c.row ?? 0) + 1}
+            <span class="tag">{label(c)}</span> <span class="mono small">{c.table}/{c.key}{c.level ? "#" + c.level : ""} 行{(c.row ?? 0) + 1}
               {c.op === "move_row" ? ` → 行${(c.to_row ?? 0) + 1}` : ""}</span>
             {c.beforeDescription !== undefined || c.afterDescription !== undefined ? (
               <div class="before-after small">

@@ -225,7 +225,7 @@ action_skill 的结构编辑按客户端档位处理：`level` 指源/插入档�
 - 模板选择器：区块 + kind 搜索（编号/中文/英文），有先例/待验证筛选；零先例 kind 标「待验证」仍可选，插入前可选位置；键盘 ↑↓ Enter Esc。
 - 提示就地显示：首行 c1（合击资格）变化、共享键（列出全部持有者，须勾选确认 → `shared_ok`）、错表/错块与缺字段（`问题` 指名的列即使为空也显示并标红）、技能 c0/c1 走 wf text 面板规则（违规条目逐条展示）。技能文本编辑会对每一档带旧值断言并同步两份服务端镜像，启动时需 `--server-dir`。
 - 已写入草稿但与原版不同的行用 `GET .../ability/preview` 显示「原版 / 草稿」描述对照。
-- 未做：desc_override / custom_ability_string 覆盖文案编辑、技能档位插删移、挂新键（后端已支持，界面未开放）。
+- 覆盖文案编辑、技能档位插删、换键见下文 M4c；技能档位「移动」界面未开放。
 
 ### 生成 / 导出
 
@@ -249,3 +249,21 @@ python -m wf.studio --provides work/studio-provides/v34-x86.json --server-dir <�
 ```
 
 页面上仍然可以改成别的 provides 文件；留空时交付不通过。
+
+## M4c：文案、技能档位、换键（前端 + 只读接口）
+
+写入全部沿用 `POST /api/drafts/<cid>/ability`（`abilityRequest`）：数值/结构/`attach_key` 走 `operations`，desc_override、custom_ability_string、队长名 c10 走 `text`（wf text，两份服务端镜像同步，交付语义不变）。新增的只是只读接口：
+
+| 方法 | 路径 | 作用 |
+|---|---|---|
+| GET | `/api/characters/<cid>/text` | 草稿态 wf text 文档：技能每档 c0/c1、desc_override、custom_ability_string 的逐字段规则（面板规范逐条五态 + 作者规则）、原版值、全部持有者；服务端生效文本（p5b 整行覆盖 base）与客户端镜像列 c4–c10 对照；队长名 c10 与 character c18 |
+| POST | `/api/drafts/<cid>/text/lint` | `{text: abilityText}` 投影到草稿文档后跑同一套规则，不写盘（前端实时检查用） |
+| GET | `/api/studio/ability/keys?table=&q=&cid=` | 按键名、持有角色名/ID、中文描述检索现有键，列出全部持有者；带 cid 时包含草稿里新建的键 |
+| GET | `/api/characters/<cid>/ability` | 增加 `slots`（能力 1–6、队长技、技能键、队长名 c18），供 `attach_key` 的 `old_key` 断言 |
+
+- 「文案」页：每个文本框下显示作者规则（不写「生命值100%以下」类恒真条件；desc_override 不写「自身为队长时」；技能描述不重复强化效果；不用「…之核」命名）和面板规范逐条状态（问题/待验证/满足 + 条款原文与覆盖边界）。改过的字段出现「问题」时禁止写入。「自身为队长时」在 wf text 中只对 `_leader/_ls` 与 `_1–_6` 键判定，编辑台对全部 desc_override 额外检查（仅编辑侧门禁，交付检查未改）。
+- 共享的覆盖/技能文本须勾选 shared_ok；wf text 只有请求级 `shared_ok`，前端要求每个共享键都确认后才发送。
+- 「技能」页「技能档位」：在某档后插入（复制该档全部列）或删除；后端试算返回的 `ability.skill-tier-references`（默认档位、玛纳技能进化/SLv 节点、觉醒来源、缺引用表、未觉醒最高档缺档）逐项列出，勾选「已核对」后才能写入。档位结构与技能文本、换技能键不能放在同一次写入。
+- 换键：能力 1–6、队长技、技能卡片右上「换键…」。挂现有键（检索、持有者、共享确认）或复制当前键为新键（逐格 null 旧值断言）。换队长技键时提示同步 character c18 / character_text c10，可在对话框里一并改队长名（走 wf text）。
+- 性能：custom 文本持有者用「名称是键的子串或键出现在能力行」做必要条件预筛，再逐个调用原 `custom_keys`，结果与全表扫描相同（`tests/test_studio_m4c_text.py`），`apply_text` 同样改用它。
+- 截图在仓库外 `m4c-shots/`（139985）。

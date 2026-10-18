@@ -511,9 +511,17 @@ export interface AbilityEntry {
   descriptions: (string | null)[];
 }
 
+export interface AbilitySlots {
+  ability: string[];
+  leader_ability: string;
+  action_skill: string;
+  leaderName: string;
+}
+
 export interface AbilityState {
   characterId: string;
   entries: AbilityEntry[];
+  slots?: AbilitySlots;
   checks: RuleResult[];
   runtime: string;
 }
@@ -537,6 +545,35 @@ export interface AbilityOp {
   shared_ok?: boolean;
 }
 
+/** attach_key: put an existing (or new, asserted) key on a slot. */
+export interface AttachOp {
+  op: "attach_key";
+  table: AbilityTable;
+  key: string;
+  slot: number;
+  old_key: string;
+  shared_ok?: boolean;
+  column_space?: "native";
+  rows?: AbilityCellOp[][];
+  levels?: Record<string, AbilityCellOp[][]>;
+}
+
+export interface TextPair { old: string; new: string }
+
+/** abilityRequest.text (wf text); skill c0/c1 travel as asserted operations instead. */
+export interface AbilityTextSections {
+  desc_override?: Record<string, TextPair>;
+  custom_ability_string?: Record<string, TextPair>;
+  character_text?: Record<string, TextPair>;
+  action_skill?: Record<string, Record<string, TextPair>>;
+}
+
+export interface AbilityRequest {
+  operations: (AbilityOp | AttachOp)[];
+  text?: AbilityTextSections;
+  shared_ok?: boolean;
+}
+
 export interface AbilityPreviewChange {
   op?: string;
   table?: string;
@@ -546,7 +583,10 @@ export interface AbilityPreviewChange {
   level?: string;
   surface?: string;
   client_old?: string;
+  old?: string;
   new?: string;
+  old_key?: string;
+  slot?: number;
   owners?: string[] | Record<string, string[]>;
   beforeDescription?: string | null;
   afterDescription?: string | null;
@@ -564,6 +604,72 @@ export interface RowPreview {
   after: { cells: string[] | null; description: string | null };
   owners: string[];
   checks: RuleResult[];
+}
+
+export interface TextFinding {
+  rule: string;
+  state: string;
+  location?: string;
+  message: string;
+  source?: string;
+  evidence?: { matches?: string[]; key?: string; text?: string; [k: string]: unknown };
+}
+
+export interface TextRuleRecord {
+  rule: string;
+  state: string;
+  mode: string;
+  requirement: string;
+  boundary: string;
+  source: string;
+  evidence_nature: string;
+}
+
+export interface HouseRuleState {
+  id: string;
+  title: string;
+  requirement: string;
+  state: string;
+  findings: TextFinding[];
+}
+
+export interface TextField {
+  surface: "action_skill" | "desc_override" | "custom_ability_string";
+  location: string;
+  key: string;
+  value: string;
+  original: string | null;
+  base: string | null;
+  owners: string[];
+  enhancement: boolean;
+  tier?: string;
+  field?: "c0" | "c1";
+  slot?: string;
+  findings: TextFinding[];
+  rules: TextRuleRecord[];
+  house: HouseRuleState[];
+}
+
+export interface TextPanel {
+  characterId: string;
+  skillKey: string;
+  snapshot: string;
+  skillOwners: string[];
+  leaderName: { characterText: string | null; character: string | null };
+  fields: TextField[];
+  general: TextFinding[];
+  server: {
+    effectiveSource: string; rankOverridesBase: boolean; inBase: boolean; inRank: boolean; rule: string;
+    columns: { column: number; label: string; client: string | null; server: string | null; match: boolean }[];
+  };
+  houseRules: { id: string; title: string; requirement: string; rules: string[] }[];
+  standard: { version: string; name: string; scope: string };
+}
+
+export interface KeySearchResult {
+  table: string;
+  total: number;
+  results: { key: string; rows: number; levels: string[] | null; owners: { id: string; name: string }[]; descriptions: string[] }[];
 }
 
 export interface TemplateOption {
@@ -642,8 +748,12 @@ export const ability = {
       (level ? `&level=${level}` : "")),
   templates: (table: string, block: string) =>
     cached<TemplateList>(`/api/studio/ability/templates?table=${table}&block=${block}`),
-  check: (cid: string, body: { operations: AbilityOp[] }) => post<AbilityCheckResult>(`/api/drafts/${cid}/ability/check`, body),
-  apply: (cid: string, body: { operations: AbilityOp[] }) => notify(cid, post<WriteResult>(`/api/drafts/${cid}/ability`, body)),
+  check: (cid: string, body: AbilityRequest) => post<AbilityCheckResult>(`/api/drafts/${cid}/ability/check`, body),
+  apply: (cid: string, body: AbilityRequest) => notify(cid, post<WriteResult>(`/api/drafts/${cid}/ability`, body)),
+  text: (cid: string) => get<TextPanel>(`/api/characters/${cid}/text`),
+  lint: (cid: string, text: AbilityTextSections) => post<TextPanel>(`/api/drafts/${cid}/text/lint`, { text }),
+  keys: (table: AbilityTable, q: string, cid: string) =>
+    get<KeySearchResult>(`/api/studio/ability/keys?table=${table}&q=${encodeURIComponent(q)}&cid=${cid}&limit=40`),
 };
 
 export const deliveries = {
