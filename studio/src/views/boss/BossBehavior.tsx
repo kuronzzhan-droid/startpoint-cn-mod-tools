@@ -25,7 +25,7 @@ type Edit =
   | { kind: "trial"; enemy: BehaviorEnemy; state: BehaviorState }
   | null;
 
-interface MoveRef { path: string; label: string; enemy: string; slot?: number }
+interface MoveRef { path: string; label: string; enemy: string; slot?: number; state?: string }
 
 function terminationText(enemy: BehaviorEnemy, s: BehaviorState): string {
   const t = s.termination as any;
@@ -120,7 +120,7 @@ export function BossBehavior({ doc, questId, rev, onPreview, onWritten }: {
         </section>
       )}
 
-      {move ? <MovePlayer key={move.path} quest={questId} move={move} onClose={() => setMove(null)} /> : null}
+      {move ? <MovePlayer key={move.path + (move.state ?? "")} quest={questId} rev={rev} move={move} onClose={() => setMove(null)} /> : null}
       <StateTable enemy={enemy} edit={edit} setEdit={setEdit} onPreviewMove={setMove} questId={questId}
         onPreview={onPreview} onWritten={onWritten} />
 
@@ -279,7 +279,7 @@ function StateTable({ enemy, edit, setEdit, onPreviewMove, questId, onPreview, o
                     <td class="small mono">{typeof s.next === "string" ? s.next : <span title={JSON.stringify(s.next)}>表达式</span>}</td>
                     <td class="small">
                       {s.actions.length ? s.actions.map((a) => a.dsl.map((d) => (
-                        <button type="button" class="link" title={d} onClick={() => onPreviewMove({ path: d, label: `${s.id} · ${short(d)}`, enemy: enemy.enemyCode, slot: a.slot })}>
+                        <button type="button" class="link" title={d} onClick={() => onPreviewMove({ path: d, label: `${s.id} · ${short(d)}`, enemy: enemy.enemyCode, slot: a.slot, state: s.id })}>
                           {a.slot !== undefined ? `槽 ${a.slot}` : short(d)}{a.trigger_frame !== undefined ? `@${a.trigger_frame}` : ""} ▶
                         </button>
                       ))) : <span class="muted">—</span>}
@@ -364,7 +364,7 @@ function StateEditor({ edit, can, questId, onPreview, onWritten, onClose }: {
 const summaryOnce: Map<string, ReturnType<typeof timelineApi.bossMoves>> = new Map();
 
 /** 「预览」: backend esdl timeline summary when present, else the move's DSL through /api/studio/timeline. */
-function MovePlayer({ quest, move, onClose }: { quest: string; move: MoveRef; onClose: () => void }) {
+function MovePlayer({ quest, rev, move, onClose }: { quest: string; rev: string; move: MoveRef; onClose: () => void }) {
   const box = useRef<HTMLElement>(null);
   useEffect(() => { box.current?.scrollIntoView({ block: "start", behavior: "smooth" }); }, []);
   const [timeline, setTimeline] = useState<Timeline | null>(null);
@@ -373,26 +373,37 @@ function MovePlayer({ quest, move, onClose }: { quest: string; move: MoveRef; on
   useEffect(() => {
     let live = true;
     setTimeline(null); setError(null);
-    if (!summaryOnce.has(quest)) summaryOnce.set(quest, timelineApi.bossMoves(quest));
-    summaryOnce.get(quest)!.then(async (summary) => {
-      const hit = summary.available ? summary.moves.find((m: any) => m.name === move.path || m.program === move.path || m.path === move.path
-        || (move.slot !== undefined && (m.slot === move.slot && (!m.enemyCode || m.enemyCode === move.enemy)))) : undefined;
-      if (hit) { if (live) { setTimeline(hit.timeline); setSource("后端 esdl 时间轴摘要（timeline-summary）"); } return; }
+    const key = quest + "@" + rev;
+    if (!summaryOnce.has(key)) summaryOnce.set(key, timelineApi.bossMoves(quest));
+    summaryOnce.get(key)!.then(async (summary) => {
+      const hit = summary.available ? pickMove(summary.moves as SummaryMove[], move) : undefined;
+      if (hit) { if (live) { setTimeline(hit.timeline); setSource((hit.timeline as any).timeOrigin === "action_entry" ? "timeline-summary（触发帧未知：从动作开始计时）" : "timeline-summary（从状态进入计时，含本草稿改动）"); } return; }
       const t = await timelineApi.timeline(move.path, "subprogram");
-      if (live) { setTimeline(t); setSource(summary.available ? "timeline-summary 里没有这一招，改用 DSL 路径直接解析" : "按出招 DSL 路径直接解析（/api/studio/timeline）"); }
+      if (live) { setTimeline(t); setSource(summary.available ? "timeline-summary 里没有这一招，改用 DSL 路径直接解析（基线视图）" : "按出招 DSL 路径直接解析（/api/studio/timeline，基线视图）"); }
     }).catch((e: Error) => { if (live) setError(e.message); });
     return () => { live = false; };
-  }, [quest, move.path]);
+  }, [quest, rev, move.path, move.state]);
   return (
     <section class="boss-block move-player" aria-label="出招预览" ref={box}>
       <header><h3>出招预览 · {move.label}</h3><span class="small muted">{source}</span><span class="spacer" />
         <button type="button" class="link close-x" onClick={onClose} aria-label="关闭">×</button></header>
       {error ? <Notice kind="error">解析失败：{error}</Notice> : !timeline ? <div class="loading">正在解析出招……</div> : (
         <>
-          <p class="small muted">敌方出招：画面里的「伤害归属」标签对敌人不适用；主体「协力伙伴 / 自身」指 boss 的目标与自身。读的是当前基线视图里的程序，不含本草稿的换招。</p>
+          <p class="small muted">敌方出招：画面里的「伤害归属」标签对敌人不适用；主体「协力伙伴 / 自身」指 boss 的目标与自身。条件、循环与实际状态选择未模拟。</p>
           <TimelinePlayer key={move.path} timeline={timeline} title={move.label} boss />
         </>
       )}
     </section>
   );
+}
+
+interface SummaryMove { name: string; label?: string; enemyCode?: string; slot?: number | null; timeline: Timeline }
+
+/** timeline-summary names moves `<wave>/<code>/<level>/<state>/<index>/<program>`: same program (+ state when known), else same slot. */
+function pickMove(moves: SummaryMove[], move: MoveRef): SummaryMove | undefined {
+  const mine = moves.filter((m) => !m.enemyCode || m.enemyCode === move.enemy);
+  const same = mine.filter((m) => m.name === move.path || m.name.endsWith("/" + move.path));
+  // State ids may contain "/" (GeneralBoss group/state), so match the segment run, not a split index.
+  return (move.state ? same.find((m) => m.name.includes(`/${move.state}/`)) : undefined) ?? same[0]
+    ?? (move.slot !== undefined ? mine.find((m) => m.slot === move.slot) : undefined);
 }
