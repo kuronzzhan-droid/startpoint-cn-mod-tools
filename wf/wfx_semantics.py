@@ -1,6 +1,10 @@
 """Per-effect WFX parameter semantics recorded by the v35 build contracts."""
 from __future__ import annotations
 
+from functools import lru_cache
+import hashlib
+import json
+
 
 def flags_rule(registry, code):
     return registry.get("effect_flags_overrides", {}).get(str(code))
@@ -53,6 +57,7 @@ def candidate_profile_problems(entry, names, catalog):
     evidence = entry.get("evidence", {})
     if not isinstance(evidence, dict):
         evidence = {}
+    local_ids = None
     for name in names:
         capability = catalog[name]
         if capability["status"] == "shipped":
@@ -67,5 +72,53 @@ def candidate_profile_problems(entry, names, catalog):
                 or evidence.get("swf_sha256") != expected["swf_sha256"]
                 or not isinstance(apks, dict)
                 or evidence.get("apk_sha256") not in apks.values()):
+            if local_ids is None:
+                local_ids = _registered_local_capabilities(entry)
+            if capability.get("capability_id") in local_ids:
+                continue
             problems.append(f"本地候选能力 {name} 缺少匹配的 SWF/APK 离线证据")
     return problems
+
+
+def _registered_local_capabilities(entry):
+    """Bridge reviewed local method evidence without trusting claimed capability names."""
+    from pathlib import Path
+    from wf.apk.local_registry import find
+    from wf.caps.profiles import read_client
+    from wf.paths import REPOSITORY
+
+    evidence = entry.get("evidence", {})
+    record = find(evidence.get("swf_sha256"), apk_sha256=evidence.get("apk_sha256"))
+    if record is None or evidence.get("apk_sha256") != record["source"]["sha256"]:
+        return set()
+    filename = entry.get("provides")
+    if not filename:
+        return set()
+    path = Path(filename)
+    if not path.is_absolute():
+        path = REPOSITORY / path
+    try:
+        supplied = read_client(path, profile=entry)
+        verified = _verified_local_ids(json.dumps(record, sort_keys=True), _evidence_token(REPOSITORY))
+    except (OSError, ValueError):
+        return set()
+    return {row["id"] for row in supplied["provides"]} & verified
+
+
+def _evidence_token(root):
+    """Rehash every trusted input; cache only the expensive pure derivation."""
+    files = sorted((root / "wf/caps").glob("*.yml"))
+    files += [root / name for name in ("wf/apk/data/v34-evidence.json",
+              "wf/apk/data/v35e-evidence.json", "wf/apk/data/v35e-method-contexts.json",
+              "schemas/capability.schema.json")]
+    digest = hashlib.sha256()
+    for path in files:
+        digest.update(str(path.relative_to(root)).encode())
+        digest.update(hashlib.sha256(path.read_bytes()).digest())
+    return digest.hexdigest()
+
+
+@lru_cache(maxsize=8)
+def _verified_local_ids(serialized, evidence_token):
+    from wf.apk.register_local import provides_for
+    return frozenset(row["id"] for row in provides_for(json.loads(serialized))["provides"])

@@ -114,8 +114,11 @@ def _patches(record: dict, registry: dict) -> tuple[dict, list, list]:
 
 
 def derive_provides(record: dict, source: dict | None = None, registry: dict | None = None) -> dict:
-    registry = load_registry() if registry is None else registry
+    if registry is None:
+        from .local_registry import for_swf
+        registry = for_swf(load_registry(), record.get("swf_sha256"))
     patches, unresolved, warnings = _patches(record, registry)
+    warnings.extend(record.get("local_withheld", []))
     standalone = _standalone(record, registry, unresolved)
     capabilities = []
     for cid, capability in sorted(registry.items()):

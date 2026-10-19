@@ -20,9 +20,17 @@ def main(argv=None):
     kinds.add_argument("--swf", type=Path, help="显式 SWF/APK 路径；仍校验所选档案 SWF 哈希")
     kinds.add_argument("--output", "--out", "--json", dest="output", type=Path,
                        help="可选 JSON 文件；省略时只输出到 stdout")
+    register = commands.add_parser("register-local", help="实际SWF方法证据登记本地自用APK；非测试服包")
+    register.add_argument("source", type=Path)
+    register.add_argument("--profile", help="可选local-档案名；默认从v35文件名前缀读取")
     args = parser.parse_args(argv)
-    target = local_output(args.output) if args.output else None
+    target = local_output(args.output) if getattr(args, "output", None) else None
     try:
+        if args.command == "register-local":
+            from .register_local import register_local
+            document = register_local(args.source, profile=args.profile)
+            print(json.dumps(document, ensure_ascii=False, indent=2))
+            return 0
         document = (inspect_profile(args.profile, swf=args.swf) if args.command == "kinds"
                     else build_provides(args.source))
     except (OSError, ValueError, RuntimeError) as error:

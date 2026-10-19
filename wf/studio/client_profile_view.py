@@ -120,7 +120,9 @@ class ClientProfileView:
                 result[name] = {"compatible": False, "error": client["error"], "missing": [], "pending": []}
                 continue
             try:
-                checks = check_compat(requires, client["document"], registry=registry)
+                from wf.apk.local_registry import for_swf
+                selected_registry = for_swf(registry, client["document"]["source"].get("swf_sha256"))
+                checks = check_compat(requires, client["document"], registry=selected_registry)
             except (OSError, ValueError) as exc:
                 result[name] = {"compatible": False, "error": str(exc), "missing": [], "pending": []}
                 continue

@@ -118,6 +118,10 @@ def _read_profiles(path: Path) -> dict[str, Any]:
 def load_profiles(path: Path = PROFILES_PATH) -> dict[str, ClientProfile]:
     """读取并校验：capability 必须登记在注册表，且不能声明 status=planned（尚无 APK）的能力。"""
     data = _read_profiles(path)
+    if Path(path).resolve() == PROFILES_PATH.resolve():
+        from wf.apk.local_registry import registrations
+        for record in registrations():
+            data["profiles"].setdefault(record["profile_id"], record["profile"])
     catalog = wfx_registry.capabilities()
     profiles: dict[str, ClientProfile] = {}
     for name, entry in data["profiles"].items():
