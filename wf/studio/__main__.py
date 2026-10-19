@@ -28,6 +28,8 @@ def main(argv=None) -> int:
     parser.add_argument("--server-dir", type=Path, help="文本编辑所需的只读服务端镜像根目录")
     parser.add_argument("--provides", type=Path, metavar="JSON",
                         help="生成交付时默认使用的客户端能力清单（wf apk provides 的输出）")
+    parser.add_argument("--screenshots-dir", action="append", type=Path, default=[], metavar="DIR",
+                        help="实测截图白名单目录（可重复；与 profile 的 paths.studio_screenshots 合并）")
     parser.add_argument("--warm", action="store_true", help="启动时预先加载角色列表（同步）")
     parser.add_argument("--no-prewarm", action="store_true", help="不在后台预热词条/文案缓存")
     parser.add_argument("--allow-origin", action="append", default=[], metavar="URL",
@@ -41,7 +43,9 @@ def main(argv=None) -> int:
                           use_default_chain=not args.no_chain)
     if args.provides is not None and not args.provides.is_file():
         parser.error(f"--provides 文件不存在：{args.provides}")
-    app = StudioApp(source, server_dir=args.server_dir, default_provides=args.provides)
+    from .device_result import configured_screenshot_dirs
+    app = StudioApp(source, server_dir=args.server_dir, default_provides=args.provides,
+                    screenshot_dirs=configured_screenshot_dirs(args.screenshots_dir))
     if args.warm:
         app.character_list()
     if not args.no_prewarm:

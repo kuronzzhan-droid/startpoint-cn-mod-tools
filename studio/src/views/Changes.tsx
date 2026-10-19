@@ -66,8 +66,10 @@ function size(bytes: number): string {
 
 /** 「本次修改」：草稿里的全部改动，逐项撤销；保存 / 生成 / 导出接通，应用 / 发布不开放。
  * Boss drafts pass their own `subject`, `renderChange`, `emptyText` and `techNote`. */
-export function ChangesPanel({ characterId, scratch, subject, renderChange, emptyText, techNote }: {
+export function ChangesPanel({ characterId, scratch, subject, renderChange, emptyText, techNote, openDelivery }: {
   characterId: string; scratch?: boolean; subject?: DraftSubject;
+  /** Open 「导出」 on this delivery (link from the 实测 cell of the status bar). */
+  openDelivery?: string | null;
   renderChange?: (change: DraftChange, actions: { busy: boolean; onRevert: () => void }) => ComponentChildren;
   emptyText?: ComponentChildren; techNote?: ComponentChildren;
 }) {
@@ -75,7 +77,8 @@ export function ChangesPanel({ characterId, scratch, subject, renderChange, empt
   const { view, error } = useDraftOf(target);
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<{ kind: "info" | "error"; text: string } | null>(null);
-  const [panel, setPanel] = useState<"generate" | "export" | null>(null);
+  const [panel, setPanel] = useState<"generate" | "export" | null>(openDelivery ? "export" : null);
+  useEffect(() => { if (openDelivery) setPanel("export"); }, [openDelivery]);
 
   if (error) return <Notice kind="error">草稿读取失败：{error}</Notice>;
   if (!view) return <div class="loading">正在读取草稿……</div>;
@@ -126,7 +129,8 @@ export function ChangesPanel({ characterId, scratch, subject, renderChange, empt
         <Notice kind="warn">页面里没有写入令牌（不是由 python -m wf.studio 提供的页面），所有写入都会被拒绝。</Notice>
       ) : null}
       {message ? <Notice kind={message.kind === "error" ? "error" : "info"}>{message.text}</Notice> : null}
-      {panel ? <DeliveryPanel characterId={target.id} mode={panel} view={view} onMode={setPanel} api={target.deliveries} /> : null}
+      {panel ? <DeliveryPanel characterId={target.id} mode={panel} view={view} onMode={setPanel} api={target.deliveries}
+        initialPick={openDelivery ?? null} /> : null}
       <p class="hint">
         草稿只记录「要把什么换成什么」，不改游戏数据、测试服或补丁链；「生成」只在本机写一个交付目录。
         {view.changeset ? ` 基于资源版本 ${view.changeset.baseView}，第 ${view.changeset.revision} 次修改。` : ""}

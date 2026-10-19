@@ -14,6 +14,8 @@
     python -m wf.studio.draft show 139985
     python -m wf.studio.draft revert 139985 c-0123456789ab
     python -m wf.studio.draft save 139985
+    python -m wf.studio.draft device-result import <交付目录>/device-result.json --delivery <交付名>
+    python -m wf.studio.draft device-result write <交付名> --file result.json
 """
 from __future__ import annotations
 
@@ -197,6 +199,9 @@ def run(args) -> dict:
     if args.command == "build":
         from .draft_commands import run_build
         return run_build(args, store)
+    if args.command == "device-result":
+        from .draft_commands import run_device_result
+        return run_device_result(args)
 
     ops = _ops(args)
     if args.command == "boss":

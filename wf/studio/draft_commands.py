@@ -17,6 +17,7 @@ def source_arguments(parser):
 
 
 def add_commands(sub):
+    add_device_result(sub)
     p = sub.add_parser("boss", help="读取、编辑副本草稿；new 按暗凛模板新建共同决战")
     p.add_argument("cid", help="副本 ID、kind:path 选择器或 new")
     p.add_argument("--request", type=Path, help="bossRequest JSON")
@@ -94,3 +95,61 @@ def run_build(args, store):
                        baseline_zip_dirs=args.baseline_zip_dir or args.zip_dir,
                        base_store=args.base_store or args.store, base_version=args.base_version,
                        view_lock=args.view_lock, server_dir=args.server_dir, pathlist=args.pathlist)
+
+
+def add_device_result(sub):
+    p = sub.add_parser("device-result", help="交付的真机实测记录 device-result.json：show / write / import / schema")
+    p.add_argument("action", choices=("show", "write", "import", "schema"))
+    p.add_argument("target", nargs="?", help="show/write：交付目录名；import：来源 device-result.json 或其交付目录")
+    p.add_argument("--boss", action="store_true", help="副本交付（work/studio-deliveries/boss）")
+    p.add_argument("--deliveries", type=Path, help="交付根目录（默认 work/studio-deliveries[/boss]）")
+    p.add_argument("--delivery", help="import：目标交付目录名（默认与来源目录同名）")
+    p.add_argument("--file", type=Path, help="write：实测记录 JSON（结构见 schemas/device-result.schema.json）")
+    p.add_argument("--status", choices=("通过", "失败", "未执行", "作废"), help="write：覆盖或直接给出结论")
+    p.add_argument("--tester", help="write：测试人")
+    p.add_argument("--tested-at", help="write：实测时间（默认现在）")
+    p.add_argument("--notes", help="write：备注")
+    p.add_argument("--allow-unverified", action="store_true",
+                   help="import：来源目录没有 delivery-manifest.json 时仍导入（标 archivesMatch=null）")
+
+
+def _delivery_folder(args, name):
+    from . import device_result
+    from .boss_routes import BossDeliveries
+    from .deliver_routes import DELIVERIES, DeliverRoutes
+    routes = BossDeliveries if args.boss else DeliverRoutes
+    root = args.deliveries or (DELIVERIES / "boss" if args.boss else DELIVERIES)
+    if not name or not routes.name_pattern.fullmatch(name):
+        raise DraftError(f"交付目录名无效：{name!r}")
+    folder = (Path(root) / name).resolve()
+    if not folder.is_relative_to(Path(root).resolve()) or not folder.is_dir():
+        raise DraftError(f"没有这个交付目录：{folder}")
+    return folder, routes.kind, device_result
+
+
+def run_device_result(args):
+    from . import device_result
+    if args.action == "schema":
+        return device_result.schema()
+    if args.action == "show":
+        folder, kind, module = _delivery_folder(args, args.target)
+        return {"name": folder.name, "deviceResult": module.read(folder, kind)}
+    if args.action == "write":
+        folder, kind, module = _delivery_folder(args, args.target)
+        body = json.loads(args.file.read_text("utf-8-sig")) if args.file else {"checks": []}
+        if not isinstance(body, dict):
+            raise DraftError("--file 必须是 JSON 对象")
+        overrides = {"status": args.status, "tester": args.tester, "notes": args.notes,
+                     "testedAt": args.tested_at}
+        body.update({k: v for k, v in overrides.items() if v is not None})
+        body.setdefault("testedAt", module.now())
+        if "status" not in body:
+            raise DraftError("需要 --status 或 --file 里的 status")
+        return {"name": folder.name, "result": module.write(folder, kind, body)}
+    source = Path(args.target or "")
+    if not args.target:
+        raise DraftError("import 需要来源路径")
+    name = args.delivery or (source.name if source.is_dir() else source.parent.name)
+    folder, kind, module = _delivery_folder(args, name)
+    return {"name": folder.name,
+            "result": module.import_file(source, folder, kind, allow_unverified=args.allow_unverified)}

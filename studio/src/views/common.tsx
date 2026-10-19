@@ -2,6 +2,7 @@ import { ComponentChildren } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { api, DeliverySummary, DraftCheck, DraftStatus, Origin } from "../api";
 import { RuleChips } from "./rules";
+import { DeviceCell, DeviceCellValue } from "./DeviceResult";
 
 const ELEMENT_CLASS: Record<string, string> = {
   火: "el-fire", 水: "el-water", 雷: "el-thunder", 风: "el-wind", 光: "el-light", 暗: "el-dark",
@@ -30,8 +31,10 @@ export function Rarity({ value }: { value: number | string | null }) {
 }
 
 /** Codex 状态语言：保存状态 / 检查结果（五态）/ 实测情况，未接入的项如实显示。 */
-export function StatusStrip({ draft, checks = [], build }: {
+export function StatusStrip({ draft, checks = [], build, device, deviceLink, deviceNote }: {
   draft?: DraftStatus | null; checks?: DraftCheck[]; build?: DeliverySummary | null;
+  /** 「实测」 cell (see deviceCell); omitted = 未执行. */
+  device?: DeviceCell | null; deviceLink?: (delivery: string) => string; deviceNote?: string;
 }) {
   const errors = checks.filter((c) => c.level === "error").length;
   const warns = checks.filter((c) => c.level === "warn").length;
@@ -58,8 +61,9 @@ export function StatusStrip({ draft, checks = [], build }: {
         )}
       </div>
       <div>
-        <span class="label">真机</span>
-        <span class="value state-none" title="编辑台不安装、不上真机">未记录</span>
+        <span class="label">实测{deviceNote ? <span class="muted"> · {deviceNote}</span> : null}</span>
+        {device ? <DeviceCellValue cell={device} link={deviceLink} />
+          : <span class="value state-none" title="编辑台不安装、不上真机；装机后在「导出」的交付详情里记录实测">未执行</span>}
       </div>
     </div>
   );

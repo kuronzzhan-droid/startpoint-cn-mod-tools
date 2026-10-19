@@ -799,8 +799,89 @@ export interface DeliverySummary {
   from: string | null;
   to: string | null;
   draftRevision: number | null;
+  /** createdAt of the draft snapshot the delivery was built from (a re-created draft repeats revision numbers). */
+  draftCreatedAt?: string | null;
   prepush: string | null;
   counts: Record<string, number>;
+  /** device-result.json of this delivery (null: never tested). */
+  device?: DeviceSummary | null;
+}
+
+// ---------------------------------------------------------------------------
+// 实测（交付目录里的 device-result.json，结构见 schemas/device-result.schema.json）
+
+export type DeviceStatus = "通过" | "失败" | "未执行" | "作废";
+export const DEVICE_STATUSES: DeviceStatus[] = ["通过", "失败", "未执行", "作废"];
+
+export interface DeviceSummary {
+  /** 「无效」: the file exists but cannot be read. */
+  status: DeviceStatus | "无效";
+  testedAt?: string;
+  tester?: string;
+  draftRevision?: number | null;
+  checks?: number;
+  legacy?: boolean;
+  imported?: boolean;
+  /** The draft changed (revision or re-created) after this delivery was built. */
+  stale?: boolean;
+  errors?: string[];
+}
+
+export interface DeviceCheck {
+  item: string;
+  expected?: string;
+  observed?: string;
+  status?: "通过" | "失败" | "未执行";
+  screenshot?: string;
+}
+
+export interface DeviceResult {
+  schema: string;
+  status: DeviceStatus;
+  reason?: string;
+  delivery: { name: string; kind: "character" | "boss"; subject?: string | null; draftRevision: number | null;
+    draftCreatedAt?: string | null;
+    from?: string | null; to?: string | null; archives?: { name: string; sha256: string }[] };
+  device?: { id?: string; label?: string; emulator?: boolean; package?: string; apk?: string; apkSha256?: string };
+  server?: string;
+  client?: { versionBefore?: string; versionAfter?: string; profile?: string };
+  chainEdges?: { version: string; note?: string }[];
+  checks: DeviceCheck[];
+  screenshots?: string[];
+  errorCodes?: string[];
+  errorScan?: string;
+  notes?: string;
+  tester?: string;
+  testedAt: string;
+  recordedAt?: string;
+  restore?: { method?: string; edges?: string[]; verified?: boolean; notes?: string };
+  importedFrom?: { path: string; sha256: string; schema: string; delivery?: string; archivesMatch?: boolean | null; at?: string };
+  extra?: Record<string, unknown>;
+}
+
+export interface DeviceShot { path: string; name: string; allowed: boolean; exists: boolean }
+
+export interface DeviceEntry {
+  path: string;
+  result: DeviceResult | null;
+  /** Stored as the hand-written wf-device-result/1 (shown converted; the file is unchanged). */
+  legacy: boolean;
+  errors: string[];
+  history: number;
+  bindingMismatch?: boolean;
+  screenshots: DeviceShot[];
+  currentRevision: number | null;
+  /** No draft exists for this delivery any more (staleness cannot be judged). */
+  draftMissing?: boolean;
+  /** The draft changed after this delivery was tested. */
+  stale: boolean;
+}
+
+/** Body of a 「记录实测」 write: everything but the delivery binding (the editor fills it). */
+export type DeviceWrite = Omit<DeviceResult, "schema" | "delivery" | "recordedAt" | "importedFrom">;
+
+export function screenshotUrl(path: string): string {
+  return `/api/device-screenshots?path=${encodeURIComponent(path)}`;
 }
 
 export interface DeliveryDetail {
@@ -815,6 +896,7 @@ export interface DeliveryDetail {
   check: RuleResult[] | null;
   compat: RuleResult[] | null;
   files: { path: string; size: number }[];
+  deviceResult?: DeviceEntry | null;
   deviceValidation: string;
 }
 
@@ -841,7 +923,8 @@ export interface DeliveryApi {
   /** Draft-change listener key of a draft id (characters: the id itself). */
   key: (cid: string) => string;
   defaults: () => Promise<DeliveryDefaults>;
-  list: (cid: string) => Promise<{ root: string; deliveries: DeliverySummary[]; running: Record<string, string>; jobs: BuildJob[] }>;
+  list: (cid: string) => Promise<{ root: string; deliveries: DeliverySummary[]; running: Record<string, string>; jobs: BuildJob[];
+    currentRevision?: number | null }>;
   job: (name: string) => Promise<BuildJob>;
   start: (cid: string, body: BuildRequest) => Promise<BuildJob>;
   cancel: (cid: string) => Promise<{ name: string; cancelling: boolean; note: string }>;
@@ -849,6 +932,10 @@ export interface DeliveryApi {
   finished: (cid: string) => Promise<null>;
   detail: (name: string) => Promise<DeliveryDetail>;
   fileUrl: (name: string, path: string) => string;
+  device: (name: string) => Promise<{ name: string; deviceResult: DeviceEntry | null; screenshotDirs: string[] }>;
+  writeDevice: (cid: string, name: string, body: DeviceWrite) => Promise<{ name: string; deviceResult: DeviceEntry }>;
+  importDevice: (cid: string, name: string, path: string, allowUnverified?: boolean) =>
+    Promise<{ name: string; deviceResult: DeviceEntry }>;
 }
 
 export function deliveryApi(prefix: string, key: (cid: string) => string = (cid) => cid): DeliveryApi {
@@ -863,6 +950,12 @@ export function deliveryApi(prefix: string, key: (cid: string) => string = (cid)
     finished: (cid) => notify(key(cid), Promise.resolve(null)),
     detail: (name) => get<DeliveryDetail>(`${prefix}/deliveries/${encodeURIComponent(name)}`),
     fileUrl: (name, path) => `${prefix}/deliveries/${encodeURIComponent(name)}/file?path=${encodeURIComponent(path)}`,
+    device: (name) => get(`${prefix}/deliveries/${encodeURIComponent(name)}/device-result`),
+    writeDevice: (cid, name, body) =>
+      notify(key(cid), post(`${prefix}/drafts/${id(cid)}/deliveries/${encodeURIComponent(name)}/device-result`, body)),
+    importDevice: (cid, name, path, allowUnverified) =>
+      notify(key(cid), post(`${prefix}/drafts/${id(cid)}/deliveries/${encodeURIComponent(name)}/device-result/import`,
+        { path, ...(allowUnverified ? { allowUnverified: true } : {}) })),
   };
 }
 

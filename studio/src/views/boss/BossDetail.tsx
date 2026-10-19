@@ -9,6 +9,7 @@ import { href, Route } from "../../router";
 import { ChangesPanel, ChecksList, useDraftOf } from "../Changes";
 import { Drawer, ElementBadge, Notice, StatusStrip } from "../common";
 import { InfoTip, useDeliveries } from "../Delivery";
+import { deviceCell, sameDraft } from "../DeviceResult";
 import { ChecksPanel } from "./BossChecks";
 import { BossParams, PreviewState } from "./BossParams";
 import { BossEncounter, BossRewards, HiddenQuests, Src } from "./BossRead";
@@ -35,7 +36,7 @@ const TAB_ALIAS: Record<string, string> = { moves: "behavior" };
 
 const IDLE: PreviewState = { state: "idle", checks: null, ok: false };
 
-export function BossDetail({ quest, tab }: { quest: string; tab?: string }) {
+export function BossDetail({ quest, tab, sub }: { quest: string; tab?: string; sub?: string }) {
   const [read, setRead] = useState<BossRead | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { list } = useBossList();
@@ -117,8 +118,9 @@ export function BossDetail({ quest, tab }: { quest: string; tab?: string }) {
         </div>
       </header>
       <StatusStrip draft={status ?? null} checks={changes.flatMap((c) => c.checks)}
-        build={(built.list ?? []).find((d) => draft.view?.changeset && d.draftRevision === draft.view.changeset.revision
-          && draft.view.status.state === "saved") ?? null} />
+        build={(built.list ?? []).find((d) => sameDraft(d, draft.view?.changeset) && draft.view?.status.state === "saved") ?? null}
+        device={deviceCell(built.list, draft.view?.changeset?.revision)}
+        deviceLink={(name) => href({ work: "content", shop: "boss", quest, tab: "changes", sub: name })} />
       <nav class="tabs" role="tablist" aria-label="副本内容">
         {TABS.map((t) => (
           <a role="tab" aria-selected={active === t.id} class={active === t.id ? "active" : ""} href={href(link(t.id))}>
@@ -156,7 +158,7 @@ export function BossDetail({ quest, tab }: { quest: string; tab?: string }) {
       </div>
       {drawer ? (
         <Drawer title={<>本次修改 <span class="small muted">{status?.label}</span></>} onClose={closeDrawer}>
-          <ChangesPanel characterId={questId} subject={subject}
+          <ChangesPanel characterId={questId} subject={subject} openDelivery={sub ?? null}
             renderChange={(change, actions) => <BossChangeItem change={change} {...actions} />}
             emptyText="还没有改动。到「地形」「商店与武器」「行为」或「调整参数」改动，预检通过后写入草稿。"
             techNote={<p class="small">副本草稿在 <span class="mono">work/studio-drafts/boss/</span>，每个副本一份可重放的操作序列（

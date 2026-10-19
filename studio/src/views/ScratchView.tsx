@@ -1,9 +1,10 @@
 import { useEffect, useState } from "preact/hooks";
-import { api, BindResult, CharacterSummary, drafts, ScratchInfo, scratchApi } from "../api";
+import { api, BindResult, CharacterSummary, DraftCheck, DraftStatus, drafts, ScratchInfo, scratchApi } from "../api";
 import { href, Route } from "../router";
 import { ChangesPanel, useDraft } from "./Changes";
 import { Drawer, ElementBadge, Notice, StatusStrip } from "./common";
-import { InfoTip } from "./Delivery";
+import { InfoTip, useDeliveries } from "./Delivery";
+import { deviceCell } from "./DeviceResult";
 import { PixelGroup, PixelSub } from "./PixelGroup";
 
 const ELEMENTS = ["火", "水", "雷", "风", "光", "暗"];
@@ -160,7 +161,10 @@ export function ScratchDetail({ id, tab, sub }: { id: string; tab?: string; sub?
           <span class={"origin " + (bound ? "origin-new" : "origin-unknown")}>{bound ? `已绑定 ${bound.characterId}` : "还没有角色 ID"}</span>
         </div>
       </header>
-      <StatusStrip draft={draft.view?.status ?? null} checks={draft.view?.changeset?.changes.flatMap((c) => c.checks) ?? []} />
+      {bound ? <BoundStatusStrip cid={bound.characterId} draft={draft.view?.status ?? null}
+        checks={draft.view?.changeset?.changes.flatMap((c) => c.checks) ?? []} />
+        : <StatusStrip draft={draft.view?.status ?? null} checks={draft.view?.changeset?.changes.flatMap((c) => c.checks) ?? []}
+          deviceNote="没有游戏 ID，不能生成" />}
       {bound ? <Notice>已绑定到 <a href={href({ work: "content", shop: "characters", id: bound.characterId, tab: "changes" })}>{bound.characterId}（{bound.code}）</a>：
         在那个角色的「本次修改」里保存、生成。这里之后的改动不会自动同步过去。</Notice>
         : <Notice kind="warn">还没有游戏 ID：可以编辑、保存，但不能生成；先「绑定到角色」。</Notice>}
@@ -179,6 +183,15 @@ export function ScratchDetail({ id, tab, sub }: { id: string; tab?: string; sub?
       ) : null}
     </section>
   );
+}
+
+/** A bound scratch character is generated and tested as its target character: show that one's 实测. */
+function BoundStatusStrip({ cid, draft, checks }: { cid: string; draft: DraftStatus | null; checks: DraftCheck[] }) {
+  const built = useDeliveries(cid);
+  const target = useDraft(cid);
+  return <StatusStrip draft={draft} checks={checks} device={deviceCell(built.list, target.view?.changeset?.revision)}
+    deviceNote={`按绑定角色 ${cid}`}
+    deviceLink={(name) => href({ work: "content", shop: "characters", id: cid, tab: "changes", sub: name })} />;
 }
 
 function RenameForm({ info, onDone }: { info: ScratchInfo; onDone: () => void }) {

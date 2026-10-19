@@ -82,7 +82,7 @@ function App() {
           {route.work === "patches" ? (
             <PatchManager archive={route.archive} />
           ) : route.shop === "boss" ? (
-            <BossWorkshop quest={route.quest} tab={route.tab} wizard={route.wizard} source={route.source} />
+            <BossWorkshop quest={route.quest} tab={route.tab} sub={route.sub} wizard={route.wizard} source={route.source} />
           ) : route.shop === "scratch" ? (
             route.id ? <ScratchDetail id={route.id} tab={route.tab} sub={route.sub} /> : <ScratchList />
           ) : route.id ? (

@@ -51,8 +51,13 @@ def error(status: int, message: str) -> Response:
 class StudioApp:
     """Request handlers bound to one :class:`StudioSource`."""
 
-    def __init__(self, source: StudioSource, *, drafts=None, server_dir=None, default_provides=None):
+    def __init__(self, source: StudioSource, *, drafts=None, server_dir=None, default_provides=None,
+                 screenshot_dirs=None):
+        from .device_result import Screenshots, configured_screenshot_dirs
         self.source = source
+        # 实测截图白名单：profile paths.studio_screenshots / WF_STUDIO_SCREENSHOTS / --screenshots-dir
+        self.screenshots = Screenshots(configured_screenshot_dirs() if screenshot_dirs is None
+                                       else screenshot_dirs)
         self.pixels = PixelCache(source)
         self.assets = AssetIndex(source)
         self.ops = DraftOps(source, store=drafts, assets=self.assets, characters=self.character_list)
@@ -81,6 +86,8 @@ class StudioApp:
             ("GET", re.compile(r"^/api/characters/(?P<cid>\d+)/voice$"), self.voice_lines),
             ("GET", re.compile(r"^/api/studio/masks/(?P<slot>[a-z0-9_]+)\.png$"), self.mask),
             ("GET", re.compile(r"^/api/studio/schema$"), self.schema),
+            ("GET", re.compile(r"^/api/device-screenshots$"), self.device_screenshot),
+            ("GET", re.compile(r"^/api/studio/device-result/schema$"), self.device_schema),
             ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/portrait/(?P<form>[01])/source$"), self.portrait_upload),
             ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/portrait$"), self.portrait_save),
             ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/pixel$"), self.pixel_save),
@@ -278,6 +285,20 @@ class StudioApp:
     def schema(self, query) -> Response:
         from .drafts import schema
         return json_response(schema())
+
+    def device_screenshot(self, query) -> Response:
+        value = (query.get("path") or [""])[0]
+        try:
+            data, kind = self.screenshots.read(value)
+        except PermissionError as exc:
+            return error(403, str(exc))
+        except FileNotFoundError as exc:
+            return error(404, str(exc))
+        return Response(200, data, kind, cache="no-store")
+
+    def device_schema(self, query) -> Response:
+        from .device_result import schema as device_schema
+        return json_response({**device_schema(), "screenshotDirs": self.screenshots.public()})
 
     def portrait_upload(self, query, body, cid: str, form: str) -> Response:
         return json_response(self.ops.portrait_upload(cid, form, body.get("png", "")))

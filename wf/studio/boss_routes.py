@@ -16,11 +16,16 @@ ICON_PATH = re.compile(r"^item/[A-Za-z0-9_./-]+$")
 
 
 class BossDeliveries(DeliverRoutes):
+    kind = "boss"
     name_pattern = re.compile(r"^(?:[0-9]{1,9}|(?:boss_battle|hard_multi|practice)_[0-9_]+)-[0-9.]+-to-[0-9.]+-[0-9]{8}-[0-9]{6}$")
 
     def output_identity(self, cid):
         self.app.ops.store.directory(cid)
         return safe_id(cid)
+
+    def draft_id(self, subject):
+        from wf.boss.identity import from_directory
+        return from_directory(subject)
 
     def baseline_options(self):
         options = super().baseline_options()
@@ -41,7 +46,8 @@ class BossRoutes:
         self.app = app
         self.store = BossDraftStore(app.ops.store.root / "boss")
         self.editor = BossEditor(app.source, store=self.store, server_dir=server_dir)
-        proxy = SimpleNamespace(source=app.source, ops=SimpleNamespace(store=self.store))
+        proxy = SimpleNamespace(source=app.source, ops=SimpleNamespace(store=self.store),
+                                screenshots=getattr(app, "screenshots", None))
         self.deliveries = BossDeliveries(proxy, server_dir, root=DELIVERIES / "boss",
                                         default_provides=default_provides)
 

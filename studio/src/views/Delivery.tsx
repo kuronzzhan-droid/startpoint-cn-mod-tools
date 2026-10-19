@@ -4,6 +4,7 @@ import { Notice } from "./common";
 import { RuleChips, ruleCounts, RuleList } from "./rules";
 import { useClientProfile } from "../clientProfile";
 import { MissingCapabilities, ProfileBadge } from "./ClientProfile";
+import { DeviceBadge, DevicePanel, sameDraft, useDeviceEntry } from "./DeviceResult";
 
 function size(bytes: number | null | undefined): string {
   if (bytes == null) return "—";
@@ -13,22 +14,29 @@ function size(bytes: number | null | undefined): string {
 }
 
 /** Latest delivery for a character or boss draft (refreshed after any draft write or build). */
-export function useDeliveries(cid: string, api: DeliveryApi = deliveries): { list: DeliverySummary[] | null; reload: () => void } {
+export function useDeliveries(cid: string, api: DeliveryApi = deliveries): {
+  list: DeliverySummary[] | null; currentRevision: number | null; reload: () => void;
+} {
   const [list, setList] = useState<DeliverySummary[] | null>(null);
-  const reload = () => api.list(cid).then((r) => setList(r.deliveries), () => setList([]));
+  const [currentRevision, setRevision] = useState<number | null>(null);
+  const reload = () => {
+    if (!cid) { setList([]); return Promise.resolve(); }
+    return api.list(cid).then((r) => { setList(r.deliveries); setRevision(r.currentRevision ?? null); }, () => setList([]));
+  };
   useEffect(() => {
     setList(null);
     reload();
     return onDraftChange((changed) => { if (changed === api.key(cid)) reload(); });
   }, [cid, api]);
-  return { list, reload };
+  return { list, currentRevision, reload };
 }
 
-export function DeliveryPanel({ characterId, mode, view, onMode, api = deliveries }: {
+export function DeliveryPanel({ characterId, mode, view, onMode, api = deliveries, initialPick = null }: {
   characterId: string; mode: "generate" | "export"; view: DraftView; onMode: (m: "generate" | "export") => void;
-  api?: DeliveryApi;
+  api?: DeliveryApi; initialPick?: string | null;
 }) {
-  const [picked, setPicked] = useState<string | null>(null);
+  const [picked, setPicked] = useState<string | null>(initialPick);
+  useEffect(() => { if (initialPick) setPicked(initialPick); }, [initialPick]);
   return (
     <section class="delivery-panel">
       <nav class="segmented" aria-label="生成或导出">
@@ -38,7 +46,7 @@ export function DeliveryPanel({ characterId, mode, view, onMode, api = deliverie
       {mode === "generate" ? (
         <GenerateForm characterId={characterId} view={view} api={api} onBuilt={(name) => { setPicked(name); onMode("export"); }} />
       ) : (
-        <ExportView characterId={characterId} picked={picked} onPick={setPicked} revision={view.changeset?.revision ?? null} api={api} />
+        <ExportView characterId={characterId} picked={picked} onPick={setPicked} revision={view.changeset?.revision ?? null} changeset={view.changeset} api={api} />
       )}
     </section>
   );
@@ -179,8 +187,9 @@ function BuildResultCard({ result, onOpen }: { result: BuildResult; onOpen: () =
   );
 }
 
-function ExportView({ characterId, picked, onPick, revision, api }: {
+function ExportView({ characterId, picked, onPick, revision, changeset, api }: {
   characterId: string; picked: string | null; onPick: (name: string) => void; revision: number | null; api: DeliveryApi;
+  changeset?: DraftView["changeset"];
 }) {
   const { list } = useDeliveries(characterId, api);
   useEffect(() => {
@@ -197,18 +206,22 @@ function ExportView({ characterId, picked, onPick, revision, api }: {
               <span class={d.ok ? "state-ok" : "error-text"}>{d.ok ? "完成" : "失败"}</span>
               <span class="mono small">{d.from} → {d.to}</span>
               <span class="small muted">{d.name.slice(-15)}</span>
-              {d.draftRevision != null && revision != null && d.draftRevision !== revision ? <span class="tag">旧修订 {d.draftRevision}</span> : null}
+              {d.draftRevision != null && revision != null && d.draftRevision !== revision ? <span class="tag">旧修订 {d.draftRevision}</span>
+                : d.draftRevision != null && changeset && !sameDraft(d, changeset) ? <span class="tag" title="草稿删掉重建过，修订号相同但不是同一份草稿">旧草稿</span> : null}
+              {d.device ? <span title={`实测 ${d.device.testedAt ?? ""}`}><DeviceBadge status={d.device.status}
+                stale={!!d.device.stale} /></span> : null}
             </button>
           </li>
         ))}
       </ul>
-      {picked ? <DeliveryDetailView name={picked} api={api} /> : null}
+      {picked ? <DeliveryDetailView name={picked} api={api} characterId={characterId} /> : null}
     </div>
   );
 }
 
-function DeliveryDetailView({ name, api }: { name: string; api: DeliveryApi }) {
+function DeliveryDetailView({ name, api, characterId }: { name: string; api: DeliveryApi; characterId: string }) {
   const [detail, setDetail] = useState<DeliveryDetail | null>(null);
+  const [device, setDevice] = useDeviceEntry(detail?.deviceResult);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   useEffect(() => {
@@ -236,8 +249,11 @@ function DeliveryDetailView({ name, api }: { name: string; api: DeliveryApi }) {
       <div class="status-strip compact">
         <div><span class="label">保存状态</span><span class="value">草稿修订 {report?.draftRevision ?? "—"}</span></div>
         <div><span class="label">检查结果</span><span class="value"><RuleChips counts={ruleCounts([...(detail.check ?? []), ...(detail.compat ?? [])])} /></span></div>
-        <div><span class="label">实测情况</span><span class="value state-none">未记录（{detail.deviceValidation}）</span></div>
+        <div><span class="label">实测情况</span><span class="value">
+          {device?.result ? <><DeviceBadge status={device.result.status} stale={device.stale} /> <span class="small muted">{device.result.testedAt}</span></>
+            : <span class="state-none">未执行</span>}</span></div>
       </div>
+      <DevicePanel name={name} cid={characterId} entry={device} api={api} onChange={setDevice} />
 
       <h4>ZIP（{detail.archives.length}）</h4>
       <table class="files">

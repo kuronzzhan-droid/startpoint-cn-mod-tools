@@ -36,6 +36,10 @@
 
 旧别名仍可读取，但使用时会产生可见的 `UserWarning`。规范变量和别名同时存在时，解析到同一路径可以兼容，不同路径则报冲突，避免依赖隐含的选择顺序。
 
+编辑台的实测截图白名单用 `paths.studio_screenshots`（字符串或字符串数组，例如模拟器共享文件夹里的截图目录），
+也可用环境变量 `WF_STUDIO_SCREENSHOTS`（多个目录用系统路径分隔符）或 `python -m wf.studio --screenshots-dir`。
+编辑台只展示这些目录里的 png/jpg/webp；记录里别处的截图路径只显示文字。
+
 `WF_PATHS_PROFILE` 只用于指定路径配置 JSON，缺省读取本仓 `profiles/local.json`。
 `WF_PROFILE` 只用于选择版本档案 ID（例如 `cn`）；把 JSON 文件名填入该变量会提示改用 `WF_PATHS_PROFILE`。
 本地配置可保留 `active` / `profiles` 版本结构，版本条目支持 `store`、`cdndata`、`fallback`、`cdn_dir`、`server_dir`、`label` 和 `res_version`。

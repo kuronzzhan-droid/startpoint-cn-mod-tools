@@ -139,7 +139,7 @@ python -m wf.studio            # 打开 http://127.0.0.1:8790/
 
 ### 本次修改
 
-角色页「本次修改」列出全部草稿改动（缩略图、检查、替换文件表、待生成项、词条操作），逐项撤销。五个按钮中「保存」「生成」「导出」接通（见下文 M4b），「应用」「发布」未接入。状态三栏：保存状态读草稿；检查结果在当前已保存修订生成过交付时显示该次交付的五态计数，否则显示草稿检查并注明交付规则未执行；实测情况固定「未记录」。
+角色页「本次修改」列出全部草稿改动（缩略图、检查、替换文件表、待生成项、词条操作），逐项撤销。五个按钮中「保存」「生成」「导出」接通（见下文 M4b），「应用」「发布」未接入。状态三栏：保存状态读草稿；检查结果在当前已保存修订生成过交付时显示该次交付的五态计数，否则显示草稿检查并注明交付规则未执行；实测情况读交付目录的 device-result.json（见下文「实测记录」）。
 
 ### 测试与截图
 
@@ -168,7 +168,7 @@ python -m wf.studio.draft build 139985 --from 1.4.233 --to 1.4.234 --out work/m4
 - `delivery/` 包含 ≤5 MiB ZIP、旧/上游两种 manifest、三层归档、`requires.json`、prepush、奖励键对照、前后摘要断言脚本、基线锁和校验和。
 - 自动回读 `wf check` 结果到 `delivery/check.json`；提供 `--provides` 时执行能力和方法摘要匹配到 `delivery/compat.json`。缺能力或 prepush 问题会使 CLI 非零退出；缺少 provides 时 `build-report.ok=false`、`compat="未确认"`，CLI 非零退出。
 - 只有显式 `--allow-unknown-client` 才允许缺少 provides 的本地交付。此时兼容性仍为「未确认」，例外记录在交付清单 `client_compatibility.allow_unknown_client` 和报告 `allowUnknownClient`；该参数不能跳过已提供客户端的真实缺能力错误。对最终清单重跑 `wf check` 会保留同一门禁。
-- `build-report.json` 汇总状态、版本、草稿修订和产物路径。`compat` 是状态字符串，逐项结果在 `compatChecks`；原始编译检查在 `draftChecks` 和 `delivery/draft-checks.json`，像素预算、技能档位引用等「待验证」也进入最终 `checks`。检查通过属于文件与静态能力证据；`deviceValidation` 固定为「未执行」。
+- `build-report.json` 汇总状态、版本、草稿修订和产物路径。`compat` 是状态字符串，逐项结果在 `compatChecks`；原始编译检查在 `draftChecks` 和 `delivery/draft-checks.json`，像素预算、技能档位引用等「待验证」也进入最终 `checks`。检查通过属于文件与静态能力证据；`build-report.json` 的 `deviceValidation` 固定为「未执行」，实测结论另记在 device-result.json。
 - 客户端成员按精确 CDN 根与基线逐字节比较，服务端 changes 按基线摘要比较；相同成员全部剔除，包括定位表、illustration atlas、frame 和文本镜像。纯无变化草稿拒绝生成空交付。
 
 ### 媒体编译约束
@@ -238,6 +238,33 @@ action_skill 的结构编辑按客户端档位处理：`level` 指源/插入档�
 | GET | `/api/deliveries/<名>/file?path=` | 读取交付目录内文件（限目录内） |
 
 生成沿用编辑台视图的补丁链清单与已解析 ZIP 所在目录作为基线（`ManifestView` 按清单重新锁定），只接受已保存草稿；未提供 provides 时兼容检查为「未执行」。应用/发布按钮保持禁用。
+
+### 实测记录（device-result.json）
+
+装机测试的结果写在交付目录根的 `device-result.json`（与 `delivery/` 同级），结构见 `schemas/device-result.schema.json`
+（`wf-device-result/2`：结论 通过/失败/未执行/作废、设备与包名、更新前后客户端资源版本、装入的链边、逐项检查 item/expected/observed/截图、
+错误码、测试人、时间、恢复方式）。编辑台写入时按交付目录自己的 `build-report.json` 与 `delivery-manifest.json` 填 `delivery` 绑定
+（交付名、草稿修订、ZIP sha256），请求里的绑定不算数；旧文件移到 `device-results/<时间>.json`。device-round-1 手写的
+`wf-device-result/1`（checks 用 what/expect/result）读取时按新结构显示，原文件不改。
+
+| 方法 | 路径 | 作用 |
+|---|---|---|
+| GET | `/api/deliveries/<名>/device-result` | 记录（已转换）、截图白名单判定、`stale`（草稿修订已变）；交付详情 `deviceResult` 同此 |
+| POST | `/api/drafts/<cid>/deliveries/<名>/device-result` | 写入或更新；交付必须属于这个草稿 |
+| POST | `/api/drafts/<cid>/deliveries/<名>/device-result/import` | `{path, allowUnverified?}`：按路径导入别处（例如另一 worktree）的记录；来源交付 ZIP 摘要须与本交付一致 |
+| GET | `/api/device-screenshots?path=` | 只读白名单目录（profiles 的 `paths.studio_screenshots`）里的 png/jpg/webp |
+
+副本交付同样在 `/api/boss/...` 下。列表 `GET /api/deliveries?cid=` 每项带 `device` 摘要，并给 `currentRevision`。
+三栏状态的「实测」：当前草稿修订生成的交付有记录就显示结论与日期（点开到「导出」的这份交付）；只有旧修订的记录时显示「实测已过期」。
+草稿角色已绑定时显示绑定角色的实测。
+
+命令行（agent）：
+
+```powershell
+python -m wf.studio.draft device-result show <交付名> [--boss]
+python -m wf.studio.draft device-result write <交付名> --file result.json [--status 通过] [--tester 名字]
+python -m wf.studio.draft device-result import <另一处>/studio-deliveries/<交付名>/device-result.json [--delivery <本地交付名>]
+```
 
 ### 默认客户端能力清单(`--provides`)
 

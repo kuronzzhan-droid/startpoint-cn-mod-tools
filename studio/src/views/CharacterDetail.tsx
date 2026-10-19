@@ -8,6 +8,7 @@ import { PixelGroup, PixelSub } from "./PixelGroup";
 import { PortraitEditor } from "./PortraitEditor";
 import { VoiceTab } from "./VoiceTab";
 import { InfoTip, useDeliveries } from "./Delivery";
+import { deviceCell, sameDraft } from "./DeviceResult";
 import { AbilityProvider, KeyEditor, PendingBar, useAbilityWorkspace, useWorkspace } from "./AbilityEditor";
 import { pendingCount } from "./abilityModel";
 import { AttachControl, SkillTiers, slotOf } from "./KeyTools";
@@ -89,8 +90,9 @@ export function CharacterDetailView({ id, tab, sub }: { id: string; tab?: string
         </div>
       </header>
       <StatusStrip draft={draft.view?.status ?? null} checks={draft.view?.changeset?.changes.flatMap((c) => c.checks) ?? []}
-        build={(built.list ?? []).find((d) => draft.view?.changeset && d.draftRevision === draft.view.changeset.revision
-          && draft.view.status.state === "saved") ?? null} />
+        build={(built.list ?? []).find((d) => sameDraft(d, draft.view?.changeset) && draft.view?.status.state === "saved") ?? null}
+        device={deviceCell(built.list, draft.view?.changeset?.revision)}
+        deviceLink={(name) => href(link("changes", name))} />
       <nav class="tabs" role="tablist" aria-label="角色内容">
         {GROUPS.map((g) => (
           <a role="tab" aria-selected={group === g.id} class={group === g.id ? "active" : ""} href={href(link(g.id))}>
@@ -119,7 +121,7 @@ export function CharacterDetailView({ id, tab, sub }: { id: string; tab?: string
       {isAbilityGroup ? <PendingBar /> : null}
       {drawer === "changes" ? (
         <Drawer title={<>本次修改 <span class="small muted">{status?.label}</span></>} onClose={closeDrawer}>
-          <ChangesPanel characterId={detail.id} />
+          <ChangesPanel characterId={detail.id} openDelivery={sub ?? null} />
         </Drawer>
       ) : drawer === "assets" ? (
         <Drawer title="全部资源" wide onClose={closeDrawer}>

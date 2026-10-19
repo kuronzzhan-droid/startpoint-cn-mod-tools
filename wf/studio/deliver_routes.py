@@ -21,6 +21,7 @@ from pathlib import Path
 
 from wf.paths import REPOSITORY
 
+from . import device_result
 from .drafts import DraftError
 
 DELIVERIES = REPOSITORY / "work" / "studio-deliveries"
@@ -44,10 +45,28 @@ def next_version(version: str) -> str:
 
 class DeliverRoutes:
     name_pattern = NAME
+    kind = "character"
 
     def output_identity(self, cid):
         self.app.ops.store.directory(cid)
         return cid
+
+    def current_draft(self, subject):
+        """Revision and creation time of the draft a delivery came from (None: gone or unreadable)."""
+        try:
+            changeset = self.app.ops.store.load(self.draft_id(subject)) if subject else None
+        except (DraftError, ValueError, OSError, TypeError):
+            return None
+        if not changeset:
+            return None
+        return {"revision": changeset.get("revision"), "createdAt": changeset.get("createdAt")}
+
+    def draft_id(self, subject):
+        return subject
+
+    def screenshots(self):
+        from .device_result import Screenshots
+        return getattr(self.app, "screenshots", None) or Screenshots([])
 
     def display_root(self):
         root = self.root.resolve()
@@ -214,6 +233,7 @@ class DeliverRoutes:
         cid = (query.get("cid") or [""])[0]
         cid = self.output_identity(cid) if cid else ""
         items = []
+        draft = self.current_draft(cid) if cid else None
         if self.root.is_dir():
             for folder in sorted(self.root.iterdir(), reverse=True):
                 if not folder.is_dir() or not self.name_pattern.fullmatch(folder.name):
@@ -234,11 +254,14 @@ class DeliverRoutes:
                               "from": report.get("from") if report else None,
                               "to": report.get("to") if report else None,
                               "draftRevision": report.get("draftRevision") if report else None,
+                              "draftCreatedAt": (_read_json(folder / "inputs" / "draft.json") or {}).get("createdAt"),
                               "prepush": (report.get("prepush") or {}).get("status") if report else None,
-                              "counts": counts})
+                              "counts": counts,
+                              "device": device_result.summary(device_result.read(folder, self.kind), draft)})
         with self._lock:
             jobs = [self._public(job) for job in self.jobs.values() if not cid or job["characterId"] == cid]
         return json_response({"root": self.display_root(), "deliveries": items,
+                              "currentRevision": (draft or {}).get("revision"),
                               "running": dict(self.running), "jobs": jobs})
 
     def _folder(self, name: str) -> Path:
@@ -272,11 +295,55 @@ class DeliverRoutes:
         servers = [{"target": s.get("target"), "sha256": s.get("sha256")} for s in changeset.get("server_changes", [])]
         check = (_read_json(delivery / "check.json") or {}).get("results")
         compat = (_read_json(delivery / "compat.json") or {}).get("results")
+        device = self._device(folder)
         return json_response({"name": name, "path": str(folder), "report": report, "error": error,
                               "archives": archives, "members": members, "serverChanges": servers,
                               "requires": _read_json(delivery / "requires.json"),
                               "check": check, "compat": compat, "files": files,
-                              "deviceValidation": "未执行"})
+                              "deviceResult": device,
+                              "deviceValidation": (device.get("result") or {}).get("status", "未执行") if device else "未执行"})
+
+    # -- 实测（device-result.json） ----------------------------------------
+    def _device(self, folder: Path) -> dict | None:
+        entry = device_result.read(folder, self.kind)
+        if entry is None:
+            return None
+        result = entry.get("result")
+        draft = self.current_draft(device_result.subject_of(folder.name))
+        return {**entry, "screenshots": self.screenshots().annotate(result),
+                "currentRevision": (draft or {}).get("revision"), "draftMissing": draft is None,
+                "stale": device_result.stale(result, draft)}
+
+    def device_get(self, query, name):
+        from .server import json_response
+        folder = self._folder(name)
+        return json_response({"name": name, "deviceResult": self._device(folder),
+                              "screenshotDirs": self.screenshots().public()})
+
+    def _owned(self, cid, name) -> Path:
+        identity = self.output_identity(cid)
+        if device_result.subject_of(name) != identity:
+            raise DraftError(f"交付 {name} 不属于 {cid}")
+        return self._folder(name)
+
+    def device_write(self, query, body, cid, name):
+        from .server import json_response
+        folder = self._owned(cid, name)
+        device_result.write(folder, self.kind, body)
+        return json_response({"name": name, "deviceResult": self._device(folder)})
+
+    def device_import(self, query, body, cid, name):
+        from .server import json_response
+        source = str(body.get("path") or "").strip()
+        if not source:
+            raise DraftError("需要 path：来源 device-result.json 或它所在的交付目录")
+        folder = self._owned(cid, name)
+        try:
+            device_result.import_file(Path(source), folder, self.kind,
+                                      allow_unverified=bool(body.get("allowUnverified")))
+        except OSError as exc:
+            raise DraftError(f"读取来源失败：{exc}") from exc
+        return json_response({"name": name, "deviceResult": self._device(folder)})
 
     def file(self, query, name):
         from .server import Response
@@ -296,5 +363,9 @@ class DeliverRoutes:
                 ("GET", re.compile(r"^/api/deliveries/jobs/(?P<name>[^/]+)$"), self.job),
                 ("GET", re.compile(r"^/api/deliveries/(?P<name>[^/]+)$"), self.detail),
                 ("GET", re.compile(r"^/api/deliveries/(?P<name>[^/]+)/file$"), self.file),
+                ("GET", re.compile(r"^/api/deliveries/(?P<name>[^/]+)/device-result$"), self.device_get),
+                ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/deliveries/(?P<name>[^/]+)/device-result$"), self.device_write),
+                ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/deliveries/(?P<name>[^/]+)/device-result/import$"),
+                 self.device_import),
                 ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/build$"), self.build),
                 ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/build/cancel$"), self.cancel)]
