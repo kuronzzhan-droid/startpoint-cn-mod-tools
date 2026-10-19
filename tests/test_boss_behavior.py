@@ -176,3 +176,30 @@ def test_new_derived_program_appearance_is_input_drift(tmp_path):
     editor.source = StudioSource(editor.source.view)
     with pytest.raises(ValueError, match='drift'):
         compile_boss(editor.source, editor.store, draft, server_dir=editor.server_dir)
+
+def test_behavior_terrain_scene_sequences_keep_prior_edits(tmp_path):
+    editor = behavior_editor(tmp_path); view = editor.source.view
+    fields = codec.parse_node(view.files[s.FIELD]); fields['alternate'] = fields['field']
+    view.files[s.FIELD] = codec.build_node(fields)
+    quest = 'hard_multi:1006/1'
+    editor.apply(quest, request(state='idle', intervalFrames=90))
+    editor.apply(quest, {'operation':'terrain_position','layer':'0','name':'extra','action':'add','x':12,'y':34})
+    editor.apply(quest, {'operation':'edit','parameters':{'scene':'alternate'}})
+    editor.apply(quest, request(slot=1, damageMultiplier=2))
+    editor.apply(quest, {'operation':'terrain_position','layer':'0','name':'extra','action':'update','x':56,'y':34})
+    editor.apply(quest, {'operation':'edit','parameters':{'scene':'field'}})
+    editor.apply(quest, request(state='idle', trialThreshold=20))
+    draft = editor.store.save(quest)
+    compiled = compile_boss(editor.source, editor.store, draft, server_dir=editor.server_dir)
+    class Unpacked:
+        tip = '1.4.236'; zips = []
+        def read_raw(self, logical):
+            return compiled['client'].get(logical, view.files.get(logical)), 'unpacked'
+    document = BossReader(Unpacked()).show(quest)
+    assert document['field']['id'] == 'field'
+    assert next(o for o in document['terrain']['waves'][0]['objects'] if o.get('name') == 'extra')['x'] == 56
+    state = next(s for s in read_behavior(Unpacked(), document)['enemies'][0]['states'] if s['name'] == 'idle')
+    assert state['duration_frames'] == 90 and state['trial']['threshold'] == '20'
+    enemy = document['enemies'][0]
+    assert '/studio_behavior/' in enemy['row'][111]
+

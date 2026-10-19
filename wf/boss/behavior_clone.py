@@ -28,6 +28,14 @@ def select_enemy(state, quest, code):
     return document, enemy
 
 
+def _introduced(state, logical, key):
+    original = state.original.get(logical)
+    if original is not None and key in codec.parse_node(original):
+        return False
+    return any(change['table'] == logical and change['path'] == [key]
+               and change['old'] is None for change in state.changes)
+
+
 def isolate_enemy(state, document, enemy):
     quest = document['quest']; code = enemy['code']
     original = codec.parse_node(state.original[enemy['table']])
@@ -53,7 +61,7 @@ def isolate_enemy(state, document, enemy):
     zone_id = identity(quest['selector'], 'zone')
     fd_id = identity(quest['selector'], 'field_data')
     fd = list(document['field_data']['row']); zone = state.table(s.ZONE)[document['zone']['id']]
-    if zone_id != document['zone']['id'] and zone_id in state.table(s.ZONE):
+    if zone_id in state.table(s.ZONE) and not _introduced(state, s.ZONE, zone_id):
         raise ValueError(f'behavior zone ID collision: {zone_id}')
     from .edit_state import put
     for path, text in list(s.iter_leaves(zone)):
@@ -65,7 +73,7 @@ def isolate_enemy(state, document, enemy):
         put(zone, path, '\n'.join(join(row) for row in rows))
     state.set_leaf(s.ZONE, [zone_id], zone, new=zone_id not in state.table(s.ZONE))
     fd[2] = zone_id
-    if fd_id != document['field_data']['id'] and fd_id in state.table(s.FIELD_DATA):
+    if fd_id in state.table(s.FIELD_DATA) and not _introduced(state, s.FIELD_DATA, fd_id):
         raise ValueError(f'behavior field_data ID collision: {fd_id}')
     state.set_leaf(s.FIELD_DATA, [fd_id], join(fd), new=fd_id not in state.table(s.FIELD_DATA))
     row = list(quest['row']); row[s.QUEST_COLUMNS[quest['kind']]['field_data']] = fd_id
