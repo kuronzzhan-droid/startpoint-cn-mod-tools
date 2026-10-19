@@ -56,7 +56,7 @@ SELECTORS = {33: ("ally", "己方全体（含自身）"), 34: ("leader", "队长
              82: ("ally", "主小队"), 97: ("ball", "球"), 49: ("enemy", "全部敌人"),
              50: ("enemy", "杂兵"), 51: ("enemy", "boss"), 52: ("enemy", "浮游敌人")}
 THROWS_ON_CD = {"ball", "self", "enemy", "ally", "leader", "mate"}
-KIND_DEFAULT = {"skill": "技能", "pf": "强化弹射", "ability_skill": "技能", "subprogram": "技能"}
+KIND_DEFAULT = {"skill": "技能", "pf": "强化弹射", "ability_skill": "技能", "subprogram": "技能", "boss": "敌方攻击"}
 BTA = {1: "技能", 2: "能力", 3: "强化弹射", 4: "直击",
        101: "技能（转换）", 102: "能力（转换）", 104: "直击（转换）",
        131: "强化弹射 Lv1（转换）", 132: "强化弹射 Lv2（转换）", 133: "强化弹射 Lv3（转换）"}

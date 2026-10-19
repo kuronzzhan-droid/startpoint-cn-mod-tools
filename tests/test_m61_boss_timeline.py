@@ -1,0 +1,144 @@
+"""Boss timeline HTTP contract, state timing and fractional trial regressions."""
+import copy
+import json
+
+import pytest
+import wf_quest_lib as codec
+
+from test_boss_behavior import behavior_editor, request
+from test_boss_model import csv_row
+from test_studio_drafts import live, _request
+from test_studio_timeline import cmd, root, wait
+from wf.boss import schema as s
+from wf.boss.behavior_wire import compress, write_tree
+from wf.boss.esdl import decode_esdl, transform
+from wf.studio import drafts
+from wf.studio.boss import compile_boss
+from wf.studio.server import StudioApp
+
+QUEST = "hard_multi:1006/1"
+URL = "/api/boss/hard_multi%3A1006%2F1/timeline-summary"
+
+
+def app_for(editor, tmp_path):
+    return StudioApp(editor.source, drafts=drafts.DraftStore(tmp_path / "app"), server_dir=editor.server_dir)
+
+
+def install_programs(editor):
+    tree = root(wait(5, cmd("ShakeCamera", 1)))
+    for name in ("one", "two"):
+        editor.source.view.files[f"battle/action/{name}.action.dsl.amf3.deflate"] = compress(write_tree(tree))
+
+
+def install_standard(editor):
+    view = editor.source.view
+    tree = {"gender": "Unknown", "initialPosition": ["Absolute", "p0"], "marker": "battle/marker/test",
+            "action_base_path": "battle/action/", "animations": ["idle"], "forms": [{"states": [
+                {"canonicalPath": 0, "animation": 0, "terminationCondition": ["TimeElapsed", ["Frame", 60]],
+                 "trial": ["DamageCheck", {"percentage": 5.0}],
+                 "actions": [{"filePath": "one", "event": ["OnStateEnter"]},
+                             {"filePath": "two", "event": ["OnStateExit"]}]},
+                {"canonicalPath": 1, "animation": 0, "terminationCondition": ["MovementCompleted"],
+                 "actions": [{"filePath": "one", "event": ["OnStateExit"]}]}]}]}
+    logical = "battle/enemy/boss/test.esdl.amf3.deflate"
+    view.files[logical] = compress(write_tree(transform(tree, encode=True)))
+    view.files[s.STANDARD_BOSS] = codec.build_node({"org": {"100": "Boss,battle/enemy/boss/test"}})
+    zones = codec.parse_node(view.files[s.ZONE])
+    cells = s.parse_rows(zones["zone"]["0"])[0]
+    cells[23] = cells[25] = "0"
+    zones["zone"]["0"] = csv_row(cells)
+    view.files[s.ZONE] = codec.build_node(zones)
+    return logical
+
+
+def test_general_http_contract_offsets_dsl_events_and_is_readonly(tmp_path):
+    editor = behavior_editor(tmp_path)
+    install_programs(editor)
+    app = app_for(editor, tmp_path)
+    before = copy.deepcopy(editor.source.view.files)
+    response = app.dispatch("GET", URL, {})
+    assert response.status == 200
+    payload = json.loads(response.body)
+    moves = payload["moves"]
+    idle = next(m for m in moves if m["slot"] == 1 and m["timeline"]["stateInterval"]["id"] == "1/idle")
+    timeline = idle["timeline"]
+    assert all(key in timeline for key in ("events", "lanes", "arms", "unknown", "issues", "subprograms"))
+    assert timeline["stateInterval"]["triggerFrame"] == 3
+    assert timeline["stateInterval"]["end"] == 60
+    assert next(e["t"] for e in timeline["events"] if e["kind"] == "ShakeCamera") == 8
+    assert timeline["timeOrigin"] == "state_entry"
+    assert timeline["attribution"]["label"] == "敌方攻击"
+    assert any(i["level"] == "待验证" and "裸路径" in i["text"] for i in timeline["issues"])
+    assert len({m["name"] for m in moves}) == len(moves)
+    assert editor.source.view.files == before
+    assert not app.boss.store.root.exists()
+
+
+def test_standard_entry_exit_and_unknown_exit_are_not_confused(tmp_path):
+    editor = behavior_editor(tmp_path)
+    install_programs(editor)
+    install_standard(editor)
+    payload = json.loads(app_for(editor, tmp_path).dispatch("GET", URL, {}).body)
+    timelines = [m["timeline"] for m in payload["moves"]]
+    assert [t["stateInterval"]["triggerFrame"] for t in timelines] == [0, 60, None]
+    assert [next(e["t"] for e in t["events"] if e["kind"] == "ShakeCamera") for t in timelines] == [5, 65, 5]
+    assert timelines[-1]["timeOrigin"] == "action_entry"
+    assert timelines[-1]["stateInterval"]["end"] is None
+
+
+def test_missing_program_and_unmapped_slot_are_visible(tmp_path):
+    editor = behavior_editor(tmp_path)
+    install_programs(editor)
+    view = editor.source.view
+    del view.files["battle/action/one.action.dsl.amf3.deflate"]
+    del view.files["battle/marker/test.timeline.amf3.deflate"]
+    moves = json.loads(app_for(editor, tmp_path).dispatch("GET", URL, {}).body)["moves"]
+    assert len(moves) == 2
+    missing = next(m["timeline"] for m in moves if m["slot"] == 1)
+    assert missing["stateInterval"]["triggerFrame"] is None
+    assert missing["events"] == []
+    assert any(i["level"] == "问题" and "缺少动作" in i["text"] for i in missing["issues"])
+
+
+def test_summary_reads_draft_candidate(tmp_path):
+    editor = behavior_editor(tmp_path)
+    install_programs(editor)
+    app = app_for(editor, tmp_path)
+    app.boss.editor.apply(QUEST, request(state="idle", intervalFrames=90))
+    payload = json.loads(app.dispatch("GET", URL, {}).body)
+    assert any(m["timeline"]["stateInterval"]["end"] == 90 for m in payload["moves"])
+    assert not any(m["timeline"]["stateInterval"]["end"] == 60 for m in payload["moves"])
+
+
+def test_summary_preserves_host_guard(live):
+    port, guard, _ = live
+    code, body = _request(port, "GET", "/api/boss/7/timeline-summary", headers={"Host": f"outside.invalid:{port}"})
+    assert code == 403 and guard.token.encode() not in body
+
+
+def test_fractional_damage_trial_passes_http_schema_and_compile(tmp_path):
+    editor = behavior_editor(tmp_path)
+    install_programs(editor)
+    install_standard(editor)
+    app = app_for(editor, tmp_path)
+    body = request(state="0", trialThreshold=6.25)
+    assert not drafts.schema_errors(body, "bossRequest")
+    response = app.dispatch("POST", "/api/boss/drafts/hard_multi%3A1006%2F1", {}, body)
+    assert response.status == 200, response.body
+    draft = app.boss.store.save(QUEST)
+    compiled = compile_boss(editor.source, app.boss.store, draft, server_dir=editor.server_dir)
+    logical = next(path for path in compiled["client"] if path.endswith(".esdl.amf3.deflate"))
+    trial = decode_esdl(compiled["client"][logical])["tree"]["forms"][0]["states"][0]["trial"]
+    assert trial == ["DamageCheck", {"percentage": 6.25}]
+
+
+@pytest.mark.parametrize("value", [0, -1, 100.01])
+def test_damage_trial_rejects_out_of_range_values(tmp_path, value):
+    editor = behavior_editor(tmp_path)
+    install_standard(editor)
+    assert not editor.preview(QUEST, request(state="0", trialThreshold=value))["ok"]
+
+
+def test_fractional_general_trial_is_still_rejected_after_schema_change(tmp_path):
+    editor = behavior_editor(tmp_path)
+    assert not editor.preview(QUEST, request(state="idle", trialThreshold=6.25))["ok"]

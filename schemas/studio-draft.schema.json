@@ -301,8 +301,8 @@
           "maximum": 1000
         },
         "trialThreshold": {
-          "type": "integer",
-          "minimum": 1,
+          "type": "number",
+          "exclusiveMinimum": 0,
           "maximum": 2147483647
         },
         "atlasBudget": {
