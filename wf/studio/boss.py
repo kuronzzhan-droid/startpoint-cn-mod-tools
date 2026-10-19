@@ -116,6 +116,9 @@ def _replay(source, quest, requests, *, server_dir=None, reserved=(), client_pro
         if any(req["operation"].startswith(("terrain_", "behavior_")) for req in requests):
             from wf.boss.behavior_guards import check_behavior_positions
             results.append(check_behavior_positions(state, document))
+        if any(req["operation"].startswith("behavior_") for req in requests):
+            from wf.boss.behavior_loading import check_behavior_loading
+            results.append(check_behavior_loading(state))
         # Five-tier edits check five quests; each result names the quest it belongs to.
         checks.extend({**entry, "quest": document["quest"]["selector"]} for entry in results)
     blocking = [entry for entry in checks if entry.get("blocking")]

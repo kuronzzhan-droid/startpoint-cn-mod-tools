@@ -353,6 +353,6 @@ python -m wf.studio.draft scratch-list | scratch-show <sid>
 
 战场按 1080×1920 逻辑坐标：-1 场地中心 (540, 960)、-2 左上角 (0, 0)、球/自身默认 (540, 1380)、敌人 (540, 620)，球和敌人可拖动，球方向可调（EF 坐标系跟它走）。场地边界是估计值；小人按所选动作循环（DSL 不控制技能期间的小人动作）。
 
-BOSS「出招预览」请求 `GET /api/boss/<关卡>/timeline-summary`，期望 `{ "moves": [{ "name", "label"?, "timeline": <与 /api/studio/timeline 相同结构> }], "note"? }`；接口不存在时显示占位说明。
+BOSS「出招预览」请求 `GET /api/boss/<关卡>/timeline-summary`，返回 `{ "moves": [{ "name", "label"?, "timeline": <与 /api/studio/timeline 相同结构> }], "note"? }`。后端从当前草稿逐招调用 `build_timeline`，附 `stateInterval` 和 `timeOrigin`；已知触发帧换算为状态相对帧，条件触发保持未知。同一首领在不同波次分别展示，初始化/watch 根动作保留未知触发提示。裸路径动作加载仍标「待验证」。旧后端接口不存在时显示占位说明。
 
 测试：`tests/test_studio_timeline.py`（金标准事件表、伤害归属、未知节点、子程序与循环引用、循环上限与分支、作用域/坐标系检查、HideEffect 与碰撞分支、烘焙锚点；有真实视图时跑 111183 全部程序）。截图在仓库外 `l2-shots/`。
