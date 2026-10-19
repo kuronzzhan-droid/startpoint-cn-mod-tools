@@ -8,7 +8,7 @@ from wf.rules.boss_preload import programs, walk
 REPEAT_LIMIT = 999
 
 
-def reject_loops(closure):
+def reject_loops(closure, *, roots=None):
     edges = {program: {p for item in walk(tree) if isinstance(item, str) for p in programs(item)}
              for program, tree in closure.items()}
     visiting, totals = set(), {}
@@ -46,7 +46,11 @@ def reject_loops(closure):
 
     for program in closure:
         visit(program)
-    children = set().union(*edges.values()) if edges else set()
-    total = sum(totals[program] for program in set(closure) - children)
+    if roots is None:
+        children = set().union(*edges.values()) if edges else set()
+        roots = set(closure) - children
+    # A root can also be a dependency of another root, or occur twice in the
+    # same action cell. Both occurrences execute and must retain their cost.
+    total = sum(visit(program) for program in roots)
     if total > REPEAT_LIMIT:
         raise ValueError(f'borrowed Repeat closure budget exceeds {REPEAT_LIMIT}: {total}')

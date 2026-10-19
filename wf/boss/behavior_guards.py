@@ -45,7 +45,7 @@ def borrowed_check(view, roots, receiver_row):
     graph = Programs(view); closure = graph.closure(roots)
     if graph.missing:
         raise ValueError('C8016: borrowed DSL preload missing: ' + ', '.join(sorted(graph.missing)))
-    reject_loops(closure)
+    reject_loops(closure, roots=roots)
     # Standard/zako summons and state-dependent foreign mechanisms cannot be
     # inferred from a bare program. General Funnel is handled with fixed shims.
     for program, tree in closure.items():
