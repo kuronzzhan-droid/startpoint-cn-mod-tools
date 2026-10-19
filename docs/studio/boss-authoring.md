@@ -1,6 +1,6 @@
 # BOSS 工坊第二期：地形、商店武器与行为
 
-本页补充 [副本工坊接口](boss.md)。所有操作使用同一 `bossRequest` schema、`BossEditor`、独立 boss 草稿目录与既有交付桥。请求先在内存中重放，预览不保存；保存记录输入摘要，生成时重新重放并检查。输出是本地候选，不执行服务器应用、设备安装或发布。前端页面不属于 M6 交付范围。
+本页补充 [副本工坊接口](boss.md)。所有操作使用同一 `bossRequest` schema、`BossEditor`、独立 boss 草稿目录与既有交付桥。请求先在内存中重放，预览不保存；保存记录输入摘要，生成时重新重放并检查。输出是本地候选，不执行服务器应用、设备安装或发布。M6.2 对已有参数页面作最小适配：绝对值表单改发明确字段，并显示实际改前、改后系数。
 
 ## 读取与调用
 
@@ -14,6 +14,30 @@ python -m wf.studio.draft --tip 236 --manifest inputs/manifest.json --store inpu
 ```
 
 `--section` 只读取已有副本，不能与 `--request`、`--preview` 或 `new` 混用。修改继续使用 `POST /api/boss/drafts/<quest>`；加 `?preview=true` 只预览。去掉 CLI `--preview` 将请求写入草稿；随后使用 `save <quest> --boss` 或 `POST /api/boss/drafts/<quest>/save` 校验并标记已保存，才能构建。完整字段约束见 `python -m wf.studio.draft schema --def bossRequest`。
+
+## M6.2：HP 与攻击的绝对值和缩放
+
+`parameters` 和每项 `tiers` 使用以下字段。这里的数值是 quest 表内的 HP / 攻击修正系数，不是敌人最终生命值或攻击力。
+
+| 字段 | 语义 | 当前为 0.1，输入 10 |
+|---|---|---|
+| `hpScale` / `attackScale` | 杂兵、浮游、首领三项分别乘以自己的当前值 | 变为 1 |
+| `hpValue` / `attackValue` | 三项直接设为输入的绝对值 | 变为 10 |
+| `hpMultiplier` / `attackMultiplier` | **绝对值、已弃用**；为旧请求和已保存草稿保留原有赋值语义 | 仍变为 10 |
+
+同一参数对象内，每个属性的 `Scale`、`Value`、旧 `Multiplier` 最多出现一个；不同属性可采用不同方式。五档操作中，某档显式设置 HP 或攻击时，会覆盖公共参数对同一属性的设置方式。例如公共 `hpScale:10` 配合第 1 档 `hpValue:1`，第 1 档直接设为 1，其余档分别乘 10。输入及缩放结果必须是有限正数且不超过 2147483647；无法解析的当前值拒绝缩放。
+
+```json
+{"operation":"edit","parameters":{"hpScale":10,"attackValue":1}}
+```
+
+已有 0.1 的 HP 系数经 `hpScale:10` 变为 1；`hpValue:1` 直接设为 1。缩放使用十进制运算，分别保留三项原有差异，例如 `[0.1,0.2,0.3]` 乘 10 得到 `[1,2,3]`。新建共同决战先建立默认 HP 1.5、攻击 1.3，再应用显式参数，因此创建请求的 `hpScale:10` 得到 15；`hpValue:10` 得到 10。
+
+预览、写入、读取和编译返回 `parameterChanges`，按草稿操作顺序给出 `quest`、`parameter`、`stat`、`mode`（`scale` 或 `absolute`）、`input`、`deprecated`、`repeatScale`；每条 `values` 含 `target`（`zako` / `funnel` / `boss`）、零基 `column`、字符串 `before` 和 `after`。字符串保留可审阅的十进制实际值。前端当前的参数表单和新建表单使用绝对设置，分别发 `hpValue` / `attackValue`；缩放可通过同一 API / CLI 请求使用。
+
+旧字段的 schema 带 `deprecated:true`，API `checks` 中的 `boss.parameter-deprecated` 明确提示「绝对值、已弃用」，但不阻断旧草稿重放。`boss.parameter-scale` 明确提示「同一草稿再次写入会再乘一次」；同一副本、同一属性已有缩放操作时，`repeatScale:true`。每次写入追加一个操作，例如同一草稿两次写入 `hpScale:10` 会从 0.1 依次变为 1、10。重复预览、读取、保存或编译只从原输入重放已有序列，不追加操作，也不会在已有结果上再次重放整份草稿。
+
+本节只涉及 quest 参数。`weapon_clone.weapon.hpMultiplier` / `attackMultiplier` 继续对武器等级曲线乘以输入值；招式 `damageMultiplier` 继续对选中动作当前伤害系数相乘。这些原本已是乘数的字段不弃用、不改变旧语义。
 
 ## 地形与波次
 

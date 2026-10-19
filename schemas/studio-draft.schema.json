@@ -32,13 +32,21 @@
       "type": "object", "additionalProperties": false,
       "properties": {
         "level": {"type": "integer", "minimum": 1, "maximum": 999},
-        "hpMultiplier": {"type": "number", "exclusiveMinimum": 0, "maximum": 2147483647},
-        "attackMultiplier": {"type": "number", "exclusiveMinimum": 0, "maximum": 2147483647},
+        "hpScale": {"type": "number", "exclusiveMinimum": 0, "maximum": 2147483647, "description": "在当前草稿的杂兵、浮游、首领 HP 系数上分别相乘；同一草稿再次写入会再乘一次"},
+        "hpValue": {"type": "number", "exclusiveMinimum": 0, "maximum": 2147483647, "description": "绝对值：将杂兵、浮游、首领 HP 系数直接设为此值"},
+        "attackScale": {"type": "number", "exclusiveMinimum": 0, "maximum": 2147483647, "description": "在当前草稿的杂兵、浮游、首领攻击系数上分别相乘；同一草稿再次写入会再乘一次"},
+        "attackValue": {"type": "number", "exclusiveMinimum": 0, "maximum": 2147483647, "description": "绝对值：将杂兵、浮游、首领攻击系数直接设为此值"},
+        "hpMultiplier": {"type": "number", "exclusiveMinimum": 0, "maximum": 2147483647, "deprecated": true, "description": "绝对值、已弃用：保留旧草稿直接赋值语义，等同 hpValue；不是相乘"},
+        "attackMultiplier": {"type": "number", "exclusiveMinimum": 0, "maximum": 2147483647, "deprecated": true, "description": "绝对值、已弃用：保留旧草稿直接赋值语义，等同 attackValue；不是相乘"},
         "restrictedElement": {"type": ["integer", "null"], "minimum": 0, "maximum": 5},
         "recommendedElement": {"type": "integer", "minimum": 0, "maximum": 5},
         "bgm": {"type": "string", "minLength": 1},
         "scene": {"type": "string", "minLength": 1}
-      }
+      },
+      "allOf": [
+        {"not": {"anyOf": [{"required": ["hpScale", "hpValue"]}, {"required": ["hpScale", "hpMultiplier"]}, {"required": ["hpValue", "hpMultiplier"]}]}},
+        {"not": {"anyOf": [{"required": ["attackScale", "attackValue"]}, {"required": ["attackScale", "attackMultiplier"]}, {"required": ["attackValue", "attackMultiplier"]}]}}
+      ]
     },
     "bossRequest": {
       "oneOf": [

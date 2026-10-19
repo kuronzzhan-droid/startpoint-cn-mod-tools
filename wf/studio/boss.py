@@ -5,6 +5,7 @@ import copy
 
 from wf.boss.edit_state import BossEditState, digest
 from wf.boss.parameters import edit_parameters
+from wf.boss.parameter_semantics import parameter_report
 from wf.boss.template import create_shared, REWARD_FILES
 from wf.rules.catalog import result
 import wf_quest_lib as codec
@@ -17,9 +18,10 @@ from wf.boss.identity import safe_id
 class BossRulesRejected(ValueError):
     """Blocking rule results; preview still shows every five-state result."""
 
-    def __init__(self, message, checks, allocation=None):
+    def __init__(self, message, checks, allocation=None, parameters=None):
         super().__init__(message)
         self.checks, self.allocation = checks, allocation
+        self.parameters = parameters or {}
 
 
 def _identity(draft, quest, version):
@@ -121,10 +123,11 @@ def _replay(source, quest, requests, *, server_dir=None, reserved=(), client_pro
             results.append(check_behavior_loading(state))
         # Five-tier edits check five quests; each result names the quest it belongs to.
         checks.extend({**entry, "quest": document["quest"]["selector"]} for entry in results)
+    checks.extend(getattr(state, "parameter_checks", []))
     blocking = [entry for entry in checks if entry.get("blocking")]
     if blocking:
         raise BossRulesRejected("boss rules rejected the candidate: " + "; ".join(entry["message"] for entry in blocking),
-                                checks, allocation)
+                                checks, allocation, parameter_report(state))
     return state, quest, checks, allocation
 
 
@@ -139,7 +142,7 @@ def compile_boss(source, store, draft, *, server_dir=None, client_profile=None, 
     state.verify_snapshot(draft["changes"][0]["params"]["inputs"])
     return {"client": state.client, "servers": state.servers,
             "server_before": {key: digest(state.server_original[key]) for key in state.servers},
-            "changes": state.changes, "checks": checks}
+            "changes": state.changes, "checks": checks, **parameter_report(state)}
 
 
 class BossEditor:
@@ -228,7 +231,8 @@ class BossEditor:
             from .boss_dispatch import draft_weapons
             return {"questId": identity, "boss": BossReader(StudioSource(state)).show(identity),
                     "draftWeapons": draft_weapons(state, requests),
-                    "changeset": self.store.load(identity), "checks": checks, "runtime": "未执行"}
+                    "changeset": self.store.load(identity), "checks": checks,
+                    **parameter_report(state), "runtime": "未执行"}
         except (ValueError, KeyError, OSError, TypeError) as exc:
             raise DraftError(str(exc)) from exc
 
@@ -238,14 +242,15 @@ class BossEditor:
             state, identity, _, checks, allocation = self._state(quest, request)
             return {"ok": True, "questId": identity, "allocation": allocation,
                     "changes": state.changes, "serverTargets": sorted(state.servers),
-                    "checks": checks, "runtime": "未执行"}
+                    "checks": checks, **parameter_report(state), "runtime": "未执行"}
         except (ValueError, KeyError, OSError, TypeError) as exc:
             # The summary stays first; rule rejections also carry every result
             # so the editor can show which rule blocks and what still passes.
             rules = exc.checks if isinstance(exc, BossRulesRejected) else []
             allocation = exc.allocation if isinstance(exc, BossRulesRejected) else None
+            parameters = exc.parameters if isinstance(exc, BossRulesRejected) else {}
             return {"ok": False, "questId": quest, "allocation": allocation, "checks": [
-                result("boss.inputs", "问题", str(exc), blocking=True), *rules], "runtime": "未执行"}
+                result("boss.inputs", "问题", str(exc), blocking=True), *rules], **parameters, "runtime": "未执行"}
 
     def inspect(self, quest, section):
         from wf.boss.reader import BossReader
@@ -276,6 +281,6 @@ class BossEditor:
                 draft = self.store.put_change(identity, f"boss_{safe_id(identity)}", self.source.version, change)
             return {"ok": True, "questId": identity, "allocation": allocation,
                     "change": change, "changeset": draft, "status": status(draft), "checks": checks,
-                    "runtime": "未执行"}
+                    **parameter_report(state), "runtime": "未执行"}
         except (ValueError, KeyError, OSError, TypeError) as exc:
             raise DraftError(str(exc)) from exc
