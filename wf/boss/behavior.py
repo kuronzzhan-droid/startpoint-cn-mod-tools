@@ -6,7 +6,7 @@ import math
 
 from wf.rules.boss_preload import programs, walk, _expected, tier
 from . import schema as s
-from .behavior_clone import identity, isolate_enemy, select_enemy, set_owned_resource
+from .behavior_clone import identity, isolate_enemy, owns_resource, select_enemy, set_owned_resource
 from .behavior_guards import borrowed_check, check_behavior_positions
 from .behavior_model import Programs, STATES, marker, read_behavior
 from .behavior_wire import compress, decode_wire, encode_wire, write_tree
@@ -49,7 +49,16 @@ def edit_damage(state, row, slot, multiplier, owner):
     roots = _programs_at(state, row, slot); graph = Programs(state); closure = graph.closure(roots)
     if graph.missing:
         raise ValueError('damage DSL closure missing: ' + ', '.join(sorted(graph.missing)))
-    mapped = {program: 'battle/action/enemy/action/studio_behavior/' + identity(owner, program)
+    suffix = '.action.dsl.amf3.deflate'
+    owned = {p for p in closure if owns_resource(state, p + suffix)}
+    shared = set()
+    if owned:
+        others = [p for number in range(1, 51) if number != slot
+                  for p in programs(s.cell(row, 110 + number))]
+        shared = set(graph.closure(others))
+    scope = identity(owner, f'damage-slot:{slot}')
+    mapped = {program: program if program in owned - shared else
+              'battle/action/enemy/action/studio_behavior/' + identity(scope, program)
               for program in closure}
     changed = 0
     def rewrite(value):

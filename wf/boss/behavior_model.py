@@ -102,10 +102,13 @@ def general_model(view, enemy, graph):
                        'next': s.cell(cells, 31), 'back': s.cell(cells, 40), 'trial': trial,
                        'invincible_by_phase_change': s.cell(cells, 15) == 'true',
                        'position': s.cell(cells, 50), 'actions': actions, **graph.summary(roots)})
+    from .behavior_positions import watch_programs
+    preload_roots = [p for value in [s.cell(row, 109), *slots.values()] for p in programs(value)]
+    preload_roots.extend(watch_programs(view, enemy['code'], routine))
     return {'kind': 'general', 'routine': routine, 'initial_state': s.cell(row, 43),
             'marker': s.cell(row, 25), 'slots': [{'slot': k, 'program': v} for k, v in slots.items()],
             'states': states, 'marker_missing': timeline.get('missing', False),
-            'preload': graph.summary([p for value in [s.cell(row, 109), *slots.values()] for p in programs(value)])}
+            'preload': graph.summary(preload_roots)}
 
 
 def standard_model(view, enemy, graph):
