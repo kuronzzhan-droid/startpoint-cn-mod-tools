@@ -1,5 +1,6 @@
 """All authoring paths use the same GeneralBoss/Funnel named-position gate."""
 import pytest
+import copy
 import wf_quest_lib as codec
 
 from wf.boss import schema as s
@@ -7,6 +8,8 @@ from wf.boss.behavior_identity import GENERAL_FUNNEL, WATCH
 from wf.boss.behavior_guards import check_behavior_positions
 from wf.boss.behavior_wire import compress, decode_wire, write_tree
 from wf.boss.reader import BossReader
+from wf.boss.edit_state import BossEditState
+from wf.boss.terrain_edit import apply_terrain
 from wf.rules.boss_terrain import terrain_checks
 from wf.studio.boss import compile_boss
 from wf.studio.source import StudioSource
@@ -101,3 +104,36 @@ def test_native_missing_action_input_is_pending_but_borrow_stays_blocked(tmp_pat
         assert 'battle/action/two' in str(result['limitations'])
     req = request('behavior_replace', slot=1, sourceEnemyCode='donor', sourceSlot=2)
     assert not editor.preview('hard_multi:1006/1', req)['ok']
+    add_position(editor)
+    deletion = {'operation': 'terrain_position', 'layer': '0', 'name': 'IL2', 'action': 'delete'}
+    assert not editor.preview('hard_multi:1006/1', deletion)['ok']
+    state = BossEditState(editor.source)
+    with pytest.raises(ValueError, match='cannot delete position.*battle/action/two'):
+        apply_terrain(state, 'hard_multi:1006/1', deletion)
+    assert not state.changes
+
+
+def test_direct_terrain_delete_rejects_known_dsl_reference(tmp_path):
+    editor = behavior_editor(tmp_path)
+    position_program(editor, 'linked')
+    add_position(editor)
+    state = BossEditState(editor.source)
+    with pytest.raises(ValueError, match='IL2.*C14102'):
+        apply_terrain(state, 'hard_multi:1006/1', {
+            'operation': 'terrain_position', 'layer': '0', 'name': 'IL2', 'action': 'delete'})
+    assert not state.changes
+
+
+def test_same_wave_code_routine_retains_each_selected_band_action_reference(tmp_path):
+    from wf.rules.boss_references import routine_positions
+    editor = behavior_editor(tmp_path)
+    position_program(editor, 'direct')
+    document = BossReader(editor.source).show('hard_multi:1006/1')
+    second = copy.deepcopy(document['enemies'][0])
+    second['path'][-1] = '200'
+    second['row'][111] = second['row'][112] = 'battle/action/other-band'
+    editor.source.view.files['battle/action/other-band.action.dsl.amf3.deflate'] = compress(
+        write_tree(['CustomPosition', 'OTHER']))
+    document['enemies'].append(second)
+    required, _, _ = routine_positions(document, editor.source)
+    assert required[('0', 'org', 'routine')] == {'IL2', 'OTHER'}

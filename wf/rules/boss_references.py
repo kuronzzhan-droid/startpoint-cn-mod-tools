@@ -23,7 +23,8 @@ def routine_positions(document, view):
         if enemy.get("table") != GENERAL and str(enemy.get("native_kind")) not in {"1", "8"}:
             continue
         routine = cell(enemy, 42)
-        key = (str(enemy.get("wave", "0")), enemy.get("code"), routine)
+        key = (str(enemy.get("wave", "0")), enemy.get("code"), routine,
+               tuple(enemy.get('path') or ()), tuple(enemy.get('row') or ()))
         routines[key] = enemy
     if not routines:
         return required, issues, pending
@@ -32,7 +33,7 @@ def routine_positions(document, view):
     states = CandidateView(view).table(STATES) or {}
     from wf.boss.behavior_positions import PositionReferences
     actions = PositionReferences(view)
-    for (wave, code, routine), enemy in routines.items():
+    for (wave, code, routine, _, _), enemy in routines.items():
         node = states.get(routine)
         rows = list(leaves(node))
         if routine not in EMPTY and not rows:
@@ -45,5 +46,5 @@ def routine_positions(document, view):
         # Keep that distinction visible; selected/borrowed action edits have
         # their own strict closure gates before reaching this terrain check.
         pending.extend(f"层 {wave} 敌人 {code} 站位动作闭包缺失，待验证 {logical}" for logical in missing)
-        required[(wave, code, routine)] = names
+        required.setdefault((wave, code, routine), set()).update(names)
     return required, issues, pending

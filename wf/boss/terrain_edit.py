@@ -158,6 +158,17 @@ def apply_terrain(state, quest, request):
     if operation == "terrain_replace":
         tree = _replace(state, tree, document, request)
     elif operation == "terrain_position":
+        if request['action'] == 'delete':
+            from .behavior_guards import check_behavior_positions
+            proposed = copy.deepcopy(document)
+            for wave in proposed['terrain']['waves']:
+                if str(wave['name']) == str(request['layer']):
+                    wave['objects'] = [obj for obj in wave['objects'] if not (
+                        obj.get('type') == 'CUSTOM_POSITION' and obj.get('name') == request['name'])]
+            references = check_behavior_positions(state, proposed)
+            if references['blocking'] or references.get('limitations'):
+                raise ValueError('cannot delete position: ' + '; '.join(
+                    [*references['issues'], *references.get('limitations', [])]))
         tree = _position(tree, request)
     else:
         tree = _append(state, tree, document, request, identity)
