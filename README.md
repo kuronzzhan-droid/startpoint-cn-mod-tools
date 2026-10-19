@@ -223,6 +223,7 @@ mod-tools/
 - **[角色改动规律方案.md](docs/角色改动规律方案.md)** — 改动规律总纲:五表列图、五类改动标准做法、**移植铁律(同属性/别去共鸣/统一sid/跨表重排)**、做不到的边界、效果代码速查、工具能力矩阵。
 - **[角色包工作流.md](docs/角色包工作流.md)** — 自制新角色从工作区到发布的完整流程(manifest/preflight/发布/回滚)。
 - **[新角色制作心得.md](docs/新角色制作心得.md)** — 双新角色(赛瑞斯/史黛拉)上线全程沉淀:先例原则、解析器 schema、崩溃图鉴、发布链路坑。
+- **[客户端补丁效果码速查.md](docs/客户端补丁效果码速查.md)** — v35 系列客户端补丁的数据开关：`wfx:` 固有状态码（直击倍率/次数、治疗转伤害与加 Fever、施放者护盾等）、`custom_ability_string` 文本开关（合击放开、属性自适应、全程超限……）、身份 tag，附可直接抄的例子和常见坑。
 - **[分享包收方指南.md](docs/分享包收方指南.md)** — 面向**收方服主**(不装任何工具):分享包结构、full / content-only 变体选择、链尾衔接前提、main / dev 两种服务端的落地步骤、`requires.json` 字段速查、常见问题。
 - **[wf-release-v1.md](docs/wf-release-v1.md)** / **[wf-release-v1-local-install.md](docs/wf-release-v1-local-install.md)** — 新的不可变发行物、受管安装/恢复，以及旧 `wfshare` 的只读迁移预检；旧包脚本不会被执行，也不能绕过 Release 门禁直接安装。
 - **[去增强变体.md](docs/去增强变体.md)** — 面向发包方:content-only 变体的设计与操作(官方基准=官方 CDN 归档、纠缠表按行重建、官方资产 drop-list),配套 `wf_enhancement_policy.py` / `wf_share_variant.py`。
