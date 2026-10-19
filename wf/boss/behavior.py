@@ -6,7 +6,7 @@ import math
 
 from wf.rules.boss_preload import programs, walk, _expected, tier
 from . import schema as s
-from .behavior_clone import identity, isolate_enemy, select_enemy
+from .behavior_clone import identity, isolate_enemy, select_enemy, set_owned_resource
 from .behavior_guards import borrowed_check, check_behavior_positions
 from .behavior_model import Programs, STATES, marker, read_behavior
 from .behavior_wire import compress, decode_wire, encode_wire, write_tree
@@ -69,7 +69,7 @@ def edit_damage(state, row, slot, multiplier, owner):
         raise ValueError('selected action has no editable CreateNormalAttack multiplier')
     for program, tree in candidate.items():
         path = program + '.action.dsl.amf3.deflate'
-        state.set_raw(path, compress(write_tree(tree)), new=state.raw(path) is None)
+        set_owned_resource(state, path, compress(write_tree(tree)))
     row[110 + slot] = ','.join(mapped[p] for p in roots)
 
 
@@ -97,12 +97,16 @@ def _preload_shims(state, row, closure, owner, level):
             fixed = _expected(tree, frow[0])
             if fixed is None:
                 continue
-            available = [slot for slot in range(50, 0, -1) if slot not in _fired(state, row)
-                         and not s.present(s.cell(row, 110 + slot))]
+            target = 'battle/action/enemy/action/studio_behavior/' + identity(owner, 'preload:' + program)
+            fired = _fired(state, row)
+            existing = [slot for slot in range(1, 51) if s.cell(row, 110 + slot) == target]
+            if any(slot in fired for slot in existing):
+                raise ValueError('C8016: fixed-element preload shim is now marker-triggered')
+            available = existing or [slot for slot in range(50, 0, -1) if slot not in fired
+                                    and not s.present(s.cell(row, 110 + slot))]
             if not available:
                 raise ValueError('C8016: no non-fired empty marker slot for fixed-element preload')
-            target = 'battle/action/enemy/action/studio_behavior/' + identity(owner, 'preload:' + program)
-            state.set_raw(target + '.action.dsl.amf3.deflate', compress(write_tree(fixed)), new=True)
+            set_owned_resource(state, target + '.action.dsl.amf3.deflate', compress(write_tree(fixed)))
             row[110 + available[0]] = target
             from .behavior_guards import effect_dependencies
             effect_dependencies(state, {target: fixed}, int(frow[0]))
@@ -168,7 +172,7 @@ def _standard_parameters(state, row, request, owner):
         else:
             raise ValueError('state lacks an editable trial (DamageCheck percentage must be <=100)')
     target = 'battle/enemy/boss/' + identity(owner, 'esdl')
-    state.set_raw(target + '.esdl.amf3.deflate', encode_esdl(document), new=state.raw(target + '.esdl.amf3.deflate') is None)
+    set_owned_resource(state, target + '.esdl.amf3.deflate', encode_esdl(document))
     row[1] = target
 
 

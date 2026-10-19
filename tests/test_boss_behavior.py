@@ -1,4 +1,4 @@
-﻿"""Meaningful behavior regressions: wire losslessness, isolation, and gates."""
+"""Meaningful behavior regressions: wire losslessness, isolation, and gates."""
 import base64
 import copy
 import hashlib
@@ -174,7 +174,7 @@ def test_new_derived_program_appearance_is_input_drift(tmp_path):
     editor.source.view.files[created] = editor.source.view.files['battle/action/one.action.dsl.amf3.deflate']
     from wf.studio.source import StudioSource
     editor.source = StudioSource(editor.source.view)
-    with pytest.raises(ValueError, match='drift'):
+    with pytest.raises(ValueError, match='drift|collision'):
         compile_boss(editor.source, editor.store, draft, server_dir=editor.server_dir)
 
 def test_behavior_terrain_scene_sequences_keep_prior_edits(tmp_path):
@@ -203,3 +203,45 @@ def test_behavior_terrain_scene_sequences_keep_prior_edits(tmp_path):
     enemy = document['enemies'][0]
     assert '/studio_behavior/' in enemy['row'][111]
 
+
+@pytest.mark.parametrize('suffix', ['damage', 'esdl'])
+def test_initial_behavior_resource_collision_is_rejected(tmp_path, suffix):
+    from wf.boss.behavior_clone import identity, set_owned_resource
+    editor = behavior_editor(tmp_path)
+    owner = identity('hard_multi:1006/1', 'org')
+    if suffix == 'damage':
+        logical = 'battle/action/enemy/action/studio_behavior/' + identity(owner, 'battle/action/one') + '.action.dsl.amf3.deflate'
+    else:
+        logical = 'battle/enemy/boss/' + identity(owner, 'esdl') + '.esdl.amf3.deflate'
+    original = compress(write_tree({'sentinel': 123}))
+    editor.source.view.files[logical] = original
+    state = BossEditState(editor.source)
+    with pytest.raises(ValueError, match='collision'):
+        if suffix == 'damage':
+            apply_behavior(state, 'hard_multi:1006/1', request(slot=1, damageMultiplier=2))
+        else:
+            set_owned_resource(state, logical, compress(write_tree({'replacement': 456})))
+    assert logical not in state.client and editor.source.view.files[logical] == original
+
+
+def test_resource_created_in_same_replay_can_be_updated(tmp_path):
+    from wf.boss.behavior_clone import set_owned_resource
+    editor = behavior_editor(tmp_path); state = BossEditState(editor.source)
+    logical = 'battle/enemy/boss/local.esdl.amf3.deflate'
+    set_owned_resource(state, logical, b'first')
+    set_owned_resource(state, logical, b'second')
+    assert state.original[logical] is None and state.client[logical] == b'second'
+
+def test_repeated_borrow_reuses_same_nontriggered_preload_shim(tmp_path):
+    editor = behavior_editor(tmp_path); view = editor.source.view
+    view.files['battle/action/two.action.dsl.amf3.deflate'] = compress(write_tree(['SpawnFunnel', ['Funnel', 'funnel']]))
+    view.files['master/battle/boss/funnel/general_funnel.orderedmap'] = codec.build_node({'funnel': {'100': '2,battle/action/funnel'}})
+    view.files['battle/action/funnel.action.dsl.amf3.deflate'] = view.files['battle/action/one.action.dsl.amf3.deflate']
+    state = BossEditState(editor.source)
+    for slot in (1, 2):
+        apply_behavior(state, 'hard_multi:1006/1', request('behavior_replace', slot=slot, sourceEnemyCode='donor', sourceSlot=2))
+    cells = BossReader(state).show('hard_multi:1006/1')['enemies'][0]['row']
+    assert '/studio_behavior/' in cells[160]
+    assert cells[159] == '(None)'
+    resources = [item for item in state.changes if item.get('resource')]
+    assert len(resources) == 1 and resources[0]['old'] is None
