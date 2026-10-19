@@ -94,6 +94,8 @@ def _position(tree, request):
 
 def _append(state, tree, document, request, identity):
     source = _read(state, request["sourceQuest"])[-1]
+    if source["quest"]["fields"].get("recommended_element") != document["quest"]["fields"].get("recommended_element"):
+        raise ValueError("新增层来源与目标推荐属性不同，不能沿用来源遭遇的预载假设（C8016）；请选同推荐属性来源")
     source_tree = decode(state.raw(source["terrain"]["logical"]))
     incoming = copy.deepcopy(layer(source_tree, request["sourceLayer"]))
     waves = groups(tree)

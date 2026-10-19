@@ -117,6 +117,19 @@ def test_preexisting_derived_resource_is_not_overwritten(state):
     assert not state.client
 
 
+def test_append_with_different_recommended_element_cannot_reuse_source_preload(state):
+    from wf.view.base149 import join
+    logical = s.QUEST_TABLES["hard_multi"]
+    table = codec.parse_node(state.base.files[logical])
+    values = s.parse_rows(table["1006"]["1"])[0]
+    values[0], values[73] = "1007001", str((int(values[73]) + 1) % 6)
+    table["1007"] = {"1": join(values)}
+    state.base.files[logical] = codec.build_node(table)
+    with pytest.raises(ValueError, match="C8016"):
+        apply_terrain(state, "1006001", {"operation": "terrain_add_layer", "sourceQuest": "1007001", "sourceLayer": "0"})
+    assert not state.client
+
+
 def test_untouched_existing_table_leaves_remain_byte_identical(state):
     def leaves(raw, path=()):
         parsed = codec._try_parse_map(raw)
