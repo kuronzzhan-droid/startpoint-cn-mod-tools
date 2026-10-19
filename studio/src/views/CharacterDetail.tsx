@@ -13,6 +13,7 @@ import { pendingCount } from "./abilityModel";
 import { AttachControl, SkillTiers, slotOf } from "./KeyTools";
 import { TextTab } from "./TextTab";
 import { CharacterProfileBadge, ProgramCapChip } from "./ClientProfile";
+import { SkillPreview } from "./TimelinePreview";
 
 // Seven groups (C1): 能力（一板/二板/三板）｜技能｜文案｜立绘｜像素（预览/单动作替换/工坊/整族导入）｜语音;
 // 本次修改 and 资源 open as header drawers.
@@ -104,7 +105,8 @@ export function CharacterDetailView({ id, tab, sub }: { id: string; tab?: string
       {group === "ability" ? (
         <AbilityGroupPage detail={detail} sub={groupSub} awakeCount={awakeCount} link={(s) => link("ability", s)} />
       ) : group === "skill" ? (
-        <SkillTab detail={detail} onText={() => { location.hash = href(link("text")); }} />
+        <SkillGroupPage detail={detail} sub={groupSub} link={(s) => link("skill", s)}
+          onText={() => { location.hash = href(link("text")); }} />
       ) : group === "text" ? (
         <TextTab characterId={detail.id} />
       ) : group === "portrait" ? (
@@ -231,6 +233,27 @@ function AbilityCard({ title, table, group, rows, columns, awake, filter }: {
         </details>
       ) : null}
     </article>
+  );
+}
+
+const SKILL_SUBS = [
+  { id: "data", label: "技能数据", hint: "能量、程序、档位等字段" },
+  { id: "preview", label: "动作预览", hint: "技能 / 强化弹射 / 629 能力技的编排时间轴（L2）" },
+];
+
+function SkillGroupPage({ detail, sub, link, onText }: {
+  detail: CharacterDetail; sub?: string; link: (sub: string) => Route; onText: () => void;
+}) {
+  const active = SKILL_SUBS.some((s) => s.id === sub) ? sub! : "data";
+  return (
+    <div class="group-page">
+      <nav class="subnav" aria-label="技能">
+        {SKILL_SUBS.map((s) => (
+          <a class={active === s.id ? "on" : ""} href={href(link(s.id))} title={s.hint} aria-current={active === s.id ? "page" : undefined}>{s.label}</a>
+        ))}
+      </nav>
+      {active === "preview" ? <SkillPreview characterId={detail.id} /> : <SkillTab detail={detail} onText={onText} />}
+    </div>
   );
 }
 
