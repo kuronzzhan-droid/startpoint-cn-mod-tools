@@ -223,3 +223,87 @@ ghost_fox 真实数据反证完成 5 案，每案先用同源合法 HP 草稿验
 本节及验证摘要另作本地文档提交，未 push。
 
 所有结论为本地代码、静态客户端档案、候选重放或历史字节证据。未做真机加载、实际战斗、三人房、实际购买扣费或业务服务器部署；不把这些未执行事项写成通过。
+
+## M6.2：BOSS 参数语义与 v35k3 本地档案
+
+本节对应 M6.2 任务书，起点为 `a6bcc44`，实施分支为 `refactor/m5-boss`。写入范围限当前 worktree；其他目录仅作只读输入，未操作其他集成 worktree，未 push，未访问业务服务器、本地 8001 服务、模拟器或设备。临时脚本、测试输出、构建产物和详细证据保存在忽略目录 `work/m62/`。
+
+### BOSS 参数的最终语义
+
+| 字段 | 行为 |
+|---|---|
+| `hpScale` / `attackScale` | 将当前 quest 行的三个对应实际值分别乘以输入数值 |
+| `hpValue` / `attackValue` | 将三个对应实际值直接设为输入数值 |
+| `hpMultiplier` / `attackMultiplier` | 保留历史绝对值写入行为；schema 标记 `deprecated: true`，API 返回“绝对值、已弃用”的非阻断提示 |
+
+同一属性在一次有效参数集内只能指定一种模式。五档配置中，某档显式提供的模式覆盖该属性的公共模式；HP 与攻击可独立选择。正数、有限值、当前基值和结果范围均校验，拒绝零、负数、非有限值、非法基值及结果溢出，十进制计算避免将 `0.1 × 10` 写成不准确的小数。
+
+预览、保存和编译响应提供 `parameterChanges`，逐操作列出关卡、字段、模式，以及小怪、浮游和 BOSS 各自的实际 before/after。现有编辑台输入改为明确的“设为绝对值”，并展示这些变化；API/CLI 可显式选择 Scale。新建副本先完成既有模板默认值初始化，再在初始化后的实际值上执行用户操作。
+
+反证已覆盖 `0.1 → hpScale:10 → 1`、`hpValue:1 → 1`，以及同草稿再次追加 Scale 后确实再乘一次并返回提示。每次 Scale 都提示“同一草稿再次写入会再乘一次”；之前已有相同规范化关卡、相同属性的 Scale 时，另标记 `repeatScale:true`，中间的绝对赋值不会清除历史标记。重新读取、预览或编译同一份已保存草稿只重放既有操作，不额外追加乘法。攻击字段、旧字段兼容、五档覆盖、规范化关卡别名、冲突失败后草稿保持也有回归。独立复核的三组持久化组合全部通过。
+
+已有副本的编辑请求可写成下例；目标副本由 API 路径或 CLI 位置参数指定。它将三类当前 HP 系数分别乘以 10，并将攻击系数设为 1：
+
+```json
+{"operation":"edit","parameters":{"hpScale":10,"attackValue":1}}
+```
+
+Boss 定向测试 **88 passed**，TypeScript 静态检查与 Vite 本地构建退出 0。构建证据包含本次工具结果汇总及源码/产物摘要；原始构建日志未保存。长期接口说明见 [boss-authoring.md](docs/studio/boss-authoring.md) 与 [boss.md](docs/studio/boss.md)。
+
+### 真实 APK 登记与差异
+
+实际读取 `v35k3-local-wf-x86.signed.apk`，包名为 `com.leiting.wf`，versionCode/versionName 为 `1008001` / `1.8.1`。完整 APK SHA-256 为：
+
+```text
+6981c48c42e43ebf6b85e5893cf40357affe4e7a31787e078f0ce28c3cd5f807
+```
+
+内置 SWF SHA-256 为 `c52e01b8a536f78a06f48cce07bd3e0f23b3814b9b7f861e02a20755f74cc2c1`。新增 `local-v35k3`，明确标为“本地自用，非测试服包”，没有改变默认客户端档案。
+
+能力依据从实际 SWF 提取：838 个去重已登记方法中，808 个 code 和引用上下文都与固定 v35e 基线一致，23 个 code 变化，7 个仅引用上下文变化。上下文包含方法签名、直接常量引用、命名空间身份、异常表、activation trait、直接方法上下文和类声明；敏感常量只保留指纹，不在差异报告中展开。一个补丁的全部方法证据一致才授予对应能力，不按版本名称推断能力。
+
+本档案提供 **123 项能力、101 个补丁**。30 个补丁暂扣；v35e 的 179 项能力中，共 56 项没有在本地档案中证明，包括未自动继承的 4 项官方系统声明。暂扣表示证据不足，不宣称客户端必然不支持，也不声称具有这些能力。真实能力请求仍会被兼容检查阻断。描述覆盖、普通 kind 422、R3 装备回充解析和普通 kind 检查已通过；需要暂扣直击基础能力的请求明确阻断。
+
+差异逐项保存在以下长期材料中：
+
+- [本地登记用法、能力边界与 30 项补丁说明](docs/m6/local-clients.md)。
+- [APK 全成员差异](docs/m6/m62-package-diff.json)：各 6,131 个成员，6,122 个字节相同、9 个变化；包括 3 个签名成员和 6 个 payload，bundle 内 5 个成员另列。
+- [SWF 全部差异](docs/m6/m62-full-swf-diff.json)：304 个 ABC 中 301 个原字节相同，方法体 96,825 → 96,863，29 个既有方法体变化、38 个新增、0 个删除；常量池、声明及非 ABC 标签差异也保留。
+- [已登记方法与能力差异](docs/m6/m62-registered-method-diff.json)：每项变化的方法名、ABC、涉及补丁、前后 code/context SHA，以及全部未证明能力 ID。
+
+后续同线本地包可在本 checkout 执行：
+
+```text
+python -B -m wf apk register-local <v35版本-local-wf-x86.signed.apk>
+```
+
+例如文件名 `v35k4-local-wf-x86.signed.apk` 默认登记为 `local-v35k4`，也可用 `--profile local-自选英文标识` 明确命名。命令只读输入 APK，把新登记原子写入忽略目录 `work/local-clients/<profile>/`，并接入档案列表、编辑台、provides、kind 和兼容检查。相同完整 SHA 幂等返回，不覆盖同名不同内容；真实 manifest 必须是 `com.leiting.wf`。内置 v35k3 上实际执行 provides、两次 register-local 与 kinds 均退出 0，APK 与参考 SWF 前后摘要保持。
+
+独立审阅发现的方法上下文与显式 registry 边界缺口已修复并以反例验证。旧版 `wfx_gate` 也接入登记证据，要求 APK/SWF、provides 文件摘要和实际重新推导出的能力同时匹配；仅添加能力名称不能放行。自定义 registry/profiles 文件仍保持调用者限定的范围。
+
+### 最终验证与历史逐字节保持
+
+完整 `python -B -m pytest` 已结束：**5010 passed、354 skipped、26 warnings，exit 0**，外层用时 1143.55 秒。26 条警告均为既有 `WF_SERVER_DIR` / `WF_TARGET_STORE` 环境变量的弃用提示。跳过项保留为 skipped，不计为通过；原始终端结果与 JUnit 统计分别保存，避免将 unittest.subTest 的额外报告混入主套件计数。
+
+测试从提交 `762b3d6` 的干净工作区启动，运行后核对 2066 份源码、schema、配置与数据文件 SHA256 未变。路径扫描 **2422 个文本文件、0 项命中**；全仓提交卫生检查通过，最终报告与摘要另做暂存区卫生及 `git diff --check` 检查。
+
+APK 定向回归为 **171 passed、10 skipped、361 subtests passed**；随后新增的同 SWF 多 APK 配对反例单独通过，并被本轮全量覆盖。最终独立旧入口检查共 12 项身份与授权反例、10 项缓存反例、4 项精确配对反例，均通过。
+
+历史 223 在当前实现生成完成后，再打开独立原 ZIP 比较，**3/3 成员逐字节相同**。历史 221 从四角色各七步骤的完整源资产重建，**11 个归档、310/310 成员逐字节相同、差异 0**，分层回读也为 310/310，旧清单语义相同。11/11 ZIP 排除 DOS 时间戳后容器相同；原始 ZIP SHA 并不相同，不将成员逐字节一致写成整个 ZIP 原字节一致。两项外层退出码均为 0。
+
+历史构建及核验共保留 1,110 个去重外部输入文件的原 SHA，174 次 ffmpeg 子进程输出均受限于当前 worktree。最初历史验证脚本误将 Windows 子进程参数视为列表，修正证据脚本后在全新目录完成全部重建；原失败记录保留在 `work/m62/history/failed-attempt1/`。首轮全量测试在旧 `wfx_gate` 档案读取处收集失败，记录保留在 `work/m62/full-attempt1/`，未计作通过。
+
+完整验证数字与逐项证据 SHA 索引见 [m62-validation.json](docs/m6/m62-validation.json)。详细原始材料包括 `work/m62/full.log`、`full.xml`、`full-exit.json`、`test-source-snapshot.json`、`history/summary.json`、`apk/acceptance.json`、`review/boss-independent.json`、`review/apk-final.json` 和 `review/apk-gate-final.json`。
+
+本地提交按主题拆分：
+
+| 主题 | 提交 |
+|---|---|
+| BOSS Scale/Value 语义、兼容提示及回归 | `f6351a3` |
+| 编辑台明确绝对值并展示实际参数变化 | `8ff3cb8` |
+| APK 与全 SWF 的逐条字节差异 | `73817ae` |
+| 真实方法证据、本地登记与各兼容入口 | `762b3d6` |
+
+本节与最终验证摘要另作本地文档提交，没有 push。
+
+以上结论限本地代码、静态 APK/SWF 方法证据及历史字节回放；本任务没有运行设备、实际战斗、业务服务器或部署验收。

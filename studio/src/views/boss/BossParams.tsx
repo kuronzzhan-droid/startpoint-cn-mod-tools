@@ -8,6 +8,7 @@ import { href } from "../../router";
 import { Notice } from "../common";
 import { InfoTip } from "../Delivery";
 import { ELEMENT_ORDER, fiveTier, preloadState, questElement, questElementValue } from "./bossModel";
+import { BossParameterPreview } from "./BossParameterPreview";
 
 /** What the right-hand checks column shows for the current form. */
 export interface PreviewState {
@@ -50,7 +51,7 @@ export function diffParameters(values: Values, current: Values, options: BossOpt
     if (!Number.isInteger(n) || n < 1 || n > 999) problems.push("等级要是 1–999 的整数");
     else parameters.level = n;
   }
-  for (const [key, name, label] of [["hp", "hpMultiplier", "HP 倍率"], ["atk", "attackMultiplier", "攻击倍率"]] as const) {
+  for (const [key, name, label] of [["hp", "hpValue", "HP 系数（绝对值）"], ["atk", "attackValue", "攻击系数（绝对值）"]] as const) {
     if (!changed(key)) continue;
     const n = Number(values[key]);
     if (!Number.isFinite(n) || n <= 0 || n > MAX) problems.push(`${label}要是大于 0 的数`);
@@ -275,10 +276,10 @@ export function BossParams({ doc, questId, list, drafts, onPreview, onWritten }:
               <Field id="bp-level" label="等级" note={`当前 Lv${current.level}`} changed={values.level !== current.level}>
                 <input id="bp-level" type="number" min={1} max={999} step={1} value={values.level} onInput={(e) => set("level")((e.target as HTMLInputElement).value)} />
               </Field>
-              <Field id="bp-hp" label="HP 倍率" note={multiNote(doc, "hp")} changed={values.hp !== current.hp}>
+              <Field id="bp-hp" label="HP 系数（绝对设为）" note={multiNote(doc, "hp")} changed={values.hp !== current.hp}>
                 <input id="bp-hp" type="number" min={0} step={0.1} value={values.hp} onInput={(e) => set("hp")((e.target as HTMLInputElement).value)} />
               </Field>
-              <Field id="bp-atk" label="攻击倍率" note={multiNote(doc, "attack")} changed={values.atk !== current.atk}>
+              <Field id="bp-atk" label="攻击系数（绝对设为）" note={multiNote(doc, "attack")} changed={values.atk !== current.atk}>
                 <input id="bp-atk" type="number" min={0} step={0.1} value={values.atk} onInput={(e) => set("atk")((e.target as HTMLInputElement).value)} />
               </Field>
             </>
@@ -306,14 +307,14 @@ export function BossParams({ doc, questId, list, drafts, onPreview, onWritten }:
           {!tierValues || !tierCurrent ? <p class="small muted">正在读取五档当前值……</p> : (
             <div class="table-scroll">
               <table class="boss-table tier-edit">
-                <thead><tr><th>档</th><th>等级</th><th>HP 倍率</th><th>攻击倍率</th></tr></thead>
+                <thead><tr><th>档</th><th>等级</th><th>HP 系数（绝对设为）</th><th>攻击系数（绝对设为）</th></tr></thead>
                 <tbody>
                   {tierValues.map((v, i) => (
                     <tr>
                       <th scope="row">第 {i + 1} 档</th>
                       {FIELD_KEYS.map((k) => (
                         <td>
-                          <input type="number" aria-label={`第 ${i + 1} 档 ${k === "level" ? "等级" : k === "hp" ? "HP 倍率" : "攻击倍率"}`}
+                          <input type="number" aria-label={`第 ${i + 1} 档 ${k === "level" ? "等级" : k === "hp" ? "HP 系数（绝对设为）" : "攻击系数（绝对设为）"}`}
                             class={v[k] !== tierCurrent[i][k] ? "changed" : ""} step={k === "level" ? 1 : 0.1} min={k === "level" ? 1 : 0}
                             value={v[k]} onInput={(e) => setTierValues(tierValues.map((t, j) => j === i ? { ...t, [k]: (e.target as HTMLInputElement).value } : t))} />
                           <span class="small muted"> 原 {tierCurrent[i][k]}</span>
@@ -330,6 +331,7 @@ export function BossParams({ doc, questId, list, drafts, onPreview, onWritten }:
       ) : null}
 
       {built.problems.length ? <ul class="inline-problems">{built.problems.map((p) => <li>{p}</li>)}</ul> : null}
+      {fresh ? <BossParameterPreview preview={live.preview} /> : null}
       <PreloadConfirm checks={live.preview?.checks ?? null} acknowledged={acknowledged} onChange={setAcknowledged} />
 
       <div class="save-row">
@@ -365,8 +367,8 @@ export function BossParams({ doc, questId, list, drafts, onPreview, onWritten }:
 function multiNote(doc: BossDoc, kind: "hp" | "attack"): string {
   const f = doc.quest.fields;
   const values = [f[`${kind}_zako`], f[`${kind}_funnel`], f[`${kind}_boss`]];
-  if (values.every((v) => v === values[0])) return `当前 ×${values[0]}；杂兵/浮游/boss 三项一起改`;
-  return `当前 杂兵 ×${values[0]} / 浮游 ×${values[1]} / boss ×${values[2]}；改了会设成同一个值`;
+  if (values.every((v) => v === values[0])) return `当前系数 ${values[0]}；杂兵/浮游/boss 三项直接设为输入值`;
+  return `当前 杂兵 ${values[0]} / 浮游 ${values[1]} / boss ${values[2]}；三项直接设为输入值`;
 }
 
 function Field({ id, label, note, changed, children }: {

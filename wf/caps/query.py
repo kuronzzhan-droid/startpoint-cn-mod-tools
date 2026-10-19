@@ -17,6 +17,7 @@ def requirements_for_signals(signals, registry):
 
 def query_requirements(*, kinds=(), unique_strings=(), dsl_markers=(), selectors=(),
                        custom_keys=(), unique_id=None, client_profile=None, registry=None):
+    explicit_registry = registry is not None
     registry = load_registry() if registry is None else registry
     signals = [("kinds", value) for value in kinds]
     signals += [("dsl_nodes", value) for value in dsl_markers]
@@ -44,7 +45,12 @@ def query_requirements(*, kinds=(), unique_strings=(), dsl_markers=(), selectors
             continue
         try:
             path, _ = resolve_client(client_profile=name)
-            checks = check_compat(requires, read_client(path), registry=registry)
+            evidence = read_client(path)
+            selected_registry = registry
+            if not explicit_registry:
+                from wf.apk.local_registry import for_swf
+                selected_registry = for_swf(registry, evidence["source"].get("swf_sha256"))
+            checks = check_compat(requires, evidence, registry=selected_registry)
         except (OSError, ValueError) as exc:
             reports[name] = {"compatible": False, "error": str(exc), "checks": []}
             continue

@@ -54,7 +54,7 @@ def test_profiles_name_default_and_extra_capabilities(app):
 def test_lookup_kind_unique_custom_and_explicit_capability(app):
     _, kind = call(app, "/api/studio/caps/lookup", {"kind": ["422"]})
     assert [c["id"] for c in kind["capabilities"]] == ["client.kind422.dash@1"]
-    assert kind["requiredClientProfiles"] == ["test-v34", "test-v35e"]
+    assert kind["requiredClientProfiles"] == ["test-v34", "test-v35e", "local-v35k3"]
     assert "仅检索能力目录" in kind["note"] and "不证明该 kind 在具体表/块受支持" in kind["note"]
     _, hidden = call(app, "/api/studio/caps/lookup", {"unique": [HIDDEN]})
     assert {"client.direct.base@1", "client.wfx.hidden_unique_icons@1"} <= {c["id"] for c in hidden["capabilities"]}
@@ -63,7 +63,7 @@ def test_lookup_kind_unique_custom_and_explicit_capability(app):
     assert missing["client.direct.base@1"]["patches"] == [112, 113, 124, 130]
     assert missing["client.wfx.hidden_unique_icons@1"]["missingPatches"] == [131]
     _, custom = call(app, "/api/studio/caps/lookup", {"customKey": ["wfx_pf4_139990"]})
-    assert custom["requiredClientProfiles"] == ["test-v35e"]
+    assert custom["requiredClientProfiles"] == ["test-v35e", "local-v35k3"]
     _, explicit = call(app, "/api/studio/caps/lookup", {"capability": ["client.direct.base@1"]})
     assert [c["id"] for c in explicit["capabilities"]] == ["client.direct.base@1"]
     assert explicit["requiredClientProfiles"] == ["test-v35e"]
@@ -100,7 +100,7 @@ def test_rows_official_instant_collision_is_supported_without_patch_dependency(a
     _, body = call(app, "/api/drafts/169985/caps/rows", body={"rows": [{"id": "x", "table": "ability", "key": "1", "cells": row}]})
     result = body["rows"]["x"]
     assert not result["capabilities"] and not result["placement"]
-    assert result["requiredClientProfiles"] == ["test-v34", "test-v35e"]
+    assert result["requiredClientProfiles"] == ["test-v34", "test-v35e", "local-v35k3"]
     sites = [signal["value"] for signal in result["signals"] if signal["kind"] == "kind_site"]
     assert sites == [{"logical_path": "master/ability/ability.orderedmap", "key": "1", "row": 0,
                       "table": "ability", "block": "instant_content", "kind": str(kind)}]
@@ -118,7 +118,10 @@ def test_rows_during_kind_dependency_is_table_scoped(app, table, kind, expected)
         {"id": "x", "table": table, "key": "1", "cells": cells}]})
     result = body["rows"]["x"]
     assert [cap["id"] for cap in result["capabilities"]] == [expected]
-    assert result["requiredClientProfiles"] == ["test-v34", "test-v35e"]
+    expected_profiles = ["test-v34", "test-v35e"]
+    if expected != "client.kind423.gauge_source_limit@1":
+        expected_profiles.append("local-v35k3")
+    assert result["requiredClientProfiles"] == expected_profiles
     assert not result["placement"]
 
 
@@ -140,13 +143,13 @@ def test_rows_reject_bad_requests(app):
 
 def test_kind_catalog_per_table_and_block(app):
     _, during = call(app, "/api/studio/caps/kinds", {"table": ["ability"], "block": ["during_content"]})
-    assert during["kinds"]["422"]["requiredClientProfiles"] == ["test-v34", "test-v35e"]
+    assert during["kinds"]["422"]["requiredClientProfiles"] == ["test-v34", "test-v35e", "local-v35k3"]
     assert not during["kinds"]["422"]["placement"]
     _, instant = call(app, "/api/studio/caps/kinds", {"table": ["ability"], "block": ["instant_content"]})
     for kind in ("419", "422", "423", "424"):
         result = instant["kinds"][kind]
         assert not result["placement"] and not result["capabilities"]
-        assert result["requiredClientProfiles"] == ["test-v34", "test-v35e"]
+        assert result["requiredClientProfiles"] == ["test-v34", "test-v35e", "local-v35k3"]
     assert instant["kinds"]["724"]["capabilities"]
     _, leader = call(app, "/api/studio/caps/kinds", {"table": ["leader_ability"], "block": ["during_content"]})
     assert not leader["kinds"]["423"]["requiredClientProfiles"]
@@ -159,7 +162,7 @@ def test_kind_catalog_per_table_and_block(app):
 def test_lookup_preserves_context_and_explicit_capability_when_combined(app):
     _, official = call(app, "/api/studio/caps/lookup", {
         "kind": ["423", "423"], "table": ["leader_ability"], "block": ["instant_content"]})
-    assert official["requiredClientProfiles"] == ["test-v34", "test-v35e"]
+    assert official["requiredClientProfiles"] == ["test-v34", "test-v35e", "local-v35k3"]
     assert not official["capabilities"] and len(official["signals"]) == 1
     assert "仅检索能力目录" not in official["note"]
     _, invalid = call(app, "/api/studio/caps/lookup", {

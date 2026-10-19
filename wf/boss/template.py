@@ -88,10 +88,16 @@ def template_rows(state, request, ids):
     values[5:7] = [START, "(None)"]
     values[7:17] = ["(None)", "", "", "", "(None)", "(None)", "", "", "", "(None)"]
     element = int(encounter[columns(kind)["recommendedElement"][0]])
-    defaults = {"level": 100, "hpMultiplier": 1.5, "attackMultiplier": 1.3,
+    defaults = {"level": 100, "hpValue": 1.5, "attackValue": 1.3,
                 "restrictedElement": element, "recommendedElement": element,
                 "bgm": encounter[columns(kind)["bgm"][0]]}
-    values = apply_values(values, "hard_multi", {**defaults, **request.get("parameters", {})})
+    values = apply_values(values, "hard_multi", defaults)
+    before = values
+    parameters = request.get("parameters", {})
+    values = apply_values(values, "hard_multi", parameters)
+    from .parameter_semantics import record_parameters
+    record_parameters(state, "hard_multi", (ids["event"], "1"), before, values,
+                      parameters, columns("hard_multi"))
     validate_bgm(state, values[111])
     values[110], values[71] = ids["fieldData"], ids["reward"]
     if "scene" in request.get("parameters", {}):

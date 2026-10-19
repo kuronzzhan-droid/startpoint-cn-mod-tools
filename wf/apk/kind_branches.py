@@ -93,7 +93,11 @@ def registry_mismatches(tables, registry, available) -> list[dict]:
     """
     from wf.caps.surfaces import kind_bindings
 
-    groups = {}
+    groups, registered_tables = {}, {}
+    for cap in registry.values():
+        surface = cap["data_surface"]
+        for block, kind in kind_bindings(surface):
+            registered_tables.setdefault((kind, block), set()).update(surface.get("allowed_tables", []))
     for cap_id in sorted(available):
         cap = registry.get(cap_id)
         if cap is None:
@@ -107,12 +111,17 @@ def registry_mismatches(tables, registry, available) -> list[dict]:
     for (kind, block), group in sorted(groups.items()):
         actual = {table for table, blocks in tables.items()
                   if kind in blocks.get(block, {}).get("kinds", [])}
-        if group["tables"] != actual:
+        # A parser may remain present while another capability using that table
+        # is withheld because its downstream implementation changed. Its known
+        # table is not an accidental expansion of the capability checked here.
+        missing = group["tables"] - actual
+        unregistered = actual - registered_tables[(kind, block)]
+        if missing or unregistered:
             mismatches.append({
                 "kind": kind, "block": block, "capabilities": group["capabilities"],
                 "allowed_tables": sorted(group["tables"]), "actual_tables": sorted(actual),
-                "missing_branches": sorted(group["tables"] - actual),
-                "unregistered_tables": sorted(actual - group["tables"]),
+                "missing_branches": sorted(missing),
+                "unregistered_tables": sorted(unregistered),
                 "message": f"kind {kind} / {block}: allowed_tables 与真实 SWF 分支不符",
             })
     return mismatches

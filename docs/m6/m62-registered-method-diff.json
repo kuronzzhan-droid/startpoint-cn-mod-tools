@@ -1,0 +1,853 @@
+{
+  "schema": "wf-local-client-method-diff/1",
+  "baseline_swf_sha256": "89461f676b57a059bde58fe5897190db9b61013ae63947401fe1bf87106d6bcf",
+  "local_swf_sha256": "c52e01b8a536f78a06f48cce07bd3e0f23b3814b9b7f861e02a20755f74cc2c1",
+  "registered_method_count": 838,
+  "unchanged_method_count": 808,
+  "code_changed_count": 23,
+  "context_only_changed_count": 7,
+  "changes": [
+    {
+      "abc": "boot_ffc6",
+      "label": "AbilityDamageShot/finish",
+      "patches": [
+        122,
+        125
+      ],
+      "before": {
+        "sha256": "57d406ca5b723d9f5acc60afd213ac697aadde8127987ccadd3097cf519d1d8f",
+        "context_sha256": "cc055bd3cde723dcc383eb64e4274e77dbe279fdcdc786be044d050cfba6c3ef"
+      },
+      "after": {
+        "sha256": "6038b4ae0dbc538f73156b9ec1a674fc0182b7d7d3a085a33707351ff00808e0",
+        "context_sha256": "2cdc552600ce4ca2ffd02a1bff42d46e598a711c4e8ebf072e98a2e93720907f"
+      },
+      "classification": "code_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "boot_ffc6",
+      "label": "ActionEvaluator/evalCommand",
+      "patches": [
+        31
+      ],
+      "before": {
+        "sha256": "740d1da65f427f1fd65adb18261d71d333a8e0b8ebe5142299abf266121e9b14",
+        "context_sha256": "3f35b0876349d4f1e4f346cac0d6a22a9a5ccfb1f578ae5f45dd9db379875d8b"
+      },
+      "after": {
+        "sha256": "da225036264d7261f207f3048eb28226337bfde261a84ee70803628de8f9c05a",
+        "context_sha256": "5073e592b993bff3bf25b3a804f612cf99dc9dcf51b036273d40924af4f6a258"
+      },
+      "classification": "code_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "boot_ffc6",
+      "label": "BattleCharacterLogic/getElement",
+      "patches": [
+        121
+      ],
+      "before": {
+        "sha256": "af3bd846acede1a3ace8c1ff2cc7221a3fc28cef44730ed59c9f59d998b1318f",
+        "context_sha256": "d70cf31e69bf1cbc6bffbf236c5533b26fab2f230bd81972ef1266e7361fab44"
+      },
+      "after": {
+        "sha256": "1773f4a8dcb5bd7cc793b3b0ff9b6b7bdd436ce77bf34b59ce5c5f65829b3a40",
+        "context_sha256": "82bb08a9a26e4cc647c5276d8deb04bc4c612630b0d157b1d8878d36511ee953"
+      },
+      "classification": "code_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "boot_ffc6",
+      "label": "BattleCharacterLogic/getInstantAbiltyCountWithoutLimit",
+      "patches": [
+        120
+      ],
+      "before": {
+        "sha256": "65dafd49bdcf77015670a32b60a443677a0cbf116d58c136008559756c20c307",
+        "context_sha256": "748dc234d52d535200fdda103fb6735a47583674ccbea49ecb681c8d277c488e"
+      },
+      "after": {
+        "sha256": "8b21fea75ce919bf191153c72285784a1ca68800ae2375077d33fef01fe919e0",
+        "context_sha256": "b5ce9a0d7028200739a40ed61376587b2b8846d6ddcc724926cca7153eafa57d"
+      },
+      "classification": "code_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "boot_ffc6",
+      "label": "BattleCharacterLogic/getOpitionAbilitiesWithoutAbilitySoul",
+      "patches": [
+        120
+      ],
+      "before": {
+        "sha256": "a2e15db07a25960667fa958a57813682351f347baf8f2a1afccd95c23c71be26",
+        "context_sha256": "7cc438da836a7226a99ec09c0ca462c05495422652416d5ecca35be8f901e14a"
+      },
+      "after": {
+        "sha256": "c5f806eb8ffb05f1c2807d5423af4c85d804edb634bec8b00801895605f627bb",
+        "context_sha256": "f860738ca7dd6d4154dbf696bf24ff876e5467f941550ecadef0dc141998d7b8"
+      },
+      "classification": "code_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "boot_ffc6",
+      "label": "BattleCharacterLogic/wfxAdaptiveElement",
+      "patches": [
+        121
+      ],
+      "before": {
+        "sha256": "505bc3e60962b8ca5953cd63c3014f81ad2eec36714104cdc09431e2e857d2f1",
+        "context_sha256": "e3c8ec3d5010164585cce3f625253b272951fd2cdbb9139da94ad7cd99cbc914"
+      },
+      "after": {
+        "sha256": "24eb22261dddddd9c703089a03d6bcc59c607440351690f7fd69258752d3ea38",
+        "context_sha256": "91647f8b59ab746152868c0667dedd54a19e9696ab67356c54be4962e2959fd6"
+      },
+      "classification": "code_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "boot_ffc6",
+      "label": "BattleCharacterLogic/wfxExtraLeaders",
+      "patches": [
+        120
+      ],
+      "before": {
+        "sha256": "739ab8d642fb22bf761006710b7fb1df09b8dc7a1324d5594312cfe0b110ee41",
+        "context_sha256": "d90bb32b88ae8b2f71e4a435e15d01154e448d98e2a5e913ff925f0e997729c5"
+      },
+      "after": {
+        "sha256": "09882c34abd6cce4b2d72057a78e9f5c59efa33f18e56bfd08600817e4305646",
+        "context_sha256": "8270c4b78c9ab9018052a059fbf160a885cc777a4b3518d943852ddca3795e13"
+      },
+      "classification": "code_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "boot_ffc6",
+      "label": "BattleCharacterLogic/wfxPartyMask",
+      "patches": [
+        120
+      ],
+      "before": {
+        "sha256": "c7a1db19edc1938f331ceee3e029d6e22d700741a17dc5432b5451f5e95bfbda",
+        "context_sha256": "0481198acc1297adf1400ba081e5f5416493e7dd5885654ea698a594700b3ceb"
+      },
+      "after": {
+        "sha256": "2d875de4a44504825e2b4185115301db5d96371d6dc9b6c10796946f7a58f5d1",
+        "context_sha256": "8e168f86f5a1d1da9f527dac25187d14aff02a2c99a3cbb6002bab174e659560"
+      },
+      "classification": "code_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "boot_ffc6",
+      "label": "ConditionSlot$/wfxSpec",
+      "patches": [
+        112,
+        130
+      ],
+      "before": {
+        "sha256": "91ca69969bd16ae753041acdb6982603f6c3dc685c2145bd8cf96c33e369dd12",
+        "context_sha256": "a8f3a67ab7ee436c3086c2f5992c4df9e97dab33e852bf6747e06d88424e54c6"
+      },
+      "after": {
+        "sha256": "41a35474919597c0284697979a51213f2daf14b71d8dae19a77f53a35439b20a",
+        "context_sha256": "bc8772faf51f9c97df4e9541b3115413d12601fa86a05e765de8fd999424ec94"
+      },
+      "classification": "code_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "boot_ffc6",
+      "label": "DevConfig_gf_android/<ctor>",
+      "patches": [
+        42
+      ],
+      "before": {
+        "sha256": "aee7494661c43707178b8d042fe0c853dea722eddf3cb7483dd1893dfb244c00",
+        "context_sha256": "003e90c6e8a228a28a2e8497bd6caade3ba29de2770d01338da46bdbfb3416d0"
+      },
+      "after": {
+        "sha256": "aee7494661c43707178b8d042fe0c853dea722eddf3cb7483dd1893dfb244c00",
+        "context_sha256": "03ea63c23dc6fc8bbdf00816f4705d9661c61da3cd9017b5ccfec3d3ae2b5082"
+      },
+      "classification": "referenced_context_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "boot_ffc6",
+      "label": "ExpodOverLimitByItemDialog/getDescription",
+      "patches": [
+        111
+      ],
+      "before": {
+        "sha256": "a0468818a62ad753f0d18a755b29af19c61ebf5c3cd4a145c7a5a8cfc8a8be55",
+        "context_sha256": "5bcf8857ee9b6fdeb9016948623309933d127f29e33c1ba62e93faa94c555c4f"
+      },
+      "after": {
+        "sha256": "002d338edc18618ff1c0badc69e639c32a322a3ce472df89c7475be49206d43d",
+        "context_sha256": "8dfdf7b7c5451357df61ceee9d7725d7fb1fffe9cbbd3d15e6324ef6f935a109"
+      },
+      "classification": "code_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "boot_ffc6",
+      "label": "GeneralCharacterLogic/getHalfPedestalImagePath",
+      "patches": [
+        81
+      ],
+      "before": {
+        "sha256": "0dc8e515702c2c3c77cca60549da8e063eec0785f89a57e503b5ddf41be6a28a",
+        "context_sha256": "cc59fbe96bdd42fb295877da1ed70c51762a7dc95ff03fabbbbe1662966b4759"
+      },
+      "after": {
+        "sha256": "563f61520501a8aa0095d48c3e861bbbe2782edf6ae5efaf8b467fc16aa32d29",
+        "context_sha256": "0c3a53411afbdc532f26483f6f9c475b595a4c128826463ff673769bb04ee7b5"
+      },
+      "classification": "code_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "boot_ffc6",
+      "label": "GeneralCharacterLogic/getPedestalImagePath",
+      "patches": [
+        80
+      ],
+      "before": {
+        "sha256": "1c5905b65f624a24c01cf58adeeb90c300a9e9ae965577c4b295c093f0be117d",
+        "context_sha256": "d5bc6f4048e629b703b5ac4c248bf07f0718ea69b8fdfca8377c4df0cc37e750"
+      },
+      "after": {
+        "sha256": "746d25246464eee803ca007a47853a152c7f8cffa13af6fc7303956c2ea42772",
+        "context_sha256": "ad83f1e0b63d6624444bed928b2f30bd338878f9e490f94ce9bd2fff53de9496"
+      },
+      "classification": "code_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "boot_ffc6",
+      "label": "MemberImpl/applyHeal",
+      "patches": [
+        122
+      ],
+      "before": {
+        "sha256": "9b58acb942b51fea70693b9034034b7738387d27778abe3af552897b21b3425a",
+        "context_sha256": "8aba14d9bed6114550f7fdff5c96db63257d624f402d257a74684b8696a02b8b"
+      },
+      "after": {
+        "sha256": "343cbc499674828c173e36ee5eb41eb5b1c4c9bf10092f3dc7a0896780f7957a",
+        "context_sha256": "fa37cfdcd2a91586d51a8d6cea660de5f90907203b13ddec6858e843fa284ff6"
+      },
+      "classification": "code_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "boot_ffc6",
+      "label": "MemberImpl/scheduleDirectAttack",
+      "patches": [
+        54,
+        56,
+        113,
+        114
+      ],
+      "before": {
+        "sha256": "7f0d02acfc116523f829a639e717fea6e53ce30b61c0f40085082c4b0caf1e07",
+        "context_sha256": "c06ec18add47b2e217f92f86638af9cb68487de6896d21a7ea68468fc0999ae1"
+      },
+      "after": {
+        "sha256": "478a6b73bfbf2479c1a50b4ab00350b67e775a604c6b148f360de4e41d13a620",
+        "context_sha256": "1d6cded0df990010f8951254e1e8cc42e2fabfa48e0e0983618a05cc61705b73"
+      },
+      "classification": "code_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "boot_ffc6",
+      "label": "OverLimitWindow/getOverLimitState",
+      "patches": [
+        109
+      ],
+      "before": {
+        "sha256": "ae683cc1f5574ac7b415c43cf779ea642535cd6a66531aa1ee51a150d1492068",
+        "context_sha256": "442d6548695d8cf683b8d220d07c8d0acc5f4887a8a0de558ef139e570d72030"
+      },
+      "after": {
+        "sha256": "eea92f78c2cc8dbd3529af5c0e46e1c0a1bf9f5cd3cd17630f786bb1b4058f25",
+        "context_sha256": "71ae97854b8f38aeffc0f9369f7c205a5268d451ad8c10195a941d83bb74cfcb"
+      },
+      "classification": "code_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "boot_ffc6",
+      "label": "OverLimitWindow/getStatusInformation",
+      "patches": [
+        110
+      ],
+      "before": {
+        "sha256": "c64d19bbf7957fd9490406d4d251abb9d1e16eeb3062e1b49148f56afbd29aa4",
+        "context_sha256": "27c1cb323c26c2610fceb6fdea734dd687b6a6b0513f0a6a128b97e3740a6d2a"
+      },
+      "after": {
+        "sha256": "1c60bfbd538517f6fa3d393655a3dd282e93a3b1fe53f563a7088bc48b733ccc",
+        "context_sha256": "f6508156e65c1b7d4b6b32e981704d8b3e19013dd466bbfd754cf4c27180a542"
+      },
+      "classification": "code_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "boot_ffc6",
+      "label": "OverLimitWindow/run",
+      "patches": [
+        110
+      ],
+      "before": {
+        "sha256": "b96160fc0f1046a50cf78065ed8d907861a2a65fb13c4f365abad60cbd4b2a7e",
+        "context_sha256": "aabe386b551460622fd64e96b5cbd7c9940b8621eaaa577939ada56839e9543f"
+      },
+      "after": {
+        "sha256": "d38a6b02ef83d2e1fb99134aa35733786e0ad3a423c4eecd404bac54a48d73d2",
+        "context_sha256": "ef972c3a91b636d990e5ab694054117e17d8f5324b41fb647632ce85223c1456"
+      },
+      "classification": "code_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "boot_ffc6",
+      "label": "OwnedCharacterLogic/getPossibleOverLimitCountByItem",
+      "patches": [
+        101
+      ],
+      "before": {
+        "sha256": "7fa65be8a2181e01a0a17b400d74fecbd0565c2600be4e78a7be8d96a94e837e",
+        "context_sha256": "bbdcb2bf4a0c567cf1d4f5f0150ce632d10030d25a95ddb274f060cf8205f476"
+      },
+      "after": {
+        "sha256": "ec11cc72b904085a2745ae66e9c8d7dca14d7a85ebfb05f356b17802b32847fb",
+        "context_sha256": "f9a0a4046f6ad0685b0b61c877c28116a0554669257d9e02b25bb80a4b4a5710"
+      },
+      "classification": "code_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "boot_ffc6",
+      "label": "OwnedOverLimitLogic/getAwakingCrystalToOverLimit",
+      "patches": [
+        78
+      ],
+      "before": {
+        "sha256": "2e584914a2f67e60a268e62502f8e7af84a6a6e1e38af444b8de79c446470b34",
+        "context_sha256": "2d7a5c07588d527728ea10a56b0a5d1777cc4162ccc8caac7d2f935048bf813a"
+      },
+      "after": {
+        "sha256": "ae75214b496824eeb8a3f67a961e105668a259b1ffbd9b67a7b8a3bbdca2dfb4",
+        "context_sha256": "2fae4d7e0036532bcac27ea5e73bd2181fb5be090127688438ba106cf2059139"
+      },
+      "classification": "code_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "boot_ffc6",
+      "label": "OwnedOverLimitLogic/getOverLimitState",
+      "patches": [
+        84
+      ],
+      "before": {
+        "sha256": "98f9c7121ac212729daaf7a0e9b740e2de275dcc26e2536ad4d8e1d63d023fd0",
+        "context_sha256": "7f4f038fa5c7c71e52a5a6d4732bda67225e2b6bef1c78ae961c8e5222c97d77"
+      },
+      "after": {
+        "sha256": "108cde956841ca68e0061dcf332f7943d6e6c86a8b0c56fe2e30e14abcd60af0",
+        "context_sha256": "a2f1911121c605cc69a94eb9677c589a3946e6c83670b48222ec52455543539d"
+      },
+      "classification": "code_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "boot_ffc6",
+      "label": "OwnedOverLimitLogic/getOwnAwakingCrystalToOverLimit",
+      "patches": [
+        85
+      ],
+      "before": {
+        "sha256": "2be9af1fa92ed8bb56a5ee90b9eb511f7f94c6941f38a223e406207e17be61b2",
+        "context_sha256": "ae9ae80bf257e08f243be0ffffdeacbce160a7757acf166021e8271677f2ff6b"
+      },
+      "after": {
+        "sha256": "a9394992e89a5690204d5a1e5df4445dcc36b1be49a547b6427f7562370d1547",
+        "context_sha256": "d2ab2c114857246ca01085f5adb7a91157be29e84b2e8ea17d20b9dc0e31711f"
+      },
+      "classification": "code_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "boot_ffc6",
+      "label": "SquadManagerImpl/updatePhase",
+      "patches": [
+        122
+      ],
+      "before": {
+        "sha256": "b1de02513d4ce9f4ffb4db39a0449bb2bec16f15ca36019efd91ee0e09bd824c",
+        "context_sha256": "8cd48eeff440427069099e7c24ca732a5b80f4acf02feaef51d1e30b5ec61341"
+      },
+      "after": {
+        "sha256": "316f4438216de54b72782f724db60ee7ff3959b62a04e98c01c8b67a879be532",
+        "context_sha256": "2942e0042229841990d76c70ac740a963743bd4579e984791a7c65baa835bd08"
+      },
+      "classification": "code_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "boot_ffc6",
+      "label": "UniqueConditionLogic/wfxSuperPreload",
+      "patches": [
+        125
+      ],
+      "before": {
+        "sha256": "71cfbb4a334b6f1b5ee637d01caca302bd29dfd4b27e3a8a09caf854cfa243eb",
+        "context_sha256": "782ede57d2bffd3153b71d02df4e9eca50264588b549019701b11726e391b24a"
+      },
+      "after": {
+        "sha256": "b12034d239cf2ddb9b6a0ffb5126843aa6141f962c8b09172f341ac31d949d65",
+        "context_sha256": "40b468171726c4f4a2c65e95cfcd0c65875fc7b8615e31640a0696850ffdedb0"
+      },
+      "classification": "code_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "cn/admission/ClientAdmission",
+      "label": "ClientAdmission$/beforeQueue",
+      "patches": [
+        19,
+        52
+      ],
+      "before": {
+        "sha256": "8b0ffcd1ec5f48f50d1c5bbaeb34389e435adb2e2784643ee799dbf239b680ba",
+        "context_sha256": "9a0318afb873ce1143fe8f4b871952a66d141da5a8b3efc03cf80ba7fe8badb0"
+      },
+      "after": {
+        "sha256": "8b0ffcd1ec5f48f50d1c5bbaeb34389e435adb2e2784643ee799dbf239b680ba",
+        "context_sha256": "1440def6c601cf54c14cc5955a3955b582ddbae97ae89d03fcbb98d6729ec096"
+      },
+      "classification": "referenced_context_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "cn/admission/ClientAdmission",
+      "label": "ClientAdmission$/load",
+      "patches": [
+        19,
+        52
+      ],
+      "before": {
+        "sha256": "8e98d09dc0c9a26faee11ee52b453b50b0ff8f6f3a2be21ffc419f6c3161be86",
+        "context_sha256": "c08417dcce5795fe96f4be4f3c9ed72ee3e8eb8fbae6a862d27a42b2cf8de649"
+      },
+      "after": {
+        "sha256": "8e98d09dc0c9a26faee11ee52b453b50b0ff8f6f3a2be21ffc419f6c3161be86",
+        "context_sha256": "702af48bf32397a18e652efa1d671f06c8adda7fe2c3d7052625d2e443109bbc"
+      },
+      "classification": "referenced_context_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "cn/admission/ClientAdmission",
+      "label": "ClientAdmission$/refreshSession",
+      "patches": [
+        19,
+        52
+      ],
+      "before": {
+        "sha256": "e3229ea5ad3242195002b91605d8ca95609c338745d89a5a2fe4ba014274639d",
+        "context_sha256": "b90e07d8fe23e121c77a552e1a7721cfc518000cdbe48bc77d104a776ffd6ee2"
+      },
+      "after": {
+        "sha256": "e3229ea5ad3242195002b91605d8ca95609c338745d89a5a2fe4ba014274639d",
+        "context_sha256": "1820535783d9944a5f3c328f947196c6543b4429000963faeed88b7b3473f320"
+      },
+      "classification": "referenced_context_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "cn/admission/ClientAdmission",
+      "label": "ClientAdmission$/transport",
+      "patches": [
+        19,
+        52
+      ],
+      "before": {
+        "sha256": "7263a26a1637526c79986ceea8c0101fb31087ab29a27f76d7ec1ba9a4d3c422",
+        "context_sha256": "fbda099c3b74764f3f82bc54338151520f7755e2acfd51ca950fc29bacf98585"
+      },
+      "after": {
+        "sha256": "7263a26a1637526c79986ceea8c0101fb31087ab29a27f76d7ec1ba9a4d3c422",
+        "context_sha256": "c79682d5c6f320ade72e7665b5fc349a5c6e5686fd9c50c6ab2bc712a393f6bd"
+      },
+      "classification": "referenced_context_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "cn/admission/ClientAdmission",
+      "label": "anonymous-method-27",
+      "patches": [
+        19,
+        52
+      ],
+      "before": {
+        "sha256": "6baf8e462ba41c179b27a07f1287bb7eacf1add34f90414dae8fee545f545f9d",
+        "context_sha256": "e34a4a6f68036720d6a9280d8dcfd1aad9b7b569766affb3c846ebbe845e967c"
+      },
+      "after": {
+        "sha256": "6baf8e462ba41c179b27a07f1287bb7eacf1add34f90414dae8fee545f545f9d",
+        "context_sha256": "abfa62d68b2088ac5c1f0c4d0f2b33d9c4c0f065604cf662419d5c62903a7066"
+      },
+      "classification": "referenced_context_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    },
+    {
+      "abc": "cn/admission/ClientAdmission",
+      "label": "anonymous-method-31",
+      "patches": [
+        19,
+        52
+      ],
+      "before": {
+        "sha256": "b98010f3f8065a40a3dc203c1fba8d9fd7001365b6e2a116eb78aa2f8e36c2a4",
+        "context_sha256": "a68441512acd7093d29273242cff9291c8408318db9f3ffd4371eed302d49998"
+      },
+      "after": {
+        "sha256": "b98010f3f8065a40a3dc203c1fba8d9fd7001365b6e2a116eb78aa2f8e36c2a4",
+        "context_sha256": "6b539279d8fe02ee5bcb06a6efc7ea71929383ed9594079d9efde699c42e3982"
+      },
+      "classification": "referenced_context_changed",
+      "capability_decision": "withheld; no claim of absence or support"
+    }
+  ],
+  "withheld_patches": [
+    {
+      "patch": 19,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        "anonymous-method-27",
+        "anonymous-method-31",
+        "ClientAdmission$/beforeQueue",
+        "ClientAdmission$/load",
+        "ClientAdmission$/refreshSession",
+        "ClientAdmission$/transport"
+      ],
+      "kind": "method_changed"
+    },
+    {
+      "patch": 31,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        "ActionEvaluator/evalCommand"
+      ],
+      "kind": "method_changed"
+    },
+    {
+      "patch": 42,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        "DevConfig_gf_android/<ctor>"
+      ],
+      "kind": "method_changed"
+    },
+    {
+      "patch": 52,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        "anonymous-method-27",
+        "anonymous-method-31",
+        "ClientAdmission$/beforeQueue",
+        "ClientAdmission$/load",
+        "ClientAdmission$/refreshSession",
+        "ClientAdmission$/transport"
+      ],
+      "kind": "method_changed"
+    },
+    {
+      "patch": 54,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        "MemberImpl/scheduleDirectAttack"
+      ],
+      "kind": "method_changed"
+    },
+    {
+      "patch": 56,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        "MemberImpl/scheduleDirectAttack"
+      ],
+      "kind": "method_changed"
+    },
+    {
+      "patch": 78,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        "OwnedOverLimitLogic/getAwakingCrystalToOverLimit"
+      ],
+      "kind": "method_changed"
+    },
+    {
+      "patch": 79,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        null
+      ],
+      "kind": "non_swf_evidence_required"
+    },
+    {
+      "patch": 80,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        "GeneralCharacterLogic/getPedestalImagePath"
+      ],
+      "kind": "method_changed"
+    },
+    {
+      "patch": 81,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        "GeneralCharacterLogic/getHalfPedestalImagePath"
+      ],
+      "kind": "method_changed"
+    },
+    {
+      "patch": 82,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        null
+      ],
+      "kind": "non_swf_evidence_required"
+    },
+    {
+      "patch": 84,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        "OwnedOverLimitLogic/getOverLimitState"
+      ],
+      "kind": "method_changed"
+    },
+    {
+      "patch": 85,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        "OwnedOverLimitLogic/getOwnAwakingCrystalToOverLimit"
+      ],
+      "kind": "method_changed"
+    },
+    {
+      "patch": 86,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        null
+      ],
+      "kind": "non_swf_evidence_required"
+    },
+    {
+      "patch": 97,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        null
+      ],
+      "kind": "non_swf_evidence_required"
+    },
+    {
+      "patch": 98,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        null
+      ],
+      "kind": "non_swf_evidence_required"
+    },
+    {
+      "patch": 99,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        null
+      ],
+      "kind": "non_swf_evidence_required"
+    },
+    {
+      "patch": 100,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        null
+      ],
+      "kind": "non_swf_evidence_required"
+    },
+    {
+      "patch": 101,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        "OwnedCharacterLogic/getPossibleOverLimitCountByItem"
+      ],
+      "kind": "method_changed"
+    },
+    {
+      "patch": 109,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        "OverLimitWindow/getOverLimitState"
+      ],
+      "kind": "method_changed"
+    },
+    {
+      "patch": 110,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        "OverLimitWindow/run",
+        "OverLimitWindow/getStatusInformation"
+      ],
+      "kind": "method_changed"
+    },
+    {
+      "patch": 111,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        "ExpodOverLimitByItemDialog/getDescription"
+      ],
+      "kind": "method_changed"
+    },
+    {
+      "patch": 112,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        "ConditionSlot$/wfxSpec"
+      ],
+      "kind": "method_changed"
+    },
+    {
+      "patch": 113,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        "MemberImpl/scheduleDirectAttack"
+      ],
+      "kind": "method_changed"
+    },
+    {
+      "patch": 114,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        "MemberImpl/scheduleDirectAttack"
+      ],
+      "kind": "method_changed"
+    },
+    {
+      "patch": 120,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        "BattleCharacterLogic/getOpitionAbilitiesWithoutAbilitySoul",
+        "BattleCharacterLogic/getInstantAbiltyCountWithoutLimit",
+        "BattleCharacterLogic/wfxPartyMask",
+        "BattleCharacterLogic/wfxExtraLeaders"
+      ],
+      "kind": "method_changed"
+    },
+    {
+      "patch": 121,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        "BattleCharacterLogic/getElement",
+        "BattleCharacterLogic/wfxAdaptiveElement"
+      ],
+      "kind": "method_changed"
+    },
+    {
+      "patch": 122,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        "AbilityDamageShot/finish",
+        "MemberImpl/applyHeal",
+        "SquadManagerImpl/updatePhase"
+      ],
+      "kind": "method_changed"
+    },
+    {
+      "patch": 125,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        "AbilityDamageShot/finish",
+        "UniqueConditionLogic/wfxSuperPreload"
+      ],
+      "kind": "method_changed"
+    },
+    {
+      "patch": 130,
+      "reason": "未证明等价，不声明支持或不支持",
+      "methods": [
+        "ConditionSlot$/wfxSpec"
+      ],
+      "kind": "method_changed"
+    }
+  ],
+  "baseline_capabilities": 179,
+  "local_capabilities": 123,
+  "not_proven_capabilities": [
+    "client.ability.resistance@1",
+    "client.apk.patch019@1",
+    "client.apk.patch031@1",
+    "client.apk.patch042@1",
+    "client.apk.patch052@1",
+    "client.apk.patch054@1",
+    "client.apk.patch056@1",
+    "client.apk.patch078@1",
+    "client.apk.patch079@1",
+    "client.apk.patch080@1",
+    "client.apk.patch081@1",
+    "client.apk.patch082@1",
+    "client.apk.patch084@1",
+    "client.apk.patch085@1",
+    "client.apk.patch086@1",
+    "client.apk.patch097@1",
+    "client.apk.patch098@1",
+    "client.apk.patch099@1",
+    "client.apk.patch100@1",
+    "client.apk.patch101@1",
+    "client.apk.patch109@1",
+    "client.apk.patch110@1",
+    "client.apk.patch111@1",
+    "client.apk.patch112@1",
+    "client.apk.patch113@1",
+    "client.apk.patch114@1",
+    "client.apk.patch120@1",
+    "client.apk.patch121@1",
+    "client.apk.patch122@1",
+    "client.apk.patch125@1",
+    "client.apk.patch130@1",
+    "client.charge.cap@2",
+    "client.direct.base@1",
+    "client.direct.merge@1",
+    "client.direct.parameters@1",
+    "client.element.adaptive@1",
+    "client.heal.overflow_damage@1",
+    "client.kind423.gauge_source_limit@1",
+    "client.leader.unlock@1",
+    "client.overlimit.lv120@1",
+    "client.overlimit.o10@1",
+    "client.overlimit.o11@1",
+    "client.overlimit.o12@1",
+    "client.overlimit.o2@1",
+    "client.overlimit.o3@1",
+    "client.overlimit.o4@1",
+    "client.overlimit.o5@1",
+    "client.overlimit.o6@1",
+    "client.overlimit.o7@1",
+    "client.overlimit.o9@1",
+    "client.super_fever@1",
+    "client.wfx.effect_query@1",
+    "official.awakening@1",
+    "official.kind629.invoke_skill@1",
+    "official.pf.special@1",
+    "official.unison@1"
+  ],
+  "new_claims": []
+}

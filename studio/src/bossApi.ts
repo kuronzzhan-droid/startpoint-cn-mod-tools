@@ -171,7 +171,13 @@ export interface BossRead {
 
 export interface BossParameters {
   level?: number;
+  hpScale?: number;
+  hpValue?: number;
+  attackScale?: number;
+  attackValue?: number;
+  /** @deprecated Absolute assignment; use hpValue. */
   hpMultiplier?: number;
+  /** @deprecated Absolute assignment; use attackValue. */
   attackMultiplier?: number;
   restrictedElement?: number | null;
   recommendedElement?: number;
@@ -329,6 +335,11 @@ export interface BossPreview {
   allocation?: BossAllocation | null;
   changes?: { table: string; path: string[]; old: unknown; new: unknown }[];
   serverTargets?: string[];
+  parameterChanges?: {
+    quest: string; parameter: string; stat: "hp" | "attack"; mode: "absolute" | "scale";
+    input: number; deprecated: boolean; repeatScale: boolean;
+    values: { target: "zako" | "funnel" | "boss"; column: number; before: string; after: string }[];
+  }[];
   checks: RuleResult[];
   runtime: string;
 }

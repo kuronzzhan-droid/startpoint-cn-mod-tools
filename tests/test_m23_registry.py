@@ -74,10 +74,10 @@ def test_r3_duplicate_method_records_are_rejected():
         derive_provides(record)
 
 
-def test_only_two_test_profiles_gain_new_r3_and_bind_both_provides_forms():
+def test_evidence_backed_profiles_gain_r3_and_bind_their_provides():
     _, profiles = load_profiles()
     for name, profile in profiles.items():
-        if name not in {"test-v34", "test-v35e"}:
+        if name not in {"test-v34", "test-v35e", "local-v35k3"}:
             assert R3 not in profile.get("m2_capabilities", [])
             continue
         assert R3 in profile["m2_capabilities"]
@@ -86,9 +86,10 @@ def test_only_two_test_profiles_gain_new_r3_and_bind_both_provides_forms():
         selected, selected_name = resolve_client(client_profile=name)
         assert selected_name == name
         assert R3 in {entry["id"] for entry in read_client(selected)["provides"]}
-        fallback = REPOSITORY / profile["provides_fallback"]
-        assert hashlib.sha256(fallback.read_bytes()).hexdigest() == profile["provides_fallback_sha256"]
-        read_client(fallback, profile=profile, expected_digest=profile["provides_fallback_sha256"])
+        if profile.get("provides_fallback"):
+            fallback = REPOSITORY / profile["provides_fallback"]
+            assert hashlib.sha256(fallback.read_bytes()).hexdigest() == profile["provides_fallback_sha256"]
+            read_client(fallback, profile=profile, expected_digest=profile["provides_fallback_sha256"])
 
 
 def test_committed_observations_bind_registered_method_hashes_and_actual_branch():

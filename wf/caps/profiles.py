@@ -12,8 +12,14 @@ DEFAULT_PROFILE = "test-v34"
 
 
 def load_profiles(filename=None):
+    explicit = filename is not None
     filename = Path(filename) if filename else REPOSITORY / "client_profiles.json"
     document = json.loads(filename.read_text("utf-8-sig"))
+    if not explicit:
+        from wf.apk.local_registry import registrations
+        for record in registrations(REPOSITORY):
+            if record["profile_id"] not in document["profiles"]:
+                document["profiles"][record["profile_id"]] = record["profile"]
     return document.get("default_client_profile", DEFAULT_PROFILE), document["profiles"]
 
 

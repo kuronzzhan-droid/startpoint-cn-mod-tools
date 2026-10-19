@@ -1,14 +1,14 @@
 """Quest parameter edits using generated *QuestValues column layouts."""
 from __future__ import annotations
 
-import copy
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, localcontext
 import wf_quest_lib as codec
 
 from wf.view.base149 import row, join
 from .edit_state import leaf
 from .schema import cell
 from .server_parameters import sync_recommended_element
+from .parameter_semantics import merge_parameters, record_parameters, validate_stat_modes
 
 QUESTS = {
     "boss_battle": "master/quest/boss_battle_quest.orderedmap",
@@ -45,8 +45,11 @@ def find_quest(state, quest):
 
 def columns(kind):
     offset = 0 if kind == "boss_battle" else 1
-    return {"level": [106 + offset], "hpMultiplier": list(range(97 + offset, 100 + offset)),
-            "attackMultiplier": list(range(100 + offset, 103 + offset)),
+    return {"level": [106 + offset],
+            **{name: list(range(97 + offset, 100 + offset))
+               for name in ("hpValue", "hpScale", "hpMultiplier")},
+            **{name: list(range(100 + offset, 103 + offset))
+               for name in ("attackValue", "attackScale", "attackMultiplier")},
             "restrictedElement": [68 + offset], "recommendedElement": [72 + offset],
             "bgm": [110 + offset], "fieldData": [109 + offset], "reward": [70 + offset]}
 
@@ -74,6 +77,7 @@ def validate_bgm(state, value):
 
 
 def apply_values(values, kind, parameters):
+    validate_stat_modes(parameters)
     values = list(values)
     mapping = columns(kind)
     for key, value in parameters.items():
@@ -97,7 +101,13 @@ def apply_values(values, kind, parameters):
             if key == "level" and (Decimal(text) != int(Decimal(text)) or int(text) > 999):
                 raise ValueError("level must be an integer in 1..999")
         for column in mapping[key]:
-            values[column] = text
+            if key.endswith("Scale"):
+                current, factor = Decimal(number(values[column])), Decimal(text)
+                with localcontext() as context:
+                    context.prec = max(28, len(current.as_tuple().digits) + len(factor.as_tuple().digits))
+                    values[column] = number(current * factor)
+            else:
+                values[column] = text
     return values
 
 
@@ -115,7 +125,7 @@ def edit_parameters(state, quest, request):
         group = leaf(state.table(logical), path[:-1])
         if not isinstance(group, dict) or set(group) != {"1", "2", "3", "4", "5"}:
             raise ValueError("the selected boss group is not a five-tier encounter")
-        targets = [(path[:-1] + (str(i),), row(group[str(i)]), {**parameters, **extra})
+        targets = [(path[:-1] + (str(i),), row(group[str(i)]), merge_parameters(parameters, extra))
                    for i, extra in enumerate(tier_values, 1)]
     for _, before, _ in targets:
         require_encounter(kind, before)
@@ -145,5 +155,6 @@ def edit_parameters(state, quest, request):
         if "bgm" in params:
             validate_bgm(state, params["bgm"])
         state.set_leaf(logical, target, join(after))
+        record_parameters(state, kind, target, before, after, params, columns(kind))
         changed_ids.append(f"{kind}:{'/'.join(target)}")
     return changed_ids

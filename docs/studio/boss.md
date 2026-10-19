@@ -55,8 +55,8 @@ python -m wf check boss hard_multi:1006/1 --tip 1.4.236 --manifest inputs/manife
 | score 奖励组 | c70 | c71 |
 | 推荐属性 `recommendedElement` | c72 | c73 |
 | 隐藏推荐属性 | c73 | c74 |
-| 杂兵 / 浮游 / boss HP 修正 `hpMultiplier` | c97 / c98 / c99 | c98 / c99 / c100 |
-| 杂兵 / 浮游 / boss 攻击修正 `attackMultiplier` | c100 / c101 / c102 | c101 / c102 / c103 |
+| 杂兵 / 浮游 / boss HP 修正 `hpValue` / `hpScale` | c97 / c98 / c99 | c98 / c99 / c100 |
+| 杂兵 / 浮游 / boss 攻击修正 `attackValue` / `attackScale` | c100 / c101 / c102 | c101 / c102 / c103 |
 | 敌人等级 `level` | c106 | c107 |
 | 难度 rank | c107 | c108 |
 | `field_data` | c109 | c110 |
@@ -64,7 +64,7 @@ python -m wf check boss hard_multi:1006/1 --tip 1.4.236 --manifest inputs/manife
 | 时间限制 | c111 | c112 |
 | `BothBoss` / 隐藏关标记 | c122 / c123 | 不按此映射解释 |
 
-`scene` 修改的是所引用 `field_data` 的 c0（`field` 键）；`field_data` c1 是地形，c2 是 zone。编辑会为该副本派生独立 `field_data`，避免改动其他共用者。HP/攻击倍率同时设置表内的三个对应修正，不修改全局敌人基础数值或等级表。属性整数采用客户端原生枚举 0–5；`restrictedElement: null` 写为 `(None)`。限定属性与推荐属性是不同字段。
+`scene` 修改的是所引用 `field_data` 的 c0（`field` 键）；`field_data` c1 是地形，c2 是 zone。编辑会为该副本派生独立 `field_data`，避免改动其他共用者。HP/攻击的 `Value` 直接设置表内三个对应修正，`Scale` 则分别乘以三项当前值，不修改全局敌人基础数值或等级表。旧 `hpMultiplier` / `attackMultiplier` 是绝对值、已弃用，仍保留赋值语义。完整规则和实际数值预览见 [M6.2 参数语义](boss-authoring.md)。属性整数采用客户端原生枚举 0–5；`restrictedElement: null` 写为 `(None)`。限定属性与推荐属性是不同字段。
 
 改变 `recommendedElement` 会同步实际有效的服务端 quest 键的 `element`。领主战先找 `_cnmod` 覆盖键、再找本体键；共同决战使用 `hard_multi_event_quest.json`。缺少该键会拒绝编辑。木人没有此服务端归属。客户端推荐枚举与敌人 c0 枚举不同，不应互换数值。
 
@@ -86,8 +86,8 @@ python -m wf.studio.draft validate work/boss/edit.json --def bossRequest
   "operation": "edit",
   "parameters": {
     "level": 100,
-    "hpMultiplier": 1.5,
-    "attackMultiplier": 1.3,
+    "hpValue": 1.5,
+    "attackValue": 1.3,
     "restrictedElement": null,
     "recommendedElement": 0
   }
@@ -109,7 +109,7 @@ python -m wf.studio.draft validate work/boss/edit.json --def bossRequest
 ```json
 {
   "operation": "edit",
-  "parameters": {"hpMultiplier": 1.5},
+  "parameters": {"hpValue": 1.5},
   "tiers": [
     {"level": 20},
     {"level": 40},
@@ -127,11 +127,11 @@ python -m wf.studio.draft validate work/boss/edit.json --def bossRequest
   "operation": "create_shared",
   "sourceQuest": "boss_battle:1/81/1",
   "name": "丑王奥格",
-  "parameters": {"level": 100, "hpMultiplier": 1.5, "attackMultiplier": 1.3}
+  "parameters": {"level": 100, "hpValue": 1.5, "attackValue": 1.3}
 }
 ```
 
-模板以官方暗凛 `hard_multi:1006/1` 的 quest/event 结构为骨架，从 `sourceQuest` 复制遭遇的 `field_data`、zone、名称及 BGM 组；未指定 `sourceQuest` 时默认暗凛本身。默认等级 100、HP ×1.5、攻击 ×1.3，限定属性和推荐属性默认取遭遇的推荐属性。它复制已有敌人机制，不生成新 AI、美术、武器或商店；事件美术仍继承模板。
+模板以官方暗凛 `hard_multi:1006/1` 的 quest/event 结构为骨架，从 `sourceQuest` 复制遭遇的 `field_data`、zone、名称及 BGM 组；未指定 `sourceQuest` 时默认暗凛本身。默认等级 100、HP 系数设为 1.5、攻击系数设为 1.3，再应用显式参数；限定属性和推荐属性默认取遭遇的推荐属性。它复制已有敌人机制，不生成新 AI、美术、武器或商店；事件美术仍继承模板。
 
 模板自动执行以下一致性操作：
 

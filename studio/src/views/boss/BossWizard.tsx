@@ -7,6 +7,7 @@ import { ChecksPanel } from "./BossChecks";
 import { ElementSelect, PreloadConfirm, PreviewState, useLivePreview } from "./BossParams";
 import { Src } from "./BossRead";
 import { MODE_LABEL, MODE_ORDER, questElement, questElementValue, shortName } from "./bossModel";
+import { BossParameterPreview } from "./BossParameterPreview";
 
 const DEFAULTS = { level: "100", hp: "1.5", atk: "1.3" };
 // 与后端 template_rows 同一套：换行类字符、单双引号、弯引号和 :: 都拒绝。
@@ -59,7 +60,7 @@ export function BossWizard({ source }: { source?: string }) {
   if (name && (name.length > 80 || NAME_BAD.test(name))) problems.push("名称最多 80 字，不能有换行、引号或 ::");
   const levelNumber = Number(level);
   if (!Number.isInteger(levelNumber) || levelNumber < 1 || levelNumber > 999) problems.push("等级要是 1–999 的整数");
-  for (const [value, label] of [[hp, "HP 倍率"], [atk, "攻击倍率"]] as const) {
+  for (const [value, label] of [[hp, "HP 系数（绝对值）"], [atk, "攻击系数（绝对值）"]] as const) {
     const n = Number(value);
     if (!Number.isFinite(n) || n <= 0) problems.push(`${label}要是大于 0 的数`);
   }
@@ -72,7 +73,7 @@ export function BossWizard({ source }: { source?: string }) {
       operation: "create_shared", sourceQuest: chosen.selector,
       ...(name.trim() ? { name: name.trim() } : {}),
       parameters: {
-        level: Number(level), hpMultiplier: Number(hp), attackMultiplier: Number(atk),
+        level: Number(level), hpValue: Number(hp), attackValue: Number(atk),
         ...(element ? { recommendedElement: questElementValue(element) } : {}),
         restrictedElement: restricted ? questElementValue(restricted) : null,
         ...(bgm ? { bgm } : {}),
@@ -183,14 +184,14 @@ export function BossWizard({ source }: { source?: string }) {
                 <span class="small muted">模板默认 100</span>
               </div>
               <div class="param-field">
-                <label for="wz-hp">HP 倍率</label>
+                <label for="wz-hp">HP 系数（绝对设为）</label>
                 <input id="wz-hp" type="number" min={0} step={0.1} value={hp} onInput={(e) => setHp((e.target as HTMLInputElement).value)} />
-                <span class="small muted">默认 ×1.5（杂兵/浮游/boss 一起）</span>
+                <span class="small muted">默认设为 1.5（杂兵/浮游/boss 一起）</span>
               </div>
               <div class="param-field">
-                <label for="wz-atk">攻击倍率</label>
+                <label for="wz-atk">攻击系数（绝对设为）</label>
                 <input id="wz-atk" type="number" min={0} step={0.1} value={atk} onInput={(e) => setAtk((e.target as HTMLInputElement).value)} />
-                <span class="small muted">默认 ×1.3</span>
+                <span class="small muted">默认设为 1.3</span>
               </div>
               <div class="param-field">
                 <label for="wz-restricted">出战限定</label>
@@ -211,6 +212,7 @@ export function BossWizard({ source }: { source?: string }) {
             </div>
           </fieldset>
           {problems.length ? <ul class="inline-problems">{problems.map((p) => <li>{p}</li>)}</ul> : null}
+          {fresh ? <BossParameterPreview preview={live.preview} /> : null}
           <PreloadConfirm checks={live.preview?.checks ?? null} acknowledged={acknowledged} onChange={setAcknowledged} />
 
           <section class="boss-block">

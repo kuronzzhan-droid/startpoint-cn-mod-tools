@@ -9,11 +9,12 @@ from .method_evidence import accepted_hashes, selected_method_hash
 
 
 def check_compat(requires, provides, *, registry=None, delivery_dir=None):
-    if registry is None:
-        from .registry import load_registry
-        registry = load_registry()
     validate_document(requires, "requires.schema.json")
     validate_document(provides, "provides.schema.json")
+    if registry is None:
+        from .registry import load_registry
+        from wf.apk.local_registry import for_swf
+        registry = for_swf(load_registry(), provides["source"].get("swf_sha256"))
     required = requires["requires"]
     results = []
     if required["capabilityResolution"] == "declared":
