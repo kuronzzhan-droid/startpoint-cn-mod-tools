@@ -16,17 +16,26 @@ ABILITY_TABLES = {
 }
 DSL_SUFFIX = ".action.dsl.amf3.deflate"
 PROGRAM = re.compile(r"^battle/[A-Za-z0-9_./-]+\$[A-Za-z0-9_.-]+$")
+BARE_PROGRAM = re.compile(r"^battle/action/[A-Za-z0-9_./-]+$")
 
 
 def program_logical(value):
     if not isinstance(value, str):
         return None
     program = value.removesuffix(DSL_SUFFIX)
-    return program + DSL_SUFFIX if PROGRAM.fullmatch(program) else None
+    # InvokeSkill forwards action_path unchanged. LeadingLogicAssetCache adds
+    # .action.dsl; '$' is part of an asset name, not a required delimiter.
+    # Keep plain paths inside the action namespace so effect paths are not
+    # mistaken for executable dependencies when walking arbitrary DSL values.
+    if not (PROGRAM.fullmatch(program) or BARE_PROGRAM.fullmatch(program)):
+        return None
+    if any(part in ('', '.', '..') for part in program.split('/')):
+        return None
+    return program + DSL_SUFFIX
 
 
 def linked_programs(tree):
-    """Return exact path$program references, without treating prose as paths."""
+    """Return exact action paths, including names without a '$' delimiter."""
     found = set()
 
     def walk(value):
@@ -81,7 +90,7 @@ def resolve_programs(reference, skills):
             if logical:
                 found.add(logical)
             else:
-                raise ValueError(f"action_skill/{skill}/{level}: missing path$program at c7")
+                raise ValueError(f"action_skill/{skill}/{level}: missing action program at c7")
     if not found:
         raise ValueError(f"kind 629 references empty action_skill: {skill}")
     return found

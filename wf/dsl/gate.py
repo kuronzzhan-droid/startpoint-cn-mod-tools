@@ -13,7 +13,7 @@ from .sanitize import forbidden_629
 
 
 def check_629_actions(read_raw, *, overrides=None, changed_logicals=None):
-    """Check affected 629 roots and all their transitive path$program calls.
+    """Check affected 629 roots and all their transitive action-program calls.
 
     ``read_raw(logical)`` returns bytes or ``(bytes, source)``. Overrides contain
     candidate bytes keyed by logical path. With no changed_logicals all roots
