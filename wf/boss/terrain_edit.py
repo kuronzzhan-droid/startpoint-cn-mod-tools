@@ -20,7 +20,10 @@ OPERATIONS = {"terrain_replace", "terrain_position", "terrain_add_layer"}
 def _owned_row(state, logical, identity, current, value):
     existing = leaf(state.table(logical), (identity,))
     original = state.original.get(logical)
-    if existing is not None and (identity != current or leaf(codec.parse_node(original), (identity,)) is not None):
+    introduced = any(change["table"] == logical and change["path"] == [identity]
+                     and change["old"] is None for change in state.changes)
+    if existing is not None and (leaf(codec.parse_node(original), (identity,)) is not None
+                                 or identity != current and not introduced):
         raise ValueError(f"ID collision: {logical}/{identity}")
     state.set_leaf(logical, (identity,), value, new=existing is None)
 

@@ -73,6 +73,18 @@ def test_position_add_update_delete_replay_retains_other_objects(state):
     assert show(state)["terrain"]["waves"][0]["objects"] == before
 
 
+def test_terrain_scene_terrain_reuses_only_its_own_detached_field_data(state):
+    from wf.boss.parameters import edit_parameters
+    payload = {"operation": "terrain_position", "layer": "0", "action": "update", "name": "p0", "x": 120, "y": 100}
+    apply_terrain(state, "1006001", payload)
+    terrain_fd = show(state)["field_data"]["id"]
+    edit_parameters(state, "1006001", {"parameters": {"scene": "field"}})
+    assert show(state)["field_data"]["id"] != terrain_fd
+    apply_terrain(state, "1006001", payload | {"x": 121})
+    assert show(state)["field_data"]["id"] == terrain_fd
+    assert next(p for p in show(state)["terrain"]["waves"][0]["custom_positions"] if p["name"] == "p0")["rect"]["x"] == 121
+
+
 def test_append_clones_zone_and_fills_field_without_shared_mutations(state):
     before = show(state)
     apply_terrain(state, "1006001", {"operation": "terrain_add_layer", "sourceQuest": "1006001", "sourceLayer": "0"})
