@@ -26,6 +26,10 @@ def draft_weapons(state, requests):
 
 
 def inspect_section(state, document, section, requests=()):
+    if section == "timeline-summary":
+        from .boss_timeline import timeline_summary
+        from .source import StudioSource
+        return timeline_summary(StudioSource(state), document)
     if section == "terrain":
         return document["terrain"]
     if section == "shops":

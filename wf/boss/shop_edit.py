@@ -9,6 +9,7 @@ from . import schema as s
 from .edit_bytes import delete_keys
 from .edit_state import merge_keys
 from .shop_model import ITEM, SERVER_SHOP, SERVER_MAP, product_fields
+from .shop_availability import set_availability
 
 
 def one(state, logical, identity, width=None):
@@ -46,11 +47,18 @@ def item_reference(state, identity):
     row = one(state, ITEM, str(identity))
     if s.present(s.cell(row, 4)):
         from wf_weapon_awaken import decode_atlas
-        logical = "item_icon/sprite_sheet.atlas.amf3.deflate"
-        raw = state.raw(logical)
-        names = {str(e["n"]) for e in decode_atlas(raw)} if raw is not None else set()
-        if row[4] not in names or state.raw("item_icon/sprite_sheet.png") is None:
-            raise ValueError(f"C8004: item {identity} c4 {row[4]} missing from loaded item_icon atlas")
+        for prefix in ("item", "item_icon", "item_sec", "scene/general"):
+            logical = prefix + "/sprite_sheet"
+            raw = state.raw(logical + ".atlas.amf3.deflate")
+            if raw is not None and state.raw(logical + ".png") is not None:
+                if row[4] in {str(e["n"]) for e in decode_atlas(raw)}:
+                    return
+        raise ValueError(f"C8004: item {identity} c4 {row[4]} missing from loaded item/item_icon/item_sec/scene/general atlases")
+
+
+def validate_text(value, field):
+    if any(c in str(value) for c in (",", "\n", "\r", '"', "::")):
+        raise ValueError(f"{field} contains unsupported text delimiters")
 
 
 def set_costs(state, row, costs, start):
@@ -118,6 +126,7 @@ def edit_shop(state, request, categories, reserved=()):
         identity = reserve(occupied, 991000000, spec.get("productId"))
         spec["productId"] = identity
         row[0], row[7], row[8] = category, "1", "1"
+        set_availability(state, row, spec, adding=True, source=source)
     else:
         identity = str(spec["productId"])
         row = one(state, s.SHOP, identity, 50)
@@ -128,10 +137,12 @@ def edit_shop(state, request, categories, reserved=()):
         nested_product(state, category, identity)
         state.delete_server_keys(SERVER_MAP, [identity])
         return
+    if operation == "shop_edit":
+        set_availability(state, row, spec)
     for name, column in (("name", 6), ("description", 10), ("icon", 12), ("stock", 28)):
         if name in spec:
-            if name in ("name", "description") and any(c in str(spec[name]) for c in ("\n", "\r", '"', "::")):
-                raise ValueError(f"shop {name} contains unsupported text delimiters")
+            if name in ("name", "description"):
+                validate_text(spec[name], f"shop {name}")
             row[column] = str(spec[name])
     if "icon" in spec:
         image_reference(state, spec["icon"])
@@ -150,7 +161,8 @@ def edit_shop(state, request, categories, reserved=()):
     if operation == "shop_add":
         new_server.update(generated)
     else:
-        for requested, target in (("price", "costs"), ("stock", "stock"), ("rewards", "rewards")):
+        for requested, target in (("price", "costs"), ("stock", "stock"), ("rewards", "rewards"),
+                                  ("availableFrom", "availableFrom"), ("availableUntil", "availableUntil")):
             if requested in spec:
                 new_server[target] = generated[target]
     state.set_leaf(s.SHOP, [identity], join(row), new=operation == "shop_add")

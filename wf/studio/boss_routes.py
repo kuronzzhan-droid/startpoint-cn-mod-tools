@@ -97,6 +97,11 @@ class BossRoutes:
         from .server import json_response
         return json_response(self.editor.inspect(quest, section))
 
+    def timeline_summary(self, query, quest):
+        from .server import json_response
+        result = self.editor.inspect(quest, "timeline-summary")
+        return json_response({**result["data"], "questId": result["questId"], "checks": result["checks"]})
+
     def drafts(self, query):
         from .server import json_response
         entries = [draft_summary(entry, self.store.load(entry["characterId"])) for entry in self.store.characters()]
@@ -142,6 +147,7 @@ class BossRoutes:
             ("GET", re.compile(r"^/api/boss/weapon-icons$"), self.icons),
             ("GET", re.compile(r"^/api/boss/icon\.png$"), self.icon),
             *self.deliveries.routes(),
+            ("GET", re.compile(r"^/api/boss/(?P<quest>[^/]+)/timeline-summary$"), self.timeline_summary),
             ("GET", re.compile(r"^/api/boss/(?P<quest>[^/]+)/(?P<section>terrain|shops|weapons|behavior|timeline)$"), self.section),
             ("GET", re.compile(r"^/api/boss/(?P<quest>[^/]+)$"), self.show),
             ("POST", re.compile(r"^/api/boss/drafts$"), self.edit),

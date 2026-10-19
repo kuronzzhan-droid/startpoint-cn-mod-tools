@@ -301,8 +301,8 @@
           "maximum": 1000
         },
         "trialThreshold": {
-          "type": "integer",
-          "minimum": 1,
+          "type": "number",
+          "exclusiveMinimum": 0,
           "maximum": 2147483647
         },
         "atlasBudget": {
@@ -391,6 +391,8 @@
                     {"required": ["icon"]},
                     {"required": ["price"]},
                     {"required": ["stock"]},
+                    {"required": ["availableFrom"]},
+                    {"required": ["availableUntil"]},
                     {"required": ["rewards"]}
                   ]
                 }
@@ -493,6 +495,8 @@
         "icon": {"type": "string", "minLength": 1, "maxLength": 240},
         "price": {"type": "array", "minItems": 1, "maxItems": 4, "items": {"$ref": "#/$defs/bossMaterialCost"}},
         "stock": {"type": "integer", "minimum": -1, "maximum": 2147483647},
+        "availableFrom": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}([ T][0-9]{2}:[0-9]{2}:[0-9]{2})?$"},
+        "availableUntil": {"type": ["string", "null"], "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}([ T][0-9]{2}:[0-9]{2}:[0-9]{2})?$"},
         "rewards": {"type": "array", "minItems": 1, "maxItems": 6, "items": {"$ref": "#/$defs/bossShopReward"}}
       }
     },
@@ -547,7 +551,7 @@
                     "additionalProperties": false,
                     "required": ["type", "amount"],
                     "properties": {
-                      "type": {"type": "integer", "enum": [0, 1, 2]},
+                      "type": {"type": "integer", "enum": [1, 2]},
                       "amount": {"type": "integer", "minimum": 1, "maximum": 2147483647}
                     }
                   }

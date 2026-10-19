@@ -82,11 +82,14 @@ def isolate_enemy(state, document, enemy):
     return alias, path, s.parse_rows(leaf(state.table(enemy['table']), path))[0]
 
 
-def set_owned_resource(state, logical, raw):
-    current = state.raw(logical)
-    owned = state.original.get(logical) is None and any(
+def owns_resource(state, logical):
+    return state.original.get(logical) is None and any(
         change['table'] == logical and change.get('resource') and change['old'] is None
         for change in state.changes)
-    if current is not None and not owned:
+
+
+def set_owned_resource(state, logical, raw):
+    current = state.raw(logical)
+    if current is not None and not owns_resource(state, logical):
         raise ValueError(f'behavior resource collision: {logical}')
     state.set_raw(logical, raw, new=current is None)

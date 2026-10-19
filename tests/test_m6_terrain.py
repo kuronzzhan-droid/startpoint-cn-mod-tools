@@ -22,12 +22,14 @@ def state(tmp_path):
     tree = decode(original.files["battle/terrain/test.amf3.deflate"])
     for obj in tree["layers"][0]["objects"]:
         obj.update(x=46, y=0, width=16, height=16)
+        if obj["type"] == "BOUNDS":
+            obj.update(width=300, height=300)
         if obj["type"] == "CUSTOM_POSITION":
             obj.update(x=128, y=100)
     tree["layers"][0]["objects"] += [
         {"type": "GATE", "x": 127, "y": 42, "width": 20, "height": 20},
         {"type": "TRANSIT", "x": 111, "y": 144, "width": 50, "height": 50},
-        {"type": "CUSTOM_POSITION", "name": "unused", "x": 10, "y": 10, "width": 16, "height": 16}]
+        {"type": "CUSTOM_POSITION", "name": "unused", "x": 50, "y": 10, "width": 16, "height": 16}]
     original.files["battle/terrain/test.amf3.deflate"] = encode(tree)
     other = copy.deepcopy(tree)
     other["layers"][0]["objects"][0]["y"] = 352
@@ -125,12 +127,13 @@ def test_invalid_targets_and_coordinates_are_rejected(state, payload):
     assert not state.client
 
 
-def test_preexisting_derived_resource_is_not_overwritten(state):
+def test_preexisting_derived_resource_gets_new_generation_without_overwrite(state):
     target = "battle/terrain/studio/hard_multi_1006_1.amf3.deflate"
-    state.base.files[target] = encode({"layers": []})
-    with pytest.raises(ValueError, match="collision"):
-        apply_terrain(state, "1006001", {"operation": "terrain_position", "layer": "0", "action": "update", "name": "p0", "x": 1, "y": 1})
-    assert not state.client
+    original = encode({"layers": []})
+    state.base.files[target] = original
+    apply_terrain(state, "1006001", {"operation": "terrain_position", "layer": "0", "action": "update", "name": "p0", "x": 120, "y": 100})
+    assert target not in state.client and state.base.files[target] == original
+    assert show(state)["terrain"]["logical"] == target.replace(".amf3", "_v2.amf3")
 
 
 def test_append_with_different_recommended_element_cannot_reuse_source_preload(state):

@@ -44,6 +44,7 @@ def fixture_editor(tmp_path):
     events["2081"] = events["1006"]
     raw.files[s.EVENT] = codec.build_node(events)
     objects = [{"type": t} for t in ("BOUNDS", "WALL1", "RETURN_LANE_GUIDE")]
+    objects[0].update(x=0, y=0, width=320, height=352)
     objects += [{"type": "CUSTOM_POSITION", "name": "p0"}] + [{"type": "COFFIN"}] * 9
     raw.files["battle/terrain/test.amf3.deflate"] = encoded(
         {"layers": [{"type": "objectgroup", "name": "0", "objects": objects}]})

@@ -102,10 +102,14 @@ def general_model(view, enemy, graph):
                        'next': s.cell(cells, 31), 'back': s.cell(cells, 40), 'trial': trial,
                        'invincible_by_phase_change': s.cell(cells, 15) == 'true',
                        'position': s.cell(cells, 50), 'actions': actions, **graph.summary(roots)})
+    from .behavior_positions import watch_programs
+    nonmarker_roots = [*programs(s.cell(row, 109)), *watch_programs(view, enemy['code'], routine)]
+    preload_roots = [*nonmarker_roots, *[p for value in slots.values() for p in programs(value)]]
     return {'kind': 'general', 'routine': routine, 'initial_state': s.cell(row, 43),
             'marker': s.cell(row, 25), 'slots': [{'slot': k, 'program': v} for k, v in slots.items()],
             'states': states, 'marker_missing': timeline.get('missing', False),
-            'preload': graph.summary([p for value in [s.cell(row, 109), *slots.values()] for p in programs(value)])}
+            'preload_roots': list(dict.fromkeys(nonmarker_roots)),
+            'preload': graph.summary(preload_roots)}
 
 
 def standard_model(view, enemy, graph):
@@ -156,7 +160,7 @@ def _display(value):
 def read_behavior(view, document):
     graph, entries, seen = Programs(view), [], set()
     for enemy in document.get('enemies', []):
-        key = enemy.get('code'), tuple(enemy.get('path') or [])
+        key = enemy.get('code'), tuple(enemy.get('path') or []), str(enemy.get('wave', '0'))
         if key in seen or enemy.get('kind') != 'boss':
             continue
         seen.add(key)

@@ -1,13 +1,13 @@
 """Marker-slot replacements and conservative parameter edits on cloned kits."""
 from __future__ import annotations
 
-import copy
 import math
 
 from wf.rules.boss_preload import programs, walk, _expected, tier
 from . import schema as s
 from .behavior_clone import identity, isolate_enemy, select_enemy, set_owned_resource
 from .behavior_guards import borrowed_check, check_behavior_positions
+from .behavior_damage import edit_damage
 from .behavior_model import Programs, STATES, marker, read_behavior
 from .behavior_wire import compress, decode_wire, encode_wire, write_tree
 from .edit_state import leaf
@@ -35,44 +35,6 @@ def _programs_at(view, row, slot):
     return roots
 
 
-def _scale(value, multiplier):
-    if isinstance(value, dict) and set(value) == {'min', 'max'}:
-        return {key: float(number) * multiplier for key, number in value.items()}
-    if isinstance(value, list) and value and all(isinstance(item, dict) and set(item) == {'min', 'max'} for item in value):
-        return [_scale(item, multiplier) for item in value]
-    if isinstance(value, list) and value[:1] == ['SLv'] and len(value) == 2:
-        return ['SLv', _scale(value[1], multiplier)]
-    raise ValueError('damage multiplier needs an existing constant SLv min/max expression')
-
-
-def edit_damage(state, row, slot, multiplier, owner):
-    roots = _programs_at(state, row, slot); graph = Programs(state); closure = graph.closure(roots)
-    if graph.missing:
-        raise ValueError('damage DSL closure missing: ' + ', '.join(sorted(graph.missing)))
-    mapped = {program: 'battle/action/enemy/action/studio_behavior/' + identity(owner, program)
-              for program in closure}
-    changed = 0
-    def rewrite(value):
-        nonlocal changed
-        if isinstance(value, str):
-            return ','.join(mapped.get(part, part) for part in value.split(','))
-        if isinstance(value, dict):
-            return {key: rewrite(item) for key, item in value.items()}
-        if isinstance(value, list):
-            value = [rewrite(item) for item in value]
-            if value[:1] == ['CreateNormalAttack']:
-                value[6] = _scale(value[6], multiplier); changed += 1
-            return value
-        return value
-    candidate = {mapped[p]: rewrite(copy.deepcopy(tree)) for p, tree in closure.items()}
-    if not changed:
-        raise ValueError('selected action has no editable CreateNormalAttack multiplier')
-    for program, tree in candidate.items():
-        path = program + '.action.dsl.amf3.deflate'
-        set_owned_resource(state, path, compress(write_tree(tree)))
-    row[110 + slot] = ','.join(mapped[p] for p in roots)
-
-
 def _preload_shims(state, row, closure, owner, level):
     spawned = {node[1][1] for tree in closure.values() for node in walk(tree)
                if isinstance(node, list) and len(node) > 1 and node[0] == 'SpawnFunnel'
@@ -82,11 +44,12 @@ def _preload_shims(state, row, closure, owner, level):
         frow = tier(funnels.get(code), level)
         if not frow:
             raise ValueError(f'C8016: missing borrowed Funnel {code}')
-        graph = Programs(state); trees = graph.closure([p for cell in frow for p in programs(cell)])
+        roots = [p for cell in frow for p in programs(cell)]
+        graph = Programs(state); trees = graph.closure(roots)
         if graph.missing or not trees:
             raise ValueError(f'C8016: missing Funnel preload closure {code}')
         from .behavior_guards import effect_dependencies, reject_loops
-        reject_loops(trees)
+        reject_loops(trees, roots=roots)
         effect_dependencies(state, trees, int(frow[0]))
         if any(isinstance(node, list) and node and node[0] in ('SpawnFunnel', 'SpawnAlterEgo')
                for tree in trees.values() for node in walk(tree)):
@@ -118,9 +81,10 @@ def _hit_count(value):
     return int(value)
 
 
-def _general_parameters(state, row, request, owner):
+def _general_parameters(state, row, request, owner, code, current_path=None):
     if 'damageMultiplier' in request:
-        edit_damage(state, row, request['slot'], request['damageMultiplier'], owner)
+        edit_damage(state, row, request['slot'], request['damageMultiplier'], owner,
+                    roots=_programs_at(state, row, request['slot']), current_path=current_path)
     if not any(key in request for key in ('intervalFrames', 'trialThreshold')):
         return
     routine = row[42]; tree = state.table(STATES).get(routine)
@@ -144,6 +108,8 @@ def _general_parameters(state, row, request, owner):
     target = identity(owner, 'routine')
     if routine != target:
         state.set_leaf(STATES, [target], tree, new=True)
+        from .behavior_identity import clone_routine_watches
+        clone_routine_watches(state, code, routine, target)
     state.set_leaf(STATES, [target, *path], join(cells)); row[42] = target
 
 
@@ -209,14 +175,14 @@ def apply_behavior(state, quest, request):
         if graph.missing:
             raise ValueError('C8016: replacement DSL closure missing: ' + ', '.join(sorted(graph.missing)))
         from .behavior_guards import reject_loops
-        reject_loops(native_closure)
+        reject_loops(native_closure, roots=roots)
         if donor not in (old_code, request['enemyCode']):
             closure, _ = borrowed_check(state, roots, row)
             _preload_shims(state, row, closure, owner, enemy['level'])
         row[110 + request['slot']] = ','.join(roots)
     elif request['operation'] == 'behavior_parameters':
         if enemy['table'] == s.GENERAL_BOSS:
-            _general_parameters(state, row, request, owner)
+            _general_parameters(state, row, request, owner, alias, current_path=path)
         else:
             _standard_parameters(state, row, request, owner)
     else:

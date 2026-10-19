@@ -148,3 +148,78 @@ python -B scripts/check_no_hardcoded_paths.py --json work/m6/path-scan.json
 prepush 保留了已知警告，没有把 exit 0 写成零警告：地形为 ERROR 0 / WARN 43 / INFO 10；武器克隆 WARN 29，其余商店武器 WARN 28。隔离快照没有 kulo#35 检查要求的服务端编译入口，该子项仍待验证；没有为消除提示构建或操作服务器。
 
 三人图集估计继续保留 M5.1 的敌方下界和队伍输入完整性状态。本次没有三队完整角色/技能/PF 输入，没有真机、三人房、服务器部署或实际购买扣费验证。所有运行时结论均保持未执行；这些事项不在本任务授权范围内。
+
+## M6.1：审查修复与时间线接口
+
+本节对应 M6.1 任务书及 M6 审查意见，起点为 `1fb6633`，分支为 `refactor/m5-boss`。实现、测试输出与本地提交均限本 worktree；其它目录只读，未操作另一集成 worktree，未 push、部署、修改业务服务器或操作设备。新临时脚本、日志、回归产物与草稿保存在忽略目录 `work/m61/`，没有覆盖 M6 原验收证据。长期接口说明已更新到 `docs/studio/boss-authoring.md`。
+
+### 修复范围与反证
+
+| 任务项 | 最终行为与反证覆盖 |
+|---|---|
+| H1 watch | routine 改名完整复制自身 watch 子树，保留相位跳转及客户端从 watch 解析的预载。覆盖 interval/trial 两种参数、routine 与 code 同名边界，以及指定 boar 副本的实际预览、保存、编译与 watch 回读。 |
+| H2 站位 | 合并 GeneralBoss、watch、递归 General Funnel 动作中的 CustomPosition，与 routine/esdl 站位共用门禁；同波同首领不同档位取并集。借招到缺少 IL* 的地形、删除被引用站位均拒绝；扫描输入不完整时拒绝删除。 |
+| M1 商品时间 | shop_add/shop_edit 可设置 availableFrom/Until；新增默认 2000-01-01 起、无结束。两端同步，日期非法/倒置阻断，过期来源给出非阻断提示。 |
+| M2 武器 | 克隆保留 materialByEquipment 限制及无关原文字节；受限来源缺证据拒绝。kind 校验使用交付所选 client_profile 或显式 provides 的实际 SWF，覆盖不同档案结果与未知客户端反例。 |
+| M3 坐标 | add 缺少任一 x/y 拒绝；add/update 与换图后的站位完整矩形必须在该层 BOUNDS 内。覆盖非零原点、四边与尺寸越界、缩窄换图及 preview/compile 拒绝。 |
+| L1 图集 | C8004 认可 item/item_icon/item_sec/scene/general 四类实际加载图集，仍拒绝缺成员或缺 PNG。 |
+| L2 文案 | 商店/武器名称和描述拒绝半角逗号，中文逗号允许；克隆强化描述 c6 同步。 |
+| L3 小数 | 客户端 TrialDamageCheckParams.percentage 是 Float，schema 接受 number；HTTP/编译按试炼种类校验，DamageCheck 允许 0 < percentage ≤ 100 的小数，HitCountCheck 和帧间隔继续拒绝小数。 |
+| L4 userCost | schema 与直接编辑拒绝 type 0；克隆来源阶段继承 type 0 也拒绝。 |
+| L5 二次地形 | 派生 ID/路径按 _v2、_v3 等序号避让旧交付资源；同草稿复用当前代。连续三次模拟上链后再编辑、再追加波次及保存编译保持通过。 |
+| L6 倍率/Repeat | 私有槽重复倍率复用克隆；其它 boss/档位/槽/初始化/watch/Funnel 引用受保护。Repeat 按嵌套、跨程序及显式重复入口累计，999×999、600+600、根既被调用又独立触发均拒绝。 |
+| L7 加载证据 | 新裸路径动作的 preview/compile 返回非阻断 boss.behavior-loading「待验证」，时间线亦提示。源码推断与静态回读不称为真机加载通过。 |
+| 时间线 | GET /api/boss/<关卡>/timeline-summary 返回 moves/name/label/timeline。逐招复用 build_timeline；状态相对触发帧、hiddenAt/erasedAt/motions 一起平移，未知触发保持动作相对帧。同首领不同波次、初始化/watch 根入口、缺失 DSL、Host 守卫和候选草稿读取均有反证。 |
+
+本次独立审查又实证发现并修复两个倍率/循环边界：跨 boss 借用已克隆动作后再调倍率会串改借招方；roots=[a,b] 且 a 调用 b，或 roots=[b,b] 时会漏算总执行次数。修复后第三方动作字节保持，1200 次展开明确拒绝。另修复时间线跨波次去重、绝对事件时刻遗漏平移和 GeneralBoss 属性码到内部属性码的换算。
+
+### 当前数据与历史回归
+
+236 视图完整枚举 1010 个 GeneralBoss 档位，其中 146 个带自身 routine watch。以这 146 档真实数据分别投影执行参数修改及 routine 改名，新 routine 下的 watch 子树与原树 146/146 完全相等；真实关卡能否编辑另按下段入口回归判定。471 个现有关卡的站位扫描新增阻断为 0。12 个档位的上界动作闭包存在输入缺失，不能宣称 1010 个档位的所有动作证据均完整；按实际关卡敌人等级选择档位后，470 关的 GeneralBoss/Funnel 命名站位引用证据完整，`practice:1021` 的 4 个原生 Funnel 动作缺失，明确返回非阻断「待验证」。此状态不推断成缺少命名站位，但删除站位必须先补齐引用证据，不能借待验证绕过删除门禁。
+
+82 个领主战 watch 候选均实际执行：18 个可编辑战斗成功，覆盖 36 个敌人出现位置；1 个 BothBoss 聚合入口覆盖另外 2 个出现位置，被既有入口门禁拒绝；其余 63 个身份锁定候选被拒绝。所有拒绝均无候选改动。因此审查统计的 38 个未身份锁定出现位置全部得到验证，其中 36 个编辑成功、2 个由入口门禁阻断。指定 `boss_battle:1/13/4` 的 `boar_rider_multi_80` 改为 intervalFrames=45，实际 preview、保存、compile 均通过；新 routine 下完整保留原 watch，包括 `phase1_giga_lost_ready` 跳转。
+
+入口回归脚本最初将 9 个五重相关候选都预判为聚合入口，末尾数量断言与真实结果不符；保留该次日志及脚本，随后修正验证脚本分类，并独立读回全部 82 条结果、boar 预览/编译及原 watch SHA，核验通过。此处只修正验证脚本断言，产品源码未变，未把拒绝项记作编辑成功。
+
+ghost_fox 真实数据反证完成 5 案，每案先用同源合法 HP 草稿验证 preview、保存、compile 正向通过，再分别验证负请求的 preview/compile 都拒绝。自然关卡 `boss_battle:1/19/4` 删除 IL1 返回 C14102。精确 IL2 案只将该关卡的 field_data 单格内存投影为真实 `rush_05_ghost_fox`，其原生地形、站位及 DSL 全部保持真实字节，删除 IL2 返回 C14102；这属于真实数据投影，不称为自然可选关卡。
+
+另外 3 案把真实 rush 槽 26/27、multi80 槽 31 借给 boar，都在 preview/compile 被既有 C8016 分身预载门禁先行拒绝。扫描到的 14 个 ghost_fox 含 CustomPosition 的真实槽/档闭包全部带 SpawnAlterEgo，因此不能把这些拒绝冒充新增站位门禁的直接证据，也没有删除真实 DSL 节点来绕过门禁。跨首领借招缺少 IL2 时的新增站位拒绝由 `tests/test_m61_behavior_positions.py` 独立反证覆盖。真实反证汇总见 `work/m61/behavior/ghost-fox/summary.json`，外层退出码 0。
+
+真实时间线只读调用 4/4 返回 200：boar、光废龙、maou、hard_multi:1006/1 分别返回 45、136、94、171 个招式及 920、1320、815、1519 个事件；没有创建草稿。接口读取当前候选，不进行战斗模拟。
+
+历史 223 本次回归 3/3 成员逐字节一致。历史 221 从四角色各七步骤完整源资产重建，11 个归档共 310/310 成员逐字节一致、差异 0；分层清单回读 310/310 一致，旧清单语义一致。11/11 归档排除 DOS 时间戳后相同；不声称原始 ZIP SHA256 全同。两项外层退出码均为 0。报告位于 `work/m61/history/`。
+
+### 最终验证与证据
+
+完整 `python -B -m pytest` 已结束：**4948 passed、354 skipped、26 warnings，exit 0**，pytest 用时 948.47 秒。跳过项主要依赖未配置的外部客户端/服务端源码、live store、历史资产及 POSIX/符号链接能力；本次没有把跳过项计作通过。26 条警告均来自旧环境变量 `WF_SERVER_DIR`/`WF_TARGET_STORE` 的弃用提示。
+
+测试启动源码提交为 `253d4f2`；运行后逐项核对 1713 个 Python/schema 文件 SHA256，源码未变，随后仅补文档和证据摘要。原始终端计数与 JUnit 计数分别保存，避免 unittest.subTest 的额外 report 数混入终端通过数。
+
+路径扫描：**2402 个文本文件，0 项命中**。全仓 `bash scripts/check-hygiene.sh --all` 已通过，最终文档另执行暂存区卫生检查及 `git diff --check`。
+
+完整证据摘要及 SHA256 索引见 [m61-validation.json](docs/m6/m61-validation.json)。重要本地证据：
+
+- `work/m61/behavior/verified/summary.json`、`watches.json`、`quests.json`：1010/146 档位及 471 关完整扫描。
+- `work/m61/behavior/verified/integration-summary.json`、`watch-entries.json`、`boar-preview.json`、`boar-compiled.json`：真实领主战入口和指定 boar 编译回读。
+- `work/m61/behavior/verified/integration-result-check.json`：入口分类修正后的独立结果核验。
+- `work/m61/behavior/source-evidence.json`：watch 客户端取键/预载与 DamageCheck Float 的源码摘要。
+- `work/m61/behavior/ghost-fox/summary.json`、`exit.json`、`projection.json`、`dsl-provenance.json`：5 案真实数据反证、原动作 SHA 和投影边界。
+- `work/m61/timeline/summary.json`：真实接口结果及响应摘要。
+- `work/m61/history/replay221.json`、`replay223.json`、`exit.json`：本次历史回归。
+- `work/m61/full.log`、`full.xml`、`full-exit.json`：完整 pytest；`test-source-snapshot.json` 核对运行时与最终源码未变。
+- `work/m61/path-scan.json`、`hygiene-all.log`：路径和提交卫生。
+
+本地提交按主题拆分：
+
+| 主题 | 提交 |
+|---|---|
+| watch 克隆与站位闭包 | `88ebbd4`、`b6c20d7`、`5022bf1`、`ba17239` |
+| 站位边界与地形版本 | `bb139a0`、`10d8c6f` |
+| 商品时间、图集与武器限制 | `7183b2d`、`8175102` |
+| 时间线与 DamageCheck | `ff340ac`、`6676aae`、`e3c78c0`、`5e85be1` |
+| 加载证据与共享动作隔离 | `c0519c8`、`253d4f2` |
+| 持续接口文档 | `e8f975f` |
+
+本节及验证摘要另作本地文档提交，未 push。
+
+所有结论为本地代码、静态客户端档案、候选重放或历史字节证据。未做真机加载、实际战斗、三人房、实际购买扣费或业务服务器部署；不把这些未执行事项写成通过。

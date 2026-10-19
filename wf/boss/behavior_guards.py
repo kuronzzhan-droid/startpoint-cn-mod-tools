@@ -7,31 +7,10 @@ from wf.rules.catalog import result
 from . import schema as s
 from .atlas import _sheet
 from .behavior_model import Programs
+from .behavior_limits import reject_loops
 from .esdl import decode_esdl
 
 COLORS = {1: 'red', 2: 'blue', 3: 'yellow', 4: 'green', 5: 'white', 6: 'black', 7: 'colorless'}
-
-
-def reject_loops(closure):
-    edges = {}
-    for program, tree in closure.items():
-        edges[program] = {p for item in walk(tree) if isinstance(item, str) for p in programs(item)}
-        for node in walk(tree):
-            if isinstance(node, list) and node and node[0] == 'Repeat':
-                if len(node) < 3 or not isinstance(node[2], (int, float)) or not 0 < node[2] < 1000:
-                    raise ValueError(f'borrowed infinite/unbounded Repeat is forbidden: {program}')
-    visiting, done = set(), set()
-    def visit(program):
-        if program in visiting:
-            raise ValueError(f'borrowed recursive DSL cycle is forbidden: {program}')
-        if program in done:
-            return
-        visiting.add(program)
-        for child in edges.get(program, ()):
-            visit(child)
-        visiting.remove(program); done.add(program)
-    for program in edges:
-        visit(program)
 
 
 def effect_dependencies(view, closure, element):
@@ -66,7 +45,7 @@ def borrowed_check(view, roots, receiver_row):
     graph = Programs(view); closure = graph.closure(roots)
     if graph.missing:
         raise ValueError('C8016: borrowed DSL preload missing: ' + ', '.join(sorted(graph.missing)))
-    reject_loops(closure)
+    reject_loops(closure, roots=roots)
     # Standard/zako summons and state-dependent foreign mechanisms cannot be
     # inferred from a bare program. General Funnel is handled with fixed shims.
     for program, tree in closure.items():
@@ -88,6 +67,13 @@ def check_behavior_positions(view, document):
     source, issues, checked = CandidateView(view), [], 0
     waves = {str(wave.get('name')): {obj.get('name') for obj in wave.get('objects', [])
              if obj.get('type') == 'CUSTOM_POSITION'} for wave in document.get('terrain', {}).get('waves', [])}
+    from wf.rules.boss_references import routine_positions
+    required, failures, pending = routine_positions(document, view)
+    issues.extend(failures)
+    for (wave, code, routine), positions in required.items():
+        checked += 1
+        for name in sorted(positions - waves.get(wave, set())):
+            issues.append(f'{code}: routine/action 引用缺失站位 {name}（C14102）')
     seen = set()
     for enemy in document.get('enemies', []):
         if enemy.get('table') != s.STANDARD_BOSS or str(enemy.get('wave')) not in waves:
@@ -104,6 +90,7 @@ def check_behavior_positions(view, document):
             continue
         for name in sorted(_absolute_positions(decode_esdl(raw)['tree']) - waves[str(enemy['wave'])]):
             issues.append(f'{enemy["code"]}: esdl 引用缺失站位 {name}（C14102）')
-    return result('boss.behavior-positions', '问题' if issues else '满足' if checked else '不适用',
-                  ('逐波核对 StandardBoss esdl 初始、复活与移动命名站位' + (': ' + '; '.join(issues) if issues else '')), blocking=bool(issues), issues=issues, checked=checked,
-                  evidence_nature='源码推断', source='TypePackerResource2 PositionKind.Absolute / SimpleState.movements', rule_version='1.0')
+    return result('boss.behavior-positions', '问题' if issues else '待验证' if pending else '满足' if checked else '不适用',
+                  ('逐波核对 GeneralBoss/Funnel 动作闭包及 StandardBoss esdl 命名站位' + (': ' + '; '.join(issues) if issues else '')), blocking=bool(issues), issues=issues, checked=checked,
+                  limitations=pending, evidence_nature='源码推断',
+                  source='CustomPosition / PositionKind.Absolute / routine c50', rule_version='1.1')

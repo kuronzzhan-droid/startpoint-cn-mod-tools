@@ -82,5 +82,15 @@ def clone_self_watches(state, code, alias):
     if node is not None:
         if not isinstance(node, dict):
             raise ValueError(f'malformed GeneralBoss self watch: {code}')
-        state.set_leaf(WATCH, ['1', alias],
-                       {alias if key == code else key: value for key, value in node.items()}, new=True)
+        # These keys identify routines, not enemy identities. A routine whose
+        # name happens to equal the old enemy code must keep that name too.
+        state.set_leaf(WATCH, ['1', alias], node, new=True)
+
+
+def clone_routine_watches(state, code, routine, target):
+    """Keep the client's watch[1][code][routine] lookup reachable after rename."""
+    if routine == target:
+        return
+    node = _table(state, WATCH).get('1', {}).get(code, {})
+    if routine in node:
+        state.set_leaf(WATCH, ['1', code, target], node[routine], new=True)

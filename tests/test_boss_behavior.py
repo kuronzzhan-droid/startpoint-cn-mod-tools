@@ -231,7 +231,8 @@ def test_initial_behavior_resource_collision_is_rejected(tmp_path, suffix):
     editor = behavior_editor(tmp_path)
     owner = identity('hard_multi:1006/1', 'org')
     if suffix == 'damage':
-        logical = 'battle/action/enemy/action/studio_behavior/' + identity(owner, 'battle/action/one') + '.action.dsl.amf3.deflate'
+        scope = identity(owner, 'damage-slot:1')
+        logical = 'battle/action/enemy/action/studio_behavior/' + identity(scope, 'battle/action/one') + '.action.dsl.amf3.deflate'
     else:
         logical = 'battle/enemy/boss/' + identity(owner, 'esdl') + '.esdl.amf3.deflate'
     original = compress(write_tree({'sentinel': 123}))

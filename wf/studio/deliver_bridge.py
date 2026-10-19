@@ -75,11 +75,13 @@ def _draft(store, cid, source):
     return changeset
 
 
-def compile_draft(source, store, changeset, *, server_dir=None):
+def compile_draft(source, store, changeset, *, server_dir=None, client_profile=None, provides=None):
     """Pure compilation: return stored client bytes and asserted server mirrors."""
     if changeset.get("subjectKind") == "boss":
         from .boss import compile_boss
-        boss = compile_boss(source, store, changeset, server_dir=server_dir)
+        evidence = {key: value for key, value in (("client_profile", client_profile), ("provides", provides))
+                    if value is not None}
+        boss = compile_boss(source, store, changeset, server_dir=server_dir, **evidence)
         return ({("common", logical): raw for logical, raw in boss["client"].items()},
                 boss["servers"], boss["server_before"], boss["changes"], boss["checks"])
     from .deliver_media import compile_media
@@ -207,7 +209,9 @@ def build_draft(cid: str, *, from_version: str, to_version: str, out: Path,
     baseline = open_baseline(from_version, to_version, **options)
     source = StudioSource(baseline)
     changeset = _draft(store, cid, source)
-    compiled = compile_draft(source, store, changeset, server_dir=options.get("server_dir"))
+    compiled = compile_draft(source, store, changeset, server_dir=options.get("server_dir"),
+                             client_profile=selected_profile if provides is not None else False,
+                             provides=provides)
     baseline.verify()
     filename = _stage(out, changeset, source, compiled, to_version)
     _step(progress, cancel, "deliver")
