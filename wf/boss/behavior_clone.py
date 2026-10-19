@@ -43,6 +43,8 @@ def isolate_enemy(state, document, enemy):
     alias = code if owned else identity(quest['selector'], code)
     table = state.table(enemy['table'])
     if alias != code:
+        from .behavior_identity import require_rename_safe
+        require_rename_safe(state, code)
         if alias in table:
             raise ValueError(f'behavior enemy ID collision: {alias}')
         state.set_leaf(enemy['table'], [alias], table[code], new=True)
@@ -54,10 +56,8 @@ def isolate_enemy(state, document, enemy):
             variable = state.table(variables).get(code)
             if variable is not None:
                 state.set_leaf(variables, [alias], variable, new=True)
-            from wf_five_boss_v2 import watch_copies
-            watches = 'master/battle/boss/general_enemy_watch.orderedmap'
-            for watch_path, value in watch_copies(state.table(watches), code, alias):
-                state.set_leaf(watches, watch_path, value, new=True)
+            from .behavior_identity import clone_self_watches
+            clone_self_watches(state, code, alias)
     zone_id = identity(quest['selector'], 'zone')
     fd_id = identity(quest['selector'], 'field_data')
     fd = list(document['field_data']['row']); zone = state.table(s.ZONE)[document['zone']['id']]

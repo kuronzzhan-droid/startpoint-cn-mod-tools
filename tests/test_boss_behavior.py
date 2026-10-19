@@ -21,6 +21,11 @@ from test_boss_model import csv_row, row
 
 def behavior_editor(tmp_path):
     editor = fixture_editor(tmp_path); view = editor.source.view
+    from wf.boss.behavior_identity import GENERAL_FUNNEL, STANDARD_FUNNEL, WATCH
+    view.files[GENERAL_FUNNEL] = codec.build_node({'unrelated': {'100': row(33, {})}})
+    view.files[WATCH] = codec.build_node({'2': {'unrelated': {'r': {'2': {'other': {'0': '0'}}}}}})
+    view.files[STANDARD_FUNNEL] = codec.build_node({'unrelated': {'100': 'battle/enemy/funnel/unrelated'}})
+    view.files['battle/enemy/funnel/unrelated.esdl.amf3.deflate'] = compress(write_tree({}))
     tables = codec.parse_node(view.files[s.GENERAL_BOSS])
     for code in ('org', 'donor'):
         tables[code] = {'100': row(161, {0: 4, 1: code, 25: 'battle/marker/test', 41: 'p0',
