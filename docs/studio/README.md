@@ -328,3 +328,31 @@ python -m wf.studio.draft scratch-list | scratch-show <sid>
 ```
 
 测试：`tests/test_studio_scratch.py`。
+
+## L2：编排级动作预览（技能 / 强化弹射 / 629）
+
+入口：角色页「技能 › 动作预览」；「像素 › 强化弹射预览」是同一个播放器，默认选中强化弹射；BOSS 工坊副本页多一个「出招预览」。只读，不写草稿。
+
+后端 `wf/studio/timeline.py` 把一棵 ActionDsl 树按客户端求值顺序排成 60 帧/秒的事件表（按帧排队处理，`HideEffect` / `RemoveEvent` / `EraseHitArea` 只影响当时已有的东西）：
+
+- 特效（ShowEffect）：路径（含 ResolveByElement 按角色属性派生）、挂载主体、坐标系、偏移、旋转、缩放（DSL 写了就用 DSL，没写用 parts 的 `s`）、图层、寿命。寿命按特效 timeline 推出播放头：`PlayOnlyFirstSequence` 播完第一段；`UntilTargetTerminates` 跟挂载的判定区/参考点同寿；终止时有 `end` 段就跳去播完，没有就当帧删除。特效 timeline 里的音效按播放头落到「声音」轨道。
+- 判定区（CreateHitArea 26 参）：形状（圆/矩形/扇形；3600×3600 标「全屏惯用写法」）、对齐、阵型（NWay / Line 按客户端公式展开）、寿命、期望命中数与最小间隔（`lifetime/(N−0.5)`）、每目标上限、伤害归属（根头部 buffTargetAs，判定区 params[23] 覆盖；0=按来源自动：技能/629→技能、PF→强化弹射；101–133 标「转换」）。MoveHitArea 按客户端速度公式画移动。
+- 动作：停球、移动球、隐藏角色、震屏、抑制强化弹射、通知 PF 结束；状态：赋予/移除状态、治疗、技能量、Fever 等。
+- 等待/循环：Wait n 帧后执行；Repeat(interval, count) 当帧起每 interval 帧一次，最多展开 12 次，其余注明。
+- 子程序：多球 / 目标攻击 / 龙卷风参数里的 DSL 路径解析成子时间轴（最多 2 层，循环引用只报不展开），可在播放器里打开。
+- 只标注不模拟：命中（命中块在示意时刻展开一次：跟球走的判定区取寿命中点，其余取创建帧）、目标选取（绑定 1 个代表）、分支（全部分支都画，可逐条关掉）、碰撞事件（命中分支 +1 帧，超时分支在窗口末尾）。
+- 不丢节点：不在 112 Command / 6 Event 构造表里的名字列为「未知节点」（注明客户端会静默解成 Trace/Wait），合法但没有画面模型的命令进「其它」轨道并计数；同时报主体不在作用域（C16103）、CD 挂在球/角色/敌人上（U_4f5401）、裸 Block 根（F1009）、形状越界。
+
+`wf/studio/effect_render.py` 烘焙 flatomo parts：展开根组每帧的绘制指令（矩阵、alpha、混合模式），把用到的贴图去旋转重新打包。浏览器按「容器（位置·旋转·缩放）× 图层矩阵」画，贴图放在 `(-fx, -fy)`——图层原点是帧框左上角，镜像层跟着矩阵翻转（旧桌面渲染器的锚点 bug 在这里不存在）。颜色变换和 MovieClip 段未应用。
+
+| 方法 | 路径 | 作用 |
+|---|---|---|
+| GET | `/api/characters/<cid>/programs` | 技能各档、切换后技能、原生 PF（射击/剑士/辅助模板在 APK 内则标「无法预览」）、722/419 覆盖各档（forLevels=4 标「读第 3 槽，推定」）、629 能力技 |
+| GET | `/api/studio/timeline?path=&kind=skill\|pf\|ability_skill&cid=` | 事件表（lanes / events / arms / unknown / unmodeled / issues / subprograms） |
+| GET | `/api/studio/effect?path=`、`/api/studio/effect.png?path=` | 烘焙后的特效与贴图 |
+
+战场按 1080×1920 逻辑坐标：-1 场地中心 (540, 960)、-2 左上角 (0, 0)、球/自身默认 (540, 1380)、敌人 (540, 620)，球和敌人可拖动，球方向可调（EF 坐标系跟它走）。场地边界是估计值；小人按所选动作循环（DSL 不控制技能期间的小人动作）。
+
+BOSS「出招预览」请求 `GET /api/boss/<关卡>/timeline-summary`，期望 `{ "moves": [{ "name", "label"?, "timeline": <与 /api/studio/timeline 相同结构> }], "note"? }`；接口不存在时显示占位说明。
+
+测试：`tests/test_studio_timeline.py`（金标准事件表、伤害归属、未知节点、子程序与循环引用、循环上限与分支、作用域/坐标系检查、HideEffect 与碰撞分支、烘焙锚点；有真实视图时跑 111183 全部程序）。截图在仓库外 `l2-shots/`。

@@ -7,21 +7,23 @@ import { Notice } from "./common";
 import { InfoTip } from "./Delivery";
 import { PixelImport } from "./PixelImport";
 import { PixelPlayer } from "./PixelPlayer";
+import { SkillPreview } from "./TimelinePreview";
 import { PixelWorkshop, WORKSHOP_SUBS, WorkshopSub } from "./PixelWorkshop";
 import { readAsDataUrl } from "./workshopKit";
 
-export type PixelSub = "preview" | "replace" | WorkshopSub | "import";
+export type PixelSub = "preview" | "replace" | WorkshopSub | "import" | "timeline";
 
 const SUBS: { id: PixelSub; label: string; hint: string }[] = [
   { id: "preview", label: "预览", hint: "播放每个动作" },
   { id: "replace", label: "单动作替换", hint: "上传逐帧 PNG 或精灵图，替换一个动作" },
   ...WORKSHOP_SUBS,
   { id: "import", label: "整族导入", hint: "导入离线做好的整套小人文件（可带颜色表）" },
+  { id: "timeline", label: "强化弹射预览", hint: "强化弹射 / 技能的编排时间轴（L2），与「技能 › 动作预览」同一个播放器" },
 ];
 
 export function pixelSubs(scratch: boolean) {
   // A scratch character's「当前视图」is its base family: preview and single-action replace live in the workshop pages.
-  return scratch ? SUBS.filter((s) => s.id !== "preview" && s.id !== "replace") : SUBS;
+  return scratch ? SUBS.filter((s) => s.id !== "preview" && s.id !== "replace" && s.id !== "timeline") : SUBS;
 }
 
 export function PixelGroup({ characterId, sub, scratch, link }: {
@@ -39,6 +41,7 @@ export function PixelGroup({ characterId, sub, scratch, link }: {
       {active === "preview" ? <PixelPlayer characterId={characterId} />
         : active === "replace" ? <PixelImport characterId={characterId} />
         : active === "import" ? <FamilyImport cid={characterId} />
+        : active === "timeline" ? <SkillPreview characterId={characterId} prefer="pf" />
         : <PixelWorkshop characterId={characterId} sub={active as WorkshopSub} key={characterId + active} />}
     </div>
   );

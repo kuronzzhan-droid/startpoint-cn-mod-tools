@@ -11,6 +11,7 @@ import { InfoTip, useDeliveries } from "../Delivery";
 import { ChecksPanel } from "./BossChecks";
 import { BossParams, PreviewState } from "./BossParams";
 import { BossEncounter, BossRewards, HiddenQuests, Src } from "./BossRead";
+import { BossMovesPreview } from "../TimelinePreview";
 import {
   fiveTier, MODE_LABEL, QUEST_ELEMENTS, questElement, shortName, useBossDrafts, useBossList,
 } from "./bossModel";
@@ -19,6 +20,7 @@ const TABS = [
   { id: "encounter", label: "遭遇" },
   { id: "rewards", label: "奖励与商店" },
   { id: "params", label: "调整参数" },
+  { id: "moves", label: "出招预览" },
 ];
 
 const IDLE: PreviewState = { state: "idle", checks: null, ok: false };
@@ -109,7 +111,8 @@ export function BossDetail({ quest, tab }: { quest: string; tab?: string }) {
             <Notice kind="warn">这是五重决战的<strong>入口</strong>（BothBoss 路由），只读：它按两轮选择把玩家送进隐藏关，自己不是战斗内容，也不能作新建共同决战的模板。</Notice>
           ) : null}
           {doc.routing.kind === "BothBoss" && active === "encounter" ? <HiddenQuests doc={doc} /> : null}
-          {active === "encounter" ? <BossEncounter doc={doc} /> : active === "rewards" ? <BossRewards doc={doc} /> : null}
+          {active === "encounter" ? <BossEncounter doc={doc} /> : active === "rewards" ? <BossRewards doc={doc} />
+            : active === "moves" ? <BossMovesPreview quest={read.questId} /> : null}
           {/* Kept mounted so unwritten edits survive a look at 遭遇 / 奖励. */}
           <div class="boss-params-host" hidden={active !== "params"}>
             <BossParams doc={doc} questId={read.questId} list={list} drafts={drafts} onPreview={setPreview}

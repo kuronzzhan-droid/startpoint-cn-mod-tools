@@ -105,6 +105,9 @@ class StudioApp:
         from .boss_routes import BossRoutes
         self.boss = BossRoutes(self, server_dir, default_provides)
         self.routes.extend(self.boss.routes())
+        from .timeline_routes import TimelineRoutes
+        self.timelines = TimelineRoutes(self)
+        self.routes.extend(self.timelines.routes())
 
     # -- dispatch -------------------------------------------------------
     def dispatch(self, method: str, path: str, query: dict[str, list[str]], body=None) -> Response | None:
