@@ -1,0 +1,150 @@
+# M6：BOSS 工坊第二期后端交付报告
+
+本次在 `refactor/m5-boss` 分支、起点 `1507779` 上实施。写入范围限当前 worktree；冻结客户端版本链、服务端 JSON 镜像、客户端档案与反编译源码仅作只读输入。未访问 `m4-integrate`，未 push，未部署或启动业务服务器，未操作设备。
+
+临时脚本、草稿、日志、ZIP 与完整核验记录都保存在被忽略的 `work/m6/`，不纳入版本控制。长期接口说明见 [boss-authoring.md](docs/studio/boss-authoring.md)。本报告记录本地代码、静态检查和交付包证据，不将其写成运行中服务器或真机结果。
+
+## 功能与调用入口
+
+| 范围 | 已实现 |
+|---|---|
+| 地形读取 | objectgroup、BOUNDS、9 个复活位及队伍/成员映射、命名对象、CUSTOM_POSITION、Tiled 原坐标和运行时中心坐标、field_data/field/zone/波次绑定 |
+| 地形草稿 | 替换已有地形；新增、移动、删除命名站位；复制已有战斗层追加一波，自动补 field c7/c8 和转场对象 |
+| 商店读取与编辑 | 领主币和魂珠商品、分类、价格、币种、库存与周期限制；商品增删改同步客户端、category_map 和服务端分类内商品 |
+| 武器读取与编辑 | 装备、魂珠、强化词条、状态及到 120 级的材料链；克隆装备并改数值、词条、既有图标引用；编辑强化材料与 userCost |
+| 行为读取与编辑 | GeneralBoss routine/marker/触发槽及 StandardBoss EnemyDsl 状态、试炼、免伤引用；同首领换招、跨首领借招、间隔、伤害倍率、试炼阈值编辑 |
+| 无损编解码 | 客户端 TypePacker 导出的 104 个可达类型；可读字段、原始 wire 保存、JSON 往返及重编码 |
+| 统一入口 | schema、BossEditor 预览/保存/编译、既有 build_draft 桥、客户端档案、HTTP 与 CLI |
+
+只读 HTTP section 为 `terrain`、`shops`、`weapons`、`behavior`、`timeline`，路径为 `/api/boss/<URL编码的quest>/<section>`。CLI 为 `python -m wf.studio.draft ... boss <quest> --section <section>`。编辑继续使用原有草稿 POST 或 `--request`。`weapons` 和详情中的 `draftWeapons` 会显示已克隆但尚未上架的武器。
+
+代码按资源字节、地形对象与操作、商品、武器、行为模型、编解码、隔离及门禁拆分；没有把全部逻辑塞入 HTTP 路由。新请求仍走同一预览、重放与编译路径，未增加第二套交付器。
+
+## 数据保持与语义约束
+
+- 地形、field_data、zone、敌人和行为资源采用当前副本拥有的派生键或路径。共享原件不改；基线已有同名派生资源会拒绝。连续地形、场景、行为操作能够复用本草稿拥有的资源。
+- 换地形保留原 CUSTOM_POSITION 相对 BOUNDS 的位置语义，防止相同 `p1` 名称在两图中表示不同位置。追加战斗层必须与目标推荐属性一致；转场来源可单独借用。
+- orderedmap 未改叶子的压缩字节保持；服务端 JSON 以键或分类内商品、商品内字段做局部拼接，未改 value 原文保持。无实际变化的成员不装包。
+- 商品、武器和强化商品 ID 同时检查客户端、服务端与其它草稿。保存分配结果，编译时再检查其它草稿占用，防止保存后发生冲突。
+- M2.4 真实 SWF 判定的 kind 列位：ability_soul 为 c44/c106，equipment_enhancement_ability 为 c47/c109；错误块、未被该 kind 消费的 strength 字段及不支持的 kind 拒绝。
+- 图标引用使用现有装备/强化装备，并复用对应魂珠真实 c3/c4 组合；非空 c4 必须位于实际加载图集，独立 PNG 不能替代子纹理检查。
+- 强化从 0 级开始，按各阶段等级差累计到 120；c11=2 表示羁绊证 userCost，不是按阶段只收费一次。克隆武器不会自动上架。
+- 时间线以每个状态进入为 0 帧，60 fps；条件退出、循环和未知时长保留表达式或空区间。它是供前端使用的状态摘要，不是战斗模拟器。
+- 伤害倍率编辑乘以所选动作闭包内已有 CreateNormalAttack 常量倍率；间隔只改 Time/TimeElapsed.Frame；试炼只改受支持的现有阈值结构。换招/借招时拒绝无限或过大 Repeat 与递归；所选动作或借招预载闭包缺失时也拒绝。参数编辑不把原生状态循环当成新借招。
+- 帧间隔和 HitCountCheck 次数强制整数，拒绝客户端会静默截断的小数输入；DamageCheck 百分比允许小数，并验证写入后精确回读。
+- 隔离改名前从当前候选扫描 damage_share、partner watch、GeneralBossAlive、StandardFunnel 反向引用。存在固定身份链接或扫描证据不完整时拒绝并说明链路，避免首领改名后断开伤害共享、死亡联动等机制；未扩大为整条机制闭包迁移。
+
+## 真实副本交付与回读
+
+验收使用冻结的 1.4.236 视图，分别建立独立草稿，保存后通过现有桥生成本地 236→237 候选包，再检验 ZIP CRC、解包、摘要和叠包读模型。所有真实构建显式选择 `test-v34`；它表示静态客户端档案匹配。
+
+| 操作 | 真实副本 | 客户端成员数 | 保持相同的未改压缩叶 |
+|---|---|---:|---:|
+| 换地形 | `boss_battle:1/10/3` | 3 | 1,910 |
+| 增站位 | `hard_multi:1006/1` | 3 | 1,631 |
+| 改坐标 | `boss_battle:1/10/3` | 3 | 1,910 |
+| 删站位 | 五重隐藏关 `1099031` | 3 | 1,910 |
+| 追加一波 | `hard_multi:1006/1` | 5 | 3,398 |
+| 新增商品 | `boss_battle:1/81/5` | 1 | 6,701 |
+| 修改商品 | 同上 | 1 | 6,700 |
+| 删除商品 | 同上 | 1 | 6,700 |
+| 克隆武器 | 同上 | 8 | 5,483 |
+| 修改强化材料 | 同上 | 1 | 920 |
+| 同首领换招 | `boss_battle:1/81/5` | 6 | 8,742 |
+| 跨首领借招 | 同上 | 6 | 8,742 |
+| GeneralBoss 间隔 | 同上 | 7 | 56,414 |
+| 招式伤害倍率 | 同上 | 7 | 8,742 |
+| StandardBoss 试炼阈值 | `boss_battle:1/29/4` | 5 | 3,711 |
+| StandardBoss 帧间隔 | 同上 | 5 | 3,711 |
+
+上述 **16 项均 build ok=true、prepush exit 0，且完成解包回读**；最终包均显式使用 `test-v34` 客户端档案，各模块当前源码重放与最终交付字节一致。地形与行为交付服务端变更为 0。商店/武器五项还核对了服务端局部原文保持及两端分类、价格、库存、ID 注册、六阶费用引用；17 份源服务端文件摘要保持不变。
+
+地形早期 `acceptance-1` 使用显式能力摘要，后续已在全新 `acceptance-profile` 目录为全部五项补做 `test-v34` 档案构建、ZIP 回读和当前源码重放；最终验收以新目录为准，旧结果保留作过程证据。
+
+实际武器克隆为 5930011→5950001，六个强化商品 595000101–595000106，HP×1.1、攻击×1.2，魂珠词条 kind 34→32，使用已有 5930012 的本体和 70 级图标。材料操作将 593001106 阶段改为道具 10000402×12。另一副本在同一草稿存储预览克隆时自动分配 5950002。
+
+行为六项均 `build ok=true`、prepush exit 0，并以 `a3ffedb` 当前代码重编译与最终 ZIP 逐成员摘要核对一致。每项仅改变目标 quest 的原有绑定叶，其余旧表叶及压缩叶保持；新增专属数据不覆盖原敌人或共享资源。
+
+独立于编译器的实际 ZIP 语义核对也是 6/6：同首领 slot 2 确实采用来源 slot 3；跨首领采用五重水废龙 slot 11，2 个动作程序和 4 个特效预载资源均可读；GeneralBoss 原 30 帧改为 45 帧，其余 382 个状态和目标状态其它字段不变；一处 CreateNormalAttack 最小/最大倍率均由 0.15 的浮点表示乘以 1.2；光废龙试炼次数 40→45、另一状态间隔 120→95，两个 ESDL 各自其余全树不变。
+
+## ESDL 完整语料验证
+
+先验证当前 standard_boss 引用的 265 份资源，再将路径表中的 461 个 boss ESDL 名称、当前表引用及已提取目录中的 752 个文件名取并集。提取后的 JSON 只用于发现逻辑路径；实际原始字节全部从冻结 236 的 ManifestView 读取。
+
+最终 **752 个候选、752 个可读、752 个通过，缺失 0、失败 0**。每份都执行 decode→`json.dumps(ensure_ascii=True)`→loads→encode，原始 deflate 字节 752/752 一致；另行从可读语义结构重建 AMF3，未压缩字节也 752/752 一致。原始压缩 wire 的保存用于精确往返，不将不同压缩策略的容器误判为语义差异。`view.verify` 通过，逐件 SHA256 与来源均留存。
+
+任务引用的历史资料没有列出“官方六件”的具体文件名，原调查文档在指定只读目录中也已不存在。因此本次用可读官方 752 件全集覆盖验收，不把任意六个样本称为历史原六件。当前表引用的 265 件是该全集子集。
+
+五重 v2 的 16 个隐藏副本检查了敌人、召唤、routine 和 DSL 闭包：17 个 routine、377 个 DSL，直接及间接 ESDL 引用为 **0**。这些副本实际使用 GeneralBoss 表驱动行为；不能虚构“若干五重 ESDL 往返”。其引用清单和表摘要另存于 `five-v2-closure.json`，行为借招的真实验收也使用了五重 v2 的既有招式。
+
+## 反证与回归证据
+
+| 任务要求或额外风险 | 证据 |
+|---|---|
+| 多波缺 c7 或 c8 | 真实追加波次候选分别清空两列；preview 和 compile 均 C8251 拒绝 |
+| 商店缺同号 category | 真实分类 81 移除同号行，preview 拒绝 |
+| 武器 kind 错位 | 将真实 soul kind 从 c44 放到 c47，preview 拒绝；同时核对 test-v34/test-v35e 实际 SWF |
+| 借无有限终止保证的循环招式 | 保留完整真实 donor ActionDsl 元数据，仅用 Repeat(30, 0) 或 Repeat(30, -1) 包装原表达式；两者 preview 与保存后 compile 均拒绝 |
+| 借超限循环招式 | 在真实借招来源动作加入 Repeat 9999 超限循环，preview 与保存草稿的 compile 均拒绝 |
+| 借招缺预载 | 从真实来源候选移除对应 effect atlas，preview 与 compile 均 C8016 拒绝 |
+| 图集错误 | 魂珠 c4 指向实际图集中不存在的子纹理，preview 拒绝 |
+| 保存后 ID 冲突 | 两份已保存草稿分别制造入口、商品、装备、强化商品冲突；compile 全部拒绝 |
+| 连续操作所有权 | terrain→scene→terrain、scene→terrain→scene、behavior→terrain→scene→behavior 回归；基线撞名拒绝 |
+| 派生资源覆盖和重复借招 | 拒绝首次覆盖基线资源；允许复用本草稿已拥有的预载垫片和未触发槽 |
+| 固定身份引用断链 | 真实 shark 三色随从的 79/100 档 c32 引用使其编辑被拒绝，候选零改动；StandardFunnel 固定引用的 steampunk_another_multi 同样拒绝 |
+
+真实 damage 构建曾暴露既有 629 门禁的裸动作路径误拒。客户端加载链和实际 spheal 资源证明 `battle/action/...` 不必含 `$`；修复仅增加规范裸路径解析和递归检查。实际 damage 的 7 个原始成员字节通过门禁；往真实基线树的内存副本加入 `NotifyPowerflipEnd` 仍被拒绝。没有修改基线或放宽危险命令检查。相关 51 项针对测试及 3 项历史 629 测试通过，证据见 `work/m6/terrain/gate-review/`。
+
+无限循环要求的反证依据来自原生 Repeat/ListeningEvent/ActionEvaluator 调用链：count 为整数，非正次数没有正常有限计数结束保证；外部销毁或整数回绕仍可能终止，因此不声称数学意义永久运行或已做设备证明。扫描 996 份原生敌人动作 JSON 的 1,557 个 Repeat 节点未发现非正次数；上述 0/-1 是按原生结构构造的真实候选反证，原始 donor 摘要保持不变。它与 9999 超限反例分别保留证据。
+
+真实只读接口验证：3 个副本 × 5 个 section 共 15 次实际 StudioApp 路由调用均返回 200，CLI timeline exit 0，读取没有创建草稿。另有 Host、Origin、token 及请求/section 约束的定向测试。
+
+历史回放使用本次任务生成的结果：223 的 3/3 个成员逐字节相同；221 从完整源资产重建，11 个归档共 310/310 成员、叠包 310/310 成员逐字节相同，旧清单语义一致。221 的 11 个 ZIP 在排除 DOS 时间戳后容器相同；不声称完整 ZIP SHA256 相同，也不声称历史包通过当前发布门禁。
+
+## 全局验证与本地提交
+
+最终功能代码为 `a3ffedb`。该提交的完整 pytest **exit 0：4825 passed、354 skipped、26 warnings，881.67 秒**，没有失败或错误。前两轮全量在新发现的身份引用、路径兼容和整数精度修复后主动终止，保留日志及 `superseded` 记录，不计作完成的全量证据。
+
+最终路径扫描检查 **2,375 个文本文件，发现数 0**；`git diff --check` 和全仓已跟踪文件的提交卫生检查通过。最终验证数字及逐项证据 SHA256 见 [validation.json](docs/m6/validation.json)，全量日志保存在 `work/m6/full-verified.log` 与同名 JUnit XML。提交卫生日志保存在 `work/m6/hygiene-all.log`、`hygiene-staged.log`。
+
+测试计数采用 pytest 终端汇总和外层进程 exit 0。原始 JUnit 含 5,179 个 testcase，无 error/failure，但其聚合头记录 7,556 tests、357 skipped，且 testcase 的 skipped 标记数为 357，与终端汇总不一致；原文件保持生成状态，没有改写成预期值。机器摘要单独保留该计数差异，不用不一致的 XML 头推导通过数。
+
+最终全量命令使用独立 basetemp、pytest cache 与 TEMP/TMP，全部位于当前 worktree，子进程 stdin 关闭。可直接复现测试主体：
+
+```powershell
+python -B -m pytest --basetemp work/m6/recheck-temp --junitxml work/m6/recheck.xml -o cache_dir=work/m6/recheck-cache
+python -B scripts/check_no_hardcoded_paths.py --json work/m6/path-scan.json
+```
+
+本地实施按主题分为以下提交；没有 push：
+
+| 主题 | 提交 |
+|---|---|
+| 资源与服务端字节保持 | `00f2372` |
+| 地形模型、编辑、预载与交叉操作 | `664cc01`、`ca5f6e7`、`e45d1bc`、`9438490` |
+| 商店、武器与材料链 | `ae9f503` |
+| 行为编解码、隔离、门禁及参数精度 | `b805808`、`89abea3`、`871f0b6`、`2eda7ec`、`a3ffedb` |
+| schema/API/CLI 和编译 ID 避碰 | `8682929`、`189a6cd` |
+| 真实 damage 交付需要的 629 裸路径兼容 | `bc1bb83` |
+
+## 证据索引与验证边界
+
+| 证据 | 本地相对路径 |
+|---|---|
+| 地形五项最终档案构建/回读 | `work/m6/terrain/acceptance-profile/summary.json`，各操作的 `roundtrip.json` |
+| 地形最终源码重放 | `work/m6/terrain/current-profile-verification.json` |
+| 商店武器五项构建/回读 | `work/m6/shop/acceptance-summary.json` |
+| 商店武器最终源码和双端核对 | `work/m6/shop/current-verification.json`、`delivery-conformance.json` |
+| 行为六项构建/重放 | `work/m6/esdl/acceptance-summary.json`、`acceptance-v2/<case>/final-replay.json` |
+| 行为独立 ZIP 语义核对 | `work/m6/esdl/independent-conformance.json` |
+| 真实分类/kind/图集反证 | `work/m6/shop/counterexamples.json` |
+| esdl 语料和五重闭包 | `work/m6/esdl/codec-corpus.json`、`five-v2-closure.json` |
+| 752 件官方全集 | `work/m6/esdl/official-all-summary.json`、`official-all-results.json`、`official-all-view-lock.json` |
+| 行为真实反证 | `work/m6/esdl/real-negative-behavior.json`、`real-identity.json` |
+| 非正 Repeat 反证及客户端语义 | `work/m6/esdl/real-unbounded-repeat.json`、`repeat-source-evidence.json` |
+| 真实接口与 CLI | `work/m6/core/interfaces/summary.json` |
+| 221/223 回放 | `work/m6/history/replay221.json`、`replay223.json`、`exit.json` |
+
+prepush 保留了已知警告，没有把 exit 0 写成零警告：地形为 ERROR 0 / WARN 43 / INFO 10；武器克隆 WARN 29，其余商店武器 WARN 28。隔离快照没有 kulo#35 检查要求的服务端编译入口，该子项仍待验证；没有为消除提示构建或操作服务器。
+
+三人图集估计继续保留 M5.1 的敌方下界和队伍输入完整性状态。本次没有三队完整角色/技能/PF 输入，没有真机、三人房、服务器部署或实际购买扣费验证。所有运行时结论均保持未执行；这些事项不在本任务授权范围内。

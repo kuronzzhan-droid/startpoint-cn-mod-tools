@@ -1,0 +1,302 @@
+{
+  "schema": "wf-m6-validation/1",
+  "status": "completed-local",
+  "base_commit": "1507779",
+  "tested_code_commit": "a3ffedb8ed5bc61bda59e705b81ceb9803a9c5d7",
+  "pytest": {
+    "tests": 5179,
+    "passed": 4825,
+    "skipped": 354,
+    "errors": 0,
+    "failures": 0,
+    "warnings": 26,
+    "seconds": 881.67,
+    "exit_code": 0,
+    "count_source": "pytest terminal summary"
+  },
+  "junit_observation": {
+    "aggregate": {
+      "tests": 7556,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 357
+    },
+    "testcase_elements": 5179,
+    "testcase_skipped_elements": 357,
+    "note": "Raw JUnit counters disagree with the terminal summary; retained as generated, not used as the pass count."
+  },
+  "path_scan": {
+    "scanned_text_files": 2375,
+    "findings": [],
+    "count": 0
+  },
+  "real_operations": [
+    {
+      "module": "terrain",
+      "case": "replace",
+      "build_ok": true,
+      "client_members": 3,
+      "unchanged_compressed_leaves": 1910,
+      "client_profile": "test-v34",
+      "prepush_exit_code": 0
+    },
+    {
+      "module": "terrain",
+      "case": "add",
+      "build_ok": true,
+      "client_members": 3,
+      "unchanged_compressed_leaves": 1631,
+      "client_profile": "test-v34",
+      "prepush_exit_code": 0
+    },
+    {
+      "module": "terrain",
+      "case": "update",
+      "build_ok": true,
+      "client_members": 3,
+      "unchanged_compressed_leaves": 1910,
+      "client_profile": "test-v34",
+      "prepush_exit_code": 0
+    },
+    {
+      "module": "terrain",
+      "case": "delete",
+      "build_ok": true,
+      "client_members": 3,
+      "unchanged_compressed_leaves": 1910,
+      "client_profile": "test-v34",
+      "prepush_exit_code": 0
+    },
+    {
+      "module": "terrain",
+      "case": "append",
+      "build_ok": true,
+      "client_members": 5,
+      "unchanged_compressed_leaves": 3398,
+      "client_profile": "test-v34",
+      "prepush_exit_code": 0
+    },
+    {
+      "module": "shop_weapon",
+      "case": "shop_add",
+      "build_ok": true,
+      "client_members": 1,
+      "unchanged_compressed_leaves": 6701,
+      "client_profile": "test-v34",
+      "prepush_exit_code": 0
+    },
+    {
+      "module": "shop_weapon",
+      "case": "shop_edit",
+      "build_ok": true,
+      "client_members": 1,
+      "unchanged_compressed_leaves": 6700,
+      "client_profile": "test-v34",
+      "prepush_exit_code": 0
+    },
+    {
+      "module": "shop_weapon",
+      "case": "shop_delete",
+      "build_ok": true,
+      "client_members": 1,
+      "unchanged_compressed_leaves": 6700,
+      "client_profile": "test-v34",
+      "prepush_exit_code": 0
+    },
+    {
+      "module": "shop_weapon",
+      "case": "weapon_clone",
+      "build_ok": true,
+      "client_members": 8,
+      "unchanged_compressed_leaves": 5483,
+      "client_profile": "test-v34",
+      "prepush_exit_code": 0
+    },
+    {
+      "module": "shop_weapon",
+      "case": "weapon_materials",
+      "build_ok": true,
+      "client_members": 1,
+      "unchanged_compressed_leaves": 920,
+      "client_profile": "test-v34",
+      "prepush_exit_code": 0
+    },
+    {
+      "module": "behavior",
+      "case": "replace",
+      "build_ok": true,
+      "client_members": 6,
+      "unchanged_compressed_leaves": 8742,
+      "client_profile": "test-v34",
+      "prepush_exit_code": 0
+    },
+    {
+      "module": "behavior",
+      "case": "borrow",
+      "build_ok": true,
+      "client_members": 6,
+      "unchanged_compressed_leaves": 8742,
+      "client_profile": "test-v34",
+      "prepush_exit_code": 0
+    },
+    {
+      "module": "behavior",
+      "case": "interval",
+      "build_ok": true,
+      "client_members": 7,
+      "unchanged_compressed_leaves": 56414,
+      "client_profile": "test-v34",
+      "prepush_exit_code": 0
+    },
+    {
+      "module": "behavior",
+      "case": "damage",
+      "build_ok": true,
+      "client_members": 7,
+      "unchanged_compressed_leaves": 8742,
+      "client_profile": "test-v34",
+      "prepush_exit_code": 0
+    },
+    {
+      "module": "behavior",
+      "case": "trial",
+      "build_ok": true,
+      "client_members": 5,
+      "unchanged_compressed_leaves": 3711,
+      "client_profile": "test-v34",
+      "prepush_exit_code": 0
+    },
+    {
+      "module": "behavior",
+      "case": "esdl_interval",
+      "build_ok": true,
+      "client_members": 5,
+      "unchanged_compressed_leaves": 3711,
+      "client_profile": "test-v34",
+      "prepush_exit_code": 0
+    }
+  ],
+  "official_esdl": {
+    "candidate_total": 752,
+    "readable_total": 752,
+    "passed": 752,
+    "missing": 0,
+    "failed": 0,
+    "canonical_amf3_equal": 752,
+    "view_verified": true
+  },
+  "official_six_identity": "Historical six filenames unavailable; all 752 known official boss ESDL resources verified.",
+  "five_v2": {
+    "quests": 16,
+    "routines": 17,
+    "dsl_count": 377,
+    "esdl_count": 0
+  },
+  "required_negative_cases": [
+    "missing_field_c7",
+    "missing_field_c8",
+    "missing_shop_category",
+    "wrong_weapon_kind_column",
+    "borrowed_nonpositive_repeat",
+    "borrowed_excessive_repeat",
+    "missing_borrowed_preload"
+  ],
+  "historical": {
+    "223": {
+      "member_count": 3,
+      "different_members": 0
+    },
+    "221": {
+      "archive_count": 11,
+      "member_count": 310,
+      "different_members": 0,
+      "layered_members_byte_equal": 310,
+      "archives_equal_without_dos_timestamps": 11,
+      "legacy_manifest_semantic_equal": true
+    }
+  },
+  "readonly_interfaces": {
+    "http_dispatches": 15,
+    "cli_exit_code": 0,
+    "created_drafts": false
+  },
+  "limitations": [
+    "kulo#35 server compiled entry absent in isolated validation snapshot; subcheck not executed.",
+    "Three-party atlas estimate remains a lower bound without complete party inputs.",
+    "No server deployment, device installation, runtime battle or purchase validation executed."
+  ],
+  "evidence": [
+    {
+      "path": "work/m6/terrain/acceptance-profile/summary.json",
+      "sha256": "4c2325fc75d540898e7bc1f5abb61b11ce6f966c19dea2aa6f27102728ffeed5"
+    },
+    {
+      "path": "work/m6/terrain/current-profile-verification.json",
+      "sha256": "74d0e7aed73bb40f0b423824a785c016ef51246ebb543d74521403cdfdcf3fc7"
+    },
+    {
+      "path": "work/m6/shop/acceptance-summary.json",
+      "sha256": "f8515ea48c61839f08c1925c246c05cad35474d7f1b3668b8c736ddf983be5d5"
+    },
+    {
+      "path": "work/m6/shop/current-verification.json",
+      "sha256": "e322ff09e86d299bb96d5274435aea60974c272bcc36e037fa23c44720d47b70"
+    },
+    {
+      "path": "work/m6/shop/delivery-conformance.json",
+      "sha256": "ac972b3275e8fa48ad29143485963b5fb9ee93a77c16f546890ef4883add62e7"
+    },
+    {
+      "path": "work/m6/esdl/acceptance-summary.json",
+      "sha256": "af3bce12c27629971c758e8fe0d311019be8e4172cc06857de74d0c60b451997"
+    },
+    {
+      "path": "work/m6/esdl/independent-conformance.json",
+      "sha256": "3fd5a0069d7e8e6cce4eaa3fa7593f83358f832001a1dc3d1e48ed1453db3b0e"
+    },
+    {
+      "path": "work/m6/esdl/official-all-summary.json",
+      "sha256": "2c1a75d165c882b1a2f0a73e48655ec8b292e8209c50a388898505e05edf1c17"
+    },
+    {
+      "path": "work/m6/esdl/official-all-results.json",
+      "sha256": "2ff703cdcdd051217fa5bf44562df2955570920d8e9712b2097a60bdc62e225a"
+    },
+    {
+      "path": "work/m6/esdl/real-negative-behavior.json",
+      "sha256": "eb3606ecf1c2e7fc8b1acbbe5b4c96c48e25130bb384c2d8e81fef9919b312bc"
+    },
+    {
+      "path": "work/m6/esdl/real-identity.json",
+      "sha256": "398569ce847b4d3e3eb0c3b1eadd616f9373f3b5e15459f914b6590b888a5638"
+    },
+    {
+      "path": "work/m6/esdl/real-unbounded-repeat.json",
+      "sha256": "71383a2863780daf438c813d68ac01db7895ecf7b8c3608f81191a1d94c9ff67"
+    },
+    {
+      "path": "work/m6/esdl/repeat-source-evidence.json",
+      "sha256": "6024e2a71448a071e50adb5de41485cfa9a8b30872ac99d6ad448cbe365eab5d"
+    },
+    {
+      "path": "work/m6/esdl/five-v2-closure.json",
+      "sha256": "2b2cb9c28ecfbf141e286f32198dd46d4ff7531633288c01852301f78dd2e115"
+    },
+    {
+      "path": "work/m6/terrain/gate-review/summary.json",
+      "sha256": "80a4112ce4dccbed313d84cad492ff17655f2b865b49f3a9050b68033512bc2f"
+    },
+    {
+      "path": "work/m6/history/replay221.json",
+      "sha256": "1cca38299e8660aad97403d1dea056c60336f59334a824bf4d9e1e8b31bbd3cf"
+    },
+    {
+      "path": "work/m6/history/replay223.json",
+      "sha256": "8833840e5380d63d58bc4310f16cac18b4491bc847fde56740fe86c48ec80c73"
+    },
+    {
+      "path": "work/m6/core/interfaces/summary.json",
+      "sha256": "42b9385c54e13df7a934438796c11703019d79af7a6465039ef2e11053df92a8"
+    }
+  ]
+}
