@@ -63,6 +63,10 @@ class BossRoutes:
         from .server import json_response
         return json_response(self.editor.read(quest))
 
+    def section(self, query, quest, section):
+        from .server import json_response
+        return json_response(self.editor.inspect(quest, section))
+
     def drafts(self, query):
         from .server import json_response
         entries = [draft_summary(entry, self.store.load(entry["characterId"])) for entry in self.store.characters()]
@@ -105,6 +109,7 @@ class BossRoutes:
             ("GET", re.compile(r"^/api/boss/options$"), self.options),
             ("GET", re.compile(r"^/api/boss/drafts/(?P<quest>[^/]+)$"), self.draft),
             *self.deliveries.routes(),
+            ("GET", re.compile(r"^/api/boss/(?P<quest>[^/]+)/(?P<section>terrain|shops|weapons|behavior|timeline)$"), self.section),
             ("GET", re.compile(r"^/api/boss/(?P<quest>[^/]+)$"), self.show),
             ("POST", re.compile(r"^/api/boss/drafts$"), self.edit),
             ("POST", re.compile(r"^/api/boss/drafts/(?P<quest>[^/]+)$"), self.edit),

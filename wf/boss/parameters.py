@@ -134,8 +134,10 @@ def edit_parameters(state, quest, request):
             identity = target[-1] if kind == "practice" else before[0]
             new_fd = f"studio_boss_{kind}_{identity}_scene"
             exists = new_fd in state.table(FIELD_DATA)
-            owned = new_fd not in codec.parse_node(state.original[FIELD_DATA])
-            if exists and (before[columns(kind)["fieldData"][0]] != new_fd or not owned):
+            owned = (new_fd not in codec.parse_node(state.original[FIELD_DATA])
+                     and any(c["table"] == FIELD_DATA and c["path"] == [new_fd]
+                             and c["old"] is None for c in state.changes))
+            if exists and not owned:
                 raise ValueError(f"ID collision: field_data/{new_fd}")
             fd[0] = scene
             state.set_leaf(FIELD_DATA, (new_fd,), join(fd), new=not exists)

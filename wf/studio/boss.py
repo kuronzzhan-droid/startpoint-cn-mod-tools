@@ -75,8 +75,11 @@ def _replay(source, quest, requests, *, server_dir=None, reserved=()):
             allocation = create_shared(state, request, reserved=reserved)
             quest, touched, created = allocation["quest"], [allocation["quest"]], True
             request["ids"] = {key: allocation[key] for key in ("event", "node")}
-        else:
+        elif request["operation"] == "edit":
             touched = edit_parameters(state, quest, request)
+        else:
+            from .boss_dispatch import apply_operation
+            touched = apply_operation(state, quest, request, reserved=reserved)
         affected.extend(touched)
         for identifier in touched:
             current = BossReader(StudioSource(state)).show(identifier)
@@ -108,6 +111,9 @@ def _replay(source, quest, requests, *, server_dir=None, reserved=()):
                              server_changes=state.servers, server_before=state.server_original,
                              context=_context(state, created, document, baseline, requests,
                                               preload_approvals[document["quest"]["selector"]][1]))
+        if any(req["operation"].startswith(("terrain_", "behavior_")) for req in requests):
+            from wf.boss.behavior_guards import check_behavior_positions
+            results.append(check_behavior_positions(state, document))
         # Five-tier edits check five quests; each result names the quest it belongs to.
         checks.extend({**entry, "quest": document["quest"]["selector"]} for entry in results)
     blocking = [entry for entry in checks if entry.get("blocking")]
@@ -122,7 +128,8 @@ def compile_boss(source, store, draft, *, server_dir=None):
     quest = draft["characterId"]
     _identity(draft, quest, source.version)
     requests = _requests(draft)
-    state, _, checks, _ = _replay(source, quest, requests, server_dir=server_dir)
+    reserved = BossEditor(source, store=store, server_dir=server_dir)._reservations(quest)
+    state, _, checks, _ = _replay(source, quest, requests, server_dir=server_dir, reserved=reserved)
     state.verify_snapshot(draft["changes"][0]["params"]["inputs"])
     return {"client": state.client, "servers": state.servers,
             "server_before": {key: digest(state.server_original[key]) for key in state.servers},
@@ -135,6 +142,7 @@ class BossEditor:
 
     def _reservations(self, except_quest):
         quests, nodes = [], []
+        products, weapons, enhancement_products = [], [], []
         for entry in self.store.characters():
             identifier = entry["characterId"]
             if identifier == except_quest:
@@ -143,7 +151,13 @@ class BossEditor:
                 if request["operation"] == "create_shared":
                     quests.append(identifier)
                     nodes.append(request["ids"]["node"])
-        return {"quests": quests, "nodes": nodes}
+                if request["operation"] == "shop_add":
+                    products.append(request["shop"]["productId"])
+                if request["operation"] == "weapon_clone":
+                    weapons.append(request["weapon"]["id"])
+                    enhancement_products.extend(request["weapon"].get("enhancementProducts", []))
+        return {"quests": quests, "nodes": nodes, "products": products,
+                "weapons": weapons, "enhancementProducts": enhancement_products}
 
     def canonical(self, quest):
         """One identity for every existing quest; newly allocated drafts keep IDs."""
@@ -202,8 +216,10 @@ class BossEditor:
         from wf.boss.reader import BossReader
         from .source import StudioSource
         try:
-            state, identity, _, checks, _ = self._state(quest)
+            state, identity, requests, checks, _ = self._state(quest)
+            from .boss_dispatch import draft_weapons
             return {"questId": identity, "boss": BossReader(StudioSource(state)).show(identity),
+                    "draftWeapons": draft_weapons(state, requests),
                     "changeset": self.store.load(identity), "checks": checks, "runtime": "未执行"}
         except (ValueError, KeyError, OSError, TypeError) as exc:
             raise DraftError(str(exc)) from exc
@@ -222,6 +238,19 @@ class BossEditor:
             allocation = exc.allocation if isinstance(exc, BossRulesRejected) else None
             return {"ok": False, "questId": quest, "allocation": allocation, "checks": [
                 result("boss.inputs", "问题", str(exc), blocking=True), *rules], "runtime": "未执行"}
+
+    def inspect(self, quest, section):
+        from wf.boss.reader import BossReader
+        from .source import StudioSource
+        from .boss_dispatch import inspect_section
+        try:
+            state, identity, requests, checks, _ = self._state(quest)
+            document = BossReader(StudioSource(state)).show(identity)
+            return {"questId": identity, "section": section,
+                    "data": inspect_section(state, document, section, requests),
+                    "checks": checks, "runtime": "未执行"}
+        except (ValueError, KeyError, OSError, TypeError) as exc:
+            raise DraftError(str(exc)) from exc
 
     def apply(self, quest, request):
         try:

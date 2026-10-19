@@ -113,6 +113,12 @@ class BossReader(BossTables):
                   "rewards": reward, "shops": shops(self, entrance, reward, quest), "routing": routing(self, quest),
                   "source_semantics": "leaf 表示该完整 CSV 叶子最后语义变更的层；不声明每格首次引入层。"
                                       "table_layer 是整表载入层，scope=table 时叶子变更层未核验。"}
+        result["terrain"]["bindings"] = {
+            "field_data": fd_id, "field": field_id, "zone": zone_id,
+            "waves": [{"layer": wave["name"],
+                       "zone_paths": [entry["path"] for entry in zone_rows
+                                      if entry["path"][-1] == wave["name"]]}
+                      for wave in result["terrain"].get("waves", [])]}
         if result["routing"]["kind"] == "BothBoss":
             scope = {"kind": "entrance_only", "label": "入口自身，非战斗内容", "combat_content": False}
             result["content_scope"] = scope

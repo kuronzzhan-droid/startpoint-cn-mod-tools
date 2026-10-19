@@ -21,6 +21,7 @@ def add_commands(sub):
     p.add_argument("cid", help="副本 ID、kind:path 选择器或 new")
     p.add_argument("--request", type=Path, help="bossRequest JSON")
     p.add_argument("--preview", action="store_true")
+    p.add_argument("--section", choices=("terrain", "shops", "weapons", "behavior", "timeline"), help="只读候选子模型")
     p = sub.add_parser("ability", help="读取或编辑词条草稿（与 HTTP API 使用相同请求）")
     p.add_argument("cid")
     p.add_argument("--request", type=Path, help="abilityRequest JSON")

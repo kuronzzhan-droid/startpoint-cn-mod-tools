@@ -202,6 +202,10 @@ def run(args) -> dict:
     if args.command == "boss":
         from .boss import BossEditor, BossDraftStore
         editor = BossEditor(ops.source, store=BossDraftStore(store.root / "boss"), server_dir=args.server_dir)
+        if args.section:
+            if args.request or args.preview or args.cid == "new":
+                raise DraftError("boss --section 只读取已有副本，不能与 --request/--preview/new 混用")
+            return editor.inspect(args.cid, args.section)
         if args.request:
             request = _load_json(args.request)
             return editor.preview(args.cid, request) if args.preview else editor.apply(args.cid, request)

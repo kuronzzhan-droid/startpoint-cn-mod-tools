@@ -41,6 +41,552 @@
       }
     },
     "bossRequest": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/bossLegacyRequest"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "operation",
+            "terrain"
+          ],
+          "properties": {
+            "operation": {
+              "const": "terrain_replace"
+            },
+            "terrain": {
+              "type": "string",
+              "pattern": "^battle/terrain/[A-Za-z0-9_./-]+$"
+            },
+            "acknowledgePreload": {
+              "type": "boolean"
+            },
+            "atlasBudget": {
+              "$ref": "#/$defs/bossAtlasBudget"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "operation",
+            "layer",
+            "action",
+            "name"
+          ],
+          "properties": {
+            "operation": {
+              "const": "terrain_position"
+            },
+            "layer": {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            },
+            "action": {
+              "enum": [
+                "add",
+                "update",
+                "delete"
+              ]
+            },
+            "name": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,80}$"
+            },
+            "x": {
+              "type": "number",
+              "minimum": -1000000,
+              "maximum": 1000000
+            },
+            "y": {
+              "type": "number",
+              "minimum": -1000000,
+              "maximum": 1000000
+            },
+            "width": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "height": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "acknowledgePreload": {
+              "type": "boolean"
+            },
+            "atlasBudget": {
+              "$ref": "#/$defs/bossAtlasBudget"
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "action": {
+                    "enum": [
+                      "add",
+                      "update"
+                    ]
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "x",
+                  "y"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "action": {
+                    "const": "delete"
+                  }
+                }
+              },
+              "then": {
+                "not": {
+                  "anyOf": [
+                    {
+                      "required": [
+                        "x"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "y"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "width"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "height"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "operation",
+            "sourceQuest",
+            "sourceLayer"
+          ],
+          "properties": {
+            "operation": {
+              "const": "terrain_add_layer"
+            },
+            "sourceQuest": {
+              "$ref": "#/$defs/bossId"
+            },
+            "sourceLayer": {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            },
+            "transitionSourceQuest": {
+              "$ref": "#/$defs/bossId"
+            },
+            "acknowledgePreload": {
+              "type": "boolean"
+            },
+            "atlasBudget": {
+              "$ref": "#/$defs/bossAtlasBudget"
+            }
+          }
+        },
+        {
+          "$ref": "#/$defs/behaviorReplace"
+        },
+        {
+          "$ref": "#/$defs/behaviorParameters"
+        },
+        {
+          "$ref": "#/$defs/bossShopWeaponRequest"
+        }
+      ]
+    },
+    "behaviorReplace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation",
+        "enemyCode",
+        "slot",
+        "sourceEnemyCode",
+        "sourceSlot"
+      ],
+      "properties": {
+        "enemyCode": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "slot": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "operation": {
+          "const": "behavior_replace"
+        },
+        "sourceEnemyCode": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "sourceSlot": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "atlasBudget": {
+          "$ref": "#/$defs/bossAtlasBudget"
+        }
+      }
+    },
+    "behaviorParameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation",
+        "enemyCode"
+      ],
+      "properties": {
+        "enemyCode": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "slot": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "operation": {
+          "const": "behavior_parameters"
+        },
+        "state": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "form": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "intervalFrames": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 36000
+        },
+        "damageMultiplier": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1000
+        },
+        "trialThreshold": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "atlasBudget": {
+          "$ref": "#/$defs/bossAtlasBudget"
+        }
+      },
+      "dependentRequired": {"intervalFrames": ["state"], "trialThreshold": ["state"], "damageMultiplier": ["slot"]},
+      "anyOf": [
+        {
+          "required": [
+            "state",
+            "intervalFrames"
+          ]
+        },
+        {
+          "required": [
+            "slot",
+            "damageMultiplier"
+          ]
+        },
+        {
+          "required": [
+            "state",
+            "trialThreshold"
+          ]
+        }
+      ]
+    },
+    "bossShopWeaponRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operation"],
+      "properties": {
+        "operation": {"enum": ["shop_add", "shop_edit", "shop_delete", "weapon_clone", "weapon_materials"]},
+        "shop": {"$ref": "#/$defs/bossShop"},
+        "weapon": {"$ref": "#/$defs/bossWeapon"},
+        "atlasBudget": {"$ref": "#/$defs/bossAtlasBudget"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"operation": {"const": "shop_add"}}},
+          "then": {
+            "required": ["shop"],
+            "properties": {"shop": {"required": ["category", "sourceProduct"]}},
+            "not": {
+              "anyOf": [
+                {"required": ["tiers"]},
+                {"required": ["parameters"]},
+                {"required": ["name"]},
+                {"required": ["sourceQuest"]},
+                {"required": ["ids"]},
+                {"required": ["weapon"]}
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties": {"operation": {"const": "shop_edit"}}},
+          "then": {
+            "required": ["shop"],
+            "properties": {"shop": {"required": ["category", "productId"], "not": {"anyOf": [{"required": ["sourceProduct"]}]}}},
+            "not": {
+              "anyOf": [
+                {"required": ["tiers"]},
+                {"required": ["parameters"]},
+                {"required": ["name"]},
+                {"required": ["sourceQuest"]},
+                {"required": ["ids"]},
+                {"required": ["weapon"]}
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties": {"operation": {"const": "shop_delete"}}},
+          "then": {
+            "required": ["shop"],
+            "properties": {
+              "shop": {
+                "required": ["category", "productId"],
+                "not": {
+                  "anyOf": [
+                    {"required": ["sourceProduct"]},
+                    {"required": ["name"]},
+                    {"required": ["description"]},
+                    {"required": ["icon"]},
+                    {"required": ["price"]},
+                    {"required": ["stock"]},
+                    {"required": ["rewards"]}
+                  ]
+                }
+              }
+            },
+            "not": {
+              "anyOf": [
+                {"required": ["tiers"]},
+                {"required": ["parameters"]},
+                {"required": ["name"]},
+                {"required": ["sourceQuest"]},
+                {"required": ["ids"]},
+                {"required": ["weapon"]}
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties": {"operation": {"const": "weapon_clone"}}},
+          "then": {
+            "required": ["weapon"],
+            "properties": {"weapon": {"required": ["sourceWeapon"], "not": {"anyOf": [{"required": ["stages"]}]}}},
+            "not": {
+              "anyOf": [
+                {"required": ["tiers"]},
+                {"required": ["parameters"]},
+                {"required": ["name"]},
+                {"required": ["sourceQuest"]},
+                {"required": ["ids"]},
+                {"required": ["shop"]}
+              ]
+            }
+          }
+        },
+        {
+          "if": {"properties": {"operation": {"const": "weapon_materials"}}},
+          "then": {
+            "required": ["weapon"],
+            "properties": {
+              "weapon": {
+                "required": ["id", "stages"],
+                "not": {
+                  "anyOf": [
+                    {"required": ["sourceWeapon"]},
+                    {"required": ["name"]},
+                    {"required": ["description"]},
+                    {"required": ["icon"]},
+                    {"required": ["enhancedIcon"]},
+                    {"required": ["hpMultiplier"]},
+                    {"required": ["attackMultiplier"]},
+                    {"required": ["abilities"]},
+                    {"required": ["enhancementProducts"]}
+                  ]
+                }
+              }
+            },
+            "not": {
+              "anyOf": [
+                {"required": ["tiers"]},
+                {"required": ["parameters"]},
+                {"required": ["name"]},
+                {"required": ["sourceQuest"]},
+                {"required": ["ids"]},
+                {"required": ["shop"]}
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "bossMaterialCost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["itemId", "amount"],
+      "properties": {
+        "itemId": {"type": "string", "pattern": "^[1-9][0-9]*$", "maxLength": 10},
+        "amount": {"type": "integer", "minimum": 1, "maximum": 2147483647}
+      }
+    },
+    "bossShopReward": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id", "amount"],
+      "properties": {
+        "kind": {"type": "integer", "enum": [0, 4]},
+        "id": {"type": "string", "pattern": "^[1-9][0-9]*$", "maxLength": 10},
+        "amount": {"type": "integer", "minimum": 1, "maximum": 2147483647}
+      }
+    },
+    "bossShop": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["category"],
+      "properties": {
+        "category": {"type": "string", "pattern": "^[1-9][0-9]*$", "maxLength": 10},
+        "productId": {"type": "string", "pattern": "^[1-9][0-9]*$", "maxLength": 10},
+        "sourceProduct": {"type": "string", "pattern": "^[1-9][0-9]*$", "maxLength": 10},
+        "name": {"type": "string", "minLength": 1, "maxLength": 80},
+        "description": {"type": "string", "minLength": 1, "maxLength": 60},
+        "icon": {"type": "string", "minLength": 1, "maxLength": 240},
+        "price": {"type": "array", "minItems": 1, "maxItems": 4, "items": {"$ref": "#/$defs/bossMaterialCost"}},
+        "stock": {"type": "integer", "minimum": -1, "maximum": 2147483647},
+        "rewards": {"type": "array", "minItems": 1, "maxItems": 6, "items": {"$ref": "#/$defs/bossShopReward"}}
+      }
+    },
+    "bossWeaponAbility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["table", "row", "block"],
+      "anyOf": [{"required": ["kind"]}, {"required": ["strength"]}],
+      "properties": {
+        "table": {"enum": ["ability_soul", "equipment_enhancement_ability"]},
+        "row": {"type": "integer", "minimum": 0},
+        "block": {"enum": ["instant_content", "during_content"]},
+        "kind": {"type": "integer", "minimum": 0, "maximum": 9999},
+        "strength": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {"type": "integer", "minimum": -2147483648, "maximum": 2147483647}
+        }
+      }
+    },
+    "bossWeapon": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "pattern": "^[1-9][0-9]*$", "maxLength": 10},
+        "sourceWeapon": {"type": "string", "pattern": "^[1-9][0-9]*$", "maxLength": 10},
+        "name": {"type": "string", "minLength": 1, "maxLength": 80},
+        "description": {"type": "string", "minLength": 1, "maxLength": 57},
+        "icon": {"type": "string", "minLength": 1, "maxLength": 240},
+        "enhancedIcon": {"type": "string", "minLength": 1, "maxLength": 240},
+        "hpMultiplier": {"type": "number", "exclusiveMinimum": 0, "maximum": 1000},
+        "attackMultiplier": {"type": "number", "exclusiveMinimum": 0, "maximum": 1000},
+        "abilities": {"type": "array", "minItems": 1, "maxItems": 100, "items": {"$ref": "#/$defs/bossWeaponAbility"}},
+        "enhancementProducts": {"type": "array", "items": {"type": "string", "pattern": "^[1-9][0-9]*$", "maxLength": 10}, "uniqueItems": true},
+        "stages": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["productId", "costs"],
+            "properties": {
+              "productId": {"type": "string", "pattern": "^[1-9][0-9]*$", "maxLength": 10},
+              "costs": {"type": "array", "minItems": 1, "maxItems": 4, "items": {"$ref": "#/$defs/bossMaterialCost"}},
+              "userCost": {
+                "oneOf": [
+                  {"type": "null"},
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["type", "amount"],
+                    "properties": {
+                      "type": {"type": "integer", "enum": [0, 1, 2]},
+                      "amount": {"type": "integer", "minimum": 1, "maximum": 2147483647}
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "bossAtlasBudget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parties"
+      ],
+      "properties": {
+        "parties": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "enemy_sheets": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "bossLegacyRequest": {
       "type": "object", "additionalProperties": false, "required": ["operation"],
       "properties": {
         "operation": {"enum": ["edit", "create_shared"]},
@@ -347,7 +893,7 @@
                 "requests": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/bossRequest"}},
                 "inputs": {"type": "object", "additionalProperties": false, "required": ["client", "server"],
                   "properties": {
-                    "client": {"type": "object", "additionalProperties": {"$ref": "#/$defs/sha256"}},
+                    "client": {"type": "object", "additionalProperties": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]}},
                     "server": {"type": "object", "additionalProperties": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]}}
                   }}
               }},
