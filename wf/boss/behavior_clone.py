@@ -1,0 +1,74 @@
+"""Isolate existing encounters before changing behavior, never mutate sharers."""
+from __future__ import annotations
+
+import hashlib
+import wf_quest_lib as codec
+
+from . import schema as s
+from .edit_state import leaf
+from .parameters import join, require_encounter
+from .reader import BossReader
+
+
+def identity(quest, code):
+    return 'studio_behavior_' + hashlib.sha256((quest + '\0' + code).encode()).hexdigest()[:18]
+
+
+def select_enemy(state, quest, code):
+    document = BossReader(state).show(quest)
+    require_encounter(document['quest']['kind'], document['quest']['row'])
+    alias = identity(document['quest']['selector'], code)
+    matches = [e for e in document['enemies'] if e['code'] in (code, alias)]
+    paths = {(e.get('table'), tuple(e.get('path') or [])) for e in matches}
+    if len(paths) != 1 or not matches:
+        raise ValueError('behavior enemyCode must identify one actual selected enemy band')
+    enemy = matches[0]
+    if enemy['table'] not in (s.GENERAL_BOSS, s.STANDARD_BOSS):
+        raise ValueError('behavior editing supports GeneralBoss / StandardBoss only')
+    return document, enemy
+
+
+def isolate_enemy(state, document, enemy):
+    quest = document['quest']; code = enemy['code']
+    original = codec.parse_node(state.original[enemy['table']])
+    owned = code.startswith('studio_behavior_') and code not in original
+    alias = code if owned else identity(quest['selector'], code)
+    table = state.table(enemy['table'])
+    if alias != code:
+        if alias in table:
+            raise ValueError(f'behavior enemy ID collision: {alias}')
+        state.set_leaf(enemy['table'], [alias], table[code], new=True)
+        levels = state.table(s.BOSS_LEVEL)
+        if code in levels:
+            state.set_leaf(s.BOSS_LEVEL, [alias], levels[code], new=True)
+        if enemy['table'] == s.GENERAL_BOSS:
+            variables = 'master/battle/boss/general_boss_variable.orderedmap'
+            variable = state.table(variables).get(code)
+            if variable is not None:
+                state.set_leaf(variables, [alias], variable, new=True)
+            from wf_five_boss_v2 import watch_copies
+            watches = 'master/battle/boss/general_enemy_watch.orderedmap'
+            for watch_path, value in watch_copies(state.table(watches), code, alias):
+                state.set_leaf(watches, watch_path, value, new=True)
+    zone_id = identity(quest['selector'], 'zone')
+    fd_id = identity(quest['selector'], 'field_data')
+    fd = list(document['field_data']['row']); zone = state.table(s.ZONE)[document['zone']['id']]
+    if zone_id != document['zone']['id'] and zone_id in state.table(s.ZONE):
+        raise ValueError(f'behavior zone ID collision: {zone_id}')
+    from .edit_state import put
+    for path, text in list(s.iter_leaves(zone)):
+        rows = s.parse_rows(text)
+        for row in rows:
+            for column in (24, 26, 28, 30, 32, 34):
+                if s.cell(row, column) == code:
+                    row[column] = alias
+        put(zone, path, '\n'.join(join(row) for row in rows))
+    state.set_leaf(s.ZONE, [zone_id], zone, new=zone_id not in state.table(s.ZONE))
+    fd[2] = zone_id
+    if fd_id != document['field_data']['id'] and fd_id in state.table(s.FIELD_DATA):
+        raise ValueError(f'behavior field_data ID collision: {fd_id}')
+    state.set_leaf(s.FIELD_DATA, [fd_id], join(fd), new=fd_id not in state.table(s.FIELD_DATA))
+    row = list(quest['row']); row[s.QUEST_COLUMNS[quest['kind']]['field_data']] = fd_id
+    state.set_leaf(quest['table'], quest['path'], join(row))
+    path = [alias, *enemy['path'][1:]]
+    return alias, path, s.parse_rows(leaf(state.table(enemy['table']), path))[0]

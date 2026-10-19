@@ -1,0 +1,2151 @@
+{
+  "source": "TypePackerResource2.as",
+  "source_sha256": "f2fabf5a52eaf883784cce405956806f917d47f5886d4193de1ef47984c910e6",
+  "types": {
+    "pinball.scene.battle.battle.enemy.standard.EnemyDsl": {
+      "kind": "ANONYMOUS",
+      "fields": {
+        "type": "pinball.scene.battle.battle.enemy.standard.Type",
+        "toughness": "Int",
+        "suppressBentEffect": "Bool",
+        "share_condition_with_damage_share_target": "Bool",
+        "referenced_funnels": "Array<String>",
+        "race": "Array<pinball.master.generated.RaceId>",
+        "num_wince_state_frames": "pinball.scene.battle.battle.enemy.standard.TimeKind",
+        "num_stun_state_frames": "pinball.scene.battle.battle.enemy.standard.TimeKind",
+        "marker": "pinball.asset.path.AnimationLayoutAssetPath",
+        "initialPosition": "pinball.scene.battle.battle.enemy.standard.PositionKind",
+        "hit_count_check_fore_animation_path": "pinball.asset.path.AnimationLayoutAssetPath",
+        "hit_count_check_back_animation_path": "pinball.asset.path.AnimationLayoutAssetPath",
+        "gender": "pinball.master.generated.GenderId",
+        "forms": "Array<pinball.scene.battle.battle.enemy.standard.Form>",
+        "element": "pinball.common.data.general.ColorlessableElementKind",
+        "dont_apply_damage9": "Bool",
+        "dont_apply_damage8": "Bool",
+        "dont_apply_damage7": "Bool",
+        "dont_apply_damage6": "Bool",
+        "dont_apply_damage5": "Bool",
+        "dont_apply_damage4": "Bool",
+        "dont_apply_damage3": "Bool",
+        "dont_apply_damage2": "Bool",
+        "dont_apply_damage1": "Bool",
+        "dieWhenHitCountCheckPrevented": "Bool",
+        "dieWhenDamageCheckPrevented": "Bool",
+        "dieWhenAllWeakPointsAreBroken": "Bool",
+        "dead_behavior": "pinball.scene.battle.battle.enemy.standard.DeadBehavior",
+        "damage_share_target_boss_id": "pinball.master.generated.BossId",
+        "damage_check_fore_animation_path": "pinball.asset.path.AnimationLayoutAssetPath",
+        "damage_check_back_animation_path": "pinball.asset.path.AnimationLayoutAssetPath",
+        "color_change": "pinball.scene.battle.battle.enemy.standard.ColorChangeKind",
+        "children": "Array<pinball.scene.battle.battle.enemy.standard.EnemyModel>",
+        "attack": "Int",
+        "animations": "Array<String>",
+        "animation2": "pinball.asset.path.AnimationLayoutAssetPath",
+        "animation1": "pinball.asset.path.AnimationLayoutAssetPath",
+        "action_base_path": "pinball.scene.battle.battle.enemy.standard.ActionDslAssetBasePath"
+      },
+      "aliases": {
+        "type": "bx",
+        "toughness": "ah",
+        "suppressBentEffect": "bg",
+        "share_condition_with_damage_share_target": "bJ",
+        "referenced_funnels": "bo",
+        "race": "aa",
+        "num_wince_state_frames": "be",
+        "num_stun_state_frames": "bd",
+        "marker": "ar",
+        "initialPosition": "ae",
+        "hit_count_check_fore_animation_path": "bn",
+        "hit_count_check_back_animation_path": "bm",
+        "gender": "ac",
+        "forms": "au",
+        "element": "ab",
+        "dont_apply_damage9": "cF",
+        "dont_apply_damage8": "cE",
+        "dont_apply_damage7": "cD",
+        "dont_apply_damage6": "cC",
+        "dont_apply_damage5": "cB",
+        "dont_apply_damage4": "cA",
+        "dont_apply_damage3": "bE",
+        "dont_apply_damage2": "bD",
+        "dont_apply_damage1": "bC",
+        "dieWhenHitCountCheckPrevented": "bj",
+        "dieWhenDamageCheckPrevented": "bi",
+        "dieWhenAllWeakPointsAreBroken": "bh",
+        "dead_behavior": "bF",
+        "damage_share_target_boss_id": "bG",
+        "damage_check_fore_animation_path": "bl",
+        "damage_check_back_animation_path": "bk",
+        "color_change": "bI",
+        "children": "av",
+        "attack": "ba",
+        "animations": "aw",
+        "animation2": "at",
+        "animation1": "as",
+        "action_base_path": "bH"
+      },
+      "array": false,
+      "order": [
+        "action_base_path",
+        "animation1",
+        "animation2",
+        "animations",
+        "attack",
+        "children",
+        "color_change",
+        "damage_check_back_animation_path",
+        "damage_check_fore_animation_path",
+        "damage_share_target_boss_id",
+        "dead_behavior",
+        "dieWhenAllWeakPointsAreBroken",
+        "dieWhenDamageCheckPrevented",
+        "dieWhenHitCountCheckPrevented",
+        "dont_apply_damage1",
+        "dont_apply_damage2",
+        "dont_apply_damage3",
+        "dont_apply_damage4",
+        "dont_apply_damage5",
+        "dont_apply_damage6",
+        "dont_apply_damage7",
+        "dont_apply_damage8",
+        "dont_apply_damage9",
+        "element",
+        "forms",
+        "gender",
+        "hit_count_check_back_animation_path",
+        "hit_count_check_fore_animation_path",
+        "initialPosition",
+        "marker",
+        "num_stun_state_frames",
+        "num_wince_state_frames",
+        "race",
+        "referenced_funnels",
+        "share_condition_with_damage_share_target",
+        "suppressBentEffect",
+        "toughness",
+        "type"
+      ]
+    },
+    "pinball.scene.battle.battle.enemy.standard.Type": {
+      "kind": "ENUM",
+      "constructors": {
+        "TFunnel": 1,
+        "TBoss": 0
+      },
+      "arguments": {
+        "0": [
+          "pinball.scene.battle.battle.enemy.standard.Boss"
+        ],
+        "1": [
+          "pinball.scene.battle.battle.enemy.standard.Funnel"
+        ]
+      },
+      "aliases": {
+        "TFunnel": "T2",
+        "TBoss": "T1"
+      }
+    },
+    "pinball.scene.battle.battle.enemy.standard.Boss": {
+      "kind": "ANONYMOUS",
+      "fields": {
+        "use_generic_death_effect": "Bool",
+        "pre_action_rerun_when_continue": "Bool",
+        "pre_action_path": "Array<pinball.scene.battle.battle.enemy.standard.ActionDslAssetName>",
+        "name": "String",
+        "extra_character_fore_animation_path": "pinball.asset.path.AnimationLayoutAssetPath",
+        "extra_character_back_animation_path": "pinball.asset.path.AnimationLayoutAssetPath",
+        "displays_piyo": "Bool",
+        "displays_aura": "Bool"
+      },
+      "aliases": {
+        "use_generic_death_effect": "f",
+        "pre_action_rerun_when_continue": "h",
+        "pre_action_path": "g",
+        "name": "a",
+        "extra_character_fore_animation_path": "e",
+        "extra_character_back_animation_path": "d",
+        "displays_piyo": "c",
+        "displays_aura": "b"
+      },
+      "array": false,
+      "order": [
+        "displays_aura",
+        "displays_piyo",
+        "extra_character_back_animation_path",
+        "extra_character_fore_animation_path",
+        "name",
+        "pre_action_path",
+        "pre_action_rerun_when_continue",
+        "use_generic_death_effect"
+      ]
+    },
+    "Bool": {
+      "kind": "PRIMITIVE"
+    },
+    "Array<pinball.scene.battle.battle.enemy.standard.ActionDslAssetName>": {
+      "kind": "COLLECTION",
+      "item": "pinball.scene.battle.battle.enemy.standard.ActionDslAssetName"
+    },
+    "pinball.scene.battle.battle.enemy.standard.ActionDslAssetName": {
+      "kind": "ABSTRACT",
+      "item": "String"
+    },
+    "String": {
+      "kind": "STRING"
+    },
+    "pinball.asset.path.AnimationLayoutAssetPath": {
+      "kind": "ABSTRACT",
+      "item": "String"
+    },
+    "pinball.scene.battle.battle.enemy.standard.Funnel": {
+      "kind": "ANONYMOUS",
+      "fields": {
+        "suppress_disappear_effect": "Bool",
+        "suppress_blown_off_effect": "Bool",
+        "leave_on_continue": "Bool",
+        "high_priority_target": "Bool",
+        "high_level_bonus": "Null<pinball.common.data.battle.enemy.HighLevelBonus>",
+        "funnel_metal": "pinball.common.data.battle.enemy.FunnelMetalKind",
+        "dont_apply_impact": "Bool",
+        "display_hp_gauge": "Bool",
+        "copies_parent_conditions": "Bool",
+        "condition_icon_position": "pinball.common.data.battle.enemy.EnemyConditionIconPosition"
+      },
+      "aliases": {
+        "suppress_disappear_effect": "k",
+        "suppress_blown_off_effect": "f",
+        "leave_on_continue": "d",
+        "high_priority_target": "c",
+        "high_level_bonus": "l",
+        "funnel_metal": "h",
+        "dont_apply_impact": "b",
+        "display_hp_gauge": "e",
+        "copies_parent_conditions": "a",
+        "condition_icon_position": "g"
+      },
+      "array": false,
+      "order": [
+        "condition_icon_position",
+        "copies_parent_conditions",
+        "display_hp_gauge",
+        "dont_apply_impact",
+        "funnel_metal",
+        "high_level_bonus",
+        "high_priority_target",
+        "leave_on_continue",
+        "suppress_blown_off_effect",
+        "suppress_disappear_effect"
+      ]
+    },
+    "Null<pinball.common.data.battle.enemy.HighLevelBonus>": {
+      "kind": "ABSTRACT",
+      "item": "Int"
+    },
+    "Int": {
+      "kind": "PRIMITIVE"
+    },
+    "pinball.common.data.battle.enemy.FunnelMetalKind": {
+      "kind": "ENUM",
+      "constructors": {
+        "None": 0,
+        "Metal": 1,
+        "ForCombo": 2
+      },
+      "arguments": {
+        "0": [],
+        "2": [
+          "pinball.common.data.battle.enemy.FunnelForComboDetail"
+        ],
+        "1": [
+          "pinball.common.data.battle.enemy.FunnelMetalDetail"
+        ]
+      },
+      "aliases": {
+        "None": "T1",
+        "Metal": "T2",
+        "ForCombo": "T3"
+      }
+    },
+    "pinball.common.data.battle.enemy.FunnelForComboDetail": {
+      "kind": "ANONYMOUS",
+      "fields": {
+        "displays_damage": "Bool"
+      },
+      "aliases": {
+        "displays_damage": "a"
+      },
+      "array": false,
+      "order": [
+        "displays_damage"
+      ]
+    },
+    "pinball.common.data.battle.enemy.FunnelMetalDetail": {
+      "kind": "ANONYMOUS",
+      "fields": {
+        "receivable_conditons": "Bool",
+        "immune_poison": "Bool"
+      },
+      "aliases": {
+        "receivable_conditons": "b",
+        "immune_poison": "a"
+      },
+      "array": false,
+      "order": [
+        "immune_poison",
+        "receivable_conditons"
+      ]
+    },
+    "pinball.common.data.battle.enemy.EnemyConditionIconPosition": {
+      "kind": "ABSTRACT",
+      "item": "Int"
+    },
+    "Array<String>": {
+      "kind": "COLLECTION",
+      "item": "String"
+    },
+    "Array<pinball.master.generated.RaceId>": {
+      "kind": "COLLECTION",
+      "item": "pinball.master.generated.RaceId"
+    },
+    "pinball.master.generated.RaceId": {
+      "kind": "ABSTRACT",
+      "item": "String"
+    },
+    "pinball.scene.battle.battle.enemy.standard.TimeKind": {
+      "kind": "ENUM",
+      "constructors": {
+        "Loop": 1,
+        "Infinity": 2,
+        "Frame": 0
+      },
+      "arguments": {
+        "0": [
+          "Int"
+        ],
+        "2": [],
+        "1": [
+          "Int"
+        ]
+      },
+      "aliases": {
+        "Loop": "T2",
+        "Infinity": "S1",
+        "Frame": "T1"
+      }
+    },
+    "pinball.scene.battle.battle.enemy.standard.PositionKind": {
+      "kind": "ENUM",
+      "constructors": {
+        "Relative": 1,
+        "Absolute": 0
+      },
+      "arguments": {
+        "0": [
+          "String"
+        ],
+        "1": [
+          "Float",
+          "Float"
+        ]
+      },
+      "aliases": {
+        "Relative": "2",
+        "Absolute": "T1"
+      }
+    },
+    "Float": {
+      "kind": "PRIMITIVE"
+    },
+    "pinball.master.generated.GenderId": {
+      "kind": "ABSTRACT",
+      "item": "String"
+    },
+    "Array<pinball.scene.battle.battle.enemy.standard.Form>": {
+      "kind": "COLLECTION",
+      "item": "pinball.scene.battle.battle.enemy.standard.Form"
+    },
+    "pinball.scene.battle.battle.enemy.standard.Form": {
+      "kind": "ANONYMOUS",
+      "fields": {
+        "winceCutins": "Array<pinball.scene.battle.battle.enemy.standard.Cutin>",
+        "winceActions": "Array<pinball.scene.battle.battle.enemy.standard.Action>",
+        "watches": "Array<pinball.scene.battle.battle.enemy.standard.Watch>",
+        "terminationCondition": "pinball.scene.battle.battle.enemy.standard.TerminationCondition",
+        "stunCutins": "Array<pinball.scene.battle.battle.enemy.standard.Cutin>",
+        "stunActions": "Array<pinball.scene.battle.battle.enemy.standard.Action>",
+        "states": "Array<pinball.scene.battle.battle.enemy.standard.SimpleState>",
+        "revivalState": "Int",
+        "revivalPosition": "pinball.scene.battle.battle.enemy.standard.PositionKind",
+        "initialState": "Int",
+        "events": "Array<pinball.scene.battle.battle.enemy.standard.FormEvent>",
+        "defaultWinceAnimation": "Null<Int>",
+        "defaultStunAnimation": "Null<Int>",
+        "deadCutins": "Array<pinball.scene.battle.battle.enemy.standard.Cutin>",
+        "deadActions": "Array<pinball.scene.battle.battle.enemy.standard.Action>",
+        "changeStrategy": "pinball.scene.battle.battle.enemy.standard.FormChangeStrategy"
+      },
+      "aliases": {
+        "winceCutins": "l",
+        "winceActions": "k",
+        "watches": "h",
+        "terminationCondition": "d",
+        "stunCutins": "j",
+        "stunActions": "i",
+        "states": "g",
+        "revivalState": "b",
+        "revivalPosition": "c",
+        "initialState": "a",
+        "events": "o",
+        "defaultWinceAnimation": "bp",
+        "defaultStunAnimation": "bo",
+        "deadCutins": "n",
+        "deadActions": "m",
+        "changeStrategy": "bq"
+      },
+      "array": false,
+      "order": [
+        "changeStrategy",
+        "deadActions",
+        "deadCutins",
+        "defaultStunAnimation",
+        "defaultWinceAnimation",
+        "events",
+        "initialState",
+        "revivalPosition",
+        "revivalState",
+        "states",
+        "stunActions",
+        "stunCutins",
+        "terminationCondition",
+        "watches",
+        "winceActions",
+        "winceCutins"
+      ]
+    },
+    "Array<pinball.scene.battle.battle.enemy.standard.Cutin>": {
+      "kind": "COLLECTION",
+      "item": "pinball.scene.battle.battle.enemy.standard.Cutin"
+    },
+    "pinball.scene.battle.battle.enemy.standard.Cutin": {
+      "kind": "ANONYMOUS",
+      "fields": {
+        "text": "String",
+        "offsetY": "Float",
+        "offsetX": "Float",
+        "event": "pinball.scene.battle.battle.enemy.standard.EventKind"
+      },
+      "aliases": {
+        "text": "b",
+        "offsetY": "d",
+        "offsetX": "c",
+        "event": "a"
+      },
+      "array": false,
+      "order": [
+        "event",
+        "offsetX",
+        "offsetY",
+        "text"
+      ]
+    },
+    "pinball.scene.battle.battle.enemy.standard.EventKind": {
+      "kind": "ENUM",
+      "constructors": {
+        "PerLoop": 3,
+        "PerFrame": 4,
+        "OnUpdate": 2,
+        "OnStateExit": 1,
+        "OnStateEnter": 0
+      },
+      "arguments": {
+        "0": [],
+        "4": [
+          "Int"
+        ],
+        "2": [
+          "Int"
+        ],
+        "1": [],
+        "3": [
+          "Int",
+          "Int"
+        ]
+      },
+      "aliases": {
+        "PerLoop": "T4",
+        "PerFrame": "T5",
+        "OnUpdate": "T3",
+        "OnStateExit": "T2",
+        "OnStateEnter": "T1"
+      }
+    },
+    "Array<pinball.scene.battle.battle.enemy.standard.Action>": {
+      "kind": "COLLECTION",
+      "item": "pinball.scene.battle.battle.enemy.standard.Action"
+    },
+    "pinball.scene.battle.battle.enemy.standard.Action": {
+      "kind": "ANONYMOUS",
+      "fields": {
+        "offsetY": "Float",
+        "offsetX": "Float",
+        "filePath": "pinball.scene.battle.battle.enemy.standard.ActionDslAssetName",
+        "event": "pinball.scene.battle.battle.enemy.standard.EventKind"
+      },
+      "aliases": {
+        "offsetY": "d",
+        "offsetX": "c",
+        "filePath": "b",
+        "event": "a"
+      },
+      "array": false,
+      "order": [
+        "event",
+        "filePath",
+        "offsetX",
+        "offsetY"
+      ]
+    },
+    "Array<pinball.scene.battle.battle.enemy.standard.Watch>": {
+      "kind": "COLLECTION",
+      "item": "pinball.scene.battle.battle.enemy.standard.Watch"
+    },
+    "pinball.scene.battle.battle.enemy.standard.Watch": {
+      "kind": "ANONYMOUS",
+      "fields": {
+        "strategy": "pinball.scene.battle.battle.enemy.standard.WatchStrategy",
+        "priority": "Int",
+        "match_even_if_winced_self": "Bool",
+        "match_even_if_suspended_self": "Bool",
+        "match_even_if_stunned_self": "Bool",
+        "key4": "pinball.scene.battle.battle.enemy.standard.WatchKey4",
+        "key3": "pinball.scene.battle.battle.enemy.standard.WatchKey3",
+        "key2": "pinball.scene.battle.battle.enemy.standard.WatchKey2",
+        "key1": "pinball.scene.battle.battle.enemy.standard.WatchKey1",
+        "content": "pinball.scene.battle.battle.enemy.standard.WatchContent"
+      },
+      "aliases": {
+        "strategy": "f",
+        "priority": "e",
+        "match_even_if_winced_self": "h",
+        "match_even_if_suspended_self": "j",
+        "match_even_if_stunned_self": "g",
+        "key4": "d",
+        "key3": "c",
+        "key2": "b",
+        "key1": "a",
+        "content": "i"
+      },
+      "array": false,
+      "order": [
+        "content",
+        "key1",
+        "key2",
+        "key3",
+        "key4",
+        "match_even_if_stunned_self",
+        "match_even_if_suspended_self",
+        "match_even_if_winced_self",
+        "priority",
+        "strategy"
+      ]
+    },
+    "pinball.scene.battle.battle.enemy.standard.WatchStrategy": {
+      "kind": "ENUM",
+      "constructors": {
+        "OnUpdate": 1,
+        "OnStateExit": 0
+      },
+      "arguments": {
+        "0": [],
+        "1": []
+      },
+      "aliases": {
+        "OnUpdate": "T3",
+        "OnStateExit": "T2"
+      }
+    },
+    "pinball.scene.battle.battle.enemy.standard.WatchKey4": {
+      "kind": "ENUM",
+      "constructors": {
+        "Winced": 2,
+        "Stunned": 3,
+        "StateMatched": 0,
+        "ModifierFieldEnd": 7,
+        "HpRatio": 1,
+        "HitCountCheckPrevented": 5,
+        "EnteredFeverMode": 6,
+        "DamageCheckPrevented": 4
+      },
+      "arguments": {
+        "0": [],
+        "4": [],
+        "2": [],
+        "6": [],
+        "1": [
+          "Float"
+        ],
+        "5": [],
+        "3": [],
+        "7": [
+          "pinball.common.data.battle.action.ModifierFieldTargetKind"
+        ]
+      },
+      "aliases": {
+        "Winced": "T3",
+        "Stunned": "T4",
+        "StateMatched": "T1",
+        "ModifierFieldEnd": "T8",
+        "HpRatio": "T2",
+        "HitCountCheckPrevented": "T6",
+        "EnteredFeverMode": "T7",
+        "DamageCheckPrevented": "T5"
+      }
+    },
+    "pinball.common.data.battle.action.ModifierFieldTargetKind": {
+      "kind": "ENUM",
+      "constructors": {
+        "Debuff": 2,
+        "Buff": 1,
+        "Both": 0
+      },
+      "arguments": {
+        "0": [],
+        "2": [],
+        "1": []
+      },
+      "aliases": {
+        "Debuff": "T3",
+        "Buff": "T2",
+        "Both": "T1"
+      }
+    },
+    "pinball.scene.battle.battle.enemy.standard.WatchKey3": {
+      "kind": "ENUM",
+      "constructors": {
+        "PrefixMatch": 2,
+        "None": 0,
+        "ExactMatch": 1
+      },
+      "arguments": {
+        "0": [],
+        "2": [
+          "String"
+        ],
+        "1": [
+          "Array<String>"
+        ]
+      },
+      "aliases": {
+        "PrefixMatch": "T3",
+        "None": "T1",
+        "ExactMatch": "T2"
+      }
+    },
+    "pinball.scene.battle.battle.enemy.standard.WatchKey2": {
+      "kind": "ENUM",
+      "constructors": {
+        "PrefixMatch": 2,
+        "None": 0,
+        "ExactMatch": 1
+      },
+      "arguments": {
+        "0": [],
+        "2": [
+          "String"
+        ],
+        "1": [
+          "Array<String>"
+        ]
+      },
+      "aliases": {
+        "PrefixMatch": "T3",
+        "None": "T1",
+        "ExactMatch": "T2"
+      }
+    },
+    "pinball.scene.battle.battle.enemy.standard.WatchKey1": {
+      "kind": "ENUM",
+      "constructors": {
+        "SomeFunnels": 3,
+        "SomeBosses": 2,
+        "AllFunnels": 1,
+        "AllBosses": 0
+      },
+      "arguments": {
+        "0": [
+          "Int",
+          "String"
+        ],
+        "2": [
+          "Int",
+          "String"
+        ],
+        "1": [
+          "Int",
+          "String"
+        ],
+        "3": [
+          "Int",
+          "String"
+        ]
+      },
+      "aliases": {
+        "SomeFunnels": "T4",
+        "SomeBosses": "T3",
+        "AllFunnels": "T2",
+        "AllBosses": "T1"
+      }
+    },
+    "pinball.scene.battle.battle.enemy.standard.WatchContent": {
+      "kind": "ENUM",
+      "constructors": {
+        "ShowCutin": 4,
+        "RequestToHaltAction": 2,
+        "ExecuteAction": 3,
+        "EvaluateBattleScript": 1,
+        "ChangeState": 0
+      },
+      "arguments": {
+        "0": [
+          "Array<Int>",
+          "Bool"
+        ],
+        "4": [
+          "String",
+          "Int",
+          "Float",
+          "Float"
+        ],
+        "2": [],
+        "1": [
+          "pinball.common.data.battle.script.BattleScriptExpression"
+        ],
+        "3": [
+          "Array<pinball.scene.battle.battle.enemy.standard.ActionDslAssetName>",
+          "Float",
+          "Float"
+        ]
+      },
+      "aliases": {
+        "ShowCutin": "T5",
+        "RequestToHaltAction": "T3",
+        "ExecuteAction": "T4",
+        "EvaluateBattleScript": "T2",
+        "ChangeState": "T1"
+      }
+    },
+    "Array<Int>": {
+      "kind": "COLLECTION",
+      "item": "Int"
+    },
+    "pinball.common.data.battle.script.BattleScriptExpression": {
+      "kind": "ENUM",
+      "constructors": {
+        "UnaryOperator": 5,
+        "SetVariableValue": 2,
+        "SetGlobalValue": 7,
+        "Number": 0,
+        "GetVariableValue": 1,
+        "FunctionCall": 3,
+        "Expressions": 6,
+        "BinaryOperator": 4
+      },
+      "arguments": {
+        "0": [
+          "pinball.common.data.battle.script.BattleScriptNumber"
+        ],
+        "4": [
+          "pinball.common.data.battle.script.BinaryOp",
+          "pinball.common.data.battle.script.BattleScriptExpression",
+          "pinball.common.data.battle.script.BattleScriptExpression"
+        ],
+        "2": [
+          "String",
+          "pinball.common.data.battle.script.BattleScriptExpression"
+        ],
+        "6": [
+          "Array<pinball.common.data.battle.script.BattleScriptExpression>"
+        ],
+        "1": [
+          "String"
+        ],
+        "5": [
+          "pinball.common.data.battle.script.UnaryOp",
+          "pinball.common.data.battle.script.BattleScriptExpression"
+        ],
+        "3": [
+          "pinball.common.data.battle.script.IntrinsicFunction",
+          "Array<pinball.common.data.battle.script.BattleScriptExpression>"
+        ],
+        "7": [
+          "String",
+          "pinball.common.data.battle.script.BattleScriptExpression"
+        ]
+      },
+      "aliases": {
+        "UnaryOperator": "T5",
+        "SetVariableValue": "T3",
+        "SetGlobalValue": "T8",
+        "Number": "T1",
+        "GetVariableValue": "T2",
+        "FunctionCall": "T7",
+        "Expressions": "T6",
+        "BinaryOperator": "T4"
+      }
+    },
+    "pinball.common.data.battle.script.BattleScriptNumber": {
+      "kind": "ABSTRACT",
+      "item": "Float"
+    },
+    "pinball.common.data.battle.script.BinaryOp": {
+      "kind": "ENUM",
+      "constructors": {
+        "Sub": 1,
+        "Mul": 2,
+        "LogicalOr": 9,
+        "LogicalAnd": 10,
+        "LessThan": 7,
+        "LessOrEqual": 8,
+        "GreaterThan": 5,
+        "GreaterOrEqual": 6,
+        "Equal": 4,
+        "Div": 3,
+        "Add": 0
+      },
+      "arguments": {
+        "0": [],
+        "8": [],
+        "4": [],
+        "2": [],
+        "10": [],
+        "6": [],
+        "1": [],
+        "9": [],
+        "5": [],
+        "3": [],
+        "7": []
+      },
+      "aliases": {
+        "Sub": "O2",
+        "Mul": "O3",
+        "LogicalOr": "OA",
+        "LogicalAnd": "OB",
+        "LessThan": "O8",
+        "LessOrEqual": "O9",
+        "GreaterThan": "O6",
+        "GreaterOrEqual": "O7",
+        "Equal": "O5",
+        "Div": "O4",
+        "Add": "O1"
+      }
+    },
+    "Array<pinball.common.data.battle.script.BattleScriptExpression>": {
+      "kind": "COLLECTION",
+      "item": "pinball.common.data.battle.script.BattleScriptExpression"
+    },
+    "pinball.common.data.battle.script.UnaryOp": {
+      "kind": "ENUM",
+      "constructors": {
+        "Minus": 0,
+        "LogicalNot": 1
+      },
+      "arguments": {
+        "0": [],
+        "1": []
+      },
+      "aliases": {
+        "Minus": "O1",
+        "LogicalNot": "O2"
+      }
+    },
+    "pinball.common.data.battle.script.IntrinsicFunction": {
+      "kind": "ENUM",
+      "constructors": {
+        "Sqrt": 8,
+        "Sin": 2,
+        "Sign": 7,
+        "Round": 6,
+        "Repeat": 19,
+        "Pow": 10,
+        "PingPong": 18,
+        "Mod": 0,
+        "Min": 14,
+        "Max": 15,
+        "Log": 11,
+        "Lerp": 16,
+        "InverseLerp": 17,
+        "GetFunnelDeadCount": 20,
+        "Floor": 5,
+        "Exp": 9,
+        "Cos": 3,
+        "Clamp01": 13,
+        "Clamp": 12,
+        "Ceil": 4,
+        "Abs": 1
+      },
+      "arguments": {
+        "0": [],
+        "16": [],
+        "8": [],
+        "4": [],
+        "20": [],
+        "12": [],
+        "2": [],
+        "18": [],
+        "10": [],
+        "6": [],
+        "14": [],
+        "1": [],
+        "17": [],
+        "9": [],
+        "5": [],
+        "13": [],
+        "3": [],
+        "19": [],
+        "11": [],
+        "7": [],
+        "15": []
+      },
+      "aliases": {
+        "Sqrt": "AH",
+        "Sin": "AB",
+        "Sign": "AG",
+        "Round": "AF",
+        "Repeat": "AS",
+        "Pow": "AJ",
+        "PingPong": "AR",
+        "Mod": "AT",
+        "Min": "AN",
+        "Max": "AO",
+        "Log": "AK",
+        "Lerp": "AP",
+        "InverseLerp": "AQ",
+        "GetFunnelDeadCount": "BA",
+        "Floor": "AE",
+        "Exp": "AI",
+        "Cos": "AC",
+        "Clamp01": "AM",
+        "Clamp": "AL",
+        "Ceil": "AD",
+        "Abs": "AA"
+      }
+    },
+    "pinball.scene.battle.battle.enemy.standard.TerminationCondition": {
+      "kind": "ENUM",
+      "constructors": {
+        "Health": 0,
+        "Defeat": 1
+      },
+      "arguments": {
+        "0": [
+          "pinball.common.math.FloatInt"
+        ],
+        "1": [
+          "Int",
+          "String"
+        ]
+      },
+      "aliases": {
+        "Health": "T1",
+        "Defeat": "T2"
+      }
+    },
+    "pinball.common.math.FloatInt": {
+      "kind": "ABSTRACT",
+      "item": "Float"
+    },
+    "Array<pinball.scene.battle.battle.enemy.standard.SimpleState>": {
+      "kind": "COLLECTION",
+      "item": "pinball.scene.battle.battle.enemy.standard.SimpleState"
+    },
+    "pinball.scene.battle.battle.enemy.standard.SimpleState": {
+      "kind": "ANONYMOUS",
+      "fields": {
+        "winceMotion": "Null<Int>",
+        "trial2Tag": "String",
+        "trial1Tag": "String",
+        "trial": "pinball.scene.battle.battle.enemy.standard.Trial",
+        "traits": "Array<pinball.scene.battle.battle.enemy.standard.StateTrait>",
+        "terminationCondition": "pinball.scene.battle.battle.enemy.standard.Condition",
+        "tags": "Array<String>",
+        "synchronization_priority": "Int",
+        "synchronization": "Bool",
+        "stunMotion": "Null<Int>",
+        "stateGroup": "String",
+        "sameFrameWithPartner": "Bool",
+        "removable": "Bool",
+        "rejectSkillChain": "Bool",
+        "quantumCutins": "Array<pinball.scene.battle.battle.enemy.standard.Quantum<Array<pinball.scene.battle.battle.enemy.standard.Cutin>>>",
+        "quantumActions": "Array<pinball.scene.battle.battle.enemy.standard.Quantum<Array<pinball.scene.battle.battle.enemy.standard.Action>>>",
+        "prettyName": "String",
+        "next": "pinball.scene.battle.battle.enemy.standard.TransitionDestination",
+        "movements": "Array<pinball.scene.battle.battle.enemy.standard.Movement>",
+        "invincibleByPhaseChange": "Bool",
+        "extraForeWinceMotion": "Null<Int>",
+        "extraForeStunMotion": "Null<Int>",
+        "extraForeAnimationMotion": "Null<Int>",
+        "extraBackWinceMotion": "Null<Int>",
+        "extraBackStunMotion": "Null<Int>",
+        "extraBackAnimationMotion": "Null<Int>",
+        "evalTerminationConditionEvenIfSuspended": "Bool",
+        "cutins": "Array<pinball.scene.battle.battle.enemy.standard.Cutin>",
+        "canonicalPath": "Int",
+        "battleScript2": "pinball.common.data.battle.script.BattleScriptExpression",
+        "battleScript1": "pinball.common.data.battle.script.BattleScriptExpression",
+        "backtrack_state_name_from_interrupt": "pinball.scene.battle.battle.enemy.standard.TransitionDestination",
+        "backtrack_state_name_from_inactive": "pinball.scene.battle.battle.enemy.standard.TransitionDestination",
+        "back": "pinball.scene.battle.battle.enemy.standard.TransitionDestination",
+        "animationSpeed": "Int",
+        "animation": "Null<Int>",
+        "allowWeakPhaseChange": "Bool",
+        "actions": "Array<pinball.scene.battle.battle.enemy.standard.Action>"
+      },
+      "aliases": {
+        "winceMotion": "bu",
+        "trial2Tag": "bF",
+        "trial1Tag": "bE",
+        "trial": "m",
+        "traits": "f",
+        "terminationCondition": "d",
+        "tags": "g",
+        "synchronization_priority": "bO",
+        "synchronization": "bB",
+        "stunMotion": "bt",
+        "stateGroup": "bH",
+        "sameFrameWithPartner": "bK",
+        "removable": "bf",
+        "rejectSkillChain": "bJ",
+        "quantumCutins": "xh",
+        "quantumActions": "xi",
+        "prettyName": "#",
+        "next": "b",
+        "movements": "k",
+        "invincibleByPhaseChange": "bL",
+        "extraForeWinceMotion": "bz",
+        "extraForeStunMotion": "bw",
+        "extraForeAnimationMotion": "bs",
+        "extraBackWinceMotion": "by",
+        "extraBackStunMotion": "bv",
+        "extraBackAnimationMotion": "br",
+        "evalTerminationConditionEvenIfSuspended": "bN",
+        "cutins": "h",
+        "canonicalPath": "a",
+        "battleScript2": "bD",
+        "battleScript1": "bC",
+        "backtrack_state_name_from_interrupt": "bG",
+        "backtrack_state_name_from_inactive": "bI",
+        "back": "c",
+        "animationSpeed": "bA",
+        "animation": "e",
+        "allowWeakPhaseChange": "bM",
+        "actions": "i"
+      },
+      "array": false,
+      "order": [
+        "actions",
+        "allowWeakPhaseChange",
+        "animation",
+        "animationSpeed",
+        "back",
+        "backtrack_state_name_from_inactive",
+        "backtrack_state_name_from_interrupt",
+        "battleScript1",
+        "battleScript2",
+        "canonicalPath",
+        "cutins",
+        "evalTerminationConditionEvenIfSuspended",
+        "extraBackAnimationMotion",
+        "extraBackStunMotion",
+        "extraBackWinceMotion",
+        "extraForeAnimationMotion",
+        "extraForeStunMotion",
+        "extraForeWinceMotion",
+        "invincibleByPhaseChange",
+        "movements",
+        "next",
+        "prettyName",
+        "quantumActions",
+        "quantumCutins",
+        "rejectSkillChain",
+        "removable",
+        "sameFrameWithPartner",
+        "stateGroup",
+        "stunMotion",
+        "synchronization",
+        "synchronization_priority",
+        "tags",
+        "terminationCondition",
+        "traits",
+        "trial",
+        "trial1Tag",
+        "trial2Tag",
+        "winceMotion"
+      ]
+    },
+    "Null<Int>": {
+      "kind": "PRIMITIVE"
+    },
+    "pinball.scene.battle.battle.enemy.standard.Trial": {
+      "kind": "ENUM",
+      "constructors": {
+        "WeakPoint1": 0,
+        "HitCountCheck": 2,
+        "DamageCheck": 1
+      },
+      "arguments": {
+        "0": [
+          "pinball.scene.battle.battle.enemy.standard.TrialWeakPoint1Params"
+        ],
+        "2": [
+          "pinball.scene.battle.battle.enemy.standard.TrialHitCountCheckParams"
+        ],
+        "1": [
+          "pinball.scene.battle.battle.enemy.standard.TrialDamageCheckParams"
+        ]
+      },
+      "aliases": {
+        "WeakPoint1": "T1",
+        "HitCountCheck": "T3",
+        "DamageCheck": "T2"
+      }
+    },
+    "pinball.scene.battle.battle.enemy.standard.TrialWeakPoint1Params": {
+      "kind": "ANONYMOUS",
+      "fields": {
+        "targets": "Array<pinball.scene.battle.battle.enemy.standard.WeakPointTarget>",
+        "next": "Array<Int>",
+        "is_hard": "Bool",
+        "back": "Array<Int>"
+      },
+      "aliases": {
+        "targets": "d",
+        "next": "e",
+        "is_hard": "h",
+        "back": "c"
+      },
+      "array": false,
+      "order": [
+        "back",
+        "is_hard",
+        "next",
+        "targets"
+      ]
+    },
+    "Array<pinball.scene.battle.battle.enemy.standard.WeakPointTarget>": {
+      "kind": "COLLECTION",
+      "item": "pinball.scene.battle.battle.enemy.standard.WeakPointTarget"
+    },
+    "pinball.scene.battle.battle.enemy.standard.WeakPointTarget": {
+      "kind": "ANONYMOUS",
+      "fields": {
+        "c": "Float",
+        "body": "pinball.scene.battle.battle.enemy.standard.RigidBody",
+        "b": "Float",
+        "a": "Float"
+      },
+      "aliases": {
+        "c": "c",
+        "body": "x",
+        "b": "b",
+        "a": "a"
+      },
+      "array": false,
+      "order": [
+        "a",
+        "b",
+        "body",
+        "c"
+      ]
+    },
+    "pinball.scene.battle.battle.enemy.standard.RigidBody": {
+      "kind": "ABSTRACT",
+      "item": "Int"
+    },
+    "pinball.scene.battle.battle.enemy.standard.TrialHitCountCheckParams": {
+      "kind": "ANONYMOUS",
+      "fields": {
+        "tag": "String",
+        "show_countdown": "Bool",
+        "next": "Array<Int>",
+        "content": "pinball.scene.battle.battle.enemy.standard.TrialHitCountCheckContent"
+      },
+      "aliases": {
+        "tag": "d",
+        "show_countdown": "b",
+        "next": "e",
+        "content": "a"
+      },
+      "array": false,
+      "order": [
+        "content",
+        "next",
+        "show_countdown",
+        "tag"
+      ]
+    },
+    "pinball.scene.battle.battle.enemy.standard.TrialHitCountCheckContent": {
+      "kind": "ENUM",
+      "constructors": {
+        "SkillChain": 3,
+        "Skill": 1,
+        "PowerFlip": 2,
+        "EvaluateSkill": 5,
+        "EvaluatePowerFlip": 6,
+        "EvaluateDirectAttack": 4,
+        "DirectAttack": 0
+      },
+      "arguments": {
+        "0": [
+          "Int"
+        ],
+        "4": [
+          "pinball.common.data.battle.script.BattleScriptExpression"
+        ],
+        "2": [
+          "Int"
+        ],
+        "6": [
+          "pinball.common.data.battle.script.BattleScriptExpression"
+        ],
+        "1": [
+          "Int"
+        ],
+        "5": [
+          "pinball.common.data.battle.script.BattleScriptExpression"
+        ],
+        "3": [
+          "Int"
+        ]
+      },
+      "aliases": {
+        "SkillChain": "T4",
+        "Skill": "T2",
+        "PowerFlip": "T3",
+        "EvaluateSkill": "T6",
+        "EvaluatePowerFlip": "T7",
+        "EvaluateDirectAttack": "T5",
+        "DirectAttack": "T1"
+      }
+    },
+    "pinball.scene.battle.battle.enemy.standard.TrialDamageCheckParams": {
+      "kind": "ANONYMOUS",
+      "fields": {
+        "tag": "String",
+        "show_countdown": "Bool",
+        "script": "pinball.common.data.battle.script.BattleScriptExpression",
+        "percentage": "Float",
+        "next": "Array<Int>"
+      },
+      "aliases": {
+        "tag": "f",
+        "show_countdown": "d",
+        "script": "h",
+        "percentage": "a",
+        "next": "g"
+      },
+      "array": false,
+      "order": [
+        "next",
+        "percentage",
+        "script",
+        "show_countdown",
+        "tag"
+      ]
+    },
+    "Array<pinball.scene.battle.battle.enemy.standard.StateTrait>": {
+      "kind": "COLLECTION",
+      "item": "pinball.scene.battle.battle.enemy.standard.StateTrait"
+    },
+    "pinball.scene.battle.battle.enemy.standard.StateTrait": {
+      "kind": "ABSTRACT",
+      "item": "Int"
+    },
+    "pinball.scene.battle.battle.enemy.standard.Condition": {
+      "kind": "ENUM",
+      "constructors": {
+        "UniqueCondition": 8,
+        "TimeElapsed": 0,
+        "SubjectAndPredicate": 2,
+        "SpawnPointHeld": 9,
+        "Or": 11,
+        "MovementCompleted": 3,
+        "ModifierField": 7,
+        "EvaluateTimeElapsed": 1,
+        "EnemyAlive": 4,
+        "CountFunnelAlive": 6,
+        "CountEnemyAlive": 5,
+        "And": 10
+      },
+      "arguments": {
+        "0": [
+          "pinball.scene.battle.battle.enemy.standard.TimeKind"
+        ],
+        "8": [
+          "pinball.master.generated.UniqueConditionId"
+        ],
+        "4": [
+          "String"
+        ],
+        "2": [
+          "pinball.scene.battle.battle.enemy.standard.ConditionB1",
+          "pinball.scene.battle.battle.enemy.standard.ConditionB2"
+        ],
+        "10": [
+          "pinball.scene.battle.battle.enemy.standard.Condition",
+          "pinball.scene.battle.battle.enemy.standard.Condition"
+        ],
+        "6": [
+          "Int",
+          "pinball.scene.battle.battle.enemy.standard.RelationalOperator"
+        ],
+        "1": [
+          "pinball.common.data.battle.script.BattleScriptExpression"
+        ],
+        "9": [
+          "Array<Int>"
+        ],
+        "5": [
+          "String",
+          "Int",
+          "pinball.scene.battle.battle.enemy.standard.RelationalOperator"
+        ],
+        "3": [],
+        "11": [
+          "pinball.scene.battle.battle.enemy.standard.Condition",
+          "pinball.scene.battle.battle.enemy.standard.Condition"
+        ],
+        "7": [
+          "pinball.common.data.battle.action.ModifierFieldTargetKind"
+        ]
+      },
+      "aliases": {
+        "UniqueCondition": "T6",
+        "TimeElapsed": "T1",
+        "SubjectAndPredicate": "T2",
+        "SpawnPointHeld": "T10",
+        "Or": "O2",
+        "MovementCompleted": "T3",
+        "ModifierField": "T5",
+        "EvaluateTimeElapsed": "T9",
+        "EnemyAlive": "T4",
+        "CountFunnelAlive": "T8",
+        "CountEnemyAlive": "T7",
+        "And": "O1"
+      }
+    },
+    "pinball.master.generated.UniqueConditionId": {
+      "kind": "ABSTRACT",
+      "item": "Int"
+    },
+    "pinball.scene.battle.battle.enemy.standard.ConditionB1": {
+      "kind": "ENUM",
+      "constructors": {
+        "Self": 0
+      },
+      "arguments": {
+        "0": []
+      },
+      "aliases": {
+        "Self": "T1"
+      }
+    },
+    "pinball.scene.battle.battle.enemy.standard.ConditionB2": {
+      "kind": "ENUM",
+      "constructors": {
+        "Shield": 5,
+        "Or": 9,
+        "Not": 10,
+        "HitCountCheck": 7,
+        "GoodCondition": 1,
+        "Expression": 6,
+        "EnteredFeverModeEvenOnce": 2,
+        "DamageCheck": 3,
+        "ConditionChange": 0,
+        "Barrier": 4,
+        "And": 8
+      },
+      "arguments": {
+        "0": [
+          "pinball.scene.battle.battle.enemy.standard.ConditionContent"
+        ],
+        "8": [
+          "pinball.scene.battle.battle.enemy.standard.ConditionB2",
+          "pinball.scene.battle.battle.enemy.standard.ConditionB2"
+        ],
+        "4": [],
+        "2": [],
+        "10": [
+          "pinball.scene.battle.battle.enemy.standard.ConditionB2"
+        ],
+        "6": [
+          "pinball.common.data.battle.script.BattleScriptExpression"
+        ],
+        "1": [],
+        "9": [
+          "pinball.scene.battle.battle.enemy.standard.ConditionB2",
+          "pinball.scene.battle.battle.enemy.standard.ConditionB2"
+        ],
+        "5": [],
+        "3": [],
+        "7": [
+          "Int",
+          "pinball.scene.battle.battle.enemy.standard.RelationalOperator"
+        ]
+      },
+      "aliases": {
+        "Shield": "T6",
+        "Or": "O2",
+        "Not": "O3",
+        "HitCountCheck": "T8",
+        "GoodCondition": "T2",
+        "Expression": "T7",
+        "EnteredFeverModeEvenOnce": "T3",
+        "DamageCheck": "T4",
+        "ConditionChange": "T1",
+        "Barrier": "T5",
+        "And": "O1"
+      }
+    },
+    "pinball.scene.battle.battle.enemy.standard.ConditionContent": {
+      "kind": "ABSTRACT",
+      "item": "Int"
+    },
+    "pinball.scene.battle.battle.enemy.standard.RelationalOperator": {
+      "kind": "ABSTRACT",
+      "item": "Int"
+    },
+    "Array<pinball.scene.battle.battle.enemy.standard.Quantum<Array<pinball.scene.battle.battle.enemy.standard.Cutin>>>": {
+      "kind": "COLLECTION",
+      "item": "pinball.scene.battle.battle.enemy.standard.Quantum<Array<pinball.scene.battle.battle.enemy.standard.Cutin>>"
+    },
+    "pinball.scene.battle.battle.enemy.standard.Quantum<Array<pinball.scene.battle.battle.enemy.standard.Cutin>>": {
+      "kind": "ENUM",
+      "constructors": {
+        "Pure": 0,
+        "Mixed": 1
+      },
+      "arguments": {
+        "0": [
+          "Array<pinball.scene.battle.battle.enemy.standard.Cutin>"
+        ],
+        "1": [
+          "Array<pinball.scene.battle.battle.enemy.standard.QuantumState<Array<pinball.scene.battle.battle.enemy.standard.Cutin>>>",
+          "pinball.scene.battle.battle.enemy.standard.Quantum<Array<pinball.scene.battle.battle.enemy.standard.Cutin>>"
+        ]
+      },
+      "aliases": {
+        "Pure": "T1",
+        "Mixed": "T2"
+      }
+    },
+    "Array<pinball.scene.battle.battle.enemy.standard.QuantumState<Array<pinball.scene.battle.battle.enemy.standard.Cutin>>>": {
+      "kind": "COLLECTION",
+      "item": "pinball.scene.battle.battle.enemy.standard.QuantumState<Array<pinball.scene.battle.battle.enemy.standard.Cutin>>"
+    },
+    "pinball.scene.battle.battle.enemy.standard.QuantumState<Array<pinball.scene.battle.battle.enemy.standard.Cutin>>": {
+      "kind": "ANONYMOUS",
+      "fields": {
+        "value": "pinball.scene.battle.battle.enemy.standard.Quantum<Array<pinball.scene.battle.battle.enemy.standard.Cutin>>",
+        "condition": "pinball.scene.battle.battle.enemy.standard.Condition"
+      },
+      "aliases": {
+        "value": "b",
+        "condition": "a"
+      },
+      "array": false,
+      "order": [
+        "condition",
+        "value"
+      ]
+    },
+    "Array<pinball.scene.battle.battle.enemy.standard.Quantum<Array<pinball.scene.battle.battle.enemy.standard.Action>>>": {
+      "kind": "COLLECTION",
+      "item": "pinball.scene.battle.battle.enemy.standard.Quantum<Array<pinball.scene.battle.battle.enemy.standard.Action>>"
+    },
+    "pinball.scene.battle.battle.enemy.standard.Quantum<Array<pinball.scene.battle.battle.enemy.standard.Action>>": {
+      "kind": "ENUM",
+      "constructors": {
+        "Pure": 0,
+        "Mixed": 1
+      },
+      "arguments": {
+        "0": [
+          "Array<pinball.scene.battle.battle.enemy.standard.Action>"
+        ],
+        "1": [
+          "Array<pinball.scene.battle.battle.enemy.standard.QuantumState<Array<pinball.scene.battle.battle.enemy.standard.Action>>>",
+          "pinball.scene.battle.battle.enemy.standard.Quantum<Array<pinball.scene.battle.battle.enemy.standard.Action>>"
+        ]
+      },
+      "aliases": {
+        "Pure": "T1",
+        "Mixed": "T2"
+      }
+    },
+    "Array<pinball.scene.battle.battle.enemy.standard.QuantumState<Array<pinball.scene.battle.battle.enemy.standard.Action>>>": {
+      "kind": "COLLECTION",
+      "item": "pinball.scene.battle.battle.enemy.standard.QuantumState<Array<pinball.scene.battle.battle.enemy.standard.Action>>"
+    },
+    "pinball.scene.battle.battle.enemy.standard.QuantumState<Array<pinball.scene.battle.battle.enemy.standard.Action>>": {
+      "kind": "ANONYMOUS",
+      "fields": {
+        "value": "pinball.scene.battle.battle.enemy.standard.Quantum<Array<pinball.scene.battle.battle.enemy.standard.Action>>",
+        "condition": "pinball.scene.battle.battle.enemy.standard.Condition"
+      },
+      "aliases": {
+        "value": "b",
+        "condition": "a"
+      },
+      "array": false,
+      "order": [
+        "condition",
+        "value"
+      ]
+    },
+    "pinball.scene.battle.battle.enemy.standard.TransitionDestination": {
+      "kind": "ENUM",
+      "constructors": {
+        "QS": 1,
+        "LS": 0
+      },
+      "arguments": {
+        "0": [
+          "pinball.scene.battle.battle.enemy.standard.NextState"
+        ],
+        "1": [
+          "pinball.scene.battle.battle.enemy.standard.QuantumTransition"
+        ]
+      },
+      "aliases": {
+        "QS": "T2",
+        "LS": "T1"
+      }
+    },
+    "pinball.scene.battle.battle.enemy.standard.NextState": {
+      "kind": "ENUM",
+      "constructors": {
+        "Shield": 10,
+        "Poison": 2,
+        "ModifierField": 17,
+        "MemberUniqueCondition": 13,
+        "Level": 12,
+        "HitCountCheck": 9,
+        "GoodCondition": 3,
+        "GeneralFunnelDead": 16,
+        "GeneralFunnelAlive": 15,
+        "GeneralBossAlive": 14,
+        "Funnel": 4,
+        "Frozen": 1,
+        "Expression": 11,
+        "EnteredFeverModeEvenOnce": 7,
+        "DuringFeverMode": 6,
+        "DamageCheck": 8,
+        "Barrier": 5,
+        "Always": 0
+      },
+      "arguments": {
+        "0": [
+          "Array<Int>"
+        ],
+        "16": [
+          "Array<Int>",
+          "Array<Int>",
+          "pinball.scene.battle.battle.enemy.standard.NextStateForceChangeStateKind",
+          "Array<String>"
+        ],
+        "8": [
+          "Array<Int>",
+          "Array<Int>",
+          "pinball.scene.battle.battle.enemy.standard.NextStateForceChangeStateKind"
+        ],
+        "4": [
+          "Array<Int>",
+          "Array<Int>",
+          "pinball.scene.battle.battle.enemy.standard.NextStateForceChangeStateKind"
+        ],
+        "12": [
+          "Array<Int>",
+          "Array<Int>",
+          "pinball.scene.battle.battle.enemy.standard.NextStateForceChangeStateKind",
+          "Int"
+        ],
+        "2": [
+          "Array<Int>",
+          "Array<Int>",
+          "pinball.scene.battle.battle.enemy.standard.NextStateForceChangeStateKind"
+        ],
+        "10": [
+          "Array<Int>",
+          "Array<Int>",
+          "pinball.scene.battle.battle.enemy.standard.NextStateForceChangeStateKind"
+        ],
+        "6": [
+          "Array<Int>",
+          "Array<Int>",
+          "pinball.scene.battle.battle.enemy.standard.NextStateForceChangeStateKind"
+        ],
+        "14": [
+          "Array<Int>",
+          "Array<Int>",
+          "pinball.scene.battle.battle.enemy.standard.NextStateForceChangeStateKind",
+          "String"
+        ],
+        "1": [
+          "Array<Int>",
+          "Array<Int>",
+          "pinball.scene.battle.battle.enemy.standard.NextStateForceChangeStateKind"
+        ],
+        "17": [
+          "Array<Int>",
+          "Array<Int>",
+          "pinball.scene.battle.battle.enemy.standard.NextStateForceChangeStateKind",
+          "pinball.common.data.battle.action.ModifierFieldTargetKind"
+        ],
+        "9": [
+          "Array<Int>",
+          "Array<Int>",
+          "pinball.scene.battle.battle.enemy.standard.NextStateForceChangeStateKind",
+          "Int"
+        ],
+        "5": [
+          "Array<Int>",
+          "Array<Int>",
+          "pinball.scene.battle.battle.enemy.standard.NextStateForceChangeStateKind"
+        ],
+        "13": [
+          "Array<Int>",
+          "Array<Int>",
+          "pinball.scene.battle.battle.enemy.standard.NextStateForceChangeStateKind",
+          "Int"
+        ],
+        "3": [
+          "Array<Int>",
+          "Array<Int>",
+          "pinball.scene.battle.battle.enemy.standard.NextStateForceChangeStateKind"
+        ],
+        "11": [
+          "Array<Int>",
+          "Array<Int>",
+          "pinball.scene.battle.battle.enemy.standard.NextStateForceChangeStateKind",
+          "pinball.common.data.battle.script.BattleScriptExpression"
+        ],
+        "7": [
+          "Array<Int>",
+          "Array<Int>",
+          "pinball.scene.battle.battle.enemy.standard.NextStateForceChangeStateKind"
+        ],
+        "15": [
+          "Array<Int>",
+          "Array<Int>",
+          "pinball.scene.battle.battle.enemy.standard.NextStateForceChangeStateKind",
+          "Array<String>"
+        ]
+      },
+      "aliases": {
+        "Shield": "TC",
+        "Poison": "T4",
+        "ModifierField": "TJ",
+        "MemberUniqueCondition": "TF",
+        "Level": "TE",
+        "HitCountCheck": "TB",
+        "GoodCondition": "T5",
+        "GeneralFunnelDead": "TI",
+        "GeneralFunnelAlive": "TH",
+        "GeneralBossAlive": "TG",
+        "Funnel": "T6",
+        "Frozen": "T3",
+        "Expression": "TD",
+        "EnteredFeverModeEvenOnce": "T9",
+        "DuringFeverMode": "T8",
+        "DamageCheck": "TA",
+        "Barrier": "T7",
+        "Always": "T1"
+      }
+    },
+    "pinball.scene.battle.battle.enemy.standard.NextStateForceChangeStateKind": {
+      "kind": "ENUM",
+      "constructors": {
+        "None": 0,
+        "IfMatchConsequent": 1,
+        "IfMatchAlternate": 2
+      },
+      "arguments": {
+        "0": [],
+        "2": [
+          "Bool"
+        ],
+        "1": [
+          "Bool"
+        ]
+      },
+      "aliases": {
+        "None": "T1",
+        "IfMatchConsequent": "T2",
+        "IfMatchAlternate": "T3"
+      }
+    },
+    "pinball.scene.battle.battle.enemy.standard.QuantumTransition": {
+      "kind": "ENUM",
+      "constructors": {
+        "Pure": 0,
+        "Mixed": 1
+      },
+      "arguments": {
+        "0": [
+          "pinball.scene.battle.battle.enemy.standard.Transition"
+        ],
+        "1": [
+          "Array<pinball.scene.battle.battle.enemy.standard.QuantumTransitionState>",
+          "pinball.scene.battle.battle.enemy.standard.QuantumTransition"
+        ]
+      },
+      "aliases": {
+        "Pure": "T1",
+        "Mixed": "T2"
+      }
+    },
+    "pinball.scene.battle.battle.enemy.standard.Transition": {
+      "kind": "ENUM",
+      "constructors": {
+        "D": 3,
+        "C": 2,
+        "B": 1,
+        "A": 0
+      },
+      "arguments": {
+        "0": [
+          "Array<Int>"
+        ],
+        "2": [
+          "Array<Int>"
+        ],
+        "1": [
+          "Array<Int>"
+        ],
+        "3": [
+          "Array<pinball.scene.battle.battle.enemy.standard.RandomSelectionCandidate>"
+        ]
+      },
+      "aliases": {
+        "D": "T4",
+        "C": "T3",
+        "B": "T2",
+        "A": "T1"
+      }
+    },
+    "Array<pinball.scene.battle.battle.enemy.standard.RandomSelectionCandidate>": {
+      "kind": "COLLECTION",
+      "item": "pinball.scene.battle.battle.enemy.standard.RandomSelectionCandidate"
+    },
+    "pinball.scene.battle.battle.enemy.standard.RandomSelectionCandidate": {
+      "kind": "ANONYMOUS",
+      "fields": {
+        "weight": "pinball.scene.battle.battle.enemy.standard.Weight",
+        "state": "Int"
+      },
+      "aliases": {
+        "weight": "a",
+        "state": "b"
+      },
+      "array": false,
+      "order": [
+        "state",
+        "weight"
+      ]
+    },
+    "pinball.scene.battle.battle.enemy.standard.Weight": {
+      "kind": "ENUM",
+      "constructors": {
+        "Static": 0,
+        "Dynamic": 1
+      },
+      "arguments": {
+        "0": [
+          "Float"
+        ],
+        "1": [
+          "pinball.common.data.battle.script.BattleScriptExpression"
+        ]
+      },
+      "aliases": {
+        "Static": "T1",
+        "Dynamic": "T2"
+      }
+    },
+    "Array<pinball.scene.battle.battle.enemy.standard.QuantumTransitionState>": {
+      "kind": "COLLECTION",
+      "item": "pinball.scene.battle.battle.enemy.standard.QuantumTransitionState"
+    },
+    "pinball.scene.battle.battle.enemy.standard.QuantumTransitionState": {
+      "kind": "ANONYMOUS",
+      "fields": {
+        "value": "pinball.scene.battle.battle.enemy.standard.QuantumTransition",
+        "condition": "pinball.scene.battle.battle.enemy.standard.Condition"
+      },
+      "aliases": {
+        "value": "b",
+        "condition": "a"
+      },
+      "array": false,
+      "order": [
+        "condition",
+        "value"
+      ]
+    },
+    "Array<pinball.scene.battle.battle.enemy.standard.Movement>": {
+      "kind": "COLLECTION",
+      "item": "pinball.scene.battle.battle.enemy.standard.Movement"
+    },
+    "pinball.scene.battle.battle.enemy.standard.Movement": {
+      "kind": "ENUM",
+      "constructors": {
+        "Time": 1,
+        "Speed": 0
+      },
+      "arguments": {
+        "0": [
+          "pinball.scene.battle.battle.enemy.standard.PositionKind",
+          "Float",
+          "pinball.common.data.battle.enemy.GeneralEnemyMovementEasing"
+        ],
+        "1": [
+          "pinball.scene.battle.battle.enemy.standard.PositionKind",
+          "pinball.scene.battle.battle.enemy.standard.TimeKind",
+          "pinball.common.data.battle.enemy.GeneralEnemyMovementEasing"
+        ]
+      },
+      "aliases": {
+        "Time": "T2",
+        "Speed": "T1"
+      }
+    },
+    "pinball.common.data.battle.enemy.GeneralEnemyMovementEasing": {
+      "kind": "ABSTRACT",
+      "item": "Int"
+    },
+    "Array<pinball.scene.battle.battle.enemy.standard.FormEvent>": {
+      "kind": "COLLECTION",
+      "item": "pinball.scene.battle.battle.enemy.standard.FormEvent"
+    },
+    "pinball.scene.battle.battle.enemy.standard.FormEvent": {
+      "kind": "ANONYMOUS",
+      "fields": {
+        "processes": "pinball.scene.battle.battle.enemy.standard.QuantumFormEventProcess",
+        "kind": "pinball.scene.battle.battle.enemy.standard.FormEventKind"
+      },
+      "aliases": {
+        "processes": "b",
+        "kind": "a"
+      },
+      "array": false,
+      "order": [
+        "kind",
+        "processes"
+      ]
+    },
+    "pinball.scene.battle.battle.enemy.standard.QuantumFormEventProcess": {
+      "kind": "ENUM",
+      "constructors": {
+        "Pure": 0,
+        "Mixed": 1
+      },
+      "arguments": {
+        "0": [
+          "pinball.scene.battle.battle.enemy.standard.FormEventProcess"
+        ],
+        "1": [
+          "Array<pinball.scene.battle.battle.enemy.standard.QuantumFormEventProcessState>",
+          "pinball.scene.battle.battle.enemy.standard.QuantumFormEventProcess"
+        ]
+      },
+      "aliases": {
+        "Pure": "T1",
+        "Mixed": "T2"
+      }
+    },
+    "pinball.scene.battle.battle.enemy.standard.FormEventProcess": {
+      "kind": "ANONYMOUS",
+      "fields": {
+        "contents": "Array<pinball.scene.battle.battle.enemy.standard.FormEventContent>"
+      },
+      "aliases": {
+        "contents": "a"
+      },
+      "array": false,
+      "order": [
+        "contents"
+      ]
+    },
+    "Array<pinball.scene.battle.battle.enemy.standard.FormEventContent>": {
+      "kind": "COLLECTION",
+      "item": "pinball.scene.battle.battle.enemy.standard.FormEventContent"
+    },
+    "pinball.scene.battle.battle.enemy.standard.FormEventContent": {
+      "kind": "ENUM",
+      "constructors": {
+        "ShowCutin": 0,
+        "ExecScript": 1,
+        "ChangeState": 2
+      },
+      "arguments": {
+        "0": [
+          "String",
+          "Float",
+          "Float"
+        ],
+        "2": [
+          "Int"
+        ],
+        "1": [
+          "pinball.common.data.battle.script.BattleScriptExpression"
+        ]
+      },
+      "aliases": {
+        "ShowCutin": "T1",
+        "ExecScript": "T2",
+        "ChangeState": "T3"
+      }
+    },
+    "Array<pinball.scene.battle.battle.enemy.standard.QuantumFormEventProcessState>": {
+      "kind": "COLLECTION",
+      "item": "pinball.scene.battle.battle.enemy.standard.QuantumFormEventProcessState"
+    },
+    "pinball.scene.battle.battle.enemy.standard.QuantumFormEventProcessState": {
+      "kind": "ANONYMOUS",
+      "fields": {
+        "value": "pinball.scene.battle.battle.enemy.standard.QuantumFormEventProcess",
+        "condition": "pinball.scene.battle.battle.enemy.standard.Condition"
+      },
+      "aliases": {
+        "value": "b",
+        "condition": "a"
+      },
+      "array": false,
+      "order": [
+        "condition",
+        "value"
+      ]
+    },
+    "pinball.scene.battle.battle.enemy.standard.FormEventKind": {
+      "kind": "ENUM",
+      "constructors": {
+        "SomebodyDead": 0
+      },
+      "arguments": {
+        "0": []
+      },
+      "aliases": {
+        "SomebodyDead": "T2"
+      }
+    },
+    "pinball.scene.battle.battle.enemy.standard.FormChangeStrategy": {
+      "kind": "ENUM",
+      "constructors": {
+        "Withstand": 1,
+        "Normal": 0
+      },
+      "arguments": {
+        "0": [],
+        "1": []
+      },
+      "aliases": {
+        "Withstand": "T2",
+        "Normal": "T1"
+      }
+    },
+    "pinball.common.data.general.ColorlessableElementKind": {
+      "kind": "ABSTRACT",
+      "item": "Int"
+    },
+    "pinball.scene.battle.battle.enemy.standard.DeadBehavior": {
+      "kind": "ENUM",
+      "constructors": {
+        "Vanish": 0,
+        "Revive": 1
+      },
+      "arguments": {
+        "0": [],
+        "1": [
+          "Int",
+          "Int"
+        ]
+      },
+      "aliases": {
+        "Vanish": "T1",
+        "Revive": "T2"
+      }
+    },
+    "pinball.master.generated.BossId": {
+      "kind": "ABSTRACT",
+      "item": "String"
+    },
+    "pinball.scene.battle.battle.enemy.standard.ColorChangeKind": {
+      "kind": "ENUM",
+      "constructors": {
+        "None": 0,
+        "ColorMatrix": 1
+      },
+      "arguments": {
+        "0": [],
+        "1": [
+          "Float",
+          "Float",
+          "Float",
+          "Float",
+          "Float",
+          "Float",
+          "Float",
+          "Float",
+          "Float",
+          "Float",
+          "Float",
+          "Float",
+          "Float",
+          "Float",
+          "Float",
+          "Float",
+          "Float",
+          "Float",
+          "Float",
+          "Float"
+        ]
+      },
+      "aliases": {
+        "None": "T1",
+        "ColorMatrix": "T2"
+      }
+    },
+    "Array<pinball.scene.battle.battle.enemy.standard.EnemyModel>": {
+      "kind": "COLLECTION",
+      "item": "pinball.scene.battle.battle.enemy.standard.EnemyModel"
+    },
+    "pinball.scene.battle.battle.enemy.standard.EnemyModel": {
+      "kind": "ANONYMOUS",
+      "fields": {
+        "type": "pinball.scene.battle.battle.enemy.standard.Type",
+        "toughness": "Int",
+        "suppressBentEffect": "Bool",
+        "share_condition_with_damage_share_target": "Bool",
+        "referenced_funnels": "Array<String>",
+        "race": "Array<pinball.master.generated.RaceId>",
+        "num_wince_state_frames": "pinball.scene.battle.battle.enemy.standard.TimeKind",
+        "num_stun_state_frames": "pinball.scene.battle.battle.enemy.standard.TimeKind",
+        "marker": "pinball.asset.path.AnimationLayoutAssetPath",
+        "initialPosition": "pinball.scene.battle.battle.enemy.standard.PositionKind",
+        "hit_count_check_fore_animation_path": "pinball.asset.path.AnimationLayoutAssetPath",
+        "hit_count_check_back_animation_path": "pinball.asset.path.AnimationLayoutAssetPath",
+        "gender": "pinball.master.generated.GenderId",
+        "forms": "Array<pinball.scene.battle.battle.enemy.standard.Form>",
+        "element": "pinball.common.data.general.ColorlessableElementKind",
+        "dont_apply_damage9": "Bool",
+        "dont_apply_damage8": "Bool",
+        "dont_apply_damage7": "Bool",
+        "dont_apply_damage6": "Bool",
+        "dont_apply_damage5": "Bool",
+        "dont_apply_damage4": "Bool",
+        "dont_apply_damage3": "Bool",
+        "dont_apply_damage2": "Bool",
+        "dont_apply_damage1": "Bool",
+        "dieWhenHitCountCheckPrevented": "Bool",
+        "dieWhenDamageCheckPrevented": "Bool",
+        "dieWhenAllWeakPointsAreBroken": "Bool",
+        "dead_behavior": "pinball.scene.battle.battle.enemy.standard.DeadBehavior",
+        "damage_share_target_boss_id": "pinball.master.generated.BossId",
+        "damage_check_fore_animation_path": "pinball.asset.path.AnimationLayoutAssetPath",
+        "damage_check_back_animation_path": "pinball.asset.path.AnimationLayoutAssetPath",
+        "color_change": "pinball.scene.battle.battle.enemy.standard.ColorChangeKind",
+        "children": "Array<pinball.scene.battle.battle.enemy.standard.EnemyModel>",
+        "attack": "Int",
+        "animations": "Array<String>",
+        "animation2": "pinball.asset.path.AnimationLayoutAssetPath",
+        "animation1": "pinball.asset.path.AnimationLayoutAssetPath",
+        "action_base_path": "pinball.scene.battle.battle.enemy.standard.ActionDslAssetBasePath"
+      },
+      "aliases": {
+        "type": "bx",
+        "toughness": "ah",
+        "suppressBentEffect": "bg",
+        "share_condition_with_damage_share_target": "bJ",
+        "referenced_funnels": "bo",
+        "race": "aa",
+        "num_wince_state_frames": "be",
+        "num_stun_state_frames": "bd",
+        "marker": "ar",
+        "initialPosition": "ae",
+        "hit_count_check_fore_animation_path": "bn",
+        "hit_count_check_back_animation_path": "bm",
+        "gender": "ac",
+        "forms": "au",
+        "element": "ab",
+        "dont_apply_damage9": "cF",
+        "dont_apply_damage8": "cE",
+        "dont_apply_damage7": "cD",
+        "dont_apply_damage6": "cC",
+        "dont_apply_damage5": "cB",
+        "dont_apply_damage4": "cA",
+        "dont_apply_damage3": "bE",
+        "dont_apply_damage2": "bD",
+        "dont_apply_damage1": "bC",
+        "dieWhenHitCountCheckPrevented": "bj",
+        "dieWhenDamageCheckPrevented": "bi",
+        "dieWhenAllWeakPointsAreBroken": "bh",
+        "dead_behavior": "bF",
+        "damage_share_target_boss_id": "bG",
+        "damage_check_fore_animation_path": "bl",
+        "damage_check_back_animation_path": "bk",
+        "color_change": "bI",
+        "children": "av",
+        "attack": "ba",
+        "animations": "aw",
+        "animation2": "at",
+        "animation1": "as",
+        "action_base_path": "bH"
+      },
+      "array": false,
+      "order": [
+        "action_base_path",
+        "animation1",
+        "animation2",
+        "animations",
+        "attack",
+        "children",
+        "color_change",
+        "damage_check_back_animation_path",
+        "damage_check_fore_animation_path",
+        "damage_share_target_boss_id",
+        "dead_behavior",
+        "dieWhenAllWeakPointsAreBroken",
+        "dieWhenDamageCheckPrevented",
+        "dieWhenHitCountCheckPrevented",
+        "dont_apply_damage1",
+        "dont_apply_damage2",
+        "dont_apply_damage3",
+        "dont_apply_damage4",
+        "dont_apply_damage5",
+        "dont_apply_damage6",
+        "dont_apply_damage7",
+        "dont_apply_damage8",
+        "dont_apply_damage9",
+        "element",
+        "forms",
+        "gender",
+        "hit_count_check_back_animation_path",
+        "hit_count_check_fore_animation_path",
+        "initialPosition",
+        "marker",
+        "num_stun_state_frames",
+        "num_wince_state_frames",
+        "race",
+        "referenced_funnels",
+        "share_condition_with_damage_share_target",
+        "suppressBentEffect",
+        "toughness",
+        "type"
+      ]
+    },
+    "pinball.scene.battle.battle.enemy.standard.ActionDslAssetBasePath": {
+      "kind": "ABSTRACT",
+      "item": "String"
+    }
+  }
+}
