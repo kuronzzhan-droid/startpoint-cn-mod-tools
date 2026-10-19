@@ -63,6 +63,9 @@ def terrain_checks(document, *, view=None):
         positions = [o.get("name") for o in objects if o.get("type") == "CUSTOM_POSITION"]
         if any(not name for name in positions):
             issues.append(f"层 {label} CUSTOM_POSITION 名称为空")
+        duplicates = sorted(name for name, count in Counter(positions).items() if count > 1 and name)
+        if duplicates:
+            issues.append(f"层 {label} CUSTOM_POSITION 重名，坐标语义不唯一: {duplicates}")
         multiplayer = document.get("quest", {}).get("kind") not in {"practice", "practice_quest"}
         if multiplayer and counts["COFFIN"] != 9:
             issues.append(f"层 {label} 协力复活位须为 9 个，实际 {counts['COFFIN']}")
