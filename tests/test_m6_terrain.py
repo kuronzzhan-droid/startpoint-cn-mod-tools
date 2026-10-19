@@ -79,9 +79,13 @@ def test_terrain_scene_terrain_reuses_only_its_own_detached_field_data(state):
     apply_terrain(state, "1006001", payload)
     terrain_fd = show(state)["field_data"]["id"]
     edit_parameters(state, "1006001", {"parameters": {"scene": "field"}})
-    assert show(state)["field_data"]["id"] != terrain_fd
+    scene_fd = show(state)["field_data"]["id"]
+    assert scene_fd != terrain_fd
     apply_terrain(state, "1006001", payload | {"x": 121})
     assert show(state)["field_data"]["id"] == terrain_fd
+    assert next(p for p in show(state)["terrain"]["waves"][0]["custom_positions"] if p["name"] == "p0")["rect"]["x"] == 121
+    edit_parameters(state, "1006001", {"parameters": {"scene": "field"}})
+    assert show(state)["field_data"]["id"] == scene_fd
     assert next(p for p in show(state)["terrain"]["waves"][0]["custom_positions"] if p["name"] == "p0")["rect"]["x"] == 121
 
 
