@@ -551,7 +551,7 @@
                     "additionalProperties": false,
                     "required": ["type", "amount"],
                     "properties": {
-                      "type": {"type": "integer", "enum": [0, 1, 2]},
+                      "type": {"type": "integer", "enum": [1, 2]},
                       "amount": {"type": "integer", "minimum": 1, "maximum": 2147483647}
                     }
                   }

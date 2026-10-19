@@ -8,35 +8,16 @@ from wf.view.base149 import join
 from . import schema as s
 from .shop_model import (ITEM, STATUS, SOUL, ENH, ENH_ABILITY, ENH_STATUS, ENH_SHOP,
                          SERVER_ENH, WEAPON_TABLES)
-from .shop_edit import one, reserve, image_reference, item_reference, set_costs
+from .shop_edit import one, reserve, image_reference, item_reference, set_costs, validate_text
+from .weapon_rules import (check_ability_rows, awakening_materials, clone_awakening,
+                           check_user_cost)
 
 SERVER_WEAPON_MAPS = tuple("assets/" + name + ".json" for name in (
     "equipment_lookup", "equipment_max_level", "equipment_element", "item_sale", "item_lookup"))
 SERVER_WEAPON_LISTS = ("assets/equipment_ids.json", "assets/item_ids.json")
 
 
-def check_ability_rows(table, text):
-    """M2.4's layout and actual profile-bound parseAt branches, never old notes."""
-    import wf_client_legality
-    from wf.apk.kinds import inspect_profile, kind_supported
-    from wf.caps.facts import table_signals
-    report = inspect_profile("test-v34")
-    if report["mismatches"]:
-        raise ValueError("weapon kind registry disagrees with actual SWF branches")
-    logical = SOUL if table == "ability_soul" else ENH_ABILITY
-    width = wf_describe.layout(table)["ncols"]
-    for index, row in enumerate(s.parse_rows(text)):
-        if len(row) != width:
-            raise ValueError(f"{table} row {index} must have {width} columns")
-        problems = wf_client_legality.client_legality_problems(table, row)
-        if problems:
-            raise ValueError(f"{table} row {index} kind/fields: {'; '.join(problems)}")
-    for signal, value in table_signals(logical, ("candidate",), text):
-        if signal == "kind_site" and not kind_supported(report, table, value["block"], value["kind"]):
-            raise ValueError(f"weapon kind unsupported by real SWF: {table}.{value['block']}={value['kind']}")
-
-
-def edit_abilities(rows, changes, table):
+def edit_abilities(rows, changes, table, *, client_profile=None, provides=None):
     layout = wf_describe.layout(table)
     for change in changes:
         if change["table"] != table:
@@ -59,7 +40,7 @@ def edit_abilities(rows, changes, table):
             for field, value in zip(("strength.power1", "strength.first_max"), change["strength"]):
                 row[base + offsets[field]] = str(value)
     text = "\n".join(join(row) for row in rows)
-    check_ability_rows(table, text)
+    check_ability_rows(table, text, client_profile=client_profile, provides=provides)
     return text
 
 
@@ -82,9 +63,11 @@ def _scale_status(node, spec):
 
 def clone_weapon(state, spec, reserved=()):
     source = str(spec["sourceWeapon"])
+    materials = awakening_materials(state, source)
     equipment = one(state, s.EQUIPMENT, source, 16)
     soul_key = equipment[10]
     occupied = {key for logical in WEAPON_TABLES for key in state.table(logical)}
+    occupied.update(materials)
     for target in SERVER_WEAPON_MAPS:
         occupied.update(state.server(target))
     for target in SERVER_WEAPON_LISTS:
@@ -110,8 +93,8 @@ def clone_weapon(state, spec, reserved=()):
                    for value in state.table(ENH).values()):
             raise ValueError("enhancedIcon must reuse a current equipment enhancement icon")
     for name in ("name", "description"):
-        if name in spec and any(c in spec[name] for c in ("\n", "\r", '"', "::")):
-            raise ValueError(f"weapon {name} contains unsupported text delimiters")
+        if name in spec:
+            validate_text(spec[name], f"weapon {name}")
     equipment[0], equipment[10] = "boss_workshop_" + identity, identity
     for name, column in (("name", 1), ("description", 7), ("icon", 6)):
         if name in spec:
@@ -130,7 +113,9 @@ def clone_weapon(state, spec, reserved=()):
             if logical == SOUL or any(c["table"] == table for c in changes):
                 raise ValueError(f"weapon donor lacks {logical}")
             continue
-        value = edit_abilities(s.parse_rows(value), changes, table)
+        value = edit_abilities(s.parse_rows(value), changes, table,
+                              client_profile=getattr(state, "client_profile", None),
+                              provides=getattr(state, "client_provides", None))
         state.set_leaf(logical, [identity], value, new=True)
     for logical in (STATUS, ENH_STATUS):
         value = state.table(logical).get(source)
@@ -143,6 +128,8 @@ def clone_weapon(state, spec, reserved=()):
         row = s.parse_rows(enhancement)[0]
         if "name" in spec:
             row[2] = spec["name"] + "·改"
+        if "description" in spec:
+            row[6] = spec["description"]
         if "enhancedIcon" in spec:
             row[4] = spec["enhancedIcon"]
         state.set_leaf(ENH, [identity], join(row), new=True)
@@ -160,6 +147,7 @@ def clone_weapon(state, spec, reserved=()):
         state.set_server_keys(target, {identity: value}, new=True)
     for target in SERVER_WEAPON_LISTS:
         state.append_server_values(target, [int(identity)])
+    clone_awakening(state, source, identity, materials)
 
 
 def _clone_stages(state, source, identity, spec, reserved):
@@ -177,6 +165,9 @@ def _clone_stages(state, source, identity, spec, reserved):
     for index, (key, row) in enumerate(stages):
         if key not in server:
             raise ValueError(f"missing server enhancement stage {key}")
+        check_user_cost(server[key].get("userCost"))
+        if s.present(row[11]):
+            check_user_cost({"type": int(row[11]), "amount": int(row[12])})
         new_id = reserve(occupied, int(identity) * 100 + index + 1, requested[index] if requested else None)
         occupied.add(new_id)
         allocated.append(new_id)
@@ -206,10 +197,14 @@ def edit_materials(state, spec):
         value["costs"] = [{"id": int(cost["itemId"]), "amount": cost["amount"]} for cost in stage["costs"]]
         if "userCost" in stage:
             cost = stage["userCost"]
+            check_user_cost(cost)
             row[11:13] = [str(cost["type"]), str(cost["amount"])] if cost is not None else ["(None)", ""]
             if cost is None:
                 value.pop("userCost", None)
             else:
                 value["userCost"] = copy.deepcopy(cost)
+        check_user_cost(value.get("userCost"))
+        if s.present(row[11]):
+            check_user_cost({"type": int(row[11]), "amount": int(row[12])})
         state.set_leaf(ENH_SHOP, [product], join(row))
         state.set_server_keys(SERVER_ENH, {product: value})

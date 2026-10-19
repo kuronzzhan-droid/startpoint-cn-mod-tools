@@ -60,11 +60,12 @@ def _context(state, created, document, baseline, requests, acknowledgment=False)
                 source_quest=baseline.get("quest", {}).get("id"), supplied=supplied)}
 
 
-def _replay(source, quest, requests, *, server_dir=None, reserved=()):
+def _replay(source, quest, requests, *, server_dir=None, reserved=(), client_profile=None, provides=None):
     from wf.boss.reader import BossReader
     from wf.rules.boss import check_boss
     from .source import StudioSource
     state = BossEditState(source, server_dir=server_dir)
+    state.client_profile, state.client_provides = client_profile, provides
     affected, created, allocation = [], False, None
     preload_approvals = {}
     for index, request in enumerate(requests):
@@ -124,13 +125,14 @@ def _replay(source, quest, requests, *, server_dir=None, reserved=()):
     return state, quest, checks, allocation
 
 
-def compile_boss(source, store, draft, *, server_dir=None):
+def compile_boss(source, store, draft, *, server_dir=None, client_profile=None, provides=None):
     validate(draft)
     quest = draft["characterId"]
     _identity(draft, quest, source.version)
     requests = _requests(draft)
     reserved = BossEditor(source, store=store, server_dir=server_dir)._reservations(quest)
-    state, _, checks, _ = _replay(source, quest, requests, server_dir=server_dir, reserved=reserved)
+    state, _, checks, _ = _replay(source, quest, requests, server_dir=server_dir, reserved=reserved,
+                                client_profile=client_profile, provides=provides)
     state.verify_snapshot(draft["changes"][0]["params"]["inputs"])
     return {"client": state.client, "servers": state.servers,
             "server_before": {key: digest(state.server_original[key]) for key in state.servers},
@@ -138,8 +140,9 @@ def compile_boss(source, store, draft, *, server_dir=None):
 
 
 class BossEditor:
-    def __init__(self, source, *, store=None, server_dir=None):
+    def __init__(self, source, *, store=None, server_dir=None, client_profile=None):
         self.source, self.store, self.server_dir = source, store or BossDraftStore(), server_dir
+        self.client_profile = client_profile
 
     def _reservations(self, except_quest):
         quests, nodes = [], []
@@ -205,12 +208,13 @@ class BossEditor:
         _identity(draft, quest, self.source.version)
         requests = _requests(draft)
         if draft and requests:
-            old, _, _, _ = _replay(self.source, quest, copy.deepcopy(requests), server_dir=self.server_dir)
+            old, _, _, _ = _replay(self.source, quest, copy.deepcopy(requests), server_dir=self.server_dir,
+                                  client_profile=self.client_profile)
             old.verify_snapshot(draft["changes"][0]["params"]["inputs"])
         if extra is not None:
             requests.append(copy.deepcopy(extra))
         state, identity, checks, allocation = _replay(self.source, quest, requests,
-            server_dir=self.server_dir, reserved=self._reservations(quest))
+            server_dir=self.server_dir, reserved=self._reservations(quest), client_profile=self.client_profile)
         return state, identity, requests, checks, allocation
 
     def read(self, quest):
