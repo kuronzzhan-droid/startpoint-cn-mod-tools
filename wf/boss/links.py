@@ -56,6 +56,7 @@ def rewards(tables, quest):
 
 
 def shops(tables, entrance, reward, quest=None):
+    from .shop_model import enrich_product, equipment
     categories, currencies = set(), set(reward["item_ids"])
     inferred = {}
     node, event = entrance["stage_node"], entrance["event"]
@@ -99,16 +100,18 @@ def shops(tables, entrance, reward, quest=None):
         for path, row in products:
             if s.cell(row, 0) != category:
                 continue
-            group_products.append(record(tables, s.SHOP, path, row))
+            entry = enrich_product(tables, record(tables, s.SHOP, path, row))
+            group_products.append(entry)
             for column in range(32, 50, 3):
-                if s.cell(row, column) == "4":
+                if s.cell(row, column) == "4" or s.cell(row, column + 1) in entry["soul_item_ids"]:
                     key = s.cell(row, column + 1)
-                    weapon = record(tables, s.EQUIPMENT, [key])
-                    value = {"id": key, "product": path[0], "equipment": weapon,
+                    value = {**equipment(tables, key), "product": path[0],
                              "source": tables.citation(s.SHOP, path)}
                     if value not in weapons:
                         weapons.append(value)
         result.append({"id": category, "category": group, "products": group_products,
+                       "shop_kind": "boss_coin", "contains_soul_products": any(
+                           item["soul_item_ids"] for item in group_products),
                        "weapons": weapons, "association": inferred.get(category, {"kind": "native_node_or_currency"}),
                        "server_sync": "未执行；此读模型仅解析客户端视图"})
     return result
