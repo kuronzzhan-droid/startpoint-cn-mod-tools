@@ -86,3 +86,19 @@ def test_routine_rename_preserves_all_watches_and_action_preload(tmp_path, routi
     graph = Programs(editor.source)
     assert set(graph.closure(roots)) == {'battle/action/one', 'battle/action/two'}
     assert not graph.missing
+
+
+def test_behavior_keeps_same_enemy_per_wave_and_watch_entry_roots(tmp_path):
+    import copy
+    from wf.boss.behavior_model import read_behavior
+    from wf.boss.reader import BossReader
+    editor = behavior_editor(tmp_path)
+    editor.source.view.files[WATCH] = codec.build_node({'1': {'org': {'routine': {
+        '2': {'funnel': {'0': '0,idle,battle/action/two'}}}}}})
+    document = BossReader(editor.source).show('hard_multi:1006/1')
+    second = copy.deepcopy(document['enemies'][0])
+    second['wave'] = '1'
+    document['enemies'].append(second)
+    entries = read_behavior(editor.source, document)['enemies']
+    assert [entry['wave'] for entry in entries] == ['0', '1']
+    assert all(entry['preload_roots'] == ['battle/action/two'] for entry in entries)
