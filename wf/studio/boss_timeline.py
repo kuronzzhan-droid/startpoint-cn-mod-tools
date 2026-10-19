@@ -68,7 +68,8 @@ def timeline_summary(source, document):
         code, wave, level = enemy["enemyCode"], enemy["wave"], enemy["level"]
         row = next((item.get("row", []) for item in document.get("enemies", [])
                     if (item.get("code"), item.get("wave"), item.get("level")) == (code, wave, level)), [])
-        element = int(row[0]) if enemy["kind"] == "general" and row and row[0].isdigit() else None
+        # GeneralBoss masters use 1..7; build_timeline consumes internal 0..6.
+        element = int(row[0]) - 1 if enemy["kind"] == "general" and row and row[0] in set("1234567") else None
         triggered = set()
 
         def add(program, state, action, index):

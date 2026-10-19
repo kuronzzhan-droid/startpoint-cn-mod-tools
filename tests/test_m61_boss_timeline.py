@@ -8,7 +8,7 @@ import wf_quest_lib as codec
 from test_boss_behavior import behavior_editor, request
 from test_boss_model import csv_row
 from test_studio_drafts import live, _request
-from test_studio_timeline import cmd, root, wait
+from test_studio_timeline import cmd, root, wait, show
 from wf.boss import schema as s
 from wf.boss.behavior_wire import compress, write_tree
 from wf.boss.esdl import decode_esdl, transform
@@ -98,6 +98,16 @@ def test_missing_program_and_unmapped_slot_are_visible(tmp_path):
     assert missing["stateInterval"]["triggerFrame"] is None
     assert missing["events"] == []
     assert any(i["level"] == "问题" and "缺少动作" in i["text"] for i in missing["issues"])
+
+
+def test_general_master_element_is_converted_to_internal_effect_element(tmp_path):
+    editor = behavior_editor(tmp_path)
+    command = show("属性特效", "battle/effect/test", -17, ["PlayOnlyFirstSequence"])
+    command[1][2] = ["ResolveByElement", "battle/effect/test", 255]
+    editor.source.view.files["battle/action/one.action.dsl.amf3.deflate"] = compress(write_tree(root(command)))
+    moves = json.loads(app_for(editor, tmp_path).dispatch("GET", URL, {}).body)["moves"]
+    effects = [e for m in moves for e in m["timeline"]["events"] if e["kind"] == "effect"]
+    assert effects and all(e["path"] == "battle/effect/test/test_green/test_green" for e in effects)
 
 
 def test_summary_reads_draft_candidate(tmp_path):
