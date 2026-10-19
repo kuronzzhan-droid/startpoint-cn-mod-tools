@@ -199,7 +199,13 @@ class TimelineBuilder:
         if name == "GH" and len(value) > 1:
             result["toward"] = self.lookup(env, value[1], ctx, role + " 坐标系 GH")
         if name == "CD" and subject.get("ref") in THROWS_ON_CD:
-            self.issue("问题", ctx, f"{role} 坐标系 CD 挂在「{subject['label']}」上：getDirCD 会抛错（U_4f5401）")
+            if subject.get("ref") == "self":
+                # 作者 2026-10-19 确认：赛瑞斯 ability_skill_seris_revert 把 CD 挂在 -17（自身）上，测试服实际没崩。
+                # 是否真能执行到/真会抛未经真机证实，只提示待验证，不判问题。
+                self.issue("待验证", ctx, f"{role} 坐标系 CD 挂在「{subject['label']}」上：按旧经验可能抛 U_4f5401，"
+                           "但赛瑞斯同样写法在测试服未崩，需真机确认")
+            else:
+                self.issue("问题", ctx, f"{role} 坐标系 CD 挂在「{subject['label']}」上：getDirCD 会抛错（U_4f5401）")
         if name == "EF" and subject.get("ref") not in ("ball", "self"):
             result["note"] = "EF 只在球/角色上跟随速度方向；其它主体返回常量（预览按朝上）"
         return result

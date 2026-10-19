@@ -202,3 +202,11 @@ def test_real_programs_and_timelines(real_routes):
     effect = next(e for e in timeline["events"] if e["kind"] == "effect" and e["asset"])
     meta, png = real_routes.routes._baked(effect["path"])
     assert meta["ok"] and png and meta["frames"]
+
+
+def test_cd_on_self_is_pending_not_problem():
+    # 2026-10-19 作者确认赛瑞斯 ability_skill_seris_revert 的同类写法在测试服未崩。
+    tree = root(cmd("ShowEffect", "CD挂自身", ["SpecifyEffectDirectly", "battle/effect/a/flash"], -17,
+                    ["ForesideOfCharacter"], ["PlayOnlyFirstSequence"], ["CD"], 0, 0, 0, True, True, ["None"]))
+    issues = [i for i in build_timeline(tree, effects=EFFECTS.get)["issues"] if "U_4f5401" in i["text"]]
+    assert issues and all(i["level"] == "待验证" for i in issues)
