@@ -71,6 +71,8 @@ class BossEditState:
             return self.client[logical], "boss-draft"
         if logical not in self.original:
             self.original[logical] = self.base.read_raw(logical)[0]
+        if self.original[logical] is None:
+            raise FileNotFoundError(logical)
         return self.original[logical], "boss-draft"
 
     def raw(self, logical):
@@ -86,6 +88,25 @@ class BossEditState:
         return copy.deepcopy(self.trees[logical])
 
     load = table
+
+    def set_raw(self, logical, raw, *, new=False):
+        """Replace a logical resource in memory, recording absent targets too."""
+        from pathlib import PurePosixPath
+        path = PurePosixPath(logical)
+        if not logical or "\\" in logical or ":" in logical or path.is_absolute() or ".." in path.parts:
+            raise ValueError("resource must have a relative logical path")
+        if not isinstance(raw, bytes):
+            raise ValueError("resource content must be bytes")
+        before = self.raw(logical)
+        if new and before is not None:
+            raise ValueError(f"resource collision: {logical}")
+        self.original.setdefault(logical, before)
+        if before == raw:
+            return
+        self.client[logical] = raw
+        self.trees.pop(logical, None)
+        self.changes.append({"table": logical, "path": [], "resource": True,
+                             "old": digest(before), "new": digest(raw)})
 
     def set_leaf(self, logical, path, value, *, new=False):
         table = self.table(logical)
@@ -103,6 +124,20 @@ class BossEditState:
             raise ValueError(f"boss table roundtrip mismatch: {logical}")
         self.client[logical], self.trees[logical] = encoded, table
         self.changes.append({"table": logical, "path": list(path), "old": before, "new": value})
+
+    def delete_leaf(self, logical, path):
+        table = self.table(logical)
+        before = leaf(table, path)
+        if not path or before is None:
+            raise ValueError(f"missing delete target: {logical}/{'/'.join(path)}")
+        parent = leaf(table, path[:-1]) if len(path) > 1 else table
+        del parent[str(path[-1])]
+        raw = self.raw(logical)
+        encoded = _encode(raw, codec.parse_node(raw), table)
+        if codec.parse_node(encoded) != table:
+            raise ValueError(f"boss table roundtrip mismatch: {logical}")
+        self.client[logical], self.trees[logical] = encoded, table
+        self.changes.append({"table": logical, "path": list(path), "old": before, "new": None})
 
     def server(self, target, *, required=True):
         if target not in self.server_original:
@@ -128,6 +163,18 @@ class BossEditState:
             raise ValueError(f"server ID collision: {target}: {sorted(set(updates) & set(current))}")
         raw = self.servers.get(target, self.server_original[target])
         self.servers[target] = merge_keys(raw if raw is not None else b"{}\n", updates)
+
+    def delete_server_keys(self, target, keys):
+        from .edit_bytes import delete_keys
+        self.server(target)
+        raw = self.servers.get(target, self.server_original[target])
+        self.servers[target] = delete_keys(raw, keys)
+
+    def append_server_values(self, target, values):
+        from .edit_bytes import append_values
+        self.server(target)
+        raw = self.servers.get(target, self.server_original[target])
+        self.servers[target] = append_values(raw, values)
 
     def snapshot(self):
         return {"client": {k: digest(v) for k, v in sorted(self.original.items())},

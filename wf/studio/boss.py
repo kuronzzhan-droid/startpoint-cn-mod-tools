@@ -47,6 +47,8 @@ def _context(state, created, document, baseline, requests, acknowledgment=False)
                 yield "/".join((*prefix, key))
                 yield from paths(value, (*prefix, key))
     for change in state.changes:
+        if change.get("resource"):
+            continue
         if change["old"] is None:
             logical = change["table"]
             new_ids.setdefault(logical, []).append("/".join(change["path"]))
