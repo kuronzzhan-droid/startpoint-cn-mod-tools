@@ -88,6 +88,18 @@ def coordinate(value, *, size=False):
     return value
 
 
+def require_within_bounds(obj, boundary, *, layer_name=""):
+    """Require the complete edited rectangle, not only its centre, in BOUNDS."""
+    rect = {key: coordinate(value, size=key in {"width", "height"})
+            for key, value in geometry(obj).items()}
+    box = {key: coordinate(value, size=key in {"width", "height"})
+           for key, value in geometry(boundary).items()}
+    if any(rect[axis] < box[axis]
+           or rect[axis] + rect[size] > box[axis] + box[size]
+           for axis, size in (("x", "width"), ("y", "height"))):
+        raise ValueError(f"CUSTOM_POSITION {layer_name}/{obj.get('name', '')} rectangle is outside BOUNDS")
+
+
 def move_to_bounds(obj, source, target):
     moved = copy.deepcopy(obj)
     for axis in ("x", "y"):

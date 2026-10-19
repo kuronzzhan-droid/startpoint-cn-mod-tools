@@ -12,7 +12,7 @@ from .identity import safe_id
 from .parameters import columns, find_quest, require_encounter
 from .reader import BossReader
 from .terrain_objects import (bounds, coordinate, decode, encode, fresh_objects, groups,
-                              layer, logical_path, move_to_bounds, objects)
+                              layer, logical_path, move_to_bounds, objects, require_within_bounds)
 
 OPERATIONS = {"terrain_replace", "terrain_position", "terrain_add_layer"}
 
@@ -56,6 +56,7 @@ def _replace(state, current, document, request):
             raise ValueError(f"existing terrain contains duplicate CUSTOM_POSITION in layer {wave}")
         for name in old_positions:
             replacement = move_to_bounds(old_positions[name], bounds(old), bounds(new))
+            require_within_bounds(replacement, bounds(new), layer_name=wave)
             matches = [o for o in objects(new, "CUSTOM_POSITION") if o.get("name") == name]
             if len(matches) > 1:
                 raise ValueError(f"replacement contains duplicate CUSTOM_POSITION {wave}/{name}")
@@ -74,6 +75,8 @@ def _position(tree, request):
     matches = [o for o in objects(group, "CUSTOM_POSITION") if o.get("name") == name]
     action = request["action"]
     if action == "add":
+        if not all(key in request for key in ("x", "y")):
+            raise ValueError("CUSTOM_POSITION add requires both x and y")
         if matches:
             raise ValueError(f"CUSTOM_POSITION already exists: {name}")
         obj = {"type": "CUSTOM_POSITION", "name": name, "visible": True,
@@ -90,6 +93,7 @@ def _position(tree, request):
         for key in ("x", "y", "width", "height"):
             if key in request:
                 obj[key] = coordinate(request[key], size=key in {"width", "height"})
+        require_within_bounds(obj, bounds(group), layer_name=str(group["name"]))
     else:
         raise ValueError(f"unknown position action: {action}")
     return tree
