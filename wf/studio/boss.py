@@ -111,6 +111,7 @@ def _replay(source, quest, requests, *, server_dir=None, reserved=()):
                              server_changes=state.servers, server_before=state.server_original,
                              context=_context(state, created, document, baseline, requests,
                                               preload_approvals[document["quest"]["selector"]][1]))
+        results.extend(getattr(state, "shop_checks", []))
         if any(req["operation"].startswith(("terrain_", "behavior_")) for req in requests):
             from wf.boss.behavior_guards import check_behavior_positions
             results.append(check_behavior_positions(state, document))
