@@ -112,6 +112,12 @@ def _preload_shims(state, row, closure, owner, level):
             effect_dependencies(state, {target: fixed}, int(frow[0]))
 
 
+def _hit_count(value):
+    if value != int(value):
+        raise ValueError('HitCountCheck trialThreshold must be an integer')
+    return int(value)
+
+
 def _general_parameters(state, row, request, owner):
     if 'damageMultiplier' in request:
         edit_damage(state, row, request['slot'], request['damageMultiplier'], owner)
@@ -128,13 +134,13 @@ def _general_parameters(state, row, request, owner):
     if 'intervalFrames' in request:
         if cells[46] != '2':
             raise ValueError('intervalFrames only edits native Time termination states')
-        cells[47] = str(request['intervalFrames'])
+        cells[47] = str(int(request['intervalFrames']))
     if 'trialThreshold' in request:
         if s.cell(cells, 22) not in {'0', '1', '2', '3'}:
             raise ValueError('state has no existing HitCountCheck trial')
         if cells[22] == '3' and not 4 <= request['trialThreshold'] <= 9:
             raise ValueError('SkillChain trial threshold must be 4..9')
-        cells[23] = str(request['trialThreshold'])
+        cells[23] = str(_hit_count(request['trialThreshold']))
     target = identity(owner, 'routine')
     if routine != target:
         state.set_leaf(STATES, [target], tree, new=True)
@@ -157,7 +163,7 @@ def _standard_parameters(state, row, request, owner):
         condition = current.get('terminationCondition', [])
         if not (condition[:1] == ['TimeElapsed'] and condition[1][:1] == ['Frame']):
             raise ValueError('intervalFrames only edits native TimeElapsed/Frame esdl states')
-        condition[1][1] = request['intervalFrames']
+        condition[1][1] = int(request['intervalFrames'])
     if 'trialThreshold' in request:
         trial = current.get('trial', [])
         if trial[:1] == ['HitCountCheck']:
@@ -166,7 +172,7 @@ def _standard_parameters(state, row, request, owner):
                 raise ValueError('evaluated trial expressions cannot be replaced by a constant')
             if content[0] == 'SkillChain' and not 4 <= request['trialThreshold'] <= 9:
                 raise ValueError('SkillChain trial threshold must be 4..9')
-            content[1] = request['trialThreshold']
+            content[1] = _hit_count(request['trialThreshold'])
         elif trial[:1] == ['DamageCheck'] and request['trialThreshold'] <= 100:
             trial[1]['percentage'] = float(request['trialThreshold'])
         else:
@@ -184,6 +190,8 @@ def apply_behavior(state, quest, request):
         if key in request and (isinstance(request[key], bool) or not isinstance(request[key], (int,float))
                                or not math.isfinite(request[key]) or request[key] <= 0):
             raise ValueError(f'invalid behavior parameter {key}')
+    if 'intervalFrames' in request and request['intervalFrames'] != int(request['intervalFrames']):
+        raise ValueError('intervalFrames must be an integer')
     document, enemy = select_enemy(state, quest, request['enemyCode'])
     old_code = enemy['code']; owner = identity(document['quest']['selector'], request['enemyCode'])
     alias, path, row = isolate_enemy(state, document, enemy)

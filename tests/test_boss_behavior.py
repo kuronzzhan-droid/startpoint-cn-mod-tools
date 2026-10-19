@@ -130,6 +130,8 @@ def test_esdl_parameters_and_missing_position(tmp_path):
     view.files[s.STANDARD_BOSS] = codec.build_node({'org': {'100': 'Boss,battle/enemy/boss/test'}})
     zones = codec.parse_node(view.files[s.ZONE]); cells = s.parse_rows(zones['zone']['0'])[0]
     cells[23] = cells[25] = '0'; zones['zone']['0'] = csv_row(cells); view.files[s.ZONE] = codec.build_node(zones)
+    with pytest.raises(ValueError, match='HitCountCheck.*integer'):
+        apply_behavior(BossEditState(editor.source), 'hard_multi:1006/1', request(state='0', trialThreshold=10.5))
     state = BossEditState(editor.source)
     apply_behavior(state, 'hard_multi:1006/1', request(state='0', intervalFrames=80, trialThreshold=12))
     document = BossReader(state).show('hard_multi:1006/1')
@@ -139,6 +141,20 @@ def test_esdl_parameters_and_missing_position(tmp_path):
     assert json.dumps(model, ensure_ascii=False).encode('utf-8')
     document['terrain']['waves'][0]['objects'] = []
     assert check_behavior_positions(state, document)['blocking']
+    tree['forms'][0]['states'][0]['trial'] = ['DamageCheck', {'percentage': 5.0}]
+    view.files[esdl] = compress(write_tree(transform(tree, encode=True)))
+    state = BossEditState(editor.source)
+    apply_behavior(state, 'hard_multi:1006/1', request(state='0', trialThreshold=6.25))
+    changed = BossReader(state).show('hard_multi:1006/1')['enemies'][0]['row'][1] + '.esdl.amf3.deflate'
+    actual = decode_esdl(state.raw(changed))['tree']['forms'][0]['states'][0]['trial']
+    assert actual == ['DamageCheck', {'percentage': 6.25}]
+
+
+@pytest.mark.parametrize('field', ['intervalFrames', 'trialThreshold'])
+def test_general_integer_parameters_reject_fractional_values(tmp_path, field):
+    editor = behavior_editor(tmp_path)
+    with pytest.raises(ValueError, match='integer'):
+        apply_behavior(BossEditState(editor.source), 'hard_multi:1006/1', request(state='idle', **{field: 10.5}))
 
 
 def test_timeline_reports_marker_relative_frames(tmp_path):
