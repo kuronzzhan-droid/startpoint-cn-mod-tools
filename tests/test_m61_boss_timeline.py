@@ -110,6 +110,52 @@ def test_general_master_element_is_converted_to_internal_effect_element(tmp_path
     assert effects and all(e["path"] == "battle/effect/test/test_green/test_green" for e in effects)
 
 
+def test_state_placement_shifts_absolute_times_but_preserves_local_durations():
+    from wf.studio.boss_timeline import _place
+    original = {"events": [{"t": 5, "dur": 15, "hiddenAt": 20, "erasedAt": 18,
+                            "motions": [{"t": 7}], "hits": {"times": [0, 5]}}],
+                "subprograms": [{"t": 10, "timeline": {"events": [{"t": 2}]}}],
+                "duration": 20, "notes": []}
+    actual = _place(original, {"id": "idle", "end": 60}, {"begin": 30})
+    event = actual["events"][0]
+    assert (event["t"], event["hiddenAt"], event["erasedAt"], event["motions"][0]["t"]) == (35, 50, 48, 37)
+    assert event["dur"] == 15 and event["hits"]["times"] == [0, 5]
+    assert actual["subprograms"][0] == {"t": 40, "timeline": {"events": [{"t": 2}]}}
+    assert original["events"][0]["t"] == 5
+
+
+def test_same_enemy_in_different_waves_keeps_both_timelines(tmp_path):
+    from wf.boss.reader import BossReader
+    from wf.studio.boss_timeline import timeline_summary
+    editor = behavior_editor(tmp_path)
+    install_programs(editor)
+    document = BossReader(editor.source).show(QUEST)
+    another = copy.deepcopy(document["enemies"][0])
+    another["wave"] = "1"
+    document["enemies"].append(another)
+    assert {m["wave"] for m in timeline_summary(editor.source, document)["moves"]} == {"0", "1"}
+
+
+def test_initialization_and_watch_roots_are_visible_without_fake_triggers(tmp_path):
+    from wf.boss.behavior_identity import WATCH
+    editor = behavior_editor(tmp_path)
+    install_programs(editor)
+    view = editor.source.view
+    rows = codec.parse_node(view.files[s.GENERAL_BOSS])
+    cells = s.parse_rows(rows["org"]["100"])[0]
+    cells[109] = "battle/action/init"
+    rows["org"]["100"] = csv_row(cells)
+    view.files[s.GENERAL_BOSS] = codec.build_node(rows)
+    view.files[WATCH] = codec.build_node({"1": {"org": {"routine": {
+        "2": {"funnel": {"0": "0,phase2,battle/action/watched"}}}}}})
+    for name in ("init", "watched"):
+        view.files[f"battle/action/{name}.action.dsl.amf3.deflate"] = view.files["battle/action/one.action.dsl.amf3.deflate"]
+    moves = json.loads(app_for(editor, tmp_path).dispatch("GET", URL, {}).body)["moves"]
+    extras = [m["timeline"] for m in moves if m["timeline"]["program"] in {"battle/action/init", "battle/action/watched"}]
+    assert len(extras) == 2
+    assert all(t["stateInterval"]["triggerFrame"] is None for t in extras)
+
+
 def test_summary_reads_draft_candidate(tmp_path):
     editor = behavior_editor(tmp_path)
     install_programs(editor)

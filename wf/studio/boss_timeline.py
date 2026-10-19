@@ -18,6 +18,11 @@ def _place(timeline, state, action):
     offset = begin if known else 0
     for event in result["events"]:
         event["t"] += offset
+        for key in ("hiddenAt", "erasedAt"):
+            if event.get(key) is not None:
+                event[key] += offset
+        for motion in event.get("motions", []):
+            motion["t"] += offset
     for subprogram in result["subprograms"]:
         subprogram["t"] += offset
     result["duration"] += offset
@@ -91,5 +96,9 @@ def timeline_summary(source, document):
                 if program not in triggered:
                     triggered.add(program)
                     add(program, {}, {"slot": slot["slot"]}, slot["slot"])
+        for index, program in enumerate(enemy.get("preload_roots", [])):
+            if program not in triggered:
+                triggered.add(program)
+                add(program, {}, {"event": ["InitializationOrWatch"]}, f"preload{index}")
     return {"moves": moves, "note": "按状态分别展示招式；条件、循环、命中与实际状态选择未模拟。",
             "runtime": "未执行", "limitations": behavior["timeline"]["limitations"]}
