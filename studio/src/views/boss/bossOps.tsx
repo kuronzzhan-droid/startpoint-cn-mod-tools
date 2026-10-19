@@ -1,6 +1,5 @@
 // Shared plumbing of the phase-2 BOSS工坊 tabs: one operation → live preview → 写入草稿,
-// plus small read helpers (section loading keyed to the draft revision, CSV cells, disabled-pending notes).
-import { ComponentChildren } from "preact";
+// plus small read helpers (section loading keyed to the draft revision, CSV cells).
 import { useEffect, useState } from "preact/hooks";
 import { Changeset } from "../../api";
 import { AnyBossRequest, boss, SectionResponse } from "../../bossApi";
@@ -115,15 +114,6 @@ export function OpActions({ op, problems, onReset, idle = "还没有改动", wri
         </details>
       ) : null}
     </>
-  );
-}
-
-/** A control that exists but is closed until the M6.1 backend fixes land. */
-export function PendingFix({ children, why }: { children: ComponentChildren; why: string }) {
-  return (
-    <span class="pending-fix" title={why}>
-      {children}<span class="tag pend">后端修复中</span>
-    </span>
   );
 }
 

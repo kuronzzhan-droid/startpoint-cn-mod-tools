@@ -8,7 +8,7 @@ import { Notice } from "../common";
 import { InfoTip } from "../Delivery";
 import { PreviewState } from "./BossParams";
 import { Src } from "./BossRead";
-import { cellOf, csvRow, OpActions, PendingFix, useBossOp, useSection } from "./bossOps";
+import { cellOf, csvRow, OpActions, useBossOp, useSection } from "./bossOps";
 import { questElement, shortName } from "./bossModel";
 
 /** Terrain pixels → runtime: ×6 (the client draws the BOUNDS rectangle as the 1080×1920 field). */
@@ -20,7 +20,7 @@ const NAME = /^[A-Za-z0-9_-]{1,80}$/;
 
 type Mode = "positions" | "replace" | "wave";
 
-interface Pending { action: "add" | "update"; name: string; x: string; y: string; width: string; height: string }
+interface Pending { action: "add" | "update" | "delete"; name: string; x: string; y: string; width: string; height: string }
 
 function boundsOf(layer: TerrainLayer | undefined): Rect | null {
   return layer?.bounds?.[0] ?? null;
@@ -276,14 +276,14 @@ function PositionsEditor({ doc, questId, layer, behavior, onPreview, onWritten }
   const startUpdate = (name: string, x?: number, y?: number) => {
     const p = byName.get(name);
     if (!p && pending?.action !== "add") return;
-    const base = pending && pending.name === name ? pending
+    const base = pending && pending.name === name && pending.action !== "delete" ? pending
       : { action: "update" as const, name, x: String(p!.rect.x), y: String(p!.rect.y), width: String(p!.rect.width), height: String(p!.rect.height) };
     setPending({ ...base, ...(x !== undefined ? { x: String(x) } : {}), ...(y !== undefined ? { y: String(y) } : {}) });
   };
 
   const rect = pending ? { x: num(pending.x), y: num(pending.y), width: num(pending.width), height: num(pending.height) } : null;
   const problems: string[] = [];
-  if (pending && rect) {
+  if (pending && rect && pending.action !== "delete") {
     if (!NAME.test(pending.name)) problems.push("名字只能用字母、数字、下划线或连字符（1–80 个字符）");
     if (pending.action === "add" && byName.has(pending.name)) problems.push(`这一层已有站位「${pending.name}」`);
     if (!Number.isFinite(rect.x) || !Number.isFinite(rect.y)) problems.push("坐标 x / y 必须填写");
@@ -296,7 +296,9 @@ function PositionsEditor({ doc, questId, layer, behavior, onPreview, onWritten }
       if (p && p.rect.x === rect.x && p.rect.y === rect.y && p.rect.width === rect.width && p.rect.height === rect.height) problems.push("坐标和原来一样");
     }
   }
-  const request: TerrainRequest | null = pending && rect ? {
+  const request: TerrainRequest | null = pending?.action === "delete"
+    ? { operation: "terrain_position", layer: layer.name, action: "delete", name: pending.name }
+    : pending && rect ? {
     operation: "terrain_position", layer: layer.name, action: pending.action, name: pending.name,
     x: rect.x, y: rect.y,
     ...(Number.isFinite(rect.width) ? { width: rect.width } : {}), ...(Number.isFinite(rect.height) ? { height: rect.height } : {}),
@@ -304,7 +306,9 @@ function PositionsEditor({ doc, questId, layer, behavior, onPreview, onWritten }
   const op = useBossOp(questId, request, problems, onPreview, onWritten);
 
   const markers: Marker[] = layer.custom_positions.map((p) => (
-    pending && pending.action === "update" && pending.name === p.name && rect && Number.isFinite(rect.x) && Number.isFinite(rect.y)
+    pending && pending.action === "delete" && pending.name === p.name
+      ? { name: p.name, rect: p.rect, tone: "pending" as const, note: "（删除）" }
+      : pending && pending.action === "update" && pending.name === p.name && rect && Number.isFinite(rect.x) && Number.isFinite(rect.y)
       ? { name: p.name, rect: rect as Rect, tone: "pending" as const, note: "（移动中）" }
       : { name: p.name, rect: p.rect, tone: "pos" as const }));
   if (pending?.action === "add" && rect && Number.isFinite(rect.x) && Number.isFinite(rect.y)) {
@@ -330,7 +334,7 @@ function PositionsEditor({ doc, questId, layer, behavior, onPreview, onWritten }
             <h4>命名站位（{layer.custom_positions.length}）</h4>
             <div class="table-scroll">
               <table class="boss-table">
-                <thead><tr><th>名字（点一行开始移动）</th><th>坐标</th></tr></thead>
+                <thead><tr><th>名字（点一行开始移动）</th><th>坐标</th><th /></tr></thead>
                 <tbody>
                   {layer.custom_positions.map((p) => (
                     <tr class={"clickable" + (p.name === selected ? " on" : "")} onClick={() => { setSelected(p.name); startUpdate(p.name); }}>
@@ -339,6 +343,10 @@ function PositionsEditor({ doc, questId, layer, behavior, onPreview, onWritten }
                       <td class="mono small" title={`左上角（地形像素）${p.rect.x}, ${p.rect.y}，${p.rect.width}×${p.rect.height}
 中心（运行时）${Math.round(p.runtime_point.x)}, ${Math.round(p.runtime_point.y)}`}>
                         <span class="nowrap">{p.rect.x}, {p.rect.y}</span><div class="muted nowrap">运行时 {Math.round(p.runtime_point.x)}, {Math.round(p.runtime_point.y)}</div></td>
+                      <td class="nowrap"><button type="button" class="link danger" onClick={(e) => {
+                        e.stopPropagation(); setSelected(p.name);
+                        setPending({ action: "delete", name: p.name, x: String(p.rect.x), y: String(p.rect.y), width: String(p.rect.width), height: String(p.rect.height) });
+                      }}>删除</button></td>
 
                     </tr>
                   ))}
@@ -346,9 +354,7 @@ function PositionsEditor({ doc, questId, layer, behavior, onPreview, onWritten }
               </table>
             </div>
             {!layer.custom_positions.length ? <p class="small muted">这一层没有命名站位。</p> : null}
-            <p class="small muted">
-              <PendingFix why="M6.1 修复中：删站位前要先确认 boss 动作 DSL 里的 CustomPosition 引用（审查 H2），暂不开放">删除站位</PendingFix>
-            </p>
+            <p class="small muted">删除站位前后端会核对 routine / esdl / watch / Funnel 动作里的 CustomPosition 引用；有引用或引用证据不完整（「待验证」）都会拒绝。</p>
             <div class="row-inline">
               <input class="mono" placeholder="新站位名，如 p_extra" value={newName} aria-label="新站位名"
                 onInput={(e) => setNewName((e.target as HTMLInputElement).value)} />
@@ -360,7 +366,15 @@ function PositionsEditor({ doc, questId, layer, behavior, onPreview, onWritten }
             </div>
             <p class="small muted">新增的站位先放在边界中心，可拖到目标处或直接填坐标。</p>
           </section>
-          {pending ? (
+          {pending?.action === "delete" ? (
+            <section class="param-block pending-block">
+              <h4>删除站位 <span class="mono">{pending.name}</span></h4>
+              {referenced.has(pending.name) || bosses.some((x) => x.name === pending.name) ? (
+                <Notice kind="warn">这个站位是 boss 初始位置或被状态 c50 引用，预检会拒绝删除。</Notice>
+              ) : <p class="small muted">预检会再扫一遍动作闭包里的 CustomPosition；任何引用或证据缺失都会拒绝。</p>}
+              <OpActions op={op} problems={problems} writeLabel="写入删除" onReset={() => setPending(null)} />
+            </section>
+          ) : pending ? (
             <section class="param-block pending-block">
               <h4>{pending.action === "add" ? "新增站位" : "移动站位"} <span class="mono">{pending.name || "（未命名）"}</span></h4>
               <div class="param-fields compact">

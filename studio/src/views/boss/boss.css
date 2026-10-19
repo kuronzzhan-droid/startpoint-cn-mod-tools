@@ -163,8 +163,6 @@
 .terrain-side input:not([type]), .terrain-side select, .clone-wizard input:not([type]), .boss-behavior .filters input {
   border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; background: var(--surface); width: 100%; }
 .terrain-side select[size] { margin-top: 6px; }
-.pending-fix { display: inline-flex; align-items: center; gap: 4px; cursor: help; }
-.pending-fix button[disabled] { opacity: 0.55; }
 .boss-table tr.on td { background: var(--accent-soft); }
 .boss-table tr.edit-row > td { background: var(--surface-2); padding: 6px 8px 10px; }
 .close-x { margin-left: auto; font-size: 18px; line-height: 1; color: var(--muted); }
@@ -198,3 +196,4 @@
 .terrain-grid.stacked { grid-template-columns: minmax(0, 1fr); }
 .terrain-grid.stacked .terrain-side { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; align-items: start; }
 .terrain-empty { width: 281px; height: 499px; }
+.boss-table button.link.danger { color: var(--danger); }

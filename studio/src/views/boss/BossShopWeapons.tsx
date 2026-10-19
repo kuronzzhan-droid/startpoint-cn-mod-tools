@@ -1,4 +1,4 @@
-// 商店与武器：分类商品表（改价格 / 库存；新增待 M6.1）、关联武器（数值 / 词条 / 到 120 的强化链）、
+// 商店与武器：分类商品表（新增 / 改价格 / 库存 / 下架）、关联武器（数值 / 词条 / 到 120 的强化链）、
 // 克隆武器向导（名称、数值倍率、词条、已有图标引用；ID 由后端分配并显示）、改强化材料。
 // 每次一个操作：实时预检 → 写入草稿；三处同步、C8004 与 kind 落位的结果并排显示。
 import { ComponentChildren } from "preact";
@@ -11,12 +11,13 @@ import { Notice } from "../common";
 import { InfoTip } from "../Delivery";
 import { PreviewState } from "./BossParams";
 import { Src } from "./BossRead";
-import { cellOf, codeHits, OpActions, PendingFix, useBossOp, useSection } from "./bossOps";
+import { cellOf, codeHits, OpActions, useBossOp, useSection } from "./bossOps";
 import { present } from "./bossModel";
 
 type Editing =
   | { kind: "product"; category: string; product: ShopProduct }
   | { kind: "delete"; category: string; product: ShopProduct }
+  | { kind: "add"; category: string }
   | { kind: "clone"; source: string }
   | { kind: "materials"; weapon: WeaponDoc }
   | null;
@@ -115,9 +116,7 @@ export function BossShopWeapons({ doc, questId, rev, onPreview, onWritten }: {
       <section class="boss-block">
         <header><h3>兑换商店（{shops.data.length}）</h3>
           <span class="spacer" />
-          <PendingFix why="M6.1 修复中：新增商品会沿用来源商品的上架时间（审查 M1），修好前不开放">
-            <button type="button" disabled>新增商品</button>
-          </PendingFix>
+          <InfoTip text="新增 = 从这个分类的已有商品克隆一行（productId 由后端分配），默认 2000-01-01 起上架、不结束；不继承来源的过期窗口。" />
         </header>
         {!shops.data.length ? <p class="muted small">这一关没有关联的兑换商店。</p> : shops.data.map((shop) => (
           <article class="boss-shop">
@@ -126,6 +125,10 @@ export function BossShopWeapons({ doc, questId, rev, onPreview, onWritten }: {
               <Src c={shop.category?.source} />
               {!shop.category ? <span class="error-text small">缺少分类同号行（C8601）</span> : null}
               <span class="small muted">服务端：{shop.server_sync}</span>
+              <span class="spacer" />
+              <button type="button" disabled={!shop.products.length || !shop.category}
+                title={!shop.category ? "缺少分类同号行，不能新增" : !shop.products.length ? "分类里没有可克隆的商品" : ""}
+                onClick={() => setEditing({ kind: "add", category: shop.id })}>新增商品</button>
             </header>
             <div class="table-scroll">
               <table class="boss-table">
@@ -152,6 +155,9 @@ export function BossShopWeapons({ doc, questId, rev, onPreview, onWritten }: {
                 </tbody>
               </table>
             </div>
+            {editing?.kind === "add" && editing.category === shop.id ? (
+              <AddProductEditor shop={shop} questId={questId} names={names} onPreview={relay} onWritten={onWritten} onClose={() => setEditing(null)} />
+            ) : null}
             {editing && (editing.kind === "product" || editing.kind === "delete") && editing.category === shop.id ? (
               <ProductEditor key={editing.kind + editing.product.id} editing={editing} questId={questId} names={names}
                 onPreview={relay} onWritten={onWritten} onClose={() => setEditing(null)} />
@@ -190,6 +196,55 @@ export function BossShopWeapons({ doc, questId, rev, onPreview, onWritten }: {
 }
 
 // ------------------------------------------------------------------------------------ product
+
+/** Server clock is pinned (wf-custom-server-time-trap); a source window ending before it is already expired in game. */
+const SERVER_NOW = "2025-08-05";
+const DATE = /^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}:\d{2})?$/;
+
+function AddProductEditor({ shop, questId, names, onPreview, onWritten, onClose }: {
+  shop: ShopDoc; questId: string; names: Map<string, string>;
+  onPreview: (s: PreviewState) => void; onWritten: () => void; onClose: () => void;
+}) {
+  const [source, setSource] = useState(shop.products[0]?.id ?? "");
+  const [from, setFrom] = useState("2000-01-01");
+  const [until, setUntil] = useState("");
+  const src = shop.products.find((p) => p.id === source);
+  const problems: string[] = [];
+  if (!src) problems.push("选一个来源商品");
+  if (!DATE.test(from.trim())) problems.push("上架时间格式 YYYY-MM-DD 或 YYYY-MM-DD HH:MM:SS");
+  if (until.trim() && !DATE.test(until.trim())) problems.push("下架时间格式 YYYY-MM-DD 或 YYYY-MM-DD HH:MM:SS（留空 = 不结束）");
+  if (DATE.test(from.trim()) && DATE.test(until.trim()) && until.trim() < from.trim()) problems.push("下架时间不能早于上架时间");
+  if (DATE.test(from.trim()) && from.trim().slice(0, 10) > SERVER_NOW) problems.push(`服务端时间固定在 ${SERVER_NOW}，上架时间晚于它会一直不开放`);
+  const srcUntil = src && present(src.fields.availableUntil) ? src.fields.availableUntil : "";
+  const expired = !!srcUntil && srcUntil.slice(0, 10) < SERVER_NOW;
+  const request: ShopWeaponRequest | null = src ? { operation: "shop_add", shop: {
+    category: shop.id, sourceProduct: src.id, availableFrom: from.trim(), availableUntil: until.trim() ? until.trim() : null } } : null;
+  const op = useBossOp(questId, problems.length ? null : request, problems, onPreview, onWritten);
+  return (
+    <div class="param-block pending-block">
+      <h4>新增商品 · 分类 {shop.id} <button type="button" class="link close-x" onClick={onClose} aria-label="关闭">×</button></h4>
+      <div class="param-fields compact">
+        <label class="param-field"><span>克隆来源</span>
+          <select value={source} onChange={(e) => setSource((e.target as HTMLSelectElement).value)}>
+            {shop.products.map((p) => <option value={p.id}>{p.fields.name} · {p.id}</option>)}
+          </select>
+          {src ? <span class="small muted">价格 {costText(src.fields.price, names)} · 来源窗口 {present(src.fields.availableFrom) ? src.fields.availableFrom.slice(0, 10) : "—"}
+            {srcUntil ? ` 至 ${srcUntil.slice(0, 10)}` : " 起不结束"}</span> : null}
+        </label>
+        <label class="param-field"><span>上架时间</span>
+          <input class="mono" value={from} onInput={(e) => setFrom((e.target as HTMLInputElement).value)} />
+          <span class="small muted">默认 2000-01-01（服务端时间钉在 {SERVER_NOW}）</span>
+        </label>
+        <label class="param-field"><span>下架时间</span>
+          <input class="mono" placeholder="留空 = 不结束" value={until} onInput={(e) => setUntil((e.target as HTMLInputElement).value)} />
+        </label>
+      </div>
+      {expired ? <Notice kind="warn">来源商品已于 {srcUntil} 下架（服务端时间 {SERVER_NOW}）。新商品用上面的窗口，不继承来源的过期时间；这只是提示，不阻断。</Notice> : null}
+      <p class="small muted">新 productId 由后端分配，同时写客户端商品行、服务端 category_map 和分类内商品；之后可用「改价格 / 库存」继续改。</p>
+      <OpActions op={op} problems={problems} onReset={onClose} idle="选一个来源商品" />
+    </div>
+  );
+}
 
 function ProductEditor({ editing, questId, names, onPreview, onWritten, onClose }: {
   editing: { kind: "product" | "delete"; category: string; product: ShopProduct }; questId: string; names: Map<string, string>;
@@ -550,7 +605,7 @@ function CloneWizard({ weapons, source, questId, kinds, onPreview, onWritten, on
             <dt>词条改动</dt><dd>{abilities.length ? abilities.map((a) => `${TABLE_LABEL[a.table]}第 ${a.row + 1} 行${a.kind !== undefined ? ` kind→${a.kind}` : ""}${a.strength ? ` 强度→${a.strength.join("/")}` : ""}`).join("；") : "无"}</dd>
             <dt>图标</dt><dd class="mono small">{icon || "沿用母本"}{enhancedIcon ? " · 强化 " + enhancedIcon : ""}</dd>
           </dl>
-          <p class="small muted">ID 同时避开客户端表、服务端记录和其它草稿；写入后保存在草稿请求里，之后重放用同一组 ID。上架需另做「新增商品」（待 M6.1）。</p>
+          <p class="small muted">ID 同时避开客户端表、服务端记录和其它草稿；写入后保存在草稿请求里，之后重放用同一组 ID。上架需另做「新增商品」（在对应分类里克隆一行装备奖励商品，再把奖励改成新武器 ID）。</p>
         </div>
       )}
       <div class="save-row">

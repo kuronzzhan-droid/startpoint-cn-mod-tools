@@ -202,6 +202,8 @@ export type TerrainRequest =
 export interface ShopSpec {
   category: string; productId?: string; sourceProduct?: string; name?: string; description?: string;
   icon?: string; price?: MaterialCost[]; stock?: number; rewards?: ShopReward[];
+  /** YYYY-MM-DD or YYYY-MM-DD HH:MM:SS; shop_add defaults to 2000-01-01 → no end (null). */
+  availableFrom?: string; availableUntil?: string | null;
 }
 
 export interface WeaponAbilityChange {

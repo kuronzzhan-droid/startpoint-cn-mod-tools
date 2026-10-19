@@ -1,5 +1,5 @@
 // 行为：GeneralBoss 的 routine / marker 出招槽与 StandardBoss 的 esdl 状态机（只读视图）；
-// 开放同首领换招、招式伤害倍率、StandardBoss 状态间隔与试炼阈值；GeneralBoss 间隔/试炼与跨首领借招待 M6.1。
+// 开放换招（同首领 / 跨首领借招）、招式伤害倍率、GeneralBoss 与 StandardBoss 的状态间隔和试炼阈值。
 // 每个出招都有「预览」：优先用后端 /api/boss/<quest>/timeline-summary，没有就按出招的 DSL 路径调 /api/studio/timeline。
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { BehaviorDoc, BehaviorEnemy, BehaviorRequest, BehaviorState, BossDoc, GeneralTrial } from "../../bossApi";
@@ -8,10 +8,8 @@ import { Notice } from "../common";
 import { InfoTip } from "../Delivery";
 import { TimelinePlayer } from "../TimelinePreview";
 import { PreviewState } from "./BossParams";
-import { OpActions, PendingFix, useBossOp, useSection } from "./bossOps";
+import { OpActions, useBossOp, useSection } from "./bossOps";
 
-const H1 = "M6.1 修复中：GeneralBoss 改间隔 / 试炼会让自身 watch 失效（审查 H1），修好前不开放";
-const H2 = "M6.1 修复中：借用其它首领的招式时，动作里的命名站位引用还没有门禁（审查 H2），修好前不开放";
 const GENERAL_TERMINATION: Record<string, string> = { "1": "动画结束", "2": "定时", "3": "条件", "6": "试炼 / 计数" };
 const TRIAL_KIND: Record<string, string> = { "0": "直击次数", "1": "技能次数", "2": "强化弹射次数", "3": "技能连锁" };
 const PAGE = 40;
@@ -20,6 +18,7 @@ const short = (path: string) => path.split("/").pop()?.replace(/^boss_[^$]*\$/, 
 
 type Edit =
   | { kind: "swap"; enemy: BehaviorEnemy; slot: number }
+  | { kind: "borrow"; enemy: BehaviorEnemy; slot: number }
   | { kind: "damage"; enemy: BehaviorEnemy; slot: number }
   | { kind: "interval"; enemy: BehaviorEnemy; state: BehaviorState }
   | { kind: "trial"; enemy: BehaviorEnemy; state: BehaviorState }
@@ -50,13 +49,17 @@ function trialText(s: BehaviorState): string {
 }
 
 /** What the backend lets us edit on this state, and why not otherwise. */
-function editable(enemy: BehaviorEnemy, s: BehaviorState): { interval: "ok" | "pending" | "no"; trial: "ok" | "pending" | "no"; frames?: number; threshold?: number } {
+function editable(enemy: BehaviorEnemy, s: BehaviorState): { interval: "ok" | "no"; trial: "ok" | "no"; frames?: number; threshold?: number; chain?: boolean } {
   if (enemy.kind === "general") {
     const t = s.termination as { kind: string; value: string };
     const trial = s.trial as GeneralTrial | null;
+    const frames = t?.kind === "2" ? Number(t.value) : NaN;
+    const threshold = trial ? Number(trial.threshold) : NaN;
+    const trialOk = !!trial && ["0", "1", "2", "3"].includes(trial.kind) && Number.isInteger(threshold);
     return {
-      interval: t?.kind === "2" ? "pending" : "no",
-      trial: trial && ["0", "1", "2", "3"].includes(trial.kind) ? "pending" : "no",
+      interval: Number.isInteger(frames) && frames > 0 ? "ok" : "no",
+      trial: trialOk ? "ok" : "no",
+      frames: Number.isInteger(frames) ? frames : undefined, threshold: trialOk ? threshold : undefined, chain: trial?.kind === "3",
     };
   }
   const t = s.termination as any[];
@@ -146,7 +149,6 @@ function SlotTable({ enemy, edit, setEdit, onPreviewMove, questId, onPreview, on
         <h3>出招槽（{enemy.slots.length}）</h3>
         <InfoTip text="general_boss c111–c160：marker 动画到触发帧时执行槽里的 ActionDsl。换招 = 把目标槽改用同一首领另一个槽的程序；伤害倍率 = 槽里 CreateNormalAttack 当前倍率再乘一个数。" />
         <span class="spacer" />
-        <PendingFix why={H2}><button type="button" disabled>从其它首领借招</button></PendingFix>
       </header>
       <div class="table-scroll">
         <table class="boss-table">
@@ -154,7 +156,7 @@ function SlotTable({ enemy, edit, setEdit, onPreviewMove, questId, onPreview, on
           <tbody>
             {enemy.slots.map((s) => {
               const states = usedBy.get(s.slot) ?? [];
-              const on = edit && (edit.kind === "swap" || edit.kind === "damage") && edit.slot === s.slot;
+              const on = edit && (edit.kind === "swap" || edit.kind === "borrow" || edit.kind === "damage") && edit.slot === s.slot;
               return (
                 <>
                   <tr class={on ? "on" : ""}>
@@ -164,6 +166,7 @@ function SlotTable({ enemy, edit, setEdit, onPreviewMove, questId, onPreview, on
                     <td class="nowrap">
                       <button type="button" class="link" onClick={() => onPreviewMove({ path: s.program, label: `槽 ${s.slot} · ${short(s.program)}`, enemy: enemy.enemyCode, slot: s.slot })}>预览</button>
                       {" "}<button type="button" class="link" onClick={() => setEdit({ kind: "swap", enemy, slot: s.slot })}>换招</button>
+                      {" "}<button type="button" class="link" onClick={() => setEdit({ kind: "borrow", enemy, slot: s.slot })}>借招</button>
                       {" "}<button type="button" class="link" onClick={() => setEdit({ kind: "damage", enemy, slot: s.slot })}>伤害倍率</button>
                     </td>
                   </tr>
@@ -171,6 +174,8 @@ function SlotTable({ enemy, edit, setEdit, onPreviewMove, questId, onPreview, on
                     <tr class="edit-row"><td colSpan={4}>
                       {edit!.kind === "swap" ? (
                         <SwapEditor enemy={enemy} slot={s.slot} questId={questId} onPreview={onPreview} onWritten={onWritten} onClose={() => setEdit(null)} />
+                      ) : edit!.kind === "borrow" ? (
+                        <BorrowEditor enemy={enemy} slot={s.slot} questId={questId} onPreview={onPreview} onWritten={onWritten} onClose={() => setEdit(null)} />
                       ) : (
                         <DamageEditor enemy={enemy} slot={s.slot} questId={questId} onPreview={onPreview} onWritten={onWritten} onClose={() => setEdit(null)} />
                       )}
@@ -205,6 +210,36 @@ function SwapEditor({ enemy, slot, questId, onPreview, onWritten, onClose }: {
       </label>
       <p class="small muted">目标槽和来源槽都必须已有 marker 触发；有伤害共享 / 联动随从等固定身份链接的首领会被拒绝，并说明引用链。</p>
       <OpActions op={op} problems={[]} onReset={onClose} idle="选一个来源槽" />
+    </div>
+  );
+}
+
+function BorrowEditor({ enemy, slot, questId, onPreview, onWritten, onClose }: {
+  enemy: BehaviorEnemy; slot: number; questId: string; onPreview: (s: PreviewState) => void; onWritten: () => void; onClose: () => void;
+}) {
+  const [code, setCode] = useState("");
+  const [sourceSlot, setSourceSlot] = useState("");
+  const problems: string[] = [];
+  const c = code.trim();
+  const n = Number(sourceSlot);
+  if (c && !/^[A-Za-z0-9_]+$/.test(c)) problems.push("首领代码只能是字母、数字、下划线");
+  if (c === enemy.enemyCode) problems.push("同一首领请用「换招」");
+  if (sourceSlot.trim() && (!Number.isInteger(n) || n < 1 || n > 50)) problems.push("来源槽是 1–50 的整数");
+  const request: BehaviorRequest | null = c && sourceSlot.trim() && !problems.length
+    ? { operation: "behavior_replace", enemyCode: enemy.enemyCode, slot, sourceEnemyCode: c, sourceSlot: n } : null;
+  const op = useBossOp(questId, request, problems, onPreview, onWritten);
+  return (
+    <div class="param-block pending-block">
+      <h4>槽 {slot} 借用其它首领的招式 <button type="button" class="link close-x" onClick={onClose} aria-label="关闭">×</button></h4>
+      <div class="param-fields compact">
+        <label class="param-field"><span>来源首领代码（general_boss 键）</span>
+          <input class="mono" placeholder="如 ghost_fox" value={code} onInput={(e) => setCode((e.target as HTMLInputElement).value)} /></label>
+        <label class="param-field"><span>来源槽</span>
+          <input type="number" min={1} max={50} step={1} value={sourceSlot} onInput={(e) => setSourceSlot((e.target as HTMLInputElement).value)} /></label>
+      </div>
+      <p class="small muted">按本首领的等级档取来源首领同档的槽程序。预检会核对：DSL 闭包与预载（C8016）、递归 / 无界循环、动作里的 CustomPosition
+        是否在本关地形上都存在（缺 IL* 等命名站位会拒绝）、图集预算。来源槽必须已有 marker 触发。</p>
+      <OpActions op={op} problems={problems} onReset={onClose} idle="填来源首领和槽" />
     </div>
   );
 }
@@ -291,11 +326,9 @@ function StateTable({ enemy, edit, setEdit, onPreviewMove, questId, onPreview, o
                       {s.missing.length ? <span class="tag error-text" title={s.missing.join("\n")}>缺 {s.missing.length}</span> : null}
                     </td>
                     <td class="nowrap">
-                      {can.interval === "ok" ? <button type="button" class="link" onClick={() => setEdit({ kind: "interval", enemy, state: s })}>改间隔</button>
-                        : can.interval === "pending" ? <PendingFix why={H1}><button type="button" class="link" disabled>改间隔</button></PendingFix> : null}
+                      {can.interval === "ok" ? <button type="button" class="link" onClick={() => setEdit({ kind: "interval", enemy, state: s })}>改间隔</button> : null}
                       {" "}
-                      {can.trial === "ok" ? <button type="button" class="link" onClick={() => setEdit({ kind: "trial", enemy, state: s })}>改试炼</button>
-                        : can.trial === "pending" ? <PendingFix why={H1}><button type="button" class="link" disabled>改试炼</button></PendingFix> : null}
+                      {can.trial === "ok" ? <button type="button" class="link" onClick={() => setEdit({ kind: "trial", enemy, state: s })}>改试炼</button> : null}
                     </td>
                   </tr>
                   {on ? (
@@ -330,10 +363,13 @@ function StateEditor({ edit, can, questId, onPreview, onWritten, onClose }: {
   const [value, setValue] = useState(String(original ?? ""));
   const trial = edit.state.trial as any[] | null;
   const damage = Array.isArray(trial) && trial[0] === "DamageCheck";
-  const chain = Array.isArray(trial) && trial[1]?.content?.[0] === "SkillChain";
+  const chain = can.chain || (Array.isArray(trial) && trial[1]?.content?.[0] === "SkillChain");
+  const general = edit.enemy.kind === "general";
   const n = Number(value);
   const problems: string[] = [];
-  if (!Number.isInteger(n) || n < 1) problems.push(isInterval ? "帧数要是正整数（客户端按整数读取）" : "阈值要是正整数");
+  if (damage && !isInterval) {
+    if (!Number.isFinite(n) || n <= 0) problems.push("伤害百分比要大于 0");
+  } else if (!Number.isInteger(n) || n < 1) problems.push(isInterval ? "帧数要是正整数（客户端按整数读取）" : "次数要是正整数（客户端按整数读取）");
   else if (isInterval && n > 36000) problems.push("帧数最多 36000（10 分钟）");
   else if (damage && n > 100) problems.push("伤害百分比不超过 100");
   else if (chain && (n < 4 || n > 9)) problems.push("技能连锁阈值只能 4–9");
@@ -349,11 +385,13 @@ function StateEditor({ edit, can, questId, onPreview, onWritten, onClose }: {
       <h4>{isInterval ? "改状态间隔" : "改试炼阈值"} · <span class="mono">{edit.state.id}</span>
         <button type="button" class="link close-x" onClick={onClose} aria-label="关闭">×</button></h4>
       <label class="param-field"><span>{isInterval ? "帧数（60 帧 = 1 秒）" : damage ? "伤害百分比" : "次数"}</span>
-        <input type="number" min={1} step={1} value={value} onInput={(e) => setValue((e.target as HTMLInputElement).value)} />
+        <input type="number" min={damage && !isInterval ? 0 : 1} step={damage && !isInterval ? "any" : 1} value={value} onInput={(e) => setValue((e.target as HTMLInputElement).value)} />
         <span class="small muted">原 {original}{isInterval && Number.isFinite(n) ? ` · ${(n / 60).toFixed(2)} 秒` : ""}</span>
       </label>
-      <p class="small muted">{isInterval ? "只改原生 TimeElapsed / Frame 定时终止；条件退出和循环不受影响。" : damage ? "DamageCheck 百分比（当前接口只收整数）。" : "HitCountCheck 常量次数；表达式型阈值不能改。"}
-        改动写进这一关专属的 esdl 副本，原敌人资源不变。</p>
+      <p class="small muted">{isInterval ? (general ? "只改 c46/c47 定时终止（类型 2）。" : "只改原生 TimeElapsed / Frame 定时终止；条件退出和循环不受影响。")
+        : damage ? "DamageCheck 百分比，可写小数（0 < 值 ≤ 100）。" : general ? "c22–c26 试炼次数（直击 / 技能 / 强化弹射 / 技能连锁）。" : "HitCountCheck 常量次数；表达式型阈值不能改。"}
+        {general ? " 改动写进这一关专属的 general_boss / routine 副本：routine 改名时自身 watch 子树（含相位跳转）整棵复制，原敌人不变。"
+          : " 改动写进这一关专属的 esdl 副本，原敌人资源不变。"}</p>
       <OpActions op={op} problems={problems} onReset={onClose} />
     </div>
   );
