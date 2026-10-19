@@ -5,12 +5,12 @@ import copy
 import re
 
 import wf_quest_lib as codec
-from wf.view.base149 import join, row
+from wf.view.base149 import join
 from . import schema as s
 from .edit_state import leaf
-from .identity import safe_id
 from .parameters import columns, find_quest, require_encounter
 from .reader import BossReader
+from .terrain_identity import terrain_identity
 from .terrain_objects import (bounds, coordinate, decode, encode, fresh_objects, groups,
                               layer, logical_path, move_to_bounds, objects, require_within_bounds)
 
@@ -152,7 +152,7 @@ def apply_terrain(state, quest, request):
         raise ValueError(f"unsupported terrain operation: {operation}")
     kind, logical, path, values, document = _read(state, quest)
     selector = document["quest"]["selector"]
-    identity = "studio_terrain_" + safe_id(selector)
+    identity, target = terrain_identity(state, selector, document["terrain"]["logical"])
     tree = decode(state.raw(document["terrain"]["logical"]))
     before_tree = copy.deepcopy(tree)
     if operation == "terrain_replace":
@@ -163,7 +163,6 @@ def apply_terrain(state, quest, request):
         tree = _append(state, tree, document, request, identity)
     if tree == before_tree and operation != "terrain_add_layer":
         return [selector]
-    target = f"battle/terrain/studio/{safe_id(selector)}.amf3.deflate"
     existing = state.raw(target)
     if existing is not None and (target != document["terrain"]["logical"] or state.original.get(target) is not None):
         raise ValueError(f"ID collision: terrain/{target}")
