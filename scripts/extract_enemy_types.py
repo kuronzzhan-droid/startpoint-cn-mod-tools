@@ -57,6 +57,3 @@ if __name__ == '__main__':
     result['source_sha256'] = hashlib.sha256(source_file.read_bytes()).hexdigest()
     Path(sys.argv[2]).write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
     print('reachable types:',len(result['types']))
-
-
-

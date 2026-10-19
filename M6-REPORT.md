@@ -107,7 +107,7 @@
 
 最终路径扫描检查 **2,375 个文本文件，发现数 0**；`git diff --check` 和全仓已跟踪文件的提交卫生检查通过。最终验证数字及逐项证据 SHA256 见 [validation.json](docs/m6/validation.json)，全量日志保存在 `work/m6/full-verified.log` 与同名 JUnit XML。提交卫生日志保存在 `work/m6/hygiene-all.log`、`hygiene-staged.log`。
 
-测试计数采用 pytest 终端汇总和外层进程 exit 0。原始 JUnit 含 5,179 个 testcase，无 error/failure，但其聚合头记录 7,556 tests、357 skipped，且 testcase 的 skipped 标记数为 357，与终端汇总不一致；原文件保持生成状态，没有改写成预期值。机器摘要单独保留该计数差异，不用不一致的 XML 头推导通过数。
+测试计数采用 pytest 终端汇总和外层进程 exit 0。原始 JUnit 含 5,179 个 testcase，无 error/failure，聚合头记录 7,556 tests、357 skipped，testcase 的 skipped 标记数也为 357。已只读核对本机 pytest 9.1.1 实现：unittest.subTest 会额外发送报告，终端不单列通过/跳过的子报告，JUnit 则累计它们并可能复用父 testcase 的 nodeid。因此这是统计粒度差异；按差值可推得额外 2,374 条通过、3 条跳过的子报告。原 XML 保持生成状态，机器摘要同时保留两种口径，没有把子测试统计混入主套件通过数。
 
 最终全量命令使用独立 basetemp、pytest cache 与 TEMP/TMP，全部位于当前 worktree，子进程 stdin 关闭。可直接复现测试主体：
 

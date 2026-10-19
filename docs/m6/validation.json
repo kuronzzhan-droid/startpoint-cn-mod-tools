@@ -23,7 +23,11 @@
     },
     "testcase_elements": 5179,
     "testcase_skipped_elements": 357,
-    "note": "Raw JUnit counters disagree with the terminal summary; retained as generated, not used as the pass count."
+    "note": "pytest 9.1.1 unittest.subTest reports increase JUnit aggregate counters, while the terminal suppresses passed/skipped subreports and JUnit can reuse the parent testcase nodeid. Main-suite counts use the terminal summary; raw XML is preserved.",
+    "subreport_difference_inferred": {
+      "passed": 2374,
+      "skipped": 3
+    }
   },
   "path_scan": {
     "scanned_text_files": 2375,
