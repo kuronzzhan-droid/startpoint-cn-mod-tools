@@ -53,4 +53,36 @@ def test_soft_self_watch_is_copied_to_renamed_boss(tmp_path):
     watches = state.table(WATCH)['1']
     alias = next(key for key in watches if key.startswith('studio_behavior_'))
     assert watches[alias]['r'] == watches['org']['r']
-    assert watches[alias][alias] == watches['org']['org']
+    assert watches[alias]['org'] == watches['org']['org']
+
+
+@pytest.mark.parametrize('routine', ['routine', 'org'])
+@pytest.mark.parametrize('parameter', ['intervalFrames', 'trialThreshold'])
+def test_routine_rename_preserves_all_watches_and_action_preload(tmp_path, routine, parameter):
+    from wf.boss import schema as s
+    from wf.boss.behavior_model import Programs
+    from wf.boss.reader import BossReader
+    from wf.rules.boss_preload import programs
+    editor = behavior_editor(tmp_path)
+    tables = codec.parse_node(editor.source.view.files[s.GENERAL_BOSS])
+    cells = s.parse_rows(tables['org']['100'])[0]
+    cells[42] = routine
+    tables['org']['100'] = ','.join(cells)
+    editor.source.view.files[s.GENERAL_BOSS] = codec.build_node(tables)
+    states = codec.parse_node(editor.source.view.files[STATES])
+    states[routine] = states['routine']
+    editor.source.view.files[STATES] = codec.build_node(states)
+    node = {'2': {'funnel': {'0': '0,phase1_giga_lost_ready,battle/action/one'}},
+            '0': {'hp': {'0': '0,phase2,battle/action/two'}}}
+    editor.source.view.files[WATCH] = codec.build_node({'1': {'org': {routine: node}}})
+    draft = editor.apply('hard_multi:1006/1', request(state='idle', **{parameter: 45}))['changeset']
+    compiled = compile_boss(editor.source, editor.store, draft, server_dir=editor.server_dir)
+    general = codec.parse_node(compiled['client'][s.GENERAL_BOSS])
+    alias = next(key for key in general if key.startswith('studio_behavior_'))
+    target = s.parse_rows(general[alias]['100'])[0][42]
+    watches = codec.parse_node(compiled['client'][WATCH])['1']
+    assert watches[alias][target] == watches['org'][routine] == node
+    roots = [p for _, text in s.iter_leaves(watches[alias][target]) for p in programs(text)]
+    graph = Programs(editor.source)
+    assert set(graph.closure(roots)) == {'battle/action/one', 'battle/action/two'}
+    assert not graph.missing

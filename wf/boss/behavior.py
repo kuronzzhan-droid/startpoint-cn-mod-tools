@@ -118,7 +118,7 @@ def _hit_count(value):
     return int(value)
 
 
-def _general_parameters(state, row, request, owner):
+def _general_parameters(state, row, request, owner, code):
     if 'damageMultiplier' in request:
         edit_damage(state, row, request['slot'], request['damageMultiplier'], owner)
     if not any(key in request for key in ('intervalFrames', 'trialThreshold')):
@@ -144,6 +144,8 @@ def _general_parameters(state, row, request, owner):
     target = identity(owner, 'routine')
     if routine != target:
         state.set_leaf(STATES, [target], tree, new=True)
+        from .behavior_identity import clone_routine_watches
+        clone_routine_watches(state, code, routine, target)
     state.set_leaf(STATES, [target, *path], join(cells)); row[42] = target
 
 
@@ -216,7 +218,7 @@ def apply_behavior(state, quest, request):
         row[110 + request['slot']] = ','.join(roots)
     elif request['operation'] == 'behavior_parameters':
         if enemy['table'] == s.GENERAL_BOSS:
-            _general_parameters(state, row, request, owner)
+            _general_parameters(state, row, request, owner, alias)
         else:
             _standard_parameters(state, row, request, owner)
     else:
