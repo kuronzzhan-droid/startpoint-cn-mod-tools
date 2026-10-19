@@ -41,6 +41,9 @@ def routine_positions(document, view):
                  if name.strip() not in EMPTY}
         positions, missing = actions.general(enemy)
         names.update(positions)
-        issues.extend(f"层 {wave} 敌人 {code} 站位动作闭包缺失 {logical}" for logical in missing)
+        # A missing native input cannot establish a missing named position.
+        # Keep that distinction visible; selected/borrowed action edits have
+        # their own strict closure gates before reaching this terrain check.
+        pending.extend(f"层 {wave} 敌人 {code} 站位动作闭包缺失，待验证 {logical}" for logical in missing)
         required[(wave, code, routine)] = names
     return required, issues, pending

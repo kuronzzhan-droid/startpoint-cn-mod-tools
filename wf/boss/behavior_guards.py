@@ -90,7 +90,7 @@ def check_behavior_positions(view, document):
             continue
         for name in sorted(_absolute_positions(decode_esdl(raw)['tree']) - waves[str(enemy['wave'])]):
             issues.append(f'{enemy["code"]}: esdl 引用缺失站位 {name}（C14102）')
-    return result('boss.behavior-positions', '问题' if issues else '满足' if checked else '不适用',
+    return result('boss.behavior-positions', '问题' if issues else '待验证' if pending else '满足' if checked else '不适用',
                   ('逐波核对 GeneralBoss/Funnel 动作闭包及 StandardBoss esdl 命名站位' + (': ' + '; '.join(issues) if issues else '')), blocking=bool(issues), issues=issues, checked=checked,
                   limitations=pending, evidence_nature='源码推断',
                   source='CustomPosition / PositionKind.Absolute / routine c50', rule_version='1.1')

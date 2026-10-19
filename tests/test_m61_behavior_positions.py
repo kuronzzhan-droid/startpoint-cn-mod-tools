@@ -4,6 +4,7 @@ import wf_quest_lib as codec
 
 from wf.boss import schema as s
 from wf.boss.behavior_identity import GENERAL_FUNNEL, WATCH
+from wf.boss.behavior_guards import check_behavior_positions
 from wf.boss.behavior_wire import compress, decode_wire, write_tree
 from wf.boss.reader import BossReader
 from wf.rules.boss_terrain import terrain_checks
@@ -88,3 +89,15 @@ def test_delete_blocks_in_preview_and_saved_compile(tmp_path):
     assert 'IL2' in str(editor.preview('hard_multi:1006/1', deletion))
     with pytest.raises(ValueError, match='IL2'):
         compile_boss(editor.source, editor.store, draft, server_dir=editor.server_dir)
+
+
+def test_native_missing_action_input_is_pending_but_borrow_stays_blocked(tmp_path):
+    editor = behavior_editor(tmp_path)
+    del editor.source.view.files['battle/action/two.action.dsl.amf3.deflate']
+    document = BossReader(editor.source).show('hard_multi:1006/1')
+    for result in (terrain_checks(document, view=editor.source)[1],
+                   check_behavior_positions(editor.source, document)):
+        assert result['status'] == '待验证' and not result['blocking']
+        assert 'battle/action/two' in str(result['limitations'])
+    req = request('behavior_replace', slot=1, sourceEnemyCode='donor', sourceSlot=2)
+    assert not editor.preview('hard_multi:1006/1', req)['ok']
