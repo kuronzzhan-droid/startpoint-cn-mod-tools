@@ -107,6 +107,8 @@ HitCountCheck 次数与 `intervalFrames` 必须为整数；DamageCheck 百分比
 
 GeneralBoss routine 改名会同步复制该 routine 下的全部自身 watch，保留相位跳转及动作预载可达性。GeneralBoss、watch 和递归 General Funnel 动作中的 `CustomPosition` 进入统一站位门禁，借招、删站位与换图均受约束。重复调倍率复用该槽拥有的动作克隆，继续按当前倍率相乘，不累积废弃克隆。Repeat 按嵌套与跨程序调用的整个闭包估算展开量，超过上限、非正次数、非整数次数或递归拒绝。
 
+站位扫描缺少原生动作输入时标为「待验证」，不能据此声称站位不存在。删除站位要求完整引用证据，未知闭包与已知引用都会拒绝；add/update 保持名字，换地形保留全部原有站位，不把与名字无关的参数编辑一并禁用。同波同首领的不同档位引用取并集。倍率克隆若被其它首领、档位、槽、初始化、watch 或召唤物入口共享，会重新隔离；Repeat 总预算保留显式入口的重复次数，即使某个入口同时被另一入口调用也不会漏算。
+
 `GET /api/boss/<URL编码关卡>/timeline-summary` 返回 `{moves:[{name,label,timeline}],note}`，读取当前草稿候选。每个 `timeline` 复用 `build_timeline` 的 `events/lanes/arms/unknown/unmodeled/issues/subprograms` 格式，并附 `stateInterval`（状态 ID、起止帧、触发帧、退出条件及跳转）。已知触发帧以状态进入为零点，事件、隐藏/消除时刻和运动时刻一起平移；未知触发保留动作相对帧及空触发帧。跨波次同一首领分别保留，初始化和 watch 根动作显示为触发时刻未知。子程序维持自身时间原点，不拼接虚构的全战斗顺序。缺失程序及未建模节点保持显式提示。
 
 裸 `battle/action/...` 路径可以通过静态结构与依赖门禁，但这仅是源码推断。新增派生目录下裸路径动作的加载证据标为「待验证」；预览、编译的 `boss.behavior-loading` 及时间线提示不会把本地回读写成真机加载通过。
