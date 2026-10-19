@@ -212,8 +212,12 @@ function SiblingNav({ doc, list, drafts, tab }: {
 function paramText(p: BossParameters): string[] {
   const out: string[] = [];
   if (p.level !== undefined) out.push(`等级 ${p.level}`);
-  if (p.hpMultiplier !== undefined) out.push(`HP ×${p.hpMultiplier}`);
-  if (p.attackMultiplier !== undefined) out.push(`攻击 ×${p.attackMultiplier}`);
+  if (p.hpScale !== undefined) out.push(`HP 当前系数乘以 ${p.hpScale}`);
+  if (p.attackScale !== undefined) out.push(`攻击当前系数乘以 ${p.attackScale}`);
+  if (p.hpValue !== undefined) out.push(`HP 系数设为 ${p.hpValue}`);
+  if (p.attackValue !== undefined) out.push(`攻击系数设为 ${p.attackValue}`);
+  if (p.hpMultiplier !== undefined) out.push(`HP 系数设为 ${p.hpMultiplier}（旧字段已弃用）`);
+  if (p.attackMultiplier !== undefined) out.push(`攻击系数设为 ${p.attackMultiplier}（旧字段已弃用）`);
   if (p.recommendedElement !== undefined) out.push(`副本属性 ${QUEST_ELEMENTS[p.recommendedElement] ?? p.recommendedElement}`);
   if (p.restrictedElement !== undefined) out.push(p.restrictedElement === null ? "出战不限定" : `出战限定 ${QUEST_ELEMENTS[p.restrictedElement]}`);
   if (p.bgm !== undefined) out.push(`BGM ${p.bgm}`);
