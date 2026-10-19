@@ -1,0 +1,204 @@
+{
+  "schema": "wf-m62-validation/1",
+  "status": "completed-local",
+  "base_commit": "a6bcc44",
+  "tested_code_commit": "762b3d68cef002692ea619767967cc639de575e2",
+  "start_commit": "762b3d68cef002692ea619767967cc639de575e2",
+  "start_had_uncommitted_files": false,
+  "source_snapshot_unchanged": true,
+  "source_files_checked": 2066,
+  "pytest": {
+    "passed": 5010,
+    "skipped": 354,
+    "warnings": 26,
+    "failed": 0,
+    "errors": 0,
+    "exit_code": 0,
+    "seconds": 1143.554298899995,
+    "count_source": "pytest terminal summary"
+  },
+  "junit_observation": {
+    "aggregate": {
+      "tests": 7773,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 357
+    },
+    "testcase_elements": 5364,
+    "testcase_skipped_elements": 357,
+    "note": "Raw JUnit and terminal counts retained separately because unittest.subTest adds reports."
+  },
+  "path_scan": {
+    "scanned_text_files": 2422,
+    "findings": [],
+    "count": 0
+  },
+  "hygiene_exit_code": 0,
+  "hygiene_staged_exit_code": 0,
+  "historical": {
+    "221": {
+      "characters_fully_rebuilt": 4,
+      "steps_per_character": 7,
+      "archives": 11,
+      "members_byte_equal": 310,
+      "different_members": 0,
+      "archives_equal_without_dos_timestamps": 11,
+      "archives_with_identical_raw_sha256": 0,
+      "legacy_manifest_semantic_equal": true,
+      "layered_manifest_members_byte_equal": 310
+    },
+    "223_members_byte_equal": 3,
+    "input_preservation": {
+      "221-build": {
+        "external_read_files": 1016,
+        "unchanged_files": 1016,
+        "subprocess_count": 174
+      },
+      "221-verify": {
+        "external_read_files": 113,
+        "unchanged_files": 113,
+        "subprocess_count": 0
+      },
+      "223": {
+        "external_read_files": 198,
+        "unchanged_files": 198,
+        "subprocess_count": 0
+      }
+    },
+    "unique_external_input_files_preserved": 1110
+  },
+  "boss": {
+    "independent_cases": 3,
+    "independent_failures": 0,
+    "frontend_build_exit_code": 0,
+    "frontend_versions": {
+      "typescript": "5.9.3",
+      "vite": "6.4.4",
+      "preact": "10.29.8",
+      "nodeAtEvidenceCapture": "v24.19.0",
+      "npm": "11.17.0"
+    }
+  },
+  "apk": {
+    "profile": "local-v35k3",
+    "apk_sha256": "6981c48c42e43ebf6b85e5893cf40357affe4e7a31787e078f0ce28c3cd5f807",
+    "swf_sha256": "c52e01b8a536f78a06f48cce07bd3e0f23b3814b9b7f861e02a20755f74cc2c1",
+    "package": {
+      "package_name": "com.leiting.wf",
+      "versionCode": 1008001,
+      "versionName": "1.8.1"
+    },
+    "capabilities": 123,
+    "patches": 101,
+    "unresolved": 0,
+    "withheld": 30,
+    "observed_registered_methods": 838
+  },
+  "limitations": [
+    "Local code, byte replay and static APK/SWF evidence only; no business server, device, install, push or deployment actions.",
+    "Unproven capability equivalence is withheld, not declared unsupported. No automatic new semantic capability is invented.",
+    "Historical ZIP members are byte-identical; 221 containers are equal only after DOS timestamp normalization."
+  ],
+  "evidence": [
+    {
+      "path": "work/m62/apk/acceptance.json",
+      "sha256": "5667b93ad368d93bde3104f4ba9945d7688a1dd58abc74ad789a7c0dba1c8021"
+    },
+    {
+      "path": "work/m62/apk/index-bytes.json",
+      "sha256": "297e858a92d6c73cd31c190a7eb2c5622345a09c7eadb3342ad31be17ba11cf4"
+    },
+    {
+      "path": "work/m62/apk/targeted-tests-final.log",
+      "sha256": "ef4fc3653f69e49495da7d0ffc7d6c7b303ed482b45c174fd7a8a27fbb73a950"
+    },
+    {
+      "path": "work/m62/boss/build-validation.json",
+      "sha256": "6b4000ab1bb13f0cb0c06969462b3eb26a3cab98c6758981fce017a6a7d6ebfa"
+    },
+    {
+      "path": "work/m62/boss/pytest.log",
+      "sha256": "fdea347fe9ed8aca6916b3563f58e973200fd2bc784274975d78b3bb97b29960"
+    },
+    {
+      "path": "work/m62/full-exit.json",
+      "sha256": "26221971e9cc2b6704689653d42502e26bac56f43789ad42bb39362413b7c9e3"
+    },
+    {
+      "path": "work/m62/full.log",
+      "sha256": "d30c8ff71347a5c5b5929683f7c96030fb78da08e6b75610573ec6492ea16ac4"
+    },
+    {
+      "path": "work/m62/full.xml",
+      "sha256": "32ecf890b8e77d6c783ede854e3715034c788252729d202651454ee925184d95"
+    },
+    {
+      "path": "work/m62/history/exit.json",
+      "sha256": "e6d6dd028e78ed0bd04e3bda1beab0b9c40856a08eeb3d6d290d6807586fae03"
+    },
+    {
+      "path": "work/m62/history/replay221.json",
+      "sha256": "f9b01c5a282788a3142ea4b7379aa541c8550ad35a9cf082d217ad35e31b7e83"
+    },
+    {
+      "path": "work/m62/history/replay223.json",
+      "sha256": "044f2308e95d91880eacc7edf22c6f4a34417f9bb1f925bf98e88af29330d8d9"
+    },
+    {
+      "path": "work/m62/history/summary.json",
+      "sha256": "55b54ec274aa8d4216f82b088a72f551714a603b3b07414dad1cdd5674710f37"
+    },
+    {
+      "path": "work/m62/hygiene-all-exit.json",
+      "sha256": "71961de6c3eab1040d2f2440368297992377a9f3b2181effe132acbe9962de37"
+    },
+    {
+      "path": "work/m62/hygiene-all.log",
+      "sha256": "afdf5bc1be4a013fc35f4f5e26cfed89c0e993e752130d26b60bd274a764456e"
+    },
+    {
+      "path": "work/m62/hygiene-staged-exit.json",
+      "sha256": "2d5931cd619cee5746f2d508a5a7486b50dd9e446d96416f4b756906829459b9"
+    },
+    {
+      "path": "work/m62/hygiene-staged.log",
+      "sha256": "afdf5bc1be4a013fc35f4f5e26cfed89c0e993e752130d26b60bd274a764456e"
+    },
+    {
+      "path": "work/m62/path-scan.json",
+      "sha256": "6cbaba2ae9df05b61f226f2dfd80b5ef7d86214e1a804f42dfb76665dcd8a8ba"
+    },
+    {
+      "path": "work/m62/review/apk-final.json",
+      "sha256": "0de9dbef9fc3f0151f5d596c550e2b1f3403baa7d68ac1a98bfe8a29a5951378"
+    },
+    {
+      "path": "work/m62/review/apk-gate-cache-exit.json",
+      "sha256": "e81bc160c0843ee56f31f12997bb3aff50528d596002d4866676cb8a1b19195a"
+    },
+    {
+      "path": "work/m62/review/apk-gate-cache.log",
+      "sha256": "985b1fe1528922996195351ed19c0623de55086d9b67ca3607ab4b91cf9333e4"
+    },
+    {
+      "path": "work/m62/review/apk-gate-final.json",
+      "sha256": "efa845f78e80c73b3b4578064cee4c34329baf05129b858af8f1a58599bc4441"
+    },
+    {
+      "path": "work/m62/review/apk-gate-pair-exit.json",
+      "sha256": "1652db757db1ab44142e4354b8f05f6059a92ce5230f8b723720775c0fb42dce"
+    },
+    {
+      "path": "work/m62/review/apk-gate-pair.log",
+      "sha256": "e30c9065b8ffbae8a3a4807b41df59bb66d92f4922a89162653d0dfed318e28e"
+    },
+    {
+      "path": "work/m62/review/boss-independent.json",
+      "sha256": "191e5c447cf62beaa2dda05aea655c506372f26d316dfc224d52a686832087ee"
+    },
+    {
+      "path": "work/m62/test-source-snapshot.json",
+      "sha256": "39012ba83a18f29c85be5bda207345ff4d69a3262a51c3678e75efc1c1702034"
+    }
+  ]
+}
