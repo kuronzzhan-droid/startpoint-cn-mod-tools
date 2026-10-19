@@ -7,8 +7,12 @@ from types import SimpleNamespace
 from wf.boss.identity import safe_id
 
 from .boss import BossEditor, BossDraftStore
-from .boss_catalog import draft_summary, enrich_listing, options, template_sources
+from .boss_catalog import (draft_summary, enrich_listing, options, template_sources, terrain_preview,
+                           weapon_icons)
 from .deliver_routes import DeliverRoutes, DELIVERIES
+
+
+ICON_PATH = re.compile(r"^item/[A-Za-z0-9_./-]+$")
 
 
 class BossDeliveries(DeliverRoutes):
@@ -59,6 +63,32 @@ class BossRoutes:
     def options(self, query):
         return self._read_only(options)
 
+    def terrain(self, query):
+        return self._read_only(lambda reader: terrain_preview(reader, (query.get("path") or [""])[0]))
+
+    def icons(self, query):
+        return self._read_only(weapon_icons)
+
+    def icon(self, query):
+        from .server import Response, error
+        logical = (query.get("path") or [""])[0].strip()
+        if not ICON_PATH.match(logical) or ".." in logical.split("/"):
+            return error(400, "只允许读取 item/ 下的图标")
+        import wf_assets
+        from wf.boss.reader import BossReader
+        # Same resolution as the weapon/shop icon gate (state.raw of the logical PNG).
+        logical = logical if logical.endswith(".png") else logical + ".png"
+        raw = BossReader(self.app.source).raw(logical)
+        if raw is not None:
+            return Response(200, wf_assets.png_decode(raw), "image/png")
+        try:  # official images live under the store's resolution roots (medium / android)
+            found = self.app.assets.file(logical)
+        except (AttributeError, OSError, ValueError):
+            found = None
+        if found is None:
+            return error(404, "当前视图中没有这个图标")
+        return Response(200, found[0], found[1])
+
     def show(self, query, quest):
         from .server import json_response
         return json_response(self.editor.read(quest))
@@ -108,6 +138,9 @@ class BossRoutes:
             ("GET", re.compile(r"^/api/boss/templates$"), self.templates),
             ("GET", re.compile(r"^/api/boss/options$"), self.options),
             ("GET", re.compile(r"^/api/boss/drafts/(?P<quest>[^/]+)$"), self.draft),
+            ("GET", re.compile(r"^/api/boss/terrain-preview$"), self.terrain),
+            ("GET", re.compile(r"^/api/boss/weapon-icons$"), self.icons),
+            ("GET", re.compile(r"^/api/boss/icon\.png$"), self.icon),
             *self.deliveries.routes(),
             ("GET", re.compile(r"^/api/boss/(?P<quest>[^/]+)/(?P<section>terrain|shops|weapons|behavior|timeline)$"), self.section),
             ("GET", re.compile(r"^/api/boss/(?P<quest>[^/]+)$"), self.show),

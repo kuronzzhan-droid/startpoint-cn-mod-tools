@@ -5,7 +5,10 @@ the overview; they never change a selector or the rule results.
 """
 from __future__ import annotations
 
+import re
+
 from wf.boss import schema as s
+from wf.boss.terrain import read_terrain
 from wf.boss.parameters import BGM_GROUP, FIELD
 
 from .drafts import status
@@ -119,8 +122,51 @@ def options(reader):
     for key, text in reader.table(FIELD).items():
         row = s.parse_rows(text)[0] if isinstance(text, str) and text else []
         scenes.append({"id": key, "background": s.cell(row, 0)})
-    return {"bgm": bgm, "scenes": scenes,
+    return {"bgm": bgm, "scenes": scenes, "terrains": terrain_choices(reader),
             "note": "BGM 填 battle_bgm_group 的键；场景填 field 的键（会为这一关派生独立 field_data）"}
+
+
+TERRAIN_PATH = re.compile(r"^battle/terrain/[A-Za-z0-9_./-]+$")
+
+
+def terrain_choices(reader):
+    """Existing terrain logical paths (field_data c1) and the field_data rows that use them."""
+    users = {}
+    for key, text in reader.table(s.FIELD_DATA).items():
+        row = s.parse_rows(text)[0] if isinstance(text, str) and text else []
+        path = s.cell(row, 1)
+        if s.present(path) and TERRAIN_PATH.match(path):
+            users.setdefault(path, []).append(key)
+    return [{"path": path, "uses": len(keys), "fieldData": sorted(keys)[:5]}
+            for path, keys in sorted(users.items())]
+
+
+def terrain_preview(reader, path):
+    """Decoded layers of one existing terrain (read only; nothing is drafted)."""
+    path = (path or "").strip().removesuffix(".amf3.deflate")
+    if not TERRAIN_PATH.match(path) or ".." in path.split("/"):
+        raise ValueError("地形路径必须是 battle/terrain/ 下的逻辑路径")
+    result = read_terrain(reader, path)
+    if result["missing"]:
+        raise ValueError(f"当前视图里没有这个地形：{path}")
+    return result
+
+
+def weapon_icons(reader):
+    """Icon references the weapon clone may reuse: equipment c6 and enhanced equipment c4."""
+    from wf.boss.shop_model import ENH
+
+    def collect(logical, column, name_column):
+        seen = {}
+        for key, text in reader.table(logical).items():
+            row = s.parse_rows(text)[0] if isinstance(text, str) and text else []
+            icon = s.cell(row, column)
+            # Only references whose PNG exists in this view pass the clone's icon gate.
+            if s.present(icon) and icon not in seen and reader.raw(icon + ".png") is not None:
+                seen[icon] = {"icon": icon, "id": key, "name": s.cell(row, name_column)}
+        return sorted(seen.values(), key=lambda entry: entry["icon"])
+    return {"equipment": collect(s.EQUIPMENT, 6, 1), "enhanced": collect(ENH, 4, 2),
+            "note": "只列当前视图里有 PNG 的已有图标引用；不新建图像或图集格"}
 
 
 def draft_summary(entry, draft):

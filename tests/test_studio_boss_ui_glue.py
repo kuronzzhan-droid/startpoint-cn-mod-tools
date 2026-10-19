@@ -99,3 +99,33 @@ def test_leaf_histories_are_shared_only_for_the_same_immutable_view():
     assert provenance._histories_for(_View(["a.zip", "b.zip"])) is not first
     overlay = _Overlay([])
     assert provenance._histories_for(overlay) is not provenance._histories_for(overlay)
+
+
+def test_terrain_choices_preview_and_weapon_icons_are_read_only(tmp_path):
+    from wf.studio.boss_catalog import terrain_choices, terrain_preview, weapon_icons
+    editor = fixture_editor(tmp_path)
+    reader = BossReader(editor.source)
+    choices = terrain_choices(reader)
+    assert choices and all(c["path"].startswith("battle/terrain/") and c["uses"] >= 1 for c in choices)
+    assert "terrains" in options(reader)
+    preview = terrain_preview(reader, "battle/terrain/test")
+    assert preview["wave_count"] == 1 and preview["waves"][0]["position_names"] == ["p0"]
+    for bad in ("battle/terrain/../x", "master/battle/zone", "battle/terrain/absent"):
+        try:
+            terrain_preview(reader, bad)
+        except ValueError:
+            continue
+        raise AssertionError(bad)
+    icons = weapon_icons(reader)
+    assert set(icons) >= {"equipment", "enhanced"}
+    assert len({i["icon"] for i in icons["equipment"]}) == len(icons["equipment"])
+
+
+def test_boss_icon_route_only_serves_item_images(tmp_path):
+    editor = fixture_editor(tmp_path)
+    app = StudioApp(editor.source, drafts=DraftStore(tmp_path / "drafts"), server_dir=editor.server_dir)
+    assert app.dispatch("GET", "/api/boss/icon.png", {"path": ["battle/terrain/test"]}).status == 400
+    assert app.dispatch("GET", "/api/boss/icon.png", {"path": ["item/../x"]}).status == 400
+    assert app.dispatch("GET", "/api/boss/icon.png", {"path": ["item/absent_icon"]}).status == 404
+    response = app.dispatch("GET", "/api/boss/terrain-preview", {"path": ["battle/terrain/test"]})
+    assert response.status == 200 and json.loads(response.body)["wave_count"] == 1
