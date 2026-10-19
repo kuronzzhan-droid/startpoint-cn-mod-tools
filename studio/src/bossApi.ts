@@ -188,6 +188,130 @@ export interface BossRequest {
   name?: string;
 }
 
+// --- M6 phase-2 operations (terrain / shop & weapons / behavior) -------------------------
+
+export interface MaterialCost { itemId: string; amount: number }
+export interface ShopReward { kind: 0 | 4; id: string; amount: number }
+
+export type TerrainRequest =
+  | { operation: "terrain_replace"; terrain: string }
+  | { operation: "terrain_position"; layer: string; action: "add" | "update" | "delete"; name: string;
+      x?: number; y?: number; width?: number; height?: number }
+  | { operation: "terrain_add_layer"; sourceQuest: string; sourceLayer: string; transitionSourceQuest?: string };
+
+export interface ShopSpec {
+  category: string; productId?: string; sourceProduct?: string; name?: string; description?: string;
+  icon?: string; price?: MaterialCost[]; stock?: number; rewards?: ShopReward[];
+}
+
+export interface WeaponAbilityChange {
+  table: "ability_soul" | "equipment_enhancement_ability"; row: number;
+  block: "instant_content" | "during_content"; kind?: number; strength?: [number, number];
+}
+
+export interface WeaponStage { productId: string; costs: MaterialCost[]; userCost?: { type: number; amount: number } | null }
+
+export interface WeaponSpec {
+  id?: string; sourceWeapon?: string; name?: string; description?: string; icon?: string; enhancedIcon?: string;
+  hpMultiplier?: number; attackMultiplier?: number; abilities?: WeaponAbilityChange[];
+  enhancementProducts?: string[]; stages?: WeaponStage[];
+}
+
+export type ShopWeaponRequest =
+  | { operation: "shop_add" | "shop_edit" | "shop_delete"; shop: ShopSpec }
+  | { operation: "weapon_clone" | "weapon_materials"; weapon: WeaponSpec };
+
+export type BehaviorRequest =
+  | { operation: "behavior_replace"; enemyCode: string; slot: number; sourceEnemyCode: string; sourceSlot: number }
+  | { operation: "behavior_parameters"; enemyCode: string; slot?: number; state?: string; form?: number;
+      intervalFrames?: number; damageMultiplier?: number; trialThreshold?: number };
+
+/** Every request the boss draft endpoint accepts (one operation per POST). */
+export type AnyBossRequest = BossRequest | TerrainRequest | ShopWeaponRequest | BehaviorRequest;
+
+export interface Rect { x: number; y: number; width: number; height: number }
+export interface Point2 { x: number; y: number }
+export interface TerrainObject {
+  id?: number; type?: string; name?: string; x?: number; y?: number; width?: number; height?: number;
+  [key: string]: unknown;
+}
+export interface TerrainPosition { object_id?: number; name: string; type: string; rect: Rect; runtime_point: Point2 }
+export interface TerrainLayer {
+  name: string; objects: TerrainObject[]; bounds: Rect[];
+  coffins: { index: number; party: number; member: number; object_id?: number; rect: Rect; runtime_point: Point2 }[];
+  named_positions: TerrainPosition[]; custom_positions: TerrainPosition[]; coffin_count: number; position_names: string[];
+}
+export interface TerrainDoc {
+  logical: string; missing: boolean; waves: TerrainLayer[]; wave_count: number | null; source: BossCitation | null;
+  coordinate_semantics?: Record<string, string>;
+  bindings?: { field_data: string; field: string; zone: string; waves: { layer: string; zone_paths: string[][] }[] };
+}
+
+export interface ProductFields {
+  name: string; description: string; icon: string; rarity: string;
+  price: { itemId: string; amount: string }[]; stock: string;
+  limit: { frequency: string; daily: string; monthly: string };
+  availableFrom: string; availableUntil: string;
+  rewards: { kind: string; id: string; amount: string }[];
+  currencies: { itemId: string; amount: string; item: BossRecord | null }[];
+}
+export interface ShopProduct extends BossRecord { id: string; fields: ProductFields; soul_item_ids: string[] }
+export interface EnhancementStage extends BossRecord {
+  id: string; categoryId: string; groupId: string; stage: string; maxLevel: string; requireAwakeningLevel: string;
+  costs: { itemId: string; amount: string }[]; priceKind: string; userCost: { type: string; amount: string } | null;
+  startLevel: number; purchaseCountTo120: number;
+}
+export interface WeaponDoc {
+  id: string; product?: string;
+  equipment: BossRecord | null; soul_item: BossRecord | null; ability_soul: BossRecord | null;
+  equipment_enhancement: BossRecord | null; equipment_enhancement_ability: BossRecord | null;
+  status: { level: string; row: string[]; source: BossCitation }[];
+  enhancement_status: { level: string; row: string[]; source: BossCitation }[];
+  enhancement_chain: EnhancementStage[];
+  materials_to_120: { itemId: string; amount: number }[];
+  user_costs_to_120: { type: string; amount: number }[];
+  enhancement_start_level: number; reaches_120: boolean; material_semantics: string;
+  kind_columns: Record<string, Record<string, number>>; kind_evidence: string;
+  source?: BossCitation;
+}
+export interface ShopDoc {
+  id: string; category: BossRecord | null; products: ShopProduct[]; shop_kind: string;
+  contains_soul_products: boolean; weapons: WeaponDoc[]; association: { kind: string; note?: string }; server_sync: string;
+}
+
+export interface BehaviorAction {
+  slot?: number; event?: unknown; begin: number; end: number | null; trigger_frame?: number;
+  interval_semantics?: string; marker_frame?: number; positions?: Point2[]; dsl: string[]; offset?: number[];
+}
+export interface GeneralTrial { kind: string; threshold: string; countdown: string; wince: string; next: string; source: string }
+export interface BehaviorState {
+  id: string; name?: string; form?: number; animation: string; marker_sequence: string;
+  marker_interval: { begin: number; end: number; name: string; kind: string } | null;
+  begin: number; end: number | null; duration_frames: number | null; interval_semantics: string;
+  termination: { kind: string; value: string } | unknown[];
+  next: unknown; back: unknown;
+  trial: GeneralTrial | unknown[] | null;
+  invincible_by_phase_change: boolean; position?: string;
+  actions: BehaviorAction[]; dsl: string[]; effects: string[]; immunity_links: unknown[]; missing: string[];
+}
+export interface BehaviorEnemy {
+  enemyCode: string; wave: string; level: number; kind: string;
+  routine?: string; initial_state?: string; logical?: string; marker?: string; marker_missing?: boolean;
+  slots: { slot: number; program: string }[]; states: BehaviorState[];
+  decoded?: { initialPosition?: unknown[]; [key: string]: unknown };
+  slot_edit_supported?: boolean; preload?: { dsl: string[]; effects: string[]; missing: string[] };
+  limitation?: string; missing?: boolean;
+}
+export interface BehaviorDoc { schema: string; enemies: BehaviorEnemy[] }
+
+export interface WeaponIcons {
+  equipment: { icon: string; id: string; name: string }[];
+  enhanced: { icon: string; id: string; name: string }[];
+  note: string;
+}
+
+export interface SectionResponse<T> { questId: string; section: string; data: T; checks: RuleResult[]; runtime: string }
+
 export interface BossAllocation {
   event: string;
   quest: string;
@@ -250,6 +374,7 @@ export interface BossTemplates {
 export interface BossOptions {
   bgm: { id: string; tracks: string[] }[];
   scenes: { id: string; background: string }[];
+  terrains?: { path: string; uses: number; fieldData: string[] }[];
   note: string;
 }
 
@@ -304,8 +429,14 @@ export const boss = {
   read: (quest: string) => get<BossRead>(`/api/boss/${enc(quest)}`),
   drafts: () => get<{ drafts: BossDraftSummary[] }>("/api/boss/drafts"),
   draft: (quest: string) => get<DraftView>(`/api/boss/drafts/${enc(quest)}`),
-  preview: (quest: string, body: BossRequest) => previewPost(draftUrl(quest) + "?preview=true", body),
-  apply: async (quest: string, body: BossRequest) => {
+  /** Read-only candidate sub-model with this quest's draft replayed; `rev` keys the cache to one draft revision. */
+  section: <T>(quest: string, name: "terrain" | "shops" | "weapons" | "behavior" | "timeline", rev = "") =>
+    once<SectionResponse<T>>(`/api/boss/${enc(quest)}/${name}?rev=${enc(rev)}`),
+  terrainPreview: (path: string) => once<TerrainDoc>(`/api/boss/terrain-preview?path=${enc(path)}`),
+  weaponIcons: () => once<WeaponIcons>("/api/boss/weapon-icons"),
+  iconUrl: (path: string) => `/api/boss/icon.png?path=${enc(path)}`,
+  preview: (quest: string, body: AnyBossRequest) => previewPost(draftUrl(quest) + "?preview=true", body),
+  apply: async (quest: string, body: AnyBossRequest) => {
     const result = await post<BossApplied>(draftUrl(quest), body);
     announce(result.questId);
     return result;

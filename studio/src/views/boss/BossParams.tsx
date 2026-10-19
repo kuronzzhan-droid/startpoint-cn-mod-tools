@@ -2,7 +2,7 @@ import { ComponentChildren } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { RuleResult } from "../../api";
 import {
-  boss, BossDoc, BossDraftSummary, BossList, BossOptions, BossParameters, BossPreview, BossRequest,
+  AnyBossRequest, boss, BossDoc, BossDraftSummary, BossList, BossOptions, BossParameters, BossPreview, BossRequest,
 } from "../../bossApi";
 import { href } from "../../router";
 import { Notice } from "../common";
@@ -70,7 +70,7 @@ export function diffParameters(values: Values, current: Values, options: BossOpt
 }
 
 /** Debounced live preview through POST …?preview=true; stale answers are dropped. */
-export function useLivePreview(target: string | null, request: BossRequest | null, problems: string[],
+export function useLivePreview(target: string | null, request: AnyBossRequest | null, problems: string[],
   onState: (state: PreviewState) => void): { preview: BossPreview | null; previewedFor: string | null; runNow: () => void } {
   const [preview, setPreview] = useState<BossPreview | null>(null);
   const [previewedFor, setPreviewedFor] = useState<string | null>(null);

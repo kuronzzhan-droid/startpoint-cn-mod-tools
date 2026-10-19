@@ -140,6 +140,7 @@ export const RULE_LABEL: Record<string, string> = {
   "boss.unique-ids": "新 ID 撞号",
   "boss.trial-link": "试炼击破条链接",
   "capability.unknown": "客户端能力",
+  "boss.behavior-positions": "boss 命名站位引用",
 };
 
 export function preloadState(checks: RuleResult[]): "none" | "pending" | "acknowledged" | "blocked-known" {

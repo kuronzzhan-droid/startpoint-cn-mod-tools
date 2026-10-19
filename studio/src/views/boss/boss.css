@@ -132,3 +132,69 @@
   .boss-card-side { max-width: 42%; }
   .filters .segmented button { padding: 4px 9px; }
 }
+
+/* 第二期：地形 / 商店与武器 / 行为 */
+.boss-tab-host { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.boss-tab-host[hidden] { display: none; }
+.boss-terrain, .terrain-edit { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.boss-terrain .segmented { margin: 2px 6px 6px 0; }
+.layer-pick button { font-size: 12.5px; }
+.terrain-grid { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 12px; align-items: start; }
+.terrain-pair { display: flex; gap: 10px; flex-wrap: wrap; }
+.terrain-stage { margin: 0; display: flex; flex-direction: column; gap: 4px; max-width: 324px; }
+.terrain-canvas { border-radius: 8px; border: 1px solid var(--border); touch-action: none; display: block; }
+.terrain-canvas.draggable { cursor: grab; }
+.terrain-canvas.draggable:active { cursor: grabbing; }
+.terrain-empty { width: 324px; height: 576px; display: flex; align-items: center; justify-content: center; border: 1px dashed var(--border); border-radius: 8px; text-align: center; padding: 12px; }
+.terrain-side { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.terrain-side h4 { margin: 2px 0 6px; }
+.terrain-legend { list-style: none; padding: 0; margin: 6px 0 0; display: flex; flex-wrap: wrap; gap: 4px 12px; max-width: 324px; }
+.terrain-legend .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+.sw-bounds { background: #51cf66; } .sw-coffin { background: #4dabf7; } .sw-pos { background: #ffd43b; }
+.sw-boss { background: #ff6b6b; } .sw-pending { background: #ff922b; } .sw-wall { background: #adb5bd; }
+.row-inline { display: flex; gap: 6px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+.row-inline input { flex: 1; min-width: 140px; border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; background: var(--surface); }
+.pending-block { border-color: var(--accent); }
+.pending-block h4 { display: flex; align-items: center; gap: 6px; margin: 4px 0 8px; }
+.param-fields.compact { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+.inline-checks { list-style: none; padding: 0; margin: 6px 0; display: flex; flex-direction: column; gap: 2px; }
+.inline-checks .state-ok { font-weight: 400; }
+.pick-list { list-style: none; padding: 0; margin: 6px 0 0; max-height: 260px; overflow: auto; border: 1px solid var(--border); border-radius: 6px; }
+.terrain-side input:not([type]), .terrain-side select, .clone-wizard input:not([type]), .boss-behavior .filters input {
+  border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; background: var(--surface); width: 100%; }
+.terrain-side select[size] { margin-top: 6px; }
+.pending-fix { display: inline-flex; align-items: center; gap: 4px; cursor: help; }
+.pending-fix button[disabled] { opacity: 0.55; }
+.boss-table tr.on td { background: var(--accent-soft); }
+.boss-table tr.edit-row > td { background: var(--surface-2); padding: 6px 8px 10px; }
+.close-x { margin-left: auto; font-size: 18px; line-height: 1; color: var(--muted); }
+.sync-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 3px; overflow-wrap: anywhere; }
+.weapon-list { display: flex; flex-direction: column; gap: 10px; }
+.weapon-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 12px; background: var(--surface); }
+.weapon-card > header { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+.weapon-title { display: flex; flex-direction: column; min-width: 0; }
+.weapon-icon { border-radius: 6px; background: var(--surface-2); image-rendering: auto; object-fit: contain; flex: none; }
+.weapon-icon.empty { display: inline-flex; align-items: center; justify-content: center; color: var(--muted); border: 1px dashed var(--border); }
+.ability-lines { margin: 0; padding-left: 16px; }
+.cost-input { display: inline-flex; flex-direction: column; margin-right: 8px; }
+.tier-edit input.short, input.short { width: 92px; }
+.clone-wizard .wizard-steps li { padding: 0; }
+.clone-wizard .wizard-steps button { padding: 2px 10px; color: inherit; }
+.icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 6px; margin: 6px 0 10px; max-height: 300px; overflow: auto; }
+.icon-pick { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px; border: 1px solid var(--border); background: var(--surface); }
+.icon-pick .small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.icon-pick.on { border-color: var(--accent); background: var(--accent-soft); }
+.boss-behavior .filters { align-items: center; }
+.boss-behavior .filters input { max-width: 260px; }
+.state-table td .link { display: inline-block; margin: 0 4px 2px 0; }
+.move-player { border-color: var(--accent); }
+@media (max-width: 1100px) { .terrain-grid { grid-template-columns: minmax(0, 1fr); } }
+.terrain-grid { grid-template-columns: max-content minmax(240px, 1fr); }
+.terrain-side .boss-table td, .terrain-side .boss-table th { padding: 3px 5px; }
+.terrain-side .tag { margin-left: 3px; }
+.terrain-side .param-fields.compact { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 10px; }
+.terrain-side .param-field input { width: 100%; }
+.boss-table tr.clickable { cursor: pointer; }
+.terrain-grid.stacked { grid-template-columns: minmax(0, 1fr); }
+.terrain-grid.stacked .terrain-side { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; align-items: start; }
+.terrain-empty { width: 281px; height: 499px; }
