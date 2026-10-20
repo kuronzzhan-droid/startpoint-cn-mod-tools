@@ -1,0 +1,72 @@
+--- a/src/multi/coordinator/default-runtime.ts
++++ b/src/multi/coordinator/default-runtime.ts
+@@ -136,6 +136,7 @@
+     await startRealtimeOwner()
+     getRoomCommandGateway()
+     console.log(`[MULTI-REALTIME] owner ready pid=${processTransport!.pid} epoch=${processTransport!.ownerEpoch}`)
++    startRealtimeOwnerWatchdog()
+ }
+ export function quiesceRealtimeSessionServer(): Promise<void> {
+     if (!quiesced) {
+@@ -170,11 +171,60 @@
+     })()
+     return stopped
+ }
+-/** Security/channel failure seals this owner until the service is explicitly restarted. */
++/** Security/channel failure seals this owner; a process owner is then rebuilt by the respawn supervisor. */
+ export async function failRealtimeOwner(): Promise<void> {
++    if (phase === "failed") return
+     phase = "failed"
+     gateway?.close()
+     executor?.close()
+     if (!isRealtimeParent()) { await require("../tcp/server").stopSessionServer(); return }
+     await processTransport?.abort()
++    scheduleRealtimeOwnerRespawn()
++}
++
++// A sealed owner used to stay down until a manual restart, leaving the session port closed (live 2026-10-16).
++// The old child is aborted before a new owner epoch starts, so two owners never hold authority at once.
++const RESPAWN_DELAY_MS = boundedEnvInt("MULTI_REALTIME_RESPAWN_DELAY_MS", 5000, 500, 120_000)
++const RESPAWN_MAX = boundedEnvInt("MULTI_REALTIME_RESPAWN_MAX", 5, 0, 100)
++const RESPAWN_WINDOW_MS = 10 * 60_000
++const respawnHistory: number[] = []
++let respawnTimer: NodeJS.Timeout | undefined
++let watchdog: NodeJS.Timeout | undefined
++
++function boundedEnvInt(name: string, fallback: number, min: number, max: number): number {
++    const value = Number(process.env[name])
++    return Number.isSafeInteger(value) && value >= min && value <= max ? value : fallback
++}
++
++function scheduleRealtimeOwnerRespawn(): void {
++    if (respawnTimer || isServerShuttingDown()) return
++    const now = Date.now()
++    while (respawnHistory.length && now - respawnHistory[0] > RESPAWN_WINDOW_MS) respawnHistory.shift()
++    if (respawnHistory.length >= RESPAWN_MAX) {
++        console.error(`[MULTI-REALTIME] owner respawn limit reached (${RESPAWN_MAX} per 10 min); manual restart required`)
++        return
++    }
++    respawnHistory.push(now)
++    console.error(`[MULTI-REALTIME] owner sealed; respawning in ${RESPAWN_DELAY_MS}ms (attempt ${respawnHistory.length}/${RESPAWN_MAX})`)
++    respawnTimer = setTimeout(() => {
++        respawnTimer = undefined
++        if (isServerShuttingDown() || phase !== "failed") return
++        startRealtimeSessionServer().then(
++            () => console.log("[MULTI-REALTIME] owner respawned"),
++            error => { console.error("[MULTI-REALTIME] owner respawn failed", error); phase = "failed"; scheduleRealtimeOwnerRespawn() })
++    }, RESPAWN_DELAY_MS)
++    respawnTimer.unref?.()
++}
++
++/** A process owner that exits on its own is treated like a sealed owner. */
++function startRealtimeOwnerWatchdog(): void {
++    if (watchdog) return
++    watchdog = setInterval(() => {
++        if (isServerShuttingDown()) { clearInterval(watchdog); watchdog = undefined; return }
++        if (phase === "running" && isRealtimeParent() && processTransport && !processTransport.isReady) {
++            console.error("[MULTI-REALTIME] owner process is no longer ready; sealing for respawn")
++            void failRealtimeOwner()
++        }
++    }, 5000)
++    watchdog.unref?.()
+ }

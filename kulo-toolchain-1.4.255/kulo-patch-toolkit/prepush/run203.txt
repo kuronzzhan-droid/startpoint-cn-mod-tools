@@ -1,0 +1,25 @@
+è§†å›¾: åŸºç¡€ store=D:\WF\out\kulo-patch-toolkit\store131\production; é“¾ 201 ä¸ªåŒ…,é“¾å°¾ 1.4.203; --since 1.4.202(æ–°åŒ… 1 ä¸ª)
+Traceback (most recent call last):
+  File "D:\WF\startpoint-cn-kulo\tools\fantasy-gauntlet-mod-tools\wf_quest_lib.py", line 194, in parse_node
+    return zlib.decompress(raw).decode("utf-8")
+           ~~~~~~~~~~~~~~~^^^^^
+zlib.error: Error -3 while decompressing data: incorrect header check
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\WF\out\kulo-patch-toolkit\prepush\wf_prepush_check.py", line 1035, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "D:\WF\out\kulo-patch-toolkit\prepush\wf_prepush_check.py", line 993, in main
+    check_level(args, view, old, rep)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\WF\out\kulo-patch-toolkit\prepush\wf_prepush_check.py", line 860, in check_level
+    s = LevelScan(view).run()
+  File "D:\WF\out\kulo-patch-toolkit\prepush\wf_prepush_check.py", line 776, in run
+    Q = self.view.table(lp)
+  File "D:\WF\out\kulo-patch-toolkit\prepush\wf_prepush_check.py", line 173, in table
+    node = q.parse_node(raw)
+  File "D:\WF\startpoint-cn-kulo\tools\fantasy-gauntlet-mod-tools\wf_quest_lib.py", line 196, in parse_node
+    raise ValueError(f"ÎÞ·¨Ê¶±ðµÄ chunk({len(raw)} bytes): {raw[:16].hex()}") from exc
+ValueError: ÎÞ·¨Ê¶±ðµÄ chunk(16 bytes): 0c00000078da63606060000000040001

@@ -1,0 +1,6 @@
+视图: 基础 store=D:\WF\out\kulo-patch-toolkit\store131\production; 链 201 个包,链尾 1.4.203; --since 1.4.202(新包 1 个)
+
+[补丁链/清单] ERROR 0  WARN 1  INFO 0
+  WARN  服务端 asset.js 没有 checkPatchChainIntegrity(该服务端还没合 #35)
+
+合计: ERROR 0  WARN 1  INFO 0  => 可以推送

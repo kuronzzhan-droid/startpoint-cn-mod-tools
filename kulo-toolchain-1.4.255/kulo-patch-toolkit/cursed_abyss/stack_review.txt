@@ -1,0 +1,211 @@
+## 月耀守护 leader_ability 149999
+   row 6 instant trig 20 kind 32 old [40.0, 40.0] new [50.0, 50.0] ucap None
+   row 7 instant trig 20 kind 33 old [40.0, 40.0] new [50.0, 50.0] ucap None
+   row 8 instant trig 20 kind 388 old [40.0, 40.0] new [50.0, 50.0] ucap None
+## 破契的黑翼 leader_ability 169999
+   row 6 instant trig 235 kind 32 old [20.0, 20.0] new [25.0, 25.0] ucap None
+   row 7 instant trig 235 kind 34 old [20.0, 20.0] new [25.0, 25.0] ucap None
+   row 8 instant trig 235 kind 388 old [20.0, 20.0] new [25.0, 25.0] ucap None
+## 照亮彼方的灯火 leader_ability 119999
+   row 6 instant trig 57 kind 245 old [10.0, 10.0] new [15.0, 15.0] ucap None
+## 照亮彼方的灯火 leader_ability 119998
+   row 6 instant trig 57 kind 245 old [10.0, 10.0] new [15.0, 15.0] ucap None
+## 背水雷冠·女王凯歌 ability 1399974
+   row 0 instant trig 144 kind 32 old [3.75, 7.5] new [5.0, 10.0] ucap None
+## 蚀水狩阵 leader_ability 129997
+   row 4 during trig 171 kind 258 old [50.0, 50.0] new [65.0, 65.0] ucap 20
+   row 5 during trig 171 kind 159 old [50.0, 50.0] new [65.0, 65.0] ucap 20
+   row 6 during trig 171 kind 348 old [50.0, 50.0] new [65.0, 65.0] ucap 20
+   row 7 instant trig 2 kind 35 old [5.0, 5.0] new [6.5, 6.5] ucap None
+## 蚀水狩阵 ability 1299973
+   row 1 during trig 171 kind 258 old [50.0, 50.0] new [65.0, 65.0] ucap 20
+   row 2 during trig 171 kind 159 old [50.0, 50.0] new [65.0, 65.0] ucap 20
+   row 4 during trig 171 kind 348 old [50.0, 50.0] new [65.0, 65.0] ucap 20
+## 剑光统御 leader_ability 149995
+   row 6 during trig 134 kind 0 old [25.0, 25.0] new [30.0, 30.0] ucap 12
+   row 7 during trig 134 kind 2 old [25.0, 25.0] new [30.0, 30.0] ucap 12
+## 冥暗的刚刃 leader_ability 169997
+   row 10 instant trig 144 kind 32 old [5.0, 5.0] new [6.5, 6.5] ucap None
+   row 11 instant trig 144 kind 388 old [5.0, 5.0] new [6.5, 6.5] ucap None
+## 雷岚圣兽 ability 1699943
+   row 6 during trig 134 kind 0 old [100.0, 100.0] new [100.0, 100.0] ucap 99
+## 被打破的屠龙轮回＋ leader_ability 169995
+   row 3 during trig 134 kind 1 old [25.0, 25.0] new [30.0, 30.0] ucap 99
+   row 4 during trig 134 kind 2 old [25.0, 25.0] new [30.0, 30.0] ucap 99
+   row 5 during trig 134 kind 154 old [25.0, 25.0] new [30.0, 30.0] ucap 99
+   row 6 during trig 134 kind 23 old [25.0, 25.0] new [30.0, 30.0] ucap 99
+## 光芒阵·万象泛照 ability 1599502
+   row 0 instant trig 19 kind 388 old [10.0, 20.0] new [15.0, 25.0] ucap None
+## 泪光协议 leader_ability 159970
+   row 4 instant trig 57 kind 245 old [10.0, 10.0] new [15.0, 15.0] ucap None
+## 泪光协议 ability 1599701
+   row 1 instant trig 57 kind 34 old [60.0, 120.0] new [80.0, 100.0] ucap None
+## 机械歼灭程序 leader_ability 169970
+   row 2 instant trig 57 kind 32 old [30.0, 60.0] new [40.0, 80.0] ucap None
+   row 5 instant trig 57 kind 245 old [10.0, 10.0] new [15.0, 15.0] ucap None
+## 机械歼灭程序 ability 1699701
+   row 1 instant trig 57 kind 34 old [55.0, 110.0] new [70.0, 100.0] ucap None
+## 机神之律 leader_ability 179970
+   row 1 instant trig 57 kind 32 old [50.0, 100.0] new [65.0, 100.0] ucap None
+   row 4 instant trig 57 kind 245 old [10.0, 10.0] new [15.0, 15.0] ucap None
+## 秋灯雷华妖狐姬 leader_ability 139995
+   row 1 during trig 134 kind 18 old [30.0, 30.0] new [40.0, 40.0] ucap 99
+   row 4 during trig 134 kind 23 old [110.0, 110.0] new [100.0, 100.0] ucap 99
+   row 5 during trig 134 kind 0 old [130.0, 130.0] new [100.0, 100.0] ucap 99
+   row 6 during trig 134 kind 154 old [130.0, 130.0] new [100.0, 100.0] ucap 99
+   row 9 during trig 134 kind 413 old [3.5, 3.5] new [4.5, 4.5] ucap 99
+## 盛夏的咆哮 leader_ability 149990
+   row 0 instant trig 8 kind 35 old [100.0, 100.0] new [100.0, 100.0] ucap None
+   row 3 instant trig 248 kind 32 old [35.0, 35.0] new [45.0, 45.0] ucap None
+   row 4 instant trig 248 kind 388 old [35.0, 35.0] new [45.0, 45.0] ucap None
+## 女王的开放课堂 ability 1199893
+   row 2 during trig 134 kind 154 old [50.0, 50.0] new [65.0, 65.0] ucap 2147483647
+   row 5 during trig 134 kind 412 old [1.0, 1.0] new [1.5, 1.5] ucap 2147483647
+## 追逐光影的课后时光 leader_ability 149989
+   row 6 during trig 134 kind 154 old [20.0, 20.0] new [25.0, 25.0] ucap 2147483647
+   row 7 during trig 134 kind 0 old [20.0, 20.0] new [25.0, 25.0] ucap 2147483647
+## 一起续杯的约定 leader_ability 169989
+   row 8 instant trig 235 kind 32 old [7.0, 7.0] new [9.0, 9.0] ucap None
+   row 9 instant trig 235 kind 33 old [7.0, 7.0] new [9.0, 9.0] ucap None
+## 一起续杯的约定 ability 1699893
+   row 0 during trig 2 kind 410 old [2.5, 2.5] new [3.0, 3.0] ucap None
+   row 1 during trig 2 kind 0 old [2.5, 2.5] new [3.0, 3.0] ucap None
+## 约会纪念模式 leader_ability 139994
+   row 0 during trig 134 kind 2 old [120.0, 120.0] new [100.0, 100.0] ucap 99
+   row 1 during trig 134 kind 0 old [80.0, 80.0] new [100.0, 100.0] ucap 99
+   row 7 during trig 134 kind 0 old [120.0, 120.0] new [100.0, 100.0] ucap 99
+   row 8 during trig 134 kind 2 old [120.0, 120.0] new [100.0, 100.0] ucap 99
+## 礼服下的守护炮火 leader_ability 139993
+   row 0 during trig 134 kind 0 old [80.0, 80.0] new [100.0, 100.0] ucap 99
+   row 1 during trig 134 kind 2 old [160.0, 160.0] new [100.0, 100.0] ucap 99
+   row 2 during trig 134 kind 411 old [3.5, 3.5] new [4.5, 4.5] ucap 99
+   row 3 during trig 134 kind 3 old [5.0, 5.0] new [6.5, 6.5] ucap 99
+   row 4 during trig 134 kind 124 old [5.0, 5.0] new [6.5, 6.5] ucap 99
+   row 8 instant trig 77 kind 34 old [70.0, 70.0] new [90.0, 90.0] ucap None
+   row 10 during trig 134 kind 0 old [35.0, 35.0] new [45.0, 45.0] ucap 99
+   row 11 during trig 134 kind 2 old [35.0, 35.0] new [45.0, 45.0] ucap 99
+## 寒梅武士道、比肩忍道 leader_ability 159998
+   row 7 instant trig 12 kind 32 old [40.0, 80.0] new [50.0, 100.0] ucap None
+   row 8 instant trig 12 kind 34 old [40.0, 80.0] new [50.0, 100.0] ucap None
+   row 9 instant trig 12 kind 694 old [4.0, 8.0] new [5.0, 10.0] ucap None
+## 今晚由团长买单 leader_ability 159997
+   row 3 instant trig 12 kind 55 old [35.0, 35.0] new [45.0, 45.0] ucap None
+   row 4 instant trig 2 kind 32 old [25.0, 25.0] new [30.0, 30.0] ucap None
+   row 6 during trig 134 kind 413 old [2.0, 2.0] new [2.5, 2.5] ucap 99
+   row 7 instant trig 12 kind 32 old [20.0, 20.0] new [25.0, 25.0] ucap None
+   row 8 instant trig 12 kind 55 old [20.0, 20.0] new [25.0, 25.0] ucap None
+## 今晚由团长买单 ability 1599973
+   row 6 during trig 2 kind 23 old [5.0, 5.0] new [6.5, 6.5] ucap None
+## 夏祭夜空的祈愿 leader_ability 159996
+   row 1 instant trig 2 kind 32 old [20.0, 20.0] new [25.0, 25.0] ucap None
+   row 3 instant trig 2 kind 55 old [40.0, 40.0] new [50.0, 50.0] ucap None
+   row 6 instant trig 23 kind 32 old [80.0, 80.0] new [100.0, 100.0] ucap None
+   row 7 instant trig 2 kind 32 old [35.0, 35.0] new [45.0, 45.0] ucap None
+## 疾风同路 leader_ability 119990
+   row 1 instant trig 2 kind 34 old [80.0, 80.0] new [100.0, 100.0] ucap None
+   row 2 instant trig 2 kind 32 old [40.0, 40.0] new [50.0, 50.0] ucap None
+   row 9 instant trig 2 kind 34 old [20.0, 20.0] new [25.0, 25.0] ucap None
+   row 10 during trig 134 kind 2 old [35.0, 35.0] new [45.0, 45.0] ucap 99
+   row 11 during trig 134 kind 0 old [35.0, 35.0] new [45.0, 45.0] ucap 99
+   row 12 during trig 134 kind 411 old [4.0, 4.0] new [5.0, 5.0] ucap 99
+## 响彻月夜的低音 leader_ability 169988
+   row 6 instant trig 15 kind 32 old [35.0, 35.0] new [45.0, 45.0] ucap None
+## 圆月下的捣糕之约 leader_ability 149987
+   row 4 instant trig 2 kind 32 old [15.0, 15.0] new [20.0, 20.0] ucap None
+   row 5 instant trig 2 kind 34 old [15.0, 15.0] new [20.0, 20.0] ucap None
+   row 9 instant trig 12 kind 34 old [70.0, 70.0] new [90.0, 90.0] ucap None
+   row 10 instant trig 2 kind 35 old [5.0, 5.0] new [6.5, 6.5] ucap None
+   row 11 instant trig 2 kind 245 old [5.0, 5.0] new [6.5, 6.5] ucap None
+   row 12 instant trig 2 kind 694 old [4.0, 4.0] new [5.0, 5.0] ucap None
+## 桂火教鞭 ability 1199913
+   row 2 instant trig 23 kind 32 old [50.0, 50.0] new [65.0, 65.0] ucap None
+   row 3 instant trig 23 kind 245 old [5.0, 5.0] new [6.5, 6.5] ucap None
+   row 4 instant trig 23 kind 35 old [5.0, 5.0] new [6.5, 6.5] ucap None
+## 今宵手气正旺 leader_ability 139991
+   row 4 instant trig 8 kind 33 old [105.0, 105.0] new [100.0, 100.0] ucap None
+## 今宵手气正旺 ability 1399912
+   row 3 instant trig 107 kind 32 old [35.0, 35.0] new [45.0, 45.0] ucap None
+## 不落幕的安可 leader_ability 149986
+   row 3 instant trig 20 kind 32 old [80.0, 80.0] new [100.0, 100.0] ucap None
+   row 4 instant trig 20 kind 33 old [70.0, 70.0] new [90.0, 90.0] ucap None
+## 不落幕的安可 ability 1499866
+   row 3 instant trig 20 kind 693 old [7.0, 7.0] new [9.0, 9.0] ucap None
+   row 5 instant trig 246 kind 32 old [35.0, 35.0] new [45.0, 45.0] ucap None
+   row 6 instant trig 246 kind 33 old [35.0, 35.0] new [45.0, 45.0] ucap None
+## 照彻归途的月光 leader_ability 139990
+   row 0 during trig 134 kind 0 old [10.0, 10.0] new [15.0, 15.0] ucap 99
+   row 1 during trig 134 kind 0 old [50.0, 50.0] new [65.0, 65.0] ucap 99
+   row 2 during trig 134 kind 1 old [60.0, 60.0] new [80.0, 80.0] ucap 99
+   row 3 during trig 134 kind 1 old [20.0, 20.0] new [25.0, 25.0] ucap 99
+   row 6 instant trig 51 kind 32 old [20.0, 20.0] new [25.0, 25.0] ucap None
+## 照彻归途的月光 ability 1399905
+   row 0 instant trig 20 kind 35 old [5.0, 5.0] new [6.5, 6.5] ucap None
+===== desc_override_ginovi
+  - 暗属性共鸣时，自身每保持贯穿效果1.5秒，暗属性角色攻击力＋20%、技能伤害＋20%、能力伤害＋20%
+  + 暗属性共鸣时，自身每保持贯穿效果1.5秒，暗属性角色攻击力＋25%、技能伤害＋25%、能力伤害＋25%（最多3次）
+===== desc_override_vaseraga_dark
+  - 暗属性共鸣时，自身每造成1次能力伤害，攻击力＋5%、能力伤害＋5%
+  + 暗属性共鸣时，自身每造成1次能力伤害，攻击力＋6.5%、能力伤害＋6.5%（最多3次）
+===== desc_override_white_tiger_ghost_playable_3
+  -  <icon id='main'>  雷属性共鸣时，「雷威」每1层，雷属性角色攻击力＋100%
+  +  <icon id='main'>  雷属性共鸣时，「雷威」每1层，雷属性角色攻击力＋100%（最多计3层）
+===== desc_override_white_tiger_summer
+  - 风属性共鸣时，FEVER模式中每持续1.5秒，风属性角色攻击力＋35%、能力伤害＋35%
+  + 风属性共鸣时，FEVER模式中每持续1.5秒，风属性角色攻击力＋45%、能力伤害＋45%（最多3次）
+  - 每达成35连击，自身FEVER槽＋35%
+  + 每达成35连击，自身FEVER槽＋45%（最多3次）
+===== desc_override_lady_summoner_campus_3
+  -  <icon id='main'>  Fever模式中，每层「焰域研修」使火属性角色能力伤害+50%、能力伤害额外乘区+1%。
+  +  <icon id='main'>  Fever模式中，每层「焰域研修」使火属性角色能力伤害+65%、能力伤害额外乘区+1.5%（最多计3层）
+===== desc_override_wind_spgirl_campus
+  - Fever模式中，每层「星风心得」使风属性角色能力伤害+20%、攻击力+20%。
+  + Fever模式中，每层「星风心得」使风属性角色能力伤害+25%、攻击力+25%（最多计3层）
+===== desc_override_ruin_girl_campus
+  - 暗属性共鸣时，Fever 模式中，处于贯穿效果的时间每累计2秒，暗属性角色攻击力+7%、直接攻击伤害+7%。
+  + 暗属性共鸣时，Fever 模式中，处于贯穿效果的时间每累计2秒，暗属性角色攻击力+9%、直接攻击伤害+9%（最多3次）
+===== desc_override_ruin_girl_campus_3
+  -  <icon id='main'>  暗属性共鸣时，Fever 模式中，当前每有1连击，暗属性角色直接攻击造成的伤害+2.5%（独立乘区）、攻击力+2.5%（均无上限）。
+  +  <icon id='main'>  暗属性共鸣时，Fever 模式中，当前每有1连击，暗属性角色直接攻击造成的伤害+3%（独立乘区）、攻击力+3%（最多3次）。
+===== desc_override_rec_android_seaside
+  - 雷属性共鸣时，每层「浪涌充能」，雷属性角色技能伤害＋120%、攻击力＋80%
+  + 雷属性共鸣时，每层「浪涌充能」，雷属性角色技能伤害＋100%、攻击力＋100%（最多计3层）
+  - 每层「浪涌充能」，自身攻击力＋120%、技能伤害＋120%
+  + 每层「浪涌充能」，自身攻击力＋100%、技能伤害＋100%（最多计3层）
+===== desc_override_guildknight_leader_tavern
+  - 每达成35连击，强化弹射伤害＋35%
+  + 每达成35连击，强化弹射伤害＋45%（最多3次）
+  - 每发动强化弹射，光属性角色攻击力＋25%
+  + 每发动强化弹射，光属性角色攻击力＋30%（最多3次）
+  - 每1层「灯芯」，强化弹射伤害额外乘区＋2%
+  + 每1层「灯芯」，强化弹射伤害额外乘区＋2.5%（最多计3层）
+  - 光属性共鸣时，每获得1次「灯火正旺」，光属性角色攻击力＋20%，强化弹射伤害＋20%（CT 5s）
+  + 光属性共鸣时，每获得1次「灯火正旺」，光属性角色攻击力＋25%，强化弹射伤害＋25%（CT 5s）（最多3次）
+===== desc_override_lion_swordman_moon
+  - 火属性共鸣时，每发动3次强化弹射，火属性角色技能伤害＋80%、攻击力＋40%、技能槽＋5%，自身技能伤害＋20%、引擎点火＋7层
+  + 火属性共鸣时，每发动3次强化弹射，火属性角色技能伤害＋100%、攻击力＋50%、技能槽＋5%，自身技能伤害＋25%、引擎点火＋7层
+  - 自身引擎点火每提升1层，自身技能伤害＋35%、攻击力＋35%，火属性角色技能伤害额外乘区＋4%
+  + 自身引擎点火每提升1层，自身技能伤害＋45%、攻击力＋45%，火属性角色技能伤害额外乘区＋5%（最多计3层）
+===== desc_override_psychic_teleport_moon
+  - 强化弹射每累计命中4次，自身攻击力＋35%
+  + 强化弹射每累计命中4次，自身攻击力＋45%（最多3次）
+===== desc_override_combat_animal_moon
+  - 风属性共鸣时，每发动3次强化弹射，风属性角色技能充能速度＋5%、技能槽最大值＋5%、技能伤害额外乘区＋4%
+  + 风属性共鸣时，每发动3次强化弹射，风属性角色技能充能速度＋6.5%、技能槽最大值＋6.5%、技能伤害额外乘区＋5%
+  - 风属性共鸣时，每发动1次强化弹射，风属性角色攻击力＋15%、技能伤害＋15%、连击＋5
+  + 风属性共鸣时，每发动1次强化弹射，风属性角色攻击力＋20%、技能伤害＋20%、连击＋5（最多3次）
+  - 风属性共鸣时，每达到250连击，自身技能伤害＋70%
+  + 风属性共鸣时，每达到250连击，自身技能伤害＋90%（最多3次）
+===== desc_override_outlaw_panther_moon
+  - 每次进入Fever：雷属性角色直击伤害＋105%
+  + 每次进入Fever：雷属性角色直击伤害＋100%（最多3次）
+===== desc_override_black_wolf_knight_moon
+  - 风属性共鸣时，风属性角色每造成100次直接攻击，风属性角色攻击力＋80%、直击伤害＋70%，直击伤害额外乘区＋7%
+  + 风属性共鸣时，风属性角色每造成100次直接攻击，风属性角色攻击力＋100%、直击伤害＋90%，直击伤害额外乘区＋7%（最多3次）
+===== desc_override_kyle_moon
+  - 自身“月牙”每上升1层，自身攻击力＋60%、直击伤害＋80%；除自身外雷属性角色攻击力＋10%、直击伤害＋60%
+  + 自身“月牙”每上升1层，自身攻击力＋80%、直击伤害＋80%；除自身外雷属性角色攻击力＋15%、直击伤害＋80%（最多计3层）
+  - 雷属性共鸣时，自身每获得一次贯穿效果，雷属性角色攻击力＋20%，对处于“眩晕”、“畏缩”状态的敌人造成伤害，额外乘区＋4%
+  + 雷属性共鸣时，自身每获得一次贯穿效果，雷属性角色攻击力＋25%，对处于“眩晕”、“畏缩”状态的敌人造成伤害，额外乘区＋4%（最多3次）
+===== desc_override_kyle_moon_5
+  - 雷属性共鸣时：雷属性角色每造成50次直击，雷属性角色技能充能速度＋5%
+  + 雷属性共鸣时：雷属性角色每造成50次直击，雷属性角色技能充能速度＋6.5%（最多3次）

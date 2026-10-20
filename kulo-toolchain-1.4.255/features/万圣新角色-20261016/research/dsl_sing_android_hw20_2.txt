@@ -1,0 +1,117 @@
+###### battle/action/skill/action/rare5/sing_android_hw20$sing_android_hw20_2
+[
+  "ActionDsl"
+  1
+  ["None"]
+  false
+  false
+  false
+  false
+  false
+  false
+  false
+  0
+  [
+    "Block"
+    [
+      ["Command", ["StopBall", -18, 10, ["RestoreToSpeedBeforeActionExecution"], ["EF"], 0]]
+      ["Command", ["HideCharacter", -17, 113]]
+      [
+        "Command"
+        [
+          "ShowEffect"
+          "ダミー演出"
+          ["SpecifyEffectDirectly", "battle/effect/skill_unique/sing_android_hw20/sing_android_hw20_player_back"]
+          -17
+          ["SameAsCharacter"]
+          ["SpecifyEffectLifetimeDirectly", 113]
+          ["AB"]
+          0
+          0
+          0
+          true
+          false
+          ["None"]
+        ]
+      ]
+      [
+        "Command"
+        ["ShowEffect", "スキル演出", ["SpecifyEffectDirectly", "battle/effect/skill_unique/sing_android_hw20/sing_android_hw20"], -1, ["ForesideOfCharacter"], ["PlayOnlyFirstSequence"], ["AB"], 0, 0, 0, false, false, ["None"]]
+      ]
+      [
+        "Command"
+        [
+          "FindAllSubjects"
+          0
+          33
+          []
+          []
+          []
+          []
+          []
+          ["DoNothing"]
+          [
+            "Block"
+            [
+              [
+                "Command"
+                [
+                  "CreateCondition"
+                  0
+                  [["ACAttackPoint", [{"min": 900, "max": 900}], [{"min": 0.65, "max": 0.75}], [{"min": 1, "max": 1}]]]
+                  [{"min": 1, "max": 1}]
+                  ["GenericConditionHitEffect"]
+                  true
+                  false
+                  ""
+                  null
+                  false
+                  3
+                  [{"min": 1, "max": 1}]
+                  false
+                ]
+              ]
+              [
+                "Command"
+                [
+                  "CreateCondition"
+                  0
+                  [["ACDirectDamage", [{"min": 900, "max": 900}], [{"min": 0.65, "max": 0.75}], [{"min": 1, "max": 1}]]]
+                  [{"min": 1, "max": 1}]
+                  ["GenericConditionHitEffect"]
+                  true
+                  false
+                  ""
+                  null
+                  false
+                  3
+                  [{"min": 1, "max": 1}]
+                  false
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+      ["Command", ["FindAllSubjects", 1, 33, [6], [], [], [], [], ["DoNothing"], ["Block", [["Command", ["CreateBarrier", 1, [{"min": 0.045, "max": 0.06}], ["GenericBarrierHitEffect"]]]]]]]
+      [
+        "Command"
+        [
+          "CreateCondition"
+          -33
+          [["ACAttackPoint", [{"min": 900, "max": 900}], [{"min": 0.65, "max": 0.75}], [{"min": 1, "max": 1}]]]
+          [{"min": 1, "max": 1}]
+          ["GenericConditionHitEffect"]
+          true
+          false
+          ""
+          null
+          false
+          3
+          [{"min": 1, "max": 1}]
+          false
+        ]
+      ]
+    ]
+  ]
+]

@@ -1,0 +1,21 @@
+--- seris_rework.py	2026-10-15 15:02:44.110854700 +1100
++++ seris_rework.py (quiet)	2026-10-15 15:02:51.010286000 +1100
+@@ -34,7 +34,7 @@
+ sys.path.insert(0, r"D:/WF/out/kulo-patch-toolkit/oldrepo_modtools")
+ import wf_client_legality as L
+ import wf_cursed_weapons as W
+-import seris_pf as PF
++import seris_pf_quiet as PF          # quiet 1015：非保留类型 PF 特效走静音副本
+ 
+ NL = chr(10)
+ CID, CODE = "129999", "seris_dragon_king"
+@@ -177,7 +177,8 @@
+     d = FX["dragon_skill"]
+     replace_show(t, "龙形升空演出", d["flight"])
+     for k in (1, 2, 3):
+-        replace_show(t, f"龙息第{k}段", d[f"breath_{k}"])
++        key = "breath_1_auto" if (transform and k == 1) else f"breath_{k}"     # quiet 1015：化龙自动龙息整棵静音，只留化龙一声
++        replace_show(t, f"龙息第{k}段", d[key])
+     if transform:
+         t[11][1].insert(0, ["Command", copy.deepcopy(FX["transform_on_fever_start"]["node"])])
+     return t

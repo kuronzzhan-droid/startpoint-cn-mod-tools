@@ -1,0 +1,88 @@
+def scale_cells(cells, f):
+    for cell in cells:
+        for k in ("min", "max"):
+            cell[k] = round(cell[k] * f, 6)
+        for v in cell.get("vlv", []):
+            for k in ("min", "max"):
+                v[k] = v[k] * f
+
+
+# ============================================================ 1) 风巨蜥 149998
+P = "battle/action/skill/action/rare5/land_dragon_wind_playable$land_dragon_wind_playable_"
+for lv in ("1", "2"):
+    t = dsl(P + lv)
+    fever = [c for pp, c in commands(t, "ConditionalsFeverMode")]; assert len(fever) == 1
+    prob = [c for pp, c in commands(fever[0][1], "ConditionalsProbability")]; assert len(prob) == 1
+    hits = list(commands(prob[0], "CreateNormalAttack")); assert len(hits) == 17, len(hits)
+    before = sum(c[6][0]["max"] for pp, c in hits)
+    assert abs(before - 120.0) < 1e-6, before
+    for pp, c in hits:
+        assert c[1] >= 2200 and len(c[6]) == 1 and "vlv" not in c[6][0], c[:7]
+        scale_cells(c[6], 0.75)
+    tot = sum(c[6][0]["max"] for pp, c in hits)
+    assert abs(tot - 90.0) < 1e-6, tot  # 三个首领技各 30（满级），合计 90
+    allh = list(commands(t, "CreateNormalAttack")); assert len(allh) == 25
+    assert all(c[6] == [{"min": 2.25, "max": 3.0}] for pp, c in allh if c[1] < 2200)
+LOG.append("风巨蜥 技能 Fever 随机首领技（重爪 1×40 / 巨型激光 8×5 / 全场旋风 8×5，每种满级合计 40）倍率 ×0.75 → 重爪 1×30、激光 8×3.75、旋风 8×3.75（每种合计 30）；技能1档同比例 ×0.75；非 Fever 8×3 倍不动；两档 DSL 同改")
+rs = R(AB_LP, "1499982"); assert len(rs) == 4
+r = rs[2]; eq(r, 6, "2"); eq(r, 27, "12"); eq(r, 30, "2500000"); eq(r, 47, "211"); eq(r, 51, "5000"); setv(r, [35], "60", "180")
+put(AB_LP, "1499982", rs, rs[0])
+override("desc_override_land_dragon_wind_playable_2", [("自身技能槽+5%（CT：1秒）", "自身技能槽+5%（CT：3秒）")])
+LOG.append("风巨蜥 能力2 #2 风共鸣 每25连击 自身技能槽 +5%：CT 60帧 → 180帧（1秒 → 3秒）；CAS 文案同步")
+
+# ============================================================ 2) 凯尔 kyle_moon 139990
+t = dsl("battle/action/skill/action/ability_skill/ability_skill_kyle_moon_direct_params$ability_skill_kyle_moon_direct_params")
+cc = list(commands(t, "CreateCondition")); assert len(cc) == 2
+for (pp, c), (uid, old, new) in zip(cc, ((13999011, 10, 5), (13999012, 500, 1000))):
+    ac = c[2]; assert len(ac) == 1 and ac[0][0] == "ACUnique" and ac[0][1] == uid, ac
+    assert ac[0][2] == [{"min": old, "max": old}], ac
+    ac[0][2] = [{"min": new, "max": new}]
+for uid in ("13999011", "13999012"):
+    u = R(UQ_LP, uid); assert len(u) == 1 and u[0][4] == "9999", u  # 层数上限 9999 ≥ 1000
+LOG.append("凯尔 队长 #10 开局 629 ability_skill_kyle_moon_direct_params：固有 13999011（基础倍数）10 层 → 5 层、13999012（每连击 0.01%）500 层 → 1000 层；客户端补丁公式 B×(1+P/10000×连击) ⇒ 10×(1+5%×连击) → 5×(1+10%×连击)（纯数据，APK 不动）")
+T[CAS_LP]["ability_skill_kyle_moon_direct_params"] = T[CAS_LP]["ability_skill_kyle_moon_direct_params"].replace("基础伤害10倍，每1连击再＋5%", "基础伤害5倍，每1连击再＋10%")
+assert "基础伤害5倍，每1连击再＋10%" in T[CAS_LP]["ability_skill_kyle_moon_direct_params"]; TOUCH[CAS_LP].add("ability_skill_kyle_moon_direct_params")
+override("desc_override_kyle_moon", [("自身为队长时，直接攻击基础伤害为通常的10倍，每1连击再＋5%（无上限）", "直接攻击基础伤害为通常的5倍，每1连击再＋10%（无上限）")])
+LOG.append("凯尔 队长文案：「自身为队长时，…10倍，每1连击再＋5%」→「直接攻击基础伤害为通常的5倍，每1连击再＋10%（无上限）」（按覆盖文案规则去掉「自身为队长时」前缀）；629 CAS 同步")
+rs = R(AB_LP, "1399903"); assert len(rs) == 7
+r = rs[3]; eq(r, 6, "187"); eq(r, 12, "13999001"); eq(r, 47, "202"); setv(r, [51, 52], "300000", "150000")
+put(AB_LP, "1399903", rs, rs[0])
+override("desc_override_kyle_moon_3", [("合计伤害额外乘区＋300%", "合计伤害额外乘区＋150%")])
+LOG.append("凯尔 能力3 #3 持有月牙 雷属性直击变3次(202) 合计伤害额外乘区 +300% → +150%")
+rs = R(AB_LP, "1399905"); assert len(rs) == 6
+r = rs[0]; eq(r, 27, "20"); eq(r, 30, "5000000"); eq(r, 47, "35"); setv(r, [34], "3", "4"); setv(r, [51, 52], "6500", "5000")
+put(AB_LP, "1399905", rs, rs[0])
+override("desc_override_kyle_moon_5", [("技能充能速度＋6.5%（最多3次）", "技能充能速度＋5%（最多4次）")])
+LOG.append("凯尔 能力5 #0 雷共鸣 每50直击 雷属性技能充能速度 +6.5%（限3次⇒19.5%）→ +5%（限4次⇒20%）")
+
+# ============================================================ 3) 黑 139991
+rs = R(AB_LP, "1399912"); assert len(rs) == 5
+r = rs[0]; eq(r, 27, "107"); eq(r, 34, "25"); eq(r, 51, "5000"); eq(r, 52, "5000")
+setv(r, [47], "32", "33"); setv(r, [48], "2", "5"); setv(r, [49], "", "Yellow")
+assert r[47:50] == rs[4][47:50], (r[47:50], rs[4][47:50])
+r = rs[4]; eq(r, 6, "187"); eq(r, 12, "13999102"); eq(r, 47, "33"); setv(r, [51, 52], "150000", "250000")
+d = rs[1]; eq(d, 6, "187"); eq(d, 12, "13999102"); eq(d, 47, "32"); eq(d, 51, "100000")
+new = [rs[0], rs[2], rs[3], rs[4]]
+put(AB_LP, "1399912", new, rs[0])
+override("desc_override_outlaw_panther_moon_2", [("自身技能每命中1次，队长攻击力＋5%，最多25次", "自身技能每命中1次，全队直接攻击伤害＋5%，最多25次"),
+                                             ("雷属性角色直接攻击伤害＋150%、攻击力＋100%", "雷属性角色直接攻击伤害＋250%")])
+LOG.append("黑 能力2 #0 雷共鸣 技能每命中1次（限25次）：队长 攻击力 +5% → 全队(雷) 直接攻击伤害 +5%（kind 32→33，目标 2→5/Yellow，同 #4 豹步行的目标列）")
+LOG.append("黑 能力2 豹步 #4 雷属性 直击伤害 +150% → +250%；删除原 #1 豹步 攻击力 +100%；CAS 文案同步")
+
+# ============================================================ 4) 灼原的狮王 玛格诺斯 119996（lion_swordman_reborn）
+ls = R(LE_LP, "119996"); assert len(ls) == 6
+r = ls[5]; eq(r, 25, "23"); eq(r, 26, "7"); eq(r, 27, "Red"); eq(r, 45, "251"); setv(r, [49, 50], "7000000", "5500000")
+put(LE_LP, "119996", ls, ls[0])
+LOG.append("灼原的狮王 玛格诺斯 119996 队长 #5 火属性角色发动技能时 对所有敌人 自身攻击 70倍 → 55倍 火属性能力伤害（kind 251）；该角色无队长覆盖文案，面板自动生成")
+
+# ============================================================ 5) 月下归途的机车骑士 玛格诺斯 119990（lion_swordman_moon）特殊强化弹射 ×0.5
+for n in (1, 2, 3):
+    t = dsl(f"battle/action/skill/action/ability_skill/lion_swordman_moon_pf_skill$lion_swordman_moon_pf_skill_lv{n}")
+    hits = list(commands(t, "CreateNormalAttack")); assert len(hits) == 2
+    old = [(c[6][0]["max"], c[6][0]["vlv"][0]["max"]) for pp, c in hits]
+    for pp, c in hits:
+        assert len(c[6]) == 1 and c[6][0]["vlv"][0]["vid"] == 11999005, c[6]
+        scale_cells(c[6], 0.5)
+    nw = [(c[6][0]["max"], c[6][0]["vlv"][0]["max"]) for pp, c in hits]
+    LOG.append(f"机车玛格诺斯 特殊强化弹射 Lv{n}（629 lion_swordman_moon_pf_skill_lv{n}）两段倍率 ×0.5：基础 {old[0][0]:g}/{old[1][0]:g} → {nw[0][0]:g}/{nw[1][0]:g}，引擎点火每层加成满档 {old[0][1]:.4g}/{old[1][1]:.4g} → {nw[0][1]:.4g}/{nw[1][1]:.4g}")
+LOG.append("机车玛格诺斯 722 覆盖树 lion_swordman_moon_pf_lv1-3 只有演出无伤害，不动；override_string 文案无数字不动")

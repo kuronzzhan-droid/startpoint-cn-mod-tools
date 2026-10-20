@@ -1,0 +1,63 @@
+===== battle/action/skill/action/rare5/ginovi$ginovi_1 pinball-1.4.199-1.4.200-1-balance-ginovi2-local.zip
+(11, 1, 0) StopBall 
+(11, 1, 1) ShowEffect 
+(11, 1, 2) ShowEffect 
+(11, 1, 3, 1, 3, 1, 0) MoveBall 
+(11, 1, 4) ConditionalsMultiballNumber [[1110021, 1110022, 1110061, 1110062, 1110063, 1110064, 1110391, 1110392, 1110393, 1110394, 1110811, 1110812, 1111351, 1111352, 1111471, 1111472, 1111711, 1111712, 1130011, 1399961, 1610391, 1610392, 
+  (11, 1, 4, 1, 4, 1, 0) MultiballNumberVariable 
+  (11, 1, 4, 1, 4, 1, 1) RemoveMultiball 
+  (11, 1, 4, 1, 4, 1, 2) CreateCondition [-17, ["ACAttackPoint", [{"min": 750, "max": 750}], [{"min": 0.5, "max": 0.5, "mul": 1}], [{"min": 1, "max": 1}]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, false, "ginovi_devour", null, false, 3, [{"min": 1, "max": 1}], false]
+(11, 1, 5) ConditionalsChangeSkillFlag [1, ["Block", [["Command", ["FindAllSubjects", 0, 33, [], [], [], [], [], ["DoNothing"], ["Block", [["Command", ["ConditionalsHealthPointRatioOf", 0, 25, ["Block", [["Command", ["CreateRatioAttack", 0
+  (11, 1, 5, 1, 2, 1, 0) FindAllSubjects [0, 33, [], [], [], [], [], ["DoNothing"], ["Block", [["Command", ["ConditionalsHealthPointRatioOf", 0, 25, ["Block", [["Command", ["CreateRatioAttack", 0, 2, [{"min": 0.2, "max": 0.2}]]]]], ["Block",
+    (11, 1, 5, 1, 2, 1, 0, 1, 9, 1, 0) ConditionalsHealthPointRatioOf [0, 25, ["Block", [["Command", ["CreateRatioAttack", 0, 2, [{"min": 0.2, "max": 0.2}]]]]], ["Block", []]]
+      (11, 1, 5, 1, 2, 1, 0, 1, 9, 1, 0, 1, 3, 1, 0) CreateRatioAttack [0, 2, [{"min": 0.2, "max": 0.2}]]
+    (11, 1, 5, 1, 2, 1, 0, 1, 9, 1, 1) CreateCondition [0, ["ACAttackPoint", [{"min": 750, "max": 750}], [{"min": 2.0, "max": 2.0}], [{"min": 1, "max": 1}]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, false, "", null, false, 3, [{"min": 1, "max": 1}], false]
+    (11, 1, 5, 1, 2, 1, 0, 1, 9, 1, 2) CreateCondition [0, ["ACAttackPoint", [{"min": 750, "max": 750}], [{"min": 0.5, "max": 0.5}], [{"min": 1, "max": 1}]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, false, "", null, false, 3, [{"min": 1, "max": 1}], false]
+    (11, 1, 5, 1, 2, 1, 0, 1, 9, 1, 3) CreateCondition [0, ["ACSkillDamage", [{"min": 750, "max": 750}], [{"min": 2.0, "max": 2.0}], [{"min": 1, "max": 1}]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, false, "", null, false, 3, [{"min": 1, "max": 1}], false]
+  (11, 1, 5, 1, 2, 1, 1) FindAllSubjects [0, 82, [], [], [], [], [], ["DoNothing"], ["Block", [["Command", ["CreateBarrier", 0, [{"min": 0.15, "max": 0.15}], ["GenericBarrierHitEffect"]]]]]]
+    (11, 1, 5, 1, 2, 1, 1, 1, 9, 1, 0) CreateBarrier 
+  (11, 1, 5, 1, 2, 1, 2) FindAllSubjects [0, 97, [], [], [], [], [], ["DoNothing"], ["Block", [["Command", ["CreateCondition", 0, [["ACPiercing", [{"min": 750, "max": 750}]]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, fals
+    (11, 1, 5, 1, 2, 1, 2, 1, 9, 1, 0) CreateCondition [0, ["ACPiercing", [{"min": 750, "max": 750}]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, false, "", null, false, 2, [{"min": 1, "max": 1}], false]
+  (11, 1, 5, 1, 2, 1, 3) FindAllSubjects [0, 49, [], [], [], [], [], ["DoNothing"], ["Block", [["Command", ["CreateCondition", 0, [["ACToleranceOfElement", [{"min": 750, "max": 750}], 254, [{"min": -0.4, "max": -0.4}], [{"min": 1, "max": 1}]
+    (11, 1, 5, 1, 2, 1, 3, 1, 9, 1, 0) CreateCondition [0, ["ACToleranceOfElement", [{"min": 750, "max": 750}], 254, [{"min": -0.4, "max": -0.4}], [{"min": 1, "max": 1}]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, false, "", null, false, 3, [{"min": 1, "max": 1}], false]
+  (11, 1, 5, 1, 2, 1, 4) TargetMate [42, [], [], [], [], []]
+  (11, 1, 5, 1, 2, 1, 5) CreateCondition [42, ["ACAttackPoint", [{"min": 750, "max": 750}], [{"min": 2.0, "max": 2.0}], [{"min": 1, "max": 1}]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, false, "", null, false, 3, [{"min": 1, "max": 1}], false]
+  (11, 1, 5, 1, 2, 1, 6) CreateCondition [42, ["ACAttackPoint", [{"min": 750, "max": 750}], [{"min": 0.5, "max": 0.5}], [{"min": 1, "max": 1}]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, false, "", null, false, 3, [{"min": 1, "max": 1}], false]
+  (11, 1, 5, 1, 2, 1, 7) CreateCondition [42, ["ACSkillDamage", [{"min": 750, "max": 750}], [{"min": 2.0, "max": 2.0}], [{"min": 1, "max": 1}]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, false, "", null, false, 3, [{"min": 1, "max": 1}], false]
+  (11, 1, 5, 1, 2, 1, 8) CreateCondition [42, ["ACPiercing", [{"min": 750, "max": 750}]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, false, "", null, false, 3, [{"min": 1, "max": 1}], false]
+  (11, 1, 5, 1, 2, 1, 9) FindNearSubjects [-18, 1, 49, ["DoNothing"], 0, ["Block", [["Command", ["CreateCondition", 0, [["ACUnique", 1699901, [{"min": 1, "max": 1}]]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], false, false, "", n
+    (11, 1, 5, 1, 2, 1, 9, 1, 6, 1, 0) CreateCondition [0, ["ACUnique", 1699901, [{"min": 1, "max": 1}]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], false, false, "", null, false, 3, [{"min": 1, "max": 1}], false]
+  (11, 1, 5, 1, 2, 1, 10) FindAllSubjects [0, 33, [], [], [], [], [], ["DoNothing"], ["Block", [["Command", ["CreateCondition", 0, [["ACAdditionalDirectAttack", [{"min": 750, "max": 750}], [{"min": 3, "max": 3}], [{"min": 0.15, "max": 0.15}],
+    (11, 1, 5, 1, 2, 1, 10, 1, 9, 1, 0) CreateCondition [0, ["ACAdditionalDirectAttack", [{"min": 750, "max": 750}], [{"min": 3, "max": 3}], [{"min": 0.15, "max": 0.15}], [{"min": 1, "max": 1}]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, false, "", null, false, 3, [{"min": 1, "max": 1}], false]
+  (11, 1, 5, 1, 2, 1, 11) FindAllSubjects [0, 82, [6], [], [], [], [], ["DoNothing"], ["Block", [["Command", ["CreateBarrier", 0, [{"min": 0.2, "max": 0.2}], ["GenericBarrierHitEffect"]]]]]]
+    (11, 1, 5, 1, 2, 1, 11, 1, 9, 1, 0) CreateBarrier 
+  (11, 1, 5, 1, 2, 1, 12) FindAllSubjects [0, 33, [6], [], [], [], [], ["DoNothing"], ["Block", [["Command", ["CreateCondition", 0, [["ACFixedSpeed", [{"min": 750, "max": 750}], [{"min": 0.5, "max": 0.5}], [{"min": 0, "max": 0}], [{"min": 1, 
+    (11, 1, 5, 1, 2, 1, 12, 1, 9, 1, 0) CreateCondition [0, ["ACFixedSpeed", [{"min": 750, "max": 750}], [{"min": 0.5, "max": 0.5}], [{"min": 0, "max": 0}], [{"min": 1, "max": 1}]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, false, "", null, false, 3, [{"min": 1, "max": 1}], false]
+  (11, 1, 5, 1, 2, 1, 13) ConditionalsConditionAccumulationNumber [["DCUnique", 169998], 1, ["Block", []], ["Block", [["Event", ["Wait", 70, "*", ["Block", [["Command", ["CreateReferencePointAtSpecifiedPosition", -1, -1, 40, 30, ["Block", [["Command", ["ShowEffect",
+    (11, 1, 5, 1, 2, 1, 13, 1, 4, 1, 0, 1, 3, 1, 0) CreateReferencePointAtSpecifiedPosition 
+      (11, 1, 5, 1, 2, 1, 13, 1, 4, 1, 0, 1, 3, 1, 0, 1, 5, 1, 0) ShowEffect 
+    (11, 1, 5, 1, 2, 1, 13, 1, 4, 1, 1) FindAllSubjects [0, 33, [], [], [], [], [], ["DoNothing"], ["Block", [["Command", ["CreateRatioAttack", 0, 2, [{"min": 0.95, "max": 0.95}]]]]]]
+      (11, 1, 5, 1, 2, 1, 13, 1, 4, 1, 1, 1, 9, 1, 0) CreateRatioAttack [0, 2, [{"min": 0.95, "max": 0.95}]]
+    (11, 1, 5, 1, 2, 1, 13, 1, 4, 1, 2) FindAllSubjects [0, 82, [], [], [], [], [], ["DoNothing"], ["Block", [["Command", ["CreateBarrier", 0, [{"min": 0.6, "max": 0.6}], ["GenericBarrierHitEffect"]]]]]]
+      (11, 1, 5, 1, 2, 1, 13, 1, 4, 1, 2, 1, 9, 1, 0) CreateBarrier 
+    (11, 1, 5, 1, 2, 1, 13, 1, 4, 1, 3) CreateCondition [-17, ["ACUnique", 169998, [{"min": 1, "max": 1}]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, false, "", null, false, 3, [{"min": 1, "max": 1}], false]
+  (11, 1, 5, 1, 3, 1, 0) FindAllSubjects [0, 33, [], [], [], [], [], ["DoNothing"], ["Block", [["Command", ["ConditionalsHealthPointRatioOf", 0, 25, ["Block", [["Command", ["CreateRatioAttack", 0, 2, [{"min": 0.2, "max": 0.2}]]]]], ["Block",
+    (11, 1, 5, 1, 3, 1, 0, 1, 9, 1, 0) ConditionalsHealthPointRatioOf [0, 25, ["Block", [["Command", ["CreateRatioAttack", 0, 2, [{"min": 0.2, "max": 0.2}]]]]], ["Block", []]]
+      (11, 1, 5, 1, 3, 1, 0, 1, 9, 1, 0, 1, 3, 1, 0) CreateRatioAttack [0, 2, [{"min": 0.2, "max": 0.2}]]
+    (11, 1, 5, 1, 3, 1, 0, 1, 9, 1, 1) CreateCondition [0, ["ACAttackPoint", [{"min": 750, "max": 750}], [{"min": 2.0, "max": 2.0}], [{"min": 1, "max": 1}]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, false, "", null, false, 3, [{"min": 1, "max": 1}], false]
+    (11, 1, 5, 1, 3, 1, 0, 1, 9, 1, 2) CreateCondition [0, ["ACSkillDamage", [{"min": 750, "max": 750}], [{"min": 2.0, "max": 2.0}], [{"min": 1, "max": 1}]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, false, "", null, false, 3, [{"min": 1, "max": 1}], false]
+  (11, 1, 5, 1, 3, 1, 1) FindAllSubjects [0, 82, [], [], [], [], [], ["DoNothing"], ["Block", [["Command", ["CreateBarrier", 0, [{"min": 0.15, "max": 0.15}], ["GenericBarrierHitEffect"]]]]]]
+    (11, 1, 5, 1, 3, 1, 1, 1, 9, 1, 0) CreateBarrier 
+  (11, 1, 5, 1, 3, 1, 2) FindAllSubjects [0, 97, [], [], [], [], [], ["DoNothing"], ["Block", [["Command", ["CreateCondition", 0, [["ACPiercing", [{"min": 750, "max": 750}]]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, fals
+    (11, 1, 5, 1, 3, 1, 2, 1, 9, 1, 0) CreateCondition [0, ["ACPiercing", [{"min": 750, "max": 750}]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, false, "", null, false, 2, [{"min": 1, "max": 1}], false]
+  (11, 1, 5, 1, 3, 1, 3) FindAllSubjects [0, 49, [], [], [], [], [], ["DoNothing"], ["Block", [["Command", ["CreateCondition", 0, [["ACToleranceOfElement", [{"min": 750, "max": 750}], 254, [{"min": -0.4, "max": -0.4}], [{"min": 1, "max": 1}]
+    (11, 1, 5, 1, 3, 1, 3, 1, 9, 1, 0) CreateCondition [0, ["ACToleranceOfElement", [{"min": 750, "max": 750}], 254, [{"min": -0.4, "max": -0.4}], [{"min": 1, "max": 1}]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, false, "", null, false, 3, [{"min": 1, "max": 1}], false]
+  (11, 1, 5, 1, 3, 1, 4) TargetMate [41, [], [], [], [], []]
+  (11, 1, 5, 1, 3, 1, 5) CreateCondition [41, ["ACAttackPoint", [{"min": 750, "max": 750}], [{"min": 2.0, "max": 2.0}], [{"min": 1, "max": 1}]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, false, "", null, false, 3, [{"min": 1, "max": 1}], false]
+  (11, 1, 5, 1, 3, 1, 6) CreateCondition [41, ["ACSkillDamage", [{"min": 750, "max": 750}], [{"min": 2.0, "max": 2.0}], [{"min": 1, "max": 1}]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, false, "", null, false, 3, [{"min": 1, "max": 1}], false]
+  (11, 1, 5, 1, 3, 1, 7) CreateCondition [41, ["ACPiercing", [{"min": 750, "max": 750}]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, false, "", null, false, 3, [{"min": 1, "max": 1}], false]
+(11, 1, 6) CreateCondition [-17, ["ACUnique", 1699902, [{"min": 1, "max": 1}]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, false, "", null, false, 3, [{"min": 1, "max": 1}], false]
+(11, 1, 7) ShowEffect 
+(11, 1, 8) CreateHitArea ["*", -18, ["AB"], 0, 0, 0, true, false, ["Circle", [{"min": 230, "max": 230}]], ["Center"], ["Center"], ["Single"], ["SpecifyHitAreaLifetimeDirectly", 750], ["SpecifyMinHitIntervalDirectly", 60], ["Some", [{"min": 12, "max": 12}]], false, true, ["None"], 9024, ["Block", []], 9025, 9026, ["Block", [
+  (11, 1, 8, 1, 23, 1, 0) CreateNormalAttack [9026, 255, [], [], 233, [{"min": 4.0, "max": 4.0}], [{"min": 0, "max": 0}], true, false, false, false, false, [{"min": 2.5, "max": 2.5}], [{"min": 8, "max": 8}], ["None"], true]
+  (11, 1, 8, 1, 23, 1, 1) CreateCondition [9026, ["ACToleranceOfElement", [{"min": 750, "max": 750}], 6, [{"min": -0.2, "max": -0.2}], [{"min": 1, "max": 1}]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, false, "", null, false, 3, [{"min": 1, "max": 1}], false]

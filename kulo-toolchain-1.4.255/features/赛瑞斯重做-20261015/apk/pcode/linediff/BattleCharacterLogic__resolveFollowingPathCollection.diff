@@ -1,0 +1,247 @@
+--- LOCAL
++++ TEST
+@@ -42,3 +42,3 @@
+ getproperty ['playsSoundEffect']
+-iffalse [] -> #617
++iffalse [] -> #648
+ findpropstrict ['getShortVoice']
+@@ -50,3 +50,3 @@
+ pushbyte [0]
+-ifne [] -> #617
++ifne [] -> #648
+ getlocal [5]
+@@ -111,3 +111,3 @@
+ getproperty ['playsSkillReady']
+-iffalse [] -> #258
++iffalse [] -> #286
+ getlocal [5]
+@@ -209,2 +209,30 @@
+ getlocal [5]
++getproperty ['characterId']
++pushint [149999]
++ifne [] -> #236
++getlocal [5]
++getproperty ['logicAssets']
++pushstring ['character/white_wolf_gerald/voice/battle/skill_ready_alt_1']
++callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
++iffalse [] -> #220
++getlocal_1 []
++pushstring ['character/white_wolf_gerald/voice/battle/skill_ready_alt_1']
++callpropvoid ['pinball.asset.logic:IAssetPathCollectionBuilder::addSoundEffect', 1]
++getlocal [5]
++getproperty ['logicAssets']
++pushstring ['character/white_wolf_gerald/voice/battle/skill_ready_alt_2']
++callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
++iffalse [] -> #228
++getlocal_1 []
++pushstring ['character/white_wolf_gerald/voice/battle/skill_ready_alt_2']
++callpropvoid ['pinball.asset.logic:IAssetPathCollectionBuilder::addSoundEffect', 1]
++getlocal [5]
++getproperty ['logicAssets']
++pushstring ['character/white_wolf_gerald/voice/battle/skill_ready_alt_3']
++callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
++iffalse [] -> #236
++getlocal_1 []
++pushstring ['character/white_wolf_gerald/voice/battle/skill_ready_alt_3']
++callpropvoid ['pinball.asset.logic:IAssetPathCollectionBuilder::addSoundEffect', 1]
++getlocal [5]
+ callproperty ['get_skillReadyVoicePath', 0]
+@@ -212,3 +240,3 @@
+ setlocal [10]
+-jump [] -> #222
++jump [] -> #250
+ avm_label []
+@@ -221,3 +249,3 @@
+ avm_label []
+-jump [] -> #233
++jump [] -> #261
+ getlocal [10]
+@@ -227,8 +255,8 @@
+ getlocal [11]
+-ifstrictne [] -> #230
+-pushbyte [0]
+-jump [] -> #231
++ifstrictne [] -> #258
++pushbyte [0]
++jump [] -> #259
+ pushbyte [255]
+ op_08 [11]
+-lookupswitch [] default #220, cases [213]
++lookupswitch [] default #248, cases [241]
+ getlocal [5]
+@@ -237,3 +265,3 @@
+ setlocal [10]
+-jump [] -> #247
++jump [] -> #275
+ avm_label []
+@@ -246,3 +274,3 @@
+ avm_label []
+-jump [] -> #258
++jump [] -> #286
+ getlocal [10]
+@@ -252,11 +280,11 @@
+ getlocal [11]
+-ifstrictne [] -> #255
+-pushbyte [0]
+-jump [] -> #256
++ifstrictne [] -> #283
++pushbyte [0]
++jump [] -> #284
+ pushbyte [255]
+ op_08 [11]
+-lookupswitch [] default #245, cases [238]
++lookupswitch [] default #273, cases [266]
+ getlocal_3 []
+ getproperty ['playsSkillReady']
+-iffalse [] -> #457
++iffalse [] -> #488
+ getlocal [5]
+@@ -267,12 +295,15 @@
+ pushint [149990]
+-ifeq [] -> #457
++ifeq [] -> #488
+ getlocal [13]
+ pushint [129992]
+-ifeq [] -> #457
++ifeq [] -> #488
+ getlocal [13]
+ pushint [139993]
+-ifeq [] -> #457
++ifeq [] -> #488
+ getlocal [13]
+ pushint [159998]
+-ifeq [] -> #457
++ifeq [] -> #488
++getlocal [13]
++pushint [149999]
++ifeq [] -> #488
+ getlocal [5]
+@@ -284,3 +315,3 @@
+ pushbyte [0]
+-ifne [] -> #367
++ifne [] -> #398
+ getlocal [12]
+@@ -304,3 +335,3 @@
+ callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
+-iffalse [] -> #367
++iffalse [] -> #398
+ getlocal_1 []
+@@ -318,3 +349,3 @@
+ callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
+-iffalse [] -> #367
++iffalse [] -> #398
+ getlocal_1 []
+@@ -332,3 +363,3 @@
+ callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
+-iffalse [] -> #367
++iffalse [] -> #398
+ getlocal_1 []
+@@ -346,3 +377,3 @@
+ callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
+-iffalse [] -> #367
++iffalse [] -> #398
+ getlocal_1 []
+@@ -360,3 +391,3 @@
+ callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
+-iffalse [] -> #367
++iffalse [] -> #398
+ getlocal_1 []
+@@ -374,3 +405,3 @@
+ pushbyte [0]
+-ifne [] -> #457
++ifne [] -> #488
+ getlocal [12]
+@@ -394,3 +425,3 @@
+ callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
+-iffalse [] -> #457
++iffalse [] -> #488
+ getlocal_1 []
+@@ -408,3 +439,3 @@
+ callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
+-iffalse [] -> #457
++iffalse [] -> #488
+ getlocal_1 []
+@@ -422,3 +453,3 @@
+ callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
+-iffalse [] -> #457
++iffalse [] -> #488
+ getlocal_1 []
+@@ -436,3 +467,3 @@
+ callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
+-iffalse [] -> #457
++iffalse [] -> #488
+ getlocal_1 []
+@@ -450,3 +481,3 @@
+ callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
+-iffalse [] -> #457
++iffalse [] -> #488
+ getlocal_1 []
+@@ -468,3 +499,3 @@
+ setlocal [8]
+-jump [] -> #481
++jump [] -> #512
+ avm_label []
+@@ -485,3 +516,3 @@
+ convert_i []
+-iflt [] -> #469
++iflt [] -> #500
+ getlocal [5]
+@@ -497,3 +528,3 @@
+ setlocal [8]
+-jump [] -> #510
++jump [] -> #541
+ avm_label []
+@@ -514,3 +545,3 @@
+ convert_i []
+-iflt [] -> #498
++iflt [] -> #529
+ getlocal [5]
+@@ -526,3 +557,3 @@
+ setlocal [8]
+-jump [] -> #539
++jump [] -> #570
+ avm_label []
+@@ -543,3 +574,3 @@
+ convert_i []
+-iflt [] -> #527
++iflt [] -> #558
+ getlocal [5]
+@@ -555,3 +586,3 @@
+ setlocal [8]
+-jump [] -> #568
++jump [] -> #599
+ avm_label []
+@@ -572,4 +603,4 @@
+ convert_i []
+-iflt [] -> #556
+-jump [] -> #606
++iflt [] -> #587
++jump [] -> #637
+ avm_label []
+@@ -586,3 +617,3 @@
+ setlocal [8]
+-jump [] -> #599
++jump [] -> #630
+ avm_label []
+@@ -603,5 +634,5 @@
+ convert_i []
+-iflt [] -> #587
+-avm_label []
+-jump [] -> #617
++iflt [] -> #618
++avm_label []
++jump [] -> #648
+ getlocal_3 []
+@@ -611,8 +642,8 @@
+ getlocal [11]
+-ifstrictne [] -> #614
+-pushbyte [0]
+-jump [] -> #615
++ifstrictne [] -> #645
++pushbyte [0]
++jump [] -> #646
+ pushbyte [255]
+ op_08 [11]
+-lookupswitch [] default #604, cases [574]
++lookupswitch [] default #635, cases [605]
+ returnvoid []

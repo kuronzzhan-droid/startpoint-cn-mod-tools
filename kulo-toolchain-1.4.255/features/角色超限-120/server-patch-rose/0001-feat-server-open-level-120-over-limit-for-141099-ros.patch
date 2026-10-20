@@ -1,0 +1,33 @@
+From 44c68959bc42dd4e5cd8f30e3be69571ef89f0b9 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Thu, 15 Oct 2026 12:14:21 +1100
+Subject: [PATCH] feat(server): open level 120 over-limit for 141099 (rose
+ dragon)
+
+Adds 141099 to the over-limit character list and its level-120 awake
+mission 1410991.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+---
+ assets/character_overlimit.json | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/assets/character_overlimit.json b/assets/character_overlimit.json
+index b376309d..a752f568 100644
+--- a/assets/character_overlimit.json
++++ b/assets/character_overlimit.json
+@@ -4,8 +4,9 @@
+   "rarity": 5,
+   "max_over_limit": 8,
+   "extra_exp_caps": [454988, 529988, 604988, 679988],
+-  "characters": [111183],
++  "characters": [111183, 141099],
+   "level_missions": {
+-    "1111831": 120
++    "1111831": 120,
++    "1410991": 120
+   }
+ }
+-- 
+2.52.0.windows.1
+

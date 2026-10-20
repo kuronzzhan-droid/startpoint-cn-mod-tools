@@ -1,0 +1,611 @@
+# wf 工具包与编辑台(自动生成 2026-10-19 22:35)
+
+源:`D:\WF\wf-mod-tools-worktrees\m4-integrate`(只读;分支 refactor/m4-studio-deliver)。命令入口 `python -m wf <子命令>`、`python -m wf.studio`(编辑台 8790)、`python -m wf.studio.draft <子命令>`(agent 用)。
+
+## wf 包模块
+
+- `wf/__init__.py` — World Flipper offline tooling, consolidated production API.
+- `wf/__main__.py` — Unified offline command entry point: python -m wf <command>.
+- `wf/check.py` — Unified schema and evidence-aware rules with five explicit result states.
+- `wf/check_delivery.py` — Read-back delivery checks, separated from schema dispatch.
+- `wf/local_assets.py` — Find an author-relocated resource while keeping repository code portable.
+- `wf/paths.py` — Machine paths: environment > local profile; external inputs have no guesses.
+- `wf/wfx_semantics.py` — Per-effect WFX parameter semantics recorded by the v35 build contracts.
+- `wf/apk/__init__.py` — Offline, method-level SWF/ABC patching primitives.
+- `wf/apk/abcfmt.py` — Minimal-but-complete AVM2 ABC reader/writer (survey + slice builder).
+- `wf/apk/asm.py` — AVM2 方法体汇编器 / 拼接器 —— V12 客户端补丁的公共底座。
+- `wf/apk/avm_mini.py` — Minimal AVM2 interpreter for offline equivalence tests of the round-2 patches.
+- `wf/apk/bodies.py` — 按「类名/方法名」在主 ABC 里唯一定位方法体下标。
+- `wf/apk/bump_versioncode.py` — Rewrite android:versionCode in an APK's binary AndroidManifest.xml (in place in the AXML, same length).
+- `wf/apk/cli.py` — Offline APK capability inspection; no build, install, or device access.
+- `wf/apk/common.py` — Shared read-only helpers for perf-v30: load SWF/ABC, label bodies, list P-code.
+- `wf/apk/evidence.py` — Read explicit patch records or recognize pinned artifacts without version guessing.
+- `wf/apk/kind_branches.py` — Read kind branches from actual ABC code, never decompiled source snapshots.
+- `wf/apk/kinds.py` — Inspect real profile-bound SWFs and compare registered kind table surfaces.
+- `wf/apk/local_registry.py` — Digest-bound local registrations supplement, never replace, reviewed registry data.
+- `wf/apk/manifest.py` — Small read-only binary Android manifest identity reader (no SDK subprocess).
+- `wf/apk/method_snapshot.py` — Read actual method code and its referenced constants; never infer from versions.
+- `wf/apk/opwalk.py` — AVM2 bytecode walker with a full operand table (read + rewrite).
+- `wf/apk/patching.py` — perf-v30 round 2: replayable method-level patch framework.
+- `wf/apk/provides.py` — Derive client capabilities from explicit patch and method evidence.
+- `wf/apk/register_local.py` — Register a local APK using actual SWF observations and a pinned reference audit.
+- `wf/apk/swfabc.py` — 读写 SWF 里那一个 `boot_ffc6` DoABC2 标签,并提供常量池的「只增不改」编辑器。
+- `wf/apk/swftags.py` — (无说明)
+- `wf/art/__init__.py` — Reusable media primitives.
+- `wf/art/audio_probe.py` — Shared media helpers extracted from the production C tools.
+- `wf/art/image_fit.py` — Shared media helpers extracted from the production C tools.
+- `wf/balance/__init__.py` — Data-driven balance recipes with explicit old-value assertions.
+- `wf/balance/cli.py` — CLI adapter; every write stays in the current tools checkout.
+- `wf/balance/engine.py` — Assertion-first balance edits preserving untouched orderedmap chunks.
+- `wf/balance/inputs.py` — Read-only manifest views or frozen M0 replay locks.
+- `wf/balance/output.py` — Local review artifacts and the shared deliver change-set contract.
+- `wf/balance/ownership.py` — Resolve all character owners from the input view before editing shared keys.
+- `wf/balance/recipe.py` — Strict, data-only YAML recipes; duplicate mapping keys are rejected.
+- `wf/balance/rows.py` — Lossless CSV leaves and shared ability/leader column addressing.
+- `wf/boss/__init__.py` — Boss workshop: read models and assertion-first local edits.
+- `wf/boss/atlas.py` — Collect a conservative, explicitly incomplete encounter sheet lower bound.
+- `wf/boss/behavior.py` — Marker-slot replacements and conservative parameter edits on cloned kits.
+- `wf/boss/behavior_clone.py` — Isolate existing encounters before changing behavior, never mutate sharers.
+- `wf/boss/behavior_damage.py` — Scale a slot's private action closure without mutating any other consumer.
+- `wf/boss/behavior_guards.py` — Conservative gates for cross-boss borrowed programs and terrain references.
+- `wf/boss/behavior_identity.py` — Candidate-only reverse identity references that prevent isolated renaming.
+- `wf/boss/behavior_limits.py` — Bound repeated work across nested events and referenced action programs.
+- `wf/boss/behavior_loading.py` — Keep static DSL acceptance separate from device loader evidence.
+- `wf/boss/behavior_model.py` — Read native GeneralBoss and EnemyDsl state-local timeline summaries.
+- `wf/boss/behavior_positions.py` — Named terrain references reachable through GeneralBoss and Funnel actions.
+- `wf/boss/behavior_wire.py` — (无说明)
+- `wf/boss/cli.py` — Offline boss list/show commands, with explicit reproducible view options.
+- `wf/boss/edit_bytes.py` — Small byte-preserving operations for boss resource and server overlays.
+- `wf/boss/edit_state.py` — Assertion-first boss table overlays; inputs are never mutated or written.
+- `wf/boss/enemies.py` — Resolve explicit zone enemy slots and the level band selected at runtime.
+- `wf/boss/esdl.py` — (无说明)
+- `wf/boss/identity.py` — Validated quest selectors and reversible, filesystem-safe draft identities.
+- `wf/boss/links.py` — Entrance, reward and shop relations for a resolved boss quest.
+- `wf/boss/parameter_semantics.py` — Explicit quest stat assignment/scaling and replayable parameter diagnostics.
+- `wf/boss/parameters.py` — Quest parameter edits using generated *QuestValues column layouts.
+- `wf/boss/provenance.py` — Read nested masters and trace each leaf's last semantic change layer.
+- `wf/boss/reader.py` — Read-only boss workshop model, independent of filesystem configuration.
+- `wf/boss/schema.py` — Native boss table paths and zero-based CSV columns.
+- `wf/boss/server_parameters.py` — Keep server reward element selection aligned with edited quest metadata.
+- `wf/boss/shop_availability.py` — Editable shop windows and warnings against the server's pinned clock.
+- `wf/boss/shop_edit.py` — Scoped boss shop edits; preserve every unrelated server product value byte.
+- `wf/boss/shop_model.py` — Native shop and equipment relations, including the complete material ladder.
+- `wf/boss/shop_weapon.py` — Boss request dispatcher for shop products and their weapon graphs.
+- `wf/boss/template.py` — Official 1006 shared-battle skeleton with isolated encounter/reward identities.
+- `wf/boss/terrain.py` — Decode complete object-group layers, which define actual battle waves.
+- `wf/boss/terrain_edit.py` — Quest-owned terrain edits, preserving shared resources and native positions.
+- `wf/boss/terrain_identity.py` — Allocate terrain generations without overwriting a previously delivered copy.
+- `wf/boss/terrain_objects.py` — Lossless terrain loading and explicit native coordinate conventions.
+- `wf/boss/weapon_edit.py` — Clone native weapon graphs and edit their semantic abilities/material stages.
+- `wf/boss/weapon_rules.py` — Profile-bound weapon kinds and source-specific awakening restrictions.
+- `wf/caps/__init__.py` — Capability declarations and their data-driven consumers.
+- `wf/caps/character_requirements.py` — Map changed character content to the registry's documented APK dependencies.
+- `wf/caps/cli.py` — Local mechanism matrix CLI backed by the same manifest chain as wf view.
+- `wf/caps/compat.py` — Compare capability identity, required patch sets and recorded method hashes.
+- `wf/caps/facts.py` — Extract typed capability signals, never search arbitrary prose for kind IDs.
+- `wf/caps/kind_compat.py` — Check concrete table/kind uses against the selected binary, never decompiled AS.
+- `wf/caps/method_evidence.py` — Accept intentional method replacements only for their recorded client SWF.
+- `wf/caps/profiles.py` — Resolve selected client evidence; never infer compatibility from profile names.
+- `wf/caps/query.py` — Read-only editor queries using the same typed signals and compatibility gate.
+- `wf/caps/registry.py` — Data-only capability registry with explicit provenance and unresolved hashes.
+- `wf/caps/requirements.py` — Infer content dependencies from changed leaves and their actual references.
+- `wf/caps/roster_requirements.py` — Reuse delivery inference for a complete per-character reference closure.
+- `wf/caps/scan.py` — Read gameplay evidence for the selected modified or complete character roster.
+- `wf/caps/scan_binding.py` — Bind declared requirements to the actual local archive members.
+- `wf/caps/scan_bundle.py` — Explicit APK bundle fallback for resources absent from the CDN/store view.
+- `wf/caps/scan_capabilities.py` — Project scanned facts into registry IDs, retaining the evidence for each claim.
+- `wf/caps/scan_facts.py` — Mechanism primitives ported from the reviewed 108-character matrix scanner.
+- `wf/caps/scan_output.py` — Legacy human-readable matrix plus registered capability projections.
+- `wf/caps/scan_source.py` — Read-only scanner source; no studio dependency and no external cache writes.
+- `wf/caps/signals_v35.py` — Typed v35 configuration markers and their optional ownership references.
+- `wf/caps/surfaces.py` — Shared matching for declared data surfaces, separate from SWF support.
+- `wf/chars/__init__.py` — Character construction APIs extracted from production frameworks.
+- `wf/chars/halloween/__init__.py` — Frozen Halloween delivery construction support.
+- `wf/chars/halloween/art.py` — 立绘装配：透明母图 art/masters/<key>-<0|1>.png + 手标 landmarks → full_shot×2、图标、cutin PNG+ATF、
+- `wf/chars/halloween/color.py` — 保亮度换色：只改色相（可选饱和度倍率），明度 V 不动，alpha 不动，alpha==0 像素不碰。
+- `wf/chars/halloween/common.py` — 万圣四角色包上下文:MAPack(★4/★3 母本 status/gacha 补洞)+ 读 1.4.220 视图 store,不用官方 .cdn 基线。
+- `wf/chars/halloween/env.py` — Explicit read-only inputs and checkout-local outputs for replay.
+- `wf/chars/halloween/kit_ludi.py` — 露迪「万圣第一的公主殿下」139985 lady_android_halloween：雷·Fever 外 DB 辅助 / Fever 内副 C。
+- `wf/chars/halloween/kit_momiya.py` — 莫弥亚「猎魔人装束的魔法剑士」169985 blade_witch_halloween：暗·协力球直击队长（特殊 PF）。
+- `wf/chars/halloween/kit_recital.py` — 瑞西塔尔「奇怪的杰克南瓜灯」149985 lich_halloween：风·技伤通用麻痹辅助。
+- `wf/chars/halloween/kit_seriol.py` — 塞里奥尔「别扭的吸血鬼伯爵」159985 crystal_swordman_halloween：光·PF 满速辅助。
+- `wf/chars/halloween/kitlib.py` — 万圣四角色 kit 公共库：按字段名装行、DSL 小构件、闸门。
+- `wf/chars/halloween/pixel.py` — 像素小人换色（保亮度，只改色相）+ ★3 母本补 special 槽（领取演出必需）。
+- `wf/chars/halloween/replay.py` — Rebuild all four Halloween packages from source tables, art and approved WAVs.
+- `wf/chars/halloween/specs.py` — 万圣四角色规格(复用 wf_seasonal7_specs.SeasonalSpec)。
+- `wf/chars/halloween/voice.py` — Fish 生成的 WAV → 游戏语音（44.1k 单声道 96k CBR、-14 LUFS、存储态 MP3）+ character_speech 字幕行。
+- `wf/chars/support/__init__.py` — Reusable primitives; batch-specific specifications live in recipes.
+- `wf/chars/support/actor.py` — 校园奈芙两种协力球的独立演员；保留官方图像与基础动作，不生成战斗逻辑。
+- `wf/chars/support/assets.py` — Production primitives extracted from wf_seasonal7_assets.py (C baseline).
+- `wf/chars/support/build.py` — Production primitives extracted from wf_seasonal7_build.py (C baseline).
+- `wf/chars/support/common.py` — Character package primitives and effect family helpers.
+- `wf/chars/support/context.py` — Mutable local package context; source assets remain read-only.
+- `wf/chars/support/images.py` — Production primitives extracted from wf_campus_art_images.py (C baseline).
+- `wf/chars/support/kitlib.py` — Production primitives extracted from wf_midautumn_kitlib.py (C baseline).
+- `wf/chars/support/masks.py` — Production primitives extracted from wf_seasonal7_art.py (C baseline).
+- `wf/chars/support/pixel_codec.py` — Production primitives extracted from wf_nephtim_fever_pixels.py (C baseline).
+- `wf/chars/support/portraits.py` — Production primitives extracted from wf_campus_art.py (C baseline).
+- `wf/chars/support/primitives.py` — 季节换装七角色：规格驱动角色包的共用原语。
+- `wf/chars/support/rarity.py` — Production primitives extracted from wf_midautumn_common.py (C baseline).
+- `wf/chars/support/specs.py` — Production primitives extracted from wf_seasonal7_specs.py (C baseline).
+- `wf/chars/support/speech.py` — Production primitives extracted from wf_seasonal7_voice.py (C baseline).
+- `wf/chars/support/table_rows.py` — Production primitives extracted from wf_seasonal7_tables.py (C baseline).
+- `wf/chars/support/tables.py` — Assemble character tables using the shared row transformations.
+- `wf/compat/__init__.py` — Original A generic APIs retained during the C-source consolidation.
+- `wf/compat/abyss_gacha_banner_compile.py` — Compile explicit SHA-locked PNG specifications into WF storage bytes.
+- `wf/compat/abyss_ticket_compile.py` — Compile explicitly supplied ticket rows and 20x20 item-atlas specifications.
+- `wf/compat/apk_paths.py` — (无说明)
+- `wf/compat/character_ui_compile.py` — Pure UI PNG/atlas/ATF compilation from explicit payloads and crop contracts.
+- `wf/compat/database_paths.py` — (无说明)
+- `wf/compat/device_paths.py` — Portable executable discovery for optional local device tools.
+- `wf/compat/flatomo_compile.py` — Build a small Flatomo flipbook effect from fixed-size RGBA PNG frames.
+- `wf/compat/pixelart_compile.py` — Pure sprite compiler for a locked World Flipper ``skill_ready`` canary.
+- `wf/compat/pixelart_normal_compile.py` — Pure compiler for a complete original normal character sprite set.
+- `wf/compat/pixelart_special_compat_compile.py` — Build the client special contract by aliasing locked normal sprite pixels.
+- `wf/compat/pixelart_special_compile.py` — Compile an original acquisition-special animation into four client assets.
+- `wf/compat/preview_2d.py` — Loopback-only, read-only web preview for local 2D animation sources.
+- `wf/compat/preview_2d_core.py` — Read-only loaders for local 2D frame and World Flipper pixel-art previews.
+- `wf/compat/release_paths.py` — Resolve tool, server, store, and CDN roots for character releases.
+- `wf/compat/release_ui.py` — Loopback-only preparation UI for the independent wf-release-v1 workflow.
+- `wf/compat/release_ui_actions.py` — Strict preparation-only actions exposed by the standalone release UI.
+- `wf/compat/tool_distribution.py` — Build a deterministic, self-describing standalone WF mod-tools archive.
+- `wf/config/__init__.py` — Validated external resource discovery.
+- `wf/config/database.py` — (无说明)
+- `wf/config/device.py` — Portable executable discovery for optional local device tools.
+- `wf/config/profile_merge.py` — Merge the compatibility version profile into explicit machine paths.
+- `wf/deliver/__init__.py` — Local package validation and delivery checks; importing performs no checks.
+- `wf/deliver/archives.py` — Deterministic ZIP construction with an actual compressed-size ceiling.
+- `wf/deliver/assert_box.py` — Standalone, read-only verifier copied into every delivery.
+- `wf/deliver/baseline.py` — Resolve delivery baselines from manifests, without copying their archives.
+- `wf/deliver/build.py` — Produce reviewable artifacts; never install, publish, or contact a service.
+- `wf/deliver/chain_contract.py` — Offline chain invariants; no dependency on loading a server module.
+- `wf/deliver/changeset.py` — Validated, content-addressed inputs for an entirely local delivery.
+- `wf/deliver/cli.py` — CLI for packaging a validated local change set.
+- `wf/deliver/client_compatibility.py` — Keep the studio client-evidence gate effective during delivery read-back.
+- `wf/deliver/dsl_gate.py` — Apply the 629 gate before creating any delivery archive.
+- `wf/deliver/gate.py` — Run prepush using manifest-selected, read-only baseline archives.
+- `wf/deliver/json_merge.py` — Key-scoped JSON merge preserving every unselected value byte.
+- `wf/deliver/logical_paths.py` — Logical Win32 asset paths, preserved from the original toolkit API.
+- `wf/deliver/manifests.py` — Legacy and layered delivery metadata, with no publishing side effects.
+- `wf/deliver/prepush.py` — 推送前数据自检:客户端补丁链在上测试服之前的四项检查。
+- `wf/deliver/prepush_base.py` — Shared prepush report and layered read-only view.
+- `wf/deliver/prepush_chain.py` — 补丁链和清单检查。
+- `wf/deliver/prepush_companion.py` — 道具伴随表检查。
+- `wf/deliver/prepush_level.py` — 敌人等级、生成闭包和变量表检查。
+- `wf/deliver/prepush_rewards.py` — Reward row identities shared by the companion check and delivery gate.
+- `wf/deliver/prepush_text.py` — 客户端技能描述检查。
+- `wf/deliver/runtime_package.py` — Convert a validated offline handoff into a formal runtime-test pack.
+- `wf/dsl/__init__.py` — Public ActionDSL safety transforms and checks.
+- `wf/dsl/check.py` — Signature and execution-context checks for ActionDSL JSON or binary trees.
+- `wf/dsl/corpus.py` — Reproducible positive-control census of official kind-629 action trees.
+- `wf/dsl/gate.py` — Read-only kind-629 reachability gate shared by balance and deliver.
+- `wf/dsl/references.py` — Derive kind-629 action roots from actual table layouts and skill rows.
+- `wf/dsl/sanitize.py` — Remove real-powerflip lifecycle operations from kind-629 ability actions.
+- `wf/rules/__init__.py` — Pure validation and generation rules shared by the tools.
+- `wf/rules/boss.py` — Evidence-aware boss gates shared by CLI, draft preview and compilation.
+- `wf/rules/boss_atlas.py` — Read actual three-party sheet dimensions; keep runtime packing uncertain.
+- `wf/rules/boss_cli.py` — CLI input routing for saved boss snapshots or manifest-backed selectors.
+- `wf/rules/boss_common.py` — Small read-only adapters for boss rule inputs and candidate views.
+- `wf/rules/boss_integrity.py` — Boss entry, route, time and server/client identity checks.
+- `wf/rules/boss_levels.py` — Reject known missing native enemy bands before edited levels reach delivery.
+- `wf/rules/boss_preload.py` — Prove C8016 shims from decoded candidate DSL and marker action slots.
+- `wf/rules/boss_references.py` — Known missing combat references are failures, not absent check input.
+- `wf/rules/boss_terrain.py` — Inspect actual terrain objects, field cells and per-mode boss slots.
+- `wf/rules/catalog.py` — Versioned rule metadata shared by command-line and future studio callers.
+- `wf/rules/dsl_signature.py` — Static ActionDSL validation recovered from the B tool lineage.
+- `wf/rules/instant_content.py` — Sentinel values for fields declared by the client's instant-content cases.
+- `wf/rules/rogue_lineage.py` — Read-only identity and terrain gates recovered from the B rogue builder.
+- `wf/studio/__init__.py` — 编辑台 (studio): read-only HTTP backend for the Vite frontend in ``studio/``.
+- `wf/studio/__main__.py` — python -m wf.studio — start the 编辑台 backend on 127.0.0.1:8790 (reads the view, writes only drafts).
+- `wf/studio/ability.py` — Studio ability draft API; compilation returns bytes to the deliver bridge.
+- `wf/studio/ability_engine.py` — In-memory, assertion-first ability edits with lossless orderedmap leaves.
+- `wf/studio/ability_references.py` — Explain skill-tier dependencies without pretending to inspect player saves.
+- `wf/studio/ability_routes.py` — Thin HTTP routes for draft ability operations; the core is shared with CLI.
+- `wf/studio/ability_templates.py` — Enum-backed row templates: absence of precedent is evidence, not a ban.
+- `wf/studio/ability_text.py` — Route visible fields through wf text, including both server mirrors.
+- `wf/studio/assets.py` — 「全套资源」: every asset a character owns in the layered view (read-only).
+- `wf/studio/boss.py` — Boss drafts share the existing delivery bridge in a separate namespace.
+- `wf/studio/boss_catalog.py` — Read-only helpers behind the BOSS工坊 pages: overview modes, template sources, options.
+- `wf/studio/boss_dispatch.py` — One operation registry shared by HTTP, CLI and persisted boss draft replay.
+- `wf/studio/boss_routes.py` — Boss HTTP surface; the host/origin/token guard remains in server.Handler.
+- `wf/studio/boss_store.py` — Boss-only draft storage; kind-qualified selectors never become directory paths.
+- `wf/studio/boss_timeline.py` — Project boss state triggers onto the shared L2 ActionDsl event format.
+- `wf/studio/capability_routes.py` — Read-only client profile requirements for the future ability editor UI.
+- `wf/studio/chain.py` — Resolve the test-server patch chain beyond kulo active from a manifest.json.
+- `wf/studio/characters.py` — Character list / detail payloads for the 角色工坊 (read-only).
+- `wf/studio/client_profile_signals.py` — Canonical signal/site values for the editor's shared capability checks.
+- `wf/studio/client_profile_view.py` — 编辑台「目标客户端」只读胶水：档案说明、按标记/数据行/程序查能力需求、全角色兼容报告。
+- `wf/studio/deliver_bridge.py` — Compile a studio draft and run the existing, entirely local M1/M2 delivery.
+- `wf/studio/deliver_media.py` — Compile studio media to stored client bytes without touching a filesystem.
+- `wf/studio/deliver_pixel.py` — Compile action replacements while preserving every untouched atlas region.
+- `wf/studio/deliver_pixel_pack.py` — Reclaim replaced atlas regions and account for the battle layer0 margin.
+- `wf/studio/deliver_portrait.py` — Portrait assets and assertion-backed geometry leaves for local delivery.
+- `wf/studio/deliver_routes.py` — HTTP glue for 「生成」/「导出」: run the existing deliver bridge and list its output.
+- `wf/studio/deliver_voice.py` — Existing-path voice replacement, including the strict stored MP3 gate.
+- `wf/studio/device_result.py` — 交付的真机实测记录（device-result.json）：读、写、导入与截图白名单。
+- `wf/studio/draft.py` — python -m wf.studio.draft — 编辑台草稿的命令行入口（给 agent 用，和界面走同一套操作）。
+- `wf/studio/draft_commands.py` — CLI argument and routing helpers for ability editing and local delivery.
+- `wf/studio/drafts.py` — Draft workspace: ``work/studio-drafts/<cid>/`` = files + ``changeset.json``.
+- `wf/studio/effect_render.py` — Bake a flatomo PartsAnimation battle effect for the L2 timeline preview.
+- `wf/studio/guard.py` — Write-request guard for the studio (same idea as the release UI token).
+- `wf/studio/operations.py` — Draft operations shared by the HTTP API and ``python -m wf.studio.draft``.
+- `wf/studio/patches.py` — 补丁管理: read-only listing of the kulo asset-patch chain.
+- `wf/studio/perf.py` — Process-wide caches for the studio's read paths (view objects are immutable per process).
+- `wf/studio/pixel_generate.py` — 程序化动作：从三张底图（正面 front / 背面 back / 躺倒 liedown）合成官方样式序列。
+- `wf/studio/pixel_import.py` — 像素小人：按动作槽导入新帧（只写草稿，不重排游戏图集）。
+- `wf/studio/pixel_routes.py` — HTTP routes for 像素工坊 (analysis, remap, procedural actions, import, draft-state preview)
+- `wf/studio/pixel_workshop.py` — 像素工坊：拆解（analyze）与母本映射（remap）。
+- `wf/studio/pixel_workshop_ops.py` — 像素工坊：拆解 / 母本映射 / 程序化动作 / 画板 —— HTTP 与 CLI 共用的操作。
+- `wf/studio/pixels.py` — Pixel character (像素小人) data for the L1 preview player.
+- `wf/studio/portrait.py` — 立绘替换 → 裁剪模板 → 派生 UI 图（只写草稿）。
+- `wf/studio/scratch.py` — 草稿角色（scratch）：还没有游戏 ID 的角色草稿，只承载像素。
+- `wf/studio/server.py` — Stdlib HTTP server: explicit route table + static frontend.
+- `wf/studio/source.py` — Layered read-only data source for the studio.
+- `wf/studio/text_panel.py` — Read-only panel-text view for the studio: per-field wf text findings.
+- `wf/studio/timeline.py` — L2 编排级 preview: turn one ActionDsl tree into a 60 fps event timeline.
+- `wf/studio/timeline_routes.py` — HTTP surface of the L2 编排级 preview (read-only).
+- `wf/studio/voice.py` — 语音：上传 WAV/MP3 → 游戏规格 MP3（44.1kHz 单声道 96kbps CBR）→ 草稿。
+- `wf/text/__init__.py` — Unified character text reads, assertions, local staging and warning audit.
+- `wf/text/audit.py` — Explain every prepush text warning against complete, hashed input values.
+- `wf/text/cli.py` — CLI for local text inspection, checked edits and prepush explanations.
+- `wf/text/draft.py` — Re-read compiled client tables before a draft can produce a delivery.
+- `wf/text/edit.py` — Assert text edits in memory, then stage both client and server locally.
+- `wf/text/effective.py` — Compare the actual key-level server overlay with client skill text cells.
+- `wf/text/json_patch.py` — Replace selected mirror cells without reserializing any surrounding JSON.
+- `wf/text/markup.py` — Deterministic author markup checks with explicit slot evidence.
+- `wf/text/model.py` — Read visible character text from the same immutable client view.
+- `wf/text/release.py` — Read-only whole-table policy audit with all findings and coverage states.
+- `wf/text/rules.py` — Conservative text rules: hard syntax failures and reviewable overlap evidence.
+- `wf/text/skill_checks.py` — Cross-tier wording comparison; keep numeric progression and name suffixes.
+- `wf/text/slots.py` — Resolve override ownership from actual slot c0 values, never key suffixes.
+- `wf/text/standard.py` — Auditable wording policy, with incomplete semantic checks kept explicit.
+- `wf/text/standard_checks.py` — Deterministic fragments of the panel convention; no gameplay inference.
+- `wf/view/__init__.py` — Read-only historical asset views and reusable builder primitives.
+- `wf/view/balance.py` — Balance row-edit framework migrated from the 1017 production builder.
+- `wf/view/balance_inputs.py` — Verify the complete active-chain and store fallback lock for balance replay.
+- `wf/view/base149.py` — Read-only store131 + ordered local ZIP view; later ZIP members win.
+- `wf/view/chain.py` — Resolve a unique manifest dependency chain and its ordered ZIP parts.
+- `wf/view/character_pack.py` — 四个角色包 → kulo 测试服补丁 zip（同一版本边，按 ≤5MiB 分包）+ integrity + manifest 条目。
+- `wf/view/cli.py` — Read and lock a manifest-derived view without materializing external data.
+- `wf/view/compare.py` — Byte-level ZIP member comparison, independent of container timestamps.
+- `wf/view/config.py` — Explicit manifest-view configuration; no filesystem-wide discovery.
+- `wf/view/dsltools.py` — (无说明)
+- `wf/view/layout.py` — (无说明)
+- `wf/view/live149.py` — LiveReader over the 1.4.149 view + kulo server assets.
+- `wf/view/manifest.py` — Manifest-derived, read-only asset view with reproducible input locks.
+- `wf/view/recipe_inputs.py` — Verify historical materialized view inputs against the original overlay recipe.
+- `wf/view/safety.py` — Process-local write fence for historical recipe replay.
+- `wf/view/stage_all.py` — Shared staging primitives extracted from the historical cursed/abyss builder.
+
+## 编辑台 HTTP 路由(wf/studio)
+
+- GET `^/api/characters/(?P<cid>\d+)/ability$` — wf/studio/ability_routes.py:85
+- GET `^/api/drafts/(?P<cid>\d+)/ability/preview$` — wf/studio/ability_routes.py:86
+- GET `^/api/studio/ability/templates$` — wf/studio/ability_routes.py:87
+- GET `^/api/studio/ability/keys$` — wf/studio/ability_routes.py:88
+- GET `^/api/characters/(?P<cid>\d+)/text$` — wf/studio/ability_routes.py:89
+- POST `^/api/drafts/(?P<cid>\d+)/text/lint$` — wf/studio/ability_routes.py:90
+- POST `^/api/drafts/(?P<cid>\d+)/ability/check$` — wf/studio/ability_routes.py:91
+- POST `^/api/drafts/(?P<cid>\d+)/ability$` — wf/studio/ability_routes.py:92
+- GET `^/api/boss$` — wf/studio/boss_routes.py:147
+- GET `^/api/boss/drafts$` — wf/studio/boss_routes.py:148
+- GET `^/api/boss/templates$` — wf/studio/boss_routes.py:149
+- GET `^/api/boss/options$` — wf/studio/boss_routes.py:150
+- GET `^/api/boss/drafts/(?P<quest>[^/]+)$` — wf/studio/boss_routes.py:151
+- GET `^/api/boss/terrain-preview$` — wf/studio/boss_routes.py:152
+- GET `^/api/boss/weapon-icons$` — wf/studio/boss_routes.py:153
+- GET `^/api/boss/icon\.png$` — wf/studio/boss_routes.py:154
+- GET `^/api/boss/(?P<quest>[^/]+)/timeline-summary$` — wf/studio/boss_routes.py:156
+- GET `^/api/boss/(?P<quest>[^/]+)/(?P<section>terrain|shops|weapons|behavior|timeline)$` — wf/studio/boss_routes.py:157
+- GET `^/api/boss/(?P<quest>[^/]+)$` — wf/studio/boss_routes.py:158
+- POST `^/api/boss/drafts$` — wf/studio/boss_routes.py:159
+- POST `^/api/boss/drafts/(?P<quest>[^/]+)$` — wf/studio/boss_routes.py:160
+- POST `^/api/boss/drafts/(?P<quest>[^/]+)/save$` — wf/studio/boss_routes.py:161
+- POST `^/api/boss/drafts/(?P<quest>[^/]+)/changes/(?P<change>c-[0-9a-f]{12})/revert$` — wf/studio/boss_routes.py:162
+- GET `^/api/capabilities/requirements$` — wf/studio/capability_routes.py:9
+- GET `^/api/client-profiles$` — wf/studio/capability_routes.py:10
+- GET `^/api/studio/client-profiles$` — wf/studio/client_profile_view.py:302
+- GET `^/api/studio/caps/lookup$` — wf/studio/client_profile_view.py:303
+- GET `^/api/studio/caps/kinds$` — wf/studio/client_profile_view.py:304
+- GET `^/api/studio/caps/program$` — wf/studio/client_profile_view.py:305
+- POST `^/api/drafts/(?P<cid>\d+)/caps/rows$` — wf/studio/client_profile_view.py:307
+- GET `^/api/studio/character-compat$` — wf/studio/client_profile_view.py:308
+- GET `^/api/deliveries$` — wf/studio/deliver_routes.py:361
+- GET `^/api/deliveries/defaults$` — wf/studio/deliver_routes.py:362
+- GET `^/api/deliveries/jobs/(?P<name>[^/]+)$` — wf/studio/deliver_routes.py:363
+- GET `^/api/deliveries/(?P<name>[^/]+)$` — wf/studio/deliver_routes.py:364
+- GET `^/api/deliveries/(?P<name>[^/]+)/file$` — wf/studio/deliver_routes.py:365
+- GET `^/api/deliveries/(?P<name>[^/]+)/device-result$` — wf/studio/deliver_routes.py:366
+- POST `^/api/drafts/(?P<cid>\d+)/deliveries/(?P<name>[^/]+)/device-result$` — wf/studio/deliver_routes.py:367
+- POST `^/api/drafts/(?P<cid>\d+)/deliveries/(?P<name>[^/]+)/device-result/import$` — wf/studio/deliver_routes.py:368
+- POST `^/api/drafts/(?P<cid>\d+)/build$` — wf/studio/deliver_routes.py:370
+- POST `^/api/drafts/(?P<cid>\d+)/build/cancel$` — wf/studio/deliver_routes.py:371
+- GET `^/api/scratch$` — wf/studio/pixel_routes.py:49
+- POST `^/api/drafts/scratch$` — wf/studio/pixel_routes.py:51
+- GET `^/api/health$` — wf/studio/server.py:68
+- GET `^/api/meta$` — wf/studio/server.py:69
+- GET `^/api/characters$` — wf/studio/server.py:70
+- GET `^/api/characters/(?P<cid>\d+)$` — wf/studio/server.py:71
+- GET `^/api/characters/(?P<cid>\d+)/pixels$` — wf/studio/server.py:72
+- GET `^/api/characters/(?P<cid>\d+)/pixels/(?P<family>pixelart|special)\.png$` — wf/studio/server.py:73
+- GET `^/api/characters/(?P<cid>\d+)/assets$` — wf/studio/server.py:75
+- GET `^/api/characters/(?P<cid>\d+)/avatar/(?P<form>[01])\.png$` — wf/studio/server.py:76
+- GET `^/api/asset$` — wf/studio/server.py:77
+- GET `^/api/lookup$` — wf/studio/server.py:78
+- GET `^/api/patches$` — wf/studio/server.py:79
+- GET `^/api/patches/(?P<archive>[^/]+\.zip)/members$` — wf/studio/server.py:80
+- GET `^/api/drafts$` — wf/studio/server.py:82
+- GET `^/api/drafts/(?P<cid>\d+|scratch-[a-z0-9][a-z0-9-]{0,47})$` — wf/studio/server.py:83
+- GET `^/api/drafts/(?P<cid>\d+|scratch-[a-z0-9][a-z0-9-]{0,47})/file$` — wf/studio/server.py:84
+- GET `^/api/characters/(?P<cid>\d+)/portrait/(?P<form>[01])$` — wf/studio/server.py:85
+- GET `^/api/characters/(?P<cid>\d+)/voice$` — wf/studio/server.py:86
+- GET `^/api/studio/masks/(?P<slot>[a-z0-9_]+)\.png$` — wf/studio/server.py:87
+- GET `^/api/studio/schema$` — wf/studio/server.py:88
+- GET `^/api/device-screenshots$` — wf/studio/server.py:89
+- GET `^/api/studio/device-result/schema$` — wf/studio/server.py:90
+- POST `^/api/drafts/(?P<cid>\d+)/portrait/(?P<form>[01])/source$` — wf/studio/server.py:91
+- POST `^/api/drafts/(?P<cid>\d+)/portrait$` — wf/studio/server.py:92
+- POST `^/api/drafts/(?P<cid>\d+)/pixel$` — wf/studio/server.py:93
+- POST `^/api/drafts/(?P<cid>\d+)/voice$` — wf/studio/server.py:94
+- POST `^/api/drafts/(?P<cid>\d+|scratch-[a-z0-9][a-z0-9-]{0,47})/changes/(?P<change>c-[0-9a-f]{12})/revert$` — wf/studio/server.py:95
+- POST `^/api/drafts/(?P<cid>\d+|scratch-[a-z0-9][a-z0-9-]{0,47})/save$` — wf/studio/server.py:96
+- GET `^/api/characters/(?P<cid>\d+)/programs$` — wf/studio/timeline_routes.py:133
+- GET `^/api/studio/timeline$` — wf/studio/timeline_routes.py:134
+- GET `^/api/studio/effect$` — wf/studio/timeline_routes.py:135
+- GET `^/api/studio/effect\.png$` — wf/studio/timeline_routes.py:136
+
+## CLI 子命令
+
+- wf/apk/cli.py: `provides`:14, `kinds`:18, `register-local`:23
+- wf/caps/cli.py: `scan`:92
+- wf/studio/draft.py: `list`:74, `show`:76, `schema`:79, `validate`:81, `portrait-info`:85, `portrait`:89, `pixel`:98, `pixel-analyze`:112, `pixel-remap`:117, `pixel-generate`:125, `pixel-import`:136, `scratch-new`:145, `scratch-list`:151, `scratch-show`:152, `scratch-bind`:154, `voice-lines`:159, `voice`:161, `revert`:167, `save`:171
+- wf/studio/draft_commands.py: `boss`:21, `ability`:26, `ability-preview`:30, `ability-templates`:36, `build`:40, `device-result`:101
+- wf/text/cli.py: `rules`:20
+
+## JSON Schema
+
+- `schemas/balance-recipe.schema.json`
+- `schemas/capability.schema.json`
+- `schemas/change-set.schema.json`
+- `schemas/character-pack-v1.schema.json`
+- `schemas/character-text.schema.json`
+- `schemas/delivery-manifest.schema.json`
+- `schemas/device-result.schema.json`
+- `schemas/provides.schema.json`
+- `schemas/requires.schema.json`
+- `schemas/studio-draft.schema.json`
+- `schemas/wf-release-legacy-character-adoption-v1.schema.json`
+- `schemas/wf-release-ownership-v1.schema.json`
+- `schemas/wf-release-requires-v1.schema.json`
+- `schemas/wf-release-target-v1.schema.json`
+- `schemas/wf-release-v1.schema.json`
+
+## 能力注册表 wf/caps(179 项)
+
+- `client.ability.resistance@1`
+- `client.ability.visuals@1`
+- `client.apk.patch001@1`
+- `client.apk.patch002@1`
+- `client.apk.patch003@1`
+- `client.apk.patch004@1`
+- `client.apk.patch005@1`
+- `client.apk.patch006@1`
+- `client.apk.patch007@1`
+- `client.apk.patch008@1`
+- `client.apk.patch009@1`
+- `client.apk.patch010@1`
+- `client.apk.patch011@1`
+- `client.apk.patch012@1`
+- `client.apk.patch013@1`
+- `client.apk.patch014@1`
+- `client.apk.patch015@1`
+- `client.apk.patch016@1`
+- `client.apk.patch017@1`
+- `client.apk.patch018@1`
+- `client.apk.patch019@1`
+- `client.apk.patch020@1`
+- `client.apk.patch021@1`
+- `client.apk.patch022@1`
+- `client.apk.patch023@1`
+- `client.apk.patch024@1`
+- `client.apk.patch025@1`
+- `client.apk.patch026@1`
+- `client.apk.patch027@1`
+- `client.apk.patch028@1`
+- `client.apk.patch029@1`
+- `client.apk.patch030@1`
+- `client.apk.patch031@1`
+- `client.apk.patch032@1`
+- `client.apk.patch033@1`
+- `client.apk.patch034@1`
+- `client.apk.patch035@1`
+- `client.apk.patch036@1`
+- `client.apk.patch037@1`
+- `client.apk.patch038@1`
+- `client.apk.patch039@1`
+- `client.apk.patch040@1`
+- `client.apk.patch041@1`
+- `client.apk.patch042@1`
+- `client.apk.patch043@1`
+- `client.apk.patch044@1`
+- `client.apk.patch045@1`
+- `client.apk.patch046@1`
+- `client.apk.patch047@1`
+- `client.apk.patch048@1`
+- `client.apk.patch049@1`
+- `client.apk.patch050@1`
+- `client.apk.patch051@1`
+- `client.apk.patch052@1`
+- `client.apk.patch053@1`
+- `client.apk.patch054@1`
+- `client.apk.patch055@1`
+- `client.apk.patch056@1`
+- `client.apk.patch057@1`
+- `client.apk.patch058@1`
+- `client.apk.patch059@1`
+- `client.apk.patch060@1`
+- `client.apk.patch061@1`
+- `client.apk.patch062@1`
+- `client.apk.patch063@1`
+- `client.apk.patch064@1`
+- `client.apk.patch065@1`
+- `client.apk.patch066@1`
+- `client.apk.patch067@1`
+- `client.apk.patch068@1`
+- `client.apk.patch069@1`
+- `client.apk.patch070@1`
+- `client.apk.patch071@1`
+- `client.apk.patch072@1`
+- `client.apk.patch073@1`
+- `client.apk.patch074@1`
+- `client.apk.patch075@1`
+- `client.apk.patch076@1`
+- `client.apk.patch077@1`
+- `client.apk.patch078@1`
+- `client.apk.patch079@1`
+- `client.apk.patch080@1`
+- `client.apk.patch081@1`
+- `client.apk.patch082@1`
+- `client.apk.patch083@1`
+- `client.apk.patch084@1`
+- `client.apk.patch085@1`
+- `client.apk.patch086@1`
+- `client.apk.patch087@1`
+- `client.apk.patch088@1`
+- `client.apk.patch089@1`
+- `client.apk.patch090@1`
+- `client.apk.patch091@1`
+- `client.apk.patch092@1`
+- `client.apk.patch093@1`
+- `client.apk.patch094@1`
+- `client.apk.patch095@1`
+- `client.apk.patch096@1`
+- `client.apk.patch097@1`
+- `client.apk.patch098@1`
+- `client.apk.patch099@1`
+- `client.apk.patch100@1`
+- `client.apk.patch101@1`
+- `client.apk.patch102@1`
+- `client.apk.patch103@1`
+- `client.apk.patch104@1`
+- `client.apk.patch105@1`
+- `client.apk.patch106@1`
+- `client.apk.patch107@1`
+- `client.apk.patch108@1`
+- `client.apk.patch109@1`
+- `client.apk.patch110@1`
+- `client.apk.patch111@1`
+- `client.apk.patch112@1`
+- `client.apk.patch113@1`
+- `client.apk.patch114@1`
+- `client.apk.patch115@1`
+- `client.apk.patch116@1`
+- `client.apk.patch117@1`
+- `client.apk.patch118@1`
+- `client.apk.patch119@1`
+- `client.apk.patch120@1`
+- `client.apk.patch121@1`
+- `client.apk.patch122@1`
+- `client.apk.patch123@1`
+- `client.apk.patch124@1`
+- `client.apk.patch125@1`
+- `client.apk.patch126@1`
+- `client.apk.patch127@1`
+- `client.apk.patch128@1`
+- `client.apk.patch129@1`
+- `client.apk.patch130@1`
+- `client.apk.patch131@1`
+- `client.charge.cap@1`
+- `client.charge.cap@2`
+- `client.direct.base@1`
+- `client.direct.merge@1`
+- `client.direct.parameters@1`
+- `client.dual_form.uid@1`
+- `client.dual_form@1`
+- `client.element.adaptive@1`
+- `client.equipment.gauge_gain_rules@1`
+- `client.equipment.rules_data@1`
+- `client.fever.items@1`
+- `client.fever.items@2`
+- `client.fever.voice@1`
+- `client.heal.overflow_damage@1`
+- `client.kind422.dash@1`
+- `client.kind423.gauge_source_limit@1`
+- `client.kind424.damage_convert@1`
+- `client.kind724.fever_ratio@1`
+- `client.leader.unlock@1`
+- `client.overlimit.lv120@1`
+- `client.overlimit.o10@1`
+- `client.overlimit.o11@1`
+- `client.overlimit.o12@1`
+- `client.overlimit.o1@1`
+- `client.overlimit.o2@1`
+- `client.overlimit.o3@1`
+- `client.overlimit.o4@1`
+- `client.overlimit.o5@1`
+- `client.overlimit.o6@1`
+- `client.overlimit.o7@1`
+- `client.overlimit.o8@1`
+- `client.overlimit.o9@1`
+- `client.pf.level4@1`
+- `client.pf.lv4_data@1`
+- `client.pf.snapcombo@1`
+- `client.super_fever@1`
+- `client.text.desc_override@1`
+- `client.unique.hidden@1`
+- `client.unique.sunburn@1`
+- `client.voice.rotation@1`
+- `client.wfx.effect_query@1`
+- `client.wfx.hidden_unique_icons@1`
+- `official.awakening@1`
+- `official.kind629.invoke_skill@1`
+- `official.pf.special@1`
+- `official.unison@1`
+
+## 前端(studio/src,Vite + TS + Preact)
+
+- `studio/src/api.ts`
+- `studio/src/bossApi.ts`
+- `studio/src/clientProfile.ts`
+- `studio/src/main.tsx`
+- `studio/src/router.ts`
+- `studio/src/timelineApi.ts`
+- `studio/src/views/AbilityEditor.tsx`
+- `studio/src/views/AssetsTab.tsx`
+- `studio/src/views/Changes.tsx`
+- `studio/src/views/CharacterDetail.tsx`
+- `studio/src/views/CharacterList.tsx`
+- `studio/src/views/ClientProfile.tsx`
+- `studio/src/views/Delivery.tsx`
+- `studio/src/views/DeviceResult.tsx`
+- `studio/src/views/KeyTools.tsx`
+- `studio/src/views/LookupPanel.tsx`
+- `studio/src/views/PatchManager.tsx`
+- `studio/src/views/PixelGroup.tsx`
+- `studio/src/views/PixelImport.tsx`
+- `studio/src/views/PixelPlayer.tsx`
+- `studio/src/views/PixelWorkshop.tsx`
+- `studio/src/views/PixelWorkshopTools.tsx`
+- `studio/src/views/PortraitEditor.tsx`
+- `studio/src/views/ScratchView.tsx`
+- `studio/src/views/TextTab.tsx`
+- `studio/src/views/TimelinePreview.tsx`
+- `studio/src/views/VoiceTab.tsx`
+- `studio/src/views/abilityModel.ts`
+- `studio/src/views/common.tsx`
+- `studio/src/views/rules.tsx`
+- `studio/src/views/timelineGeometry.ts`
+- `studio/src/views/workshopKit.tsx`
+- `studio/src/views/boss/BossBehavior.tsx`
+- `studio/src/views/boss/BossChecks.tsx`
+- `studio/src/views/boss/BossDetail.tsx`
+- `studio/src/views/boss/BossOverview.tsx`
+- `studio/src/views/boss/BossParameterPreview.tsx`
+- `studio/src/views/boss/BossParams.tsx`
+- `studio/src/views/boss/BossRead.tsx`
+- `studio/src/views/boss/BossShopWeapons.tsx`
+- `studio/src/views/boss/BossTerrain.tsx`
+- `studio/src/views/boss/BossWizard.tsx`
+- `studio/src/views/boss/BossWorkshop.tsx`
+- `studio/src/views/boss/bossModel.ts`
+- `studio/src/views/boss/bossOps.tsx`

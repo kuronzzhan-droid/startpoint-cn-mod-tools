@@ -1,0 +1,537 @@
+###### battle/action/skill/action/rare5/crystal_swordman$crystal_swordman_2
+[
+  "ActionDsl"
+  2
+  ["None"]
+  false
+  false
+  false
+  false
+  false
+  false
+  false
+  0
+  [
+    "Block"
+    [
+      ["Command", ["StopBall", -18, 50, ["Stop"], ["AB"], 0]]
+      [
+        "Command"
+        [
+          "ShowEffect"
+          "攻撃演出"
+          ["SpecifyEffectDirectly", "battle/effect/skill_unique/crystal_swordman/crystal_swordman_beam"]
+          -18
+          ["ForesideOfCharacter"]
+          ["SpecifyEffectLifetimeDirectly", 60]
+          ["AB"]
+          0
+          0
+          0
+          true
+          false
+          ["Some", [{"min": 2.5, "max": 2.5}]]
+        ]
+      ]
+      [
+        "Event"
+        [
+          "Wait"
+          30
+          "*"
+          [
+            "Block"
+            [
+              [
+                "Command"
+                [
+                  "ShowEffect"
+                  "全体演出"
+                  ["SpecifyEffectDirectly", "battle/effect/skill_unique/crystal_swordman/crystal_swordman_shadow"]
+                  -1
+                  ["SuperForesideOfCharacter"]
+                  ["SpecifyEffectLifetimeDirectly", 35]
+                  ["AB"]
+                  0
+                  0
+                  0
+                  false
+                  false
+                  ["None"]
+                ]
+              ]
+              [
+                "Event"
+                [
+                  "Wait"
+                  0
+                  "*"
+                  [
+                    "Block"
+                    [
+                      [
+                        "Command"
+                        [
+                          "CreateHitArea"
+                          "*"
+                          -18
+                          ["AB"]
+                          0
+                          0
+                          0
+                          true
+                          false
+                          ["Rectangle", [{"min": 300, "max": 300}], [{"min": 2000, "max": 2000}]]
+                          ["Center"]
+                          ["Bottom"]
+                          ["Single"]
+                          ["SpecifyHitAreaLifetimeDirectly", 5]
+                          ["SpecifyMinHitIntervalDirectly", 5]
+                          ["Some", [{"min": 1, "max": 1}]]
+                          false
+                          true
+                          ["None"]
+                          0
+                          ["Block", []]
+                          1
+                          2
+                          [
+                            "Block"
+                            [
+                              ["Command", ["ShakeCamera", 2]]
+                              [
+                                "Command"
+                                [
+                                  "CreateNormalAttack"
+                                  2
+                                  255
+                                  []
+                                  []
+                                  16
+                                  [{"min": 2.1666666666666665, "max": 2.5}]
+                                  [{"min": 0, "max": 0}]
+                                  false
+                                  false
+                                  false
+                                  false
+                                  false
+                                  [{"min": 4.166666666666667, "max": 4.166666666666667}]
+                                  [{"min": 1.6666666666666667, "max": 1.6666666666666667}]
+                                  ["SpecifyHitEffectDirectly", ["SpecifyEffectDirectly", "battle/effect/skill_unique/crystal_swordman/crystal_swordman_hit"], false]
+                                  true
+                                ]
+                              ]
+                            ]
+                          ]
+                          0
+                          0
+                          ["None"]
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+              [
+                "Event"
+                [
+                  "Wait"
+                  6
+                  "*"
+                  [
+                    "Block"
+                    [
+                      [
+                        "Command"
+                        [
+                          "CreateHitArea"
+                          "*"
+                          -18
+                          ["AB"]
+                          0
+                          0
+                          0
+                          true
+                          false
+                          ["Rectangle", [{"min": 300, "max": 300}], [{"min": 2000, "max": 2000}]]
+                          ["Center"]
+                          ["Bottom"]
+                          ["Single"]
+                          ["SpecifyHitAreaLifetimeDirectly", 5]
+                          ["SpecifyMinHitIntervalDirectly", 5]
+                          ["Some", [{"min": 1, "max": 1}]]
+                          false
+                          true
+                          ["None"]
+                          3
+                          ["Block", []]
+                          4
+                          5
+                          [
+                            "Block"
+                            [
+                              ["Command", ["ShakeCamera", 2]]
+                              [
+                                "Command"
+                                [
+                                  "CreateNormalAttack"
+                                  5
+                                  255
+                                  []
+                                  []
+                                  16
+                                  [{"min": 2.1666666666666665, "max": 2.5}]
+                                  [{"min": 0, "max": 0}]
+                                  false
+                                  false
+                                  false
+                                  false
+                                  false
+                                  [{"min": 4.166666666666667, "max": 4.166666666666667}]
+                                  [{"min": 1.6666666666666667, "max": 1.6666666666666667}]
+                                  ["SpecifyHitEffectDirectly", ["SpecifyEffectDirectly", "battle/effect/skill_unique/crystal_swordman/crystal_swordman_hit_reverse"], false]
+                                  true
+                                ]
+                              ]
+                            ]
+                          ]
+                          0
+                          0
+                          ["None"]
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+              [
+                "Event"
+                [
+                  "Wait"
+                  11
+                  "*"
+                  [
+                    "Block"
+                    [
+                      [
+                        "Command"
+                        [
+                          "CreateHitArea"
+                          "*"
+                          -18
+                          ["AB"]
+                          0
+                          0
+                          0
+                          true
+                          false
+                          ["Rectangle", [{"min": 300, "max": 300}], [{"min": 2000, "max": 2000}]]
+                          ["Center"]
+                          ["Bottom"]
+                          ["Single"]
+                          ["SpecifyHitAreaLifetimeDirectly", 5]
+                          ["SpecifyMinHitIntervalDirectly", 5]
+                          ["Some", [{"min": 1, "max": 1}]]
+                          false
+                          true
+                          ["None"]
+                          6
+                          ["Block", []]
+                          7
+                          8
+                          [
+                            "Block"
+                            [
+                              ["Command", ["ShakeCamera", 2]]
+                              [
+                                "Command"
+                                [
+                                  "CreateNormalAttack"
+                                  8
+                                  255
+                                  []
+                                  []
+                                  16
+                                  [{"min": 2.1666666666666665, "max": 2.5}]
+                                  [{"min": 0, "max": 0}]
+                                  false
+                                  false
+                                  false
+                                  false
+                                  false
+                                  [{"min": 4.166666666666667, "max": 4.166666666666667}]
+                                  [{"min": 1.6666666666666667, "max": 1.6666666666666667}]
+                                  ["SpecifyHitEffectDirectly", ["SpecifyEffectDirectly", "battle/effect/skill_unique/crystal_swordman/crystal_swordman_hit"], false]
+                                  true
+                                ]
+                              ]
+                            ]
+                          ]
+                          0
+                          0
+                          ["None"]
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+              [
+                "Event"
+                [
+                  "Wait"
+                  17
+                  "*"
+                  [
+                    "Block"
+                    [
+                      [
+                        "Command"
+                        [
+                          "CreateHitArea"
+                          "*"
+                          -18
+                          ["AB"]
+                          0
+                          0
+                          0
+                          true
+                          false
+                          ["Rectangle", [{"min": 300, "max": 300}], [{"min": 2000, "max": 2000}]]
+                          ["Center"]
+                          ["Bottom"]
+                          ["Single"]
+                          ["SpecifyHitAreaLifetimeDirectly", 5]
+                          ["SpecifyMinHitIntervalDirectly", 5]
+                          ["Some", [{"min": 1, "max": 1}]]
+                          false
+                          true
+                          ["None"]
+                          9
+                          ["Block", []]
+                          10
+                          11
+                          [
+                            "Block"
+                            [
+                              ["Command", ["ShakeCamera", 2]]
+                              [
+                                "Command"
+                                [
+                                  "CreateNormalAttack"
+                                  11
+                                  255
+                                  []
+                                  []
+                                  16
+                                  [{"min": 2.1666666666666665, "max": 2.5}]
+                                  [{"min": 0, "max": 0}]
+                                  false
+                                  false
+                                  false
+                                  false
+                                  false
+                                  [{"min": 4.166666666666667, "max": 4.166666666666667}]
+                                  [{"min": 1.6666666666666667, "max": 1.6666666666666667}]
+                                  ["SpecifyHitEffectDirectly", ["SpecifyEffectDirectly", "battle/effect/skill_unique/crystal_swordman/crystal_swordman_hit_reverse"], false]
+                                  true
+                                ]
+                              ]
+                            ]
+                          ]
+                          0
+                          0
+                          ["None"]
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+              [
+                "Event"
+                [
+                  "Wait"
+                  22
+                  "*"
+                  [
+                    "Block"
+                    [
+                      [
+                        "Command"
+                        [
+                          "CreateHitArea"
+                          "*"
+                          -18
+                          ["AB"]
+                          0
+                          0
+                          0
+                          true
+                          false
+                          ["Rectangle", [{"min": 300, "max": 300}], [{"min": 2000, "max": 2000}]]
+                          ["Center"]
+                          ["Bottom"]
+                          ["Single"]
+                          ["SpecifyHitAreaLifetimeDirectly", 5]
+                          ["SpecifyMinHitIntervalDirectly", 5]
+                          ["Some", [{"min": 1, "max": 1}]]
+                          false
+                          true
+                          ["None"]
+                          12
+                          ["Block", []]
+                          13
+                          14
+                          [
+                            "Block"
+                            [
+                              ["Command", ["ShakeCamera", 2]]
+                              [
+                                "Command"
+                                [
+                                  "CreateNormalAttack"
+                                  14
+                                  255
+                                  []
+                                  []
+                                  16
+                                  [{"min": 2.1666666666666665, "max": 2.5}]
+                                  [{"min": 0, "max": 0}]
+                                  false
+                                  false
+                                  false
+                                  false
+                                  false
+                                  [{"min": 4.166666666666667, "max": 4.166666666666667}]
+                                  [{"min": 1.6666666666666667, "max": 1.6666666666666667}]
+                                  ["SpecifyHitEffectDirectly", ["SpecifyEffectDirectly", "battle/effect/skill_unique/crystal_swordman/crystal_swordman_hit"], false]
+                                  true
+                                ]
+                              ]
+                            ]
+                          ]
+                          0
+                          0
+                          ["None"]
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+              [
+                "Event"
+                [
+                  "Wait"
+                  28
+                  "*"
+                  [
+                    "Block"
+                    [
+                      [
+                        "Command"
+                        [
+                          "CreateHitArea"
+                          "*"
+                          -18
+                          ["AB"]
+                          0
+                          0
+                          0
+                          true
+                          false
+                          ["Rectangle", [{"min": 300, "max": 300}], [{"min": 2000, "max": 2000}]]
+                          ["Center"]
+                          ["Bottom"]
+                          ["Single"]
+                          ["SpecifyHitAreaLifetimeDirectly", 5]
+                          ["SpecifyMinHitIntervalDirectly", 5]
+                          ["Some", [{"min": 1, "max": 1}]]
+                          false
+                          true
+                          ["None"]
+                          15
+                          ["Block", []]
+                          16
+                          17
+                          [
+                            "Block"
+                            [
+                              ["Command", ["ShakeCamera", 2]]
+                              [
+                                "Command"
+                                [
+                                  "CreateNormalAttack"
+                                  17
+                                  255
+                                  []
+                                  []
+                                  16
+                                  [{"min": 2.1666666666666665, "max": 2.5}]
+                                  [{"min": 0, "max": 0}]
+                                  false
+                                  false
+                                  false
+                                  false
+                                  false
+                                  [{"min": 4.166666666666667, "max": 4.166666666666667}]
+                                  [{"min": 1.6666666666666667, "max": 1.6666666666666667}]
+                                  ["SpecifyHitEffectDirectly", ["SpecifyEffectDirectly", "battle/effect/skill_unique/crystal_swordman/crystal_swordman_hit_reverse"], false]
+                                  true
+                                ]
+                              ]
+                            ]
+                          ]
+                          0
+                          0
+                          ["None"]
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+      [
+        "Command"
+        [
+          "CreateCondition"
+          -17
+          [["ACAttackPoint", [{"min": 1200, "max": 1200}], [{"min": 0.85, "max": 1}], [{"min": 1, "max": 1}]]]
+          [{"min": 1, "max": 1}]
+          ["GenericConditionHitEffect"]
+          true
+          false
+          ""
+          null
+          false
+          3
+          [{"min": 1, "max": 1}]
+          false
+        ]
+      ]
+      [
+        "Command"
+        [
+          "CreateCondition"
+          -17
+          [["ACAbilityDamage", [{"min": 1200, "max": 1200}], [{"min": 1.75, "max": 2}], [{"min": 1, "max": 1}]]]
+          [{"min": 1, "max": 1}]
+          ["GenericConditionHitEffect"]
+          true
+          false
+          ""
+          null
+          false
+          3
+          [{"min": 1, "max": 1}]
+          false
+        ]
+      ]
+    ]
+  ]
+]

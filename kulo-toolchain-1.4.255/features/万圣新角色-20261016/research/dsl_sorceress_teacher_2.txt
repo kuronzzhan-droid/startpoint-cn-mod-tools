@@ -1,0 +1,111 @@
+###### battle/action/skill/action/rare4/sorceress_teacher$sorceress_teacher_2
+[
+  "ActionDsl"
+  1
+  ["None"]
+  false
+  false
+  false
+  false
+  false
+  false
+  false
+  0
+  [
+    "Block"
+    [
+      ["Command", ["HideCharacter", -17, 124]]
+      [
+        "Command"
+        [
+          "ShowEffect"
+          "ダミー演出"
+          ["SpecifyEffectDirectly", "battle/effect/skill_unique/sorceress_teacher/sorceress_teacher_player_back"]
+          -17
+          ["SameAsCharacter"]
+          ["SpecifyEffectLifetimeDirectly", 124]
+          ["AB"]
+          0
+          0
+          0
+          true
+          false
+          ["None"]
+        ]
+      ]
+      [
+        "Command"
+        ["ShowEffect", "全体演出", ["SpecifyEffectDirectly", "battle/effect/skill_unique/sorceress_teacher/sorceress_teacher_all"], -1, ["ForesideOfCharacter"], ["PlayOnlyFirstSequence"], ["AB"], 0, 0, 0, false, false, ["None"]]
+      ]
+      [
+        "Event"
+        [
+          "Wait"
+          57
+          "*"
+          [
+            "Block"
+            [
+              [
+                "Command"
+                [
+                  "CreateHitArea"
+                  "*"
+                  -1
+                  ["AB"]
+                  0
+                  0
+                  0
+                  false
+                  false
+                  ["Rectangle", [{"min": 1500, "max": 1500}], [{"min": 2000, "max": 2000}]]
+                  ["Center"]
+                  ["Center"]
+                  ["Single"]
+                  ["SpecifyHitAreaLifetimeDirectly", 10]
+                  ["CalculatedUsingMaxNumOfHits", 1]
+                  ["Some", [{"min": 1, "max": 1}]]
+                  false
+                  false
+                  ["None"]
+                  0
+                  ["Block", [["Command", ["ShakeCamera", 3]]]]
+                  1
+                  2
+                  [
+                    "Block"
+                    [
+                      ["Command", ["CreateNormalAttack", 2, 255, [], [], 70, [{"min": 9.1, "max": 10.5}], [{"min": 0, "max": 0}], false, false, false, false, false, [{"min": 8, "max": 8}], [{"min": 3, "max": 3}], ["Explosion"], true]]
+                      [
+                        "Command"
+                        [
+                          "CreateCondition"
+                          2
+                          [["ACAttackPoint", [{"min": 900, "max": 900}], [{"min": -0.15, "max": -0.2}], [{"min": 1, "max": 1}]]]
+                          [{"min": 1, "max": 1}]
+                          ["GenericConditionHitEffect"]
+                          true
+                          false
+                          ""
+                          null
+                          false
+                          3
+                          [{"min": 1, "max": 1}]
+                          false
+                        ]
+                      ]
+                      ["Command", ["DeleteCondition", 2, ["DCAll", 2], 1, 0, "", ["Default"]]]
+                    ]
+                  ]
+                  0
+                  0
+                  ["None"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ]
+]

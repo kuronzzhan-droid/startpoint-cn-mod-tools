@@ -1,0 +1,357 @@
+diff --git a/src/lib/character-overlimit.ts b/src/lib/character-overlimit.ts
+new file mode 100644
+index 00000000..90ee0019
+--- /dev/null
++++ b/src/lib/character-overlimit.ts
+@@ -0,0 +1,124 @@
++// Character over-limit extension ("超限"): selected 5* characters may uncap
++// past the retail cap with a dedicated item, up to level 120.
++//
++// The patched client mirrors these rules: a tagged character reports the
++// extended cap only after the retail uncaps are used, offers only the
++// extension item for the extra steps, and never offers duplicates for them.
++
++import overLimitJson from "../../assets/character_overlimit.json"
++import { characterExpCaps } from "./character"
++
++interface OverLimitExtension {
++    item_id: number
++    // Items consumed together with item_id by every extended uncap step.
++    extra_costs: { item_id: number, amount: number }[]
++    rarity: number
++    max_over_limit: number
++    // Cumulative EXP at the level cap reached by each extra uncap step
++    // (step base+1, base+2, ...), matching the client's bundled level table.
++    extra_exp_caps: number[]
++    characters: number[]
++    // Awake mission ID -> character level that completes it.
++    level_missions: Record<string, number>
++}
++
++const extension = overLimitJson as OverLimitExtension
++const extendedCharacters = new Set(extension.characters)
++
++export const OVER_LIMIT_EXTENSION_ITEM_ID = extension.item_id
++
++export const retailMaxOverLimits: Record<number, number> = {
++    [1]: 12,
++    [2]: 10,
++    [3]: 8,
++    [4]: 6,
++    [5]: 4,
++}
++
++export function isOverLimitExtendedCharacter(characterId: number, rarity: number): boolean {
++    return rarity === extension.rarity && extendedCharacters.has(characterId)
++}
++
++export function getRetailMaxOverLimit(rarity: number): number | undefined {
++    return retailMaxOverLimits[rarity]
++}
++
++export function getCharacterMaxOverLimit(characterId: number, rarity: number): number | undefined {
++    if (isOverLimitExtendedCharacter(characterId, rarity)) return extension.max_over_limit
++    return retailMaxOverLimits[rarity]
++}
++
++function getCharacterExpCapList(characterId: number, rarity: number): number[] | undefined {
++    const caps = characterExpCaps[rarity]
++    if (!caps) return undefined
++    return isOverLimitExtendedCharacter(characterId, rarity)
++        ? [...caps, ...extension.extra_exp_caps]
++        : caps
++}
++
++export function getCharacterExpCap(characterId: number, rarity: number, overLimitStep: number): number | undefined {
++    return getCharacterExpCapList(characterId, rarity)?.[overLimitStep]
++}
++
++export function estimateExtendedCharacterLevel(characterId: number, rarity: number, exp: number): number {
++    const caps = getCharacterExpCapList(characterId, rarity)
++    if (!caps || caps.length === 0) return 0
++    const baseLevel = 40 + (rarity - 1) * 10
++    let level = 0
++    for (let index = 0; index < caps.length; index++) {
++        if (exp < caps[index]) break
++        level = baseLevel + index * 5
++    }
++    return level
++}
++
++export function getExtendedOverLimitExtraCosts(
++    characterId: number,
++    rarity: number,
++    currentStep: number,
++    count: number,
++): { itemId: number, amount: number }[] {
++    const retailMax = retailMaxOverLimits[rarity]
++    if (!isOverLimitExtendedCharacter(characterId, rarity) || retailMax === undefined || currentStep < retailMax) {
++        return []
++    }
++    return extension.extra_costs.map(cost => ({ itemId: cost.item_id, amount: cost.amount * count }))
++}
++
++export function getAwakeLevelMissionTarget(missionId: number): number | undefined {
++    return extension.level_missions[String(missionId)]
++}
++
++/**
++ * Validates one over_limit request against the retail and extended caps.
++ * Returns an error message, or null when the request is allowed.
++ */
++export function validateOverLimitRequest(
++    characterId: number,
++    rarity: number,
++    currentStep: number,
++    count: number,
++    useStack: boolean,
++    itemId: number | undefined,
++): string | null {
++    const retailMax = retailMaxOverLimits[rarity]
++    const maxOver = getCharacterMaxOverLimit(characterId, rarity)
++    if (retailMax === undefined || maxOver === undefined) return "Unknown rarity."
++    const newStep = currentStep + count
++    if (newStep > maxOver) return "Character cannot be uncapped further."
++    if (currentStep < retailMax) {
++        if (newStep > retailMax) return "Retail and extended uncaps must be requested separately."
++        if (useStack) return null
++        // Matches the client item table: 10003 is 5* only, 10002 covers 4* and below,
++        // 10001 covers 3* and below.
++        if ((rarity === 5 && itemId !== 10003)
++            || (rarity === 4 && itemId !== 10002)
++            || (rarity <= 3 && itemId !== 10002 && itemId !== 10001)) {
++            return "Attempted to use invalid item."
++        }
++        return null
++    }
++    if (useStack) return "Duplicates cannot uncap past the retail cap."
++    if (itemId !== extension.item_id) return "Attempted to use invalid item."
++    return null
++}
+diff --git a/src/lib/character.ts b/src/lib/character.ts
+index ffbdcff1..d434ad7f 100644
+--- a/src/lib/character.ts
++++ b/src/lib/character.ts
+@@ -4,6 +4,7 @@ import { adjustPlayerExpPoolSync, getPlayerSync } from "../data/domains/player"
+ import { givePlayerItemSync } from "../data/domains/item"
+ import { getCharacterDataSync } from "./assets";
+ import { grantCharacterDegreeRewardsSync } from "./character-degree-rewards";
++import { getCharacterExpCap } from "./character-overlimit";
+ import { AddExpList, AddExpListItem, ClientReturnBondTokenStatus, ClientReturnBondTokenStatusList, ClientReturnCharacter, Element, GivePlayerCharacterResult, RewardPlayerCharacterExpResult } from "./types";
+ 
+ export const characterExpCaps: Record<number, number[]> = {
+@@ -221,7 +222,7 @@ export function givePlayerCharactersExpSync(
+         const assetData = getCharacterDataSync(characterId)
+         
+         if ((characterData !== null) && (assetData !== null) && !ignoreUpdate) {
+-            const expCap = characterExpCaps[assetData.rarity][characterData.overLimitStep] || Number.MAX_SAFE_INTEGER
++            const expCap = getCharacterExpCap(characterId, assetData.rarity, characterData.overLimitStep) || Number.MAX_SAFE_INTEGER
+             const currentExp = characterData.exp
+ 
+             let afterExp = currentExp + expAmount
+diff --git a/src/lib/mission/computer-awake.ts b/src/lib/mission/computer-awake.ts
+index f0e0f1a8..5e0a1b6f 100644
+--- a/src/lib/mission/computer-awake.ts
++++ b/src/lib/mission/computer-awake.ts
+@@ -15,6 +15,8 @@ import { isMissionProgressComplete } from "./stages"
+ import type { MissionComputer, CategoryContext } from "./types"
+ import type { Player, PlayerActiveMission, PlayerCharacter, PlayerQuestProgress } from "../../data/types"
+ import { characterAwakeDefinitions } from "./awake-master-assets"
++import { getCharacterDataSync } from "../assets"
++import { estimateExtendedCharacterLevel, getAwakeLevelMissionTarget } from "../character-overlimit"
+ import {
+     AWAKE_DIRECT_BATTLE_MISSION_IDS,
+     BARAK_AWAKE_PRACTICE_QUEST_ID,
+@@ -291,6 +293,16 @@ export const AwakeComputer: MissionComputer = {
+             return Math.max(dbProgress, 1)
+         }
+ 
++        // Over-limit level missions: progress is the character's current level.
++        if (getAwakeLevelMissionTarget(missionId) !== undefined) {
++            const char = actx.charData.get(charId)
++            const rarity = getCharacterDataSync(Number(charId))?.rarity
++            const level = char && rarity !== undefined
++                ? estimateExtendedCharacterLevel(Number(charId), rarity, char.exp)
++                : 0
++            return Math.max(dbProgress, level)
++        }
++
+         // Race-composition missions (e.g., 人+龙+魔)
+         if (AWAKE_DIRECT_BATTLE_MISSION_IDS.has(missionId)) {
+             return Math.max(dbProgress, actx.categoryMissionProgress.get(missionId) ?? 0)
+diff --git a/src/routes/api/character.ts b/src/routes/api/character.ts
+index ea2aebfd..5517dbb8 100644
+--- a/src/routes/api/character.ts
++++ b/src/routes/api/character.ts
+@@ -14,6 +14,7 @@ import { resolvePlayerIdSync } from "../../data/activeAccount";
+ import { reconcileAwakeUnlockCharacterList, settleDegreeMissionResponse } from "../../lib/mission";
+ import { gameVerboseLog } from "../../lib/game-logging";
+ import { runPersistenceTransaction } from "../../lib/persistence-coordinator";
++import { getExtendedOverLimitExtraCosts, validateOverLimitRequest } from "../../lib/character-overlimit";
+ 
+ interface OverLimitBody {
+     viewer_id: number
+@@ -123,9 +124,11 @@ const routes = async (fastify: FastifyInstance) => {
+             if (!character) return { error: "Character not owned." }
+             const newOverLimit = character.overLimitStep + overLimitCount
+             const rarity = characterAssetData.rarity
+-            if (newOverLimit > characterMaxOverLimits[rarity]) {
+-                return { error: "Character cannot be uncapped further." }
+-            }
++            const requestError = validateOverLimitRequest(
++                characterId, rarity, character.overLimitStep, overLimitCount,
++                Boolean(body.use_stack), body.item_id,
++            )
++            if (requestError !== null) return { error: requestError }
+             let stack = character.stack
+             const itemList: Record<number, number> = {}
+             if (body.use_stack) {
+@@ -134,16 +137,21 @@ const routes = async (fastify: FastifyInstance) => {
+                 updatePlayerCharacterSync(playerId, characterId, { overLimitStep: newOverLimit, stack })
+             } else {
+                 const itemId = body.item_id
+-                if ((rarity === 5 && itemId !== 10003)
+-                    || (rarity <= 4 && itemId !== 10002 && itemId !== 10001)) {
+-                    return { error: "Attempted to use invalid item." }
++                const costs = [{ itemId, amount: overLimitCount }, ...getExtendedOverLimitExtraCosts(
++                    characterId, rarity, character.overLimitStep, overLimitCount,
++                )]
++                const remainders: Record<number, number> = {}
++                for (const cost of costs) {
++                    const count = getPlayerItemSync(playerId, cost.itemId)
++                    if (count === null) return { error: "Attempted to use unowned item." }
++                    const remaining = count - cost.amount
++                    if (remaining < 0) return { error: "Not enough of item to uncap." }
++                    remainders[cost.itemId] = remaining
++                }
++                for (const [costItemId, remaining] of Object.entries(remainders)) {
++                    updatePlayerItemSync(playerId, Number(costItemId), remaining)
++                    itemList[Number(costItemId)] = remaining
+                 }
+-                const count = getPlayerItemSync(playerId, itemId)
+-                if (count === null) return { error: "Attempted to use unowned item." }
+-                const remaining = count - overLimitCount
+-                if (remaining < 0) return { error: "Not enough of item to uncap." }
+-                updatePlayerItemSync(playerId, itemId, remaining)
+-                itemList[itemId] = remaining
+                 updatePlayerCharacterSync(playerId, characterId, { overLimitStep: newOverLimit })
+             }
+             grantCharacterDegreeRewardsSync(playerId, [characterId])
+diff --git a/src/routes/api/exBoost.ts b/src/routes/api/exBoost.ts
+index d1f9c8b6..9c61197f 100644
+--- a/src/routes/api/exBoost.ts
++++ b/src/routes/api/exBoost.ts
+@@ -12,7 +12,7 @@ import { randomInt } from "crypto"
+ import { clientSerializeDate } from "../../data/utils"
+ import { resolvePlayerIdSync } from "../../data/activeAccount";
+ import { runPersistenceTransaction } from "../../lib/persistence-coordinator";
+-import { characterMaxOverLimits } from "./character"
++import { getCharacterMaxOverLimit } from "../../lib/character-overlimit"
+ import orderedExAbility from "../../../assets/ex_ability.json"
+ 
+ interface ExBoostDrawBody {
+@@ -212,7 +212,7 @@ const drawExpBoost = async (request: FastifyRequest, reply: FastifyReply, autoAc
+ 
+         // ensure max over limit step (aligned with client isMaxOverLimitStep)
+         const rarity = characterAssetData.rarity
+-        const maxOver = characterMaxOverLimits[rarity]
++        const maxOver = getCharacterMaxOverLimit(characterId, rarity)
+         if (maxOver === undefined || characterData.overLimitStep < maxOver) {
+             return reject(400, "Character not at max over limit step.")
+         }
+diff --git a/src/routes/api/expod.ts b/src/routes/api/expod.ts
+index dfe825ad..17ba9ef5 100644
+--- a/src/routes/api/expod.ts
++++ b/src/routes/api/expod.ts
+@@ -7,7 +7,7 @@ import { getPlayerCharacterSync, getPlayerCharactersSync, updatePlayerCharacterS
+ import { getPlayerItemsSync, givePlayerItemSync } from "../../data/domains/item"
+ import { adjustPlayerExpPoolSync, collectPlayerDataPooledExpSync, getPlayerSync } from "../../data/domains/player"
+ import { getSession } from "../../data/domains/session"
+-import { characterMaxOverLimits } from "./character";
++import { getCharacterMaxOverLimit } from "../../lib/character-overlimit";
+ import { givePlayerCharactersExpSync } from "../../lib/character";
+ import { generateDataHeaders, getServerDate, getServerTime } from "../../utils";
+ import { getCharacterDataSync } from "../../lib/assets";
+@@ -194,7 +194,7 @@ const routes = async (fastify: FastifyInstance) => {
+             if (!charAsset) continue
+ 
+             const rarity = charAsset.rarity
+-            const maxOver = characterMaxOverLimits[rarity] ?? 0
++            const maxOver = getCharacterMaxOverLimit(characterId, rarity) ?? 0
+             if (character.overLimitStep < maxOver) continue
+ 
+             const stack = character.stack
+diff --git a/tests/character-overlimit.test.js b/tests/character-overlimit.test.js
+new file mode 100644
+index 00000000..b7cdb51b
+--- /dev/null
++++ b/tests/character-overlimit.test.js
+@@ -0,0 +1,68 @@
++const test = require("node:test")
++const assert = require("node:assert/strict")
++
++const {
++    OVER_LIMIT_EXTENSION_ITEM_ID,
++    estimateExtendedCharacterLevel,
++    getExtendedOverLimitExtraCosts,
++    getAwakeLevelMissionTarget,
++    getCharacterExpCap,
++    getCharacterMaxOverLimit,
++    validateOverLimitRequest,
++} = require("../out/lib/character-overlimit")
++
++const WAGNER = 111183
++const OTHER_FIVE_STAR = 111001
++
++test("only listed 5* characters get the extended cap", () => {
++    assert.equal(getCharacterMaxOverLimit(WAGNER, 5), 8)
++    assert.equal(getCharacterMaxOverLimit(OTHER_FIVE_STAR, 5), 4)
++    assert.equal(getCharacterMaxOverLimit(WAGNER, 4), 6)
++})
++
++test("retail uncaps keep their retail items and duplicates", () => {
++    assert.equal(validateOverLimitRequest(WAGNER, 5, 0, 4, false, 10003), null)
++    assert.equal(validateOverLimitRequest(WAGNER, 5, 2, 1, true, undefined), null)
++    assert.match(validateOverLimitRequest(WAGNER, 5, 0, 1, false, OVER_LIMIT_EXTENSION_ITEM_ID), /invalid item/)
++    assert.match(validateOverLimitRequest(WAGNER, 5, 3, 2, false, 10003), /separately/)
++})
++
++test("retail crystals follow the client rarity limits", () => {
++    const FOUR_STAR = 141008
++    const THREE_STAR = 131001
++    assert.match(validateOverLimitRequest(FOUR_STAR, 4, 0, 1, false, 10001), /invalid item/)
++    assert.equal(validateOverLimitRequest(FOUR_STAR, 4, 0, 1, false, 10002), null)
++    assert.match(validateOverLimitRequest(FOUR_STAR, 4, 0, 1, false, 10003), /invalid item/)
++    assert.equal(validateOverLimitRequest(THREE_STAR, 3, 0, 1, false, 10001), null)
++    assert.equal(validateOverLimitRequest(THREE_STAR, 3, 0, 1, false, 10002), null)
++    assert.match(validateOverLimitRequest(WAGNER, 5, 0, 1, false, 10002), /invalid item/)
++})
++
++test("extended uncaps take only the extension item", () => {
++    assert.equal(validateOverLimitRequest(WAGNER, 5, 4, 4, false, OVER_LIMIT_EXTENSION_ITEM_ID), null)
++    assert.match(validateOverLimitRequest(WAGNER, 5, 4, 1, false, 10003), /invalid item/)
++    assert.match(validateOverLimitRequest(WAGNER, 5, 4, 1, true, undefined), /Duplicates/)
++    assert.match(validateOverLimitRequest(WAGNER, 5, 7, 2, false, OVER_LIMIT_EXTENSION_ITEM_ID), /further/)
++    assert.match(validateOverLimitRequest(OTHER_FIVE_STAR, 5, 4, 1, false, OVER_LIMIT_EXTENSION_ITEM_ID), /further/)
++})
++
++test("exp caps and level estimate reach 120 only for listed characters", () => {
++    assert.equal(getCharacterExpCap(WAGNER, 5, 4), 379988)
++    assert.equal(getCharacterExpCap(WAGNER, 5, 8), 679988)
++    assert.equal(getCharacterExpCap(OTHER_FIVE_STAR, 5, 8), undefined)
++    assert.equal(estimateExtendedCharacterLevel(WAGNER, 5, 379988), 100)
++    assert.equal(estimateExtendedCharacterLevel(WAGNER, 5, 679987), 115)
++    assert.equal(estimateExtendedCharacterLevel(WAGNER, 5, 679988), 120)
++    assert.equal(estimateExtendedCharacterLevel(OTHER_FIVE_STAR, 5, 679988), 100)
++})
++
++test("the level-120 awake mission is configured", () => {
++    assert.equal(getAwakeLevelMissionTarget(1111831), 120)
++    assert.equal(getAwakeLevelMissionTarget(1111832), undefined)
++})
++
++test("extended uncaps also cost paradox cores, retail ones do not", () => {
++    assert.deepEqual(getExtendedOverLimitExtraCosts(WAGNER, 5, 4, 2), [{ itemId: 10000302, amount: 2 }])
++    assert.deepEqual(getExtendedOverLimitExtraCosts(WAGNER, 5, 2, 1), [])
++    assert.deepEqual(getExtendedOverLimitExtraCosts(OTHER_FIVE_STAR, 5, 4, 1), [])
++})

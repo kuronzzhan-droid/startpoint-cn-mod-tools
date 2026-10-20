@@ -1,0 +1,37 @@
+
+## 119997 xiaketi
+  [解析] 能力3#3: ('NAN_FLOAT', 51, 'parseAt51')
+  [解析] 能力3#3: ('NAN_FLOAT', 52, 'parseAt51')
+
+## 129951 spirit_beast_water_playable
+  [固有上限] 能力2#2: precondition2:ConditionAccumulationCountUnique 按层数读 129951「水势」，上限=1
+
+## 129989 white_wolf_gerald_aqua
+  [固有外来] DSL: ConditionalsConditionExist 读 1299901「苍海龙域」，只由其他角色赋予 [('129999', '队长技#0')]
+  [固有外来] DSL: ConditionalsConditionExist 读 22「龙王显现」，只由其他角色赋予 [('129999', '能力3#3')]
+
+## 129997 claude_wolf_assassin_ex
+  [固有对象] DSL: ConditionalsConditionExist 读自身侧 129997「淬毒」，但只被赋予给敌人 [('129997', '能力2#0:enemy')]
+
+## 159991 cnmod_inaho_midautumn
+  [技能旗] DSL: DSL 判 ChangeSkillFlag 2，本角色行没有设置该旗(已设=['1'])
+  [解析] 能力2#2: ('C7050', 110, '', 'parseAt110')
+
+## 169994 white_tiger_ghost_playable
+  [元素门] 能力2#1: precondition1=Member 组=Green 阈值=600000，角色本身元素=Yellow
+
+## 169995 maou2_playable
+  [元素门] 能力5#6: precondition1=UnisonWithMain 组=Black 阈值=，角色本身元素=White
+  [元素门] 能力5#7: precondition2=Member 组=Black 阈值=600000，角色本身元素=White
+  [元素门] 能力5#8: precondition2=Member 组=Black 阈值=600000，角色本身元素=White
+
+## 179970 steam_robot_another_playable
+  [元素门] 能力1#0: precondition1=Member 组=Red 阈值=600000，角色本身元素=Black
+  [元素门] 能力1#1: precondition1=Member 组=Blue 阈值=600000，角色本身元素=Black
+  [元素门] 能力1#2: precondition1=Member 组=Yellow 阈值=600000，角色本身元素=Black
+  [元素门] 能力1#3: precondition1=Member 组=Green 阈值=600000，角色本身元素=Black
+  [元素门] 能力1#4: precondition1=Member 组=White 阈值=600000，角色本身元素=Black
+
+## 179999 black_wolf_knight_wt26
+  [元素门] 能力1#1: precondition1=Member 组=Green 阈值=600000，角色本身元素=Red
+  [元素门] 能力4#1: precondition1=Member 组=Green 阈值=600000，角色本身元素=Red

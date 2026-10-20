@@ -1,0 +1,20 @@
+--- a/src/routes/api/exBoost.ts	2026-10-15 09:48:12.009617600 +1100
++++ b/src/routes/api/exBoost.ts	2026-10-15 09:48:12.082532300 +1100
+@@ -12,7 +12,7 @@
+ import { clientSerializeDate } from "../../data/utils"
+ import { resolvePlayerIdSync } from "../../data/activeAccount";
+ import { runPersistenceTransaction } from "../../lib/persistence-coordinator";
+-import { characterMaxOverLimits } from "./character"
++import { getCharacterMaxOverLimit } from "../../lib/character-overlimit"
+ import orderedExAbility from "../../../assets/ex_ability.json"
+ 
+ interface ExBoostDrawBody {
+@@ -212,7 +212,7 @@
+ 
+         // ensure max over limit step (aligned with client isMaxOverLimitStep)
+         const rarity = characterAssetData.rarity
+-        const maxOver = characterMaxOverLimits[rarity]
++        const maxOver = getCharacterMaxOverLimit(characterId, rarity)
+         if (maxOver === undefined || characterData.overLimitStep < maxOver) {
+             return reject(400, "Character not at max over limit step.")
+         }

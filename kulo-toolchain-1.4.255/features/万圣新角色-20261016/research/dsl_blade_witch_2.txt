@@ -1,0 +1,199 @@
+###### battle/action/skill/action/rare5/blade_witch$blade_witch_2
+[
+  "ActionDsl"
+  3
+  ["None"]
+  true
+  false
+  false
+  false
+  false
+  false
+  false
+  0
+  [
+    "Block"
+    [
+      ["Event", ["Repeat", 1, 60, "*", ["Block", [["Command", ["FindNearSubjects", -18, 1, 49, ["CreateImaginaryTarget", -1000000], 0, ["Block", [["Command", ["MoveBall", -18, ["GH", 0], 0, 2, 5, ["KeepGoing"], true]]]]]]]]]]
+      [
+        "Command"
+        [
+          "CreateHitArea"
+          "*"
+          -18
+          ["EF"]
+          0
+          0
+          0
+          true
+          true
+          ["Rectangle", [{"min": 240, "max": 240}], [{"min": 480, "max": 480}]]
+          ["Center"]
+          ["Bottom"]
+          ["Single"]
+          ["SpecifyHitAreaLifetimeDirectly", 60]
+          ["CalculatedUsingMaxNumOfHits", 9]
+          ["None"]
+          false
+          true
+          ["None"]
+          1
+          [
+            "Block"
+            [
+              [
+                "Command"
+                [
+                  "ShowEffect"
+                  "斬撃演出"
+                  ["SpecifyEffectDirectly", "battle/effect/skill_unique/blade_witch/blade_witch_start"]
+                  1
+                  ["ForesideOfCharacter"]
+                  ["SpecifyEffectLifetimeDirectly", 60]
+                  ["CD"]
+                  0
+                  -220
+                  0
+                  true
+                  true
+                  ["Some", [{"min": 6, "max": 6}]]
+                ]
+              ]
+            ]
+          ]
+          2
+          3
+          [
+            "Block"
+            [
+              [
+                "Command"
+                [
+                  "CreateNormalAttack"
+                  3
+                  255
+                  []
+                  []
+                  7
+                  [{"min": 0.9444444444444444, "max": 1.1111111111111112}]
+                  [{"min": 0, "max": 0}]
+                  false
+                  false
+                  false
+                  false
+                  false
+                  [{"min": 0.4444444444444444, "max": 0.4444444444444444}]
+                  [{"min": 0.8888888888888888, "max": 0.8888888888888888}]
+                  ["SpecifyHitEffectDirectly", ["SpecifyEffectDirectly", "battle/effect/skill_unique/blade_witch/blade_witch_hit"], true]
+                  true
+                ]
+              ]
+              ["Command", ["ShakeCamera", 1]]
+            ]
+          ]
+          0
+          0
+          ["None"]
+        ]
+      ]
+      [
+        "Event"
+        [
+          "Wait"
+          45
+          "*"
+          [
+            "Block"
+            [
+              [
+                "Command"
+                [
+                  "ShowEffect"
+                  "斬撃演出"
+                  ["SpecifyEffectDirectly", "battle/effect/skill_unique/blade_witch/blade_witch_end"]
+                  -18
+                  ["ForesideOfCharacter"]
+                  ["SpecifyEffectLifetimeDirectly", 60]
+                  ["AB"]
+                  0
+                  0
+                  0
+                  true
+                  true
+                  ["Some", [{"min": 6, "max": 6}]]
+                ]
+              ]
+              ["Event", ["Wait", 15, "*", ["Block", [["Command", ["StopBall", -18, 20, ["Stop"], ["EF"], 0]]]]]]
+              [
+                "Event"
+                [
+                  "Wait"
+                  30
+                  "*"
+                  [
+                    "Block"
+                    [
+                      [
+                        "Command"
+                        [
+                          "CreateHitArea"
+                          "*"
+                          -18
+                          ["EF"]
+                          0
+                          0
+                          0
+                          true
+                          true
+                          ["Circle", [{"min": 300, "max": 300}]]
+                          ["Center"]
+                          ["Center"]
+                          ["Single"]
+                          ["SpecifyHitAreaLifetimeDirectly", 20]
+                          ["CalculatedUsingMaxNumOfHits", 1]
+                          ["None"]
+                          false
+                          true
+                          ["None"]
+                          4
+                          ["Block", []]
+                          5
+                          6
+                          [
+                            "Block"
+                            [
+                              ["Command", ["CreateNormalAttack", 6, 255, [], [], 80, [{"min": 10.5, "max": 12}], [{"min": 0, "max": 0}], false, false, false, false, false, [{"min": 4, "max": 4}], [{"min": 8, "max": 8}], ["Coarse"], true]]
+                              ["Command", ["ShakeCamera", 2]]
+                            ]
+                          ]
+                          0
+                          0
+                          ["None"]
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+      [
+        "Command"
+        [
+          "FindAllSubjects"
+          7
+          33
+          []
+          []
+          []
+          []
+          []
+          ["DoNothing"]
+          ["Block", [["Command", ["CreateCondition", 7, [["ACPiercing", [{"min": 480, "max": 600}]]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, false, "", null, false, 3, [{"min": 1, "max": 1}], false]]]]
+        ]
+      ]
+    ]
+  ]
+]

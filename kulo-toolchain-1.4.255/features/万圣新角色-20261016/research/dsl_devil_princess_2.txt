@@ -1,0 +1,272 @@
+###### battle/action/skill/action/rare4/devil_princess$devil_princess_2
+[
+  "ActionDsl"
+  1
+  ["None"]
+  false
+  false
+  false
+  false
+  false
+  false
+  false
+  0
+  [
+    "Block"
+    [
+      ["Command", ["StopBall", -18, 10, ["RestoreToSpeedBeforeActionExecution"], ["EF"], 0]]
+      [
+        "Command"
+        [
+          "ConditionalsMultiballNumber"
+          [2610011, 2610012]
+          []
+          1
+          [
+            "Block"
+            [
+              [
+                "Command"
+                [
+                  "ShowEffect"
+                  "攻撃背景"
+                  ["SpecifyEffectDirectly", "battle/effect/skill_unique/devil_princess/devil_princess_fist_big_ground"]
+                  -1
+                  ["BacksideOfCharacter"]
+                  ["PlayOnlyFirstSequence"]
+                  ["AB"]
+                  0
+                  0
+                  0
+                  false
+                  false
+                  ["None"]
+                ]
+              ]
+              [
+                "Command"
+                ["ShowEffect", "攻撃演出", ["SpecifyEffectDirectly", "battle/effect/skill_unique/devil_princess/devil_princess_fist_big"], -1, ["ForesideOfCharacter"], ["PlayOnlyFirstSequence"], ["AB"], 0, 0, 0, false, false, ["None"]]
+              ]
+              [
+                "Event"
+                [
+                  "Wait"
+                  45
+                  "*"
+                  [
+                    "Block"
+                    [
+                      [
+                        "Command"
+                        [
+                          "CreateHitArea"
+                          "*"
+                          -1
+                          ["AB"]
+                          0
+                          0
+                          0
+                          false
+                          false
+                          ["Rectangle", [{"min": 1500, "max": 1500}], [{"min": 2000, "max": 2000}]]
+                          ["Center"]
+                          ["Center"]
+                          ["Single"]
+                          ["SpecifyHitAreaLifetimeDirectly", 10]
+                          ["CalculatedUsingMaxNumOfHits", 1]
+                          ["None"]
+                          false
+                          true
+                          ["None"]
+                          0
+                          ["Block", [["Command", ["ShakeCamera", 3]]]]
+                          1
+                          2
+                          [
+                            "Block"
+                            [["Command", ["CreateNormalAttack", 2, 255, [], [], 140, [{"min": 18.2, "max": 21}], [{"min": 0, "max": 0}], false, false, false, false, false, [{"min": 5, "max": 5}], [{"min": 4, "max": 4}], ["Coarse"], true]]]
+                          ]
+                          0
+                          0
+                          ["None"]
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+          [
+            "Block"
+            [
+              [
+                "Command"
+                [
+                  "FindNearSubjects"
+                  -18
+                  1
+                  49
+                  ["CreateImaginaryTarget", -192]
+                  3
+                  [
+                    "Block"
+                    [
+                      [
+                        "Command"
+                        [
+                          "CreateReferencePoint"
+                          3
+                          ["AB"]
+                          0
+                          0
+                          0
+                          false
+                          false
+                          ["Single"]
+                          100
+                          4
+                          [
+                            "Block"
+                            [
+                              [
+                                "Command"
+                                [
+                                  "ShowEffect"
+                                  "攻撃背景"
+                                  ["SpecifyEffectDirectly", "battle/effect/skill_unique/devil_princess/devil_princess_fist_small_ground"]
+                                  4
+                                  ["BacksideOfCharacter"]
+                                  ["PlayOnlyFirstSequence"]
+                                  ["AB"]
+                                  0
+                                  0
+                                  0
+                                  false
+                                  false
+                                  ["Some", [{"min": 3, "max": 3}]]
+                                ]
+                              ]
+                              [
+                                "Command"
+                                [
+                                  "ShowEffect"
+                                  "攻撃演出"
+                                  ["SpecifyEffectDirectly", "battle/effect/skill_unique/devil_princess/devil_princess_fist_small"]
+                                  4
+                                  ["ForesideOfCharacter"]
+                                  ["PlayOnlyFirstSequence"]
+                                  ["AB"]
+                                  0
+                                  0
+                                  0
+                                  false
+                                  false
+                                  ["Some", [{"min": 3, "max": 3}]]
+                                ]
+                              ]
+                              [
+                                "Event"
+                                [
+                                  "Wait"
+                                  45
+                                  "*"
+                                  [
+                                    "Block"
+                                    [
+                                      [
+                                        "Command"
+                                        [
+                                          "CreateHitArea"
+                                          "*"
+                                          4
+                                          ["AB"]
+                                          0
+                                          0
+                                          0
+                                          false
+                                          false
+                                          ["Circle", [{"min": 150, "max": 150}]]
+                                          ["Center"]
+                                          ["Center"]
+                                          ["Single"]
+                                          ["SpecifyHitAreaLifetimeDirectly", 10]
+                                          ["CalculatedUsingMaxNumOfHits", 1]
+                                          ["None"]
+                                          false
+                                          true
+                                          ["None"]
+                                          5
+                                          ["Block", [["Command", ["ShakeCamera", 2]]]]
+                                          6
+                                          7
+                                          [
+                                            "Block"
+                                            [["Command", ["CreateNormalAttack", 7, 255, [], [], 53, [{"min": 6.89, "max": 8}], [{"min": 0, "max": 0}], false, false, false, false, false, [{"min": 5, "max": 5}], [{"min": 4, "max": 4}], ["Coarse"], true]]]
+                                          ]
+                                          0
+                                          0
+                                          ["None"]
+                                        ]
+                                      ]
+                                    ]
+                                  ]
+                                ]
+                              ]
+                            ]
+                          ]
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+              [
+                "Command"
+                [
+                  "ShowEffect"
+                  "ボール演出"
+                  ["SpecifyEffectDirectly", "battle/effect/skill_unique/devil_princess/multiball_devil_princess_effect_ready_generation"]
+                  -18
+                  ["ForesideOfCharacter"]
+                  ["PlayOnlyFirstSequence"]
+                  ["AB"]
+                  0
+                  0
+                  0
+                  true
+                  false
+                  ["None"]
+                ]
+              ]
+              [
+                "Command"
+                [
+                  "CreateSummonsMultiball"
+                  1
+                  2610012
+                  [{"min": 9000, "max": 9000}]
+                  [
+                    "E2"
+                    ["SpecifyEffectDirectly", "battle/effect/skill_unique/devil_princess/multiball_devil_princess_effect_appear"]
+                    ["SpecifyEffectDirectly", "battle/effect/skill_unique/devil_princess/multiball_devil_princess_effect_ready_left"]
+                    ["SpecifyEffectDirectly", "battle/effect/skill_unique/devil_princess/multiball_devil_princess_effect_ready_right"]
+                  ]
+                  ["SpecifyEffectDirectly", "battle/effect/skill_unique/devil_princess/multiball_devil_princess_effect_appear"]
+                  ["SpecifyEffectDirectly", "battle/effect/skill_unique/devil_princess/multiball_devil_princess_effect_disappear"]
+                  0
+                  false
+                  "*"
+                  8
+                  9
+                  null
+                  null
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ]
+]

@@ -1,0 +1,5 @@
+# BattleQuestBaseImpl/resolvePathCollectionForDashPanel body=21430 method=22732 header=[2, 2, 1, 1] exc=[] traits=[] sha=e3ccc6d9ff72f1cd35c336806e50ae75cbf499b607ec66795c86fec03d3747e6
+#0000 ofs0000: getlocal_1 []
+#0001 ofs0001: pushstring ['sound_effect/yakumono/se_dash_panel']
+#0002 ofs0005: callpropvoid ['pinball.asset.logic:IAssetPathCollectionBuilder::addSoundEffect', 1]
+#0003 ofs0009: returnvoid []

@@ -1,0 +1,177 @@
+--- LOCAL
++++ TEST
+@@ -43,3 +43,3 @@
+ convert_b []
+-iffalse [] -> #546
++iffalse [] -> #621
+ findproperty ['featuresPermit']
+@@ -47,3 +47,3 @@
+ getproperty ['playsSkillReady']
+-iffalse [] -> #481
++iffalse [] -> #556
+ findproperty ['member']
+@@ -397,6 +397,78 @@
+ jump [] -> #397
+-getlocal [4]
+-getproperty ['index']
+-pushbyte [0]
+-ifne [] -> #466
++getlocal_0 []
++getproperty ['character']
++getproperty ['mainCharacterStringId']
++pushstring ['white_wolf_gerald']
++ifne [] -> #469
++getlocal [4]
++getproperty ['index']
++pushbyte [0]
++ifne [] -> #469
++getlocal_0 []
++getproperty ['geraldReadyNext']
++pushbyte [0]
++ifeq [] -> #434
++getlocal_0 []
++getproperty ['geraldReadyNext']
++pushbyte [1]
++ifeq [] -> #438
++getlocal_0 []
++getproperty ['geraldReadyNext']
++pushbyte [2]
++ifeq [] -> #454
++getlocal_0 []
++pushbyte [0]
++setproperty ['geraldReadyNext']
++getlocal_0 []
++getproperty ['character']
++getproperty ['logic']
++getproperty ['logicAssets']
++pushstring ['character/white_wolf_gerald/voice/battle/skill_ready_alt_3']
++callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
++iffalse [] -> #469
++getlex ['haxe.ds::Option']
++pushstring ['character/white_wolf_gerald/voice/battle/skill_ready_alt_3']
++callproperty ['Some', 1]
++coerce ['haxe.ds::Option']
++setlocal [4]
++jump [] -> #469
++getlocal_0 []
++pushbyte [1]
++setproperty ['geraldReadyNext']
++jump [] -> #469
++getlocal_0 []
++pushbyte [2]
++setproperty ['geraldReadyNext']
++getlocal_0 []
++getproperty ['character']
++getproperty ['logic']
++getproperty ['logicAssets']
++pushstring ['character/white_wolf_gerald/voice/battle/skill_ready_alt_1']
++callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
++iffalse [] -> #469
++getlex ['haxe.ds::Option']
++pushstring ['character/white_wolf_gerald/voice/battle/skill_ready_alt_1']
++callproperty ['Some', 1]
++coerce ['haxe.ds::Option']
++setlocal [4]
++jump [] -> #469
++getlocal_0 []
++pushbyte [3]
++setproperty ['geraldReadyNext']
++getlocal_0 []
++getproperty ['character']
++getproperty ['logic']
++getproperty ['logicAssets']
++pushstring ['character/white_wolf_gerald/voice/battle/skill_ready_alt_2']
++callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
++iffalse [] -> #469
++getlex ['haxe.ds::Option']
++pushstring ['character/white_wolf_gerald/voice/battle/skill_ready_alt_2']
++callproperty ['Some', 1]
++coerce ['haxe.ds::Option']
++setlocal [4]
++getlocal [4]
++getproperty ['index']
++pushbyte [0]
++ifne [] -> #541
+ getlocal_0 []
+@@ -408,12 +480,15 @@
+ pushstring ['white_tiger_summer']
+-ifeq [] -> #466
++ifeq [] -> #541
+ getlocal [5]
+ pushstring ['unicorn_lancer_rose']
+-ifeq [] -> #466
++ifeq [] -> #541
+ getlocal [5]
+ pushstring ['super_robot_tailcoat']
+-ifeq [] -> #466
++ifeq [] -> #541
+ getlocal [5]
+ pushstring ['samurai_robot_plum']
+-ifeq [] -> #466
++ifeq [] -> #541
++getlocal [5]
++pushstring ['white_wolf_gerald']
++ifeq [] -> #541
+ getlocal [4]
+@@ -436,7 +511,7 @@
+ pushbyte [0]
+-ifgt [] -> #441
+-getlocal_0 []
+-pushbyte [1]
+-setproperty ['geraldReadyNext']
+-jump [] -> #466
++ifgt [] -> #516
++getlocal_0 []
++pushbyte [1]
++setproperty ['geraldReadyNext']
++jump [] -> #541
+ getlocal [6]
+@@ -452,3 +527,3 @@
+ callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
+-iffalse [] -> #463
++iffalse [] -> #538
+ getlex ['haxe.ds::Option']
+@@ -462,10 +537,10 @@
+ setproperty ['geraldReadyNext']
+-jump [] -> #466
+-getlocal_0 []
+-pushbyte [1]
+-setproperty ['geraldReadyNext']
+-getlocal [4]
+-getproperty ['index']
+-lookupswitch [] default #469, cases [470, 481]
+-jump [] -> #481
++jump [] -> #541
++getlocal_0 []
++pushbyte [1]
++setproperty ['geraldReadyNext']
++getlocal [4]
++getproperty ['index']
++lookupswitch [] default #544, cases [545, 556]
++jump [] -> #556
+ getlocal_1 []
+@@ -480,3 +555,3 @@
+ callpropvoid ['pinball.scene.battle.view:BattleViewOrder::playSoundEffect', 2]
+-jump [] -> #481
++jump [] -> #556
+ findproperty ['effectManager']
+@@ -503,3 +578,3 @@
+ convert_i []
+-lookupswitch [] default #504, cases [511, 523, 535]
++lookupswitch [] default #579, cases [586, 598, 610]
+ getlex ['flash::Boot']
+@@ -510,3 +585,3 @@
+ throw []
+-jump [] -> #546
++jump [] -> #621
+ findproperty ['effectManager']
+@@ -522,3 +597,3 @@
+ callpropvoid ['pinball.scene.battle.battle.effect:EffectManager::show', 1]
+-jump [] -> #546
++jump [] -> #621
+ findproperty ['effectManager']
+@@ -534,3 +609,3 @@
+ callpropvoid ['pinball.scene.battle.battle.effect:EffectManager::show', 1]
+-jump [] -> #546
++jump [] -> #621
+ findproperty ['effectManager']

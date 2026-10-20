@@ -1,0 +1,17 @@
+视图: 基础 store=D:\WF\out\kulo-patch-toolkit\store131\production; 链 201 个包,链尾 1.4.203; --since 1.4.202(新包 1 个)
+
+[伴随表] ERROR 0  WARN 12  INFO 0
+  WARN  道具 40193(蛇神残响)在客户端 item 表里,但不在服务端 assets/item_ids.json
+  WARN  道具 8000201(幻星术式核心魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+  WARN  道具 8000202(双星追迹刃魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+  WARN  道具 8000203(坠星破界锤魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+  WARN  道具 8000204(群星自律机库魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+  WARN  道具 8000205(因果演算终端魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+  WARN  道具 8000206(热寂共鸣环魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+  WARN  道具 8000207(半月蚀心剑魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+  WARN  道具 8000208(天穹无坠之翼魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+  WARN  道具 8000209(冥灯返魂杖魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+  WARN  道具 8000210(无界贯星枪魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+  WARN  道具 8000211(六相万华轮魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+
+合计: ERROR 0  WARN 12  INFO 0  => 可以推送

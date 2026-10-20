@@ -1,0 +1,37 @@
+diff --git a/out/lib/quest/finish/single-finish-transaction.js b/out/lib/quest/finish/single-finish-transaction.js
+index 8f217d2..e5d6518 100644
+--- a/out/lib/quest/finish/single-finish-transaction.js
++++ b/out/lib/quest/finish/single-finish-transaction.js
+@@ -73,6 +73,12 @@ function settleSingleQuestFinishInTransaction(args) {
+     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z;
+     const { playerId, viewerId, questCategory, questId, questData, playerData, activeQuestData, body, clearTime, clearRank, questAccomplished, questProgress, fiveBossSoloQuest, registered, scoreAttackBorderTiers, beforeRankPoint, newRankPoint, manaObtained, newMana, newBoostPoint, newBossBoostPoint, useBoostPoint, displayMode15ManaAsFieldDrop, finishCacheKey, } = args;
+     const questPreviouslyCompleted = questProgress !== null;
++    if (questCategory !== types_1.QuestCategory.SCORE_ATTACK_EVENT) {
++        const singleScoreScale = Number(process.env.SINGLE_SCORE_SCALE ?? "0.5");
++        if (Number.isFinite(singleScoreScale) && singleScoreScale > 0 && singleScoreScale !== 1) {
++            body.score = Math.floor((Number(body.score) || 0) * singleScoreScale);
++        }
++    }
+     const isScoreAttackEvent = questCategory === types_1.QuestCategory.SCORE_ATTACK_EVENT;
+     const bodyTiming = (0, single_settlement_diagnostics_1.createSingleSettlementBodyTimingCollector)(questCategory, !!fiveBossSoloQuest);
+     let bodySucceeded = false;
+diff --git a/src/lib/quest/finish/single-finish-transaction.ts b/src/lib/quest/finish/single-finish-transaction.ts
+index adb0ce9..32bdf58 100644
+--- a/src/lib/quest/finish/single-finish-transaction.ts
++++ b/src/lib/quest/finish/single-finish-transaction.ts
+@@ -155,6 +155,15 @@ export function settleSingleQuestFinishInTransaction(
+         displayMode15ManaAsFieldDrop, finishCacheKey,
+     } = args
+     const questPreviouslyCompleted = questProgress !== null
++    // 单人结算分数缩放（2026-10-08）：客户端单人 boss 战时间倍率额外 ×2（SCORE_SCALING_SINGLE_PLAY_BOSS_BATTLE），
++    // 联机没有这一项；这里按 SINGLE_SCORE_SCALE（默认 0.5）缩放「记录用」分数，与联机口径对齐。
++    // 只影响服务端记录（最高分、分数奖励、排行），不影响客户端结算画面显示；分数挑战活动不缩放（档位不变）。
++    if (questCategory !== QuestCategory.SCORE_ATTACK_EVENT) {
++        const singleScoreScale = Number(process.env.SINGLE_SCORE_SCALE ?? "0.5")
++        if (Number.isFinite(singleScoreScale) && singleScoreScale > 0 && singleScoreScale !== 1) {
++            body.score = Math.floor((Number(body.score) || 0) * singleScoreScale)
++        }
++    }
+     const isScoreAttackEvent = questCategory === QuestCategory.SCORE_ATTACK_EVENT
+     const bodyTiming = createSingleSettlementBodyTimingCollector(questCategory, !!fiveBossSoloQuest)
+     let bodySucceeded = false

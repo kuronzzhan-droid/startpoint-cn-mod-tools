@@ -1,0 +1,50 @@
+视图: 基础 store=D:\WF\out\kulo-patch-toolkit\store131\production; 链 269 个包,链尾 1.4.225; --since 1.4.220(新包 45 个)
+
+[补丁链/清单] ERROR 0  WARN 0  INFO 0
+
+[改错表] ERROR 0  WARN 78  INFO 0
+  WARN  服务端 assets/cdndata/character_text.json 角色 149999 第1档技能描述与游戏内不一致;游戏只读 action_skill[white_wolf_gerald][1] c1
+  WARN  服务端 assets/cdndata/character_text.json 角色 149999 第2档技能描述与游戏内不一致;游戏只读 action_skill[white_wolf_gerald][2] c1
+  WARN  服务端 assets/cdndata/character_text.json 角色 151159 第3档技能描述与游戏内不一致;游戏只读 action_skill[golden_dragon_jr][3] c1
+  WARN  服务端 assets/cdndata/character_text.json 角色 261089 第3档技能描述与游戏内不一致;游戏只读 action_skill[darkness_dragon][3] c1
+  WARN  服务端 assets/cdndata/character_text.json 角色 700001 第1档技能名与游戏内不一致;游戏只读 action_skill[devil_leader_assist][1] c0
+  WARN  服务端 assets/cdndata/character_text.json 角色 700002 第1档技能名与游戏内不一致;游戏只读 action_skill[elf_princess_assist][1] c0
+  WARN  服务端 assets/cdndata/character_text.json 角色 700003 第1档技能名与游戏内不一致;游戏只读 action_skill[resistance_princess_assist][1] c0
+  WARN  服务端 assets/cdndata/character_text.json 角色 700004 第1档技能名与游戏内不一致;游戏只读 action_skill[horn_leader_assist][1] c0
+  WARN  服务端 assets/cdndata/character_text.json 角色 700005 第1档技能名与游戏内不一致;游戏只读 action_skill[guildknight_leader_assist][1] c0
+  WARN  服务端 assets/cdndata/character_text.json 角色 700006 第1档技能名与游戏内不一致;游戏只读 action_skill[desert_commander_no_piercing][1] c0
+  WARN  服务端 assets/cdndata/character_text.json 角色 700007 第1档技能描述与游戏内不一致;游戏只读 action_skill[ruin_lady_no_piercing][1] c1
+  WARN  服务端 assets/cdndata/character_text.json 角色 700007 第1档技能名与游戏内不一致;游戏只读 action_skill[ruin_lady_no_piercing][1] c0
+  ……另有 66 条 WARN(--verbose 或 --json 看全部)
+
+[伴随表] ERROR 0  WARN 12  INFO 0
+  WARN  道具 40193(蛇神残响)在客户端 item 表里,但不在服务端 assets/item_ids.json
+  WARN  道具 8000201(幻星术式核心魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+  WARN  道具 8000202(双星追迹刃魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+  WARN  道具 8000203(坠星破界锤魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+  WARN  道具 8000204(群星自律机库魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+  WARN  道具 8000205(因果演算终端魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+  WARN  道具 8000206(热寂共鸣环魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+  WARN  道具 8000207(半月蚀心剑魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+  WARN  道具 8000208(天穹无坠之翼魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+  WARN  道具 8000209(冥灯返魂杖魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+  WARN  道具 8000210(无界贯星枪魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+  WARN  道具 8000211(六相万华轮魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+
+[等级缺口] ERROR 0  WARN 5  INFO 10
+  WARN  variable 缺口 general_boss_variable[guardian_golem_fire_multi] 最高 79 < 关卡等级 80(变量表取空,状态机用到变量时崩)
+  WARN  variable 缺口 general_boss_variable[lich_wind_multi] 最高 79 < 关卡等级 80(变量表取空,状态机用到变量时崩)
+  WARN  variable 缺口 general_boss_variable[mod_abyss_ex_boss14] 最高 79 < 关卡等级 90(变量表取空,状态机用到变量时崩)
+  WARN  variable 缺口 general_boss_variable[mod_fb2_034_lich_w02] 最高 79 < 关卡等级 80(变量表取空,状态机用到变量时崩)
+  WARN  variable 缺口 general_boss_variable[mod_fb2_037_lich_w00] 最高 79 < 关卡等级 80(变量表取空,状态机用到变量时崩)
+
+说明:
+  - kulo#35 checkPatchChainIntegrity: 0 条
+  - 等级检查: 22 张 quest 表, 3609 个关卡, 等级 1..100, 1738 个等级表条目被引用
+  - atk_basic_curve 不在视图里(多为 APK 内置表),未检查
+  - hit_hp_basic_curve 不在视图里(多为 APK 内置表),未检查
+  - party_atk_curve 不在视图里(多为 APK 内置表),未检查
+  - party_hp_curve 不在视图里(多为 APK 内置表),未检查
+  - APK 内置表(store 里是 16 字节桩,按不在视图处理): atk_basic_curve, hit_hp_basic_curve, party_atk_curve, party_hp_curve, tutorial_quest
+
+合计: ERROR 0  WARN 95  INFO 10  => 可以推送

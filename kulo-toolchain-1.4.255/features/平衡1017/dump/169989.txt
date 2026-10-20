@@ -1,0 +1,56 @@
+######### 169989 ruin_girl_campus 一起续杯的约定
+TEXT 奈芙提姆,NAIFUTIMU,如今以成年大学生的身份学习现代文明的奈芙提姆。午后，她总会在校园咖啡厅给同伴留一个座位，用珍珠奶茶的甜度记录今天的心情。古代装置化作轻巧的随身终端，守护着这段难得的课余时光。,午后珍珠星光,午后星轨·甜蜜续杯,"赋予参战者及协力球贯穿效果，提升队伍内角色及协力球的直接攻击伤害。
+Fever 模式中，使暗属性角色的直接攻击分为多次，并提高总伤害。",午后星轨·甜蜜续杯＋,"赋予参战者及协力球贯穿效果，提升队伍内角色及协力球的直接攻击伤害。
+Fever 模式中，使暗属性角色的直接攻击分为多次，并提高总伤害。",(None),(None),一起续杯的约定,AI 合成配音
+
+== leader 169989
+  L0 暗·编成≥6 时: 自身 强化弹射覆盖
+  L1 暗·编成≥6 时: 自身 切换技能形态[change_skill_ruin_girl_campus_fever]
+  L2 暗·编成≥6 时: 赋予全队(暗) Direct伤害 400%
+  L3 暗·编成≥6 时: 赋予全队(暗) 攻击力 200%
+  L4 暗·编成≥6 时: 连击≥35 → 赋予全队(暗) Fever点 15%
+  L5 暗·编成≥6 时: 自身 Fever时间延长 100%
+  L6 暗·编成≥6 时: 多球Remove≥1 → 赋予全队(暗) 技能槽 5%
+  L7 暗·编成≥6 时: Elapsed时间≥10 → 自身 发动技能动作[ruin_girl_campus_ball_hit_count]
+  L8 暗·编成≥6 且 Fever 时: 状态KeepFrame贯通≥1(限3次) → 赋予全队(暗) 攻击力 9%
+  L9 暗·编成≥6 且 Fever 时: 状态KeepFrame贯通≥1(限3次) → 赋予全队(暗) Direct伤害 9%
+  OVR: 暗属性共鸣时，强化弹射变为特殊型与辅助型组合。 || 暗属性共鸣时，强化『午后星轨·甜蜜续杯』：额外赋予暗属性角色及协力球攻击力提升效果；Fever 模式中发动时，自身获得或刷新「星夜茶会」，并赋予暗属性角色及协力球护盾。 || 暗属性共鸣时，暗属性角色攻击力+200%、直接攻击伤害+400%，Fever 时间+100%。 || 暗属性共鸣时，每达成35连击，暗属性角色获得的 Fever 槽上升量+15%。 || 暗属性共鸣时，每有1个协力球消失时，暗属性角色技能槽+5%。 || 暗属性共鸣时，每有1个协力球存在，自身直击判定次数+1。 || 暗属性共鸣时，Fever 模式中，处于贯穿效果的时间每累计2秒，暗属性角色攻击力+9%、直接攻击伤害+9%（最多3次）
+== ability 1 1699891 c1=false
+  A1.0 自身 技能槽 50% 
+  A1.1 暗·编成≥6 且 Fever 时: 状态KeepFrame固有≥1[固有16998901] → 自身 发动技能动作[ruin_girl_campus_fever_spawn]  DSL=battle/action/skill/action/ability_skill/ruin_girl_campus$ruin_girl_campus_fever_spawn
+  A1.2 Fever结束≥1 → 自身 Delete固有状态 
+  A1.3 状态固有[固有16998901] 且 非Fever 时: Elapsed时间≥1 → 自身 Delete固有状态 
+  OVR:  <icon id='main'>  战斗开始时，自身技能槽+50%。 ||  <icon id='main'>  暗属性共鸣时，强化技能，额外赋予暗属性角色及协力球攻击力提升250%效果，持续20秒。 ||  <icon id='main'>  暗属性共鸣时，Fever 模式中，发动技能时，自身获得或刷新「星夜茶会」，持续20秒，并赋予暗属性角色及协力球各自最大生命值10%的护盾。 ||  <icon id='main'>  暗属性共鸣时，Fever 模式中，持有「星夜茶会」时，每经过1.5秒交替召唤1个光、暗属性协力球，各持续25秒且无法回复生命值，协力球最多同时存在9个；再次发动技能不会延长已有协力球的存在时间。 ||  <icon id='main'>  暗属性共鸣时，Fever 模式中，持有「星夜茶会」时，协力球已达9个时，该次召唤改为自身攻击力+25%，持续20秒，可叠加。 ||  <icon id='main'>  Fever 结束或自身倒下时，「星夜茶会」解除。
+== ability 2 1699892 c1=true
+  A2.0 暗·编成≥6 时: 自身 贯通延长 40% 
+  A2.1 暗·编成≥6 时: 赋予全队(暗) Direct伤害 250% 
+  A2.2 暗·编成≥6 且 Fever 时: 持续·Fever → 赋予全队(暗) 2号位技能槽 10% 
+  OVR: 暗属性共鸣时，全队贯穿效果时间+40%，暗属性角色直接攻击伤害+250%。 || 暗属性共鸣时，Fever 模式中，暗属性角色技能槽上限+10%。
+== ability 3 1699893 c1=false
+  A3.0 暗·编成≥6 且 Fever 时: 持续·连击≥1(限3次) → 赋予全队(暗) 独立乘区Direct伤害 6% 
+  A3.1 暗·编成≥6 且 Fever 时: 持续·连击≥1(限3次) → 赋予全队(暗) 攻击力 10% 
+  A3.2 暗·编成≥6 且 Fever 时: 状态KeepFrame贯通≥1(限10次) → 赋予全队(暗) 攻击力 5% 
+  A3.3 暗·编成≥6 且 Fever 时: 状态KeepFrame贯通≥1(限10次) → 赋予全队(暗) Direct伤害 10% 
+  A3.4 暗·编成≥6 时: 编成直接攻击≥45 → 自身 Fever槽增减(上限比例) 15% 
+  A3.5 暗·编成≥6 时: Elapsed时间≥10 → 自身 发动技能动作[ruin_girl_campus_multiball_direct]  DSL=battle/action/skill/action/ability_skill/ruin_girl_campus$ruin_girl_campus_multiball_direct
+  OVR:  <icon id='main'>  暗属性共鸣时，Fever 模式中，当前每有1连击，暗属性角色直接攻击造成的伤害+6%（独立乘区）、攻击力+10%（最多3次）。 ||  <icon id='main'>  暗属性共鸣时，Fever 模式中，处于贯穿效果的时间每累计2秒，暗属性角色攻击力+10%、直接攻击伤害+10%。 ||  <icon id='main'>  暗属性共鸣时，暗属性角色合计每直接攻击45次，Fever 槽+15%。 ||  <icon id='main'>  暗属性共鸣时，每有1个协力球存在时，全队及协力球对敌人造成的直接攻击伤害+25%（独立乘区）。
+== ability 4 1699894 c1=true
+  A4.0 暗·编成≥6 且 Fever 时: 持续·Fever → 赋予全队(暗) 独立乘区Direct伤害 50% 
+  A4.1 暗·编成≥6 且 Fever 时: Elapsed时间≥10 → 自身 发动技能动作[ruin_girl_campus_multiball_direct_a4]  DSL=battle/action/skill/action/ability_skill/ruin_girl_campus$ruin_girl_campus_multiball_direct_a4
+  OVR: 暗属性共鸣时，Fever 模式中，暗属性角色及协力球直接攻击造成的伤害+50%（独立乘区）。
+== ability 5 1699895 c1=true
+  A5.0 非Fever 时: Elapsed时间≥600 → 自身 状态贯通(3秒)×1次 
+  A5.1 Fever 时: FeverFrame≥300 → 自身 状态贯通(3秒)×1次 
+  OVR: 非 Fever 模式中，每经过10秒，赋予全队贯穿效果，持续3秒。 || Fever 模式中，每经过5秒，赋予全队贯穿效果，持续3秒。
+== ability 6 1699896 c1=true
+  A6.0 暗·编成≥6 时: 赋予全队(暗) Direct伤害 100% 
+  OVR: 暗属性共鸣时，暗属性角色直接攻击伤害+100%。
+  CAS change_skill_ruin_girl_campus_fever 强化技能：暗属性角色及协力球攻击力+250%，持续20秒；Fever 模式中发动技能时，自身获得或刷新「星夜茶会」，持续20秒，并赋予暗属性角色及协力球各自最大生命值10%的护盾
+  CAS ruin_girl_campus_fever_spawn 交替召唤1个光、暗属性协力球，持续25秒且无法回复生命值，协力球最多同时存在9个；已达9个时改为自身攻击力+25%，持续20秒，可叠加；再次发动技能不会延长已有协力球的存在时间
+
+  CAS ruin_girl_campus_fever_powerflip 强化弹射变为特殊型与辅助型组合
+  CAS ruin_girl_campus_multiball_direct 每有1个协力球存在时，全队及协力球对敌人造成的直接攻击伤害+25%（独立乘区）。
+
+  CAS ruin_girl_campus_multiball_direct_a4 协力球对敌人造成的直接攻击伤害+50%（独立乘区）。
+  CAS ruin_girl_campus_ball_hit_count 暗属性共鸣时，每有1个协力球存在，自身直击判定次数+1。
+

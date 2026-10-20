@@ -1,0 +1,18 @@
+视图: 基础 store=D:\WF\out\kulo-patch-toolkit\store131\production; 链 201 个包,链尾 1.4.203; --since 1.4.202(新包 1 个)
+
+[改错表] ERROR 0  WARN 77  INFO 0
+  WARN  服务端 assets/cdndata/character_text.json 角色 129999 第1档技能描述与游戏内不一致;游戏只读 action_skill[seris_dragon_king][1] c1
+  WARN  服务端 assets/cdndata/character_text.json 角色 129999 第2档技能描述与游戏内不一致;游戏只读 action_skill[seris_dragon_king][2] c1
+  WARN  服务端 assets/cdndata/character_text.json 角色 149999 第1档技能描述与游戏内不一致;游戏只读 action_skill[white_wolf_gerald][1] c1
+  WARN  服务端 assets/cdndata/character_text.json 角色 149999 第2档技能描述与游戏内不一致;游戏只读 action_skill[white_wolf_gerald][2] c1
+  WARN  服务端 assets/cdndata/character_text.json 角色 151159 第3档技能描述与游戏内不一致;游戏只读 action_skill[golden_dragon_jr][3] c1
+  WARN  服务端 assets/cdndata/character_text.json 角色 261089 第3档技能描述与游戏内不一致;游戏只读 action_skill[darkness_dragon][3] c1
+  WARN  服务端 assets/cdndata/character_text.json 角色 700001 第1档技能名与游戏内不一致;游戏只读 action_skill[devil_leader_assist][1] c0
+  WARN  服务端 assets/cdndata/character_text.json 角色 700002 第1档技能名与游戏内不一致;游戏只读 action_skill[elf_princess_assist][1] c0
+  WARN  服务端 assets/cdndata/character_text.json 角色 700003 第1档技能名与游戏内不一致;游戏只读 action_skill[resistance_princess_assist][1] c0
+  WARN  服务端 assets/cdndata/character_text.json 角色 700004 第1档技能名与游戏内不一致;游戏只读 action_skill[horn_leader_assist][1] c0
+  WARN  服务端 assets/cdndata/character_text.json 角色 700005 第1档技能名与游戏内不一致;游戏只读 action_skill[guildknight_leader_assist][1] c0
+  WARN  服务端 assets/cdndata/character_text.json 角色 700006 第1档技能名与游戏内不一致;游戏只读 action_skill[desert_commander_no_piercing][1] c0
+  ……另有 65 条 WARN(--verbose 或 --json 看全部)
+
+合计: ERROR 0  WARN 77  INFO 0  => 可以推送

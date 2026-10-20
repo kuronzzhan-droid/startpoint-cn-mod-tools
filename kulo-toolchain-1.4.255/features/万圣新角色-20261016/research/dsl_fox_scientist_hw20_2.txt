@@ -1,0 +1,117 @@
+###### battle/action/skill/action/rare4/fox_scientist_hw20$fox_scientist_hw20_2
+[
+  "ActionDsl"
+  2
+  ["None"]
+  false
+  false
+  false
+  false
+  false
+  false
+  false
+  0
+  [
+    "Block"
+    [
+      ["Command", ["StopBall", -18, 60, ["Stop"], ["AB"], 0]]
+      [
+        "Command"
+        [
+          "ShowEffect"
+          "ビーム演出"
+          ["SpecifyEffectDirectly", "battle/effect/skill_unique/fox_scientist_hw20/fox_scientist_hw20_laser"]
+          -18
+          ["ForesideOfCharacter"]
+          ["SpecifyEffectLifetimeDirectly", 70]
+          ["AB"]
+          0
+          0
+          0
+          true
+          false
+          ["None"]
+        ]
+      ]
+      [
+        "Command"
+        [
+          "CreateHitArea"
+          "*"
+          -18
+          ["AB"]
+          0
+          0
+          0
+          true
+          false
+          ["Rectangle", [{"min": 100, "max": 100}], [{"min": 2000, "max": 2000}]]
+          ["Center"]
+          ["Bottom"]
+          ["Single"]
+          ["SpecifyHitAreaLifetimeDirectly", 70]
+          ["CalculatedUsingMaxNumOfHits", 10]
+          ["Some", [{"min": 10, "max": 10}]]
+          false
+          true
+          ["None"]
+          0
+          ["Block", []]
+          1
+          2
+          [
+            "Block"
+            [
+              ["Command", ["CreateNormalAttack", 2, 255, [], [], 7, [{"min": 0.949, "max": 1.1}], [{"min": 0, "max": 0}], false, false, false, false, false, [{"min": 0.6, "max": 0.6}], [{"min": 2, "max": 2}], ["None"], true]]
+              ["Command", ["CreateCondition", 2, [["ACFrozen", [{"min": 1050, "max": 1200}], true]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, false, "", null, false, 3, [{"min": 1, "max": 1}], false]]
+            ]
+          ]
+          0
+          0
+          ["None"]
+        ]
+      ]
+      [
+        "Command"
+        [
+          "CreateHitArea"
+          "*"
+          -18
+          ["AB"]
+          0
+          0
+          0
+          true
+          false
+          ["Rectangle", [{"min": 100, "max": 100}], [{"min": 2000, "max": 2000}]]
+          ["Center"]
+          ["Bottom"]
+          ["Single"]
+          ["SpecifyHitAreaLifetimeDirectly", 70]
+          ["CalculatedUsingMaxNumOfHits", 1]
+          ["Some", [{"min": 1, "max": 1}]]
+          false
+          true
+          ["None"]
+          3
+          ["Block", []]
+          4
+          5
+          [
+            "Block"
+            [
+              [
+                "Command"
+                ["ShowEffect", "ヒット演出", ["SpecifyEffectDirectly", "battle/effect/skill_unique/fox_scientist_hw20/fox_scientist_hw20_hit"], 5, ["ForesideOfCharacter"], ["PlayOnlyFirstSequence"], ["AB"], 0, 0, 0, true, false, ["None"]]
+              ]
+              ["Command", ["DeleteCondition", 5, ["DCAll", 2], 2, 0, "", ["Default"]]]
+            ]
+          ]
+          0
+          0
+          ["None"]
+        ]
+      ]
+    ]
+  ]
+]

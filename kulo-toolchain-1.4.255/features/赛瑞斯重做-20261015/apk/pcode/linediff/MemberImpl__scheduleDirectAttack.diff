@@ -1,0 +1,102 @@
+--- LOCAL
++++ TEST
+@@ -164,3 +164,11 @@
+ pushbyte [4]
+-iflt [] -> #225
++iflt [] -> #233
++getlocal_0 []
++callproperty ['isLeader', 0]
++iffalse [] -> #233
++getlocal_0 []
++getproperty ['source']
++getproperty ['mainCharacterStringId']
++pushstring ['kyle_moon']
++ifne [] -> #233
+ getlocal [5]
+@@ -195,3 +203,3 @@
+ convert_b []
+-iffalse [] -> #203
++iffalse [] -> #211
+ getlocal_0 []
+@@ -205,3 +213,3 @@
+ setlocal [42]
+-jump [] -> #222
++jump [] -> #230
+ avm_label []
+@@ -217,3 +225,3 @@
+ callproperty ['__isMyBattle__', 0]
+-iffalse [] -> #221
++iffalse [] -> #229
+ getlocal_0 []
+@@ -224,4 +232,4 @@
+ getlocal [41]
+-iflt [] -> #206
+-jump [] -> #619
++iflt [] -> #214
++jump [] -> #620
+ avm_label []
+@@ -312,3 +320,3 @@
+ callproperty ['isLeader', 0]
+-iffalse [] -> #363
++iffalse [] -> #371
+ getlocal_0 []
+@@ -317,3 +325,3 @@
+ pushstring ['kyle_moon']
+-ifne [] -> #363
++ifne [] -> #371
+ getlocal_0 []
+@@ -327,3 +335,3 @@
+ pushbyte [0]
+-ifngt [] -> #363
++ifngt [] -> #371
+ getlocal_0 []
+@@ -341,3 +349,3 @@
+ getlocal [39]
+-iffalse [] -> #350
++iffalse [] -> #358
+ getlex ['pinball.common.mask::MaskGeneral']
+@@ -403,3 +411,3 @@
+ pushbyte [1]
+-ifne [] -> #416
++ifne [] -> #424
+ getlocal [34]
+@@ -415,3 +423,3 @@
+ setlocal [33]
+-jump [] -> #423
++jump [] -> #431
+ pushnull []
+@@ -431,3 +439,3 @@
+ pushbyte [1]
+-ifne [] -> #444
++ifne [] -> #452
+ getlocal [36]
+@@ -443,3 +451,3 @@
+ setlocal [35]
+-jump [] -> #451
++jump [] -> #459
+ pushnull []
+@@ -529,3 +537,3 @@
+ pushbyte [4]
+-iflt [] -> #532
++iflt [] -> #540
+ pop []
+@@ -537,3 +545,3 @@
+ pushbyte [4]
+-iflt [] -> #543
++iflt [] -> #551
+ pop []
+@@ -608,9 +616,2 @@
+ coerce ['haxe.ds::Option']
+-getlocal [11]
+-pushbyte [0]
+-ifeq [] -> #615
+-pop []
+-getlex ['haxe.ds::Option']
+-getproperty ['None']
+-coerce ['haxe.ds::Option']
+ pushstring ['createdByCoopCommand']
+@@ -621,3 +622,3 @@
+ getlocal [10]
+-iflt [] -> #226
++iflt [] -> #234
+ findproperty ['directAttackExecutionCount']

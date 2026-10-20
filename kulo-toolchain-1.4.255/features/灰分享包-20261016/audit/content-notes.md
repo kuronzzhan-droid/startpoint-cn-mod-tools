@@ -1,0 +1,366 @@
+# 分享包内容审计
+
+本审计只读取固定本地输入，没有联网或调用服务器、模拟器。
+
+## 排除策略
+
+GM 武器 5990001–5990006 共 6 把；训练关卡 1103–1123 共 21 个。
+客户端逐键排除 156 个表键、逐成员排除 63 个独立资源。
+这些键和资源恢复共同祖先值；共同祖先不存在时删除。灰已有内容优先，任何灰侧碰撞由主合并记录。
+GM 表数据涉及 ability_soul、equipment、equipment_status、item、custom_ability_string，另有专用 direct_hits DSL。
+训练数据包括 practice 入口、folder 101、boss/field/zone/level/funnel/state/variable、专用即时道具、地形和 DSL。
+
+## 逐项排除的训练副本
+
+| quest id | 名称 |
+|---|---|
+| 1103 | 仅直击木人·无 |
+| 1104 | 仅能力木人·无 |
+| 1105 | 仅技伤木人·无 |
+| 1106 | 仅强化弹射木人·无 |
+| 1107 | 仅直击木人们·无 |
+| 1108 | 仅能力木人们·无 |
+| 1109 | 仅技伤木人们·无 |
+| 1110 | 仅强化弹射木人们·无 |
+| 1111 | 全伤害木人·无 |
+| 1112 | 全伤害木人们·无 |
+| 1113 | 能量瓶木人·无 |
+| 1114 | 伤害圈木人·无 |
+| 1115 | 能量瓶木人们·无 |
+| 1116 | 伤害圈木人们·无 |
+| 1117 | 超·结实假人(经典) |
+| 1118 | 超·极速假人 |
+| 1119 | 超·强力假人 |
+| 1120 | 超·诅咒假人 |
+| 1121 | 超·守护假人 |
+| 1122 | 超·痛苦假人 |
+| 1123 | 超·痛苦假人们 |
+
+## 逐键排除清单
+
+| 表逻辑路径 | 键 | 原因 |
+|---|---|---|
+| master/ability/ability_soul.orderedmap | 5990001 | GM 武器 |
+| master/ability/ability_soul.orderedmap | 5990002 | GM 武器 |
+| master/ability/ability_soul.orderedmap | 5990003 | GM 武器 |
+| master/ability/ability_soul.orderedmap | 5990004 | GM 武器 |
+| master/ability/ability_soul.orderedmap | 5990005 | GM 武器 |
+| master/ability/ability_soul.orderedmap | 5990006 | GM 武器 |
+| master/battle/boss/boss_level.orderedmap | practice_all_damage_dummies | 训练假人 |
+| master/battle/boss/boss_level.orderedmap | practice_all_damage_dummy | 训练假人 |
+| master/battle/boss/boss_level.orderedmap | practice_energy_dummies | 训练假人 |
+| master/battle/boss/boss_level.orderedmap | practice_energy_dummy | 训练假人 |
+| master/battle/boss/boss_level.orderedmap | practice_typed_dummies_ability | 训练假人 |
+| master/battle/boss/boss_level.orderedmap | practice_typed_dummies_direct | 训练假人 |
+| master/battle/boss/boss_level.orderedmap | practice_typed_dummies_pf | 训练假人 |
+| master/battle/boss/boss_level.orderedmap | practice_typed_dummies_skill | 训练假人 |
+| master/battle/boss/boss_level.orderedmap | practice_typed_dummy_ability | 训练假人 |
+| master/battle/boss/boss_level.orderedmap | practice_typed_dummy_direct | 训练假人 |
+| master/battle/boss/boss_level.orderedmap | practice_typed_dummy_pf | 训练假人 |
+| master/battle/boss/boss_level.orderedmap | practice_typed_dummy_skill | 训练假人 |
+| master/battle/boss/boss_level.orderedmap | practice_zone_dummies | 训练假人 |
+| master/battle/boss/boss_level.orderedmap | practice_zone_dummy | 训练假人 |
+| master/battle/boss/boss_level.orderedmap | super_dummy_hayai | 训练假人 |
+| master/battle/boss/boss_level.orderedmap | super_dummy_katai | 训练假人 |
+| master/battle/boss/boss_level.orderedmap | super_dummy_mamori | 训练假人 |
+| master/battle/boss/boss_level.orderedmap | super_dummy_noroi | 训练假人 |
+| master/battle/boss/boss_level.orderedmap | super_dummy_tough | 训练假人 |
+| master/battle/boss/boss_level.orderedmap | super_dummy_tough_funnel | 训练假人 |
+| master/battle/boss/boss_level.orderedmap | super_dummy_tsuyoi | 训练假人 |
+| master/battle/boss/funnel/general_funnel.orderedmap | funnel_all_damage_dummy | 训练假人 |
+| master/battle/boss/funnel/general_funnel.orderedmap | funnel_typed_dummy_ability | 训练假人 |
+| master/battle/boss/funnel/general_funnel.orderedmap | funnel_typed_dummy_direct | 训练假人 |
+| master/battle/boss/funnel/general_funnel.orderedmap | funnel_typed_dummy_pf | 训练假人 |
+| master/battle/boss/funnel/general_funnel.orderedmap | funnel_typed_dummy_skill | 训练假人 |
+| master/battle/boss/funnel/general_funnel.orderedmap | super_funnel_waraboss_stage1 | 训练假人 |
+| master/battle/boss/funnel/general_funnel.orderedmap | super_funnel_waraboss_stage2 | 训练假人 |
+| master/battle/boss/funnel/general_funnel.orderedmap | super_funnel_waraboss_tough_colorless | 训练假人 |
+| master/battle/boss/funnel_level.orderedmap | funnel_all_damage_dummy | 训练假人 |
+| master/battle/boss/funnel_level.orderedmap | funnel_typed_dummy_ability | 训练假人 |
+| master/battle/boss/funnel_level.orderedmap | funnel_typed_dummy_direct | 训练假人 |
+| master/battle/boss/funnel_level.orderedmap | funnel_typed_dummy_pf | 训练假人 |
+| master/battle/boss/funnel_level.orderedmap | funnel_typed_dummy_skill | 训练假人 |
+| master/battle/boss/funnel_level.orderedmap | super_funnel_waraboss_stage1 | 训练假人 |
+| master/battle/boss/funnel_level.orderedmap | super_funnel_waraboss_stage2 | 训练假人 |
+| master/battle/boss/funnel_level.orderedmap | super_funnel_waraboss_tough_colorless | 训练假人 |
+| master/battle/boss/general_boss.orderedmap | practice_all_damage_dummies | 训练假人 |
+| master/battle/boss/general_boss.orderedmap | practice_all_damage_dummy | 训练假人 |
+| master/battle/boss/general_boss.orderedmap | practice_energy_dummies | 训练假人 |
+| master/battle/boss/general_boss.orderedmap | practice_energy_dummy | 训练假人 |
+| master/battle/boss/general_boss.orderedmap | practice_typed_dummies_ability | 训练假人 |
+| master/battle/boss/general_boss.orderedmap | practice_typed_dummies_direct | 训练假人 |
+| master/battle/boss/general_boss.orderedmap | practice_typed_dummies_pf | 训练假人 |
+| master/battle/boss/general_boss.orderedmap | practice_typed_dummies_skill | 训练假人 |
+| master/battle/boss/general_boss.orderedmap | practice_typed_dummy_ability | 训练假人 |
+| master/battle/boss/general_boss.orderedmap | practice_typed_dummy_direct | 训练假人 |
+| master/battle/boss/general_boss.orderedmap | practice_typed_dummy_pf | 训练假人 |
+| master/battle/boss/general_boss.orderedmap | practice_typed_dummy_skill | 训练假人 |
+| master/battle/boss/general_boss.orderedmap | practice_zone_dummies | 训练假人 |
+| master/battle/boss/general_boss.orderedmap | practice_zone_dummy | 训练假人 |
+| master/battle/boss/general_boss.orderedmap | super_dummy_hayai | 训练假人 |
+| master/battle/boss/general_boss.orderedmap | super_dummy_katai | 训练假人 |
+| master/battle/boss/general_boss.orderedmap | super_dummy_mamori | 训练假人 |
+| master/battle/boss/general_boss.orderedmap | super_dummy_noroi | 训练假人 |
+| master/battle/boss/general_boss.orderedmap | super_dummy_tough | 训练假人 |
+| master/battle/boss/general_boss.orderedmap | super_dummy_tough_funnel | 训练假人 |
+| master/battle/boss/general_boss.orderedmap | super_dummy_tsuyoi | 训练假人 |
+| master/battle/boss/general_boss_state.orderedmap | super_dummy_hayai | 训练假人 |
+| master/battle/boss/general_boss_state.orderedmap | super_dummy_katai | 训练假人 |
+| master/battle/boss/general_boss_state.orderedmap | super_dummy_mamori | 训练假人 |
+| master/battle/boss/general_boss_state.orderedmap | super_dummy_noroi | 训练假人 |
+| master/battle/boss/general_boss_state.orderedmap | super_dummy_tsuyoi | 训练假人 |
+| master/battle/boss/general_boss_variable.orderedmap | super_dummy_katai | 训练假人 |
+| master/battle/field_data.orderedmap | practice_all_damage_dummies | 训练假人 |
+| master/battle/field_data.orderedmap | practice_all_damage_dummy | 训练假人 |
+| master/battle/field_data.orderedmap | practice_energy_dummies | 训练假人 |
+| master/battle/field_data.orderedmap | practice_energy_dummy | 训练假人 |
+| master/battle/field_data.orderedmap | practice_typed_dummies_ability | 训练假人 |
+| master/battle/field_data.orderedmap | practice_typed_dummies_direct | 训练假人 |
+| master/battle/field_data.orderedmap | practice_typed_dummies_pf | 训练假人 |
+| master/battle/field_data.orderedmap | practice_typed_dummies_skill | 训练假人 |
+| master/battle/field_data.orderedmap | practice_typed_dummy_ability | 训练假人 |
+| master/battle/field_data.orderedmap | practice_typed_dummy_direct | 训练假人 |
+| master/battle/field_data.orderedmap | practice_typed_dummy_pf | 训练假人 |
+| master/battle/field_data.orderedmap | practice_typed_dummy_skill | 训练假人 |
+| master/battle/field_data.orderedmap | practice_zone_dummies | 训练假人 |
+| master/battle/field_data.orderedmap | practice_zone_dummy | 训练假人 |
+| master/battle/field_data.orderedmap | super_dummy_hayai | 训练假人 |
+| master/battle/field_data.orderedmap | super_dummy_katai | 训练假人 |
+| master/battle/field_data.orderedmap | super_dummy_mamori | 训练假人 |
+| master/battle/field_data.orderedmap | super_dummy_noroi | 训练假人 |
+| master/battle/field_data.orderedmap | super_dummy_tough | 训练假人 |
+| master/battle/field_data.orderedmap | super_dummy_tough_funnel | 训练假人 |
+| master/battle/field_data.orderedmap | super_dummy_tsuyoi | 训练假人 |
+| master/battle/item/executable_instant_item.orderedmap | wf_dummy_skill_charge_half | 训练假人 |
+| master/battle/item/executable_instant_item_level.orderedmap | wf_dummy_skill_charge_half | 训练假人后续引用 |
+| master/battle/yakumono/direct_instant_item.orderedmap | wf_dummy_skill_charge_half | 训练假人 |
+| master/battle/zone.orderedmap | practice_all_damage_dummies | 训练假人 |
+| master/battle/zone.orderedmap | practice_all_damage_dummy | 训练假人 |
+| master/battle/zone.orderedmap | practice_energy_dummies | 训练假人 |
+| master/battle/zone.orderedmap | practice_energy_dummy | 训练假人 |
+| master/battle/zone.orderedmap | practice_typed_dummies_ability | 训练假人 |
+| master/battle/zone.orderedmap | practice_typed_dummies_direct | 训练假人 |
+| master/battle/zone.orderedmap | practice_typed_dummies_pf | 训练假人 |
+| master/battle/zone.orderedmap | practice_typed_dummies_skill | 训练假人 |
+| master/battle/zone.orderedmap | practice_typed_dummy_ability | 训练假人 |
+| master/battle/zone.orderedmap | practice_typed_dummy_direct | 训练假人 |
+| master/battle/zone.orderedmap | practice_typed_dummy_pf | 训练假人 |
+| master/battle/zone.orderedmap | practice_typed_dummy_skill | 训练假人 |
+| master/battle/zone.orderedmap | practice_zone_dummies | 训练假人 |
+| master/battle/zone.orderedmap | practice_zone_dummy | 训练假人 |
+| master/battle/zone.orderedmap | super_dummy_hayai | 训练假人 |
+| master/battle/zone.orderedmap | super_dummy_katai | 训练假人 |
+| master/battle/zone.orderedmap | super_dummy_mamori | 训练假人 |
+| master/battle/zone.orderedmap | super_dummy_noroi | 训练假人 |
+| master/battle/zone.orderedmap | super_dummy_tough | 训练假人 |
+| master/battle/zone.orderedmap | super_dummy_tough_funnel | 训练假人 |
+| master/battle/zone.orderedmap | super_dummy_tsuyoi | 训练假人 |
+| master/item/equipment.orderedmap | 5990001 | GM 武器 |
+| master/item/equipment.orderedmap | 5990002 | GM 武器 |
+| master/item/equipment.orderedmap | 5990003 | GM 武器 |
+| master/item/equipment.orderedmap | 5990004 | GM 武器 |
+| master/item/equipment.orderedmap | 5990005 | GM 武器 |
+| master/item/equipment.orderedmap | 5990006 | GM 武器 |
+| master/item/equipment_status.orderedmap | 5990001 | GM 武器 |
+| master/item/equipment_status.orderedmap | 5990002 | GM 武器 |
+| master/item/equipment_status.orderedmap | 5990003 | GM 武器 |
+| master/item/equipment_status.orderedmap | 5990004 | GM 武器 |
+| master/item/equipment_status.orderedmap | 5990005 | GM 武器 |
+| master/item/equipment_status.orderedmap | 5990006 | GM 武器 |
+| master/item/item.orderedmap | 5990001 | GM 武器 |
+| master/item/item.orderedmap | 5990002 | GM 武器 |
+| master/item/item.orderedmap | 5990003 | GM 武器 |
+| master/item/item.orderedmap | 5990004 | GM 武器 |
+| master/item/item.orderedmap | 5990005 | GM 武器 |
+| master/item/item.orderedmap | 5990006 | GM 武器 |
+| master/quest/practice/practice_quest.orderedmap | 1103 | 训练假人 |
+| master/quest/practice/practice_quest.orderedmap | 1104 | 训练假人 |
+| master/quest/practice/practice_quest.orderedmap | 1105 | 训练假人 |
+| master/quest/practice/practice_quest.orderedmap | 1106 | 训练假人 |
+| master/quest/practice/practice_quest.orderedmap | 1107 | 训练假人 |
+| master/quest/practice/practice_quest.orderedmap | 1108 | 训练假人 |
+| master/quest/practice/practice_quest.orderedmap | 1109 | 训练假人 |
+| master/quest/practice/practice_quest.orderedmap | 1110 | 训练假人 |
+| master/quest/practice/practice_quest.orderedmap | 1111 | 训练假人 |
+| master/quest/practice/practice_quest.orderedmap | 1112 | 训练假人 |
+| master/quest/practice/practice_quest.orderedmap | 1113 | 训练假人 |
+| master/quest/practice/practice_quest.orderedmap | 1114 | 训练假人 |
+| master/quest/practice/practice_quest.orderedmap | 1115 | 训练假人 |
+| master/quest/practice/practice_quest.orderedmap | 1116 | 训练假人 |
+| master/quest/practice/practice_quest.orderedmap | 1117 | 训练假人 |
+| master/quest/practice/practice_quest.orderedmap | 1118 | 训练假人 |
+| master/quest/practice/practice_quest.orderedmap | 1119 | 训练假人 |
+| master/quest/practice/practice_quest.orderedmap | 1120 | 训练假人 |
+| master/quest/practice/practice_quest.orderedmap | 1121 | 训练假人 |
+| master/quest/practice/practice_quest.orderedmap | 1122 | 训练假人 |
+| master/quest/practice/practice_quest.orderedmap | 1123 | 训练假人 |
+| master/quest/practice/practice_quest_folder.orderedmap | 101 | 训练假人 |
+| master/string/custom_ability_string.orderedmap | gm_direct_hits | GM 武器 |
+
+## 整成员排除清单
+
+| 逻辑路径 | CDN 成员 | 原因 |
+|---|---|---|
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_noroi_waraboss__difficulity10_shot4.action.dsl.amf3.deflate | production/upload/05/4d9f6eb79f243f46b4e4ce3500f25cb2fbad3d | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_mamori_waraboss__difficulity10_gravity1.action.dsl.amf3.deflate | production/upload/07/077b398059c84848fccbb34d569df9be166193 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_typed_waraboss$multi_ability.action.dsl.amf3.deflate | production/upload/0c/954516f8d62d1bd6826c932b7c9a34e467cf32 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_typed_waraboss$multi_skill.action.dsl.amf3.deflate | production/upload/0e/db5fb2540f3958535e0fa1e6626cdb8138ebeb | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_waraboss__difficulity10_skill_shot1.action.dsl.amf3.deflate | production/upload/16/0395eeab4baf3bd092ea942d0febc2586dd13a | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_tsuyoi_waraboss__difficulity10_shot2.action.dsl.amf3.deflate | production/upload/18/a8f055caf7c809dcc9487e828838300977edf2 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_mamori_waraboss__difficulity10_skill_shot1.action.dsl.amf3.deflate | production/upload/20/04b0ba6d6678b1e13bff423135db1f140f5559 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_tsuyoi_waraboss__difficulity10_skill_shot2.action.dsl.amf3.deflate | production/upload/21/590ee38a4880a215321befe9233b181de0f933 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_waraboss_hayai__difficulity10_shot2.action.dsl.amf3.deflate | production/upload/29/220bc1a06c5eaab2f563df34c2446089b722c1 | 训练假人 |
+| battle/terrain/practice_quest/super_dummy_mamori.amf3.deflate | production/upload/2c/7356d7e5bc5451848c860f31b28a89007b39f8 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_typed_waraboss$ability.action.dsl.amf3.deflate | production/upload/31/c8feeffc73a98eb314c62ff791895e4a935468 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_noroi_waraboss__difficulity10_skill_shot2.action.dsl.amf3.deflate | production/upload/32/468e2f8c5a9925e63f7ae40e69b486a2196a73 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_mamori_waraboss__difficulity10_shild2.action.dsl.amf3.deflate | production/upload/32/f4d12208cb8f5f0209b88369b9e4b743c3c2df | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_waraboss_katai__difficulity10_shot3.action.dsl.amf3.deflate | production/upload/37/f07a45acba7135850f1c8d33bb397a79f481d5 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_mamori_waraboss__difficulity10_shild1.action.dsl.amf3.deflate | production/upload/39/6ecd22ed37da37b3944ee322d6e03886806794 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_typed_waraboss$all_damage.action.dsl.amf3.deflate | production/upload/3c/a6801824829bcd51855833ab7bbce398f3ece7 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$pre_super_dummy_tough_funnel.action.dsl.amf3.deflate | production/upload/45/384f055435161b83c6197599e845613b09c255 | 训练假人 |
+| battle/action/skill/action/ability_skill/gm_weapon$direct_hits.action.dsl.amf3.deflate | production/upload/49/9b3fd398e81c4aaa40873d826b433fdad1e418 | GM 武器 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_tsuyoi_waraboss__difficulity10_shot3.action.dsl.amf3.deflate | production/upload/53/87575f87876c62e1c04b78c95d73c972f19c0b | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_typed_waraboss$pf.action.dsl.amf3.deflate | production/upload/57/b5a18f6d8bdd6415174d72d9d9e828005af995 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_waraboss_hayai__difficulity10_skill_shot1.action.dsl.amf3.deflate | production/upload/5c/643dde29f32783ffc6f754e0786ab787fa90c8 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_mamori_waraboss__difficulity10_funnel_shot1_single.action.dsl.amf3.deflate | production/upload/68/49aff782fc803cb4c941d4fbc1f02002e921a7 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_waraboss_katai__difficulity10_shot1.action.dsl.amf3.deflate | production/upload/71/3e691d755b6c052a80f07c0507f785f902ae99 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$pre_super_dummy_katai.action.dsl.amf3.deflate | production/upload/72/3fd4333317b422a6b539b0cea456fafeaf4a2e | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_typed_waraboss$multi_direct.action.dsl.amf3.deflate | production/upload/73/984707809f0fef0e16f7bb8d7d9be24133544e | 训练假人 |
+| battle/terrain/practice_quest/super_dummy_noroi.amf3.deflate | production/upload/74/c48042c22728390135409a92b3407a9fdbe12f | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$pre_super_dummy_tsuyoi.action.dsl.amf3.deflate | production/upload/76/7a841717860c5704fe17c2b444d703d431b71f | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_noroi_waraboss__difficulity10_shot1.action.dsl.amf3.deflate | production/upload/76/fc88f0730ffef75d9ee951777ce09a155c0c6a | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_tough_waraboss__attack.action.dsl.amf3.deflate | production/upload/80/939f9b817c5f022e59f221a1570262029e3272 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_tough_waraboss__heal.action.dsl.amf3.deflate | production/upload/82/2e8702a360e3c173ce88df10de188851725370 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_waraboss_hayai__difficulity10_shot1.action.dsl.amf3.deflate | production/upload/82/351dfe470c54c2901c06578c384fd7ff7caa78 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$pre_super_dummy_tough.action.dsl.amf3.deflate | production/upload/8a/efb608c92fc507593077025937a51694d959c3 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_mamori_waraboss__difficulity10_ex_shot2.action.dsl.amf3.deflate | production/upload/8c/03d65a82043a11a350eb125551b1fdd9312f10 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_tsuyoi_waraboss__difficulity10_skill_shot1.action.dsl.amf3.deflate | production/upload/8e/a7f344b0158ca0cd0f257bd73857b83a2d266a | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_noroi_waraboss__difficulity10_skill_shot3.action.dsl.amf3.deflate | production/upload/94/378c0083e023add24a7b912aeeb82ed5bd8120 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_typed_waraboss$zone_practice_zone_dummy.action.dsl.amf3.deflate | production/upload/98/e2d044c90ba869accf09cdeb294af33129e714 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_typed_waraboss$multi_all_damage.action.dsl.amf3.deflate | production/upload/a0/a8fd66a23cdaec3d59a8549f805c6a191a5e03 | 训练假人 |
+| battle/terrain/practice_quest/wf_dummy_energy.amf3.deflate | production/upload/a2/ea45784b112ccad4c8116adb1c63cbc71ced42 | 训练假人 |
+| battle/terrain/practice_quest/super_dummy_katai.amf3.deflate | production/upload/a4/a381b433b8b21c68f6a990121fb9062da7961b | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_tsuyoi_waraboss__difficulity10_extra2.action.dsl.amf3.deflate | production/upload/a6/2db9a669df177ffd7daf0ec254860aff5c6079 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$pre_super_dummy_mamori.action.dsl.amf3.deflate | production/upload/a6/a3bd82c7f388bf2ca655412003e79681d15b6d | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_typed_waraboss$direct.action.dsl.amf3.deflate | production/upload/a9/67db27db139b3fe93f155a3c3b444cbd53ac7e | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$pre_super_dummy_noroi.action.dsl.amf3.deflate | production/upload/aa/036bf54b4a5287ebe0c0faa9359338cbd53d69 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$funnel_boss_waraboss_mamori__difficulity10_shot1.action.dsl.amf3.deflate | production/upload/aa/afddbd5d97132b9137121980d88ea76f1d2c5f | 训练假人 |
+| battle/terrain/practice_quest/super_dummy_tsuyoi.amf3.deflate | production/upload/ac/434fb9d56fae96a5bcce286406e28d094e9e20 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_mamori_waraboss__difficulity10_gravity2.action.dsl.amf3.deflate | production/upload/b0/75a484849d98b31054a53cb43d44fe40b0a14e | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_typed_waraboss$skill.action.dsl.amf3.deflate | production/upload/b4/83ae2d166cefe38ab664435130185d9f03fb5a | 训练假人 |
+| battle/terrain/practice_quest/super_dummy_hayai.amf3.deflate | production/upload/b6/9f0351a2f91616e92dccd85fc3148a58433946 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_tsuyoi_waraboss__difficulity10_funnel_shot1_single.action.dsl.amf3.deflate | production/upload/b8/cd1fecaefa116a5fde1f03bd8ffe0ca5e212fc | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_waraboss__difficulity10_funnel_shot1_single.action.dsl.amf3.deflate | production/upload/bd/9202b9cdf0bcab02d9ad9ea84bdecb79dcc1de | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_typed_waraboss$zone_practice_zone_dummies.action.dsl.amf3.deflate | production/upload/cb/0110cfed8d4cc4d2712abadd0b37dc78263a67 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_noroi_waraboss__difficulity10_shot3.action.dsl.amf3.deflate | production/upload/d1/1a1a501ccf47bd42ff03b982ec09618f5df862 | 训练假人 |
+| battle/action/item/action/wf_dummy_skill_charge_half.action.dsl.amf3.deflate | production/upload/d4/6ea85647b6de4ef31612f0cb21d5720430e0d9 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_waraboss_katai__difficulity10_shot2.action.dsl.amf3.deflate | production/upload/d7/3e5f2cfeac699c6a8e0edb1f79d9429932cc6b | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$pre_super_dummy_hayai.action.dsl.amf3.deflate | production/upload/d9/14f62c99cd4ca47868ccd914e9395d301d00bc | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_tsuyoi_waraboss__difficulity10_extra3.action.dsl.amf3.deflate | production/upload/d9/be3771b0f3b0817a2e7a27cf45bcf9f5d9a689 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_noroi_waraboss__difficulity10_shot2.action.dsl.amf3.deflate | production/upload/de/83fd0124cf83b00903a49ebe6dc16ed59e6433 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$funnel_boss_waraboss_tsuyoi__difficulity10_shot1.action.dsl.amf3.deflate | production/upload/df/c24021ebb8c98e38cac17b6e40319855fad678 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_noroi_waraboss__difficulity10_skill_shot1.action.dsl.amf3.deflate | production/upload/e5/54b0143a0bfe4f04023ab2c663c94fca45f8d4 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_mamori_waraboss__difficulity10_ex_shot1.action.dsl.amf3.deflate | production/upload/ea/3ff4e1607b69cdeb98451961bb83fe7602b9a7 | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_typed_waraboss$multi_pf.action.dsl.amf3.deflate | production/upload/f3/1614ef67d91a6dd7a40b98a948ee8a7476167e | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_tsuyoi_waraboss__difficulity10_shot1.action.dsl.amf3.deflate | production/upload/f4/2929e2c29b7a223bacdf23717221180d321aaa | 训练假人 |
+| battle/action/enemy/action/boss_waraboss/boss_super_waraboss$boss_tsuyoi_waraboss__difficulity10_extra1.action.dsl.amf3.deflate | production/upload/f6/3cb1089193ff778a147697e332a0b401c4a60a | 训练假人 |
+
+## 后续引用审查
+
+对我方链最终改动成员中可解码表的键和叶值扫描精确 GM id 5990001–5990006，
+找到 30 个叶值命中；这些命中均已纳入排除策略。
+
+后续边追加的引用：
+- master/battle/item/executable_instant_item_level.orderedmap / wf_dummy_skill_charge_half：训练假人后续引用，源 pinball-1.4.200-1.4.201-1-ginovi-text-c8601-local.zip。
+
+1.4.156→1.4.157 虽名 typed-dummies-record-fix，实际只有公共 item/sprite_sheet 图集；
+其功能为魂珠图集修复，保留。1.4.192→193 的第二分包为杰拉尔德语音，同样保留。
+1.4.153→154 modchar-stack-cap 是角色平衡：无上限成长改最多3次、单次数值×1.3并封顶；不是调试，保留。
+1.4.196→197 / 197→198 平衡源脚本显式排除 five-boss-atlas-slim 测试边；本链不含该边。
+1.4.198→199 / 201→202 为真实高难 Boss/Funnel 等级及伴生变量补行，保留；1.4.200→201 的训练道具等级键另行剔除。
+
+## 需重新排期的决战副本
+
+共 72 个可玩 quest id，其中主线 Boss 领主战 45 个、共同决战 27 个。
+以下每一项均为 **需重新排期，开放时间由灰定**；本包保留源表时间，不做排期决定。
+源表没有给出时区，时间时区未核实；(None) 表示未填结束时间。关卡原名里的 ::quest_rank:: 为客户端替换标记。
+
+| quest id | 副本 | 当前开放时间 | 当前条件 |
+|---|---|---|---|
+| 1080001 | 歼灭者（主线 Boss 领主战，档位 1） | 2000-01-01 00:00:00 → (None) | 主线 9-5-2 通关（quest id 9005002）；推荐属性代码 5；c73=true（条件语义未核实） |
+| 1080002 | 歼灭者（主线 Boss 领主战，档位 2） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1080001 通关（章/节点/档 1/80/1）；推荐属性代码 5；c73=true（条件语义未核实） |
+| 1080003 | 歼灭者（主线 Boss 领主战，档位 3） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1080002 通关（章/节点/档 1/80/2）；推荐属性代码 5；c73=true（条件语义未核实） |
+| 1080004 | 歼灭者（主线 Boss 领主战，档位 4） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1080003 通关（章/节点/档 1/80/3）；推荐属性代码 5；c73=true（条件语义未核实） |
+| 1080005 | 歼灭者（主线 Boss 领主战，档位 5） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1080004 通关（章/节点/档 1/80/4）；推荐属性代码 5；c73=true（条件语义未核实） |
+| 1081001 | 丑王奥格（主线 Boss 领主战，档位 1） | 2000-01-01 00:00:00 → (None) | 主线 8-14-1 通关（quest id 8014001）；推荐属性代码 4；c73=true（条件语义未核实） |
+| 1081002 | 丑王奥格（主线 Boss 领主战，档位 2） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1081001 通关（章/节点/档 1/81/1）；推荐属性代码 4；c73=true（条件语义未核实） |
+| 1081003 | 丑王奥格（主线 Boss 领主战，档位 3） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1081002 通关（章/节点/档 1/81/2）；推荐属性代码 4；c73=true（条件语义未核实） |
+| 1081004 | 丑王奥格（主线 Boss 领主战，档位 4） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1081003 通关（章/节点/档 1/81/3）；推荐属性代码 4；c73=true（条件语义未核实） |
+| 1081005 | 丑王奥格（主线 Boss 领主战，档位 5） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1081004 通关（章/节点/档 1/81/4）；推荐属性代码 4；c73=true（条件语义未核实） |
+| 1082001 | 魔王（主线 Boss 领主战，档位 1） | 2000-01-01 00:00:00 → (None) | 主线 7-14-2 通关（quest id 7014002）；推荐属性代码 4；c73=true（条件语义未核实） |
+| 1082002 | 魔王（主线 Boss 领主战，档位 2） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1082001 通关（章/节点/档 1/82/1）；推荐属性代码 4；c73=true（条件语义未核实） |
+| 1082003 | 魔王（主线 Boss 领主战，档位 3） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1082002 通关（章/节点/档 1/82/2）；推荐属性代码 4；c73=true（条件语义未核实） |
+| 1082004 | 魔王（主线 Boss 领主战，档位 4） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1082003 通关（章/节点/档 1/82/3）；推荐属性代码 4；c73=true（条件语义未核实） |
+| 1082005 | 魔王（主线 Boss 领主战，档位 5） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1082004 通关（章/节点/档 1/82/4）；推荐属性代码 4；c73=true（条件语义未核实） |
+| 1083001 | 上位歼灭者（主线 Boss 领主战，档位 1） | 2000-01-01 00:00:00 → (None) | 主线 9-9-2 通关（quest id 9009002）；推荐属性代码 5；c73=true（条件语义未核实） |
+| 1083002 | 上位歼灭者（主线 Boss 领主战，档位 2） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1083001 通关（章/节点/档 1/83/1）；推荐属性代码 5；c73=true（条件语义未核实） |
+| 1083003 | 上位歼灭者（主线 Boss 领主战，档位 3） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1083002 通关（章/节点/档 1/83/2）；推荐属性代码 5；c73=true（条件语义未核实） |
+| 1083004 | 上位歼灭者（主线 Boss 领主战，档位 4） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1083003 通关（章/节点/档 1/83/3）；推荐属性代码 5；c73=true（条件语义未核实） |
+| 1083005 | 上位歼灭者（主线 Boss 领主战，档位 5） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1083004 通关（章/节点/档 1/83/4）；推荐属性代码 5；c73=true（条件语义未核实） |
+| 1084001 | 形似弁天的魔物（主线 Boss 领主战，档位 1） | 2000-01-01 00:00:00 → (None) | 主线 10-8-1 通关（quest id 10008001）；推荐属性代码 2；c73=true（条件语义未核实） |
+| 1084002 | 形似弁天的魔物（主线 Boss 领主战，档位 2） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1084001 通关（章/节点/档 1/84/1）；推荐属性代码 2；c73=true（条件语义未核实） |
+| 1084003 | 形似弁天的魔物（主线 Boss 领主战，档位 3） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1084002 通关（章/节点/档 1/84/2）；推荐属性代码 2；c73=true（条件语义未核实） |
+| 1084004 | 形似弁天的魔物（主线 Boss 领主战，档位 4） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1084003 通关（章/节点/档 1/84/3）；推荐属性代码 2；c73=true（条件语义未核实） |
+| 1084005 | 形似弁天的魔物（主线 Boss 领主战，档位 5） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1084004 通关（章/节点/档 1/84/4）；推荐属性代码 2；c73=true（条件语义未核实） |
+| 1085001 | 异形歼灭者（主线 Boss 领主战，档位 1） | 2000-01-01 00:00:00 → (None) | 主线 10-14-1 通关（quest id 10014001）；推荐属性代码 1；c73=true（条件语义未核实） |
+| 1085002 | 异形歼灭者（主线 Boss 领主战，档位 2） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1085001 通关（章/节点/档 1/85/1）；推荐属性代码 1；c73=true（条件语义未核实） |
+| 1085003 | 异形歼灭者（主线 Boss 领主战，档位 3） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1085002 通关（章/节点/档 1/85/2）；推荐属性代码 1；c73=true（条件语义未核实） |
+| 1085004 | 异形歼灭者（主线 Boss 领主战，档位 4） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1085003 通关（章/节点/档 1/85/3）；推荐属性代码 1；c73=true（条件语义未核实） |
+| 1085005 | 异形歼灭者（主线 Boss 领主战，档位 5） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1085004 通关（章/节点/档 1/85/4）；推荐属性代码 1；c73=true（条件语义未核实） |
+| 1086001 | 吞噬星辰之物（主线 Boss 领主战，档位 1） | 2000-01-01 00:00:00 → (None) | 主线 11-6-2 通关（quest id 11006002）；推荐属性代码 5；c73=true（条件语义未核实） |
+| 1086002 | 吞噬星辰之物（主线 Boss 领主战，档位 2） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1086001 通关（章/节点/档 1/86/1）；推荐属性代码 5；c73=true（条件语义未核实） |
+| 1086003 | 吞噬星辰之物（主线 Boss 领主战，档位 3） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1086002 通关（章/节点/档 1/86/2）；推荐属性代码 5；c73=true（条件语义未核实） |
+| 1086004 | 吞噬星辰之物（主线 Boss 领主战，档位 4） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1086003 通关（章/节点/档 1/86/3）；推荐属性代码 5；c73=true（条件语义未核实） |
+| 1086005 | 吞噬星辰之物（主线 Boss 领主战，档位 5） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1086004 通关（章/节点/档 1/86/4）；推荐属性代码 5；c73=true（条件语义未核实） |
+| 1087001 | 咒剑（主线 Boss 领主战，档位 1） | 2000-01-01 00:00:00 → (None) | 主线 12-4-1 通关（quest id 12004001）；推荐属性代码 5；c73=true（条件语义未核实） |
+| 1087002 | 咒剑（主线 Boss 领主战，档位 2） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1087001 通关（章/节点/档 1/87/1）；推荐属性代码 5；c73=true（条件语义未核实） |
+| 1087003 | 咒剑（主线 Boss 领主战，档位 3） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1087002 通关（章/节点/档 1/87/2）；推荐属性代码 5；c73=true（条件语义未核实） |
+| 1087004 | 咒剑（主线 Boss 领主战，档位 4） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1087003 通关（章/节点/档 1/87/3）；推荐属性代码 5；c73=true（条件语义未核实） |
+| 1087005 | 咒剑（主线 Boss 领主战，档位 5） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1087004 通关（章/节点/档 1/87/4）；推荐属性代码 5；c73=true（条件语义未核实） |
+| 1088001 | 终始之龙（主线 Boss 领主战，档位 1） | 2000-01-01 00:00:00 → (None) | 主线 12-10-1 通关（quest id 12010001）；推荐属性代码 5；c73=true（条件语义未核实） |
+| 1088002 | 终始之龙（主线 Boss 领主战，档位 2） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1088001 通关（章/节点/档 1/88/1）；推荐属性代码 5；c73=true（条件语义未核实） |
+| 1088003 | 终始之龙（主线 Boss 领主战，档位 3） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1088002 通关（章/节点/档 1/88/2）；推荐属性代码 5；c73=true（条件语义未核实） |
+| 1088004 | 终始之龙（主线 Boss 领主战，档位 4） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1088003 通关（章/节点/档 1/88/3）；推荐属性代码 5；c73=true（条件语义未核实） |
+| 1088005 | 终始之龙（主线 Boss 领主战，档位 5） | 2000-01-01 00:00:00 → (None) | 前置领主战 quest id 1088004 通关（章/节点/档 1/88/4）；推荐属性代码 5；c73=true（条件语义未核实） |
+| 2025001 | 伊尔考普斯（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2025：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+| 2026001 | 伊萨巴迪卡（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2026：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+| 2027001 | 伊劳德雷斯（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2027：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+| 2028001 | 伊尔格拉乌（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2028：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+| 2029001 | 伊尔梅塔雷（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2029：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+| 2030001 | 伊尔昂斯拉（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2030：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+| 2035001 | 青之女王（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2035：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+| 2037001 | 赤之女王（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2037：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+| 2038001 | 碧之女王（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2038：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+| 2039001 | 皓之女王（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2039：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+| 2040001 | 金之女王（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2040：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+| 2041001 | 墨之女王（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2041：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+| 2051001 | 火魔奥尔塔尼亚（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2051：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+| 2052001 | 水鬼斯拉姆冈（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2052：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+| 2053001 | 雷龟普罗格雷奥（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2053：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+| 2054001 | 风师亚特摩西亚（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2054：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+| 2055001 | 光蛛杜梅欧（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2055：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+| 2056001 | 暗凤希亚特利欧（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2056：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+| 2080001 | 歼灭者（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2080：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+| 2081001 | 丑王奥格（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2081：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+| 2082001 | 魔王（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2082：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+| 2083001 | 上位歼灭者（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2083：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+| 2084001 | 形似弁天的魔物（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2084：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+| 2085001 | 异形歼灭者（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2085：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+| 2086001 | 吞噬星辰之物（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2086：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+| 2087001 | 咒剑（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2087：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+| 2088001 | 终始之龙（共同决战，档位 1） | 2000-01-01 00:00:00 → (None)；活动 2088：2000-01-01 00:00:00 → (None) | 关卡 c7–c31 无显式前置（均为空或 (None)）；活动 c10=(None)、c14=(None)、c18=(None)、c19=(None)；活动字段运行时含义未核实 |
+
+1098001 是魂珠兑换商店隐藏过期锚点，用来满足客户端节点构造；不作为可玩副本排期。
+已扫描我方终态所有改过的 master/quest/*quest.orderedmap：新增 boss_battle_quest 46叶（45可玩+1隐藏锚点）、hard_multi_event_quest 27叶、practice_quest 21叶（全部训练剔除）。
+149→150、150→151、151→152 的诅咒r4/深渊二期/PARADOX包逐成员核实没有 quest 表，因此不增加副本排期项。
+完整源条件列已保存在 schedule.json，包括关卡 c7–c31 和共同决战活动 c10–c22，无法确认的运行时含义明确写为未核实。

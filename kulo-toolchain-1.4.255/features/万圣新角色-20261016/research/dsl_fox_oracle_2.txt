@@ -1,0 +1,134 @@
+###### battle/action/skill/action/rare5/fox_oracle$fox_oracle_2
+[
+  "ActionDsl"
+  1
+  ["None"]
+  false
+  false
+  false
+  false
+  false
+  false
+  false
+  0
+  [
+    "Block"
+    [
+      ["Command", ["ShakeCamera", 3]]
+      [
+        "Command"
+        [
+          "CreateHitArea"
+          "*"
+          -1
+          ["AB"]
+          0
+          0
+          0
+          false
+          false
+          ["Rectangle", [{"min": 1500, "max": 1500}], [{"min": 2000, "max": 2000}]]
+          ["Center"]
+          ["Center"]
+          ["Single"]
+          ["SpecifyHitAreaLifetimeDirectly", 30]
+          ["CalculatedUsingMaxNumOfHits", 1]
+          ["None"]
+          false
+          false
+          ["None"]
+          0
+          [
+            "Block"
+            [
+              [
+                "Command"
+                ["ShowEffect", "画面全体用の雷演出", ["SpecifyEffectDirectly", "battle/effect/skill_unique/fox_oracle/fox_oracle_all"], -1, ["ForesideOfCharacter"], ["PlayOnlyFirstSequence"], ["AB"], 0, 0, 0, false, false, ["None"]]
+              ]
+            ]
+          ]
+          1
+          2
+          [
+            "Block"
+            [["Command", ["CreateCondition", 2, [["ACParalysis", [{"min": 480, "max": 600}], true]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, false, "", null, false, 3, [{"min": 1, "max": 1}], false]]]
+          ]
+          0
+          0
+          ["None"]
+        ]
+      ]
+      [
+        "Event"
+        [
+          "Wait"
+          1
+          "*"
+          [
+            "Block"
+            [
+              [
+                "Command"
+                [
+                  "CreateHitArea"
+                  "*"
+                  -1
+                  ["AB"]
+                  0
+                  0
+                  0
+                  false
+                  false
+                  ["Rectangle", [{"min": 1500, "max": 1500}], [{"min": 2000, "max": 2000}]]
+                  ["Center"]
+                  ["Center"]
+                  ["Single"]
+                  ["SpecifyHitAreaLifetimeDirectly", 30]
+                  ["CalculatedUsingMaxNumOfHits", 1]
+                  ["None"]
+                  false
+                  false
+                  ["None"]
+                  3
+                  ["Block", []]
+                  4
+                  5
+                  [
+                    "Block"
+                    [
+                      [
+                        "Command"
+                        [
+                          "CreateNormalAttack"
+                          5
+                          255
+                          []
+                          []
+                          120
+                          [{"min": 15.5, "max": 18}]
+                          [{"min": 0, "max": 0}]
+                          false
+                          false
+                          false
+                          false
+                          false
+                          [{"min": 20, "max": 20}]
+                          [{"min": 5, "max": 5}]
+                          ["SpecifyHitEffectDirectly", ["SpecifyEffectDirectly", "battle/effect/skill_unique/fox_oracle/fox_oracle_hit"], false]
+                          true
+                        ]
+                      ]
+                    ]
+                  ]
+                  0
+                  0
+                  ["None"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ]
+]

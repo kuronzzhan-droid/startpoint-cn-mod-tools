@@ -1,0 +1,94 @@
+###### battle/action/skill/action/rare4/whitedog_beast$whitedog_beast_2
+[
+  "ActionDsl"
+  1
+  ["None"]
+  false
+  false
+  false
+  false
+  false
+  false
+  false
+  0
+  [
+    "Block"
+    [
+      ["Command", ["HideCharacter", -17, 52]]
+      [
+        "Command"
+        [
+          "ShowEffect"
+          "自己ダミー演出"
+          ["SpecifyEffectDirectly", "battle/effect/skill_unique/whitedog_beast/whitedog_beast_player_back"]
+          -17
+          ["ForesideOfCharacter"]
+          ["SpecifyEffectLifetimeDirectly", 52]
+          ["AB"]
+          0
+          0
+          0
+          true
+          false
+          ["Some", [{"min": 6, "max": 6}]]
+        ]
+      ]
+      [
+        "Command"
+        ["ShowEffect", "シャボン玉演出", ["SpecifyEffectDirectly", "battle/effect/skill_unique/whitedog_beast/whitedog_beast"], -1, ["ForesideOfCharacter"], ["PlayOnlyFirstSequence"], ["AB"], 0, 0, 0, false, false, ["None"]]
+      ]
+      [
+        "Event"
+        [
+          "Wait"
+          40
+          "*"
+          [
+            "Block"
+            [
+              [
+                "Command"
+                [
+                  "CreateHitArea"
+                  "*"
+                  -1
+                  ["AB"]
+                  0
+                  0
+                  0
+                  false
+                  false
+                  ["Rectangle", [{"min": 1500, "max": 1500}], [{"min": 2000, "max": 2000}]]
+                  ["Center"]
+                  ["Center"]
+                  ["Single"]
+                  ["SpecifyHitAreaLifetimeDirectly", 28]
+                  ["CalculatedUsingMaxNumOfHits", 4]
+                  ["None"]
+                  false
+                  false
+                  ["None"]
+                  0
+                  ["Block", []]
+                  1
+                  2
+                  [
+                    "Block"
+                    [
+                      ["Command", ["CreateNormalAttack", 2, 255, [], [], 30, [{"min": 3.875, "max": 4.5}], [{"min": 0, "max": 0}], false, false, false, false, false, [{"min": 4.5, "max": 4.5}], [{"min": 0.75, "max": 0.75}], ["Fine"], true]]
+                      ["Command", ["CreateCondition", 2, [["ACFrozen", [{"min": 1050, "max": 1200}], true]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], true, false, "", null, false, 3, [{"min": 1, "max": 1}], false]]
+                      ["Command", ["ShakeCamera", 2]]
+                    ]
+                  ]
+                  0
+                  0
+                  ["None"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ]
+]

@@ -1,0 +1,108 @@
+--- LOCAL
++++ TEST
+@@ -598,18 +598,6 @@
+ getlocal_1 []
+-getproperty ['createdByPrimaryBattle']
+-iffalse [] -> #609
+-getlocal_2 []
+-getproperty ['createdByDirectAttack']
+-iffalse [] -> #609
+-getlocal_1 []
+ getproperty ['hitEffect']
+ getproperty ['index']
+-pushbyte [1]
+-ifne [] -> #609
+-returnvoid []
+-getlocal_1 []
+-getproperty ['hitEffect']
+-getproperty ['index']
+-pushbyte [0]
+-ifne [] -> #632
++pushbyte [0]
++ifne [] -> #620
+ getlocal_1 []
+@@ -620,3 +608,3 @@
+ getproperty ['randomRotation']
+-iftrue [] -> #632
++iftrue [] -> #620
+ getlocal_1 []
+@@ -630,3 +618,3 @@
+ pushstring ['battle/common/layer0/attack_to_hostile_hit']
+-ifne [] -> #632
++ifne [] -> #620
+ returnvoid []
+@@ -635,3 +623,3 @@
+ convert_b []
+-iffalse [] -> #689
++iffalse [] -> #677
+ findproperty ['showDamageFont']
+@@ -661,3 +649,3 @@
+ convert_b []
+-iftrue [] -> #667
++iftrue [] -> #655
+ pop []
+@@ -713,7 +701,7 @@
+ pushbyte [255]
+-ifne [] -> #722
++ifne [] -> #710
+ getlocal [24]
+-iffalse [] -> #718
++iffalse [] -> #706
+ pushstring ['sound_effect/battle_common/se_enemy_damage_damage_resistance_down_critical']
+-jump [] -> #719
++jump [] -> #707
+ pushstring ['sound_effect/battle_common/se_enemy_damage_damage_resistance_down_normal']
+@@ -721,10 +709,10 @@
+ setlocal [23]
+-jump [] -> #744
+-getlocal [7]
+-pushbyte [0]
+-ifne [] -> #733
++jump [] -> #732
++getlocal [7]
++pushbyte [0]
++ifne [] -> #721
+ getlocal [24]
+-iffalse [] -> #729
++iffalse [] -> #717
+ pushstring ['sound_effect/battle_common/se_enemy_damage_critical']
+-jump [] -> #730
++jump [] -> #718
+ pushstring ['sound_effect/battle_common/se_enemy_damage_normal']
+@@ -732,10 +720,10 @@
+ setlocal [23]
+-jump [] -> #744
+-getlocal [7]
+-pushbyte [1]
+-ifne [] -> #744
++jump [] -> #732
++getlocal [7]
++pushbyte [1]
++ifne [] -> #732
+ getlocal [24]
+-iffalse [] -> #740
++iffalse [] -> #728
+ pushstring ['sound_effect/battle_common/se_enemy_damage_damage_resistance_up_critical']
+-jump [] -> #741
++jump [] -> #729
+ pushstring ['sound_effect/battle_common/se_enemy_damage_damage_resistance_up_normal']
+@@ -743,3 +731,3 @@
+ setlocal [23]
+-jump [] -> #744
++jump [] -> #732
+ findproperty ['viewOrder']
+@@ -757,3 +745,3 @@
+ not []
+-iffalse [] -> #764
++iffalse [] -> #752
+ pop []
+@@ -764,3 +752,3 @@
+ convert_b []
+-iffalse [] -> #771
++iffalse [] -> #759
+ pop []
+@@ -771,3 +759,3 @@
+ convert_b []
+-iffalse [] -> #777
++iffalse [] -> #765
+ findproperty ['damageFlasher']

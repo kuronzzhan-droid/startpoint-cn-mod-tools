@@ -1,0 +1,8 @@
+# GeneralCharacterLogic/getPedestalImagePath body=17568 header=[2, 1, 1, 2] exc=[] sha=9713b7437a4eddaf978f704d4b6721ca65a63f6d24138b05817c32b97cbe9ce2
+#0000 ofs0000: getlocal_0 []
+#0001 ofs0001: pushscope []
+#0002 ofs0002: getlex ['pinball.common.data.character::CharacterPedestalImageResolver']
+#0003 ofs0005: getlocal_0 []
+#0004 ofs0006: callproperty ['resolveFull', 1]
+#0005 ofs000b: coerce ['String']
+#0006 ofs000d: returnvalue []

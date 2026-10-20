@@ -1,0 +1,159 @@
+--- LOCAL
++++ TEST
+@@ -343,2 +343,30 @@
+ getproperty ['characterId']
++pushint [149999]
++ifne [] -> #369
++getlocal_2 []
++getproperty ['logicAssets']
++pushstring ['character/white_wolf_gerald/voice/battle/skill_ready_alt_1']
++callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
++iffalse [] -> #353
++getlocal [21]
++pushstring ['character/white_wolf_gerald/voice/battle/skill_ready_alt_1']
++callpropvoid ['http://adobe.com/AS3/2006/builtin::push', 1]
++getlocal_2 []
++getproperty ['logicAssets']
++pushstring ['character/white_wolf_gerald/voice/battle/skill_ready_alt_2']
++callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
++iffalse [] -> #361
++getlocal [21]
++pushstring ['character/white_wolf_gerald/voice/battle/skill_ready_alt_2']
++callpropvoid ['http://adobe.com/AS3/2006/builtin::push', 1]
++getlocal_2 []
++getproperty ['logicAssets']
++pushstring ['character/white_wolf_gerald/voice/battle/skill_ready_alt_3']
++callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
++iffalse [] -> #369
++getlocal [21]
++pushstring ['character/white_wolf_gerald/voice/battle/skill_ready_alt_3']
++callpropvoid ['http://adobe.com/AS3/2006/builtin::push', 1]
++getlocal_2 []
++getproperty ['characterId']
+ convert_i []
+@@ -347,9 +375,12 @@
+ pushint [129992]
+-ifeq [] -> #526
++ifeq [] -> #557
+ getlocal [36]
+ pushint [139993]
+-ifeq [] -> #526
++ifeq [] -> #557
+ getlocal [36]
+ pushint [159998]
+-ifeq [] -> #526
++ifeq [] -> #557
++getlocal [36]
++pushint [149999]
++ifeq [] -> #557
+ getlocal [21]
+@@ -360,3 +391,3 @@
+ pushbyte [0]
+-ifle [] -> #442
++ifle [] -> #473
+ getlocal [21]
+@@ -379,3 +410,3 @@
+ callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
+-iffalse [] -> #442
++iffalse [] -> #473
+ getlocal [21]
+@@ -393,3 +424,3 @@
+ callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
+-iffalse [] -> #442
++iffalse [] -> #473
+ getlocal [21]
+@@ -407,3 +438,3 @@
+ callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
+-iffalse [] -> #442
++iffalse [] -> #473
+ getlocal [21]
+@@ -421,3 +452,3 @@
+ callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
+-iffalse [] -> #442
++iffalse [] -> #473
+ getlocal [21]
+@@ -435,3 +466,3 @@
+ callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
+-iffalse [] -> #442
++iffalse [] -> #473
+ getlocal [21]
+@@ -444,3 +475,3 @@
+ pushbyte [1]
+-ifle [] -> #526
++ifle [] -> #557
+ getlocal [21]
+@@ -463,3 +494,3 @@
+ callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
+-iffalse [] -> #526
++iffalse [] -> #557
+ getlocal [21]
+@@ -477,3 +508,3 @@
+ callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
+-iffalse [] -> #526
++iffalse [] -> #557
+ getlocal [21]
+@@ -491,3 +522,3 @@
+ callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
+-iffalse [] -> #526
++iffalse [] -> #557
+ getlocal [21]
+@@ -505,3 +536,3 @@
+ callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
+-iffalse [] -> #526
++iffalse [] -> #557
+ getlocal [21]
+@@ -519,3 +550,3 @@
+ callproperty ['pinball.asset.logic:ILogicAssetContainer::existsVoiceFileReader', 1]
+-iffalse [] -> #526
++iffalse [] -> #557
+ getlocal [21]
+@@ -537,3 +568,3 @@
+ setlocal [7]
+-jump [] -> #553
++jump [] -> #584
+ avm_label []
+@@ -557,3 +588,3 @@
+ convert_i []
+-iflt [] -> #538
++iflt [] -> #569
+ getlocal_3 []
+@@ -584,3 +615,3 @@
+ setlocal [7]
+-jump [] -> #600
++jump [] -> #631
+ avm_label []
+@@ -604,3 +635,3 @@
+ convert_i []
+-iflt [] -> #585
++iflt [] -> #616
+ getlocal_3 []
+@@ -626,3 +657,3 @@
+ setlocal [7]
+-jump [] -> #642
++jump [] -> #673
+ avm_label []
+@@ -646,3 +677,3 @@
+ convert_i []
+-iflt [] -> #627
++iflt [] -> #658
+ getlocal_3 []
+@@ -668,3 +699,3 @@
+ setlocal [7]
+-jump [] -> #684
++jump [] -> #715
+ avm_label []
+@@ -688,3 +719,3 @@
+ convert_i []
+-iflt [] -> #669
++iflt [] -> #700
+ getlocal_3 []
+@@ -710,3 +741,3 @@
+ setlocal [7]
+-jump [] -> #726
++jump [] -> #757
+ avm_label []
+@@ -730,3 +761,3 @@
+ convert_i []
+-iflt [] -> #711
++iflt [] -> #742
+ getlocal_3 []

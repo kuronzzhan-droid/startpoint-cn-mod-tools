@@ -1,0 +1,193 @@
+def body_ins(abc, label):
+    return asm.decode(abc.bodies[bodies.resolve(abc, label)][5])
+
+
+def find_mn(abc, label, op, name):
+    """在参考方法体里找唯一的 (op, 名字) 多名下标——不新建、不猜。"""
+    hits = {x.args[0] for x in body_ins(abc, label)
+            if x.op == asm.MNEMONICS[op] and x.args and abc.mn_name(x.args[0]).split("::")[-1].split(":")[-1] == name}
+    if len(hits) != 1:
+        raise Fail(f"multiname {name} via {op} in {label}: {sorted(hits)}")
+    return hits.pop()
+
+
+def trait_mn(abc, cls, name):
+    k = [i for i, r in enumerate(abc.instances) if abc.mn_name(r[0]).endswith("::" + cls)]
+    if len(k) != 1:
+        raise Fail("class " + cls)
+    t = [t for t in abc.instances[k[0]][6] if abc.mn_name(t.name).split(":")[-1] == name]
+    if len(t) != 1:
+        raise Fail(f"trait {cls}.{name}")
+    return t[0].name
+
+
+def patch_swf(src: Path, dst: Path) -> dict:
+    swf = SwfAbc(src)
+    abc = swf.abc
+    before_bodies = [bytes(b[5]) for b in abc.bodies]
+    pool0 = (list(abc.strings), list(abc.multinames), list(abc.ints))
+    pool = PoolEditor(abc)
+    idx = {lab: bodies.resolve(abc, lab) for lab in LOCKS}
+    for lab, bi in idx.items():
+        b = abc.bodies[bi]
+        got = sha(b[5])
+        if b[1:5] != LOCKS[lab]["header"] or not got.startswith(LOCKS[lab]["sha"]):
+            raise Fail(f"unknown method baseline for {lab}: sha {got[:12]} header {b[1:5]} (locked {LOCKS[lab]}); already patched or different client")
+    # ---------------- 锚点
+    sd = asm.decode(abc.bodies[idx["MemberImpl/scheduleDirectAttack"]][5])
+    option = expect(sd, 461, "getlex", "Option", abc)
+    expect(sd, 465, "pushstring", abc=abc, arg=abc.strings.index(MARKER))
+    expect(sd, 475, "callproperty", "Some", abc)
+    expect(sd, 476, "coerce", "Option", abc)
+    if sd[477].op != asm.MNEMONICS["pushstring"] or abc.strings[sd[477].args[0]] != b"createdByCoopCommand":
+        raise Fail("anchor 477 is not createdByCoopCommand")
+    none_mn = expect(sd, 350, "getproperty", "None", abc)
+    if sd[349].op != asm.MNEMONICS["getlex"] or sd[349].args[0] != option:
+        raise Fail("anchor 349 is not getlex Option")
+    coerce_option = sd[476].args[0]
+    expect(sd, 165, "setlocal", arg=11); expect(sd, 163, "inclocal_i", arg=9)
+    decimal = expect(sd, 239, "getlex", "Decimal_Impl_", abc)
+    expect(sd, 240, "pushbyte", arg=1)
+    from_float = expect(sd, 241, "callproperty", "fromFloat", abc)
+    expect(sd, 244, "setlocal", arg=26)
+    for at, key, val in ((412, b"enablesComboBonus", "pushfalse"), (426, b"currentCombos", "pushbyte")):
+        if sd[at].op != asm.MNEMONICS["pushstring"] or abc.strings[sd[at].args[0]] != key:
+            raise Fail(f"anchor {at} is not {key!r}")
+        expect(sd, at + 1, val)
+    if sd[427].args[0] != 0:
+        raise Fail("currentCombos literal is not 0")
+    expect(sd, 399, "pushstring"); expect(sd, 400, "getlocal", arg=26)
+    if abc.strings[sd[399].args[0]] != b"multiplierOfAttackPoint":
+        raise Fail("local 26 is not multiplierOfAttackPoint")
+    ap = asm.decode(abc.bodies[idx["EnemyImpl/applyAttack"]][5])
+    expect(ap, 596, "initproperty", "lastAttackResult", abc)
+    expect(ap, 597, "getlocal_2"); expect(ap, 598, "getproperty", "shouldShowDamageFont", abc)
+    hit_mn = expect(ap, 656, "getproperty", "hitEffect", abc)
+    primary_mn = expect(ap, 662, "getproperty", "createdByPrimaryBattle", abc)
+    direct_mn = {x.args[0] for x in ap if x.op == 0x66 and abc.mn_name(x.args[0]).endswith("createdByDirectAttack")}
+    if len(direct_mn) != 1:
+        raise Fail("createdByDirectAttack multiname not unique")
+    direct_mn = direct_mn.pop()
+    index_mn = mn_from(abc, "EnemyImpl/showHitEffect", 3, "getproperty", "index")
+    params_mn = mn_from(abc, "EnemyImpl/showHitEffect", 11, "getproperty", "params")
+    sh = body_ins(abc, "EnemyImpl/showHitEffect")
+    expect(sh, 12, "pushbyte", arg=0)
+    elem_mn = sh[13].args[0]
+    if sh[13].op != 0x66 or abc.multinames[elem_mn][0] != 0x1B:
+        raise Fail("element access multiname is not MultinameL")
+    paths_mn = mn_from(abc, "ImpactHitEffectManager/show", 18, "getproperty", "paths")
+    rot_mn = mn_from(abc, "ImpactHitEffectManager/show", 48, "getproperty", "randomRotation")
+    marker_str = abc.strings.index(MARKER)
+    gc = asm.decode(abc.bodies[idx["MemberImpl/getStatModifierSkillGaugeCharging"]][5])
+    expect(gc, 179, "getlocal_1"); expect(gc, 180, "getlocal_2"); expect(gc, 181, "add"); expect(gc, 184, "setlocal", arg=8)
+    bconst = expect(gc, 194, "getlex", "BattleConstants", abc)
+    max_mn = expect(gc, 195, "getproperty", "MAX_STAT_MIDIFIER_SKILL_GAUGE_CHARGING", abc)
+    expect(gc, 202, "setlocal", arg=8)
+    expect(gc, 203, "findproperty", "stats", abc)
+    # 其余多名：只取既有条目
+    is_leader = trait_mn(abc, "MemberImpl", "isLeader")
+    source_mn = trait_mn(abc, "MemberImpl", "source")
+    combo_calc = trait_mn(abc, "MemberImpl", "comboCalculator")
+    acc_mn = trait_mn(abc, "MemberImpl", "getConditionAccumulationCount")
+    main_id = find_mn(abc, "MemberImpl/isExchangedPowerFlip", "getproperty", "mainCharacterStringId")
+    mask_cls = find_mn(abc, "ActionEvaluator/evalCommand", "getlex", "MaskGeneral")
+    mask_bit = find_mn(abc, "ActionEvaluator/evalCommand", "getproperty", "maskBit")
+    get_combo = find_mn(abc, "ActionEvaluator/evalCommand", "callproperty", "getCombo")
+    ctk = find_mn(abc, "GeneralEnemy/testUniqueCondition", "getlex", "ConditionTargetKind")
+    unique_mn = find_mn(abc, "GeneralEnemy/testUniqueCondition", "callproperty", "Unique")
+    kyle_str = pool.string(KYLE_CODE)
+    i200 = pool.integer(KYLE_COMBO_CAP)
+    iuniq = pool.integer(CHARGE_CAP_UNIQUE)
+
+    # ---------------- 块
+    L_FLAG, L_CC = 38, 39            # scheduleDirectAttack 新局部（原 localcount 38）
+    kyle = [  # 原 #245：_loc26_ 初值之后
+        ("pushbyte", 255), ("setlocal", L_FLAG),                       # -1 = 非凯尔队长
+        ("getlocal_0",), ("callproperty", is_leader, 0), ("iffalse", "END"),
+        ("getlocal_0",), ("getproperty", source_mn), ("getproperty", main_id),
+        ("pushstring", kyle_str), ("ifne", "END"),
+        ("getlex", decimal), ("pushbyte", KYLE_ATK_MULT), ("callproperty", from_float, 1), ("convert_d",), ("setlocal", 26),
+        ("pushbyte", 0), ("setlocal", L_FLAG),
+        ("getlocal_0",), ("getproperty", combo_calc), ("setlocal", L_CC),
+        ("getlocal", L_CC), ("iffalse", "END"),
+        ("getlex", mask_cls), ("getproperty", mask_bit), ("getlocal", L_CC), ("callproperty", get_combo, 0),
+        ("convert_i",), ("bitxor",), ("convert_i",), ("setlocal", L_FLAG),
+        ("getlocal", L_FLAG), ("pushint", i200), ("ifngt", "END"),
+        ("pushint", i200), ("setlocal", L_FLAG),
+    ]
+    combo_on = [("getlocal", L_FLAG), ("pushbyte", 0), ("iflt", "END"), ("pop",), ("pushtrue",)]       # 原 #414
+    combo_val = [("getlocal", L_FLAG), ("pushbyte", 0), ("iflt", "END"), ("pop",), ("getlocal", L_FLAG)]  # 原 #428
+    block_a = [  # 原 #477：第 2 段起 hitEffect = None
+        ("getlocal", 11), ("pushbyte", 0), ("ifeq", "END"),
+        ("pop",), ("getlex", option), ("getproperty", none_mn), ("coerce", coerce_option),
+    ]
+    hit = [("getlocal_1",), ("getproperty", hit_mn)]
+    some0 = hit + [("getproperty", params_mn), ("pushbyte", 0), ("getproperty", elem_mn)]
+    block_b = [
+        ("getlocal_1",), ("getproperty", primary_mn), ("iffalse", "R2"),
+        ("getlocal_2",), ("getproperty", direct_mn), ("iffalse", "R2"),
+        *hit, ("getproperty", index_mn), ("pushbyte", 1), ("ifne", "R2"),
+        ("returnvoid",),
+        ("label", "R2"),
+        *hit, ("getproperty", index_mn), ("pushbyte", 0), ("ifne", "END"),
+        *some0, ("getproperty", rot_mn), ("iftrue", "END"),
+        *some0, ("getproperty", paths_mn), ("pushbyte", 0), ("getproperty", elem_mn),
+        ("pushstring", marker_str), ("ifne", "END"),
+        ("returnvoid",),
+    ]
+    L_N, L_SUM, L_CAP = 22, 23, 24   # getStatModifierSkillGaugeCharging 新局部（原 localcount 22）
+    charge = [  # 原 #203：官方上限钳完之后；持有固有 n 层 → 上限 1+n/50，未钳前的和在上限内就恢复
+        ("getlocal_0",), ("getlex", ctk), ("pushint", iuniq), ("callproperty", unique_mn, 1),
+        ("callproperty", acc_mn, 1), ("convert_i",), ("setlocal", L_N),
+        ("getlocal", L_N), ("pushbyte", 0), ("ifngt", "END"),
+        ("getlocal_1",), ("getlocal_2",), ("add",), ("convert_d",), ("setlocal", L_SUM),
+        ("getlocal", L_SUM), ("getlex", bconst), ("getproperty", max_mn), ("ifngt", "END"),
+        ("getlex", decimal), ("pushbyte", 1), ("getlocal", L_N), ("pushbyte", CHARGE_CAP_DIV), ("divide",), ("add",),
+        ("callproperty", from_float, 1), ("convert_d",), ("setlocal", L_CAP),
+        ("getlocal", L_SUM), ("getlocal", L_CAP), ("ifngt", "USESUM"),
+        ("getlocal", L_CAP), ("setlocal", 8), ("jump", "END"),
+        ("label", "USESUM"),
+        ("getlocal", L_SUM), ("setlocal", 8),
+    ]
+    plan = {
+        "MemberImpl/scheduleDirectAttack": [(245, kyle, asm.FORBID), (414, combo_on, asm.FORBID),
+                                            (428, combo_val, asm.FORBID), (477, block_a, asm.FORBID)],
+        "EnemyImpl/applyAttack": [(597, block_b, asm.FORBID)],
+        # #203 是官方 `if(MAX < x)` 假分支的落点 ⇒ ENTER：两条路径都要经过本块
+        "MemberImpl/getStatModifierSkillGaugeCharging": [(203, charge, asm.ENTER)],
+    }
+    report = {}
+    for lab, adds in plan.items():
+        body = abc.bodies[idx[lab]]
+        before = bytes(body[5]); header_before = list(body[1:5])
+        code, exc, merged, placed = asm.splice_many(body, [(at, asm.assemble(bl), pol) for at, bl, pol in adds])
+        if asm.unsplice_many(code, placed) != before:
+            raise Fail("not reversible: " + lab)
+        analysis = [asm.Instruction(0x02) if x.op in (0xEF, 0xF0, 0xF1) else x for x in merged]
+        metrics = asm.simulate(analysis, body[3], abc.multinames)
+        if metrics[1] != body[4] or metrics[2]:
+            raise Fail(f"stack/scope check failed: {lab} {metrics}")
+        body[1] = max(body[1], metrics[0])
+        body[2] = max(body[2], asm.block_locals(merged))
+        body[5], body[6] = code, exc
+        report[lab] = {"body": idx[lab], "before": sha(before), "after": sha(code), "inserted_at": placed,
+                       "header_before": header_before, "header_after": list(body[1:5]), "metrics": list(metrics)}
+    changed = [i for i, b in enumerate(abc.bodies) if bytes(b[5]) != before_bodies[i]]
+    if sorted(changed) != sorted(idx.values()):
+        raise Fail(f"unexpected body changes: {changed}")
+    # 常量池只追加：原有条目逐个不变
+    if abc.strings[:len(pool0[0])] != pool0[0] or abc.multinames[:len(pool0[1])] != pool0[1] or abc.ints[:len(pool0[2])] != pool0[2]:
+        raise Fail("existing constant pool entries changed")
+    data = swf.serialize()
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    dst.write_bytes(data)
+    back = SwfAbc(dst)
+    for lab, bi in idx.items():
+        if sha(back.abc.bodies[bi][5]) != report[lab]["after"]:
+            raise Fail("readback mismatch " + lab)
+    return {"source_swf_sha256": sha(src.read_bytes()), "output_swf_sha256": sha(data),
+            "source_abc_sha256": sha(SwfAbc(src).abc.serialize()), "output_abc_sha256": sha(back.abc.serialize()),
+            "methods": report, "bodies_total": len(abc.bodies), "bodies_changed": len(changed),
+            "constant_pool_appended": pool.report(),
+            "constants": {"kyle_code": KYLE_CODE, "kyle_atk_mult": KYLE_ATK_MULT, "kyle_combo_cap": KYLE_COMBO_CAP,
+                          "charge_cap_unique": CHARGE_CAP_UNIQUE, "charge_cap_formula": f"1 + stacks/{CHARGE_CAP_DIV}"}}

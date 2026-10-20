@@ -1,0 +1,280 @@
+# 工具脚本清单(自动生成 2026-10-19 22:35)
+
+手写说明见 [tools.md](tools.md)。
+
+## builder 脚本 `D:\WF\bughunt-20261014\builder`
+
+- `_lg_explore.py` — (无说明)
+- `abyss2.py` — 深渊武器二期 9 把（意见征集「深渊武器专题」采用项 #2 #3 #4 #6 #7 #8 #9 #10 #12）。
+- `all_dmg_dummies_multi.py` — 「结实假人们」新增 1112「全伤害木人们·无」：克隆 1107 链路（大木人 + 4 小木人），全部吃四类伤害，
+- `all_dmg_dummy.py` — 练习关「结实假人」新增 1111「全伤害木人·无」：四类伤害都吃，HP≈90 万亿，永续不可驱散（全伤害 -50%、3 攻击、3 防御、
+- `anim_seq_fix.py` — U_b13d0e 修复：风巨蜥 149998 land_dragon_wind_playable 像素动画时间轴。
+- `b1008d_body.py` — (无说明)
+- `balance_1008.py` — 角色平衡 1008（杰拉德 149999 / 稻穗 159991 / 白 149990 / 罗尔夫 179999），叠加在 kulo 1.4.158 视图上。
+- `balance_1008b.py` — 1008 平衡 b 版（作者「改动按表为准」），叠加在 1.4.159 上：
+- `balance_1008c.py` — 1008c 平衡（作者「改动按表为准」），叠加在 1.4.159 上：
+- `balance_1008d.py` — 角色平衡 1008d（芙拉菲修正/索恩/杰拉德/稻穗/魔王/杰拉尔/黑；旧注：杰拉德 149999 / 稻穗 159991 / 白 149990 / 罗尔夫 179999），叠加在 kulo 1.4.158 视图上。
+- `balance_1010.py` — 角色平衡 1010（腾讯表「以下为 1.4.184 之后新增」各块），叠加在 kulo 1.4.195 视图上 → 1.4.196。
+- `balance_1012.py` — 角色平衡 1012（腾讯表 1.4.196 之后新增各块），叠加在 kulo 1.4.196 视图上 → 1.4.197。
+- `balance_1014.py` — 角色平衡 1014（腾讯表 1.4.197 之后新增各块），叠加在 kulo 1.4.197 视图上 → 1.4.198。
+- `balance_gerard2.py` — 杰拉尔 129992 追加：能力3 删 8倍追击、能力伤害 +200% → 技能伤害 +200%；能力5 删 12倍、技伤独立乘区 20% → 10%、删能伤独立乘区。叠加在 1.4.184 上。
+- `balance_ginovi.py` — 基诺维平衡（作者「改动按表为准」），叠加在 1.4.159 上：
+- `balance_ginovi2.py` — 基诺维 抗性下降 ×0.8（表 2026.10.14 13:15「技能给的伤害抗性降低太多了」），叠加在 kulo 1.4.199 视图上 → 1.4.200。
+- `balance_landdragon.py` — 风巨蜥 149998：能力2 25连击回槽加 CT 1 秒；能力6 发动2次技能回槽加 CT 3 秒、Fever 能力伤害独立乘区 15→30% 改为 10%。叠加在 1.4.175 上。
+- `balance_rabbit.py` — 芙拉菲 149987 能力6 追加：风共鸣开局给自身 999 层 13999010（v23+：充能速度上限 999%）；发动技能时自身充能速度 +10%（限 99 次）。叠加在 1.4.181 上。
+- `balance_wolf_scythe.py` — 罗尔夫(中秋) 149986 能力2：非队长时全队无法获得能力/武器类技能槽（423 掩码 8）；深渊·裂空战镰 8000107 连击→技能槽 加 CT 5 秒。叠加在 1.4.182 上。
+- `base149.py` — (无说明)
+- `base_stats_3.py` — 魔王/深渊之兽/歼灭者 基础 HP/ATK 降到官方 5★「特殊」(character c6=4) lv100 中位数；全等级点按 lv100 比例缩放。叠加在 1.4.163 上。
+- `bh_bbq.py` — (无说明)
+- `bh_c8601.py` — Which tip-view zips carry eii/dii, and does each version still contain the dummy item key?
+- `bh_c8601b.py` — (无说明)
+- `bh_item.py` — (无说明)
+- `bh_items.py` — (无说明)
+- `bh_items2.py` — (无说明)
+- `bh_items3.py` — (无说明)
+- `bh_lk.py` — (无说明)
+- `bh_soul.py` — (无说明)
+- `bh_tmp.py` — (无说明)
+- `bh_var.py` — (无说明)
+- `bh_vargap.py` — (无说明)
+- `c_body.py` — (无说明)
+- `candidates.py` — (无说明)
+- `cmp_gen.py` — (无说明)
+- `delta.py` — 1.4.150 → 1.4.151 增量包：全量重建（CA_STAGE_DIR=../full151）后，只收与已安装 1.4.150 zip 不同的成员。
+- `dsltools.py` — (无说明)
+- `dummy_variants.py` — 全伤害木人（1111 单体 / 1112 多体）各加两个变体：能量瓶（场地道具每 5 秒刷新，拾取全队技能槽 +50%）、
+- `dump.py` — (无说明)
+- `dump_char.py` — (无说明)
+- `enum_probe6.py` — (无说明)
+- `enum_probe6b.py` — (无说明)
+- `fb_dmg_rank.py` — (无说明)
+- `fb_dup_probe.py` — (无说明)
+- `fb_fill_probe.py` — (无说明)
+- `fb_hp_half.py` — 五重决战 全部 boss 血量 -50%：boss_battle_quest 文件夹 1/99 每个 quest 的 c99（boss HP 修正）×0.5。叠加在 1.4.162 上。
+- `fb_layer0_gate.py` — 五重每轮 layer0 门禁：最坏三人房（3 队 × 6 = 18 个不同角色，按 layer0 占用贪心挑最重）+ 该轮全部 boss/召唤物。
+- `fb_layer0_sim.py` — 五重 layer0 图集门禁模拟器（只读）。
+- `fb_ring_probe.py` — (无说明)
+- `fb_slim196_build.py` — 1.4.195 -> 1.4.196：五重 boss 侧 layer0 瘦身（只挪 atlas 区域 x/y，带 1px 环；渲染不变）。
+- `fb_slim196_repack.py` — 五重 boss/召唤物/特效/场地表：带 1px 外扩环的无损重排（只改 atlas 记录的 x/y）。
+- `fb_slot_probe.py` — 五重 boss 招式槽：marker 时间轴触发集 vs 已填槽；不触发槽的独占 layer0 贡献。
+- `find1012.py` — (无说明)
+- `find1014.py` — (无说明)
+- `find196.py` — (无说明)
+- `five_boss_buffs.py` — 五重决战（boss_battle_quest 1/99 全 39 关）再削弱 + boss 增益 + 登场负面。叠加在 1.4.185 上。
+- `five_boss_tune.py` — 五重调参（叠加在 1.4.186 上）：登场负面 攻击 -200%、技能伤害 -200%、充能 -50%（防御 -30% 不变）；
+- `gen_icons.py` — 深渊武器二期 9 把图标：RetroDiffusion rd_pro__default 20×20，参考现有深渊图标（lv0 / lv120 各两张）。
+- `gin_body.py` — (无说明)
+- `gm_weapon6.py` — 测试服专用 GM 武器 5990006（GM·不屈连击），叠加在 kulo 1.4.192 视图上；全新键，不改任何已有键。
+- `gm_weapons.py` — 测试服专用 GM 武器 5 把（5990001–5990005），叠加在 kulo 1.4.152 视图上；全新键，不改任何已有键。
+- `grepstr.py` — (无说明)
+- `icon194.py` — 1.4.193 -> 1.4.194: 用作者认可的「保留场景面部特写」图标一对一替换 1.4.192 派生图标(含 skill_cutin 安卓 ATF)。
+- `kulo_merge_probe.py` — (无说明)
+- `kulo_recut.py` — 把 Ku1o staging 的 1.4.131-134 四条边重切到本地链 1.4.188-191（表成员三方行级合并，其余原样，>5MiB 按序号拆包）。
+- `kyle_cap_to_leader.py` — 凯尔 139990：「强化充能速度」发动行从能力6 移到队长技；队长文案 10 倍行去掉「200连击封顶」。叠加在 1.4.171 上。
+- `kyle_charge_200.py` — 凯尔 139990：删除队长 #10（自身充能速度 +999%）；强化充能速度 999 → 200 层（v20：上限 200%）。叠加在 1.4.173 上，仅 v20。
+- `kyle_charge_999.py` — 凯尔 139990：充能速度上限 999%（v20 公式 上限=层数/100）+ 队长自身充能速度 +999%。叠加在 1.4.172 上，需 v20 APK。
+- `kyle_charge_cap.py` — 凯尔 139990「强化充能速度」：新固有 13999010（层数 n → 充能速度上限 1+n/50，需 APK charge-cap-unique-v1）。
+- `kyle_combo_direct.py` — 凯尔 139990 队长技追加 1 行：连击数每 10，自身直击伤害 +15%（最多 10 次 = +150%）。叠加在 1.4.166 上。
+- `kyle_direct_base.py` — 凯尔 139990 直击「基础倍率」改造，叠加在 1.4.167 上（作者纠偏：不是加数值，是凯尔一碰=别人 10 碰，再吃其他加成；随连击像斩铁那样涨）。
+- `kyle_direct_params.py` — 凯尔 139990：直击倍率参数化（v21）——新固有 13999011（基础倍数）/13999012（每连击 0.01%），
+- `kyle_direct_pf.py` — 凯尔 139990：①自身直击伤害 +300% / 直击独立乘区 +20%（队长技追加 2 行）；
+- `kyle_hidden_carriers.py` — 凯尔载体固有状态改 string_id 为 hidden_*（v23 状态栏不画）。叠加在 1.4.178 上。
+- `kyle_hitfx.py` — 凯尔 139990：月牙追击 DSL 的 CreateCondition 施加特效 GenericConditionHitEffect → None（段数/伤害/叠层不变）。叠加在 1.4.164 上。
+- `kyle_pf_marker.py` — 凯尔特殊 PF 追加判定区命中特效 None → hitfx-silence-v1 静默标记（attack_to_hostile_hit, randomRotation=false）。叠加在 1.4.167 上。
+- `kyle_rm_interim.py` — 凯尔 139990：删除 1.4.168 临时队长行 #9（693 直击独立乘区 +900%）/#10（每 10 连击 +50%）及两行文案，
+- `layout.py` — (无说明)
+- `level_gap_check.py` — 敌等级档缺口检查(U_3be147 / getSurjectivity「値 N に対応するキーが見つかりません」)。
+- `live149.py` — LiveReader over the 1.4.149 view + kulo server assets.
+- `off.py` — (无说明)
+- `p1014.py` — (无说明)
+- `p1014b.py` — (无说明)
+- `p1014c.py` — (无说明)
+- `p1014d.py` — (无说明)
+- `p1014e.py` — (无说明)
+- `p1014f.py` — (无说明)
+- `p1014g.py` — (无说明)
+- `p1014h.py` — (无说明)
+- `p192_common.py` — portrait192 共用：1.4.191 live 视图下的多根资产读取。
+- `p192_inspect.py` — (无说明)
+- `p192_live_icons.py` — (无说明)
+- `p192_masks.py` — 官方 1.4.0 全量档形状蒙版：每槽 alpha>127 多数票（_0/_1 合并）。
+- `p192_probe.py` — (无说明)
+- `p192_probe2.py` — (无说明)
+- `p192_rembg.py` — (无说明)
+- `p192_rembg2.py` — (无说明)
+- `p192_zoom.py` — (无说明)
+- `patch_generator.py` — 诅咒武器第四轮（2026-10-07 意见征集「时装后的数值建议改动」）：在旧仓生成器的副本上做定点改写。
+- `patch_paradox.py` — PARADOX 第二轮（作者 1007）：在旧仓生成器副本上定点改写 → wf_paradox_weapon_r2.py。
+- `pick_icons.py` — 挑选 RD 候选 → ../art/final/<slug>.png / <slug>_lv120.png（20×20）。
+- `portrait192.py` — 1.4.191 -> 1.4.192: 四张立绘换新(杰拉德_0 / 杰拉尔_0 / 歌狼_0,_1),派生 UI 图标 + 三张定位表行级改写。
+- `portrait192_pack.py` — portrait192 打包: 按成员装箱成 <=5MiB 的 1.4.191->1.4.192 分包 + integrity.json。
+- `portrait195.py` — 1.4.194 -> 1.4.195: 月狼 149986 black_wolf_knight_moon _0/_1 换作者 1009 重选立绘 + 现成面部特写图标(保留场景) + ATF + 图鉴格 + 三张定位表。
+- `probe1012.py` — (无说明)
+- `probe196.py` — (无说明)
+- `probe2.py` — (无说明)
+- `probe3.py` — (无说明)
+- `probe4.py` — (无说明)
+- `probe_dsl.py` — (无说明)
+- `raw1012.py` — (无说明)
+- `raw1014.py` — (无说明)
+- `restore_paradox_assets.py` — 旧仓 assets 已随磁盘清理删除：从 kulo 视图回填 PARADOX 生成器读取的源文件（PNG 改回标准签名；回响 DSL 存为 JSON 树）。
+- `rt.py` — (无说明)
+- `sb_level_fix199.py` — 1.4.198 -> 1.4.199: quest 的 battle_enemy_level 高于敌方等级表条目最高档 => getSurjectivity 抛 U_3be147
+- `scan6.py` — (无说明)
+- `scan6c.py` — (无说明)
+- `scan6d.py` — (无说明)
+- `scan6e.py` — (无说明)
+- `scan6f.py` — (无说明)
+- `scan_timelines.py` — 扫描角色像素动画 timeline：序列最大 end、末序列 kind、atlas 最大帧号；找 Playhead 会越过全部序列的形态。
+- `soul_icon_atlas.py` — 战斗记录 C8004 修复：把所有自制魂珠（装备同 ID 的 item 行）c3 缩略图补进常驻 item/sprite_sheet 图集。
+- `stack_cap.py` — 全体 MOD 角色（kulo 1.4.153 视图里不在官方 1.4.0 角色表中的 91 名 + 改造官方 151159/261089）的队长技 / 能力：
+- `stage_all.py` — 诅咒武器第四轮 + 深渊武器二期：在 kulo 1.4.149 视图上组装一个客户端补丁 zip + 服务端 JSON 全量副本。
+- `stage_paradox.py` — PARADOX 第二轮增量包：在 kulo 1.4.151 视图上按 wf_paradox_weapon_r2 输出，只收变化的表/DSL；服务端变化才写 ../server3/。
+- `super_dummies.py` — 「超·假人」：官方 7 种练习假人各做一个超级版（叠加在 1.4.180 上）。
+- `super_probe.py` — (无说明)
+- `survey.py` — (无说明)
+- `typed_dummies.py` — 练习关「结实假人」入口新增 4 个单伤害类型木人（无属性，HP≈9999亿，10 分钟），叠加在 kulo 1.4.154 视图上。
+- `typed_dummies_v2.py` — 单伤害类型木人 v2（叠加在 kulo 1.4.155 上）：
+- `v193_probe.py` — (无说明)
+- `v193_probe2.py` — (无说明)
+- `v193_probe3.py` — (无说明)
+- `validate.py` — 独立复核 ../patch 里的 zip：成员逐个解析回放、往返、文案上限、强化阶段、撞号、PNG 签名、服务端/客户端对齐。
+- `validate_paradox.py` — 复核 1.4.152 增量包：往返、无丢键、逐行合法性、文案上限、固有上限、触发来源。
+- `validate_stack.py` — (无说明)
+- `verify6.py` — (无说明)
+- `verify_baseline.py` — 确认旧仓生成器（未改）输出 == kulo 1.4.149 现状（全部诅咒自有键）。
+- `verify_paradox.py` — 确认 PARADOX 生成器（模块名可传）输出 == kulo 视图（WF_TIP）。
+- `view.py` — (无说明)
+- `voice193_build.py` — 杰拉德(149999 white_wolf_gerald) 语音重录: 1.4.192 视图之上的成员 + 分包。
+- `voice193_verify.py` — (无说明)
+- `wf_cursed_weapons_r4.py` — 诅咒武器 29 把：腾讯文档「诅咒武器专题意见征集」提案 → 武器数据（纯函数生成器）。
+- `wf_paradox_weapon_r2.py` — PARADOX（5920001）：作者 2026-09-28 设计的单件武器生成器。
+
+## 补丁包 active `D:\WF\ghmain\assets\asset-patch\active`
+
+- `pinball-1.4.100-1.4.101-1-shop-banner-png-encoding.zip` (957 KiB)
+- `pinball-1.4.101-1.4.102-1-lens0907-0908-consolidated.zip` (43700 KiB)
+- `pinball-1.4.102-1.4.103-1-lens0909-consolidated-cn.zip` (22300 KiB)
+- `pinball-1.4.103-1.4.104-1-abyss-lens0910-entry-message-consolidated.zip` (39259 KiB)
+- `pinball-1.4.104-1.4.105-1-five-boss-ui-art.zip` (1910 KiB)
+- `pinball-1.4.104-1.4.105-2-gerald-portrait.zip` (5738 KiB)
+- `pinball-1.4.104-1.4.105-3-how-to-get-sources.zip` (214 KiB)
+- `pinball-1.4.104-1.4.105-4-kyubi-afterglow.zip` (42 KiB)
+- `pinball-1.4.105-1.4.106-1-mech-item-sources.zip` (348 KiB)
+- `pinball-1.4.105-1.4.106-2-deathbringer-core-icons.zip` (947 KiB)
+- `pinball-1.4.106-1.4.107-1-weapon-caps-practice-hp.zip` (40 KiB)
+- `pinball-1.4.106-1.4.107-2-author858-selected.zip` (60000 KiB)
+- `pinball-1.4.106-1.4.107-3-gacha-note-layout.zip` (2 KiB)
+- `pinball-1.4.107-1.4.108-1-reborn-character-degrees.zip` (1784 KiB)
+- `pinball-1.4.107-1.4.108-2-epuration-gacha.zip` (9 KiB)
+- `pinball-1.4.107-1.4.108-3-campus-summon-g1008.zip` (5 KiB)
+- `pinball-1.4.108-1.4.109-1-author-update-fusion.zip` (1044 KiB)
+- `pinball-1.4.108-1.4.109-2-c2265-character-speech.zip` (385 KiB)
+- `pinball-1.4.108-1.4.109-3-campus-skill-cutin.zip` (4444 KiB)
+- `pinball-1.4.109-1.4.110-1-seasonal-characters-degrees.zip` (72808 KiB)
+- `pinball-1.4.109-1.4.110-2-abyss-normal-ex-art.zip` (9981 KiB)
+- `pinball-1.4.110-1.4.111-1-abyss-ui-rewards.zip` (114 KiB)
+- `pinball-1.4.111-1.4.112-1-abyss-ex-reroll-rewards.zip` (3727 KiB)
+- `pinball-1.4.112-1.4.113-1-abyss-normal-details.zip` (371 KiB)
+- `pinball-1.4.113-1.4.114-1-fantasy-abyss-material-shop.zip` (972 KiB)
+- `pinball-1.4.114-1.4.115-1-abyss-ex20-exchange.zip` (4258 KiB)
+- `pinball-1.4.115-1.4.116-1-inaho-midautumn-final.zip` (22339 KiB)
+- `pinball-1.4.115-1.4.116-2-author-characters-1033.zip` (0 KiB)
+- `pinball-1.4.115-1.4.116-3-abyss-reward-and-description-cleanup.zip` (214 KiB)
+- `pinball-1.4.116-1.4.117-1-author-inaho-fluffy-consolidated.zip` (0 KiB)
+- `pinball-1.4.117-1.4.118-1-midautumn-national-2026.zip` (8682 KiB)
+- `pinball-1.4.118-1.4.119-1-author-1047-wind-dragon.zip` (8627 KiB)
+- `pinball-1.4.119-1.4.120-1-orochi-boss-terminal-consolidated.zip` (2517 KiB)
+- `pinball-1.4.120-1.4.121-1-orochi-p4-hard-weakpoint-3s.zip` (2 KiB)
+- `pinball-1.4.121-1.4.122-1-author-balance-fox-20260930.zip` (992 KiB)
+- `pinball-1.4.122-1.4.123-1-author-weapons-fiveboss-20261001.zip` (8945 KiB)
+- `pinball-1.4.123-1.4.124-1-orochi-superplus-shop-ui-20261001.zip` (818 KiB)
+- `pinball-1.4.124-1.4.125-1-cursed-weapon-pool-20261001.zip` (2 KiB)
+- `pinball-1.4.125-1.4.126-1-abyss-enhancement-original-icons-20261001.zip` (14 KiB)
+- `pinball-1.4.126-1.4.127-1-kyle-ability4-null-role-fix-20261001.zip` (191 KiB)
+- `pinball-1.4.127-1.4.128-1-five-boss-c8016-preload-frame-cap-20261001.zip` (351 KiB)
+- `pinball-1.4.128-1.4.129-1-cursed-weapon-awakening-icon-preload-20261002.zip` (743 KiB)
+- `pinball-1.4.129-1.4.130-1-five-boss-reward-preview.zip` (250 KiB)
+- `pinball-1.4.130-1.4.131-1-liangyue-character-final-merged.zip` (12486 KiB)
+- `pinball-1.4.131-1.4.132-1-midautumn-orochi-event-closure-20261007.zip` (975 KiB)
+- `pinball-1.4.132-1.4.133-1-midautumn-mod-pool-migration-20261008.zip` (10 KiB)
+- `pinball-1.4.133-1.4.134-1-abyss-race-gacha-art-20261008.zip` (11873 KiB)
+- `pinball-1.4.134-1.4.135-1-vyrn-liangyue-atlas-final-20261011.zip` (4947 KiB)
+- `pinball-1.4.134-1.4.135-2-vyrn-liangyue-atlas-final-20261011.zip` (5018 KiB)
+- `pinball-1.4.134-1.4.135-3-vyrn-liangyue-atlas-final-20261011.zip` (3733 KiB)
+- `pinball-1.4.135-1.4.136-1-five-boss-evil-cannon-preload.zip` (350 KiB)
+- `pinball-1.4.54-1.4.55-1-mod07141843.zip` (23 KiB)
+- `pinball-1.4.55-1.4.56-1-mod-ability-damage-party-balanced-v5.zip` (405 KiB)
+- `pinball-1.4.56-1.4.57-1-consolidated-ability-v7-and-custom-drops.zip` (1898 KiB)
+- `pinball-1.4.57-1.4.58-1-shop-stock-999-consolidated.zip` (859 KiB)
+- `pinball-1.4.58-1.4.59-1-independent-warmup-v10-cd-balance-nephteim-voice-rescue-fragment-display.zip` (1398 KiB)
+- `pinball-1.4.59-1.4.60-1-stella139999.zip` (3484 KiB)
+- `pinball-1.4.59-1.4.60-2-stella139999.zip` (3407 KiB)
+- `pinball-1.4.59-1.4.60-3-stella139999.zip` (3407 KiB)
+- `pinball-1.4.59-1.4.60-4-stella139999.zip` (3112 KiB)
+- `pinball-1.4.59-1.4.60-5-stella139999.zip` (303 KiB)
+- `pinball-1.4.59-1.4.60-6-fragment-exchange.zip` (33 KiB)
+- `pinball-1.4.60-1.4.61-1-post60-terminal-overlay-sixpack-v2.zip` (21908 KiB)
+- `pinball-1.4.60-1.4.61-2-post60-terminal-overlay-sixpack-v2.zip` (21084 KiB)
+- `pinball-1.4.60-1.4.61-3-post60-terminal-overlay-sixpack-v2.zip` (21489 KiB)
+- `pinball-1.4.60-1.4.61-4-post60-terminal-overlay-sixpack-v2.zip` (20892 KiB)
+- `pinball-1.4.60-1.4.61-5-post60-terminal-overlay-sixpack-v2.zip` (22459 KiB)
+- `pinball-1.4.60-1.4.61-6-post60-terminal-overlay-sixpack-v2.zip` (19442 KiB)
+- `pinball-1.4.61-1.4.62-1-0806194711-hide-deep-abyss-entry-cache-v2.zip` (4 KiB)
+- `pinball-1.4.62-1.4.63-1-ginovi-wind-dragon-balance-cache-v2.zip` (157 KiB)
+- `pinball-1.4.63-1.4.64-1-0807185447.zip` (4785 KiB)
+- `pinball-1.4.64-1.4.65-1-0807201059.zip` (4594 KiB)
+- `pinball-1.4.65-1.4.66-1-0807203058.zip` (832 KiB)
+- `pinball-1.4.66-1.4.67-1-0807204308.zip` (32 KiB)
+- `pinball-1.4.67-1.4.68-1-battle-atlas-crop-fix.zip` (2973 KiB)
+- `pinball-1.4.68-1.4.69-1-0807230819-light-dark-dragon-redesign.zip` (1290 KiB)
+- `pinball-1.4.69-1.4.70-1-mode15final70.zip` (4593 KiB)
+- `pinball-1.4.69-1.4.70-2-mode15final70.zip` (3050 KiB)
+- `pinball-1.4.70-1.4.71-1-0809181408.zip` (4612 KiB)
+- `pinball-1.4.71-1.4.72-1-merge7274into72.zip` (4811 KiB)
+- `pinball-1.4.72-1.4.73-1-0811190633.zip` (1126 KiB)
+- `pinball-1.4.73-1.4.74-1-0811222236.zip` (562 KiB)
+- `pinball-1.4.74-1.4.75-1-0812tower2.zip` (566 KiB)
+- `pinball-1.4.75-1.4.76-1-0812-abyss-reroll-lilith-fix.zip` (649 KiB)
+- `pinball-1.4.76-1.4.77-1-0813-abyss-reroll-rolf.zip` (4495 KiB)
+- `pinball-1.4.76-1.4.77-2-0813-abyss-reroll-rolf.zip` (3980 KiB)
+- `pinball-1.4.76-1.4.77-3-0813-abyss-reroll-rolf.zip` (2556 KiB)
+- `pinball-1.4.76-1.4.77-4-0813-abyss-reroll-rolf.zip` (2489 KiB)
+- `pinball-1.4.76-1.4.77-5-0813-abyss-reroll-rolf.zip` (2776 KiB)
+- `pinball-1.4.76-1.4.77-6-0813-abyss-reroll-rolf.zip` (1988 KiB)
+- `pinball-1.4.77-1.4.78-1-0816-thunder-abyss-fantasy.zip` (5053 KiB)
+- `pinball-1.4.77-1.4.78-2-0816-thunder-abyss-fantasy.zip` (2472 KiB)
+- `pinball-1.4.77-1.4.78-3-0816-thunder-abyss-fantasy.zip` (5045 KiB)
+- `pinball-1.4.77-1.4.78-4-0816-thunder-abyss-fantasy.zip` (5056 KiB)
+- `pinball-1.4.77-1.4.78-5-0816-thunder-abyss-fantasy.zip` (1574 KiB)
+- `pinball-1.4.77-1.4.78-6-0816-thunder-abyss-fantasy.zip` (355 KiB)
+- `pinball-1.4.78-1.4.79-1-0817130424.zip` (4755 KiB)
+- `pinball-1.4.79-1.4.80-1-swimex139997-author-g.zip` (14192 KiB)
+- `pinball-1.4.79-1.4.80-2-0817-fantasy-two-icon-refresh.zip` (1 KiB)
+- `pinball-1.4.80-1.4.81-1-0817-thunder-dragon-fantasy-v4.zip` (916 KiB)
+- `pinball-1.4.81-1.4.82-1-0818-claude-abyss-gerald-flipper.zip` (13108 KiB)
+- `pinball-1.4.82-1.4.83-1-0818-gauntlet-hub-rank140.zip` (170 KiB)
+- `pinball-1.4.83-1.4.84-1-0818-gauntlet-final-art.zip` (607 KiB)
+- `pinball-1.4.84-1.4.85-1-0821-mosiyike-balance-ios.zip` (9761 KiB)
+- `pinball-1.4.85-1.4.86-1-0822-twochar-stella-abyss-ios.zip` (34441 KiB)
+- `pinball-1.4.86-1.4.87-1-0823-lion-balance-raid-abyss-ios.zip` (15187 KiB)
+- `pinball-1.4.87-1.4.88-1-0825-integrated-ginovi-spgirl-trio-rogue.zip` (57228 KiB)
+- `pinball-1.4.88-1.4.89-1-0826-rogue-orochi-ex24-int32-fix.zip` (15 KiB)
+- `pinball-1.4.89-1.4.90-1-0827-trio-ui-refresh.zip` (40414 KiB)
+- `pinball-1.4.90-1.4.91-1-0827-four-character-ui-centering.zip` (4430 KiB)
+- `pinball-1.4.91-1.4.92-1-0829-home-load-rank-p5b.zip` (17981 KiB)
+- `pinball-1.4.91-1.4.92-2-0829-home-load-rank-p5b.zip` (11080 KiB)
+- `pinball-1.4.91-1.4.92-3-58f49db214d9.zip` (3362 KiB)
+- `pinball-1.4.91-1.4.92-4-0829-mod-balance-fold.zip` (632 KiB)
+- `pinball-1.4.92-1.4.93-1-0830-simoun-flock-reset-rollback.zip` (444 KiB)
+- `pinball-1.4.92-1.4.93-2-0830-abyss-position-fix.zip` (80 KiB)
+- `pinball-1.4.93-1.4.94-1-0830-awakened-balance-migration.zip` (479 KiB)
+- `pinball-1.4.94-1.4.95-1-0831-mana-node-awake-board2.zip` (0 KiB)
+- `pinball-1.4.95-1.4.96-1-cdn-consolidated-gerald0903.zip` (20686 KiB)
+- `pinball-1.4.96-1.4.97-1-greyupd0902-cdn-resource-recovery.zip` (0 KiB)
+- `pinball-1.4.97-1.4.98-1-greyupd0902-abyss-item-icon-closure.zip` (738 KiB)
+- `pinball-1.4.98-1.4.99-1-siete-ui-restore.zip` (10086 KiB)
+- `pinball-1.4.98-1.4.99-2-siete-active-balance.zip` (498 KiB)
+- `pinball-1.4.98-1.4.99-3-gacha-non-gacha-cleanup.zip` (13 KiB)
+- `pinball-1.4.99-1.4.100-1-abyss-exchange-shop-banners.zip` (963 KiB)
+- `pinball-1.4.99-1.4.100-2-rank-title-conditions.zip` (187 KiB)

@@ -1,0 +1,129 @@
+###### battle/action/skill/action/rare4/lady_android$lady_android_2
+[
+  "ActionDsl"
+  1
+  ["None"]
+  false
+  false
+  false
+  false
+  false
+  false
+  false
+  0
+  [
+    "Block"
+    [
+      [
+        "Command"
+        [
+          "FindAllSubjects"
+          0
+          33
+          []
+          []
+          []
+          []
+          []
+          ["DoNothing"]
+          ["Block", [["Command", ["CreateCondition", 0, [["ACFlying", [{"min": 480, "max": 600}]]], [{"min": 1, "max": 1}], ["None"], true, false, "", null, false, 3, [{"min": 1, "max": 1}], false]]]]
+        ]
+      ]
+      [
+        "Command"
+        [
+          "ShowEffect"
+          "雷前面演出"
+          ["SpecifyEffectDirectly", "battle/effect/skill_unique/lady_android/lady_android"]
+          -18
+          ["ForesideOfCharacter"]
+          ["SpecifyEffectLifetimeDirectly", 480]
+          ["AB"]
+          0
+          0
+          0
+          true
+          true
+          ["Some", [{"min": 4, "max": 4}]]
+        ]
+      ]
+      [
+        "Command"
+        [
+          "ShowEffect"
+          "雷背面演出"
+          ["SpecifyEffectDirectly", "battle/effect/skill_unique/lady_android/lady_android_back"]
+          -18
+          ["BacksideOfCharacter"]
+          ["SpecifyEffectLifetimeDirectly", 480]
+          ["AB"]
+          0
+          0
+          0
+          true
+          true
+          ["Some", [{"min": 4, "max": 4}]]
+        ]
+      ]
+      [
+        "Command"
+        [
+          "CreateHitArea"
+          "*"
+          -18
+          ["AB"]
+          0
+          0
+          0
+          true
+          true
+          ["Circle", [{"min": 200, "max": 200}]]
+          ["Center"]
+          ["Center"]
+          ["Single"]
+          ["SpecifyHitAreaLifetimeDirectly", 480]
+          ["CalculatedUsingMaxNumOfHits", 32]
+          ["Some", [{"min": 26, "max": 26}]]
+          false
+          true
+          ["None"]
+          1
+          ["Block", []]
+          2
+          3
+          [
+            "Block"
+            [
+              [
+                "Command"
+                [
+                  "CreateNormalAttack"
+                  3
+                  255
+                  []
+                  []
+                  6
+                  [{"min": 0.90625, "max": 1.03125}]
+                  [{"min": 0, "max": 0}]
+                  false
+                  false
+                  false
+                  false
+                  false
+                  [{"min": 0.375, "max": 0.375}]
+                  [{"min": 1.25, "max": 1.25}]
+                  ["ThunderSmall"]
+                  true
+                ]
+              ]
+              ["Command", ["ShakeCamera", 1]]
+            ]
+          ]
+          0
+          0
+          ["None"]
+        ]
+      ]
+    ]
+  ]
+]

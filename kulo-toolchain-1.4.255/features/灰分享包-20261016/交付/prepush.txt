@@ -1,0 +1,539 @@
+视图: 基础 store=D:\WF\out\kulo-patch-toolkit\store131\production; 链 140 个包,链尾 1.4.220; --since 1.4.136(新包 14 个)
+
+[补丁链/清单] ERROR 0  WARN 0  INFO 0
+
+[改错表] ERROR 0  WARN 76  INFO 0
+  WARN  服务端 assets/cdndata/character_text.json 角色 149999 第1档技能描述与游戏内不一致;游戏只读 action_skill[white_wolf_gerald][1] c1
+        此处: 时空为之凝滞的一闪。展开时之魔法阵，向最近的敌人突进并对接触到的敌人造成光属性伤害／以全屏月牙交叉斩对全体敌人造成光属性伤害 ＋ 消除2个强化效果 ＋ 赋予累积全属性抗性降低效果／赋予队伍最大速度固定＋贯穿＋浮游效果
+        游戏: 时空为之凝滞的一闪。向最近的敌人突进，对接触到的敌人造成光属性伤害／以全屏月牙交叉斩对全体敌人造成光属性伤害 ＋ 消除敌人的2个强化效果／赋予队伍最大速度固定＋贯穿＋浮游效果（技能伤害以直接攻击伤害计算）
+        id=text.drift:服务端 assets/cdndata/character_text.json:149999:1:技能描述
+  WARN  服务端 assets/cdndata/character_text.json 角色 149999 第2档技能描述与游戏内不一致;游戏只读 action_skill[white_wolf_gerald][2] c1
+        此处: 时空为之凝滞的一闪。展开时之魔法阵，向最近的敌人突进并对接触到的敌人造成光属性伤害／以全屏月牙交叉斩对全体敌人造成光属性伤害 ＋ 消除2个强化效果 ＋ 赋予累积全属性抗性降低效果／赋予队伍最大速度固定＋贯穿＋浮游效果
+        游戏: 时空为之凝滞的一闪。向最近的敌人突进，对接触到的敌人造成光属性伤害／以全屏月牙交叉斩对全体敌人造成光属性伤害 ＋ 消除敌人的2个强化效果／赋予队伍最大速度固定＋贯穿＋浮游效果（技能伤害以直接攻击伤害计算）
+        id=text.drift:服务端 assets/cdndata/character_text.json:149999:2:技能描述
+  WARN  服务端 assets/cdndata/character_text.json 角色 151159 第3档技能描述与游戏内不一致;游戏只读 action_skill[golden_dragon_jr][3] c1
+        此处: 以古龙的威光赋予领域内全体敌人累积光属性抗性降低效果 ＋ 消除1个强化效果 ／ 放出锐利的光芒，对领域内全体敌人造成光属性伤害
+        游戏: 以古龙的威光赋予领域内全体敌人累积光·暗属性抗性降低效果 ＋ 消除1个强化效果 ／ 放出锐利的光芒，在一段时间内对领域内全体敌人连续造成多段光属性伤害 ／ 赋予我方全体与协力角色“光暗共鸣”效果（攻击力提升＋全属性抗性提升＋持续回复），其持
+        id=text.drift:服务端 assets/cdndata/character_text.json:151159:3:技能描述
+  WARN  服务端 assets/cdndata/character_text.json 角色 261089 第3档技能描述与游戏内不一致;游戏只读 action_skill[darkness_dragon][3] c1
+        此处: 引爆黑暗，对领域内全体敌人造成暗属性伤害 ／ 赋予暗属性角色技能伤害提升效果
+        游戏: 引爆黑暗，对领域内全体敌人连续释放三段暗属性伤害＋消除其强化效果＋赋予麻痹与“光暗抗性降低”效果（光属性·暗属性抗性同时降低） ／ 赋予我方全体角色攻击力提升与技能伤害提升效果
+        id=text.drift:服务端 assets/cdndata/character_text.json:261089:3:技能描述
+  WARN  服务端 assets/cdndata/character_text.json 角色 700001 第1档技能名与游戏内不一致;游戏只读 action_skill[devil_leader_assist][1] c0
+        此处: カース・ブリンガー
+        游戏: 诅咒逆焰
+        id=text.drift:服务端 assets/cdndata/character_text.json:700001:1:技能名
+  WARN  服务端 assets/cdndata/character_text.json 角色 700002 第1档技能名与游戏内不一致;游戏只读 action_skill[elf_princess_assist][1] c0
+        此处: サドール・ハソル
+        游戏: 忠勇斧刃
+        id=text.drift:服务端 assets/cdndata/character_text.json:700002:1:技能名
+  WARN  服务端 assets/cdndata/character_text.json 角色 700003 第1档技能名与游戏内不一致;游戏只读 action_skill[resistance_princess_assist][1] c0
+        此处: アルケミック・ヴァリデート
+        游戏: 艾克赛里奥圣剑
+        id=text.drift:服务端 assets/cdndata/character_text.json:700003:1:技能名
+  WARN  服务端 assets/cdndata/character_text.json 角色 700004 第1档技能名与游戏内不一致;游戏只读 action_skill[horn_leader_assist][1] c0
+        此处: カース・ブリンガー
+        游戏: 同胞们、都来呀！
+        id=text.drift:服务端 assets/cdndata/character_text.json:700004:1:技能名
+  WARN  服务端 assets/cdndata/character_text.json 角色 700005 第1档技能名与游戏内不一致;游戏只读 action_skill[guildknight_leader_assist][1] c0
+        此处: サドール・ハソル
+        游戏: 工作开始了哟、公会骑士
+        id=text.drift:服务端 assets/cdndata/character_text.json:700005:1:技能名
+  WARN  服务端 assets/cdndata/character_text.json 角色 700006 第1档技能名与游戏内不一致;游戏只读 action_skill[desert_commander_no_piercing][1] c0
+        此处: ザハブ・ファジュル
+        游戏: 黄金黎明
+        id=text.drift:服务端 assets/cdndata/character_text.json:700006:1:技能名
+  WARN  服务端 assets/cdndata/character_text.json 角色 700007 第1档技能描述与游戏内不一致;游戏只读 action_skill[ruin_lady_no_piercing][1] c1
+        此处: 命令Alter Device进行炮击，对领域内全体敌人造成水属性伤害／赋予全体队员攻击力提升效果／提升Fever槽
+        游戏: ruin_lady_no_piercing
+        id=text.drift:服务端 assets/cdndata/character_text.json:700007:1:技能描述
+  WARN  服务端 assets/cdndata/character_text.json 角色 700007 第1档技能名与游戏内不一致;游戏只读 action_skill[ruin_lady_no_piercing][1] c0
+        此处: 阿德·乌姆
+        游戏: 众神之怒
+        id=text.drift:服务端 assets/cdndata/character_text.json:700007:1:技能名
+  WARN  服务端 assets/cdndata/character_text.json 角色 700008 第1档技能名与游戏内不一致;游戏只读 action_skill[justice_lady_assist][1] c0
+        此处: カース・ブリンガー
+        游戏: 将觉悟存于胸中。
+        id=text.drift:服务端 assets/cdndata/character_text.json:700008:1:技能名
+  WARN  服务端 assets/cdndata/character_text.json 角色 149997 第1档技能描述与游戏内不一致;游戏只读 action_skill[mosiyike][1] c1
+        此处: 以风包裹全体队友，各起一圈守护的风盾／解除全体队友的全部弱化效果／赋予全体队友最大生命值 15% 的护盾／全体队友全属性抗性 +25%（20 秒）、攻击力 +250%（20 秒）
+        游戏: 以风包裹全体队友，各起一圈守护的风盾／解除全体队友的全部弱化效果／赋予全体队友最大生命值 15% 的护盾／全体队友全属性抗性 +25%（20 秒）、攻击力 +250%（20 秒）／赋予全体队友最大速度固定效果（6 秒）
+        id=text.drift:服务端 assets/cdndata/character_text.json:149997:1:技能描述
+  WARN  服务端 assets/cdndata/character_text.json 角色 149997 第2档技能描述与游戏内不一致;游戏只读 action_skill[mosiyike][2] c1
+        此处: 以风包裹全体队友，各起一圈守护的风盾／解除全体队友的全部弱化效果／赋予全体队友最大生命值 15% 的护盾／全体队友全属性抗性 +25%（20 秒）、攻击力 +250%（20 秒）
+        游戏: 以风包裹全体队友，各起一圈守护的风盾／解除全体队友的全部弱化效果／赋予全体队友最大生命值 15% 的护盾／全体队友全属性抗性 +25%（20 秒）、攻击力 +250%（20 秒）／赋予全体队友最大速度固定效果（6 秒）
+        id=text.drift:服务端 assets/cdndata/character_text.json:149997:2:技能描述
+  WARN  服务端 assets/cdndata/character_text.json 角色 149995 第1档技能描述与游戏内不一致;游戏只读 action_skill[seofon_wind][1] c1
+        此处: 剑神双奏：无「剑神」时，原地召唤剑神——全体队员获得15%护盾，自身获得1级「剑神」与30%加速（10秒）；持有N级「剑神」时，剑神化身突进攻击1段，并向前方推出N把灵剑（每把攻击1段），共N+1段，随后消耗1级「剑神」。进化前每段倍率：1
+        游戏: 剑神双奏：无「剑神」时，原地召唤剑神——全体队员获得15%护盾，自身获得1级「剑神」与30%加速（10秒）；持有N级「剑神」时，剑神化身突进攻击1段，并向前方推出N把灵剑（每把攻击1段），共N+1段，随后消耗1级「剑神」。进化前每段倍率：1
+        id=text.drift:服务端 assets/cdndata/character_text.json:149995:1:技能描述
+  WARN  服务端 assets/cdndata/character_text.json 角色 149995 第2档技能描述与游戏内不一致;游戏只读 action_skill[seofon_wind][2] c1
+        此处: 剑神双奏：无「剑神」时，原地召唤剑神——全体队员获得15%护盾，自身获得1级「剑神」与30%加速（10秒）；持有N级「剑神」时，剑神化身突进攻击1段，并向前方推出N把灵剑（每把攻击1段），共N+1段，随后消耗1级「剑神」。进化前每段倍率：1
+        游戏: 剑神双奏：无「剑神」时，原地召唤剑神——全体队员获得15%护盾，自身获得1级「剑神」与30%加速（10秒）；持有N级「剑神」时，剑神化身突进攻击1段，并向前方推出N把灵剑（每把攻击1段），共N+1段，随后消耗1级「剑神」。进化后每段倍率：1
+        id=text.drift:服务端 assets/cdndata/character_text.json:149995:2:技能描述
+  WARN  服务端 assets/cdndata/character_text.json 角色 129992 第1档技能描述与游戏内不一致;游戏只读 action_skill[unicorn_lancer_rose][1] c1
+        此处: 将守护的誓约寄于枪锋，向距离最近的敌人突进，并在原地释放连续突刺，对命中的敌人造成合计60倍水属性技能伤害，随连击数提升威力。
+        游戏: 将守护的誓约寄于枪锋，向距离最近的敌人突进，并在原地释放连续突刺，对命中的敌人造成合计40倍水属性技能伤害，随连击数提升威力。
+        id=text.drift:服务端 assets/cdndata/character_text.json:129992:1:技能描述
+  WARN  服务端 assets/cdndata/character_text.json 角色 129992 第2档技能描述与游戏内不一致;游戏只读 action_skill[unicorn_lancer_rose][2] c1
+        此处: 将守护的誓约寄于枪锋，向距离最近的敌人突进，并在原地释放连续突刺，对命中的敌人造成合计75倍水属性技能伤害，随连击数提升威力。
+        游戏: 将守护的誓约寄于枪锋，向距离最近的敌人突进，并在原地释放连续突刺，对命中的敌人造成合计50倍水属性技能伤害，随连击数提升威力。
+        id=text.drift:服务端 assets/cdndata/character_text.json:129992:2:技能描述
+  WARN  服务端 assets/cdndata/character_text.json 角色 159991 第1档技能描述与游戏内不一致;游戏只读 action_skill[cnmod_inaho_midautumn][1] c1
+        此处: 对全场敌人造成光属性伤害（共3段，合计30倍技能伤害） / 消除敌方1个强化效果与队伍全体2个弱化效果。
+强制赋予敌方永久、不可驱散的「月蚀」：光属性耐性-15%；光属性共鸣时，追加能力伤害耐性、直接攻击耐性各-7.5%。
+赋予队伍全体20
+        游戏: 对全场敌人造成光属性伤害（共3段，合计30倍技能伤害） / 消除敌方1个强化效果与队伍全体2个弱化效果。
+强制赋予敌方永久、不可驱散的「月蚀」：光属性耐性-7.5%。
+赋予队伍全体20秒「月满丰穰」：攻击力、能力伤害、直接攻击伤害各+50%
+        id=text.drift:服务端 assets/cdndata/character_text.json:159991:1:技能描述
+  WARN  服务端 assets/cdndata/character_text.json 角色 159991 第2档技能描述与游戏内不一致;游戏只读 action_skill[cnmod_inaho_midautumn][2] c1
+        此处: 对全场敌人造成光属性伤害（共3段，合计30倍技能伤害） / 消除敌方1个强化效果与队伍全体2个弱化效果。
+强制赋予敌方永久、不可驱散的「月蚀」：光属性耐性-15%；光属性共鸣时，追加能力伤害耐性、直接攻击耐性各-7.5%。
+赋予队伍全体20
+        游戏: 对全场敌人造成光属性伤害（共3段，合计30倍技能伤害） / 消除敌方1个强化效果与队伍全体2个弱化效果。
+强制赋予敌方永久、不可驱散的「月蚀」：光属性耐性-7.5%。
+赋予队伍全体20秒「月满丰穰」：攻击力、能力伤害、直接攻击伤害各+50%
+        id=text.drift:服务端 assets/cdndata/character_text.json:159991:2:技能描述
+  WARN  服务端 assets/cdndata/character_text.json 角色 159992 第1档技能描述与游戏内不一致;游戏只读 action_skill[liangyue_onmyoji][1] c1
+        此处: 驱使画出的百鬼向前方奔袭斩击，对周围的敌人造成风属性伤害
+        游戏: 驱使画出的百鬼向前方奔袭斩击，对前方区域内的敌人造成风属性伤害
+        id=text.drift:服务端 assets/cdndata/character_text.json:159992:1:技能描述
+  WARN  服务端 assets/cdndata/character_text.json 角色 159992 第2档技能描述与游戏内不一致;游戏只读 action_skill[liangyue_onmyoji][2] c1
+        此处: 驱使画出的百鬼向前方奔袭斩击，对周围的敌人造成风属性伤害／赋予己方直击联动效果
+        游戏: 驱使画出的百鬼向前方奔袭斩击，对前方区域内的敌人造成风属性伤害／赋予风属性角色「直接攻击伤害上升效果」／赋予己方浮游效果
+        id=text.drift:服务端 assets/cdndata/character_text.json:159992:2:技能描述
+  WARN  服务端 assets/cdndata/character_text.json 角色 159992 第3档技能描述与游戏内不一致;游戏只读 action_skill[liangyue_onmyoji][3] c1
+        此处: 驱使画出的百鬼向前方奔袭斩击，对周围的敌人造成风属性伤害／赋予己方直击联动效果／赋予己方浮游效果
+        游戏: 驱使画出的百鬼向前方奔袭斩击，对前方区域内的敌人造成风属性伤害／赋予风属性角色「直接攻击伤害上升效果」／赋予己方浮游效果
+        id=text.drift:服务端 assets/cdndata/character_text.json:159992:3:技能描述
+  WARN  服务端 assets/cdndata/character_text_rank_p5b.json 角色 169995 第2档技能描述与游戏内不一致;游戏只读 action_skill[maou2_playable][2] c1
+        此处: 终结爆发进一步增强。
+        游戏: 降下黑雷雨与四连光柱，终以湮灭冲击归零万象，对全体敌人造成大伤害。
+        id=text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:169995:2:技能描述
+  WARN  服务端 assets/cdndata/character_text_rank_p5b.json 角色 169995 第2档技能名与游戏内不一致;游戏只读 action_skill[maou2_playable][2] c0
+        此处: 勇者终焉・万象归零＋
+        游戏: 勇者终焉・万象归零
+        id=text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:169995:2:技能名
+  WARN  服务端 assets/cdndata/character_text_rank_p5b.json 角色 119951 第1档技能描述与游戏内不一致;游戏只读 action_skill[spirit_beast_fire_playable][1] c1
+        此处: 展开缠绕自身的炎环，在一段时间内持续对范围内的敌人造成火属性伤害，被炎环命中的敌人火属性耐性降低25%（最多3层）／随后向前方释放两道炎狱
+        游戏: 在弹珠落点展开缠绕的炎环，10 秒内持续对范围内的敌人造成火属性伤害，被炎环命中的敌人火属性耐性降低 25%（最多 3 层，持续 65 秒）／随后向左、右、正面依次释放三道炎狱，最后一道范围与威力更大
+        id=text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:119951:1:技能描述
+  WARN  服务端 assets/cdndata/character_text_rank_p5b.json 角色 119951 第2档技能描述与游戏内不一致;游戏只读 action_skill[spirit_beast_fire_playable][2] c1
+        此处: 展开缠绕自身的炎环，在一段时间内持续对范围内的敌人造成火属性伤害，被炎环命中的敌人火属性耐性降低30%（最多3层）／随后向前方释放两道炎狱
+        游戏: 在弹珠落点展开缠绕的炎环，10 秒内持续对范围内的敌人造成火属性伤害，被炎环命中的敌人火属性耐性降低 30%（最多 3 层，持续 65 秒）／随后向左、右、正面依次释放三道炎狱，最后一道范围与威力更大
+        id=text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:119951:2:技能描述
+  WARN  服务端 assets/cdndata/character_text_rank_p5b.json 角色 119970 第1档技能描述与游戏内不一致;游戏只读 action_skill[steam_robot_fire_playable][1] c1
+        此处: 举剑下劈斩开前方直线,对命中的敌人造成火属性伤害;自身「嫉火」达到 20 层时追加一圈处刑爆炎,并将嫉火全部烧尽换取技能伤害提升。
+        游戏: 举剑下劈，在前方开出一道宽幅绝杀斩击，对命中的敌人造成火属性伤害并炸开绝杀弹；自身「嫉火」达到 20 层时追加一圈处刑爆炎，随后烧尽全部嫉火，换取自身技能伤害提升（最多 3 层）。
+        id=text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:119970:1:技能描述
+  WARN  服务端 assets/cdndata/character_text_rank_p5b.json 角色 119970 第2档技能描述与游戏内不一致;游戏只读 action_skill[steam_robot_fire_playable][2] c1
+        此处: 下劈的威力与追加处刑爆炎的范围同步提升,烧尽嫉火后获得的技能伤害提升更高。
+        游戏: 下劈与处刑爆炎的威力同步提升，烧尽嫉火后获得的技能伤害提升更高。
+        id=text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:119970:2:技能描述
+  WARN  服务端 assets/cdndata/character_text_rank_p5b.json 角色 129951 第1档技能描述与游戏内不一致;游戏只读 action_skill[spirit_beast_water_playable][1] c1
+        此处: 【水势】掀起横贯战场的巨浪，并在落点留下持续的回旋涡流，命中的敌人水属性耐性降低20%（最多3层）／【冰势】降下冰河【对冻结中的敌人伤害提升】，并以冰晶爆破使命中的敌人陷入冻结／每次发动后在两势之间切换
+        游戏: 【水势】掀起横贯战场的巨浪，并在落点留下持续的回旋涡流，命中的敌人水属性耐性降低 20%（最多 3 层，持续 65 秒）／【冰势】降下冰河【对冻结中的敌人伤害提升】，并以冰晶爆散使命中的敌人陷入冻结 3 秒／每次发动后在两势之间切换
+        id=text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:129951:1:技能描述
+  WARN  服务端 assets/cdndata/character_text_rank_p5b.json 角色 129951 第2档技能描述与游戏内不一致;游戏只读 action_skill[spirit_beast_water_playable][2] c1
+        此处: 【水势】掀起横贯战场的巨浪，并在落点留下持续的回旋涡流，命中的敌人水属性耐性降低25%（最多3层）／【冰势】降下冰河【对冻结中的敌人伤害提升】，并以冰晶爆破使命中的敌人陷入冻结／每次发动后在两势之间切换
+        游戏: 【水势】掀起横贯战场的巨浪，并在落点留下持续的回旋涡流，命中的敌人水属性耐性降低 25%（最多 3 层，持续 65 秒）／【冰势】降下冰河【对冻结中的敌人伤害提升】，并以冰晶爆散使命中的敌人陷入冻结 3 秒／每次发动后在两势之间切换
+        id=text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:129951:2:技能描述
+  WARN  服务端 assets/cdndata/character_text_rank_p5b.json 角色 129970 第1档技能描述与游戏内不一致;游戏只读 action_skill[steam_robot_water_playable][1] c1
+        此处: 以曲射炮向前方倾泻弹幕,对命中的敌人造成水属性伤害;持有「运转率」时追加一次重启冲击并回复我方全员生命值,随后清空运转率,换取自身永久的强化弹射伤害提升(最多 3 层)。
+        游戏: 以曲射炮向前方倾泻弹幕并甩出薬莢，对命中的敌人造成水属性伤害；持有「运转率」时追加一次重启冲击波并回复我方全员生命值，随后清空运转率，换取自身永久的强化弹射伤害提升（最多 3 层）。
+        id=text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:129970:1:技能描述
+  WARN  服务端 assets/cdndata/character_text_rank_p5b.json 角色 129970 第2档技能描述与游戏内不一致;游戏只读 action_skill[steam_robot_water_playable][2] c1
+        此处: 曲射与重启冲击的威力、回复量与重启后获得的强化弹射伤害提升全面加强。
+        游戏: 曲射、薬莢与重启冲击的威力、回复量与重启后获得的强化弹射伤害提升全面加强。
+        id=text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:129970:2:技能描述
+  WARN  服务端 assets/cdndata/character_text_rank_p5b.json 角色 139951 第1档技能描述与游戏内不一致;游戏只读 action_skill[spirit_beast_thunder_playable][1] c1
+        此处: 在战场上展开持续的带电领域，反复对领域内的敌人造成雷属性伤害／同时降下三道天雷
+        游戏: 在战场上展开持续 10 秒的带电领域，反复对领域内的敌人造成雷属性伤害／同时依次降下四道天雷，最后一道的落点范围与威力更大
+        id=text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:139951:1:技能描述
+  WARN  服务端 assets/cdndata/character_text_rank_p5b.json 角色 139951 第2档技能描述与游戏内不一致;游戏只读 action_skill[spirit_beast_thunder_playable][2] c1
+        此处: 在战场上展开持续的带电领域，反复对领域内的敌人造成雷属性伤害（威力提升）／同时降下三道天雷
+        游戏: 在战场上展开持续 10 秒的带电领域，反复对领域内的敌人造成雷属性伤害（威力提升）／同时依次降下四道天雷，最后一道的落点范围与威力更大
+        id=text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:139951:2:技能描述
+  WARN  服务端 assets/cdndata/character_text_rank_p5b.json 角色 139970 第1档技能描述与游戏内不一致;游戏只读 action_skill[steam_robot_thunder_playable][1] c1
+        此处: 向前方注水并以螯肢横扫,对命中的敌人造成雷属性伤害;「蓄电水域」达到 3 级时一次排干并放电,造成大额雷属性伤害并使敌方陷入麻痹。
+        游戏: 向前方注水铺开电域并以螯肢横扫，对命中的敌人造成雷属性伤害；「蓄电水域」达到 3 级时一次排干并放电，射出放电光束造成大额雷属性伤害，使全体敌人陷入麻痹，随后消耗 3 级蓄电水域。
+        id=text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:139970:1:技能描述
+  WARN  服务端 assets/cdndata/character_text_rank_p5b.json 角色 139970 第2档技能描述与游戏内不一致;游戏只读 action_skill[steam_robot_thunder_playable][2] c1
+        此处: 注水横扫与排水放电的威力提升,麻痹的持续时间同步延长。
+        游戏: 注水横扫与排水放电的威力提升，麻痹的持续时间同步延长。
+        id=text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:139970:2:技能描述
+  WARN  服务端 assets/cdndata/character_text_rank_p5b.json 角色 149951 第1档技能描述与游戏内不一致;游戏只读 action_skill[spirit_beast_wind_playable][1] c1
+        此处: 于前方展开毒风，对命中的敌人造成风属性伤害，并赋予中毒与属性耐性降低效果。自身持有 8 层以上「风蛇的诅咒」时，追加引爆诅咒，对周围敌人造成风属性伤害并消耗 8 层。无论是否引爆，都会赋予我方全体攻击力提升；仅在引爆时增加自身技能槽5%。
+        游戏: 于前方展开毒风，对命中的敌人造成风属性伤害，并赋予中毒与全属性耐性降低 18%（最多 3 层）。自身持有 8 层以上「风蛇的诅咒」时，追加引爆诅咒，对周围敌人造成风属性伤害并消耗 8 层，赋予我方全体攻击力提升 25%（15 秒）并增加自身
+        id=text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:149951:1:技能描述
+  WARN  服务端 assets/cdndata/character_text_rank_p5b.json 角色 149951 第2档技能描述与游戏内不一致;游戏只读 action_skill[spirit_beast_wind_playable][2] c1
+        此处: 于前方展开毒风，对命中的敌人造成风属性伤害，并赋予中毒与属性耐性降低效果。自身持有 8 层以上「风蛇的诅咒」时，追加引爆诅咒，对周围敌人造成风属性伤害并消耗 8 层。无论是否引爆，都会赋予我方全体攻击力提升；仅在引爆时增加自身技能槽5%。
+        游戏: 于前方展开毒风，对命中的敌人造成风属性伤害，并赋予中毒与全属性耐性降低 25%（最多 3 层）。自身持有 8 层以上「风蛇的诅咒」时，追加引爆诅咒，对周围敌人造成风属性伤害并消耗 8 层，赋予我方全体攻击力提升 30%（15 秒）并增加自身
+        id=text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:149951:2:技能描述
+  WARN  服务端 assets/cdndata/character_text_rank_p5b.json 角色 149970 第1档技能描述与游戏内不一致;游戏只读 action_skill[steam_robot_wind_playable][1] c1
+        此处: 展翼进行地毯式轰炸,对前方直线上的敌人造成风属性伤害并降低其风属性抗性;同时解除我方全员的弱体状态并赋予护盾,「愁绪」达到 3 层时再加厚一层并将其消耗。
+        游戏: 展翼掠出翼刃并进行地毯式轰炸，对前方直线上的敌人造成风属性伤害并降低其风属性抗性；同时解除我方全员的弱体状态并赋予护盾，「愁绪」达到 3 层时再加厚一层护盾并消耗 3 层愁绪。
+        id=text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:149970:1:技能描述
+  WARN  服务端 assets/cdndata/character_text_rank_p5b.json 角色 159951 第1档技能描述与游戏内不一致;游戏只读 action_skill[spirit_beast_light_playable][1] c1
+        此处: 于前方张开巨网，持续对网内的敌人造成光属性伤害，并叠加「破绽」（光属性耐性降低，最多 3 层）。随后引爆蛛网，对周围敌人造成光属性伤害。技能结束时赋予我方全体贯通与浮游效果。
+        游戏: 于前方张开巨网，持续对网内的敌人造成光属性伤害，并叠加「破绽」（光属性耐性降低 12%，最多 3 层，持续 20 秒）。随后引爆蛛网，对周围敌人造成光属性伤害。技能结束时赋予我方全体贯通与浮游 8 秒。
+        id=text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:159951:1:技能描述
+  WARN  服务端 assets/cdndata/character_text_rank_p5b.json 角色 159951 第2档技能描述与游戏内不一致;游戏只读 action_skill[spirit_beast_light_playable][2] c1
+        此处: 于前方张开巨网，持续对网内的敌人造成光属性伤害，并叠加「破绽」（光属性耐性降低，最多 3 层）。随后引爆蛛网，对周围敌人造成光属性伤害。技能结束时赋予我方全体贯通与浮游效果。
+        游戏: 于前方张开巨网，持续对网内的敌人造成光属性伤害，并叠加「破绽」（光属性耐性降低 15%，最多 3 层，持续 20 秒）。随后引爆蛛网，对周围敌人造成光属性伤害。技能结束时赋予我方全体贯通与浮游 10 秒。
+        id=text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:159951:2:技能描述
+  WARN  服务端 assets/cdndata/character_text_rank_p5b.json 角色 169951 第1档技能描述与游戏内不一致;游戏只读 action_skill[spirit_beast_dark_playable][1] c1
+        此处: 化为冥炎向前俯冲，对命中的敌人造成暗属性伤害并驱散其增益效果。随后散射黑羽追击，最后引爆深渊地狱造成暗属性伤害。技能结束时为自身张开护罩，并在一段时间内使自身的直接攻击变为 2 段、直击伤害提升。
+        游戏: 化为冥炎向前俯冲，对命中的敌人造成暗属性伤害并驱散其增益效果。随后散射三道黑羽追击，最后引爆深渊地狱造成暗属性伤害。技能结束时为自身张开吸收 6% 伤害的护罩，并在 12 秒内使自身的直接攻击变为 2 段、直击伤害提升 20%。
+        id=text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:169951:1:技能描述
+  WARN  服务端 assets/cdndata/character_text_rank_p5b.json 角色 169951 第2档技能描述与游戏内不一致;游戏只读 action_skill[spirit_beast_dark_playable][2] c1
+        此处: 化为冥炎向前俯冲，对命中的敌人造成暗属性伤害并驱散其增益效果。随后散射黑羽追击，最后引爆深渊地狱造成暗属性伤害。技能结束时为自身张开护罩，并在一段时间内使自身的直接攻击变为 2 段、直击伤害提升。
+        游戏: 化为冥炎向前俯冲，对命中的敌人造成暗属性伤害并驱散其增益效果。随后散射三道黑羽追击，最后引爆深渊地狱造成暗属性伤害。技能结束时为自身张开吸收 8% 伤害的护罩，并在 15 秒内使自身的直接攻击变为 2 段、直击伤害提升 25%。
+        id=text.drift:服务端 assets/cdndata/character_text_rank_p5b.json:169951:2:技能描述
+  WARN  客户端 character_text 表 角色 151159 第3档技能描述与游戏内不一致;游戏只读 action_skill[golden_dragon_jr][3] c1
+        此处: 以古龙的威光赋予领域内全体敌人累积光属性抗性降低效果 ＋ 消除1个强化效果 ／ 放出锐利的光芒，对领域内全体敌人造成光属性伤害
+        游戏: 以古龙的威光赋予领域内全体敌人累积光·暗属性抗性降低效果 ＋ 消除1个强化效果 ／ 放出锐利的光芒，在一段时间内对领域内全体敌人连续造成多段光属性伤害 ／ 赋予我方全体与协力角色“光暗共鸣”效果（攻击力提升＋全属性抗性提升＋持续回复），其持
+        id=text.drift:客户端 character_text 表:151159:3:技能描述
+  WARN  客户端 character_text 表 角色 261089 第1档技能描述与游戏内不一致;游戏只读 action_skill[darkness_dragon][1] c1
+        此处: 引爆黑暗，对领域内全体敌人连续释放三段暗属性伤害＋消除其强化效果＋赋予麻痹与暗属性抗性降低效果 ／ 赋予暗属性角色技能伤害提升效果＋解除其弱体效果
+        游戏: 引爆黑暗，对领域内全体敌人造成暗属性伤害 ／ 赋予暗属性角色技能伤害提升效果
+        id=text.drift:客户端 character_text 表:261089:1:技能描述
+  WARN  客户端 character_text 表 角色 261089 第2档技能描述与游戏内不一致;游戏只读 action_skill[darkness_dragon][2] c1
+        此处: 引爆黑暗，对领域内全体敌人连续释放三段暗属性伤害＋消除其强化效果＋赋予麻痹与暗属性抗性降低效果 ／ 赋予暗属性角色技能伤害提升效果＋解除其弱体效果
+        游戏: 引爆黑暗，对领域内全体敌人造成暗属性伤害 ／ 赋予暗属性角色技能伤害提升效果
+        id=text.drift:客户端 character_text 表:261089:2:技能描述
+  WARN  客户端 character_text 表 角色 261089 第3档技能描述与游戏内不一致;游戏只读 action_skill[darkness_dragon][3] c1
+        此处: 引爆黑暗，对领域内全体敌人造成暗属性伤害 ／ 赋予暗属性角色技能伤害提升效果
+        游戏: 引爆黑暗，对领域内全体敌人连续释放三段暗属性伤害＋消除其强化效果＋赋予麻痹与“光暗抗性降低”效果（光属性·暗属性抗性同时降低） ／ 赋予我方全体角色攻击力提升与技能伤害提升效果
+        id=text.drift:客户端 character_text 表:261089:3:技能描述
+  WARN  客户端 character_text 表 角色 700006 第1档技能名与游戏内不一致;游戏只读 action_skill[desert_commander_no_piercing][1] c0
+        此处: ザハブ・ファジュル
+        游戏: 黄金黎明
+        id=text.drift:客户端 character_text 表:700006:1:技能名
+  WARN  客户端 character_text 表 角色 700007 第1档技能描述与游戏内不一致;游戏只读 action_skill[ruin_lady_no_piercing][1] c1
+        此处: 命令Alter Device进行炮击，对领域内全体敌人造成水属性伤害／赋予全体队员攻击力提升效果／提升Fever槽
+        游戏: ruin_lady_no_piercing
+        id=text.drift:客户端 character_text 表:700007:1:技能描述
+  WARN  客户端 character_text 表 角色 700007 第1档技能名与游戏内不一致;游戏只读 action_skill[ruin_lady_no_piercing][1] c0
+        此处: 阿德·乌姆
+        游戏: 众神之怒
+        id=text.drift:客户端 character_text 表:700007:1:技能名
+  WARN  客户端 character_text 表 角色 700008 第1档技能名与游戏内不一致;游戏只读 action_skill[justice_lady_assist][1] c0
+        此处: カース・ブリンガー
+        游戏: 将觉悟存于胸中。
+        id=text.drift:客户端 character_text 表:700008:1:技能名
+  WARN  客户端 character_text 表 角色 700004 第1档技能名与游戏内不一致;游戏只读 action_skill[horn_leader_assist][1] c0
+        此处: カース・ブリンガー
+        游戏: 同胞们、都来呀！
+        id=text.drift:客户端 character_text 表:700004:1:技能名
+  WARN  客户端 character_text 表 角色 700005 第1档技能名与游戏内不一致;游戏只读 action_skill[guildknight_leader_assist][1] c0
+        此处: サドール・ハソル
+        游戏: 工作开始了哟、公会骑士
+        id=text.drift:客户端 character_text 表:700005:1:技能名
+  WARN  客户端 character_text 表 角色 700001 第1档技能名与游戏内不一致;游戏只读 action_skill[devil_leader_assist][1] c0
+        此处: カース・ブリンガー
+        游戏: 诅咒逆焰
+        id=text.drift:客户端 character_text 表:700001:1:技能名
+  WARN  客户端 character_text 表 角色 700002 第1档技能名与游戏内不一致;游戏只读 action_skill[elf_princess_assist][1] c0
+        此处: サドール・ハソル
+        游戏: 忠勇斧刃
+        id=text.drift:客户端 character_text 表:700002:1:技能名
+  WARN  客户端 character_text 表 角色 700003 第1档技能名与游戏内不一致;游戏只读 action_skill[resistance_princess_assist][1] c0
+        此处: アルケミック・ヴァリデート
+        游戏: 艾克赛里奥圣剑
+        id=text.drift:客户端 character_text 表:700003:1:技能名
+  WARN  客户端 character_text 表 角色 149997 第1档技能描述与游戏内不一致;游戏只读 action_skill[mosiyike][1] c1
+        此处: 以风包裹全体队友，各起一圈守护的风盾／解除全体队友的全部弱化效果／赋予全体队友最大生命值 15% 的护盾／全体队友全属性抗性 +25%（20 秒）、攻击力 +250%（20 秒）
+        游戏: 以风包裹全体队友，各起一圈守护的风盾／解除全体队友的全部弱化效果／赋予全体队友最大生命值 15% 的护盾／全体队友全属性抗性 +25%（20 秒）、攻击力 +250%（20 秒）／赋予全体队友最大速度固定效果（6 秒）
+        id=text.drift:客户端 character_text 表:149997:1:技能描述
+  WARN  客户端 character_text 表 角色 149997 第2档技能描述与游戏内不一致;游戏只读 action_skill[mosiyike][2] c1
+        此处: 以风包裹全体队友，各起一圈守护的风盾／解除全体队友的全部弱化效果／赋予全体队友最大生命值 15% 的护盾／全体队友全属性抗性 +25%（20 秒）、攻击力 +250%（20 秒）
+        游戏: 以风包裹全体队友，各起一圈守护的风盾／解除全体队友的全部弱化效果／赋予全体队友最大生命值 15% 的护盾／全体队友全属性抗性 +25%（20 秒）、攻击力 +250%（20 秒）／赋予全体队友最大速度固定效果（6 秒）
+        id=text.drift:客户端 character_text 表:149997:2:技能描述
+  WARN  客户端 character_text 表 角色 149995 第1档技能描述与游戏内不一致;游戏只读 action_skill[seofon_wind][1] c1
+        此处: 剑神双奏：无「剑神」时，原地召唤剑神——全体队员获得15%护盾，自身获得1级「剑神」与30%加速（10秒）；持有N级「剑神」时，剑神化身突进攻击1段，并向前方推出N把灵剑（每把攻击1段），共N+1段，随后消耗1级「剑神」。进化前每段倍率：1
+        游戏: 剑神双奏：无「剑神」时，原地召唤剑神——全体队员获得15%护盾，自身获得1级「剑神」与30%加速（10秒）；持有N级「剑神」时，剑神化身突进攻击1段，并向前方推出N把灵剑（每把攻击1段），共N+1段，随后消耗1级「剑神」。进化前每段倍率：1
+        id=text.drift:客户端 character_text 表:149995:1:技能描述
+  WARN  客户端 character_text 表 角色 149995 第2档技能描述与游戏内不一致;游戏只读 action_skill[seofon_wind][2] c1
+        此处: 剑神双奏：无「剑神」时，原地召唤剑神——全体队员获得15%护盾，自身获得1级「剑神」与30%加速（10秒）；持有N级「剑神」时，剑神化身突进攻击1段，并向前方推出N把灵剑（每把攻击1段），共N+1段，随后消耗1级「剑神」。进化前每段倍率：1
+        游戏: 剑神双奏：无「剑神」时，原地召唤剑神——全体队员获得15%护盾，自身获得1级「剑神」与30%加速（10秒）；持有N级「剑神」时，剑神化身突进攻击1段，并向前方推出N把灵剑（每把攻击1段），共N+1段，随后消耗1级「剑神」。进化后每段倍率：1
+        id=text.drift:客户端 character_text 表:149995:2:技能描述
+  WARN  客户端 character_text 表 角色 169995 第2档技能描述与游戏内不一致;游戏只读 action_skill[maou2_playable][2] c1
+        此处: 终结爆发进一步增强。
+        游戏: 降下黑雷雨与四连光柱，终以湮灭冲击归零万象，对全体敌人造成大伤害。
+        id=text.drift:客户端 character_text 表:169995:2:技能描述
+  WARN  客户端 character_text 表 角色 169995 第2档技能名与游戏内不一致;游戏只读 action_skill[maou2_playable][2] c0
+        此处: 勇者终焉・万象归零＋
+        游戏: 勇者终焉・万象归零
+        id=text.drift:客户端 character_text 表:169995:2:技能名
+  WARN  客户端 character_text 表 角色 119951 第1档技能描述与游戏内不一致;游戏只读 action_skill[spirit_beast_fire_playable][1] c1
+        此处: 展开缠绕自身的炎环，在一段时间内持续对范围内的敌人造成火属性伤害，被炎环命中的敌人火属性耐性降低25%（最多3层）／随后向前方释放两道炎狱
+        游戏: 在弹珠落点展开缠绕的炎环，10 秒内持续对范围内的敌人造成火属性伤害，被炎环命中的敌人火属性耐性降低 25%（最多 3 层，持续 65 秒）／随后向左、右、正面依次释放三道炎狱，最后一道范围与威力更大
+        id=text.drift:客户端 character_text 表:119951:1:技能描述
+  WARN  客户端 character_text 表 角色 119951 第2档技能描述与游戏内不一致;游戏只读 action_skill[spirit_beast_fire_playable][2] c1
+        此处: 展开缠绕自身的炎环，在一段时间内持续对范围内的敌人造成火属性伤害，被炎环命中的敌人火属性耐性降低30%（最多3层）／随后向前方释放两道炎狱
+        游戏: 在弹珠落点展开缠绕的炎环，10 秒内持续对范围内的敌人造成火属性伤害，被炎环命中的敌人火属性耐性降低 30%（最多 3 层，持续 65 秒）／随后向左、右、正面依次释放三道炎狱，最后一道范围与威力更大
+        id=text.drift:客户端 character_text 表:119951:2:技能描述
+  WARN  客户端 character_text 表 角色 129951 第1档技能描述与游戏内不一致;游戏只读 action_skill[spirit_beast_water_playable][1] c1
+        此处: 【水势】掀起横贯战场的巨浪，并在落点留下持续的回旋涡流，命中的敌人水属性耐性降低20%（最多3层）／【冰势】降下冰河【对冻结中的敌人伤害提升】，并以冰晶爆破使命中的敌人陷入冻结／每次发动后在两势之间切换
+        游戏: 【水势】掀起横贯战场的巨浪，并在落点留下持续的回旋涡流，命中的敌人水属性耐性降低 20%（最多 3 层，持续 65 秒）／【冰势】降下冰河【对冻结中的敌人伤害提升】，并以冰晶爆散使命中的敌人陷入冻结 3 秒／每次发动后在两势之间切换
+        id=text.drift:客户端 character_text 表:129951:1:技能描述
+  WARN  客户端 character_text 表 角色 129951 第2档技能描述与游戏内不一致;游戏只读 action_skill[spirit_beast_water_playable][2] c1
+        此处: 【水势】掀起横贯战场的巨浪，并在落点留下持续的回旋涡流，命中的敌人水属性耐性降低25%（最多3层）／【冰势】降下冰河【对冻结中的敌人伤害提升】，并以冰晶爆破使命中的敌人陷入冻结／每次发动后在两势之间切换
+        游戏: 【水势】掀起横贯战场的巨浪，并在落点留下持续的回旋涡流，命中的敌人水属性耐性降低 25%（最多 3 层，持续 65 秒）／【冰势】降下冰河【对冻结中的敌人伤害提升】，并以冰晶爆散使命中的敌人陷入冻结 3 秒／每次发动后在两势之间切换
+        id=text.drift:客户端 character_text 表:129951:2:技能描述
+  WARN  客户端 character_text 表 角色 139951 第1档技能描述与游戏内不一致;游戏只读 action_skill[spirit_beast_thunder_playable][1] c1
+        此处: 在战场上展开持续的带电领域，反复对领域内的敌人造成雷属性伤害／同时降下三道天雷
+        游戏: 在战场上展开持续 10 秒的带电领域，反复对领域内的敌人造成雷属性伤害／同时依次降下四道天雷，最后一道的落点范围与威力更大
+        id=text.drift:客户端 character_text 表:139951:1:技能描述
+  WARN  客户端 character_text 表 角色 139951 第2档技能描述与游戏内不一致;游戏只读 action_skill[spirit_beast_thunder_playable][2] c1
+        此处: 在战场上展开持续的带电领域，反复对领域内的敌人造成雷属性伤害（威力提升）／同时降下三道天雷
+        游戏: 在战场上展开持续 10 秒的带电领域，反复对领域内的敌人造成雷属性伤害（威力提升）／同时依次降下四道天雷，最后一道的落点范围与威力更大
+        id=text.drift:客户端 character_text 表:139951:2:技能描述
+  WARN  客户端 character_text 表 角色 149951 第1档技能描述与游戏内不一致;游戏只读 action_skill[spirit_beast_wind_playable][1] c1
+        此处: 于前方展开毒风，对命中的敌人造成风属性伤害，并赋予中毒与属性耐性降低效果。自身持有 8 层以上「风蛇的诅咒」时，追加引爆诅咒，对周围敌人造成风属性伤害并消耗 8 层。无论是否引爆，都会赋予我方全体攻击力提升；仅在引爆时增加自身技能槽5%。
+        游戏: 于前方展开毒风，对命中的敌人造成风属性伤害，并赋予中毒与全属性耐性降低 18%（最多 3 层）。自身持有 8 层以上「风蛇的诅咒」时，追加引爆诅咒，对周围敌人造成风属性伤害并消耗 8 层，赋予我方全体攻击力提升 25%（15 秒）并增加自身
+        id=text.drift:客户端 character_text 表:149951:1:技能描述
+  WARN  客户端 character_text 表 角色 149951 第2档技能描述与游戏内不一致;游戏只读 action_skill[spirit_beast_wind_playable][2] c1
+        此处: 于前方展开毒风，对命中的敌人造成风属性伤害，并赋予中毒与属性耐性降低效果。自身持有 8 层以上「风蛇的诅咒」时，追加引爆诅咒，对周围敌人造成风属性伤害并消耗 8 层。无论是否引爆，都会赋予我方全体攻击力提升；仅在引爆时增加自身技能槽5%。
+        游戏: 于前方展开毒风，对命中的敌人造成风属性伤害，并赋予中毒与全属性耐性降低 25%（最多 3 层）。自身持有 8 层以上「风蛇的诅咒」时，追加引爆诅咒，对周围敌人造成风属性伤害并消耗 8 层，赋予我方全体攻击力提升 30%（15 秒）并增加自身
+        id=text.drift:客户端 character_text 表:149951:2:技能描述
+  WARN  客户端 character_text 表 角色 159951 第1档技能描述与游戏内不一致;游戏只读 action_skill[spirit_beast_light_playable][1] c1
+        此处: 于前方张开巨网，持续对网内的敌人造成光属性伤害，并叠加「破绽」（光属性耐性降低，最多 3 层）。随后引爆蛛网，对周围敌人造成光属性伤害。技能结束时赋予我方全体贯通与浮游效果。
+        游戏: 于前方张开巨网，持续对网内的敌人造成光属性伤害，并叠加「破绽」（光属性耐性降低 12%，最多 3 层，持续 20 秒）。随后引爆蛛网，对周围敌人造成光属性伤害。技能结束时赋予我方全体贯通与浮游 8 秒。
+        id=text.drift:客户端 character_text 表:159951:1:技能描述
+  WARN  客户端 character_text 表 角色 159951 第2档技能描述与游戏内不一致;游戏只读 action_skill[spirit_beast_light_playable][2] c1
+        此处: 于前方张开巨网，持续对网内的敌人造成光属性伤害，并叠加「破绽」（光属性耐性降低，最多 3 层）。随后引爆蛛网，对周围敌人造成光属性伤害。技能结束时赋予我方全体贯通与浮游效果。
+        游戏: 于前方张开巨网，持续对网内的敌人造成光属性伤害，并叠加「破绽」（光属性耐性降低 15%，最多 3 层，持续 20 秒）。随后引爆蛛网，对周围敌人造成光属性伤害。技能结束时赋予我方全体贯通与浮游 10 秒。
+        id=text.drift:客户端 character_text 表:159951:2:技能描述
+  WARN  客户端 character_text 表 角色 169951 第1档技能描述与游戏内不一致;游戏只读 action_skill[spirit_beast_dark_playable][1] c1
+        此处: 化为冥炎向前俯冲，对命中的敌人造成暗属性伤害并驱散其增益效果。随后散射黑羽追击，最后引爆深渊地狱造成暗属性伤害。技能结束时为自身张开护罩，并在一段时间内使自身的直接攻击变为 2 段、直击伤害提升。
+        游戏: 化为冥炎向前俯冲，对命中的敌人造成暗属性伤害并驱散其增益效果。随后散射三道黑羽追击，最后引爆深渊地狱造成暗属性伤害。技能结束时为自身张开吸收 6% 伤害的护罩，并在 12 秒内使自身的直接攻击变为 2 段、直击伤害提升 20%。
+        id=text.drift:客户端 character_text 表:169951:1:技能描述
+  WARN  客户端 character_text 表 角色 169951 第2档技能描述与游戏内不一致;游戏只读 action_skill[spirit_beast_dark_playable][2] c1
+        此处: 化为冥炎向前俯冲，对命中的敌人造成暗属性伤害并驱散其增益效果。随后散射黑羽追击，最后引爆深渊地狱造成暗属性伤害。技能结束时为自身张开护罩，并在一段时间内使自身的直接攻击变为 2 段、直击伤害提升。
+        游戏: 化为冥炎向前俯冲，对命中的敌人造成暗属性伤害并驱散其增益效果。随后散射三道黑羽追击，最后引爆深渊地狱造成暗属性伤害。技能结束时为自身张开吸收 8% 伤害的护罩，并在 15 秒内使自身的直接攻击变为 2 段、直击伤害提升 25%。
+        id=text.drift:客户端 character_text 表:169951:2:技能描述
+
+[伴随表] ERROR 0  WARN 81  INFO 0
+  WARN  道具 40193(蛇神残响)在客户端 item 表里,但不在服务端 assets/item_ids.json
+        id=companion.item_ids:40193
+  WARN  道具 8000201(幻星术式核心魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+        id=companion.item_ids:8000201
+  WARN  道具 8000202(双星追迹刃魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+        id=companion.item_ids:8000202
+  WARN  道具 8000203(坠星破界锤魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+        id=companion.item_ids:8000203
+  WARN  道具 8000204(群星自律机库魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+        id=companion.item_ids:8000204
+  WARN  道具 8000205(因果演算终端魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+        id=companion.item_ids:8000205
+  WARN  道具 8000206(热寂共鸣环魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+        id=companion.item_ids:8000206
+  WARN  道具 8000207(半月蚀心剑魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+        id=companion.item_ids:8000207
+  WARN  道具 8000208(天穹无坠之翼魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+        id=companion.item_ids:8000208
+  WARN  道具 8000209(冥灯返魂杖魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+        id=companion.item_ids:8000209
+  WARN  道具 8000210(无界贯星枪魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+        id=companion.item_ids:8000210
+  WARN  道具 8000211(六相万华轮魂珠)在客户端 item 表里,但不在服务端 assets/item_ids.json
+        id=companion.item_ids:8000211
+  WARN  新道具 5930001(歼灭者的裁决之刃魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930001
+  WARN  新道具 5930002(歼灭者的碎岳战斧魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930002
+  WARN  新道具 5930011(奥格的碎岳战斧魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930011
+  WARN  新道具 5930012(奥格的崩山拳甲魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930012
+  WARN  新道具 5930021(魔王的崩山拳甲魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930021
+  WARN  新道具 5930022(魔王的镇魂坚盾魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930022
+  WARN  新道具 5930031(上位歼灭者的镇魂坚盾魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930031
+  WARN  新道具 5930032(上位歼灭者的心核坠饰魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930032
+  WARN  新道具 5930041(弁天的心核坠饰魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930041
+  WARN  新道具 5930042(弁天的穿星魔铳魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930042
+  WARN  新道具 5930051(异形歼灭者的穿星魔铳魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930051
+  WARN  新道具 5930052(异形歼灭者的裁决之刃魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930052
+  WARN  新道具 5930061(噬星者的裁决之刃魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930061
+  WARN  新道具 5930062(噬星者的崩山拳甲魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930062
+  WARN  新道具 5930071(咒剑的碎岳战斧魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930071
+  WARN  新道具 5930072(咒剑的镇魂坚盾魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930072
+  WARN  新道具 5930081(终始之龙的崩山拳甲魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930081
+  WARN  新道具 5930082(终始之龙的心核坠饰魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930082
+  WARN  新道具 5930091(青之女王的镇魂坚盾魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930091
+  WARN  新道具 5930092(青之女王的穿星魔铳魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930092
+  WARN  新道具 5930101(赤之女王的心核坠饰魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930101
+  WARN  新道具 5930102(赤之女王的裁决之刃魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930102
+  WARN  新道具 5930111(碧之女王的穿星魔铳魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930111
+  WARN  新道具 5930112(碧之女王的碎岳战斧魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930112
+  WARN  新道具 5930121(皓之女王的裁决之刃魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930121
+  WARN  新道具 5930122(皓之女王的镇魂坚盾魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930122
+  WARN  新道具 5930131(金之女王的碎岳战斧魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930131
+  WARN  新道具 5930132(金之女王的心核坠饰魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930132
+  WARN  新道具 5930141(墨之女王的崩山拳甲魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930141
+  WARN  新道具 5930142(墨之女王的穿星魔铳魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930142
+  WARN  新道具 5930151(伊尔考普斯的镇魂坚盾魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930151
+  WARN  新道具 5930152(伊尔考普斯的裁决之刃魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930152
+  WARN  新道具 5930161(伊萨巴迪卡的心核坠饰魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930161
+  WARN  新道具 5930162(伊萨巴迪卡的碎岳战斧魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930162
+  WARN  新道具 5930171(伊劳德雷斯的穿星魔铳魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930171
+  WARN  新道具 5930172(伊劳德雷斯的崩山拳甲魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930172
+  WARN  新道具 5930181(伊尔格拉乌的裁决之刃魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930181
+  WARN  新道具 5930182(伊尔格拉乌的心核坠饰魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930182
+  WARN  新道具 5930191(伊尔梅塔雷的碎岳战斧魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930191
+  WARN  新道具 5930192(伊尔梅塔雷的穿星魔铳魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930192
+  WARN  新道具 5930201(伊尔昂斯拉的崩山拳甲魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930201
+  WARN  新道具 5930202(伊尔昂斯拉的裁决之刃魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930202
+  WARN  新道具 5930211(奥尔塔尼亚的镇魂坚盾魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930211
+  WARN  新道具 5930212(奥尔塔尼亚的碎岳战斧魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930212
+  WARN  新道具 5930221(斯拉姆冈的心核坠饰魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930221
+  WARN  新道具 5930222(斯拉姆冈的崩山拳甲魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930222
+  WARN  新道具 5930231(普罗格雷奥的穿星魔铳魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930231
+  WARN  新道具 5930232(普罗格雷奥的镇魂坚盾魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930232
+  WARN  新道具 5930241(亚特摩西亚的裁决之刃魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930241
+  WARN  新道具 5930242(亚特摩西亚的穿星魔铳魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930242
+  WARN  新道具 5930251(杜梅欧的碎岳战斧魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930251
+  WARN  新道具 5930252(杜梅欧的裁决之刃魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930252
+  WARN  新道具 5930261(希亚特利欧的崩山拳甲魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930261
+  WARN  新道具 5930262(希亚特利欧的碎岳战斧魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5930262
+  WARN  新道具 5990001(【测试服专用】GM·全能魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5990001
+  WARN  新道具 5990002(【测试服专用】GM·充能魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5990002
+  WARN  新道具 5990003(【测试服专用】GM·槽上限魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5990003
+  WARN  新道具 5990004(【测试服专用】GM·直击魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5990004
+  WARN  新道具 5990005(【测试服专用】GM·连击魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5990005
+  WARN  新道具 5990006(【测试服专用】GM·不屈连击魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:5990006
+  WARN  新道具 8000116(深渊·白鸽羽毛魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:8000116
+  WARN  新道具 8000117(深渊·珍珠奶茶魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:8000117
+  WARN  新道具 8000118(深渊·血月魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:8000118
+  WARN  新道具 8000119(深渊·大葱话筒魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:8000119
+  WARN  新道具 8000120(深渊·胡萝卜剑魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:8000120
+  WARN  新道具 8000121(深渊·冲浪板魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:8000121
+  WARN  新道具 8000122(深渊·沙滩排球魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:8000122
+  WARN  新道具 8000123(深渊·机车头盔魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:8000123
+  WARN  新道具 8000124(深渊·船夹板魂珠)没有 item_quest_search 行(获取途径页空白)
+        id=companion.item_quest_search:8000124
+
+[等级缺口] ERROR 0  WARN 5  INFO 10
+  WARN  variable 缺口 general_boss_variable[guardian_golem_fire_multi] 最高 79 < 关卡等级 80(变量表取空,状态机用到变量时崩)
+        关卡(1): boss_battle_quest:1/6/3
+        id=level.var_gap:general_boss_variable:guardian_golem_fire_multi
+  WARN  variable 缺口 general_boss_variable[lich_wind_multi] 最高 79 < 关卡等级 80(变量表取空,状态机用到变量时崩)
+        关卡(1): boss_battle_quest:1/3/4
+        id=level.var_gap:general_boss_variable:lich_wind_multi
+  WARN  variable 缺口 general_boss_variable[mod_abyss_ex_boss14] 最高 79 < 关卡等级 90(变量表取空,状态机用到变量时崩)
+        关卡(1): rush_event_quest:700100/14
+        id=level.var_gap:general_boss_variable:mod_abyss_ex_boss14
+  WARN  variable 缺口 general_boss_variable[mod_fb2_034_lich_w02] 最高 79 < 关卡等级 80(变量表取空,状态机用到变量时崩)
+        关卡(1): boss_battle_quest:1/99/34
+        id=level.var_gap:general_boss_variable:mod_fb2_034_lich_w02
+  WARN  variable 缺口 general_boss_variable[mod_fb2_037_lich_w00] 最高 79 < 关卡等级 80(变量表取空,状态机用到变量时崩)
+        关卡(1): boss_battle_quest:1/99/37
+        id=level.var_gap:general_boss_variable:mod_fb2_037_lich_w00
+  INFO  仅按名引用(tier2,客户端不按等级查) general_boss[discarded_dragon_light] 最高 80 < 100
+        关卡: rush_event_quest:700100/28
+        id=level.nameonly:general_boss:discarded_dragon_light
+  INFO  仅按名引用(tier2,客户端不按等级查) general_boss[grizzly] 最高 79 < 80
+        关卡: boss_battle_quest:1/24/4, score_attack_event_quest:1/10, score_attack_event_quest:1/110
+        id=level.nameonly:general_boss:grizzly
+  INFO  仅按名引用(tier2,客户端不按等级查) general_boss[hero_big_boss_multi] 最高 59 < 100
+        关卡: advent_event_quest:200063/3, advent_event_quest:200063/4, advent_event_quest:200063/5, rush_event_quest:700098/2
+        id=level.nameonly:general_boss:hero_big_boss_multi
+  INFO  仅按名引用(tier2,客户端不按等级查) general_boss[mechanic_dragon_eater_multi] 最高 79 < 100
+        关卡: expert_single_event_quest:2/11, practice_quest:1023, score_attack_event_quest:1/113, score_attack_event_quest:1/13
+        id=level.nameonly:general_boss:mechanic_dragon_eater_multi
+  INFO  仅按名引用(tier2,客户端不按等级查) general_boss[mechanic_dragon_eater_single] 最高 79 < 100
+        关卡: expert_single_event_quest:2/11, practice_quest:1023, score_attack_event_quest:1/113, score_attack_event_quest:1/13
+        id=level.nameonly:general_boss:mechanic_dragon_eater_single
+  INFO  仅按名引用(tier2,客户端不按等级查) general_boss[mechanic_dragon_eater_story] 最高 79 < 100
+        关卡: expert_single_event_quest:2/11, practice_quest:1023, score_attack_event_quest:1/113, score_attack_event_quest:1/13
+        id=level.nameonly:general_boss:mechanic_dragon_eater_story
+  INFO  仅按名引用(tier1,客户端不按等级查) standard_boss[steampunk_light_multi] 最高 80 < 100
+        关卡: hard_multi_event_quest:100000/1, hard_multi_event_quest:1005/1
+        id=level.nameonly:standard_boss:steampunk_light_multi
+  INFO  仅按名引用(tier1,客户端不按等级查) standard_funnel[steampunk_light_funnel_core_multi] 最高 80 < 100
+        关卡: hard_multi_event_quest:100000/1, hard_multi_event_quest:1005/1
+        id=level.nameonly:standard_funnel:steampunk_light_funnel_core_multi
+  INFO  仅按名引用(tier1,客户端不按等级查) standard_funnel[steampunk_light_funnel_multi] 最高 80 < 100
+        关卡: hard_multi_event_quest:100000/1, hard_multi_event_quest:1005/1
+        id=level.nameonly:standard_funnel:steampunk_light_funnel_multi
+  INFO  仅按名引用(tier1,客户端不按等级查) standard_funnel[steampunk_wind_funnel_core_multi] 最高 80 < 100
+        关卡: hard_multi_event_quest:1004/1, hard_multi_event_quest:2/1
+        id=level.nameonly:standard_funnel:steampunk_wind_funnel_core_multi
+
+说明:
+  - kulo#35 checkPatchChainIntegrity: 0 条
+  - 等级检查: 22 张 quest 表, 3609 个关卡, 等级 1..100, 1738 个等级表条目被引用
+  - atk_basic_curve 不在视图里(多为 APK 内置表),未检查
+  - hit_hp_basic_curve 不在视图里(多为 APK 内置表),未检查
+  - party_atk_curve 不在视图里(多为 APK 内置表),未检查
+  - party_hp_curve 不在视图里(多为 APK 内置表),未检查
+  - APK 内置表(store 里是 16 字节桩,按不在视图处理): atk_basic_curve, hit_hp_basic_curve, party_atk_curve, party_hp_curve, tutorial_quest
+
+合计: ERROR 0  WARN 162  INFO 10  => 可以推送

@@ -1,0 +1,1787 @@
+3#0	white_tiger	赋予全队 攻击力 45%→60%
+3#1	white_tiger	自身 强化弹射伤害 45%→60%
+111001#0	fire_dragon	赋予全队(火) 攻击力 75%→100%
+111001#1	fire_dragon	[觉醒1替换] 赋予全队(火) 攻击力 125%
+111001#2	fire_dragon	自身 强化弹射伤害 55%→70%
+111001#3	fire_dragon	[觉醒1替换] 自身 强化弹射伤害 125%
+111001#4	fire_dragon	[觉醒1追加] 自身 强化弹射Lv3伤害特攻 10%
+111002#0	pirates_girl	赋予全队(火) HP 15%→20%
+111002#1	pirates_girl	赋予全队(火) 攻击力 40%→50%
+111002#2	pirates_girl	弹射≥20(限4次) → 赋予全队(火) 攻击力 10%→12.5%
+111003#0	clarisse	赋予全队(火) 技能伤害 150%→200%
+111003#1	clarisse	[觉醒1替换] 赋予全队(火) 技能伤害 200%→220%
+121001#0	brown_fighter	赋予全队(水) 攻击力 45%→60%
+121001#1	brown_fighter	[觉醒1替换] 赋予全队(水) 攻击力 60%
+121001#2	brown_fighter	连击≥30(限5次) → 赋予全队(水) 攻击力 18%→24%
+121001#3	brown_fighter	[觉醒1替换] 连击≥30(限5次) → 赋予全队(水) 攻击力 30%
+121001#4	brown_fighter	[觉醒1追加] 自身 攻击力 50%
+121002#0	onmyoji_boy	赋予全队(水) HP 30%→40%
+121002#1	onmyoji_boy	赋予全队(水) 攻击力 30%→40%
+131001#0	fox_oracle	赋予全队(雷) 攻击力 60%→80%
+131001#1	fox_oracle	非Fever 时: 技能发动≥1 → 自身 追加Fever点 4500%→6000%
+131002#0	cagliostro	赋予全队(雷) HP 5%→10%
+131002#1	cagliostro	赋予全队(雷) 攻击力 40%→50%
+131002#2	cagliostro	赋予全队(雷) 技能伤害 70%→90%
+141002#0	wind_oracle	持续·HP≥60% → 赋予触发者 攻击力 130%→170%
+141003#0	katana_ghost	赋予全队(风) 技能槽 30%→50%
+141003#1	katana_ghost	赋予全队(风) 攻击力 75%→100%
+141003#2	katana_ghost	[觉醒1追加] 赋予全队(风) 技能槽 50%
+141003#3	katana_ghost	[觉醒1追加] 赋予全队(风) 攻击力 150%
+141004#0	mercenary	赋予全队(风) 攻击力 75%→100%
+141004#1	mercenary	自身 强化弹射伤害 55%→70%
+151001#0	ruin_girl	赋予全队(光) 攻击力 75%→100%
+151001#1	ruin_girl	自身 Fever时间延长 20%→30%
+151002#0	prince_zero	赋予全队(光) 攻击力 45%→60%
+151002#1	prince_zero	治疗计数≥1(限10次) → 赋予触发者 攻击力 4.5%→6%
+151002#2	prince_zero	治疗计数≥1(限10次) → 赋予触发者 抗性暗 1.5%→2%
+161001#0	dimension_witch	持续·HP≤50% → 赋予触发者 攻击力 150%→200%
+161001#1	dimension_witch	[觉醒1追加] 赋予全队(暗) 技能槽 15%→30%
+161002#0	veteran_hunter	赋予全队(暗) 攻击力 115%→150%
+161002#1	veteran_hunter	[觉醒1追加] 赋予全队(暗) 攻击力 150%
+161002#2	veteran_hunter	[觉醒1追加] 持续·状态贯通 → 自身 Direct伤害 100%
+211001#0	dragon_slayer	赋予全队(火) 攻击力 30%→40%
+211001#1	dragon_slayer	赋予全队(火) 角色特攻 20%→25%[限龙族]
+211001#2	dragon_slayer	[觉醒1追加] 赋予全队(火) 攻击力 40%
+211001#3	dragon_slayer	[觉醒1追加] 赋予全队(火) 角色特攻 25%[限龙族]
+211001#4	dragon_slayer	[觉醒1追加] 自身 强化弹射伤害 80%
+211002#0	lady_summoner	龙族·编成≥2(限1次) → 赋予全队 攻击力 90%→120%
+211002#1	lady_summoner	[觉醒1替换] 龙族·编成≥2(限1次) → 赋予全队 攻击力 120%→150%
+211003#0	kunoichi	赋予全队(火) 技能槽 80%→100%
+211003#1	kunoichi	赋予全队(火) 攻击力 20%→30%
+211004#0	half_oni_boy	赋予全队(火) 攻击力 90%→120%
+211005#0	master_knight	自身 强化弹射伤害 115%→150%
+221001#0	swallow_knight	赋予全队(水) HP 10%→15%
+221001#1	swallow_knight	[觉醒1替换] 赋予全队(水) HP 15%→20%
+221001#2	swallow_knight	赋予全队(水) 攻击力 50%→65%
+221002#0	bishop_girl	赋予全队 攻击力 45%→60%
+221002#1	bishop_girl	赋予全队 Ease治疗 10%→15%
+221003#0	mermaid	水·编成≥6 时: 自身 追加Fever点 75000%→100000%
+221003#1	mermaid	水·编成≥6 时: Fever≥1 → 自身 状态连击加成 375%→500%×1次
+221004#0	alice	持续·HP≥80% → 赋予触发者 攻击力 120%→160%
+221004#1	alice	[觉醒1追加] 持续·HP≥80% → 赋予触发者 攻击力 160%
+221004#2	alice	[觉醒1追加] 水·编成≥6 时: 弹射≥5(CT10秒) → 自身 追加连击 6
+222001#0	spry_sailor	赋予全队(水) 攻击力 15%→20%
+222001#1	spry_sailor	赋予全队(水) 增益延长 15%→20%
+221006#0	battle_guild_staff	自身 强化弹射伤害 75%→100%
+221006#1	battle_guild_staff	自身 强化弹射连击数↓ 3
+231001#0	thunder_dragon	赋予全队(雷) 技能伤害 115%→150%
+231001#1	thunder_dragon	[觉醒1追加] 赋予全队(雷) 技能伤害 150%
+231001#2	thunder_dragon	[觉醒1追加] 自身 技能伤害 110%
+231002#0	fox_scientist	赋予全队(雷) 技能伤害 60%→80%
+231002#1	fox_scientist	赋予全队(雷) 麻痹特攻 10%→15%
+231003#0	rec_android	赋予全队(雷) 攻击力 20%→30%
+231003#1	rec_android	持续·Fever → 赋予全队(雷) 技能伤害 130%→170%
+231004#0	elf_soldier	赋予全队(雷) 攻击力 45%→60%
+231004#1	elf_soldier	连击Display≥15(限10次) → 赋予全队(雷) 攻击力 7.5%→10%
+231005#0	cat_shaman	赋予全队(雷) 攻击力 30%→40%
+231005#1	cat_shaman	赋予全队(雷) 角色特攻 20%→25%[限不死]
+241001#0	tiger_treasure_hunter	开幕:玛纳加成
+241001#1	tiger_treasure_hunter	赋予全队(风) 攻击力 55%→70%
+241001#2	tiger_treasure_hunter	赋予全队(风) HP 8%→10%
+241002#0	birdman	赋予全队(风) HP 10%→15%
+241002#1	birdman	[觉醒1替换] 赋予全队(风) HP 15%→20%
+241002#2	birdman	持续·状态Flying → 赋予全队(风) 攻击力 60%→80%
+241003#0	samurai	赋予全队(风) 技能槽 20%→30%
+241003#1	samurai	赋予全队(风) 技能伤害 85%→110%
+241004#0	elf_archer	赋予全队(风) HP 10%→15%
+241004#1	elf_archer	连击≥30(限5次) → 赋予全队(风) 攻击力 10%→14%
+243001#0	arisa	连击≥20(限10次) → 赋予全队 攻击力 8%→12%
+251001#0	sing_android	赋予全队(光) 攻击力 30%→40%
+251001#1	sing_android	持续·Fever → 赋予全队(光) 攻击力 80%→100%
+251002#0	unicorn_lancer	赋予全队(光) HP 15%→20%
+251002#1	unicorn_lancer	赋予全队(光) 抗性暗 10%→15%
+251002#2	unicorn_lancer	赋予全队(光) 攻击力 15%→20%
+251003#0	lightbullet_wiz	赋予全队(光) 技能伤害 115%→150%
+251003#1	lightbullet_wiz	[觉醒1追加] 赋予全队(光) 技能伤害 150%
+251003#2	lightbullet_wiz	[觉醒1追加] 自身 攻击力 50%
+251004#0	palpebra_knight	持续·HP≥60% → 赋予触发者 攻击力 40%→50%
+251004#1	palpebra_knight	持续·HP≥60% → 赋予触发者 抗性暗 20%→30%
+251004#2	palpebra_knight	[觉醒1追加] 持续·HP≥60% → 赋予触发者 攻击力 50%
+251004#3	palpebra_knight	[觉醒1追加] 持续·HP≥60% → 赋予触发者 抗性暗 30%
+251004#4	palpebra_knight	[觉醒1追加] 赋予全队(光) 攻击力 100%
+251005#0	palpebra_knight_lady	赋予全队(光) 攻击力 90%→120%
+261001#0	devil_princess	持续·暗·计数Specific多球≥1(限3次) → 赋予全队(暗) 攻击力 40%→50%
+261003#0	battle_maid	赋予全队(暗) 技能伤害 55%→70%
+261003#1	battle_maid	[觉醒1替换] 赋予全队(暗) 技能伤害 70%→100%
+261003#2	battle_maid	赋予全队(暗) 减益特攻 5%→10%
+261004#0	undead_boy	赋予全队(暗) HP 15%→20%
+261004#1	undead_boy	赋予全队(暗) 攻击力 35%→45%
+261005#0	warlock	赋予全队(暗) 攻击力 90%→120%
+311001#0	alchemist	赋予全队(火) 技能伤害 50%→70%
+311002#0	pretty_witch	赋予多球 HP 10%→15%
+311002#1	pretty_witch	[觉醒1替换] 赋予多球 HP 15%→20%
+311002#2	pretty_witch	赋予多球 攻击力 30%→40%
+311003#0	gunslinger	赋予全队(火) 攻击力 10%→15%
+311003#1	gunslinger	赋予全队(火) 技能伤害 30%→40%
+311004#0	monster_hunter	赋予全队(火) 攻击力 10%→15%
+311004#1	monster_hunter	持续·状态贯通 → 赋予全队(火) 攻击力 30%→40%
+311005#0	black_doctor	持续·HP≥60% → 赋予触发者 攻击力 45%→60%
+311006#0	cool_woman_soldier	自身 强化弹射伤害 50%→70%
+311008#0	berserker	赋予全队(火) 攻击力 50%→60%
+311008#1	berserker	赋予全队(火) 抗性全属性 -25%
+311009#0	fire_shaman	赋予全队(火) 减益特攻 15%→20%
+311010#0	disciplined_swordman	赋予全队(火) 攻击力 25%→35%
+321001#0	sniper	赋予全队 中毒攻击特攻 55%→75%
+321002#0	urban_soldier	赋予全队(水) 攻击力 10%→15%
+321002#1	urban_soldier	赋予全队(水) 增益延长 25%→35%
+321003#0	hard_face_soldier	赋予全队(水) HP 16%→22.5%
+321004#0	nurse	治疗计数≥1(限10次) → 赋予全队(水) 攻击力 4%→5%
+321005#0	wolf_assassin	赋予全队(水) 攻击力 25%→35%
+321006#0	fox_companion	赋予全队(神秘) HP 25%→35%
+321007#0	depraved_monk	持续·HP≥80% → 赋予触发者 攻击力 25%→35%
+321007#1	depraved_monk	赋予全队(水) Ease治疗 15%→20%
+321008#0	sailor_girl	赋予全队(水) 攻击力 10%→15%
+321008#1	sailor_girl	持续·状态增益 → 赋予触发者 攻击力 25%→30%
+321009#0	cute_fafnir	赋予全队(水) 抗性火 16%→22.5%
+321009#1	cute_fafnir	[觉醒1替换] 赋予全队(水) 抗性火 22.5%→25%
+331001#0	twin_blader	持续·连击≥10(限1次) → 赋予全队(雷) 攻击力 65%→90%
+331002#0	bee_girl	赋予全队(雷) 攻击力 10%→15%
+331002#1	bee_girl	[觉醒1替换] 赋予全队(雷) 攻击力 15%→50%
+331002#2	bee_girl	赋予全队(雷) 眩晕畏缩特攻 10%→15%
+331003#0	lightning_fighter	赋予全队(雷) 技能伤害 50%→70%
+331003#1	lightning_fighter	[觉醒1替换] 赋予全队(雷) 技能伤害 150%
+331003#2	lightning_fighter	[觉醒1追加] 技能发动≥1(限4次) → 自身 技能伤害 30%
+331004#0	outlaw_panther	赋予全队(雷) 攻击力 10%→15%
+331004#1	outlaw_panther	自身 Fever时间延长 20%→25%
+331005#0	wolf_swordsman	赋予全队(雷) 攻击力 10%→15%
+331005#1	wolf_swordsman	持续·状态攻击力↑ → 赋予触发者 攻击力 35%→45%
+331006#0	oni_girl	赋予全队(雷) 攻击力 25%→35%
+331007#0	sociable_mestizo	赋予全队(雷) 攻击力 10%→15%
+331007#1	sociable_mestizo	连击≥30(限5次) → 赋予全队(雷) 攻击力 6%→7%
+331010#0	magic_boy	赋予全队(雷) 攻击力 10%→15%
+331010#1	magic_boy	弹射≥15(限5次) → 赋予全队(雷) 攻击力 6%→7%
+331011#0	student_gunsmith	赋予全队 技能伤害 45%→60%
+341001#0	highlander	赋予全队(风) 攻击力 10%→15%
+341001#1	highlander	[觉醒1替换] 赋予全队(风) 攻击力 80%
+341001#2	highlander	连击≥30(限5次) → 赋予全队(风) 攻击力 6%→7%
+341001#3	highlander	[觉醒1替换] 连击≥30(限5次) → 赋予全队(风) 攻击力 15%
+341001#4	highlander	[觉醒1追加] 连击≥30(限5次) → 自身 攻击力 10%
+341002#0	dryad	持续·HP≥80% → 赋予触发者 攻击力 25%→30%
+341002#1	dryad	赋予全队(风) Ease治疗 15%→20%
+341003#0	lich	赋予全队(风) HP 10%→15%
+341003#1	lich	赋予全队 战斗不能Base计数- 400%
+341004#0	casino_dealer	持续·Fever → 赋予全队 攻击力 77%→99%
+341005#0	cat_fighter	赋予全队(风) 攻击力 10%→15%
+341005#1	cat_fighter	连击≥30(限5次) → 自身 强化弹射伤害 10%→14%
+341005#2	cat_fighter	[觉醒1追加] 赋予全队(风) Direct伤害 5%→10%
+341006#0	devil_clown	连击≥30(限10次) → 赋予全队(风) 攻击力 7%→9%
+341007#0	herbalist	赋予全队(风) 中毒特攻 20%→30%
+341008#0	spearman	赋予全队(风) 攻击力 25%→35%
+341009#0	trap_errand	赋予全队(风) 减益特攻 15%→20%
+351001#0	priest	赋予全队(光) HP 7.5%→10%
+351001#1	priest	[觉醒1替换] 赋予全队(光) HP 10%→15%
+351001#2	priest	治疗计数≥1(限10次) → 赋予全队(光) 攻击力 4%→5%
+351001#3	priest	[觉醒1替换] 治疗计数≥1(限10次) → 赋予全队(光) 攻击力 5%→6%
+351002#0	lady_gunner	赋予全队(光) 技能伤害 50%→70%
+351003#0	woman_knight	赋予全队(光) 抗性暗 18%→25%
+351004#0	docking_beast	赋予多球 HP 10%→15%
+351004#1	docking_beast	赋予多球 攻击力 30%→40%
+351005#0	exorcist_oldman	赋予全队(光) 攻击力 25%→35%
+351006#0	half_knight	赋予全队(光) HP 7.5%→10%
+351006#1	half_knight	赋予全队(光) 攻击力 15%→20%
+351007#0	reporter	赋予全队(光) 攻击力 10%→15%
+351007#1	reporter	持续·连击≥10(限1次) → 赋予全队(光) 攻击力 40%→50%
+361001#0	reaper_girl	赋予全队(暗) 攻击力 55%→65%
+361001#1	reaper_girl	赋予全队 HP -20%
+361002#0	chakram_shooter	赋予全队(暗) 技能槽 15%→20%
+361002#1	chakram_shooter	[觉醒1替换] 赋予全队(暗) 技能槽 20%→40%
+361002#2	chakram_shooter	赋予全队(暗) 技能伤害 45%→60%
+361002#3	chakram_shooter	[觉醒1替换] 赋予全队(暗) 技能伤害 60%→80%
+361003#0	devil_woman_soldier	赋予全队(暗) 攻击力 25%→35%
+361004#0	informant	赋予全队(暗) 减益特攻 15%→20%
+361005#0	arabic_swordman	赋予全队(暗) 攻击力 10%→15%
+361005#1	arabic_swordman	持续·状态贯通 → 赋予全队(暗) 攻击力 30%→40%
+361006#0	dark_nursemaid	赋予全队(暗) HP 5%→7.5%
+361006#1	dark_nursemaid	持续·HP≤80% → 赋予触发者 攻击力 25%→35%
+361007#0	bearish_darkwitch	赋予全队(暗) 攻击力 10%→15%
+361007#1	bearish_darkwitch	持续·HP≤80% → 赋予触发者 技能伤害 50%→60%
+900002#0	_dummy_leader_skill_1_	赋予全队(火) 攻击力 10%
+5#0	tutorial_witch	赋予全队(暗) 技能伤害 40%→50%
+5#1	tutorial_witch	赋予全队(暗) 技能槽 15%→20%
+6#0	tutorial_priest	赋予全队(暗) 攻击力 65%→75%
+6#1	tutorial_priest	赋予全队 HP -25%
+151015#0	hoshikawa_ririi	赋予全队 攻击力 95%→125%
+161009#0	konno_junko	赋予全队 技能伤害 60%→80%
+161009#1	konno_junko	技能发动≥1(限3次) → 赋予触发者 技能伤害 30%→40%
+231014#0	mizuno_ai	赋予全队 技能伤害 90%→120%
+121009#0	minamoto_sakura	Fever≥1 → 自身 状态强化弹射伤害 150%→200%(20秒)×1次
+121009#1	minamoto_sakura	赋予全队(水) HP 10%→20%
+141009#0	nikaido_saki	赋予全队(风) 攻击力 75%→100%
+141009#1	nikaido_saki	自身 强化弹射伤害 55%→70%
+211014#0	yugiri	赋予全队(火) HP 10%→20%
+211014#1	yugiri	赋予全队(火) 技能伤害 45%→60%
+263003#0	yamada_tae	自身 强化弹射伤害 75%→100%
+263003#1	yamada_tae	赋予多球 HP 5%→10%
+243007#0	ekaki_onmyoji	赋予全队(风) 攻击力 45%→60%
+243007#1	ekaki_onmyoji	持续·敌方≥1(限5次) → 赋予全队(风) 攻击力 12%→16%
+700000#0	ekaki_onmyoji_noskill	属性属性种类≥1(限6次) → 赋予全队 攻击力 7%→8%
+141111#0	silence_suzuka	赋予全队(风) 攻击力 90%→120%
+141111#1	silence_suzuka	技能发动≥1 → 赋予触发者 状态Direct伤害 135%→180%(25秒)×1次
+151105#0	special_week	赋予全队(光) HP 7.5%→10%
+151105#1	special_week	赋予全队(光) 状态持续回复 3500%→5000%(14秒)×1次
+151105#2	special_week	持续·Fever → 赋予全队(光) Direct伤害 225%→300%
+113001#0	gold_ship	赋予全队(火) HP 10.64%→15.64%
+113001#1	gold_ship	赋予全队(火) 攻击力 46.4%→56.4%
+113001#2	gold_ship	自身 强化弹射伤害 46.4%→56.4%
+113001#3	gold_ship	自身 强化弹射伤害 46.4%→56.4%
+111069#0	suzumiya_haruhi	赋予全队(火) 攻击力 30%→40%
+111069#1	suzumiya_haruhi	持续·状态计数技能伤害↑≥1(限4次) → 赋予全队(火) 攻击力 20%→25%
+111069#2	suzumiya_haruhi	技能发动≥1 → 赋予全队(火) 状态技能伤害 40%→50%(15秒)×1次
+121057#0	nagato_yuki	赋予全队(水) HP 7.5%→10%
+121057#1	nagato_yuki	赋予全队(水) 技能伤害 115%→150%
+151057#0	asahina_mikuru	赋予全队(光) HP 7.5%→10%
+151057#1	asahina_mikuru	治疗计数≥1(限50次) → 赋予触发者 攻击力 2%→3%
+261053#0	koizumi_ituki	赋予全队(暗) 攻击力 45%→60%
+261053#1	koizumi_ituki	编成直接攻击≥30(限10次) → 赋予全队(暗) Direct伤害 11.5%→15%
+213007#0	kyon	赋予全队(火) 攻击力 45%→60%
+213007#1	kyon	赋予全队(火) 技能伤害 70%→90%
+121021#0	emilia	赋予全队(水) 攻击力 35%→50%
+121021#1	emilia	技能发动≥1(限10次) → 赋予全队(水) 攻击力 10%→14%
+121027#0	rem	持续·HPIncrease≥1%(限100次) → 赋予触发者 攻击力 0.75%→1%
+121027#1	rem	持续·HPIncrease≥1%(限100次) → 赋予触发者 技能伤害 0.75%→1%
+241021#0	ram	赋予全队(风) 攻击力 45%→60%
+241021#1	ram	自身 强化弹射伤害 60%→80%
+263009#0	subaru	赋予全队(暗) HP 10%→15%
+263009#1	subaru	Revival≥1(限6次) → 赋予全队(暗) 技能伤害 15%→20%
+111117#0	megumin	赋予全队(火) 技能伤害 195%→260%
+121123#0	aqua	赋予全队(水) 攻击力 105%→140%
+121123#1	aqua	赋予全队(水) HP 15%→20%
+151111#0	darkness	伤害计数≥10(限20次) → 赋予全队(光) 攻击力 10%→12.5%
+151111#1	darkness	自身 抗性暗 15%→20%
+263015#0	kazuma	属性属性种类≥1(限6次) → 赋予全队 攻击力 15%→20%
+263015#1	kazuma	赋予全队 HP 7.5%→10%
+111183#0	fire_dragon_zenith	强化弹射≥3(限10次) → 赋予全队(火) 攻击力 15%→20%
+111183#1	fire_dragon_zenith	强化弹射≥3(限10次) → 赋予全队(火) 技能伤害 15%→20%
+111183#2	fire_dragon_zenith	火·编成≥6 时: 强化弹射≥5 → 赋予全队(火) 技能槽 4%→5%
+111183#3	fire_dragon_zenith	火·编成≥6 时: 技能发动≥1 → 自身 状态固有 300%×1次
+111183#4	fire_dragon_zenith	火·编成≥6 且 状态计数固有≥1[固有19] 时: 强化弹射≥1 → 自身 发动技能动作[ability_skill_fire_dragon_zenith]
+111183#5	fire_dragon_zenith	火·编成≥6 且 状态计数固有≥1[固有19] 时: 强化弹射≥1 → 自身 消耗固有状态 100%
+111183#6	fire_dragon_zenith	[觉醒1替换] 强化弹射≥3(限10次) → 赋予全队(火) 攻击力 22.5%→30%
+111183#7	fire_dragon_zenith	[觉醒1替换] 强化弹射≥3(限10次) → 赋予全队(火) 技能伤害 22.5%→30%
+111183#8	fire_dragon_zenith	[觉醒1替换] 火·编成≥6 时: 强化弹射≥5 → 赋予全队(火) 技能槽 5.6%→7%
+111183#9	fire_dragon_zenith	[觉醒1替换] 火·编成≥6 时: 技能发动≥1 → 自身 状态固有 600%×1次
+111183#10	fire_dragon_zenith	[觉醒1替换] 火·编成≥6 且 状态计数固有≥1[固有1111830] 时: 强化弹射≥1 → 自身 发动技能动作[ability_skill_fire_dragon_zenith]
+111183#11	fire_dragon_zenith	[觉醒1替换] 火·编成≥6 且 状态计数固有≥1[固有1111830] 时: 强化弹射≥1 → 自身 消耗固有状态 100%
+111183#12	fire_dragon_zenith	[觉醒1替换] 自身 强化弹射覆盖
+121189#0	dryad_hw23	持续·HPIncrease≥1%(限100次) → 赋予全队(水) 攻击力 2.25%→3%
+121189#1	dryad_hw23	持续·HPIncrease≥1%(限100次) → 赋予全队(水) 技能伤害 2.25%→3%
+121189#2	dryad_hw23	水·编成≥6 时: 自身 切换技能形态[change_skill_dryad_hw23]
+141189#0	mob_jiguza_playable	赋予全队(风) HP 7.5%→10%
+141189#1	mob_jiguza_playable	持续·状态Fixed速度↑ → 赋予全队(风) Direct伤害 225%→300%
+141189#2	mob_jiguza_playable	风·编成≥6(限1次) → 自身 Fixed速度↑延长 15%→20%
+111177#0	wirfled_playable	赋予除自身全员(火) 技能槽 40%→50%
+111177#1	wirfled_playable	赋予全队(火) 攻击力 150%→200%
+111177#2	wirfled_playable	技能发动≥1(限4次) → 赋予全队(火) 技能伤害 45%→60%
+131176#0	artificialeye_sniper	赋予除自身全员(雷) 技能槽 40%→50%
+131176#1	artificialeye_sniper	持续·HP≤Excludes阈值≥50% → 赋予触发者 攻击力 185%→250%
+131176#2	artificialeye_sniper	持续·HP≤Excludes阈值≥50% → 赋予触发者 技能伤害 185%→250%
+121183#0	guild_front_girl_playable	水·编成≥6 时: Fever结束≥1(限1次) → 自身 追加Fever点 55000%→75000%
+121183#1	guild_front_girl_playable	Fever≥1 → 赋予全队(水) 状态攻击力 265%→350%(20秒)×1次
+121183#2	guild_front_girl_playable	Fever≥1 → 赋予全队(水) 比例治疗 3.5%→5%
+121183#3	guild_front_girl_playable	赋予全队(水) Ease治疗 7.5%→10%
+121183#4	guild_front_girl_playable	开幕:玛纳加成
+141183#0	combat_animal_meteor23	持续·状态Flying → 赋予全队(风) 攻击力 150%→200%
+141183#1	combat_animal_meteor23	持续·状态Flying → 赋予全队(风) Direct伤害 190%→250%
+141183#2	combat_animal_meteor23	风·编成≥6 时: 技能发动≥1 → 自身 状态冲刺(4秒→6秒)×1次
+141183#3	combat_animal_meteor23	风·编成≥6(限1次) → 自身 Fixed速度↑延长 7.5%→10%
+141183#4	combat_animal_meteor23	风·编成≥6 时: 持续·状态Flying → 赋予全队(风) 技能槽充能 7.5%→10%
+131170#0	starbreak_hunter_meteor23	持续·HP≤Excludes阈值≥50% → 赋予触发者 攻击力 265%→350%
+131170#1	starbreak_hunter_meteor23	持续·HP≤Excludes阈值≥50% → 赋予触发者 技能伤害 115%→150%
+131170#2	starbreak_hunter_meteor23	雷·编成≥6 且 HP≥50% 时: 技能发动≥1(限2次) → 自身 技能槽 10%→15%
+131170#3	starbreak_hunter_meteor23	雷·编成≥6(限1次) → 自身 2号位技能槽 7.5%→10%
+121177#0	psycho_reaper_meteor23	水·编成≥6 时: 自身 状态固有 200%→300%×1次
+121177#1	psycho_reaper_meteor23	水·编成≥6 时: Fever≥1 → 自身 状态固有 400%→600%×1次
+121177#2	psycho_reaper_meteor23	水·编成≥6 时: Fever≥1 → 自身 状态连击加成 9→12×1次
+121177#3	psycho_reaper_meteor23	水·编成≥6 时: 持续·状态计数固有≥1(限1次)[固有18] → 自身 强化弹射覆盖
+121177#4	psycho_reaper_meteor23	强化弹射≥1 → 自身 消耗固有状态 100%
+121177#5	psycho_reaper_meteor23	水·编成≥6 时: 自身弹射≥1 → 自身 追加连击 2→3
+121177#6	psycho_reaper_meteor23	自身 攻击力↑延长 10%→15%
+121177#7	psycho_reaper_meteor23	自身 强化弹射伤害↑延长 10%→15%
+161195#0	blindfold_agent	暗·编成≥6 时: 持续·暗·计数Specific多球≥1(限3次) → 赋予全队(暗) 攻击力 75%→100%
+161195#1	blindfold_agent	暗·编成≥6 时: 持续·暗·计数Specific多球≥1(限3次) → 赋予全队(暗) 技能伤害 75%→100%
+141177#0	psychic_yamikawa_smr23	赋予全队(风) 技能槽 75%→100%
+141177#1	psychic_yamikawa_smr23	技能发动≥1(限3次) → 赋予全队(风) 攻击力 75%→100%
+131164#0	lion_boy_smr23	赋予全队(雷) HP 15%→20%
+131164#1	lion_boy_smr23	Fever≥1(限3次) → 赋予全队(雷) 攻击力 75%→100%
+131164#2	lion_boy_smr23	Fever≥1(限3次) → 赋予全队(雷) 技能伤害 25%→30%
+131164#3	lion_boy_smr23	雷·编成≥6 且 非Fever 时: 技能发动≥1 → 自身 追加Fever点 4000%→5000%
+111171#0	summoner_little_smr23	赋予全队(火) 技能槽 40%→50%
+111171#1	summoner_little_smr23	赋予全队(火) HP 10%→15%
+111171#2	summoner_little_smr23	自身 Specific多球HP 10%→15%[限火]
+111171#3	summoner_little_smr23	自身 Specific多球攻击 50%→70%[限火]
+111171#4	summoner_little_smr23	自身 Specific多球Direct伤害 50%→70%[限火]
+121171#0	psychic_projection_smr23	水·编成≥6 时: 赋予全队(水) 技能槽 40%→50%
+121171#1	psychic_projection_smr23	水·编成≥6 时: Fever结束≥1(限1次) → 自身 追加Fever点 55000%→75000%
+121171#2	psychic_projection_smr23	Fever≥1 → 赋予全队(水) 状态攻击力 300%→400%(20秒)×1次
+121171#3	psychic_projection_smr23	Fever≥1 → 自身 状态强化弹射伤害 75%→100%(20秒)×1次
+121165#0	amulet_bosslady	持续·任一敌方状态计数减益≥1(限5次) → 赋予全队(水) 触发敌方攻击特攻 30%→40%
+121165#1	amulet_bosslady	持续·任一敌方状态计数减益≥1(限5次) → 赋予全队(水) 触发敌方Direct伤害特攻 45%→60%
+151171#0	magatama_spirit	持续·Fever → 赋予全队(光) 攻击力 150%→200%
+151171#1	magatama_spirit	持续·Fever → 赋予全队(光) Direct伤害 300%→400%
+151171#2	magatama_spirit	光·编成≥6(限1次) → 自身 Fever时间延长 10%→15%
+251006#0	unyielding_adventurer	赋予全队(光) 攻击力 60%→80%
+251006#1	unyielding_adventurer	赋予多球 HP 15%→20%
+251006#2	unyielding_adventurer	[觉醒1替换] 赋予多球 HP 20%→24%
+161005#0	cursed_girl	赋予全队(暗) 攻击力 45%→60%
+161005#1	cursed_girl	赋予全队(暗) Direct伤害 120%→160%
+361009#0	delusion_girl	赋予全队(暗) 攻击力 18%→25%
+361009#1	delusion_girl	赋予全队(暗) Direct伤害 18%→25%
+121006#0	lakeside_guardian	赋予全队(水) 攻击力 45%→60%
+121006#1	lakeside_guardian	持续·状态贯通 → 赋予全队(水) Direct伤害 150%→200%
+231009#0	lady_android	赋予全队(雷) 技能伤害 40%→55%
+231009#1	lady_android	持续·Fever → 赋予全队(雷) 技能槽充能 20%→30%
+263002#0	touyakiren_ceo	赋予全队(暗) 技能伤害 75%→100%
+263002#1	touyakiren_ceo	[觉醒1替换] 赋予全队(暗) 技能伤害 170%
+263002#2	touyakiren_ceo	[觉醒1追加] 赋予全队(暗) 攻击力 50%
+263002#3	touyakiren_ceo	赋予全队(光) 攻击力 30%→40%
+263002#4	touyakiren_ceo	[觉醒1替换] 赋予全队(光) 攻击力 65%
+263002#5	touyakiren_ceo	[觉醒1追加] 赋予全队(光) 技能伤害 30%
+161189#0	priest_prince_playable	赋予多球(按角色组)(暗) HP 7.5%→10%
+161189#1	priest_prince_playable	持续·暗·计数Specific多球≥1(限3次) → 赋予全队(暗) 技能伤害 115%→150%
+161189#2	priest_prince_playable	持续·暗·计数Specific多球≥1(限3次) → 赋予全队(暗) 技能槽充能 2%→3%
+161183#0	psychic_teleport_playable	暗·编成≥6 时: 赋予全队(暗) 比例伤害最大HP 15%
+161183#1	psychic_teleport_playable	暗·编成≥6 时: 赋予全队(暗) 技能槽充能 10%→15%
+161183#2	psychic_teleport_playable	持续·HPDecrease≥1%(限100次) → 赋予全队(暗) 技能伤害 2.5%→4%
+151165#0	alk_3halfanv	光·编成≥6 时: 赋予全队(光) 攻击力 150%→200%
+151165#1	alk_3halfanv	光·编成≥6 时: 赋予全队(光) 技能伤害 150%→200%
+151165#2	alk_3halfanv	光·编成≥6 时: 赋予全队(光) 技能槽充能 7.5%→10%
+161177#0	ruin_girl_3halfanv	暗·编成≥6 时: 赋予全队(暗) 技能槽 40%→50%
+161177#1	ruin_girl_3halfanv	暗·编成≥6 时: 持续·暗·计数Specific多球≥1(限3次) → 赋予全队(暗) 攻击力 55%→70%
+161177#2	ruin_girl_3halfanv	暗·编成≥6 时: 持续·暗·计数Specific多球≥1(限3次) → 赋予全队(暗) 技能伤害 55%→70%
+161177#3	ruin_girl_3halfanv	暗·编成≥6 时: 持续·暗·计数Specific多球≥1(限3次) → 赋予全队(暗) 技能槽充能 3%→4%
+111165#0	resistance_princess_3halfanv	火·编成≥6 时: 自身 贯通延长 25%→30%
+111165#1	resistance_princess_3halfanv	火·编成≥6 时: 持续·状态贯通 → 赋予全队(火) 技能槽充能 10%→15%
+111165#2	resistance_princess_3halfanv	火·编成≥6 时: 持续·状态贯通 → 自身 强化弹射伤害 150%→200%
+111165#3	resistance_princess_3halfanv	火·编成≥6 且 状态计数固有≥1[固有15] 时: 强化弹射Lv3≥1 → 自身 状态攻击力 225%→300%(10秒)×1次
+111165#4	resistance_princess_3halfanv	火·编成≥6 且 状态计数固有≥1[固有15] 时: 强化弹射Lv3≥1 → 自身 发动技能动作[ability_skill_resistance_princess_3halfanv]
+153001#0	psychic_nao_3halfanv	赋予全队(光) 攻击力 225%→300%
+121159#0	vesta_caster	水·编成≥6 时: 赋予全队(水) HP 15%→20%
+121159#1	vesta_caster	水·编成≥6 时: 持续·状态计数攻击力↑≥1(限6次) → 赋予触发者 攻击力 30%→40%
+121159#2	vesta_caster	水·编成≥6 时: 持续·状态计数攻击力↑≥1(限6次) → 赋予触发者 Direct伤害 30%→40%
+121159#3	vesta_caster	水·编成≥6 时: 赋予全队(水) 攻击力↑延长 7.5%→10%
+141171#0	psychic_taichi	技能发动≥1 → 赋予触发者 状态攻击力 115%→150%(10秒)×1次
+141171#1	psychic_taichi	持续·状态计数攻击力↑≥1(限4次) → 赋予触发者 攻击力 45%→60%
+131158#0	psychic_katana	持续·HP≤Excludes阈值≥50% → 赋予触发者 攻击力 225%→300%
+131158#1	psychic_katana	持续·HP≤Excludes阈值≥50% → 赋予触发者 技能伤害 190%→250%
+111159#0	catbaby_psychicer	持续·状态贯通 → 赋予全队(火) 攻击力 245%→330%
+111159#1	catbaby_psychicer	火·编成≥6 时: 自身 贯通延长 15%→20%
+151159#0	golden_dragon_jr	光·编成≥6 时: 赋予全队(光) 状态持续回复 3500%→5000%(14秒)×1次
+151159#1	golden_dragon_jr	赋予全队(光) HP 7.5%→10%
+151159#2	golden_dragon_jr	持续·Fever → 赋予全队(光) 攻击力 205%→270%
+151159#3	golden_dragon_jr	[觉醒1替换] 赋予全队(光) 状态持续回复 5000%→8000%(14秒)×1次
+151159#4	golden_dragon_jr	[觉醒1替换] 赋予全队(光) HP 20%→30%
+151159#5	golden_dragon_jr	[觉醒1替换] 持续·Fever → 赋予全队(光) 攻击力 270%→350%
+261089#0	darkness_dragon	赋予全队(暗) 攻击力 100%→130%
+261089#1	darkness_dragon	赋予全队(暗) 技能伤害 100%→130%
+261089#2	darkness_dragon	[觉醒1替换] 赋予全队(暗) 攻击力 130%→165%
+261089#3	darkness_dragon	[觉醒1替换] 赋予全队(暗) 技能伤害 250%→285%
+261089#4	darkness_dragon	[觉醒1替换] 赋予全队(暗) 技能槽充能 7.5%→10%
+261089#5	darkness_dragon	[觉醒1替换] 龙族·编成≥1 时: 赋予全队(暗) 攻击力 100%
+121153#0	ruin_lady_meteor23	水·编成≥6 时: 赋予全队(水) 技能槽 75%→100%
+121153#1	ruin_lady_meteor23	水·编成≥6 时: 持续·状态计数攻击力↑≥1(限6次) → 赋予触发者 独立乘区Direct伤害 6%→7.5%
+121153#2	ruin_lady_meteor23	水·编成≥6 时: 技能发动≥1 → 赋予全队(水) 状态攻击力 45%→60%(20秒)×2次[每次技能发动倍增+0.001%]
+131152#0	pbc_ceo_playable	自身 强化弹射伤害 150%→200%
+131152#1	pbc_ceo_playable	雷·编成≥6 时: 连击Display计数≥15 → 自身 状态固有 100%×1次
+131152#2	pbc_ceo_playable	状态计数固有≥1[固有14] 时: 强化弹射Lv3≥1 → 自身 消耗固有状态 100%
+131152#3	pbc_ceo_playable	状态计数固有≥1[固有14] 时: 强化弹射Lv3≥1 → 自身 状态强化弹射伤害 150%→200%(10秒)×1次
+131152#4	pbc_ceo_playable	雷·编成≥6 时: 连击Display计数≥9 → 自身 追加连击 4→6
+131152#5	pbc_ceo_playable	雷·编成≥6 时: 赋予全队(雷) 技能槽充能 7.5%→10%
+141165#0	wind_oracle_meteor23	赋予全队(风) 技能伤害 130%→170%
+141165#1	wind_oracle_meteor23	技能发动≥1 → 赋予触发者 状态攻击力 40%→50%(10秒)×1次[每次技能发动倍增+0.001%]
+141165#2	wind_oracle_meteor23	风·编成≥6 时: 赋予全队(风) 技能槽充能 15%→20%
+141159#0	black_wolf_knight_wt23	强化弹射≥5(限6次) → 自身 强化弹射伤害 20%→25%
+141159#1	black_wolf_knight_wt23	风·编成≥6 时: 强化弹射≥10 → 自身 状态连击加成 3→5×1次
+141159#2	black_wolf_knight_wt23	风·编成≥6 时: 强化弹射≥10 → 自身 状态强化弹射连击数↓ 3→5(30秒)×1次
+141159#3	black_wolf_knight_wt23	风·编成≥6 时: 强化弹射≥10 → 自身 状态贯通(30秒)×1次
+131146#0	blade_dancer_wt23	赋予全队(雷) 攻击力 230%→300%
+231099#0	hero_mechanic	赋予全队(雷) HP 15%→20%
+231099#1	hero_mechanic	Fever≥1(限3次) → 赋予全队(雷) 技能伤害 60%→80%
+231099#2	hero_mechanic	非Fever 时: 技能发动≥1 → 自身 追加Fever点 4000%→5000%
+111153#0	flame_blessgirl	赋予全队(火) 技能槽 40%→50%
+111153#1	flame_blessgirl	赋予全队(火) HP 15%→20%
+111153#2	flame_blessgirl	技能发动≥1(限4次) → 赋予触发者 攻击力 45%→60%
+141153#0	psychic_gal	持续·状态Flying → 赋予全队(风) 攻击力 75%→100%
+141153#1	psychic_gal	持续·状态Flying → 赋予全队(风) Direct伤害 300%→400%
+141153#2	psychic_gal	风·编成≥6 时: 持续·状态Flying → 赋予全队(风) 技能槽充能 7.5%→10%
+161171#0	impostor_priest	赋予全队(暗) 技能槽 40%→50%
+161171#1	impostor_priest	赋予全队(暗) 技能伤害 245%→330%
+141147#0	heavenly_two_vt23	赋予全队(风) 攻击力 150%→200%
+141147#1	heavenly_two_vt23	风·编成≥6 时: 自身 计数+强化弹射 300%→500%
+131140#0	dark_psygirl_vt23	赋予全队(雷) 攻击力 75%→100%
+131140#1	dark_psygirl_vt23	Fever≥1(限3次) → 赋予全队(雷) 攻击力 35%→45%
+131140#2	dark_psygirl_vt23	雷·编成≥6 时: Fever≥1 → 赋予全队(雷) 技能槽 40%→50%
+221078#0	sleep_puppy_vt23	赋予全队(水) HP 7.5%→10%
+221078#1	sleep_puppy_vt23	赋予全队(水) 攻击力 135%→180%
+151147#0	stella_ballot23	赋予全队(光) 技能槽 75%→100%
+151147#1	stella_ballot23	持续·Fever → 赋予全队(光) 攻击力 115%→150%
+151147#2	stella_ballot23	光·编成≥6 时: 持续·Fever → 赋予全队(光) 技能槽充能 7.5%→10%
+151147#3	stella_ballot23	光·编成≥6 时: 自身 Fever时间延长 10%→15%
+111147#0	still_obstinator_ballot23	赋予全队(火) 技能槽 40%→50%
+111147#1	still_obstinator_ballot23	自身 Specific多球HP 10%→15%[限火]
+111147#2	still_obstinator_ballot23	自身 Specific多球攻击 40%→50%[限火]
+111147#3	still_obstinator_ballot23	自身 Specific多球Direct伤害 75%→100%[限火]
+111147#4	still_obstinator_ballot23	火·编成≥6 时: My多球Remove≥1(CT20秒) → 自身 技能槽 10%→15%
+151153#0	light_ballot23	赋予全队 技能槽 75%→100%
+131007#0	combat_soldier	赋予全队(光) 攻击力 75%→100%
+131007#1	combat_soldier	[觉醒1替换] 赋予全队(光) 攻击力 150%
+131007#2	combat_soldier	自身 强化弹射伤害 55%→70%
+131007#3	combat_soldier	[觉醒1替换] 自身 强化弹射伤害 100%
+131007#4	combat_soldier	[觉醒1追加] 光·编成≥6 时: 强化弹射≥5 → 自身 状态连击加成 9×1次
+131006#0	starbreak_hunter	赋予全队(光) 攻击力 45%→60%
+131006#1	starbreak_hunter	赋予全队(光) Direct伤害 120%→160%
+251007#0	unleash_hunter	赋予全队(光) 攻击力 45%→60%
+251007#1	unleash_hunter	自身 强化弹射伤害 60%→80%
+221008#0	desert_wizard	赋予全队(水) 攻击力 35%→50%
+221008#1	desert_wizard	自身 强化弹射伤害 70%→95%
+131134#0	octcyborg_lady	自身 强化弹射伤害 150%→200%
+131134#1	octcyborg_lady	连击Display≥30(限15次) → 赋予全队(雷) 攻击力 15%→20%
+161165#0	evilloli_master	赋予全队(暗) 比例伤害最大HP 15%
+161165#1	evilloli_master	持续·HPDecrease≥1%(限100次) → 赋予全队(暗) 攻击力 1.15%→1.5%
+161165#2	evilloli_master	持续·HPDecrease≥1%(限100次) → 赋予全队(暗) 技能伤害 2.5%→3.7%
+211062#0	jiangshi_girl	赋予全队(火) 攻击力 100%→130%
+211062#1	jiangshi_girl	自身 强化弹射伤害 100%→130%
+141141#0	heavenly_four	赋予全队(风) 技能槽 40%→50%
+141141#1	heavenly_four	赋予全队(风) HP 15%→20%
+141141#2	heavenly_four	持续·状态计数固有≥1(限1次)[固有12] → 赋予全队(风) 攻击力 225%→300%
+121147#0	psychic_yuki_ny23	赋予全队(水) HP 7.5%→10%
+121147#1	psychic_yuki_ny23	持续·HPIncrease≥1%(限100次) → 赋予全队(水) 技能伤害 3%→4%
+131128#0	general_toyakiren_ny23	自身 强化弹射伤害 200%→250%
+131128#1	general_toyakiren_ny23	雷·编成≥6 时: 赋予全队(雷) 技能槽充能 7.5%→10%
+131128#2	general_toyakiren_ny23	雷·编成≥6 时: 技能发动≥1 → 自身 状态连击加成 8→12×1次
+111141#0	tiger_treasure_hunter_xm22	赋予全队(火) 攻击力 100%→130%
+111141#1	tiger_treasure_hunter_xm22	自身 强化弹射伤害 75%→100%
+111141#2	tiger_treasure_hunter_xm22	火·编成≥6 时: 自身 强化弹射连击数↓ 3→4
+151141#0	compliment_oiran_xm22	自身 技能槽 75%→100%
+151141#1	compliment_oiran_xm22	赋予全队(光) 攻击力 140%→180%
+151141#2	compliment_oiran_xm22	光·编成≥6 时: 自身 贯通延长 12%→15%
+261083#0	herbalist_xm22	赋予全队(暗) 攻击力 150%→190%
+151129#0	swallow_knight_3anv	光·编成≥6 时: 自身 强化弹射伤害 225%→300%
+151129#1	swallow_knight_3anv	光·编成≥6 时: 强化弹射Lv2≤3 → 自身 追加连击 7→9
+151129#2	swallow_knight_3anv	光·编成≥6 时: 强化弹射Lv2≤6 → 自身 追加连击 7→9
+161153#0	veteran_hunter_3anv	持续·状态贯通 → 赋予全队(暗) 攻击力 225%→300%
+161153#1	veteran_hunter_3anv	持续·状态贯通 → 自身 强化弹射伤害 115%→150%
+161153#2	veteran_hunter_3anv	暗·编成≥6 时: 自身 贯通延长 10%→15%
+121141#0	wind_spbro_3anv	持续·HPIncrease≥1%(限100次) → 赋予全队(水) 攻击力 1.5%→2%
+121141#1	wind_spbro_3anv	持续·HPIncrease≥1%(限100次) → 赋予全队(水) 技能伤害 1.5%→2%
+121141#2	wind_spbro_3anv	水·编成≥6 时: 赋予全队(水) 技能槽充能 7.5%→10%
+161159#0	rector_sorcerer_playable	持续·HPDecrease≥1%(限100次) → 赋予全队(暗) 攻击力 3%→4%
+161159#1	rector_sorcerer_playable	暗·编成≥6 且 HP≥40%(全队任一) 时: 技能发动≥1 → 赋予触发者 比例伤害最大HP 10%
+161159#2	rector_sorcerer_playable	暗·编成≥6 时: 持续·HP≤Excludes阈值≥30% → 赋予触发者 抗性光 20%→25%
+161159#3	rector_sorcerer_playable	暗·编成≥6 时: 技能发动≥1 → 自身 状态Adversity 20%→25%(5秒)×1次
+253019#0	reformist_prince	赋予全队(光) 攻击力 75%→100%
+253019#1	reformist_prince	赋予全队(光) 抗性暗 10%→15%
+253019#2	reformist_prince	光·编成≥6 时: 强化弹射Lv2≤3 → 自身 追加连击 3→4
+141135#0	asymmetry_birdgirl	持续·状态Flying → 赋予全队(风) Direct伤害 300%→400%
+141135#1	asymmetry_birdgirl	风·编成≥6 时: 自身 Flying延长 4%→5%
+141135#2	asymmetry_birdgirl	风·编成≥6 时: 自身 Fixed速度↑延长 7.5%→10%
+161147#0	horn_mypace	赋予全队(暗) HP 15%→20%
+161147#1	horn_mypace	赋予全队(暗) 攻击力 110%→150%
+161147#2	horn_mypace	暗·编成≥6 时: 自身 贯通延长 7.5%→10%
+241069#0	kung_fu_girl	自身 强化弹射伤害 150%→200%
+241069#1	kung_fu_girl	风·编成≥6 时: 强化弹射≥10 → 自身 状态连击加成 4→5×1次
+161135#0	wind_spgirl_hw22	持续·状态贯通 → 赋予全队(暗) Direct伤害 230%→300%
+161135#1	wind_spgirl_hw22	状态贯通 时: 持续·计数直接攻击伤害↑≥20%(限100次) → 赋予全队(暗) 攻击力 1.5%→2%
+131122#0	palpebra_knight_lady_hw22	雷·编成≥6 时: Fever≥1 → 赋予全队(雷) 技能槽 40%→50%
+131122#1	palpebra_knight_lady_hw22	雷·编成≥6 时: Fever结束≥1 → 自身 追加Fever点 55000%→75000%
+131122#2	palpebra_knight_lady_hw22	雷·编成≥6 时: 赋予全队(雷) 2号位技能槽 10%→15%
+261077#0	psychic_tomboygirl_hw22	赋予全队(暗) 攻击力 90%→125%
+261077#1	psychic_tomboygirl_hw22	赋予全队(暗) Direct伤害 75%→100%
+111135#0	golemclub_captain	赋予全队(火) 技能槽 40%→50%
+111135#1	golemclub_captain	自身 Specific多球HP 7.5%→10%[限火]
+111135#2	golemclub_captain	自身 Specific多球Direct伤害 75%→100%[限火]
+141123#0	ghost_nymph	赋予全队(风) 技能伤害 225%→300%
+121135#0	pirates_of_fear	赋予全队(水) 攻击力 75%→100%
+121135#1	pirates_of_fear	自身 强化弹射伤害 175%→230%
+151123#0	holysword_girl	赋予全队(光) 攻击力 75%→100%
+151123#1	holysword_girl	赋予全队(光) 技能伤害 75%→100%
+151123#2	holysword_girl	赋予全队(光) 技能槽充能 7.5%→10%
+131116#0	little_vampire	赋予全队(雷) 攻击力 100%→135%
+131116#1	little_vampire	赋予全队(雷) 技能伤害 100%→135%
+231093#0	marching_rival	赋予全队(雷) 技能槽 40%→50%
+231093#1	marching_rival	Fever≥1(限3次) → 赋予全队(雷) 技能伤害 75%→100%
+111129#0	lion_swordman_playable	火·编成≥1(限6次) → 赋予全队(火) 攻击力 25%→30%
+111129#1	lion_swordman_playable	火·编成≥6 时: 自身 技能伤害 90%→120%
+111129#2	lion_swordman_playable	火·编成≥6 时: 技能发动≥1 → 自身 状态攻击力 90%→120%(10秒)×1次
+161129#0	psychic_yamikawa	持续·暗·计数Specific多球≥1(限3次) → 赋予全队(暗) 技能伤害 100%→130%
+161129#1	psychic_yamikawa	持续·暗·计数Specific多球≥1(限3次) → 赋予全队(暗) 技能槽充能 3%→4%
+241063#0	ekaki_girl_playable	风·编成≥1(限6次) → 赋予全队(风) 攻击力 12%→15%
+241063#1	ekaki_girl_playable	风·编成≥1(限6次) → 赋予全队(风) 技能伤害 12%→15%
+241063#2	ekaki_girl_playable	[觉醒1追加] 风·编成≥1(限6次) → 赋予全队(风) 攻击力 15%
+241063#3	ekaki_girl_playable	[觉醒1追加] 风·编成≥1(限6次) → 赋予全队(风) 技能伤害 15%
+241063#4	ekaki_girl_playable	[觉醒1追加] 风·编成≥6 时: 持续·状态Flying → 赋予全队(风) 技能槽充能 15%
+111007#0	black_wolf_knight	赋予全队(火) 攻击力 45%→60%
+111007#1	black_wolf_knight	自身 强化弹射伤害 75%→100%
+251008#0	illusionist	赋予全队(光) 攻击力 60%→80%
+251008#1	illusionist	自身 Fever时间延长 20%→25%
+241008#0	timid_kunoichi	赋予全队(风) 攻击力 30%→40%
+241008#1	timid_kunoichi	连击≥30(限5次) → 赋予全队(风) 攻击力 15%→20%
+131005#0	mighty_striker	赋予全队(雷) 攻击力 55%→70%
+131005#1	mighty_striker	[觉醒1追加] 赋予全队(雷) 攻击力 70%
+131005#2	mighty_striker	自身 强化弹射伤害 70%→90%
+131005#3	mighty_striker	[觉醒1追加] 自身 强化弹射伤害 90%
+131005#4	mighty_striker	[觉醒1追加] 雷·编成≥6 时: 弹射≥5(CT10秒) → 自身 追加连击 6
+121129#0	luca_playable	水·编成≥6 时: 自身 追加Fever点 75000%→100000%
+121129#1	luca_playable	水·编成≥6 时: Fever结束≥1(限1次) → 自身 追加Fever点 38000%→50000%
+121129#2	luca_playable	Fever≥1 → 赋予全队(水) 状态攻击力 300%→400%(20秒)×1次
+131110#0	nihilist_mechgirl	赋予全队(雷) 攻击力 150%→200%
+131110#1	nihilist_mechgirl	赋予全队(雷) HP 7.5%→10%
+221072#0	sand_bandit	赋予全队(水) 中毒攻击特攻 140%→180%
+131104#0	combat_soldier_smr22	赋予全队(雷) 攻击力 55%→75%
+131104#1	combat_soldier_smr22	持续·HP≤Excludes阈值≥50% → 赋予触发者 攻击力 95%→125%
+131104#2	combat_soldier_smr22	雷·编成≥6 时: 自身 技能槽 40%→50%
+131104#3	combat_soldier_smr22	雷·编成≥6 且 HP≥50% 时: 技能发动≥1(限1次) → 自身 技能槽 40%→50%
+131104#4	combat_soldier_smr22	HP≤Excludes阈值≥50% 时: 技能发动≥3 → 自身 状态固有 100%×1次
+151117#0	samurai_robot_smr22	赋予全队(光) 攻击力 75%→100%
+151117#1	samurai_robot_smr22	技能发动≥1(限2次) → 赋予全队(光) 技能伤害 55%→70%
+151117#2	samurai_robot_smr22	光·编成≥6 时: 技能发动≥1(限1次) → 自身 技能槽 40%→50%
+161123#0	blackflower_wiz_smr22	持续·状态累积计数固有≥1(限10次)[固有11] → 赋予全队(暗) 攻击力 11.5%→15%
+161123#1	blackflower_wiz_smr22	持续·状态累积计数固有≥1(限10次)[固有11] → 赋予全队(暗) 技能槽充能 0.75%→1%
+161123#2	blackflower_wiz_smr22	暗·编成≥6 时: 技能发动≥1 → 自身 状态固有 100%×1次
+161123#3	blackflower_wiz_smr22	暗·编成≥6 时: 自身 状态固有 100%×1次
+161123#4	blackflower_wiz_smr22	暗·编成≥6 时: 赋予除自身全员(暗) 比例伤害最大HP 25%
+233013#0	rural_ladyship	赋予全队(雷) 攻击力 60%→80%
+233013#1	rural_ladyship	技能发动≥1(限4次) → 赋予触发者 攻击力 25%→35%
+111123#0	monster_cook_smr22	技能发动≥1 → 赋予全队(火) 比例治疗 3%→5%
+111123#1	monster_cook_smr22	技能发动≥1 → 赋予全队(火) 状态攻击力 190%→250%(20秒)×1次
+141117#0	psychic_shouta_smr22	赋予全队(风) 攻击力 90%→120%
+141117#1	psychic_shouta_smr22	赋予全队(风) 技能伤害 90%→120%
+221066#0	nurse_pirate_smr22	赋予全队(水) 攻击力 60%→80%
+221066#1	nurse_pirate_smr22	赋予全队(水) Ease治疗 12%→15%
+251077#0	twin_blader_smr22	持续·Fever → 赋予全队(光) 攻击力 115%→150%
+251077#1	twin_blader_smr22	自身 Fever时间延长 20%→25%
+111111#0	halberd_princess_2halfanv	赋予全队(火) 攻击力 60%→80%
+111111#1	halberd_princess_2halfanv	状态贯通 时: 强化弹射≥1(限10次) → 赋予全队(火) 攻击力 7.5%→10%
+111111#2	halberd_princess_2halfanv	火·编成≥6 时: 自身 贯通延长 10%→15%
+121117#0	sing_android_2halfanv	赋予全队(水) HP 10%→15%
+121117#1	sing_android_2halfanv	持续·HPIncrease≥1%(限100次) → 赋予全队(水) 攻击力 0.6%→0.8%
+121117#2	sing_android_2halfanv	技能发动≥1 → 自身 状态连击加成 4→6×1次
+161117#0	warlock_2halfanv	Revival≥1(限10次) → 赋予全队(暗) 攻击力 15%→20%
+161117#1	warlock_2halfanv	暗·编成≥6 时: 赋予除自身全员 TakeOver伤害比例 35%→50%
+161117#2	warlock_2halfanv	暗·编成≥6 时: Revival≥1 → 赋予全队(暗) 技能槽 3.5%→5%
+223019#0	student_president	赋予全队(水) HP 10%→15%
+223019#1	student_president	赋予全队(水) 攻击力 55%→70%
+131098#0	spider_ninja	技能发动≥1(限4次) → 赋予触发者 攻击力 40%→52.5%
+141105#0	waste_armor	赋予全队(风) 抗性雷 7.5%→10%
+141105#1	waste_armor	Collision编成&敌方≥8(限10次) → 赋予全队(风) 攻击力 12%→16%
+221060#0	innocent_glaiver	自身 强化弹射伤害 75%→100%
+221060#1	innocent_glaiver	水·编成≥6 时: 技能发动≥1 → 自身 状态连击加成 3→5×1次
+151099#0	airship_captain	赋予全队(光) 技能槽 75%→100%
+151099#1	airship_captain	光·编成≥6 时: 持续·Fever → 赋予全队(光) 攻击力 75%→100%
+151099#2	airship_captain	光·编成≥6 时: 自身 Fever时间延长 15%→20%
+161111#0	mirror_witch	赋予全队(暗) 攻击力 45%→60%
+161111#1	mirror_witch	持续·状态贯通 → 赋予全队(暗) 攻击力 100%→130%
+161111#2	mirror_witch	自身 贯通延长 7.5%→10%
+231087#0	long_hair_swordsman	技能发动≥1(限4次) → 赋予触发者 攻击力 25%→35%
+231087#1	long_hair_swordsman	赋予全队(雷) 技能槽 30%→40%
+161105#0	estateguild_leader	赋予全队(暗) 技能伤害 70%→90%
+161105#1	estateguild_leader	Revival≥1(限10次) → 赋予全队(暗) 技能伤害 14%→18%
+111105#0	anger_investigator	赋予全队(火) 攻击力 50%→70%
+111105#1	anger_investigator	赋予全队(火) 技能伤害 75%→100%
+111105#2	anger_investigator	赋予全队(火) 技能槽充能 3.5%→5%
+231081#0	scissor_ratgirl	赋予全队(雷) 攻击力 70%→90%
+231081#1	scissor_ratgirl	赋予全队(雷) 抗性水 12%→15%
+121111#0	justice_lady	持续·HPIncrease≥1%(限100次) → 赋予全队(水) 攻击力 0.75%→1%
+121111#1	justice_lady	水·编成≥6 时: 技能发动≥1 → 自身 状态连击加成 7→10×1次
+151093#0	still_obstinator	赋予全队(光) 攻击力 75%→100%
+151093#1	still_obstinator	赋予全队(光) 技能伤害 75%→100%
+251071#0	pbc_operator	持续·Fever → 赋予全队(光) 攻击力 75%→100%
+251071#1	pbc_operator	自身 Fever时间延长 15%→20%
+141005#0	bigwing_shaman	赋予全队(风) 攻击力 60%→80%
+141005#1	bigwing_shaman	赋予全队(风) HP 15%→20%
+121005#0	commander	赋予全队(水) 攻击力 45%→60%
+121005#1	commander	赋予全队(水) Direct伤害 120%→160%
+121005#2	commander	[觉醒1替换] 赋予全队(水) Direct伤害 160%→200%
+221007#0	deepsea_mage	赋予全队(水) 技能伤害 60%→80%
+221007#1	deepsea_mage	赋予全队(水) 中毒特攻 10%→15%
+361008#0	monster_attract	赋予全队(暗) 攻击力 10%→15%
+361008#1	monster_attract	赋予全队(暗) Direct伤害 35%→45%
+161099#0	katana_ghost_wt22	赋予全队(暗) 攻击力 55%→70%
+161099#1	katana_ghost_wt22	Revival≥1(限8次) → 赋予全队(暗) 攻击力 12.5%→17.5%
+141099#0	wind_dragon_wt22	赋予全队(风) 攻击力 55%→70%
+141099#1	wind_dragon_wt22	强化弹射≥2(限10次) → 赋予全队(风) 攻击力 9%→12%
+141099#2	wind_dragon_wt22	[觉醒1替换] 赋予全队(风) 攻击力 225%→300%
+141099#3	wind_dragon_wt22	[觉醒1替换] 强化弹射≥2(限10次) → 赋予全队(风) 攻击力 13.5%→18%
+141099#4	wind_dragon_wt22	[觉醒1替换] 强化弹射≥2(限10次) → 赋予全队(风) 强化弹射伤害 11.25%→15%
+141099#5	wind_dragon_wt22	[觉醒1替换] 强化弹射≥2(限10次) → 赋予全队(风) 技能伤害 7.5%→10%
+141099#6	wind_dragon_wt22	[觉醒1替换] 风·编成≥6 时: 技能发动≥1(CT15秒) → 赋予全队(风) 技能槽 10%
+141099#7	wind_dragon_wt22	[觉醒1替换] 自身 强化弹射覆盖
+141099#8	wind_dragon_wt22	[觉醒1替换] 任一敌方强化弹射HitLvAny≥1(CT4秒) → 自身 发动技能动作[ability_skill_wind_dragon_wt22_ol_typhoon]
+141099#9	wind_dragon_wt22	[觉醒1替换] 连击≥10(限10次) → 自身 强化弹射伤害 15%
+141099#10	wind_dragon_wt22	[觉醒1替换] 开局≥1 → 赋予全队(风) 技能槽 50%
+141099#11	wind_dragon_wt22	[觉醒1替换] 技能发动≥1 → 自身 状态连击加成 15×1次
+251065#0	advanced_soldier	赋予全队(光) 攻击力 45%→60%
+251065#1	advanced_soldier	自身 强化弹射伤害 60%→80%
+121105#0	ice_dragon	赋予除自身全员(水) 技能槽 40%→50%
+121105#1	ice_dragon	赋予全队(水) 攻击力 40%→50%
+121105#2	ice_dragon	赋予全队(水) 固有攻击特攻 60%→80%
+131092#0	super_robot	技能发动≥1(限6次) → 赋予全队(雷) 攻击力 15%→20%
+131092#1	super_robot	技能发动≥1(限6次) → 赋予全队(雷) 技能伤害 20%→25%
+141093#0	marching_conductor	自身 强化弹射伤害 130%→175%
+111099#0	tsundere_bountyhunter_vt22	赋予全队(火) 攻击力 40%→54%
+111099#1	tsundere_bountyhunter_vt22	强化弹射≥3(限10次) → 赋予全队(火) 攻击力 12%→16%
+111099#2	tsundere_bountyhunter_vt22	火·编成≥6 时: 强化弹射≥5(CT15秒) → 赋予全队(火) 技能槽 7.5%→10%
+151087#0	hero_girl_vt22	强化弹射≥1(限30次) → 赋予全队(光) 攻击力 4.5%→6%
+151087#1	hero_girl_vt22	光·编成≥6 时: 强化弹射Lv1≥3 → 自身 追加连击 3→5
+231075#0	spanner_girl	赋予全队(雷) 攻击力 70%→90%
+231075#1	spanner_girl	赋予全队(雷) 抗性水 12%→15%
+243019#0	sheep_girl	赋予全队(风) HP 3.5%→5%
+243019#1	sheep_girl	赋予全队(风) 攻击力 30%→40%
+243019#2	sheep_girl	赋予全队(风) Ease治疗 15%→20%
+121099#0	kyouka	赋予全队(水) 攻击力 60%→80%
+121099#1	kyouka	技能发动≥1(限4次) → 赋予全队(水) 攻击力 25%→35%
+111093#0	misogi	赋予全队(火) 攻击力 35%→50%
+111093#1	misogi	赋予全队(火) 抗性风 10%→15%
+111093#2	misogi	技能发动≥1(限3次) → 赋予全队(火) 攻击力 25%→30%
+141087#0	mimi	赋予全队(风) 攻击力 45%→60%
+141087#1	mimi	风·编成≥6 时: 弹射≥1(CT12秒) → 自身 状态连击加成 2→3×1次
+141087#2	mimi	风·编成≥6 时: 强化弹射≥10 → 自身 状态连击加成 4→5×1次
+121093#0	heavenly_three	赋予全队(水) 攻击力 45%→60%
+121093#1	heavenly_three	持续·HPIncrease≥1%(限100次) → 自身 强化弹射伤害 0.9%→1.2%
+151081#0	high_priestess_ny22	赋予全队(光) 攻击力 60%→80%
+151081#1	high_priestess_ny22	技能发动≥1(限4次) → 赋予触发者 技能伤害 35%→45%
+161093#0	dimension_witch_ny22	赋予全队(暗) 攻击力 50%→70%
+161093#1	dimension_witch_ny22	技能发动≥1(限4次) → 赋予触发者 攻击力 15%→20%
+161093#2	dimension_witch_ny22	技能发动≥1(限4次) → 赋予触发者 技能伤害 15%→20%
+211056#0	shapely_soldier_ny22	赋予全队(火) 攻击力 30%→40%
+211056#1	shapely_soldier_ny22	自身 强化弹射连击数↓ 3→5
+211056#2	shapely_soldier_ny22	技能发动≥1 → 自身 状态连击加成 3→4×1次
+231069#0	outlaw_panther_ny22	赋予全队(雷) 攻击力 40%→50%
+231069#1	outlaw_panther_ny22	连击Display≥15(限10次) → 赋予全队(雷) 攻击力 5%→7%
+121087#0	freeze_eye_xm21	赋予全队(水) HP 10%→15%
+121087#1	freeze_eye_xm21	持续·任一敌方状态计数减益≥1(限5次) → 赋予全队(水) 触发敌方Direct伤害特攻 30%→45%
+141081#0	combat_animal_xm21	赋予全队(风) 攻击力 37.5%→50%
+141081#1	combat_animal_xm21	持续·状态累积计数固有≥3(限10次)[固有7] → 赋予全队(风) 攻击力 7.5%→10%
+141081#2	combat_animal_xm21	持续·状态累积计数固有≥3(限10次)[固有7] → 赋予全队(风) 技能伤害 7.5%→10%
+251059#0	devil_clown_xm21	赋予全队(光) 攻击力 30%→40%
+251059#1	devil_clown_xm21	持续·任一敌方状态计数抗性光↓≥1(限3次) → 赋予全队(光) 触发敌方攻击特攻 35%→50%
+211050#0	nurse_pirate	赋予全队(火) HP 10%→15%
+211050#1	nurse_pirate	赋予全队(火) 攻击力 50%→65%
+131086#0	white_tiger_2anv	赋予全队(雷) 攻击力 40%→50%
+131086#1	white_tiger_2anv	连击Display≥15(限20次) → 赋予全队(雷) 攻击力 4.5%→6%
+131086#2	white_tiger_2anv	雷·编成≥6 时: Continuous强化弹射Lv1≥3 → 自身 追加连击 4→5
+121081#0	ice_witch_2anv	持续·任一敌方状态计数减益≥1(限6次) → 赋予全队(水) 触发敌方Direct伤害特攻 37.5%→50%
+121081#1	ice_witch_2anv	水·编成≥6 时: 赋予全队(水) 技能槽 75%→100%
+261071#0	informant_2anv	赋予全队(暗) 攻击力 45%→60%
+261071#1	informant_2anv	Revival≥1(限10次) → 赋予全队(暗) 攻击力 5%→7%
+111087#0	pirates_girl_2anv	持续·计数技能伤害↑≥1(限20次) → 赋予全队(火) 攻击力 7.5%→10%
+111087#1	pirates_girl_2anv	火·编成≥6 时: 强化弹射≥5(CT15秒) → 赋予全队(火) 技能槽 7.5%→10%
+161087#0	summoner_little_2anv	持续·暗·计数Specific多球≥1(限3次) → 赋予全队(暗) 攻击力 40%→55%
+161087#1	summoner_little_2anv	持续·暗·计数Specific多球≥1(限3次) → 赋予全队(暗) 技能槽充能 2.5%→4%
+131080#0	psychic_tohru	赋予全队(雷) 攻击力 60%→80%
+131080#1	psychic_tohru	赋予全队(雷) 技能伤害 75%→90%
+111081#0	shadow_redhood	赋予多球 攻击力 37.5%→50%
+111081#1	shadow_redhood	技能发动≥1(限4次) → 赋予全队(火) 攻击力 22.5%→30%
+121075#0	navy_officer	持续·状态计数攻击力↑≥1(限5次) → 赋予触发者 Direct伤害 40%→50%
+121075#1	navy_officer	赋予全队(水) 攻击力↑延长 7.5%→10%
+121075#2	navy_officer	技能发动≥1 → 赋予触发者 状态攻击力 55%→75%(8秒)×1次
+261065#0	psychic_projection	赋予多球 攻击力 15%→20%
+261065#1	psychic_projection	赋予全队(暗) 技能伤害 45%→60%
+131004#0	thunder_archer	赋予全队(雷) 攻击力 60%→80%
+131004#1	thunder_archer	持续·Fever → 赋予全队(雷) 攻击力 75%→100%
+131004#2	thunder_archer	[觉醒1追加] 赋予全队(雷) 技能槽 20%→30%
+241007#0	beast_adventurer	兽型·编成≥4(限1次) → 赋予全队 HP 20%→30%
+241007#1	beast_adventurer	兽型·编成≥4(限1次) → 赋予全队 攻击力 45%→60%
+211008#0	shapely_soldier	赋予全队 攻击力 75%→100%
+111006#0	compliment_oiran	赋予全队(火) 攻击力 60%→80%
+111006#1	compliment_oiran	赋予多球 攻击力 30%→40%
+111006#2	compliment_oiran	赋予多球 HP 8%→10%
+311011#0	birdwoman	赋予全队(火) 攻击力 10%→15%
+311011#1	birdwoman	持续·状态Flying → 赋予全队(火) 攻击力 30%→40%
+253001#0	monster_cook	持续·HP≥80% → 赋予触发者 攻击力 45%→60%
+253001#1	monster_cook	击杀敌人≥5(限5次) → 赋予全队(光) 攻击力 4%→6%
+253001#2	monster_cook	击杀敌人≥5(限5次) → 赋予全队(光) 比例治疗 3%→4%
+213013#0	psychic_nao	赋予全队 HP 15%→20%
+213013#1	psychic_nao	赋予全队 攻击力 40%→50%
+121070#0	psychic_yuki	持续·HPIncrease≥1%(限100次) → 赋予触发者 技能伤害 1.5%→2%
+121070#1	psychic_yuki	技能发动≥1 → 赋予全队(水) 状态抗性全属性 15%→20%(12秒)×1次
+161082#0	psychic_shouta	赋予全队(暗) 攻击力 115%→150%
+211044#0	psychic_tomboygirl	赋予全队(火) 攻击力 45%→60%
+211044#1	psychic_tomboygirl	赋予全队(火) 减益攻击特攻 55%→75%
+221054#0	psychic_seiji	赋予全队(水) 攻击力 70%→90%
+221054#1	psychic_seiji	HP≤80%(限5次) → 赋予触发者 比例治疗 3%→4%
+151075#0	neoviolin_musician_hw21	赋予全队(光) 攻击力 75%→100%
+151075#1	neoviolin_musician_hw21	自身 强化弹射伤害 55%→70%
+161081#0	touyakiren_ceo_hw21	赋予全队(暗) 攻击力 40%→50%
+161081#1	touyakiren_ceo_hw21	技能发动≥1(限3次) → 赋予触发者 技能伤害 30%→40%
+161081#2	touyakiren_ceo_hw21	暗·编成≥6 时: 技能发动≥1(限3次) → 赋予触发者 技能槽充能 3.5%→5%
+241057#0	sanctuary_guard_hw21	自身 强化弹射伤害 45%→60%
+241057#1	sanctuary_guard_hw21	持续·状态贯通 → 自身 强化弹射伤害 90%→120%
+221053#0	spry_sailor_hw21	赋予全队(水) 攻击力 20%→30%
+221053#1	spry_sailor_hw21	持续·状态贯通 → 赋予全队(水) Direct伤害 150%→200%
+241051#0	pilgrim_monk	赋予全队(风) 攻击力 45%→60%
+241051#1	pilgrim_monk	自身 强化弹射伤害 75%→100%
+121069#0	waterdragon_kunfu_proud	持续·状态计数攻击力↑≥1(限5次) → 赋予触发者 Direct伤害 57%→76%
+121069#1	waterdragon_kunfu_proud	赋予全队(水) 攻击力↑延长 7.5%→10%
+131074#0	dog_slasher_proud	赋予全队(雷) 攻击力 50%→65%
+131074#1	dog_slasher_proud	强化弹射≥1(限20次) → 赋予全队(雷) 攻击力 6%→7.5%
+233007#0	lion_boy	赋予全队(雷) 攻击力 45%→60%
+233007#1	lion_boy	自身 强化弹射伤害 75%→100%
+131068#0	horn_leader	赋予全队(雷) 攻击力 60%→80%
+131068#1	horn_leader	连击Display≥30(限10次) → 赋予全队(雷) 攻击力 7.5%→10%
+151069#0	guildknight_leader	赋予全队(光) 攻击力 30%→40%
+151069#1	guildknight_leader	强化弹射≥1(限30次) → 赋予全队(光) 攻击力 3%→4%
+151069#2	guildknight_leader	强化弹射Lv1≥3 → 自身 追加连击 3→5
+231073#0	warashi	赋予全队(雷) 攻击力 40%→50%
+231073#1	warashi	赋予全队(雷) Ease治疗 15%→20%
+131062#0	cyber_battergirl	自身 强化弹射伤害 50%→75%
+131062#1	cyber_battergirl	赋予全队(雷) 抗性雷↓攻击特攻 90%→120%
+261059#0	formercorrupt_detective	赋予全队(暗) 攻击力 45%→60%
+261059#1	formercorrupt_detective	赋予全队(暗) 抗性暗↓攻击特攻 70%→90%
+331020#0	conjurer_girl	赋予全队(雷) 攻击力 33.75%→45%
+141069#0	mercenary_smr21	赋予全队(风) 攻击力 40%→50%
+141069#1	mercenary_smr21	强化弹射Lv3≥1(限10次) → 赋予全队(风) 攻击力 7.5%→10%
+141069#2	mercenary_smr21	风·编成≥6 时: 连击Display≥21 → 自身 追加连击 7→9
+151063#0	ruin_girl_smr21	赋予全队(光) 技能槽 75%→100%
+151063#1	ruin_girl_smr21	光·编成≥6 时: 技能发动≥1 → 赋予全队 状态持续回复 7500%→10000%(10秒)×1次
+151063#2	ruin_girl_smr21	光·编成≥6 时: 治疗计数≥1 → 自身 追加Fever点 400%→500%
+253007#0	psycho_reaper_smr21	赋予全队(光) 攻击力 45%→60%
+253007#1	psycho_reaper_smr21	自身 强化弹射伤害 60%→80%
+141063#0	bigwing_shaman_smr21	赋予全队(风) 攻击力 40%→50%
+141063#1	bigwing_shaman_smr21	强化弹射≥4(限5次) → 赋予全队(风) 攻击力 20%→30%
+151051#0	fox_oracle_smr21	持续·状态计数强化弹射伤害↑≥1(限3次) → 赋予全队(光) 攻击力 40%→50%
+151051#1	fox_oracle_smr21	自身 强化弹射伤害↑延长 7%→10%
+141057#0	tengu_master	自身 强化弹射伤害 150%→200%
+221040#0	fox_companion_smr21	赋予全队(水) 攻击力 40%→50%
+221040#1	fox_companion_smr21	技能发动≥1(限4次) → 赋予全队(水) Direct伤害 35%→45%
+361033#0	assistant_boy	赋予全队(暗) 攻击力 25%→35%
+241045#0	bird_master	赋予全队(风) 攻击力 30%→40%
+241045#1	bird_master	赋予全队(风) 眩晕畏缩特攻 15%→20%
+221034#0	dress_gunner	赋予全队(水) 攻击力 40%→50%
+221034#1	dress_gunner	自身 强化弹射伤害 70%→95%
+111063#0	bodysuit_trooper_smr21	赋予全队(火) 攻击力 22.5%→30%
+111063#1	bodysuit_trooper_smr21	强化弹射Lv3≥1(限15次) → 赋予全队(火) 攻击力 4%→5%
+111063#2	bodysuit_trooper_smr21	自身 强化弹射连击数↓ 2→3
+111063#3	bodysuit_trooper_smr21	强化弹射Lv3≥1(限10次) → 自身 强化弹射Lv3伤害特攻 0.7%→1%
+161069#0	blackflower_wiz	技能发动≥1(限10次) → 赋予全队(暗) 技能伤害 10%→15%
+161069#1	blackflower_wiz	赋予全队(暗) 减益攻击特攻 60%→80%
+121051#0	holy_mother	赋予全队(水) HP 15%→20%
+121051#1	holy_mother	赋予全队(水) 攻击力 60%→80%
+341017#0	rookie_adventurer	赋予全队(风) 技能伤害 40%→50%
+341017#1	rookie_adventurer	赋予全队(风) 抗性雷 10%→15%
+131056#0	machine_police_girl_smr21	赋予全队(雷) 攻击力 45%→60%
+131056#1	machine_police_girl_smr21	Fever≥1(限3次) → 赋予全队(雷) 攻击力 25%→30%
+131056#2	machine_police_girl_smr21	Fever结束≥1 → 自身 追加Fever点 22500%→30000%
+151045#0	resistance_princess_smr21	赋予全队(光) 攻击力 30%→40%
+151045#1	resistance_princess_smr21	能力伤害≥10(限4次) → 赋予全队(光) 攻击力 12.5%→15%
+151045#2	resistance_princess_smr21	能力伤害≥10(CT20秒) → 对最近的敌人 能力伤害·依攻击光 5000%(50倍)→7000%(70倍)
+151045#3	resistance_princess_smr21	[觉醒1替换] 赋予全队(光) 攻击力 30%→100%
+151045#4	resistance_princess_smr21	[觉醒1替换] 能力伤害≥10(限4次) → 赋予全队(光) 攻击力 12.5%→15%
+151045#5	resistance_princess_smr21	[觉醒1替换] 能力伤害≥3(CT2.5秒) → 对最近的敌人 能力伤害·依攻击光 1000%(10倍)
+151045#6	resistance_princess_smr21	[觉醒1替换] 能力伤害≥1(CT8秒) → 赋予全队(光) 技能槽 20%
+151045#7	resistance_princess_smr21	[觉醒1替换] 赋予全队(光) 技能槽 50%
+211038#0	dragon_slayer_smr21	赋予全队(火) 攻击力 15%→20%
+211038#1	dragon_slayer_smr21	赋予全队(火) 技能伤害 30%→40%
+211038#2	dragon_slayer_smr21	赋予全队(火) 角色特攻 20%→25%[限龙族]
+111057#0	tsundere_bountyhunter	赋予全队(火) 技能槽 40%→50%
+111057#1	tsundere_bountyhunter	赋予全队(火) 攻击力 40%→50%
+111057#2	tsundere_bountyhunter	技能发动≥1(限10次) → 赋予全队(火) 攻击力 7.5%→10%
+131050#0	elder_guild_fighter	持续·HP≤50% → 赋予触发者 攻击力 150%→200%
+221028#0	stylish_witch	赋予全队(水) 攻击力 60%→80%
+221028#1	stylish_witch	赋予全队(水) Fever点 15%→20%
+251053#0	desert_priest	赋予全队(光) HP 12%→15%
+251053#1	desert_priest	HP≤60%(限1次) → 赋予触发者 比例治疗 20%→25%
+121045#0	mermaid_1halfanv	赋予全队(水) 攻击力 60%→80%
+121045#1	mermaid_1halfanv	水·编成≥6 时: 自身 追加Fever点 120000%→150000%
+121045#2	mermaid_1halfanv	水·编成≥6 时: Fever≥1 → 自身 状态连击加成 7→10×1次
+141051#0	elf_princess_1halfanv	赋予全队(风) HP 10%→15%
+141051#1	elf_princess_1halfanv	持续·状态Flying → 赋予全队(风) 攻击力 60%→80%
+141051#2	elf_princess_1halfanv	风·编成≥6 时: 持续·状态Flying → 赋予全队(风) 技能槽充能 12%→15%
+161063#0	blindness_gunner_1halfanv	赋予全队(暗) 攻击力 75%→100%
+161063#1	blindness_gunner_1halfanv	暗·编成≥6 时: 强化弹射≥5(CT15秒) → 赋予全队(暗) 技能槽 7.5%→10%
+161063#2	blindness_gunner_1halfanv	暗·编成≥6 时: 持续·状态累积计数固有≥3(限1次)[固有6] → 自身 攻击力 75%→100%
+161063#3	blindness_gunner_1halfanv	暗·编成≥6 时: 持续·状态累积计数固有≥4(限1次)[固有6] → 自身 技能伤害 75%→100%
+211032#0	naginata_girl	赋予全队(火) 攻击力 45%→60%
+211032#1	naginata_girl	持续·状态贯通 → 赋予全队(火) 抗性风 20%→25%
+361027#0	revenge_rabbit	赋予全队(暗) 攻击力 10%→15%
+361027#1	revenge_rabbit	技能发动≥1(限10次) → 赋予全队(暗) 攻击力 3%→4%
+223013#0	hero_girl	赋予全队(水) 攻击力 45%→60%
+223013#1	hero_girl	技能发动≥1(限10次) → 赋予全队(水) 技能伤害 9%→12%
+131044#0	samurai_robot	赋予全队(雷) 攻击力 45%→60%
+131044#1	samurai_robot	Fever≥1(限3次) → 赋予全队(雷) 攻击力 25%→30%
+131044#2	samurai_robot	非Fever 时: 技能发动≥1(限5次) → 自身 追加Fever点 7500%→10000%
+151039#0	yokai_exterminator	赋予全队(光) 攻击力 45%→60%
+151039#1	yokai_exterminator	强化弹射≥1(限20次) → 赋予全队(光) 攻击力 5%→7%
+251047#0	sleep_puppy	赋予全队(光) 攻击力 55%→75%
+251047#1	sleep_puppy	赋予全队(光) Ease治疗 10%→15%
+241039#0	cool_witch_girl	赋予全队(风) 攻击力 40%→50%
+241039#1	cool_witch_girl	自身 强化弹射伤害 70%→95%
+231056#0	secret_observer	赋予全队(雷) HP 10%→15%
+231056#1	secret_observer	赋予全队(雷) 攻击力 50%→65%
+261047#0	desert_caravans	赋予全队(暗) 攻击力 40%→50%
+261047#1	desert_caravans	技能发动≥1(限10次) → 自身 强化弹射伤害 11.5%→15%
+111051#0	zeta	赋予全队(火) 攻击力 50%→70%
+111051#1	zeta	技能发动≥1(限4次) → 赋予全队(火) 攻击力 20%→25%
+161057#0	beatrix	持续·HPDecrease≥1%(限100次) → 赋予触发者 攻击力 1.8%→2.4%
+141045#0	beast_shaman	技能发动≥1(限12次) → 赋予全队(风) 攻击力 15%→17.5%
+111045#0	magical_bayonetter	自身 强化弹射连击数↓ 2→3
+111045#1	magical_bayonetter	赋予全队(火) 攻击力 30%→40%
+111045#2	magical_bayonetter	强化弹射Lv3≥1(限10次) → 赋予全队(火) 攻击力 6%→8%
+261041#0	walking_armor	赋予全队(暗) HP 7.5%→10%
+261041#1	walking_armor	赋予全队(暗) 攻击力 30%→40%
+261041#2	walking_armor	Revival≥1(限6次) → 赋予全队(暗) 技能伤害 10%→15%
+361021#0	mummy_boy	赋予全队(暗) HP 7.5%→10%
+361021#1	mummy_boy	赋予全队(暗) 攻击力 10%→15%
+131038#0	general_toyakiren	赋予全队(雷) 攻击力 45%→60%
+131038#1	general_toyakiren	连击Display≥40(限6次) → 赋予全队(雷) 攻击力 10%→15%
+131038#2	general_toyakiren	技能发动≥1 → 自身 追加连击 7→10
+223007#0	ruin_lady	赋予全队(水) 攻击力 40%→50%
+223007#1	ruin_lady	自身 强化弹射伤害 70%→95%
+141039#0	brown_fighter_dst21	赋予全队(风) 攻击力 45%→60%
+141039#1	brown_fighter_dst21	风·编成≥6 时: 强化弹射≥3(限8次) → 赋予全队(风) 攻击力 10%→12.5%
+141039#2	brown_fighter_dst21	风·编成≥6 时: 自身 状态连击加成 7→9×1次
+161051#0	dark_psygirl_dst21	持续·暗·计数Specific多球≥1(限3次) → 赋予全队(暗) 攻击力 40%→50%
+161051#1	dark_psygirl_dst21	持续·暗·计数Specific多球≥1(限3次) → 赋予全队(暗) 技能槽充能 2%→3%
+121039#0	desert_commander	持续·状态计数攻击力↑≥1(限5次) → 赋予触发者 Direct伤害 55%→70%
+121039#1	desert_commander	赋予全队(水) 攻击力↑延长 7%→10%
+351033#0	kids_gunner	赋予全队(光) 攻击力 25%→35%
+151033#0	crystal_swordman	赋予全队(光) 攻击力 60%→80%
+151033#1	crystal_swordman	能力伤害≥1(限10次) → 赋予触发者 攻击力 2%→3%
+151033#2	crystal_swordman	能力伤害≥1(限10次) → 赋予触发者 能力伤害 2%→3%
+161045#0	noble_sorceress	赋予全队(暗) HP 15%→20%
+161045#1	noble_sorceress	赋予全队(暗) 技能伤害 75%→100%
+231050#0	electro_girl	赋予全队(雷) 攻击力 90%→120%
+311025#0	wolf_assassin_wt21	自身 强化弹射伤害 50%→70%
+111039#0	onmyoji_boy_wt21	赋予全队(火) 技能槽 40%→50%
+111039#1	onmyoji_boy_wt21	赋予多球 HP 8%→10%
+111039#2	onmyoji_boy_wt21	技能发动≥1(限10次) → 赋予多球 攻击力 7.5%→10%
+121033#0	waterdragon_kunfu	持续·HPIncrease≥1%(限100次) → 赋予触发者 攻击力 1.5%→2%
+241033#0	steel_lacrosse	赋予全队(风) 攻击力 40%→50%
+241033#1	steel_lacrosse	持续·连击≥10(限1次) → 赋予全队(风) Direct伤害 90%→120%
+351027#0	skateboard_boy	赋予全队(光) 攻击力 25%→35%
+161039#0	summoner_little	持续·计数多球≥1(限3次) → 赋予全队(暗) 攻击力 40%→50%
+161039#1	summoner_little	赋予多球 攻击力 15%→20%
+131032#0	girl_and_mecha	赋予全队(雷) HP 15%→20%
+131032#1	girl_and_mecha	持续·HP≤50% → 赋予触发者 攻击力 115%→150%
+111033#0	doctor_pirate	赋予全队(火) HP 15%→20%
+111033#1	doctor_pirate	赋予全队(火) 攻击力 60%→80%
+231044#0	punk_warrior	持续·HP≤50% → 赋予全队(雷) 攻击力 60%→80%
+231044#1	punk_warrior	赋予全队(雷) 技能伤害 70%→90%
+261035#0	mystery_agent	赋予全队(暗) Direct伤害 60%→80%
+261035#1	mystery_agent	赋予全队(暗) 减益特攻 10%→15%
+151027#0	lightbullet_wiz_vt21	赋予全队(光) 攻击力 70%→90%
+151027#1	lightbullet_wiz_vt21	技能发动≥1(限5次) → 赋予触发者 攻击力 5%→6%
+151027#2	lightbullet_wiz_vt21	技能发动≥1(限5次) → 赋予触发者 能力伤害 5%→6%
+251041#0	whitedog_beast_vt21	赋予全队(光) 攻击力 45%→60%
+251041#1	whitedog_beast_vt21	赋予全队(光) 能力伤害 20%→30%
+141033#0	combat_animal	赋予全队(风) 技能槽 30%→40%
+141033#1	combat_animal	赋予全队(风) 技能伤害 105%→140%
+111027#0	halberd_princess	赋予全队(火) 攻击力 45%→60%
+111027#1	halberd_princess	伤害计数≥15(限10次) → 赋予全队(火) 攻击力 10%→14%
+241027#0	wind_striker	赋予全队(风) 攻击力 40%→50%
+241027#1	wind_striker	自身 强化弹射Lv3伤害特攻 10%→15%
+251035#0	sea_violent	赋予全队(光) 攻击力 45%→60%
+251035#1	sea_violent	自身 强化弹射伤害 60%→80%
+131026#0	heavenly_two	赋予全队(雷) 技能槽 40%→50%
+131026#1	heavenly_two	赋予全队(雷) 攻击力 40%→50%
+131026#2	heavenly_two	持续·HP≤50% → 赋予全队(雷) 攻击力 60%→80%
+221022#0	urban_soldier_ny21	赋予全队(水) 攻击力 45%→60%
+221022#1	urban_soldier_ny21	技能发动≥1(限4次) → 赋予全队(水) Direct伤害 40%→50%
+141027#0	timid_kunoichi_ny21	赋予全队(风) 攻击力 45%→60%
+141027#1	timid_kunoichi_ny21	连击≥60(限8次) → 赋予全队(风) 攻击力 10%→15%
+231038#0	little_wizard	赋予全队(雷) HP 7%→10%
+231038#1	little_wizard	赋予全队(雷) 攻击力 30%→40%
+231038#2	little_wizard	赋予全队(雷) 技能伤害 55%→70%
+111021#0	lady_summoner_xm20	龙族·编成≥3(限1次) → 赋予全队 攻击力 135%→180%
+211026#0	cool_woman_soldier_xm20	赋予全队(火) 攻击力 45%→60%
+211026#1	cool_woman_soldier_xm20	持续·状态贯通 → 自身 强化弹射伤害 75%→100%
+231032#0	black_hair_swordman_xm20	赋予全队(雷) 攻击力 60%→80%
+231032#1	black_hair_swordman_xm20	Fever≥1(限3次) → 赋予全队(雷) 攻击力 25%→30%
+361015#0	delusion_girl_xm20	赋予全队(暗) 攻击力 15%→25%
+361015#1	delusion_girl_xm20	男性·编成≥2(限1次) → 赋予全队(暗) 攻击力 10%→20%
+161033#0	devil_princess_xm20	持续·HPDecrease≥1%(限100次) → 赋予触发者 攻击力 1.8%→2.4%
+243013#0	white_tiger_xm20	赋予全队(风) 攻击力 40%→50%
+243013#1	white_tiger_xm20	持续·连击≥10(限1次) → 赋予全队(风) 攻击力 60%→80%
+121015#0	freeze_eye	赋予全队(水) 攻击力 45%→60%
+121015#1	freeze_eye	持续·状态计数攻击力↑≥1(限5次) → 赋予触发者 Direct伤害 40%→50%
+351021#0	junior_soldier	赋予全队(光) 攻击力 10%→15%
+351021#1	junior_soldier	自身 强化弹射伤害 30%→40%
+111015#0	kunoichi_1anv	赋予全队(火) 技能槽 75%→100%
+111015#1	kunoichi_1anv	赋予全队(火) 攻击力 40%→50%
+111015#2	kunoichi_1anv	技能最大≥1(限5次) → 赋予触发者 攻击力 8%→10%
+151021#0	wind_oracle_1anv	赋予全队(光) 攻击力 60%→80%
+151021#1	wind_oracle_1anv	持续·状态计数增益≥1(限5次) → 赋予触发者 攻击力 6%→8%
+151021#2	wind_oracle_1anv	持续·状态计数增益≥1(限5次) → 赋予触发者 能力伤害 5%→6%
+261029#0	devil_woman_soldier_1anv	赋予全队(暗) 攻击力 45%→60%
+261029#1	devil_woman_soldier_1anv	持续·HP≤50% → 赋予全队(暗) 攻击力 70%→90%
+141021#0	wind_spgirl_1anv	赋予全队(风) 攻击力 40%→50%
+141021#1	wind_spgirl_1anv	持续·状态累积计数固有≥1(限20次)[固有1] → 赋予全队(风) 攻击力 6.5%→8.5%
+251029#0	woman_knight_1anv	赋予全队(光) 攻击力 40%→50%
+251029#1	woman_knight_1anv	持续·屏障 → 赋予触发者 抗性全属性 20%→30%
+131020#0	rec_android_1anv	赋予全队(雷) 攻击力 55%→75%
+131020#1	rec_android_1anv	Fever≥1(限3次) → 赋予全队(雷) 攻击力 10%→15%
+131020#2	rec_android_1anv	雷·编成≥6 时: Fever≥2(限1次) → 自身 计数+Fever 100%
+131020#3	rec_android_1anv	[觉醒1替换] 赋予全队(雷) 攻击力 255%→275%
+131020#4	rec_android_1anv	[觉醒1替换] Fever≥1(限4次) → 赋予全队(雷) 攻击力 40%→45%
+131020#5	rec_android_1anv	[觉醒1替换] 雷·编成≥6 时: Fever≥2 → 自身 计数+Fever 100%
+221017#0	shy_assassin	赋予全队(水) 攻击力 60%→80%
+221017#1	shy_assassin	自身 Fever时间延长 20%→25%
+231026#0	doctor_machine	赋予全队(光) Ease治疗 12%→15%
+231026#1	doctor_machine	治疗计数≥1(限10次) → 赋予触发者 攻击力 7%→9%
+311019#0	sewing_girl	赋予全队(火) 攻击力 7.5%→10%
+311019#1	sewing_girl	赋予全队(火) 抗性风 15%→20%
+251017#0	resistance_princess	赋予全队 攻击力 45%→60%
+251017#1	resistance_princess	赋予全队 能力伤害 12%→20%
+141015#0	elf_princess	赋予全队(风) 攻击力 45%→60%
+141015#1	elf_princess	持续·状态Flying → 赋予全队(风) 攻击力 90%→120%
+161027#0	devil_leader	持续·HP≤80% → 赋予全队(暗) 攻击力 75%→100%
+161027#1	devil_leader	持续·HP≤50% → 赋予全队(暗) 攻击力 130%→170%
+241015#0	wild_boy	赋予全队(风) 技能伤害 75%→100%
+241015#1	wild_boy	赋予全队(风) Ease治疗 10%→15%
+161021#0	dark_psygirl	赋予全队(暗) 攻击力 45%→60%
+161021#1	dark_psygirl	击杀敌人≥3(限7次) → 赋予全队(暗) 攻击力 15%→20%
+211020#0	sorceress_teacher	技能发动≥1(限3次) → 赋予触发者 技能伤害 30%→40%
+211020#1	sorceress_teacher	赋予全队(火) 技能槽 40%→50%
+261023#0	illegal_herbalist	赋予全队(暗) HP 10%→15%
+261023#1	illegal_herbalist	赋予全队(暗) 攻击力 50%→65%
+161015#0	sing_android_hw20	赋予全队(暗) 攻击力 45%→60%
+161015#1	sing_android_hw20	持续·状态计数增益≥1(限5次) → 赋予触发者 攻击力 20%→24%
+261017#0	reaper_girl_hw20	赋予全队(暗) 攻击力 75%→100%
+261017#1	reaper_girl_hw20	持续·Revival≥6(限1次) → 赋予全队(暗) 抗性光 20%→25%
+231020#0	fox_scientist_hw20	赋予全队(雷) 攻击力 30%→40%
+231020#1	fox_scientist_hw20	赋予全队(雷) 冻结特攻 10%→15%
+351015#0	priest_hw20	赋予全队(光) HP 7.5%→10%
+351015#1	priest_hw20	技能发动≥1(限4次) → 赋予触发者 攻击力 7.5%→12.5%
+151013#0	high_priestess	赋予全队(光) 技能伤害 150%→200%
+151014#0	lamp_guide	赋予全队(光) HP 15%→20%
+151014#1	lamp_guide	持续·屏障 → 赋予全队(光) 攻击力 75%→100%
+261011#0	crazy_doctor	赋予全队(暗) 技能伤害 40%→60%
+261011#1	crazy_doctor	赋予全队(暗) 减益特攻 10%→15%
+211013#0	vigilante_boy	赋予全队(火) 攻击力 75%→100%
+211013#1	vigilante_boy	自身 强化弹射伤害 45%→60%
+121008#0	prince_zero_smr20	赋予全队(水) HP 7.5%→10%
+121008#1	prince_zero_smr20	持续·HP≥80% → 赋予触发者 攻击力 115%→150%
+261010#0	dinosaur_hunter	赋予全队(暗) HP 7.5%→10%
+261010#1	dinosaur_hunter	自身 强化弹射伤害 85%→110%
+211012#0	magic_sword_girl	赋予全队(火) 技能伤害 115%→150%
+351009#0	moth_girl	赋予全队(光) HP 10%→15%
+351009#1	moth_girl	赋予全队(光) 攻击力 7.5%→10%
+161008#0	alice_smr20	赋予全队(暗) 攻击力 85%→110%
+161008#1	alice_smr20	暗·编成≥1(限6次) → 自身 攻击力 10%→15%
+261009#0	lady_gunner_smr20	赋予全队(暗) 攻击力 45%→60%
+261009#1	lady_gunner_smr20	持续·HP≤30% → 赋予全队(暗) 攻击力 70%→90%
+221011#0	unicorn_lancer_smr20	持续·HP≥80% → 赋予触发者 攻击力 100%→140%
+223001#0	pirates_girl_smr20	赋予全队(水) 攻击力 45%→60%
+223001#1	pirates_girl_smr20	持续·强化弹射伤害↑≥2 → 自身 攻击力 75%→100%
+151012#0	neoviolin_musician	赋予全队(光) 攻击力 60%→80%
+151012#1	neoviolin_musician	光·编成≥1(限6次) → 自身 攻击力 10%→15%
+331014#0	floating_girl	赋予全队(雷) 攻击力 10%→15%
+331014#1	floating_girl	自身 Flying延长 20%→30%
+141008#0	wind_dragon	赋予全队(风) 攻击力 50%→60%
+141008#1	wind_dragon	自身 强化弹射Lv3伤害特攻 10%→20%
+251011#0	keylock_girl	赋予全队(光) 技能伤害 50%→65%
+251011#1	keylock_girl	赋予全队(光) 抗性暗 10%→20%
+131014#0	dimension_witch_smr20	持续·HP≤50% → 赋予全队(雷) 攻击力 90%→120%
+131014#1	dimension_witch_smr20	持续·HP≤50% → 赋予全队(雷) 抗性水 10%→20%
+231013#0	hidden_blader	赋予全队(雷) 攻击力 30%→40%
+231013#1	hidden_blader	赋予全队(雷) 麻痹特攻 15%→20%
+321013#0	scout_girl	赋予全队(水) HP 5%→10%
+321013#1	scout_girl	[觉醒1追加] 赋予全队(水) HP 10%
+321013#2	scout_girl	自身 强化弹射伤害 30%→40%
+321013#3	scout_girl	[觉醒1追加] 赋予全队(水) 抗性火 20%
+321013#4	scout_girl	[觉醒1追加] 技能发动≥1(限3次) → 赋予全队(水) 技能伤害 120%
+251010#0	bishop_girl_smr20	赋予全队(光) 攻击力 45%→60%
+251010#1	bishop_girl_smr20	持续·屏障 → 赋予触发者 攻击力 60%→80%
+111009#0	tiger_treasure_hunter_smr20	赋予全队(火) 攻击力 30%→40%
+111009#1	tiger_treasure_hunter_smr20	技能发动≥1(限4次) → 赋予全队(火) 攻击力 17.5%→22.5%
+111009#2	tiger_treasure_hunter_smr20	自身 强化弹射连击数↓ 2→3
+131013#0	illusionist_smr20	赋予全队(雷) HP 15%→20%
+131013#1	illusionist_smr20	赋予全队(雷) 攻击力 30%→40%
+131013#2	illusionist_smr20	技能发动≥1 → 自身 追加Fever点 6000%→7000%
+231012#0	casino_dealer_smr20	自身 强化弹射伤害 88%→111%
+231012#1	casino_dealer_smr20	Fever≥1 → 赋予全队(雷) 状态攻击力 55%→77%(20秒)×1次
+341011#0	lazy_genious	赋予全队(风) 技能伤害 50%→70%
+151008#0	pecorine	赋予全队(光) 攻击力 40%→50%
+151008#1	pecorine	持续·HP≥60% → 赋予触发者 攻击力 135%→180%
+141007#0	kokkoro	赋予全队(风) 技能槽 30%→50%
+141007#1	kokkoro	赋予全队(风) 攻击力 75%→100%
+161007#0	kyaru	赋予全队(暗) 技能伤害 75%→100%
+161007#1	kyaru	击杀敌人≥2(限15次) → 赋予全队(暗) 技能伤害 8%→10%
+311013#0	brave_mouse	兽型·编成≥1(限6次) → 自身 强化弹射伤害 12%→17.5%
+211011#0	sanctuary_guard	赋予全队(火) 攻击力 45%→60%
+211011#1	sanctuary_guard	持续·状态贯通 → 赋予全队(火) 攻击力 55%→75%
+233001#0	fake_princess	自身 强化弹射伤害 45%→60%
+233001#1	fake_princess	强化弹射≥3(限8次) → 赋予全队(雷) 技能伤害 15%→20%
+151009#0	ruin_girl_halfanv	持续·Fever → 赋予全队(光) 攻击力 100%→130%
+151009#1	ruin_girl_halfanv	自身 Fever时间延长 20%→30%
+131012#0	big_gunner	赋予全队(雷) 技能伤害 60%→80%
+131012#1	big_gunner	Fever≥1(限2次) → 赋予全队(雷) 技能伤害 75%→100%
+161003#0	olivia	赋予全队(暗) 攻击力 45%→60%
+161003#1	olivia	持续·状态贯通 → 赋予全队(暗) 攻击力 90%→120%
+261002#0	luna	赋予全队(暗) 攻击力 40%→50%
+261002#1	luna	Revival≥1(限6次) → 赋予全队(暗) 攻击力 15%→20%
+211010#0	pirates_gunner	赋予全队(火) HP 10%→15%
+211010#1	pirates_gunner	赋予全队(火) 攻击力 50%→65%
+321012#0	little_shaman	赋予全队(水) 攻击力 10%→15%
+321012#1	little_shaman	赋予全队(水) Direct伤害 30%→45%
+131011#0	machine_police_girl	赋予全队(雷) 攻击力 30%→40%
+131011#1	machine_police_girl	连击≥50(限1次) → 赋予全队(雷) 攻击力 45%→60%
+131011#2	machine_police_girl	连击≥100(限1次) → 赋予全队(雷) 攻击力 60%→80%
+211009#0	crybaby_shooter	赋予全队(火) 攻击力 45%→60%
+211009#1	crybaby_shooter	技能发动≥1(限10次) → 赋予全队(火) 攻击力 7.5%→10%
+221010#0	psycho_reaper	自身 强化弹射伤害 115%→150%
+311012#0	tradition_healer	赋予全队(火) 攻击力 10%→15%
+311012#1	tradition_healer	赋予全队(火) Ease治疗 15%→18%
+261008#0	blindness_gunner	赋予全队(暗) 技能伤害 70%→90%
+261008#1	blindness_gunner	赋予全队(暗) 抗性光 10%→15%
+261008#2	blindness_gunner	[觉醒1追加] 赋予全队(暗) 技能伤害 90%
+261008#3	blindness_gunner	[觉醒1追加] 赋予全队(暗) 抗性光 15%
+261008#4	blindness_gunner	[觉醒1追加] 持续·HPDecrease≥1%(限100次) → 赋予触发者 攻击力 2.5%
+151005#0	blade_dancer	赋予全队(光) 攻击力 45%→60%
+151005#1	blade_dancer	[觉醒1替换] 赋予全队(光) 攻击力 60%→80%
+151005#2	blade_dancer	持续·状态计数增益≥1(限10次) → 赋予触发者 攻击力 5%→7%
+151005#3	blade_dancer	持续·状态计数增益≥1(限10次) → 赋予触发者 技能伤害 5%→7%
+121007#0	drawing_witch	技能发动≥1(限12次) → 赋予全队(水) 攻击力 12.5%→17.5%
+221009#0	onmyo_attendant	赋予全队(水) Direct伤害 75%→100%
+221009#1	onmyo_attendant	赋予全队(水) 中毒Direct伤害特攻 100%→130%
+331013#0	old_mercenary	自身 强化弹射伤害 50%→70%
+151182#0	nova_4anv	光·编成≥6 时: 赋予除自身全员 技能槽 75%→100%
+151182#1	nova_4anv	光·编成≥6 时: 赋予全队(光) 攻击力 150%→200%
+151182#2	nova_4anv	光·编成≥6 时: 赋予全队(光) 技能伤害 150%→200%
+161201#0	stella_copy_4anv	赋予除自身全员(暗) 技能槽 75%→100%
+161201#1	stella_copy_4anv	技能发动≥1(限4次) → 赋予全队(暗) 固有攻击特攻 30%→40%
+161201#2	stella_copy_4anv	技能发动≥1(限4次) → 赋予全队(暗) 固有技能特攻 50%→75%
+161201#3	stella_copy_4anv	暗·编成≥6(限1次) → 赋予全队(暗) 技能槽充能 7.5%→10%
+141201#0	wind_spgirl_4anv	赋予全队(风) 攻击力 150%→200%
+141201#1	wind_spgirl_4anv	风·编成≥6 时: 自身 强化弹射覆盖
+141201#2	wind_spgirl_4anv	风·编成≥6 时: 技能发动≥1 → 自身 状态连击加成 3→5×1次
+131182#0	light_adventurer_4anv	赋予全队(雷) 攻击力 150%→200%
+131182#1	light_adventurer_4anv	强化弹射HitLv1≥4(限10次) → 赋予全队(雷) 攻击力 20%→30%
+131182#2	light_adventurer_4anv	强化弹射HitLv1≥4(限10次) → 自身 强化弹射伤害 20%→30%
+131182#3	light_adventurer_4anv	雷·编成≥6 时: 强化弹射≥1 → 自身 状态冲刺(3秒)×1次
+241009#0	tengu_girl	赋予全队(风) 技能伤害 75%→100%
+241009#1	tengu_girl	持续·连击≥20(限1次) → 赋予全队(风) 攻击力 40%→55%
+141006#0	gentle_barten	赋予全队(风) 攻击力 60%→80%
+141006#1	gentle_barten	赋予全队(风) 技能伤害 70%→90%
+321011#0	junior_yearngirl	自身 强化弹射伤害 50%→70%
+251009#0	whitedog_beast	赋予全队(光) 攻击力 25%→30%
+251009#1	whitedog_beast	赋予全队(光) 技能伤害 85%→110%
+700006#0	desert_commander_no_piercing	属性属性种类≥1(限6次) → 赋予全队 攻击力 7%→8%
+700007#0	ruin_lady_no_piercing	赋予全队(水) 攻击力 20%→25%
+700007#1	ruin_lady_no_piercing	自身 强化弹射伤害 30%→50%
+700008#0	justice_lady_assist	属性属性种类≥1(限6次) → 赋予全队 攻击力 7%→8%
+700004#0	horn_leader_assist	属性属性种类≥1(限6次) → 赋予全队 攻击力 7%→8%
+700005#0	guildknight_leader_assist	属性属性种类≥1(限6次) → 赋予全队 攻击力 7%→8%
+700001#0	devil_leader_assist	属性属性种类≥1(限6次) → 赋予全队 攻击力 7%→8%
+700002#0	elf_princess_assist	属性属性种类≥1(限6次) → 赋予全队 攻击力 7%→8%
+700003#0	resistance_princess_assist	属性属性种类≥1(限6次) → 赋予全队 攻击力 7%→8%
+700015#0	white_tiger_chapter12	赋予全队 攻击力 45%→60%
+700015#1	white_tiger_chapter12	自身 强化弹射伤害 45%→60%
+700016#0	light_chapter12	赋予全队 HP 10%→15%
+700017#0	alk_devil_chapter12	自身 HP 100%→200%
+700018#0	stella_chapter12_assist	自身 HP 100%→200%
+700019#0	stella_copy_assist	自身 HP 100%→200%
+700011#0	psychic_yuki_assist	属性属性种类≥1(限6次) → 赋予全队 攻击力 7%→8%
+700012#0	psychic_shouta_assist	属性属性种类≥1(限6次) → 赋予全队 攻击力 7%→8%
+700010#0	alk_shoutabattle	属性属性种类≥1(限6次) → 赋予全队 攻击力 7%→8%
+700009#0	alk_serious	属性属性种类≥1(限6次) → 赋予全队 攻击力 7%→8%
+161141#0	asta	赋予全队(暗) 攻击力 40%→50%
+161141#1	asta	赋予全队(暗) HP 7.5%→10%
+161141#2	asta	持续·HPDecrease≥1%(限100次) → 赋予触发者 攻击力 2%→2.5%
+141129#0	yuno	赋予全队(风) 攻击力 100%→140%
+141129#1	yuno	风·编成≥6 时: 持续·状态Flying → 赋予全队(风) 技能槽充能 10%→15%
+123001#0	noelle_silva	赋予全队(水) 抗性火 15%→20%
+123001#1	noelle_silva	技能发动≥1(限3次) → 赋予全队(水) 技能伤害 90%→120%
+1#0	alk	属性属性种类≥1(限6次) → 赋予全队 攻击力 20%→25%
+1#1	alk	[觉醒1替换] 属性属性种类≥1(限6次) → 赋予全队 攻击力 40%
+999999#0	flame_witch	属性属性种类≥1(限6次) → 赋予全队 攻击力 7%→8%
+333001#0	cat_fighter_ny20	赋予全队(雷) 攻击力 10%→15%
+333001#1	cat_fighter_ny20	连击≥30(限5次) → 赋予全队(雷) 技能伤害 12%→15%
+263001#0	sword_beauty	赋予全队(暗) 攻击力 45%→60%
+263001#1	sword_beauty	技能发动≥1(限10次) → 赋予全队(暗) 攻击力 7.5%→10%
+323001#0	dryad_xm19	赋予全队(水) 攻击力 10%→15%
+323001#1	dryad_xm19	自身 Fever时间延长 20%→25%
+121004#0	ice_witch	持续·HP≥80% → 赋予全队(水) 攻击力 90%→120%
+121004#1	ice_witch	HP≤80%(限1次) → 赋予触发者 比例治疗 15%→20%
+161004#0	blade_witch	赋予全队(暗) 攻击力 50%→70%
+161004#1	blade_witch	持续·状态贯通 → 赋予全队(暗) 攻击力 75%→100%
+231008#0	black_hair_swordman	赋予全队(雷) 攻击力 30%→40%
+231008#1	black_hair_swordman	赋予全队(雷) 眩晕畏缩特攻 20%→25%
+341010#0	gang_girl	赋予全队(风) 眩晕畏缩特攻 20%→30%
+121003#0	lightbullet_wiz_ny20	赋予全队(水) 攻击力 45%→60%
+121003#1	lightbullet_wiz_ny20	赋予全队(水) 技能伤害 90%→120%
+111005#0	heavenly_one	赋予全队(火) 攻击力 40%→50%
+111005#1	heavenly_one	赋予全队(火) 增益延长 20%→25%
+261006#0	swallow_knight_ny20	赋予全队(暗) HP 15%→20%
+261006#1	swallow_knight_ny20	持续·HP≤50% → 赋予触发者 攻击力 50%→60%
+261006#2	swallow_knight_ny20	赋予全队 比例伤害最大HP 10%
+241006#0	bearish_darkwitch_ny20	赋予全队(风) 攻击力 60%→80%
+241006#1	bearish_darkwitch_ny20	自身 Fever时间延长 20%→25%
+211007#0	reporter_ny20	自身 强化弹射伤害 70%→90%
+211007#1	reporter_ny20	赋予全队(火) 增益延长 7.5%→10%
+351008#0	wild_wolfgirl	持续·Fever → 赋予全队(光) 攻击力 85%→115%
+131003#0	samurai_xm19	赋予全队(雷) 攻击力 60%→80%
+131003#1	samurai_xm19	赋予全队(雷) 技能伤害 90%→120%
+151004#0	fox_oracle_xm19	技能发动≥1 → 自身 追加Fever点 4000%→5000%
+151004#1	fox_oracle_xm19	赋予全队(光) 攻击力 75%→100%
+111004#0	battle_maid_xm19	赋予全队(火) 攻击力 25%→30%
+111004#1	battle_maid_xm19	赋予全队(火) 减益特攻 15%→20%
+231007#0	docking_beast_xm19	赋予全队(雷) 攻击力 70%→90%
+231007#1	docking_beast_xm19	自身 Fever时间延长 15%→20%
+211006#0	red_gunner	持续·连击≥10(限1次) → 赋予全队(火) 攻击力 105%→140%
+331012#0	fortuneteller	赋予全队(雷) 攻击力 10%→15%
+331012#1	fortuneteller	赋予全队(雷) Ease治疗 15%→18%
+141001#0	wind_spgirl	持续·连击≥10(限1次) → 赋予全队(风) 攻击力 65%→85%
+141001#1	wind_spgirl	[觉醒1替换] 持续·连击≥10(限1次) → 赋予全队(风) 攻击力 85%→100%
+141001#2	wind_spgirl	赋予全队(风) 攻击力 60%→80%
+141001#3	wind_spgirl	[觉醒1替换] 赋予全队(风) 攻击力 80%→100%
+151003#0	bodysuit_trooper	持续·HP≥60% → 赋予触发者 攻击力 130%→170%
+241005#0	dog_slasher	赋予全队(风) 攻击力 35%→45%
+241005#1	dog_slasher	赋予全队(风) 抗性雷 20%→25%
+231006#0	minotaur_girl	持续·HP≤50% → 赋予全队(雷) 攻击力 115%→150%
+231006#1	minotaur_girl	[觉醒1替换] 持续·HP≤50% → 赋予全队(雷) 攻击力 150%→180%
+321010#0	mens_attire_girl	赋予全队(水) Ease治疗 22.5%→30%
+253013#0	stella_2anv	赋予全队 技能槽 75%→100%
+700013#0	white_tiger_2anv_assist	赋予全队(雷) 攻击力 45%→60%
+700014#0	ice_witch_2anv_assist	赋予全队(水) 攻击力 45%→60%
+163001#0	silent_ninja	赋予全队(暗) 攻击力 75%→100%
+163001#1	silent_ninja	自身 强化弹射伤害 55%→70%
+213001#0	alk_1anv	属性属性种类≥1(限6次) → 赋予全队 攻击力 12%→15%
+213001#1	alk_1anv	属性属性种类≥1(限6次) → 赋予全队 HP 1.5%→2.5%
+129999#0	seris_dragon_king_leader	水·编成≥6 时: 自身 状态固有 100%×1次
+129999#1	seris_dragon_king_leader	水·编成≥6 时: 自身 Fever点 100%
+129999#2	seris_dragon_king_leader	水·编成≥6 时: 持续·Fever → 自身 攻击力 350%
+129999#3	seris_dragon_king_leader	水·编成≥6 时: 持续·Fever → 自身 强化弹射伤害 450%
+129999#4	seris_dragon_king_leader	水·编成≥6 时: Fever≥1 → 自身 状态连击加成 40×1次
+129999#5	seris_dragon_king_leader	水·编成≥6 时: 自身弹射≥1 → 自身 追加连击 3
+129999#6	seris_dragon_king_leader	水·编成≥6 时: 自身 切换技能形态[change_skill_seris_dragon_king]
+129999#7	seris_dragon_king_leader	水·编成≥6 时: 持续·状态计数固有≥1(限1次)[固有22] → 自身 强化弹射覆盖
+129999#8	seris_dragon_king_leader	水·编成≥6 时: 持续·状态计数固有≥1(限1次)[固有22] → 自身 强化弹射覆盖
+129999#9	seris_dragon_king_leader	水·编成≥6 时: 持续·HP≤1 → 自身 强化弹射覆盖
+149999#0	black_wolf_knight	自身 Fever时间延长 30%
+149999#1	black_wolf_knight	自身 强化弹射覆盖
+149999#2	black_wolf_knight	持续·Fever → 赋予全队(光) 2号位技能槽 20%
+149999#3	black_wolf_knight	光·编成≥6 时: 能力伤害≥1(CT2.5秒) → 赋予全队(光) 技能槽 5%
+149999#4	black_wolf_knight	光·编成≥6 时: 开局≥1 → 赋予全队(光) 技能槽 50%
+149999#5	black_wolf_knight	光·编成≥6 时: 编成直接攻击≥35 → 对全体敌人 能力伤害·依攻击光 300%(3倍)
+149999#6	black_wolf_knight	持续·Fever → 赋予全队(光) 眩晕蓄积 50%
+149999#7	black_wolf_knight	Fever 时: 技能发动≥1 → 自身 发动技能动作[ability_skill_gerald_time_rift]
+149999#8	black_wolf_knight	光·编成≥6 时: 自身 切换技能形态[change_skill_white_wolf_gerald]
+149999#9	black_wolf_knight	光·编成≥6 时: 编成直接攻击≥50(限100次) → 赋予全队(光) 攻击力 4%
+149999#10	black_wolf_knight	光·编成≥6 时: 编成直接攻击≥50(限100次) → 赋予全队(光) Direct伤害 4%
+149999#11	black_wolf_knight	光·编成≥6 时: 编成直接攻击≥50(限100次) → 赋予全队(光) 能力伤害 4%
+149998#0	wind_dragon	风·编成≥6 时: 赋予全队(风) 攻击力 100%→150%
+149998#1	wind_dragon	风·编成≥6 时: 赋予全队(风) 能力伤害 150%→200%
+149998#2	wind_dragon	风·编成≥6 时: 赋予全队 Fever点 100%→150%
+149998#3	wind_dragon	风·编成≥6 时: 自身 Fever时间延长 20%→30%
+149998#4	wind_dragon	风·编成≥6 时: Fever≥1 → 赋予全队(风) 技能槽 5%
+149998#5	wind_dragon	风·编成≥6 时: 持续·Fever → 赋予全队(风) 能力伤害 100%→150%
+149998#6	wind_dragon	风·编成≥6 时: 持续·Fever → 赋予全队(风) 技能槽充能 15%→30%
+149998#7	wind_dragon	风·编成≥6 时: 任一敌方强化弹射HitLv2≥1(CT0.6秒) → 自身 发动技能动作[ability_skill_land_dragon_wind_ring_lv2]
+149998#8	wind_dragon	风·编成≥6 时: 任一敌方强化弹射HitLv3≥1(CT0.6秒) → 自身 发动技能动作[ability_skill_land_dragon_wind_laser_lv3]
+149998#9	black_wolf_knight	风·编成≥6 时: 自身 强化弹射覆盖
+169998#0	touyakiren_ceo	赋予全队 技能伤害 100%→150%
+169998#1	touyakiren_ceo	[觉醒1替换] 赋予全队 技能伤害 200%
+169998#2	touyakiren_ceo	[觉醒1追加] 赋予全队(暗) 攻击力 50%
+169998#3	touyakiren_ceo	赋予全队 攻击力 100%→120%
+169998#4	touyakiren_ceo	[觉醒1替换] 赋予全队 攻击力 150%
+169998#5	touyakiren_ceo	[觉醒1追加] 赋予全队(光) 技能伤害 30%
+169999#0	ginovi	自身 强化弹射覆盖
+169999#1	ginovi	任一敌方强化弹射HitLv1≥1(CT0.6秒) → 自身 发动技能动作[ability_skill_ginovi_pf_lv1]
+169999#2	ginovi	任一敌方强化弹射HitLv2≥1(CT0.6秒) → 自身 发动技能动作[ability_skill_ginovi_pf_lv2]
+169999#3	ginovi	任一敌方强化弹射HitLv3≥1(CT0.6秒) → 自身 发动技能动作[ability_skill_ginovi_pf_lv3]
+169999#4	ginovi	冲刺≥1(CT0.333333秒) → 自身 发动技能动作[ability_skill_ginovi_dash]
+169999#5	ginovi	暗·编成≥6 时: 弹射≥1 → 自身 状态冲刺(3秒)×1次
+169999#6	ginovi	暗·编成≥6 时: 状态KeepFrame贯通≥1(限3次) → 赋予全队(暗) 攻击力 25%
+169999#7	ginovi	暗·编成≥6 时: 状态KeepFrame贯通≥1(限3次) → 赋予全队(暗) 技能伤害 25%
+169999#8	ginovi	暗·编成≥6 时: 状态KeepFrame贯通≥1(限3次) → 赋予全队(暗) 能力伤害 25%
+169999#9	ginovi	暗·编成≥6 时: 赋予全队(暗) 技能槽 50%
+169999#10	ginovi	持续·任一敌方状态累积计数固有≥1(限10次)[固有1699901] → 赋予全队 触发敌方特攻 1%
+139999#0	stella_summer_goddess	赋予全队 技能槽 100%
+139999#1	stella_summer_goddess	能力伤害≥10 → 赋予全队 状态攻击力 20%(10秒)×1次[累积上限5]
+139999#2	stella_summer_goddess	能力伤害≥10 → 赋予全队 状态能力伤害 50%(10秒)×1次[累积上限5]
+139999#3	stella_summer_goddess	赋予全队 技能槽充能 15%
+139999#4	stella_summer_goddess	赋予除自身全员 状态攻击力共享 50%
+119999#0	resistance_princess_3halfanv	火·编成≥6 时: 自身 贯通延长 50%→60%
+119999#1	resistance_princess_3halfanv	火·编成≥6 时: 持续·状态贯通 → 赋予全队(火) 技能槽充能 15%→20%
+119999#2	resistance_princess_3halfanv	火·编成≥6 时: 持续·状态贯通 → 自身 强化弹射伤害 150%→200%
+119999#3	resistance_princess_3halfanv	火·编成≥6 且 状态计数固有≥1[固有15] 时: 强化弹射Lv3≥1 → 自身 状态攻击力 225%→300%(10秒)×1次
+119999#4	resistance_princess_3halfanv	火·编成≥6 且 状态计数固有≥1[固有15] 时: 强化弹射Lv3≥1 → 自身 发动技能动作[ability_skill_resistance_princess_3halfanv]
+119999#5	resistance_princess_3halfanv	自身 强化弹射Lv3伤害特攻 15%→30%
+119999#6	resistance_princess_3halfanv	火·编成≥4(限3次) → 自身 2号位技能槽 15%
+119998#0	resistance_princess_3halfanv	火·编成≥6 时: 自身 贯通延长 50%→60%
+119998#1	resistance_princess_3halfanv	火·编成≥6 时: 持续·状态贯通 → 赋予全队(火) 技能槽充能 15%→20%
+119998#2	resistance_princess_3halfanv	火·编成≥6 时: 持续·状态贯通 → 自身 强化弹射伤害 150%→200%
+119998#3	resistance_princess_3halfanv	火·编成≥6 且 状态计数固有≥1[固有15] 时: 强化弹射Lv3≥1 → 自身 状态攻击力 225%→300%(10秒)×1次
+119998#4	resistance_princess_3halfanv	火·编成≥6 且 状态计数固有≥1[固有15] 时: 强化弹射Lv3≥1 → 自身 发动技能动作[ability_skill_resistance_princess_3halfanv]
+119998#5	resistance_princess_3halfanv	自身 强化弹射Lv3伤害特攻 15%→30%
+119998#6	resistance_princess_3halfanv	火·编成≥4(限3次) → 自身 2号位技能槽 15%
+179999#0	black_wolf_knight	火·编成≥6 时: 自身 强化弹射覆盖
+179999#1	black_wolf_knight	火·编成≥6 时: 赋予全队(火) 2号位技能槽 20%
+179999#2	black_wolf_knight	赋予全队(火) 攻击力 300%
+179999#3	black_wolf_knight	技能发动≥1 → 自身 追加连击 20
+179999#4	black_wolf_knight	火·编成≥6 时: 连击≥15 → 自身 追加Fever点 15000%
+179999#5	black_wolf_knight	火·编成≥6 时: 连击≥35 → 自身 追加Fever点 50000%
+179999#6	black_wolf_knight	Fever≥1 → 自身 状态连击加成 10×1次
+179999#7	black_wolf_knight	火·编成≥6 时: 强化弹射≥1 → 自身 追加Fever点 5000%
+139998#0	cnmod_thunder_dragon_ascendant	赋予全队(雷) 攻击力 250%
+139998#1	cnmod_thunder_dragon_ascendant	赋予全队(雷) 能力伤害 600%
+139998#2	cnmod_thunder_dragon_ascendant	雷·编成≥6 时: 技能发动≥1 → 自身 状态固有 100%×1次
+139998#3	cnmod_thunder_dragon_ascendant	雷·编成≥6 时: 任一敌方强化弹射HitLvAny≥1 → 对全体敌人 能力伤害·依攻击雷 500%(5倍)
+139998#4	cnmod_thunder_dragon_ascendant	状态计数固有≥1[固有139998] 时: 伤害·依能力≥1 → 自身 触发敌方状态麻痹(3秒)
+139997#0	resistance_princess_ex	自身 强化弹射覆盖
+139997#1	resistance_princess_ex	赋予全队(雷) 能力伤害 450%
+139997#2	resistance_princess_ex	赋予全队(雷) 攻击力 250%
+139997#3	resistance_princess_ex	自身 强化弹射伤害 200%
+139997#4	resistance_princess_ex	持续·HP≤Excludes阈值≥50% → 赋予全队(雷) 能力伤害 200%
+139997#5	resistance_princess_ex	持续·HP≤Excludes阈值≥50% → 自身 强化弹射伤害 200%
+139997#6	resistance_princess_ex	雷·编成≥6 时: 技能发动≥1 → 赋予全队(雷) 技能槽 5%
+139997#7	resistance_princess_ex	雷·编成≥6 时: 赋予全队(雷) 2号位技能槽 25%
+139997#8	resistance_princess_ex	雷·编成≥6 时: 技能槽≥1(CT0.5秒) → 对全体敌人 能力伤害·依攻击雷 5000%(50倍)
+129997#0	claude_wolf_assassin_ex	自身 强化弹射覆盖
+129997#1	claude_wolf_assassin_ex	水·编成≥6 时: 赋予全队(水) 能力伤害 400%
+129997#2	claude_wolf_assassin_ex	水·编成≥6 时: 赋予全队(水) Direct伤害 600%
+129997#3	claude_wolf_assassin_ex	水·编成≥6 时: 赋予全队(水) 技能槽 50%
+129997#4	claude_wolf_assassin_ex	水·编成≥6 时: 持续·任一敌方状态累积计数固有≥1(限6次)[固有129997] → 赋予全队(水) 触发敌方Direct伤害特攻 60%
+129997#5	claude_wolf_assassin_ex	水·编成≥6 时: 持续·任一敌方状态累积计数固有≥1(限4次)[固有129997] → 赋予全队(水) 触发敌方能力伤害特攻 60%
+129997#6	claude_wolf_assassin_ex	水·编成≥6 时: 强化弹射≥1(限3次) → 赋予全队(水) 技能槽充能 6.5%
+129997#7	claude_wolf_assassin_ex	赋予全队(水) 2号位技能槽 15%
+129997#8	claude_wolf_assassin_ex	水·编成≥6 时: Elapsed时间≥10 → 自身 发动技能动作[claude_wolf_assassin_ex_poison_hits]
+129997#9	claude_wolf_assassin_ex	水·编成≥6 时: 强化弹射≥1 → 自身 发动技能动作[claude_wolf_assassin_ex_poison_vuln]
+149997#0	mosiyike	自身 强化弹射覆盖
+149997#1	mosiyike	龙族·编成≥3 时: 赋予全队(龙族) 攻击力 240%
+149997#2	mosiyike	龙族·编成≥3 时: 赋予全队(龙族) 技能槽充能 30%
+149997#3	mosiyike	自身 强化弹射连击数↓ 8
+149997#4	mosiyike	自身 追加连击 5
+149996#0	wind_spgirl_swim_leader	连击≥77(限101次) → 自身 攻击力 10%
+149996#1	wind_spgirl_swim_leader	连击≥77(限101次) → 自身 Direct伤害 10%
+149996#2	wind_spgirl_swim_leader	风·编成≥6 时: 连击≥777 → 赋予全队(风) 技能槽 150%
+149996#3	wind_spgirl_swim_leader	风·编成≥6 时: 赋予全队(风) 2号位技能槽 50%
+149996#4	wind_spgirl_swim_leader	风·编成≥6 时: 强化弹射Lv3≥1 → 赋予全队(风) 技能槽 77%
+149996#5	wind_spgirl_swim_leader	连击≥77(限101次) → 赋予全队(风) 攻击力 10%
+149996#6	wind_spgirl_swim_leader	连击≥77(限101次) → 赋予全队(风) Direct伤害 10%
+149996#7	wind_spgirl_swim_leader	连击≥77(限101次) → 赋予全队(风) 技能伤害 10%
+119997#0	xiaketi_leader	自身 状态固有 300%×1次
+119997#1	xiaketi_leader	状态计数固有≥1[固有119997] 时: 技能发动≥1 → 自身 技能槽 100%(延迟2秒)
+119997#2	xiaketi_leader	状态计数固有≥1[固有119997] 时: 技能发动≥1 → 自身 消耗固有状态 100%
+119997#3	xiaketi_leader	技能发动≥1 → 自身 状态攻击力 100%(5秒)×1次[累积上限3]
+119997#4	xiaketi_leader	HP≥40% 时: 技能发动≥1(CT30秒) → 自身 比例伤害最大HP 40%
+119997#5	xiaketi_leader	HP≥40% 时: 技能发动≥1(CT30秒) → 自身 技能槽 100%(延迟2秒)
+119997#6	xiaketi_leader	技能发动≥1 → 自身 状态技能伤害 100%(5秒)×1次[累积上限3]
+119996#0	lion_swordman_reborn	状态计数固有≥1[固有119996] 时: Collision编成&敌方≥1(CT3秒) → 赋予全队(火) 技能槽 5%
+119996#1	lion_swordman_reborn	状态计数固有≥1[固有119996] 时: 赋予全队(火) 攻击力 300%
+119996#2	lion_swordman_reborn	状态计数固有≥1[固有119996] 时: 赋予全队(火) 能力伤害 300%
+119996#3	lion_swordman_reborn	自身 Fever点 300%
+119996#4	lion_swordman_reborn	自身 强化弹射覆盖
+119996#5	lion_swordman_reborn	技能发动≥1 → 对全体敌人 能力伤害·依攻击火 5500%(55倍)
+149995#0	seofon_wind_leader	赋予全队(风) 攻击力 300%
+149995#1	seofon_wind_leader	赋予全队(风) 技能伤害 300%
+149995#2	seofon_wind_leader	赋予全队(风) 技能槽充能 30%
+149995#3	seofon_wind_leader	风·编成≥6 时: 技能发动≥1 → 自身 状态固有 200%×1次
+149995#4	seofon_wind_leader	状态累积计数固有≥3[固有149995] 时: 技能发动≥1 → 自身 消耗固有状态 300%
+149995#5	seofon_wind_leader	状态累积计数固有≥3[固有149995] 时: 技能发动≥1 → 赋予除自身全员(风) 技能槽 35%
+149995#6	seofon_wind_leader	持续·状态累积计数固有≥1(限3次)[固有149995] → 自身 攻击力 30%
+149995#7	seofon_wind_leader	持续·状态累积计数固有≥1(限3次)[固有149995] → 自身 技能伤害 30%
+169996#0	simoun_dark	暗·编成≥6 时: 赋予全队(暗) 技能槽 25%
+169996#1	simoun_dark	持续·状态累积计数固有≥1(限4次)[固有169996] → 自身 攻击力 37.5%
+169996#2	simoun_dark	持续·状态累积计数固有≥1(限4次)[固有169996] → 自身 技能伤害 37.5%
+169996#3	simoun_dark	持续·状态累积计数固有≥1(限4次)[固有169996] → 赋予全队(暗) 攻击力 50%
+169996#4	simoun_dark	持续·状态累积计数固有≥1(限4次)[固有169996] → 赋予全队(暗) 技能伤害 50%
+169996#5	simoun_dark	持续·状态累积计数固有≥1(限4次)[固有169996] → 赋予全队(暗) 技能槽充能 4%
+169997#0	vaseraga_dark	暗·编成≥6 时: 赋予全队(暗) 攻击力 300%
+169997#1	vaseraga_dark	暗·编成≥6 时: 赋予全队(暗) 能力伤害 300%
+169997#2	vaseraga_dark	暗·编成≥6 时: 持续·HP≤50%(限1次) → 赋予全队(暗) 技能槽充能 20%
+169997#3	vaseraga_dark	暗·编成≥6 时: 持续·HP≤50%(限1次) → 赋予全队(暗) 能力伤害 400%
+169997#4	vaseraga_dark	暗·编成≥6 时: HP≤1%(CT20秒) → 赋予除自身全员(暗) 技能槽 50%
+169997#5	vaseraga_dark	暗·编成≥6 时: HP≤1%(CT10秒) → 赋予全队(暗) 状态攻击力 300%(10秒)×1次
+169997#6	vaseraga_dark	暗·编成≥6 时: 技能发动≥1 → 自身 比例伤害最大HP 25%
+169997#7	vaseraga_dark	暗·编成≥6 时: 技能发动≥1 → 自身 技能槽 30%
+169997#8	vaseraga_dark	暗·编成≥6 时: 技能发动≥1 → 自身 状态攻击力 300%(20秒)×1次
+169997#9	vaseraga_dark	暗·编成≥6 时: 技能发动≥1 → 自身 状态抗性全属性 40%(20秒)×1次
+169997#10	vaseraga_dark	暗·编成≥6 时: 能力伤害≥1(限3次) → 自身 攻击力 6.5%
+169997#11	vaseraga_dark	暗·编成≥6 时: 能力伤害≥1(限3次) → 自身 能力伤害 6.5%
+169997#12	vaseraga_dark	暗·编成≥6 时: 赋予全队(暗) 战斗不能非Remove状态固有
+169980#0	abyss_beast_playable	赋予全队(暗) 技能槽充能 15%
+169980#1	abyss_beast_playable	赋予全队(暗) 攻击力 150%
+169980#2	abyss_beast_playable	赋予全队(暗) 能力伤害 175%
+169980#3	abyss_beast_playable	赋予全队(暗) 技能槽 80%
+169980#4	abyss_beast_playable	暗·编成≥6 时: 赋予全队(暗) 技能槽充能 10%
+169980#5	abyss_beast_playable	暗·编成≥6 时: 赋予全队(暗) 能力伤害 150%
+169980#6	abyss_beast_playable	持续·状态累积计数固有≥1(限4次)[固有180001] → 赋予全队(暗) 独立乘区伤害 25%
+169980#7	abyss_beast_playable	状态计数固有≥4[固有180001] 时: 技能发动≥1 → 自身 发动技能动作[ability_skill_abyss_beast_awaken]
+169980#8	abyss_beast_playable	状态计数固有≥4[固有180001] 时: 技能发动≥1 → 自身 状态攻击力 150%(15秒)×1次
+169980#9	abyss_beast_playable	状态计数固有≥4[固有180001] 时: 技能发动≥1 → 自身 状态能力伤害 150%(15秒)×1次
+169980#10	abyss_beast_playable	状态计数固有≥4[固有180001] 时: 技能发动≥1 → 自身 消耗固有状态 400%
+169980#11	abyss_beast_playable	状态计数固有≥3[固有180001] 时: 强化弹射Lv3≥1 → 自身 状态强化弹射伤害 50%(5秒)×1次
+169980#12	abyss_beast_playable	自身 强化弹射覆盖
+169980#13	abyss_beast_playable	自身 中毒无效
+169980#14	abyss_beast_playable	自身 冻结无效
+169994#0	white_tiger_ghost_playable	雷·编成≥6 时: 自身 强化弹射覆盖
+169994#1	white_tiger_ghost_playable	持续·状态累积计数固有≥1(限10次)[固有1699940] → 赋予全队(雷) 攻击力 50%
+169994#2	white_tiger_ghost_playable	雷·编成≥6 时: 强化弹射≥1 → 自身 状态固有 200%×1次
+169994#3	white_tiger_ghost_playable	雷·编成≥6 且 状态累积计数固有≥10[固有1699940] 时: 强化弹射Lv3≥1(CT5秒) → 自身 发动技能动作[ability_skill_white_tiger_ghost_pf_lv3_ex_followup]
+169994#4	white_tiger_ghost_playable	雷·编成≥6 且 状态累积计数固有≥10[固有1699940] 时: 强化弹射Lv3≥1(CT5秒) → 自身 消耗固有状态 500%
+169995#0	maou2_playable	持续·状态累积计数固有≥10(限1次)[固有1699950] → 赋予全队(White,Black) 独立乘区伤害 25%
+169995#1	maou2_playable	自身 强化弹射覆盖
+169995#2	maou2_playable	赋予全队(White,Black) 战斗不能非Remove状态固有
+169995#3	maou2_playable	持续·状态累积计数固有≥1(限3次)[固有1699950] → 赋予全队(White,Black) Direct伤害 30%
+169995#4	maou2_playable	持续·状态累积计数固有≥1(限3次)[固有1699950] → 赋予全队(White,Black) 技能伤害 30%
+169995#5	maou2_playable	持续·状态累积计数固有≥1(限3次)[固有1699950] → 赋予全队(White,Black) 能力伤害 30%
+169995#6	maou2_playable	持续·状态累积计数固有≥1(限3次)[固有1699950] → 赋予全队(White,Black) 强化弹射伤害 30%
+169995#7	maou2_playable	自身 中毒无效
+169995#8	maou2_playable	自身 麻痹无效
+169995#9	maou2_playable	自身 冻结无效
+179981#0	cnmod_epuration_empress	赋予全队(暗) 攻击力 175%
+179981#1	cnmod_epuration_empress	赋予全队(暗) 技能伤害 200%
+179981#2	cnmod_epuration_empress	赋予全队(暗) 角色特攻 100%[限Machine,Element]
+179981#3	cnmod_epuration_empress	暗·编成≥6 时: 赋予全队(暗) 强化弹射伤害 200%
+179981#4	cnmod_epuration_empress	暗·编成≥6 时: 赋予全队(暗) 技能槽 60%
+179981#5	cnmod_epuration_empress	强化弹射Lv3≥1 → 自身 技能槽 5%
+179981#6	cnmod_epuration_empress	自身 强化弹射覆盖
+129998#0	ghost_girl_playable	赋予全队(水) 攻击力 100%
+129998#1	ghost_girl_playable	赋予全队(水) 技能伤害 120%
+129998#2	ghost_girl_playable	赋予全队(水) 技能槽 30%
+129998#3	ghost_girl_playable	赋予全队(水) 冻结特攻 30%
+139996#0	cube_boss_playable	赋予全队(雷) 攻击力 100%
+139996#1	cube_boss_playable	自身 强化弹射伤害 120%
+139996#2	cube_boss_playable	赋予全队(雷) 固有技能特攻 60%
+139996#3	cube_boss_playable	赋予全队(雷) 技能槽 30%
+139996#4	cube_boss_playable_leader	自身 强化弹射覆盖
+129996#0	clione_playable	赋予全队(水) 攻击力 80%
+129996#1	clione_playable	赋予全队(水) Direct伤害 120%
+129996#2	clione_playable	赋予全队(水) Ease治疗 15%
+129996#3	clione_playable	赋予全队(水) HP 20%
+149994#0	one_eyed_rabbit_playable	赋予全队(风) 攻击力 100%
+149994#1	one_eyed_rabbit_playable	赋予全队(风) Direct伤害 140%
+149994#2	one_eyed_rabbit_playable	自身 贯通延长 20%
+149994#3	one_eyed_rabbit_playable	赋予全队(风) 技能槽 30%
+159999#0	security_robot_playable	赋予全队(光) 攻击力 100%
+159999#1	security_robot_playable	赋予全队(光) 技能伤害 120%
+159999#2	security_robot_playable	赋予全队(光) 眩晕畏缩特攻 30%
+159999#3	security_robot_playable	赋予全队(光) HP 20%
+159999#4	security_robot_playable	自身 强化弹射覆盖
+129995#0	wander_armor_water_playable	赋予全队(水) 攻击力 80%
+129995#1	wander_armor_water_playable	赋予全队(水) 技能伤害 80%
+129995#2	wander_armor_water_playable	赋予全队(水) 抗性火 20%
+129995#3	wander_armor_water_playable	赋予全队(水) HP 20%
+149993#0	haniwa_green_playable	赋予全队(风) 攻击力 80%
+149993#1	haniwa_green_playable	赋予全队(风) 技能伤害 100%
+149993#2	haniwa_green_playable	赋予全队(风) HP 25%
+149993#3	haniwa_green_playable	赋予全队(风) 抗性全属性 10%
+149993#4	haniwa_green_playable	自身 强化弹射覆盖
+119995#0	dog_soldier_playable	赋予全队(火) 攻击力 100%
+119995#1	dog_soldier_playable	自身 强化弹射伤害 120%
+119995#2	dog_soldier_playable	赋予全队(火) HP 20%
+119995#3	dog_soldier_playable	技能发动≥1 → 自身 追加连击 5
+149992#0	wander_armor_wind_playable	赋予全队(风) 攻击力 80%
+149992#1	wander_armor_wind_playable	持续·状态Flying → 赋予全队(风) Direct伤害 140%
+149992#2	wander_armor_wind_playable	自身 Flying延长 20%
+149992#3	wander_armor_wind_playable	赋予全队(风) 技能槽 30%
+129994#0	haniwa_blue_playable	赋予全队(水) 攻击力 80%
+129994#1	haniwa_blue_playable	赋予全队(水) Direct伤害 100%
+129994#2	haniwa_blue_playable	赋予全队(水) 攻击力↑延长 20%
+129994#3	haniwa_blue_playable	赋予全队(水) 技能槽 30%
+119993#0	cobra_playable	赋予全队(火) 攻击力 80%
+119993#1	cobra_playable	赋予全队(火) 减益攻击特攻 60%
+119993#2	cobra_playable	赋予全队(火) 技能伤害 100%
+119993#3	cobra_playable	赋予全队(火) HP 15%
+129993#0	killer_whale_playable	赋予全队(水) 攻击力 80%
+129993#1	killer_whale_playable	赋予全队(水) 技能伤害 100%
+129993#2	killer_whale_playable	赋予全队(水) 冻结特攻 30%
+129993#3	killer_whale_playable	赋予全队(水) 技能槽 30%
+169993#0	genin_playable	赋予全队(暗) 攻击力 100%
+169993#1	genin_playable	赋予全队(暗) 技能伤害 120%
+169993#2	genin_playable	赋予全队(暗) 中毒特攻 30%
+169993#3	genin_playable	赋予全队(暗) 技能槽 30%
+149991#0	big_bear_monster_playable	赋予全队(风) 攻击力 100%
+149991#1	big_bear_monster_playable	赋予全队(风) Direct伤害 100%
+149991#2	big_bear_monster_playable	赋予全队(风) 攻击力↑延长 20%
+149991#3	big_bear_monster_playable	赋予全队(风) HP 15%
+119994#0	haniwa_playable	赋予全队(火) 攻击力 80%
+119994#1	haniwa_playable	赋予全队(火) Direct伤害 140%
+119994#2	haniwa_playable	自身 强化弹射伤害 80%
+119994#3	haniwa_playable	赋予全队(火) HP 15%
+129952#0	dimension_witch_smr20_ex	赋予全队(水) 攻击力 112.5%→150%
+129952#1	dimension_witch_smr20_ex	持续·任一敌方状态计数减益≥1(限1次) → 赋予全队(水) 触发敌方Direct伤害特攻 150%→200%
+129952#2	dimension_witch_smr20_ex	赋予全队(水) 能力伤害 40%→60%
+129952#3	dimension_witch_smr20_ex	持续·任一敌方状态计数减益≥1(限3次) → 赋予全队(水) 触发敌方攻击特攻 18%→30%
+129952#4	dimension_witch_smr20_ex	持续·任一敌方状态计数减益≥4(限1次) → 赋予全队(水) 触发敌方攻击特攻 6%→10%
+129952#5	dimension_witch_smr20_ex	持续·任一敌方状态计数减益≥1(限10次) → 赋予全队(水) 触发敌方Direct伤害特攻 45%→60%
+129952#6	dimension_witch_smr20_ex	编成直接攻击≥12 → 赋予全队(水) 技能槽 2%→3%
+129952#7	dimension_witch_smr20_ex	能力伤害≥10(CT20秒) → 对最近的敌人 能力伤害·依攻击水 3000%(30倍)→5000%(50倍)
+119950#0	discarded_dragon_fire_playable	持续·状态累积计数固有≥1(限6次)[固有119950] → 赋予全队(火) 攻击力 20%→25%
+119950#1	discarded_dragon_fire_playable	持续·状态累积计数固有≥1(限6次)[固有119950] → 赋予全队(火) 技能伤害 15%→20%
+119950#2	discarded_dragon_fire_playable	赋予全队(火) 攻击力 190%→250%
+119950#3	discarded_dragon_fire_playable	自身 强化弹射伤害 100%→150%
+119950#4	discarded_dragon_fire_playable	强化弹射Lv3≥1 → 赋予全队(火) 状态攻击力 120%→180%(12秒)×1次
+119950#5	discarded_dragon_fire_playable	火·编成≥6 时: 赋予全队(火) 技能伤害 100%→150%
+129950#0	discarded_dragon_water_playable	赋予全队(水) 攻击力 175%→230%
+129950#1	discarded_dragon_water_playable	持续·连击≥10(限1次) → 赋予全队(水) 攻击力 90%→120%
+129950#2	discarded_dragon_water_playable	持续·连击≥30(限1次) → 赋予全队(水) 技能伤害 120%→160%
+129950#3	discarded_dragon_water_playable	连击≥30(限4次) → 赋予全队(水) 攻击力 25%→35%
+129950#4	discarded_dragon_water_playable	持续·Fever → 赋予全队(水) 技能伤害 120%→180%
+129950#5	discarded_dragon_water_playable	自身 强化弹射伤害 120%→180%
+139950#0	discarded_dragon_thunder_playable	赋予全队(雷) 攻击力 165%→220%
+139950#1	discarded_dragon_thunder_playable	持续·状态贯通 → 赋予全队(雷) 攻击力 150%→200%
+139950#2	discarded_dragon_thunder_playable	持续·状态贯通 → 赋予全队(雷) 技能伤害 130%→180%
+139950#3	discarded_dragon_thunder_playable	持续·HP≤50% → 赋予全队(雷) 技能伤害 120%→180%
+139950#4	discarded_dragon_thunder_playable	持续·HP≥50% → 赋予全队(雷) 攻击力 80%→120%
+139950#5	discarded_dragon_thunder_playable	HP≤50%(CT10秒) → 赋予全队(雷) 状态攻击力 200%→300%(15秒)×1次
+149950#0	discard_dragon_wind_playable	赋予全队(风) 攻击力 170%→230%
+149950#1	discard_dragon_wind_playable	持续·状态Flying → 赋予全队(风) 攻击力 150%→200%
+149950#2	discard_dragon_wind_playable	持续·状态Flying → 赋予全队(风) Direct伤害 300%→400%
+149950#3	discard_dragon_wind_playable	风·编成≥6 时: 持续·状态Flying → 赋予全队(风) 技能槽充能 7.5%→12.5%
+149950#4	discard_dragon_wind_playable	持续·状态累积计数固有≥1(限30次)[固有1499500] → 赋予全队(风) Direct伤害 10%→20%
+149950#5	discard_dragon_wind_playable	状态KeepFrameFlying≥1(限20次) → 赋予全队(风) 攻击力 3%→6%
+149950#6	discard_dragon_wind_playable	持续·计数直接攻击伤害↑≥20%(限100次) → 赋予全队(风) 攻击力 1.5%→3%
+149950#7	discard_dragon_wind_playable	风·编成≥6 时: 自身 Flying延长 10%→20%
+159950#0	discard_dragon_light_playable	赋予全队(光) 攻击力 170%→230%
+159950#1	discard_dragon_light_playable	光·编成≥6 时: 赋予全队(光) 2号位技能槽 10%→20%
+159950#2	discard_dragon_light_playable	持续·状态累积计数固有≥1(限20次)[固有1599500] → 赋予全队(光) 能力伤害 10%→20%
+159950#3	discard_dragon_light_playable	治疗计数≥1(限20次) → 赋予触发者 攻击力 3%→6%
+159950#4	discard_dragon_light_playable	持续·状态计数增益≥1(限5次) → 赋予触发者 技能伤害 25%→45%
+159950#5	discard_dragon_light_playable	技能发动≥1 → 赋予全队(光) 技能槽 5%
+159950#6	discard_dragon_light_playable	光·编成≥6 时: 持续·Fever → 赋予全队(光) 技能槽充能 7.5%→12.5%
+159950#7	discard_dragon_light_playable	持续·Fever → 赋予全队(光) 能力伤害 150%→250%
+159950#8	discard_dragon_light_playable	治疗计数≥1(限30次) → 赋予全队(光) 技能槽 5%
+169950#0	discard_dragon_dark_playable	赋予全队(暗) 攻击力 160%→220%
+169950#1	discard_dragon_dark_playable	赋予全队(暗) 技能伤害 100%→150%
+169950#2	discard_dragon_dark_playable	持续·任一敌方状态计数减益≥1(限6次) → 赋予全队(暗) 触发敌方Direct伤害特攻 37.5%→60%
+169950#3	discard_dragon_dark_playable	持续·任一敌方状态计数减益≥1(限6次) → 赋予全队(暗) 触发敌方攻击特攻 25%→45%
+169950#4	discard_dragon_dark_playable	持续·状态贯通 → 赋予全队(暗) Direct伤害 230%→300%
+169950#5	discard_dragon_dark_playable	技能发动≥1 → 赋予全队(暗) 技能槽 5%
+169950#6	discard_dragon_dark_playable	暗·编成≥6 时: 赋予全队(暗) 2号位技能槽 10%→20%
+169950#7	discard_dragon_dark_playable	持续·状态累积计数固有≥1(限15次)[固有1699500] → 赋予全队(暗) Direct伤害 8%→16%
+119951#0	spirit_beast_fire_playable	赋予全队(火) 攻击力 140%→200%
+119951#1	spirit_beast_fire_playable	持续·状态累积计数固有≥1(限6次)[固有119951] → 赋予全队(火) 攻击力 17.5%→25%
+119951#2	spirit_beast_fire_playable	持续·状态累积计数固有≥1(限6次)[固有119951] → 赋予全队(火) 技能伤害 21%→30%
+119951#3	spirit_beast_fire_playable	赋予全队(火) 技能槽 35%→50%
+119951#4	spirit_beast_fire_playable	技能发动≥1 → 自身 追加连击 4→6
+119951#5	spirit_beast_fire_playable	持续·连击≥30(限1次) → 赋予全队(火) 技能伤害 84%→120%
+129951#0	spirit_beast_water_playable	赋予全队(水) 攻击力 126%→180%
+129951#1	spirit_beast_water_playable	持续·状态计数固有≥1(限1次)[固有129951] → 赋予全队(水) 技能伤害 140%→200%
+129951#2	spirit_beast_water_playable	持续·状态计数固有≥1(限1次)[固有1299510] → 自身 强化弹射伤害 140%→200%
+129951#3	spirit_beast_water_playable	持续·任一敌方状态计数减益≥1(限4次) → 赋予全队(水) 触发敌方Direct伤害特攻 35%→50%
+129951#4	spirit_beast_water_playable	持续·HP≥70% → 赋予全队(水) 技能伤害 140%→200%
+129951#5	spirit_beast_water_playable	赋予全队(水) HP 21%→30%
+139951#0	spirit_beast_thunder_playable	赋予全队(雷) 攻击力 126%→180%
+139951#1	spirit_beast_thunder_playable	持续·状态累积计数固有≥1(限15次)[固有139951] → 赋予全队(雷) 攻击力 7%→10%
+139951#2	spirit_beast_thunder_playable	持续·状态累积计数固有≥1(限15次)[固有139951] → 赋予全队(雷) Direct伤害 5.5%→8%
+139951#3	spirit_beast_thunder_playable	赋予全队(雷) 技能槽 35%→50%
+139951#4	spirit_beast_thunder_playable	自身 强化弹射伤害 84%→120%
+139951#5	spirit_beast_thunder_playable	技能发动≥1 → 自身 追加连击 7→10
+139951#6	spirit_beast_thunder_playable	持续·连击≥40(限1次) → 自身 强化弹射伤害 105%→150%
+149951#0	149951	赋予全队(风) 攻击力 126%→180%
+149951#1	149951	赋予全队(风) 中毒特攻 28%→40%
+149951#2	149951	持续·状态累积计数固有≥1(限12次)[固有149951] → 赋予全队(风) 攻击力 7%→10%
+149951#3	149951	持续·状态累积计数固有≥4(限1次)[固有149951] → 赋予全队(风) 技能槽充能 7%→10%
+149951#4	149951	自身 强化弹射连击数↓ 4
+149951#5	149951	自身 强化弹射伤害 84%→120%
+159951#0	159951	赋予全队(光) 攻击力 105%→150%
+159951#1	159951	持续·任一敌方状态计数抗性光↓≥1(限3次) → 赋予全队(光) 触发敌方攻击特攻 45%→60%
+159951#2	159951	赋予全队(光) 技能槽充能 10.5%→15%
+159951#3	159951	持续·状态贯通 → 赋予全队(光) 攻击力 70%→100%
+159951#4	159951	持续·状态贯通 → 赋予全队(光) 技能伤害 100%→150%
+159951#5	159951	光·编成≥6 时: 赋予全队(光) 2号位技能槽 10.5%→15%
+169951#0	169951	赋予全队(暗) 攻击力 140%→200%
+169951#1	169951	编成直接攻击≥30(限5次) → 赋予全队(暗) Direct伤害 16%→20%
+169951#2	169951	持续·屏障 → 赋予全队(暗) 攻击力 80%→100%
+169951#3	169951	自身 强化弹射伤害 105%→150%
+169951#4	169951	自身 强化弹射连击数↓ 3
+169951#5	169951	赋予全队(暗) 技能伤害 84%→120%
+119970#0	steam_robot_fire_playable	赋予全队(火) 攻击力 110%→180%
+119970#1	steam_robot_fire_playable	赋予全队(火) Direct伤害 100%→150%
+119970#2	steam_robot_fire_playable	赋予全队(火) 技能伤害 30%→60%
+119970#3	steam_robot_fire_playable	赋予全队(火) 技能槽 30%→40%
+119970#4	steam_robot_fire_playable	持续·状态累积计数固有≥1(限30次)[固有119970] → 赋予全队(火) 技能伤害 1.5%→2.5%
+119970#5	steam_robot_fire_playable	持续·状态累积计数固有≥1(限30次)[固有119970] → 赋予全队(火) Direct伤害 1.5%→3%
+129970#0	steam_robot_water_playable	赋予全队(水) 攻击力 100%→150%
+129970#1	steam_robot_water_playable	赋予全队(水) 强化弹射伤害 60%→100%
+129970#2	steam_robot_water_playable	自身 强化弹射伤害 40%→70%
+129970#3	steam_robot_water_playable	自身 强化弹射连击数↓ 3
+129970#4	steam_robot_water_playable	赋予全队(水) 技能槽 25%→35%
+129970#5	steam_robot_water_playable	非Fever 时: 技能发动≥1 → 自身 追加Fever点 3000%→5000%
+129970#6	steam_robot_water_playable	持续·状态累积计数固有≥1(限4次)[固有129970] → 赋予全队(水) 攻击力 5%→8%
+129970#7	steam_robot_water_playable	持续·屏障 → 赋予全队(水) 强化弹射伤害 100%→150%
+139970#0	steam_robot_thunder_playable	赋予全队(雷) 攻击力 100%→150%
+139970#1	steam_robot_thunder_playable	赋予全队(雷) Direct伤害 80%→120%
+139970#2	steam_robot_thunder_playable	赋予全队(雷) 麻痹特攻 25%→50%
+139970#3	steam_robot_thunder_playable	赋予全队(雷) 技能槽 25%→35%
+139970#4	steam_robot_thunder_playable	赋予全队(雷) 技能槽充能 10%→15%
+139970#5	steam_robot_thunder_playable	持续·状态累积计数固有≥1(限6次)[固有139970] → 赋予全队(雷) Direct伤害 5%→10%
+139970#6	steam_robot_thunder_playable	持续·任一敌方状态计数减益≥1(限5次) → 赋予全队(雷) 触发敌方攻击特攻 15%→30%
+149970#0	steam_robot_wind_playable	赋予全队(风) 攻击力 100%→150%
+149970#1	steam_robot_wind_playable	赋予全队(风) 技能槽充能 15%→25%
+149970#2	steam_robot_wind_playable	赋予全队(风) 技能槽 35%→45%
+149970#3	steam_robot_wind_playable	自身 强化弹射连击数↓ 3
+149970#4	steam_robot_wind_playable	赋予全队(风) 强化弹射伤害 60%→100%
+149970#5	steam_robot_wind_playable	风·编成≥6 时: 技能发动≥1 → 自身 状态冲刺(4秒→6秒)×1次
+149970#6	steam_robot_wind_playable	持续·状态累积计数固有≥1(限5次)[固有149970] → 赋予全队(风) 技能槽充能 2%→3%
+149970#7	steam_robot_wind_playable	持续·屏障 → 赋予全队(风) 攻击力 40%→80%
+159970#0	steam_robot_light_playable	赋予全队(光) 攻击力 100%→200%
+159970#1	steam_robot_light_playable	赋予全队(光) 技能伤害 80%→160%
+159970#2	steam_robot_light_playable	赋予全队 Ease治疗 25%→50%
+159970#3	steam_robot_light_playable	治疗计数≥1(限5次) → 自身 追加Fever点 2500%→5000%
+159970#4	steam_robot_light_playable	光·编成≥4(限3次) → 自身 2号位技能槽 15%
+159970#5	steam_robot_light_playable	持续·Fever → 赋予全队(光) 技能伤害 50%→100%
+169970#0	steam_robot_dark_playable	赋予全队(暗) 攻击力 100%→200%
+169970#1	steam_robot_dark_playable	赋予全队(暗) 技能伤害 75%→150%
+169970#2	steam_robot_dark_playable	机械·编成≥4(限3次) → 赋予全队 攻击力 40%→80%
+169970#3	steam_robot_dark_playable	强化弹射≥1 → 自身 追加连击 5
+169970#4	steam_robot_dark_playable	连击≥30(限5次) → 赋予全队(暗) 技能槽 5%
+169970#5	steam_robot_dark_playable	暗·编成≥4(限3次) → 自身 2号位技能槽 15%
+179970#0	steam_robot_another_playable	赋予全队 攻击力 100%→200%
+179970#1	steam_robot_another_playable	机械·编成≥4(限3次) → 赋予全队 攻击力 65%→100%
+179970#2	steam_robot_another_playable	赋予全队 技能伤害 60%→120%
+179970#3	steam_robot_another_playable	技能发动≥1 → 赋予全队 技能槽 5%
+179970#4	steam_robot_another_playable	暗·编成≥4(限3次) → 自身 2号位技能槽 15%
+179970#5	steam_robot_another_playable	持续·状态累积计数固有≥3(限1次)[固有179970] → 赋予全队 技能伤害 50%→100%
+179982#0	epuration_infantry_playable	赋予除自身全员(火) 攻击力 75%→100%
+179982#1	epuration_infantry_playable	自身 强化弹射伤害 110%→150%
+179982#2	epuration_infantry_playable	自身 强化弹射覆盖
+179983#0	epuration_monk_playable	赋予2号位(雷) 攻击力 60%→80%
+179983#1	epuration_monk_playable	赋予2号位(雷) 技能伤害 105%→140%
+179983#2	epuration_monk_playable	自身 强化弹射覆盖
+179984#0	epuration_variant_playable	赋予3号位(风) 攻击力 65%→90%
+179984#1	epuration_variant_playable	赋予3号位(风) 技能伤害 100%→140%
+179984#2	epuration_variant_playable	自身 强化弹射伤害 90%→120%
+179984#3	epuration_variant_playable	自身 强化弹射覆盖
+179985#0	epuration_empress_playable	赋予协力全队(暗) 攻击力 60%→80%
+179985#1	epuration_empress_playable	赋予协力全队(暗) 技能伤害 95%→130%
+179985#2	epuration_empress_playable	自身 强化弹射伤害 90%→120%
+179985#3	epuration_empress_playable	自身 强化弹射覆盖
+179986#0	mechanic_dragon_eater_playable	赋予全队(光) 攻击力 90%
+179986#1	mechanic_dragon_eater_playable	赋予全队(光) 技能伤害 120%
+179986#2	mechanic_dragon_eater_playable	自身 强化弹射覆盖
+129992#0	unicorn_lancer_rose	自身 独立乘区固有技能特攻 20%
+129992#1	unicorn_lancer_rose	水·编成≥6 时: 连击≥50(限5次) → 自身 技能伤害 100%
+129992#2	unicorn_lancer_rose	水·编成≥6 时: 赋予全队(水) 攻击力 200%
+129992#3	unicorn_lancer_rose	水·编成≥6 时: 赋予全队(水) 技能伤害 200%
+129992#4	unicorn_lancer_rose	水·编成≥6 时: 技能发动≥1 → 自身 技能槽 10%
+129992#5	unicorn_lancer_rose	水·编成≥6 时: 技能发动≥1 → 自身 追加连击 10
+129992#6	unicorn_lancer_rose	技能发动≥1 → 自身 追加连击 20
+129992#7	unicorn_lancer_rose	技能发动≥1 → 赋予除自身全员(水) 技能槽 10%
+129992#8	unicorn_lancer_rose	自身 强化弹射覆盖
+139995#0	fox_oracle_autumn	雷·编成≥6 时: 自身 Fever点 160%
+139995#1	fox_oracle_autumn	雷·编成≥6 时: 持续·状态累积计数固有≥1(限3次)[固有1399952] → 自身 Fever点 40%
+139995#2	fox_oracle_autumn	雷·编成≥6 时: Fever≥1 → 赋予全队(雷) 技能槽 20%
+139995#3	fox_oracle_autumn	雷·编成≥6 时: Fever≥1(限1次) → 赋予全队(雷) 2号位技能槽 20%
+139995#4	fox_oracle_autumn	雷·编成≥6 时: 持续·状态累积计数固有≥1(限3次)[固有1399952] → 自身 强化弹射伤害 100%
+139995#5	fox_oracle_autumn	雷·编成≥6 时: 持续·状态累积计数固有≥1(限3次)[固有1399952] → 赋予全队(雷) 攻击力 100%
+139995#6	fox_oracle_autumn	雷·编成≥6 时: 持续·状态累积计数固有≥1(限3次)[固有1399952] → 赋予全队(雷) 能力伤害 100%
+139995#7	fox_oracle_autumn	雷·编成≥6 时: 自身 强化弹射覆盖
+139995#8	fox_oracle_autumn	雷·编成≥6 时: 自身 强化弹射连击数↓ -10
+139995#9	fox_oracle_autumn	雷·编成≥6 时: 持续·状态累积计数固有≥1(限3次)[固有1399952] → 自身 独立乘区强化弹射伤害 4.5%
+139995#10	fox_oracle_autumn	雷·编成≥6 时: Fever≥1 → 自身 状态固有 100%×1次
+149990#0	white_tiger_summer	风·编成≥6 时: Fever≥1(限3次) → 赋予全队(风) 技能槽充能 100%
+149990#1	white_tiger_summer	风·编成≥6 时: 赋予全队(风) 2号位技能槽 50%
+149990#2	white_tiger_summer	风·编成≥6 时: 自身 Fever时间延长 50%
+149990#3	white_tiger_summer	风·编成≥6 时: 持续·Fever → 赋予全队(风) 攻击力 300%
+149990#4	white_tiger_summer	风·编成≥6 时: 持续·Fever → 赋予全队(风) 能力伤害 300%
+149990#5	white_tiger_summer	风·编成≥6 时: FeverFrame≥90(限40次) → 赋予全队(风) 攻击力 6%
+149990#6	white_tiger_summer	风·编成≥6 时: FeverFrame≥90(限40次) → 赋予全队(风) 能力伤害 6%
+149990#7	white_tiger_summer	自身 强化弹射覆盖
+119989#0	lady_summoner_campus	火·编成≥6 时: 赋予全队(火) 攻击力 200%
+119989#1	lady_summoner_campus	火·编成≥6 时: 赋予全队(火) 能力伤害 400%
+119989#2	lady_summoner_campus	火·编成≥6 时: 持续·Fever → 赋予全队(火) 攻击力 200%
+119989#3	lady_summoner_campus	火·编成≥6 时: 状态固有≥1[固有11998901] → 自身 追加Fever点 50000%
+119989#4	lady_summoner_campus	火·编成≥6 时: 状态固有≥1[固有11998901] → 赋予全队(火) 技能槽 25%
+119989#5	lady_summoner_campus	技能发动≥1 → 对全体敌人 能力伤害·依攻击火 5000%(50倍)
+149989#0	wind_spgirl_campus	赋予全队(风) 攻击力 200%
+149989#1	wind_spgirl_campus	赋予全队(风) 能力伤害 400%
+149989#2	wind_spgirl_campus	风·编成≥6 时: 自身 强化弹射覆盖
+149989#3	wind_spgirl_campus	风·编成≥6 且 Fever 时: 强化弹射≥1 → 对全体敌人 能力伤害·依攻击风 1000%(10倍)
+149989#4	wind_spgirl_campus	风·编成≥6 且 Fever 时: 技能发动≥1 → 自身 发动技能动作[wind_spgirl_campus_flip_stock]
+149989#5	wind_spgirl_campus	风·编成≥6 且 Fever 时: 自身弹射≥1(需消耗固有状态 1[固有14998901]) → 自身 发动技能动作[wind_spgirl_campus_flip_stock_spent]
+149989#6	wind_spgirl_campus	风·编成≥6 且 Fever 时: 持续·状态累积计数固有≥1(限7次)[固有14998902] → 赋予全队(风) 能力伤害 20%
+149989#7	wind_spgirl_campus	风·编成≥6 且 Fever 时: 持续·状态累积计数固有≥1(限7次)[固有14998902] → 赋予全队(风) 攻击力 20%
+169989#0	ruin_girl_campus	暗·编成≥6 时: 自身 强化弹射覆盖
+169989#1	ruin_girl_campus	暗·编成≥6 时: 自身 切换技能形态[change_skill_ruin_girl_campus_fever]
+169989#2	ruin_girl_campus	暗·编成≥6 时: 赋予全队(暗) Direct伤害 400%
+169989#3	ruin_girl_campus	暗·编成≥6 时: 赋予全队(暗) 攻击力 200%
+169989#4	ruin_girl_campus	暗·编成≥6 时: 连击≥35 → 赋予全队(暗) Fever点 15%
+169989#5	ruin_girl_campus	暗·编成≥6 时: 自身 Fever时间延长 100%
+169989#6	ruin_girl_campus	暗·编成≥6 时: 多球Remove≥1 → 赋予全队(暗) 技能槽 5%
+169989#7	ruin_girl_campus	暗·编成≥6 时: Elapsed时间≥10 → 自身 发动技能动作[ruin_girl_campus_ball_hit_count]
+169989#8	ruin_girl_campus	暗·编成≥6 且 Fever 时: 状态KeepFrame贯通≥1(限3次) → 赋予全队(暗) 攻击力 9%
+169989#9	ruin_girl_campus	暗·编成≥6 且 Fever 时: 状态KeepFrame贯通≥1(限3次) → 赋予全队(暗) Direct伤害 9%
+149988#0	scutum_valentine	持续·状态Flying → 赋予全队(风) Direct伤害 400%
+149988#1	scutum_valentine	自身 强化弹射连击数↓ 9
+149988#2	scutum_valentine	风·编成≥6 时: 伤害计数≥10(CT5秒) → 自身 发动技能动作[scutum_valentine_retaliation]
+149988#3	scutum_valentine	持续·状态贯通 → 赋予全队(风) 攻击力 150%
+149988#4	scutum_valentine	持续·状态贯通 → 赋予全队(风) Direct伤害 150%
+149988#5	scutum_valentine	持续·状态贯通 → 赋予全队(风) 独立乘区Direct伤害 20%
+139994#0	rec_android_seaside	雷·编成≥6 时: 持续·状态累积计数固有≥1(限3次)[固有13999401] → 赋予全队(雷) 技能伤害 100%
+139994#1	rec_android_seaside	雷·编成≥6 时: 持续·状态累积计数固有≥1(限3次)[固有13999401] → 赋予全队(雷) 攻击力 100%
+139994#2	rec_android_seaside	雷·编成≥6 时: 技能发动≥1(CT5秒) → 赋予除自身全员(雷) 技能槽 5%
+139994#3	rec_android_seaside	雷·编成≥6 时: 自身 Fever时间延长 -50%
+139994#4	rec_android_seaside	雷·编成≥6 时: Fever≥1 → 自身 技能槽 25%(延迟2秒)
+139994#5	rec_android_seaside	雷·编成≥6 时: Fever≥1 → 赋予全队(雷) 技能槽 25%(延迟2秒)
+139994#6	rec_android_seaside	Fever结束≥1 → 自身 状态固有 100%×1次
+139994#7	rec_android_seaside	持续·状态累积计数固有≥1(限3次)[固有13999401] → 自身 攻击力 100%
+139994#8	rec_android_seaside	持续·状态累积计数固有≥1(限3次)[固有13999401] → 自身 技能伤害 100%
+139994#9	rec_android_seaside	雷·编成≥6 时: 自身 切换技能形态[change_skill_rec_android_seaside_leader]
+139993#0	super_robot_tailcoat	雷·编成≥6 时: 持续·状态累积计数固有≥1(限3次)[固有13999301] → 赋予全队(雷) 攻击力 100%
+139993#1	super_robot_tailcoat	雷·编成≥6 时: 持续·状态累积计数固有≥1(限3次)[固有13999301] → 赋予全队(雷) 技能伤害 100%
+139993#2	super_robot_tailcoat	雷·编成≥6 时: 持续·状态累积计数固有≥1(限3次)[固有13999301] → 自身 独立乘区技能伤害 4.5%
+139993#3	super_robot_tailcoat	雷·编成≥6 时: 持续·状态累积计数固有≥1(限3次)[固有13999301] → 自身 技能槽充能 6.5%
+139993#4	super_robot_tailcoat	雷·编成≥6 时: 持续·状态累积计数固有≥1(限3次)[固有13999301] → 自身 2号位技能槽 6.5%
+139993#5	super_robot_tailcoat	雷·编成≥6 时: 持续·状态计数固有≥1(限1次)[固有13999302] → 赋予除自身全员(雷) 技能槽充能 50%
+139993#6	super_robot_tailcoat	雷·编成≥6 时: 持续·状态计数固有≥1(限1次)[固有13999302] → 赋予除自身全员(雷) 2号位技能槽 50%
+139993#7	super_robot_tailcoat	雷·编成≥6 时: 赋予全队(雷) 技能槽充能 25%
+139993#8	super_robot_tailcoat	雷·编成≥6 且 状态计数固有≥1[固有13999302] 且 HP≤50% 时: Elapsed时间≥120(限3次) → 自身 技能伤害 90%
+139993#9	super_robot_tailcoat	雷·编成≥6 且 HP≤50% 时: 技能发动≥1 → 自身 状态固有 100%×1次
+139993#10	super_robot_tailcoat	持续·状态累积计数固有≥1(限3次)[固有13999301] → 自身 攻击力 45%
+139993#11	super_robot_tailcoat	持续·状态累积计数固有≥1(限3次)[固有13999301] → 自身 技能伤害 45%
+159998#0	samurai_robot_plum	光·编成≥6 时: 连击≥30(限10次) → 赋予全队(光) 攻击力 25%→33%
+159998#1	samurai_robot_plum	光·编成≥6 时: 连击≥30(限10次) → 赋予全队(光) 技能伤害 30%→40%
+159998#2	samurai_robot_plum	光·编成≥6 时: 赋予全队(光) 技能槽充能 22.5%→30%
+159998#3	samurai_robot_plum	光·编成≥6 时: 技能发动≥1 → 自身 技能槽 2.5%→5%
+159998#4	samurai_robot_plum	光·编成≥6 时: 赋予全队(光) 技能槽 25%→50%
+159998#5	samurai_robot_plum	光·编成≥6 时: 技能槽≥1(限20次) → 自身 技能伤害 25%→50%
+159998#6	samurai_robot_plum	光·编成≥6 时: 持续·Fever → 赋予全队(光) 技能伤害 100%
+159997#0	guildknight_leader_tavern	光·编成≥6 时: 赋予全队(光) 攻击力 400%
+159997#1	guildknight_leader_tavern	光·编成≥6 时: 自身 强化弹射伤害 200%
+159997#2	guildknight_leader_tavern	自身 强化弹射覆盖
+159997#3	guildknight_leader_tavern	连击≥35(限15次) → 自身 强化弹射伤害 6%
+159997#4	guildknight_leader_tavern	强化弹射≥1(限15次) → 赋予全队(光) 攻击力 4%
+159997#5	guildknight_leader_tavern	光·编成≥6 时: 强化弹射≥3 → 自身 状态连击加成 9×1次
+159997#6	guildknight_leader_tavern	持续·状态累积计数固有≥1(限15次)[固有1599971] → 自身 独立乘区强化弹射伤害 0.4%
+159997#7	guildknight_leader_tavern	光·编成≥6 时: 连击≥55(限45次)(CT5秒) → 赋予全队(光) 攻击力 5%
+159997#8	guildknight_leader_tavern	光·编成≥6 时: 连击≥55(限45次)(CT5秒) → 自身 强化弹射伤害 5%
+159996#0	wind_oracle_yukata	赋予全队(光) 攻击力 200%
+159996#1	wind_oracle_yukata	光·编成≥6 时: 强化弹射≥1(限3次) → 赋予全队(光) 攻击力 25%
+159996#2	wind_oracle_yukata	自身 强化弹射覆盖
+159996#3	wind_oracle_yukata	光·编成≥6 时: 强化弹射≥1(限3次) → 自身 强化弹射伤害 50%
+159996#4	wind_oracle_yukata	光·编成≥6 时: 自身 强化弹射连击数↓ 7
+159996#5	wind_oracle_yukata	光·编成≥6 时: 强化弹射≥10 → 自身 状态强化弹射连击数↓ 7(30秒)×1次
+159996#6	wind_oracle_yukata	光·编成≥6 时: 技能发动≥1(限3次) → 赋予全队(光) 攻击力 100%
+159996#7	wind_oracle_yukata	光·编成≥6 时: 强化弹射≥5(限3次) → 自身 攻击力 45%
+169992#0	blackflower_wiz_yukata	持续·状态贯通 → 赋予全队(暗) Direct伤害 300%
+169992#1	blackflower_wiz_yukata	暗·编成≥6 时: 赋予全队(暗) 技能槽 50%
+169992#2	blackflower_wiz_yukata	持续·状态累积计数固有≥1(限20次)[固有16999201] → 赋予全队(暗) Direct伤害 15%
+169992#3	blackflower_wiz_yukata	暗·编成≥6 时: 自身 状态固有 300%×1次
+169992#4	blackflower_wiz_yukata	赋予全队(暗) 减益攻击特攻 100%
+169992#5	blackflower_wiz_yukata	持续·状态累积计数固有≥1(限20次)[固有16999201] → 赋予全队(暗) 技能槽充能 1%
+129991#0	psychic_yuki_swim	水·编成≥6 时: 赋予全队(水) 攻击力 200%
+129991#1	psychic_yuki_swim	水·编成≥6 时: 赋予全队(水) 技能伤害 300%
+129991#2	psychic_yuki_swim	水·编成≥6 时: 连击≥150(限5次) → 赋予全队(水) 技能伤害 100%
+129991#3	psychic_yuki_swim	持续·屏障 → 赋予全队(水) 攻击力 500%
+129991#4	psychic_yuki_swim	水·编成≥6 时: 技能发动≥1 → 自身 状态连击加成 150×1次
+129991#5	psychic_yuki_swim	技能发动≥1 → 赋予除自身全员(水) 技能槽 10%
+129991#6	psychic_yuki_swim	技能发动≥1 → 自身 追加连击 10
+159991#0	cnmod_inaho_midautumn	赋予全队(光) 攻击力 150%
+159991#1	cnmod_inaho_midautumn	赋予全队(光) 能力伤害 100%
+159991#2	cnmod_inaho_midautumn	自身 状态贯通(10秒)×1次
+159991#3	cnmod_inaho_midautumn	自身 状态Flying(10秒)×1次
+159991#4	cnmod_inaho_midautumn	赋予全队 状态持续回复 3750%(10秒)×1次
+159991#5	cnmod_inaho_midautumn	持续·Fever → 赋予全队(光) Direct伤害 200%
+159991#6	cnmod_inaho_midautumn	治疗计数≥1(限10次) → 赋予全队(光) 攻击力 10%
+159991#7	cnmod_inaho_midautumn	光·编成≥6 时: 能力伤害≥5(CT0.0166667秒) → 对全体敌人 能力伤害·依攻击光 6000%(60倍)
+159991#8	cnmod_inaho_midautumn	光·编成≥6 时: 能力伤害≥5(CT0.0166667秒) → 自身 状态攻击力 100%(15秒)×1次[累积上限1]
+159991#9	cnmod_inaho_midautumn	光·编成≥6 时: 能力伤害≥5(CT0.0166667秒) → 自身 状态能力伤害 100%(15秒)×1次[累积上限1]
+159991#10	cnmod_inaho_midautumn	状态固有[固有15999100] 时: 连击≥45 → 自身 状态贯通(2秒)×1次
+159991#11	cnmod_inaho_midautumn	状态固有[固有15999100] 时: 连击≥45 → 自身 状态Flying(2秒)×1次
+159991#12	cnmod_inaho_midautumn	自身 强化弹射覆盖
+159991#13	cnmod_inaho_midautumn	光·编成≥6 且 Fever 时: 治疗计数≥1(CT15秒) → 赋予全队 技能槽 7.5%
+159991#14	cnmod_inaho_midautumn	状态固有[固有15999100] 时: 连击≥45 → 自身 技能槽 1%(0秒)×0次
+159991#15	cnmod_inaho_midautumn	光·编成≥6 时: 持续·状态计数固有≥1(限1次)[固有15999100] → 自身 减益无效 0%
+129990#0	spheal_mascot_leader	赋予全队 技能槽 100%
+129990#1	spheal_mascot_leader	自身 发动技能动作[spheal_mascot_leader]
+119992#0	tiger_treasure_hunter_moon	火·编成≥6 时: 赋予全队(火) 攻击力 250%
+119992#1	tiger_treasure_hunter_moon	火·编成≥6 时: 自身 强化弹射伤害 200%
+119992#2	tiger_treasure_hunter_moon	火·编成≥6 时: 自身 强化弹射连击数↓ 6
+119992#3	tiger_treasure_hunter_moon	火·编成≥6 时: 自身弹射≥1 → 自身 追加连击 6
+119992#4	tiger_treasure_hunter_moon	火·编成≥6 时: 强化弹射≥2 → 自身 状态连击加成 10×1次
+119992#5	tiger_treasure_hunter_moon	强化弹射Lv3≥1(限10次) → 赋予全队(火) 攻击力 10%
+119992#6	tiger_treasure_hunter_moon	火·编成≥6 且 状态计数固有≥1[固有11999201] 时: 强化弹射≥3 → 自身 发动技能动作[ability_skill_tiger_treasure_hunter_moon]
+119992#7	tiger_treasure_hunter_moon	火·编成≥6 且 状态计数固有≥1[固有11999201] 时: 强化弹射≥3 → 自身 消耗固有状态 300%
+119990#0	lion_swordman_moon	火·编成≥6 时: 自身 强化弹射覆盖
+119990#1	lion_swordman_moon	火·编成≥6 时: 强化弹射≥3(限3次) → 赋予全队(火) 技能伤害 100%
+119990#2	lion_swordman_moon	火·编成≥6 时: 强化弹射≥3(限3次) → 赋予全队(火) 攻击力 50%
+119990#3	lion_swordman_moon	火·编成≥6 时: 强化弹射≥3 → 赋予全队(火) 技能槽 5%
+119990#4	lion_swordman_moon	火·编成≥6 时: 强化弹射≥3 → 自身 状态固有 700%×1次
+119990#5	lion_swordman_moon	状态计数固有≥1[固有11999002] 时: 弹射≥1 → 自身 追加连击 35
+119990#6	lion_swordman_moon	火·编成≥6 时: 强化弹射Lv1≥1 → 自身 发动技能动作[override_string_lion_swordman_moon_pf]
+119990#7	lion_swordman_moon	火·编成≥6 时: 强化弹射Lv2≥1 → 自身 发动技能动作[override_string_lion_swordman_moon_pf]
+119990#8	lion_swordman_moon	火·编成≥6 时: 强化弹射Lv3≥1 → 自身 发动技能动作[override_string_lion_swordman_moon_pf]
+119990#9	lion_swordman_moon	火·编成≥6 时: 强化弹射≥3(限3次) → 自身 技能伤害 25%
+119990#10	lion_swordman_moon	火·编成≥6 时: 持续·状态累积计数固有≥1(限3次)[固有11999001] → 自身 技能伤害 45%
+119990#11	lion_swordman_moon	火·编成≥6 时: 持续·状态累积计数固有≥1(限3次)[固有11999001] → 自身 攻击力 45%
+119990#12	lion_swordman_moon	持续·状态累积计数固有≥1(限3次)[固有11999001] → 赋予全队(火) 独立乘区技能伤害 5%
+169988#0	psychic_teleport_moon	开局≥1 → 自身 强化弹射覆盖 50%
+169988#1	psychic_teleport_moon	持续·状态贯通 → 赋予全队(暗) 攻击力 300%
+169988#2	psychic_teleport_moon	持续·状态贯通 → 自身 强化弹射伤害 200%
+169988#3	psychic_teleport_moon	暗·编成≥6 时: 自身 贯通延长 30%
+169988#4	psychic_teleport_moon	强化弹射≥3 → 自身 状态固有 100%×1次
+169988#5	psychic_teleport_moon	暗·编成≥6 时: 技能发动≥1 → 自身 发动技能动作[ability_skill_psychic_teleport_moon_pf_skill]
+169988#6	psychic_teleport_moon	强化弹射HitLv1≥4(限3次) → 自身 攻击力 45%
+169988#7	psychic_teleport_moon	冲刺≥1(CT1.5秒) → 自身 发动技能动作[ability_skill_psychic_teleport_moon_pf_dash]
+169988#8	psychic_teleport_moon	暗·编成≥6 时: 技能发动≥1 → 自身 计数+强化弹射 100%
+169988#9	psychic_teleport_moon	冲刺≥1(CT1.5秒) → 自身 计数+强化弹射 100%
+169988#10	psychic_teleport_moon	持续·状态累积计数固有≥1(限10次)[固有16998801] → 自身 强化弹射伤害 20%
+169988#11	psychic_teleport_moon	持续·状态累积计数固有≥1(限10次)[固有16998801] → 自身 攻击力 20%
+169991#0	bearish_darkwitch_moon	暗·编成≥6 时: 赋予全队(暗) 攻击力 300%
+169991#1	bearish_darkwitch_moon	暗·编成≥6 时: 自身 强化弹射伤害 200%
+169991#2	bearish_darkwitch_moon	暗·编成≥6 时: 自身 计数+强化弹射 500%
+169991#3	bearish_darkwitch_moon	暗·编成≥6 时: 自身 强化弹射连击数↓ 5
+169991#4	bearish_darkwitch_moon	强化弹射≥1(限30次) → 赋予全队(暗) 攻击力 15%
+169991#5	bearish_darkwitch_moon	技能发动≥1 → 赋予全队(暗) 状态攻击力 200%(20秒)×1次
+149987#0	combat_animal_moon	风·编成≥6 时: 自身 强化弹射覆盖
+149987#1	combat_animal_moon	风·编成≥6 时: 赋予全队(风) 2号位技能槽 20%
+149987#2	combat_animal_moon	风·编成≥6 时: 赋予全队(风) 技能槽充能 20%
+149987#3	combat_animal_moon	风·编成≥6 时: 赋予全队(风) 技能槽 50%
+149987#4	combat_animal_moon	风·编成≥6 时: 强化弹射≥1(限150次) → 赋予全队(风) 攻击力 2%
+149987#5	combat_animal_moon	风·编成≥6 时: 强化弹射≥1(限150次) → 赋予全队(风) 技能伤害 2%
+149987#6	combat_animal_moon	风·编成≥6 时: 强化弹射≥1 → 自身 追加连击 5
+149987#7	combat_animal_moon	风·编成≥6 时: 强化弹射Lv3≥5(CT6秒) → 自身 追加连击 500
+149987#8	combat_animal_moon	风·编成≥6 时: 强化弹射Lv3≥5(CT6秒) → 自身 发动技能动作[ability_skill_combat_animal_moon]
+149987#9	combat_animal_moon	风·编成≥6 时: 连击≥999(限25次) → 自身 技能伤害 20%
+149987#10	combat_animal_moon	风·编成≥6 时: 强化弹射≥3(限50次) → 赋予全队(风) 技能槽充能 3%
+149987#11	combat_animal_moon	风·编成≥6 时: 强化弹射≥3(限50次) → 赋予全队(风) 2号位技能槽 3%
+149987#12	combat_animal_moon	风·编成≥6 时: 强化弹射≥3(限50次) → 赋予全队(风) 独立乘区技能伤害 0.2%
+149987#13	combat_animal_moon	风·编成≥6 时: 开局≥1(CT0.6秒) → 自身 发动技能动作[ability_skill_combat_animal_moon_charge_cap]
+149987#14	combat_animal_moon	风·编成≥6 时: 技能发动≥1(限99次) → 自身 技能槽充能 10%
+159995#0	still_obstinator_moon	光·编成≥6 时: 自身 强化弹射覆盖
+159995#1	still_obstinator_moon	光·编成≥6 时: 赋予除自身全员(光) 技能槽 50%
+159995#2	still_obstinator_moon	光·编成≥6 时: 赋予全队(光) 技能伤害 400%
+159995#3	still_obstinator_moon	光·编成≥6 时: 赋予全队(光) 攻击力 200%
+159995#4	still_obstinator_moon	光·编成≥6 时: 技能发动≥1 → 赋予除自身全员(光) 技能槽 5%
+159995#5	still_obstinator_moon	光·编成≥6 时: 技能发动≥1 → 自身 追加连击 50
+159995#6	still_obstinator_moon	光·编成≥6 时: 连击≥250(限5次) → 赋予全队(光) 攻击力 100%
+159995#7	still_obstinator_moon	光·编成≥6 时: 强化弹射HitLv1≥1 → 赋予全队(光) 状态攻击力 100%(8秒)×1次
+159995#8	still_obstinator_moon	光·编成≥6 时: 强化弹射≥1 → 自身 追加连击 5
+119991#0	sorceress_teacher_moon	火·编成≥6 时: 赋予全队(火) 攻击力 150%→200%
+119991#1	sorceress_teacher_moon	火·编成≥6 时: 赋予全队(火) 技能伤害 150%→200%
+119991#2	sorceress_teacher_moon	火·编成≥6 时: 赋予除自身全员(火) 技能槽 75%→100%
+119991#3	sorceress_teacher_moon	火·编成≥6 时: 技能最大≥1(限5次) → 赋予全队(火) 技能伤害 20%→30%
+119991#4	sorceress_teacher_moon	火·编成≥6 时: 赋予全队(火) 技能槽充能 22.5%→25%
+119991#5	sorceress_teacher_moon	技能发动≥1(限3次) → 赋予触发者 技能伤害 30%→40%
+139992#0	artificialeye_sniper_moon	持续·任一敌方状态计数减益≥1(限4次) → 赋予全队(雷) 触发敌方Direct伤害特攻 60%→85%
+139992#1	artificialeye_sniper_moon	持续·任一敌方状态计数减益≥1(限4次) → 赋予全队(雷) 触发敌方攻击特攻 30%→40%
+139992#2	artificialeye_sniper_moon	赋予全队(雷) 减益攻击特攻 30%→50%
+139992#3	artificialeye_sniper_moon	雷·编成≥6 时: 赋予全队(雷) 减益特攻 15%→25%
+139992#4	artificialeye_sniper_moon	赋予除自身全员(雷) 技能槽 40%→50%
+139991#0	outlaw_panther_moon	持续·Fever → 赋予全队(雷) Direct伤害 400%
+139991#1	outlaw_panther_moon	持续·Fever → 赋予全队(雷) 攻击力 200%
+139991#2	outlaw_panther_moon	自身 Fever时间延长 25%
+139991#3	outlaw_panther_moon	雷·编成≥6 且 非Fever 时: 技能发动≥1 → 自身 追加Fever点 5000%
+139991#4	outlaw_panther_moon	Fever≥1(限3次) → 赋予全队(雷) Direct伤害 100%
+149986#0	black_wolf_knight_moon	风·编成≥6 时: 赋予全队(风) 增益延长 100%
+149986#1	black_wolf_knight_moon	风·编成≥6 时: 赋予全队(风) 贯通延长 100%
+149986#2	black_wolf_knight_moon	风·编成≥6 时: 赋予全队(风) Fixed速度↑延长 100%
+149986#3	black_wolf_knight_moon	风·编成≥6 时: 编成直接攻击≥100(限6次) → 赋予全队(风) 攻击力 40%
+149986#4	black_wolf_knight_moon	风·编成≥6 时: 编成直接攻击≥100(限6次) → 赋予全队(风) Direct伤害 30%
+149986#5	black_wolf_knight_moon	风·编成≥6 时: 赋予全队(风) 技能槽 50%
+149986#6	black_wolf_knight_moon	风·编成≥6 时: 赋予全队(风) 2号位技能槽 10%
+139990#0	kyle_moon	雷·编成≥6 时: 持续·状态累积计数固有≥1(限3次)[固有13999001] → 赋予全队(雷) 攻击力 15%
+139990#1	kyle_moon	雷·编成≥6 时: 持续·状态累积计数固有≥1(限3次)[固有13999001] → 自身 攻击力 65%
+139990#2	kyle_moon	雷·编成≥6 时: 持续·状态累积计数固有≥1(限3次)[固有13999001] → 赋予全队(雷) Direct伤害 80%
+139990#3	kyle_moon	雷·编成≥6 时: 持续·状态累积计数固有≥1(限3次)[固有13999001] → 自身 Direct伤害 25%
+139990#4	kyle_moon	雷·编成≥6 时: 赋予全队(雷) 2号位技能槽 20%
+139990#5	kyle_moon	雷·编成≥6 时: 赋予全队(雷) 技能槽充能 20%
+139990#6	kyle_moon	雷·编成≥6 时: 状态贯通≥1(限3次) → 赋予全队(雷) 攻击力 25%
+139990#7	kyle_moon	雷·编成≥6 时: 状态贯通≥1 → 赋予全队(雷) 眩晕畏缩特攻 4%
+139990#8	kyle_moon	自身 强化弹射覆盖
+139990#9	kyle_moon	开局≥1(CT0.6秒) → 自身 发动技能动作[ability_skill_kyle_moon_charge_cap]
+139990#10	kyle_moon	开局≥1(CT0.6秒) → 自身 发动技能动作[ability_skill_kyle_moon_direct_params]
+159994#0	tweyen_light	光·编成≥6 时: 赋予全队(光) 攻击力 180%→240%
+159994#1	tweyen_light	持续·任一敌方状态计数减益≥1(限3次) → 赋予全队(光) 技能伤害 75%→100%
+159994#2	tweyen_light	持续·任一敌方状态计数减益≥1(限5次) → 赋予全队(光) 触发敌方攻击特攻 25%→35%
+159994#3	tweyen_light	光·编成≥6 时: 赋予全队(光) 技能槽充能 7.5%→10%
+159992#0	black_wolf_knight	风·编成≥1 → 赋予全队(风) 攻击力 120%
+159992#1	black_wolf_knight	风·编成≥1 → 赋予全队(风) 强化弹射伤害 150%
+159992#2	black_wolf_knight	赋予队长 技能槽 100%
+159992#3	black_wolf_knight	持续·状态Flying≥1 → 赋予全队(风) 技能槽充能 30%
+159992#4	black_wolf_knight	风·编成≥1(限6次) → 赋予全队(风) 技能伤害 15%
+159992#5	black_wolf_knight	赋予全队 状态连击加成 2×1次
+169978#0	cnmod_vyrn_dark	龙族·编成≥2(限1次) → 赋予全队 攻击力 75%→150%

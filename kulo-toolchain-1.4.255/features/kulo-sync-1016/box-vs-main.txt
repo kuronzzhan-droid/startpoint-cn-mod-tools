@@ -1,0 +1,64 @@
+DIFFERS(28 box-lines-vs-base) src/cn-server.ts
+DIFFERS(20 box-lines-vs-base) src/data/domains/abyss-tower-progress.ts
+BOX-ONLY-FILE src/data/domains/finish-receipt.ts
+DIFFERS(13 box-lines-vs-base) src/data/utils/player-data.ts
+SAME-AS-MAIN src/lib/character-degree-catalog.ts
+DIFFERS(22 box-lines-vs-base) src/lib/character-helpers.ts
+BOX-ONLY-FILE src/lib/character-overlimit.ts
+DIFFERS(3 box-lines-vs-base) src/lib/character.ts
+DIFFERS(0 box-lines-vs-base) src/lib/client-address.ts
+DIFFERS(11 box-lines-vs-base) src/lib/client-admission.ts
+SAME-AS-MAIN src/lib/custom-cdn-resource-routes.ts
+SAME-AS-MAIN src/lib/file-download.ts
+DIFFERS(69 box-lines-vs-base) src/lib/finish-response-cache.ts
+DIFFERS(4 box-lines-vs-base) src/lib/gacha.ts
+DIFFERS(52 box-lines-vs-base) src/lib/management-auth.ts
+DIFFERS(238 box-lines-vs-base) src/lib/mission/active-reconciliation.ts
+DIFFERS(12 box-lines-vs-base) src/lib/mission/computer-awake.ts
+DIFFERS(16 box-lines-vs-base) src/lib/multi-special-exchange.ts
+DIFFERS(2 box-lines-vs-base) src/lib/persistence/command-names.ts
+DIFFERS(17 box-lines-vs-base) src/lib/persistence/commands.ts
+DIFFERS(120 box-lines-vs-base) src/lib/persistence-coordinator.ts
+DIFFERS(47 box-lines-vs-base) src/lib/player-login.ts
+BOX-ONLY-FILE src/lib/process-guards.ts
+DIFFERS(116 box-lines-vs-base) src/lib/quest/finish/single-finish-transaction.ts
+SAME-AS-MAIN src/lib/request-ids.ts
+SAME-AS-MAIN src/lib/types/box-gacha.ts
+SAME-AS-MAIN src/lib/types/gacha.ts
+DIFFERS(82 box-lines-vs-base) src/lounge/state.ts
+DIFFERS(2 box-lines-vs-base) src/lounge/tcp.ts
+DIFFERS(0 box-lines-vs-base) src/multi/battle-telemetry.ts
+DIFFERS(3 box-lines-vs-base) src/multi/coordinator/embedded.ts
+SAME-AS-MAIN src/multi/five-boss/connection-diagnostic.ts
+DIFFERS(44 box-lines-vs-base) src/multi/five-boss/lobby-runtime.ts
+DIFFERS(1132 box-lines-vs-base) src/multi/http/battle.ts
+DIFFERS(33 box-lines-vs-base) src/multi/http/lobby.ts
+SAME-AS-MAIN src/multi/party-snapshot.ts
+DIFFERS(21 box-lines-vs-base) src/multi/room/manager.ts
+DIFFERS(24 box-lines-vs-base) src/multi/settlement-snapshot.ts
+DIFFERS(199 box-lines-vs-base) src/multi/state/SessionManager.ts
+DIFFERS(0 box-lines-vs-base) src/multi/tcp/battle-relay/bridge.ts
+DIFFERS(0 box-lines-vs-base) src/multi/tcp/battle-relay/child.ts
+DIFFERS(0 box-lines-vs-base) src/multi/tcp/battle-relay/protocol.ts
+DIFFERS(34 box-lines-vs-base) src/multi/tcp/battle.ts
+DIFFERS(4 box-lines-vs-base) src/multi/tcp/disconnect-diagnostics.ts
+DIFFERS(14 box-lines-vs-base) src/multi/tcp/handshake.ts
+DIFFERS(81 box-lines-vs-base) src/multi/tcp/lobby.ts
+SAME-AS-MAIN src/multi/tcp/relay.ts
+SAME-AS-MAIN src/multi/tcp/reliable-send.ts
+DIFFERS(449 box-lines-vs-base) src/multi/tcp/server.ts
+DIFFERS(32 box-lines-vs-base) src/routes/api/character.ts
+SAME-AS-MAIN src/routes/api/equipment.ts
+DIFFERS(93 box-lines-vs-base) src/routes/api/exBoost.ts
+DIFFERS(4 box-lines-vs-base) src/routes/api/expod.ts
+DIFFERS(7 box-lines-vs-base) src/routes/api/gacha.ts
+SAME-AS-MAIN src/routes/api/item.ts
+DIFFERS(10 box-lines-vs-base) src/routes/api/multiSpecialExchange.ts
+SAME-AS-MAIN src/routes/api/sell.ts
+DIFFERS(960 box-lines-vs-base) src/routes/api/shop.ts
+DIFFERS(319 box-lines-vs-base) src/routes/api/singleBattleQuest.ts
+SAME-AS-MAIN src/routes/api/storyQuest.ts
+DIFFERS(160 box-lines-vs-base) src/routes/cn/asset.ts
+DIFFERS(189 box-lines-vs-base) src/routes/cn/load.ts
+SAME-AS-MAIN src/routes/cn/takeOver.ts
+DIFFERS(6 box-lines-vs-base) src/routes/web_api/diagnostics.ts

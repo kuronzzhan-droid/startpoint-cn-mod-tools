@@ -1,0 +1,11 @@
+
+# ============================================================ 6) 灼原的狮王 119996 技能 全属性抗性下降 ×0.6（表写在机车块，机车无此效果，协调者确认改到 119996）
+for lv in ("1", "2"):
+    t = dsl("battle/action/skill/action/rare5/lion_swordman_reborn$lion_swordman_reborn_" + lv)
+    tol = [ac for pp, c in commands(t, "CreateCondition") for ac in c[2] if ac[0] == "ACToleranceOfElement"]
+    allel = [ac for ac in tol if ac[2] == 254]; fire = [ac for ac in tol if ac[2] == 1]
+    assert len(allel) == 1 and len(fire) == 1, tol
+    assert allel[0][3] == [{"min": -0.25, "max": -0.25}] and allel[0][4] == [{"min": 1, "max": 1}], allel
+    allel[0][3] = [{"min": -0.15, "max": -0.15}]
+    assert fire[0][3] == [{"min": -0.05 if lv == "1" else -0.06, "max": -0.05 if lv == "1" else -0.06}]
+LOG.append("灼原的狮王 119996 技能两档 领域命中附加 全属性(254)抗性 -25% → -15%（×0.6）；火属性 -5%/-6% 叠3层不动；技能文案无数字不动（表写在机车块，机车 119990 无此效果，经协调者确认改到 119996）")

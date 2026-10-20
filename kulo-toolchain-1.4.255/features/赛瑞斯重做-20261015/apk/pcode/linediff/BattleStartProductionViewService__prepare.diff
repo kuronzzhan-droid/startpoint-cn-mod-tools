@@ -1,0 +1,11 @@
+--- LOCAL
++++ TEST
+@@ -114,2 +114,8 @@
+ callpropvoid ['autoDistribute', 1]
++getlex ['cn.loading::BattlePackSlicer']
++getlocal_0 []
++getlocal_2 []
++callproperty ['start', 2]
++iffalse [] -> #120
++returnvoid []
+ findproperty ['setupTextureAtlas']

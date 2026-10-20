@@ -1,0 +1,225 @@
+###### battle/action/skill/action/rare4/devil_clown_xm21$devil_clown_xm21_2
+[
+  "ActionDsl"
+  1
+  ["None"]
+  false
+  false
+  false
+  false
+  false
+  false
+  false
+  0
+  [
+    "Block"
+    [
+      ["Command", ["StopBall", -18, 20, ["RestoreToSpeedBeforeActionExecution"], ["EF"], 0]]
+      [
+        "Command"
+        [
+          "ShowEffect"
+          "プレゼント演出"
+          ["SpecifyEffectDirectly", "battle/effect/skill_unique/devil_clown_xm21/devil_clown_xm21_box_appear"]
+          -1
+          ["SuperForesideOfCharacter"]
+          ["PlayOnlyFirstSequence"]
+          ["AB"]
+          0
+          0
+          0
+          false
+          false
+          ["None"]
+        ]
+      ]
+      [
+        "Command"
+        [
+          "ShowEffect"
+          "ジャグリング"
+          ["SpecifyEffectDirectly", "battle/effect/skill_unique/devil_clown_xm21/devil_clown_xm21_ball_juggling"]
+          -18
+          ["ForesideOfCharacter"]
+          ["PlayOnlyFirstSequence"]
+          ["AB"]
+          0
+          0
+          0
+          true
+          false
+          ["None"]
+        ]
+      ]
+      [
+        "Event"
+        [
+          "Wait"
+          59
+          "*"
+          [
+            "Block"
+            [
+              [
+                "Command"
+                [
+                  "ShowEffect"
+                  "プレゼント爆発"
+                  ["SpecifyEffectDirectly", "battle/effect/skill_unique/devil_clown_xm21/devil_clown_xm21_box_open"]
+                  -1
+                  ["SuperForesideOfCharacter"]
+                  ["PlayOnlyFirstSequence"]
+                  ["AB"]
+                  0
+                  0
+                  0
+                  false
+                  false
+                  ["None"]
+                ]
+              ]
+              [
+                "Command"
+                [
+                  "CreateHitArea"
+                  "*"
+                  -1
+                  ["AB"]
+                  0
+                  0
+                  0
+                  true
+                  true
+                  ["Rectangle", [{"min": 1500, "max": 1500}], [{"min": 2000, "max": 2000}]]
+                  ["Center"]
+                  ["Center"]
+                  ["Single"]
+                  ["SpecifyHitAreaLifetimeDirectly", 10]
+                  ["CalculatedUsingMaxNumOfHits", 1]
+                  ["Some", [{"min": 1, "max": 1}]]
+                  false
+                  true
+                  ["None"]
+                  0
+                  ["Block", [["Command", ["ShakeCamera", 1]]]]
+                  1
+                  2
+                  [
+                    "Block"
+                    [
+                      [
+                        "Command"
+                        [
+                          "ConditionalsChangeSkillFlag"
+                          1
+                          [
+                            "Block"
+                            [
+                              [
+                                "Command"
+                                [
+                                  "CreateCondition"
+                                  2
+                                  [["ACToleranceOfElement", [{"alv_min": 3000, "alv_max": 3300}], 5, [{"alv_min": -0.05, "alv_max": -0.1}], [{"min": 3, "max": 3}]]]
+                                  [{"alv_min": 1, "alv_max": 1}]
+                                  ["GenericConditionHitEffect"]
+                                  true
+                                  false
+                                  ""
+                                  null
+                                  false
+                                  3
+                                  [{"min": 1, "max": 1}]
+                                  false
+                                ]
+                              ]
+                              [
+                                "Command"
+                                [
+                                  "CreateCondition"
+                                  2
+                                  [["ACAttackPoint", [{"alv_min": 3000, "alv_max": 3300}], [{"alv_min": -0.02, "alv_max": -0.04}], [{"min": 3, "max": 3}]]]
+                                  [{"alv_min": 1, "alv_max": 1}]
+                                  ["GenericConditionHitEffect"]
+                                  true
+                                  false
+                                  ""
+                                  null
+                                  false
+                                  3
+                                  [{"min": 1, "max": 1}]
+                                  false
+                                ]
+                              ]
+                            ]
+                          ]
+                          [
+                            "Block"
+                            [
+                              [
+                                "Command"
+                                [
+                                  "CreateCondition"
+                                  2
+                                  [["ACToleranceOfElement", [{"min": 3300, "max": 3300}], 5, [{"min": -0.06, "max": -0.08}], [{"min": 3, "max": 3}]]]
+                                  [{"min": 1, "max": 1}]
+                                  ["GenericConditionHitEffect"]
+                                  true
+                                  false
+                                  ""
+                                  null
+                                  false
+                                  3
+                                  [{"min": 1, "max": 1}]
+                                  false
+                                ]
+                              ]
+                            ]
+                          ]
+                        ]
+                      ]
+                    ]
+                  ]
+                  0
+                  0
+                  ["None"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+      [
+        "Event"
+        [
+          "Wait"
+          84
+          "*"
+          [
+            "Block"
+            [
+              [
+                "Command"
+                [
+                  "ShowEffect"
+                  "ジャグリング破棄"
+                  ["SpecifyEffectDirectly", "battle/effect/skill_unique/devil_clown_xm21/devil_clown_xm21_ball_explosion"]
+                  -18
+                  ["ForesideOfCharacter"]
+                  ["PlayOnlyFirstSequence"]
+                  ["AB"]
+                  0
+                  0
+                  0
+                  false
+                  false
+                  ["None"]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ]
+]

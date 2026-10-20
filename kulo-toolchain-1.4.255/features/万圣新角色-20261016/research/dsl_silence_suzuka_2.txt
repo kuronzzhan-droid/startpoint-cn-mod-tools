@@ -1,0 +1,255 @@
+###### battle/action/skill/action/rare5/silence_suzuka$silence_suzuka_2
+[
+  "ActionDsl"
+  3
+  ["None"]
+  false
+  false
+  false
+  false
+  false
+  false
+  false
+  0
+  [
+    "Block"
+    [
+      [
+        "Command"
+        ["ShowEffect", "全体演出", ["SpecifyEffectDirectly", "battle/effect/skill_unique/silence_suzuka/silence_suzuka_all"], -1, ["SuperForesideOfCharacter"], ["PlayOnlyFirstSequence"], ["AB"], 0, 0, 0, false, false, ["None"]]
+      ]
+      [
+        "Command"
+        [
+          "ConditionalsChangeSkillFlag"
+          1
+          [
+            "Block"
+            [
+              [
+                "Command"
+                [
+                  "FindNearSubjects"
+                  -18
+                  1
+                  49
+                  ["CreateImaginaryTarget", -100000]
+                  0
+                  [
+                    "Block"
+                    [
+                      ["Command", ["MoveBall", -18, ["GH", 0], 0, 1, 72, ["KeepGoing"], false]]
+                      [
+                        "Command"
+                        ["ShowEffect", "ダッシュ", ["SpecifyEffectDirectly", "battle/effect/skill_unique/silence_suzuka/silence_suzuka_dash"], -18, ["ForesideOfCharacter"], ["PlayOnlyFirstSequence"], ["GH", 0], 0, 0, 0, false, false, ["None"]]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+              [
+                "Command"
+                [
+                  "ShowEffect"
+                  "ダッシュループ"
+                  ["SpecifyEffectDirectly", "battle/effect/skill_unique/silence_suzuka/silence_suzuka_player"]
+                  -18
+                  ["ForesideOfCharacter"]
+                  ["SpecifyEffectLifetimeSLv", [{"min": 270, "max": 300}]]
+                  ["EF"]
+                  0
+                  0
+                  0
+                  true
+                  true
+                  ["None"]
+                ]
+              ]
+              [
+                "Command"
+                [
+                  "FindAllSubjects"
+                  1
+                  82
+                  []
+                  []
+                  []
+                  []
+                  []
+                  ["DoNothing"]
+                  [
+                    "Block"
+                    [
+                      ["Command", ["CreateCondition", 1, [["ACPiercing", [{"min": 270, "max": 300}]]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], false, false, "", null, false, 3, [{"min": 1, "max": 1}], false]]
+                      ["Command", ["CreateCondition", 1, [["ACFlying", [{"min": 270, "max": 300}]]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], false, false, "", null, false, 3, [{"min": 1, "max": 1}], false]]
+                      [
+                        "Command"
+                        [
+                          "CreateCondition"
+                          1
+                          [["ACFixedSpeed", [{"min": 270, "max": 300}], [{"min": 4, "max": 4}], [{"min": -0.65, "max": -0.65}], [{"min": 1, "max": 1}]]]
+                          [{"min": 1, "max": 1}]
+                          ["GenericConditionHitEffect"]
+                          false
+                          false
+                          ""
+                          null
+                          false
+                          3
+                          [{"min": 1, "max": 1}]
+                          false
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+              ["Command", ["SuppressBallActivity", -18, [{"min": 270, "max": 300}]]]
+              [
+                "Command"
+                [
+                  "CreateReferencePoint"
+                  -1
+                  ["AB"]
+                  0
+                  767
+                  0
+                  false
+                  false
+                  ["Single"]
+                  370
+                  2
+                  [
+                    "Block"
+                    [
+                      ["Command", ["CreateCollider", 2, "剛体", ["Rectangle", [{"min": 600, "max": 600}], [{"min": 70, "max": 70}]], ["SpecificFrameSLv", [{"min": 340, "max": 370}]], ["AB"], 0, 0, 0, true, false]]
+                      [
+                        "Command"
+                        [
+                          "ShowEffect"
+                          "剛体演出"
+                          ["SpecifyEffectDirectly", "battle/effect/skill_unique/silence_suzuka/silence_suzuka_outhole_guard"]
+                          2
+                          ["ForesideOfCharacter"]
+                          ["SpecifyEffectLifetimeSLv", [{"min": 340, "max": 370}]]
+                          ["AB"]
+                          0
+                          0
+                          0
+                          true
+                          false
+                          ["None"]
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+          [
+            "Block"
+            [
+              [
+                "Command"
+                [
+                  "FindNearSubjects"
+                  -18
+                  1
+                  49
+                  ["CreateImaginaryTarget", -100000]
+                  3
+                  [
+                    "Block"
+                    [
+                      ["Command", ["MoveBall", -18, ["GH", 3], 0, 1, 36, ["KeepGoing"], false]]
+                      [
+                        "Command"
+                        ["ShowEffect", "ダッシュ", ["SpecifyEffectDirectly", "battle/effect/skill_unique/silence_suzuka/silence_suzuka_dash"], -18, ["ForesideOfCharacter"], ["PlayOnlyFirstSequence"], ["GH", 3], 0, 0, 0, false, false, ["None"]]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+              [
+                "Command"
+                [
+                  "ShowEffect"
+                  "ダッシュループ"
+                  ["SpecifyEffectDirectly", "battle/effect/skill_unique/silence_suzuka/silence_suzuka_player"]
+                  -18
+                  ["ForesideOfCharacter"]
+                  ["SpecifyEffectLifetimeSLv", [{"min": 270, "max": 300}]]
+                  ["EF"]
+                  0
+                  0
+                  0
+                  true
+                  true
+                  ["None"]
+                ]
+              ]
+              [
+                "Command"
+                [
+                  "FindAllSubjects"
+                  4
+                  82
+                  []
+                  []
+                  []
+                  []
+                  []
+                  ["DoNothing"]
+                  [
+                    "Block"
+                    [
+                      ["Command", ["CreateCondition", 4, [["ACPiercing", [{"min": 270, "max": 300}]]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], false, false, "", null, false, 3, [{"min": 1, "max": 1}], false]]
+                      ["Command", ["CreateCondition", 4, [["ACFlying", [{"min": 270, "max": 300}]]], [{"min": 1, "max": 1}], ["GenericConditionHitEffect"], false, false, "", null, false, 3, [{"min": 1, "max": 1}], false]]
+                      [
+                        "Command"
+                        [
+                          "CreateCondition"
+                          4
+                          [["ACFixedSpeed", [{"min": 270, "max": 300}], [{"min": 1, "max": 1}], [{"min": -0.3, "max": -0.3}], [{"min": 1, "max": 1}]]]
+                          [{"min": 1, "max": 1}]
+                          ["GenericConditionHitEffect"]
+                          false
+                          false
+                          ""
+                          null
+                          false
+                          3
+                          [{"min": 1, "max": 1}]
+                          false
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+      [
+        "Command"
+        [
+          "CreateCondition"
+          -17
+          [["ACAdditionalDirectAttack", [{"min": 1200, "max": 1200}], [{"min": 2, "max": 2}], [{"min": 0.25, "max": 0.3}], [{"min": 1, "max": 1}]]]
+          [{"min": 1, "max": 1}]
+          ["GenericConditionHitEffect"]
+          true
+          false
+          ""
+          null
+          false
+          3
+          [{"min": 1, "max": 1}]
+          false
+        ]
+      ]
+    ]
+  ]
+]

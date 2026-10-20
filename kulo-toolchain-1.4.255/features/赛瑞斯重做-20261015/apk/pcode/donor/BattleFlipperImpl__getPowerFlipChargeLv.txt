@@ -1,0 +1,8 @@
+# BattleFlipperImpl/getPowerFlipChargeLv body=58385 method=63010 header=[1, 1, 1, 2] exc=[] traits=[] sha=66fd57af5262a27bb1a7ea0a1ff8ad6224047e9e751fe0734f0e95d32c352f4d
+#0000 ofs0000: getlocal_0 []
+#0001 ofs0001: pushscope []
+#0002 ofs0002: findproperty ['comboCalculator']
+#0003 ofs0006: getproperty ['comboCalculator']
+#0004 ofs000a: callproperty ['pinball.scene.battle.battle:ComboCalculator::getPowerFlipChargeLv', 0]
+#0005 ofs000f: convert_i []
+#0006 ofs0010: returnvalue []

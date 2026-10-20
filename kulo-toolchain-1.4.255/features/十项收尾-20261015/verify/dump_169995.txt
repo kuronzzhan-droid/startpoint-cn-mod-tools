@@ -1,0 +1,65 @@
+######### 169995 maou2_playable 被打破的屠龙轮回＋
+TEXT 魔王,MAOU,曾经也是勇者、如今要打破屠龙轮回的魔王。,断轮的原勇者,勇者终焉・万象归零,降下黑雷雨与四连光柱，终以湮灭冲击归零万象，对全体敌人造成大伤害。,勇者终焉・万象归零＋,终结爆发进一步增强。,(None),(None),被打破的屠龙轮回＋,--
+== leader 169995
+  L0 持续·状态累积计数固有≥10(限1次)[固有1699950] → 赋予全队(White,Black) 独立乘区伤害 25%
+  L1 自身 强化弹射覆盖
+  L2 赋予全队(White,Black) 战斗不能非Remove状态固有
+  L3 持续·状态累积计数固有≥1(限3次)[固有1699950] → 赋予全队(White,Black) Direct伤害 30%
+  L4 持续·状态累积计数固有≥1(限3次)[固有1699950] → 赋予全队(White,Black) 技能伤害 30%
+  L5 持续·状态累积计数固有≥1(限3次)[固有1699950] → 赋予全队(White,Black) 能力伤害 30%
+  L6 持续·状态累积计数固有≥1(限3次)[固有1699950] → 赋予全队(White,Black) 强化弹射伤害 30%
+  L7 自身 中毒无效
+  L8 自身 麻痹无效
+  L9 自身 冻结无效
+== ability 1 1699951 c1=true
+  A1.0 持有者为主位 且 光·编成≥6 时: 技能发动≥1 → 自身 状态固有 200%×1次 
+  A1.1 持有者为主位 且 光·编成≥6 时: 技能发动≥1 → 自身 状态固有 100%×1次 
+  A1.2 持有者为主位 时: 强化弹射Lv2≥1 → 自身 状态固有 100%×1次 
+  A1.3 持有者为主位 时: 强化弹射Lv3≥1 → 自身 状态固有 200%×1次 
+  A1.4 持有者为主位 时: 冲刺≥1(CT1.5秒) → 自身 发动技能动作[ability_skill_maou2_playable_dash]  DSL=battle/action/skill/action/rare5/maou2_playable$maou2_playable_dash
+  A1.5 持有者为主位 时: 冲刺≥2(CT12秒) → 自身 发动技能动作[ability_skill_maou2_playable_eye]  DSL=battle/action/skill/action/rare5/maou2_playable$maou2_playable_eye
+  A1.6 持有者为主位 时: 冲刺≥1(CT4秒) → 自身 状态固有 100%×1次 
+  A1.7 tag_boss·编成≥2 时: 赋予全队 状态攻击力 -999%×1次[不可驱散] 
+  A1.8 tag_boss·编成≥2 时: 赋予全队 状态封印×1次[不可驱散] 
+  A1.9 tag_boss·编成≥2 时: 赋予全队 状态增益Rejection×1次[不可驱散] 
+  A1.10 tag_boss·编成≥2 时: 赋予全队 状态固有 100%×1次 
+  A1.11 tag_boss·编成≥2 时: Revival≥1 → 赋予全队 状态攻击力 -999%×1次[不可驱散] 
+  A1.12 tag_boss·编成≥2 时: Revival≥1 → 赋予全队 状态封印×1次[不可驱散] 
+  A1.13 tag_boss·编成≥2 时: Revival≥1 → 赋予全队 状态增益Rejection×1次[不可驱散] 
+== ability 2 1699952 c1=false
+  A2.0 持续·状态累积计数固有≥1(限100次)[固有1699950] → 自身 攻击力 5% 
+  A2.1 持续·状态累积计数固有≥1(限100次)[固有1699950] → 自身 技能伤害 5% 
+  A2.2 持续·状态累积计数固有≥1(限100次)[固有1699950] → 自身 能力伤害 5% 
+  A2.3 持有者为主位 时: Fever≥1 → 自身 发动技能动作[ability_skill_maou2_playable_ring]  DSL=battle/action/skill/action/rare5/maou2_playable$maou2_playable_ring
+  A2.4 持续·状态累积计数固有≥1(限50次)[固有1699950] → 自身 独立乘区能力伤害 0.5% 
+== ability 3 1699953 c1=true
+  A3.0 持有者为主位 且 光·编成≥6 时: 技能发动≥1(CT2秒) → 自身 发动技能动作[ability_skill_maou2_playable_followup]  DSL=battle/action/skill/action/rare5/maou2_playable$maou2_playable_ability_followup
+  A3.1 持有者为主位 且 状态累积计数固有≥10[固有1699950] 且 光·编成≥6 时: 技能发动≥1(CT30秒) → 自身 发动技能动作[ability_skill_maou2_playable_meteor]  DSL=battle/action/skill/action/rare5/maou2_playable$maou2_playable_meteor
+  A3.2 Elapsed时间≥120 → 对全体敌人 能力伤害·依攻击光 100%(1倍) 
+  A3.3 Elapsed时间≥180 → 对全体敌人 能力伤害·依攻击暗 200%(2倍) 
+  A3.4 状态累积计数固有≥66[固有1699950] 时: Elapsed时间≥180 → 对全体敌人 能力伤害·依攻击光 400%(4倍) 
+  A3.5 状态累积计数固有≥66[固有1699950] 时: Elapsed时间≥240 → 对全体敌人 能力伤害·依攻击暗 600%(6倍) 
+== ability 4 1699954 c1=true
+  A4.0 光·编成≥6 时: 技能发动≥1 → 自身 状态Guts 100%×1次[不可驱散] 
+== ability 5 1699955 c1=true
+  A5.0 暗·协力·且主位 → 自身 覆盖角色属性[暗] 
+  A5.1 持有者为主位 时: 任一敌方强化弹射HitLv2≥1(CT2秒) → 自身 发动技能动作[ability_skill_maou2_playable_pf_lv2]  DSL=battle/action/skill/action/rare5/maou2_playable$maou2_playable_pf_lv2_followup
+  A5.2 持有者为主位 时: 任一敌方强化弹射HitLv3≥1(CT1.2秒) → 自身 发动技能动作[ability_skill_maou2_playable_pf_lv3]  DSL=battle/action/skill/action/rare5/maou2_playable$maou2_playable_pf_lv3_followup
+  A5.3 持有者为协力 时: 赋予全队(暗) 攻击力 100%→150% 
+  A5.4 持有者为协力 时: 赋予全队(暗) 技能伤害 100%→150% 
+  A5.5 持有者为协力 时: 赋予全队(暗) HP 30%→40% 
+  A5.6 暗·协力·且主位 时: 自身 攻击力 60%→100% 
+  A5.7 持有者为协力 且 暗·编成≥6 时: 赋予全队(暗) 技能伤害 100%→150% 
+  A5.8 持有者为协力 且 暗·编成≥6 时: 赋予全队(暗) 能力伤害 100%→150% 
+== ability 6 1699956 c1=false
+  A6.0 自身 状态Guts 100%×1次[不可驱散] 
+  A6.1 发动Guts≥1 → 自身 比例治疗 50% 
+  A6.2 发动Guts≥1 → 自身 状态无敌(5秒)×1次[不可驱散] 
+  A6.3 发动Guts≥1 → 自身 屏障 5%→10% 
+  CAS ability_skill_maou2_playable_followup 发动技能「逆光魔弹」
+  CAS ability_skill_maou2_playable_pf_lv2 发动技能「回天魔王炮」
+  CAS ability_skill_maou2_playable_pf_lv3 发动技能「缩略・万象归零」
+  CAS ability_skill_maou2_playable_dash 发动技能「虚空魔弹」
+  CAS ability_skill_maou2_playable_eye 发动技能「诅咒魔眼」
+  CAS ability_skill_maou2_playable_meteor 发动技能「粉碎流星」
+  CAS ability_skill_maou2_playable_ring 发动技能「诅咒骇浪」

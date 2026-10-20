@@ -1,0 +1,50 @@
+######### 129999 seris_dragon_king 苍海龙王的敕令
+TEXT 赛瑞斯,SEIRIS,统御苍海的古龙之王。平日以银鳞龙人的姿态行走于人世；当战意沸腾到极点，便显露翼龙真身，以万潮肃清战场。,苍海龙王,苍海潮涌,对全体敌人造成3段水属性伤害（伤害量以强化弹射伤害判定）,苍海潮涌＋,对全体敌人造成3段水属性伤害（伤害量以强化弹射伤害判定）,(None),(None),苍海龙王的敕令,原创合成音声
+== leader 129999
+  L0 水·编成≥6 时: 自身 状态固有 100%×1次
+  L1 水·编成≥6 时: 自身 Fever点 100%
+  L2 水·编成≥6 时: 持续·Fever → 自身 攻击力 350%
+  L3 水·编成≥6 时: 持续·Fever → 自身 强化弹射伤害 450%
+  L4 水·编成≥6 时: Fever≥1 → 自身 状态连击加成 40×1次
+  L5 水·编成≥6 时: 自身弹射≥1 → 自身 追加连击 3
+  L6 水·编成≥6 时: 自身 切换技能形态[change_skill_seris_dragon_king]
+  L7 水·编成≥6 时: 持续·状态计数固有≥1(限1次)[固有22] → 自身 强化弹射覆盖
+  L8 水·编成≥6 时: 持续·状态计数固有≥1(限1次)[固有22] → 自身 强化弹射覆盖
+  L9 水·编成≥6 时: 持续·HP≤1 → 自身 强化弹射覆盖
+== ability 1 1299991 c1=true
+  A1.0 自身 技能槽 25%→50% 
+  A1.1 自身 强化弹射伤害 50%→100% 
+  A1.2 非Fever 时: 技能发动≥1 → 自身 Fever槽增减(上限比例) 35% 
+  A1.3 队长 且 非Fever 时: 强化弹射Lv3≥1(CT2秒) → 自身 Fever槽增减(上限比例) 5% 
+  A1.4 队长 时: Fever结束≥1 → 自身 Fever槽增减(上限比例) 30% 
+  OVR: 战斗开始时，自身技能槽＋50％ || 强化弹射伤害＋100％ || 非FEVER模式中，发动技能时，FEVER槽＋35％ || 自身为队长且非FEVER模式中，发动强化弹射Lv3时，FEVER槽＋5％（CT：2秒） || 自身为队长时，FEVER模式结束时，FEVER槽＋30％
+== ability 2 1299992 c1=true
+  A2.0 队长 时: 持续·HP≤1 → 自身 冲刺参数(可调) 30% 
+  A2.1 队长 时: 持续·HP≤1 → 自身 冲刺参数(可调) 50% 
+  A2.2 冲刺≥1(CT1秒) → 自身 追加连击 8 
+  A2.3 非Fever 时: 冲刺≥1(CT2秒) → 自身 Fever槽增减(上限比例) 2% 
+  OVR: 自身冲刺速度提升，可冲刺的高度范围扩大 || 冲刺时，连击＋8（CT：1秒） || 非FEVER模式中，冲刺时FEVER槽＋2％（CT：2秒）
+== ability 3 1299993 c1=false
+  A3.0 水·编成≥6 时: 持续·状态计数固有≥1(限1次)[固有22] → 自身 攻击力 300% 
+  A3.1 水·编成≥6 时: 持续·状态计数固有≥1(限1次)[固有22] → 自身 强化弹射伤害 300% 
+  A3.2 水·编成≥6 时: 持续·状态计数固有≥1(限1次)[固有22] → 自身 独立乘区强化弹射伤害 15% 
+  A3.3 水·编成≥6 时: Fever≥1 → 自身 状态固有 100%×1次 
+  A3.4 水·编成≥6 时: Fever结束≥1 → 自身 Delete固有状态 
+  A3.5 水·编成≥6 时: Fever结束≥1 → 自身 发动技能动作[ability_skill_seris_revert]  DSL=battle/action/skill/action/ability_skill/ability_skill_seris_revert$ability_skill_seris_revert
+  A3.6 水·编成≥6 时: Fever≥1 → 自身 发动技能动作[ability_skill_seris_breath]  DSL=battle/action/skill/action/ability_skill/ability_skill_seris_breath$ability_skill_seris_breath
+  A3.7 水·编成≥6 且 非Fever 时: Elapsed时间≥900 → 自身 Fever槽增减(上限比例) 15% 
+  OVR:  <icon id='main'>  水属性共鸣时，「真龙」形态中，自身攻击力＋300％，强化弹射伤害＋300％，强化弹射伤害＋15％（独立乘区） ||  <icon id='main'>  水属性共鸣时，化身「真龙」时，发动「龙王吐息・苍潮」（不消耗技能槽） ||  <icon id='main'>  水属性共鸣时，「龙人」形态中，每经过15秒，FEVER槽＋15％
+== ability 4 1299994 c1=true
+  A4.0 持续·连击≥50(限1次) → 自身 强化弹射伤害 25%→50% 
+  A4.1 持续·连击≥100(限1次) → 自身 强化弹射伤害 25%→50% 
+  OVR: 连击数50以上时，强化弹射伤害＋50％ || 连击数100以上时，强化弹射伤害再＋50％
+== ability 5 1299995 c1=true
+  A5.0 非Fever 时: 冲刺≥1(CT2秒) → 自身 发动技能动作[ability_skill_seris_dash_h]  DSL=battle/action/skill/action/ability_skill/ability_skill_seris_dash_h$ability_skill_seris_dash_h
+  A5.1 Fever 时: 冲刺≥1(CT2秒) → 自身 发动技能动作[ability_skill_seris_dash_d]  DSL=battle/action/skill/action/ability_skill/ability_skill_seris_dash_d$ability_skill_seris_dash_d
+  OVR: 冲刺时，对距离最近的敌人造成自身攻击4倍威力的水属性伤害；「真龙」形态中改为8倍（伤害量以强化弹射伤害判定，CT：2秒）
+== ability 6 1299996 c1=true
+  A6.0 自身 强化弹射伤害 25%→50% 
+  A6.1 自身 Fever点 15%→30% 
+  OVR: 强化弹射伤害＋50％ || 自身Fever获得量＋30％
+  CAS change_skill_seris_dragon_king 为『苍海潮涌』与『龙王吐息・苍潮』追加「强制赋予敌人强化弹射抗性降低」与「强制赋予敌人水属性抗性降低」
+

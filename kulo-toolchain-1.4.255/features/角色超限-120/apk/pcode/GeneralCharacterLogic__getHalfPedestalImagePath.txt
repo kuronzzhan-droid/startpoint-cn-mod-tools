@@ -1,0 +1,8 @@
+# GeneralCharacterLogic/getHalfPedestalImagePath body=17588 header=[2, 1, 1, 2] exc=[] sha=3c050c660a915c1f8c18f16f2fad519ffba84f42d6661c86fcaa64f9af9b16bd
+#0000 ofs0000: getlocal_0 []
+#0001 ofs0001: pushscope []
+#0002 ofs0002: getlex ['pinball.common.data.character::CharacterPedestalImageResolver']
+#0003 ofs0005: getlocal_0 []
+#0004 ofs0006: callproperty ['resolveHalf', 1]
+#0005 ofs000b: coerce ['String']
+#0006 ofs000d: returnvalue []
