@@ -118,5 +118,5 @@ if __name__ == '__main__':
     parser.add_argument('--delivery', type=Path, required=True)
     parser.add_argument('--apply', action='store_true')
     args = parser.parse_args()
-    print(json.dumps(install(Path(__file__).resolve().parents[1], args.pack,
+    print(json.dumps(install(Path(__file__).resolve().parents[4], args.pack,
                              args.delivery, apply=args.apply), ensure_ascii=False))

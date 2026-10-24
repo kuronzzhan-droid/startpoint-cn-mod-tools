@@ -8,7 +8,7 @@ import zipfile
 from wf_character_revision import RevisionCandidate
 from wf_assets import png_encode, png_decode, png_dims
 
-ART = Path(__file__).resolve().parent/'art/status-icons-20260917'
+ART = Path(__file__).resolve().parents[3]/'art/status-icons-20260917'
 PREVIOUS_CANDIDATES = {
     'gerald_duel': '144115ef0a2f2d52f0d24a19eb70f134dede252cf99c4991ae16538172898612',
     'inaho_foxfire': 'e6906cafcb577054e14c73611848973127e773fbaf7b3cc2028997786eb1aa57',
@@ -60,5 +60,5 @@ if __name__=='__main__':
     parser.add_argument('--backup',type=Path,required=True)
     parser.add_argument('--apply',action='store_true')
     args=parser.parse_args()
-    print(json.dumps(prepare(Path(__file__).resolve().parents[1],args.character,args.backup,
+    print(json.dumps(prepare(Path(__file__).resolve().parents[4],args.character,args.backup,
                              apply=args.apply),ensure_ascii=False))

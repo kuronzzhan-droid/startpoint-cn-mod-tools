@@ -72,7 +72,7 @@ from collections import OrderedDict
 from pathlib import Path
 from typing import Iterable, Mapping, Sequence
 
-TOOL_DIR = Path(__file__).resolve().parent
+TOOL_DIR = Path(__file__).resolve().parents[3]
 ROOT = TOOL_DIR.parent
 ROSTER_PATH = TOOL_DIR / "atlas_budget_roster.json"
 
