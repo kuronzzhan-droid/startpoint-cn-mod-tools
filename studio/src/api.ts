@@ -1,4 +1,5 @@
 // Typed wrappers over the read-only backend (python -m wf.studio).
+import type { AbilityGlossary } from "./abilityGlossary";
 
 export interface SourceInfo {
   version: string;
@@ -729,6 +730,8 @@ export interface TemplateOption {
   kind: string;
   en?: string;
   cn?: string;
+  official?: string | null;
+  mappingStatus?: "as3" | "guess" | "none";
   status: RuleState | string;
   selectable: boolean;
   defaults: string[];
@@ -901,6 +904,7 @@ export interface DeliveryDetail {
 }
 
 export const ability = {
+  glossary: () => cached<AbilityGlossary>("/api/studio/ability/glossary"),
   state: (cid: string) => get<AbilityState>(`/api/characters/${cid}/ability`),
   rowPreview: (cid: string, table: string, key: string, row: number, level?: string | null) =>
     get<RowPreview>(`/api/drafts/${cid}/ability/preview?table=${table}&key=${encodeURIComponent(key)}&row=${row}` +

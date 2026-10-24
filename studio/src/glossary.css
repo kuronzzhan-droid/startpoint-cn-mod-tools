@@ -1,0 +1,12 @@
+.cell-controls { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.cell-controls .cell { min-width: 0; flex: 1; }
+.cell-controls .enum-button { flex-shrink: 0; padding: 4px 6px; }
+.cell-meaning { display: block; font-size: 12px; line-height: 1.5; margin-top: 4px; overflow-wrap: anywhere; }
+.decoded-term + .decoded-term::before { content: " / "; }
+.enum-picker { width: min(760px, 92vw); padding: 18px; }
+.enum-picker .picker-list { max-height: 52vh; overflow-y: auto; }
+.enum-picker .search { width: 100%; }
+.enum-en { display: block; overflow-wrap: anywhere; }
+.type-lookup > label { display: flex; gap: 8px; align-items: center; margin: 10px 0; }
+.lookup > .segmented { margin-bottom: 12px; }
+.raw-table .cell-meaning { min-width: 180px; max-width: 360px; }
