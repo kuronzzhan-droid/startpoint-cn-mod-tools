@@ -19,3 +19,9 @@ jobs:
         run: bash scripts/tests/test-hygiene.sh
       - name: Scan every tracked file
         run: bash scripts/check-hygiene.sh --all
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Reject machine-local paths
+        run: python scripts/check_no_hardcoded_paths.py

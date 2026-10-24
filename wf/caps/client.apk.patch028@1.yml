@@ -1,0 +1,96 @@
+schema: wf-capability/1
+id: client.apk.patch028@1
+title: 五重随机地图种子
+layer: A
+provided_by:
+  patches:
+  - 28
+  match: all
+  methods:
+  - patch: 28
+    abc: boot_ffc6
+    label: BothBossTool$/bothBossMap
+    sha256: 85ae58d54e427ea926fd838dc3cacf8d2c316a858fac8c96d6d51321f8597f4e
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 28
+    abc: boot_ffc6
+    label: BothBossTool$/bothBossMapSingle
+    sha256: b7affd6ee25203b61f8137a1f3d082b98f9a707d8a09a57c673cc87d0644e60c
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 28
+    abc: boot_ffc6
+    label: BothBossTool$/isConditionalRow
+    sha256: 7db4961886739d9c8695feace54846431831a2bea366d8aefa0a4cfe8de848ec
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 28
+    abc: boot_ffc6
+    label: BothBossTool$/isRandomMapQuest
+    sha256: e84bc0b0fe0b4b3e90dba190809ba2a78af89a981e68babba8aec7a696bfa7eb
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 28
+    abc: boot_ffc6
+    label: BothBossTool$/mapBoss
+    sha256: 4f7be710e2c1d4a1e57a818f9176d4e7bfeecd0a4c9ebf4d7db1dfde6755d8cb
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 28
+    abc: boot_ffc6
+    label: BothBossTool$/mapSeed
+    sha256: b5942a1f7195ca7d566fc7aa8805814d450a8b45d51b1f736336329b3a93709e
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 28
+    abc: boot_ffc6
+    label: BothBossTool$/pickCandidate
+    sha256: 2d5831ea25c4c78fb546c04ed0e6c7cfd709b41a4c32b1cfce7890ef92ea37de
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 28
+    abc: boot_ffc6
+    label: BothBossTool$/randomIndex
+    sha256: 730d28453db5beaf32c3483afd615930af4fe9b0819483fa9081d32fd70aac89
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 28
+    abc: boot_ffc6
+    label: BothBossTool$/singleMapSeed
+    sha256: 1f51b372b44a7fed9ef03abf84eb8fd950284cf8d7f5a6d98caccaf557395581
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: true
+  features: []
+  note: 需要对应服务端规则；本能力声明不证明服务端已部署
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: 五重随机地图种子
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: 五重随机地图种子
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: 五重随机地图种子
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/verification/v33-patches-preserved-o8-o12-r2.json

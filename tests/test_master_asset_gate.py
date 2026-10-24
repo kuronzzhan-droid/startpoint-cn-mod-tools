@@ -156,6 +156,99 @@ class TestReferenceExtraction(unittest.TestCase):
             "缺目录/效果两段的 battle/effect/ 字符串不算特效引用",
         )
 
+    def test_resolve_by_element_derives_colour_variant_not_base_path(self):
+        """ShowEffect 的 ResolveByElement 基路径不是资产,必须按客户端规则派生分色路径。
+
+        客户端 ActionDslAssetResolver.resolveEffect(:102-114) →
+        EffectTools.resolveEffectByElement / createPathFromElementSuffix:
+        f"{base}/{name}_{colour}/{name}_{colour}";属性码 = 内部属性 + 1。
+        官方 enemy_general 全族只有分色三层目录,两层扁平名一个都不存在,
+        按字面校验基路径会把正确的包整包误判成缺失资产。
+        """
+        base = "battle/effect/enemy_general/enemy_shot_laser_l"
+        trees = {
+            "a.action.dsl.amf3.deflate": [
+                "Block",
+                [["Command", ["ShowEffect", "vfx", ["ResolveByElement", base, 1]]]],
+            ],
+        }
+
+        effects = [
+            item.value
+            for item in requirements.extract_master_asset_references({}, None, trees)
+            if item.kind == "skill_effect"
+        ]
+
+        self.assertEqual(
+            [f"{base}/enemy_shot_laser_l_red/enemy_shot_laser_l_red"], effects,
+        )
+        self.assertNotIn(base, effects, "基路径本身不得再进字面校验")
+
+    def test_resolve_by_element_covers_every_declared_element_code(self):
+        base = "battle/effect/enemy_general/enemy_shot_circle"
+        expected = {
+            1: "red", 2: "blue", 3: "yellow", 4: "green",
+            5: "white", 6: "black", 7: "colorless",
+        }
+        for code, colour in expected.items():
+            with self.subTest(code=code):
+                trees = {"a.action.dsl.amf3.deflate": [
+                    ["ResolveByElement", base, code],
+                ]}
+                effects = [
+                    item.value
+                    for item in requirements.extract_master_asset_references(
+                        {}, None, trees,
+                    )
+                    if item.kind == "skill_effect"
+                ]
+                self.assertEqual(
+                    [f"{base}/enemy_shot_circle_{colour}/enemy_shot_circle_{colour}"],
+                    effects,
+                )
+
+    def test_context_element_code_follows_caster_and_is_skipped_when_unknown(self):
+        base = "battle/effect/enemy_general/enemy_shot_circle"
+        trees = {"a.action.dsl.amf3.deflate": [
+            ["ResolveByElement", base, requirements.EFFECT_CONTEXT_ELEMENT_CODE],
+        ]}
+
+        with_context = [
+            item.value
+            for item in requirements.extract_master_asset_references(
+                {}, None, trees, context_element=5,
+            )
+            if item.kind == "skill_effect"
+        ]
+        self.assertEqual(
+            [f"{base}/enemy_shot_circle_black/enemy_shot_circle_black"], with_context,
+        )
+
+        without_context = [
+            item.value
+            for item in requirements.extract_master_asset_references({}, None, trees)
+            if item.kind == "skill_effect"
+        ]
+        self.assertEqual(
+            [], without_context, "属性未知时不得退回按字面基路径校验",
+        )
+
+    def test_same_path_used_directly_elsewhere_still_checked_literally(self):
+        base = "battle/effect/enemy_general/enemy_shot_circle"
+        trees = {"a.action.dsl.amf3.deflate": [
+            ["ResolveByElement", base, 1],
+            ["SpecifyEffectDirectly", base],
+        ]}
+
+        effects = {
+            item.value
+            for item in requirements.extract_master_asset_references({}, None, trees)
+            if item.kind == "skill_effect"
+        }
+
+        self.assertIn(base, effects)
+        self.assertIn(f"{base}/enemy_shot_circle_red/enemy_shot_circle_red", effects)
+
     def test_required_asset_paths_expand_per_kind(self):
         icon = requirements.MasterAssetReference(
             "unique_condition_icon", INCIDENT_ICON, "t:23",

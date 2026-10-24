@@ -12,33 +12,13 @@ import wf_atf
 import wf_dsl
 import wf_character_ui_compile as ui_compile
 from wf_character_ui_compile import (
-    SUMMER_THUNDER_CROP_BOXES,
-    SUMMER_THUNDER_MASTER_SHA256,
-    SUMMER_THUNDER_SHAPE_MASK_SHA256,
     compile_cutin_atf_assets,
-    compile_summer_thunder_dragon_ui_assets,
     compile_ui_png_assets,
 )
 
 
-SOURCE = "character/thunder_dragon"
-TARGET = "character/cnmod_thunder_dragon_ascendant"
-ACCEPTED_PORTRAIT_ROOT = (
-    Path(__file__).resolve().parents[1]
-    / "work"
-    / "builds"
-    / "cnmod_thunder_dragon_ascendant"
-    / "art"
-    / "portraits"
-    / "accepted_v1"
-)
-ACCEPTED_PORTRAIT_PATHS = {
-    0: ACCEPTED_PORTRAIT_ROOT / "summer_thunder_dragon_unawakened.png",
-    1: ACCEPTED_PORTRAIT_ROOT / "summer_thunder_dragon_awakened.png",
-}
-HAS_LOCAL_ACCEPTED_PORTRAITS = all(
-    path.is_file() for path in ACCEPTED_PORTRAIT_PATHS.values()
-)
+SOURCE = "character/synthetic_source"
+TARGET = "character/synthetic_target"
 
 ASSET_KEYS = (
     "skill_cutin",
@@ -174,18 +154,6 @@ def _shape_masks():
     return output
 
 
-def _accepted_masters():
-    missing = [
-        str(path)
-        for path in ACCEPTED_PORTRAIT_PATHS.values()
-        if not path.is_file()
-    ]
-    if missing:
-        raise AssertionError(f"locked accepted portraits are missing: {missing}")
-    return {
-        form: path.read_bytes()
-        for form, path in ACCEPTED_PORTRAIT_PATHS.items()
-    }
 
 
 def _opaque_shape_masks(sizes):
@@ -369,86 +337,8 @@ class CharacterUiCompileTests(unittest.TestCase):
             parsed = wf_atf.parse_atf(zlib.decompress(files[logical], -15))
             self.assertEqual((8, 4, 4), (parsed["w"], parsed["h"], parsed["mips"]))
 
-    def test_locked_wrapper_threads_every_identity_hash_and_rejects_mask_drift(self):
-        self._require_module()
-        masters = _masters()
-        donor_atlas = _donor_atlas()
-        shape_masks = _shape_masks()
-        donor_atfs = {}
-        for form, color in ((0, (255, 80, 20, 255)), (1, (20, 160, 255, 255))):
-            reference_png = _png_bytes(Image.new("RGBA", (8, 4), color))
-            donor_atfs[form] = wf_atf.deflate(
-                wf_atf.build_cutin_atf(reference_png)
-            )
-        master_hashes = {
-            form: hashlib.sha256(payload).hexdigest()
-            for form, payload in masters.items()
-        }
-        mask_hashes = {
-            key: hashlib.sha256(payload).hexdigest()
-            for key, payload in shape_masks.items()
-        }
-        atf_hashes = {
-            form: hashlib.sha256(payload).hexdigest()
-            for form, payload in donor_atfs.items()
-        }
-        locks = (
-            mock.patch.object(ui_compile, "SUMMER_THUNDER_CROP_BOXES", _boxes()),
-            mock.patch.object(ui_compile, "SUMMER_THUNDER_UI_SIZES", _sizes()),
-            mock.patch.object(ui_compile, "SUMMER_THUNDER_MASTER_SHA256", master_hashes),
-            mock.patch.object(
-                ui_compile,
-                "SUMMER_THUNDER_DONOR_ATLAS_SHA256",
-                hashlib.sha256(donor_atlas).hexdigest(),
-            ),
-            mock.patch.object(ui_compile, "SUMMER_THUNDER_DONOR_ATF_SHA256", atf_hashes),
-            mock.patch.object(ui_compile, "SUMMER_THUNDER_SHAPE_MASK_SHA256", mask_hashes),
-        )
-        with locks[0], locks[1], locks[2], locks[3], locks[4], locks[5]:
-            files, report = compile_summer_thunder_dragon_ui_assets(
-                masters, donor_atlas, donor_atfs, shape_masks
-            )
-            self.assertEqual(28, len(files))
-            self.assertFalse(report["writes_live"])
-            drifted = dict(shape_masks)
-            drifted["round_95"] += b"\x00"
-            with self.assertRaisesRegex(ValueError, "does not match locked SHA-256"):
-                compile_summer_thunder_dragon_ui_assets(
-                    masters, donor_atlas, donor_atfs, drifted
-                )
 
-    def test_locked_identity_and_asset_specific_crop_contract(self):
-        self._require_module()
-        self.assertIsNotNone(compile_summer_thunder_dragon_ui_assets)
-        self.assertEqual(
-            {
-                0: "ab842d15fb2a9e70162a86f2291a4cda5191456be276aeabfd59f65e75b27dac",
-                1: "cb553428246fe1cd12b11b0bbba7523360ff06ea9f976b3e1d97492a03ca8eed",
-            },
-            SUMMER_THUNDER_MASTER_SHA256,
-        )
-        self.assertEqual(
-            {
-                "round_95": "08905639407af0a17d5f19ae995b2541e2aff2b95471f0444278de1247a08d4d",
-                "round_136": "11e9cd99bb90d787ccdb9eac1098b0b4888cea6976d6384e04234f5e9ba0d388",
-                "level_up": "561b9524b1960ce07723cc8ca326ae0a6444e2c1de18a9b0b676d620edb2a32a",
-                "party_main": "0b1ef1f70d5412c634237bea233dc667f9d08847c1dd2243961719357e90bd70",
-                "party_unison": "92cf558b0bd9f4359ddd3e44e379d67ef341c2f47a445d72c6a7104727e15904",
-                "control_board": "45b06451e25f05fb7858a03b4d160903f283bb9d058bac3a19ddffb4a6bbcb9c",
-                "member_status": "b8bf0ab68310373479181a720100c75553623773d9e46bdf95d5e751f7d25814",
-                "chain": "a7abab2acd2dbff5d5e480e87234dd5cea6ca9cf6630f41a545f8fc1bade6f28",
-            },
-            SUMMER_THUNDER_SHAPE_MASK_SHA256,
-        )
-        self.assertEqual((250, 0, 1070, 410), SUMMER_THUNDER_CROP_BOXES[0]["skill_cutin"])
-        self.assertEqual((430, 20, 709, 608), SUMMER_THUNDER_CROP_BOXES[0]["party_main"])
-        self.assertEqual((0, 220, 1080, 760), SUMMER_THUNDER_CROP_BOXES[1]["skill_cutin"])
-        self.assertEqual((245, 270, 524, 858), SUMMER_THUNDER_CROP_BOXES[1]["party_main"])
-        self.assertNotEqual(
-            SUMMER_THUNDER_CROP_BOXES[0]["square_212"],
-            SUMMER_THUNDER_CROP_BOXES[0]["skill_cutin"],
-        )
-
+    def test_rejects_crop_outside_master(self):
         invalid_boxes = _boxes()
         invalid_boxes[1] = dict(invalid_boxes[1])
         invalid_boxes[1]["member_status"] = (0, 0, 99, 99)
@@ -489,104 +379,6 @@ class CharacterUiCompileTests(unittest.TestCase):
             if alpha_value == 0:
                 self.assertEqual((0, 0, 0), (red, green, blue))
 
-    @unittest.skipUnless(
-        HAS_LOCAL_ACCEPTED_PORTRAITS,
-        "local evidence requires gitignored work/.../portraits/accepted_v1",
-    )
-    def test_local_locked_cutin_wrapper_matches_accepted_portraits(self):
-        self._require_module()
-        expected = {
-            0: {
-                "crop": (250, 0, 1070, 410),
-                "source_face": (565, 260),
-                "target_face": (393, 325),
-                "bbox": (0, 1, 888, 512),
-                "coverage": 0.487560,
-                "alpha_sha256": "d73c03c840cb6cec48bdc5b419c3196815f81fe7d069d648399c13c7acd1d71a",
-            },
-            1: {
-                "crop": (0, 220, 1080, 760),
-                "source_face": (385, 485),
-                "target_face": (365, 251),
-                "bbox": (38, 0, 992, 512),
-                "coverage": 0.622202,
-                "alpha_sha256": "e5608d5f45677ec7b4b6f2b98aa213ad89b3441d142827f7c70a0c6d93d4728a",
-            },
-        }
-        masters = _accepted_masters()
-        donor_atlas = _donor_atlas()
-        shape_masks = _opaque_shape_masks(ui_compile.SUMMER_THUNDER_UI_SIZES)
-        mask_hashes = {
-            key: hashlib.sha256(payload).hexdigest()
-            for key, payload in shape_masks.items()
-        }
-        with (
-            mock.patch.object(
-                ui_compile,
-                "SUMMER_THUNDER_DONOR_ATLAS_SHA256",
-                hashlib.sha256(donor_atlas).hexdigest(),
-            ),
-            mock.patch.object(
-                ui_compile, "SUMMER_THUNDER_SHAPE_MASK_SHA256", mask_hashes
-            ),
-            mock.patch.object(
-                ui_compile, "compile_cutin_atf_assets", _stub_cutin_atfs
-            ),
-        ):
-            files, _report = compile_summer_thunder_dragon_ui_assets(
-                masters, donor_atlas, {}, shape_masks
-            )
-        alpha_payloads = []
-        for form in (0, 1):
-            contract = expected[form]
-            self.assertEqual(
-                contract["crop"],
-                SUMMER_THUNDER_CROP_BOXES[form]["skill_cutin"],
-            )
-            left, top, right, bottom = contract["crop"]
-            source_face_x, source_face_y = contract["source_face"]
-            mapped_face = (
-                (source_face_x - left) * 1024 / (right - left),
-                (source_face_y - top) * 512 / (bottom - top),
-            )
-            self.assertLessEqual(abs(mapped_face[0] - contract["target_face"][0]), 2)
-            self.assertLessEqual(abs(mapped_face[1] - contract["target_face"][1]), 2)
-
-            logical = f"{TARGET}/ui/skill_cutin_{form}.png"
-            with Image.open(io.BytesIO(wf_assets.png_decode(files[logical]))) as opened:
-                rendered = opened.convert("RGBA")
-            alpha = rendered.getchannel("A")
-            alpha_payload = alpha.tobytes()
-            alpha_payloads.append(alpha_payload)
-            corners = (
-                alpha.getpixel((0, 0)),
-                alpha.getpixel((1023, 0)),
-                alpha.getpixel((0, 511)),
-                alpha.getpixel((1023, 511)),
-            )
-            self.assertEqual((0, 0, 0, 0), corners)
-            edge = (
-                [alpha.getpixel((x, 0)) for x in range(1024)]
-                + [alpha.getpixel((x, 511)) for x in range(1024)]
-                + [alpha.getpixel((0, y)) for y in range(512)]
-                + [alpha.getpixel((1023, y)) for y in range(512)]
-            )
-            self.assertLessEqual(max(edge), 223)
-            self.assertNotIn(255, edge)
-            occupied = alpha.point(lambda value: 255 if value > 1 else 0)
-            actual_bbox = occupied.getbbox()
-            self.assertIsNotNone(actual_bbox)
-            for actual, wanted in zip(actual_bbox, contract["bbox"]):
-                self.assertLessEqual(abs(actual - wanted), 1)
-            coverage = sum(value > 1 for value in alpha_payload) / len(alpha_payload)
-            self.assertLessEqual(abs(coverage - contract["coverage"]), 0.001)
-            self.assertEqual(
-                contract["alpha_sha256"], hashlib.sha256(alpha_payload).hexdigest()
-            )
-            for red, green, blue, alpha_value in rendered.get_flattened_data():
-                if alpha_value == 0:
-                    self.assertEqual((0, 0, 0), (red, green, blue))
-        self.assertNotEqual(alpha_payloads[0], alpha_payloads[1])
 
 
 if __name__ == "__main__":

@@ -1,0 +1,205 @@
+{
+  "schema": "wf-m62-apk-package-diff/1",
+  "comparison": "test-v35e x86 to local-v35k3 x86",
+  "before": {
+    "apk_sha256": "aab1f83518f5f2994d5aba409f7b8ce9b889598a2ce2db5de48e6928e5950c26",
+    "package_name": "com.leiting.wt",
+    "versionCode": 1008003
+  },
+  "after": {
+    "apk_sha256": "6981c48c42e43ebf6b85e5893cf40357affe4e7a31787e078f0ce28c3cd5f807",
+    "package_name": "com.leiting.wf",
+    "versionCode": 1008001
+  },
+  "members_before": 6131,
+  "members_after": 6131,
+  "unchanged_members": 6122,
+  "differences": [
+    {
+      "member": "AndroidManifest.xml",
+      "before": "150e66e6ceb990963b131573e658e3d27b72f9a1a98680ca951962f5f83756d0",
+      "after": "183c055e2a51cc7aaf6c07180842f1d87e683af3163bcd33009d3d59e466a405",
+      "before_bytes": 24268,
+      "after_bytes": 24268
+    },
+    {
+      "member": "META-INF/ANDROIDD.RSA",
+      "before": "d06f7d22521ec97613e82d46f13f08d5df06a0b4e4507d7f92bd2ac8eb9a32bf",
+      "after": "582be3738ac7dc89b7299d47be0ce340d0ca332d7c487bf3d510b194c8c0f0aa",
+      "before_bytes": 1167,
+      "after_bytes": 1167
+    },
+    {
+      "member": "META-INF/ANDROIDD.SF",
+      "before": "421b2c2dcf4edf29f5c133aa9a821036e1b8fed9d49aa14b64ab89a49856fae3",
+      "after": "baf3e95e320555d99cf9158c16b6e275aaaca1da604d8c177ff4eb60aedaa534",
+      "before_bytes": 1143872,
+      "after_bytes": 1143872
+    },
+    {
+      "member": "META-INF/MANIFEST.MF",
+      "before": "691ab19e2b13cb2568b3f843f8f0996045a1a92272dbc5d1a48a5f5288d615fe",
+      "after": "e774f111454e72eb08bda2211aeb72c7ceeb69a6fffa56c6a89b713f0205d31d",
+      "before_bytes": 1143745,
+      "after_bytes": 1143745
+    },
+    {
+      "member": "assets/bundle.zip",
+      "before": "ffc48f54e4bbca7a5d058ff4a8a741dc04e292cb124013b8acb21ce8114ade9e",
+      "after": "b788173a03b6bf700d628967bed4dd0c7686111543ab9cf204b55277cb9f6abd",
+      "before_bytes": 80833365,
+      "after_bytes": 80824107
+    },
+    {
+      "member": "assets/bundle.zip.sha1",
+      "before": "d421f6ef677a21206d61622cd98d7b204909547dad2a9116bdfdfde9829b0482",
+      "after": "ac76df302e1c837a2a064cfe90cfccf930cef7c221e7243eb9932bb4940962dc",
+      "before_bytes": 40,
+      "after_bytes": 41
+    },
+    {
+      "member": "assets/worldflipper_android_release.swf",
+      "before": "89461f676b57a059bde58fe5897190db9b61013ae63947401fe1bf87106d6bcf",
+      "after": "c52e01b8a536f78a06f48cce07bd3e0f23b3814b9b7f861e02a20755f74cc2c1",
+      "before_bytes": 16052309,
+      "after_bytes": 16057179
+    },
+    {
+      "member": "classes.dex",
+      "before": "280e64891f48b1b50b8bab85aa4daa5196e3d69d9669c6a6eb6d570273adb318",
+      "after": "3b9757ff2bc5fe55d9e4d5efb4938f6a329b046781fb890d7b88d869506f487e",
+      "before_bytes": 16676,
+      "after_bytes": 18812
+    },
+    {
+      "member": "resources.arsc",
+      "before": "58e457e4cb43481bdae2447f17c66db9bd2602ad02207c3938fca7a083bab8e5",
+      "after": "35f14b5bf21f193417d86bdc03245edfbd9e92cfac5faa2f7175328f371105a5",
+      "before_bytes": 1126184,
+      "after_bytes": 1126184
+    }
+  ],
+  "manifest_differences": [
+    {
+      "path": "manifest",
+      "name": null,
+      "attributes": [
+        {
+          "name": "android:versionCode",
+          "before": 1008003,
+          "after": 1008001
+        },
+        {
+          "name": "package",
+          "before": "com.leiting.wt",
+          "after": "com.leiting.wf"
+        }
+      ]
+    },
+    {
+      "path": "manifest/application/activity/meta-data",
+      "name": "uniqueappversionid",
+      "attributes": [
+        {
+          "name": "android:value",
+          "before": "01ba6d87-98a6-4550-8abe-f1f0addf781b",
+          "after": "27081ce0-f20a-4baf-b816-ac9bbd0bd5c5"
+        }
+      ]
+    },
+    {
+      "path": "manifest/application/provider",
+      "name": "com.adobe.air.CameraUIProvider",
+      "attributes": [
+        {
+          "name": "android:authorities",
+          "before": "com.leiting.wt.provider",
+          "after": "com.leiting.wf.provider"
+        }
+      ]
+    },
+    {
+      "path": "manifest/application/provider",
+      "name": "android.support.v4.content.FileProvider",
+      "attributes": [
+        {
+          "name": "android:authorities",
+          "before": "com.leiting.wt.fileprovider",
+          "after": "com.leiting.wf.fileprovider"
+        }
+      ]
+    },
+    {
+      "path": "manifest/application/provider",
+      "name": "com.leiting.sdk.plug.util.LtShareProvider",
+      "attributes": [
+        {
+          "name": "android:authorities",
+          "before": "com.leiting.wt.ltshare.fileprovider",
+          "after": "com.leiting.wf.ltshare.fileprovider"
+        }
+      ]
+    },
+    {
+      "path": "manifest/application/provider",
+      "name": "com.sobot.chat.provider.SobotFileProvider",
+      "attributes": [
+        {
+          "name": "android:authorities",
+          "before": "com.leiting.wt.sobot_fileprovider",
+          "after": "com.leiting.wf.sobot_fileprovider"
+        }
+      ]
+    }
+  ],
+  "nested_archives": {
+    "assets/bundle.zip": [
+      {
+        "member": "production/android_bundle/23/a83b55daad153a95f8d5b66667b32e47f3dca2",
+        "before": "8ce0cbe4ab540483a535068a6b6005dba3eefabb2cd42938294ca0995ef53828",
+        "after": "eb21a7fe67d9f58730235ce276d1421b26a14cb84e7d27fd35cb2e0cae2b3565",
+        "before_bytes": 5932,
+        "after_bytes": 5485,
+        "logical_path": null
+      },
+      {
+        "member": "production/android_bundle/96/b97133a2b5c5bc58a4f234d531960136f0729f",
+        "before": "c7618668e916b823926795523a1612acf99e0f1d998ecaaa898280469ac3b8d0",
+        "after": "9755243e07fc77bdb57f6047263f65cf450a07178083935b08528c8b991e8551",
+        "before_bytes": 54926,
+        "after_bytes": 46248,
+        "logical_path": null
+      },
+      {
+        "member": "production/android_bundle/c7/b8f9c6f9d572bb625885e0d0c9226c01d9a385",
+        "before": "9b816e7f05479519549357df3fe7a5193f56689e4c419ec554030757fd49d4ba",
+        "after": "ef1214e38f5e7514c6f6ee60c79f9126e482e39a9566188698dccbf026102190",
+        "before_bytes": 69,
+        "after_bytes": 64,
+        "logical_path": null
+      },
+      {
+        "member": "production/android_bundle/ce/d720392bdd8eeb25b339c2e3943f327fea27ba",
+        "before": "c8b460ff58f075cc6260878decf5c4eb394f2d3f4b03b9463bc45c4a67255964",
+        "after": "0c97536686a770ea83664846d20e1e5eb1cb2e8843aa3445c43d2fdf056acad1",
+        "before_bytes": 833,
+        "after_bytes": 691,
+        "logical_path": null
+      },
+      {
+        "member": "production/android_bundle/dc/bcccb129122c0189c8eab004ecc4516a077f3e",
+        "before": "bf37fe2fa8b7f25b2924bed0093f8f2b53970dd62162532099d04d3aa01885cc",
+        "after": "f9cba755d3c5d63f334989fd0a0a21b7f169f0fbede9e77e3178f4efa5568125",
+        "before_bytes": 466,
+        "after_bytes": 480,
+        "logical_path": "battle/common/attention/hud_attention_label.parts.amf3.deflate"
+      }
+    ]
+  },
+  "inputs_unchanged": true,
+  "limitations": [
+    "APK member bytes and decoded AndroidManifest.xml only; changed DEX/resources are not asserted semantically equivalent.",
+    "All differences are listed, including signatures; no install, server access or device verification.",
+    "A null logical_path means the bundled hash path has not been mapped by the repository pathlist."
+  ]
+}

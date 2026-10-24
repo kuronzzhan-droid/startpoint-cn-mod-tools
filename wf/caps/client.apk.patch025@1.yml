@@ -1,0 +1,120 @@
+schema: wf-capability/1
+id: client.apk.patch025@1
+title: 幻想连战结算返回
+layer: A
+provided_by:
+  patches:
+  - 25
+  match: all
+  methods:
+  - patch: 25
+    abc: boot_ffc6
+    label: CooperationRoomSocketContact/<ctor>
+    sha256: fe543cc8ab0437439839e6f8279fd128b6804febde07c7ad95e349cfb7bd2ea0
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 25
+    abc: boot_ffc6
+    label: CooperationRoomSocketContact/applyDisbanded
+    sha256: df4212688f576811207ec47b4ccb6092b71a8f7ed5ede87d49cfaaedfe7e9099
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 25
+    abc: boot_ffc6
+    label: CooperationRoomSocketContact/disband
+    sha256: c7935d4a4e56433f8786272af58181783f59809b2c3bec13f04ddc8d26d14333
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 25
+    abc: boot_ffc6
+    label: MultiBattleRoomScene/BackChangeSceneHandler
+    sha256: aaa3efba659d97818783b8c4ddc315cf0e5be1b6736ace521719074797f9d512
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 25
+    abc: boot_ffc6
+    label: MultiBattleRoomScene/releaseOpenMultiRoom
+    sha256: d5b821ff85589b2c487578c9c78fcfb994ccc9c2f30123cd40c63d826a2d0bec
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 25
+    abc: boot_ffc6
+    label: QuestAbortTransitionRouter/resolve
+    sha256: 4c6a45128864164527a3c5d004034ba4251b75611a0731df4ee325077be6cbe5
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 25
+    abc: boot_ffc6
+    label: QuestResultScene/finishQuestResult
+    sha256: b144c1e4dfd056de5a80ca59dc0cdbef7371379d18e199a8dd891b9952dfd1ac
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 25
+    abc: boot_ffc6
+    label: QuestResultScene/isFantasyRushMultiContinue
+    sha256: 00bfca84e55d28ddce405e043f1535340d82b46abab71cc0fca61741306902bd
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 25
+    abc: boot_ffc6
+    label: QuestResultScene/retryQuest
+    sha256: f7bae59bbdb490df9ca1b5f6df7800efa170c1b6d85d7fef3c7732591a8f59df
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 25
+    abc: boot_ffc6
+    label: RushEventClearRewardDialog/buttonClicked
+    sha256: 79b8a9a2bd998dfc8d1cac0d70de095f1a1f93501f81e1213d392be727743897
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 25
+    abc: boot_ffc6
+    label: RushEventClearRewardDialog/completeAnimation
+    sha256: 7170673e44810492c9e71df0b37a2e0d449aeaf07449196cb27efc8037627159
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 25
+    abc: boot_ffc6
+    label: RushEventClearRewardDialog/isFantasyRushMultiBoundary
+    sha256: b7cfdf3e1f68a165c20fd9489fdd79ba38d2e6842381591d9b6fedfb2632bac6
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 25
+    abc: boot_ffc6
+    label: RushEventClearRewardDialog/prepare
+    sha256: 5d7d494c8e26583e4cd57fd9f4f697e75ed844f007d8f5eceb9b7347945c51dd
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: true
+  features: []
+  note: 需要对应服务端规则；本能力声明不证明服务端已部署
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: 幻想连战结算返回
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: 幻想连战结算返回
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: 幻想连战结算返回
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/verification/v33-patches-preserved-o8-o12-r2.json

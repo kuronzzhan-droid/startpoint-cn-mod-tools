@@ -1,0 +1,4735 @@
+{
+  "schema": "wf-local-baseline-provenance/v1",
+  "contract_id": "local-live-baseline-provenance-1-4-312",
+  "terminal_contract_id": "local-live-terminal-1-4-312",
+  "inventory_sha256": "34481b057b90f05df4eb13e8e4fd458a0054f9e7b1c2ec582a8fb6c09cb7df77",
+  "baselines": [
+    "1.4.277",
+    "1.4.311"
+  ],
+  "members": [
+    {
+      "root": "android",
+      "logical_path": "character/ginovi/ui/skill_cutin_0.atf.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-android-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-android.zip",
+          "archive_member": "production/android_upload/b2/839e2307d0d473b483c8085b1a88c2bab4e41f",
+          "size": 95067,
+          "sha256": "4716cc263c37d7edc5e590d893bc2890d1250b18415a7e3c842353821868d8de"
+        }
+      }
+    },
+    {
+      "root": "android",
+      "logical_path": "character/ginovi/ui/skill_cutin_1.atf.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-android-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-android.zip",
+          "archive_member": "production/android_upload/6c/28a4dc5136d604c0df12bf88cc2e731f2a2644",
+          "size": 214740,
+          "sha256": "545566ac750cdc3203d99b7c4a196750f239d718c5ac201f20372ebda96a3689"
+        }
+      }
+    },
+    {
+      "root": "android",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/skill_cutin_0.atf.deflate",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-android-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-android.zip",
+          "archive_member": "production/android_upload/12/a8a62c3a8e3d973a30f6e6e9791b79e705d7e4",
+          "size": 106424,
+          "sha256": "bfb40c3a382b4b39d35833859bb1e5e3672d3885a9bc5f774202bbbf71736399"
+        }
+      }
+    },
+    {
+      "root": "android",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/skill_cutin_1.atf.deflate",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-android-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-android.zip",
+          "archive_member": "production/android_upload/23/8686d2f77266d2e63fe5b409dd4a8acb5a59aa",
+          "size": 133279,
+          "sha256": "0dd549d5768d98e1f7d02107f7c379b7f5c26c5711b45a6628b32b33008c5d31"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/enemy/action/mod_rogue/immunity_0b1008ef01b1.action.dsl.amf3.deflate",
+      "owners": [
+        "abyss_tower"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": null
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/enemy/action/mod_rogue/immunity_1a98dbee76e1.action.dsl.amf3.deflate",
+      "owners": [
+        "abyss_tower"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": null
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/enemy/action/mod_rogue/immunity_32d64c29eed9.action.dsl.amf3.deflate",
+      "owners": [
+        "abyss_tower"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": null
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/enemy/action/mod_rogue/immunity_422a63b0df24.action.dsl.amf3.deflate",
+      "owners": [
+        "abyss_tower"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": null
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/enemy/action/mod_rogue/immunity_4255840e160e.action.dsl.amf3.deflate",
+      "owners": [
+        "abyss_tower"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": null
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/enemy/action/mod_rogue/immunity_78cde5452567.action.dsl.amf3.deflate",
+      "owners": [
+        "abyss_tower"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": null
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/enemy/action/mod_rogue/immunity_a3df0b182c8b.action.dsl.amf3.deflate",
+      "owners": [
+        "abyss_tower"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": null
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/enemy/action/mod_rogue/immunity_a71b9cf43096.action.dsl.amf3.deflate",
+      "owners": [
+        "abyss_tower"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": null
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/enemy/action/mod_rogue/immunity_aa500f5fb393.action.dsl.amf3.deflate",
+      "owners": [
+        "abyss_tower"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": null
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/enemy/action/mod_rogue/immunity_b853b0950500.action.dsl.amf3.deflate",
+      "owners": [
+        "abyss_tower"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": null
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/enemy/action/mod_rogue/immunity_c834103c6461.action.dsl.amf3.deflate",
+      "owners": [
+        "abyss_tower"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": null
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/enemy/action/mod_rogue/immunity_cfa672fc88b1.action.dsl.amf3.deflate",
+      "owners": [
+        "abyss_tower"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": null
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/enemy/action/mod_rogue/immunity_d9fcff68c333.action.dsl.amf3.deflate",
+      "owners": [
+        "abyss_tower"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": null
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/enemy/action/mod_rogue/immunity_e74fdf723b15.action.dsl.amf3.deflate",
+      "owners": [
+        "abyss_tower"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": null
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/power_flip/action/override/ginovi_pf$ginovi_pf_lv1.action.dsl.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/30/a6c3207f698f1c3dc43d3340d4e81bf4cfb1b3",
+          "size": 1003,
+          "sha256": "2b8749c8dda0f10f740759706aa69152e300f48c253a3783e243425d3f4551c7"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/power_flip/action/override/ginovi_pf$ginovi_pf_lv2.action.dsl.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/bb/21e6d1ec1faeefaa5caf9eebb09956b4c2f50c",
+          "size": 1048,
+          "sha256": "24c660a3bbb7829c744038eb867e7cb18ac85408e17876c1cef035ae8d2a5643"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/power_flip/action/override/ginovi_pf$ginovi_pf_lv3.action.dsl.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/3f/9a0838455a30cebe634ee375ef0a783fb0521a",
+          "size": 1096,
+          "sha256": "9f10e33295fa33f4c620183c970289a6d44ac760f8e4013b05025dd95e1ba332"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/skill/action/ability_skill/ability_skill_ginovi_dash$ability_skill_ginovi_dash.action.dsl.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/b9/fea87bc36039d773f97c12ebceaca4801f056f",
+          "size": 693,
+          "sha256": "b515895f9173e070311aee96d232f2414d32bbc3a0153d9a5780d4269a7475aa"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/skill/action/ability_skill/ability_skill_ginovi_pf_lv1$ability_skill_ginovi_pf_lv1.action.dsl.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/3d/48cd2f77bdd0814f022cb1703fd263143639ba",
+          "size": 787,
+          "sha256": "6e27f62633fcea375eabe5c1e588363dde543fee974585fc18687df787747af3"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/skill/action/ability_skill/ability_skill_ginovi_pf_lv2$ability_skill_ginovi_pf_lv2.action.dsl.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/c6/904965ca4ce449893a4e1fde842be08f105cc5",
+          "size": 630,
+          "sha256": "38e60e33476ac322ce09eae1170871a6a004f6abbe226afaa8d7eeb9b63053a8"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/skill/action/ability_skill/ability_skill_ginovi_pf_lv3$ability_skill_ginovi_pf_lv3.action.dsl.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/48/7a89265ad00933d2d952dbae6379ed0c6b0457",
+          "size": 641,
+          "sha256": "ac6750a25bc4fd9680ff1d2a41f91d9ce50ec615f64e5150a2d9ab2fba14089b"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/skill/action/ability_skill/ability_skill_ginovi_ring$ability_skill_ginovi_ring.action.dsl.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/27/393b0c412f850de208f33f825d6e6c08e47d8b",
+          "size": 235,
+          "sha256": "bf4e573c7b9b06943093141d38ec6c90afd3360efd5fa2d3ae5c911bc660c0a0"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/skill/action/rare4/darkness_dragon$darkness_dragon_1.action.dsl.amf3.deflate",
+      "owners": [
+        "light_dark_dragons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": ".cdn/cn/archive-common-full/pinball-1.4.0-301-72a632f5.zip",
+          "archive_member": "production/upload/f0/679090eb5b7082fe2749e81ad7f52b91308937",
+          "size": 605,
+          "sha256": "7424e1f99b4d02e10179994336b9831fffc2920cf1ceaa0e265743fa51d6082d"
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.302-1.4.303-1-08052025.zip",
+          "archive_member": "production/upload/f0/679090eb5b7082fe2749e81ad7f52b91308937",
+          "size": 907,
+          "sha256": "df5fe168639a76c3dd2371f3d0113cc01e8373289a037d168723f828094f0ebe"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/skill/action/rare4/darkness_dragon$darkness_dragon_2.action.dsl.amf3.deflate",
+      "owners": [
+        "light_dark_dragons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": ".cdn/cn/archive-common-full/pinball-1.4.0-175-ef91f155.zip",
+          "archive_member": "production/upload/88/982e0381b621c13d512a8531064a821afb6b24",
+          "size": 605,
+          "sha256": "eaaf0b1770e4cf4e9127d9739aec7d0dc7965a2ffb94dd717f9c4306156ac3a5"
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.302-1.4.303-1-08052025.zip",
+          "archive_member": "production/upload/88/982e0381b621c13d512a8531064a821afb6b24",
+          "size": 912,
+          "sha256": "6bf13861dce1c650b54e1513687d9c9d83e6747c35cf0a2b53f4a34f71fbaafd"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/skill/action/rare5/ginovi$ginovi_1.action.dsl.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.310-1.4.311-1-08052151.zip",
+          "archive_member": "production/upload/8c/5f0877c50efc07a97ece9c59ef1e0c2de138ea",
+          "size": 1016,
+          "sha256": "b3eb16d45c32c44035b68027903cc1c17accd1fe0f0cdc74376c05fb9079ab43"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/skill/action/rare5/ginovi$ginovi_2.action.dsl.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.310-1.4.311-1-08052151.zip",
+          "archive_member": "production/upload/de/d29725f307c061990a31f65400b417a7bb110f",
+          "size": 1016,
+          "sha256": "b3eb16d45c32c44035b68027903cc1c17accd1fe0f0cdc74376c05fb9079ab43"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/skill/action/rare5/golden_dragon_jr$golden_dragon_jr_1.action.dsl.amf3.deflate",
+      "owners": [
+        "light_dark_dragons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": ".cdn/cn/archive-common-full/pinball-1.4.0-281-5e9da46f.zip",
+          "archive_member": "production/upload/de/b31de8710be590d2787505019b254b4b1618ca",
+          "size": 767,
+          "sha256": "92d6f2cd03fdf6e6938918fcad2a813e2be011ba4d4cb21c01b76951b5e87bad"
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.303-1.4.304-1-08052032.zip",
+          "archive_member": "production/upload/de/b31de8710be590d2787505019b254b4b1618ca",
+          "size": 965,
+          "sha256": "8f6f81da87dcbc0cd83cc55735507318463f0cc24a0c13427e9f33ee3a6998de"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/skill/action/rare5/golden_dragon_jr$golden_dragon_jr_2.action.dsl.amf3.deflate",
+      "owners": [
+        "light_dark_dragons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": ".cdn/cn/archive-common-full/pinball-1.4.0-258-2a9dff32.zip",
+          "archive_member": "production/upload/cc/c535e1c37ea5b6f90b59e882256c23e48095cf",
+          "size": 774,
+          "sha256": "00577891e00f4f26c4e6e6f166e9ebcd7d5065af0b7e0c4ca5344b6a9ba09a05"
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.303-1.4.304-1-08052032.zip",
+          "archive_member": "production/upload/cc/c535e1c37ea5b6f90b59e882256c23e48095cf",
+          "size": 969,
+          "sha256": "81c90fa6ad40f2c07e15dd5e1a7984fadcf8a4d50e382e66d63601e387c5f626"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/skill/action/rare5/touyakiren_ceo_ny26$touyakiren_ceo_ny26_1.action.dsl.amf3.deflate",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/7e/80c8ca6a8d3d055a7a83ce062aaf9da029de4c",
+          "size": 713,
+          "sha256": "56c6cde0939f7aa9206dc34675c9fc1b01fcc16e95e418311a2721f563d4b7f3"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/skill/action/rare5/touyakiren_ceo_ny26$touyakiren_ceo_ny26_2.action.dsl.amf3.deflate",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/ae/05acf38217c375b12c856a4606842085a2f80c",
+          "size": 709,
+          "sha256": "3100c5f6a1a92b484fa85e5cb7d45ae2e9769a446b8dfcc868eceb1c7a12f91d"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/action/skill/action/rare5/touyakiren_ceo_ny26$touyakiren_ceo_ny26_3.action.dsl.amf3.deflate",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/ef/94e36566be155dd65ff0670dd593e4d5a06e7c",
+          "size": 713,
+          "sha256": "f76fa5570a16f0ddf3f167246da12ee286176e3b5edb31f0ae889e46084d39f5"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/common/unique_condition/unique_darkness_dragon_resist_down.png",
+      "owners": [
+        "light_dark_dragons"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.293-1.4.294-1-08051838.zip",
+          "archive_member": "production/upload/99/15cde3c36916efd46543382a695cee31a2573e",
+          "size": 3831,
+          "sha256": "a9f6d5c578ccbf8ccb43c3f1113e7b968bdfa4eaf3fdbdfd451b47ff2b2bcf37"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/common/unique_condition/unique_ginovi.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.308-1.4.309-1-08052136.zip",
+          "archive_member": "production/upload/4d/1912a078e886e3d144351e04659f860734d9dd",
+          "size": 2363,
+          "sha256": "7c1047c33937e8f9076e6d9c00a9c7907550cc0bfae8db5b3c98b842ae7728ea"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/common/unique_condition/unique_ginovi_pact.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.308-1.4.309-1-08052136.zip",
+          "archive_member": "production/upload/f7/34d2c9cb9fc4c81c5eda292fb0822e0652820e",
+          "size": 2346,
+          "sha256": "5cb7babfe630d614ad3e8a82a975cf446b0ac1428575663409ebd51392c3f93d"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/common/unique_condition/unique_golden_dragon_resonance.png",
+      "owners": [
+        "light_dark_dragons"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.293-1.4.294-1-08051838.zip",
+          "archive_member": "production/upload/d1/1e3803076c813e2976bb0c7973312480ab599b",
+          "size": 4448,
+          "sha256": "225b8bca39317a208a45c62b50518b61a6b70d3999e3bd21b17e72ead54f4afb"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/common/unique_condition/unique_lafu_system_intrusion.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/73/e85dbf877be4ea7541bdcd48a4390c1a56d396",
+          "size": 575,
+          "sha256": "9249efe68498305f3a5a51cfd7a762b8bbaca3eaeff5a7e823a048409692cfc1"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/effect_powerflip_attack_special/effect_powerflip_attack_special.atlas.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/d7/b87d6cac65c47353fd54c69da9f11e88455004",
+          "size": 475,
+          "sha256": "fd6c23543b2e5335cf467b94ee7cc7b0fe1b10597344d3e72c9143475205734e"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/effect_powerflip_attack_special/effect_powerflip_attack_special.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/08/8fa568d8a3d6f302936a6ced3582658dfa27a6",
+          "size": 10580,
+          "sha256": "6efd06fbf93973b328a6cce2e11439fcd3cb15860e2bf088326df9c185e5e348"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/effect_powerflip_attack_special/powerflip_attack_special_player_one.parts.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/3b/c5e3faa1f1ef03c536515b954a5b3aa6dc4374",
+          "size": 666,
+          "sha256": "0667397054ecccb8ced5d53ef6bf5dcd5eecabf87e6beb24dbe49d1c1eda899c"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/effect_powerflip_attack_special/powerflip_attack_special_player_one.timeline.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/d5/28489ccedea3194a507a72002e67547deaf158",
+          "size": 87,
+          "sha256": "806e1172492e0eb7206f13f69416f585f1f8fcb84b64470df5cd15f787bee743"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/aura_loop.parts.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.309-1.4.310-1-08052138.zip",
+          "archive_member": "production/upload/60/770336498b939d4b68a801851d8b6c3e3efbb7",
+          "size": 909,
+          "sha256": "8f898ff2bfc353f246607b33f1624803b17bcc44d4a9be43444ab5fdae403b1b"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/aura_loop.timeline.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/93/b118de6805072067b948033b46734cb5331bdc",
+          "size": 95,
+          "sha256": "08f9a2871e7b65f3df17696ba7408220a81de3468c2dd3eff808cda4a9a84dfc"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/aura_ring_v1.parts.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/f4/0dfdfcfe562051ae09593f3099fa7fb547faf4",
+          "size": 1544,
+          "sha256": "af48c127889f47fbe131c75d3610d9efafcf1f9281af411725038dd969563429"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/aura_ring_v1.timeline.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/51/9b5a5ae807219e9cf2cfd82f02688736b5d316",
+          "size": 95,
+          "sha256": "08f9a2871e7b65f3df17696ba7408220a81de3468c2dd3eff808cda4a9a84dfc"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/feather_burst.parts.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.309-1.4.310-1-08052138.zip",
+          "archive_member": "production/upload/9f/1eadb49859b738eec2267c5d7438254a796a0f",
+          "size": 668,
+          "sha256": "e4c83df7e76bb3438d8e9cd7c9bf1a0b59752f9f6c34e8aada7071bd7711d319"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/feather_burst.timeline.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/88/d681754f7a47cd441c381574a605eca49ffbce",
+          "size": 95,
+          "sha256": "7a92069f66692a893033dfbcebba1feb3bf010dc6afa9bf64d5505b34a77fa6a"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/ginovi_effects.atlas.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.309-1.4.310-1-08052138.zip",
+          "archive_member": "production/upload/bb/edd3c8df3c00aee9229bdff8a1279c4c13ba10",
+          "size": 727,
+          "sha256": "37629d04c338c08cde5e8d2908581e6099acd1ac90762f71f1d6e5fb7adbdfff"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/ginovi_effects.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.309-1.4.310-1-08052138.zip",
+          "archive_member": "production/upload/58/d8b99c4131fb60963ee87c88e9bcf5b51a0036",
+          "size": 592454,
+          "sha256": "8d60b612b2ad2f62208db5b1a82714ae431db574c035c3f548f5062afee8e892"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/hit_spark.parts.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/e3/ca15e8f012a069cdda1df4e59752ff7074bd21",
+          "size": 498,
+          "sha256": "e8c82152abcfdd553adea7193e9d464465103cc7dcb4d7617cf12f505bb6ae32"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/hit_spark.timeline.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/79/056992f4379a260b0e19810247b58077bb0716",
+          "size": 94,
+          "sha256": "92468c750251144e9871d35793522c9cfe77e725bb1a0d90aeb58c1f263d5ad0"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/pf_sword_arc.parts.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/38/2f6bcbb65d7f6612ed453d81b37ac71e66dafe",
+          "size": 695,
+          "sha256": "2322ce8fd98e23b95f0c0e57c442fa7dd953605191d9e3a7d4987aaa4fd5c2c1"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/pf_sword_arc.timeline.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/b5/5cc576b2d3bc2c0b2f0f52479a3846c0062e6c",
+          "size": 95,
+          "sha256": "7a92069f66692a893033dfbcebba1feb3bf010dc6afa9bf64d5505b34a77fa6a"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/skill_circle.parts.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/86/66a401f9a09fdbb96446535ff5543776763ac0",
+          "size": 395,
+          "sha256": "045f6899228ce44eb15fa6af02541123fc8d6f33131fe8c238a0a1ce5fd1240f"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/skill_circle.timeline.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/6e/f784ea4408d151f1100643ff29426069366212",
+          "size": 95,
+          "sha256": "b6cbf7e81e729fe0ba387a005415493ce1ca4f6a5fdb625ee04cf32279c0a5a2"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/slash_lv1.parts.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/ce/7bad07806ce2f0e6692348d89824470f1f00c5",
+          "size": 587,
+          "sha256": "e5eb3f56d4630d557a34c64443d9c71132b838e5b36646d7e29b675516e56a8e"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/slash_lv1.timeline.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/a2/a2b90416a67479a9c886c160cef8ad586e895c",
+          "size": 94,
+          "sha256": "92468c750251144e9871d35793522c9cfe77e725bb1a0d90aeb58c1f263d5ad0"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/slash_lv2.parts.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/39/20e143be628ec218990bc71de4b2fd92848c03",
+          "size": 843,
+          "sha256": "2c3877a23febbf543fae790eb348e628d67fa876d7351085742435531755e448"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/slash_lv2.timeline.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/c3/f42d581e3cc72f5d74a5fdbe23448568617a01",
+          "size": 95,
+          "sha256": "b6cbf7e81e729fe0ba387a005415493ce1ca4f6a5fdb625ee04cf32279c0a5a2"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/slash_lv3.parts.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/ad/42183a316d234afb50b09afe3d73487e771461",
+          "size": 847,
+          "sha256": "94ad9b233cef055be3b3647e5b80805b96db4fc25a12a34baf68ac22e8b8c3c3"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/slash_lv3.timeline.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/32/339e5fba0a89ed0e02951f8de2608c3c97ab63",
+          "size": 95,
+          "sha256": "b6cbf7e81e729fe0ba387a005415493ce1ca4f6a5fdb625ee04cf32279c0a5a2"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/touyakiren_ceo_ny26/touyakiren_ceo_ny26.atlas.amf3.deflate",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/84/5a1b6ec569b6d397d6eec45d49c504f55ac91c",
+          "size": 1213,
+          "sha256": "8fd137399b23bf1cb9972279555e20982588b16e0ed3c2113a49af07b9e8006c"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/touyakiren_ceo_ny26/touyakiren_ceo_ny26.parts.amf3.deflate",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/f6/e39f40d3c9604838997849370b76d1ca8f11d9",
+          "size": 17449,
+          "sha256": "26fc4f9617c0257c4a1f88212f95043143822fd08e817f9cc87c0c48f7a5c366"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/touyakiren_ceo_ny26/touyakiren_ceo_ny26.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/ce/d99a237c8a33a5673f509db1769a403b14dac8",
+          "size": 81122,
+          "sha256": "294e96cbc2f9228b8abb6537e6080ed1400821018fe8f22652074d9925fd792d"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/touyakiren_ceo_ny26/touyakiren_ceo_ny26.timeline.amf3.deflate",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/e0/c4a3f5ff1608a334f3c41723b07c018bc58ad6",
+          "size": 254,
+          "sha256": "258bafd978653d13105b88e4b9e2071431c5015266876387bef87d2eab572101"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/touyakiren_ceo_ny26_petal/touyakiren_ceo_ny26_petal.atlas.amf3.deflate",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/06/d364033bed31d29ceb55df0b41e1b653c3c27b",
+          "size": 445,
+          "sha256": "0da9207fef9e43b004f73169c98cacfe55b3437a5793ecc957ace4acbb1db79d"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/touyakiren_ceo_ny26_petal/touyakiren_ceo_ny26_petal.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/6c/35be06962370c4e2730ead864002603018cb72",
+          "size": 12913,
+          "sha256": "e52e9f9c553de695132b9abc447297525ff3c0f57954699fa798d89405db05e1"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/touyakiren_ceo_ny26_petal/touyakiren_ceo_ny26_petal_hit.parts.amf3.deflate",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/41/fa26e93786152ba0fae2bf0007c360fc8de585",
+          "size": 6732,
+          "sha256": "8b42f3f19906fae0f4cfdfd04b018043f8d9f58ec90dc626dfd2d7aeee503242"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/touyakiren_ceo_ny26_petal/touyakiren_ceo_ny26_petal_hit.timeline.amf3.deflate",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/06/7fca772fb1790c6f2e0fe853c081afe933da2a",
+          "size": 149,
+          "sha256": "caac742308e8b7117eab9c5f987a3b5e23f57c464f2fd694c9d5977768b6b207"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/touyakiren_ceo_ny26_sakura/touyakiren_ceo_ny26_sakura.atlas.amf3.deflate",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/26/751bbab8bb1dad5294d584854827781a4560a7",
+          "size": 783,
+          "sha256": "d7bdd24e2f6c2d70ca16e1ffe40b5e28121ef6f55d275d46e79ee6a5fbc36d6a"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/touyakiren_ceo_ny26_sakura/touyakiren_ceo_ny26_sakura.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/3c/77b4b24030c530f00bafa9efbcabaf6fd6bc6d",
+          "size": 48348,
+          "sha256": "37cbce49cf37431b7af72770d560d5bc7280aa462c4ba5f036d7ee7a1cbf11cc"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/touyakiren_ceo_ny26_sakura/touyakiren_ceo_ny26_sakura_all.parts.amf3.deflate",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/f2/8ec1b3fe7434c3a8e1b2e9cb0805d2f9fb0c86",
+          "size": 41668,
+          "sha256": "0fb69d3a8be4e9793178ad3067da78499cb4dde3d28e2a74eb75b0b5227ff38a"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/touyakiren_ceo_ny26_sakura/touyakiren_ceo_ny26_sakura_all.timeline.amf3.deflate",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/a9/7ff194b5677df5485a5c49c00e44ea28d34df3",
+          "size": 207,
+          "sha256": "edad5596a48729e15d1cf3389c1cf4bc1b5a2b77ed2b49b6f9b235f4665d06e7"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/battle/character_detail_skill_preview.battle.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/de/06f09e448db938690998742a66bd560daa80f6",
+          "size": 139,
+          "sha256": "beb1ea7251e539d59bf840ecf35b59dd59ed5b260c510230f2f8dbbf69dd6598"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/pixelart/pixelart.frame.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/f0/bbc45f2eb447973832c604f39ea02ed835497d",
+          "size": 69,
+          "sha256": "07970f90c655d5225e15494f536b87087ff6a30541883ac8530c183899606911"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/pixelart/pixelart.timeline.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/c2/06957b8e7bb559cd504c3407213719ebf923ef",
+          "size": 328,
+          "sha256": "da70363406bf85e6f18cf28a28f8c1f71157cdab4a2610f588a49f51bc9fb2a0"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/pixelart/special.frame.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/ae/b0b15159c490048e962cc0d5c782742830fb3c",
+          "size": 76,
+          "sha256": "2d2770e17592d5f5c5ee1b719495e8fc87359674fedeb47797dbf43439fbeaf7"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/pixelart/special.timeline.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/e2/2ed212a3428ff88cb2378661395a08caab3be7",
+          "size": 108,
+          "sha256": "a10c0b64dbf05796ffbfd365414d91a5a0a81ebef7cbbe4662d049afc01a7dca"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/pixelart/special_sprite_sheet.atlas.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/84/85b4dafe4e5694c3336568bb6a4b27bb14448f",
+          "size": 153,
+          "sha256": "7f7643ed2693353bc5930f6c5d2aa7afdbc4db19be11d30e630e5b9633aba7df"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/pixelart/special_sprite_sheet.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/31/5ae73f41d1b391c3f8092dc0b16b81879bd392",
+          "size": 16082,
+          "sha256": "b707b6939ec6f45d0c6b5ead77af09a7445c6f87f8513a3c00bc9faab108cdbf"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/pixelart/sprite_sheet.atlas.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/18/a57aa1f0a55506001044bead30bee3c948ebfc",
+          "size": 718,
+          "sha256": "1b389dd9dd0472ab3ccf9ef97681f53f9c7f707362726cbc0895467a2fc6a3ba"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/pixelart/sprite_sheet.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/3f/401e2b231a92a5e38781baa27ccc11bd0ad47b",
+          "size": 31848,
+          "sha256": "18bc4692a00b235cc944e1536ed683d8e134fbe616b83917267476aceb913a0c"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/ui/illustration_setting_sprite_sheet.atlas.amf3.deflate",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/7f/4ee75e7003b58b7972803af76b101f165b6d63",
+          "size": 144,
+          "sha256": "5b0f3669f86ffb6e8cf45f2ffd060f078a7e422bd449a8aa70071dba7451577c"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/voice/ally/evolution.mp3",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/80/c4f0ab7ed6d36e61edb34f0509df9e4da34d10",
+          "size": 79455,
+          "sha256": "dc073aa7eaf5f34dfa2db2d67edfdc6b2f9738e47020dd5b5779a17a8ee4c4f7"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/voice/ally/join.mp3",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/2c/0ff4ec41a41c44f6209398d570a43766f64b94",
+          "size": 52287,
+          "sha256": "ea8a51df056f19dab38f8dea01e6e3e78fed74736c370dd26a028eda60236056"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/voice/battle/battle_start_0.mp3",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/56/ed866f42e66de19f21e3a22315cafe7b6f830e",
+          "size": 25956,
+          "sha256": "72cedad169bc2d23b9f7af6cbb363537300ca49ff8ebe9280b881eeb35d58343"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/voice/battle/battle_start_1.mp3",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/6c/27267491792a4da268da40235f9561d635c8a6",
+          "size": 30972,
+          "sha256": "e44d438be596f168e906fa4a5f90f8158add68ac5ff0398583c49e0a373bf9e0"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/voice/battle/outhole_0.mp3",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/ff/c64614397819d2ab44e79697eb607f7fd23d7b",
+          "size": 8402,
+          "sha256": "0544be70b9c617679edcc27fc83e465714ced9237093424bb928b34e4bec28fb"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/voice/battle/power_flip_0.mp3",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/61/a457f6acfb3fe926d44c3c59753f70eb83d26b",
+          "size": 14671,
+          "sha256": "3d087129df873b14b1aa67dfcbb8f59c1237975b55f7afd0c6ae4c5828bb4e87"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/voice/battle/power_flip_1.mp3",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/a0/50729c8e71e65f008c02c180e788ee64952518",
+          "size": 10492,
+          "sha256": "b73470ec26db4aa1f1e3a0fe975ccbc3ac4a5ae89778c36ef97b13683d30a5ec"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/voice/battle/power_flip_2.mp3",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/a0/7b6330e451f8f6352ccf4f2373e5401c168a16",
+          "size": 12999,
+          "sha256": "2dd1f9f9cb701c1b2ac6fe61dffd1d6ac473c7ee2fb5518fce066a34218f7a0d"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/voice/battle/skill_0.mp3",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/3b/1a62bd30c43face811c75aa18eb20bfdd74d39",
+          "size": 36405,
+          "sha256": "d97d4918f3213da13c15701553698950957fa05a54a7802a7ea5c477ac4d2b19"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/voice/battle/skill_1.mp3",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/72/6b316e47f30f2bae135fc2ae26cb4be3c64259",
+          "size": 38495,
+          "sha256": "955c7b57ef616539d4b88c9d1dec49d6dfcdf16ac58969bf9736904a04f9c773"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/voice/battle/skill_ready.mp3",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/76/1a83643a5f943642e5208b0eb43b37aa3fbe7d",
+          "size": 12999,
+          "sha256": "c3a4aa9e3a7bb9efb208e9d3c5ec498b49e82270a3939c9ecfd527927eec1e64"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/voice/battle/win_0.mp3",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/72/941e5ef6bbbfa5f8e0439f2596f0f9e460accb",
+          "size": 25120,
+          "sha256": "ff9ac59e7e13f5e8ba969233d0f85f0eb6a216de9349ec68d3ccb6c094fb3e80"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/voice/battle/win_1.mp3",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/55/dea78df8031117e08153980605fad2cbd96364",
+          "size": 36405,
+          "sha256": "d5207b445c9d0c8a0dd0a7463d8e942dd89f7ddb464df5396d6000b452d614a8"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/voice/home/home_0.mp3",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/fd/93549425943a72ea5e7ea876f87ca460d577bf",
+          "size": 252908,
+          "sha256": "b516c61cf147a5c0fb79f44d9bf5faab643b6fec86e5559ea2f29a38c482fb5e"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/voice/home/home_1.mp3",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/ef/b9a94ceac24c02602e8ddc11d9b358499fc381",
+          "size": 325633,
+          "sha256": "e502f0743f23ea5a2a1aba022ce65ea296909f65db3440a9f0150c256c8a7e33"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/voice/home/home_2.mp3",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/39/21336b5799d60d1b2d6042bc5cdd4d4b927dd5",
+          "size": 283001,
+          "sha256": "b2db6bd608a43ef4e245b3d99b20322899933a4591dda1cba3aa008cc19195ba"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/voice/home/home_3.mp3",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/06/41afc8bfe8a9b1366edfc088596f080fd12e63",
+          "size": 295958,
+          "sha256": "386a326977b36d935b67ee51cf4fa65538e0ddc26eed099432a2db238920cb5b"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/ginovi/voice/home/home_4.mp3",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/08/232a1021a1bdb5c311bbfb1fb8357f99808f0f",
+          "size": 261267,
+          "sha256": "9931f6ceac48587767bb494f101be7dec5428315a914226de33cb14aeb614bde"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/battle/character_detail_skill_preview.battle.amf3.deflate",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/57/07b3a6ab2fd9f78e0667f8e9c993f35ced04fa",
+          "size": 142,
+          "sha256": "b3574f534248bc1e6cae67a56a8dc2a8471068bea296227c192e495036b51767"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/pixelart/pixelart.frame.amf3.deflate",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/89/ebd3a16864f5f850d6c32f1415735f19f9ca45",
+          "size": 82,
+          "sha256": "86d74f95179f3771b9cc54a085832f7d10b1dc254b64f8717f0f8712fd57e29b"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/pixelart/pixelart.timeline.amf3.deflate",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/14/0b0af6ce9f01319b0c7c49f516d288fb9e7222",
+          "size": 333,
+          "sha256": "9a602863ae1c7cfb9f18cc9008e66856d68bbb456d5d8c8926d975cb228d5064"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/pixelart/special.frame.amf3.deflate",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/a3/c7b3fe6cb583eba5f6976616d1f0e3a079f0e5",
+          "size": 86,
+          "sha256": "e4e8153bc02dc089edeae9b2d3169d1ca4529f999f0d454785319b366925cf06"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/pixelart/special.timeline.amf3.deflate",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/c1/89261ff7c9bf18f7e2cf2496ede7d546492ce3",
+          "size": 110,
+          "sha256": "071d9eb6649dc603b0472c385a8263abfa3e31c720e27b1766dcb6f25d0fee4b"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/pixelart/special_sprite_sheet.atlas.amf3.deflate",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/ff/66ccaab8b1702f91b46d2139a158fd8e2363f8",
+          "size": 596,
+          "sha256": "667a06d2f8789829175ca522389a456f7efc8820afd92ee110e58b9dd2761802"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/pixelart/special_sprite_sheet.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/3f/1a1a4e3302a346cb3d155124ec9edd491c3606",
+          "size": 25374,
+          "sha256": "73ec1de7046f31e9b1bc2dc0b3a0a92750019d59cbc5d2079785051b8ee5cf4d"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/pixelart/sprite_sheet.atlas.amf3.deflate",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/a9/6f958590a2ea4a4bda3f6ff53c038d2959d93d",
+          "size": 1051,
+          "sha256": "fb343c9720dd14328a8e41739f7eba1118042cef3e8dfcbb9b655617a5a8910c"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/pixelart/sprite_sheet.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/92/9bdd9ad4cd0f4d4a2f00df1c47137d8776b861",
+          "size": 18351,
+          "sha256": "58e7ea19c28991ebc7d60af0481a263264187b36eb5ef9359a4acb12f85222f5"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/illustration_setting_sprite_sheet.atlas.amf3.deflate",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/0a/3dad7f9e8157f7726afa3b7991c09caf40e869",
+          "size": 158,
+          "sha256": "bfa7551a390843678e6925b4c0579c8e951affd7a564bd00be2057cbf020d7bf"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/ally/evolution.mp3",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/3e/e2798656b3b187afc55af6122330a2d96fdbc0",
+          "size": 147375,
+          "sha256": "c6e2fee9773a3ba69b0f4be5f0422fd1613b94c0b14379f4b4d74f40179b43cd"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/ally/join.mp3",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/49/a01ce5b244723072f503e4d99add365ea2d8b6",
+          "size": 190320,
+          "sha256": "ae91b72d0413f5092a1220adb91b8621c8bc2fb15fd53aaadead8122d969458d"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/battle/battle_start_0.mp3",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/1e/38029c303541892c08080e9e418520e8967be5",
+          "size": 35780,
+          "sha256": "eaecfd0246bbe17f7da22f16e30ec10eb1b1bfb5948f6528790e6e09bcc09189"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/battle/battle_start_1.mp3",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/11/6374fa5eae6e65eb1a8f8521d60eb83ec842f5",
+          "size": 35466,
+          "sha256": "419fdc976299ed9f96ded0375aec3b8b80f34893acb3e66bdb757859ebdfaa46"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/battle/outhole_0.mp3",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/4d/b9d7fcd0e6154a47380440e9dea7eca826d8aa",
+          "size": 15404,
+          "sha256": "baa66bd82b0a9b7085d8ca50c9e3b48b01e80d8266eebb99fdd9f4d2281627bd"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/battle/outhole_1.mp3",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/3c/d36c0a76c19dd3f3dae1726c3afbc778479174",
+          "size": 14150,
+          "sha256": "50d53da0654ee648bc5ce5a1c14f9d69d513c4cee0edf858171627ad8dabf3d9"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/battle/power_flip_0.mp3",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/fb/170e830f1785ff996b7b81631f8366ef84635b",
+          "size": 9135,
+          "sha256": "a33724e46827150957a1b99bdf65478958356b3b551172e70cea2d1b5c29dde2"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/battle/power_flip_1.mp3",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/1a/7c277d17432057bfd9c4ee1597b9b96d25d7c8",
+          "size": 6313,
+          "sha256": "d120648b62fa3c18a210c558f8d222ace7e4f60aee691c5bb9fd69f478efa833"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/battle/skill_0.mp3",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/4e/53b26fffa1ee1a032336d461874fa20222c60a",
+          "size": 128566,
+          "sha256": "0fe8466f451cf5ec511874b7eb2358a98a8d27734c6e9893ddd6af78cab2d3af"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/battle/skill_1.mp3",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/9f/06002d24ac6a38021513bfd7ca6971fc468f7d",
+          "size": 128880,
+          "sha256": "d6fe8ee48b9f541bcd4f3f0743e2291c6a6ffddf79f8f7715d7b56ad8a69090e"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/battle/skill_ready.mp3",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/5f/fa904f442a03901d1097d5aa167806454e21af",
+          "size": 67126,
+          "sha256": "48035561d01132cda35e81fff8321269059c74eafe81c443a0634223e6ecfe5d"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/battle/win_0.mp3",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/8d/de850c5979fc450bdf185fb534a83ee1250d0f",
+          "size": 51140,
+          "sha256": "cc634a7df98730eb9c89656ef13a0e018ff4edf4d90da29b4f45b281d8ba0e2b"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/battle/win_1.mp3",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/14/76b79c688ee33952b463c2d73dba56f2ada69e",
+          "size": 31077,
+          "sha256": "7e8e56ffe102c30c41ed42c8e7052c586ba893ecaff7070becaf61065b5c9c5b"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/home/hitoridemo.mp3",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/a8/615e60c10785218ffddc10808b026f3a34ff2d",
+          "size": 166496,
+          "sha256": "e2f86dce36910356a78e79645b815d0b484f0cf086f4db284dbe33c97c14106b"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/home/konoisu.mp3",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/3f/47d6c475ce30272f2f4f57a9b46171b3df208e",
+          "size": 195335,
+          "sha256": "bf8dfa67d552363aae92d84a999641533bc482aea7a61be86f9ca7bf6378fb85"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/home/kyoha.mp3",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/2c/147a374be5d1124b8d8bcc4a8c2886dda30a72",
+          "size": 216338,
+          "sha256": "6313bed7075a4c580458f8950880fab2df2e3450e5efc5d610d731dd54c833a8"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/home/oshigoto.mp3",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/02/19f40d09eec11f1924cb254366c344468b5f1b",
+          "size": 184991,
+          "sha256": "f06a0a0295b0dbb1bdbfab5e18a6031aeade8b8c6b8f8ba184628f41520b639b"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/home/tamani.mp3",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/b9/08db0629e6ab86a8013242690878607be881f8",
+          "size": 135463,
+          "sha256": "8bc51cb04f95dcf37e0e1e92fbd16d406bd3213323d612debca37cb76391cc0a"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/dark_01.png",
+      "owners": [
+        "abyss_weapons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-3-backfill0728.zip",
+          "archive_member": "production/upload/cd/d958cf2e87af562f6ad2076931bf61842fa9f1",
+          "size": 600,
+          "sha256": "c92c7175d059e2f63b78022b2c443544b715199a92c6632e2631211ed4580669"
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-3-backfill0728.zip",
+          "archive_member": "production/upload/cd/d958cf2e87af562f6ad2076931bf61842fa9f1",
+          "size": 600,
+          "sha256": "c92c7175d059e2f63b78022b2c443544b715199a92c6632e2631211ed4580669"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/dark_02.png",
+      "owners": [
+        "abyss_weapons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-2-backfill0728.zip",
+          "archive_member": "production/upload/7f/486999384b1d352e81099d0b166b481cf76c37",
+          "size": 570,
+          "sha256": "dae307df2592fe472873679bdf1b6eff70167c86a55de1032fcd8ef42965cc11"
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-2-backfill0728.zip",
+          "archive_member": "production/upload/7f/486999384b1d352e81099d0b166b481cf76c37",
+          "size": 570,
+          "sha256": "dae307df2592fe472873679bdf1b6eff70167c86a55de1032fcd8ef42965cc11"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/fire_01.png",
+      "owners": [
+        "abyss_weapons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-1-backfill0728.zip",
+          "archive_member": "production/upload/57/01c8fde66938a923370a19034674d8ec7114f4",
+          "size": 708,
+          "sha256": "139a7e9e2005e88d6d110c36fe6c382bd4132e4fd9b3ef5354176be8a0b697f9"
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-1-backfill0728.zip",
+          "archive_member": "production/upload/57/01c8fde66938a923370a19034674d8ec7114f4",
+          "size": 708,
+          "sha256": "139a7e9e2005e88d6d110c36fe6c382bd4132e4fd9b3ef5354176be8a0b697f9"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/fire_02.png",
+      "owners": [
+        "abyss_weapons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-2-backfill0728.zip",
+          "archive_member": "production/upload/74/8e3bb9c9daa0fd0d2986df5bc208ca8ab9a7a8",
+          "size": 607,
+          "sha256": "d5ca407aa04d42d9eb0891f3d023299a5516b4b3b9d8dbcf5426b73ce06e51e1"
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-2-backfill0728.zip",
+          "archive_member": "production/upload/74/8e3bb9c9daa0fd0d2986df5bc208ca8ab9a7a8",
+          "size": 607,
+          "sha256": "d5ca407aa04d42d9eb0891f3d023299a5516b4b3b9d8dbcf5426b73ce06e51e1"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/light_01.png",
+      "owners": [
+        "abyss_weapons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-2-backfill0728.zip",
+          "archive_member": "production/upload/96/edcc99a1a3c8a831ebd6356b08c6ff37f645ec",
+          "size": 420,
+          "sha256": "1b9274080c8230f8ccbb659f678b9fad8cf0a71c3984b69d899d6bfa9858fa01"
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-2-backfill0728.zip",
+          "archive_member": "production/upload/96/edcc99a1a3c8a831ebd6356b08c6ff37f645ec",
+          "size": 420,
+          "sha256": "1b9274080c8230f8ccbb659f678b9fad8cf0a71c3984b69d899d6bfa9858fa01"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/light_02.png",
+      "owners": [
+        "abyss_weapons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-1-backfill0728.zip",
+          "archive_member": "production/upload/20/4b106fa6e05df1778d237679a2af51bc06241d",
+          "size": 702,
+          "sha256": "652f2053faa965ab1005cdd93c4baf3f622e04051d89525c5171acbef3ee5c43"
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-1-backfill0728.zip",
+          "archive_member": "production/upload/20/4b106fa6e05df1778d237679a2af51bc06241d",
+          "size": 702,
+          "sha256": "652f2053faa965ab1005cdd93c4baf3f622e04051d89525c5171acbef3ee5c43"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/thunder_01.png",
+      "owners": [
+        "abyss_weapons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-2-backfill0728.zip",
+          "archive_member": "production/upload/6a/54896fe299bb0c171255ef8669fc9444dc4d86",
+          "size": 903,
+          "sha256": "992752cc02985d338221384876d6fc9205c1a0a491db247e1811e274ef4384ef"
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-2-backfill0728.zip",
+          "archive_member": "production/upload/6a/54896fe299bb0c171255ef8669fc9444dc4d86",
+          "size": 903,
+          "sha256": "992752cc02985d338221384876d6fc9205c1a0a491db247e1811e274ef4384ef"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/thunder_02.png",
+      "owners": [
+        "abyss_weapons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-1-backfill0728.zip",
+          "archive_member": "production/upload/1f/93c504f8bdf48dfb6b1024e357535c785ee3d9",
+          "size": 743,
+          "sha256": "ff693d70355278cf52fd856659a364846ad71aed60d9c3f5d6232178074305df"
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-1-backfill0728.zip",
+          "archive_member": "production/upload/1f/93c504f8bdf48dfb6b1024e357535c785ee3d9",
+          "size": 743,
+          "sha256": "ff693d70355278cf52fd856659a364846ad71aed60d9c3f5d6232178074305df"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/universal_01.png",
+      "owners": [
+        "abyss_weapons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-2-backfill0728.zip",
+          "archive_member": "production/upload/8b/05bad75fad2b112a3dccae9752e5be5d500d5d",
+          "size": 654,
+          "sha256": "9ffc873d88ab867a247ea5011d1a1b9cd771bf8950e63193a0a4cdd4088f0700"
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-2-backfill0728.zip",
+          "archive_member": "production/upload/8b/05bad75fad2b112a3dccae9752e5be5d500d5d",
+          "size": 654,
+          "sha256": "9ffc873d88ab867a247ea5011d1a1b9cd771bf8950e63193a0a4cdd4088f0700"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/universal_02.png",
+      "owners": [
+        "abyss_weapons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-3-backfill0728.zip",
+          "archive_member": "production/upload/f5/cafa1a0647a159d05e3a2fb6af0b445f2ab4e0",
+          "size": 1207,
+          "sha256": "6e427f5f420a4cda6134e0f74296e1e59d7d9397eb8bd7ed29334da474a58dc6"
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-3-backfill0728.zip",
+          "archive_member": "production/upload/f5/cafa1a0647a159d05e3a2fb6af0b445f2ab4e0",
+          "size": 1207,
+          "sha256": "6e427f5f420a4cda6134e0f74296e1e59d7d9397eb8bd7ed29334da474a58dc6"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/universal_03.png",
+      "owners": [
+        "abyss_weapons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-3-backfill0728.zip",
+          "archive_member": "production/upload/e6/70dddb518909521be7ee53e521e3f9af8699d4",
+          "size": 999,
+          "sha256": "83280a099f6e46fd338442155b68f1c1eb8c284e0a8f625e935d1457e413e8d8"
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-3-backfill0728.zip",
+          "archive_member": "production/upload/e6/70dddb518909521be7ee53e521e3f9af8699d4",
+          "size": 999,
+          "sha256": "83280a099f6e46fd338442155b68f1c1eb8c284e0a8f625e935d1457e413e8d8"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/water_01.png",
+      "owners": [
+        "abyss_weapons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-3-backfill0728.zip",
+          "archive_member": "production/upload/c8/07f370777d28c1e9e992de1a4d5f1466b535ab",
+          "size": 539,
+          "sha256": "1681378c93f6eca67c7e099cee4353600505bdbbc00264f8fb6dc487bf0583c1"
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-3-backfill0728.zip",
+          "archive_member": "production/upload/c8/07f370777d28c1e9e992de1a4d5f1466b535ab",
+          "size": 539,
+          "sha256": "1681378c93f6eca67c7e099cee4353600505bdbbc00264f8fb6dc487bf0583c1"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/water_02.png",
+      "owners": [
+        "abyss_weapons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-3-backfill0728.zip",
+          "archive_member": "production/upload/cf/c7d13ceebf45fd6178774e3e4c00cf522b7419",
+          "size": 922,
+          "sha256": "03556f48fe9cb69cf37f0e99c662aedfe6e6de5833f8a2cb579bca5e12bc4aa1"
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-3-backfill0728.zip",
+          "archive_member": "production/upload/cf/c7d13ceebf45fd6178774e3e4c00cf522b7419",
+          "size": 922,
+          "sha256": "03556f48fe9cb69cf37f0e99c662aedfe6e6de5833f8a2cb579bca5e12bc4aa1"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/wind_01.png",
+      "owners": [
+        "abyss_weapons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-2-backfill0728.zip",
+          "archive_member": "production/upload/99/92138664d9f081ef79a45d44a91c5058e4c7fe",
+          "size": 665,
+          "sha256": "7c9d987a29ec93861062d4d518785c0a1aab9e4e8fe17875a743a95e8b77499c"
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-2-backfill0728.zip",
+          "archive_member": "production/upload/99/92138664d9f081ef79a45d44a91c5058e4c7fe",
+          "size": 665,
+          "sha256": "7c9d987a29ec93861062d4d518785c0a1aab9e4e8fe17875a743a95e8b77499c"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/wind_02.png",
+      "owners": [
+        "abyss_weapons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-1-backfill0728.zip",
+          "archive_member": "production/upload/0c/6fc27d89610197a0ec739c035e427b9679ae99",
+          "size": 567,
+          "sha256": "7e2df0e4b36c42b2a47787735c901fe035082efb01632989da66c45ae1f8096a"
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-1-backfill0728.zip",
+          "archive_member": "production/upload/0c/6fc27d89610197a0ec739c035e427b9679ae99",
+          "size": 567,
+          "sha256": "7e2df0e4b36c42b2a47787735c901fe035082efb01632989da66c45ae1f8096a"
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/ability/ability.orderedmap",
+      "owners": [
+        "ginovi",
+        "lafu_lunar_ny",
+        "light_dark_dragons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.276-1.4.277-1-08021408.zip",
+          "archive_member": "production/upload/1e/664c1cc8d80f4f9a69aae2c49ae8c01d1c4001",
+          "size": 316796,
+          "sha256": "ae0e4576acf2747ebb227c0687aa43fbaf49a4c186b99e24e917f32287ff7e43",
+          "unclaimed_sha256": "0bdcb54a38e782e737b604fbf07c190a1ca1bdb7e6711b5a0229baa5a7a13dc2",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": false
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": false
+            },
+            {
+              "owner": "light_dark_dragons",
+              "present": true,
+              "projection_sha256": "f36f614ec050cd6e238f473317052c2bb8030f5a5e4d11beb0134e45379ffb09"
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.303-1.4.304-1-08052032.zip",
+          "archive_member": "production/upload/1e/664c1cc8d80f4f9a69aae2c49ae8c01d1c4001",
+          "size": 318701,
+          "sha256": "651c91cd6fb55a6c7324e8917195ef8e798d3ad0bed7dd16901ee0b3771b9271",
+          "unclaimed_sha256": "0bdcb54a38e782e737b604fbf07c190a1ca1bdb7e6711b5a0229baa5a7a13dc2",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": true,
+              "projection_sha256": "9c160e4117e6bac4e275757e54076e1634531d382e8e4295c75f9a8fd842d3fc"
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": true,
+              "projection_sha256": "cb34fc44b135175adfc06ff453b2555dcb12a84975ff39e410e9a8c52bdc847c"
+            },
+            {
+              "owner": "light_dark_dragons",
+              "present": true,
+              "projection_sha256": "d5ce4023dbacfb97efe675ae949721d75967107cba52fb3a6df1e96cc05ded38"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/ability/ability_soul.orderedmap",
+      "owners": [
+        "abyss_weapons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-3-backfill0728.zip",
+          "archive_member": "production/upload/d6/a23f83f176b05f715a8504b8fc0fc1ffaff068",
+          "size": 42465,
+          "sha256": "3f2aaf1297b4e2045013acb56d61c5c3cefff18c82a1d175ed35c69bee266edd",
+          "unclaimed_sha256": "b59765f4b486392986d26e3191ac74382622084e58ce9ac29501200e93919cc0",
+          "table_claims": [
+            {
+              "owner": "abyss_weapons",
+              "present": true,
+              "projection_sha256": "555a315f0dd3974464209eafa935d3efd39c0d0dc0d728e85147de92e4cf2b4f"
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.306-1.4.307-1-08052127.zip",
+          "archive_member": "production/upload/d6/a23f83f176b05f715a8504b8fc0fc1ffaff068",
+          "size": 42048,
+          "sha256": "f939d40055228ea747e40c0c20943387355675c0b0a022d5b3c78dceb7276359",
+          "unclaimed_sha256": "f027639d822d6dfb200536f18fa54a073504693976681251e62fd408651e07c6",
+          "table_claims": [
+            {
+              "owner": "abyss_weapons",
+              "present": true,
+              "projection_sha256": "00d786f37a0f28dd3fa30bac845cd00d3142afc75c28b5807cd60267a7f07813"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/ability/leader_ability.orderedmap",
+      "owners": [
+        "ginovi",
+        "lafu_lunar_ny",
+        "light_dark_dragons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.276-1.4.277-1-08021408.zip",
+          "archive_member": "production/upload/ff/84353774cb95e8d7dc90c679f96a5bca7f42e5",
+          "size": 53883,
+          "sha256": "19f828cb313007bf10fb8f44119c76726272fb58ec7cbd545dadd0fe41042779",
+          "unclaimed_sha256": "e633a61302d613ed6a0a41b6943eb41f086f973c51ea33a2a8e6969d3e571a54",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": false
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": false
+            },
+            {
+              "owner": "light_dark_dragons",
+              "present": true,
+              "projection_sha256": "9dcaae3a60644d7cd89820ee418b9435f6863d1d7fe99053da87d64c1f5298ef"
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.287-1.4.288-1-08051452.zip",
+          "archive_member": "production/upload/ff/84353774cb95e8d7dc90c679f96a5bca7f42e5",
+          "size": 54396,
+          "sha256": "98af70fbb29525500ffc91bb960e417b2b686d500d8acc02fb69900a987b0de1",
+          "unclaimed_sha256": "e633a61302d613ed6a0a41b6943eb41f086f973c51ea33a2a8e6969d3e571a54",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": true,
+              "projection_sha256": "81be12cb6cd8c004296f3005abd1582b1e7485963f8f8d310be96d0821e37c76"
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": true,
+              "projection_sha256": "6ea4289b49f2269c91e7d64b6a94916b938565458859f68a90e545a75acde7f2"
+            },
+            {
+              "owner": "light_dark_dragons",
+              "present": true,
+              "projection_sha256": "63721a4807aee798e862a062b8e760dc0a7cdf0a4293e17e6fd63a415f0962ea"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/battle/boss/boss_level.orderedmap",
+      "owners": [
+        "abyss_tower"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/19/a4aa442b3249499356e7a3f6370e530bfe355e",
+          "size": 43243,
+          "sha256": "d256e1e2181f21ccafee9ded2e7c95ebed1ddf53523f34161d03f77b3363a203",
+          "unclaimed_sha256": "d1225855f9ac00731c8477b5819596ffdec58bf1af2da31c31a00ec66610e259",
+          "table_claims": [
+            {
+              "owner": "abyss_tower",
+              "present": false
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/19/a4aa442b3249499356e7a3f6370e530bfe355e",
+          "size": 43243,
+          "sha256": "d256e1e2181f21ccafee9ded2e7c95ebed1ddf53523f34161d03f77b3363a203",
+          "unclaimed_sha256": "d1225855f9ac00731c8477b5819596ffdec58bf1af2da31c31a00ec66610e259",
+          "table_claims": [
+            {
+              "owner": "abyss_tower",
+              "present": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/battle/boss/general_boss.orderedmap",
+      "owners": [
+        "abyss_tower"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/ec/d8f66b60947ca05643c4080a6cc925c750b9d6",
+          "size": 345850,
+          "sha256": "92ee5026fd10b935d39068e750ebf95acb4a104f105d9fe82f7e11b2c87c8375",
+          "unclaimed_sha256": "40a5235ba4869ecd01b6fe480744d6aad6b57704bd40ca427b07047243721821",
+          "table_claims": [
+            {
+              "owner": "abyss_tower",
+              "present": false
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/ec/d8f66b60947ca05643c4080a6cc925c750b9d6",
+          "size": 345850,
+          "sha256": "92ee5026fd10b935d39068e750ebf95acb4a104f105d9fe82f7e11b2c87c8375",
+          "unclaimed_sha256": "40a5235ba4869ecd01b6fe480744d6aad6b57704bd40ca427b07047243721821",
+          "table_claims": [
+            {
+              "owner": "abyss_tower",
+              "present": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/battle/boss/general_boss_variable.orderedmap",
+      "owners": [
+        "abyss_tower"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/82/93e535e806d70640f45950db1fe14ed9482bdf",
+          "size": 88321,
+          "sha256": "474b990eb164884d724999fe41fa8d957e9ae8d7c084734469fbb408051e6a32",
+          "unclaimed_sha256": "b613a548cbfaf88be6c30d90b9af776bde0c73c68597161eb711040c441eac7b",
+          "table_claims": [
+            {
+              "owner": "abyss_tower",
+              "present": false
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/82/93e535e806d70640f45950db1fe14ed9482bdf",
+          "size": 88321,
+          "sha256": "474b990eb164884d724999fe41fa8d957e9ae8d7c084734469fbb408051e6a32",
+          "unclaimed_sha256": "b613a548cbfaf88be6c30d90b9af776bde0c73c68597161eb711040c441eac7b",
+          "table_claims": [
+            {
+              "owner": "abyss_tower",
+              "present": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/battle/field_data.orderedmap",
+      "owners": [
+        "abyss_tower"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/30/363f8364e183905b2d0b48b8718b7165135bc2",
+          "size": 124987,
+          "sha256": "b869f774464a09595eb9d0ef83cc2ad61d93da4908496cd218fdad01b6d33a29",
+          "unclaimed_sha256": "4769c28f5c2f38e3539514244832a786cdbcb501900ac014f029a65d0c3d4925",
+          "table_claims": [
+            {
+              "owner": "abyss_tower",
+              "present": false
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/30/363f8364e183905b2d0b48b8718b7165135bc2",
+          "size": 124987,
+          "sha256": "b869f774464a09595eb9d0ef83cc2ad61d93da4908496cd218fdad01b6d33a29",
+          "unclaimed_sha256": "4769c28f5c2f38e3539514244832a786cdbcb501900ac014f029a65d0c3d4925",
+          "table_claims": [
+            {
+              "owner": "abyss_tower",
+              "present": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/battle/zone.orderedmap",
+      "owners": [
+        "abyss_tower"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/cd/6336795a27ea33bf8d0c5d5a9bfb466bedcf1e",
+          "size": 248391,
+          "sha256": "d17892260c87e4636de465482e330c42b23c216f6032faa67bc120e99e1a6bae",
+          "unclaimed_sha256": "2eaef8af8a4d85a285b37b775eda2f96a6f8c10890522d6bd1a6e639dc148edc",
+          "table_claims": [
+            {
+              "owner": "abyss_tower",
+              "present": false
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/cd/6336795a27ea33bf8d0c5d5a9bfb466bedcf1e",
+          "size": 248391,
+          "sha256": "d17892260c87e4636de465482e330c42b23c216f6032faa67bc120e99e1a6bae",
+          "unclaimed_sha256": "2eaef8af8a4d85a285b37b775eda2f96a6f8c10890522d6bd1a6e639dc148edc",
+          "table_claims": [
+            {
+              "owner": "abyss_tower",
+              "present": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/character/character.orderedmap",
+      "owners": [
+        "ginovi",
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/2d/5cb9b28d18f984a51b345a4d7aab03d77bddfc",
+          "size": 75959,
+          "sha256": "e3529dc7597132b59a9d87de09f61ddd9de5d42a541b0b0f264892d4231ab366",
+          "unclaimed_sha256": "b23f034f17c8c570fe7ae8c5d9412805246a13089c3a49944fc0775ba97ca388",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": false
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": false
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/2d/5cb9b28d18f984a51b345a4d7aab03d77bddfc",
+          "size": 76264,
+          "sha256": "d69991d3dfa31b158841c3b77842640687f603e2cba6d7c3fb7f9ab2b6195e22",
+          "unclaimed_sha256": "29e26654749ede9f26d1be5fe53f5a3a46efc01a57e0aa7ae9df8c9da9fb9912",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": true,
+              "projection_sha256": "482215f54313aff3b5a97c20c39deebc53afc90c6659af75376e758fea881874"
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": true,
+              "projection_sha256": "7446af74ada7c807a3814f1b9c5e67e199b568804aa8d090d6d7e3eec300a762"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/character/character_awake_status.orderedmap",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-2-backfill0728.zip",
+          "archive_member": "production/upload/ae/c45ffea353f4fac4ee732c5e7d597d2a1f572b",
+          "size": 737,
+          "sha256": "beb1acd385008f4d015aeec61a071d21830f186f72aae0f77b9d2bf5b51f5167",
+          "unclaimed_sha256": "bd983260f4a897891f87cf97e0b0f84df0c9f8d375af7ac2a96f95379ec25da5",
+          "table_claims": [
+            {
+              "owner": "lafu_lunar_ny",
+              "present": false
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/ae/c45ffea353f4fac4ee732c5e7d597d2a1f572b",
+          "size": 757,
+          "sha256": "0fb2031d025e5727b2b609a6280dd61f773d8db082852a826713d8b0e08b6377",
+          "unclaimed_sha256": "bd983260f4a897891f87cf97e0b0f84df0c9f8d375af7ac2a96f95379ec25da5",
+          "table_claims": [
+            {
+              "owner": "lafu_lunar_ny",
+              "present": true,
+              "projection_sha256": "f15408e95b9f09c182ba91d603a29d6e3d8e3d77641beb1954d21d63471f86e1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/character/character_gacha_sound.orderedmap",
+      "owners": [
+        "ginovi",
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/ac/b038c35f3048ba7ca07a6a84307b2fb10c041c",
+          "size": 100897,
+          "sha256": "e5d8da2175f6b002440751789af847e8160e3b11e117577e479784b50a4cb1cf",
+          "unclaimed_sha256": "f79b174e8b63db763e1021e05529ae91ad1692511ee2b57be55e11bcd596f06d",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": false
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": false
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/ac/b038c35f3048ba7ca07a6a84307b2fb10c041c",
+          "size": 101298,
+          "sha256": "01db7ff0790970c9c4206e4793d7037c5019eb78f93953791d0d7be50a20a3aa",
+          "unclaimed_sha256": "f79b174e8b63db763e1021e05529ae91ad1692511ee2b57be55e11bcd596f06d",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": true,
+              "projection_sha256": "62fb40394574090813da0a8728372996e2e1b032efc522741617c1fb1cea1035"
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": true,
+              "projection_sha256": "0294c943c2fd169f8e36668ad0d4fa8a164e46d52dee9b395cfdf096138ca6c6"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/character/character_speech.orderedmap",
+      "owners": [
+        "ginovi",
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/b4/a28679b8eeefdbdcbe6071fd4f2ff85e5b3415",
+          "size": 385670,
+          "sha256": "149efcee523984da760a00f29127daf03d631d8f86f531c10eaaa135d1aec494",
+          "unclaimed_sha256": "9237538ec2c8d94c87ef950f91ac9824a22cd89f40ef16517618ea13a6ed7f03",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": false
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": false
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/b4/a28679b8eeefdbdcbe6071fd4f2ff85e5b3415",
+          "size": 387645,
+          "sha256": "629577526df8cd14063f73219b0b1c239703199f22fb85a17359736d8f1658c9",
+          "unclaimed_sha256": "cf929bd25bd1f57873ce203a113ce778656d03837bda925af0d50c8dd2f88aa0",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": true,
+              "projection_sha256": "729e8807baedd2c8b53956a254d58c7e307e28f71bc489140ff2a09e3ae1e881"
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": true,
+              "projection_sha256": "2cdc072e17fdf61d6b689e721f0f312f6715fbd183b1d0d1637fa3feff4ee8ec"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/character/character_status.orderedmap",
+      "owners": [
+        "ginovi",
+        "lafu_lunar_ny",
+        "light_dark_dragons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/5c/6a4f0e2ceb1dbcf60f9b306b0f7bfd0eca55c9",
+          "size": 58196,
+          "sha256": "3917dd71de4580d0c36b0cfd6fd146a7b70452345fea6e7f692188bbbf2f4457",
+          "unclaimed_sha256": "6f8b7829495778c65fd19b02d5444ec016d2013a27ae50cf4efec7839c06a993",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": false
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": false
+            },
+            {
+              "owner": "light_dark_dragons",
+              "present": true,
+              "projection_sha256": "600b8446e76e9929c2ab5c95fb789896621bce8a0f7e4bf5c7b1aaabf5fcc688"
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/5c/6a4f0e2ceb1dbcf60f9b306b0f7bfd0eca55c9",
+          "size": 58426,
+          "sha256": "c7382e3f65564a0e1630e3798e9e5fcb8e4bfe74fcb60dc88796e059007c3401",
+          "unclaimed_sha256": "6f8b7829495778c65fd19b02d5444ec016d2013a27ae50cf4efec7839c06a993",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": true,
+              "projection_sha256": "cb1c100ab39e465f1a310cab6f6fc9a0e39a31f355ce51e05be6565c48d30795"
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": true,
+              "projection_sha256": "fb908b190eabc73ce26f0f916a4dc90110d138fbd5ce8403f57bddddced5d540"
+            },
+            {
+              "owner": "light_dark_dragons",
+              "present": true,
+              "projection_sha256": "74d10259cd52e2871371309b8551f5388d70307df537addc24f6b4ce9d67d946"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/character/character_text.orderedmap",
+      "owners": [
+        "ginovi",
+        "lafu_lunar_ny",
+        "light_dark_dragons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.276-1.4.277-1-08021408.zip",
+          "archive_member": "production/upload/8b/035728b2151de044fb245988ec5f33ebb544ab",
+          "size": 185042,
+          "sha256": "97e7c2eebe98f1d327a4d21c4a7212a1aa4996c20ab6458eb968d94931a6a0f4",
+          "unclaimed_sha256": "a1ded5f32feef618dc67426d5473ff76b0fdc814bb292960f2039ecde393d69f",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": false
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": false
+            },
+            {
+              "owner": "light_dark_dragons",
+              "present": true,
+              "projection_sha256": "01181db1aab525b45ee2d5cc741c092f51b85b178b156e3569df21108f9ec091"
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/8b/035728b2151de044fb245988ec5f33ebb544ab",
+          "size": 186139,
+          "sha256": "a031625899a23b33ce660811fdd967a397c5ffc4743ec9119926c54abf285388",
+          "unclaimed_sha256": "a1ded5f32feef618dc67426d5473ff76b0fdc814bb292960f2039ecde393d69f",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": true,
+              "projection_sha256": "1734a023df7526bd69c748f948e1d4ccada9f3417f380483ad23547f845e3351"
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": true,
+              "projection_sha256": "53717a572a2a74b43e711867cf5abfa75582805ac3ebe25523682d345cac9974"
+            },
+            {
+              "owner": "light_dark_dragons",
+              "present": true,
+              "projection_sha256": "cbf4095d739916e8fe37f8ba28bb4cc67d049e924c8667d7068c220784cbd571"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/character/full_shot_image_attribute.orderedmap",
+      "owners": [
+        "ginovi",
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/b9/132d27178d27f9d91df89fc47e106bbaf2d5b5",
+          "size": 41235,
+          "sha256": "827c43272abbac771810951babefa3b7f596157e3d02a17cc35adec7d1ad9218",
+          "unclaimed_sha256": "3056cb6e13fe6a804e758f64226be53e2ed280bfb002b4fe8783dd04e8f2a9bd",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": false
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": false
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/b9/132d27178d27f9d91df89fc47e106bbaf2d5b5",
+          "size": 41405,
+          "sha256": "6349dcb64f9eed64cb5604bf500c29434511961cdd56ec41bdcf68973baf94d9",
+          "unclaimed_sha256": "3056cb6e13fe6a804e758f64226be53e2ed280bfb002b4fe8783dd04e8f2a9bd",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": true,
+              "projection_sha256": "f65dc8de8510e85df79fbe99681e38a8f30bbce1f86aa78e22ecaa92f91073ba"
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": true,
+              "projection_sha256": "23e7f19a4143edf92214d8c66c28d91911d3fda104022c9b133dd5335bc0bdbf"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/character/unique_condition.orderedmap",
+      "owners": [
+        "ginovi",
+        "lafu_lunar_ny",
+        "light_dark_dragons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.276-1.4.277-1-08021408.zip",
+          "archive_member": "production/upload/30/cbcd99de1aa6e8d245221619b393721df551b4",
+          "size": 2506,
+          "sha256": "6783d8f19c3abfc92da90fd882b7616179d2fa919e2d5c458dc5426e80e66b25",
+          "unclaimed_sha256": "62f1f5951268133142b7d15d9014c2c791dc77deb5fdf9c930ffe88e026c9090",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": false
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": false
+            },
+            {
+              "owner": "light_dark_dragons",
+              "present": false
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.308-1.4.309-1-08052136.zip",
+          "archive_member": "production/upload/30/cbcd99de1aa6e8d245221619b393721df551b4",
+          "size": 3079,
+          "sha256": "84f88715028fb915133fdc3a34177aa08c968d68695d4ffafc85e7899f42f8a3",
+          "unclaimed_sha256": "62f1f5951268133142b7d15d9014c2c791dc77deb5fdf9c930ffe88e026c9090",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": true,
+              "projection_sha256": "4b9340c4d8ac4075bfd741fd0273c6650dcf8a43788bee979f9ffa5b2e595659"
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": true,
+              "projection_sha256": "16226f6be5076fce8e49354506ff54771250bc240406ba1ee0b989992d2032a8"
+            },
+            {
+              "owner": "light_dark_dragons",
+              "present": true,
+              "projection_sha256": "228984bc4374526e633a98f85c14fd8bd6b0560007c8351edb1d85b6067bfc71"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/generated/character_image.orderedmap",
+      "owners": [
+        "ginovi",
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/3e/b411841802398d5b21d422579f2eaa65d30c0e",
+          "size": 41733,
+          "sha256": "b5becb7189c4b986bf03a741388b6e08d3553744bf841f309a70c989e5186cb7",
+          "unclaimed_sha256": "ab68cf2e6a490ac0444b18c5aefb31510122aba10ea342184a759db1c82406bc",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": false
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": false
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/3e/b411841802398d5b21d422579f2eaa65d30c0e",
+          "size": 41909,
+          "sha256": "f6bcc6fa9e69590eec430c9512a8e09f7980f27fbf5ef2439a17abf0f5fa5034",
+          "unclaimed_sha256": "ab68cf2e6a490ac0444b18c5aefb31510122aba10ea342184a759db1c82406bc",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": true,
+              "projection_sha256": "7bcf2ca47cd1a1e593c04d8005da769473eb31ff846ac24fee432f84f363add4"
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": true,
+              "projection_sha256": "b1b1d344beb1beab23f3583379936d8ff8355251d932fd779c19a0ff122e0b2c"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/generated/mana_board.orderedmap",
+      "owners": [
+        "ginovi",
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/27/7b65484214436114201ae654fefa60fdc822ea",
+          "size": 834161,
+          "sha256": "0a7ae9814a4d29817695e07965859f0386db49a795e8448fc40522b1433801da",
+          "unclaimed_sha256": "00f012819207ffbdfd143ef4da17eae683156fd629089342c28e8f97b862a04d",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": false
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": false
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/27/7b65484214436114201ae654fefa60fdc822ea",
+          "size": 837579,
+          "sha256": "9935349a884059a60f6902963b335fcb8029d71f46d91c0ac949bfd40017919d",
+          "unclaimed_sha256": "00f012819207ffbdfd143ef4da17eae683156fd629089342c28e8f97b862a04d",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": true,
+              "projection_sha256": "2f6ace6b22c300e053dc09b8ce453b71e4a8323edf3019da270b79d83dfd60d5"
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": true,
+              "projection_sha256": "ded233c47cfea74dd3c5b870a11da0f62046abb3ba77fbc4b04727b2cdca77b4"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/generated/trimmed_image.orderedmap",
+      "owners": [
+        "ginovi",
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/fb/ab4344a7456dca88f3ce06f01208922f37e395",
+          "size": 375300,
+          "sha256": "da8d43f3d955296945b54abacb44313997845ebc6f89b2069f808b1e8ec8bda3",
+          "unclaimed_sha256": "ebf72c2ade8bbc4bdaff1c61076eb2cd0842676d47aaa226e43b7c2613cd6c7b",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": false
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": false
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/fb/ab4344a7456dca88f3ce06f01208922f37e395",
+          "size": 375549,
+          "sha256": "14acb86e339ca8123d4925cf67c4bebeebe4b30301c8e0570826a33be8e57d96",
+          "unclaimed_sha256": "ebf72c2ade8bbc4bdaff1c61076eb2cd0842676d47aaa226e43b7c2613cd6c7b",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": true,
+              "projection_sha256": "82a68b716240cb7b04bef757d16ae579fc43ef47cad1c67f731b8eb4d557daf5"
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": true,
+              "projection_sha256": "4f16b84c4341e444045e3e096af65f39983ac1f422f8023fadb76d3d7ba7f177"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/item/equipment.orderedmap",
+      "owners": [
+        "abyss_weapons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-1-backfill0728.zip",
+          "archive_member": "production/upload/49/a073fdd109e00ac9daf801113cb5e19f64a8cf",
+          "size": 93643,
+          "sha256": "1738c22203f1063585b92243f7f2812056ba09d8058aeb683fedc82aad614ad6",
+          "unclaimed_sha256": "7f7b396c3f743a9c39b670de63e45ef7e507bf4d34218b9a9d74c7fda5e219cd",
+          "table_claims": [
+            {
+              "owner": "abyss_weapons",
+              "present": true,
+              "projection_sha256": "add65270d0474e8673e0a672e9821aa64540aea74cf0f189be55692e030748ef"
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-1-backfill0728.zip",
+          "archive_member": "production/upload/49/a073fdd109e00ac9daf801113cb5e19f64a8cf",
+          "size": 93643,
+          "sha256": "1738c22203f1063585b92243f7f2812056ba09d8058aeb683fedc82aad614ad6",
+          "unclaimed_sha256": "7f7b396c3f743a9c39b670de63e45ef7e507bf4d34218b9a9d74c7fda5e219cd",
+          "table_claims": [
+            {
+              "owner": "abyss_weapons",
+              "present": true,
+              "projection_sha256": "add65270d0474e8673e0a672e9821aa64540aea74cf0f189be55692e030748ef"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/item/equipment_status.orderedmap",
+      "owners": [
+        "abyss_weapons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-3-backfill0728.zip",
+          "archive_member": "production/upload/cd/330520a2ab52abe04ba48fe883d79a82e0923a",
+          "size": 30965,
+          "sha256": "14d82bbeb4e1804d95d424fa2da5318f46214f44ccbb5abf9dab9a0bdf9cae99",
+          "unclaimed_sha256": "3305cc15e0902f2f3931387793eecaf4e3c1f92adf05bcddb0b8f09ec47a4054",
+          "table_claims": [
+            {
+              "owner": "abyss_weapons",
+              "present": true,
+              "projection_sha256": "b11333bae6fb83f74de0882b2a468a4f835b182eb1100f5ac14d922747584f8c"
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.300-1.4.301-1-08052021.zip",
+          "archive_member": "production/upload/cd/330520a2ab52abe04ba48fe883d79a82e0923a",
+          "size": 31833,
+          "sha256": "f88d0371d417af846bf856fc7746c2c88743d9aeb61e8a7c559280be0fc56eaf",
+          "unclaimed_sha256": "3305cc15e0902f2f3931387793eecaf4e3c1f92adf05bcddb0b8f09ec47a4054",
+          "table_claims": [
+            {
+              "owner": "abyss_weapons",
+              "present": true,
+              "projection_sha256": "26872e2005e08f132179e8a0335b4275f42bee1ae0ad03c56fcfbf6fb725201a"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/item/item.orderedmap",
+      "owners": [
+        "abyss_weapons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-2-backfill0728.zip",
+          "archive_member": "production/upload/a4/731a843d4dc0c84120bf8c88784c1e74c03baa",
+          "size": 291980,
+          "sha256": "5bf2c166071ff87572b7a0ebff742f66ab20115946e4164abc53159bbd533117",
+          "unclaimed_sha256": "ed4935f91334b64435fe36c4cdd5e3477ff554f3f00e4bc8f7524ecd73228fb2",
+          "table_claims": [
+            {
+              "owner": "abyss_weapons",
+              "present": true,
+              "projection_sha256": "ac8d3ac61880ce530b7cfe3498d9cebb385a559b2456b9e9f3b3f6e4945d058d"
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-2-backfill0728.zip",
+          "archive_member": "production/upload/a4/731a843d4dc0c84120bf8c88784c1e74c03baa",
+          "size": 291980,
+          "sha256": "5bf2c166071ff87572b7a0ebff742f66ab20115946e4164abc53159bbd533117",
+          "unclaimed_sha256": "ed4935f91334b64435fe36c4cdd5e3477ff554f3f00e4bc8f7524ecd73228fb2",
+          "table_claims": [
+            {
+              "owner": "abyss_weapons",
+              "present": true,
+              "projection_sha256": "ac8d3ac61880ce530b7cfe3498d9cebb385a559b2456b9e9f3b3f6e4945d058d"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/mana_board/mana_board2_open_condition.orderedmap",
+      "owners": [
+        "ginovi",
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/bc/0bc800f482670f3ec8a7f2fee9b9deeeca3a04",
+          "size": 25944,
+          "sha256": "04feede4af74c2a1b296fb800b60b472aa19a3f511a95c022894872f2802eded",
+          "unclaimed_sha256": "aee50ac9f34e167b379d81b4ef63f7abb69bcfa6217978080ba69f7feb30f5bd",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": false
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": false
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/bc/0bc800f482670f3ec8a7f2fee9b9deeeca3a04",
+          "size": 26038,
+          "sha256": "dd1eba2073a78d01bfb07b197681f342d73017460fd4f6372aeb7015df578a59",
+          "unclaimed_sha256": "aee50ac9f34e167b379d81b4ef63f7abb69bcfa6217978080ba69f7feb30f5bd",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": true,
+              "projection_sha256": "756e8ec63883193ba840f324529394f051143022a0f9a23d5bebe43892b8823d"
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": true,
+              "projection_sha256": "970079ff51950ee17374ba05743dbc1f8473dafd018d90f6e7e2dbcbc921c48f"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/mana_board/mana_node.orderedmap",
+      "owners": [
+        "ginovi",
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/1d/222e5126fc7ebe3f22c7efe87325f73742eb4f",
+          "size": 1016875,
+          "sha256": "c051ef46f7111e05dc4e49e6de1254fc3ec54ec2611bb6b6c04a2c54afcc8e57",
+          "unclaimed_sha256": "38091c21188067217bc11afe6b6478300f862d1a74102c2e8dd7706d234723ee",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": false
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": false
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/1d/222e5126fc7ebe3f22c7efe87325f73742eb4f",
+          "size": 1021115,
+          "sha256": "1a97bd19e28c1b53cffe32f7d194056f27d1241c2b8e5c0cee1af83fa27feebc",
+          "unclaimed_sha256": "38091c21188067217bc11afe6b6478300f862d1a74102c2e8dd7706d234723ee",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": true,
+              "projection_sha256": "2d079270defe1596b69f498cad0b9c8df51a379dfc4c610ebaf8273eb7695979"
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": true,
+              "projection_sha256": "e906c9a544d7837045cb760132944ef47d4a51ab333e7cee2c3abbb7e8b6e57f"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/mana_board/upskill.orderedmap",
+      "owners": [
+        "ginovi",
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/57/8872ecbc78561807e6846b3980c5dea980d8ce",
+          "size": 22039,
+          "sha256": "14331c2578517c9bba824eba8a0672c008df8cc5fb3e620a7176c180cd34688d",
+          "unclaimed_sha256": "17d7a517d69be5f810c5596ceaea6dd8cf5ab8ca8ea0fb3fc1f62c336c12805f",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": false
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": false
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/57/8872ecbc78561807e6846b3980c5dea980d8ce",
+          "size": 22161,
+          "sha256": "ab06cea316778d79cdfbad8a58a71f9650aa50dbf7ac3d283a13ebd7f7dea8cc",
+          "unclaimed_sha256": "17d7a517d69be5f810c5596ceaea6dd8cf5ab8ca8ea0fb3fc1f62c336c12805f",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": true,
+              "projection_sha256": "2d78658866769441e7ad75968954ae08526ba495978d200a34127859ed365828"
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": true,
+              "projection_sha256": "687ba461d6d5209efb92c0b8d7d1109a95f2c97bd07ed29febd12b8b6386c245"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/quest/event/event_list.orderedmap",
+      "owners": [
+        "abyss_tower"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/48/bd931bce4f30c62b124a693b683581c32c9483",
+          "size": 6660,
+          "sha256": "4f0c705ce89d7f1548b9de13b063c76c26ce53612749ac4fbe4a097a2e8e982d",
+          "unclaimed_sha256": "c9e902c34f65b6894477fa1ed2c00506b7e7ad5dcec08b9ac86ad3baef46b9b4",
+          "table_claims": [
+            {
+              "owner": "abyss_tower",
+              "present": true,
+              "projection_sha256": "e3045efe3c0bd9da1123c859279d84def22470088f224a242d336a076be65fda"
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/48/bd931bce4f30c62b124a693b683581c32c9483",
+          "size": 6660,
+          "sha256": "4f0c705ce89d7f1548b9de13b063c76c26ce53612749ac4fbe4a097a2e8e982d",
+          "unclaimed_sha256": "c9e902c34f65b6894477fa1ed2c00506b7e7ad5dcec08b9ac86ad3baef46b9b4",
+          "table_claims": [
+            {
+              "owner": "abyss_tower",
+              "present": true,
+              "projection_sha256": "e3045efe3c0bd9da1123c859279d84def22470088f224a242d336a076be65fda"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/quest/event/rush_event.orderedmap",
+      "owners": [
+        "abyss_700099_core"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/72/9edf423a2a32ad7948bb61488845271025caf2",
+          "size": 3832,
+          "sha256": "9c1d02bdc8609fa5b244fee56da884648a8cfe9b80960507e4ace557e4517a00",
+          "unclaimed_sha256": "69e018f8ac05caea5ff1884cde00e99c04cbf985f2113311385281f91e2a7b53",
+          "table_claims": [
+            {
+              "owner": "abyss_700099_core",
+              "present": true,
+              "projection_sha256": "8c7a7dd552041937bdb9ba8a4523ab9fb47207e09a1fc5d56d3e0e69509a610e"
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/72/9edf423a2a32ad7948bb61488845271025caf2",
+          "size": 3832,
+          "sha256": "9c1d02bdc8609fa5b244fee56da884648a8cfe9b80960507e4ace557e4517a00",
+          "unclaimed_sha256": "69e018f8ac05caea5ff1884cde00e99c04cbf985f2113311385281f91e2a7b53",
+          "table_claims": [
+            {
+              "owner": "abyss_700099_core",
+              "present": true,
+              "projection_sha256": "8c7a7dd552041937bdb9ba8a4523ab9fb47207e09a1fc5d56d3e0e69509a610e"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/quest/event/rush_event_battle_quest_correction.orderedmap",
+      "owners": [
+        "abyss_tower"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/0a/ec155b261ae7801d4c9a9bb579f88fe5bcc324",
+          "size": 6979,
+          "sha256": "15b3f71fb95e09b66a9ffbc6254a672636ba3d7e12b8de8fe9c54e0b435a0522",
+          "unclaimed_sha256": "da93bd53a4a3476fafb1fff0fb73438cfa4a968d61a783fbf48fd392ea7d1488",
+          "table_claims": [
+            {
+              "owner": "abyss_tower",
+              "present": true,
+              "projection_sha256": "65f8b6b87cac66431a95aad796cf77cfb7a9b433a4abf52d10c278e3d88ab99c"
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/0a/ec155b261ae7801d4c9a9bb579f88fe5bcc324",
+          "size": 6979,
+          "sha256": "15b3f71fb95e09b66a9ffbc6254a672636ba3d7e12b8de8fe9c54e0b435a0522",
+          "unclaimed_sha256": "da93bd53a4a3476fafb1fff0fb73438cfa4a968d61a783fbf48fd392ea7d1488",
+          "table_claims": [
+            {
+              "owner": "abyss_tower",
+              "present": true,
+              "projection_sha256": "65f8b6b87cac66431a95aad796cf77cfb7a9b433a4abf52d10c278e3d88ab99c"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/quest/event/rush_event_quest.orderedmap",
+      "owners": [
+        "abyss_tower"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/b6/595dedd9cfa79b7e6eccab25dd9a2a81b066a2",
+          "size": 38377,
+          "sha256": "b4637b11e506fb6d3cc513e0d21734d5014dd7861e9703c01e8bbef1a0643c9e",
+          "unclaimed_sha256": "e4dadd8d7ecc65e03ba6ca2fcdea29320125fb8e8668f2795f23633248fcfbef",
+          "table_claims": [
+            {
+              "owner": "abyss_tower",
+              "present": true,
+              "projection_sha256": "a440535e60583e1809522f42d6935820bd471afb635d35bd9ec23a706995507f"
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/b6/595dedd9cfa79b7e6eccab25dd9a2a81b066a2",
+          "size": 38377,
+          "sha256": "b4637b11e506fb6d3cc513e0d21734d5014dd7861e9703c01e8bbef1a0643c9e",
+          "unclaimed_sha256": "e4dadd8d7ecc65e03ba6ca2fcdea29320125fb8e8668f2795f23633248fcfbef",
+          "table_claims": [
+            {
+              "owner": "abyss_tower",
+              "present": true,
+              "projection_sha256": "a440535e60583e1809522f42d6935820bd471afb635d35bd9ec23a706995507f"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/quest/event/rush_event_quest_folder.orderedmap",
+      "owners": [
+        "abyss_tower"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/e6/e407d1adb48131eaefdf5ec32208f3d4f46910",
+          "size": 9556,
+          "sha256": "7ac5bfcfb5b4c2cf77e705bdf11c464486316738cc6493506583099942a5bd1b",
+          "unclaimed_sha256": "4e3b3b43c1e594e1c0ceb1ceb29a16c7ae5fb28a2dc39278de0e2b29b80a2fbe",
+          "table_claims": [
+            {
+              "owner": "abyss_tower",
+              "present": true,
+              "projection_sha256": "2880bc8e8e559e45b3a6576233d71406c0f081233ec1b4cc4773f09176759c0d"
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/e6/e407d1adb48131eaefdf5ec32208f3d4f46910",
+          "size": 9556,
+          "sha256": "7ac5bfcfb5b4c2cf77e705bdf11c464486316738cc6493506583099942a5bd1b",
+          "unclaimed_sha256": "4e3b3b43c1e594e1c0ceb1ceb29a16c7ae5fb28a2dc39278de0e2b29b80a2fbe",
+          "table_claims": [
+            {
+              "owner": "abyss_tower",
+              "present": true,
+              "projection_sha256": "2880bc8e8e559e45b3a6576233d71406c0f081233ec1b4cc4773f09176759c0d"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/shop/event_item_shop.orderedmap",
+      "owners": [
+        "abyss_weapons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-3-backfill0728.zip",
+          "archive_member": "production/upload/fe/1035fdd920d54f65f6797bad2d4ac054feb10d",
+          "size": 2306397,
+          "sha256": "a02c1f54d2d69d63c457ca0a03b1aa1c3de6077354a0231aeb48e4daf9a5a6fb",
+          "unclaimed_sha256": "8627cd5e2ab0ef7d6da5ff937a33e069d6e94cf242360c5c7075106c5a6799c6",
+          "table_claims": [
+            {
+              "owner": "abyss_weapons",
+              "present": true,
+              "projection_sha256": "4529a973089f6e877b2d593c3a87ae03d15e9995bd688bc485199c540fefc9e7"
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": "assets/asset-patch/active/pinball-1.4.107-1.4.217-3-backfill0728.zip",
+          "archive_member": "production/upload/fe/1035fdd920d54f65f6797bad2d4ac054feb10d",
+          "size": 2306397,
+          "sha256": "a02c1f54d2d69d63c457ca0a03b1aa1c3de6077354a0231aeb48e4daf9a5a6fb",
+          "unclaimed_sha256": "8627cd5e2ab0ef7d6da5ff937a33e069d6e94cf242360c5c7075106c5a6799c6",
+          "table_claims": [
+            {
+              "owner": "abyss_weapons",
+              "present": true,
+              "projection_sha256": "4529a973089f6e877b2d593c3a87ae03d15e9995bd688bc485199c540fefc9e7"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/skill/action_skill.orderedmap",
+      "owners": [
+        "ginovi",
+        "lafu_lunar_ny",
+        "light_dark_dragons"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.276-1.4.277-1-08021408.zip",
+          "archive_member": "production/upload/91/79892d704f88d98191c00548bce106402ad5b5",
+          "size": 301492,
+          "sha256": "3bde7708d24e149af10123809311af54586a17d2cbd939fac265e04a6e935bf8",
+          "unclaimed_sha256": "5fcf2d9c43e12098f89e765d036ccec1ac8c8aeb371dccd61e6c643e4b82e48c",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": false
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": false
+            },
+            {
+              "owner": "light_dark_dragons",
+              "present": true,
+              "projection_sha256": "259e4eece61db0e2a5aa5e38e37c03804c153c4e2d6dd2309e33653f9f05bcea"
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.291-1.4.292-1-08051726.zip",
+          "archive_member": "production/upload/91/79892d704f88d98191c00548bce106402ad5b5",
+          "size": 303956,
+          "sha256": "55318d445c97c37b98b667998e4bedfa7164fc99de9d3242d17a2b40e89db381",
+          "unclaimed_sha256": "5fcf2d9c43e12098f89e765d036ccec1ac8c8aeb371dccd61e6c643e4b82e48c",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": true,
+              "projection_sha256": "83f8c4e138b2c052a3f36403ebc0d76f044a40685e150a41808a956ccac44c5e"
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": true,
+              "projection_sha256": "5998c6cac1d0548826aada858980c829ed06f91dc4dd62b80d15188b5ff4192c"
+            },
+            {
+              "owner": "light_dark_dragons",
+              "present": true,
+              "projection_sha256": "4558c3c1414476b59ff8b84356e7c045f0a7d1ddf59e6572ba2a198dddaf0b94"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/skill/power_flip_action.orderedmap",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/38/dbe3524fee49989cccd10f2204238d25600cc8",
+          "size": 897,
+          "sha256": "9ab57d6fdcc88533e95f51a096b8d28523d3dae0f2528fe56bd61386c9dadd59",
+          "unclaimed_sha256": "1c5b2088da05136a2a2c96a9f4aef308eab9ff2054a70eace57e510708108089",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": false
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/38/dbe3524fee49989cccd10f2204238d25600cc8",
+          "size": 974,
+          "sha256": "ff29afea83ddc72d05fd30984961ea150e73761b3093ebccb1656d88813feb03",
+          "unclaimed_sha256": "1c5b2088da05136a2a2c96a9f4aef308eab9ff2054a70eace57e510708108089",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": true,
+              "projection_sha256": "b1705e6623be317241d0c99c90a896878a2c4dcb4b08084db5df9c9a199133c3"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/skill_preview/skill_preview_character.orderedmap",
+      "owners": [
+        "ginovi",
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.276-1.4.277-1-08021408.zip",
+          "archive_member": "production/upload/aa/abdd2e178d62dba4997034aab8c236a4422154",
+          "size": 26435,
+          "sha256": "115455ea8726e40d7788ff56153af68e254ec2c39f2e45252382c1127daf9177",
+          "unclaimed_sha256": "e10fa95e3fbb1fcda8608d8d719ea9a4ebfd67cc2d44340ad2896a7e2d12749c",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": false
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": false
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/aa/abdd2e178d62dba4997034aab8c236a4422154",
+          "size": 26558,
+          "sha256": "b92e546f73b363a0494291fc48815da4ecb9017d847c91345a7c562cb44dddf2",
+          "unclaimed_sha256": "e10fa95e3fbb1fcda8608d8d719ea9a4ebfd67cc2d44340ad2896a7e2d12749c",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": true,
+              "projection_sha256": "53610307cf437cbedc2e0bc66b38b79d949317a6aa51f9b05a7ff864184cea60"
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": true,
+              "projection_sha256": "bc61f4e5e48e9b74389b7f94488e8b45431ab9a7457ebe00e0226c6203c83cb3"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/stance_detail/character_stance_detail.orderedmap",
+      "owners": [
+        "ginovi",
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/d7/50c2f94f83dd053bfc79039a709f1ec6f766cb",
+          "size": 14716,
+          "sha256": "23e3f203d73463977f7cf092f805e9966e4dbd6c7fde251bbfcce02a89991b0a",
+          "unclaimed_sha256": "84edf1e5ef854957edeeb6f773a307a207ca4353d2b42338abf614c05f723893",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": false
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": false
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-common.zip",
+          "archive_member": "production/upload/d7/50c2f94f83dd053bfc79039a709f1ec6f766cb",
+          "size": 14772,
+          "sha256": "e4c9e6c67b70ef2bacbe5073073a7696a943f6b8ad19e83481b0bdcb8ab06441",
+          "unclaimed_sha256": "84edf1e5ef854957edeeb6f773a307a207ca4353d2b42338abf614c05f723893",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": true,
+              "projection_sha256": "119ff42ff9d2c542eae4a403a35fffe15c87431b5d8c8c8f76d5a6482bbdc477"
+            },
+            {
+              "owner": "lafu_lunar_ny",
+              "present": true,
+              "projection_sha256": "141a284076f4ca6d1d061bd11566af018a8a73d3e0ff776fed89db3f95e038d9"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "common",
+      "logical_path": "master/string/custom_ability_string.orderedmap",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": {
+          "writer": "assets/asset-patch/active/pinball-1.4.247-1.4.276-1-backfill0802.zip",
+          "archive_member": "production/upload/07/0c6e214359ccf27b1cb8078d3fc51aecfe0149",
+          "size": 7346,
+          "sha256": "80b4179497462a9dd0f4b190cf9f8065ddd92213ac9c8ffd53402525246606bf",
+          "unclaimed_sha256": "052d2fe083ad026ec56e9a11792930892bb477cf12d3e3943626132bcd009d8b",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": false
+            }
+          ]
+        },
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-common-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-common.zip",
+          "archive_member": "production/upload/07/0c6e214359ccf27b1cb8078d3fc51aecfe0149",
+          "size": 7681,
+          "sha256": "0d935cb27006a405f3e1b5019a390114313d1ab3595755868152316c814fb571",
+          "unclaimed_sha256": "052d2fe083ad026ec56e9a11792930892bb477cf12d3e3943626132bcd009d8b",
+          "table_claims": [
+            {
+              "owner": "ginovi",
+              "present": true,
+              "projection_sha256": "b938a369d621118de221781e6861df5c96964fcf1ae779ecf9433a6876365665"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/battle_control_board_0.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-medium.zip",
+          "archive_member": "production/medium_upload/1c/897f8c0a2a468a02bf655299b633fb90079dbd",
+          "size": 54089,
+          "sha256": "4f8b330050e7ac902ef015db96efbc65872a39709db734b48de4290a72ef4c8e"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/battle_control_board_1.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-medium.zip",
+          "archive_member": "production/medium_upload/fd/b28fa8eaea41e4b976c92cc4a97f5996434338",
+          "size": 61224,
+          "sha256": "8cf9be82573ed92f8e9af0a1c8ee082f037a43b8126218448d712ad24091d4b9"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/battle_member_status_0.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-medium.zip",
+          "archive_member": "production/medium_upload/84/65d076449c7a47c8f81b23f1b49056f668ca93",
+          "size": 5933,
+          "sha256": "41a0504758d128ba6cf5ea874cc3b4cb3258cd69bac3ca97acf80b0f74c3aecf"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/battle_member_status_1.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-medium.zip",
+          "archive_member": "production/medium_upload/c1/858c72f2aa30c9adb5aa5c8e4807aaa5a03011",
+          "size": 9864,
+          "sha256": "018a9f999ebdbd62274e07a718e400621dbb95dc518893b65ea0cde8e9094f3d"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/cutin_skill_chain_0.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-medium.zip",
+          "archive_member": "production/medium_upload/00/95404a2845f7ec4043a687e3001235981fe32e",
+          "size": 138674,
+          "sha256": "796e4a6bf183e691a862f75cfe6cdac056e0a962699edbd5d35c254a54a479c1"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/cutin_skill_chain_1.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-medium.zip",
+          "archive_member": "production/medium_upload/ed/fb4de0ee8131ae57d1c02d3ab58524bc716688",
+          "size": 210098,
+          "sha256": "94ee583246f6c048b9ea9f18580181e291870eb43b44a87ad9d9fc90441360e3"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/full_shot_1440_1920_0.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-medium.zip",
+          "archive_member": "production/medium_upload/d6/4b6d133e614e5635017c4ad852e6a2cfd193a0",
+          "size": 3134806,
+          "sha256": "1a058cb370ed4b6ea323462fdd6efae8e2216b2c3d29df18ed498e8146b2f217"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/full_shot_1440_1920_1.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-medium.zip",
+          "archive_member": "production/medium_upload/b3/3c7d9f7b99fd001bb8c99b46cd7e56f64d1824",
+          "size": 4698371,
+          "sha256": "c62f81ce23d477d51f1fbbefc942dd11bb3501ab1b777d4c0d44aef5c618eab4"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/illustration_setting_sprite_sheet.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-medium.zip",
+          "archive_member": "production/medium_upload/9d/263b91af2af9278b58194968be8568ccab1198",
+          "size": 498613,
+          "sha256": "924a718896a2ca8246eb2f60464a62dfe1728f9be1bfb1d6a4da8388dbdfee25"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/skill_cutin_0.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-medium.zip",
+          "archive_member": "production/medium_upload/7c/18ef6fb1349544ebde03364c7196a1ca740c06",
+          "size": 341174,
+          "sha256": "2b1d617e0f41121d3d4c2e081f3d63cc740f44266de2691861b0d94e9bef8d19"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/skill_cutin_1.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-medium.zip",
+          "archive_member": "production/medium_upload/f3/be984f32ef2b789d403d3a1ee2c9db109792f7",
+          "size": 843034,
+          "sha256": "5d6dfa5c7fe00f840cc0f5fd435d889f84560c43cf6c067c35117da05518d933"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/square_0.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-medium.zip",
+          "archive_member": "production/medium_upload/1d/a212cde0f22efd079d0e2ae492a3ef8c8d1f95",
+          "size": 73300,
+          "sha256": "caa4d624c5ed70a40194ed080f4951eb0bd1e30a6d05e089fdbcf397e675a18f"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/square_1.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-medium.zip",
+          "archive_member": "production/medium_upload/23/c5706142dd174c393643900b374fa6299aba12",
+          "size": 112346,
+          "sha256": "2e9d30dca80a295f5329d0587d654e20e58f42fa93a9e74daaee0daef4f8f5c1"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/square_132_132_0.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-medium.zip",
+          "archive_member": "production/medium_upload/b7/3d988d1d116c4f171905971897581516423a01",
+          "size": 30832,
+          "sha256": "3d8c70dd1e84342e385be65766fd8995469c8e6f0a0e2db7388db47a2d85aed5"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/square_132_132_1.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-medium.zip",
+          "archive_member": "production/medium_upload/7d/04fb70d165171b45ab173a9ea39fb1400dd5f3",
+          "size": 46661,
+          "sha256": "78ea5650f7d4b0d663c3e64dfb125847319b97f5d8aff7d5cc9d79a1390dad72"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/square_round_136_136_0.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-medium.zip",
+          "archive_member": "production/medium_upload/96/f1ce4de005f8a58a17e637bf30bfe061d9d324",
+          "size": 31783,
+          "sha256": "f684244047832d4135129a8413ff728c4ff1f3072b547d08204e38e1a01ba0d1"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/square_round_136_136_1.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-medium.zip",
+          "archive_member": "production/medium_upload/1b/98a9538d4e4963cd84d9095fa71a6100d7fba8",
+          "size": 49257,
+          "sha256": "3e9d597dc6fc2ad7f17fcd1c9f33d9291c2c555048b62a084a0ed95a41ae4526"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/square_round_95_95_0.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-medium.zip",
+          "archive_member": "production/medium_upload/dc/6e4a4860a3c3681b6d0653c96706605b2257c3",
+          "size": 16412,
+          "sha256": "004eae3512dda3ab555b19cec9b1cafcc1c39c34ee6ef1aef99ee362e9498b79"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/square_round_95_95_1.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-medium.zip",
+          "archive_member": "production/medium_upload/6c/f34010395bc9e1e4301fe7f966b2a570973679",
+          "size": 25274,
+          "sha256": "59c92b30e5a60cfcf776e4ffb3d1f4b3eede84793bd8aee582146a12cbce2f7f"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/thumb_level_up_0.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-medium.zip",
+          "archive_member": "production/medium_upload/3c/6f8f951b8ecca64f1fef25d26ade4373c444fe",
+          "size": 134967,
+          "sha256": "11047ed98c1130c8ecf1347f82b34c54abef5bffdffc79e534fe2c23605403ca"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/thumb_level_up_1.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-medium.zip",
+          "archive_member": "production/medium_upload/67/2a7b076c00651bad482ccaa8ea4b996a5c3be5",
+          "size": 197717,
+          "sha256": "2a4328759feb246f5be0499d1bb5d839ff2e5a729b8ef11ca60361686a6567cf"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/thumb_party_main_0.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-medium.zip",
+          "archive_member": "production/medium_upload/f5/546ac747f868216a6733aae5aa1294a275f768",
+          "size": 144029,
+          "sha256": "e4b4159a20c1314b0a00b15a83ac7f68b1608e245befca860e09a4d2fa603a57"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/thumb_party_main_1.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-medium.zip",
+          "archive_member": "production/medium_upload/89/502420924d41a3afc9cae35d7be5da6f426248",
+          "size": 158129,
+          "sha256": "a95ff7f5e1e8e72ef3e706aea6b86e2bb285caf5556cbbae6fba0f19adaf7cec"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/thumb_party_unison_0.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-medium.zip",
+          "archive_member": "production/medium_upload/aa/f771895cf35e4c26b193c35e2790f1836d83ff",
+          "size": 48729,
+          "sha256": "51c4eab5d7d42c9a7c19a9f5e70ac472e1ad891f52fc2d0bba929c635b823af0"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/thumb_party_unison_1.png",
+      "owners": [
+        "ginovi"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.283-1.4.284-1-charpkg-ginovi-20260804t141009z-755b7cdc-medium.zip",
+          "archive_member": "production/medium_upload/cc/a01b3273473c87f1b79edd330bebadbd0d46b1",
+          "size": 70313,
+          "sha256": "27565ae821057c0f028af6b3dd8c2e164ad22f48b15166136660735dd0314f40"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/battle_control_board_0.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-medium.zip",
+          "archive_member": "production/medium_upload/65/026d751f95944215f21ad7c1d8b707ea403a55",
+          "size": 66617,
+          "sha256": "d4e8eb7c5ae5faeb989688cea72a9cde2e0fe102349898496ca6d3bfc225a9a9"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/battle_control_board_1.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-medium.zip",
+          "archive_member": "production/medium_upload/59/f37999066ed8b359a39d6f2aa1315789245f0f",
+          "size": 69647,
+          "sha256": "cd82efe1c19877219a7d383ee4c951af231933a253c52d9d424ac8b8aa76b786"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/battle_member_status_0.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-medium.zip",
+          "archive_member": "production/medium_upload/04/280c47837a7b6796c2fed6376e3964211077ee",
+          "size": 9599,
+          "sha256": "6f314220750baab95ad9f7d7dd89f21fa473b8100cdb17c36d326693f5832492"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/battle_member_status_1.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-medium.zip",
+          "archive_member": "production/medium_upload/46/8f3bfb1e4abe10816b0537e91e9988faa1be1b",
+          "size": 9570,
+          "sha256": "af4b8874ef1083502dfa01a6d82575a78dc3f7eee6e0b17f0e3e583d2bc0fd1e"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/cutin_skill_chain_0.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-medium.zip",
+          "archive_member": "production/medium_upload/28/4b4848dc9258bf460d5099a9271e682565a1d6",
+          "size": 166573,
+          "sha256": "61de3113623824f2f5cf143466eadc7ac4691bfcfb21339fd4d7a19bd08b0254"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/cutin_skill_chain_1.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-medium.zip",
+          "archive_member": "production/medium_upload/68/627870d50ac4435e9f44a94646ff2f2781fb80",
+          "size": 172692,
+          "sha256": "7dd57b1f818a5e226b29a3d49e18da9d9d6a619888a3413d7e9164022585609e"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/full_shot_1440_1920_0.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-medium.zip",
+          "archive_member": "production/medium_upload/cb/4c50a6d41634856c133ac88dc1db4c921594b3",
+          "size": 2360006,
+          "sha256": "c405d136090352b4c8ab86d0e8e1190858ffc01b4a3276173927da8a86896a9a"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/full_shot_1440_1920_1.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-medium.zip",
+          "archive_member": "production/medium_upload/6a/1cf4cc1ab386c6cedbd26d7dcbe1fa385fc43f",
+          "size": 2403247,
+          "sha256": "8a5dcee0b7615d5d1918d7ffc9f7dec94b3ee505967d8749597e51ef1f53ee54"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/illustration_setting_sprite_sheet.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-medium.zip",
+          "archive_member": "production/medium_upload/9c/b32b86e10948ab407b87ef0e96eac7e6bc36d5",
+          "size": 448854,
+          "sha256": "6622c2253159d44fc9b58870fdd8088f97ebce08ffc8e3a0b68722c071e114ff"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/skill_cutin_0.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-medium.zip",
+          "archive_member": "production/medium_upload/53/127f44300348da99fd310e06eec0f5f7bfa2cd",
+          "size": 365068,
+          "sha256": "9b3b4f7df65d502d41946741c7f2c24f4f8214e2817282a1a2b62beb9cf66c7d"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/skill_cutin_1.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-medium.zip",
+          "archive_member": "production/medium_upload/98/2294961159678545213e8fbe1572eecc474e34",
+          "size": 454705,
+          "sha256": "31f56f5f4a0b4e490aa108fb40b7e47354fc8da400eef030d431a8def84195ea"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/square_0.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-medium.zip",
+          "archive_member": "production/medium_upload/9e/89c4933aa150870904893711a287f7382e008b",
+          "size": 89111,
+          "sha256": "aa01babdfbdef41d3431d9f9fda14d5c1692ac5d93fa80f1014066e168f942e1"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/square_1.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-medium.zip",
+          "archive_member": "production/medium_upload/e8/d5044e3b51cf87f8e497eebff90385453c4fc5",
+          "size": 91866,
+          "sha256": "98e03fd79d8cfe7bcdc71ec867921db9a01dfe2e35a55451f371a4037dfc2d3a"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/square_132_132_0.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-medium.zip",
+          "archive_member": "production/medium_upload/a6/fcc538412f4db33ee8be99a61b3fb0a5a3b85c",
+          "size": 39604,
+          "sha256": "839aa6219745f7f2b19e05a65292f88e7bf6dbbe43aac316918fbb3734085533"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/square_132_132_1.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-medium.zip",
+          "archive_member": "production/medium_upload/58/ea585c3691dbb840a8271f4541b7284ff303f5",
+          "size": 40409,
+          "sha256": "9d8c6a72746b7e2fd391ad3db4083ce3c343f7cafb2f634c8628376b81dc409a"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/square_round_136_136_0.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-medium.zip",
+          "archive_member": "production/medium_upload/dd/41c8a6e68f207783f9227da61e66ec3c2e86f3",
+          "size": 42834,
+          "sha256": "6ec6a97a358dd2725a0dea98f3e8636c0d186d815ff2db11040352fc836ed9ab"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/square_round_136_136_1.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-medium.zip",
+          "archive_member": "production/medium_upload/1c/d9e4d05a64d23ba3b7f1d267adc14aaaee7864",
+          "size": 43094,
+          "sha256": "cfcdea53be73c63924728297deb71766522bf26a05b9466ecd55cb3a4cb1fa8f"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/square_round_95_95_0.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-medium.zip",
+          "archive_member": "production/medium_upload/30/100abb86ebad9c01c206348f3449094c05f661",
+          "size": 22957,
+          "sha256": "57aa51561cfeba7af7e8a9898df4910e6e445872027ecf0fd6605a91b7422a3c"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/square_round_95_95_1.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-medium.zip",
+          "archive_member": "production/medium_upload/93/16ee25d09a0395d877a1976ba23f97cd1128c3",
+          "size": 23046,
+          "sha256": "67fa1e80197c0267a220b9c90622da0dcb15bd7a0862abd013d368139d1f379c"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/thumb_level_up_0.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-medium.zip",
+          "archive_member": "production/medium_upload/f8/8ae0354ddabc69b5c89c692c284c60c20e43d4",
+          "size": 157164,
+          "sha256": "2551981f61045639102978cb74617ac5b820ccf7af65896f9e61bad38171db3d"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/thumb_level_up_1.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-medium.zip",
+          "archive_member": "production/medium_upload/a6/5f2c359dcc68bcb5ccf70b7b9bb0beb1f05a6b",
+          "size": 164198,
+          "sha256": "7b6eceac022ca07da748756a5791bbd0f4cc764caefd1dddeba00d7f9cbde1ed"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/thumb_party_main_0.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-medium.zip",
+          "archive_member": "production/medium_upload/16/9dfc395dea5d81b52c8a166bc18ab8c120e5d5",
+          "size": 152494,
+          "sha256": "1b27be0151b3fe21244798668bf09a1aab8ef70113c97fde057a597e72d555ca"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/thumb_party_main_1.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-medium.zip",
+          "archive_member": "production/medium_upload/a0/7a19825272943d758e85f3b8b79dbf1908e261",
+          "size": 161463,
+          "sha256": "2c503b0cf17dc667b1e925eb3d73d1f18535f4a2d0adc97b9804588d3af37eb8"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/thumb_party_unison_0.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-medium.zip",
+          "archive_member": "production/medium_upload/82/458220b66b6557b33c40e07841436b5e3d3978",
+          "size": 58344,
+          "sha256": "7de6d134dc804d9561e3d0651284a4d3a8236cc529085b1aba9be9d9133cd99a"
+        }
+      }
+    },
+    {
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/thumb_party_unison_1.png",
+      "owners": [
+        "lafu_lunar_ny"
+      ],
+      "versions": {
+        "1.4.277": null,
+        "1.4.311": {
+          "writer": ".cdn/cn/archive-medium-diff/pinball-1.4.284-1.4.285-1-charpkg-lafu_lunar_ny-20260804t141721z-45c92d41-medium.zip",
+          "archive_member": "production/medium_upload/e9/98044f71d5e892f65614802f79e9d7dbd43cc3",
+          "size": 59489,
+          "sha256": "a4b1b1f86f48fe46035628473b57cefc7b6b1e12bc33086bc79b345272383282"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+.theme-toggle{grid-area:theme;justify-self:end;min-height:34px;padding:7px 10px;border:1px solid #c4d5d6;border-radius:8px;background:#eff8f7;color:#267b73;font-size:11px;line-height:1.35;white-space:nowrap}
+:root[data-theme="dark"]{color-scheme:dark;--paper:#111922;--surface:#1c2834;--ink:#dde8eb;--muted:#9caeb8;--line:#394e5a;--soft:#23333f;--accent-dark:#63dccb}
+[data-theme="dark"] body{background:#111922;color:var(--ink)}
+[data-theme="dark"] :is(.masthead,.sidebar,.character-card,.character-filters,.team-board,.team-preview,.team-library,.equipment-card,.equipment-toolbar,.guide-item,.portrait-viewer,.voice-card){background:#1c2834;color:#dce7eb;border-color:#3b505d;box-shadow:0 2px 8px #060e1644}
+[data-theme="dark"] :is(.game-panel,.portrait-panel,.character-dashboard){border-image:none;background:#1c2834;border-color:#2d414e;color:#dce7eb}
+[data-theme="dark"] :is(.portrait-stage,.portrait-viewer-viewport){background:#18232e}
+[data-theme="dark"] .card-art{background:#26343f}
+[data-theme="dark"] :is(input,select,button.secondary-button,.back-button,.nav-home,.category-button,.character-filter-element,.catalog-layout-button,.team-candidate,.portrait-controls button,.detail-tabs button,.portrait-viewer button,.back-to-top){background:#253743;color:#cbdde1;border-color:#48616e;box-shadow:none}
+[data-theme="dark"] :is(.character-filter-search,.character-filter-field select,.equipment-toolbar select,.theme-toggle){background:#253743;color:#dce7eb;border-color:#48616e}
+[data-theme="dark"] .theme-toggle:hover{background:#344d58}
+[data-theme="dark"] :is(.brand strong,.catalog-title-wrap h1,.group-title,.card-name,.section-title,.data-card h3,.character-filter-heading h3,.equipment-group-heading h2,.guide-item h2,.guide-item h3,.voice-header h3,.comparison-item h4){color:#e5eef0}
+[data-theme="dark"] :is(.description,.profile-copy,.info-table dd,.stats-table td,.voice-text dd,.comparison-summary,.effect-breakdown ul,.footer-credit-row>strong){color:#c3d3dc}
+[data-theme="dark"] :is(.card-title,.card-meta,.card-id,.detail-title,.status-races,.status-note,.panel-note,.numeric-context,.numeric-note,.voice-summary,.voice-source,.voice-text dt,.voice-text.original dd,.character-filter-help,.sidebar-note p,.eyebrow,.snapshot-note,.brand-caption,.section-intro,.group-description,.filter-status,.sort-control,.character-filter-field,.character-filter-search-label,.catalog-layout-label,.portrait-caption,.portrait-viewer-help){color:#9cafb9}
+[data-theme="dark"] :is(.muted){color:#9cafb9!important}
+[data-theme="dark"] :is(.masthead-note,.count-badge,.inline-count,.theme-tag,.badge,.element-badge,.detail-tabs,.team-mode-switch,.equipment-group-count,.portrait-controls,.portrait-viewer-tools,.info-table dt,.stats-table th,.numeric-values dt,.equipment-stat,.comparison-side){background:#263944;color:#b5cdd3;border-color:#405d68}
+[data-theme="dark"] #header-version{color:#c4dedf}
+[data-theme="dark"] :is(.alias-tag,.note-box,.skill-energy,.comparison-intro,.comparison-side.after){background:#193d3b;color:#b7e7d9;border-color:#376b64}
+[data-theme="dark"] :is(.editor-tag,.editor-note,.weapon-note,.equipment-enhance-badge,.equipment-highest-marker){background:#443921;color:#f0d89c;border-color:#8c743d}
+[data-theme="dark"] .editor-note p{color:#dcc793}
+[data-theme="dark"] :is(.numeric-block,.numeric-values dd,.equipment-empty,.boss-guide>.guide-field){background:#17232e;color:#c5dce2;border-color:#374f5c}
+[data-theme="dark"] :is(.numeric-title,.numeric-effect-title,.status-value strong,.comparison-intro strong,.footer-credit-row a){color:#7edbc9}
+[data-theme="dark"] .native-ui .status-value,[data-theme="dark"].native-ui .status-value{border-image:none;border:1px solid #3b7b74;background:#1b383b;padding:10px}
+[data-theme="dark"] :is(.equipment-group-heading){background:#253c42;border-color:#a98639}
+[data-theme="dark"] .equipment-group-heading:hover{background:#304c51}
+[data-theme="dark"] :is(.equipment-state,.numeric-effect,.numeric-values dt,.numeric-values dd,.section-title,.info-table,.info-table dt,.info-table dd,.stats-table td,.data-card,.voice-header,.team-pair,.site-footer,.portrait-viewer-header){border-color:#354d59}
+[data-theme="dark"] :is(.app-navigation a,.breadcrumbs,.text-button){color:#a9c2c9}
+[data-theme="dark"] .app-navigation a:hover{background:#2b4350}
+[data-theme="dark"] :is(.character-filter-element,.catalog-layout-button,.portrait-controls button,.team-mode-button,.equipment-toggle button)[aria-pressed="true"],[data-theme="dark"] .detail-tabs button[aria-selected="true"],[data-theme="dark"] .app-navigation a[aria-current="page"]{background:#185a53;color:#caffef;border-color:#43bba8;box-shadow:none}
+[data-theme="dark"] .category-button[aria-pressed="true"],[data-theme="dark"] .nav-home[aria-current="page"]{background:#775b21;color:#fff0c1;border-color:#c79433}
+[data-theme="dark"] .portrait-enlarge-hint{background:#20323be8;color:#c9dce2;border-color:#48616e}
+[data-theme="dark"] .team-slot-weapon,[data-theme="dark"] .team-slot-soul{background:#253d43}
+[data-theme="dark"] .team-slot-remove{background:#263a46;color:#dbe8ec;border-color:#637d8c}

@@ -29,7 +29,7 @@ import zlib
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))
+pass  # Imports resolve from this checkout/package, not external source copies.
 
 PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
 ATF_HEAD8 = b"ATF\x00\x00\x01\xff\x03"  # 新版头 + ATF v3(与官方 cutin 文件逐字节一致)
@@ -338,21 +338,35 @@ def parse_atf(data: bytes) -> dict:
     """解析 cutin 型 ATF:{w, h, mips, pairs: [每级 ETC1 颜色+alpha 直拼字节]}。"""
     if data[:3] != b"ATF" or len(data) < 16 or data[6] != 0xFF:
         raise ValueError("不是新版头 ATF 文件")
+    if int.from_bytes(data[8:12], "big") != len(data) - 12:
+        raise ValueError("ATF 容器声明长度与实际长度不一致")
     fmt = data[12]
     if fmt & 0x7F != 0x05:
         raise ValueError(f"ATF format=0x{fmt:02x},仅支持 0x05 RAW Compressed With Alpha")
     w, h, mips = 1 << data[13], 1 << data[14], data[15]
+    if not 1 <= mips <= max(w.bit_length(), h.bit_length()):
+        raise ValueError("ATF mip 数超出纹理尺寸允许范围")
     o = 16
     pairs = []
-    for _ in range(mips):
+    for level in range(mips):
         row = []
-        for _s in range(4):
+        for slot in range(4):
+            if o + 4 > len(data):
+                raise ValueError(f"ATF mip{level} 槽{slot} 长度前缀不完整")
             ln = int.from_bytes(data[o:o + 4], "big")
+            if o + 4 + ln > len(data):
+                raise ValueError(f"ATF mip{level} 槽{slot} 数据不完整")
             row.append(data[o + 4:o + 4 + ln])
             o += 4 + ln
         if row[0] or row[1] or row[3]:
             raise ValueError("非 ETC1-only 布局(DXT/PVRTC/ETC2 槽有数据),不认识的变体")
+        mw, mh = max(w >> level, 1), max(h >> level, 1)
+        expected = ((mw + 3) // 4) * ((mh + 3) // 4) * 16
+        if len(row[2]) != expected:
+            raise ValueError(f"ATF mip{level} ETC1 颜色+alpha 数据长度不符: {len(row[2])} != {expected}")
         pairs.append(row[2])
+    if o != len(data):
+        raise ValueError("ATF mip 数据结束后仍有多余字节")
     return {"w": w, "h": h, "mips": mips, "pairs": pairs}
 
 

@@ -1,0 +1,60 @@
+schema: wf-capability/1
+id: client.unique.hidden@1
+title: hidden_ 固有状态隐藏
+layer: A
+provided_by:
+  patches:
+  - 58
+  match: all
+  methods:
+  - patch: 58
+    abc: boot_ffc6
+    label: MemberImpl/getConditionsIncludingOuterEnvironments
+    sha256: 582e23ac1290798c11380451f6c0cdb7a894eb1719e3ef82dd01f3e34787af31
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+    accepted_variants:
+    - sha256: 1a75e43905e12699092cbc05d7469cc273ef45636022e9be94b71f6d0011d41b
+      swf_sha256: 89461f676b57a059bde58fe5897190db9b61013ae63947401fe1bf87106d6bcf
+      source: v35/run5/release-locks.json
+      reason: 有意更新：run1–run5通用入口叠加，旧路径保持依据见各轮README/verify-report；最终SWF方法摘要已复核
+  - patch: 58
+    abc: boot_ffc6
+    label: MemberImpl/getTotalConditions
+    sha256: 405cc8b1a873c66be00b5dc4b84c7e6b0acfbe84e2f673644fcbf6a9614cb7d5
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: false
+  features: []
+  note: 无额外服务端改动要求
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes:
+  - hidden_
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: hidden_ 固有状态隐藏
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: hidden_ 固有状态隐藏
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: hidden_ 固有状态隐藏
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/verification/v33-patches-preserved-o8-o12-r2.json

@@ -1,0 +1,149 @@
+{
+  "schema": "wf-m21-validation/1",
+  "date": "2026-10-18",
+  "code_head": "ec92fe43afefe5e589dd603c6e67bf500bb282ac",
+  "scope": "本地静态验证；只写本 worktree；未 push、部署、安装或操作设备；不依赖 1.4.234",
+  "pytest": {
+    "command": "python -B -m pytest --basetemp=work/m2_1/full-tmp --junitxml=work/m2_1/pytest-full.xml",
+    "exit_code": 0,
+    "terminal_summary": "4080 passed, 354 skipped, 26 warnings in 367.11s (0:06:07)",
+    "elapsed_seconds": 369.13,
+    "junit_counts_including_subtests": {
+      "tests": 6700,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 357
+    }
+  },
+  "first_full_run": {
+    "head": "969d652ea94b7adeeef459199c583b3d56c5851f",
+    "exit_code": 1,
+    "failed_test": "test_pipeline_records_do_not_inherit_base_and_merge_shared_archive",
+    "resolution": "旧断言与 H3 冲突；保留合并归档及不继承 base 检查，改为要求缺 SHA 进入 unresolved；ec92fe4"
+  },
+  "gates": {
+    "caps-check": {
+      "exit_code": 0
+    },
+    "path-scan": {
+      "exit_code": 0
+    },
+    "hygiene": {
+      "exit_code": 0
+    },
+    "diff-check": {
+      "exit_code": 0
+    }
+  },
+  "path_scan": {
+    "scanned_text_files": 2097,
+    "findings": [],
+    "count": 0
+  },
+  "acceptance": {
+    "223": {
+      "equal_members": 3,
+      "scope": "历史成员逐字节回归"
+    },
+    "221": {
+      "equal_members": 310,
+      "archives": 11,
+      "different_members": 0,
+      "scope": "历史归档层回归，不表示旧221 PF3通过公开deliver门禁"
+    },
+    "weapon151": {
+      "real_source_unchanged": true,
+      "member_byte_equality": true,
+      "members": 1,
+      "deliver_exit_code": 0,
+      "requires_resolution": "resolved"
+    },
+    "reward233": {
+      "ghmain_commit": "1aa5ec7d98bf7e1af70f55a285b04d25fff48934",
+      "repair_zip_sha256": "7c648747f7f1747a05968296d843036afa0da5362ae7b7d31e657f3092fc2f34",
+      "rows": 220,
+      "before_errors": 4,
+      "after_errors": 0,
+      "after_warnings": 0
+    },
+    "text139985": {
+      "before_problems": 2,
+      "after_problems": 0,
+      "boundary": "1.4.227客户端完整视图与准备增量的139985字段，临时构造行验证覆盖比较；不是完整历史镜像或部署证据"
+    }
+  },
+  "artifacts": [
+    {
+      "path": "work/m2_1/pytest-full-exit.json",
+      "sha256": "5b4923bcfec1dfecee52749b0d3b149f061d2c24cfa5d1c9196dfff20b1bac7e"
+    },
+    {
+      "path": "work/m2_1/pytest-full.xml",
+      "sha256": "05f22ce7fce31e2b7175661f654514679f86e7f9adde91d0cf9f1cbc7d645be8"
+    },
+    {
+      "path": "work/m2_1/pytest-full.log",
+      "sha256": "0e5be63880fa13700344f85671dc500587a9324f03da2d2ddd4f656309505cfa"
+    },
+    {
+      "path": "work/m2_1/gates.json",
+      "sha256": "c0511a3bb3e38210ea123bd2eeb1ec11dc8c00616407ce3f09c3a7ec0b42f15c"
+    },
+    {
+      "path": "work/m2_1/pytest-full-first-exit.json",
+      "sha256": "bff6cb457f17af5e2709a935ebaf647fa5653917382faec93156628f77e1a2e7"
+    },
+    {
+      "path": "work/m2_1/pytest-full-first.xml",
+      "sha256": "b029d571a640cb23a7ddadc9f4546e0d629b24502e8669992857faf0943ebdb9"
+    },
+    {
+      "path": "work/m2_1/pytest-full-first.log",
+      "sha256": "4a6f774efd0b597d24eaeb083bc29ac60a42b43df3b61bddc99729750baa5ca0"
+    },
+    {
+      "path": "work/m2_1/path-scan-final.json",
+      "sha256": "7afa9b199e91a202da415bdf01d16b282c39bc9970cf8ce6066463d0c7e4e555"
+    },
+    {
+      "path": "work/m2_1/cursed151/acceptance.json",
+      "sha256": "1ce1b83535f008d3325599dd89d83f15de78d11f5d0c569abe5d4472d6d7750a"
+    },
+    {
+      "path": "work/m2_1/cursed151/source.json",
+      "sha256": "1cbb297b1ac41813fd902fb3a117e238f4f4e12d1e07bafda603a73a2b93bce8"
+    },
+    {
+      "path": "work/m2_1/cursed151/delivery/delivery-manifest.json",
+      "sha256": "f040a98f2c07873b89a474f5624305649cade8d9885cd00acc759215bdc06390"
+    },
+    {
+      "path": "work/m2_1/cursed151/delivery/requires.json",
+      "sha256": "2dc7317ebc9b5a5a590c06a283d4d58cc470bdf7db07069bd91267def9c0885d"
+    },
+    {
+      "path": "work/m2_1/reward_233_acceptance.json",
+      "sha256": "f3c058ee4567de657ca3f914e2c5a85bb487919a935f9586df692604e84808fc"
+    },
+    {
+      "path": "work/m2_1/text-139985-probe.json",
+      "sha256": "e7f2b18ccfdb62a8bd5f9a9e43d2090a734fbed9b2cd2224ff4c4c3728fcfd20"
+    },
+    {
+      "path": "work/m2_1/acceptance/223.json",
+      "sha256": "8833840e5380d63d58bc4310f16cac18b4491bc847fde56740fe86c48ec80c73"
+    },
+    {
+      "path": "work/m2_1/acceptance/221.json",
+      "sha256": "9af07ef26314f8145455a14857a8b9e5831b49500ee7242f80ff0f0254e26673"
+    },
+    {
+      "path": "work/m2_1/acceptance/seris209-compat-good.json",
+      "sha256": "07d591121e8676697f8de0fa1ab1c5efc6bc7067dcdd0a871404de7ea07aa40f"
+    },
+    {
+      "path": "work/m2_1/acceptance/seris209-compat-negative.json",
+      "sha256": "1a6b9b44260a0d8df9c7241b3cfce4e9fda41fcae5234e454f08e4f86ff539d8"
+    }
+  ]
+}

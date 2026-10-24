@@ -26,14 +26,14 @@ class ArchiveToolPathCase(unittest.TestCase):
         self.repo = self.root / "repo"
         self.expected = self.root / "configured-cdn" / "cn"
 
-    def test_chain_squash_uses_shared_resolver_with_repo_fallback(self) -> None:
+    def test_chain_squash_uses_strict_resolver_with_explicit_repo(self) -> None:
         args = SimpleNamespace(repo_root=str(self.repo), cdn=None)
         with (
             mock.patch.dict(
-                os.environ, {"WF_CDN_DIR": "relative-cdn"}, clear=True
+                os.environ, {}, clear=True
             ),
             mock.patch.object(
-                core, "resolve_cdn_root_lax", return_value=self.expected
+                core, "resolve_cdn_root", return_value=self.expected
             ) as resolver,
         ):
             cdn_root, repo_root = chain._resolve_dirs(args)
@@ -44,13 +44,13 @@ class ArchiveToolPathCase(unittest.TestCase):
             legacy_root=self.repo.resolve() / ".cdn" / "cn"
         )
 
-    def test_pack_consolidate_uses_shared_resolver_with_repo_fallback(self) -> None:
+    def test_pack_consolidate_uses_strict_resolver_with_explicit_repo(self) -> None:
         with (
             mock.patch.dict(
-                os.environ, {"WF_CDN_DIR": "relative-cdn"}, clear=True
+                os.environ, {}, clear=True
             ),
             mock.patch.object(
-                core, "resolve_cdn_root_lax", return_value=self.expected
+                core, "resolve_cdn_root", return_value=self.expected
             ) as resolver,
         ):
             cdn_root, repo_root = pack._resolve_dirs(repo_root=str(self.repo))
@@ -65,7 +65,7 @@ class ArchiveToolPathCase(unittest.TestCase):
         cli_cdn = self.root / "cli-cdn"
         with mock.patch.object(
             core,
-            "resolve_cdn_root_lax",
+            "resolve_cdn_root",
             side_effect=AssertionError("shared resolver must not run"),
         ):
             chain_root, _ = chain._resolve_dirs(
@@ -77,6 +77,19 @@ class ArchiveToolPathCase(unittest.TestCase):
 
         self.assertEqual(cli_cdn.resolve(), chain_root)
         self.assertEqual(cli_cdn.resolve(), pack_root)
+
+    def test_invalid_cdn_configuration_is_not_replaced_by_repo_fallback(self) -> None:
+        (self.repo / ".cdn/cn/archive-common-diff").mkdir(parents=True)
+        calls = {
+            "chain": lambda: chain._resolve_dirs(
+                SimpleNamespace(repo_root=str(self.repo), cdn=None)),
+            "pack": lambda: pack._resolve_dirs(repo_root=str(self.repo)),
+        }
+        with mock.patch.dict(os.environ, {"WF_CDN_DIR": "relative-cdn"}, clear=True):
+            for name, resolve in calls.items():
+                with self.subTest(tool=name):
+                    with self.assertRaisesRegex(ValueError, "WF_CDN_DIR must be an absolute path"):
+                        resolve()
 
 
 if __name__ == "__main__":

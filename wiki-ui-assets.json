@@ -1,0 +1,250 @@
+[
+  {
+    "group": "abilityConditions",
+    "key": "main",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/vector_icon_color-assets/round_main"
+  },
+  {
+    "group": "abilityConditions",
+    "key": "unison",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/vector_icon_color-assets/round_unison"
+  },
+  {
+    "group": "abilityConditions",
+    "key": "fire",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/vector_icon_color-assets/round_ability_red"
+  },
+  {
+    "group": "abilityConditions",
+    "key": "water",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/vector_icon_color-assets/round_ability_blue"
+  },
+  {
+    "group": "abilityConditions",
+    "key": "thunder",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/vector_icon_color-assets/round_ability_yellow"
+  },
+  {
+    "group": "abilityConditions",
+    "key": "wind",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/vector_icon_color-assets/round_ability_green"
+  },
+  {
+    "group": "abilityConditions",
+    "key": "light",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/vector_icon_color-assets/round_ability_white"
+  },
+  {
+    "group": "abilityConditions",
+    "key": "dark",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/vector_icon_color-assets/round_ability_black"
+  },
+  {
+    "group": "elements",
+    "key": "火",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/vector_icon_color-assets/element_red"
+  },
+  {
+    "group": "elements",
+    "key": "水",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/vector_icon_color-assets/element_blue"
+  },
+  {
+    "group": "elements",
+    "key": "雷",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/vector_icon_color-assets/element_yellow"
+  },
+  {
+    "group": "elements",
+    "key": "风",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/vector_icon_color-assets/element_green"
+  },
+  {
+    "group": "elements",
+    "key": "光",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/vector_icon_color-assets/element_white"
+  },
+  {
+    "group": "elements",
+    "key": "暗",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/vector_icon_color-assets/element_black"
+  },
+  {
+    "group": "types",
+    "key": "剑士",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/vector_icon-assets/type_knight_medium"
+  },
+  {
+    "group": "types",
+    "key": "格斗",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/vector_icon-assets/type_fighter_medium"
+  },
+  {
+    "group": "types",
+    "key": "射击",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/vector_icon-assets/type_ranged_medium"
+  },
+  {
+    "group": "types",
+    "key": "辅助",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/vector_icon-assets/type_supporter_medium"
+  },
+  {
+    "group": "types",
+    "key": "特殊",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/vector_icon-assets/type_special_medium"
+  },
+  {
+    "group": "rarities",
+    "key": "1",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/component-assets/rarity_one"
+  },
+  {
+    "group": "rarities",
+    "key": "2",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/component-assets/rarity_two"
+  },
+  {
+    "group": "rarities",
+    "key": "3",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/component-assets/rarity_three"
+  },
+  {
+    "group": "rarities",
+    "key": "4",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/component-assets/rarity_four"
+  },
+  {
+    "group": "rarities",
+    "key": "5",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/component-assets/rarity_five"
+  },
+  {
+    "group": "icons",
+    "key": "hp",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/vector_icon-assets/party_paramater_hp"
+  },
+  {
+    "group": "icons",
+    "key": "atk",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/vector_icon-assets/party_paramater_attack"
+  },
+  {
+    "group": "backgrounds",
+    "key": "detail",
+    "sheetLogical": "scene/character/sprite_sheet.png",
+    "atlasLogical": "scene/character/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/character/sprite_sheet-assets/background"
+  },
+  {
+    "group": "frames",
+    "key": "window",
+    "sheetLogical": "scene/general/sprite_sheet_minimal.png",
+    "atlasLogical": "scene/general/sprite_sheet_minimal.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/general_window_base",
+    "cssBorderImageSliceTopRightBottomLeft": [
+      17,
+      16.95,
+      16.85,
+      17.05
+    ]
+  },
+  {
+    "group": "frames",
+    "key": "button",
+    "sheetLogical": "scene/general/sprite_sheet.png",
+    "atlasLogical": "scene/general/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/general/sprite_sheet/general_btn_base",
+    "cssBorderImageSliceTopRightBottomLeft": [
+      21,
+      19,
+      20.5,
+      20.5
+    ]
+  },
+  {
+    "group": "frames",
+    "key": "status",
+    "sheetLogical": "scene/character/sprite_sheet.png",
+    "atlasLogical": "scene/character/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/character/sprite_sheet-assets/status_frame",
+    "cssBorderImageSliceTopRightBottomLeft": [
+      22.95,
+      54.1,
+      27.1,
+      53.45
+    ]
+  },
+  {
+    "group": "panels",
+    "key": "statusBg",
+    "sheetLogical": "scene/character/sprite_sheet.png",
+    "atlasLogical": "scene/character/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/character/sprite_sheet-assets/status_bg",
+    "cssBorderImageSliceTopRightBottomLeft": [
+      14.35,
+      30.6,
+      18.1,
+      29.1
+    ]
+  },
+  {
+    "group": "panels",
+    "key": "titleLabel",
+    "sheetLogical": "scene/character/sprite_sheet.png",
+    "atlasLogical": "scene/character/sprite_sheet.atlas.amf3.deflate",
+    "textureName": "scene/character/sprite_sheet-assets/title_label_bg"
+  }
+]

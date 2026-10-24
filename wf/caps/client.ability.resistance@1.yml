@@ -1,0 +1,100 @@
+schema: wf-capability/1
+id: client.ability.resistance@1
+title: 能力伤害抗性
+layer: A
+provided_by:
+  patches:
+  - 112
+  - 116
+  match: all
+  methods:
+  - patch: 112
+    abc: boot_ffc6
+    label: ConditionSlot$/wfxSpec
+    sha256: 91ca69969bd16ae753041acdb6982603f6c3dc685c2145bd8cf96c33e369dd12
+    status: 已记录
+    source: v35/run4/release-locks.json
+  - patch: 112
+    abc: boot_ffc6
+    label: ConditionSlot/wfxCollect
+    sha256: fefed63f32ea56ea41805ea450a850ebc2d6bfb11e6a43db58411dc3ed89f1cc
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 112
+    abc: boot_ffc6
+    label: ConditionSlot/wfxRows
+    sha256: 043dc1989b5bced086cb2b10ceba115cf29139c75f6b43fe1a18fe7c1d87bba3
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 112
+    abc: boot_ffc6
+    label: ConditionSlot/wfxSum
+    sha256: 1c2e61835f1933dd81e018e91f101ac48fd871bb1ff7913d909017adee235901
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 116
+    abc: boot_ffc6
+    label: ConditionSlot/getOneSideTotalAbilityDamageResistance
+    sha256: 16046a0cff88b9a31fffd45ed4017678fd00573ec21a5e33e0c0610de7e2db75
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 116
+    abc: boot_ffc6
+    label: ConditionSlot/wfxAbilityResistance
+    sha256: 6466f8d516cbe1db3d09b6b1027e4d62e85d8261574733982fc7be01f1ab26a6
+    status: 已记录
+    source: v35/run1/release-locks.json
+  status: 已记录
+  basis: v35e/run5累计本地离线证据；哈希为方法code字节；不声明设备验收或部署
+server:
+  required: false
+  features: []
+  note: 通用客户端数据入口；不声明服务端或资源已部署
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes:
+  - 'wfx:26:'
+  unique_ids: []
+  tables: []
+  selectors: []
+  allowed_tables:
+  - unique_condition
+form:
+  label: 能力伤害抗性
+  fields:
+  - name: effect_26
+    label: 能力伤害抗性
+    arg_schema:
+      recommended: 0
+      runtime: 忽略arg，合计该code的所有状态
+    value:
+      min: -2147483648
+      max: 2147483647
+      integer: true
+      unit: 原生Decimal，100000=100%
+    flags:
+      type: integer
+      min: 0
+      max: 2147483647
+      meaning: 逐状态层数封顶，0不限
+      pin: false
+  note: 需要 test-v35e；实际参数规则以累计登记和对应实现说明为准
+describe:
+  template: 码26逐状态层数封顶后贡献能力伤害抗性，负值为减抗；保留1499901
+  channel: 能力说明
+rules:
+- capability.missing
+- capability.method-hash
+- capability.resolution
+preview:
+  label: 能力伤害抗性
+  status: 待验证
+golden:
+- source: v35/run5/registry-draft.json
+  kind: method-code-sha256
+  note: 最终SWF实际方法与最终release-lock一致；可重复离线验证不等于AIR/Android设备验收
+docs:
+- v35/run5/registry-draft.json
+- docs/m2/v35e-method-audit.json
+- docs/m2/v35e-registration.md

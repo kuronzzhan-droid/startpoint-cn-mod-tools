@@ -1,0 +1,4 @@
+# Wiki parser fixture only; importing or applying a client patch is unnecessary.
+class Config:
+    cursed_threshold: int = 2
+    decay_off: int = 4

@@ -1,0 +1,114 @@
+schema: wf-capability/1
+id: client.apk.patch013@1
+title: 深渊本期最快纪录
+layer: platform
+provided_by:
+  patches:
+  - 13
+  match: all
+  methods:
+  - patch: 13
+    abc: cn.ui.AbyssDetails
+    label: AbyssDetails$/openDetails
+    sha256: e4e50796a8508b022a9c3a4942ba205e1377a782308b56bb9de77d827d907218
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 13
+    abc: cn.ui.AbyssRecordDetails
+    label: AbyssRecordDetails$/<cinit>
+    sha256: dee51013bf04e5bd8544837c46f8000e71eee934c53224a90b60150e2e48415c
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 13
+    abc: cn.ui.AbyssRecordDetails
+    label: AbyssRecordDetails/<ctor>
+    sha256: 8ff32749a852a1d83829c6a3fac8ec00822f06b5c7177f9ebb43a09287b2101a
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 13
+    abc: cn.ui.AbyssRecordDetails
+    label: AbyssRecordDetails$/formatTime
+    sha256: 16f6ce4add4ca83d2870f3a1b7b217d99d557ebe3a168bf31706acc79b84b66a
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 13
+    abc: cn.ui.AbyssRecordDetails
+    label: AbyssRecordDetails$/open
+    sha256: 39e929fac668eb3611ba416d514a69dfd6179c0719c907bbf93b977dbc4df5fb
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 13
+    abc: cn.ui.AbyssRecordDetails
+    label: AbyssRecordDetails$/responseText
+    sha256: bd6bdb780750710767f9f6b05cfb6d8bc5f3b12c0285a5364032036e29fd9bf7
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 13
+    abc: cn.ui.AbyssRecordDetails
+    label: AbyssRecordDetails$/show
+    sha256: c4086a61cd284d04b647013927af1fbb06226930445c4b8aeee3c5bfaaf263c6
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 13
+    abc: cn.ui.AbyssRecordDetails
+    label: anonymous-method-0
+    sha256: ba12d940b8c361ceaf9219504957833f53a7d8bf369fd693ddd5d181b06b1af3
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 13
+    abc: cn.ui.AbyssRecordDetails
+    label: anonymous-method-4
+    sha256: f199ce0fe19d0460945228a83f128659c1926af516ca140b1c9657c861fa7628
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 13
+    abc: cn.ui.AbyssRecordDetails
+    label: anonymous-method-5
+    sha256: dc36e7c5312991305894e715b2110f511ec8fc3ee7a4b8f3258aad2a26cadded
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 13
+    abc: cn.ui.AbyssRecordDetails
+    label: anonymous-method-6
+    sha256: 8e728287a9c6352b245d09ce42124084635aba595b668dcceb3058d0be0c5766
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 13
+    abc: cn.ui.AbyssRecordDetails
+    label: anonymous-method-8
+    sha256: 333e0a1e27815d0ceee55c473fe3dc93d56c63e3bee2b3b4aee8eed6d70191a3
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: false
+  features: []
+  note: 无额外服务端改动要求
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: 深渊本期最快纪录
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: 深渊本期最快纪录
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: 深渊本期最快纪录
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/verification/v33-patches-preserved-o8-o12-r2.json

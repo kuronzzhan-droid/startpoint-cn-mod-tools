@@ -21,6 +21,10 @@ from wf_character_requirements import build_requirement_report, char_asset_requi
 
 _CODE_RE = re.compile(r"^[a-z][a-z0-9_]*$")
 _PACKAGE_RE = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
+# store 分片布局(<2hex>/<38hex>)。roots/ 里出现这种相对路径 = 有工具把
+# hashed_rel 的输出当成了逻辑路径写进来;发布会再哈希一次铸出死地址。
+# 与 wf_character_pack.STORE_SHARD_RE 同义(本模块按约定不 import pack)。
+_STORE_SHARD_RE = re.compile(r"^[0-9a-f]{2}/[0-9a-f]{38}$")
 _ROOT_NAMES = ("common", "medium", "android", "server")
 _WORKSPACE_KEYS = {
     "schema_version",
@@ -393,6 +397,13 @@ def _manifest_state(
                 if not isinstance(logical, str) or not logical or "\\" in logical or logical.startswith("/"):
                     errors.append(f"manifest {root_name}[{index}] has unsafe logical_path")
                     continue
+                if _STORE_SHARD_RE.fullmatch(logical):
+                    errors.append(
+                        f"manifest {root_name}[{index}] logical_path is a hashed store rel"
+                        f" ({logical}); delete the stray roots file and redeclare the"
+                        " pre-hash logical path"
+                    )
+                    continue
                 relative = f"roots/{root_name}/{logical}"
                 actual = raw_hashes.get(relative)
                 if actual is None:
@@ -436,6 +447,12 @@ def workspace_status(
     requirements = char_asset_requirements(current.code_name)
     requirement_report = build_requirement_report(requirements, client_existing)
     manifest, manifest_errors = _manifest_state(current, input_digest, raw_hashes)
+    for root_name, logical in sorted(rooted):
+        if _STORE_SHARD_RE.fullmatch(logical):
+            manifest_errors.append(
+                f"store-shard residue in package roots: {root_name}:{logical};"
+                " delete the file (it is hashed_rel output, not a logical path)"
+            )
 
     server_paths = {logical for root_name, logical in rooted if root_name == "server"}
     roots = manifest.get("roots", {}) if isinstance(manifest, dict) else {}

@@ -1,0 +1,1303 @@
+{
+  "schema": 1,
+  "characters": {
+    "c29054cf9d371": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/3d5cc2836f8d08e39f249e827a3560038ba844305eadcc243390c447a45c3235.webp",
+          "anchorX": 9,
+          "anchorY": 17
+        },
+        "skill_ready": {
+          "url": "media/pixels/9761ad5d5661ab6d8042e015b39c3eee230948ed2af37adc57325afa543cda97.webp",
+          "anchorX": 28,
+          "anchorY": 68
+        }
+      }
+    },
+    "c22d4a8ac42f7": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/e7d98e7cc240bdbf22d3e6905e2a7847d4a85524f9fa4dde40e4088427bd6d85.webp",
+          "anchorX": 16,
+          "anchorY": 39
+        },
+        "skill_ready": {
+          "url": "media/pixels/6c1f53052c1442ea9d044a3ebe3f364c63fe0bc3f991528a4d9c8cc4351b24af.webp",
+          "anchorX": 23,
+          "anchorY": 44
+        }
+      }
+    },
+    "c9a07e74081a3": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/e39b42afc133a8853f3829ff7cf0723ef129f30655899d1fe1b37029df68a415.webp",
+          "anchorX": 18,
+          "anchorY": 39
+        },
+        "skill_ready": {
+          "url": "media/pixels/8780b8c059fb41d52413181c451abe21fcf3d8fbcc1180075bd71cc1d9900896.webp",
+          "anchorX": 18,
+          "anchorY": 40
+        }
+      }
+    },
+    "c6dc9da865066": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/7ea8338704237d99be74d74a0ca1b6878e9210f8795effb17b256e1f448efda0.webp",
+          "anchorX": 23,
+          "anchorY": 40
+        },
+        "skill_ready": {
+          "url": "media/pixels/72bf4691bfeb7f8a39928563694b74c7caf3904dc9d65c93333ed81c3ad211f8.webp",
+          "anchorX": 24,
+          "anchorY": 36
+        }
+      }
+    },
+    "cb922553efea6": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/c29b128310cac5184d984abab490238596fbfd59b31fe45abe997621d727fad1.webp",
+          "anchorX": 7,
+          "anchorY": 14
+        },
+        "skill_ready": {
+          "url": "media/pixels/4d0f4cc2e4dc5e2e24085e177c57e6fded1ecdaf970e8dc6a4af61b577dbb2a4.webp",
+          "anchorX": 14,
+          "anchorY": 49
+        }
+      }
+    },
+    "c3ca327abc43c": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/aafc4ba0a5769cb3ad2585bf74fd1edbb908a53e3683f1f5a0592f5459d7a582.webp",
+          "anchorX": 8,
+          "anchorY": 17
+        },
+        "skill_ready": {
+          "url": "media/pixels/ffe3c35dfc8b4cdad83de0e3265836bb32d4f55333ef365176d800c957f3bd06.webp",
+          "anchorX": 39,
+          "anchorY": 59
+        }
+      }
+    },
+    "c1ad38008e1dd": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/90bdf764bb5daefa91cab6c55143171f2e0713d322519f606414bd4b4e946030.webp",
+          "anchorX": 9,
+          "anchorY": 17
+        },
+        "skill_ready": {
+          "url": "media/pixels/29de59b9459726080abac73ebffd1d8db7b9836315881c401bc2cda67e612e6d.webp",
+          "anchorX": 32,
+          "anchorY": 54
+        }
+      }
+    },
+    "c907f46378c61": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/58858d8c551a5514e5c0170ab8d7ebd2a2ccd93e4a166ce38de098a7a8d88172.webp",
+          "anchorX": 8,
+          "anchorY": 15
+        },
+        "skill_ready": {
+          "url": "media/pixels/4dd0a841d18bd9c27470ce7bf973b9cdecc6087eca9ae9dc15dd34c3d0d3bacb.webp",
+          "anchorX": 23,
+          "anchorY": 31
+        }
+      }
+    },
+    "cbebf6c04269f": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/faf8637de54bb67c934d378b1b36a68cae8a9048c5e7d879e7023b009bdd0c79.webp",
+          "anchorX": 12,
+          "anchorY": 20
+        },
+        "skill_ready": {
+          "url": "media/pixels/847c3d3ae0367a4027c10076807640a4f25b53649d0a8375abda73814691486b.webp",
+          "anchorX": 13,
+          "anchorY": 32
+        }
+      }
+    },
+    "c393f6e9d484c": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/af0365bcd6deebd7cf99449d0e917c07a4897b2b388a68af58a30c7d1e0a9670.webp",
+          "anchorX": 12,
+          "anchorY": 23
+        },
+        "skill_ready": {
+          "url": "media/pixels/c7f2032e489e8bf606cf98f2fed7a60f595def598295c393abf8651190436def.webp",
+          "anchorX": 19,
+          "anchorY": 25
+        }
+      }
+    },
+    "c5057d866095d": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/377c173cf1a5b78f5d21a2840762bab24681626bb8938731a9bc72e2bf899326.webp",
+          "anchorX": 9,
+          "anchorY": 14
+        },
+        "skill_ready": {
+          "url": "media/pixels/726329ef3de9378394f1213ea217b9bc57ecf2ed1158a8bd3453eb0677199e29.webp",
+          "anchorX": 16,
+          "anchorY": 27
+        }
+      }
+    },
+    "c14657e92a1c8": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/0e52d7c61d1103d9db8e146c60d71f98a55956a5142b211e1f7d76598d7ad1c6.webp",
+          "anchorX": 8,
+          "anchorY": 17
+        },
+        "skill_ready": {
+          "url": "media/pixels/8dd0a5f2d31c371ebe015fd4ae67f2490ff5b98faccbbd49c34f63b8e28bff11.webp",
+          "anchorX": 39,
+          "anchorY": 59
+        }
+      }
+    },
+    "cf2639185ac38": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/75f6cbcbddc0efa04749e78c5aadede6a9df191401f1f191ec667451a5a432fd.webp",
+          "anchorX": 8,
+          "anchorY": 14
+        },
+        "skill_ready": {
+          "url": "media/pixels/37ebea49cf499b0a786a650585f2185a897ee07efc492ee039ad6aaa0449836d.webp",
+          "anchorX": 32,
+          "anchorY": 76
+        }
+      }
+    },
+    "cbb042f435215": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/0aaef8e97a03f04cf52bfa25af3647f193a3bc68f4b61f7b7c9abde3a3fcee08.webp",
+          "anchorX": 23,
+          "anchorY": 35
+        },
+        "skill_ready": {
+          "url": "media/pixels/1c905d6469b942fe7c5413832b4e75f759b83b5f2a0e3aa5750e15b1dc98c0f7.webp",
+          "anchorX": 27,
+          "anchorY": 51
+        }
+      }
+    },
+    "c230cb7dfddb4": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/f21ecb1996fa3e9ff6fa62e8254d57cab6e69007f1f8a2b50d407326b0e6aea2.webp",
+          "anchorX": 16,
+          "anchorY": 39
+        },
+        "skill_ready": {
+          "url": "media/pixels/7c06d1e85be562b37c6202ce7ad6cce8e590a6c4a1202deeb37a012f07b3bb6e.webp",
+          "anchorX": 26,
+          "anchorY": 43
+        }
+      }
+    },
+    "cc890cc6f5b9f": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/4fecca1fb11d161d12e2b543455f2c452b65e470d17db6d6f81d57184790a2ca.webp",
+          "anchorX": 9,
+          "anchorY": 16
+        },
+        "skill_ready": {
+          "url": "media/pixels/e1d50b7ff78f33400efe311cc779fc9a6d291ea56666122bd130d2c7aac3d71a.webp",
+          "anchorX": 48,
+          "anchorY": 78
+        }
+      }
+    },
+    "cff8b856bd63e": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/650c3c6f3af1ce5def0bced09ee0cec92a8aeed5b70e3856bbcf92a0d4918aa9.webp",
+          "anchorX": 16,
+          "anchorY": 39
+        },
+        "skill_ready": {
+          "url": "media/pixels/283194cbb5ea1bfa07a0eebb89ede57e9ae60d5c4699f8bd37d9abd0a09fb311.webp",
+          "anchorX": 14,
+          "anchorY": 33
+        }
+      }
+    },
+    "cbd4438ee04a2": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/ffb5b74f6e6f1410ea8261419140bf9036c6c7f5c4c50d96a357a689c5254c4a.webp",
+          "anchorX": 8,
+          "anchorY": 14
+        },
+        "skill_ready": {
+          "url": "media/pixels/f3bbafae9cc509ce0fe6f280162afbdce72d5ed7869f0918cd84c94d3c067db6.webp",
+          "anchorX": 45,
+          "anchorY": 61
+        }
+      }
+    },
+    "c4d91125f2dba": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/2e744927f5507f82666457d27bba84957c91fd059bea5dfa397b7478aa7b2c01.webp",
+          "anchorX": 7,
+          "anchorY": 16
+        },
+        "skill_ready": {
+          "url": "media/pixels/72ae4083e7a664ef1c52b25c69c036dce44e74fa2cd7ad68d5ab962d27262cf4.webp",
+          "anchorX": 28,
+          "anchorY": 27
+        }
+      }
+    },
+    "cb300516a46bd": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/7888bd3276cbb49377fbec517e376826fc598951841dd0f2e734fcc63d82d4f6.webp",
+          "anchorX": 14,
+          "anchorY": 22
+        },
+        "skill_ready": {
+          "url": "media/pixels/a14ca7119287f2db4bac0db0dd2cef0343ae365971db31390d7dfcc27d71719e.webp",
+          "anchorX": 27,
+          "anchorY": 31
+        }
+      }
+    },
+    "cb911196e000f": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/812ba8668512600bcec2ffca9640b3cca5bf9a93fccdcd8e024bef6cb4f3fe9f.webp",
+          "anchorX": 12,
+          "anchorY": 23
+        },
+        "skill_ready": {
+          "url": "media/pixels/5cecac5a263f446bae86ef1b939bce700bde3f1a62be8386721b53e903abe523.webp",
+          "anchorX": 14,
+          "anchorY": 30
+        }
+      }
+    },
+    "caa3e97fb083b": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/0e396b8099bf92d416f670f797789f273e04df93f308f8a94e460067899c0f9a.webp",
+          "anchorX": 9,
+          "anchorY": 16
+        },
+        "skill_ready": {
+          "url": "media/pixels/7b4b96fcf845109cd2b635cdc9c22c8fe720ae1ace77daea29e7d4bd8ba36833.webp",
+          "anchorX": 15,
+          "anchorY": 21
+        }
+      }
+    },
+    "c422f7cbecb02": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/76a380d43bf5a93f1bad3b04d08ad433836a8c6fe3e5553b414bbcf5baa60192.webp",
+          "anchorX": 10,
+          "anchorY": 25
+        },
+        "skill_ready": {
+          "url": "media/pixels/c1fab8888d93bc480de747f208d937ba45ea59be9134f79b34b381c167b9c7cc.webp",
+          "anchorX": 18,
+          "anchorY": 27
+        }
+      }
+    },
+    "c91bf0fe8263f": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/ce515043d9ca9120f77d6559478e0502e033134c5feb9572856c6dcbc07b0a1d.webp",
+          "anchorX": 8,
+          "anchorY": 17
+        },
+        "skill_ready": {
+          "url": "media/pixels/8ad679ccf0bc873177e295b5a10bf64a5fde7708a70c9cd1943018f0623de286.webp",
+          "anchorX": 11,
+          "anchorY": 20
+        }
+      }
+    },
+    "cbab087128a78": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/201452cdde95c6eaaac0db932f5eaaea6bf91a127cbc07cb31df5ab0ba1cf671.webp",
+          "anchorX": 8,
+          "anchorY": 15
+        },
+        "skill_ready": {
+          "url": "media/pixels/b410e6675dbb581f2c7db5dcb1c4b08febfa3db03a907dc0219ead92b609e61e.webp",
+          "anchorX": 15,
+          "anchorY": 20
+        }
+      }
+    },
+    "ca92616555900": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/fc793e405bd6dba2be87d8af62d3f46556e69f4b0416acdd62a89e0d0096537a.webp",
+          "anchorX": 29,
+          "anchorY": 74
+        },
+        "skill_ready": {
+          "url": "media/pixels/7d9270d9d1580b6f022e3d104ff0305ada95a18175bf4c048e92e297bea39e56.webp",
+          "anchorX": 34,
+          "anchorY": 73
+        }
+      }
+    },
+    "c697b6b0e7024": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/a1c905b206e65d17de424eeaa239840aedd06e26320b1b49c84b6fd48d262a41.webp",
+          "anchorX": 8,
+          "anchorY": 16
+        },
+        "skill_ready": {
+          "url": "media/pixels/42dee37b8a1ce22609a80bd2d649a168b35179ea434d1a1c149950d7d725eacb.webp",
+          "anchorX": 37,
+          "anchorY": 66
+        }
+      }
+    },
+    "cc052ad18584b": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/6f98d72fb69d825a96ad47154f6327c749dd5b2287af97f9135c040f881e12f6.webp",
+          "anchorX": 24,
+          "anchorY": 38
+        },
+        "skill_ready": {
+          "url": "media/pixels/60f2189b221a5d428351117d3489e700d84337eea6142881f6742f9b2bdb775d.webp",
+          "anchorX": 29,
+          "anchorY": 49
+        }
+      }
+    },
+    "c42078d566c79": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/842a7251f016a54838ff052b656aafe7975cedb95ec96e42cc2871fb218761eb.webp",
+          "anchorX": 19,
+          "anchorY": 39
+        },
+        "skill_ready": {
+          "url": "media/pixels/fae2d293d777c7953c1d48a0cb011d4b364d74435a3686d8b993995fe2eb0df3.webp",
+          "anchorX": 22,
+          "anchorY": 38
+        }
+      },
+      "nativeSe": [
+        {
+          "cue": "cast",
+          "timeline": "battle/boss/spirit_beast_thunder/spirit_beast_thunder.timeline.amf3.deflate",
+          "sound": "sound_effect/monster/se_roar_beast",
+          "sequence": "shot4_fire_start",
+          "begin": 1027,
+          "decodedSha256": "b0eb48e434f2a1702644ab09bb7026b266e60d833ce4eeb15ec499e7661e583b"
+        }
+      ]
+    },
+    "c2d33d8b90591": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/63407f2b71c64d3fc7b035b82f2c66bc84de9a8919383e9c8f19041fc9564a4f.webp",
+          "anchorX": 23,
+          "anchorY": 40
+        },
+        "skill_ready": {
+          "url": "media/pixels/9dea642defb1c9e00f17c31880895415c7500cb3aa99513e0cb8a3e0da7ad4b1.webp",
+          "anchorX": 23,
+          "anchorY": 41
+        }
+      }
+    },
+    "c9d5244189661": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/700dfd93f4941be7c193cafdd27026ff1db00d491d9f31f47cf37b01777f4e94.webp",
+          "anchorX": 8,
+          "anchorY": 16
+        },
+        "skill_ready": {
+          "url": "media/pixels/1fd28a59994399d895a30befde9f19f2b14fd77dbc5442066b088750ca59807f.webp",
+          "anchorX": 44,
+          "anchorY": 52
+        }
+      }
+    },
+    "c382a022e1832": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/2f00d72db993ae0521e32d3c44c469ecd8d0e0c094d7964539c25a7a23689bbb.webp",
+          "anchorX": 7,
+          "anchorY": 16
+        },
+        "skill_ready": {
+          "url": "media/pixels/6949ad23d68ed2089f8255d5e8cfc89deee3cf9e4505ca9f45252124cffd0d82.webp",
+          "anchorX": 33,
+          "anchorY": 48
+        }
+      }
+    },
+    "c453ba49676ab": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/6757033d47db9843d820532622901ceea67bc86046f37064fed16016f2cd3513.webp",
+          "anchorX": 7,
+          "anchorY": 15
+        },
+        "skill_ready": {
+          "url": "media/pixels/a78735893f7d4757a741cfac7d0fe940d8079499c9874b001e748e532fd4f98c.webp",
+          "anchorX": 47,
+          "anchorY": 74
+        }
+      }
+    },
+    "cd06e0723b274": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/da71d219b8166f9e1c9faaa440205bfa06d364aa2af1c6388c68c152fe05c3b5.webp",
+          "anchorX": 8,
+          "anchorY": 16
+        },
+        "skill_ready": {
+          "url": "media/pixels/f2d22ca9ef14541a447d763e2a20c0b8f233fdb83b99baf49976e12b29739ae7.webp",
+          "anchorX": 46,
+          "anchorY": 74
+        }
+      }
+    },
+    "c55cd97d61417": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/dcccdfcc72e2d010c1daba5bdc45023d2550138671c53c18c5c334723cdcac84.webp",
+          "anchorX": 8,
+          "anchorY": 16
+        },
+        "skill_ready": {
+          "url": "media/pixels/eaf04493ddb30a17c97f1d1a829407b39fecd42fdee99458ef386f0867164574.webp",
+          "anchorX": 37,
+          "anchorY": 66
+        }
+      }
+    },
+    "cc574cfc67ca4": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/cf8998e22232522be689c9724639a724e430172db2cc0a55c8597d6224bbf53b.webp",
+          "anchorX": 11,
+          "anchorY": 18
+        },
+        "skill_ready": {
+          "url": "media/pixels/ed0bbf3fc28ffdc442de06d86ac7fe53944f2aabc24c429878c1b561e1ce002f.webp",
+          "anchorX": 76,
+          "anchorY": 128
+        }
+      }
+    },
+    "c76af6c75e9ef": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/bd469dd53be337e43e8eacd4c6b273b3b3cb042c0ab9f96789125c6381ebcc67.webp",
+          "anchorX": 8,
+          "anchorY": 17
+        },
+        "skill_ready": {
+          "url": "media/pixels/4081665134c9b3f468f4f51bb8d87131050be7c5788a16e2b31efecb1b916ee7.webp",
+          "anchorX": 8,
+          "anchorY": 22
+        }
+      }
+    },
+    "c52f66fa91aa0": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/e5f52ed8b0faf5aeeb69f9de901d440b6a1c184f5027437a2a49ca00046be695.webp",
+          "anchorX": 9,
+          "anchorY": 14
+        },
+        "skill_ready": {
+          "url": "media/pixels/16834895f9614b6e9d8022c30db5ea809961db975e471a4af9c343fac2927bdc.webp",
+          "anchorX": 41,
+          "anchorY": 66
+        }
+      }
+    },
+    "c1c51ad34cb8b": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/c13698d98c6e5b6386faa823032279383f5170ace752a907a47077d9f975f899.webp",
+          "anchorX": 10,
+          "anchorY": 20
+        },
+        "skill_ready": {
+          "url": "media/pixels/498e20b0a0cdf5658ed67f7607591ce16f18c803f6497cadc0b8bbcef376f940.webp",
+          "anchorX": 28,
+          "anchorY": 54
+        }
+      }
+    },
+    "ca1c35e91f036": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/a25b249c99dcc36527bb855631acdf13850ebcf7ccf3bf38571281980da9e2bf.webp",
+          "anchorX": 7,
+          "anchorY": 16
+        },
+        "skill_ready": {
+          "url": "media/pixels/e65a352680f627c71a3d736f15d435fe0aa0b6eb31378261daaeb83c527b8376.webp",
+          "anchorX": 7,
+          "anchorY": 17
+        }
+      }
+    },
+    "cb821b8bdcf90": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/b262f81dfe4361108a64924b9493de4c0845f9e3c494a9fedc8648fff5f12780.webp",
+          "anchorX": 25,
+          "anchorY": 38
+        },
+        "skill_ready": {
+          "url": "media/pixels/90807a4e1800580dc92732a06e5de5d9a7c41f4f3736994c9fa2dc5cb0876edf.webp",
+          "anchorX": 32,
+          "anchorY": 47
+        }
+      }
+    },
+    "c9fee4a115e72": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/54a759d60bfa938e3870677716a2bec2fe3e6869645486195f0ae4d54024dc0b.webp",
+          "anchorX": 17,
+          "anchorY": 35
+        },
+        "skill_ready": {
+          "url": "media/pixels/209fffb6e27ba753fae0bf013dbba4d0e94b58a9f021be166968f5053db5517e.webp",
+          "anchorX": 21,
+          "anchorY": 66
+        }
+      }
+    },
+    "c7a1f80d5b642": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/94896629d88a3f68a0de5359e4e40fb033ec2d17b9b30d0ddd9f7d7589256070.webp",
+          "anchorX": 24,
+          "anchorY": 22
+        },
+        "skill_ready": {
+          "url": "media/pixels/41c29e128234fc73cd2af5fc680e04067d3540cbb847d67144d86e294b87ec76.webp",
+          "anchorX": 23,
+          "anchorY": 21
+        }
+      }
+    },
+    "c06f389dc86fc": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/1bf35fc1c27345111d31dee97359800aeaf5b15aaa59e26563176ca5be089378.webp",
+          "anchorX": 8,
+          "anchorY": 16
+        },
+        "skill_ready": {
+          "url": "media/pixels/c2601360eeadc60476d241f004f90f3f34e1d077fe3fc300ef9586ddce49ac16.webp",
+          "anchorX": 44,
+          "anchorY": 52
+        }
+      }
+    },
+    "c6dcca08975e3": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/d9b6c7ade017288d6268ff4c3c74434864e322cc990c90683045a24679e4963c.webp",
+          "anchorX": 8,
+          "anchorY": 17
+        },
+        "skill_ready": {
+          "url": "media/pixels/7b98f5f114640668f21d1522ec081484bf9bb3c186d499755d80fb8fe39f4721.webp",
+          "anchorX": 44,
+          "anchorY": 75
+        }
+      }
+    },
+    "c14022e5e34c2": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/d5baa15455a6190f8ec3d09c6dadfa82ddb5bd89aca83c10ec1d3dfeadd752c7.webp",
+          "anchorX": 15,
+          "anchorY": 31
+        },
+        "skill_ready": {
+          "url": "media/pixels/8b5f91eb47f524c99cfcf309ae08ddad087c3cd1a2cb7fe1adac376623180937.webp",
+          "anchorX": 15,
+          "anchorY": 31
+        }
+      }
+    },
+    "c1cd6268ebf17": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/527d4474503b54babf73b6d55f911cc062c5dc3a16b377c3ebf53ed06be5a461.webp",
+          "anchorX": 8,
+          "anchorY": 15
+        },
+        "skill_ready": {
+          "url": "media/pixels/c225d11963734a84db6294764fd2aaf7192252ee215e3e85a67161ef2ea8a56f.webp",
+          "anchorX": 45,
+          "anchorY": 68
+        }
+      }
+    },
+    "c979aade7359f": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/4a46f21b48e789b535bb49c33f890b69e76f2125c16a4e1eb3c876abac689c48.webp",
+          "anchorX": 8,
+          "anchorY": 17
+        },
+        "skill_ready": {
+          "url": "media/pixels/9c11fe49aee04c65296fdacbbd39fb5d8eb3d489dd2778d18dd76e61044451fc.webp",
+          "anchorX": 38,
+          "anchorY": 62
+        }
+      }
+    },
+    "c33346bb607d9": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/f9ed49b472c7621e17476fd09a67a6657f9282bca954c0822e7e8d6c9b6d4abb.webp",
+          "anchorX": 14,
+          "anchorY": 24
+        },
+        "skill_ready": {
+          "url": "media/pixels/4a17c5b47ac1461945a10050e769283648e65cb7308ffe4ba5562b86e7c159de.webp",
+          "anchorX": 17,
+          "anchorY": 30
+        }
+      }
+    },
+    "c4a3674faacb4": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/cdeb0e121410ae25d32e83ff878ed6adccd64c3b8983085bc7f04e693e5d63b4.webp",
+          "anchorX": 9,
+          "anchorY": 16
+        },
+        "skill_ready": {
+          "url": "media/pixels/ee45a8c9d95fc82528e01c502825d5a62babab8698700b9ae7b8a65d2f9c3281.webp",
+          "anchorX": 11,
+          "anchorY": 20
+        }
+      }
+    },
+    "c02ea0cac472f": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/a9a3283c1b2ec7c1ac8e97af22c2434da18554516bfec5d4e347deda2dd19158.webp",
+          "anchorX": 12,
+          "anchorY": 25
+        },
+        "skill_ready": {
+          "url": "media/pixels/539cb1a708051a4285eac93494d491eb4a424fb7aa1d62e71282c3c76b90ce29.webp",
+          "anchorX": 12,
+          "anchorY": 30
+        }
+      }
+    },
+    "c329d2479d6db": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/30ddf512944de605fc3e9b6b2daa9fcef3625db4de3cf66e10ca61f002d0485a.webp",
+          "anchorX": 9,
+          "anchorY": 18
+        },
+        "skill_ready": {
+          "url": "media/pixels/576b3366fe815e4c652b6434c54fff03aa50c1df4ae6871845c6e524d055b51a.webp",
+          "anchorX": 12,
+          "anchorY": 28
+        }
+      }
+    },
+    "c277166ea1f5a": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/3a3041c11838f33b376dc638c682e7436e527789118d00c449179819afa0e69b.webp",
+          "anchorX": 8,
+          "anchorY": 18
+        },
+        "skill_ready": {
+          "url": "media/pixels/16120d9ae443862831f8cd31820ef1673b70f0ed6a4b64110dfb482a6865f672.webp",
+          "anchorX": 9,
+          "anchorY": 19
+        }
+      }
+    },
+    "c0160a957e45d": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/8eed3fc198a5ee23fa6bae2bb413f9878309673565b83b9251643e7ec48a3495.webp",
+          "anchorX": 9,
+          "anchorY": 17
+        },
+        "skill_ready": {
+          "url": "media/pixels/b09dae19b16661b4bc859004a7a1fa6824bfd65ea2fbf5a27279362d6db0677b.webp",
+          "anchorX": 29,
+          "anchorY": 70
+        }
+      }
+    },
+    "c78ab5173bc00": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/41e5d7487d51950d4a5419f14e95705036f900f677dde108881847d2fc8877ee.webp",
+          "anchorX": 11,
+          "anchorY": 18
+        },
+        "skill_ready": {
+          "url": "media/pixels/8c3ccc333aad71a6f6744a2ebfb200f3836b41c3251f15de6b7a48516368179d.webp",
+          "anchorX": 43,
+          "anchorY": 79
+        }
+      }
+    },
+    "c2428f776c973": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/064daf89c95eff04a97ac24af22822be2c83278fec67bccddac95b7f96af4e83.webp",
+          "anchorX": 9,
+          "anchorY": 18
+        },
+        "skill_ready": {
+          "url": "media/pixels/12fedfe19f74f30a2ea3bed1526917adc6d0f7749e9a4d334554111d31d61a94.webp",
+          "anchorX": 9,
+          "anchorY": 18
+        }
+      }
+    },
+    "c1fcbaf5fd7a3": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/b80619cc71ff0e037d92918d1047d4ea21992738fefdf48a301ce72e3d78c3af.webp",
+          "anchorX": 8,
+          "anchorY": 16
+        },
+        "skill_ready": {
+          "url": "media/pixels/906ce2d440029cc2fce88f6a313199b0c7944ea9885c39eb4e842a8b113034a4.webp",
+          "anchorX": 50,
+          "anchorY": 61
+        }
+      }
+    },
+    "c1652ce208ed9": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/46a36a5d2f507d0b363c95d562363ecf40336a825235c25cce8ffbb8bce507f0.webp",
+          "anchorX": 11,
+          "anchorY": 18
+        },
+        "skill_ready": {
+          "url": "media/pixels/b4d11973291c764b6aa2683dd294f7e3be3761280e0a67dbbf6df21223467e06.webp",
+          "anchorX": 48,
+          "anchorY": 71
+        }
+      }
+    },
+    "ccae1a246e7f4": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/0f5c9763472f3907f1a5e0ef95d07536f41dbe92f9770560e3805ace04ed71d6.webp",
+          "anchorX": 24,
+          "anchorY": 28
+        },
+        "skill_ready": {
+          "url": "media/pixels/f796971ee8f1a5efd4c7736e58e7ac47d9e33e5137bc882d30396e70e66b5bed.webp",
+          "anchorX": 29,
+          "anchorY": 38
+        }
+      }
+    },
+    "c53f09dcbd23c": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/84a13eb8bf080be9b93ba1f366505639fdf30233f01b456fe88da1bb02856d8e.webp",
+          "anchorX": 25,
+          "anchorY": 25
+        },
+        "skill_ready": {
+          "url": "media/pixels/f4bf682b8a5978455db6f98b18642a3c5d2e184263bf8b7233e94378d9bd6bcc.webp",
+          "anchorX": 25,
+          "anchorY": 28
+        }
+      }
+    },
+    "cc8b0eb3c66c7": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/73a35b16d177b85a27675d57924062af92b9c20c68f16b3a99f06d10a271e8df.webp",
+          "anchorX": 36,
+          "anchorY": 48
+        },
+        "skill_ready": {
+          "url": "media/pixels/3cf25bc011cc5a8bfdbb74e34a886bb581bb88ad86887fcbdd3c74c37e6ae950.webp",
+          "anchorX": 33,
+          "anchorY": 51
+        }
+      }
+    },
+    "cf5b7e4d65d2a": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/9a061872bad31e4108cc3160866072c55f1c209cd7e81f30e40602389a5e8079.webp",
+          "anchorX": 9,
+          "anchorY": 19
+        },
+        "skill_ready": {
+          "url": "media/pixels/82edc586cfce6613f65a58acae59355699840b02757fbbb5b848f0f02fea7324.webp",
+          "anchorX": 11,
+          "anchorY": 20
+        }
+      }
+    },
+    "c51427a616bca": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/35fd0ba9010bca08811a3dbfaf0db983291a66cf50a69e459a018a4d688a368a.webp",
+          "anchorX": 8,
+          "anchorY": 17
+        },
+        "skill_ready": {
+          "url": "media/pixels/e842f7abf663e90234e8ccd63c04bb415de83d0c1a20b30dd8ca720d0eb89d9a.webp",
+          "anchorX": 40,
+          "anchorY": 69
+        }
+      }
+    },
+    "c63b5e6541b2c": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/b546ca498a91fc3e31c6f96154188eb111f5d9c996ad5c260a776d740b320953.webp",
+          "anchorX": 9,
+          "anchorY": 15
+        },
+        "skill_ready": {
+          "url": "media/pixels/919777f0587469e21ada6bf19689ca7c942cc51b679b0220a7a65997c602d7e3.webp",
+          "anchorX": 47,
+          "anchorY": 67
+        }
+      }
+    },
+    "cd5f727aab751": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/25f35e639181987f32ab5e493f1a0e020f73a48f9266881d1a420858b4201f3f.webp",
+          "anchorX": 8,
+          "anchorY": 15
+        },
+        "skill_ready": {
+          "url": "media/pixels/84a6658834704c60ff15952f359dca50ec9f2de665245a2545f87c3c173ab4da.webp",
+          "anchorX": 47,
+          "anchorY": 61
+        }
+      }
+    },
+    "cd882590f8724": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/32097924d44da7644a051142f76693cd1912bc4ec371b469da6cddcee98eac46.webp",
+          "anchorX": 8,
+          "anchorY": 16
+        },
+        "skill_ready": {
+          "url": "media/pixels/eecc2193502f0a484646afb6741d9f158ed5c8196d5ba801a77fdd3aaebb6ffb.webp",
+          "anchorX": 47,
+          "anchorY": 76
+        }
+      }
+    },
+    "c76f2f7163f6e": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/7843e3e73070a4dd802976155a546a45e5bc18f41e407bd18c3dc693ed1b2e4b.webp",
+          "anchorX": 7,
+          "anchorY": 15
+        },
+        "skill_ready": {
+          "url": "media/pixels/cd55bb0d44d91fdec59ab6202a6d5484aaa96bbdd90c6e5a1b46cf80866e6a45.webp",
+          "anchorX": 7,
+          "anchorY": 16
+        }
+      }
+    },
+    "c6ffda440dbf2": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/a2a21ae880c36c2e22c3caa8f03273b60105566675c9693263731d8607a68165.webp",
+          "anchorX": 24,
+          "anchorY": 35
+        },
+        "skill_ready": {
+          "url": "media/pixels/8979d5d3f8131acd40bbf42ceb881682286b64f5909d5bde76a10bc68a2ee2c2.webp",
+          "anchorX": 31,
+          "anchorY": 35
+        }
+      }
+    },
+    "cc228672393a7": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/b681b9e270a49c3a649237d1a1e6a157c6e8930a45576c903b2c45efd52d50bf.webp",
+          "anchorX": 26,
+          "anchorY": 24
+        },
+        "skill_ready": {
+          "url": "media/pixels/47671c63626dd8a2cce5cc793987f2f8e95c2bd63b6ca35b37b1f95d0563185d.webp",
+          "anchorX": 23,
+          "anchorY": 24
+        }
+      }
+    },
+    "ca12720862c6d": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/66f93887acd60fbc1e0fa748d6df25608a26387dc256d996db48794c3c8de1ac.webp",
+          "anchorX": 22,
+          "anchorY": 37
+        },
+        "skill_ready": {
+          "url": "media/pixels/f5d92c55e4733e63200a8be6c10fce5b9706e9da21479f68fa0f3e75b18059f0.webp",
+          "anchorX": 25,
+          "anchorY": 43
+        }
+      }
+    },
+    "c3d9841b70bac": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/fdf9725c43f92fc4d49582c9ac82ab06f80c69aab684a82995ea0c3b247d89c6.webp",
+          "anchorX": 21,
+          "anchorY": 37
+        },
+        "skill_ready": {
+          "url": "media/pixels/45364b64923bf7ec362009c2f07047d87b3b39f887f84117dbf1fcce672ab17f.webp",
+          "anchorX": 28,
+          "anchorY": 47
+        }
+      }
+    },
+    "c40dde4bf2116": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/2babc480ed97b63507c8d8eca33682ca6d296102e6958b9055689e8db8853cff.webp",
+          "anchorX": 8,
+          "anchorY": 14
+        },
+        "skill_ready": {
+          "url": "media/pixels/2e6ae4fff059aeed1e5385b06ca4d67e771c61c937d800a9ab2c4a2e3746cd8a.webp",
+          "anchorX": 48,
+          "anchorY": 65
+        }
+      }
+    },
+    "c78386cf8da48": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/5aad9c758f691b5181d6eb97ebd5a38760ef099928402577d3dcf33417bfd0c5.webp",
+          "anchorX": 8,
+          "anchorY": 14
+        },
+        "skill_ready": {
+          "url": "media/pixels/e35c9e533423fcf53a267efee2fd7ac8d855efe3040adb2aabbab432540ff56d.webp",
+          "anchorX": 51,
+          "anchorY": 66
+        }
+      }
+    },
+    "c24fccfc08c0b": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/fe26fae15756cdd875991a99cc59035ae407a09dd2d7ec90d7e5547986b22167.webp",
+          "anchorX": 8,
+          "anchorY": 15
+        },
+        "skill_ready": {
+          "url": "media/pixels/6091c7b0048c7f2ec54cf553c27c7c9680cdd3ec4f8884cfdf9e0bfcfd1e9200.webp",
+          "anchorX": 35,
+          "anchorY": 36
+        }
+      }
+    },
+    "c8cc94e1ff94c": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/827d80fd5f79f0ed66b50cff4736787e16ce73d416e399c6bcb1e263129f9d57.webp",
+          "anchorX": 9,
+          "anchorY": 14
+        },
+        "skill_ready": {
+          "url": "media/pixels/43ad0d16df0ccace3ae66f6b8ae72112efaa9246580f217313be988c5f55a016.webp",
+          "anchorX": 42,
+          "anchorY": 76
+        }
+      }
+    },
+    "c633b80b6a710": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/6df4d7dd7ec2c8819591902b632774278875dc28a42627bbb2f1ba3a54effaa9.webp",
+          "anchorX": 7,
+          "anchorY": 14
+        },
+        "skill_ready": {
+          "url": "media/pixels/0db9e98de0bec1f8e05e60a3dcae3fd8f0cb197b511071ffd7e2537cf25a0c69.webp",
+          "anchorX": 11,
+          "anchorY": 13
+        }
+      }
+    },
+    "c220efe5f85db": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/68a0459dda9bff9429e03cf51f1afc235122924cc4706b355d9d1c30baaf9de3.webp",
+          "anchorX": 19,
+          "anchorY": 38
+        },
+        "skill_ready": {
+          "url": "media/pixels/0058f43f8d9523d4e71ddf56c588e35b121f043ad3d0e6964820e32191452c42.webp",
+          "anchorX": 17,
+          "anchorY": 29
+        }
+      }
+    },
+    "c5ac94a986fd2": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/d55408b9ae47cf9c830acd7dd52779621df820677c3abe8f6b922483bbf5344b.webp",
+          "anchorX": 12,
+          "anchorY": 29
+        },
+        "skill_ready": {
+          "url": "media/pixels/0f58930dc8ae9567ce09a67c8cb8de6c42ea19af50ce3ac8bd3f3d65521b6958.webp",
+          "anchorX": 25,
+          "anchorY": 34
+        }
+      }
+    },
+    "c60bb1ab2ccfd": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/fbab2e8b9a7bc112fefb63f6527f331d47ffdfcd214c34327bedd997f13cda70.webp",
+          "anchorX": 8,
+          "anchorY": 15
+        },
+        "skill_ready": {
+          "url": "media/pixels/772c334c45871e232235eec9b59e7248677d7ea7ae86fbf7aac53f3ded78b7ca.webp",
+          "anchorX": 9,
+          "anchorY": 18
+        }
+      }
+    },
+    "c41b6e2e3dbef": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/554de4d91dad40f01b33e609b897f5c18897c1127524bf0a58ffe9f20d70ef15.webp",
+          "anchorX": 9,
+          "anchorY": 16
+        },
+        "skill_ready": {
+          "url": "media/pixels/554de4d91dad40f01b33e609b897f5c18897c1127524bf0a58ffe9f20d70ef15.webp",
+          "anchorX": 9,
+          "anchorY": 16
+        }
+      }
+    },
+    "ca2c6d69b5906": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/f6744417a789177a7add9b12839dd49fbc0075335b779e280b0ef1e2b77892c0.webp",
+          "anchorX": 8,
+          "anchorY": 20
+        },
+        "skill_ready": {
+          "url": "media/pixels/b04e7675059c188b78362f3a2a733bf9f146e5cae5940d025433501680942b71.webp",
+          "anchorX": 39,
+          "anchorY": 71
+        }
+      }
+    },
+    "c36859f729a9d": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/dda7441d276154ea6d6451d633a2bd39551485f4aee08604f7afc136c9c2e763.webp",
+          "anchorX": 8,
+          "anchorY": 15
+        },
+        "skill_ready": {
+          "url": "media/pixels/98651f2bd4fab055ad774c1c4f86ce8fa97d2e2b3cfbc9190a5e38b63769c622.webp",
+          "anchorX": 8,
+          "anchorY": 15
+        }
+      }
+    },
+    "c22ca49e2f9aa": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/4fb91531c67fa095fe4b0281ef9ac5efc2b96f199ac1b03a421114492513565e.webp",
+          "anchorX": 25,
+          "anchorY": 38
+        },
+        "skill_ready": {
+          "url": "media/pixels/8d0a00f6b4e94e913125421e8a61c1fcb4d940425b7725880d6c50affb4ea843.webp",
+          "anchorX": 25,
+          "anchorY": 39
+        }
+      }
+    },
+    "c78b748da3786": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/16a24f6693537477f9679bef39d1791dbd4f91081ae920fbbd9449b1e2907117.webp",
+          "anchorX": 19,
+          "anchorY": 42
+        },
+        "skill_ready": {
+          "url": "media/pixels/6e0b5c36654e0fd625179f59819655dd3d1abdee22d5be40b110a882ecf5e47b.webp",
+          "anchorX": 22,
+          "anchorY": 41
+        }
+      }
+    },
+    "c06d6b4ae50fb": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/f1be0f0841f134fdfbf2b30d260814de3c84f3768547fdd41c84c84efcd590ac.webp",
+          "anchorX": 23,
+          "anchorY": 38
+        },
+        "skill_ready": {
+          "url": "media/pixels/51cbb9411f97de52fb7f80e2857cb88e6b44a5d255ced52b0fa76f7f468735f7.webp",
+          "anchorX": 47,
+          "anchorY": 50
+        }
+      }
+    },
+    "c5d2fd33ee6b1": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/16a24f6693537477f9679bef39d1791dbd4f91081ae920fbbd9449b1e2907117.webp",
+          "anchorX": 19,
+          "anchorY": 42
+        },
+        "skill_ready": {
+          "url": "media/pixels/83bd3d08764c67d9182edf579ec695c98caad84715e18a901b9567261542e5d4.webp",
+          "anchorX": 38,
+          "anchorY": 47
+        }
+      }
+    },
+    "c77a2a08c6159": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/ceaa7f423975627b18094521e79b1ad487e9bb57739307528efcd0cd2c719dfb.webp",
+          "anchorX": 27,
+          "anchorY": 43
+        },
+        "skill_ready": {
+          "url": "media/pixels/0b120b4fa4e2b32fa7ddd575c819217c74db8d23fe68d3601c12a52004e0d0ba.webp",
+          "anchorX": 46,
+          "anchorY": 56
+        }
+      }
+    },
+    "ca70010c6ea6b": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/b2b0f076349ac515fa9398e69b9b935240070aaebaec04e5f9478bbe10dda0b2.webp",
+          "anchorX": 24,
+          "anchorY": 34
+        },
+        "skill_ready": {
+          "url": "media/pixels/51ec8222def38179c4c007eb8ad39603d4924d8dcfc37091809ff787d37c7271.webp",
+          "anchorX": 26,
+          "anchorY": 35
+        }
+      }
+    },
+    "cf364400e6aa7": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/947b696c484b8b59d586ebd9d110aad5c7c02c028b257423c91f56cba76d25a5.webp",
+          "anchorX": 20,
+          "anchorY": 40
+        },
+        "skill_ready": {
+          "url": "media/pixels/bc28a9289ccffe6dff35dd704c15ea8a8ec01ea28a5be91d1ad5edb7f283c197.webp",
+          "anchorX": 19,
+          "anchorY": 39
+        }
+      }
+    },
+    "cff1dc7f5049d": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/726286cb62d2174ba4d7b08b3c89989034ad27e0ecc625ae1bf97111745be50d.webp",
+          "anchorX": 8,
+          "anchorY": 16
+        },
+        "skill_ready": {
+          "url": "media/pixels/f25565c92ba797d41a697b59b41faa8dd54ed344992d7b5dd7d9059a4a631f2b.webp",
+          "anchorX": 44,
+          "anchorY": 52
+        }
+      }
+    },
+    "c789c601e51c8": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/a839455b24e5dc69cde630e7ba0616ad68ac15103373b3aa0a62d2cf02bc4cd0.webp",
+          "anchorX": 10,
+          "anchorY": 18
+        },
+        "skill_ready": {
+          "url": "media/pixels/ce9df75da899dc921cc2f1dc8049479bc2101c9f02accd679e0563a9810d43fe.webp",
+          "anchorX": 26,
+          "anchorY": 50
+        }
+      }
+    },
+    "c5e79c24e720b": {
+      "anchors": {
+        "idle": {
+          "url": "media/pixels/0926618cd9ea48fb76d7e44255d7deb77629855adc549eaa73a4fdc97f4fe5b9.webp",
+          "anchorX": 11,
+          "anchorY": 18
+        },
+        "skill_ready": {
+          "url": "media/pixels/3f0a1477591f5f60e6626a6b71da78f9e456d52f9b3832f9c01bd012837629a0.webp",
+          "anchorX": 14,
+          "anchorY": 28
+        }
+      }
+    }
+  }
+}

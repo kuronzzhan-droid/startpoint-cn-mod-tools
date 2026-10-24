@@ -1,0 +1,93 @@
+schema: wf-capability/1
+id: client.apk.patch118@1
+title: 118 PF Lv4门槛与颜色数据化
+layer: A
+provided_by:
+  patches:
+  - 118
+  match: all
+  methods:
+  - patch: 118
+    abc: boot_ffc6
+    label: MemberImpl/startPowerFlip
+    sha256: 030ae3c33da2fe234e174d12fdd251b59251ca36ce2813a5bea1e8fb47cf69b8
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 118
+    abc: boot_ffc6
+    label: BattleFlipperImpl/update
+    sha256: c95c944a7f4735ef9e9c62a421c8a035a8bbc2894505a6f25af2814a7c3cc57d
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 118
+    abc: boot_ffc6
+    label: BattleFlipperView/draw
+    sha256: f0a8da06784d7b9bf54b73101852ca25f5665c1548e75ce00caa4f2a5bdf6516
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 118
+    abc: boot_ffc6
+    label: Battle$/wfxPfReadString
+    sha256: e5ea4e9a21522cfa9fb2692ea8ee55d53d03a34f420ade692831a9eb67e0cc4d
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 118
+    abc: boot_ffc6
+    label: Battle$/wfxPfParseUInt
+    sha256: 5ada965be7bfd983277a4f7f1523fd61b4434d184b40428df4e288c11163cc8f
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 118
+    abc: boot_ffc6
+    label: Battle$/wfxPf4Config
+    sha256: 8257144592e422abe05e62b0f07522da584579eb780f54be43348d61b5228ff5
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 118
+    abc: boot_ffc6
+    label: Battle$/wfxPf4Gradient
+    sha256: 5173ee112d9837bb75cad68c3b9801d6faf5ec34e9a8c5d1047e0c1af1a5e7a8
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 118
+    abc: boot_ffc6
+    label: BattleFlipperView/wfxPf4Accent
+    sha256: 70c64a736c9514960c298c6b0fffde17cc2d4f43550f71eaad7b4a3985012904
+    status: 已记录
+    source: v35/run1/release-locks.json
+  status: 已记录
+  basis: v35e/run5累计本地离线证据；哈希为方法code字节；不声明设备验收或部署
+server:
+  required: false
+  features: []
+  note: 通用客户端数据入口；不声明服务端或资源已部署
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+  allowed_tables: []
+form:
+  label: 118 PF Lv4门槛与颜色数据化
+  fields: []
+  note: 需要 test-v35e；实际参数规则以累计登记和对应实现说明为准
+describe:
+  template: 118 PF Lv4门槛与颜色数据化
+  channel: 能力说明
+rules:
+- capability.missing
+- capability.method-hash
+- capability.resolution
+preview:
+  label: 118 PF Lv4门槛与颜色数据化
+  status: 待验证
+golden:
+- source: v35/run1/apk-patches-additions/118-pf-lv4-data/README.md
+  kind: method-code-sha256
+  note: 最终SWF实际方法与最终release-lock一致；可重复离线验证不等于AIR/Android设备验收
+docs:
+- v35/run1/apk-patches-additions/118-pf-lv4-data/README.md
+- docs/m2/v35e-method-audit.json
+- docs/m2/v35e-registration.md

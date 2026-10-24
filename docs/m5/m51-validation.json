@@ -1,0 +1,212 @@
+{
+  "schema": "wf-m51-validation/1",
+  "status": "completed-local",
+  "base_commit": "63625fc",
+  "tested_code_commit": "6ff50c8",
+  "pytest": {
+    "tests": 4839,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 354,
+    "passed": 4485,
+    "warnings": 26,
+    "seconds": 562.5,
+    "exit_code": 0
+  },
+  "path_scan": {
+    "scanned_text_files": 2236,
+    "findings": [],
+    "count": 0
+  },
+  "historical": {
+    "223": {
+      "member_count": 3,
+      "different_members": 0
+    },
+    "221": {
+      "archive_count": 11,
+      "member_count": 310,
+      "different_members": 0,
+      "layered_members_byte_equal": 310,
+      "legacy_manifest_semantic_equal": true,
+      "archives_equal_without_dos_timestamps": 11,
+      "source_changeset_sha256": "94f4dacf515fedfefe28997a012cd8c28dd3bf1555890510428b13ecf5992321",
+      "build_report_sha256": "42893fcd974738510615e829623902774b53faf276088d3216c823317b1b318d"
+    }
+  },
+  "real_236_terrain_routines": {
+    "quest_count": 471,
+    "counts": [
+      {
+        "rule": "boss.multiwave-field",
+        "status": "不适用",
+        "count": 453
+      },
+      {
+        "rule": "boss.terrain-layers",
+        "status": "满足",
+        "count": 471
+      },
+      {
+        "rule": "boss.multiwave-field",
+        "status": "满足",
+        "count": 18
+      }
+    ],
+    "findings": []
+  },
+  "real_236_preview": {
+    "arch_evil_4_to_5_rejected": true,
+    "hermit_crab_70_to_100_rejected": true
+  },
+  "real_236_template": {
+    "hidden_quests": [
+      "1099031",
+      "1099051",
+      "1099052",
+      "1099053",
+      "1099054",
+      "1099055",
+      "1099056",
+      "1099057",
+      "1099032",
+      "1099033",
+      "1099034",
+      "1099035",
+      "1099036",
+      "1099037",
+      "1099038",
+      "1099039"
+    ],
+    "occupied_server_keys": 3895,
+    "server_element": {
+      "quest": "1012001",
+      "before": 4,
+      "after": 5,
+      "target": "assets/boss_battle_quest.json",
+      "unrelated_value_bytes_preserved": 254
+    }
+  },
+  "real_236_atlas_lower_bounds": [
+    {
+      "quest": "hard_multi:1006/1",
+      "status": "待验证",
+      "blocking": false,
+      "padded_pixels": 809210,
+      "known_heavy_source": false,
+      "enemy_lower_bound": true,
+      "runtime_executed": false
+    },
+    {
+      "quest": "boss_battle:1/99/31",
+      "status": "待验证",
+      "blocking": false,
+      "padded_pixels": 5847162,
+      "known_heavy_source": true,
+      "enemy_lower_bound": true,
+      "runtime_executed": false
+    },
+    {
+      "quest": "boss_battle:1/81/5",
+      "status": "待验证",
+      "blocking": false,
+      "padded_pixels": 4165717,
+      "known_heavy_source": false,
+      "enemy_lower_bound": true,
+      "runtime_executed": false
+    }
+  ],
+  "text_audit": {
+    "first_version": "1.4.227",
+    "last_version": "1.4.237",
+    "versions": 11,
+    "unchanged_inputs_verified": true,
+    "report": "docs/m5/m51-text-audit.md"
+  },
+  "scope": {
+    "writes": "this worktree only",
+    "m4_integrate_accessed": false,
+    "push": false,
+    "server_operations": false,
+    "device_operations": false,
+    "original_text_modified": false
+  },
+  "limitations": [
+    "Atlas enemy resources are a lower bound; full parties, indirect closures and runtime packing remain unverified.",
+    "Historical atlas maximum and failure range do not establish current runtime success.",
+    "Text audit findings are reported only; available server mirrors are local historical evidence.",
+    "221 archive containers differ by DOS timestamps; all member bytes and layer reads match."
+  ],
+  "receipts": [
+    {
+      "path": "work/m51/pytest-full-final.xml",
+      "sha256": "f227b4f28e746d4854fee11744f08aa45165ed874801f51b079db212778cbb6b",
+      "bytes": 822508
+    },
+    {
+      "path": "work/m51/pytest-full-final.log",
+      "sha256": "2015f19bcf5f2abaec3f238d948ef6a02543f7923953b0dc9a793923a2848126",
+      "bytes": 60880
+    },
+    {
+      "path": "work/m51/pytest-final-exit.json",
+      "sha256": "f2bd07bf3c36af1c63e62548245508ab9a6abcdc8c91e2a2687e9c46bb26e511",
+      "bytes": 30
+    },
+    {
+      "path": "work/m51/path-scan-final.json",
+      "sha256": "1f0ee72b02e99bb1f7dcd00f9c50fea02bc190b62fef55ac03cc905c62ee50d6",
+      "bytes": 70
+    },
+    {
+      "path": "work/m51/history/replay221.json",
+      "sha256": "45e12f04814771b23bd4b79301e06367e84dfd82544fc3c2da0ebac2e5d45e14",
+      "bytes": 105910
+    },
+    {
+      "path": "work/m51/history/replay223.json",
+      "sha256": "8833840e5380d63d58bc4310f16cac18b4491bc847fde56740fe86c48ec80c73",
+      "bytes": 1524
+    },
+    {
+      "path": "work/m51/history/build221.log",
+      "sha256": "02b4be4b6a5888dafa8da5fe70310e2516c6654c03e4feeee71c7e80d0990966",
+      "bytes": 5074
+    },
+    {
+      "path": "work/m51/gates/real-236-terrain-scan.json",
+      "sha256": "428f113e559bd3ee4e2620531e1e4ead9b062a7b2a759dd37a90470a816a683b",
+      "bytes": 371
+    },
+    {
+      "path": "work/m51/gates/real-236-preview.json",
+      "sha256": "5b6762deaf6f177ab6dc7eca84ec86ee28d30cecde59174d4d7c2adcbc90bb8c",
+      "bytes": 1136
+    },
+    {
+      "path": "work/m51/boss-template/real-evidence.json",
+      "sha256": "924f4ae219dc635d28f957e9f9063b517af9b8fc492982e4ff07cee44ffbaad2",
+      "bytes": 1216
+    },
+    {
+      "path": "work/m51/atlas-236.json",
+      "sha256": "d3206bf94f5feebe1804cf7a396c85748ddde681155ae5a4edcbd894d934674a",
+      "bytes": 11178
+    },
+    {
+      "path": "work/m51/atlas-236.lock.json",
+      "sha256": "227d756a4ca1013f4bebbc6c08c31b65d8b6a6dfeb6f25116b737668c587d2dd",
+      "bytes": 42778
+    },
+    {
+      "path": "docs/m5/m51-text-audit.json",
+      "sha256": "221c60522684f658dd24b82295f73aa31bfcbfb3ac1a0e0f3e5f9f237df2f5bc",
+      "bytes": 584822
+    },
+    {
+      "path": "docs/m5/m51-text-audit.md",
+      "sha256": "2b0c386b44592884e757875bb590d4adb6e140a2935bdb62bb8c7abe8d34344f",
+      "bytes": 12803
+    }
+  ]
+}

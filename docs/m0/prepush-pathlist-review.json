@@ -1,0 +1,33 @@
+{
+  "repository_file": {
+    "path": "WF_PATHLIST_recovered.txt",
+    "size": 6130646,
+    "sha256": "05ab0aef6e046cc4b8429b1d715898d58ffd0bd9532f9632fa7c6404df78b591",
+    "nonempty_lines": 100089
+  },
+  "original_file": {
+    "path": "${WF_ROOT}/out/kulo-patch-toolkit/prepush/WF_PATHLIST_recovered.txt",
+    "exists": false
+  },
+  "original_effective_paths": 58,
+  "repository_effective_paths": 100089,
+  "added_effective_paths": 100031,
+  "removed_effective_paths": 0,
+  "added_examples": [
+    "battle/funnel/hermit_crab_funnel/hermit_crab_another_light/hermit_crab_another_light.atlas.amf3.deflate",
+    "character/whitedog_beast/voice/words/su_sumimasen.mp3",
+    "quest/thumbnail/world_story_event/multi_battle/desert_bonds_01/multi_middle_boss_1.png",
+    "character/samurai_robot/voice/words/dokaozihio.mp3",
+    "character/alk_serious/ui/story/sad_b.png",
+    "battle/action/skill/action/rare3/monster_attract$monster_attract_2.action.dsl.amf3.deflate",
+    "character/fox_scientist/voice/words/fuun.mp3",
+    "character/combat_soldier/voice/words/a_aa.mp3",
+    "character/ruin_girl_meteor/pixelart/sprite_sheet.atlas.amf3.deflate",
+    "character/minamoto_sakura/voice/words/arigatogozaimasu.mp3",
+    "character/reformist_prince/voice/words/shigotoga_owaranu.mp3",
+    "battle/action/enemy/action/boss_thunder_sphere/boss_thunder_sphere_phase2_micronucleus$difficulty10_skill_c.action.dsl.amf3.deflate"
+  ],
+  "added_digest_sha256": "10b2ac6a3d642c9bc1fccccd4844316c015610f60c0887658b723cdce9ec6096",
+  "same_bytes": false,
+  "reason": "Original file is absent; original loader falls back to built-in known table paths."
+}

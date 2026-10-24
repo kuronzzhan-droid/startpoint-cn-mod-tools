@@ -1,0 +1,1639 @@
+{
+  "schema": "wf-apk-summary/1",
+  "name": "v35e run5 local offline candidate",
+  "swf_sha256": "89461f676b57a059bde58fe5897190db9b61013ae63947401fe1bf87106d6bcf",
+  "official_systems": true,
+  "basis": "v35e SWF逐方法复核run1–run5最终锁；旧能力变体只绑定本SWF，不代表设备或部署验收",
+  "artifacts": [
+    {
+      "kind": "apk",
+      "variant": "x86",
+      "sha256": "aab1f83518f5f2994d5aba409f7b8ce9b889598a2ce2db5de48e6928e5950c26",
+      "payload_sha256": "9c3fbf84b4f7018dfc926ffac1be86854bd63eecde5f44a87f1806a4d788b5de",
+      "excluded_patches": []
+    },
+    {
+      "kind": "apk",
+      "variant": "arm64",
+      "sha256": "160658520dae7e2ea2784bc224e0a360f798e45e6752837e31c6200ba236345b",
+      "payload_sha256": "8043a77a8983d4e91e8428c597025cee0c61337597fa0dcc506fce5f0c91e3d3",
+      "excluded_patches": [
+        97,
+        98,
+        99,
+        100
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "name": "v35/run1/release-locks.json",
+      "sha256": "e1eec80388bbae80146a70b2d648048043699f9b9e0baf2b295d813d0b73d592"
+    },
+    {
+      "name": "v35/run1/verify-report.json",
+      "sha256": "69c7bf9cba084e5f6714790f730cafc082cac46d1f92a1b468e189a41289f452"
+    },
+    {
+      "name": "v35/run1/README.md",
+      "sha256": "15547f6e42582ae1b7dc294773830e4e1b81788d9793c510d4f2ea72c0785cc7"
+    },
+    {
+      "name": "v35/run1/final-pcode/manifest.json",
+      "sha256": "360a2b2d56c58f41a23717efb8830d243df1e0bb43b76d59e4bd45d54140d21e"
+    },
+    {
+      "name": "v35/run2/release-locks.json",
+      "sha256": "1c1b5a51d7908675bb0524b8ed59f7372f01ec30bdedd5ee8742aafcf1897965"
+    },
+    {
+      "name": "v35/run2/verify-report.json",
+      "sha256": "8f3a33edec89653176cfc45bb8a3c9233feb9c3cf70fb7e15b493efcf9f613f3"
+    },
+    {
+      "name": "v35/run2/README.md",
+      "sha256": "aa2b17374cf3a91af47fd9368751c79689a2c10d287b184bf4e3223c375ae650"
+    },
+    {
+      "name": "v35/run2/final-pcode/manifest.json",
+      "sha256": "f4dbdc67ec63674091970b7816133cbe0a416647ddbde59d2f51b16084eef154"
+    },
+    {
+      "name": "v35/run3/release-locks.json",
+      "sha256": "d77973df648aea4da913b47a69be4f0b24cb19ba8f40ced01a447b6efa4dca49"
+    },
+    {
+      "name": "v35/run3/verify-report.json",
+      "sha256": "b35bec2008eb48585e5cc05cf92dfb2739d62026ebe5d295eada45838a93dc65"
+    },
+    {
+      "name": "v35/run3/README.md",
+      "sha256": "ee03de650427f154676c1e8499b77e7185e0ce8a6a075e7dd8fc5e7202689e5f"
+    },
+    {
+      "name": "v35/run3/final-pcode/manifest.json",
+      "sha256": "0f91e43c4749c1dd08a5ff2b5c2a4d6afdc400d343d23396cbdf0a739fefce0f"
+    },
+    {
+      "name": "v35/run4/release-locks.json",
+      "sha256": "b2042d1cef55e64c1a2724a558059dec0aabcdc0894f48faa1456066ad1083b1"
+    },
+    {
+      "name": "v35/run4/verify-report.json",
+      "sha256": "5a4e75f2ac61adaf894b4972e779347d0a99ad5973a066b6083a2258ec7b694e"
+    },
+    {
+      "name": "v35/run4/README.md",
+      "sha256": "17bfc81091773b80e2b96532786fab0967624c9cbc0a4b75c5a70840c698eaaa"
+    },
+    {
+      "name": "v35/run4/final-pcode/manifest.json",
+      "sha256": "c6de07e19ebb267debb3169e5dcf079ba215592570bb50a59c5daf3dda4852cd"
+    },
+    {
+      "name": "v35/run5/release-locks.json",
+      "sha256": "ee43be38823b1db317f018ad1d9b15531ad33ebebed3df323219507c70dacce1"
+    },
+    {
+      "name": "v35/run5/verify-report.json",
+      "sha256": "a1c98d911196aaacc9d3ab1e8e2ae0dc21127259f0562a513df0aa1f37001b80"
+    },
+    {
+      "name": "v35/run5/README.md",
+      "sha256": "5cfa1ed91ed2dad0d552eec97fdfd1d9edd2f251f665125d9883d48cb489eeef"
+    },
+    {
+      "name": "v35/run5/final-pcode/manifest.json",
+      "sha256": "6bb42af2b569437067ff9a6919ca8b65e4d4cf43e0d74f2b6950a3407926b6c5"
+    },
+    {
+      "name": "v35/run5/registry-draft.json",
+      "sha256": "19a31aea267ebca345404eb35fa2b388aebbcc438c467659efbacbeb2e409bd8"
+    },
+    {
+      "name": "v35/run1/apk-patches-additions/112-wfx-effect-query/README.md",
+      "sha256": "d0e4de7f1e5029f94175936b39f82b80f0260302e106ad8fa312cb445bf17b52"
+    },
+    {
+      "name": "v35/run1/apk-patches-additions/113-direct-base/README.md",
+      "sha256": "5d368e2079d51893ad47d14b86e8fefb468f98edd38534c18d5ebc308ec9ca80"
+    },
+    {
+      "name": "v35/run1/apk-patches-additions/114-direct-merge/README.md",
+      "sha256": "49122789b813fb8322f840a128fbaa2fc7fba0ff44452d455ac8621438afa035"
+    },
+    {
+      "name": "v35/run1/apk-patches-additions/115-charge-cap-v2/README.md",
+      "sha256": "ce29eacb69da3f9e98113753959306d9b4c2d14024caaba3e258c07d46a5fa5d"
+    },
+    {
+      "name": "v35/run1/apk-patches-additions/116-ability-resistance/README.md",
+      "sha256": "db6cd2755b060fb66d68758fa40c4f4ef1377f3d48ab37aca6e26d4141b45cc3"
+    },
+    {
+      "name": "v35/run1/apk-patches-additions/117-pf-snapcombo/README.md",
+      "sha256": "97d2fc212c2d0845509fd42872432627813bf264bf00e0bb3fcd1d621ee31bf9"
+    },
+    {
+      "name": "v35/run1/apk-patches-additions/118-pf-lv4-data/README.md",
+      "sha256": "7c182312f7327d9d21e5f7a17e95a881c41f8d70b875b83c193aca116b686bd1"
+    },
+    {
+      "name": "v35/run1/apk-patches-additions/119-fever-items-v2/README.md",
+      "sha256": "5154ae3b0d9113e610b499e1c500669b8e0ed77d5930b2973505a02214ee21e6"
+    },
+    {
+      "name": "v35/run2/apk-patches-additions/120-leader-unlock/README.md",
+      "sha256": "8fa6148ecd3a25462f08c9a2b2380b1acbaeb61d0e6c9fc4624720dd2821a87f"
+    },
+    {
+      "name": "v35/run2/apk-patches-additions/121-adaptive-element/README.md",
+      "sha256": "9f5662efd2c3f086db1be65857c3d1910ebb5996ee4ae53cca27070c70b0b595"
+    },
+    {
+      "name": "v35/run2/apk-patches-additions/122-overflow-heal-damage/README.md",
+      "sha256": "4349cfee98b573d8e22c09ac1dd06cc8072ec24042f3791c85d6be4705779778"
+    },
+    {
+      "name": "v35/run2/apk-patches-additions/123-ability-visuals/README.md",
+      "sha256": "3a5f15f60d3f790f638c7e528feac3ee9787bdbb510b0869d7a2dca02e1001ff"
+    },
+    {
+      "name": "v35/run2/apk-patches-additions/124-direct-factor-clamp/README.md",
+      "sha256": "709118273f9bb186e64b8970247e999a78a1bc55a7801fdfd1cadbf53051d295"
+    },
+    {
+      "name": "v35/run3/apk-patches-additions/125-super-fever/README.md",
+      "sha256": "20503d35b5590d520918ba42688a665378205a73c1dc0aa71e4c9d9f79b9ef68"
+    },
+    {
+      "name": "v35/run3/apk-patches-additions/126-fever-voice/README.md",
+      "sha256": "19be3dc14d906936afaa92fe834a632d3039a7a8dbb74da7f0398f1cef3ae720"
+    },
+    {
+      "name": "v35/run3/apk-patches-additions/127-ready-voice-generic/README.md",
+      "sha256": "310292427c3d6ab11e28c15ca53f9a33a58ad888a135c46a5b346bf26152b620"
+    },
+    {
+      "name": "v35/run3/apk-patches-additions/128-dual-form-uid/README.md",
+      "sha256": "a285a832ab1e46c383f33a3256f1340855248e14185f79952f50326d5f27e094"
+    },
+    {
+      "name": "v35/run3/apk-patches-additions/129-equipment-rules-data/README.md",
+      "sha256": "e0bce8171fcbfb0b040e82be65180903be39337c67f8df1977e15608f9b9415b"
+    },
+    {
+      "name": "v35/run4/apk-patches-additions/130-direct-target-unique/README.md",
+      "sha256": "2adc75d241ec9775fbe55e90418e7fde27628f7c02ae6a916e11ce62b5a06c4b"
+    },
+    {
+      "name": "v35/run5/apk-patches-additions/131-wfx-hidden-unique-icons/README.md",
+      "sha256": "f8d7f826d6f843bbcf60cc6954bdbc5769d7b28b65457ab6b2967e483ac1fe8e"
+    }
+  ],
+  "inherits_swf_sha256": "3d5c9745f519beee68557df7bce3e4ff635c9bb127069ed85a8fd02b5cbedb8a",
+  "inherited_method_updates": [
+    {
+      "patch": 1,
+      "abc": "boot_ffc6",
+      "label": "ActionEvaluationResolver/<ctor>",
+      "sha256": "f04f8ade940fe81b9221c9b0e5fdd848e213dd89eca0c6623ac31b3fb8dc2140",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "f04f8ade940fe81b9221c9b0e5fdd848e213dd89eca0c6623ac31b3fb8dc2140",
+      "after": "6d07497167fbfb8673fc2f8a871045721a4e1776af687951f65478359a83edb7",
+      "final_source": "v35/run1/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 5,
+      "abc": "boot_ffc6",
+      "label": "ConditionSlot/getOneSideTotalAbilityDamageResistance",
+      "sha256": "ca835a8afbbae9802a6d0a6f118e1b2075f9f0c8795dbb1b6fd61ee1e9f5d420",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "ca835a8afbbae9802a6d0a6f118e1b2075f9f0c8795dbb1b6fd61ee1e9f5d420",
+      "after": "16046a0cff88b9a31fffd45ed4017678fd00573ec21a5e33e0c0610de7e2db75",
+      "final_source": "v35/run1/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 6,
+      "abc": "boot_ffc6",
+      "label": "BattleCharacterLogic/resolveFollowingPathCollection",
+      "sha256": "d8d6141c41bcb2d9290f8cfcfe71d5618e65127a8bab1129779fe30b6924e8ea",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "d8d6141c41bcb2d9290f8cfcfe71d5618e65127a8bab1129779fe30b6924e8ea",
+      "after": "a0821604e1bf62cdcad4ae2a909d888d6b0623f8d96623b6bd6805f283312675",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 6,
+      "abc": "boot_ffc6",
+      "label": "HudMemberStatus/update",
+      "sha256": "7858113b678d100259739c4716f0729c9f3dfc75498fd101efc37f9dbaf9e50c",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "7858113b678d100259739c4716f0729c9f3dfc75498fd101efc37f9dbaf9e50c",
+      "after": "73653cf6cd859df89f878dc7bd2b4b17f6beb38ca754677ec746ae1f8a8cd193",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 6,
+      "abc": "boot_ffc6",
+      "label": "SquadManagerImpl/invokeActionSkill",
+      "sha256": "22ddd65155caa3a2110ec8abc5cc7c6e501f688c5d7847c8fcfa21ae1295293f",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "22ddd65155caa3a2110ec8abc5cc7c6e501f688c5d7847c8fcfa21ae1295293f",
+      "after": "01c059afb537bab8f8c45735203b3d44aa53a0688f7bf76b2124e9b788fedcb5",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 7,
+      "abc": "boot_ffc6",
+      "label": "BattleCharacterLogic/resolveFollowingPathCollection",
+      "sha256": "d8d6141c41bcb2d9290f8cfcfe71d5618e65127a8bab1129779fe30b6924e8ea",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "d8d6141c41bcb2d9290f8cfcfe71d5618e65127a8bab1129779fe30b6924e8ea",
+      "after": "a0821604e1bf62cdcad4ae2a909d888d6b0623f8d96623b6bd6805f283312675",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 7,
+      "abc": "boot_ffc6",
+      "label": "HudMemberStatus/update",
+      "sha256": "7858113b678d100259739c4716f0729c9f3dfc75498fd101efc37f9dbaf9e50c",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "7858113b678d100259739c4716f0729c9f3dfc75498fd101efc37f9dbaf9e50c",
+      "after": "73653cf6cd859df89f878dc7bd2b4b17f6beb38ca754677ec746ae1f8a8cd193",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 8,
+      "abc": "boot_ffc6",
+      "label": "AbilitySummarizer$/summaryAbilities",
+      "sha256": "26d392cb941fbc9a1d7134d4e12aaaa4260179786930513be49f7d1c962ec03c",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "26d392cb941fbc9a1d7134d4e12aaaa4260179786930513be49f7d1c962ec03c",
+      "after": "894b1ce3edc80e1d47e40a8acaa164b9081890fb920024b14c2a206eb6b10dec",
+      "final_source": "v35/run2/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 11,
+      "abc": "boot_ffc6",
+      "label": "BattleCharacterLogic/getAvailableAbilities",
+      "sha256": "9a0fcbbeae31de6293028b437a0716e2d959524544370cf2f7bfa58aef59fd9f",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "9a0fcbbeae31de6293028b437a0716e2d959524544370cf2f7bfa58aef59fd9f",
+      "after": "bb0aff2057665c0a4a1463868942bdd690b665c79b0a86fc2b9fa9a12ebadaad",
+      "final_source": "v35/run2/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 15,
+      "abc": "boot_ffc6",
+      "label": "BattleCharacterLogic/resolveFollowingPathCollection",
+      "sha256": "d8d6141c41bcb2d9290f8cfcfe71d5618e65127a8bab1129779fe30b6924e8ea",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "d8d6141c41bcb2d9290f8cfcfe71d5618e65127a8bab1129779fe30b6924e8ea",
+      "after": "a0821604e1bf62cdcad4ae2a909d888d6b0623f8d96623b6bd6805f283312675",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 15,
+      "abc": "boot_ffc6",
+      "label": "CharacterVoiceLogic/createVoicePathMap",
+      "sha256": "a3f3aa721b20af0547543fb26a0ab4227104248b6aee01289e66fea765dc14d7",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "a3f3aa721b20af0547543fb26a0ab4227104248b6aee01289e66fea765dc14d7",
+      "after": "805998e36e1a816701aa8b751aa40aa88e195afd0b78c32aca649a6a235a2015",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 15,
+      "abc": "boot_ffc6",
+      "label": "HudMemberStatus/update",
+      "sha256": "7858113b678d100259739c4716f0729c9f3dfc75498fd101efc37f9dbaf9e50c",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "7858113b678d100259739c4716f0729c9f3dfc75498fd101efc37f9dbaf9e50c",
+      "after": "73653cf6cd859df89f878dc7bd2b4b17f6beb38ca754677ec746ae1f8a8cd193",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 16,
+      "abc": "boot_ffc6",
+      "label": "BattleCharacterLogic/getAvailableAbilities",
+      "sha256": "9a0fcbbeae31de6293028b437a0716e2d959524544370cf2f7bfa58aef59fd9f",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "9a0fcbbeae31de6293028b437a0716e2d959524544370cf2f7bfa58aef59fd9f",
+      "after": "bb0aff2057665c0a4a1463868942bdd690b665c79b0a86fc2b9fa9a12ebadaad",
+      "final_source": "v35/run2/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 21,
+      "abc": "boot_ffc6",
+      "label": "BattleCharacterLogic/resolvePathCollection",
+      "sha256": "4be465684a1346a539ccdcc65221ea64a875fdc0e3ebcd93bb16d47b185b7e93",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "4be465684a1346a539ccdcc65221ea64a875fdc0e3ebcd93bb16d47b185b7e93",
+      "after": "1635d24840bc0c5e81cff3730159741f783528dd20bd417838c61c60aafbd8db",
+      "final_source": "v35/run2/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 21,
+      "abc": "boot_ffc6",
+      "label": "MemberView/draw",
+      "sha256": "f32bfe1956a9d8b906987ad12d8b349c908f5cbf7b4ac8f76a8a7ae9b7b1bc8e",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "f32bfe1956a9d8b906987ad12d8b349c908f5cbf7b4ac8f76a8a7ae9b7b1bc8e",
+      "after": "d554f876ffe9149d17797abbf77ac6eb7ee22f4ebf04626c587eb27b6b31dbde",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 32,
+      "abc": "boot_ffc6",
+      "label": "BattleCharacterLogic/resolvePathCollection",
+      "sha256": "4be465684a1346a539ccdcc65221ea64a875fdc0e3ebcd93bb16d47b185b7e93",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "4be465684a1346a539ccdcc65221ea64a875fdc0e3ebcd93bb16d47b185b7e93",
+      "after": "1635d24840bc0c5e81cff3730159741f783528dd20bd417838c61c60aafbd8db",
+      "final_source": "v35/run2/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 32,
+      "abc": "cn.mod.InahoAbilityVisuals",
+      "label": "InahoAbilityVisuals$/hit",
+      "sha256": "059ed57a965af38e53d3eff5019be03a4dca66e7193efe2ea6cbb3a6004476fc",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "059ed57a965af38e53d3eff5019be03a4dca66e7193efe2ea6cbb3a6004476fc",
+      "after": "222c889582126fd7c175432656d4cad2e2eca752695872a31103f3b6adcb1cc3",
+      "final_source": "v35/run2/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 32,
+      "abc": "cn.mod.InahoAbilityVisuals",
+      "label": "InahoAbilityVisuals$/preload",
+      "sha256": "c7b3e8879db4e421c24d024a8a8728d2691947607e54f84ad3b835acaf619d16",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "c7b3e8879db4e421c24d024a8a8728d2691947607e54f84ad3b835acaf619d16",
+      "after": "15046c0508ef56fb260ca03e12cc22fef8a5b57b0e779ad70074461faafecfd1",
+      "final_source": "v35/run2/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 32,
+      "abc": "cn.mod.InahoAbilityVisuals",
+      "label": "InahoAbilityVisuals$/shot",
+      "sha256": "5e96be34ca2b05298be3f4e942f7da7d70596b0c8ced94f34a936f1836eef507",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "5e96be34ca2b05298be3f4e942f7da7d70596b0c8ced94f34a936f1836eef507",
+      "after": "ec529cbd0b69317e23117240490cf406a5c41bcd76de8ea9a72dac7454f74143",
+      "final_source": "v35/run2/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 53,
+      "abc": "boot_ffc6",
+      "label": "MemberImpl/getStatModifierSkillGaugeCharging",
+      "sha256": "37fbc1b1aac0037ec9b75147e2bd7411d301be0a37e526e2a2d2075ad0fcda1f",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "37fbc1b1aac0037ec9b75147e2bd7411d301be0a37e526e2a2d2075ad0fcda1f",
+      "after": "cee93bf332e24078ac81a253e376fdac6af9295261c395f7c0d8b51d34578d8f",
+      "final_source": "v35/run1/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 54,
+      "abc": "boot_ffc6",
+      "label": "MemberImpl/scheduleDirectAttack",
+      "sha256": "223640cd78b631640313859bb39410d270696644f058435cd1258c88c9f30576",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "223640cd78b631640313859bb39410d270696644f058435cd1258c88c9f30576",
+      "after": "7f0d02acfc116523f829a639e717fea6e53ce30b61c0f40085082c4b0caf1e07",
+      "final_source": "v35/run1/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 55,
+      "abc": "boot_ffc6",
+      "label": "EnemyImpl/applyAttack",
+      "sha256": "989cd6d4d05f0e88c4073ad3d6107bff66c2e8438247e14097b6144ed56e957e",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "989cd6d4d05f0e88c4073ad3d6107bff66c2e8438247e14097b6144ed56e957e",
+      "after": "40bf00989633add7098e00901d1d76a41f67269b798e170fc03962b8c0062b03",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 56,
+      "abc": "boot_ffc6",
+      "label": "MemberImpl/scheduleDirectAttack",
+      "sha256": "223640cd78b631640313859bb39410d270696644f058435cd1258c88c9f30576",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "223640cd78b631640313859bb39410d270696644f058435cd1258c88c9f30576",
+      "after": "7f0d02acfc116523f829a639e717fea6e53ce30b61c0f40085082c4b0caf1e07",
+      "final_source": "v35/run1/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 58,
+      "abc": "boot_ffc6",
+      "label": "MemberImpl/getConditionsIncludingOuterEnvironments",
+      "sha256": "582e23ac1290798c11380451f6c0cdb7a894eb1719e3ef82dd01f3e34787af31",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "582e23ac1290798c11380451f6c0cdb7a894eb1719e3ef82dd01f3e34787af31",
+      "after": "1a75e43905e12699092cbc05d7469cc273ef45636022e9be94b71f6d0011d41b",
+      "final_source": "v35/run5/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 65,
+      "abc": "boot_ffc6",
+      "label": "BattleCharacterLogic/resolveFollowingPathCollection",
+      "sha256": "d8d6141c41bcb2d9290f8cfcfe71d5618e65127a8bab1129779fe30b6924e8ea",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "d8d6141c41bcb2d9290f8cfcfe71d5618e65127a8bab1129779fe30b6924e8ea",
+      "after": "a0821604e1bf62cdcad4ae2a909d888d6b0623f8d96623b6bd6805f283312675",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 65,
+      "abc": "boot_ffc6",
+      "label": "CharacterVoiceLogic/createVoicePathMap",
+      "sha256": "a3f3aa721b20af0547543fb26a0ab4227104248b6aee01289e66fea765dc14d7",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "a3f3aa721b20af0547543fb26a0ab4227104248b6aee01289e66fea765dc14d7",
+      "after": "805998e36e1a816701aa8b751aa40aa88e195afd0b78c32aca649a6a235a2015",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 65,
+      "abc": "boot_ffc6",
+      "label": "HudMemberStatus/update",
+      "sha256": "7858113b678d100259739c4716f0729c9f3dfc75498fd101efc37f9dbaf9e50c",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "7858113b678d100259739c4716f0729c9f3dfc75498fd101efc37f9dbaf9e50c",
+      "after": "73653cf6cd859df89f878dc7bd2b4b17f6beb38ca754677ec746ae1f8a8cd193",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 87,
+      "abc": "boot_ffc6",
+      "label": "BattleFlipperView/draw",
+      "sha256": "379ac4029668dbf388a33ee321940f77837f1911d14c3f06f19f66c553377375",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "379ac4029668dbf388a33ee321940f77837f1911d14c3f06f19f66c553377375",
+      "after": "f0a8da06784d7b9bf54b73101852ca25f5665c1548e75ce00caa4f2a5bdf6516",
+      "final_source": "v35/run1/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 88,
+      "abc": "boot_ffc6",
+      "label": "MemberImpl/startPowerFlip",
+      "sha256": "0aaa43db85c048dda9784925de22fccc38068f638449fcb59938420f12fc2d6b",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "0aaa43db85c048dda9784925de22fccc38068f638449fcb59938420f12fc2d6b",
+      "after": "030ae3c33da2fe234e174d12fdd251b59251ca36ce2813a5bea1e8fb47cf69b8",
+      "final_source": "v35/run1/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 89,
+      "abc": "boot_ffc6",
+      "label": "BattleFlipperImpl/update",
+      "sha256": "850b7356ba86f981b98d73d4d3619484acf2e7b2b0ff9f4ee8814113b7e9b8f0",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "850b7356ba86f981b98d73d4d3619484acf2e7b2b0ff9f4ee8814113b7e9b8f0",
+      "after": "c95c944a7f4735ef9e9c62a421c8a035a8bbc2894505a6f25af2814a7c3cc57d",
+      "final_source": "v35/run1/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 90,
+      "abc": "boot_ffc6",
+      "label": "YakumonoManagerImpl/deactivate",
+      "sha256": "be565848a5c9bccb1030b57a98799a4fde637418f8601d76009fc45aa3422e9b",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "be565848a5c9bccb1030b57a98799a4fde637418f8601d76009fc45aa3422e9b",
+      "after": "e53793d1c783c0c1bb5e024de944584c8df25ae9ca1cef15ebed57bcee3b3b45",
+      "final_source": "v35/run1/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 91,
+      "abc": "boot_ffc6",
+      "label": "YakumonoManagerImpl/activate",
+      "sha256": "fd64527e90a488f108d36e1efc3b4164cecc10c2b0d575eade511a92d4def037",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "fd64527e90a488f108d36e1efc3b4164cecc10c2b0d575eade511a92d4def037",
+      "after": "c79dc0e57dbb3fb20df1a33249a64a350db6a16cc8605c6f99a20d8e14a30de8",
+      "final_source": "v35/run1/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 92,
+      "abc": "boot_ffc6",
+      "label": "BattleQuestBaseImpl/resolvePathCollectionForDashPanel",
+      "sha256": "6143a756bc032bd52230fa2d42efa799c0ba7b57796759a0848e7a70befceb98",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "6143a756bc032bd52230fa2d42efa799c0ba7b57796759a0848e7a70befceb98",
+      "after": "0fa0d23a96cfb64a81ecfba61ae40f311997ab3ff3f62d5ee88d9b1b9c885a30",
+      "final_source": "v35/run1/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 93,
+      "abc": "boot_ffc6",
+      "label": "BattleQuestBaseImpl/leadingResolvePathCollection",
+      "sha256": "ae7218d15898f9b2ebe0d995b070d0088be70548bac6b6176588d5d4c7ebe391",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "ae7218d15898f9b2ebe0d995b070d0088be70548bac6b6176588d5d4c7ebe391",
+      "after": "911dbe4bf9656e6dfc682c6f24f848e6462e73684c80956deee48808864f8c9b",
+      "final_source": "v35/run1/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 94,
+      "abc": "boot_ffc6",
+      "label": "CharacterVoiceLogic/createVoicePathMap",
+      "sha256": "a3f3aa721b20af0547543fb26a0ab4227104248b6aee01289e66fea765dc14d7",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "a3f3aa721b20af0547543fb26a0ab4227104248b6aee01289e66fea765dc14d7",
+      "after": "805998e36e1a816701aa8b751aa40aa88e195afd0b78c32aca649a6a235a2015",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 95,
+      "abc": "boot_ffc6",
+      "label": "BattleCharacterLogic/resolveFollowingPathCollection",
+      "sha256": "d8d6141c41bcb2d9290f8cfcfe71d5618e65127a8bab1129779fe30b6924e8ea",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "d8d6141c41bcb2d9290f8cfcfe71d5618e65127a8bab1129779fe30b6924e8ea",
+      "after": "a0821604e1bf62cdcad4ae2a909d888d6b0623f8d96623b6bd6805f283312675",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    },
+    {
+      "patch": 96,
+      "abc": "boot_ffc6",
+      "label": "HudMemberStatus/update",
+      "sha256": "7858113b678d100259739c4716f0729c9f3dfc75498fd101efc37f9dbaf9e50c",
+      "status": "已记录",
+      "source": "v34/verification/v33-patches-preserved-o8-o12-r2.json",
+      "before": "7858113b678d100259739c4716f0729c9f3dfc75498fd101efc37f9dbaf9e50c",
+      "after": "73653cf6cd859df89f878dc7bd2b4b17f6beb38ca754677ec746ae1f8a8cd193",
+      "final_source": "v35/run3/release-locks.json",
+      "classification": "intentional"
+    }
+  ],
+  "patches": [
+    {
+      "number": 112,
+      "status": "recorded",
+      "methods": [
+        {
+          "patch": 112,
+          "abc": "boot_ffc6",
+          "label": "ConditionSlot$/wfxSpec",
+          "sha256": "91ca69969bd16ae753041acdb6982603f6c3dc685c2145bd8cf96c33e369dd12",
+          "status": "已记录",
+          "source": "v35/run4/release-locks.json"
+        },
+        {
+          "patch": 112,
+          "abc": "boot_ffc6",
+          "label": "ConditionSlot/wfxCollect",
+          "sha256": "fefed63f32ea56ea41805ea450a850ebc2d6bfb11e6a43db58411dc3ed89f1cc",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        },
+        {
+          "patch": 112,
+          "abc": "boot_ffc6",
+          "label": "ConditionSlot/wfxRows",
+          "sha256": "043dc1989b5bced086cb2b10ceba115cf29139c75f6b43fe1a18fe7c1d87bba3",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        },
+        {
+          "patch": 112,
+          "abc": "boot_ffc6",
+          "label": "ConditionSlot/wfxSum",
+          "sha256": "1c2e61835f1933dd81e018e91f101ac48fd871bb1ff7913d909017adee235901",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        }
+      ],
+      "basis": "v35/run1/apk-patches-additions/112-wfx-effect-query/README.md"
+    },
+    {
+      "number": 113,
+      "status": "recorded",
+      "methods": [
+        {
+          "patch": 113,
+          "abc": "boot_ffc6",
+          "label": "MemberImpl/scheduleDirectAttack",
+          "sha256": "7f0d02acfc116523f829a639e717fea6e53ce30b61c0f40085082c4b0caf1e07",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        },
+        {
+          "patch": 113,
+          "abc": "boot_ffc6",
+          "label": "MemberImpl/wfxDirectFactor",
+          "sha256": "79b95f994aed7627926763c51b5c320f419225b9c943bea683ec7e1cff33388a",
+          "status": "已记录",
+          "source": "v35/run4/release-locks.json"
+        }
+      ],
+      "basis": "v35/run1/apk-patches-additions/113-direct-base/README.md"
+    },
+    {
+      "number": 114,
+      "status": "recorded",
+      "methods": [
+        {
+          "patch": 114,
+          "abc": "boot_ffc6",
+          "label": "MemberImpl/scheduleDirectAttack",
+          "sha256": "7f0d02acfc116523f829a639e717fea6e53ce30b61c0f40085082c4b0caf1e07",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        },
+        {
+          "patch": 114,
+          "abc": "boot_ffc6",
+          "label": "MemberImpl/wfxMergeDirect",
+          "sha256": "9e94f2904e16303fa9eb4d2db70f97357cb304f94399ad7ca1493e8509efca61",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        }
+      ],
+      "basis": "v35/run1/apk-patches-additions/114-direct-merge/README.md"
+    },
+    {
+      "number": 115,
+      "status": "recorded",
+      "methods": [
+        {
+          "patch": 115,
+          "abc": "boot_ffc6",
+          "label": "MemberImpl/getStatModifierSkillGaugeCharging",
+          "sha256": "cee93bf332e24078ac81a253e376fdac6af9295261c395f7c0d8b51d34578d8f",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        },
+        {
+          "patch": 115,
+          "abc": "boot_ffc6",
+          "label": "MemberImpl/wfxChargeCap",
+          "sha256": "fedadf93ed5b16deed28406abc28a0e659125c0bb50e23c4fffa2b97c4d07e00",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        }
+      ],
+      "basis": "v35/run1/apk-patches-additions/115-charge-cap-v2/README.md"
+    },
+    {
+      "number": 116,
+      "status": "recorded",
+      "methods": [
+        {
+          "patch": 116,
+          "abc": "boot_ffc6",
+          "label": "ConditionSlot/getOneSideTotalAbilityDamageResistance",
+          "sha256": "16046a0cff88b9a31fffd45ed4017678fd00573ec21a5e33e0c0610de7e2db75",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        },
+        {
+          "patch": 116,
+          "abc": "boot_ffc6",
+          "label": "ConditionSlot/wfxAbilityResistance",
+          "sha256": "6466f8d516cbe1db3d09b6b1027e4d62e85d8261574733982fc7be01f1ab26a6",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        }
+      ],
+      "basis": "v35/run1/apk-patches-additions/116-ability-resistance/README.md"
+    },
+    {
+      "number": 117,
+      "status": "recorded",
+      "methods": [
+        {
+          "patch": 117,
+          "abc": "boot_ffc6",
+          "label": "ActionEvaluationResolver/<ctor>",
+          "sha256": "6d07497167fbfb8673fc2f8a871045721a4e1776af687951f65478359a83edb7",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        },
+        {
+          "patch": 117,
+          "abc": "boot_ffc6",
+          "label": "ActionEvaluationResolver/wfxUsesSnapCombo",
+          "sha256": "a400d4fdd3b6a8e03095da1e2b8340ca7f2325004797438e8f311ece2d04289c",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        },
+        {
+          "patch": 117,
+          "abc": "boot_ffc6",
+          "label": "Battle$/wfxPfReadString",
+          "sha256": "e5ea4e9a21522cfa9fb2692ea8ee55d53d03a34f420ade692831a9eb67e0cc4d",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        }
+      ],
+      "basis": "v35/run1/apk-patches-additions/117-pf-snapcombo/README.md"
+    },
+    {
+      "number": 118,
+      "status": "recorded",
+      "methods": [
+        {
+          "patch": 118,
+          "abc": "boot_ffc6",
+          "label": "MemberImpl/startPowerFlip",
+          "sha256": "030ae3c33da2fe234e174d12fdd251b59251ca36ce2813a5bea1e8fb47cf69b8",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        },
+        {
+          "patch": 118,
+          "abc": "boot_ffc6",
+          "label": "BattleFlipperImpl/update",
+          "sha256": "c95c944a7f4735ef9e9c62a421c8a035a8bbc2894505a6f25af2814a7c3cc57d",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        },
+        {
+          "patch": 118,
+          "abc": "boot_ffc6",
+          "label": "BattleFlipperView/draw",
+          "sha256": "f0a8da06784d7b9bf54b73101852ca25f5665c1548e75ce00caa4f2a5bdf6516",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        },
+        {
+          "patch": 118,
+          "abc": "boot_ffc6",
+          "label": "Battle$/wfxPfReadString",
+          "sha256": "e5ea4e9a21522cfa9fb2692ea8ee55d53d03a34f420ade692831a9eb67e0cc4d",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        },
+        {
+          "patch": 118,
+          "abc": "boot_ffc6",
+          "label": "Battle$/wfxPfParseUInt",
+          "sha256": "5ada965be7bfd983277a4f7f1523fd61b4434d184b40428df4e288c11163cc8f",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        },
+        {
+          "patch": 118,
+          "abc": "boot_ffc6",
+          "label": "Battle$/wfxPf4Config",
+          "sha256": "8257144592e422abe05e62b0f07522da584579eb780f54be43348d61b5228ff5",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        },
+        {
+          "patch": 118,
+          "abc": "boot_ffc6",
+          "label": "Battle$/wfxPf4Gradient",
+          "sha256": "5173ee112d9837bb75cad68c3b9801d6faf5ec34e9a8c5d1047e0c1af1a5e7a8",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        },
+        {
+          "patch": 118,
+          "abc": "boot_ffc6",
+          "label": "BattleFlipperView/wfxPf4Accent",
+          "sha256": "70c64a736c9514960c298c6b0fffde17cc2d4f43550f71eaad7b4a3985012904",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        }
+      ],
+      "basis": "v35/run1/apk-patches-additions/118-pf-lv4-data/README.md"
+    },
+    {
+      "number": 119,
+      "status": "recorded",
+      "methods": [
+        {
+          "patch": 119,
+          "abc": "boot_ffc6",
+          "label": "YakumonoManagerImpl/activate",
+          "sha256": "c79dc0e57dbb3fb20df1a33249a64a350db6a16cc8605c6f99a20d8e14a30de8",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        },
+        {
+          "patch": 119,
+          "abc": "boot_ffc6",
+          "label": "YakumonoManagerImpl/deactivate",
+          "sha256": "e53793d1c783c0c1bb5e024de944584c8df25ae9ca1cef15ebed57bcee3b3b45",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        },
+        {
+          "patch": 119,
+          "abc": "boot_ffc6",
+          "label": "BattleQuestBaseImpl/resolvePathCollectionForDashPanel",
+          "sha256": "0fa0d23a96cfb64a81ecfba61ae40f311997ab3ff3f62d5ee88d9b1b9c885a30",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        },
+        {
+          "patch": 119,
+          "abc": "boot_ffc6",
+          "label": "BattleQuestBaseImpl/leadingResolvePathCollection",
+          "sha256": "911dbe4bf9656e6dfc682c6f24f848e6462e73684c80956deee48808864f8c9b",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        },
+        {
+          "patch": 119,
+          "abc": "boot_ffc6",
+          "label": "YakumonoManagerImpl$/wfxFeverSpecV2",
+          "sha256": "8226ca60dd9e409406b0c0822651dc688e4782e24017064ee8c84ab5b7386ac9",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        },
+        {
+          "patch": 119,
+          "abc": "boot_ffc6",
+          "label": "YakumonoManagerImpl$/wfxFeverMarkerV2",
+          "sha256": "a2f5ada1da643f39789e21cee64a9fb154edc3a262a359355524c556652bc00a",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        },
+        {
+          "patch": 119,
+          "abc": "boot_ffc6",
+          "label": "BattleQuestBaseImpl/wfxFeverCatalogV2",
+          "sha256": "2b102585ec9a024d671dd7d0e041216c0df14fa4c388df668043c01e82c27906",
+          "status": "已记录",
+          "source": "v35/run1/release-locks.json"
+        }
+      ],
+      "basis": "v35/run1/apk-patches-additions/119-fever-items-v2/README.md"
+    },
+    {
+      "number": 120,
+      "status": "recorded",
+      "methods": [
+        {
+          "patch": 120,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic/getOpitionAbilitiesWithoutAbilitySoul",
+          "sha256": "a2e15db07a25960667fa958a57813682351f347baf8f2a1afccd95c23c71be26",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 120,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic/getAvailableAbilities",
+          "sha256": "bb0aff2057665c0a4a1463868942bdd690b665c79b0a86fc2b9fa9a12ebadaad",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 120,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic/getAvailableAbilitiesWithCond",
+          "sha256": "447a94c290475756970b51e099b484dea8da1b3a8048cb37a4dfb4e50237b1be",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 120,
+          "abc": "boot_ffc6",
+          "label": "AbilitySummarizer$/summaryAbilities",
+          "sha256": "894b1ce3edc80e1d47e40a8acaa164b9081890fb920024b14c2a206eb6b10dec",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 120,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic/resolvePathCollection",
+          "sha256": "1635d24840bc0c5e81cff3730159741f783528dd20bd417838c61c60aafbd8db",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 120,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic/getInstantAbiltyCountWithoutLimit",
+          "sha256": "65dafd49bdcf77015670a32b60a443677a0cbf116d58c136008559756c20c307",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 120,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic/wfxPartyRead",
+          "sha256": "2ca6a43a5c62d35b275e3ad45c2e0f2b9fe3e7c434d11caebd2a50438055f423",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 120,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic/wfxPartyMask",
+          "sha256": "c7a1db19edc1938f331ceee3e029d6e22d700741a17dc5432b5451f5e95bfbda",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 120,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic/wfxPartyLeader",
+          "sha256": "475e536059b2866e0adf74378b72bcfbbd5ee2d1b763e6e8bbd6e830c9240946",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 120,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic/wfxExtraLeaders",
+          "sha256": "739ab8d642fb22bf761006710b7fb1df09b8dc7a1324d5594312cfe0b110ee41",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 120,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic/wfxAddExtraLeaders",
+          "sha256": "9a40c656096f2e1d7100bb05efa45760e3fbaeea212528faecbdc65a610eb8fc",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 120,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic/wfxPreloadExtraLeaders",
+          "sha256": "925c9c3323f723bfe4660c880f677e74d1a1622b745034c8b602b4af415d5fc8",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        }
+      ],
+      "basis": "v35/run2/apk-patches-additions/120-leader-unlock/README.md"
+    },
+    {
+      "number": 121,
+      "status": "recorded",
+      "methods": [
+        {
+          "patch": 121,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic/getElement",
+          "sha256": "af3bd846acede1a3ace8c1ff2cc7221a3fc28cef44730ed59c9f59d998b1318f",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 121,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic/getSelfAbilitySlots",
+          "sha256": "fe07e77266e1b8cbb75e501ff32bdccde1e63a875fc11516e3dde34323543f0d",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 121,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic/wfxPartyRead",
+          "sha256": "2ca6a43a5c62d35b275e3ad45c2e0f2b9fe3e7c434d11caebd2a50438055f423",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 121,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic/wfxAdaptiveElement",
+          "sha256": "505bc3e60962b8ca5953cd63c3014f81ad2eec36714104cdc09431e2e857d2f1",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 121,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic/wfxAdaptiveSlots",
+          "sha256": "702e4e51f20a4a492a234646b220bad6329979c2b8b858c97ceaef2f69e79081",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        }
+      ],
+      "basis": "v35/run2/apk-patches-additions/121-adaptive-element/README.md"
+    },
+    {
+      "number": 122,
+      "status": "recorded",
+      "methods": [
+        {
+          "patch": 122,
+          "abc": "boot_ffc6",
+          "label": "AbilityDamageShot/finish",
+          "sha256": "57d406ca5b723d9f5acc60afd213ac697aadde8127987ccadd3097cf519d1d8f",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 122,
+          "abc": "boot_ffc6",
+          "label": "MemberImpl/applyHeal",
+          "sha256": "9b58acb942b51fea70693b9034034b7738387d27778abe3af552897b21b3425a",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 122,
+          "abc": "boot_ffc6",
+          "label": "SquadManagerImpl/updatePhase",
+          "sha256": "b1de02513d4ce9f4ffb4db39a0449bb2bec16f15ca36019efd91ee0e09bd824c",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 122,
+          "abc": "boot_ffc6",
+          "label": "MemberImpl$/wfxOverflowQueue",
+          "sha256": "5ef67648174f42a94def393d5d27aff3d476dac757b3a0a845c20a383edd0e10",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 122,
+          "abc": "boot_ffc6",
+          "label": "MemberImpl/wfxOverflowEmit",
+          "sha256": "e9f4ad9ea0ee424d8782a449f7822040091a6daa0e07a352181de9a8c78c7eb8",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 122,
+          "abc": "boot_ffc6",
+          "label": "MemberImpl$/wfxOverflowTick",
+          "sha256": "9a6573b030f2c920b5a91f61cdd635b1074f68e8267d888083b1edbf08066711",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 122,
+          "abc": "boot_ffc6",
+          "label": "MemberImpl/wfxOverflowRecord",
+          "sha256": "3c3616e4a128ea57582061b699d61fcaec78b8c8c344ffd8057724cdca940554",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        }
+      ],
+      "basis": "v35/run2/apk-patches-additions/122-overflow-heal-damage/README.md"
+    },
+    {
+      "number": 123,
+      "status": "recorded",
+      "methods": [
+        {
+          "patch": 123,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic/resolvePathCollection",
+          "sha256": "1635d24840bc0c5e81cff3730159741f783528dd20bd417838c61c60aafbd8db",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 123,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic$/wfxVisualPaths",
+          "sha256": "27c1317a058f2e5b854be7b3477ffa49a57ef43517f95e13b09eb308a92ef45e",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 123,
+          "abc": "boot_ffc6",
+          "label": "MemberImpl/wfxAbilityVisualPaths",
+          "sha256": "bdcd0adac5d79b7402e8ddb5f71fdfa783a15dbbfd2e7fbb46666a1db20161c6",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 123,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic$/wfxPreloadVisualFor",
+          "sha256": "b8b504471f5bed8504a58e1f77e0db657f45be64ec39fa2a280881270ce9d1a0",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 123,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic/wfxPreloadAbilityVisuals",
+          "sha256": "497ecff5cf9c6e1391114caede2f6ca73c74ca3c673e0a6456fb3ccc2f71aec1",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 123,
+          "abc": "cn.mod.InahoAbilityVisuals",
+          "label": "InahoAbilityVisuals$/shot",
+          "sha256": "ec529cbd0b69317e23117240490cf406a5c41bcd76de8ea9a72dac7454f74143",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 123,
+          "abc": "cn.mod.InahoAbilityVisuals",
+          "label": "InahoAbilityVisuals$/hit",
+          "sha256": "222c889582126fd7c175432656d4cad2e2eca752695872a31103f3b6adcb1cc3",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        },
+        {
+          "patch": 123,
+          "abc": "cn.mod.InahoAbilityVisuals",
+          "label": "InahoAbilityVisuals$/preload",
+          "sha256": "15046c0508ef56fb260ca03e12cc22fef8a5b57b0e779ad70074461faafecfd1",
+          "status": "已记录",
+          "source": "v35/run2/release-locks.json"
+        }
+      ],
+      "basis": "v35/run2/apk-patches-additions/123-ability-visuals/README.md"
+    },
+    {
+      "number": 124,
+      "status": "recorded",
+      "methods": [
+        {
+          "patch": 124,
+          "abc": "boot_ffc6",
+          "label": "MemberImpl/wfxDirectFactor",
+          "sha256": "79b95f994aed7627926763c51b5c320f419225b9c943bea683ec7e1cff33388a",
+          "status": "已记录",
+          "source": "v35/run4/release-locks.json"
+        }
+      ],
+      "basis": "v35/run2/apk-patches-additions/124-direct-factor-clamp/README.md"
+    },
+    {
+      "number": 125,
+      "status": "recorded",
+      "methods": [
+        {
+          "patch": 125,
+          "abc": "boot_ffc6",
+          "label": "AbilityDamageShot/finish",
+          "sha256": "57d406ca5b723d9f5acc60afd213ac697aadde8127987ccadd3097cf519d1d8f",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 125,
+          "abc": "boot_ffc6",
+          "label": "FeverPointGaugeImpl/addFeverPoint",
+          "sha256": "ced6a6754f7bfdf804a275acffd21e34068f994271f5f0e69cef89c378fdd0f8",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 125,
+          "abc": "boot_ffc6",
+          "label": "ConditionSlot/removeCondition",
+          "sha256": "01c23dccd42610aff382b891c6d75c42f22d61b9f43aec0ed23f1e18ebf3c222",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 125,
+          "abc": "boot_ffc6",
+          "label": "NormalAttackCalculator/_calculate",
+          "sha256": "60f34403fc68edd1d79572b02dd4ac271a9fe171094129a15efe6fb130566807",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 125,
+          "abc": "boot_ffc6",
+          "label": "EnemyImpl/applyAttack",
+          "sha256": "40bf00989633add7098e00901d1d76a41f67269b798e170fc03962b8c0062b03",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 125,
+          "abc": "boot_ffc6",
+          "label": "EnemyImpl/applySlipHandler",
+          "sha256": "9b57c2ffebbf6713c0794eb4bf8497e48d7eb0197c54440f3ec7223326b38df9",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 125,
+          "abc": "boot_ffc6",
+          "label": "FixedAttackCalculator/calculate",
+          "sha256": "f4d7217dd88a8438cbfeef3d3e786cb13c94574afbd81ae50478ad509b19602d",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 125,
+          "abc": "boot_ffc6",
+          "label": "DamageShareCalculator/calculateFromAttackResult",
+          "sha256": "688c4151903a7f5ae14ae8d47d947bee039f6ad58334174008f644d661bfb906",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 125,
+          "abc": "boot_ffc6",
+          "label": "EnemyImpl/applyDamageShare",
+          "sha256": "cde94d1fc01d0d80cb316f9ce5e766bf22d6a7ff778e2d71619e4372125c5913",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 125,
+          "abc": "boot_ffc6",
+          "label": "InstantAbilitySource/resolvePathCollection",
+          "sha256": "9bdc9e225abdba5cc26c939eb1287978285ee10d665957cb754632c83548ad88",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 125,
+          "abc": "boot_ffc6",
+          "label": "InstantAbilitySource/resolveConditionPathCollection",
+          "sha256": "ca2b71568bb55f4c9c1be63973f1b712baf98cfef234487b32a93a23a00cf7ae",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 125,
+          "abc": "boot_ffc6",
+          "label": "ActionDslAssetResolver/eval",
+          "sha256": "0ba772088a5f1ff0e0d12618c253b3b184ac6313df73db3a1c7e3f56a30134a0",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 125,
+          "abc": "boot_ffc6",
+          "label": "ConditionSlot/wfxSuperEntry",
+          "sha256": "4a30c42abb20df18cfe407a1c65fa9fb33dfeb3d6a3a114fa69dfc3293a91733",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 125,
+          "abc": "boot_ffc6",
+          "label": "MemberImpl/wfxSuperGrant",
+          "sha256": "f81c8d40830b71777799c9a178f61e329a38c487d4cda4ee0e4b9f71fec44ff7",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 125,
+          "abc": "boot_ffc6",
+          "label": "MemberImpl/wfxSuperEmit",
+          "sha256": "2567bb2ee8dd46134940dd99c6f9223505bae221e7e70d97666c1689b63ebbb0",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 125,
+          "abc": "boot_ffc6",
+          "label": "MemberImpl/wfxSuperBonus",
+          "sha256": "76fb3c2120e055c7a0918dbaad75a11ab45e1d38be9aff7f85af2bee5b0b82cc",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 125,
+          "abc": "boot_ffc6",
+          "label": "ConditionSlot/wfxSuperEnd",
+          "sha256": "45ec946b634e8360359dd884cc5fe02d47f437e81c83167ca3c439f775869d45",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 125,
+          "abc": "boot_ffc6",
+          "label": "MemberImpl/wfxSuperRecordDamage",
+          "sha256": "e55d8c44f2540e7c37d1f14ad587b5f2e77d83add1e2d4735a95ca5324e39c07",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 125,
+          "abc": "boot_ffc6",
+          "label": "FeverPointGaugeImpl/wfxSuperEnergy",
+          "sha256": "a9b08050cd021192d2fe8ef51515377ed1d3892a24633dc192b959de4571fea1",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 125,
+          "abc": "boot_ffc6",
+          "label": "EnemyImpl/wfxSuperRecordAttack",
+          "sha256": "a48c45210581a1820083074f2cfb325c311f6ce71dd8fb2b1c7f1c2050eb2a8a",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 125,
+          "abc": "boot_ffc6",
+          "label": "UniqueConditionLogic/wfxSuperPreloadIcon",
+          "sha256": "77c42e014f8be91ae28b11c3125b9b037116a4c7d0a0c2b529167463b1985089",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 125,
+          "abc": "boot_ffc6",
+          "label": "UniqueConditionLogic/wfxSuperPreload",
+          "sha256": "71cfbb4a334b6f1b5ee637d01caca302bd29dfd4b27e3a8a09caf854cfa243eb",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        }
+      ],
+      "basis": "v35/run3/apk-patches-additions/125-super-fever/README.md"
+    },
+    {
+      "number": 126,
+      "status": "recorded",
+      "methods": [
+        {
+          "patch": 126,
+          "abc": "boot_ffc6",
+          "label": "SquadManagerImpl/invokeActionSkill",
+          "sha256": "01c059afb537bab8f8c45735203b3d44aa53a0688f7bf76b2124e9b788fedcb5",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 126,
+          "abc": "boot_ffc6",
+          "label": "HudMemberStatus/update",
+          "sha256": "73653cf6cd859df89f878dc7bd2b4b17f6beb38ca754677ec746ae1f8a8cd193",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 126,
+          "abc": "boot_ffc6",
+          "label": "CalculatedBattleCharacterLogic/wfxUsesFeverVoice",
+          "sha256": "1f0c9f59c5510b65001276df0b92ee2650d6dbdc6025ecaa2f8e2fc4af299063",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        }
+      ],
+      "basis": "v35/run3/apk-patches-additions/126-fever-voice/README.md"
+    },
+    {
+      "number": 127,
+      "status": "recorded",
+      "methods": [
+        {
+          "patch": 127,
+          "abc": "boot_ffc6",
+          "label": "HudMemberStatus/update",
+          "sha256": "73653cf6cd859df89f878dc7bd2b4b17f6beb38ca754677ec746ae1f8a8cd193",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 127,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic/resolveFollowingPathCollection",
+          "sha256": "a0821604e1bf62cdcad4ae2a909d888d6b0623f8d96623b6bd6805f283312675",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 127,
+          "abc": "boot_ffc6",
+          "label": "CharacterVoiceLogic/createVoicePathMap",
+          "sha256": "805998e36e1a816701aa8b751aa40aa88e195afd0b78c32aca649a6a235a2015",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        }
+      ],
+      "basis": "v35/run3/apk-patches-additions/127-ready-voice-generic/README.md"
+    },
+    {
+      "number": 128,
+      "status": "recorded",
+      "methods": [
+        {
+          "patch": 128,
+          "abc": "boot_ffc6",
+          "label": "MemberView/draw",
+          "sha256": "d554f876ffe9149d17797abbf77ac6eb7ee22f4ebf04626c587eb27b6b31dbde",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 128,
+          "abc": "boot_ffc6",
+          "label": "MemberView/wfxDualFormUid",
+          "sha256": "c8f821b6f6aa9b5456507094a6694b8c3ac5f74da7211d8fa0c638f501a460ad",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        }
+      ],
+      "basis": "v35/run3/apk-patches-additions/128-dual-form-uid/README.md"
+    },
+    {
+      "number": 129,
+      "status": "recorded",
+      "methods": [
+        {
+          "patch": 129,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic/wfTierAbility",
+          "sha256": "a1518b447139bf07db2584a5430a1e815abfb1a9ad4d45190632dd88e80cf848",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 129,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic/wfIsCursedSoul",
+          "sha256": "73d66629e92923100d2952e5995fe8e4a19e1c550af8dc982c714a9135fb61dd",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 129,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic/wfIsDecaySoul",
+          "sha256": "a39b79e09a6638cbb7433e584bf88f9a79eb94fcf7904296209b5116c69908c0",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 129,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic/wfEquipmentRule",
+          "sha256": "9d00229ab9b600ff9d6082a2d9482e5927a51d004befe46e2564cd19e6ab7f89",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 129,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic/wfPreloadEquipmentTiers",
+          "sha256": "67b1a352eea71b3e644155c12ccabef4b14ccb88a011298478412f038dbc7669",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 129,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic/wfxEquipmentConfig",
+          "sha256": "94d1f036c2d03097d9d5f21188d0b25c7e1de72491b32910123f60e30e7fc0e5",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        },
+        {
+          "patch": 129,
+          "abc": "boot_ffc6",
+          "label": "BattleCharacterLogic/wfxEquipmentParam",
+          "sha256": "d7848a6984b3ee360b5ed6bc1a8e737b0017f2ffe7e1111d78f93e4246304bd7",
+          "status": "已记录",
+          "source": "v35/run3/release-locks.json"
+        }
+      ],
+      "basis": "v35/run3/apk-patches-additions/129-equipment-rules-data/README.md"
+    },
+    {
+      "number": 130,
+      "status": "recorded",
+      "methods": [
+        {
+          "patch": 130,
+          "abc": "boot_ffc6",
+          "label": "ConditionSlot$/wfxSpec",
+          "sha256": "91ca69969bd16ae753041acdb6982603f6c3dc685c2145bd8cf96c33e369dd12",
+          "status": "已记录",
+          "source": "v35/run4/release-locks.json"
+        },
+        {
+          "patch": 130,
+          "abc": "boot_ffc6",
+          "label": "MemberImpl/wfxDirectFactor",
+          "sha256": "79b95f994aed7627926763c51b5c320f419225b9c943bea683ec7e1cff33388a",
+          "status": "已记录",
+          "source": "v35/run4/release-locks.json"
+        },
+        {
+          "patch": 130,
+          "abc": "boot_ffc6",
+          "label": "MemberImpl/wfxDirectTargetUnique",
+          "sha256": "b7570fd1ce5975a904ed665344d2c99d600c87a1d028ad025d494b0439bff13a",
+          "status": "已记录",
+          "source": "v35/run4/release-locks.json"
+        }
+      ],
+      "basis": "v35/run4/apk-patches-additions/130-direct-target-unique/README.md"
+    },
+    {
+      "number": 131,
+      "status": "recorded",
+      "methods": [
+        {
+          "patch": 131,
+          "abc": "boot_ffc6",
+          "label": "MemberImpl/getConditionsIncludingOuterEnvironments",
+          "sha256": "1a75e43905e12699092cbc05d7469cc273ef45636022e9be94b71f6d0011d41b",
+          "status": "已记录",
+          "source": "v35/run5/release-locks.json"
+        }
+      ],
+      "basis": "v35/run5/apk-patches-additions/131-wfx-hidden-unique-icons/README.md"
+    }
+  ],
+  "method_capabilities": [
+    {
+      "id": "client.equipment.gauge_gain_rules@1",
+      "methods": [
+        {
+          "patch": null,
+          "abc": "boot_ffc6",
+          "label": "AbilitySoulValues$/parseAt106",
+          "sha256": "09dab4df4529e9b0272315b616fa9ea4e1882401a9ceadb40be2b5ee515c40ab",
+          "status": "已记录",
+          "source": "wf/apk/data/equipment-rules-r3-methods.json"
+        },
+        {
+          "patch": null,
+          "abc": "boot_ffc6",
+          "label": "EquipmentEnhancementAbilityValues$/parseAt109",
+          "sha256": "dd651c1588b171de60b3617ac33d165d22c726337ee6848caddd88dc0f331577",
+          "status": "已记录",
+          "source": "wf/apk/data/equipment-rules-r3-methods.json"
+        }
+      ],
+      "basis": "wf/apk/data/equipment-rules-r3-methods.json"
+    }
+  ]
+}

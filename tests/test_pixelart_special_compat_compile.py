@@ -19,14 +19,9 @@ compile_special_compatibility = (
     if compat_compile is not None
     else None
 )
-compile_summer_thunder_dragon_special_compatibility = (
-    getattr(compat_compile, "compile_summer_thunder_dragon_special_compatibility", None)
-    if compat_compile is not None
-    else None
-)
 
 
-TARGET = "character/cnmod_thunder_dragon_ascendant/pixelart"
+TARGET = "character/synthetic_target/pixelart"
 NORMAL_TICKS = (
     2, 8, 14, 20, 26, 32, 38, 44, 50,
     51, 56, 62, 68, 74, 80, 86, 92, 98, 104, 110,
@@ -234,13 +229,6 @@ class SpecialCompatibilityCompileTests(unittest.TestCase):
                 expected_normal_sha256=expected_sha256,
             )
 
-    def test_production_wrapper_rejects_non_locked_synthetic_normal(self):
-        self._require_module()
-        if compile_summer_thunder_dragon_special_compatibility is None:
-            self.fail("production hash-locked summer thunder compatibility wrapper is missing")
-        normal_files, _ = self._normal_files()
-        with self.assertRaisesRegex(ValueError, "normal SHA-256 drift"):
-            compile_summer_thunder_dragon_special_compatibility(normal_files)
 
 
 if __name__ == "__main__":

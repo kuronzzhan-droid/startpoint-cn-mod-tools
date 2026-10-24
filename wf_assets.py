@@ -14,6 +14,8 @@
 """
 from __future__ import annotations
 
+from wf.paths import root_path
+
 import csv
 import json
 import os
@@ -32,7 +34,28 @@ HERE = Path(__file__).resolve().parent
 # 实测游戏路径 = character/<code>/voice/<分类>/<名>.mp3,与 dump 一一对应(fire_dragon 18/18)。
 VOICE_DUMP = HERE / "voice-dump"
 
+PNG_REAL = bytes([137, 80, 78, 71, 13, 10, 26, 10])
+PNG_FAKE = bytes([137, 112, 110, 103, 13, 10, 26, 10])
 
+# MP3 帧参数表(MP3Converter.as 原样)
+#
+# ⚠ 索引 8 的 `122000` **不是笔误,不要改成标准值 112000**。
+# 客户端 `fileFaker/converter/MP3Converter.as:23` 的 `bitRateListv1` 写的就是 122000,
+# 而它在 `frameHeaderCalc` -> `getFrameSize` 里被用来**逐帧步进**。也就是说 112 kbps 的
+# mp3 在客户端自己那边也会算错帧长、当场解不动 —— 这一列的职责是**逐位复刻客户端行为**,
+# 不是复刻 MPEG-1 标准。改成 112000 会让本工具接受一批客户端根本读不了的文件。
+# (官方 1.4.0 全量档 9048/9048 条角色语音都是 96 kbps,索引 8 实际上从不被走到;
+#  2026-08-28 有两份报告先后把它当成 bug 报上来,所以把理由写在这里。)
+_BITRATE_V1 = [0, 32000, 40000, 48000, 56000, 64000, 80000, 96000, 122000,
+               128000, 160000, 192000, 224000, 256000, 320000]
+_BITRATE_V2 = [0, 8000, 16000, 24000, 32000, 40000, 48000, 56000, 64000,
+               80000, 96000, 112000, 128000, 144000, 160000]
+_SRATE_V1 = [44100, 48000, 32000]
+_SRATE_V2 = [22050, 24000, 16000]
+_SRATE_V25 = [11025, 12000, 8000]
+
+
+# ---------------------------------------------------------------- PNG
 def resolve_voice_dump() -> Path:
     """Resolve the current voice dump root without freezing process config at import."""
     raw = os.environ.get("WF_VOICE_DUMP")
@@ -49,20 +72,7 @@ def resolve_voice_dump() -> Path:
         raise ValueError(f"WF_VOICE_DUMP is not an existing directory: {candidate}")
     return candidate
 
-PNG_REAL = bytes([137, 80, 78, 71, 13, 10, 26, 10])
-PNG_FAKE = bytes([137, 112, 110, 103, 13, 10, 26, 10])
 
-# MP3 帧参数表(MP3Converter.as 原样)
-_BITRATE_V1 = [0, 32000, 40000, 48000, 56000, 64000, 80000, 96000, 122000,
-               128000, 160000, 192000, 224000, 256000, 320000]
-_BITRATE_V2 = [0, 8000, 16000, 24000, 32000, 40000, 48000, 56000, 64000,
-               80000, 96000, 112000, 128000, 144000, 160000]
-_SRATE_V1 = [44100, 48000, 32000]
-_SRATE_V2 = [22050, 24000, 16000]
-_SRATE_V25 = [11025, 12000, 8000]
-
-
-# ---------------------------------------------------------------- PNG
 
 def png_decode(data: bytes) -> bytes:
     if data[:8] == PNG_FAKE:
@@ -135,13 +145,14 @@ def mp3_decode(data: bytes) -> bytes:
 
 
 def mp3_probe(data: bytes, sig: int) -> dict:
-    """逐帧探测(只读):{frames, bitrates, srates, end(帧流覆盖末位), tail(其后字节数)}。
+    """逐帧探测(只读):{frames, bitrates, srates, channels, end(帧流覆盖末位), tail(其后字节数)}。
     与 _mp3_convert 同一走帧逻辑,用于量化"转换到底覆盖了多少"。"""
     pos, n = 0, len(data)
     sig_b = (sig >> 3) & 0xFF
     frames = 0
     bitrates: set[int] = set()
     srates: set[int] = set()
+    channels: set[int] = set()
     while pos + 4 <= n:
         b0 = data[pos]
         if b0 == 0x49:
@@ -175,10 +186,11 @@ def mp3_probe(data: bytes, sig: int) -> dict:
             frames += 1
             bitrates.add(bitrate)
             srates.add(srate)
+            channels.add(1 if header >> 6 & 3 == 3 else 2)
             pos += int(144 * bitrate / srate + padding + 2e-10)
             continue
         break
-    return {"frames": frames, "bitrates": bitrates, "srates": srates,
+    return {"frames": frames, "bitrates": bitrates, "srates": srates, "channels": channels,
             "end": pos, "tail": n - pos}
 
 
@@ -244,10 +256,21 @@ _VOICE_FIXED = (
     "battle/normal_attack_0.mp3", "battle/normal_attack_1.mp3",
     "battle/outhole_0.mp3", "battle/outhole_1.mp3",
     "battle/power_flip_0.mp3", "battle/power_flip_1.mp3",
-    "battle/skill_0.mp3", "battle/skill_1.mp3",
-    "battle/skill_2.mp3", "battle/skill_3.mp3", "battle/skill_ready.mp3",
+    "battle/skill_ready.mp3",
     "battle/win_0.mp3", "battle/win_1.mp3",
     "login/login_0.mp3", "login/login_1.mp3", "login/login_2.mp3",
+    # 引擎序号池(`CharacterShortVoiceLogic.generateVoicePaths` 顺序探到缺号即停)与
+    # 切换态单文件槽:官方 553 个目录里 matched_skill_ready / matched_skill_N /
+    # skill_4+ / battle_start_2+ / exchange_power_flip_N 全是 0 例,所以四路发现都收不到,
+    # 但我们自己的角色已经在用(seasonal7 与中秋批的 matched_skill_ready 已上线,
+    # 凯尔还要 skill_4/5 与 battle_start_2/3)。不补齐就是 home_N 那次的同款坑:
+    # 经 GUI 导出/克隆/推设备一次,这些语音就没声了。
+    # 词表只做 store 探测(`locate` 过滤),多写名字不会误报缺件。
+    "battle/matched_skill_ready.mp3",
+    *(f"battle/skill_{i}.mp3" for i in range(8)),
+    *(f"battle/matched_skill_{i}.mp3" for i in range(4)),
+    "battle/battle_start_2.mp3", "battle/battle_start_3.mp3",
+    "battle/exchange_power_flip_0.mp3", "battle/exchange_power_flip_1.mp3",
     # home 语音靠 character_speech 表注册,官方一律用罗马音专属名,所以四路发现
     # (dump/词表/采集/路径清单)都收录不到自制角色的 home_N 命名。缺了它们,
     # char_asset_manifest 会同时"丢掉活文件 + 带上已不被表引用的旧孤儿",

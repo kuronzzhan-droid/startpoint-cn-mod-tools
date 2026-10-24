@@ -1,0 +1,65 @@
+schema: wf-capability/1
+id: client.dual_form@1
+title: ModDualForm 双形态
+layer: A
+provided_by:
+  patches:
+  - 21
+  match: all
+  methods:
+  - patch: 21
+    abc: boot_ffc6
+    label: BattleCharacterLogic/resolvePathCollection
+    sha256: 4be465684a1346a539ccdcc65221ea64a875fdc0e3ebcd93bb16d47b185b7e93
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+    accepted_variants:
+    - sha256: 1635d24840bc0c5e81cff3730159741f783528dd20bd417838c61c60aafbd8db
+      swf_sha256: 89461f676b57a059bde58fe5897190db9b61013ae63947401fe1bf87106d6bcf
+      source: v35/run2/release-locks.json
+      reason: 有意更新：run1–run5通用入口叠加，旧路径保持依据见各轮README/verify-report；最终SWF方法摘要已复核
+  - patch: 21
+    abc: boot_ffc6
+    label: MemberView/draw
+    sha256: f32bfe1956a9d8b906987ad12d8b349c908f5cbf7b4ac8f76a8a7ae9b7b1bc8e
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+    accepted_variants:
+    - sha256: d554f876ffe9149d17797abbf77ac6eb7ee22f4ebf04626c587eb27b6b31dbde
+      swf_sha256: 89461f676b57a059bde58fe5897190db9b61013ae63947401fe1bf87106d6bcf
+      source: v35/run3/release-locks.json
+      reason: 有意更新：run1–run5通用入口叠加，旧路径保持依据见各轮README/verify-report；最终SWF方法摘要已复核
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: false
+  features: []
+  note: 无额外服务端改动要求
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors:
+  - character.tag=ModDualForm
+form:
+  label: ModDualForm 双形态
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: ModDualForm 双形态
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: ModDualForm 双形态
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/verification/v33-patches-preserved-o8-o12-r2.json

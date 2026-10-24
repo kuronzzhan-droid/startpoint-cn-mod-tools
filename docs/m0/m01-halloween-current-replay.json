@@ -1,0 +1,3135 @@
+{
+  "expected_composition": "original 1.4.221 delivery overlaid with original 1.4.222 fix",
+  "build_report": "work/m0.1/recipes/halloween-full/current222-m01/build-report.json",
+  "zip_count": 11,
+  "equal_members": 310,
+  "different_members": 0,
+  "members": [
+    {
+      "member": "production/android_upload/2c/f831794cd75d99b7ebad45b2fcc27f09c1a724",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-8-halloween4-characters-local.zip",
+      "expected_size": 218944,
+      "actual_size": 218944,
+      "expected_sha256": "06ddd877d59ae0fa3ecd1b83a9f00a37d7cf2a5ba666dbc53b85293f338dafd7",
+      "actual_sha256": "06ddd877d59ae0fa3ecd1b83a9f00a37d7cf2a5ba666dbc53b85293f338dafd7"
+    },
+    {
+      "member": "production/android_upload/46/bb9d637ee8fca5b39fb82b4574165a60729b85",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-8-halloween4-characters-local.zip",
+      "expected_size": 178183,
+      "actual_size": 178183,
+      "expected_sha256": "58ffe4321979d6976d2ec6e0e6a9448cc152d94fce98d40349828064816ff670",
+      "actual_sha256": "58ffe4321979d6976d2ec6e0e6a9448cc152d94fce98d40349828064816ff670"
+    },
+    {
+      "member": "production/android_upload/4e/ba3ad74e4f1580f671fd594c300918f8f8dfcf",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-8-halloween4-characters-local.zip",
+      "expected_size": 217869,
+      "actual_size": 217869,
+      "expected_sha256": "8f02871c57c5b1d1ccd5671461b74f83c8afda68590a3af15c801ff142dbeb38",
+      "actual_sha256": "8f02871c57c5b1d1ccd5671461b74f83c8afda68590a3af15c801ff142dbeb38"
+    },
+    {
+      "member": "production/android_upload/7d/34ec806aaa975812df9324a8dcd2fc304a55aa",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-8-halloween4-characters-local.zip",
+      "expected_size": 175475,
+      "actual_size": 175475,
+      "expected_sha256": "c2eda41019b5853e7854083f06eafa9e4fc314a25f3d9423eb99d674d6f3ebb1",
+      "actual_sha256": "c2eda41019b5853e7854083f06eafa9e4fc314a25f3d9423eb99d674d6f3ebb1"
+    },
+    {
+      "member": "production/android_upload/92/6da1eb28c9e62d1e1e6f35521b5e49f71af77d",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 127638,
+      "actual_size": 127638,
+      "expected_sha256": "d6fafe1a73681bb39a5f4e1fe38004a705f125e747e626546f7f07e7933aaf85",
+      "actual_sha256": "d6fafe1a73681bb39a5f4e1fe38004a705f125e747e626546f7f07e7933aaf85"
+    },
+    {
+      "member": "production/android_upload/93/d3fdfb479d386c265f508848f8f6a42eecf52b",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 148080,
+      "actual_size": 148080,
+      "expected_sha256": "076db8cf1d5734bad559e5bb08736ff70350e94b182335cb2dd0e574f1f17f1b",
+      "actual_sha256": "076db8cf1d5734bad559e5bb08736ff70350e94b182335cb2dd0e574f1f17f1b"
+    },
+    {
+      "member": "production/android_upload/ce/a1878f2ac3ae24e75d8e3e4fb2fa0db9c87aaa",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 141875,
+      "actual_size": 141875,
+      "expected_sha256": "831874cf0dadca111387f1c09f7980ad1c463871503e50a6656c6c4a5c7b0e1c",
+      "actual_sha256": "831874cf0dadca111387f1c09f7980ad1c463871503e50a6656c6c4a5c7b0e1c"
+    },
+    {
+      "member": "production/android_upload/e2/be0bdfec3dbdc1cf0ceb25238ba40fb633df1c",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-8-halloween4-characters-local.zip",
+      "expected_size": 232839,
+      "actual_size": 232839,
+      "expected_sha256": "4e3fd90d47c4ef1699d42a38212f39a4a798aa38356474df17f82d043ca7c98a",
+      "actual_sha256": "4e3fd90d47c4ef1699d42a38212f39a4a798aa38356474df17f82d043ca7c98a"
+    },
+    {
+      "member": "production/medium_upload/02/8ffac3c1589804ca38313db00e5b5278087759",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 41855,
+      "actual_size": 41855,
+      "expected_sha256": "612fc615dfbff95a0608ac7edfd686c28582b056045a2a39c2e937ab08464434",
+      "actual_sha256": "612fc615dfbff95a0608ac7edfd686c28582b056045a2a39c2e937ab08464434"
+    },
+    {
+      "member": "production/medium_upload/02/9d27299516353e06d4bf53559d42651488bf17",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 9278,
+      "actual_size": 9278,
+      "expected_sha256": "997560219795ffb7ff0fda30316174a385a4a3a3df3e8cbbf4e28c01659431c3",
+      "actual_sha256": "997560219795ffb7ff0fda30316174a385a4a3a3df3e8cbbf4e28c01659431c3"
+    },
+    {
+      "member": "production/medium_upload/04/690fc181f6b268def4872f2e4a667ec51b789e",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-7-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-7-halloween4-characters-local.zip",
+      "expected_size": 459613,
+      "actual_size": 459613,
+      "expected_sha256": "feff36e639b03cd7f0f49d46158a688fb287d8df50dcc836af77472c5c90dbf0",
+      "actual_sha256": "feff36e639b03cd7f0f49d46158a688fb287d8df50dcc836af77472c5c90dbf0"
+    },
+    {
+      "member": "production/medium_upload/07/f47369d2296fa2869ecc1be8eb261cd2433268",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 156250,
+      "actual_size": 156250,
+      "expected_sha256": "98dcca18a752509c864b83cb514cd6ba86369cbe514804725c0ddfdfa9d2950f",
+      "actual_sha256": "98dcca18a752509c864b83cb514cd6ba86369cbe514804725c0ddfdfa9d2950f"
+    },
+    {
+      "member": "production/medium_upload/09/9f3027972bac4445b1e555ec4b150393e73fe2",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 9123,
+      "actual_size": 9123,
+      "expected_sha256": "63b02f86063271fcacb427312851c97eae275d6ceaa59d3daa209648df06f510",
+      "actual_sha256": "63b02f86063271fcacb427312851c97eae275d6ceaa59d3daa209648df06f510"
+    },
+    {
+      "member": "production/medium_upload/0b/6e787a62041b101946ab83962737c2aae42742",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-3-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-3-halloween4-characters-local.zip",
+      "expected_size": 2670302,
+      "actual_size": 2670302,
+      "expected_sha256": "7d1cae82e8772209160206db31e82eda83f990f4703d4b3bdd8ba296e04d9167",
+      "actual_sha256": "7d1cae82e8772209160206db31e82eda83f990f4703d4b3bdd8ba296e04d9167"
+    },
+    {
+      "member": "production/medium_upload/0c/37b79b9f6400ba4ce3559ddfcade36987d908f",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 39406,
+      "actual_size": 39406,
+      "expected_sha256": "b72f8315a175325fb83d74180f1e59b2e7c1df2b89d2018e373341aaf5d4fbd1",
+      "actual_sha256": "b72f8315a175325fb83d74180f1e59b2e7c1df2b89d2018e373341aaf5d4fbd1"
+    },
+    {
+      "member": "production/medium_upload/0c/c917568cb95cd999c2dd1734003155075280d3",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-8-halloween4-characters-local.zip",
+      "expected_size": 177212,
+      "actual_size": 177212,
+      "expected_sha256": "93b91b8dbb3936e8e0cdb36abd1418202ec38ff501e496a6cd96f4bd71dc7d6e",
+      "actual_sha256": "93b91b8dbb3936e8e0cdb36abd1418202ec38ff501e496a6cd96f4bd71dc7d6e"
+    },
+    {
+      "member": "production/medium_upload/0d/4360073b265f6c549bf2961b6c95d6d14b4b37",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-7-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-7-halloween4-characters-local.zip",
+      "expected_size": 593725,
+      "actual_size": 593725,
+      "expected_sha256": "9d08eb39a448d3e6c7f2efd55a771c85ba13fbb904986bda6ca40249b95f483d",
+      "actual_sha256": "9d08eb39a448d3e6c7f2efd55a771c85ba13fbb904986bda6ca40249b95f483d"
+    },
+    {
+      "member": "production/medium_upload/11/8d35e96a1240596cb4c43b4efbe2d8929c58e0",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-4-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-4-halloween4-characters-local.zip",
+      "expected_size": 2514124,
+      "actual_size": 2514124,
+      "expected_sha256": "e6e61506daa45ee9c888fc3a2faac8506e3840786efb5caa3a56c3fd52031146",
+      "actual_sha256": "e6e61506daa45ee9c888fc3a2faac8506e3840786efb5caa3a56c3fd52031146"
+    },
+    {
+      "member": "production/medium_upload/12/b344161255f95217c2290b943cda6669c2df2b",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-8-halloween4-characters-local.zip",
+      "expected_size": 179237,
+      "actual_size": 179237,
+      "expected_sha256": "a9fe5040ae8506dff27de8c70aaae59e9e1c3129b6d2a9d29f242b94503bbcab",
+      "actual_sha256": "a9fe5040ae8506dff27de8c70aaae59e9e1c3129b6d2a9d29f242b94503bbcab"
+    },
+    {
+      "member": "production/medium_upload/14/3294d85ccc203b8051d58e8e06dec74e472a9f",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 95442,
+      "actual_size": 95442,
+      "expected_sha256": "763c003d7acd687a687d5a243c986ebde16710df8e8d23cb302dc21b41d58b59",
+      "actual_sha256": "763c003d7acd687a687d5a243c986ebde16710df8e8d23cb302dc21b41d58b59"
+    },
+    {
+      "member": "production/medium_upload/1a/9139a388c576aea22ce684c0e57f227e60c463",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-7-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-7-halloween4-characters-local.zip",
+      "expected_size": 489400,
+      "actual_size": 489400,
+      "expected_sha256": "a7205c6bdceda18ae0e45be08798a0332bbbde2a2181d2fb32469111c485358a",
+      "actual_sha256": "a7205c6bdceda18ae0e45be08798a0332bbbde2a2181d2fb32469111c485358a"
+    },
+    {
+      "member": "production/medium_upload/1e/b6a80006c53161cbab4ea97d255385814790b9",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 9589,
+      "actual_size": 9589,
+      "expected_sha256": "e0dd4c1e033943e7aafc257093a0ed001648743aa38617b72c45691b538abcdc",
+      "actual_sha256": "e0dd4c1e033943e7aafc257093a0ed001648743aa38617b72c45691b538abcdc"
+    },
+    {
+      "member": "production/medium_upload/1e/d191862bde06a9fcd86a52dfaa3178c7aa1871",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 39555,
+      "actual_size": 39555,
+      "expected_sha256": "bf86cc22184f73efddfc69eb3c58f4552a159190c3f67c67336606fa3cfca502",
+      "actual_sha256": "bf86cc22184f73efddfc69eb3c58f4552a159190c3f67c67336606fa3cfca502"
+    },
+    {
+      "member": "production/medium_upload/1e/e04c4d795fa04bc82807bd752b81445b5b58de",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 73633,
+      "actual_size": 73633,
+      "expected_sha256": "799fff562e441b866256e849ee5aee1974e9e226b57680815ba853f9d5bd4df4",
+      "actual_sha256": "799fff562e441b866256e849ee5aee1974e9e226b57680815ba853f9d5bd4df4"
+    },
+    {
+      "member": "production/medium_upload/20/2fc31982ca96d4464de34857301b27584ec245",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-7-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-7-halloween4-characters-local.zip",
+      "expected_size": 459334,
+      "actual_size": 459334,
+      "expected_sha256": "a5eecd0f435688c6bc718b026a9d4d540ade63ff2ea716dcdf383f3cb90630ae",
+      "actual_sha256": "a5eecd0f435688c6bc718b026a9d4d540ade63ff2ea716dcdf383f3cb90630ae"
+    },
+    {
+      "member": "production/medium_upload/26/6aeeba63e301ecddf8682d8b25106dc900880d",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 66656,
+      "actual_size": 66656,
+      "expected_sha256": "8695d0cec858f845a727f1a28c2265d8418bdf723d428950ed8f523e996f3c13",
+      "actual_sha256": "8695d0cec858f845a727f1a28c2265d8418bdf723d428950ed8f523e996f3c13"
+    },
+    {
+      "member": "production/medium_upload/28/5e0f1ee59c2bc5b2eee2fd901809277baf5293",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 104346,
+      "actual_size": 104346,
+      "expected_sha256": "f616a89195000a5c63cadbb5e0b6f8bc72baf96134b5cab9270a955606aaf289",
+      "actual_sha256": "f616a89195000a5c63cadbb5e0b6f8bc72baf96134b5cab9270a955606aaf289"
+    },
+    {
+      "member": "production/medium_upload/28/790336fe7909691141563986b0c5cd0e1fb7d3",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 61790,
+      "actual_size": 61790,
+      "expected_sha256": "1d8ecebd7308649458ac761410d2496a7ca70ef35bb3121e926a10d5f75ebe64",
+      "actual_sha256": "1d8ecebd7308649458ac761410d2496a7ca70ef35bb3121e926a10d5f75ebe64"
+    },
+    {
+      "member": "production/medium_upload/28/e63911a560fd7e8b299f6268fa012c6e8ee03e",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 70578,
+      "actual_size": 70578,
+      "expected_sha256": "78f902340ba58416d0e43e31e876751760e7831f42900f50b291ce8cca6a35d9",
+      "actual_sha256": "78f902340ba58416d0e43e31e876751760e7831f42900f50b291ce8cca6a35d9"
+    },
+    {
+      "member": "production/medium_upload/2a/2038213c7d9e398f0e8a679ceb0d32e89fa023",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-8-halloween4-characters-local.zip",
+      "expected_size": 181165,
+      "actual_size": 181165,
+      "expected_sha256": "5995aaf95f6924a24993821bc575c7f1f0e5aec24a77062bb7210e15f78a22b1",
+      "actual_sha256": "5995aaf95f6924a24993821bc575c7f1f0e5aec24a77062bb7210e15f78a22b1"
+    },
+    {
+      "member": "production/medium_upload/2a/bf0e004f8a2f66108873f7efc4a8850b689708",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-8-halloween4-characters-local.zip",
+      "expected_size": 174992,
+      "actual_size": 174992,
+      "expected_sha256": "1642fa62bb9cf80cf13d6a7244c43cc2d3463feecb7e083ed293968b7ba9b3f0",
+      "actual_sha256": "1642fa62bb9cf80cf13d6a7244c43cc2d3463feecb7e083ed293968b7ba9b3f0"
+    },
+    {
+      "member": "production/medium_upload/32/f0fa750b01a58a6a92a5ee3306701c7c987bf9",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-7-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-7-halloween4-characters-local.zip",
+      "expected_size": 751865,
+      "actual_size": 751865,
+      "expected_sha256": "979304ee8fa355220d32b3ebf8875752c8d16e3a0bcab75adba31a6a47b069ce",
+      "actual_sha256": "979304ee8fa355220d32b3ebf8875752c8d16e3a0bcab75adba31a6a47b069ce"
+    },
+    {
+      "member": "production/medium_upload/38/2ba8ff52f6941c2ed6024d22f63feee1e498cb",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-8-halloween4-characters-local.zip",
+      "expected_size": 401528,
+      "actual_size": 401528,
+      "expected_sha256": "f8c70bcba94e8e32c2530cacfe2cff6f9f7130906b84eeace65a9c8c1de389b5",
+      "actual_sha256": "f8c70bcba94e8e32c2530cacfe2cff6f9f7130906b84eeace65a9c8c1de389b5"
+    },
+    {
+      "member": "production/medium_upload/3c/65a5c2de04c4ecc80615581ba2a09119b1f291",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 42896,
+      "actual_size": 42896,
+      "expected_sha256": "970b932d538f84de71be360c74a684773a4e38c5eab09bacda70bef61c903b61",
+      "actual_sha256": "970b932d538f84de71be360c74a684773a4e38c5eab09bacda70bef61c903b61"
+    },
+    {
+      "member": "production/medium_upload/45/2251afc351c19c50e3dcc457adfc34061a5407",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 162217,
+      "actual_size": 162217,
+      "expected_sha256": "d113dc4884462a4cde075571e5009b48300dcf2ca414b98ba381e9e4a20592a8",
+      "actual_sha256": "d113dc4884462a4cde075571e5009b48300dcf2ca414b98ba381e9e4a20592a8"
+    },
+    {
+      "member": "production/medium_upload/46/d7af8bc40b32ab7cd091511bb477fe200ca491",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 156749,
+      "actual_size": 156749,
+      "expected_sha256": "21422918fe04280f5b853be15999db05f0ee54bf94ebc52e3d299af614e7067b",
+      "actual_sha256": "21422918fe04280f5b853be15999db05f0ee54bf94ebc52e3d299af614e7067b"
+    },
+    {
+      "member": "production/medium_upload/4a/6cf555fe10f837a7df06ce6d729ead93bc2400",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 82939,
+      "actual_size": 82939,
+      "expected_sha256": "910fb0a2af4139703c803bdb5340c328bc94396b841f0da2bfb1a3d1ea8f07a7",
+      "actual_sha256": "910fb0a2af4139703c803bdb5340c328bc94396b841f0da2bfb1a3d1ea8f07a7"
+    },
+    {
+      "member": "production/medium_upload/4b/7e2f1836b5f5de5bb6697eee7f741a44c0d079",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 66367,
+      "actual_size": 66367,
+      "expected_sha256": "4ae02fbb6a07768688c351438973415ff7cde184503162f0bc0d2807fcecac98",
+      "actual_sha256": "4ae02fbb6a07768688c351438973415ff7cde184503162f0bc0d2807fcecac98"
+    },
+    {
+      "member": "production/medium_upload/4c/b20f1953ec8119b6a826a38f0be175ae5499f1",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 9778,
+      "actual_size": 9778,
+      "expected_sha256": "51314b393b8fe7e9bae2b1f371fa6b10c180a45c6cd31b77b7f03d8d883c71f0",
+      "actual_sha256": "51314b393b8fe7e9bae2b1f371fa6b10c180a45c6cd31b77b7f03d8d883c71f0"
+    },
+    {
+      "member": "production/medium_upload/4d/3f771a78bd5c89b47491190f11281c80c92f72",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-8-halloween4-characters-local.zip",
+      "expected_size": 171455,
+      "actual_size": 171455,
+      "expected_sha256": "8c6436b9b31d11d86e38a8e4603ed1a0b439fb624bb74783a9495e61005cd816",
+      "actual_sha256": "8c6436b9b31d11d86e38a8e4603ed1a0b439fb624bb74783a9495e61005cd816"
+    },
+    {
+      "member": "production/medium_upload/4d/5b7ff37133726304d357128f74a1d9d173d295",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 22294,
+      "actual_size": 22294,
+      "expected_sha256": "4b02fd6f36ef2ea844c949e8f3ae95d7ea4af9a2af521ada083fc70a7878457f",
+      "actual_sha256": "4b02fd6f36ef2ea844c949e8f3ae95d7ea4af9a2af521ada083fc70a7878457f"
+    },
+    {
+      "member": "production/medium_upload/4f/93c81cd1733cb4a3a29666003dcf3b8bb8cf87",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-4-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-4-halloween4-characters-local.zip",
+      "expected_size": 2618537,
+      "actual_size": 2618537,
+      "expected_sha256": "572345eac860d58e8ba85989b2ab2ec80cf3fb7b425e11fd6e549df96f730a23",
+      "actual_sha256": "572345eac860d58e8ba85989b2ab2ec80cf3fb7b425e11fd6e549df96f730a23"
+    },
+    {
+      "member": "production/medium_upload/50/2384562a94dec012df3943fbf2b41b17d7f3a9",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 45212,
+      "actual_size": 45212,
+      "expected_sha256": "a7a318c5a5edfce46046771c458bcb62279c9ef1a0136d76c596d8988e7cb812",
+      "actual_sha256": "a7a318c5a5edfce46046771c458bcb62279c9ef1a0136d76c596d8988e7cb812"
+    },
+    {
+      "member": "production/medium_upload/51/90ce51416fb6ebd7a763c82fb10de8239e4443",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-8-halloween4-characters-local.zip",
+      "expected_size": 171922,
+      "actual_size": 171922,
+      "expected_sha256": "964d6542de439273586216a2f41406118484edb51ceb91d1c7f739f26b70bd82",
+      "actual_sha256": "964d6542de439273586216a2f41406118484edb51ceb91d1c7f739f26b70bd82"
+    },
+    {
+      "member": "production/medium_upload/54/f9ecf138b578e6e8256985201a0380371deee0",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 44046,
+      "actual_size": 44046,
+      "expected_sha256": "a20341b99acd1d5159770f70dea790b084217b984a1f00f4924cafc66ebc5077",
+      "actual_sha256": "a20341b99acd1d5159770f70dea790b084217b984a1f00f4924cafc66ebc5077"
+    },
+    {
+      "member": "production/medium_upload/57/405bdefd33af2adbfd43bf3a6b1758d2b5890f",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 148454,
+      "actual_size": 148454,
+      "expected_sha256": "c1af3ccf22e72668343bbcbd7424326c77e50068c232341fc5f831c5bdc88358",
+      "actual_sha256": "c1af3ccf22e72668343bbcbd7424326c77e50068c232341fc5f831c5bdc88358"
+    },
+    {
+      "member": "production/medium_upload/5b/fefe0ebf8a569cc778d0ec9ff4b2cde5497bfc",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 24699,
+      "actual_size": 24699,
+      "expected_sha256": "f5f15e096b55b57b16e896b9ce01c37292ab6ca7598369d61422da8c390c5aec",
+      "actual_sha256": "f5f15e096b55b57b16e896b9ce01c37292ab6ca7598369d61422da8c390c5aec"
+    },
+    {
+      "member": "production/medium_upload/5d/91771e8ecb8298f568e859b0166d3bade29b8b",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 45053,
+      "actual_size": 45053,
+      "expected_sha256": "f33d5444fd1a14434f229725cddfa3702e4c699169942028cad2b7f8a42a39e6",
+      "actual_sha256": "f33d5444fd1a14434f229725cddfa3702e4c699169942028cad2b7f8a42a39e6"
+    },
+    {
+      "member": "production/medium_upload/5f/e9d1e8e393bb3e495aff77344c7df4331ec38d",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-6-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-6-halloween4-characters-local.zip",
+      "expected_size": 828600,
+      "actual_size": 828600,
+      "expected_sha256": "662c16442373e34573155e31b69d5942543fb51a6ec25d165f05f638f43a0f1c",
+      "actual_sha256": "662c16442373e34573155e31b69d5942543fb51a6ec25d165f05f638f43a0f1c"
+    },
+    {
+      "member": "production/medium_upload/62/c7b3f4952c6c9b070951d76a5eccda339f09d3",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 8859,
+      "actual_size": 8859,
+      "expected_sha256": "d1806a297ce7e7dacf7247512c6aee7807beaef95f23d1bca7a7371f6a7de652",
+      "actual_sha256": "d1806a297ce7e7dacf7247512c6aee7807beaef95f23d1bca7a7371f6a7de652"
+    },
+    {
+      "member": "production/medium_upload/65/9926b195e179b7b97e5fc3e84fb91e4333cf7d",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-7-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-7-halloween4-characters-local.zip",
+      "expected_size": 606977,
+      "actual_size": 606977,
+      "expected_sha256": "e99b0dea1600efa5693bd6541ab4a8b665ef1420da15e1a9ead9c4d6f073cbb7",
+      "actual_sha256": "e99b0dea1600efa5693bd6541ab4a8b665ef1420da15e1a9ead9c4d6f073cbb7"
+    },
+    {
+      "member": "production/medium_upload/66/1b54df28cb635694a6f206594285e5ee7ee4d4",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 59978,
+      "actual_size": 59978,
+      "expected_sha256": "e71c55489cafc084ecc10a0f630ab4b6b688749aedcace518cc71435cfa041df",
+      "actual_sha256": "e71c55489cafc084ecc10a0f630ab4b6b688749aedcace518cc71435cfa041df"
+    },
+    {
+      "member": "production/medium_upload/66/4734f3fd03f37ab7f634492a9d876605146fcd",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 21943,
+      "actual_size": 21943,
+      "expected_sha256": "5cc1602691aab46e4ddf2668947e0b132c2553bcdf9c73a9323d0c6765744700",
+      "actual_sha256": "5cc1602691aab46e4ddf2668947e0b132c2553bcdf9c73a9323d0c6765744700"
+    },
+    {
+      "member": "production/medium_upload/6a/2453dfdf0aacaa00b220aaa2d559237858bd55",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 23150,
+      "actual_size": 23150,
+      "expected_sha256": "144c1bbbd3d33260c4f7f2e6c81e9e668a6c81c6fa6f2bed6b82c7fdf6f4d36d",
+      "actual_sha256": "144c1bbbd3d33260c4f7f2e6c81e9e668a6c81c6fa6f2bed6b82c7fdf6f4d36d"
+    },
+    {
+      "member": "production/medium_upload/6b/ca78fc88a64f7765d12a44c3ecb2340b27f61f",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 92460,
+      "actual_size": 92460,
+      "expected_sha256": "022fd1e62e7687b12f3112002924c32aec57ebf60ece9260ac3977324df492d7",
+      "actual_sha256": "022fd1e62e7687b12f3112002924c32aec57ebf60ece9260ac3977324df492d7"
+    },
+    {
+      "member": "production/medium_upload/6b/eab37ae3020984e75b760db61318311d2fe156",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 154419,
+      "actual_size": 154419,
+      "expected_sha256": "f045366e4a46f353e24284ee891424eb1c9859f82f06a385c934cfa5cf0ebbae",
+      "actual_sha256": "f045366e4a46f353e24284ee891424eb1c9859f82f06a385c934cfa5cf0ebbae"
+    },
+    {
+      "member": "production/medium_upload/6c/6933af8e56f27c9c4d978d54de08e0ff84dfdd",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-6-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-6-halloween4-characters-local.zip",
+      "expected_size": 2098405,
+      "actual_size": 2098405,
+      "expected_sha256": "e3c522255381b6f004b2e392410e91820f50e7c423e35a2bd8727f52981b5e28",
+      "actual_sha256": "e3c522255381b6f004b2e392410e91820f50e7c423e35a2bd8727f52981b5e28"
+    },
+    {
+      "member": "production/medium_upload/6c/c4cbac6a5d81d6b11d159b2214e6dd330fe6e2",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 71125,
+      "actual_size": 71125,
+      "expected_sha256": "5b948b3f2e603568b7b7b0b230bf02fa38310d16050b56e2b1d0946575bc85f2",
+      "actual_sha256": "5b948b3f2e603568b7b7b0b230bf02fa38310d16050b56e2b1d0946575bc85f2"
+    },
+    {
+      "member": "production/medium_upload/6f/2b64ce235406e7d74cd3357d1286105f60dcea",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-8-halloween4-characters-local.zip",
+      "expected_size": 166931,
+      "actual_size": 166931,
+      "expected_sha256": "1a8898475040347d1ce1c67f45dcc4ab9849d2b522b3c9b62bcbdc9fc96f71c1",
+      "actual_sha256": "1a8898475040347d1ce1c67f45dcc4ab9849d2b522b3c9b62bcbdc9fc96f71c1"
+    },
+    {
+      "member": "production/medium_upload/73/d51bfca546cda749ceb325d973274dc2a47c38",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 47889,
+      "actual_size": 47889,
+      "expected_sha256": "2d32aa224bf7bb66c51a5dfb964e9afb1a9afb8eba8458a10d6c31ffc01bdc05",
+      "actual_sha256": "2d32aa224bf7bb66c51a5dfb964e9afb1a9afb8eba8458a10d6c31ffc01bdc05"
+    },
+    {
+      "member": "production/medium_upload/76/1f0c26c24a9008dda12242f3ec3148eb3303be",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 64915,
+      "actual_size": 64915,
+      "expected_sha256": "e5eb7a420011629ac62472aa43a9e3c31746bef51ba7bade3321131b9f89a2eb",
+      "actual_sha256": "e5eb7a420011629ac62472aa43a9e3c31746bef51ba7bade3321131b9f89a2eb"
+    },
+    {
+      "member": "production/medium_upload/79/fe1bb96a60ee9253972110d08320cbea91d1e6",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 67624,
+      "actual_size": 67624,
+      "expected_sha256": "6fc80fee619f72cd8e82378aae82153cb8e448fac11505378e99025d9e07a17a",
+      "actual_sha256": "6fc80fee619f72cd8e82378aae82153cb8e448fac11505378e99025d9e07a17a"
+    },
+    {
+      "member": "production/medium_upload/7a/bd369fbc7b37cbc7f82a6eb88526972f6e70e3",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 10094,
+      "actual_size": 10094,
+      "expected_sha256": "b2c35b7c1637e275760d4c2d36f73929936101367199615352db012d9a0c1f66",
+      "actual_sha256": "b2c35b7c1637e275760d4c2d36f73929936101367199615352db012d9a0c1f66"
+    },
+    {
+      "member": "production/medium_upload/7f/1a6fada6aa8badf4930b519dc3c778f3023704",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-8-halloween4-characters-local.zip",
+      "expected_size": 442782,
+      "actual_size": 442782,
+      "expected_sha256": "cffa2532cccce7f1d45d21dc36f8410437046115c76a4d0d57699fbe013b3696",
+      "actual_sha256": "cffa2532cccce7f1d45d21dc36f8410437046115c76a4d0d57699fbe013b3696"
+    },
+    {
+      "member": "production/medium_upload/7f/23362c7ff68cba71ce6dde8d98b2d3222931c3",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 67396,
+      "actual_size": 67396,
+      "expected_sha256": "c777e7f32e1feb2da3b9dab4df42cdd4384185967e78510525a2d1295e03dc80",
+      "actual_sha256": "c777e7f32e1feb2da3b9dab4df42cdd4384185967e78510525a2d1295e03dc80"
+    },
+    {
+      "member": "production/medium_upload/83/3ff631b3a3e3432aadb596e9f5459027cdda22",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 89720,
+      "actual_size": 89720,
+      "expected_sha256": "9ea4534478e606fb3292ddf3f55d6a7437cb25c28983fc55e9dfbe8a80894975",
+      "actual_sha256": "9ea4534478e606fb3292ddf3f55d6a7437cb25c28983fc55e9dfbe8a80894975"
+    },
+    {
+      "member": "production/medium_upload/8f/b9edf81a974e2c63bc7e4b1fb4fa2ed517bc29",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 41515,
+      "actual_size": 41515,
+      "expected_sha256": "6aeb5994f9d227fcad801cf57baa49d62372b95a2bcb3c53ccc6992847f30031",
+      "actual_sha256": "6aeb5994f9d227fcad801cf57baa49d62372b95a2bcb3c53ccc6992847f30031"
+    },
+    {
+      "member": "production/medium_upload/90/a8470edd259b29c64ee02596c0e062c51b7fbe",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 23422,
+      "actual_size": 23422,
+      "expected_sha256": "cc58d0c240183fb558eb9adce7d1d44b9d369ee82249c38f8b5c1e4a94b46435",
+      "actual_sha256": "cc58d0c240183fb558eb9adce7d1d44b9d369ee82249c38f8b5c1e4a94b46435"
+    },
+    {
+      "member": "production/medium_upload/91/0f1d3640580243567a2a15eb8299ed838f3593",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 63570,
+      "actual_size": 63570,
+      "expected_sha256": "cc01b16e88ac45958bc73e739846a4403f2b5f71fbec7c342706756ff5b785a5",
+      "actual_sha256": "cc01b16e88ac45958bc73e739846a4403f2b5f71fbec7c342706756ff5b785a5"
+    },
+    {
+      "member": "production/medium_upload/94/48d131fad727b02a5f654b5a3f2e3da4f24830",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-5-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-5-halloween4-characters-local.zip",
+      "expected_size": 2184140,
+      "actual_size": 2184140,
+      "expected_sha256": "db287ba6bfddd8342367bcafe21ac2cb7b26c832daf9f51cc15edf36961b0735",
+      "actual_sha256": "db287ba6bfddd8342367bcafe21ac2cb7b26c832daf9f51cc15edf36961b0735"
+    },
+    {
+      "member": "production/medium_upload/95/8d10c8be13eb0e496df0699f5e3aaeed0f1b7a",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-8-halloween4-characters-local.zip",
+      "expected_size": 181537,
+      "actual_size": 181537,
+      "expected_sha256": "49d52747f1c21cd402cfe1df7e8b462ecd6de6d3ee2c5c76911b090e508b56f0",
+      "actual_sha256": "49d52747f1c21cd402cfe1df7e8b462ecd6de6d3ee2c5c76911b090e508b56f0"
+    },
+    {
+      "member": "production/medium_upload/9a/511b5e0790f7e6559daddf8435496bbcc3a216",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 23640,
+      "actual_size": 23640,
+      "expected_sha256": "fe3944b8795ed685901d978dc7d06e2c3c932b2ae10f147c74e522da5398aab6",
+      "actual_sha256": "fe3944b8795ed685901d978dc7d06e2c3c932b2ae10f147c74e522da5398aab6"
+    },
+    {
+      "member": "production/medium_upload/9a/e5848c5c95c6291506b0f643224c8423880da3",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-2-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-2-halloween4-characters-local.zip",
+      "expected_size": 2670328,
+      "actual_size": 2670328,
+      "expected_sha256": "2086991516da0b5e1cd9f70f2fa26149ecd59fb570574ae99329e4d9ce61b2f4",
+      "actual_sha256": "2086991516da0b5e1cd9f70f2fa26149ecd59fb570574ae99329e4d9ce61b2f4"
+    },
+    {
+      "member": "production/medium_upload/9b/240a0b51433bd71c998bf42a5708f2975baaef",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-6-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-6-halloween4-characters-local.zip",
+      "expected_size": 2058145,
+      "actual_size": 2058145,
+      "expected_sha256": "feda7bad2a24864278df72dd9ac91bd1c8eb510fb687e687765246a10429cc02",
+      "actual_sha256": "feda7bad2a24864278df72dd9ac91bd1c8eb510fb687e687765246a10429cc02"
+    },
+    {
+      "member": "production/medium_upload/9b/244c19082aa607cf2dfd1a177f601b6a6664c7",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-8-halloween4-characters-local.zip",
+      "expected_size": 192208,
+      "actual_size": 192208,
+      "expected_sha256": "0c3b5bfdec91bfbee2487945c4793fdfe1bd4177626f48f10d1602332448fd2c",
+      "actual_sha256": "0c3b5bfdec91bfbee2487945c4793fdfe1bd4177626f48f10d1602332448fd2c"
+    },
+    {
+      "member": "production/medium_upload/9d/319ff9883e41aa18c12de7d3b0100bc479a2bb",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-7-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-7-halloween4-characters-local.zip",
+      "expected_size": 444442,
+      "actual_size": 444442,
+      "expected_sha256": "ecf7bfe0f13d8aabd3eafdeaf852a45240c32d8bd6a96f9442b0fcb5258a0037",
+      "actual_sha256": "ecf7bfe0f13d8aabd3eafdeaf852a45240c32d8bd6a96f9442b0fcb5258a0037"
+    },
+    {
+      "member": "production/medium_upload/a2/e39643e1bece0801bb08f435676589a86bbefb",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 159576,
+      "actual_size": 159576,
+      "expected_sha256": "a9d7b2f7a3aedce9cc975bee8414e0ecb6a9a03db2d91dabfd1978d23555a7fc",
+      "actual_sha256": "a9d7b2f7a3aedce9cc975bee8414e0ecb6a9a03db2d91dabfd1978d23555a7fc"
+    },
+    {
+      "member": "production/medium_upload/a4/0319cdba81e4e0edaf339fc79cda53480a8cdc",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 63712,
+      "actual_size": 63712,
+      "expected_sha256": "b86240187f6683f3dc250f2d5f21983e9ebc423d73f312a3688b7193f6384b5a",
+      "actual_sha256": "b86240187f6683f3dc250f2d5f21983e9ebc423d73f312a3688b7193f6384b5a"
+    },
+    {
+      "member": "production/medium_upload/a6/7984cf88e5aa6e0d6d43960803ba36517724f8",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 161255,
+      "actual_size": 161255,
+      "expected_sha256": "3617ad33a39a8c26dab7e0c17779e49117ed8e133276d9d254314faa35f14c2e",
+      "actual_sha256": "3617ad33a39a8c26dab7e0c17779e49117ed8e133276d9d254314faa35f14c2e"
+    },
+    {
+      "member": "production/medium_upload/aa/97d7790b44fc3c81680485295139496d87d03e",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-8-halloween4-characters-local.zip",
+      "expected_size": 172628,
+      "actual_size": 172628,
+      "expected_sha256": "7f5d7774f3778974e7773dfad399dcd0922a3eed448d49d169ab36f0bf015d54",
+      "actual_sha256": "7f5d7774f3778974e7773dfad399dcd0922a3eed448d49d169ab36f0bf015d54"
+    },
+    {
+      "member": "production/medium_upload/aa/d8771dd2582c5ae05809a6af2f1bac500cd2be",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 61625,
+      "actual_size": 61625,
+      "expected_sha256": "90812dc0dc9c0dc89ebbdf887e4da9b267a510f180a4b329aef5ea210a6aff83",
+      "actual_sha256": "90812dc0dc9c0dc89ebbdf887e4da9b267a510f180a4b329aef5ea210a6aff83"
+    },
+    {
+      "member": "production/medium_upload/ae/724045c0fae2e31c7f6a33403852afafc143b0",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 41936,
+      "actual_size": 41936,
+      "expected_sha256": "b77b84c50b6b81430da532a4e2ea113af6786bb47b1a2f35e4b8423d14fc4d4b",
+      "actual_sha256": "b77b84c50b6b81430da532a4e2ea113af6786bb47b1a2f35e4b8423d14fc4d4b"
+    },
+    {
+      "member": "production/medium_upload/ae/fc5c0d6c964cd3c23768934761133a014654ce",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 64163,
+      "actual_size": 64163,
+      "expected_sha256": "62b5ebd868932e6d86fd472403a49ab11b03ec99a51f05032baa46a2b48b36de",
+      "actual_sha256": "62b5ebd868932e6d86fd472403a49ab11b03ec99a51f05032baa46a2b48b36de"
+    },
+    {
+      "member": "production/medium_upload/af/ce41fac7e16a2d4e156971afae076312638a76",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 98644,
+      "actual_size": 98644,
+      "expected_sha256": "72a5c7a0f0f98301420c1edd2630920c0750f1637967d6e952e0cbda730312ec",
+      "actual_sha256": "72a5c7a0f0f98301420c1edd2630920c0750f1637967d6e952e0cbda730312ec"
+    },
+    {
+      "member": "production/medium_upload/af/f98a32a83b8c95fc6838c24160038fdc2a231d",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 20854,
+      "actual_size": 20854,
+      "expected_sha256": "6be64acf93f708a43a395ac26400c2421abe380a797be1ed2d9ae26504813485",
+      "actual_sha256": "6be64acf93f708a43a395ac26400c2421abe380a797be1ed2d9ae26504813485"
+    },
+    {
+      "member": "production/medium_upload/b6/0d9d150e5c34b39011f23444ac3bca7698187a",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-7-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-7-halloween4-characters-local.zip",
+      "expected_size": 822987,
+      "actual_size": 822987,
+      "expected_sha256": "61172e3a72450bf12a973b8f20f407e0a4f472d4abfaf54b9c0838ce901d9b0a",
+      "actual_sha256": "61172e3a72450bf12a973b8f20f407e0a4f472d4abfaf54b9c0838ce901d9b0a"
+    },
+    {
+      "member": "production/medium_upload/b6/1b33fe9af53d63cb66bd066d92b7262212212b",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 147164,
+      "actual_size": 147164,
+      "expected_sha256": "7e4a0ac7c6cd04c7967a0544f7d485eefcba08350ce174859d472a495d500540",
+      "actual_sha256": "7e4a0ac7c6cd04c7967a0544f7d485eefcba08350ce174859d472a495d500540"
+    },
+    {
+      "member": "production/medium_upload/b8/93d622bc95957da18f64f3a0158119f4e4da8f",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 145330,
+      "actual_size": 145330,
+      "expected_sha256": "29460cd42679392f171a97e6b183a3811913c59c9cb6a1bb8e93e10a2fad2472",
+      "actual_sha256": "29460cd42679392f171a97e6b183a3811913c59c9cb6a1bb8e93e10a2fad2472"
+    },
+    {
+      "member": "production/medium_upload/b8/b10b9db2e25b8d31f7666c09a2f31e0371877f",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 37178,
+      "actual_size": 37178,
+      "expected_sha256": "57ab4d12d5dba25e8bc141fdb6e059ddf67122c8b29b1aa03849246fa1b73726",
+      "actual_sha256": "57ab4d12d5dba25e8bc141fdb6e059ddf67122c8b29b1aa03849246fa1b73726"
+    },
+    {
+      "member": "production/medium_upload/c2/6605c43110a4a48792959cadb8d82fe359dd8e",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 9346,
+      "actual_size": 9346,
+      "expected_sha256": "6b71a8c5ff9c801bd80d9e594e67c3466f153eb85c18392c02906621af3bc848",
+      "actual_sha256": "6b71a8c5ff9c801bd80d9e594e67c3466f153eb85c18392c02906621af3bc848"
+    },
+    {
+      "member": "production/medium_upload/c2/f58960e1104e52776f95f2cd0a6f95e039c7c1",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 62847,
+      "actual_size": 62847,
+      "expected_sha256": "eda32f4cc1b5f3b7884b9e63371e7c654f2c50ca23d4e98385e2498c32d7d469",
+      "actual_sha256": "eda32f4cc1b5f3b7884b9e63371e7c654f2c50ca23d4e98385e2498c32d7d469"
+    },
+    {
+      "member": "production/medium_upload/cf/d46442efd5501711237aff07f5440e4c0b39d0",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 39500,
+      "actual_size": 39500,
+      "expected_sha256": "2c1f8013f1897e8ffccf7b700edfdda21a276a56a3db17970603d6e91f98d0c8",
+      "actual_sha256": "2c1f8013f1897e8ffccf7b700edfdda21a276a56a3db17970603d6e91f98d0c8"
+    },
+    {
+      "member": "production/medium_upload/d3/2c60fec14a97985d94c28a5f74dcfe0b024b92",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-7-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-7-halloween4-characters-local.zip",
+      "expected_size": 547182,
+      "actual_size": 547182,
+      "expected_sha256": "b28ccf5d6655ab243ec7eca85d537e6ed3dc4b5ce57d5e2b42dfe321bcfffc0c",
+      "actual_sha256": "b28ccf5d6655ab243ec7eca85d537e6ed3dc4b5ce57d5e2b42dfe321bcfffc0c"
+    },
+    {
+      "member": "production/medium_upload/d7/ac27e7229823107af9cc00c36fb927497ff69f",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-8-halloween4-characters-local.zip",
+      "expected_size": 166049,
+      "actual_size": 166049,
+      "expected_sha256": "cd2386af03cc416b53ee995676d8620a24b162c895f37705b3972eca6b959865",
+      "actual_sha256": "cd2386af03cc416b53ee995676d8620a24b162c895f37705b3972eca6b959865"
+    },
+    {
+      "member": "production/medium_upload/da/e60bba3328a437e96553ae435b32731b29d879",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 22265,
+      "actual_size": 22265,
+      "expected_sha256": "ad834b6d9ad7325270d361b8a59f10c1c00f46084a7ea807004764409f856273",
+      "actual_sha256": "ad834b6d9ad7325270d361b8a59f10c1c00f46084a7ea807004764409f856273"
+    },
+    {
+      "member": "production/medium_upload/de/e7d50bb125654a670af459ec37a1f9dad3cb44",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 42540,
+      "actual_size": 42540,
+      "expected_sha256": "b4629ce572e6ee05f95d311440e7d49c6caf9167a9b314b3fa439f02b92c19c2",
+      "actual_sha256": "b4629ce572e6ee05f95d311440e7d49c6caf9167a9b314b3fa439f02b92c19c2"
+    },
+    {
+      "member": "production/medium_upload/df/7ecd0c2b421056bf971f22bd9b59efa1bd2d52",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 89000,
+      "actual_size": 89000,
+      "expected_sha256": "ccf0399e49e073f4c116fd2334dd826c7b26ab68150dac5c74cc540eec97ef0f",
+      "actual_sha256": "ccf0399e49e073f4c116fd2334dd826c7b26ab68150dac5c74cc540eec97ef0f"
+    },
+    {
+      "member": "production/medium_upload/df/e06b9a0d167cfff6ee2ae7e520713c6e4fff78",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 9476,
+      "actual_size": 9476,
+      "expected_sha256": "44b802349dccf83aef7ee4581e3fc34f8d782bc58bac34e26fa6278cc68e7739",
+      "actual_sha256": "44b802349dccf83aef7ee4581e3fc34f8d782bc58bac34e26fa6278cc68e7739"
+    },
+    {
+      "member": "production/medium_upload/e0/32d2adc0014897c43ec204608b6539527a669a",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 97973,
+      "actual_size": 97973,
+      "expected_sha256": "7c742b5106c57855963dd27ce2ca8146cdf03e0da01cf68088bb6a7a23e78b60",
+      "actual_sha256": "7c742b5106c57855963dd27ce2ca8146cdf03e0da01cf68088bb6a7a23e78b60"
+    },
+    {
+      "member": "production/medium_upload/e1/78f25d6b2aecdfd1e89abbade48c807f3c4ebc",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 40163,
+      "actual_size": 40163,
+      "expected_sha256": "ef58fb6292269100b336144a18ed3996b2ee74953240b8cf876df4a4cf908049",
+      "actual_sha256": "ef58fb6292269100b336144a18ed3996b2ee74953240b8cf876df4a4cf908049"
+    },
+    {
+      "member": "production/medium_upload/e3/ffd12f2c6226337c4a81401eb9c11d95436be9",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-5-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-5-halloween4-characters-local.zip",
+      "expected_size": 2327947,
+      "actual_size": 2327947,
+      "expected_sha256": "7bd1de4518213189df989cd674dea0bfbca4c4c94540c895373616b6a9d952cb",
+      "actual_sha256": "7bd1de4518213189df989cd674dea0bfbca4c4c94540c895373616b6a9d952cb"
+    },
+    {
+      "member": "production/medium_upload/e5/7b8fa728964c5fabcf9f80098614d4d4ff4f7c",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-8-halloween4-characters-local.zip",
+      "expected_size": 163368,
+      "actual_size": 163368,
+      "expected_sha256": "87e200c0ac4d16292d0061403e367860ebb1f5b217659d5dac6607f2dad8d0ae",
+      "actual_sha256": "87e200c0ac4d16292d0061403e367860ebb1f5b217659d5dac6607f2dad8d0ae"
+    },
+    {
+      "member": "production/medium_upload/e6/cb1fec6b85d476e8f552bda0f0d53f4dfa2334",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 65290,
+      "actual_size": 65290,
+      "expected_sha256": "7c499053c738c857efaf3960ccb4576e96157778e96450e20cf77a16405f2aa3",
+      "actual_sha256": "7c499053c738c857efaf3960ccb4576e96157778e96450e20cf77a16405f2aa3"
+    },
+    {
+      "member": "production/medium_upload/e7/912d0228c5016e02330ff482a27ede388ca698",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 42612,
+      "actual_size": 42612,
+      "expected_sha256": "3f174069e7a71bf8505069b905a102cd34e721eba98c1aed33f3aeb290c87610",
+      "actual_sha256": "3f174069e7a71bf8505069b905a102cd34e721eba98c1aed33f3aeb290c87610"
+    },
+    {
+      "member": "production/medium_upload/e9/f7a115ac2a48d4675a3be3527457ea3606c256",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 161691,
+      "actual_size": 161691,
+      "expected_sha256": "25dc80e4737c1205394a7d0dee8aa2a273cb640a6aa41485adb638f5987c7eb9",
+      "actual_sha256": "25dc80e4737c1205394a7d0dee8aa2a273cb640a6aa41485adb638f5987c7eb9"
+    },
+    {
+      "member": "production/medium_upload/ea/f9258e964d57c771d17e2cb93553317034490c",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 45622,
+      "actual_size": 45622,
+      "expected_sha256": "d426a9b513044021ca45fd894c787f4d8cb51dddeb23117a5f9086573aba4c70",
+      "actual_sha256": "d426a9b513044021ca45fd894c787f4d8cb51dddeb23117a5f9086573aba4c70"
+    },
+    {
+      "member": "production/medium_upload/f3/194dadb5bdbb22c83f3c9af4f1c9ad66f6c185",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-8-halloween4-characters-local.zip",
+      "expected_size": 173467,
+      "actual_size": 173467,
+      "expected_sha256": "86515f61a42a5fd4037428f3c2f7fe365dd6c4d58732f69c021e09030af26dec",
+      "actual_sha256": "86515f61a42a5fd4037428f3c2f7fe365dd6c4d58732f69c021e09030af26dec"
+    },
+    {
+      "member": "production/medium_upload/fe/8820e101a3ee303d32ce0d2fc1449403b236e9",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-8-halloween4-characters-local.zip",
+      "expected_size": 196457,
+      "actual_size": 196457,
+      "expected_sha256": "27cce4687e1c4c6782b1680ae7f01527df33381821ee5d0854ff14d34136c0b5",
+      "actual_sha256": "27cce4687e1c4c6782b1680ae7f01527df33381821ee5d0854ff14d34136c0b5"
+    },
+    {
+      "member": "production/upload/00/cfe010fc55e9593fe6ac3f677bcf542708b80f",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 189,
+      "actual_size": 189,
+      "expected_sha256": "b607c7b08dcba0a0cac8988fecd56ec6d970f0355429cdd80415f60a1acec965",
+      "actual_sha256": "b607c7b08dcba0a0cac8988fecd56ec6d970f0355429cdd80415f60a1acec965"
+    },
+    {
+      "member": "production/upload/01/7e4a98977218d29a7ac53f79c9f7c513d8fe07",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 149211,
+      "actual_size": 149211,
+      "expected_sha256": "b28c9e6fe7a9d287293d2b6280b553af76f8f7cb9ce23087ada3927f6560d24f",
+      "actual_sha256": "b28c9e6fe7a9d287293d2b6280b553af76f8f7cb9ce23087ada3927f6560d24f"
+    },
+    {
+      "member": "production/upload/03/d1a34b9acaefc59cefe1a88501fb05516706a4",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 143,
+      "actual_size": 143,
+      "expected_sha256": "1815174862202ab6e8878ee1590dc2bc0e2cd2bf91cc242f887cf6f835a2b23b",
+      "actual_sha256": "1815174862202ab6e8878ee1590dc2bc0e2cd2bf91cc242f887cf6f835a2b23b"
+    },
+    {
+      "member": "production/upload/06/14b20ae4689a30fa8bff218bb20dfcb1040c41",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 115670,
+      "actual_size": 115670,
+      "expected_sha256": "208437da2632f80b63b5c3b9e194ab2edf2ceb2ff98e8f4401579c27a769e7f6",
+      "actual_sha256": "208437da2632f80b63b5c3b9e194ab2edf2ceb2ff98e8f4401579c27a769e7f6"
+    },
+    {
+      "member": "production/upload/06/49b520637794a23c8d258fe446e53bb36b0088",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 222,
+      "actual_size": 222,
+      "expected_sha256": "038580a4f889eceb0cd63bad387e02185bd030711e67e1c61126d0ac1e493568",
+      "actual_sha256": "038580a4f889eceb0cd63bad387e02185bd030711e67e1c61126d0ac1e493568"
+    },
+    {
+      "member": "production/upload/06/8e850f00c5bcc86556e0a7b96fcf12d9aaeef0",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 160,
+      "actual_size": 160,
+      "expected_sha256": "4aa6b0298a10c1090ada5069b5f90960c43e8168d723b8f07b8e587be3f70428",
+      "actual_sha256": "4aa6b0298a10c1090ada5069b5f90960c43e8168d723b8f07b8e587be3f70428"
+    },
+    {
+      "member": "production/upload/07/0c6e214359ccf27b1cb8078d3fc51aecfe0149",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-1-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-1-halloween4-characters-local.zip",
+      "expected_size": 83783,
+      "actual_size": 83783,
+      "expected_sha256": "5d6aa01bafebe31b9d0cbfc35215c696b1154f78234b439e5a4095de69f8c4a7",
+      "actual_sha256": "5d6aa01bafebe31b9d0cbfc35215c696b1154f78234b439e5a4095de69f8c4a7"
+    },
+    {
+      "member": "production/upload/08/c5818186b2d9138644e31e09fcbc8c29c88a2c",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 123507,
+      "actual_size": 123507,
+      "expected_sha256": "86c8c9efde0546da23d7c975054d96e4283e80b5b1904360cf3386bca6728862",
+      "actual_sha256": "86c8c9efde0546da23d7c975054d96e4283e80b5b1904360cf3386bca6728862"
+    },
+    {
+      "member": "production/upload/08/ce3dc250bb63f1ea578773499a998c97e841e6",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 1596,
+      "actual_size": 1596,
+      "expected_sha256": "b83d4b43039c69f7fdef477ca4aabc6b97630908e81040c64f084dd73dd3eeb4",
+      "actual_sha256": "b83d4b43039c69f7fdef477ca4aabc6b97630908e81040c64f084dd73dd3eeb4"
+    },
+    {
+      "member": "production/upload/0a/19324f0e659202a082c662a7888006d17232fa",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 18181,
+      "actual_size": 18181,
+      "expected_sha256": "aba5dbbe93a94f9812529c2f53a9bc04bcefc664408f44f9699c7bdbaf08cc1c",
+      "actual_sha256": "aba5dbbe93a94f9812529c2f53a9bc04bcefc664408f44f9699c7bdbaf08cc1c"
+    },
+    {
+      "member": "production/upload/0a/88b3980021e6047e832dea056a0164ab23d645",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 41691,
+      "actual_size": 41691,
+      "expected_sha256": "50981f5898a155095a9347b731032536b903cd2765ecfbfe9690dbebba016ca1",
+      "actual_sha256": "50981f5898a155095a9347b731032536b903cd2765ecfbfe9690dbebba016ca1"
+    },
+    {
+      "member": "production/upload/0b/e31863027660ad55dfd0b51549d1936f82d310",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 98116,
+      "actual_size": 98116,
+      "expected_sha256": "72e96cd02bab75c78b98964dc671eb173e7564c860ec303c15d5c374535dc318",
+      "actual_sha256": "72e96cd02bab75c78b98964dc671eb173e7564c860ec303c15d5c374535dc318"
+    },
+    {
+      "member": "production/upload/0c/05211e08ad6e74983f389f0a18db5a78df4247",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 11598,
+      "actual_size": 11598,
+      "expected_sha256": "7a082ef03d6a2f35cb0e0ab4888b5205fff785bcb45472702591ad98f6f4fd5a",
+      "actual_sha256": "7a082ef03d6a2f35cb0e0ab4888b5205fff785bcb45472702591ad98f6f4fd5a"
+    },
+    {
+      "member": "production/upload/0c/7a2769bf24aa235b4680f3c56a058cf2000413",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 101251,
+      "actual_size": 101251,
+      "expected_sha256": "6cef9fdef3162840e420f2de22e27335f96b1fd9ac027584ebf9314073f4a844",
+      "actual_sha256": "6cef9fdef3162840e420f2de22e27335f96b1fd9ac027584ebf9314073f4a844"
+    },
+    {
+      "member": "production/upload/13/f41580c428d879c7bacccac6e09d2c46d1df24",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 174,
+      "actual_size": 174,
+      "expected_sha256": "4413cfa45b6204e8247e9af0c523ada777de928f2d187908593546a13c892ace",
+      "actual_sha256": "4413cfa45b6204e8247e9af0c523ada777de928f2d187908593546a13c892ace"
+    },
+    {
+      "member": "production/upload/15/f081d3839349ebcafd071c6a7d11b3c660d6b8",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 158,
+      "actual_size": 158,
+      "expected_sha256": "00dda6a0c10a847b58ed1370103ab1587697ef6f50d6ae53ed43fc7e1daba275",
+      "actual_sha256": "00dda6a0c10a847b58ed1370103ab1587697ef6f50d6ae53ed43fc7e1daba275"
+    },
+    {
+      "member": "production/upload/16/1f85e65a204a92bf5f3eaa85f87f0196333152",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 56111,
+      "actual_size": 56111,
+      "expected_sha256": "014532943aee3c3b1ea46f4a048579497b31993fe6843392c2d1b0f852e31135",
+      "actual_sha256": "014532943aee3c3b1ea46f4a048579497b31993fe6843392c2d1b0f852e31135"
+    },
+    {
+      "member": "production/upload/16/c718699db525e7de3807935ecf68bd038a6f9b",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 47334,
+      "actual_size": 47334,
+      "expected_sha256": "6872f08c48cef83c4aa76f3cf2dc57ef514c67cee29554fd8420c6a36bc727bb",
+      "actual_sha256": "6872f08c48cef83c4aa76f3cf2dc57ef514c67cee29554fd8420c6a36bc727bb"
+    },
+    {
+      "member": "production/upload/17/f12733bf43fc01c09889abbed106aedf6d709e",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 93100,
+      "actual_size": 93100,
+      "expected_sha256": "2ae732145268eaaa255e1b4eaf677cbf282abd5f97f34b5fd8fe405740cab3d4",
+      "actual_sha256": "2ae732145268eaaa255e1b4eaf677cbf282abd5f97f34b5fd8fe405740cab3d4"
+    },
+    {
+      "member": "production/upload/18/9da1233a314d70ec3790684fb252e7df699e09",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 157,
+      "actual_size": 157,
+      "expected_sha256": "f3c6ee0c8df0ef4d7d015122c011a05a9249d24c9865d4468a3a8f335c3c0684",
+      "actual_sha256": "f3c6ee0c8df0ef4d7d015122c011a05a9249d24c9865d4468a3a8f335c3c0684"
+    },
+    {
+      "member": "production/upload/19/1c5dfb0c75712875a0b70ab73a23f0df534ea9",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 40124,
+      "actual_size": 40124,
+      "expected_sha256": "46efe51e67ca3142cb091d6d797933c069c91e40d350f31effdfd55cfd605f89",
+      "actual_sha256": "46efe51e67ca3142cb091d6d797933c069c91e40d350f31effdfd55cfd605f89"
+    },
+    {
+      "member": "production/upload/19/61046cfe38348b0b3052dcdb2a2419c3eb4e10",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 134165,
+      "actual_size": 134165,
+      "expected_sha256": "872315fcb860fc1766b79dfba4ccc696703672684e22b7f8cbe4b644c04ab4b3",
+      "actual_sha256": "872315fcb860fc1766b79dfba4ccc696703672684e22b7f8cbe4b644c04ab4b3"
+    },
+    {
+      "member": "production/upload/19/ced05f28b6baf30ee068cf32e51f1f7cd48b71",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 2808,
+      "actual_size": 2808,
+      "expected_sha256": "0c042cdedadd3a165146357b9405f1071c396180747e998cb129da5ada36e789",
+      "actual_sha256": "0c042cdedadd3a165146357b9405f1071c396180747e998cb129da5ada36e789"
+    },
+    {
+      "member": "production/upload/1b/4d52d90accb00ca2745da56296637b24420bf1",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 120686,
+      "actual_size": 120686,
+      "expected_sha256": "805f155b98fefbfee441af0035a6d49075cbe7dcc271ea3f011e53a053e81d4f",
+      "actual_sha256": "805f155b98fefbfee441af0035a6d49075cbe7dcc271ea3f011e53a053e81d4f"
+    },
+    {
+      "member": "production/upload/1d/222e5126fc7ebe3f22c7efe87325f73742eb4f",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-1-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-1-halloween4-characters-local.zip",
+      "expected_size": 1226302,
+      "actual_size": 1226302,
+      "expected_sha256": "fa0d58d5249352e999dd6d32c58525b4d5ca1d7d0b6777855d2944ad86f07aea",
+      "actual_sha256": "fa0d58d5249352e999dd6d32c58525b4d5ca1d7d0b6777855d2944ad86f07aea"
+    },
+    {
+      "member": "production/upload/1d/6f811a441417ec2efd70eeca6f4ccf1cd68f0f",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 35422,
+      "actual_size": 35422,
+      "expected_sha256": "475aa62aa8314a3d58b4f09876f7b23447d58c7da3f0338789c07405867fc571",
+      "actual_sha256": "475aa62aa8314a3d58b4f09876f7b23447d58c7da3f0338789c07405867fc571"
+    },
+    {
+      "member": "production/upload/1e/0753f1e657cf82436d57861485ea1f04e4f206",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 84,
+      "actual_size": 84,
+      "expected_sha256": "2e735fe11ff60cff2436442ac02c84d7d3328243bd2bd7c0e26de868c3a33219",
+      "actual_sha256": "2e735fe11ff60cff2436442ac02c84d7d3328243bd2bd7c0e26de868c3a33219"
+    },
+    {
+      "member": "production/upload/1e/664c1cc8d80f4f9a69aae2c49ae8c01d1c4001",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-1-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-1-halloween4-characters-local.zip",
+      "expected_size": 405864,
+      "actual_size": 405864,
+      "expected_sha256": "61c8c6527b1eeaabd723f1f4a6fd72a760e847c000494a8452e6244607cf7f36",
+      "actual_sha256": "61c8c6527b1eeaabd723f1f4a6fd72a760e847c000494a8452e6244607cf7f36"
+    },
+    {
+      "member": "production/upload/21/9946f16a5944952981e8d7f5f851b90464e0cf",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 147,
+      "actual_size": 147,
+      "expected_sha256": "eecfc73627bc8d3557751a6cbd10a4cdeb436400ff0e6e7c5ef9706a03978a6e",
+      "actual_sha256": "eecfc73627bc8d3557751a6cbd10a4cdeb436400ff0e6e7c5ef9706a03978a6e"
+    },
+    {
+      "member": "production/upload/21/d5905380aeda68a0f6f7cdf375d1a210a6b453",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 106266,
+      "actual_size": 106266,
+      "expected_sha256": "fd0f3495f9bb631c08f1443e27fd0dd9fed2439b230414207dc77491bc4766b1",
+      "actual_sha256": "fd0f3495f9bb631c08f1443e27fd0dd9fed2439b230414207dc77491bc4766b1"
+    },
+    {
+      "member": "production/upload/24/25b61662b2bba827e28ff43fe7bc1738669cab",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 68722,
+      "actual_size": 68722,
+      "expected_sha256": "7efe3c0ccf657d27aeb9546ebc486f464286b5ca8818255b6c7aea1354297478",
+      "actual_sha256": "7efe3c0ccf657d27aeb9546ebc486f464286b5ca8818255b6c7aea1354297478"
+    },
+    {
+      "member": "production/upload/24/29c26384de4e9a619d2e320a1828b5a459d31d",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 331,
+      "actual_size": 331,
+      "expected_sha256": "23bee417315db0b49fa4bd87d62af39682a3ce9dd07b1409e01bf1c813232d8b",
+      "actual_sha256": "23bee417315db0b49fa4bd87d62af39682a3ce9dd07b1409e01bf1c813232d8b"
+    },
+    {
+      "member": "production/upload/24/604cd22dc04a8ac2e635c5d2560d6f3f40ce16",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 118178,
+      "actual_size": 118178,
+      "expected_sha256": "4fb48c312099f709e8ade19891a1f4cac06109a4fbcb20c1e78be13ce74d19c4",
+      "actual_sha256": "4fb48c312099f709e8ade19891a1f4cac06109a4fbcb20c1e78be13ce74d19c4"
+    },
+    {
+      "member": "production/upload/27/7b65484214436114201ae654fefa60fdc822ea",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-1-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-1-halloween4-characters-local.zip",
+      "expected_size": 976951,
+      "actual_size": 976951,
+      "expected_sha256": "140362739f595d646d2ebc142b4936b722f7cb4d8feacc3d81976b349377a73f",
+      "actual_sha256": "140362739f595d646d2ebc142b4936b722f7cb4d8feacc3d81976b349377a73f"
+    },
+    {
+      "member": "production/upload/27/d8499175d1eccf444cbf0e6784d9636277d7e6",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 779,
+      "actual_size": 779,
+      "expected_sha256": "b4de2fa5b2c3426177646cf816b79cf968d34d52938ab5343a77c7a4586dbfa1",
+      "actual_sha256": "b4de2fa5b2c3426177646cf816b79cf968d34d52938ab5343a77c7a4586dbfa1"
+    },
+    {
+      "member": "production/upload/2a/57dc2bd4a52905e103598cb8184506809650ab",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-8-halloween4-characters-local.zip",
+      "expected_size": 165512,
+      "actual_size": 165512,
+      "expected_sha256": "ba8230a81d8c28e7ff3f11458c9209a79a5b109f89189e077888c778bf91ea12",
+      "actual_sha256": "ba8230a81d8c28e7ff3f11458c9209a79a5b109f89189e077888c778bf91ea12"
+    },
+    {
+      "member": "production/upload/2c/5215808761ae865e0dff48dfdd23c3bb722dac",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 121940,
+      "actual_size": 121940,
+      "expected_sha256": "ad0e56959b3b2d703b03d1adca0c13175e6d237a38d7d5d0e645ee8101747722",
+      "actual_sha256": "ad0e56959b3b2d703b03d1adca0c13175e6d237a38d7d5d0e645ee8101747722"
+    },
+    {
+      "member": "production/upload/2d/5cb9b28d18f984a51b345a4d7aab03d77bddfc",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-1-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-1-halloween4-characters-local.zip",
+      "expected_size": 89118,
+      "actual_size": 89118,
+      "expected_sha256": "de851813cd73d06170154c0ba101a5787fceb19dfe49f63cc31a34e487b34a3d",
+      "actual_sha256": "de851813cd73d06170154c0ba101a5787fceb19dfe49f63cc31a34e487b34a3d"
+    },
+    {
+      "member": "production/upload/2e/f441c5a8ae7f91c314b6b307ce6f096539d337",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 104,
+      "actual_size": 104,
+      "expected_sha256": "1061d1bc9d145daa812e0407329a15bdaa54b8b4964eec37b7156eab1ecdbf8f",
+      "actual_sha256": "1061d1bc9d145daa812e0407329a15bdaa54b8b4964eec37b7156eab1ecdbf8f"
+    },
+    {
+      "member": "production/upload/30/a4111ea0cc56650ebe377cf12237bf40c9d661",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 663,
+      "actual_size": 663,
+      "expected_sha256": "048750669e88a08e2cafb1f5709d9aaee66e87a2418dc489dc4bd97366a976d3",
+      "actual_sha256": "048750669e88a08e2cafb1f5709d9aaee66e87a2418dc489dc4bd97366a976d3"
+    },
+    {
+      "member": "production/upload/30/cbcd99de1aa6e8d245221619b393721df551b4",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-1-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-1-halloween4-characters-local.zip",
+      "expected_size": 19048,
+      "actual_size": 19048,
+      "expected_sha256": "9fd124d15f7db27bf2c16e8d705b138211108d1d202c4da5f467c2334faa8b35",
+      "actual_sha256": "9fd124d15f7db27bf2c16e8d705b138211108d1d202c4da5f467c2334faa8b35"
+    },
+    {
+      "member": "production/upload/33/b434ccd50767f621236b43b83a4a97f1498eaf",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 73665,
+      "actual_size": 73665,
+      "expected_sha256": "85f440a17fa5acc595e8ba42e03d4dc0a8b1ccaf6364c777af95c2e25dd156e6",
+      "actual_sha256": "85f440a17fa5acc595e8ba42e03d4dc0a8b1ccaf6364c777af95c2e25dd156e6"
+    },
+    {
+      "member": "production/upload/33/eec32957ed84b14330a343ab06908a2bc89f18",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 359,
+      "actual_size": 359,
+      "expected_sha256": "91d79a955599a92efcc810fd2abc162025a6ff164674805fbf42fb68436dd9e3",
+      "actual_sha256": "91d79a955599a92efcc810fd2abc162025a6ff164674805fbf42fb68436dd9e3"
+    },
+    {
+      "member": "production/upload/34/5ba4b5fdbe3b48ab9f98409962f57ff0f94f24",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 734,
+      "actual_size": 734,
+      "expected_sha256": "047089541562205ad628f701a9ce86a88efe8b173a0b0126caad4e1c22c1df4f",
+      "actual_sha256": "047089541562205ad628f701a9ce86a88efe8b173a0b0126caad4e1c22c1df4f"
+    },
+    {
+      "member": "production/upload/34/e7b1a84d2c6044f0e1608c1bae0a3c6d9c16d9",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-8-halloween4-characters-local.zip",
+      "expected_size": 192784,
+      "actual_size": 192784,
+      "expected_sha256": "30ccf7d132c37faba01775302c2dad93b11cc5e26ed9b9df9c7d659b6f1f2c10",
+      "actual_sha256": "30ccf7d132c37faba01775302c2dad93b11cc5e26ed9b9df9c7d659b6f1f2c10"
+    },
+    {
+      "member": "production/upload/35/eeeaeffa3ff76f34afd2a1350c90cbb176f60d",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 678,
+      "actual_size": 678,
+      "expected_sha256": "a99c192538badae380a6739034c43bcaa089e3285c726df63c6988cfe6e171c7",
+      "actual_sha256": "a99c192538badae380a6739034c43bcaa089e3285c726df63c6988cfe6e171c7"
+    },
+    {
+      "member": "production/upload/36/01ad72b87f0ae9c3362327b2c67f3b91605547",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 42632,
+      "actual_size": 42632,
+      "expected_sha256": "2721e4afbf9ce72095270c99c67bf3670cabc3e4993159feba386987ace138e4",
+      "actual_sha256": "2721e4afbf9ce72095270c99c67bf3670cabc3e4993159feba386987ace138e4"
+    },
+    {
+      "member": "production/upload/37/c9eab077caa2c540460c6e9c15fb0c8defead3",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 15047,
+      "actual_size": 15047,
+      "expected_sha256": "323bd584667ef65a8127156022c284cdc6b643e18fe5526106a7675c4c5e3aff",
+      "actual_sha256": "323bd584667ef65a8127156022c284cdc6b643e18fe5526106a7675c4c5e3aff"
+    },
+    {
+      "member": "production/upload/37/f003e45d23876e0ae3cccb0f45d36b89774471",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 110655,
+      "actual_size": 110655,
+      "expected_sha256": "34f68e065a749889bcf5e6ce74e913144aaac737ddd4edb7255c090b872b8994",
+      "actual_sha256": "34f68e065a749889bcf5e6ce74e913144aaac737ddd4edb7255c090b872b8994"
+    },
+    {
+      "member": "production/upload/3e/3dd54fc247d7e63f0e6142252adca10cd2dce3",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 36946,
+      "actual_size": 36946,
+      "expected_sha256": "54adb1ad74744e1718550a744da7d7e56cbd1f9a57716f062b2d527c4c16f63d",
+      "actual_sha256": "54adb1ad74744e1718550a744da7d7e56cbd1f9a57716f062b2d527c4c16f63d"
+    },
+    {
+      "member": "production/upload/3e/b411841802398d5b21d422579f2eaa65d30c0e",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-1-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-1-halloween4-characters-local.zip",
+      "expected_size": 52186,
+      "actual_size": 52186,
+      "expected_sha256": "3dec595f80039471b5d0407725c13d64234c84866202542647e912706e2a11d8",
+      "actual_sha256": "3dec595f80039471b5d0407725c13d64234c84866202542647e912706e2a11d8"
+    },
+    {
+      "member": "production/upload/3f/84f5ec6d491f8e2d4574a3b8cee062b58a446d",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 131971,
+      "actual_size": 131971,
+      "expected_sha256": "6c2901c6aef46d6c6a2ecfb07011609cc072411d6fab7b36a5e251660c3b5283",
+      "actual_sha256": "6c2901c6aef46d6c6a2ecfb07011609cc072411d6fab7b36a5e251660c3b5283"
+    },
+    {
+      "member": "production/upload/42/178d48f212d9dc49feb6bd8ed132492bffee1b",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 76173,
+      "actual_size": 76173,
+      "expected_sha256": "bf53749b8cb43915f7b13a089a98de0d2c8ea3ca3c44a5ef8da0ddc210e818b2",
+      "actual_sha256": "bf53749b8cb43915f7b13a089a98de0d2c8ea3ca3c44a5ef8da0ddc210e818b2"
+    },
+    {
+      "member": "production/upload/42/dd840f9ed24a205ded72a11aa523326c3babe2",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 113476,
+      "actual_size": 113476,
+      "expected_sha256": "3e006d6ebe884636a9de5b2210c45bc69df9111db641689842724697be8564ed",
+      "actual_sha256": "3e006d6ebe884636a9de5b2210c45bc69df9111db641689842724697be8564ed"
+    },
+    {
+      "member": "production/upload/44/71458bab36126a42e7a2e7f40a6fd71b49e054",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 8758,
+      "actual_size": 8758,
+      "expected_sha256": "f3e12295f54c3df93a590290362ccf6cda545f0192e7dd33c6a278e878486f33",
+      "actual_sha256": "f3e12295f54c3df93a590290362ccf6cda545f0192e7dd33c6a278e878486f33"
+    },
+    {
+      "member": "production/upload/45/9bb1d62cc33eae26ce4ba6ec296a510ad8b6d7",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 109,
+      "actual_size": 109,
+      "expected_sha256": "376bb87e12f22ae01510347c196f985439db5112d6ba309c93b63da5da157796",
+      "actual_sha256": "376bb87e12f22ae01510347c196f985439db5112d6ba309c93b63da5da157796"
+    },
+    {
+      "member": "production/upload/46/5f4608f05a23c6d9004828af1b2181a624ca6d",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 331,
+      "actual_size": 331,
+      "expected_sha256": "23bee417315db0b49fa4bd87d62af39682a3ce9dd07b1409e01bf1c813232d8b",
+      "actual_sha256": "23bee417315db0b49fa4bd87d62af39682a3ce9dd07b1409e01bf1c813232d8b"
+    },
+    {
+      "member": "production/upload/47/0531fbac1d1f37014817d04d04a558b362eb8b",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 6317,
+      "actual_size": 6317,
+      "expected_sha256": "71df95a69732ac08005dbed12c80a2cab281891289534bd84f82c74f21ee4b8f",
+      "actual_sha256": "71df95a69732ac08005dbed12c80a2cab281891289534bd84f82c74f21ee4b8f"
+    },
+    {
+      "member": "production/upload/47/dccf6d9effdf23edc5a24c312098b1d711a8da",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 95,
+      "actual_size": 95,
+      "expected_sha256": "5af7668c748cfa8c1cb2fc472803c44234ffebef1061d3a501aeb7149e40639a",
+      "actual_sha256": "5af7668c748cfa8c1cb2fc472803c44234ffebef1061d3a501aeb7149e40639a"
+    },
+    {
+      "member": "production/upload/48/9c9c1bf57a42e34d332af3e585dbd60722376e",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 143,
+      "actual_size": 143,
+      "expected_sha256": "1815174862202ab6e8878ee1590dc2bc0e2cd2bf91cc242f887cf6f835a2b23b",
+      "actual_sha256": "1815174862202ab6e8878ee1590dc2bc0e2cd2bf91cc242f887cf6f835a2b23b"
+    },
+    {
+      "member": "production/upload/4c/4e9b133f97571847a67fcd2247bd0fa9092203",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 148,
+      "actual_size": 148,
+      "expected_sha256": "cb0391c14995b0637d29cfd10b9e24066a0cfdd92ec7650b9045c38113c53e7f",
+      "actual_sha256": "cb0391c14995b0637d29cfd10b9e24066a0cfdd92ec7650b9045c38113c53e7f"
+    },
+    {
+      "member": "production/upload/4c/a90b04ce17a4d2b5526f8bb7778bfbed7380b6",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 227,
+      "actual_size": 227,
+      "expected_sha256": "651489d772327126659b6f05799104dc540ce373b4270a648a13c6e55f37b4f9",
+      "actual_sha256": "651489d772327126659b6f05799104dc540ce373b4270a648a13c6e55f37b4f9"
+    },
+    {
+      "member": "production/upload/4c/cc89ed2995aa2e5f210dfc7815676633978e16",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 155794,
+      "actual_size": 155794,
+      "expected_sha256": "62d711356f1e017bd494623c17a445a847c4fc51aba39287d0d7c94f451b66c2",
+      "actual_sha256": "62d711356f1e017bd494623c17a445a847c4fc51aba39287d0d7c94f451b66c2"
+    },
+    {
+      "member": "production/upload/4d/068828f4165b452e894c1ffc98fe75739e3d68",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 40438,
+      "actual_size": 40438,
+      "expected_sha256": "3cd5db211da9d69f09fc965d15498fe46d519594f0d4d33013c926a4e82f6134",
+      "actual_sha256": "3cd5db211da9d69f09fc965d15498fe46d519594f0d4d33013c926a4e82f6134"
+    },
+    {
+      "member": "production/upload/4d/294ec6ea6cbe30327cf315f0863148393faf63",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 334,
+      "actual_size": 334,
+      "expected_sha256": "fba5025c54e1141d18f27b5552374edac4d8ba06afd8a87b6b90e0bf2ce8b879",
+      "actual_sha256": "fba5025c54e1141d18f27b5552374edac4d8ba06afd8a87b6b90e0bf2ce8b879"
+    },
+    {
+      "member": "production/upload/4d/f265a443a9d26496ca039937e5d0a9a638eaf2",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 72725,
+      "actual_size": 72725,
+      "expected_sha256": "170c028a2adbc8e3759b076c65e501ac3c55f972d812a8b9b773cd6ec40767fe",
+      "actual_sha256": "170c028a2adbc8e3759b076c65e501ac3c55f972d812a8b9b773cd6ec40767fe"
+    },
+    {
+      "member": "production/upload/4f/61e064773cb13d26099f0444820ce54b64c7a1",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 67082,
+      "actual_size": 67082,
+      "expected_sha256": "190bce094dd7b6156cce517b812525ac7781a40c7fa5957a0a0c627e3fdf1433",
+      "actual_sha256": "190bce094dd7b6156cce517b812525ac7781a40c7fa5957a0a0c627e3fdf1433"
+    },
+    {
+      "member": "production/upload/51/92ce162bda1ef89a363e293faabe301fe94f70",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 933,
+      "actual_size": 933,
+      "expected_sha256": "e8794317d7615ae24d7016581541e79e4aafbb812e85d91f83a92f9dbb717e64",
+      "actual_sha256": "e8794317d7615ae24d7016581541e79e4aafbb812e85d91f83a92f9dbb717e64"
+    },
+    {
+      "member": "production/upload/52/150338eb4389e3fbab049873a555327e6e8b6b",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 1037,
+      "actual_size": 1037,
+      "expected_sha256": "a7193512316b4c97e63c1333fa1affb96ee007ecfe1513126cbfe25c8c1df8e7",
+      "actual_sha256": "a7193512316b4c97e63c1333fa1affb96ee007ecfe1513126cbfe25c8c1df8e7"
+    },
+    {
+      "member": "production/upload/53/43a72c056d5952f7c3cef3116b11517c3dbc53",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-1-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-1-halloween4-characters-local.zip",
+      "expected_size": 6254,
+      "actual_size": 6254,
+      "expected_sha256": "1c5d34add4704c71875dc513cb4b3de3aff20bb651b43127f0cb4a2b02f9856b",
+      "actual_sha256": "1c5d34add4704c71875dc513cb4b3de3aff20bb651b43127f0cb4a2b02f9856b"
+    },
+    {
+      "member": "production/upload/53/64e89c2d2e7a9e751de14f95c1a08c5c2fd7a1",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-1-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-1-halloween4-characters-local.zip",
+      "expected_size": 3864,
+      "actual_size": 3864,
+      "expected_sha256": "a2e646f0cc72d83f89eecbc79b786da4387b45a792e94457d0041ed36397237e",
+      "actual_sha256": "a2e646f0cc72d83f89eecbc79b786da4387b45a792e94457d0041ed36397237e"
+    },
+    {
+      "member": "production/upload/54/7a7d60245813aa2cc396f393065e0ce50809dc",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 143,
+      "actual_size": 143,
+      "expected_sha256": "3bcd672cc16472b1f7fcbc3ab13c74caf4b33708ada0e303470952cba468244b",
+      "actual_sha256": "3bcd672cc16472b1f7fcbc3ab13c74caf4b33708ada0e303470952cba468244b"
+    },
+    {
+      "member": "production/upload/54/86a2c43b231c0571299d1b69978eea3d8cb271",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 28791,
+      "actual_size": 28791,
+      "expected_sha256": "71448848a24f26019d1dea0f0d50f13c6fa7fa09b26829322bb8de4bbf588cd5",
+      "actual_sha256": "71448848a24f26019d1dea0f0d50f13c6fa7fa09b26829322bb8de4bbf588cd5"
+    },
+    {
+      "member": "production/upload/55/f14d50862888f1a78a654d6acaacde8c996f07",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-8-halloween4-characters-local.zip",
+      "expected_size": 198426,
+      "actual_size": 198426,
+      "expected_sha256": "76a5d5ca9deb92d843cadc314d6cc684e2ba3f4feb1d1f3f588bd69889888ff5",
+      "actual_sha256": "76a5d5ca9deb92d843cadc314d6cc684e2ba3f4feb1d1f3f588bd69889888ff5"
+    },
+    {
+      "member": "production/upload/56/2f32518eb38dd65986e8c0f8ab788204454472",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 77,
+      "actual_size": 77,
+      "expected_sha256": "f81f4991267f5fff39f41c6b52401efbce29c7df6f65c3a147bbec13c28c0ae2",
+      "actual_sha256": "f81f4991267f5fff39f41c6b52401efbce29c7df6f65c3a147bbec13c28c0ae2"
+    },
+    {
+      "member": "production/upload/57/8872ecbc78561807e6846b3980c5dea980d8ce",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-1-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-1-halloween4-characters-local.zip",
+      "expected_size": 25738,
+      "actual_size": 25738,
+      "expected_sha256": "a9373f42d82ef9caa55eac1f2db60a93beebc617d384d0e84ddf1d1f53a07f07",
+      "actual_sha256": "a9373f42d82ef9caa55eac1f2db60a93beebc617d384d0e84ddf1d1f53a07f07"
+    },
+    {
+      "member": "production/upload/57/b9eacb723eba7d0da49595f033a62c329decc4",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 44513,
+      "actual_size": 44513,
+      "expected_sha256": "edfd0097fb9dd48d6c4f5c35c33ba1a458f9c7c9f62d6e22f2154e058b181204",
+      "actual_sha256": "edfd0097fb9dd48d6c4f5c35c33ba1a458f9c7c9f62d6e22f2154e058b181204"
+    },
+    {
+      "member": "production/upload/59/cdf7c0e271cd070ad03e0eac4683ef42d7168b",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 17590,
+      "actual_size": 17590,
+      "expected_sha256": "010fc3da39c4693e7c200a3b16c449accb7115873d679654819781eeac894847",
+      "actual_sha256": "010fc3da39c4693e7c200a3b16c449accb7115873d679654819781eeac894847"
+    },
+    {
+      "member": "production/upload/5a/26375f849e8d21a0f175fa666522ad812e81a6",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 2585,
+      "actual_size": 2585,
+      "expected_sha256": "cbb329af42359be7638ebedbb4304db9608471e0ca535e3f0230d830c6864599",
+      "actual_sha256": "cbb329af42359be7638ebedbb4304db9608471e0ca535e3f0230d830c6864599"
+    },
+    {
+      "member": "production/upload/5a/5a75c3ee1ccc2642e12cde9a5831093d4920c6",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 227,
+      "actual_size": 227,
+      "expected_sha256": "8d8b9a1ef3cbad7acb0ac36439fa2efe524c6409633cf0d9909b71bfaec07964",
+      "actual_sha256": "8d8b9a1ef3cbad7acb0ac36439fa2efe524c6409633cf0d9909b71bfaec07964"
+    },
+    {
+      "member": "production/upload/5a/9034b60624cef700b59e9300b67c6aa2517774",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 1450,
+      "actual_size": 1450,
+      "expected_sha256": "5b16129c768380431b10ac466e4ecd858cc6afa0ef5be11742ccc53738666584",
+      "actual_sha256": "5b16129c768380431b10ac466e4ecd858cc6afa0ef5be11742ccc53738666584"
+    },
+    {
+      "member": "production/upload/5b/f3130afa50a43445aa6271fd87ae31d0d5bd70",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 10023,
+      "actual_size": 10023,
+      "expected_sha256": "82c2d4015dd2a522a097494e7a370722cd8d8e44d796a5d2904c09cf2a15b7fd",
+      "actual_sha256": "82c2d4015dd2a522a097494e7a370722cd8d8e44d796a5d2904c09cf2a15b7fd"
+    },
+    {
+      "member": "production/upload/5c/6a4f0e2ceb1dbcf60f9b306b0f7bfd0eca55c9",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-1-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-1-halloween4-characters-local.zip",
+      "expected_size": 68690,
+      "actual_size": 68690,
+      "expected_sha256": "4622468ba9261f255ab9d7da1f0821de9cb40af64134e28faf12c3d4c13e4dae",
+      "actual_sha256": "4622468ba9261f255ab9d7da1f0821de9cb40af64134e28faf12c3d4c13e4dae"
+    },
+    {
+      "member": "production/upload/5d/6eaba43a1acd9fdb5b36b84f5f0e1b24b61bf9",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 64888,
+      "actual_size": 64888,
+      "expected_sha256": "bb5596a17a525134c9ad407fff01a701ac737f3f59252921045c88bf78075f95",
+      "actual_sha256": "bb5596a17a525134c9ad407fff01a701ac737f3f59252921045c88bf78075f95"
+    },
+    {
+      "member": "production/upload/5f/0407fc0b37300d952500ff6b8dc357d353c0dc",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 82442,
+      "actual_size": 82442,
+      "expected_sha256": "90f24dde20ba174fffa5c3c8ef19402840fa1dd0131b2b1c8e94fd6df66c77d9",
+      "actual_sha256": "90f24dde20ba174fffa5c3c8ef19402840fa1dd0131b2b1c8e94fd6df66c77d9"
+    },
+    {
+      "member": "production/upload/60/60220e0a4a27ef20347f5345e3f08e7fd06cc5",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 54587,
+      "actual_size": 54587,
+      "expected_sha256": "91f6c37c3e7bacd1f185a1010c644723a477cbb8d9e3d61750a0c62484ab6468",
+      "actual_sha256": "91f6c37c3e7bacd1f185a1010c644723a477cbb8d9e3d61750a0c62484ab6468"
+    },
+    {
+      "member": "production/upload/60/9471127a2ec935b26e74de16b3e7490fe60833",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 35109,
+      "actual_size": 35109,
+      "expected_sha256": "37b7432136ce56ebb456ef459a2927a83122c1a32160373e19a0c0bbddda23a8",
+      "actual_sha256": "37b7432136ce56ebb456ef459a2927a83122c1a32160373e19a0c0bbddda23a8"
+    },
+    {
+      "member": "production/upload/62/2e744f6679d6b7dacd25aa532989b55d84370f",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 82,
+      "actual_size": 82,
+      "expected_sha256": "7bb51ded97e895683ccc871ef84344d3a2b41cd9598cd5f83974c35cf42d1c90",
+      "actual_sha256": "7bb51ded97e895683ccc871ef84344d3a2b41cd9598cd5f83974c35cf42d1c90"
+    },
+    {
+      "member": "production/upload/62/44334eac9d4358a4ec2ac8335cdf7c07a6ad1d",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 201,
+      "actual_size": 201,
+      "expected_sha256": "c6d193d1c716c2b00bb1201380bdc22541264cf3e0720885cef0f522ef33265a",
+      "actual_sha256": "c6d193d1c716c2b00bb1201380bdc22541264cf3e0720885cef0f522ef33265a"
+    },
+    {
+      "member": "production/upload/62/509e009d65799bb1584064f23608436581020a",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 88,
+      "actual_size": 88,
+      "expected_sha256": "a1aa09697c2f00fe7966a968f33bf9849cbcd6d9d398951494155a73e0fcaec7",
+      "actual_sha256": "a1aa09697c2f00fe7966a968f33bf9849cbcd6d9d398951494155a73e0fcaec7"
+    },
+    {
+      "member": "production/upload/69/7374dd7ac6a2f583942d9a5dbd8cd137b8f962",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 34482,
+      "actual_size": 34482,
+      "expected_sha256": "ee43f539edbf4dd7302f7a71139655c5e64ad8f8d82afdfe738af46c3d423999",
+      "actual_sha256": "ee43f539edbf4dd7302f7a71139655c5e64ad8f8d82afdfe738af46c3d423999"
+    },
+    {
+      "member": "production/upload/69/bd6c58c1e0d17073d7cfdd6d0de3cd64dfe730",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 148585,
+      "actual_size": 148585,
+      "expected_sha256": "f60b7d790d4f7be5b21bf66619739a96a078c04733cdcf12b72b0a7535e387ee",
+      "actual_sha256": "f60b7d790d4f7be5b21bf66619739a96a078c04733cdcf12b72b0a7535e387ee"
+    },
+    {
+      "member": "production/upload/6b/c3ce953262673ab7e2bd8c18c1c0944360b192",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 738,
+      "actual_size": 738,
+      "expected_sha256": "62bbc84268dc5a44a0acae346d1765f3f07f1d8457bd3a3c5baacb65acced721",
+      "actual_sha256": "62bbc84268dc5a44a0acae346d1765f3f07f1d8457bd3a3c5baacb65acced721"
+    },
+    {
+      "member": "production/upload/6d/679336795a7db98b85c73696cc1735e4cdcc20",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 85,
+      "actual_size": 85,
+      "expected_sha256": "ecc3b52382d41a854a111bbc09eb8bb27ce48bc5dafacd63fdbe187fefe8c46a",
+      "actual_sha256": "ecc3b52382d41a854a111bbc09eb8bb27ce48bc5dafacd63fdbe187fefe8c46a"
+    },
+    {
+      "member": "production/upload/71/3bffb8af5a4359aa4b2d64c1bce681f16b97b1",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 120372,
+      "actual_size": 120372,
+      "expected_sha256": "b1fa5c3384d8eb0b73f927d8c2c8032a02195a80adb959f62d3a8e19953377ff",
+      "actual_sha256": "b1fa5c3384d8eb0b73f927d8c2c8032a02195a80adb959f62d3a8e19953377ff"
+    },
+    {
+      "member": "production/upload/71/5b4e92e64ccbcb0fdee7c399f0ad9c2e5a9ded",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 143569,
+      "actual_size": 143569,
+      "expected_sha256": "b6b5d5c32d265a4eacef1154da16cb768681c178c9079ac7711fe5675ddb4780",
+      "actual_sha256": "b6b5d5c32d265a4eacef1154da16cb768681c178c9079ac7711fe5675ddb4780"
+    },
+    {
+      "member": "production/upload/72/c67c5987a88d489789538ec61493f2bfac54f2",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 3512,
+      "actual_size": 3512,
+      "expected_sha256": "37d43ece8af21361b724db14272102cc0d1277034bcc61c95d85fa8d6db0f048",
+      "actual_sha256": "37d43ece8af21361b724db14272102cc0d1277034bcc61c95d85fa8d6db0f048"
+    },
+    {
+      "member": "production/upload/73/f90070d36607eab847fb8e8e2713084a06ceeb",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 373,
+      "actual_size": 373,
+      "expected_sha256": "96f7c072344debf8d32324c7302ea7b20d7c7c2fe1f22d413664e59cd554486d",
+      "actual_sha256": "96f7c072344debf8d32324c7302ea7b20d7c7c2fe1f22d413664e59cd554486d"
+    },
+    {
+      "member": "production/upload/74/b0340b21ad0ec2755b647eaccca2f908c97332",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 380,
+      "actual_size": 380,
+      "expected_sha256": "ab462b47d3a8aa67388ccf174def60b95b9bb7a35e0b25c671a4a0d7729decf4",
+      "actual_sha256": "ab462b47d3a8aa67388ccf174def60b95b9bb7a35e0b25c671a4a0d7729decf4"
+    },
+    {
+      "member": "production/upload/79/28da7d05b42af4985d8762fe7b517c376da064",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 60186,
+      "actual_size": 60186,
+      "expected_sha256": "fe0c300996915833989cfa9df319792467e15ac30df781a98d3ba8778a6ea8f5",
+      "actual_sha256": "fe0c300996915833989cfa9df319792467e15ac30df781a98d3ba8778a6ea8f5"
+    },
+    {
+      "member": "production/upload/79/f9d2446b2762d64f489f9d228aedea0c87cbde",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 46707,
+      "actual_size": 46707,
+      "expected_sha256": "3b18aa72f95f34cdaf1501fbfd693f0b208d117a7197fe2c79dc00b059b20442",
+      "actual_sha256": "3b18aa72f95f34cdaf1501fbfd693f0b208d117a7197fe2c79dc00b059b20442"
+    },
+    {
+      "member": "production/upload/7a/01eca7d69908fd382bf84902ee7a000648e451",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 133225,
+      "actual_size": 133225,
+      "expected_sha256": "805971cea924c040d82bcbde435eeace61a82a417ac7e1773628965d9592beab",
+      "actual_sha256": "805971cea924c040d82bcbde435eeace61a82a417ac7e1773628965d9592beab"
+    },
+    {
+      "member": "production/upload/7b/521e4a3e00f880c91935a7e51993eae1e94fba",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 79621,
+      "actual_size": 79621,
+      "expected_sha256": "f07542f710406c4d467b0f13f915e4ead2e1f260157c37219780e74a66913242",
+      "actual_sha256": "f07542f710406c4d467b0f13f915e4ead2e1f260157c37219780e74a66913242"
+    },
+    {
+      "member": "production/upload/7b/956afb78ce115e022458133e39eac24e924037",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 88,
+      "actual_size": 88,
+      "expected_sha256": "fe7c8f9d656a7672b8fee20150089ad2e18cf5fb23f0b4554f35ab522baa7caf",
+      "actual_sha256": "fe7c8f9d656a7672b8fee20150089ad2e18cf5fb23f0b4554f35ab522baa7caf"
+    },
+    {
+      "member": "production/upload/7b/e87401a67bd7c69810e7be1951584642614c43",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-8-halloween4-characters-local.zip",
+      "expected_size": 167706,
+      "actual_size": 167706,
+      "expected_sha256": "40bcdfa4002a36bbc02150c710b19c531e275ac4a1c0ffc8457a01748a28832d",
+      "actual_sha256": "40bcdfa4002a36bbc02150c710b19c531e275ac4a1c0ffc8457a01748a28832d"
+    },
+    {
+      "member": "production/upload/7e/f4169b470badedd4bed834468a2826dafe5a36",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 60813,
+      "actual_size": 60813,
+      "expected_sha256": "3ee703b33459b8adb055a7bb5a1a9f814f73cf19931cdec34d9638a41a29328f",
+      "actual_sha256": "3ee703b33459b8adb055a7bb5a1a9f814f73cf19931cdec34d9638a41a29328f"
+    },
+    {
+      "member": "production/upload/7f/1e9e90b6281bacab4909cd002f5aa83a794f58",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 386,
+      "actual_size": 386,
+      "expected_sha256": "007dfac2045e6f3dd84316343862ccad69312321b6fe3c62fa204f38bdb0638e",
+      "actual_sha256": "007dfac2045e6f3dd84316343862ccad69312321b6fe3c62fa204f38bdb0638e"
+    },
+    {
+      "member": "production/upload/7f/7c16efd3778c28920923b3a997ce2c572da8e2",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 165,
+      "actual_size": 165,
+      "expected_sha256": "25135ea943fd8de46ae75112da48b7e662e8ddc1d8063b9c6bc7928ccba24044",
+      "actual_sha256": "25135ea943fd8de46ae75112da48b7e662e8ddc1d8063b9c6bc7928ccba24044"
+    },
+    {
+      "member": "production/upload/80/d28620a6964ca129dd0f62a80d39a51e75eb4a",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 94041,
+      "actual_size": 94041,
+      "expected_sha256": "1998fae475c8834a1c323846b3a3f74fbe9d4d1ed88216eae4fed3fc5135ff89",
+      "actual_sha256": "1998fae475c8834a1c323846b3a3f74fbe9d4d1ed88216eae4fed3fc5135ff89"
+    },
+    {
+      "member": "production/upload/84/7af1255f8dcea95a7670ca130cb47be945d797",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 121,
+      "actual_size": 121,
+      "expected_sha256": "1209c348d42f4a6c74ac0a36c935f897984412c4e8366a67f76d3821a07ee17e",
+      "actual_sha256": "1209c348d42f4a6c74ac0a36c935f897984412c4e8366a67f76d3821a07ee17e"
+    },
+    {
+      "member": "production/upload/84/8f78e32c4d56d66619bcb89521e68023d53f71",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 41065,
+      "actual_size": 41065,
+      "expected_sha256": "69e4401ace6d2747b1d28fcc1fd9f296396f649fecc28d529d7d3c97d79110fa",
+      "actual_sha256": "69e4401ace6d2747b1d28fcc1fd9f296396f649fecc28d529d7d3c97d79110fa"
+    },
+    {
+      "member": "production/upload/85/c3cea143e762b99fa533c78859be3b9c1a5d44",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 121313,
+      "actual_size": 121313,
+      "expected_sha256": "1907a198ac149e2b61f0df15f5f08355cb39d23f3ed882a99d01baf5fc335196",
+      "actual_sha256": "1907a198ac149e2b61f0df15f5f08355cb39d23f3ed882a99d01baf5fc335196"
+    },
+    {
+      "member": "production/upload/86/45b9ab8310fa8f5be29e31fcf112266360414f",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 32914,
+      "actual_size": 32914,
+      "expected_sha256": "873ea3ba4d0617e14a2b659a3527ed70ceb88df51ec57225ef9885a133e0bb94",
+      "actual_sha256": "873ea3ba4d0617e14a2b659a3527ed70ceb88df51ec57225ef9885a133e0bb94"
+    },
+    {
+      "member": "production/upload/87/f114d4a3763a214e94f8f3e817ca402ccfb5da",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 137,
+      "actual_size": 137,
+      "expected_sha256": "b97ef6e3c6d16ed0a2a0f215b78673a1a12c51a03b51ddbaa3dd1a4c6c8a3d93",
+      "actual_sha256": "b97ef6e3c6d16ed0a2a0f215b78673a1a12c51a03b51ddbaa3dd1a4c6c8a3d93"
+    },
+    {
+      "member": "production/upload/89/45fd1ab9d8e6c8f32572e98fdf60ece8ddc46d",
+      "equal": true,
+      "expected_source": "pinball-1.4.221-1.4.222-1-seriol-pf3-fix-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 463,
+      "actual_size": 463,
+      "expected_sha256": "9c305dfd2a8befc43c2fffeaa1014a036e6a096a1681ca70c40e24deeb08cec5",
+      "actual_sha256": "9c305dfd2a8befc43c2fffeaa1014a036e6a096a1681ca70c40e24deeb08cec5"
+    },
+    {
+      "member": "production/upload/89/c6cc25551caf1fcf46b3178a9283f5a9bfb46f",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 145450,
+      "actual_size": 145450,
+      "expected_sha256": "619b49ed6089da566845ac26151936689441d231cc01b7ddef0ddd6ff70cbb40",
+      "actual_sha256": "619b49ed6089da566845ac26151936689441d231cc01b7ddef0ddd6ff70cbb40"
+    },
+    {
+      "member": "production/upload/89/eee7575d1992732069cad56768d643751fefc6",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 38870,
+      "actual_size": 38870,
+      "expected_sha256": "6206dc15659ec3830e60d9318946003f4d9d69c6bbe42d171ab8a1f24298e2ee",
+      "actual_sha256": "6206dc15659ec3830e60d9318946003f4d9d69c6bbe42d171ab8a1f24298e2ee"
+    },
+    {
+      "member": "production/upload/8b/035728b2151de044fb245988ec5f33ebb544ab",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-1-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-1-halloween4-characters-local.zip",
+      "expected_size": 227308,
+      "actual_size": 227308,
+      "expected_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876",
+      "actual_sha256": "c37af90cc4e68683e951a6c9174c4abc00fe852caf2b7624111497e54d9b8876"
+    },
+    {
+      "member": "production/upload/8c/6983fa20055516f284b0398bb9d7d6ea06b6cb",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 120372,
+      "actual_size": 120372,
+      "expected_sha256": "6eb44daf66ade66be22f15180ad8599fe8bf031ae980ed74b3d2077c8c6d0448",
+      "actual_sha256": "6eb44daf66ade66be22f15180ad8599fe8bf031ae980ed74b3d2077c8c6d0448"
+    },
+    {
+      "member": "production/upload/8e/7247e1b96749a9b0fa86c108a4534e0bd2d9d4",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 531,
+      "actual_size": 531,
+      "expected_sha256": "06057848d8c9d6fcb48f4dc9ca82a110fe2ffbb6ba181f48f402a584ce64df64",
+      "actual_sha256": "06057848d8c9d6fcb48f4dc9ca82a110fe2ffbb6ba181f48f402a584ce64df64"
+    },
+    {
+      "member": "production/upload/91/463ce261a2872943cbe3d88d12ef964eb38f7d",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 146390,
+      "actual_size": 146390,
+      "expected_sha256": "f1a1ff78207f8743411a57ca3738e670fb4e9dec78d7b9739bf42127b226cf70",
+      "actual_sha256": "f1a1ff78207f8743411a57ca3738e670fb4e9dec78d7b9739bf42127b226cf70"
+    },
+    {
+      "member": "production/upload/91/79892d704f88d98191c00548bce106402ad5b5",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-1-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-1-halloween4-characters-local.zip",
+      "expected_size": 375630,
+      "actual_size": 375630,
+      "expected_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e",
+      "actual_sha256": "a717f74dce304f1af553d56a2af070bd3a4e527fa8d1b7d0ef6b63807f5ec39e"
+    },
+    {
+      "member": "production/upload/92/273bf52de3895f8492f1068b832d1157a7ab26",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 143,
+      "actual_size": 143,
+      "expected_sha256": "3bcd672cc16472b1f7fcbc3ab13c74caf4b33708ada0e303470952cba468244b",
+      "actual_sha256": "3bcd672cc16472b1f7fcbc3ab13c74caf4b33708ada0e303470952cba468244b"
+    },
+    {
+      "member": "production/upload/93/29409e6c117ca8fd12229c78088270c27d4832",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 19757,
+      "actual_size": 19757,
+      "expected_sha256": "4cb03915424f6fcbcaa19afc1f91f9fb701f6170e2e71eaebbaba9fc83ad873b",
+      "actual_sha256": "4cb03915424f6fcbcaa19afc1f91f9fb701f6170e2e71eaebbaba9fc83ad873b"
+    },
+    {
+      "member": "production/upload/93/3496a166f8e8abb3fd99897d7bfdd039ef83d9",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 29466,
+      "actual_size": 29466,
+      "expected_sha256": "9a3e831bd0b732785134179118ba34deec4e0faaeb516a23f8beb232bc288980",
+      "actual_sha256": "9a3e831bd0b732785134179118ba34deec4e0faaeb516a23f8beb232bc288980"
+    },
+    {
+      "member": "production/upload/93/b6d34dc1e31cc4b3c7b41ba2d3e08c78fdc834",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 82,
+      "actual_size": 82,
+      "expected_sha256": "680dc0bdc25ab3374c0906933176933f6ce9371c691ea442aded68cad49c09c3",
+      "actual_sha256": "680dc0bdc25ab3374c0906933176933f6ce9371c691ea442aded68cad49c09c3"
+    },
+    {
+      "member": "production/upload/96/d694f65e95948fa2ed5682f267e4803f4d0e46",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 96862,
+      "actual_size": 96862,
+      "expected_sha256": "0e8fabaea2173963c0482c382ef9d7747f061126c368cd1b92522e6d4e600909",
+      "actual_sha256": "0e8fabaea2173963c0482c382ef9d7747f061126c368cd1b92522e6d4e600909"
+    },
+    {
+      "member": "production/upload/97/75e4d978aff424088965f25bf6ccc76af80785",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 58811,
+      "actual_size": 58811,
+      "expected_sha256": "de0f041a5385e714f93f8d7100fe967f9d937444b8fba13503abd42ae364dfcb",
+      "actual_sha256": "de0f041a5385e714f93f8d7100fe967f9d937444b8fba13503abd42ae364dfcb"
+    },
+    {
+      "member": "production/upload/97/d1d3d5bf36f2a5b8294f9c4b3ad9dde32c842f",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 109,
+      "actual_size": 109,
+      "expected_sha256": "08b4740a3af15722f77481612d17c5844a1aadfdbe7e59962266de8925fc17d4",
+      "actual_sha256": "08b4740a3af15722f77481612d17c5844a1aadfdbe7e59962266de8925fc17d4"
+    },
+    {
+      "member": "production/upload/98/56b8a135a24b2456b4c66ac6687cba90ed796d",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 95608,
+      "actual_size": 95608,
+      "expected_sha256": "9c61a0f309ca6fc1d17a1c19b62aac4720ac0ad02e2a92a4ebb6b760b58733c5",
+      "actual_sha256": "9c61a0f309ca6fc1d17a1c19b62aac4720ac0ad02e2a92a4ebb6b760b58733c5"
+    },
+    {
+      "member": "production/upload/99/ee6bf98af5dcba4be08c36dc8d1f88f300f366",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 130717,
+      "actual_size": 130717,
+      "expected_sha256": "6b20e711fbd603363b6d028c4952ff76ad67cc372f7ac68c231a81a8fc20d2f9",
+      "actual_sha256": "6b20e711fbd603363b6d028c4952ff76ad67cc372f7ac68c231a81a8fc20d2f9"
+    },
+    {
+      "member": "production/upload/9a/0d1b66e28e468715e8e51ccaf758ddab2dc5fc",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 331,
+      "actual_size": 331,
+      "expected_sha256": "23bee417315db0b49fa4bd87d62af39682a3ce9dd07b1409e01bf1c813232d8b",
+      "actual_sha256": "23bee417315db0b49fa4bd87d62af39682a3ce9dd07b1409e01bf1c813232d8b"
+    },
+    {
+      "member": "production/upload/9b/7e94757325c98edb0728a8823a4a9d23fd7156",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 12225,
+      "actual_size": 12225,
+      "expected_sha256": "c21229bd04253d64075b4765252042c65dc6e4d639cd607c75e1dad3647a18d1",
+      "actual_sha256": "c21229bd04253d64075b4765252042c65dc6e4d639cd607c75e1dad3647a18d1"
+    },
+    {
+      "member": "production/upload/9b/9a01702924096d871ab78241758288abdad9e8",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 15897,
+      "actual_size": 15897,
+      "expected_sha256": "d1bf2fd90b6e346693f20092521c9ff8413d03690bd36deca65f55f763e7ec13",
+      "actual_sha256": "d1bf2fd90b6e346693f20092521c9ff8413d03690bd36deca65f55f763e7ec13"
+    },
+    {
+      "member": "production/upload/9c/5552959ba729b4196ee8132cf0c69d6e7beed5",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 115357,
+      "actual_size": 115357,
+      "expected_sha256": "a5d41b50c78ad261855d5bcb3f6b81c1fa434e930a82673d135e1dcc7b2120c5",
+      "actual_sha256": "a5d41b50c78ad261855d5bcb3f6b81c1fa434e930a82673d135e1dcc7b2120c5"
+    },
+    {
+      "member": "production/upload/9d/4fa748960a97cb209eb1d2a00f79a3720acfa6",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 245,
+      "actual_size": 245,
+      "expected_sha256": "df4e35dcf63ce9470dd6cec87ee73ddaacc7816d9410e310d0329eea86f456a5",
+      "actual_sha256": "df4e35dcf63ce9470dd6cec87ee73ddaacc7816d9410e310d0329eea86f456a5"
+    },
+    {
+      "member": "production/upload/9d/c93f6f0d34b26f099f49024f64963fd429ad36",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 986,
+      "actual_size": 986,
+      "expected_sha256": "12675ca907adb1f42fd90800757b579859a7f9894fe9be181fc4fb3ccd8d77d6",
+      "actual_sha256": "12675ca907adb1f42fd90800757b579859a7f9894fe9be181fc4fb3ccd8d77d6"
+    },
+    {
+      "member": "production/upload/9e/710321f33a22fde027c5d8b6d4e0d20052ad5e",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 429,
+      "actual_size": 429,
+      "expected_sha256": "916d437296efc5b831e679ff6aba1148a686168db5f8e4efca35ed4a7d764b95",
+      "actual_sha256": "916d437296efc5b831e679ff6aba1148a686168db5f8e4efca35ed4a7d764b95"
+    },
+    {
+      "member": "production/upload/a0/0ab5a7ffcb33309d252b582018adc47e0d734c",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 392,
+      "actual_size": 392,
+      "expected_sha256": "902d951ba944872a9608353c8b98c295d38ffeb7986dbd288617f469f6586afa",
+      "actual_sha256": "902d951ba944872a9608353c8b98c295d38ffeb7986dbd288617f469f6586afa"
+    },
+    {
+      "member": "production/upload/a1/f9a39cdf62658d75fb2df62355546b3d4227da",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 88,
+      "actual_size": 88,
+      "expected_sha256": "2411d6b5ccb5b9124ba6c77236f4d8178c36f4e6a7023a30e211d746a1622488",
+      "actual_sha256": "2411d6b5ccb5b9124ba6c77236f4d8178c36f4e6a7023a30e211d746a1622488"
+    },
+    {
+      "member": "production/upload/a3/7970e4ff0d0f12d737b9ef46db586b5f47ba72",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 29466,
+      "actual_size": 29466,
+      "expected_sha256": "4583fd93dd58d4456b193e48b9ac7573895ab7d405946c795d45ff500bac1911",
+      "actual_sha256": "4583fd93dd58d4456b193e48b9ac7573895ab7d405946c795d45ff500bac1911"
+    },
+    {
+      "member": "production/upload/a7/bb6fd6a13f0d1a1c58d9c36241ed9afbb116f5",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 21629,
+      "actual_size": 21629,
+      "expected_sha256": "febe6d5cc75c98c8c0f9455e7d866221b05bac81feafe0bfab8943fd25cc7d4b",
+      "actual_sha256": "febe6d5cc75c98c8c0f9455e7d866221b05bac81feafe0bfab8943fd25cc7d4b"
+    },
+    {
+      "member": "production/upload/aa/abdd2e178d62dba4997034aab8c236a4422154",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-1-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-1-halloween4-characters-local.zip",
+      "expected_size": 32692,
+      "actual_size": 32692,
+      "expected_sha256": "5d7dd484a2640b554272f4cd433cc283a5258c0806804f28fce7a74b017377ca",
+      "actual_sha256": "5d7dd484a2640b554272f4cd433cc283a5258c0806804f28fce7a74b017377ca"
+    },
+    {
+      "member": "production/upload/ac/18f90c3e9bc9dbbb519ffb95312460c8a143ef",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 70531,
+      "actual_size": 70531,
+      "expected_sha256": "5ffac072b39eee71e44fd57e672202c3380ac8a7a0f3ce4aedb80e5899dfc045",
+      "actual_sha256": "5ffac072b39eee71e44fd57e672202c3380ac8a7a0f3ce4aedb80e5899dfc045"
+    },
+    {
+      "member": "production/upload/ac/b038c35f3048ba7ca07a6a84307b2fb10c041c",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-1-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-1-halloween4-characters-local.zip",
+      "expected_size": 118764,
+      "actual_size": 118764,
+      "expected_sha256": "4220254985d4c122aec3c247dab0655664c4c78a17b5c3b0c9bfc0cb19171ffb",
+      "actual_sha256": "4220254985d4c122aec3c247dab0655664c4c78a17b5c3b0c9bfc0cb19171ffb"
+    },
+    {
+      "member": "production/upload/ad/cea0f1dfca77e7b3a54647831907cc97be97c2",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 2820,
+      "actual_size": 2820,
+      "expected_sha256": "c4ab608ed31d3d5bca8ab094f96fb94c6f3eab2d03e6e2ada1e21bf66d00eb4c",
+      "actual_sha256": "c4ab608ed31d3d5bca8ab094f96fb94c6f3eab2d03e6e2ada1e21bf66d00eb4c"
+    },
+    {
+      "member": "production/upload/ae/03e2a93b4f5542a9ff0ddb1d17bd0915af12d1",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 118491,
+      "actual_size": 118491,
+      "expected_sha256": "5886d5bf387c531887df97d6a16b2c9422061edec5e0c45ef710f7d802bea20e",
+      "actual_sha256": "5886d5bf387c531887df97d6a16b2c9422061edec5e0c45ef710f7d802bea20e"
+    },
+    {
+      "member": "production/upload/ae/4613a14268145f7f23c07f785315d4dfe37a07",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 1841,
+      "actual_size": 1841,
+      "expected_sha256": "ad4ac84cec2a981339e3956c21f051659cdba0914c24bb9e3bb86bf6592ca009",
+      "actual_sha256": "ad4ac84cec2a981339e3956c21f051659cdba0914c24bb9e3bb86bf6592ca009"
+    },
+    {
+      "member": "production/upload/ae/7801e1610d3f15e7c2188616ee72c5b0d901b7",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 366,
+      "actual_size": 366,
+      "expected_sha256": "6177106b0d31dcd4fd73d018608c6a8ebd680a33c4b8d4636c95aab22f7b9fe9",
+      "actual_sha256": "6177106b0d31dcd4fd73d018608c6a8ebd680a33c4b8d4636c95aab22f7b9fe9"
+    },
+    {
+      "member": "production/upload/b1/c75adb0bc6f93d23fa13ad075b6653fc957625",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 94,
+      "actual_size": 94,
+      "expected_sha256": "a24c0055b59733fe9ab707c36f28f723594bbcf754a0f835b44f93dbbb2c9ea9",
+      "actual_sha256": "a24c0055b59733fe9ab707c36f28f723594bbcf754a0f835b44f93dbbb2c9ea9"
+    },
+    {
+      "member": "production/upload/b1/e38b6c889bd28c847cb65260901788c124166b",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 27899,
+      "actual_size": 27899,
+      "expected_sha256": "edf58b6a360f8bf6b972d88e7c432ba9f1fe1cd3fb776f8f01c01361d722435e",
+      "actual_sha256": "edf58b6a360f8bf6b972d88e7c432ba9f1fe1cd3fb776f8f01c01361d722435e"
+    },
+    {
+      "member": "production/upload/b2/ba0d32e2c7ace67b1563ceca6ed0182e8327a4",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 96235,
+      "actual_size": 96235,
+      "expected_sha256": "d06ed654746f394db4a9aa4283f002c36c4a957a8345f9b79bd5e0607caad255",
+      "actual_sha256": "d06ed654746f394db4a9aa4283f002c36c4a957a8345f9b79bd5e0607caad255"
+    },
+    {
+      "member": "production/upload/b3/3f75cf2102c267a3682ee1af15381a3294e60f",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 41065,
+      "actual_size": 41065,
+      "expected_sha256": "4e76f7ac0edeac606eb292c1b32e375cd05590d27010609dae9703097cc5c1ee",
+      "actual_sha256": "4e76f7ac0edeac606eb292c1b32e375cd05590d27010609dae9703097cc5c1ee"
+    },
+    {
+      "member": "production/upload/b4/27c5690d7ce4861663dc5ffef11cefc89fd011",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 150465,
+      "actual_size": 150465,
+      "expected_sha256": "0ef3f3ea11d0a55f4c0c1e6f4abeb324a40d50a263520f7ed5481e3b02bb007f",
+      "actual_sha256": "0ef3f3ea11d0a55f4c0c1e6f4abeb324a40d50a263520f7ed5481e3b02bb007f"
+    },
+    {
+      "member": "production/upload/b4/a28679b8eeefdbdcbe6071fd4f2ff85e5b3415",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-1-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-1-halloween4-characters-local.zip",
+      "expected_size": 438791,
+      "actual_size": 438791,
+      "expected_sha256": "ca04f19c86c6e4aa2c7c136ad787dd8f1644051646efa24ecbef44cd5a325a70",
+      "actual_sha256": "ca04f19c86c6e4aa2c7c136ad787dd8f1644051646efa24ecbef44cd5a325a70"
+    },
+    {
+      "member": "production/upload/b8/95e9f821a30fd50e4cae7597a63234c7762a96",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 143,
+      "actual_size": 143,
+      "expected_sha256": "4a3d025194767eead7436f64bc2316ba52357b729e497d8589f9f2c97685326a",
+      "actual_sha256": "4a3d025194767eead7436f64bc2316ba52357b729e497d8589f9f2c97685326a"
+    },
+    {
+      "member": "production/upload/b9/132d27178d27f9d91df89fc47e106bbaf2d5b5",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-1-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-1-halloween4-characters-local.zip",
+      "expected_size": 51096,
+      "actual_size": 51096,
+      "expected_sha256": "5d2179017bc1344392e95512ec7e4df95f346d115f769883b8b18b82d69d285d",
+      "actual_sha256": "5d2179017bc1344392e95512ec7e4df95f346d115f769883b8b18b82d69d285d"
+    },
+    {
+      "member": "production/upload/ba/5fb1eaaa18ffd6e5b4284c0a7c7387f19654da",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 127582,
+      "actual_size": 127582,
+      "expected_sha256": "aa9d83344de9d44889ebd63edee3d55c49e26bbd6cfeebc687081415b609478c",
+      "actual_sha256": "aa9d83344de9d44889ebd63edee3d55c49e26bbd6cfeebc687081415b609478c"
+    },
+    {
+      "member": "production/upload/bc/0bc800f482670f3ec8a7f2fee9b9deeeca3a04",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-1-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-1-halloween4-characters-local.zip",
+      "expected_size": 30314,
+      "actual_size": 30314,
+      "expected_sha256": "27ec18b8bef5898b4bf9dfac2c1581fe8e80656b5ba2be6f7191fc11a334d3b9",
+      "actual_sha256": "27ec18b8bef5898b4bf9dfac2c1581fe8e80656b5ba2be6f7191fc11a334d3b9"
+    },
+    {
+      "member": "production/upload/bc/8316a905d3f6236370ce0238ba0834c92f4429",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 1012,
+      "actual_size": 1012,
+      "expected_sha256": "f9f28a5607d42b5204983ad82b62a20282c022fc24d25f3dcf30946e10231a86",
+      "actual_sha256": "f9f28a5607d42b5204983ad82b62a20282c022fc24d25f3dcf30946e10231a86"
+    },
+    {
+      "member": "production/upload/be/33f9ccc939c2e02837ece510de2ee2996a68f7",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 60813,
+      "actual_size": 60813,
+      "expected_sha256": "92b4db7903fda4964b85a905befa59bc42eba1148b6d671ba43514cb1395e850",
+      "actual_sha256": "92b4db7903fda4964b85a905befa59bc42eba1148b6d671ba43514cb1395e850"
+    },
+    {
+      "member": "production/upload/be/f8ff4d1440a07523e0d3d28cbcf50079edb014",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 150779,
+      "actual_size": 150779,
+      "expected_sha256": "3737b71bc4ee6870beebba2487053af29227147d6c8641f7be80c7206f5a63c7",
+      "actual_sha256": "3737b71bc4ee6870beebba2487053af29227147d6c8641f7be80c7206f5a63c7"
+    },
+    {
+      "member": "production/upload/c2/6fa6471aecc3b0f51bfca0eddfec5cf01d7e81",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 61127,
+      "actual_size": 61127,
+      "expected_sha256": "697c9e0e390a87841d9d35c4d114365ed47524d01a47d12bb3ab9b849bf4fe6f",
+      "actual_sha256": "697c9e0e390a87841d9d35c4d114365ed47524d01a47d12bb3ab9b849bf4fe6f"
+    },
+    {
+      "member": "production/upload/c3/56c1db4b44fc50a4bb365d81c459bf1a0c8b4a",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 2989,
+      "actual_size": 2989,
+      "expected_sha256": "b34fbce857219b2eae5d62c6f36853fd0721d53e2c6efb4310a3a2583a674915",
+      "actual_sha256": "b34fbce857219b2eae5d62c6f36853fd0721d53e2c6efb4310a3a2583a674915"
+    },
+    {
+      "member": "production/upload/c3/7df8c94aa519ca61bd5b901490b20d22d90a3c",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 68963,
+      "actual_size": 68963,
+      "expected_sha256": "e24283d94ce64fabcc8c0ef244391de60832946e66a7031bee0a929788c7fe5d",
+      "actual_sha256": "e24283d94ce64fabcc8c0ef244391de60832946e66a7031bee0a929788c7fe5d"
+    },
+    {
+      "member": "production/upload/c3/922f3f30cb73a08eb4f4b1a31ef4441ee2ec0e",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 977,
+      "actual_size": 977,
+      "expected_sha256": "f149d190d1d3688176417daa21bc302e4d5471bcde6367a8b66574b57bcb0ed1",
+      "actual_sha256": "f149d190d1d3688176417daa21bc302e4d5471bcde6367a8b66574b57bcb0ed1"
+    },
+    {
+      "member": "production/upload/c6/2d030c6f28a4cd0b1086efc9b5b1b157d186f9",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 1298,
+      "actual_size": 1298,
+      "expected_sha256": "6e5d2b288093ee1ebed1cb75a463a9c35140f6aba08afbebcba5a2feee240a0c",
+      "actual_sha256": "6e5d2b288093ee1ebed1cb75a463a9c35140f6aba08afbebcba5a2feee240a0c"
+    },
+    {
+      "member": "production/upload/c6/c0a4b5138294e0cf7083e2f67be95a1d5f5c58",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 56111,
+      "actual_size": 56111,
+      "expected_sha256": "925cef0985dc8ab7a9af2efb56825ffdb715761eeb35b6c98c1ff23339e40b1b",
+      "actual_sha256": "925cef0985dc8ab7a9af2efb56825ffdb715761eeb35b6c98c1ff23339e40b1b"
+    },
+    {
+      "member": "production/upload/c9/d9a1acf18bdfca438166284433e4f8af07d817",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 30407,
+      "actual_size": 30407,
+      "expected_sha256": "d74b46d62917845ba3b1814e66ff77ebe7d01b70bdf513a74cd18ef6967bd177",
+      "actual_sha256": "d74b46d62917845ba3b1814e66ff77ebe7d01b70bdf513a74cd18ef6967bd177"
+    },
+    {
+      "member": "production/upload/ca/8926160fcc5221afc109a354cd8c754231560b",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 373,
+      "actual_size": 373,
+      "expected_sha256": "96f7c072344debf8d32324c7302ea7b20d7c7c2fe1f22d413664e59cd554486d",
+      "actual_sha256": "96f7c072344debf8d32324c7302ea7b20d7c7c2fe1f22d413664e59cd554486d"
+    },
+    {
+      "member": "production/upload/d0/450c9a395ef95a31fba0dd79382033a0928b7e",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 1101,
+      "actual_size": 1101,
+      "expected_sha256": "e1edecb92b5b08b913480da6630f157f58d97b2643485fd3ee1a6b115cb7de3b",
+      "actual_sha256": "e1edecb92b5b08b913480da6630f157f58d97b2643485fd3ee1a6b115cb7de3b"
+    },
+    {
+      "member": "production/upload/d0/68c96483f07474b4e0642aaafdf9af0f31eed9",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 473,
+      "actual_size": 473,
+      "expected_sha256": "9c09d2bf7ce4c113205a689a1fb962d167b5c55a1e86655744fb2deef8dea479",
+      "actual_sha256": "9c09d2bf7ce4c113205a689a1fb962d167b5c55a1e86655744fb2deef8dea479"
+    },
+    {
+      "member": "production/upload/d1/8de945e871f2ed3c0021f93839f22299fe4e6c",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 47020,
+      "actual_size": 47020,
+      "expected_sha256": "4a02e5575960701b246a86058ac86c4af43b31c469e49838f237f6ff0157f557",
+      "actual_sha256": "4a02e5575960701b246a86058ac86c4af43b31c469e49838f237f6ff0157f557"
+    },
+    {
+      "member": "production/upload/d2/ef852bba91d9c7e0cb366246550877b39fb33e",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 1435,
+      "actual_size": 1435,
+      "expected_sha256": "c69b77150c40825d7595a09c50eb5f8e38623af1d8af8e782102a432e5e13b7b",
+      "actual_sha256": "c69b77150c40825d7595a09c50eb5f8e38623af1d8af8e782102a432e5e13b7b"
+    },
+    {
+      "member": "production/upload/d3/660d04e0be3c878f5307b3e18a52f23e6123b9",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 184,
+      "actual_size": 184,
+      "expected_sha256": "e3f0ed1c902edfae16f168f70e413ea5edd775d76f13e47518ceb5969e8a22bf",
+      "actual_sha256": "e3f0ed1c902edfae16f168f70e413ea5edd775d76f13e47518ceb5969e8a22bf"
+    },
+    {
+      "member": "production/upload/d4/3451f28956c98155de905025e2cc1c78687287",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 1014,
+      "actual_size": 1014,
+      "expected_sha256": "c803aacc60150a3dcdc3ac2614de9b1d7291e5df2421db7ff2c13d196a4bdc35",
+      "actual_sha256": "c803aacc60150a3dcdc3ac2614de9b1d7291e5df2421db7ff2c13d196a4bdc35"
+    },
+    {
+      "member": "production/upload/d6/127ea8f481c6121df23d2d44abe107319fdb8d",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 117485,
+      "actual_size": 117485,
+      "expected_sha256": "6afce23054296169b0c00a31e9039d66bd703d90f9bea448e070842609bda820",
+      "actual_sha256": "6afce23054296169b0c00a31e9039d66bd703d90f9bea448e070842609bda820"
+    },
+    {
+      "member": "production/upload/d7/50c2f94f83dd053bfc79039a709f1ec6f766cb",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-1-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-1-halloween4-characters-local.zip",
+      "expected_size": 16940,
+      "actual_size": 16940,
+      "expected_sha256": "f96eae5dfe3a62142220b1595119fd31b77b8c9128007e4313dfb6e99b7896e6",
+      "actual_sha256": "f96eae5dfe3a62142220b1595119fd31b77b8c9128007e4313dfb6e99b7896e6"
+    },
+    {
+      "member": "production/upload/d8/1048b586f24a363ae95e1eef74c466de52dc81",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 325,
+      "actual_size": 325,
+      "expected_sha256": "299647149cb01310f33d14173c35197d8e9415336a47c7eb10e342d3f155af22",
+      "actual_sha256": "299647149cb01310f33d14173c35197d8e9415336a47c7eb10e342d3f155af22"
+    },
+    {
+      "member": "production/upload/d8/83ad11a91a98d2aacd1724d08b15cc56744d65",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 155,
+      "actual_size": 155,
+      "expected_sha256": "e78260d3f8d59d1ec24fa7fb692480c8a869f7795c10ed345d60c62481bcea7b",
+      "actual_sha256": "e78260d3f8d59d1ec24fa7fb692480c8a869f7795c10ed345d60c62481bcea7b"
+    },
+    {
+      "member": "production/upload/d9/e8e95437bf7e0f20199f76dd275f5b67e2b332",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 973,
+      "actual_size": 973,
+      "expected_sha256": "09421df7599855bdecc32160056c99662b978c9a9a65ae4140608869078f3ed7",
+      "actual_sha256": "09421df7599855bdecc32160056c99662b978c9a9a65ae4140608869078f3ed7"
+    },
+    {
+      "member": "production/upload/dd/0bf6c296d42ae7fdb4e25789fc5e495649ba0c",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 51096,
+      "actual_size": 51096,
+      "expected_sha256": "8549805cde4b0339f6ba06444e17d02363db46faf652143cebe0df61ecc76932",
+      "actual_sha256": "8549805cde4b0339f6ba06444e17d02363db46faf652143cebe0df61ecc76932"
+    },
+    {
+      "member": "production/upload/de/0e7ec242524facb8ff9e5fad04946acf763945",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 46393,
+      "actual_size": 46393,
+      "expected_sha256": "3b1e88b72f4ad194be2a5dccbcb8fe003c15e1ddd3d4d82ae17abe13439f364e",
+      "actual_sha256": "3b1e88b72f4ad194be2a5dccbcb8fe003c15e1ddd3d4d82ae17abe13439f364e"
+    },
+    {
+      "member": "production/upload/de/516e8cee5e613081284a3d7375abcbc004a1c6",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 955,
+      "actual_size": 955,
+      "expected_sha256": "8c5c2c925bf72109dcd81df9b60bd211cebb31bdde338bf2056033ba6963d7f3",
+      "actual_sha256": "8c5c2c925bf72109dcd81df9b60bd211cebb31bdde338bf2056033ba6963d7f3"
+    },
+    {
+      "member": "production/upload/df/e88056b94cb21c379fdce864f7a1bbe4935847",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 125701,
+      "actual_size": 125701,
+      "expected_sha256": "871ca78fb7ca02e89219f9d18b585a243a60d4a92e643c0182beca469ab09303",
+      "actual_sha256": "871ca78fb7ca02e89219f9d18b585a243a60d4a92e643c0182beca469ab09303"
+    },
+    {
+      "member": "production/upload/e0/a60ff5e9ffcb83b0d50338522faffcf0bc763e",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 81,
+      "actual_size": 81,
+      "expected_sha256": "890cb6baea1ae44c944f5528ba5fa15039af656861700792b4fa3b0970c81eb0",
+      "actual_sha256": "890cb6baea1ae44c944f5528ba5fa15039af656861700792b4fa3b0970c81eb0"
+    },
+    {
+      "member": "production/upload/e1/e72cae4015e2bb861037b96c9e8af8e90a20f4",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 17868,
+      "actual_size": 17868,
+      "expected_sha256": "10aead91b2f3c89615e46312c758dcab440063c56247a52fab95b1ecd0d84ac3",
+      "actual_sha256": "10aead91b2f3c89615e46312c758dcab440063c56247a52fab95b1ecd0d84ac3"
+    },
+    {
+      "member": "production/upload/e3/1c981b500ddd44f339b18fa13801b8585fa56e",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 116297,
+      "actual_size": 116297,
+      "expected_sha256": "f70be4ead17cf238209830c3af0930745460bc1185f7f01aa83e2766a780e4ab",
+      "actual_sha256": "f70be4ead17cf238209830c3af0930745460bc1185f7f01aa83e2766a780e4ab"
+    },
+    {
+      "member": "production/upload/e3/4888a9142687a80d963fb237f91937737aef47",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 20062,
+      "actual_size": 20062,
+      "expected_sha256": "1ab1b8e31e4428df604a957cfccf5dd2977210cb2f1c1ca8dbefb8d14c003609",
+      "actual_sha256": "1ab1b8e31e4428df604a957cfccf5dd2977210cb2f1c1ca8dbefb8d14c003609"
+    },
+    {
+      "member": "production/upload/ea/477321ab5d2a9684e7ab3ce9a8c1d0248080da",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 6788,
+      "actual_size": 6788,
+      "expected_sha256": "edc8097f3a6fd1ef518709625a062bcdaccddd9195ff7101527879bebfbd45d6",
+      "actual_sha256": "edc8097f3a6fd1ef518709625a062bcdaccddd9195ff7101527879bebfbd45d6"
+    },
+    {
+      "member": "production/upload/ed/27d4b2670c4d3e4e7d06e5587bf7967cc55fce",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 2820,
+      "actual_size": 2820,
+      "expected_sha256": "c4ab608ed31d3d5bca8ab094f96fb94c6f3eab2d03e6e2ada1e21bf66d00eb4c",
+      "actual_sha256": "c4ab608ed31d3d5bca8ab094f96fb94c6f3eab2d03e6e2ada1e21bf66d00eb4c"
+    },
+    {
+      "member": "production/upload/ee/93246ee15de731111ab3870a3d6ac56105bb4a",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 68336,
+      "actual_size": 68336,
+      "expected_sha256": "50a65b9c9aebc00e9ff2d90fe1017cbbdbf418957828c88f76341e43b2583fd8",
+      "actual_sha256": "50a65b9c9aebc00e9ff2d90fe1017cbbdbf418957828c88f76341e43b2583fd8"
+    },
+    {
+      "member": "production/upload/ef/5de5d2a774816930002ab6f9117865c6eb08bf",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 963,
+      "actual_size": 963,
+      "expected_sha256": "5442d4594c4b475c1c50b609bed0b7d0a0a2b824b44fba4069e82807ef836f9b",
+      "actual_sha256": "5442d4594c4b475c1c50b609bed0b7d0a0a2b824b44fba4069e82807ef836f9b"
+    },
+    {
+      "member": "production/upload/f0/ceb79d46af073da9eb6939581249717ae83fed",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 1001,
+      "actual_size": 1001,
+      "expected_sha256": "d3368fd471cf5977ec8b1e66705633608d9eabef2b287d472d1d48403b6a56b4",
+      "actual_sha256": "d3368fd471cf5977ec8b1e66705633608d9eabef2b287d472d1d48403b6a56b4"
+    },
+    {
+      "member": "production/upload/f0/ea78fa09a53464ac8c9ad668b5b293a5310c69",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 85,
+      "actual_size": 85,
+      "expected_sha256": "93c963cf1f0b98e0e7d59f3fd1de6c859e654208eb97dca5521c5a9a31834abf",
+      "actual_sha256": "93c963cf1f0b98e0e7d59f3fd1de6c859e654208eb97dca5521c5a9a31834abf"
+    },
+    {
+      "member": "production/upload/f4/3000db7f3d8f92988c32087ea62ab17fc72d11",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+      "expected_size": 127582,
+      "actual_size": 127582,
+      "expected_sha256": "9b2c32ebb725143e2320e972bfa2a756cd7b5f0df5bafd77c0327ade44255daa",
+      "actual_sha256": "9b2c32ebb725143e2320e972bfa2a756cd7b5f0df5bafd77c0327ade44255daa"
+    },
+    {
+      "member": "production/upload/f9/4ec8969e237cda474ac6c3c2e4d15e3e43efaf",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+      "expected_size": 42632,
+      "actual_size": 42632,
+      "expected_sha256": "8add23561301c3adae99dbafba5a3dc41568502ad9445fbe89df6974f2435efb",
+      "actual_sha256": "8add23561301c3adae99dbafba5a3dc41568502ad9445fbe89df6974f2435efb"
+    },
+    {
+      "member": "production/upload/f9/ec53db319014aa31ea1eaeaa1a0818f4f44987",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 18181,
+      "actual_size": 18181,
+      "expected_sha256": "f4adc7b816bc8ffd8c8115bd1246de176d827a02846e3a52fb15f28f1c1f489e",
+      "actual_sha256": "f4adc7b816bc8ffd8c8115bd1246de176d827a02846e3a52fb15f28f1c1f489e"
+    },
+    {
+      "member": "production/upload/fa/0189a88628aaa29127b9f38d5102e97fb55b99",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 120,
+      "actual_size": 120,
+      "expected_sha256": "13ac3dd0b0e905bf4b3ce277d8ce8620fdab48ff86dded698d0cdd654a521295",
+      "actual_sha256": "13ac3dd0b0e905bf4b3ce277d8ce8620fdab48ff86dded698d0cdd654a521295"
+    },
+    {
+      "member": "production/upload/fb/ab4344a7456dca88f3ce06f01208922f37e395",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-1-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-1-halloween4-characters-local.zip",
+      "expected_size": 387603,
+      "actual_size": 387603,
+      "expected_sha256": "831be1454138d7b80fa4d215367e820fc8d7a8c6d2b2aa1fdf28a2e329bbaf5d",
+      "actual_sha256": "831be1454138d7b80fa4d215367e820fc8d7a8c6d2b2aa1fdf28a2e329bbaf5d"
+    },
+    {
+      "member": "production/upload/fd/8b20ff32ac62c0944825623d7c54c7a5cc5a19",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 28212,
+      "actual_size": 28212,
+      "expected_sha256": "b8096cebdd2bd2d578650fb39e44b4c6391eeaf7cf91a7f9481c813b56008fe4",
+      "actual_sha256": "b8096cebdd2bd2d578650fb39e44b4c6391eeaf7cf91a7f9481c813b56008fe4"
+    },
+    {
+      "member": "production/upload/ff/84353774cb95e8d7dc90c679f96a5bca7f42e5",
+      "equal": true,
+      "expected_source": "pinball-1.4.220-1.4.221-1-halloween4-characters-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-1-halloween4-characters-local.zip",
+      "expected_size": 73211,
+      "actual_size": 73211,
+      "expected_sha256": "041163d645780719d128beef25710e9f936fb2721f4b2b74f8f367f07588bc03",
+      "actual_sha256": "041163d645780719d128beef25710e9f936fb2721f4b2b74f8f367f07588bc03"
+    }
+  ],
+  "fix222_members": [
+    {
+      "member": "production/upload/89/45fd1ab9d8e6c8f32572e98fdf60ece8ddc46d",
+      "equal": true,
+      "expected_source": "pinball-1.4.221-1.4.222-1-seriol-pf3-fix-local.zip",
+      "actual_source": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+      "expected_size": 463,
+      "actual_size": 463,
+      "expected_sha256": "9c305dfd2a8befc43c2fffeaa1014a036e6a096a1681ca70c40e24deeb08cec5",
+      "actual_sha256": "9c305dfd2a8befc43c2fffeaa1014a036e6a096a1681ca70c40e24deeb08cec5"
+    }
+  ],
+  "compared_to_original221": {
+    "equal_members": 309,
+    "different_members": 1,
+    "differences": [
+      {
+        "name": "production/upload/89/45fd1ab9d8e6c8f32572e98fdf60ece8ddc46d",
+        "equal": false,
+        "expected_size": 497,
+        "actual_size": 463,
+        "expected_sha256": "39d0013867105abb217bfc2fdab9308ddcfe1aaa9b9556b6ddc264ee443e85ed",
+        "actual_sha256": "9c305dfd2a8befc43c2fffeaa1014a036e6a096a1681ca70c40e24deeb08cec5"
+      }
+    ]
+  }
+}

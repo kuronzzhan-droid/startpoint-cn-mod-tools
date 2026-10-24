@@ -1,0 +1,84 @@
+schema: wf-capability/1
+id: client.apk.patch072@1
+title: 转场 GC 去重
+layer: platform
+provided_by:
+  patches:
+  - 72
+  match: all
+  methods:
+  - patch: 72
+    abc: boot_ffc6
+    label: LogicSceneTransition/deactivatePreviousScene
+    sha256: 96ee8a34ddee66156b98761c766815eeec8a24f4ca1dc350a4b7f42b924c40bd
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 72
+    abc: boot_ffc6
+    label: ProductionLoading/resetAssets
+    sha256: 88f4837fd4a910380176d6fd9072c5236ea43dce3140a33ea6864346040330ce
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 72
+    abc: cn.loading.GcGate
+    label: anonymous-method-0
+    sha256: 52740a7b374657cecba183b68c1302d20c8510d24260a33589c73afd78cbc408
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 72
+    abc: cn.loading.GcGate
+    label: GcGate$/<cinit>
+    sha256: 333e0a1e27815d0ceee55c473fe3dc93d56c63e3bee2b3b4aee8eed6d70191a3
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 72
+    abc: cn.loading.GcGate
+    label: GcGate/<ctor>
+    sha256: 8ff32749a852a1d83829c6a3fac8ec00822f06b5c7177f9ebb43a09287b2101a
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 72
+    abc: cn.loading.GcGate
+    label: GcGate$/reset
+    sha256: c9ad1a6cdcf04b416ceac9b98f1740986e68e7a99be7544a1bb98a8682a85a4a
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 72
+    abc: cn.loading.GcGate
+    label: GcGate$/skip
+    sha256: a00223b7235ef27c13a66128ea077eba6f97da6225b702781cd0f3a87de5589b
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: false
+  features: []
+  note: 无额外服务端改动要求
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: 转场 GC 去重
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: 转场 GC 去重
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: 转场 GC 去重
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/verification/v33-patches-preserved-o8-o12-r2.json

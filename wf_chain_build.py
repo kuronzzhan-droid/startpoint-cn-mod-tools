@@ -32,7 +32,7 @@ import sys
 from pathlib import Path
 
 MOD_DIR = Path(__file__).resolve().parent
-sys.path.insert(0, str(MOD_DIR))
+pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_quest_lib as q  # noqa: E402
 
 FLOOR_T = "master/battle/floor.orderedmap"

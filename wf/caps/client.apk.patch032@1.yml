@@ -1,0 +1,124 @@
+schema: wf-capability/1
+id: client.apk.patch032@1
+title: 稻穗视觉预载
+layer: C
+provided_by:
+  patches:
+  - 32
+  match: all
+  methods:
+  - patch: 32
+    abc: boot_ffc6
+    label: ActionEvaluator/addImpactToSubject
+    sha256: 2cd4d6fee6d01e91a67829603085af9270298c361b492fa6dedab72c707e9a02
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 32
+    abc: boot_ffc6
+    label: BattleCharacterLogic/resolvePathCollection
+    sha256: 4be465684a1346a539ccdcc65221ea64a875fdc0e3ebcd93bb16d47b185b7e93
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+    accepted_variants:
+    - sha256: 1635d24840bc0c5e81cff3730159741f783528dd20bd417838c61c60aafbd8db
+      swf_sha256: 89461f676b57a059bde58fe5897190db9b61013ae63947401fe1bf87106d6bcf
+      source: v35/run2/release-locks.json
+      reason: 有意更新：run1–run5通用入口叠加，旧路径保持依据见各轮README/verify-report；最终SWF方法摘要已复核
+  - patch: 32
+    abc: boot_ffc6
+    label: MemberImpl/applyInstantAbility
+    sha256: 6088e8e59832bca7c260e5f82339395fe1d1fce47c92aa7fa2f0591549052817
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 32
+    abc: cn.mod.InahoAbilityVisuals
+    label: anonymous-method-0
+    sha256: 816387a1f6f4239c71c0ecf7912975bd138d6189b26f38c23063cc64a796f5b5
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 32
+    abc: cn.mod.InahoAbilityVisuals
+    label: InahoAbilityVisuals$/<cinit>
+    sha256: 333e0a1e27815d0ceee55c473fe3dc93d56c63e3bee2b3b4aee8eed6d70191a3
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 32
+    abc: cn.mod.InahoAbilityVisuals
+    label: InahoAbilityVisuals/<ctor>
+    sha256: 8ff32749a852a1d83829c6a3fac8ec00822f06b5c7177f9ebb43a09287b2101a
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 32
+    abc: cn.mod.InahoAbilityVisuals
+    label: InahoAbilityVisuals$/hit
+    sha256: 059ed57a965af38e53d3eff5019be03a4dca66e7193efe2ea6cbb3a6004476fc
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+    accepted_variants:
+    - sha256: 222c889582126fd7c175432656d4cad2e2eca752695872a31103f3b6adcb1cc3
+      swf_sha256: 89461f676b57a059bde58fe5897190db9b61013ae63947401fe1bf87106d6bcf
+      source: v35/run2/release-locks.json
+      reason: 有意更新：run1–run5通用入口叠加，旧路径保持依据见各轮README/verify-report；最终SWF方法摘要已复核
+  - patch: 32
+    abc: cn.mod.InahoAbilityVisuals
+    label: InahoAbilityVisuals$/isInaho
+    sha256: b528f1bff2ea9f0d9315a4a3e6cd921a54f0332578694ff1c9dd67b9a4c7e17e
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 32
+    abc: cn.mod.InahoAbilityVisuals
+    label: InahoAbilityVisuals$/preload
+    sha256: c7b3e8879db4e421c24d024a8a8728d2691947607e54f84ad3b835acaf619d16
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+    accepted_variants:
+    - sha256: 15046c0508ef56fb260ca03e12cc22fef8a5b57b0e779ad70074461faafecfd1
+      swf_sha256: 89461f676b57a059bde58fe5897190db9b61013ae63947401fe1bf87106d6bcf
+      source: v35/run2/release-locks.json
+      reason: 有意更新：run1–run5通用入口叠加，旧路径保持依据见各轮README/verify-report；最终SWF方法摘要已复核
+  - patch: 32
+    abc: cn.mod.InahoAbilityVisuals
+    label: InahoAbilityVisuals$/shot
+    sha256: 5e96be34ca2b05298be3f4e942f7da7d70596b0c8ced94f34a936f1836eef507
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+    accepted_variants:
+    - sha256: ec529cbd0b69317e23117240490cf406a5c41bcd76de8ea9a72dac7454f74143
+      swf_sha256: 89461f676b57a059bde58fe5897190db9b61013ae63947401fe1bf87106d6bcf
+      source: v35/run2/release-locks.json
+      reason: 有意更新：run1–run5通用入口叠加，旧路径保持依据见各轮README/verify-report；最终SWF方法摘要已复核
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: false
+  features: []
+  note: 无额外服务端改动要求
+data_surface:
+  character_ids:
+  - '159991'
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: 稻穗视觉预载
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: 稻穗视觉预载
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: 稻穗视觉预载
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/verification/v33-patches-preserved-o8-o12-r2.json

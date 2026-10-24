@@ -1,0 +1,4748 @@
+{
+  "schema": "wf-local-migration-contract/v1",
+  "contract_id": "local-live-migrations-1-4-312",
+  "terminal_contract_id": "local-live-terminal-1-4-312",
+  "client_tables": [
+    {
+      "owner": "abyss_weapons",
+      "root": "common",
+      "logical_path": "master/shop/event_item_shop.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "9700101",
+          "9700102",
+          "9700103",
+          "9700104",
+          "9700105",
+          "9700106",
+          "9700107",
+          "9700108",
+          "9700109",
+          "9700110",
+          "9700111",
+          "9700112",
+          "9700113",
+          "9700114",
+          "9700115"
+        ],
+        "inner_keys": {}
+      },
+      "preimage": {
+        "source_size": 2306606,
+        "source_sha256": "1f58333dd173592e4bde8ba830e0ed1bee03abbf9a4af1e27ce2d926a26c1bbb",
+        "projection_sha256": "6d78df04e6cd9cfd1cf22bc4c9d1259a50f83f725da852c89d2183eab001ff95",
+        "rows": [
+          {
+            "outer": "9700101",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOeBsOeDrOW3qOWJkSw5NzAwMTAxLDEsMSwi44CQ5rex5riK6L+e5oiY5LiT5bGe44CR5LuF5Zyo5rex5riK6L+e5oiY44CB5a6d54mp5Z+f6L+e5oiYIDIwMDEg5LiO57uD5Lmg5YWz55Sf5pWILOWFtuS9meWFs+WNoeS4juWumOaWueS4gOiHtOOAgiIsKE5vbmUpLGl0ZW0vZXF1aXBtZW50L21vZC9hYnlzcy9maXJlXzAxLDUsKE5vbmUpLCwoTm9uZSksMjM3MDA5OSwxMCwoTm9uZSksLChOb25lKSwsKE5vbmUpLCwyMDAwLTAxLTAxIDAwOjAwOjAwLDIwOTktMTItMzEgMjM6NTk6NTksMCw1LDUsKE5vbmUpLDQsODAwMDEwMSwxLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLGZhbHNl"
+          },
+          {
+            "outer": "9700102",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOeGlOaguOazleadliw5NzAwMTAyLDEsMiwi44CQ5rex5riK6L+e5oiY5LiT5bGe44CR5LuF5Zyo5rex5riK6L+e5oiY44CB5a6d54mp5Z+f6L+e5oiYIDIwMDEg5LiO57uD5Lmg5YWz55Sf5pWILOWFtuS9meWFs+WNoeS4juWumOaWueS4gOiHtOOAgiIsKE5vbmUpLGl0ZW0vZXF1aXBtZW50L21vZC9hYnlzcy9maXJlXzAyLDUsKE5vbmUpLCwoTm9uZSksMjM3MDA5OSwxMCwoTm9uZSksLChOb25lKSwsKE5vbmUpLCwyMDAwLTAxLTAxIDAwOjAwOjAwLDIwOTktMTItMzEgMjM6NTk6NTksMCw1LDUsKE5vbmUpLDQsODAwMDEwMiwxLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLGZhbHNl"
+          },
+          {
+            "outer": "9700103",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOa3sea9rumVv+aeqiw5NzAwMTAzLDEsMywi44CQ5rex5riK6L+e5oiY5LiT5bGe44CR5LuF5Zyo5rex5riK6L+e5oiY44CB5a6d54mp5Z+f6L+e5oiYIDIwMDEg5LiO57uD5Lmg5YWz55Sf5pWILOWFtuS9meWFs+WNoeS4juWumOaWueS4gOiHtOOAgiIsKE5vbmUpLGl0ZW0vZXF1aXBtZW50L21vZC9hYnlzcy93YXRlcl8wMSw1LChOb25lKSwsKE5vbmUpLDIzNzAwOTksMTAsKE5vbmUpLCwoTm9uZSksLChOb25lKSwsMjAwMC0wMS0wMSAwMDowMDowMCwyMDk5LTEyLTMxIDIzOjU5OjU5LDAsNSw1LChOb25lKSw0LDgwMDAxMDMsMSwoTm9uZSksLCwoTm9uZSksLCwoTm9uZSksLCwoTm9uZSksLCwoTm9uZSksLCxmYWxzZQ=="
+          },
+          {
+            "outer": "9700104",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOWGu+a1t+aImOmUmiw5NzAwMTA0LDEsNCwi44CQ5rex5riK6L+e5oiY5LiT5bGe44CR5LuF5Zyo5rex5riK6L+e5oiY44CB5a6d54mp5Z+f6L+e5oiYIDIwMDEg5LiO57uD5Lmg5YWz55Sf5pWILOWFtuS9meWFs+WNoeS4juWumOaWueS4gOiHtOOAgiIsKE5vbmUpLGl0ZW0vZXF1aXBtZW50L21vZC9hYnlzcy93YXRlcl8wMiw1LChOb25lKSwsKE5vbmUpLDIzNzAwOTksMTAsKE5vbmUpLCwoTm9uZSksLChOb25lKSwsMjAwMC0wMS0wMSAwMDowMDowMCwyMDk5LTEyLTMxIDIzOjU5OjU5LDAsNSw1LChOb25lKSw0LDgwMDAxMDQsMSwoTm9uZSksLCwoTm9uZSksLCwoTm9uZSksLCwoTm9uZSksLCwoTm9uZSksLCxmYWxzZQ=="
+          },
+          {
+            "outer": "9700105",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOmbt+m4o+WPjOWIgyw5NzAwMTA1LDEsNSwi44CQ5rex5riK6L+e5oiY5LiT5bGe44CR5LuF5Zyo5rex5riK6L+e5oiY44CB5a6d54mp5Z+f6L+e5oiYIDIwMDEg5LiO57uD5Lmg5YWz55Sf5pWILOWFtuS9meWFs+WNoeS4juWumOaWueS4gOiHtOOAgiIsKE5vbmUpLGl0ZW0vZXF1aXBtZW50L21vZC9hYnlzcy90aHVuZGVyXzAxLDUsKE5vbmUpLCwoTm9uZSksMjM3MDA5OSwxMCwoTm9uZSksLChOb25lKSwsKE5vbmUpLCwyMDAwLTAxLTAxIDAwOjAwOjAwLDIwOTktMTItMzEgMjM6NTk6NTksMCw1LDUsKE5vbmUpLDQsODAwMDEwNSwxLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLGZhbHNl"
+          },
+          {
+            "outer": "9700106",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOi9sOeUteaImOmUpCw5NzAwMTA2LDEsNiwi44CQ5rex5riK6L+e5oiY5LiT5bGe44CR5LuF5Zyo5rex5riK6L+e5oiY44CB5a6d54mp5Z+f6L+e5oiYIDIwMDEg5LiO57uD5Lmg5YWz55Sf5pWILOWFtuS9meWFs+WNoeS4juWumOaWueS4gOiHtOOAgiIsKE5vbmUpLGl0ZW0vZXF1aXBtZW50L21vZC9hYnlzcy90aHVuZGVyXzAyLDUsKE5vbmUpLCwoTm9uZSksMjM3MDA5OSwxMCwoTm9uZSksLChOb25lKSwsKE5vbmUpLCwyMDAwLTAxLTAxIDAwOjAwOjAwLDIwOTktMTItMzEgMjM6NTk6NTksMCw1LDUsKE5vbmUpLDQsODAwMDEwNiwxLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLGZhbHNl"
+          },
+          {
+            "outer": "9700107",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOijguepuuaImOmVsCw5NzAwMTA3LDEsNywi44CQ5rex5riK6L+e5oiY5LiT5bGe44CR5LuF5Zyo5rex5riK6L+e5oiY44CB5a6d54mp5Z+f6L+e5oiYIDIwMDEg5LiO57uD5Lmg5YWz55Sf5pWILOWFtuS9meWFs+WNoeS4juWumOaWueS4gOiHtOOAgiIsKE5vbmUpLGl0ZW0vZXF1aXBtZW50L21vZC9hYnlzcy93aW5kXzAxLDUsKE5vbmUpLCwoTm9uZSksMjM3MDA5OSwxMCwoTm9uZSksLChOb25lKSwsKE5vbmUpLCwyMDAwLTAxLTAxIDAwOjAwOjAwLDIwOTktMTItMzEgMjM6NTk6NTksMCw1LDUsKE5vbmUpLDQsODAwMDEwNywxLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLGZhbHNl"
+          },
+          {
+            "outer": "9700108",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOiLjeWymumVv+W8kyw5NzAwMTA4LDEsOCwi44CQ5rex5riK6L+e5oiY5LiT5bGe44CR5LuF5Zyo5rex5riK6L+e5oiY44CB5a6d54mp5Z+f6L+e5oiYIDIwMDEg5LiO57uD5Lmg5YWz55Sf5pWILOWFtuS9meWFs+WNoeS4juWumOaWueS4gOiHtOOAgiIsKE5vbmUpLGl0ZW0vZXF1aXBtZW50L21vZC9hYnlzcy93aW5kXzAyLDUsKE5vbmUpLCwoTm9uZSksMjM3MDA5OSwxMCwoTm9uZSksLChOb25lKSwsKE5vbmUpLCwyMDAwLTAxLTAxIDAwOjAwOjAwLDIwOTktMTItMzEgMjM6NTk6NTksMCw1LDUsKE5vbmUpLDQsODAwMDEwOCwxLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLGZhbHNl"
+          },
+          {
+            "outer": "9700109",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOaZqOaYn+Wco+WJkSw5NzAwMTA5LDEsOSwi44CQ5rex5riK6L+e5oiY5LiT5bGe44CR5LuF5Zyo5rex5riK6L+e5oiY44CB5a6d54mp5Z+f6L+e5oiYIDIwMDEg5LiO57uD5Lmg5YWz55Sf5pWILOWFtuS9meWFs+WNoeS4juWumOaWueS4gOiHtOOAgiIsKE5vbmUpLGl0ZW0vZXF1aXBtZW50L21vZC9hYnlzcy9saWdodF8wMSw1LChOb25lKSwsKE5vbmUpLDIzNzAwOTksMTAsKE5vbmUpLCwoTm9uZSksLChOb25lKSwsMjAwMC0wMS0wMSAwMDowMDowMCwyMDk5LTEyLTMxIDIzOjU5OjU5LDAsNSw1LChOb25lKSw0LDgwMDAxMDksMSwoTm9uZSksLCwoTm9uZSksLCwoTm9uZSksLCwoTm9uZSksLCwoTm9uZSksLCxmYWxzZQ=="
+          },
+          {
+            "outer": "9700110",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOi+ieeOr+azleWZqCw5NzAwMTEwLDEsMTAsIuOAkOa3sea4iui/nuaImOS4k+WxnuOAkeS7heWcqOa3sea4iui/nuaImOOAgeWuneeJqeWfn+i/nuaImCAyMDAxIOS4jue7g+S5oOWFs+eUn+aViCzlhbbkvZnlhbPljaHkuI7lrpjmlrnkuIDoh7TjgIIiLChOb25lKSxpdGVtL2VxdWlwbWVudC9tb2QvYWJ5c3MvbGlnaHRfMDIsNSwoTm9uZSksLChOb25lKSwyMzcwMDk5LDEwLChOb25lKSwsKE5vbmUpLCwoTm9uZSksLDIwMDAtMDEtMDEgMDA6MDA6MDAsMjA5OS0xMi0zMSAyMzo1OTo1OSwwLDUsNSwoTm9uZSksNCw4MDAwMTEwLDEsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsZmFsc2U="
+          },
+          {
+            "outer": "9700111",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOiagOaciOWkp+WJkSw5NzAwMTExLDEsMTEsIuOAkOa3sea4iui/nuaImOS4k+WxnuOAkeS7heWcqOa3sea4iui/nuaImOOAgeWuneeJqeWfn+i/nuaImCAyMDAxIOS4jue7g+S5oOWFs+eUn+aViCzlhbbkvZnlhbPljaHkuI7lrpjmlrnkuIDoh7TjgIIiLChOb25lKSxpdGVtL2VxdWlwbWVudC9tb2QvYWJ5c3MvZGFya18wMSw1LChOb25lKSwsKE5vbmUpLDIzNzAwOTksMTAsKE5vbmUpLCwoTm9uZSksLChOb25lKSwsMjAwMC0wMS0wMSAwMDowMDowMCwyMDk5LTEyLTMxIDIzOjU5OjU5LDAsNSw1LChOb25lKSw0LDgwMDAxMTEsMSwoTm9uZSksLCwoTm9uZSksLCwoTm9uZSksLCwoTm9uZSksLCwoTm9uZSksLCxmYWxzZQ=="
+          },
+          {
+            "outer": "9700112",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOWGpeeBr+mtlOadliw5NzAwMTEyLDEsMTIsIuOAkOa3sea4iui/nuaImOS4k+WxnuOAkeS7heWcqOa3sea4iui/nuaImOOAgeWuneeJqeWfn+i/nuaImCAyMDAxIOS4jue7g+S5oOWFs+eUn+aViCzlhbbkvZnlhbPljaHkuI7lrpjmlrnkuIDoh7TjgIIiLChOb25lKSxpdGVtL2VxdWlwbWVudC9tb2QvYWJ5c3MvZGFya18wMiw1LChOb25lKSwsKE5vbmUpLDIzNzAwOTksMTAsKE5vbmUpLCwoTm9uZSksLChOb25lKSwsMjAwMC0wMS0wMSAwMDowMDowMCwyMDk5LTEyLTMxIDIzOjU5OjU5LDAsNSw1LChOb25lKSw0LDgwMDAxMTIsMSwoTm9uZSksLCwoTm9uZSksLCwoTm9uZSksLCwoTm9uZSksLCwoTm9uZSksLCxmYWxzZQ=="
+          },
+          {
+            "outer": "9700113",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOa3sea4iuW+geacjeiAhSw5NzAwMTEzLDEsMTMsIuOAkOa3sea4iui/nuaImOS4k+WxnuOAkeS7heWcqOa3sea4iui/nuaImOOAgeWuneeJqeWfn+i/nuaImCAyMDAxIOS4jue7g+S5oOWFs+eUn+aViCzlhbbkvZnlhbPljaHkuI7lrpjmlrnkuIDoh7TjgIIiLChOb25lKSxpdGVtL2VxdWlwbWVudC9tb2QvYWJ5c3MvdW5pdmVyc2FsXzAxLDUsKE5vbmUpLCwoTm9uZSksMjM3MDA5OSwxNSwoTm9uZSksLChOb25lKSwsKE5vbmUpLCwyMDAwLTAxLTAxIDAwOjAwOjAwLDIwOTktMTItMzEgMjM6NTk6NTksMCw1LDUsKE5vbmUpLDQsODAwMDExMywxLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLGZhbHNl"
+          },
+          {
+            "outer": "9700114",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOa3sea4iui9rui9rOaguCw5NzAwMTE0LDEsMTQsIuOAkOa3sea4iui/nuaImOS4k+WxnuOAkeS7heWcqOa3sea4iui/nuaImOOAgeWuneeJqeWfn+i/nuaImCAyMDAxIOS4jue7g+S5oOWFs+eUn+aViCzlhbbkvZnlhbPljaHkuI7lrpjmlrnkuIDoh7TjgIIiLChOb25lKSxpdGVtL2VxdWlwbWVudC9tb2QvYWJ5c3MvdW5pdmVyc2FsXzAyLDUsKE5vbmUpLCwoTm9uZSksMjM3MDA5OSwxNSwoTm9uZSksLChOb25lKSwsKE5vbmUpLCwyMDAwLTAxLTAxIDAwOjAwOjAwLDIwOTktMTItMzEgMjM6NTk6NTksMCw1LDUsKE5vbmUpLDQsODAwMDExNCwxLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLGZhbHNl"
+          },
+          {
+            "outer": "9700115",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOa3sea4iuS4h+ixoemTsyw5NzAwMTE1LDEsMTUsIuOAkOa3sea4iui/nuaImOS4k+WxnuOAkeS7heWcqOa3sea4iui/nuaImOOAgeWuneeJqeWfn+i/nuaImCAyMDAxIOS4jue7g+S5oOWFs+eUn+aViCzlhbbkvZnlhbPljaHkuI7lrpjmlrnkuIDoh7TjgIIiLChOb25lKSxpdGVtL2VxdWlwbWVudC9tb2QvYWJ5c3MvdW5pdmVyc2FsXzAzLDUsKE5vbmUpLCwoTm9uZSksMjM3MDA5OSwxNSwoTm9uZSksLChOb25lKSwsKE5vbmUpLCwyMDAwLTAxLTAxIDAwOjAwOjAwLDIwOTktMTItMzEgMjM6NTk6NTksMCw1LDUsKE5vbmUpLDQsODAwMDExNSwxLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLGZhbHNl"
+          }
+        ]
+      },
+      "terminal": {
+        "source_size": 2306671,
+        "source_sha256": "dcba884cd4c7360b554a4022503fcbf53e2a13aaf05d19b68cdbfe6e99558f9a",
+        "projection_sha256": "aa559ba6e0b48ffb35a62bfb89b0ffa56069b2f212c37bd2e6c98da44437e029",
+        "rows": [
+          {
+            "outer": "9700101",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOa3sea4isK354Gw54Os5beo5YmRLDk3MDAxMDEsMSwxLCLjgJDmt7HmuIrov57miJjkuJPlsZ7jgJHku4XlnKjmt7HmuIrov57miJjjgIHlrp3nianln5/ov57miJggMjAwMSDkuI7nu4PkuaDlhbPnlJ/mlYgs5YW25L2Z5YWz5Y2h5LiO5a6Y5pa55LiA6Ie044CCIiwoTm9uZSksaXRlbS9lcXVpcG1lbnQvbW9kL2FieXNzL2ZpcmVfMDEsNSwoTm9uZSksLChOb25lKSwyMzcwMDk5LDEwLChOb25lKSwsKE5vbmUpLCwoTm9uZSksLDIwMDAtMDEtMDEgMDA6MDA6MDAsMjA5OS0xMi0zMSAyMzo1OTo1OSwwLDUsNSwoTm9uZSksNCw4MDAwMTAxLDEsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsZmFsc2U="
+          },
+          {
+            "outer": "9700102",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOa3sea4isK354aU5qC45rOV5p2WLDk3MDAxMDIsMSwyLCLjgJDmt7HmuIrov57miJjkuJPlsZ7jgJHku4XlnKjmt7HmuIrov57miJjjgIHlrp3nianln5/ov57miJggMjAwMSDkuI7nu4PkuaDlhbPnlJ/mlYgs5YW25L2Z5YWz5Y2h5LiO5a6Y5pa55LiA6Ie044CCIiwoTm9uZSksaXRlbS9lcXVpcG1lbnQvbW9kL2FieXNzL2ZpcmVfMDIsNSwoTm9uZSksLChOb25lKSwyMzcwMDk5LDEwLChOb25lKSwsKE5vbmUpLCwoTm9uZSksLDIwMDAtMDEtMDEgMDA6MDA6MDAsMjA5OS0xMi0zMSAyMzo1OTo1OSwwLDUsNSwoTm9uZSksNCw4MDAwMTAyLDEsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsZmFsc2U="
+          },
+          {
+            "outer": "9700103",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOa3sea4isK35rex5r2u6ZW/5p6qLDk3MDAxMDMsMSwzLCLjgJDmt7HmuIrov57miJjkuJPlsZ7jgJHku4XlnKjmt7HmuIrov57miJjjgIHlrp3nianln5/ov57miJggMjAwMSDkuI7nu4PkuaDlhbPnlJ/mlYgs5YW25L2Z5YWz5Y2h5LiO5a6Y5pa55LiA6Ie044CCIiwoTm9uZSksaXRlbS9lcXVpcG1lbnQvbW9kL2FieXNzL3dhdGVyXzAxLDUsKE5vbmUpLCwoTm9uZSksMjM3MDA5OSwxMCwoTm9uZSksLChOb25lKSwsKE5vbmUpLCwyMDAwLTAxLTAxIDAwOjAwOjAwLDIwOTktMTItMzEgMjM6NTk6NTksMCw1LDUsKE5vbmUpLDQsODAwMDEwMywxLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLGZhbHNl"
+          },
+          {
+            "outer": "9700104",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOa3sea4isK35Ya75rW35oiY6ZSaLDk3MDAxMDQsMSw0LCLjgJDmt7HmuIrov57miJjkuJPlsZ7jgJHku4XlnKjmt7HmuIrov57miJjjgIHlrp3nianln5/ov57miJggMjAwMSDkuI7nu4PkuaDlhbPnlJ/mlYgs5YW25L2Z5YWz5Y2h5LiO5a6Y5pa55LiA6Ie044CCIiwoTm9uZSksaXRlbS9lcXVpcG1lbnQvbW9kL2FieXNzL3dhdGVyXzAyLDUsKE5vbmUpLCwoTm9uZSksMjM3MDA5OSwxMCwoTm9uZSksLChOb25lKSwsKE5vbmUpLCwyMDAwLTAxLTAxIDAwOjAwOjAwLDIwOTktMTItMzEgMjM6NTk6NTksMCw1LDUsKE5vbmUpLDQsODAwMDEwNCwxLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLGZhbHNl"
+          },
+          {
+            "outer": "9700105",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOa3sea4isK36Zu36bij5Y+M5YiDLDk3MDAxMDUsMSw1LCLjgJDmt7HmuIrov57miJjkuJPlsZ7jgJHku4XlnKjmt7HmuIrov57miJjjgIHlrp3nianln5/ov57miJggMjAwMSDkuI7nu4PkuaDlhbPnlJ/mlYgs5YW25L2Z5YWz5Y2h5LiO5a6Y5pa55LiA6Ie044CCIiwoTm9uZSksaXRlbS9lcXVpcG1lbnQvbW9kL2FieXNzL3RodW5kZXJfMDEsNSwoTm9uZSksLChOb25lKSwyMzcwMDk5LDEwLChOb25lKSwsKE5vbmUpLCwoTm9uZSksLDIwMDAtMDEtMDEgMDA6MDA6MDAsMjA5OS0xMi0zMSAyMzo1OTo1OSwwLDUsNSwoTm9uZSksNCw4MDAwMTA1LDEsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsZmFsc2U="
+          },
+          {
+            "outer": "9700106",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOa3sea4isK36L2w55S15oiY6ZSkLDk3MDAxMDYsMSw2LCLjgJDmt7HmuIrov57miJjkuJPlsZ7jgJHku4XlnKjmt7HmuIrov57miJjjgIHlrp3nianln5/ov57miJggMjAwMSDkuI7nu4PkuaDlhbPnlJ/mlYgs5YW25L2Z5YWz5Y2h5LiO5a6Y5pa55LiA6Ie044CCIiwoTm9uZSksaXRlbS9lcXVpcG1lbnQvbW9kL2FieXNzL3RodW5kZXJfMDIsNSwoTm9uZSksLChOb25lKSwyMzcwMDk5LDEwLChOb25lKSwsKE5vbmUpLCwoTm9uZSksLDIwMDAtMDEtMDEgMDA6MDA6MDAsMjA5OS0xMi0zMSAyMzo1OTo1OSwwLDUsNSwoTm9uZSksNCw4MDAwMTA2LDEsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsZmFsc2U="
+          },
+          {
+            "outer": "9700107",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOa3sea4isK36KOC56m65oiY6ZWwLDk3MDAxMDcsMSw3LCLjgJDmt7HmuIrov57miJjkuJPlsZ7jgJHku4XlnKjmt7HmuIrov57miJjjgIHlrp3nianln5/ov57miJggMjAwMSDkuI7nu4PkuaDlhbPnlJ/mlYgs5YW25L2Z5YWz5Y2h5LiO5a6Y5pa55LiA6Ie044CCIiwoTm9uZSksaXRlbS9lcXVpcG1lbnQvbW9kL2FieXNzL3dpbmRfMDEsNSwoTm9uZSksLChOb25lKSwyMzcwMDk5LDEwLChOb25lKSwsKE5vbmUpLCwoTm9uZSksLDIwMDAtMDEtMDEgMDA6MDA6MDAsMjA5OS0xMi0zMSAyMzo1OTo1OSwwLDUsNSwoTm9uZSksNCw4MDAwMTA3LDEsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsZmFsc2U="
+          },
+          {
+            "outer": "9700108",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOa3sea4isK36IuN5bKa6ZW/5byTLDk3MDAxMDgsMSw4LCLjgJDmt7HmuIrov57miJjkuJPlsZ7jgJHku4XlnKjmt7HmuIrov57miJjjgIHlrp3nianln5/ov57miJggMjAwMSDkuI7nu4PkuaDlhbPnlJ/mlYgs5YW25L2Z5YWz5Y2h5LiO5a6Y5pa55LiA6Ie044CCIiwoTm9uZSksaXRlbS9lcXVpcG1lbnQvbW9kL2FieXNzL3dpbmRfMDIsNSwoTm9uZSksLChOb25lKSwyMzcwMDk5LDEwLChOb25lKSwsKE5vbmUpLCwoTm9uZSksLDIwMDAtMDEtMDEgMDA6MDA6MDAsMjA5OS0xMi0zMSAyMzo1OTo1OSwwLDUsNSwoTm9uZSksNCw4MDAwMTA4LDEsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsZmFsc2U="
+          },
+          {
+            "outer": "9700109",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOa3sea4isK35pmo5pif5Zyj5YmRLDk3MDAxMDksMSw5LCLjgJDmt7HmuIrov57miJjkuJPlsZ7jgJHku4XlnKjmt7HmuIrov57miJjjgIHlrp3nianln5/ov57miJggMjAwMSDkuI7nu4PkuaDlhbPnlJ/mlYgs5YW25L2Z5YWz5Y2h5LiO5a6Y5pa55LiA6Ie044CCIiwoTm9uZSksaXRlbS9lcXVpcG1lbnQvbW9kL2FieXNzL2xpZ2h0XzAxLDUsKE5vbmUpLCwoTm9uZSksMjM3MDA5OSwxMCwoTm9uZSksLChOb25lKSwsKE5vbmUpLCwyMDAwLTAxLTAxIDAwOjAwOjAwLDIwOTktMTItMzEgMjM6NTk6NTksMCw1LDUsKE5vbmUpLDQsODAwMDEwOSwxLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLGZhbHNl"
+          },
+          {
+            "outer": "9700110",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOa3sea4isK36L6J546v5rOV5ZmoLDk3MDAxMTAsMSwxMCwi44CQ5rex5riK6L+e5oiY5LiT5bGe44CR5LuF5Zyo5rex5riK6L+e5oiY44CB5a6d54mp5Z+f6L+e5oiYIDIwMDEg5LiO57uD5Lmg5YWz55Sf5pWILOWFtuS9meWFs+WNoeS4juWumOaWueS4gOiHtOOAgiIsKE5vbmUpLGl0ZW0vZXF1aXBtZW50L21vZC9hYnlzcy9saWdodF8wMiw1LChOb25lKSwsKE5vbmUpLDIzNzAwOTksMTAsKE5vbmUpLCwoTm9uZSksLChOb25lKSwsMjAwMC0wMS0wMSAwMDowMDowMCwyMDk5LTEyLTMxIDIzOjU5OjU5LDAsNSw1LChOb25lKSw0LDgwMDAxMTAsMSwoTm9uZSksLCwoTm9uZSksLCwoTm9uZSksLCwoTm9uZSksLCwoTm9uZSksLCxmYWxzZQ=="
+          },
+          {
+            "outer": "9700111",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOa3sea4isK36JqA5pyI5aSn5YmRLDk3MDAxMTEsMSwxMSwi44CQ5rex5riK6L+e5oiY5LiT5bGe44CR5LuF5Zyo5rex5riK6L+e5oiY44CB5a6d54mp5Z+f6L+e5oiYIDIwMDEg5LiO57uD5Lmg5YWz55Sf5pWILOWFtuS9meWFs+WNoeS4juWumOaWueS4gOiHtOOAgiIsKE5vbmUpLGl0ZW0vZXF1aXBtZW50L21vZC9hYnlzcy9kYXJrXzAxLDUsKE5vbmUpLCwoTm9uZSksMjM3MDA5OSwxMCwoTm9uZSksLChOb25lKSwsKE5vbmUpLCwyMDAwLTAxLTAxIDAwOjAwOjAwLDIwOTktMTItMzEgMjM6NTk6NTksMCw1LDUsKE5vbmUpLDQsODAwMDExMSwxLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLGZhbHNl"
+          },
+          {
+            "outer": "9700112",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOa3sea4isK35Yal54Gv6a2U5p2WLDk3MDAxMTIsMSwxMiwi44CQ5rex5riK6L+e5oiY5LiT5bGe44CR5LuF5Zyo5rex5riK6L+e5oiY44CB5a6d54mp5Z+f6L+e5oiYIDIwMDEg5LiO57uD5Lmg5YWz55Sf5pWILOWFtuS9meWFs+WNoeS4juWumOaWueS4gOiHtOOAgiIsKE5vbmUpLGl0ZW0vZXF1aXBtZW50L21vZC9hYnlzcy9kYXJrXzAyLDUsKE5vbmUpLCwoTm9uZSksMjM3MDA5OSwxMCwoTm9uZSksLChOb25lKSwsKE5vbmUpLCwyMDAwLTAxLTAxIDAwOjAwOjAwLDIwOTktMTItMzEgMjM6NTk6NTksMCw1LDUsKE5vbmUpLDQsODAwMDExMiwxLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLChOb25lKSwsLGZhbHNl"
+          },
+          {
+            "outer": "9700113",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOa3sea4isK35b6B5pyN6ICFLDk3MDAxMTMsMSwxMywi44CQ5rex5riK6L+e5oiY5LiT5bGe44CR5LuF5Zyo5rex5riK6L+e5oiY44CB5a6d54mp5Z+f6L+e5oiYIDIwMDEg5LiO57uD5Lmg5YWz55Sf5pWILOWFtuS9meWFs+WNoeS4juWumOaWueS4gOiHtOOAgiIsKE5vbmUpLGl0ZW0vZXF1aXBtZW50L21vZC9hYnlzcy91bml2ZXJzYWxfMDEsNSwoTm9uZSksLChOb25lKSwyMzcwMDk5LDE1LChOb25lKSwsKE5vbmUpLCwoTm9uZSksLDIwMDAtMDEtMDEgMDA6MDA6MDAsMjA5OS0xMi0zMSAyMzo1OTo1OSwwLDUsNSwoTm9uZSksNCw4MDAwMTEzLDEsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsZmFsc2U="
+          },
+          {
+            "outer": "9700114",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOa3sea4isK36L2u6L2s5qC4LDk3MDAxMTQsMSwxNCwi44CQ5rex5riK6L+e5oiY5LiT5bGe44CR5LuF5Zyo5rex5riK6L+e5oiY44CB5a6d54mp5Z+f6L+e5oiYIDIwMDEg5LiO57uD5Lmg5YWz55Sf5pWILOWFtuS9meWFs+WNoeS4juWumOaWueS4gOiHtOOAgiIsKE5vbmUpLGl0ZW0vZXF1aXBtZW50L21vZC9hYnlzcy91bml2ZXJzYWxfMDIsNSwoTm9uZSksLChOb25lKSwyMzcwMDk5LDE1LChOb25lKSwsKE5vbmUpLCwoTm9uZSksLDIwMDAtMDEtMDEgMDA6MDA6MDAsMjA5OS0xMi0zMSAyMzo1OTo1OSwwLDUsNSwoTm9uZSksNCw4MDAwMTE0LDEsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsZmFsc2U="
+          },
+          {
+            "outer": "9700115",
+            "inner": null,
+            "row_base64": "Niw3MDAwOTksMTEsKE5vbmUpLChOb25lKSwsKE5vbmUpLOa3sea4isK35LiH6LGh6ZOzLDk3MDAxMTUsMSwxNSwi44CQ5rex5riK6L+e5oiY5LiT5bGe44CR5LuF5Zyo5rex5riK6L+e5oiY44CB5a6d54mp5Z+f6L+e5oiYIDIwMDEg5LiO57uD5Lmg5YWz55Sf5pWILOWFtuS9meWFs+WNoeS4juWumOaWueS4gOiHtOOAgiIsKE5vbmUpLGl0ZW0vZXF1aXBtZW50L21vZC9hYnlzcy91bml2ZXJzYWxfMDMsNSwoTm9uZSksLChOb25lKSwyMzcwMDk5LDE1LChOb25lKSwsKE5vbmUpLCwoTm9uZSksLDIwMDAtMDEtMDEgMDA6MDA6MDAsMjA5OS0xMi0zMSAyMzo1OTo1OSwwLDUsNSwoTm9uZSksNCw4MDAwMTE1LDEsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsKE5vbmUpLCwsZmFsc2U="
+          }
+        ]
+      }
+    }
+  ],
+  "server_members": [
+    {
+      "owner": "lafu_lunar_ny",
+      "logical_path": "cdndata/character.json",
+      "selector": {
+        "kind": "object_keys",
+        "path": [],
+        "keys": [
+          "169998"
+        ]
+      },
+      "preimage_sha256": "62771ef194fba7e9562fea9d234d27ca059426ae8ccaa6e1b5696e538d6289ca",
+      "terminal_sha256": "10316ad4c818974f3d867c335ff905da5843f5306e9add1204d12a1b56d813e8",
+      "preimage": {
+        "169998": [
+          [
+            "touyakiren_ceo_ny26",
+            "1",
+            "5",
+            "5",
+            "Human,Machine",
+            "",
+            "4",
+            "Female",
+            "touyakiren_ceo_ny26",
+            "(None)",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "169998",
+            "绯樱夜宴",
+            "1699981",
+            "1699982",
+            "1699983",
+            "1699984",
+            "1699985",
+            "1699986",
+            "2",
+            "Supporter",
+            "169998",
+            "(None)",
+            "1",
+            "false",
+            "true",
+            "1",
+            "1",
+            "",
+            "",
+            "6,6,6,6,6,6"
+          ]
+        ]
+      },
+      "terminal": {
+        "169998": [
+          [
+            "touyakiren_ceo_ny26",
+            "1",
+            "5",
+            "5",
+            "Human,Machine",
+            "",
+            "4",
+            "Female",
+            "touyakiren_ceo_ny26",
+            "(None)",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "169998",
+            "绯樱·夜宴序曲",
+            "1699981",
+            "1699982",
+            "1699983",
+            "1699984",
+            "1699985",
+            "1699986",
+            "2",
+            "Supporter",
+            "169998",
+            "(None)",
+            "1",
+            "false",
+            "true",
+            "1",
+            "1",
+            "",
+            "",
+            "6,6,6,6,6,6"
+          ]
+        ]
+      }
+    },
+    {
+      "owner": "lafu_lunar_ny",
+      "logical_path": "cdndata/character_text.json",
+      "selector": {
+        "kind": "object_keys",
+        "path": [],
+        "keys": [
+          "169998"
+        ]
+      },
+      "preimage_sha256": "7d10b642bffe834418a54aab74ed4c6f273c9fa0ca11211a5d7d3d87850dbecc",
+      "terminal_sha256": "807836e03edfd40408c59cb227036e99d3aaecb0f426516f36af838806b860b4",
+      "preimage": {
+        "169998": [
+          [
+            "拉芙",
+            "LAFU",
+            "表面上是大型企业集团“统夜企联”的代表公司“DayAndNight”的年轻社长。实则是统夜企联通过人才培育计划“创神计划”所创造出的“超人”。",
+            "永夜女王",
+            "诛罚机构唱诗班",
+            "呼叫巨型机甲兵器、对场上所有敌人造成暗属性伤害／赋予暗属性队员技能伤害提升效果／赋予光属性队员攻击力提升效果",
+            "诛罚机构唱诗班＋",
+            "呼叫巨型机甲兵器、对场上所有敌人造成暗属性伤害／赋予暗属性队员技能伤害提升效果／赋予光属性队员攻击力提升效果",
+            "诛罚机构唱诗班＋＋",
+            "呼叫巨型机甲兵器、对场上所有敌人造成暗属性伤害／赋予暗属性队员技能伤害提升效果／赋予光属性队员攻击力提升效果",
+            "绯樱夜宴",
+            "冲佳苗"
+          ]
+        ]
+      },
+      "terminal": {
+        "169998": [
+          [
+            "拉芙",
+            "LAFU",
+            "统夜企联的年轻社长在新春夜宴上换下了机甲王座，披上绯樱纹样的和服。霓虹灯笼与团扇之间，她仍然握着那根权杖——只是这一次，被入侵的是宴席上所有不请自来的机械。",
+            "NY★绯樱夜宴",
+            "诛罚机构·绯樱唱诗班",
+            "破坏全场敌人的弱点，呼叫巨型机甲兵器，对场上所有敌人造成伤害／施展黑客技巧，赋予技能命中的敌人「系统入侵」效果（持续时间20秒）／赋予队伍中角色及协力球「攻击力上升」效果（攻击力+150%，持续时间20秒）",
+            "诛罚机构·绯樱唱诗班＋",
+            "破坏全场敌人的弱点，呼叫巨型机甲兵器，对场上所有敌人造成伤害／施展黑客技巧，赋予技能命中的敌人「系统入侵」效果（持续时间20秒）／赋予队伍中角色及协力球「攻击力上升」效果（攻击力+150%，持续时间20秒）",
+            "诛罚机构·绯樱唱诗班＋＋",
+            "破坏全场敌人的弱点，呼叫巨型机甲兵器，对场上所有敌人造成伤害／施展黑客技巧，赋予技能命中的敌人「系统入侵」效果（持续时间20秒）／赋予队伍中角色及协力球「攻击力上升」效果（攻击力+150%，持续时间20秒）",
+            "绯樱·夜宴序曲",
+            "冲佳苗"
+          ]
+        ]
+      }
+    },
+    {
+      "owner": "lafu_lunar_ny",
+      "logical_path": "character.json",
+      "selector": {
+        "kind": "object_keys",
+        "path": [],
+        "keys": [
+          "169998"
+        ]
+      },
+      "preimage_sha256": "de293fe6638459b8cfb9a2e72a2fa88eca6742053dee82656d89b94bab7aa007",
+      "terminal_sha256": "de293fe6638459b8cfb9a2e72a2fa88eca6742053dee82656d89b94bab7aa007",
+      "preimage": {
+        "169998": {
+          "name": "拉芙",
+          "rarity": 5,
+          "element": 5,
+          "skill_count": 6
+        }
+      },
+      "terminal": {
+        "169998": {
+          "name": "拉芙",
+          "rarity": 5,
+          "element": 5,
+          "skill_count": 6
+        }
+      }
+    },
+    {
+      "owner": "lafu_lunar_ny",
+      "logical_path": "mana_node.json",
+      "selector": {
+        "kind": "object_keys",
+        "path": [],
+        "keys": [
+          "169998"
+        ]
+      },
+      "preimage_sha256": "4d6d8d84f87a4002fa8e198afe5e4b93c441401cf51f1a18b52c11d20bfb0b34",
+      "terminal_sha256": "4d6d8d84f87a4002fa8e198afe5e4b93c441401cf51f1a18b52c11d20bfb0b34",
+      "preimage": {
+        "169998": {
+          "1": {
+            "339996201": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "1",
+              "items": {
+                "42": 3
+              },
+              "manaCost": 60
+            },
+            "339996202": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "1",
+              "items": {
+                "42": 5
+              },
+              "manaCost": 100
+            },
+            "339996203": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "1",
+              "items": {
+                "42": 5
+              },
+              "manaCost": 100
+            },
+            "339996204": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "1",
+              "items": {
+                "42": 6
+              },
+              "manaCost": 160
+            },
+            "339996205": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "1",
+              "items": {
+                "42": 12
+              },
+              "manaCost": 240
+            },
+            "339996206": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "1",
+              "items": {
+                "42": 5,
+                "43": 3
+              },
+              "manaCost": 340
+            },
+            "339996207": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "2",
+              "items": {
+                "42": 5,
+                "43": 3
+              },
+              "manaCost": 340
+            },
+            "339996208": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "2",
+              "items": {
+                "42": 8,
+                "43": 3
+              },
+              "manaCost": 400
+            },
+            "339996209": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "2",
+              "items": {
+                "42": 8,
+                "43": 3
+              },
+              "manaCost": 400
+            },
+            "339996210": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "2",
+              "items": {
+                "42": 10,
+                "43": 5
+              },
+              "manaCost": 640
+            },
+            "339996211": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "2",
+              "items": {
+                "42": 14,
+                "43": 12
+              },
+              "manaCost": 1320
+            },
+            "339996212": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "2",
+              "items": {
+                "42": 10,
+                "43": 8,
+                "44": 3
+              },
+              "manaCost": 1480
+            },
+            "339996213": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "3",
+              "items": {
+                "42": 18,
+                "43": 10,
+                "44": 6,
+                "45": 1
+              },
+              "manaCost": 3160
+            },
+            "339996214": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "3",
+              "items": {
+                "43": 12,
+                "44": 8,
+                "45": 3,
+                "99": 1
+              },
+              "manaCost": 7120
+            },
+            "339996215": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "3",
+              "items": {
+                "43": 12,
+                "44": 8,
+                "45": 3,
+                "99": 1
+              },
+              "manaCost": 7120
+            },
+            "339996216": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "3",
+              "items": {
+                "43": 14,
+                "44": 10,
+                "45": 3,
+                "99": 3
+              },
+              "manaCost": 13280
+            },
+            "339996217": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "3",
+              "items": {
+                "43": 16,
+                "44": 12,
+                "45": 5,
+                "99": 8
+              },
+              "manaCost": 18000
+            },
+            "339996218": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "3",
+              "items": {
+                "43": 16,
+                "44": 12,
+                "45": 5,
+                "99": 8
+              },
+              "manaCost": 18000
+            },
+            "339996219": {
+              "field1": "0",
+              "field5": "2",
+              "field6": "",
+              "items": {
+                "42": 8,
+                "43": 6,
+                "44": 3
+              },
+              "manaCost": 1280
+            },
+            "339996220": {
+              "field1": "0",
+              "field5": "1",
+              "field6": "",
+              "items": {
+                "42": 35,
+                "43": 10,
+                "44": 5
+              },
+              "manaCost": 2120
+            },
+            "339996221": {
+              "field1": "0",
+              "field5": "1",
+              "field6": "",
+              "items": {
+                "42": 60,
+                "43": 18,
+                "44": 12
+              },
+              "manaCost": 4380
+            },
+            "339996222": {
+              "field1": "0",
+              "field5": "1",
+              "field6": "",
+              "items": {
+                "43": 14,
+                "44": 10,
+                "45": 5,
+                "99": 5
+              },
+              "manaCost": 16400
+            },
+            "339996223": {
+              "field1": "0",
+              "field5": "1",
+              "field6": "",
+              "items": {
+                "43": 14,
+                "44": 10,
+                "45": 5,
+                "99": 5
+              },
+              "manaCost": 16800
+            }
+          },
+          "2": {
+            "339996401": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "4",
+              "items": {
+                "44": 10,
+                "45": 8,
+                "62": 10,
+                "99": 3
+              },
+              "manaCost": 4500
+            },
+            "339996402": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "4",
+              "items": {
+                "44": 12,
+                "45": 10,
+                "62": 12,
+                "99": 3
+              },
+              "manaCost": 5050
+            },
+            "339996403": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "4",
+              "items": {
+                "44": 18,
+                "45": 12,
+                "62": 12,
+                "63": 2,
+                "99": 5
+              },
+              "manaCost": 5600
+            },
+            "339996404": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "4",
+              "items": {
+                "45": 14,
+                "62": 14,
+                "63": 4,
+                "64": 1,
+                "99": 5
+              },
+              "manaCost": 6240
+            },
+            "339996405": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "4",
+              "items": {
+                "45": 16,
+                "62": 16,
+                "63": 6,
+                "64": 2,
+                "99": 8
+              },
+              "manaCost": 8360
+            },
+            "339996406": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "4",
+              "items": {
+                "45": 20,
+                "62": 20,
+                "63": 10,
+                "64": 4,
+                "99": 8
+              },
+              "manaCost": 10200
+            },
+            "339996407": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "5",
+              "items": {
+                "44": 16,
+                "45": 8,
+                "62": 12,
+                "63": 4,
+                "99": 3
+              },
+              "manaCost": 5100
+            },
+            "339996408": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "5",
+              "items": {
+                "44": 20,
+                "45": 10,
+                "62": 12,
+                "63": 5,
+                "99": 5
+              },
+              "manaCost": 5900
+            },
+            "339996409": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "5",
+              "items": {
+                "45": 12,
+                "62": 14,
+                "63": 6,
+                "64": 2,
+                "99": 5
+              },
+              "manaCost": 7420
+            },
+            "339996410": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "5",
+              "items": {
+                "45": 14,
+                "62": 16,
+                "63": 8,
+                "64": 4,
+                "99": 8
+              },
+              "manaCost": 10000
+            },
+            "339996411": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "5",
+              "items": {
+                "45": 16,
+                "62": 20,
+                "63": 10,
+                "64": 6,
+                "99": 8
+              },
+              "manaCost": 12700
+            },
+            "339996412": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "5",
+              "items": {
+                "45": 18,
+                "62": 24,
+                "63": 15,
+                "64": 10,
+                "99": 10
+              },
+              "manaCost": 14100
+            },
+            "339996413": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "6",
+              "items": {
+                "45": 10,
+                "62": 14,
+                "63": 6,
+                "64": 2,
+                "99": 5
+              },
+              "manaCost": 7300
+            },
+            "339996414": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "6",
+              "items": {
+                "45": 12,
+                "62": 18,
+                "63": 8,
+                "64": 4,
+                "99": 5
+              },
+              "manaCost": 9980
+            },
+            "339996415": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "6",
+              "items": {
+                "45": 14,
+                "62": 18,
+                "63": 10,
+                "64": 6,
+                "99": 8
+              },
+              "manaCost": 12250
+            },
+            "339996416": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "6",
+              "items": {
+                "45": 16,
+                "62": 20,
+                "63": 12,
+                "64": 8,
+                "99": 8
+              },
+              "manaCost": 14600
+            },
+            "339996417": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "6",
+              "items": {
+                "45": 18,
+                "62": 24,
+                "63": 16,
+                "64": 10,
+                "99": 10
+              },
+              "manaCost": 18300
+            },
+            "339996418": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "6",
+              "items": {
+                "45": 22,
+                "62": 28,
+                "63": 20,
+                "64": 15,
+                "99": 10
+              },
+              "manaCost": 22400
+            }
+          }
+        }
+      },
+      "terminal": {
+        "169998": {
+          "1": {
+            "339996201": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "1",
+              "items": {
+                "42": 3
+              },
+              "manaCost": 60
+            },
+            "339996202": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "1",
+              "items": {
+                "42": 5
+              },
+              "manaCost": 100
+            },
+            "339996203": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "1",
+              "items": {
+                "42": 5
+              },
+              "manaCost": 100
+            },
+            "339996204": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "1",
+              "items": {
+                "42": 6
+              },
+              "manaCost": 160
+            },
+            "339996205": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "1",
+              "items": {
+                "42": 12
+              },
+              "manaCost": 240
+            },
+            "339996206": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "1",
+              "items": {
+                "42": 5,
+                "43": 3
+              },
+              "manaCost": 340
+            },
+            "339996207": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "2",
+              "items": {
+                "42": 5,
+                "43": 3
+              },
+              "manaCost": 340
+            },
+            "339996208": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "2",
+              "items": {
+                "42": 8,
+                "43": 3
+              },
+              "manaCost": 400
+            },
+            "339996209": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "2",
+              "items": {
+                "42": 8,
+                "43": 3
+              },
+              "manaCost": 400
+            },
+            "339996210": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "2",
+              "items": {
+                "42": 10,
+                "43": 5
+              },
+              "manaCost": 640
+            },
+            "339996211": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "2",
+              "items": {
+                "42": 14,
+                "43": 12
+              },
+              "manaCost": 1320
+            },
+            "339996212": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "2",
+              "items": {
+                "42": 10,
+                "43": 8,
+                "44": 3
+              },
+              "manaCost": 1480
+            },
+            "339996213": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "3",
+              "items": {
+                "42": 18,
+                "43": 10,
+                "44": 6,
+                "45": 1
+              },
+              "manaCost": 3160
+            },
+            "339996214": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "3",
+              "items": {
+                "43": 12,
+                "44": 8,
+                "45": 3,
+                "99": 1
+              },
+              "manaCost": 7120
+            },
+            "339996215": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "3",
+              "items": {
+                "43": 12,
+                "44": 8,
+                "45": 3,
+                "99": 1
+              },
+              "manaCost": 7120
+            },
+            "339996216": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "3",
+              "items": {
+                "43": 14,
+                "44": 10,
+                "45": 3,
+                "99": 3
+              },
+              "manaCost": 13280
+            },
+            "339996217": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "3",
+              "items": {
+                "43": 16,
+                "44": 12,
+                "45": 5,
+                "99": 8
+              },
+              "manaCost": 18000
+            },
+            "339996218": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "3",
+              "items": {
+                "43": 16,
+                "44": 12,
+                "45": 5,
+                "99": 8
+              },
+              "manaCost": 18000
+            },
+            "339996219": {
+              "field1": "0",
+              "field5": "2",
+              "field6": "",
+              "items": {
+                "42": 8,
+                "43": 6,
+                "44": 3
+              },
+              "manaCost": 1280
+            },
+            "339996220": {
+              "field1": "0",
+              "field5": "1",
+              "field6": "",
+              "items": {
+                "42": 35,
+                "43": 10,
+                "44": 5
+              },
+              "manaCost": 2120
+            },
+            "339996221": {
+              "field1": "0",
+              "field5": "1",
+              "field6": "",
+              "items": {
+                "42": 60,
+                "43": 18,
+                "44": 12
+              },
+              "manaCost": 4380
+            },
+            "339996222": {
+              "field1": "0",
+              "field5": "1",
+              "field6": "",
+              "items": {
+                "43": 14,
+                "44": 10,
+                "45": 5,
+                "99": 5
+              },
+              "manaCost": 16400
+            },
+            "339996223": {
+              "field1": "0",
+              "field5": "1",
+              "field6": "",
+              "items": {
+                "43": 14,
+                "44": 10,
+                "45": 5,
+                "99": 5
+              },
+              "manaCost": 16800
+            }
+          },
+          "2": {
+            "339996401": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "4",
+              "items": {
+                "44": 10,
+                "45": 8,
+                "62": 10,
+                "99": 3
+              },
+              "manaCost": 4500
+            },
+            "339996402": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "4",
+              "items": {
+                "44": 12,
+                "45": 10,
+                "62": 12,
+                "99": 3
+              },
+              "manaCost": 5050
+            },
+            "339996403": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "4",
+              "items": {
+                "44": 18,
+                "45": 12,
+                "62": 12,
+                "63": 2,
+                "99": 5
+              },
+              "manaCost": 5600
+            },
+            "339996404": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "4",
+              "items": {
+                "45": 14,
+                "62": 14,
+                "63": 4,
+                "64": 1,
+                "99": 5
+              },
+              "manaCost": 6240
+            },
+            "339996405": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "4",
+              "items": {
+                "45": 16,
+                "62": 16,
+                "63": 6,
+                "64": 2,
+                "99": 8
+              },
+              "manaCost": 8360
+            },
+            "339996406": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "4",
+              "items": {
+                "45": 20,
+                "62": 20,
+                "63": 10,
+                "64": 4,
+                "99": 8
+              },
+              "manaCost": 10200
+            },
+            "339996407": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "5",
+              "items": {
+                "44": 16,
+                "45": 8,
+                "62": 12,
+                "63": 4,
+                "99": 3
+              },
+              "manaCost": 5100
+            },
+            "339996408": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "5",
+              "items": {
+                "44": 20,
+                "45": 10,
+                "62": 12,
+                "63": 5,
+                "99": 5
+              },
+              "manaCost": 5900
+            },
+            "339996409": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "5",
+              "items": {
+                "45": 12,
+                "62": 14,
+                "63": 6,
+                "64": 2,
+                "99": 5
+              },
+              "manaCost": 7420
+            },
+            "339996410": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "5",
+              "items": {
+                "45": 14,
+                "62": 16,
+                "63": 8,
+                "64": 4,
+                "99": 8
+              },
+              "manaCost": 10000
+            },
+            "339996411": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "5",
+              "items": {
+                "45": 16,
+                "62": 20,
+                "63": 10,
+                "64": 6,
+                "99": 8
+              },
+              "manaCost": 12700
+            },
+            "339996412": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "5",
+              "items": {
+                "45": 18,
+                "62": 24,
+                "63": 15,
+                "64": 10,
+                "99": 10
+              },
+              "manaCost": 14100
+            },
+            "339996413": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "6",
+              "items": {
+                "45": 10,
+                "62": 14,
+                "63": 6,
+                "64": 2,
+                "99": 5
+              },
+              "manaCost": 7300
+            },
+            "339996414": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "6",
+              "items": {
+                "45": 12,
+                "62": 18,
+                "63": 8,
+                "64": 4,
+                "99": 5
+              },
+              "manaCost": 9980
+            },
+            "339996415": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "6",
+              "items": {
+                "45": 14,
+                "62": 18,
+                "63": 10,
+                "64": 6,
+                "99": 8
+              },
+              "manaCost": 12250
+            },
+            "339996416": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "6",
+              "items": {
+                "45": 16,
+                "62": 20,
+                "63": 12,
+                "64": 8,
+                "99": 8
+              },
+              "manaCost": 14600
+            },
+            "339996417": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "6",
+              "items": {
+                "45": 18,
+                "62": 24,
+                "63": 16,
+                "64": 10,
+                "99": 10
+              },
+              "manaCost": 18300
+            },
+            "339996418": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "6",
+              "items": {
+                "45": 22,
+                "62": 28,
+                "63": 20,
+                "64": 15,
+                "99": 10
+              },
+              "manaCost": 22400
+            }
+          }
+        }
+      }
+    },
+    {
+      "owner": "ginovi",
+      "logical_path": "cdndata/character.json",
+      "selector": {
+        "kind": "object_keys",
+        "path": [],
+        "keys": [
+          "169999"
+        ]
+      },
+      "preimage_sha256": "eb842af02acca7562ed689af72349b7fef4f6ff6a82b2a10daa3eccaedd1a0da",
+      "terminal_sha256": "eb842af02acca7562ed689af72349b7fef4f6ff6a82b2a10daa3eccaedd1a0da",
+      "preimage": {
+        "169999": [
+          [
+            "ginovi",
+            "1",
+            "5",
+            "5",
+            "Human,Beast",
+            "",
+            "3",
+            "Male",
+            "ginovi",
+            "(None)",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "169999",
+            "破契的黑翼",
+            "1699991",
+            "1699992",
+            "1699993",
+            "1699994",
+            "1699995",
+            "1699996",
+            "1",
+            "Attacker",
+            "169999",
+            "(None)",
+            "1",
+            "false",
+            "true",
+            "0",
+            "0",
+            "0",
+            "true",
+            "6,6,6,6,6,6"
+          ]
+        ]
+      },
+      "terminal": {
+        "169999": [
+          [
+            "ginovi",
+            "1",
+            "5",
+            "5",
+            "Human,Beast",
+            "",
+            "3",
+            "Male",
+            "ginovi",
+            "(None)",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "169999",
+            "破契的黑翼",
+            "1699991",
+            "1699992",
+            "1699993",
+            "1699994",
+            "1699995",
+            "1699996",
+            "1",
+            "Attacker",
+            "169999",
+            "(None)",
+            "1",
+            "false",
+            "true",
+            "0",
+            "0",
+            "0",
+            "true",
+            "6,6,6,6,6,6"
+          ]
+        ]
+      }
+    },
+    {
+      "owner": "ginovi",
+      "logical_path": "cdndata/character_text.json",
+      "selector": {
+        "kind": "object_keys",
+        "path": [],
+        "keys": [
+          "169999"
+        ]
+      },
+      "preimage_sha256": "a3a5a3f619a82d2b15d40fd29e4c36e9aea2236e07b0ed51fb769bc7a1ead37a",
+      "terminal_sha256": "110667a44429afbb08c27ff5fb7a59a2728200902662c0090444fb6e5d3a66da",
+      "preimage": {
+        "169999": [
+          [
+            "基诺维",
+            "LAFU",
+            "统夜集团旗下企业DayAndNight的前社长。暗黑帅气的死神风格是对帕尔佩布拉进行研究后得到的成果。为了自己选定的理由，走下神之宝座的少女决定向前迈出脚步。",
+            "HW★暗夜少女",
+            "自律机构安魂曲",
+            "向距离最近的敌人突进，接触到敌人或经过一段时间后挥舞镰刀对自身周围进行劈砍，对敌人造成暗属性伤害／赋予全体队员技能伤害提升效果",
+            "自律机构安魂曲＋",
+            "向距离最近的敌人突进，接触到敌人或经过一段时间后挥舞镰刀对自身周围进行劈砍，对敌人造成暗属性伤害／赋予全体队员技能伤害提升效果",
+            "(None)",
+            "(None)",
+            "破契的黑翼",
+            "冲佳苗"
+          ]
+        ]
+      },
+      "terminal": {
+        "169999": [
+          [
+            "基诺维",
+            "GINOVI",
+            "挣脱旧契约的黑鸦刺客。曾是受雇于黑鸦组织的冷血杀手，因一次任务中无法解释的心跳而停下了刀。如今作为护卫，把黑色的羽翼张开在想要守护的人身侧。冰蓝的眼睛在夜里，只为一个人亮着。",
+            "破契的黑鸦",
+            "掠影协奏",
+            "牺牲自身的生命值化作黑影掠过战场，为全体队员注入黑翼的加护（伤害提升／直接攻击变为2次／技能伤害提升／最大生命值15%的护盾），展开黑羽光环，并在12秒内获得贯通效果；首次发动时缔结血契，夺取全体队员95%的生命值，并为全体队员张开最大生命值60%的护盾",
+            "掠影协奏＋",
+            "牺牲自身的生命值化作黑影掠过战场，为全体队员注入黑翼的加护（伤害提升／直接攻击变为2次／技能伤害提升／最大生命值15%的护盾），展开黑羽光环，并在12秒内获得贯通效果；首次发动时缔结血契，夺取全体队员95%的生命值，并为全体队员张开最大生命值60%的护盾",
+            "(None)",
+            "(None)",
+            "破契的黑翼",
+            "AI"
+          ]
+        ]
+      }
+    },
+    {
+      "owner": "ginovi",
+      "logical_path": "character.json",
+      "selector": {
+        "kind": "object_keys",
+        "path": [],
+        "keys": [
+          "169999"
+        ]
+      },
+      "preimage_sha256": "6b8f6273dfbe5bb5ffbf91be4c77e0264d504f3e1222463ab67e036a1eb05195",
+      "terminal_sha256": "6b8f6273dfbe5bb5ffbf91be4c77e0264d504f3e1222463ab67e036a1eb05195",
+      "preimage": {
+        "169999": {
+          "element": 5,
+          "name": "基诺维",
+          "rarity": 5,
+          "skill_count": 6
+        }
+      },
+      "terminal": {
+        "169999": {
+          "element": 5,
+          "name": "基诺维",
+          "rarity": 5,
+          "skill_count": 6
+        }
+      }
+    },
+    {
+      "owner": "ginovi",
+      "logical_path": "mana_node.json",
+      "selector": {
+        "kind": "object_keys",
+        "path": [],
+        "keys": [
+          "169999"
+        ]
+      },
+      "preimage_sha256": "5a3c2f48f99b4964b07f009d283cdfd86782aa92a31c6f816083172b4e1b53da",
+      "terminal_sha256": "5a3c2f48f99b4964b07f009d283cdfd86782aa92a31c6f816083172b4e1b53da",
+      "preimage": {
+        "169999": {
+          "1": {
+            "339998201": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "1",
+              "items": {
+                "42": 3
+              },
+              "manaCost": 60
+            },
+            "339998202": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "1",
+              "items": {
+                "42": 5
+              },
+              "manaCost": 100
+            },
+            "339998203": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "1",
+              "items": {
+                "42": 5
+              },
+              "manaCost": 100
+            },
+            "339998204": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "1",
+              "items": {
+                "42": 8
+              },
+              "manaCost": 160
+            },
+            "339998205": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "1",
+              "items": {
+                "42": 12
+              },
+              "manaCost": 240
+            },
+            "339998206": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "1",
+              "items": {
+                "42": 5,
+                "43": 3
+              },
+              "manaCost": 340
+            },
+            "339998207": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "2",
+              "items": {
+                "42": 5,
+                "43": 3
+              },
+              "manaCost": 340
+            },
+            "339998208": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "2",
+              "items": {
+                "42": 8,
+                "43": 3
+              },
+              "manaCost": 400
+            },
+            "339998209": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "2",
+              "items": {
+                "42": 8,
+                "43": 3
+              },
+              "manaCost": 400
+            },
+            "339998210": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "2",
+              "items": {
+                "42": 12,
+                "43": 5
+              },
+              "manaCost": 640
+            },
+            "339998211": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "2",
+              "items": {
+                "42": 18,
+                "43": 12
+              },
+              "manaCost": 1320
+            },
+            "339998212": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "2",
+              "items": {
+                "42": 12,
+                "43": 8,
+                "44": 3
+              },
+              "manaCost": 1480
+            },
+            "339998213": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "3",
+              "items": {
+                "42": 18,
+                "43": 10,
+                "44": 8,
+                "45": 1
+              },
+              "manaCost": 3160
+            },
+            "339998214": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "3",
+              "items": {
+                "42": 60,
+                "43": 24,
+                "44": 14,
+                "45": 3,
+                "99": 1
+              },
+              "manaCost": 7120
+            },
+            "339998215": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "3",
+              "items": {
+                "42": 60,
+                "43": 24,
+                "44": 14,
+                "45": 3,
+                "99": 1
+              },
+              "manaCost": 7120
+            },
+            "339998216": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "3",
+              "items": {
+                "43": 36,
+                "44": 22,
+                "45": 5,
+                "99": 3
+              },
+              "manaCost": 13280
+            },
+            "339998217": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "3",
+              "items": {
+                "43": 60,
+                "44": 30,
+                "45": 8,
+                "99": 8
+              },
+              "manaCost": 18000
+            },
+            "339998218": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "3",
+              "items": {
+                "43": 60,
+                "44": 30,
+                "45": 8,
+                "99": 8
+              },
+              "manaCost": 18000
+            },
+            "339998219": {
+              "field1": "0",
+              "field5": "2",
+              "field6": "",
+              "items": {
+                "42": 10,
+                "43": 6,
+                "44": 3
+              },
+              "manaCost": 1280
+            },
+            "339998220": {
+              "field1": "0",
+              "field5": "1",
+              "field6": "",
+              "items": {
+                "42": 16,
+                "43": 10,
+                "44": 5
+              },
+              "manaCost": 2120
+            },
+            "339998221": {
+              "field1": "0",
+              "field5": "1",
+              "field6": "",
+              "items": {
+                "42": 35,
+                "43": 16,
+                "44": 12
+              },
+              "manaCost": 4380
+            },
+            "339998222": {
+              "field1": "0",
+              "field5": "1",
+              "field6": "",
+              "items": {
+                "42": 120,
+                "43": 50,
+                "44": 30,
+                "45": 10,
+                "99": 5
+              },
+              "manaCost": 16800
+            },
+            "339998223": {
+              "field1": "0",
+              "field5": "1",
+              "field6": "",
+              "items": {
+                "43": 50,
+                "44": 28,
+                "45": 8,
+                "99": 5
+              },
+              "manaCost": 16400
+            }
+          },
+          "2": {
+            "339998401": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "4",
+              "items": {
+                "44": 10,
+                "45": 8,
+                "62": 10,
+                "99": 3
+              },
+              "manaCost": 4500
+            },
+            "339998402": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "4",
+              "items": {
+                "44": 12,
+                "45": 10,
+                "62": 12,
+                "99": 3
+              },
+              "manaCost": 5050
+            },
+            "339998403": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "4",
+              "items": {
+                "44": 18,
+                "45": 12,
+                "62": 12,
+                "63": 2,
+                "99": 5
+              },
+              "manaCost": 5600
+            },
+            "339998404": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "4",
+              "items": {
+                "45": 14,
+                "62": 14,
+                "63": 4,
+                "64": 1,
+                "99": 5
+              },
+              "manaCost": 6240
+            },
+            "339998405": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "4",
+              "items": {
+                "45": 16,
+                "62": 16,
+                "63": 6,
+                "64": 2,
+                "99": 8
+              },
+              "manaCost": 8360
+            },
+            "339998406": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "4",
+              "items": {
+                "45": 20,
+                "62": 20,
+                "63": 10,
+                "64": 4,
+                "99": 8
+              },
+              "manaCost": 10200
+            },
+            "339998407": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "5",
+              "items": {
+                "44": 16,
+                "45": 8,
+                "62": 12,
+                "63": 4,
+                "99": 3
+              },
+              "manaCost": 5100
+            },
+            "339998408": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "5",
+              "items": {
+                "44": 20,
+                "45": 10,
+                "62": 12,
+                "63": 5,
+                "99": 5
+              },
+              "manaCost": 5900
+            },
+            "339998409": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "5",
+              "items": {
+                "45": 12,
+                "62": 14,
+                "63": 6,
+                "64": 2,
+                "99": 5
+              },
+              "manaCost": 7420
+            },
+            "339998410": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "5",
+              "items": {
+                "45": 14,
+                "62": 16,
+                "63": 8,
+                "64": 4,
+                "99": 8
+              },
+              "manaCost": 10000
+            },
+            "339998411": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "5",
+              "items": {
+                "45": 16,
+                "62": 20,
+                "63": 10,
+                "64": 6,
+                "99": 8
+              },
+              "manaCost": 12700
+            },
+            "339998412": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "5",
+              "items": {
+                "45": 18,
+                "62": 24,
+                "63": 15,
+                "64": 10,
+                "99": 10
+              },
+              "manaCost": 14100
+            },
+            "339998413": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "6",
+              "items": {
+                "45": 10,
+                "62": 14,
+                "63": 6,
+                "64": 2,
+                "99": 5
+              },
+              "manaCost": 7300
+            },
+            "339998414": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "6",
+              "items": {
+                "45": 12,
+                "62": 18,
+                "63": 8,
+                "64": 4,
+                "99": 5
+              },
+              "manaCost": 9980
+            },
+            "339998415": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "6",
+              "items": {
+                "45": 14,
+                "62": 18,
+                "63": 10,
+                "64": 6,
+                "99": 8
+              },
+              "manaCost": 12250
+            },
+            "339998416": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "6",
+              "items": {
+                "45": 16,
+                "62": 20,
+                "63": 12,
+                "64": 8,
+                "99": 8
+              },
+              "manaCost": 14600
+            },
+            "339998417": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "6",
+              "items": {
+                "45": 18,
+                "62": 24,
+                "63": 16,
+                "64": 10,
+                "99": 10
+              },
+              "manaCost": 18300
+            },
+            "339998418": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "6",
+              "items": {
+                "45": 22,
+                "62": 28,
+                "63": 20,
+                "64": 15,
+                "99": 10
+              },
+              "manaCost": 22400
+            }
+          }
+        }
+      },
+      "terminal": {
+        "169999": {
+          "1": {
+            "339998201": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "1",
+              "items": {
+                "42": 3
+              },
+              "manaCost": 60
+            },
+            "339998202": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "1",
+              "items": {
+                "42": 5
+              },
+              "manaCost": 100
+            },
+            "339998203": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "1",
+              "items": {
+                "42": 5
+              },
+              "manaCost": 100
+            },
+            "339998204": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "1",
+              "items": {
+                "42": 8
+              },
+              "manaCost": 160
+            },
+            "339998205": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "1",
+              "items": {
+                "42": 12
+              },
+              "manaCost": 240
+            },
+            "339998206": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "1",
+              "items": {
+                "42": 5,
+                "43": 3
+              },
+              "manaCost": 340
+            },
+            "339998207": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "2",
+              "items": {
+                "42": 5,
+                "43": 3
+              },
+              "manaCost": 340
+            },
+            "339998208": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "2",
+              "items": {
+                "42": 8,
+                "43": 3
+              },
+              "manaCost": 400
+            },
+            "339998209": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "2",
+              "items": {
+                "42": 8,
+                "43": 3
+              },
+              "manaCost": 400
+            },
+            "339998210": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "2",
+              "items": {
+                "42": 12,
+                "43": 5
+              },
+              "manaCost": 640
+            },
+            "339998211": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "2",
+              "items": {
+                "42": 18,
+                "43": 12
+              },
+              "manaCost": 1320
+            },
+            "339998212": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "2",
+              "items": {
+                "42": 12,
+                "43": 8,
+                "44": 3
+              },
+              "manaCost": 1480
+            },
+            "339998213": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "3",
+              "items": {
+                "42": 18,
+                "43": 10,
+                "44": 8,
+                "45": 1
+              },
+              "manaCost": 3160
+            },
+            "339998214": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "3",
+              "items": {
+                "42": 60,
+                "43": 24,
+                "44": 14,
+                "45": 3,
+                "99": 1
+              },
+              "manaCost": 7120
+            },
+            "339998215": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "3",
+              "items": {
+                "42": 60,
+                "43": 24,
+                "44": 14,
+                "45": 3,
+                "99": 1
+              },
+              "manaCost": 7120
+            },
+            "339998216": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "3",
+              "items": {
+                "43": 36,
+                "44": 22,
+                "45": 5,
+                "99": 3
+              },
+              "manaCost": 13280
+            },
+            "339998217": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "3",
+              "items": {
+                "43": 60,
+                "44": 30,
+                "45": 8,
+                "99": 8
+              },
+              "manaCost": 18000
+            },
+            "339998218": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "3",
+              "items": {
+                "43": 60,
+                "44": 30,
+                "45": 8,
+                "99": 8
+              },
+              "manaCost": 18000
+            },
+            "339998219": {
+              "field1": "0",
+              "field5": "2",
+              "field6": "",
+              "items": {
+                "42": 10,
+                "43": 6,
+                "44": 3
+              },
+              "manaCost": 1280
+            },
+            "339998220": {
+              "field1": "0",
+              "field5": "1",
+              "field6": "",
+              "items": {
+                "42": 16,
+                "43": 10,
+                "44": 5
+              },
+              "manaCost": 2120
+            },
+            "339998221": {
+              "field1": "0",
+              "field5": "1",
+              "field6": "",
+              "items": {
+                "42": 35,
+                "43": 16,
+                "44": 12
+              },
+              "manaCost": 4380
+            },
+            "339998222": {
+              "field1": "0",
+              "field5": "1",
+              "field6": "",
+              "items": {
+                "42": 120,
+                "43": 50,
+                "44": 30,
+                "45": 10,
+                "99": 5
+              },
+              "manaCost": 16800
+            },
+            "339998223": {
+              "field1": "0",
+              "field5": "1",
+              "field6": "",
+              "items": {
+                "43": 50,
+                "44": 28,
+                "45": 8,
+                "99": 5
+              },
+              "manaCost": 16400
+            }
+          },
+          "2": {
+            "339998401": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "4",
+              "items": {
+                "44": 10,
+                "45": 8,
+                "62": 10,
+                "99": 3
+              },
+              "manaCost": 4500
+            },
+            "339998402": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "4",
+              "items": {
+                "44": 12,
+                "45": 10,
+                "62": 12,
+                "99": 3
+              },
+              "manaCost": 5050
+            },
+            "339998403": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "4",
+              "items": {
+                "44": 18,
+                "45": 12,
+                "62": 12,
+                "63": 2,
+                "99": 5
+              },
+              "manaCost": 5600
+            },
+            "339998404": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "4",
+              "items": {
+                "45": 14,
+                "62": 14,
+                "63": 4,
+                "64": 1,
+                "99": 5
+              },
+              "manaCost": 6240
+            },
+            "339998405": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "4",
+              "items": {
+                "45": 16,
+                "62": 16,
+                "63": 6,
+                "64": 2,
+                "99": 8
+              },
+              "manaCost": 8360
+            },
+            "339998406": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "4",
+              "items": {
+                "45": 20,
+                "62": 20,
+                "63": 10,
+                "64": 4,
+                "99": 8
+              },
+              "manaCost": 10200
+            },
+            "339998407": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "5",
+              "items": {
+                "44": 16,
+                "45": 8,
+                "62": 12,
+                "63": 4,
+                "99": 3
+              },
+              "manaCost": 5100
+            },
+            "339998408": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "5",
+              "items": {
+                "44": 20,
+                "45": 10,
+                "62": 12,
+                "63": 5,
+                "99": 5
+              },
+              "manaCost": 5900
+            },
+            "339998409": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "5",
+              "items": {
+                "45": 12,
+                "62": 14,
+                "63": 6,
+                "64": 2,
+                "99": 5
+              },
+              "manaCost": 7420
+            },
+            "339998410": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "5",
+              "items": {
+                "45": 14,
+                "62": 16,
+                "63": 8,
+                "64": 4,
+                "99": 8
+              },
+              "manaCost": 10000
+            },
+            "339998411": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "5",
+              "items": {
+                "45": 16,
+                "62": 20,
+                "63": 10,
+                "64": 6,
+                "99": 8
+              },
+              "manaCost": 12700
+            },
+            "339998412": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "5",
+              "items": {
+                "45": 18,
+                "62": 24,
+                "63": 15,
+                "64": 10,
+                "99": 10
+              },
+              "manaCost": 14100
+            },
+            "339998413": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "6",
+              "items": {
+                "45": 10,
+                "62": 14,
+                "63": 6,
+                "64": 2,
+                "99": 5
+              },
+              "manaCost": 7300
+            },
+            "339998414": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "6",
+              "items": {
+                "45": 12,
+                "62": 18,
+                "63": 8,
+                "64": 4,
+                "99": 5
+              },
+              "manaCost": 9980
+            },
+            "339998415": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "6",
+              "items": {
+                "45": 14,
+                "62": 18,
+                "63": 10,
+                "64": 6,
+                "99": 8
+              },
+              "manaCost": 12250
+            },
+            "339998416": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "6",
+              "items": {
+                "45": 16,
+                "62": 20,
+                "63": 12,
+                "64": 8,
+                "99": 8
+              },
+              "manaCost": 14600
+            },
+            "339998417": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "6",
+              "items": {
+                "45": 18,
+                "62": 24,
+                "63": 16,
+                "64": 10,
+                "99": 10
+              },
+              "manaCost": 18300
+            },
+            "339998418": {
+              "field1": "0",
+              "field5": "0",
+              "field6": "6",
+              "items": {
+                "45": 22,
+                "62": 28,
+                "63": 20,
+                "64": 15,
+                "99": 10
+              },
+              "manaCost": 22400
+            }
+          }
+        }
+      }
+    },
+    {
+      "owner": "abyss_weapons",
+      "logical_path": "equipment_lookup.json",
+      "selector": {
+        "kind": "object_keys",
+        "path": [],
+        "keys": [
+          "8000101",
+          "8000102",
+          "8000103",
+          "8000104",
+          "8000105",
+          "8000106",
+          "8000107",
+          "8000108",
+          "8000109",
+          "8000110",
+          "8000111",
+          "8000112",
+          "8000113",
+          "8000114",
+          "8000115"
+        ]
+      },
+      "preimage_sha256": "9f75380b2217109a2776727f9e678221f118d23aa12a430b120d39129352c97b",
+      "terminal_sha256": "6444bb5ecc2cdd2ed9e0701ae4cb66cd843c84d5df1f2921ffa78827731eb5ec",
+      "preimage": {
+        "8000101": {
+          "name": "灰烬巨剑",
+          "rarity": "5",
+          "category": "剑"
+        },
+        "8000102": {
+          "name": "熔核法杖",
+          "rarity": "5",
+          "category": "斧"
+        },
+        "8000103": {
+          "name": "深潮长枪",
+          "rarity": "5",
+          "category": "剑"
+        },
+        "8000104": {
+          "name": "冻海战锚",
+          "rarity": "5",
+          "category": "斧"
+        },
+        "8000105": {
+          "name": "雷鸣双刃",
+          "rarity": "5",
+          "category": "剑"
+        },
+        "8000106": {
+          "name": "轰电战锤",
+          "rarity": "5",
+          "category": "斧"
+        },
+        "8000107": {
+          "name": "裂空战镰",
+          "rarity": "5",
+          "category": "剑"
+        },
+        "8000108": {
+          "name": "苍岚长弓",
+          "rarity": "5",
+          "category": "斧"
+        },
+        "8000109": {
+          "name": "晨星圣剑",
+          "rarity": "5",
+          "category": "剑"
+        },
+        "8000110": {
+          "name": "辉环法器",
+          "rarity": "5",
+          "category": "斧"
+        },
+        "8000111": {
+          "name": "蚀月大剑",
+          "rarity": "5",
+          "category": "剑"
+        },
+        "8000112": {
+          "name": "冥灯魔杖",
+          "rarity": "5",
+          "category": "斧"
+        },
+        "8000113": {
+          "name": "深渊征服者",
+          "rarity": "5",
+          "category": "剑"
+        },
+        "8000114": {
+          "name": "深渊轮转核",
+          "rarity": "5",
+          "category": "斧"
+        },
+        "8000115": {
+          "name": "深渊万象铳",
+          "rarity": "5",
+          "category": "饰品"
+        }
+      },
+      "terminal": {
+        "8000101": {
+          "name": "深渊·灰烬巨剑",
+          "rarity": "5",
+          "category": "剑"
+        },
+        "8000102": {
+          "name": "深渊·熔核法杖",
+          "rarity": "5",
+          "category": "斧"
+        },
+        "8000103": {
+          "name": "深渊·深潮长枪",
+          "rarity": "5",
+          "category": "剑"
+        },
+        "8000104": {
+          "name": "深渊·冻海战锚",
+          "rarity": "5",
+          "category": "斧"
+        },
+        "8000105": {
+          "name": "深渊·雷鸣双刃",
+          "rarity": "5",
+          "category": "剑"
+        },
+        "8000106": {
+          "name": "深渊·轰电战锤",
+          "rarity": "5",
+          "category": "斧"
+        },
+        "8000107": {
+          "name": "深渊·裂空战镰",
+          "rarity": "5",
+          "category": "剑"
+        },
+        "8000108": {
+          "name": "深渊·苍岚长弓",
+          "rarity": "5",
+          "category": "斧"
+        },
+        "8000109": {
+          "name": "深渊·晨星圣剑",
+          "rarity": "5",
+          "category": "剑"
+        },
+        "8000110": {
+          "name": "深渊·辉环法器",
+          "rarity": "5",
+          "category": "斧"
+        },
+        "8000111": {
+          "name": "深渊·蚀月大剑",
+          "rarity": "5",
+          "category": "剑"
+        },
+        "8000112": {
+          "name": "深渊·冥灯魔杖",
+          "rarity": "5",
+          "category": "斧"
+        },
+        "8000113": {
+          "name": "深渊·征服者",
+          "rarity": "5",
+          "category": "剑"
+        },
+        "8000114": {
+          "name": "深渊·轮转核",
+          "rarity": "5",
+          "category": "斧"
+        },
+        "8000115": {
+          "name": "深渊·万象铳",
+          "rarity": "5",
+          "category": "饰品"
+        }
+      }
+    },
+    {
+      "owner": "abyss_weapons",
+      "logical_path": "equipment_max_level.json",
+      "selector": {
+        "kind": "object_keys",
+        "path": [],
+        "keys": [
+          "8000101",
+          "8000102",
+          "8000103",
+          "8000104",
+          "8000105",
+          "8000106",
+          "8000107",
+          "8000108",
+          "8000109",
+          "8000110",
+          "8000111",
+          "8000112",
+          "8000113",
+          "8000114",
+          "8000115"
+        ]
+      },
+      "preimage_sha256": "42fa4a81c32b7f21790b0793ac7da6645e062aaead8b8b84035ac953f47fd02d",
+      "terminal_sha256": "42fa4a81c32b7f21790b0793ac7da6645e062aaead8b8b84035ac953f47fd02d",
+      "preimage": {
+        "8000101": 5,
+        "8000102": 5,
+        "8000103": 5,
+        "8000104": 5,
+        "8000105": 5,
+        "8000106": 5,
+        "8000107": 5,
+        "8000108": 5,
+        "8000109": 5,
+        "8000110": 5,
+        "8000111": 5,
+        "8000112": 5,
+        "8000113": 5,
+        "8000114": 5,
+        "8000115": 5
+      },
+      "terminal": {
+        "8000101": 5,
+        "8000102": 5,
+        "8000103": 5,
+        "8000104": 5,
+        "8000105": 5,
+        "8000106": 5,
+        "8000107": 5,
+        "8000108": 5,
+        "8000109": 5,
+        "8000110": 5,
+        "8000111": 5,
+        "8000112": 5,
+        "8000113": 5,
+        "8000114": 5,
+        "8000115": 5
+      }
+    },
+    {
+      "owner": "abyss_weapons",
+      "logical_path": "equipment_element.json",
+      "selector": {
+        "kind": "object_keys",
+        "path": [],
+        "keys": [
+          "8000101",
+          "8000102",
+          "8000103",
+          "8000104",
+          "8000105",
+          "8000106",
+          "8000107",
+          "8000108",
+          "8000109",
+          "8000110",
+          "8000111",
+          "8000112",
+          "8000113",
+          "8000114",
+          "8000115"
+        ]
+      },
+      "preimage_sha256": "a6272507ba3bd68482a39f6ed684925c732cb8da3bf4f5192521b2778a6c7ef5",
+      "terminal_sha256": "a6272507ba3bd68482a39f6ed684925c732cb8da3bf4f5192521b2778a6c7ef5",
+      "preimage": {
+        "8000101": 0,
+        "8000102": 0,
+        "8000103": 1,
+        "8000104": 1,
+        "8000105": 2,
+        "8000106": 2,
+        "8000107": 3,
+        "8000108": 3,
+        "8000109": 4,
+        "8000110": 4,
+        "8000111": 5,
+        "8000112": 5,
+        "8000113": -1,
+        "8000114": -1,
+        "8000115": -1
+      },
+      "terminal": {
+        "8000101": 0,
+        "8000102": 0,
+        "8000103": 1,
+        "8000104": 1,
+        "8000105": 2,
+        "8000106": 2,
+        "8000107": 3,
+        "8000108": 3,
+        "8000109": 4,
+        "8000110": 4,
+        "8000111": 5,
+        "8000112": 5,
+        "8000113": -1,
+        "8000114": -1,
+        "8000115": -1
+      }
+    },
+    {
+      "owner": "abyss_weapons",
+      "logical_path": "equipment_ids.json",
+      "selector": {
+        "kind": "array_subsequence",
+        "path": [],
+        "values": [
+          8000101,
+          8000102,
+          8000103,
+          8000104,
+          8000105,
+          8000106,
+          8000107,
+          8000108,
+          8000109,
+          8000110,
+          8000111,
+          8000112,
+          8000113,
+          8000114,
+          8000115
+        ]
+      },
+      "preimage_sha256": "79c4937bd611ab8f1794b34a0e14826ed17b448c7b8397adb2a64303e960681e",
+      "terminal_sha256": "79c4937bd611ab8f1794b34a0e14826ed17b448c7b8397adb2a64303e960681e",
+      "preimage": [
+        8000101,
+        8000102,
+        8000103,
+        8000104,
+        8000105,
+        8000106,
+        8000107,
+        8000108,
+        8000109,
+        8000110,
+        8000111,
+        8000112,
+        8000113,
+        8000114,
+        8000115
+      ],
+      "terminal": [
+        8000101,
+        8000102,
+        8000103,
+        8000104,
+        8000105,
+        8000106,
+        8000107,
+        8000108,
+        8000109,
+        8000110,
+        8000111,
+        8000112,
+        8000113,
+        8000114,
+        8000115
+      ]
+    },
+    {
+      "owner": "abyss_700099_core",
+      "logical_path": "item_ids.json",
+      "selector": {
+        "kind": "array_subsequence",
+        "path": [],
+        "values": [
+          2370099
+        ]
+      },
+      "preimage_sha256": "3c58e0045672413c5be68726a6b87ca0a5389058c1bff1ca48640f3ca72c9005",
+      "terminal_sha256": "3c58e0045672413c5be68726a6b87ca0a5389058c1bff1ca48640f3ca72c9005",
+      "preimage": [
+        2370099
+      ],
+      "terminal": [
+        2370099
+      ]
+    },
+    {
+      "owner": "abyss_weapons",
+      "logical_path": "event_item_shop.json",
+      "selector": {
+        "kind": "object_keys",
+        "path": [
+          "11",
+          "700099"
+        ],
+        "keys": [
+          "9700101",
+          "9700102",
+          "9700103",
+          "9700104",
+          "9700105",
+          "9700106",
+          "9700107",
+          "9700108",
+          "9700109",
+          "9700110",
+          "9700111",
+          "9700112",
+          "9700113",
+          "9700114",
+          "9700115"
+        ]
+      },
+      "preimage_sha256": "ecef8470b313cf880ec31323b141a661dfed096857b33eac283fe2a81c0dfc1d",
+      "terminal_sha256": "ecef8470b313cf880ec31323b141a661dfed096857b33eac283fe2a81c0dfc1d",
+      "preimage": {
+        "9700101": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 10
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000101,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700102": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 10
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000102,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700103": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 10
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000103,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700104": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 10
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000104,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700105": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 10
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000105,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700106": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 10
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000106,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700107": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 10
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000107,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700108": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 10
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000108,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700109": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 10
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000109,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700110": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 10
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000110,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700111": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 10
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000111,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700112": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 10
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000112,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700113": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 15
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000113,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700114": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 15
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000114,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700115": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 15
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000115,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        }
+      },
+      "terminal": {
+        "9700101": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 10
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000101,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700102": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 10
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000102,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700103": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 10
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000103,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700104": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 10
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000104,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700105": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 10
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000105,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700106": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 10
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000106,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700107": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 10
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000107,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700108": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 10
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000108,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700109": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 10
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000109,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700110": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 10
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000110,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700111": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 10
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000111,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700112": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 10
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000112,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700113": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 15
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000113,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700114": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 15
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000114,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        },
+        "9700115": {
+          "costs": [
+            {
+              "id": 2370099,
+              "amount": 15
+            }
+          ],
+          "rewards": [
+            {
+              "type": 4,
+              "id": 8000115,
+              "count": 1
+            }
+          ],
+          "availableFrom": "2000-01-01 00:00:00",
+          "availableUntil": "2099-12-31 23:59:59",
+          "stock": 5
+        }
+      }
+    },
+    {
+      "owner": "abyss_weapons",
+      "logical_path": "event_item_shop_id_map.json",
+      "selector": {
+        "kind": "object_keys",
+        "path": [],
+        "keys": [
+          "9700101",
+          "9700102",
+          "9700103",
+          "9700104",
+          "9700105",
+          "9700106",
+          "9700107",
+          "9700108",
+          "9700109",
+          "9700110",
+          "9700111",
+          "9700112",
+          "9700113",
+          "9700114",
+          "9700115"
+        ]
+      },
+      "preimage_sha256": "6d992acd0b719578fbc2f3d40ee690a95ca8446e1117a56a460258a61231d385",
+      "terminal_sha256": "6d992acd0b719578fbc2f3d40ee690a95ca8446e1117a56a460258a61231d385",
+      "preimage": {
+        "9700101": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700102": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700103": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700104": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700105": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700106": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700107": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700108": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700109": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700110": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700111": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700112": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700113": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700114": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700115": {
+          "eventType": 11,
+          "eventId": 700099
+        }
+      },
+      "terminal": {
+        "9700101": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700102": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700103": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700104": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700105": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700106": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700107": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700108": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700109": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700110": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700111": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700112": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700113": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700114": {
+          "eventType": 11,
+          "eventId": 700099
+        },
+        "9700115": {
+          "eventType": 11,
+          "eventId": 700099
+        }
+      }
+    },
+    {
+      "owner": "abyss_tower",
+      "logical_path": "rush_event_quest.json",
+      "selector": {
+        "kind": "object_keys",
+        "path": [],
+        "keys": [
+          "700099001",
+          "700099002",
+          "700099003",
+          "700099004",
+          "700099005",
+          "700099006",
+          "700099007",
+          "700099008",
+          "700099009",
+          "700099010",
+          "700099011",
+          "700099012",
+          "700099013",
+          "700099014",
+          "700099015",
+          "700099016",
+          "700099017",
+          "700099018",
+          "700099019",
+          "700099020",
+          "700099021",
+          "700099022",
+          "700099023",
+          "700099024",
+          "700099025",
+          "700099026",
+          "700099027",
+          "700099028",
+          "700099029",
+          "700099030",
+          "700099099"
+        ]
+      },
+      "preimage_sha256": "9b4ff7ab49fda86f08ad47bf6dcdf3a5996ec475ab3c858de348da3302dce83e",
+      "terminal_sha256": "9b4ff7ab49fda86f08ad47bf6dcdf3a5996ec475ab3c858de348da3302dce83e",
+      "preimage": {
+        "700099001": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 1
+        },
+        "700099002": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 2
+        },
+        "700099003": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 3
+        },
+        "700099004": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 4
+        },
+        "700099005": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 5
+        },
+        "700099006": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 6
+        },
+        "700099007": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 7
+        },
+        "700099008": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 8
+        },
+        "700099009": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 9
+        },
+        "700099010": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 10
+        },
+        "700099011": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 11
+        },
+        "700099012": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 12
+        },
+        "700099013": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 13
+        },
+        "700099014": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 14
+        },
+        "700099015": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 15
+        },
+        "700099016": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 16
+        },
+        "700099017": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 17
+        },
+        "700099018": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 18
+        },
+        "700099019": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 19
+        },
+        "700099020": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 20
+        },
+        "700099021": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 21
+        },
+        "700099022": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 22
+        },
+        "700099023": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 23
+        },
+        "700099024": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 24
+        },
+        "700099025": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 25
+        },
+        "700099026": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 26
+        },
+        "700099027": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 27
+        },
+        "700099028": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 28
+        },
+        "700099029": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 29
+        },
+        "700099030": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 30
+        },
+        "700099099": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 2,
+          "rushEventRound": 0
+        }
+      },
+      "terminal": {
+        "700099001": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 1
+        },
+        "700099002": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 2
+        },
+        "700099003": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 3
+        },
+        "700099004": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 4
+        },
+        "700099005": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 5
+        },
+        "700099006": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 6
+        },
+        "700099007": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 7
+        },
+        "700099008": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 8
+        },
+        "700099009": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 9
+        },
+        "700099010": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 10
+        },
+        "700099011": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 11
+        },
+        "700099012": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 12
+        },
+        "700099013": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 13
+        },
+        "700099014": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 14
+        },
+        "700099015": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 15
+        },
+        "700099016": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 16
+        },
+        "700099017": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 17
+        },
+        "700099018": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 18
+        },
+        "700099019": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 19
+        },
+        "700099020": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 20
+        },
+        "700099021": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 21
+        },
+        "700099022": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 22
+        },
+        "700099023": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 23
+        },
+        "700099024": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 24
+        },
+        "700099025": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 25
+        },
+        "700099026": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 26
+        },
+        "700099027": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 27
+        },
+        "700099028": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 28
+        },
+        "700099029": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 29
+        },
+        "700099030": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 1,
+          "rushEventRound": 30
+        },
+        "700099099": {
+          "name": "",
+          "bRankTime": 0,
+          "aRankTime": 0,
+          "sRankTime": 0,
+          "sPlusRankTime": 0,
+          "rankPointReward": 23,
+          "characterExpReward": 58,
+          "manaReward": 195,
+          "poolExpReward": 58,
+          "rushEventId": 700099,
+          "rushEventFolderId": 2,
+          "rushEventRound": 0
+        }
+      }
+    },
+    {
+      "owner": "abyss_tower",
+      "logical_path": "rush_event_quest_folder.json",
+      "selector": {
+        "kind": "object_keys",
+        "path": [],
+        "keys": [
+          "700099"
+        ]
+      },
+      "preimage_sha256": "3dc8c8d1ed2d196be24f271a5efccee9770da758bdd089f6774ebee208f2dfdc",
+      "terminal_sha256": "3dc8c8d1ed2d196be24f271a5efccee9770da758bdd089f6774ebee208f2dfdc",
+      "preimage": {
+        "700099": {
+          "1": [
+            {
+              "type": 0,
+              "id": 99,
+              "count": 750
+            },
+            {
+              "type": 0,
+              "id": 2370099,
+              "count": 5
+            },
+            {
+              "type": 0,
+              "id": 11003,
+              "count": 2
+            }
+          ]
+        }
+      },
+      "terminal": {
+        "700099": {
+          "1": [
+            {
+              "type": 0,
+              "id": 99,
+              "count": 750
+            },
+            {
+              "type": 0,
+              "id": 2370099,
+              "count": 5
+            },
+            {
+              "type": 0,
+              "id": 11003,
+              "count": 2
+            }
+          ]
+        }
+      }
+    },
+    {
+      "owner": "abyss_tower",
+      "logical_path": "rogue_event.json",
+      "selector": {
+        "kind": "object_keys",
+        "path": [
+          "events"
+        ],
+        "keys": [
+          "700099"
+        ]
+      },
+      "preimage_sha256": "492d82f4bf31aa3c95ab4e9f40941cd0b468bf1d3a88556765817e9026d16a33",
+      "terminal_sha256": "492d82f4bf31aa3c95ab4e9f40941cd0b468bf1d3a88556765817e9026d16a33",
+      "preimage": {
+        "700099": {
+          "unlock_played_parties": true,
+          "show_reward_list_endless": true,
+          "per_round_drops": [
+            {
+              "type": "item",
+              "id": 2370099,
+              "count": 5
+            }
+          ],
+          "pool_draws": 0,
+          "drop_pool": [],
+          "folder_clear_chance": [
+            {
+              "type": 0,
+              "id": 999001,
+              "count": 1,
+              "chance": 0.3
+            },
+            {
+              "type": 0,
+              "id": 11003,
+              "count": 1,
+              "chance": 0.5
+            }
+          ],
+          "reset_rerolls_tower": null,
+          "folder_clear_random": [
+            {
+              "_": "以太:6属性里随机2-3种,每种150-500",
+              "pool": [
+                52,
+                55,
+                58,
+                61,
+                64,
+                67
+              ],
+              "pick": [
+                2,
+                3
+              ],
+              "count": [
+                150,
+                500
+              ]
+            },
+            {
+              "_": "★5星铁粒:50%概率掉,掉则1-3个(pick 0/1 实现概率)",
+              "pool": [
+                13001
+              ],
+              "pick": [
+                0,
+                1
+              ],
+              "count": [
+                1,
+                3
+              ]
+            }
+          ]
+        }
+      },
+      "terminal": {
+        "700099": {
+          "unlock_played_parties": true,
+          "show_reward_list_endless": true,
+          "per_round_drops": [
+            {
+              "type": "item",
+              "id": 2370099,
+              "count": 5
+            }
+          ],
+          "pool_draws": 0,
+          "drop_pool": [],
+          "folder_clear_chance": [
+            {
+              "type": 0,
+              "id": 999001,
+              "count": 1,
+              "chance": 0.3
+            },
+            {
+              "type": 0,
+              "id": 11003,
+              "count": 1,
+              "chance": 0.5
+            }
+          ],
+          "reset_rerolls_tower": null,
+          "folder_clear_random": [
+            {
+              "_": "以太:6属性里随机2-3种,每种150-500",
+              "pool": [
+                52,
+                55,
+                58,
+                61,
+                64,
+                67
+              ],
+              "pick": [
+                2,
+                3
+              ],
+              "count": [
+                150,
+                500
+              ]
+            },
+            {
+              "_": "★5星铁粒:50%概率掉,掉则1-3个(pick 0/1 实现概率)",
+              "pool": [
+                13001
+              ],
+              "pick": [
+                0,
+                1
+              ],
+              "count": [
+                1,
+                3
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

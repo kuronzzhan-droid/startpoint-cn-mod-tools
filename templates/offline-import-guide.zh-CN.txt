@@ -1,0 +1,16 @@
+世界弹射物语国服离线整合版导入说明
+
+1. 可先按 SHA256SUMS.txt 校验四个文件。
+2. 备份共享存储根目录下的 WorldFlipper/save_haxe；新用户可跳过。
+3. 安装 WorldFlipper-离线整合版.apk；若签名冲突，确认已备份后再卸载旧 APK。
+4. 授予“所有文件访问权限”。
+5. 把 WorldFlipper-数据-1.4.196.zip 直接解压到 /storage/emulated/0/。
+6. 解压后必须同时存在以下三根和两个 marker：
+   /storage/emulated/0/WorldFlipper/dummy/download/production/upload/
+   /storage/emulated/0/WorldFlipper/dummy/download/production/medium_upload/
+   /storage/emulated/0/WorldFlipper/dummy/download/production/android_upload/
+   /storage/emulated/0/WorldFlipper/dummy/info.json
+   /storage/emulated/0/WorldFlipper/dummy/download/.empty
+   禁止把 medium_upload 或 android_upload 扁平合并进 upload；不能放在 Download 下；不能多套一层 WorldFlipper。
+7. 开启飞行模式后首次启动；游戏后在菜单点击“保存”，退出本身不会替代保存。
+8. 干净首次启动会有 129999/139999/149999；已有 save_haxe 继续以原存档为准，ZIP 不覆盖个人进度。

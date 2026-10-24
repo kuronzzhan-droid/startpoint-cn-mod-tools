@@ -19,12 +19,13 @@ from types import MappingProxyType
 from typing import Literal
 
 import wf_assets
+import wf_mod_tool as core
 from wf_asset_inventory import DEFAULT_CHUNK_SIZE
 from wf_character_pack import ARCHIVE_PREFIXES
 
 
 MOD_DIR = Path(__file__).resolve().parent
-REPO_ROOT = MOD_DIR.parent
+REPO_ROOT = MOD_DIR
 RootName = Literal["common", "medium", "android"]
 RootedKey = tuple[RootName, str]
 ROOT_NAMES: tuple[RootName, ...] = ("common", "medium", "android")
@@ -418,19 +419,25 @@ def _scandir_names(path: Path, expected_signature: tuple[int, ...], *, kind: str
 def resolve_store_roots(
     profile: str,
     *,
-    profiles_path: Path = MOD_DIR / "profiles.json",
+    profiles_path: Path | None = None,
 ) -> StoreRoots:
-    profiles_path = _absolute(Path(profiles_path))
-    try:
-        payload = json.loads(profiles_path.read_text(encoding="utf-8"))
-        selected = payload["profiles"][profile]
-        configured = selected["store"]
-    except (OSError, KeyError, TypeError, json.JSONDecodeError) as error:
-        raise StoreError(f"cannot resolve profile {profile!r} from {profiles_path}: {error}") from error
-    if not isinstance(configured, str) or not configured:
-        raise StoreError(f"profile {profile!r} has no valid store path")
-    base = profiles_path.parent.parent if profiles_path.parent.name == "mod-tools" else profiles_path.parent
-    target_store = _absolute(base / configured)
+    if profiles_path is None:
+        try:
+            target_store = core.require_active_store(profile_id=profile)
+        except (OSError, ValueError) as error:
+            raise StoreError(f"cannot resolve profile {profile!r}: {error}") from error
+    else:
+        # Explicit legacy files retain their existing relative-path API contract.
+        profiles_path = _absolute(Path(profiles_path))
+        try:
+            payload = json.loads(profiles_path.read_text(encoding="utf-8"))
+            configured = payload["profiles"][profile]["store"]
+        except (OSError, KeyError, TypeError, json.JSONDecodeError) as error:
+            raise StoreError(f"cannot resolve profile {profile!r} from {profiles_path}: {error}") from error
+        if not isinstance(configured, str) or not configured:
+            raise StoreError(f"profile {profile!r} has no valid store path")
+        base = profiles_path.parent.parent if profiles_path.parent.name == "mod-tools" else profiles_path.parent
+        target_store = _absolute(base / configured)
     located = wf_assets.roots(target_store)
     return StoreRoots(
         common=_absolute(located["upload"]),

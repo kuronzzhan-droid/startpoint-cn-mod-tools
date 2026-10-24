@@ -1,0 +1,57 @@
+schema: wf-capability/1
+id: client.apk.patch116@1
+title: 116 能力伤害抗性数据入口
+layer: A
+provided_by:
+  patches:
+  - 116
+  match: all
+  methods:
+  - patch: 116
+    abc: boot_ffc6
+    label: ConditionSlot/getOneSideTotalAbilityDamageResistance
+    sha256: 16046a0cff88b9a31fffd45ed4017678fd00573ec21a5e33e0c0610de7e2db75
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 116
+    abc: boot_ffc6
+    label: ConditionSlot/wfxAbilityResistance
+    sha256: 6466f8d516cbe1db3d09b6b1027e4d62e85d8261574733982fc7be01f1ab26a6
+    status: 已记录
+    source: v35/run1/release-locks.json
+  status: 已记录
+  basis: v35e/run5累计本地离线证据；哈希为方法code字节；不声明设备验收或部署
+server:
+  required: false
+  features: []
+  note: 通用客户端数据入口；不声明服务端或资源已部署
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+  allowed_tables: []
+form:
+  label: 116 能力伤害抗性数据入口
+  fields: []
+  note: 需要 test-v35e；实际参数规则以累计登记和对应实现说明为准
+describe:
+  template: 116 能力伤害抗性数据入口
+  channel: 能力说明
+rules:
+- capability.missing
+- capability.method-hash
+- capability.resolution
+preview:
+  label: 116 能力伤害抗性数据入口
+  status: 待验证
+golden:
+- source: v35/run1/apk-patches-additions/116-ability-resistance/README.md
+  kind: method-code-sha256
+  note: 最终SWF实际方法与最终release-lock一致；可重复离线验证不等于AIR/Android设备验收
+docs:
+- v35/run1/apk-patches-additions/116-ability-resistance/README.md
+- docs/m2/v35e-method-audit.json
+- docs/m2/v35e-registration.md

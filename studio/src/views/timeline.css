@@ -1,0 +1,49 @@
+/* L2 编排级 timeline preview */
+.tl-page { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 14px; align-items: start; }
+.tl-picker { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 4px 10px 10px; position: sticky; top: 8px; max-height: calc(100vh - 24px); overflow: auto; }
+.tl-picker h4 { margin: 10px 0 4px; font-size: 12.5px; color: var(--muted); }
+.tl-program { display: flex; flex-direction: column; align-items: flex-start; width: 100%; text-align: left; margin: 2px 0; padding: 5px 8px; border-color: transparent; background: transparent; }
+.tl-program.on { background: var(--accent-soft); border-color: var(--accent); }
+.tl-program.absent { opacity: 0.55; }
+.tl-main { min-width: 0; }
+.tl-player { display: flex; flex-direction: column; gap: 8px; }
+.tl-head { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.tl-body { display: grid; grid-template-columns: auto minmax(220px, 1fr); gap: 12px; align-items: start; }
+.tl-stage { border-radius: 8px; overflow: hidden; border: 1px solid var(--border); line-height: 0; }
+.tl-canvas { display: block; cursor: grab; touch-action: none; }
+.tl-side { display: flex; flex-direction: column; gap: 10px; font-size: 13px; }
+.tl-side section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px 8px; }
+.tl-side h4 { margin: 2px 0 6px; font-size: 12.5px; }
+.tl-lane-toggle, .tl-arm { display: flex; gap: 6px; align-items: center; margin: 2px 0; }
+.tl-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; flex: none; }
+.tl-range { display: flex; flex-direction: column; gap: 2px; }
+.tl-issues { margin: 4px 0; padding-left: 18px; font-size: 12.5px; }
+.tl-lanes { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 4px 8px 6px; }
+.tl-lane { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 6px; align-items: start; border-top: 1px solid var(--border); padding: 2px 0; }
+.tl-lane.tl-ruler { border-top: none; }
+.tl-lane-name { font-size: 12px; color: var(--muted); border-left: 3px solid var(--border); padding-left: 6px; line-height: 16px; }
+.tl-track { position: relative; min-height: 18px; cursor: pointer; }
+.tl-ruler .tl-track { height: 18px; }
+.tl-tick { position: absolute; top: 0; font-size: 10.5px; color: var(--muted); border-left: 1px solid var(--border); padding-left: 2px; }
+.tl-bar { position: absolute; height: 13px; min-width: 3px; border-radius: 3px; font-size: 10px; line-height: 13px; color: #111; overflow: hidden; white-space: nowrap; padding: 0 3px; opacity: 0.85; box-sizing: border-box; }
+.tl-bar.instant { width: 5px; padding: 0; border-radius: 50%; }
+.tl-bar.armed { outline: 1px dashed rgba(255, 255, 255, 0.7); }
+.tl-bar.triggered { background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.35) 0 3px, transparent 3px 6px); }
+.tl-bar.on { outline: 2px solid var(--accent); opacity: 1; z-index: 2; }
+.tl-playhead { position: absolute; top: 0; bottom: 0; width: 2px; background: #e03131; pointer-events: none; z-index: 3; }
+.tl-bottom { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+.tl-bottom section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px 8px; min-width: 0; }
+.tl-bottom h4 { margin: 2px 0 6px; font-size: 12.5px; }
+.tl-now { list-style: none; margin: 0; padding: 0; font-size: 12.5px; max-height: 260px; overflow: auto; }
+.tl-now li { display: flex; gap: 6px; align-items: center; padding: 1px 4px; border-radius: 4px; cursor: pointer; }
+.tl-now li.on, .tl-now li:hover { background: var(--accent-soft); }
+.tl-detail { font-size: 12.5px; border-collapse: collapse; width: 100%; }
+.tl-detail th { text-align: left; color: var(--muted); font-weight: normal; padding: 1px 8px 1px 0; vertical-align: top; white-space: nowrap; }
+.tl-detail td { padding: 1px 0; word-break: break-all; }
+.tl-notes { margin: 0; padding-left: 18px; }
+.tl-placeholder { max-width: 760px; }
+@media (max-width: 1100px) {
+  .tl-page { grid-template-columns: minmax(0, 1fr); }
+  .tl-picker { position: static; max-height: none; }
+  .tl-body, .tl-bottom { grid-template-columns: minmax(0, 1fr); }
+}

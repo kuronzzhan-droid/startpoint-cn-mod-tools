@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:wf:requires:1",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "const": 2
+    },
+    "pack": {
+      "type": "object",
+      "properties": {
+        "since": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "tail": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "anchor": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "string",
+              "pattern": "^\\d+\\.\\d+\\.\\d+$"
+            },
+            "to": {
+              "type": "string",
+              "pattern": "^\\d+\\.\\d+\\.\\d+$"
+            }
+          },
+          "required": [
+            "from",
+            "to"
+          ],
+          "additionalProperties": false
+        },
+        "archives": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(?!/)(?!.*\\\\)(?!.*:)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "since",
+        "tail",
+        "anchor",
+        "archives"
+      ],
+      "additionalProperties": false
+    },
+    "requires": {
+      "type": "object",
+      "properties": {
+        "clientCapabilities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "clientPatches": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "serverFeatures": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "serverRestart": {
+          "type": "boolean"
+        },
+        "restartReasons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "minServerVersion": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "capabilityResolution": {
+          "enum": [
+            "pending-m2",
+            "declared",
+            "resolved",
+            "partial"
+          ]
+        },
+        "capabilityEvidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "evidence"],
+            "properties": {
+              "id": {"type": "string", "minLength": 1},
+              "evidence": {"type": "array", "minItems": 1, "items": {
+                "type": "object", "required": ["logical_path", "signal", "value"]
+              }}
+            },
+            "additionalProperties": false
+          }
+        },
+        "kindSites": {"type": "array", "items": {
+          "type": "object", "required": ["logical_path", "key", "table", "block", "kind", "row"],
+          "properties": {
+            "logical_path": {"type": "string", "minLength": 1},
+            "key": {"type": "string", "minLength": 1},
+            "via": {"type": "string"},
+            "table": {"type": "string", "minLength": 1},
+            "block": {"enum": ["instant_content", "during_content"]},
+            "kind": {"type": "string"},
+            "row": {"type": "integer", "minimum": 0}
+          }, "additionalProperties": false
+        }},
+        "inferenceNotes": {"type": "array", "items": {"type": "object", "required": ["logical_path", "reason", "detail"]}},
+        "unresolved": {"type": "array", "items": {"type": "object", "required": ["logical_path", "key", "referenced_by"]}},
+        "scannedMembers": {"type": "array", "items": {
+          "type": "object", "required": ["logical_path", "root", "sha256"],
+          "properties": {"logical_path": {"type": "string"}, "root": {"enum": ["common", "medium", "android"]}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}},
+          "additionalProperties": false
+        }}
+      },
+      "required": [
+        "clientCapabilities",
+        "clientPatches",
+        "serverFeatures",
+        "serverRestart",
+        "restartReasons",
+        "minServerVersion",
+        "capabilityResolution"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "pack",
+    "requires"
+  ],
+  "additionalProperties": false
+}

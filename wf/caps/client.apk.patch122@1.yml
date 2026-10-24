@@ -1,0 +1,87 @@
+schema: wf-capability/1
+id: client.apk.patch122@1
+title: 122 溢出治疗按30帧累计转能力伤害
+layer: A
+provided_by:
+  patches:
+  - 122
+  match: all
+  methods:
+  - patch: 122
+    abc: boot_ffc6
+    label: AbilityDamageShot/finish
+    sha256: 57d406ca5b723d9f5acc60afd213ac697aadde8127987ccadd3097cf519d1d8f
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 122
+    abc: boot_ffc6
+    label: MemberImpl/applyHeal
+    sha256: 9b58acb942b51fea70693b9034034b7738387d27778abe3af552897b21b3425a
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 122
+    abc: boot_ffc6
+    label: SquadManagerImpl/updatePhase
+    sha256: b1de02513d4ce9f4ffb4db39a0449bb2bec16f15ca36019efd91ee0e09bd824c
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 122
+    abc: boot_ffc6
+    label: MemberImpl$/wfxOverflowQueue
+    sha256: 5ef67648174f42a94def393d5d27aff3d476dac757b3a0a845c20a383edd0e10
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 122
+    abc: boot_ffc6
+    label: MemberImpl/wfxOverflowEmit
+    sha256: e9f4ad9ea0ee424d8782a449f7822040091a6daa0e07a352181de9a8c78c7eb8
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 122
+    abc: boot_ffc6
+    label: MemberImpl$/wfxOverflowTick
+    sha256: 9a6573b030f2c920b5a91f61cdd635b1074f68e8267d888083b1edbf08066711
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 122
+    abc: boot_ffc6
+    label: MemberImpl/wfxOverflowRecord
+    sha256: 3c3616e4a128ea57582061b699d61fcaec78b8c8c344ffd8057724cdca940554
+    status: 已记录
+    source: v35/run2/release-locks.json
+  status: 已记录
+  basis: v35e/run5累计本地离线证据；哈希为方法code字节；不声明设备验收或部署
+server:
+  required: false
+  features: []
+  note: 通用客户端数据入口；不声明服务端或资源已部署
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+  allowed_tables: []
+form:
+  label: 122 溢出治疗按30帧累计转能力伤害
+  fields: []
+  note: 需要 test-v35e；实际参数规则以累计登记和对应实现说明为准
+describe:
+  template: 122 溢出治疗按30帧累计转能力伤害
+  channel: 能力说明
+rules:
+- capability.missing
+- capability.method-hash
+- capability.resolution
+preview:
+  label: 122 溢出治疗按30帧累计转能力伤害
+  status: 待验证
+golden:
+- source: v35/run2/apk-patches-additions/122-overflow-heal-damage/README.md
+  kind: method-code-sha256
+  note: 最终SWF实际方法与最终release-lock一致；可重复离线验证不等于AIR/Android设备验收
+docs:
+- v35/run2/apk-patches-additions/122-overflow-heal-damage/README.md
+- docs/m2/v35e-method-audit.json
+- docs/m2/v35e-registration.md

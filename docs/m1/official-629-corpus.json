@@ -1,0 +1,95 @@
+{
+  "schema": "wf-official-629-corpus/1",
+  "official_tail": "1.4.54",
+  "pinned_baselines_verified": true,
+  "ability_table_count": 4,
+  "reference_count": 3,
+  "tree_count": 3,
+  "references": [
+    {
+      "table": "master/ability/ability.orderedmap",
+      "key": "1611053",
+      "row": 0,
+      "skill": "ability_skill_estateguild_leader",
+      "action": "battle/action/skill/action/ability_skill/ability_skill_estateguild_leader$ability_skill_estateguild_leader"
+    },
+    {
+      "table": "master/ability/leader_ability.orderedmap",
+      "key": "111183",
+      "row": 4,
+      "skill": "ability_skill_fire_dragon_zenith",
+      "action": "battle/action/skill/action/ability_skill/ability_skill_fire_dragon_zenith$ability_skill_fire_dragon_zenith"
+    },
+    {
+      "table": "master/ability/leader_ability.orderedmap",
+      "key": "111165",
+      "row": 4,
+      "skill": "ability_skill_resistance_princess_3halfanv",
+      "action": "battle/action/skill/action/ability_skill/ability_skill_resistance_princess_3halfanv$ability_skill_resistance_princess_3halfanv"
+    }
+  ],
+  "trees": {
+    "battle/action/skill/action/ability_skill/ability_skill_estateguild_leader$ability_skill_estateguild_leader.action.dsl.amf3.deflate": {
+      "called_programs": []
+    },
+    "battle/action/skill/action/ability_skill/ability_skill_fire_dragon_zenith$ability_skill_fire_dragon_zenith.action.dsl.amf3.deflate": {
+      "called_programs": []
+    },
+    "battle/action/skill/action/ability_skill/ability_skill_resistance_princess_3halfanv$ability_skill_resistance_princess_3halfanv.action.dsl.amf3.deflate": {
+      "called_programs": []
+    }
+  },
+  "lifecycle_counts": {
+    "RemoveEvent": 0,
+    "SetPowerFilpSuppress": 0,
+    "NotifyPowerflipEnd": 0,
+    "Wait": 0
+  },
+  "notify_only_wait_count": 0,
+  "findings": [],
+  "sources": {
+    "battle/action/skill/action/ability_skill/ability_skill_estateguild_leader$ability_skill_estateguild_leader.action.dsl.amf3.deflate": {
+      "sha256": "a743605d2c7090d6515dd1021dee93bb0c6ae34456b5f3c5053b0933cd7e7fb1",
+      "bytes": 680,
+      "archive": "pinball-1.4.0-77-d7b5bc59.zip",
+      "member": "production/upload/3b/9ee1e0dc7c24ef1a941ffdcbfe904e32780a43"
+    },
+    "battle/action/skill/action/ability_skill/ability_skill_fire_dragon_zenith$ability_skill_fire_dragon_zenith.action.dsl.amf3.deflate": {
+      "sha256": "11d83f56fbbac4bc37768e672707ef5502853c879ba9bb359906bf5388d1145a",
+      "bytes": 574,
+      "archive": "pinball-1.4.0-152-681fde67.zip",
+      "member": "production/upload/76/8005c603bb7e94abfb4ba133a8a7fc3ad99a58"
+    },
+    "battle/action/skill/action/ability_skill/ability_skill_resistance_princess_3halfanv$ability_skill_resistance_princess_3halfanv.action.dsl.amf3.deflate": {
+      "sha256": "8e0e1531e2448bfeeea05a940f87f94490ca55ae332963bd464b6efea53c8de2",
+      "bytes": 407,
+      "archive": "pinball-1.4.0-241-6b309808.zip",
+      "member": "production/upload/be/4cd3d35873e409bd9ca77eae69df50a0321ae7"
+    },
+    "master/ability/ability.orderedmap": {
+      "sha256": "d296bee4f24972145019433f2418f31848092727b41ad7eceb2cdc094636944d",
+      "bytes": 300105,
+      "archive": "pinball-1.4.34-1.4.35-1-b7c7571d.zip",
+      "member": "production/upload/1e/664c1cc8d80f4f9a69aae2c49ae8c01d1c4001"
+    },
+    "master/ability/ability_soul.orderedmap": {
+      "sha256": "70dd53d7e1f9078199a017d49c0adb2946ecb6e91abfbc42f4b6a4da4b0a2e1e",
+      "bytes": 38313,
+      "archive": "pinball-1.4.0-271-a07f4d02.zip",
+      "member": "production/upload/d6/a23f83f176b05f715a8504b8fc0fc1ffaff068"
+    },
+    "master/ability/leader_ability.orderedmap": {
+      "sha256": "d660477abcf4ebc77b9e27fff8bd6db2f106cb57c3b07f7b8cd8f3d45b33e280",
+      "bytes": 50371,
+      "archive": "pinball-1.4.34-1.4.35-1-b7c7571d.zip",
+      "member": "production/upload/ff/84353774cb95e8d7dc90c679f96a5bca7f42e5"
+    },
+    "master/equipment_enhancement/equipment_enhancement_ability.orderedmap": {
+      "sha256": "b9aa82f7c7483af88f758bcdaeed6474178e57a076d86b660d0bab902996e0ae",
+      "bytes": 3640,
+      "archive": "pinball-1.4.46-1.4.47-1-6ddc9dab.zip",
+      "member": "production/upload/8d/d127a4e129d8c80dd3711704191738812f9181"
+    }
+  },
+  "scope": "CN official archives through 1.4.54; excludes mod tags and later increments"
+}

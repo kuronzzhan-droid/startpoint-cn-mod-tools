@@ -1,0 +1,30 @@
+.team-layout:has(.team-inspector){grid-template-columns:minmax(280px,.78fr) minmax(300px,.9fr) minmax(300px,1fr);grid-template-areas:"inspector main library";gap:10px}
+.team-inspector{grid-area:inspector;min-width:0;position:sticky;top:14px;max-height:calc(100vh - 28px);overflow:auto;scrollbar-gutter:stable;background:var(--surface,#fff);border:1px solid var(--line,#ccdadd);border-radius:10px}
+.team-inspector-heading{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:12px}.team-inspector-heading h2{margin:0;font-size:17px}.team-inspector-heading a{font-size:12px}
+.team-inspector-status{font-size:13px;line-height:1.7;margin:0;padding:0 12px 12px;color:var(--muted,#607780)}.team-inspector-status:empty{display:none}.team-inspector [hidden]{display:none!important}
+.team-inspector-body:empty{display:none}.team-inspector-body>.secondary-button{margin:0 12px 14px}.team-inspector .character-summary{border:0;border-radius:0}
+.team-inspector .summary-header{grid-template-columns:56px minmax(0,1fr) auto;gap:8px;padding:12px}.team-inspector .summary-avatar{width:56px;height:56px}.team-inspector .summary-name h1{font-size:17px}.team-inspector .summary-title{font-size:10px}.team-inspector .summary-type{font-size:10px}
+.team-inspector .summary-fields{padding:0 12px 8px;gap:6px 10px}.team-inspector .summary-field{grid-template-columns:50px minmax(0,1fr);gap:4px}.team-inspector .summary-field dt{padding:4px;font-size:10px}.team-inspector .summary-field dd{font-size:12px}
+.team-inspector :is(.summary-actions,.summary-footer,.summary-level-toolbar){padding:8px 12px}.team-inspector .summary-detail-button{padding:5px 7px;font-size:11px}.team-inspector .summary-stat-note{padding:0 12px 10px}.team-inspector .summary-editor-note{margin:0 12px 12px}
+.team-inspector .summary-section{padding:11px 12px}.team-inspector .summary-ability{grid-template-columns:52px minmax(0,1fr);gap:8px}.team-inspector :is(.summary-copy,.ability-effect-description,.ability-authored-description){font-size:13px;line-height:1.75}
+.team-slot[aria-current="true"]{outline:3px solid #15b7a3;outline-offset:2px}.team-return-link{display:inline-flex;margin-bottom:14px}
+/* Only character candidates use large portraits; equipment and soul pickers keep their layout. */
+.team-candidates[data-kind="character"]{grid-template-columns:repeat(auto-fill,minmax(min(100%,78px),1fr));gap:6px}
+.team-candidates[data-kind="character"]>.team-candidate{min-width:0;min-height:0;padding:4px;gap:5px}
+.team-candidates[data-kind="character"] .team-candidate-art{width:100%;max-width:96px;height:auto;aspect-ratio:1;box-sizing:border-box}
+.team-candidates[data-kind="character"] .team-candidate-name{display:block;width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;line-height:1.5}
+.team-candidate-art>.element-badge{position:absolute;top:0;right:0;z-index:2;border:0;border-radius:0 0 0 5px;padding:2px;background:var(--surface,#fff);pointer-events:none}
+.team-candidate-art>.element-badge>span:last-child{display:none}
+.team-candidate-art>.element-badge .native-icon{width:19px;height:19px}
+@media(max-width:1150px){.team-layout:has(.team-inspector){grid-template-columns:minmax(280px,.8fr) minmax(0,1.2fr);grid-template-areas:"inspector board" "inspector library";grid-auto-rows:min-content}.team-layout:has(.team-inspector) .team-main{display:contents}.team-layout:has(.team-inspector) .team-library{position:static}.team-layout:has(.team-inspector) .team-candidates{max-height:450px}}
+@media(max-width:820px){.team-layout:has(.team-inspector){grid-template-columns:minmax(0,1fr);grid-template-areas:"board" "library" "inspector"}.team-inspector{position:static;max-height:600px}.team-inspector .summary-header{grid-template-columns:66px minmax(0,1fr) auto}.team-inspector .summary-avatar{width:66px;height:66px}}
+@media(max-width:640px){
+  .team-layout .team-library{padding:8px}
+  .team-candidates[data-kind="character"]{grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:5px}
+  .team-candidates[data-kind="character"]>.team-candidate{padding:0;gap:0;border:0;background:transparent;box-shadow:none;border-radius:5px}
+  .team-candidates[data-kind="character"] .team-candidate-art{max-width:none}
+  .team-candidates[data-kind="character"] .team-candidate-name,
+  .team-candidates[data-kind="character"] .element-badge,
+  .team-candidates[data-kind="character"] .character-label-limited{display:none}
+  .team-candidates[data-kind="character"] .character-label{font-size:8px;line-height:1.1;padding:1px 2px}
+}

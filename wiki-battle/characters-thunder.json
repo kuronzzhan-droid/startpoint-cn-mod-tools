@@ -1,0 +1,286 @@
+{
+  "characters": [
+    {
+      "id": "c697b6b0e7024",
+      "role": "ranged",
+      "sourceSkill": "行星爆破＋",
+      "sourceExcerpt": "最近敌人激光、自身攻击强化、Fever 强化激光",
+      "skill": {
+        "name": "行星爆破＋",
+        "description": "发射一束贯穿激光，随后自身攻击提升，中效 8s。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":5,"direction":"target"},"effects":[{"type":"damage","budgetShare":0.7}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"self","range":0},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"attackUp","duration":8,"budgetShare":0.3}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "cc052ad18584b",
+      "role": "ranged",
+      "sourceSkill": "黑鳞·大天翔＋",
+      "sourceExcerpt": "蓄力雷矛贯穿、三次黑雷追击、麻痹目标加伤",
+      "skill": {
+        "name": "黑鳞·大天翔＋",
+        "description": "蓄力 1s 后贯穿雷矛，命中减速 5s；对所选目标追加三次黑雷伤害。三次追击固定，不因同列敌人数无限增加。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":1,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":5,"direction":"target"},"effects":[{"type":"damage","budgetShare":0.4}],"requiresCasterAlive":true},
+          {"offset":1,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":5,"direction":"target"},"effects":[{"type":"slow","duration":5,"budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":1.1,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.13333333}],"requiresCasterAlive":true},
+          {"offset":1.3,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.13333333}],"requiresCasterAlive":true},
+          {"offset":1.5,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.13333333}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c42078d566c79",
+      "role": "ranged",
+      "sourceSkill": "雷电领域／雷电领域＋",
+      "sourceExcerpt": "持续雷电领域、四次落雷、末雷扩大",
+      "skill": {
+        "name": "雷电领域",
+        "description": "雷电领域持续中效 8s，在领域内分四次落雷；最后一次范围与伤害份额更大。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":2.65,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":false},
+          {"offset":5.3,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":false},
+          {"offset":8,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":2},"effects":[{"type":"damage","budgetShare":0.4}],"requiresCasterAlive":false}
+        ]
+      }
+    },
+    {
+      "id": "c2d33d8b90591",
+      "role": "ranged",
+      "sourceSkill": "注水放电程序／注水放电程序＋",
+      "sourceExcerpt": "注水放电领域、爪扫、排水巨型光束",
+      "skill": {
+        "name": "注水放电程序",
+        "description": "短效 5s 导电水域持续伤害，先爪扫后排水贯穿光束；光束命中减速 5s。放电与排水属于一次施放，不累积蓄电水域。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":3,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":3,"length":3,"direction":"up"},"effects":[{"type":"dot","duration":5,"interval":1,"requiresCasterAlive":false,"budgetShare":0.3,"targetMode":"area"}],"requiresCasterAlive":true},
+          {"offset":5,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":5,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":5,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":5,"direction":"up"},"effects":[{"type":"slow","duration":5,"budgetShare":0.2}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c9d5244189661",
+      "role": "melee",
+      "sourceSkill": "月华·狼牙连斩＋",
+      "sourceExcerpt": "狼牙连斩、直接攻击强化、命中落雷",
+      "skill": {
+        "name": "月华·狼牙连斩＋",
+        "description": "先连续狼牙斩；自身进入短效 5s 攻击提升，期间每次普攻追加一段雷击连击。追加次数与总伤害显式封顶，仅攻击当前目标。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"target","radius":1},"effects":[{"type":"damage","budgetShare":0.16666667}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"self","range":0},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"attackUp","duration":5,"budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"self","range":0},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"followup","duration":5,"maxProcs":5,"budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":0.6,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"target","radius":1},"effects":[{"type":"damage","budgetShare":0.16666667}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"target","radius":1},"effects":[{"type":"damage","budgetShare":0.16666667}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c382a022e1832",
+      "role": "melee",
+      "sourceSkill": "博饼·满堂彩＋",
+      "sourceExcerpt": "旋转博饼碗持续近身伤害、队伍直击和追加攻击",
+      "skill": {
+        "name": "博饼·满堂彩＋",
+        "description": "自身旋转碗造成短效 5s 持续伤害；邻域友方攻速提升 5s。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"self","radius":1.5},"effects":[{"type":"dot","duration":5,"interval":1,"requiresCasterAlive":true,"budgetShare":0.6,"targetMode":"area"}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":2},"geometry":{"kind":"circle","center":"self","radius":2},"effects":[{"type":"haste","duration":5,"budgetShare":0.4}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c453ba49676ab",
+      "role": "ranged",
+      "sourceSkill": "桂影·望月三千＋",
+      "sourceExcerpt": "瞄准贯穿月轮弹、爆炸、保护雷队护盾",
+      "skill": {
+        "name": "桂影·望月三千＋",
+        "description": "月轮弹贯穿后爆炸；全队护盾持续短效 5s，自身份额较小。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":5,"direction":"target"},"effects":[{"type":"damage","budgetShare":0.4}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"shield","duration":5,"budgetShare":0.23}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"self","range":0},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"shield","duration":5,"budgetShare":0.07}],"requiresCasterAlive":true},
+          {"offset":0.5,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.3}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "cd06e0723b274",
+      "role": "ranged",
+      "sourceSkill": "多重爆破·礼装重炮＋",
+      "sourceExcerpt": "锁定方向、跟随重炮、逐渐变宽的激光",
+      "skill": {
+        "name": "多重爆破·礼装重炮＋",
+        "description": "锁定本次施放方向后连续炮击，末段激光扩宽；本次施放内完成。删除跨次十层引擎，只保留本次宽度递增。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":5,"direction":"target"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0.5,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":2,"length":5,"direction":"target"},"effects":[{"type":"damage","budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":1,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":3,"length":5,"direction":"target"},"effects":[{"type":"damage","budgetShare":0.5}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c55cd97d61417",
+      "role": "support",
+      "sourceSkill": "浪花爆破＋",
+      "sourceExcerpt": "浪花激光、浪涌强化、雷队技能提升",
+      "skill": {
+        "name": "浪花爆破＋",
+        "description": "三次激光由窄至宽造成伤害；全队攻击提升，短效 5s。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":4,"direction":"target"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"attackUp","duration":5,"budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":0.5,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":2,"length":4,"direction":"target"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":1,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":3,"length":4,"direction":"target"},"effects":[{"type":"damage","budgetShare":0.3}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "cc574cfc67ca4",
+      "role": "support",
+      "sourceSkill": "秋灯缭乱·雷华唤来＋",
+      "sourceExcerpt": "全域雷华、麻痹、参战者攻击强化",
+      "skill": {
+        "name": "秋灯缭乱·雷华唤来＋",
+        "description": "一次雷华脉冲造成伤害并减速 5s；全队攻击提升，中效 8s。定位为雷光控场支援，区别于光属性中秋稻穗的持续治疗。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":5,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.4}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":5,"length":3,"direction":"up"},"effects":[{"type":"slow","duration":5,"budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"attackUp","duration":8,"budgetShare":0.4}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c76af6c75e9ef",
+      "role": "ranged",
+      "sourceSkill": "制压射击·全弹开放＋",
+      "sourceExcerpt": "六轮射击、三重环状波、辅助魔块",
+      "skill": {
+        "name": "制压射击·全弹开放＋",
+        "description": "六轮集中射击后释放三重近身波；本次施放内完成。辅助魔块只作为三个射击点的动画，不作为独立单位。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":4,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true},
+          {"offset":0.24,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":4,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true},
+          {"offset":0.48,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":4,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true},
+          {"offset":0.72,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":4,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true},
+          {"offset":0.9,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"self","radius":1.5},"effects":[{"type":"damage","budgetShare":0.13333333}],"requiresCasterAlive":true},
+          {"offset":0.96,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":4,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":4,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"self","radius":1.5},"effects":[{"type":"damage","budgetShare":0.13333333}],"requiresCasterAlive":true},
+          {"offset":1.5,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"self","radius":1.5},"effects":[{"type":"damage","budgetShare":0.13333333}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c52f66fa91aa0",
+      "role": "melee",
+      "sourceSkill": "雷潮加冕·环刃变生＋",
+      "sourceExcerpt": "低血量剑环护盾、剑刃追击、雷潮打击",
+      "skill": {
+        "name": "雷潮加冕·环刃变生＋",
+        "description": "先雷潮环击；自身护盾持续中效 8s，期间在固定间隔向最近敌人放出剑刃伤害。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"self","radius":1.5},"effects":[{"type":"damage","budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"self","range":0},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"shield","duration":8,"budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":2,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true,"retarget":true},
+          {"offset":4,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true,"retarget":true},
+          {"offset":6,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true,"retarget":true},
+          {"offset":8,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true,"retarget":true}
+        ]
+      }
+    },
+    {
+      "id": "c1c51ad34cb8b",
+      "role": "ranged",
+      "sourceSkill": "碧海雷潮＋",
+      "sourceExcerpt": "黄蓝雷潮扇形多段、自身雷电增幅",
+      "skill": {
+        "name": "碧海雷潮＋",
+        "description": "密集双层涟漪造成多段伤害；自身攻击提升，短效 5s。连击次数显式封顶，不逐字移植原 55 段数值。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"fan","center":"self","radius":4,"angle":90,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.0875}],"requiresCasterAlive":true},
+          {"offset":0.171,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"fan","center":"self","radius":4,"angle":90,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.0875}],"requiresCasterAlive":true},
+          {"offset":0.343,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"fan","center":"self","radius":4,"angle":90,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.0875}],"requiresCasterAlive":true},
+          {"offset":0.514,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"fan","center":"self","radius":4,"angle":90,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.0875}],"requiresCasterAlive":true},
+          {"offset":0.686,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"fan","center":"self","radius":4,"angle":90,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.0875}],"requiresCasterAlive":true},
+          {"offset":0.857,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"fan","center":"self","radius":4,"angle":90,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.0875}],"requiresCasterAlive":true},
+          {"offset":1.029,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"fan","center":"self","radius":4,"angle":90,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.0875}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"fan","center":"self","radius":4,"angle":90,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.0875}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"ally","kind":"self","range":0},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"attackUp","duration":5,"budgetShare":0.3}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c220efe5f85db",
+      "role": "melee",
+      "sourceSkill": "白帝幻界・虎魂刚岚击／白帝幻界・虎魂刚岚击＋",
+      "sourceExcerpt": "雷霆、疾风、虎魂连续攻击，雷风同伴强化",
+      "skill": {
+        "name": "白帝幻界・虎魂刚岚击",
+        "description": "雷、风、虎魂三段环击并减速 5s；雷或风同伴攻击提升，中效 8s。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"circle","center":"self","radius":2},"effects":[{"type":"damage","budgetShare":0.16666667}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"circle","center":"self","radius":2},"effects":[{"type":"slow","duration":5,"budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12,"elements":["thunder","wind"]},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"attackUp","duration":8,"budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":0.6,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"circle","center":"self","radius":2},"effects":[{"type":"damage","budgetShare":0.16666667}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"circle","center":"self","radius":2},"effects":[{"type":"damage","budgetShare":0.16666667}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c5d2fd33ee6b1",
+      "role": "melee",
+      "sourceSkill": "灭势戒律／灭势戒律＋",
+      "sourceExcerpt": "灭势领域、斩首和追袭、侵略射线、自身攻击提升",
+      "skill": {
+        "name": "灭势戒律",
+        "description": "短距离斩首连击后释放侵略贯穿射线；自身攻击提升，中效 8s。灭势领域作为斩击范围，不新增复杂禁制或跨次戒律。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"self","radius":1.5},"effects":[{"type":"damage","budgetShare":0.06}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"self","range":0},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"attackUp","duration":8,"budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":0.3,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"self","radius":1.5},"effects":[{"type":"damage","budgetShare":0.06}],"requiresCasterAlive":true},
+          {"offset":0.6,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"self","radius":1.5},"effects":[{"type":"damage","budgetShare":0.06}],"requiresCasterAlive":true},
+          {"offset":0.9,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"self","radius":1.5},"effects":[{"type":"damage","budgetShare":0.06}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"self","radius":1.5},"effects":[{"type":"damage","budgetShare":0.06}],"requiresCasterAlive":true},
+          {"offset":1.5,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":4,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.4}],"requiresCasterAlive":true}
+        ]
+      }
+    }
+  ]
+}

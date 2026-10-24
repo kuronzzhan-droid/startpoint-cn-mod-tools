@@ -1,0 +1,260 @@
+{
+  "schema": "wf-m2.4-validation/1",
+  "date": "2026-10-19",
+  "scope": "按表与解析块区分官方和补丁 kind；仅本地静态验证，只写当前 worktree",
+  "source_commit": "843b30c624a966894447ce1cfed946c54e8b46a9",
+  "intermediate_failure": {
+    "completed_full_run": false,
+    "cause": "公共DSL表清单增加ex_ability导致旧历史锁外读取；修复为能力推导独立五表，历史DSL保持四表",
+    "repair_commit": "843b30c",
+    "regression_passed": 54,
+    "evidence": [
+      {
+        "path": "work/m2_4/pytest-first-interrupted.log",
+        "sha256": "a5cf646bf6d3fd000757c966219bf88a9f210b329ba742486dbb7969d4d78a75"
+      },
+      {
+        "path": "work/m2_4/regression-final.log",
+        "sha256": "eb7082b8a0141044a7f1ea8a6f70a33ac0b6632b47fe497fce58c62edf70f6c0"
+      }
+    ]
+  },
+  "pytest": {
+    "exit_code": 0,
+    "passed": 4710,
+    "skipped": 354,
+    "warnings": 26,
+    "junit": {
+      "tests": 7441,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 357
+    },
+    "pytest_seconds": 813.25,
+    "elapsed_seconds": 817.2,
+    "command": "python -B -m pytest --basetemp=work/m2_4/full-final-tmp --junitxml=work/m2_4/pytest-full.xml",
+    "log": {
+      "path": "work/m2_4/pytest-full.log",
+      "sha256": "ebfcb1bcc9c733b866d1ebbd4af6c36ba029b78694da8d3d27d36ba9ddb7686c"
+    },
+    "xml": {
+      "path": "work/m2_4/pytest-full.xml",
+      "sha256": "eb6f38efddcda6339d2963f39dd58adb6cfb9f898cf8859b0992637fb7de16aa"
+    }
+  },
+  "registry": {
+    "count": 179,
+    "kind_capabilities": 7,
+    "bindings": 8,
+    "check_exit_code": 0
+  },
+  "profiles": {
+    "test-v34": {
+      "swf_sha256": "3d5c9745f519beee68557df7bce3e4ff635c9bb127069ed85a8fd02b5cbedb8a",
+      "tables": 5,
+      "methods": 50,
+      "mismatches": [],
+      "cli_exit_code": 0,
+      "report": {
+        "path": "work/m2_4/official_audit/test-v34-kinds.json",
+        "sha256": "17231b69b3481b7ebc1e26baf6587f00b638791fb66cb6ce34802f61c08a03c9"
+      }
+    },
+    "test-v35e": {
+      "swf_sha256": "89461f676b57a059bde58fe5897190db9b61013ae63947401fe1bf87106d6bcf",
+      "tables": 5,
+      "methods": 50,
+      "mismatches": [],
+      "cli_exit_code": 0,
+      "report": {
+        "path": "work/m2_4/official_audit/test-v35e-kinds.json",
+        "sha256": "b129b7311620569381cc55229b60cc42a158b04a454b3c8b78b21855bea4482d"
+      }
+    }
+  },
+  "full_table_audit": {
+    "official_tail": "1.4.54",
+    "store131_is_official_only": false,
+    "corpora": {
+      "store131": {
+        "row_count": 9502,
+        "table_rows": {
+          "ability": 5815,
+          "leader_ability": 1759,
+          "ability_soul": 1247,
+          "equipment_enhancement_ability": 618,
+          "ex_ability": 63
+        },
+        "active_content_rows": 9493,
+        "non_content_rows": 9,
+        "table_sha256": {
+          "ability": "6001908d0100bf8bfd2f71454499d0421d93d37ca38d162346ce13d87ff9995a",
+          "leader_ability": "d553ce73926cb6219c0495c25e7fe6d5edec9de2ac1b403dfe664ee79af82878",
+          "ability_soul": "e0e9934e1ef6ec74788db6cadd762e1176b001d1009cc198b4f57176f29066e8",
+          "equipment_enhancement_ability": "df817fc86f06eafb504989cd251cafbbba2c487d71d420c6c198621935f9f43c",
+          "ex_ability": "ad3ca389389ace778ca0748f18db9824375a35bc97f1ed57e039526865c7ec9a"
+        },
+        "origin_counts": {
+          "official_equal": 6111,
+          "official_modified": 59,
+          "store_only": 3332
+        },
+        "resolution": "resolved",
+        "unresolved_count": 0,
+        "issue_count": 0,
+        "profile_checks": {
+          "test-v34": {
+            "problem": 0,
+            "blocking": 0,
+            "pending": 0
+          },
+          "test-v35e": {
+            "problem": 0,
+            "blocking": 0,
+            "pending": 0
+          }
+        },
+        "report": "store131-all-rows.json"
+      },
+      "official-cdn": {
+        "row_count": 6170,
+        "table_rows": {
+          "ability": 3974,
+          "leader_ability": 1107,
+          "ability_soul": 918,
+          "equipment_enhancement_ability": 108,
+          "ex_ability": 63
+        },
+        "active_content_rows": 6162,
+        "non_content_rows": 8,
+        "table_sha256": {
+          "ability": "d296bee4f24972145019433f2418f31848092727b41ad7eceb2cdc094636944d",
+          "leader_ability": "d660477abcf4ebc77b9e27fff8bd6db2f106cb57c3b07f7b8cd8f3d45b33e280",
+          "ability_soul": "70dd53d7e1f9078199a017d49c0adb2946ecb6e91abfbc42f4b6a4da4b0a2e1e",
+          "equipment_enhancement_ability": "b9aa82f7c7483af88f758bcdaeed6474178e57a076d86b660d0bab902996e0ae",
+          "ex_ability": "ad3ca389389ace778ca0748f18db9824375a35bc97f1ed57e039526865c7ec9a"
+        },
+        "origin_counts": {
+          "official_equal": 6170,
+          "official_modified": 0,
+          "store_only": 0
+        },
+        "resolution": "resolved",
+        "unresolved_count": 0,
+        "issue_count": 0,
+        "profile_checks": {
+          "test-v34": {
+            "problem": 0,
+            "blocking": 0,
+            "pending": 0
+          },
+          "test-v35e": {
+            "problem": 0,
+            "blocking": 0,
+            "pending": 0
+          }
+        },
+        "report": "official-cdn-all-rows.json"
+      }
+    },
+    "profile_row_combinations": 31344,
+    "batch_compat_checks": 4,
+    "problem_count": 0,
+    "opening_rows": {
+      "store131": 9,
+      "official_cdn": 8,
+      "note": "trigger=2 不产生 instant/during kindSite；额外逐行核对真实 opening 方法分支",
+      "profile_checks": 34,
+      "unsupported": 0,
+      "report": {
+        "path": "work/m2_4/official_audit/opening-rows.json",
+        "sha256": "ca0d9952728c8e0965b8ced6edda4752208afede571c0823dcd245ca0151be3f"
+      }
+    },
+    "synthetic": {
+      "cases": 15,
+      "profile_evaluations": 30,
+      "assertions_passed": true,
+      "report": "synthetic-counterexamples.json"
+    },
+    "input_members_unchanged": {
+      "store131": {
+        "count": 279,
+        "unchanged": true
+      },
+      "official-cdn": {
+        "count": 18,
+        "unchanged": true
+      }
+    },
+    "evidence": [
+      {
+        "path": "work/m2_4/official_audit/summary.json",
+        "sha256": "a93e3416f47ed2b92fe3c03b0f896643c3b6c3b762dfba6bfe0c5cc30219fac3"
+      },
+      {
+        "path": "work/m2_4/official_audit/store131-all-rows.json",
+        "sha256": "a59a0e88d6918f6086f4205986ad72c3a0a11eac7023afbb3324d31757920f15"
+      },
+      {
+        "path": "work/m2_4/official_audit/official-cdn-all-rows.json",
+        "sha256": "53dec67961b3aad84c8095b98498d988056f9144f8cb41e25fc7843913b916e1"
+      },
+      {
+        "path": "work/m2_4/official_audit/synthetic-counterexamples.json",
+        "sha256": "78d08dc99d6ee4aaa67675f9816bb6aaf2d4c878637dc9bce6489248d28c1b64"
+      },
+      {
+        "path": "work/m2_4/official_audit/support-matrix.json",
+        "sha256": "6047619311335e4b4d83e9d6d5cad95ebfc436e58bf96017d11777d70a2664ab"
+      }
+    ]
+  },
+  "history": {
+    "223_members": {
+      "equal": 3,
+      "total": 3
+    },
+    "221_members": {
+      "equal": 310,
+      "total": 310,
+      "archives": 11,
+      "differences": 0
+    },
+    "221_normalized_containers_equal": 11,
+    "221_full_container_hashes_equal": 0,
+    "boundary": "221复用M2.2已重建package，本轮重封装并核对双清单；未重新生成母图或音频，不声明整ZIP摘要相同或旧221通过交付门禁",
+    "evidence": [
+      {
+        "path": "work/m2_4/history/replay223.json",
+        "sha256": "e8d5a3fe5493fd014e5ffd3f8ad3142cb62d3628f4f97e26ff87a958dd028dad"
+      },
+      {
+        "path": "work/m2_4/history/replay221.json",
+        "sha256": "d0454b5870b6aaa043aba9c45d2b99ba0ccc335503c0e11f2ee439302e93ef86"
+      },
+      {
+        "path": "work/m2_4/history/summary.json",
+        "sha256": "6a1ad2c5a8aefc2162596046a5eb122b28fd20a7f93bc5a26b15eb525fc0f440"
+      }
+    ],
+    "post_run_gate_change": "历史脚本不调用build_delivery；新增前置kind门禁由CLI负向回归覆盖，未重复运行不受影响的历史调用链"
+  },
+  "checks": {
+    "path_scan": {
+      "scanned_text_files": 2347,
+      "findings": [],
+      "count": 0
+    },
+    "hygiene_exit_code": 0,
+    "diff_check_exit_code": 0
+  },
+  "local_commits": [
+    "d05dce8",
+    "1275e5e",
+    "843b30c"
+  ],
+  "device_verified": false,
+  "server_verified": false,
+  "pushed": false
+}

@@ -30,6 +30,7 @@ import shutil
 import struct
 import sys
 import time
+import warnings
 import zlib
 from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
@@ -296,16 +297,22 @@ def table_path(store: Path, logical_path: str) -> Path:
 
 
 def find_world_upload(root: Path) -> Path | None:
+    """Inspect an explicit directory only when it is inside this checkout."""
+    root = Path(root).resolve()
+    if not root.is_relative_to(project_root().resolve()):
+        raise ValueError("WorldFlipper discovery outside the tool checkout is forbidden; configure WF_STORE")
+    if not root.is_dir():
+        return None
     for child in root.iterdir():
         candidate = child / "WorldFlipper" / "dummy" / "download" / "production" / "upload"
-        if candidate.exists():
+        if candidate.is_dir() and candidate.resolve().is_relative_to(project_root().resolve()):
             return candidate
     candidate = root / "WorldFlipper" / "dummy" / "download" / "production" / "upload"
-    return candidate if candidate.exists() else None
+    return candidate if candidate.is_dir() and candidate.resolve().is_relative_to(project_root().resolve()) else None
 
 
 def default_target_store() -> Path | None:
-    return find_world_upload(Path.cwd())
+    return resolve_active_store()
 
 
 def default_source_store() -> Path | None:
@@ -328,7 +335,7 @@ def default_source_store() -> Path | None:
 class VersionProfile:
     id: str
     label: str
-    store: Path
+    store: Path | None
     cdndata: Path | None = None
     res_version: str = ""
     fallback: Path | None = None
@@ -338,9 +345,9 @@ class VersionProfile:
 
 
 def project_root() -> Path:
-    """Return the checkout root for embedded and flat tool layouts."""
-    tool_dir = Path(__file__).resolve().parent
-    return tool_dir.parent if tool_dir.name.casefold() == "mod-tools" else tool_dir
+    """工具仓根；兼容 profiles.json 相对路径以此为基准，绝不隐式取父目录。"""
+    from wf.paths import REPOSITORY
+    return REPOSITORY
 
 
 def profiles_file() -> Path:
@@ -352,54 +359,29 @@ def _resolve_profile_path(value: str) -> Path:
     return p if p.is_absolute() else (project_root() / p).resolve()
 
 
-def _optional_profile_path(
-    entry: dict[str, Any], profile_id: str, key: str
-) -> Path | None:
-    """Resolve an optional path, rejecting an explicitly present empty value."""
-    if key not in entry:
-        return None
-    value = entry[key]
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"profile {key} must be a non-empty path: {profile_id}")
-    return _resolve_profile_path(value)
-
-
 def load_profiles() -> dict[str, Any]:
     pf = profiles_file()
     if not pf.exists():
         return {}
-    return json.loads(pf.read_text(encoding="utf-8"))
+    warnings.warn("profiles.json is deprecated; migrate to profiles/local.json", UserWarning, stacklevel=2)
+    data = json.loads(pf.read_text(encoding="utf-8-sig"))
+    if not isinstance(data, dict):
+        raise ValueError(f"profiles.json must be a JSON object: {pf}")
+    return data
 
 
 def resolve_profile(profile_id: str | None = None) -> VersionProfile | None:
-    """读取 profiles.json 的激活档案。无文件 / 无匹配时返回 None,调用方回退旧逻辑。"""
-    data = load_profiles()
-    profiles = data.get("profiles") or {}
-    pid = profile_id or data.get("active")
-    if not pid or pid not in profiles:
-        return None
-    entry = profiles[pid]
-    raw_store = entry.get("store")
-    if not isinstance(raw_store, str) or not raw_store.strip():
-        raise ValueError(f"profile store must be a non-empty path: {pid}")
-    return VersionProfile(
-        id=pid,
-        label=entry.get("label", pid),
-        store=_resolve_profile_path(raw_store),
-        cdndata=_resolve_profile_path(entry["cdndata"]) if entry.get("cdndata") else None,
-        res_version=entry.get("res_version", ""),
-        fallback=_resolve_profile_path(entry["fallback"]) if entry.get("fallback") else None,
-        cdn_dir=_optional_profile_path(entry, pid, "cdn_dir"),
-        server_dir=_optional_profile_path(entry, pid, "server_dir"),
-    )
+    """统一读取环境与本地档案；旧 profiles.json 仅兼容，不允许冲突。"""
+    from wf.config.profile_merge import merge_profile
+    values = merge_profile(load_profiles(), _resolve_profile_path, profile_id)
+    return VersionProfile(**values) if values is not None else None
 
 
 # ---------------------------------------------------------------------------
 # 目标 store 解析链(唯一权威;wf_gui / wf_selftest / wf_quest_lib / wf_publish 同用)
-#   1. WF_TARGET_STORE env(显式最高优先;设了但目录不存在 = 配置错误,硬报错)
-#   2. profiles.json 激活档案的 store(WF_PROFILE env 可指定档案 id)
-#   3. find_world_upload 自动探测(给定 root → 仓库根 → 当前工作目录)
-# 全部落空返回 None,由调用方决定兜底或报错(报错文案请带上 TARGET_STORE_HINT)。
+#   WF_STORE env > profiles/local.json > 未配置。
+#   WF_TARGET_STORE 和 profiles.json 仅兼容读取并警告；冲突不允许继续。
+# 无配置返回 None，由 require_active_store 报错；不会扫描 cwd 或兄弟目录。
 # ---------------------------------------------------------------------------
 
 def _tool_dir_prefix() -> str:
@@ -411,14 +393,34 @@ def _tool_dir_prefix() -> str:
 
 
 TARGET_STORE_HINT = (
-    "请设置环境变量 WF_TARGET_STORE 指向数据包目录"
+    "请设置环境变量 WF_STORE（旧别名 WF_TARGET_STORE）指向数据包目录"
     "(…/WorldFlipper/dummy/download/production/upload),"
-    f"或在 {_tool_dir_prefix()}profiles.json 里配置激活档案的 store"
+    "或在 profiles/local.json 的 paths.store 中配置；旧 profiles.json 请迁移"
     f"(可用 python {_tool_dir_prefix()}wf_store_materialize.py "
     "--dest <一个空目录> --apply --write-profile 生成)。"
 )
 
 _UNSET_PROFILE = object()
+
+
+class _CdnRootNotFoundError(ValueError):
+    """No CDN seam was configured and no legacy CDN root was discoverable."""
+
+
+class ServerDirNotConfiguredError(ValueError):
+    """No server was configured; distinct from an invalid configured directory."""
+
+
+def _optional_profile_path(
+    entry: dict[str, Any], profile_id: str, key: str
+) -> Path | None:
+    """Null is unconfigured; other empty or malformed values are invalid."""
+    if entry.get(key) is None:
+        return None
+    value = entry[key]
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"profile {key} must be a non-empty path: {profile_id}")
+    return _resolve_profile_path(value)
 
 
 def _require_existing_directory(
@@ -436,13 +438,30 @@ def _require_existing_directory(
     return directory
 
 
+def require_active_store(
+    root: Path | None = None,
+    *,
+    profile: Any = _UNSET_PROFILE,
+    profile_id: str | None = None,
+) -> Path:
+    """Resolve the authoritative store or fail with the shared setup hint."""
+    store = resolve_active_store(
+        root, profile=profile, profile_id=profile_id
+    )
+    if store is None:
+        raise FileNotFoundError(TARGET_STORE_HINT)
+    return store
+
+
 def env_target_store() -> Path | None:
     """Return a validated explicit store, or None only when the key is absent."""
-    if "WF_TARGET_STORE" not in os.environ:
+    from wf.paths import environment_path
+    value = environment_path("store")
+    if value is None:
         return None
     try:
         return _require_existing_directory(
-            os.environ["WF_TARGET_STORE"], label="WF_TARGET_STORE"
+            value, label="WF_STORE / WF_TARGET_STORE"
         )
     except ValueError as error:
         raise ValueError(f"{error}\n{TARGET_STORE_HINT}") from None
@@ -462,54 +481,23 @@ def resolve_active_store(
     注意与本文件末尾 CLI 用的 resolve_target_store(value, profile) 区分:
     那个是 `--target-store` 命令行参数的解析,不读环境变量。
     """
+    if profile is _UNSET_PROFILE:
+        profile = resolve_profile(profile_id)
     env = env_target_store()
     if env is not None:
         return env
-    if profile is _UNSET_PROFILE:
-        profile = resolve_profile(profile_id or os.environ.get("WF_PROFILE"))
+    from wf.paths import configured_path
+    configured_store = configured_path("store", profile_id)
+    if configured_store is not None:
+        return _require_existing_directory(configured_store, label="configured store")
     if profile is not None and getattr(profile, "store", None):
         return _require_existing_directory(profile.store, label="profile store")
-    seen: list[Path] = []
-    for base in (root, project_root(), Path.cwd()):
-        if base is None:
-            continue
-        base = Path(base)
-        if base in seen:
-            continue
-        seen.append(base)
-        try:
-            found = find_world_upload(base)
-        except OSError:
-            found = None
-        if found:
-            return found
     return None
 
 
-def require_active_store(
-    root: Path | None = None,
-    *,
-    profile: Any = _UNSET_PROFILE,
-    profile_id: str | None = None,
-) -> Path:
-    """Resolve the authoritative store or fail with the shared setup hint."""
-    store = resolve_active_store(
-        root, profile=profile, profile_id=profile_id
-    )
-    if store is None:
-        raise FileNotFoundError(TARGET_STORE_HINT)
-    return store
-
-
 # ---------------------------------------------------------------------------
-# CDN 根解析链(T2 两仓独立):CDN 位置以服务端为准,工具只读发现、永不搬移。
-#   1. WF_CDN_DIR env(显式,最高优先)   2. profile.cdn_dir(持久化显式)
-#   3. 自动识别:WF_SERVER_DIR env / profile.server_dir → 复读服务端自身配置
-#      (dev:服务端 .env 的 CDN_DIR 指向含 cn/ 的父目录 → CDN_DIR/cn;
-#       缺省与 main 同为 <server>/.cdn/cn)
-#   4. 嵌套遗留兜底:project_root()/.cdn/cn(工具仍住在服务端仓内时)
-# 显式配置(1/2)不合法=硬报错(配置错误不该被兜底掩盖);派生候选(3/4)不合法则
-# 顺延下一级;全部落空报出完整尝试清单。
+# CDN 使用统一配置的 cdn_dir，或从显式 server 读取其 .env / .cdn/cn。
+# 无配置时只接受调用方显式传入的 legacy_root，不扫描旧目录布局。
 # ---------------------------------------------------------------------------
 
 
@@ -519,10 +507,6 @@ def looks_like_cdn_root(path: Path) -> bool:
         (path / "archive-common-diff").is_dir()
         or (path / "archive-common-full").is_dir()
     )
-
-
-class _CdnRootNotFoundError(ValueError):
-    """No CDN seam was configured and no legacy CDN root was discoverable."""
 
 
 def _read_server_cdn_dir(server_dir: Path) -> Path | None:
@@ -553,21 +537,12 @@ def resolve_cdn_root(
     *,
     legacy_root: Path | None = None,
 ) -> Path:
-    """按四级解析链返回 CDN 根;全部落空抛 ValueError(含尝试清单)。"""
+    """从显式 CDN / 服务端配置解析；未配置与坏配置分别报错。"""
     tried: list[str] = []
-
-    if "WF_CDN_DIR" in os.environ:
-        path = _require_existing_directory(
-            os.environ["WF_CDN_DIR"], label="WF_CDN_DIR"
-        )
-        if looks_like_cdn_root(path):
-            return path
-        raise ValueError(f"WF_CDN_DIR 指向的目录不是 CDN 根(缺 archive-common-*): {path}")
-
     profile = resolve_profile(profile_id)
     if profile and profile.cdn_dir:
         profile_cdn = _require_existing_directory(
-            profile.cdn_dir, label="profile cdn_dir"
+            profile.cdn_dir, label="WF_CDN_DIR / profile cdn_dir"
         )
         if looks_like_cdn_root(profile_cdn):
             return profile_cdn
@@ -575,13 +550,9 @@ def resolve_cdn_root(
             f"profile[{profile.id}].cdn_dir 不是 CDN 根: {profile_cdn}"
         )
 
-    if "WF_SERVER_DIR" in os.environ:
+    if profile and profile.server_dir:
         server_dir = _require_existing_directory(
-            os.environ["WF_SERVER_DIR"], label="WF_SERVER_DIR"
-        )
-    elif profile and profile.server_dir:
-        server_dir = _require_existing_directory(
-            profile.server_dir, label="profile server_dir"
+            profile.server_dir, label="WF_SERVER / WF_SERVER_DIR / profile server_dir"
         )
     else:
         server_dir = None
@@ -594,27 +565,17 @@ def resolve_cdn_root(
             if looks_like_cdn_root(candidate):
                 return candidate
             tried.append(f"服务端识别: {candidate}")
-        configured_by = (
-            "WF_SERVER_DIR"
-            if "WF_SERVER_DIR" in os.environ
-            else f"profile[{profile.id}].server_dir"
-        )
         raise ValueError(
-            f"{configured_by} 无法导出有效 CDN 根: " + "; ".join(tried)
+            "配置的 server 无法导出有效 CDN 根: " + "; ".join(tried)
         )
-
-    legacy = (
-        Path(legacy_root).resolve()
-        if legacy_root is not None
-        else project_root() / ".cdn" / "cn"
-    )
-    if looks_like_cdn_root(legacy):
-        return legacy
-    tried.append(f"嵌套遗留: {legacy}")
-
+    if legacy_root is not None:
+        legacy = _require_existing_directory(legacy_root, label="legacy_root")
+        if looks_like_cdn_root(legacy):
+            return legacy
+        raise ValueError(f"legacy_root 不是 CDN 根: {legacy}")
     raise _CdnRootNotFoundError(
-        "无法定位 CDN 根;请设 WF_CDN_DIR / profile.cdn_dir / WF_SERVER_DIR。已尝试: "
-        + "; ".join(tried)
+        "无法定位 CDN 根;请设 WF_CDN_DIR / WF_SERVER 或 profiles/local.json "
+        "的 paths.cdn_dir / paths.server；未配置时不扫描目录。"
     )
 
 
@@ -635,21 +596,26 @@ def resolve_cdn_root_lax(
 
 
 def resolve_server_dir(profile_id: str | None = None) -> Path:
-    """服务端仓根:WF_SERVER_DIR > profile.server_dir > 嵌套遗留(project_root)。
-
-    用于 asset-patch manifest、client-patch 等"贴着服务端仓"的路径推导;
-    完全未配置时保留嵌套遗留;显式坏配置失败关闭。
-    """
-    if "WF_SERVER_DIR" in os.environ:
-        return _require_existing_directory(
-            os.environ["WF_SERVER_DIR"], label="WF_SERVER_DIR"
-        )
+    """服务端仓根必须显式配置；缺失与错误都不退到工具仓或其父目录。"""
     profile = resolve_profile(profile_id)
     if profile and profile.server_dir:
         return _require_existing_directory(
-            profile.server_dir, label="profile server_dir"
+            profile.server_dir, label="WF_SERVER / WF_SERVER_DIR / profile server_dir"
         )
-    return project_root()
+    raise ServerDirNotConfiguredError("服务端未配置：请设置 WF_SERVER 或 profiles/local.json 的 paths.server")
+
+
+def resolve_cdndata_dir(profile_id: str | None = None) -> Path:
+    """资料镜像取显式 cdndata；否则只从已配置服务端派生。"""
+    profile = resolve_profile(profile_id)
+    if profile and profile.cdndata:
+        return _require_existing_directory(
+            profile.cdndata, label="WF_CDNDATA / profile cdndata"
+        )
+    return _require_existing_directory(
+        resolve_server_dir(profile_id) / "assets" / "cdndata",
+        label="configured server assets/cdndata",
+    )
 
 
 def parse_index(raw: bytes) -> tuple[list[str], list[tuple[int, int]], int]:
@@ -1719,12 +1685,10 @@ def cmd_apply(args: argparse.Namespace) -> None:
 def resolve_target_store(value: str | None, profile: "VersionProfile | None" = None) -> Path:
     if value:
         return Path(value)
-    if profile:
-        return profile.store
-    store = default_target_store()
+    store = resolve_active_store(profile=profile if profile is not None else _UNSET_PROFILE)
     if store:
         return store
-    raise SystemExit("target store not found; pass --target-store or configure mod-tools/profiles.json")
+    raise SystemExit("target store not found; " + TARGET_STORE_HINT)
 
 
 def resolve_source_store(value: str | None, profile: "VersionProfile | None" = None) -> Path | None:

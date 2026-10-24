@@ -72,6 +72,13 @@ class OfflineToolchainTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.path = Path(self.temp.name)
+        # All writable fixtures stay inside the task workspace. Model the
+        # repository and private signing home as siblings within that sandbox.
+        self.fixture_repo = self.path / "repository"
+        self.fixture_repo.mkdir()
+        repository = mock.patch.object(module, "_repository_root", return_value=self.fixture_repo)
+        repository.start()
+        self.addCleanup(repository.stop)
 
     def tool(self, relative: str) -> Path:
         path = self.path / relative
@@ -1154,7 +1161,7 @@ Signer #1 certificate SHA-256 digest: {first}
             )
         self.assertEqual([], runner.calls)
 
-        inside_repo = MOD_TOOLS / ".task7-signer-must-not-create"
+        inside_repo = self.fixture_repo / ".task7-signer-must-not-create"
         self.assertFalse(inside_repo.exists())
         with self.assertRaisesRegex(module.ToolchainError, "outside the repository"):
             module.init_signer_interactive(

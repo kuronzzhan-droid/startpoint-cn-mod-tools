@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""store 解析链回归:WF_TARGET_STORE > profiles.json 激活档案 > 自动探测 > 历史兜底。
+"""store 解析链回归:环境变量 > profiles/local.json；禁止自动探测数据包。
 
 背景(2026-08-02 群反馈「工具里那一行弹国服太变态了」):
 wf_quest_lib._store_base() 曾对 load_profiles() 返回的 dict 取 .active_store 属性,
@@ -35,8 +35,8 @@ class EnvIsolatedCase(unittest.TestCase):
         env_patch = mock.patch.dict(os.environ)
         env_patch.start()
         self.addCleanup(env_patch.stop)
-        os.environ.pop("WF_TARGET_STORE", None)
-        os.environ.pop("WF_PROFILE", None)
+        for key in ("WF_STORE", "WF_TARGET_STORE", "WF_PROFILE", "WF_PATHS_PROFILE"):
+            os.environ.pop(key, None)
         temp = tempfile.TemporaryDirectory()
         self.addCleanup(temp.cleanup)
         self.root = Path(temp.name)
@@ -68,17 +68,19 @@ class QuestLibStoreBaseTests(EnvIsolatedCase):
         with mock.patch.object(core, "resolve_profile", return_value=profile), self.rooted():
             self.assertEqual(quest._store_base(), store)
 
-    def test_auto_detection_finds_data_pack_without_any_config(self):
-        upload = self.make_dir(
+    def test_data_pack_requires_configuration_even_if_present(self):
+        self.make_dir(
             "data-pack", "WorldFlipper", "dummy", "download", "production", "upload"
         )
         with self.no_profile(), self.rooted():
-            self.assertEqual(quest._store_base(), upload)
+            with self.assertRaises(FileNotFoundError):
+                quest._store_base()
 
-    def test_legacy_layout_still_resolves_for_the_author_machine(self):
-        legacy = self.make_dir(*quest.LEGACY_STORE_REL.split("/"))
+    def test_legacy_layout_requires_configuration(self):
+        self.make_dir(*quest.LEGACY_STORE_REL.split("/"))
         with self.no_profile(), self.rooted():
-            self.assertEqual(quest._store_base(), legacy)
+            with self.assertRaises(FileNotFoundError):
+                quest._store_base()
 
     def test_nothing_configured_raises_actionable_error(self):
         with self.no_profile(), self.rooted(), mock.patch.object(
@@ -142,62 +144,6 @@ class QuestLibTableIoTests(EnvIsolatedCase):
 
 
 class CoreResolveTargetStoreTests(EnvIsolatedCase):
-    def test_flat_tool_checkout_anchors_relative_profile_paths_locally(self):
-        tool_dir = self.root / "wf-mod-tools"
-        store = tool_dir / "store"
-        store.mkdir(parents=True)
-        profiles = {
-            "active": "cn",
-            "profiles": {"cn": {"store": "store"}},
-        }
-        with mock.patch.object(
-            core, "__file__", str(tool_dir / "wf_mod_tool.py")
-        ), mock.patch.object(core, "load_profiles", return_value=profiles):
-            profile = core.resolve_profile()
-
-        self.assertIsNotNone(profile)
-        self.assertEqual(store.resolve(), profile.store)
-
-    def test_explicit_environment_store_requires_an_absolute_existing_directory(self):
-        file_path = self.root / "not-a-directory"
-        file_path.write_bytes(b"")
-        invalid_values = (
-            ("", "non-empty"),
-            (".", "absolute"),
-            (str(self.root / "missing"), "existing directory"),
-            (str(file_path), "existing directory"),
-        )
-        for value, message in invalid_values:
-            with self.subTest(value=value):
-                os.environ["WF_TARGET_STORE"] = value
-                with self.assertRaisesRegex(ValueError, message):
-                    core.env_target_store()
-
-    def test_profile_store_requires_an_absolute_existing_directory(self):
-        file_path = self.root / "not-a-directory"
-        file_path.write_bytes(b"")
-        invalid_values = (
-            Path("relative-store"),
-            self.root / "missing",
-            file_path,
-        )
-        for value in invalid_values:
-            profile = core.VersionProfile(id="cn", label="CN", store=value)
-            with self.subTest(value=value), self.assertRaisesRegex(
-                ValueError, "profile store"
-            ):
-                core.resolve_active_store(self.root, profile=profile)
-
-    def test_profile_configuration_rejects_a_blank_store(self):
-        profiles = {
-            "active": "cn",
-            "profiles": {"cn": {"label": "CN", "store": ""}},
-        }
-        with mock.patch.object(core, "load_profiles", return_value=profiles), self.assertRaisesRegex(
-            ValueError, "profile store.*non-empty"
-        ):
-            core.resolve_profile()
-
     def test_supplied_profile_is_not_re_resolved(self):
         store = self.make_dir("profile-store")
         profile = core.VersionProfile(id="cn", label="CN", store=store)
@@ -212,7 +158,7 @@ class CoreResolveTargetStoreTests(EnvIsolatedCase):
             "pack", "WorldFlipper", "dummy", "download", "production", "upload"
         )
         with mock.patch.object(core, "resolve_profile") as resolve_profile:
-            self.assertEqual(core.resolve_active_store(self.root, profile=None), upload)
+            self.assertIsNone(core.resolve_active_store(self.root, profile=None))
             resolve_profile.assert_not_called()
 
     def test_returns_none_when_the_chain_is_exhausted(self):

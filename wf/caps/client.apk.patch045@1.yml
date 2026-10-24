@@ -1,0 +1,60 @@
+schema: wf-capability/1
+id: client.apk.patch045@1
+title: 像素 frame.scale
+layer: A
+provided_by:
+  patches:
+  - 45
+  match: all
+  methods:
+  - patch: 45
+    abc: boot_ffc6
+    label: CharacterCellView/drawWithAdvanceFlag
+    sha256: beedce9917da57caa8d1d65576cc86ea91a18540a14cca0979e3fcd1cda03fc5
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 45
+    abc: boot_ffc6
+    label: MemberView/<ctor>
+    sha256: bad0f9ea0fb66f638029fb96c26b2c67b9df352f43265aed6603610eaafc1b35
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 45
+    abc: boot_ffc6
+    label: PixelArtCharacterView/spriteSheetLoadCompleted
+    sha256: 05389cca6b968bcc6097e3cb4054636a1ffc132cff35f500449a9c285e669317
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: false
+  features: []
+  note: 无额外服务端改动要求
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: 像素 frame.scale
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: 像素 frame.scale
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: 像素 frame.scale
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/verification/v33-patches-preserved-o8-o12-r2.json

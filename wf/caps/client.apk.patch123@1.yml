@@ -1,0 +1,93 @@
+schema: wf-capability/1
+id: client.apk.patch123@1
+title: 123 能力弹道命中路径及六槽队伍预载数据化
+layer: A
+provided_by:
+  patches:
+  - 123
+  match: all
+  methods:
+  - patch: 123
+    abc: boot_ffc6
+    label: BattleCharacterLogic/resolvePathCollection
+    sha256: 1635d24840bc0c5e81cff3730159741f783528dd20bd417838c61c60aafbd8db
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 123
+    abc: boot_ffc6
+    label: BattleCharacterLogic$/wfxVisualPaths
+    sha256: 27c1317a058f2e5b854be7b3477ffa49a57ef43517f95e13b09eb308a92ef45e
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 123
+    abc: boot_ffc6
+    label: MemberImpl/wfxAbilityVisualPaths
+    sha256: bdcd0adac5d79b7402e8ddb5f71fdfa783a15dbbfd2e7fbb46666a1db20161c6
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 123
+    abc: boot_ffc6
+    label: BattleCharacterLogic$/wfxPreloadVisualFor
+    sha256: b8b504471f5bed8504a58e1f77e0db657f45be64ec39fa2a280881270ce9d1a0
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 123
+    abc: boot_ffc6
+    label: BattleCharacterLogic/wfxPreloadAbilityVisuals
+    sha256: 497ecff5cf9c6e1391114caede2f6ca73c74ca3c673e0a6456fb3ccc2f71aec1
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 123
+    abc: cn.mod.InahoAbilityVisuals
+    label: InahoAbilityVisuals$/shot
+    sha256: ec529cbd0b69317e23117240490cf406a5c41bcd76de8ea9a72dac7454f74143
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 123
+    abc: cn.mod.InahoAbilityVisuals
+    label: InahoAbilityVisuals$/hit
+    sha256: 222c889582126fd7c175432656d4cad2e2eca752695872a31103f3b6adcb1cc3
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 123
+    abc: cn.mod.InahoAbilityVisuals
+    label: InahoAbilityVisuals$/preload
+    sha256: 15046c0508ef56fb260ca03e12cc22fef8a5b57b0e779ad70074461faafecfd1
+    status: 已记录
+    source: v35/run2/release-locks.json
+  status: 已记录
+  basis: v35e/run5累计本地离线证据；哈希为方法code字节；不声明设备验收或部署
+server:
+  required: false
+  features: []
+  note: 通用客户端数据入口；不声明服务端或资源已部署
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+  allowed_tables: []
+form:
+  label: 123 能力弹道命中路径及六槽队伍预载数据化
+  fields: []
+  note: 需要 test-v35e；实际参数规则以累计登记和对应实现说明为准
+describe:
+  template: 123 能力弹道命中路径及六槽队伍预载数据化
+  channel: 能力说明
+rules:
+- capability.missing
+- capability.method-hash
+- capability.resolution
+preview:
+  label: 123 能力弹道命中路径及六槽队伍预载数据化
+  status: 待验证
+golden:
+- source: v35/run2/apk-patches-additions/123-ability-visuals/README.md
+  kind: method-code-sha256
+  note: 最终SWF实际方法与最终release-lock一致；可重复离线验证不等于AIR/Android设备验收
+docs:
+- v35/run2/apk-patches-additions/123-ability-visuals/README.md
+- docs/m2/v35e-method-audit.json
+- docs/m2/v35e-registration.md

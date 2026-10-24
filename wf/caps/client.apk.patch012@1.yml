@@ -1,0 +1,48 @@
+schema: wf-capability/1
+id: client.apk.patch012@1
+title: 深渊纪录保持者昵称
+layer: platform
+provided_by:
+  patches:
+  - 12
+  match: all
+  methods:
+  - patch: 12
+    abc: cn.ui.AbyssRecordDetails
+    label: AbyssRecordDetails$/responseText
+    sha256: bd6bdb780750710767f9f6b05cfb6d8bc5f3b12c0285a5364032036e29fd9bf7
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: false
+  features: []
+  note: 无额外服务端改动要求
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: 深渊纪录保持者昵称
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: 深渊纪录保持者昵称
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: 深渊纪录保持者昵称
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/verification/v33-patches-preserved-o8-o12-r2.json

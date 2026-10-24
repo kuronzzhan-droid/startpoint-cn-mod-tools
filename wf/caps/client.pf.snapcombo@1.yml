@@ -1,0 +1,68 @@
+schema: wf-capability/1
+id: client.pf.snapcombo@1
+title: PF 前连击快照数据开关
+layer: A
+provided_by:
+  patches:
+  - 117
+  match: all
+  methods:
+  - patch: 117
+    abc: boot_ffc6
+    label: ActionEvaluationResolver/<ctor>
+    sha256: 6d07497167fbfb8673fc2f8a871045721a4e1776af687951f65478359a83edb7
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 117
+    abc: boot_ffc6
+    label: ActionEvaluationResolver/wfxUsesSnapCombo
+    sha256: a400d4fdd3b6a8e03095da1e2b8340ca7f2325004797438e8f311ece2d04289c
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 117
+    abc: boot_ffc6
+    label: Battle$/wfxPfReadString
+    sha256: e5ea4e9a21522cfa9fb2692ea8ee55d53d03a34f420ade692831a9eb67e0cc4d
+    status: 已记录
+    source: v35/run1/release-locks.json
+  status: 已记录
+  basis: v35e/run5累计本地离线证据；哈希为方法code字节；不声明设备验收或部署
+server:
+  required: false
+  features: []
+  note: 通用客户端数据入口；不声明服务端或资源已部署
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors:
+  - custom_ability_string.wfx_snapcombo_
+  allowed_tables:
+  - custom_ability_string
+form:
+  label: PF 前连击快照数据开关
+  fields:
+  - name: key
+    prefix: wfx_snapcombo_
+    value: 非空且不等于字符串0
+  note: 需要 test-v35e；实际参数规则以累计登记和对应实现说明为准
+describe:
+  template: custom_ability_string的wfx_snapcombo_<override键>非空且不等于0时使用原PF前快照；保留秋九尾旧键
+  channel: 能力说明
+rules:
+- capability.missing
+- capability.method-hash
+- capability.resolution
+preview:
+  label: PF 前连击快照数据开关
+  status: 待验证
+golden:
+- source: v35/run5/registry-draft.json
+  kind: method-code-sha256
+  note: 最终SWF实际方法与最终release-lock一致；可重复离线验证不等于AIR/Android设备验收
+docs:
+- v35/run5/registry-draft.json
+- docs/m2/v35e-method-audit.json
+- docs/m2/v35e-registration.md

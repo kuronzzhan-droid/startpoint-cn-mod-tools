@@ -5,7 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+pass  # Imports resolve from this checkout/package, not external source copies.
 from wf_gui import DEVICE, ROOT, find_adb  # noqa: E402
 
 

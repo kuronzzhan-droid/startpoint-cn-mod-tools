@@ -1,0 +1,151 @@
+{
+  "schema": "wf-matrix-validation/1",
+  "reference": "角色机制矩阵/scan_raw.json (1.4.224)",
+  "reference_sha256": "6ff163d4f293ac01f8e3a9464ea019cf890afbb3d5d21fe5eb5fe1dd0e507bb0",
+  "legacy_csv_224_byte_equal": true,
+  "versions": {
+    "224": {
+      "tip": "1.4.224",
+      "characters": 108,
+      "capabilities": 25,
+      "zip_count": 119,
+      "same_reference_ids": true,
+      "field_differences": 0,
+      "missing_dsl": 0,
+      "scan_complete": true,
+      "official_tail": "1.4.54",
+      "artifacts": {
+        "comparison.json": "70b42e64c8d1d3b700287b8ea207e0e1594a3cc836fe378309baea5413d1bf86",
+        "matrix.csv": "01dfda3c46c8cb480ad7c89dd54387cb5a7b0808a5e4f2bd11486d6f4f547f68",
+        "matrix.json": "2e5c7df828201f8ff3a7a88d480b4a86a4dca7b973e4b49f6c25323c6db25af8",
+        "scan_raw.json": "6ae879c395a129eccb5d6b29d966e185278bce128a9a30164bb22a717bbe8d36",
+        "view.lock.json": "b7d4a174dd2034da5131cd5deb919b04c96967f7f25558889f7cb8f8b90d499d",
+        "角色机制矩阵.csv": "9c4ccdcba0c02f3282a95d07062f018f8ad8c73165f29ec66f3a36fd52433650"
+      }
+    },
+    "229": {
+      "tip": "1.4.229",
+      "characters": 108,
+      "capabilities": 25,
+      "zip_count": 124,
+      "same_reference_ids": true,
+      "field_differences": 107,
+      "missing_dsl": 0,
+      "scan_complete": true,
+      "official_tail": "1.4.54",
+      "artifacts": {
+        "comparison.json": "181cd2255f7b1eca2f5d866ba083018a0d59bdf96d8bbf2038483834a1efab99",
+        "matrix.csv": "01dfda3c46c8cb480ad7c89dd54387cb5a7b0808a5e4f2bd11486d6f4f547f68",
+        "matrix.json": "85f145f750aceb6c4bca95bf5ac9f2bf3ca33bed7d4b4c6baf602a3fa43a4efa",
+        "scan_raw.json": "2a325a3dd66c6b32f5caf1c9a7b84c8e887b61bef2bb9c4e1097ba7a1dcbce59",
+        "view.lock.json": "5d541442cbb64b1085ac6832bcb40cbd815468c66c53c50c59a69652a9ad7484",
+        "角色机制矩阵.csv": "b69f9f37e00d4de3941db274dcb7bb4dab7fa39fc9dd74edf870bf21f4578d52"
+      }
+    },
+    "231": {
+      "tip": "1.4.231",
+      "characters": 108,
+      "capabilities": 25,
+      "zip_count": 126,
+      "same_reference_ids": true,
+      "field_differences": 110,
+      "missing_dsl": 0,
+      "scan_complete": true,
+      "official_tail": "1.4.54",
+      "artifacts": {
+        "comparison.json": "619676dd990449e49aa01a8c5be563c07083d988b87a173df7e3450379a9d71f",
+        "matrix.csv": "01dfda3c46c8cb480ad7c89dd54387cb5a7b0808a5e4f2bd11486d6f4f547f68",
+        "matrix.json": "daa2c40ce49fb096fbf036b0bd1af2170bf48b575ffcf91afcee05e9db963fc3",
+        "scan_raw.json": "96d93c834b7bc89ed259fe9a977941fbe120e9e68f2abdc79f86c365abe0ea80",
+        "view.lock.json": "bb20d194216efc0a5b4a3446e45e33fedb9f646841cc7e18945666e238d35a25",
+        "角色机制矩阵.csv": "2c99a9f772548ea32009cd0f79bba65e6af4cd16343ff732e02379cdb752f16b"
+      }
+    }
+  },
+  "capability_set_changes": {
+    "229": [],
+    "231": []
+  },
+  "steps": [
+    {
+      "version": "1.4.225",
+      "fields": 6,
+      "non_provenance": [
+        [
+          "139991",
+          "desc_override"
+        ],
+        [
+          "141099",
+          "awake_rows"
+        ],
+        [
+          "141099",
+          "pf_overrides"
+        ]
+      ]
+    },
+    {
+      "version": "1.4.226",
+      "fields": 0,
+      "non_provenance": []
+    },
+    {
+      "version": "1.4.227",
+      "fields": 102,
+      "non_provenance": []
+    },
+    {
+      "version": "1.4.228",
+      "fields": 0,
+      "non_provenance": []
+    },
+    {
+      "version": "1.4.229",
+      "fields": 5,
+      "non_provenance": [
+        [
+          "141099",
+          "awake_rows"
+        ]
+      ]
+    },
+    {
+      "version": "1.4.230",
+      "fields": 0,
+      "non_provenance": []
+    },
+    {
+      "version": "1.4.231",
+      "fields": 4,
+      "non_provenance": [
+        [
+          "149985",
+          "desc_override"
+        ],
+        [
+          "159994",
+          "desc_override"
+        ]
+      ]
+    }
+  ],
+  "unit_tests": {
+    "passed": 18,
+    "junit": "work/m2/matrix/pytest.xml"
+  },
+  "mutation": {
+    "mutation": "dsl_facts always removes buffTargetAs conversion evidence",
+    "expected_exit": 1,
+    "actual_exit": 1,
+    "detected": true
+  },
+  "hash_seed_determinism": {
+    "comparison.json": true,
+    "matrix.csv": true,
+    "matrix.json": true,
+    "scan_raw.json": true,
+    "view.lock.json": true,
+    "角色机制矩阵.csv": true
+  }
+}

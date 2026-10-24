@@ -98,7 +98,7 @@ class ServerAuthTests(unittest.TestCase):
             root = Path(td)
             (root / ".env").write_text("CN_ADMIN_TOKEN=gui-token\n", encoding="utf-8")
             with (
-                mock.patch.object(gui, "ROOT", root),
+                mock.patch.object(gui.core, "resolve_server_dir", return_value=root),
                 mock.patch.object(gui, "SERVER_URL", "http://127.0.0.1:8001"),
                 mock.patch.object(gui.urllib.request, "urlopen", side_effect=fake_urlopen),
                 mock.patch.dict(gui.os.environ, {}, clear=True),
@@ -128,7 +128,7 @@ class ServerAuthTests(unittest.TestCase):
             root = Path(td)
             (root / ".env").write_text("CN_ADMIN_TOKEN=rogue-token\n", encoding="utf-8")
             with (
-                mock.patch.object(rogue, "ROOT", str(root)),
+                mock.patch.object(rogue.core, "resolve_server_dir", return_value=root),
                 mock.patch.object(rogue.urllib.request, "urlopen", side_effect=fake_urlopen),
                 mock.patch.dict(rogue.os.environ, {}, clear=True),
             ):

@@ -1,0 +1,221 @@
+{
+  "schema": "wf-studio-m4a1-validation/1",
+  "source_commit": "fdd2eff6ae9a9513ebb958170ba133e648083433",
+  "scope": "仅当前 worktree 本地代码、历史字节与静态能力验证；未 push、合并、部署或操作设备",
+  "pytest": {
+    "command": "python -B -m pytest --basetemp=work/m4a1/full-tmp --junitxml=work/m4a1/pytest-full.xml",
+    "started_from_commit": "6a33aeebd808792bf2a0946674aabdb7fca054a9",
+    "exit_code": 0,
+    "terminal_summary": "4254 passed, 354 skipped, 26 warnings in 494.08s (0:08:14)",
+    "terminal_counts": {
+      "passed": 4254,
+      "skipped": 354,
+      "warnings": 26
+    },
+    "junit_counts_including_subtests": {
+      "tests": 6881,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 357
+    },
+    "elapsed_seconds": 495.97116879999885
+  },
+  "post_start_delta_validation": {
+    "commit": "fdd2eff",
+    "command": "python -B -m pytest tests/test_studio_m4a1_bridge.py --basetemp=work/m4a1/draft-rules-tmp -q",
+    "exit_code": 0,
+    "terminal_summary": "9 passed in 10.41s",
+    "evidence_basis": "本次工具返回已观察结果；全量启动后的变更仅保留 rule 标识及增加对应参数化反证",
+    "files": {
+      "wf/deliver/client_compatibility.py": "50e5f3eb54e6ee89995ce64b0de3966678199791d0d8a58ea99fee707f65c7e4",
+      "tests/test_studio_m4a1_bridge.py": "3ed5965aae785cdddbf683be1a719fdf778016b8121fd59e00a9e2f22021b489"
+    }
+  },
+  "path_scan": {
+    "scanned_text_files": 2173,
+    "findings": [],
+    "count": 0
+  },
+  "historical": {
+    "223": {
+      "members": 3,
+      "equal": 3
+    },
+    "221": {
+      "archives": 11,
+      "members": 310,
+      "different": 0,
+      "legacy_manifest_semantics_equal": true,
+      "upstream_pinned_schema_valid": true
+    }
+  },
+  "media": {
+    "ok": true,
+    "zipCount": 128,
+    "archiveCount": 1,
+    "memberCount": 28,
+    "maximumArchiveBytes": 3191113,
+    "matchedDraftFiles": 27,
+    "neutralSourceFrames": 2,
+    "untouchedActions": 8,
+    "untouchedFramePositions": 426,
+    "untouchedAtlasRegions": 24,
+    "frameBytesPreserved": true,
+    "sheetBefore": [
+      127,
+      187
+    ],
+    "sheetAfter": [
+      127,
+      202
+    ],
+    "layer0Pixels": 26316,
+    "atfs": [
+      {
+        "form": "0",
+        "width": 1024,
+        "height": 512,
+        "mips": 11,
+        "format": 5
+      },
+      {
+        "form": "1",
+        "width": 1024,
+        "height": 512,
+        "mips": 11,
+        "format": 5
+      }
+    ],
+    "voiceProbe": {
+      "frames": 149,
+      "bitrates": [
+        96000
+      ],
+      "srates": [
+        44100
+      ],
+      "channels": [
+        1
+      ],
+      "end": 46707,
+      "tail": 0
+    },
+    "enumeratedAssets": 70,
+    "untouchedEnumeratedMembers": 43,
+    "allDeliveredMembersChanged": true,
+    "compat": "满足",
+    "prepushExit": 0,
+    "untouchedChainIndexAudit": {
+      "ok": true,
+      "baseView": "1.4.233",
+      "zipCount": 128,
+      "chainIndexMembers": 1467,
+      "deliveredMembers": 28,
+      "deliveredMembersInChainIndex": 28,
+      "untouchedChainIndexMembers": 1439,
+      "actualReadFallbackMembers": 985,
+      "untouchedActualReadFallbackMembers": 985,
+      "untouchedComparedMembers": 2424,
+      "scope": "128 ZIP 历史233链当前index完整集合，以及来源锁实际读取的store fallback；候选为独立来源视图加本次28成员交付；不覆盖未知store路径，不代表设备验收",
+      "evidence": "media-untouched-chain-index.json"
+    }
+  },
+  "ability": {
+    "baseline_zip_count": 128,
+    "operation_count": 4,
+    "expected_cells_verified": 378,
+    "untouched_leaf_count": 3553,
+    "untouched_leaf_text_and_compressed_bytes_equal": true,
+    "members": 1,
+    "archives": 1,
+    "build_ok": true,
+    "compat": "满足",
+    "cli_api_members_equal": true,
+    "cli_api_changeset_equal": true
+  },
+  "ability_untouched_view_members": 1466,
+  "limitations": [
+    "kulo #35 本地编译路由 out/routes/cn/asset.js 缺失，仍为待验证",
+    "只验证当前128 ZIP链与实际读取的store fallback，未知store路径未枚举",
+    "1.4.233 -> 1.4.234 为本地历史测试候选，不是正式版本分配",
+    "v34为静态能力证据；未验证设备、三人房实际运行或服务端生效"
+  ],
+  "evidence": [
+    {
+      "path": "work/m4a1/pytest-full.log",
+      "sha256": "2b59dbc7d21bbf31ebbaae0f374b4a535d4e2b70eebbf314415e09927fe8f291"
+    },
+    {
+      "path": "work/m4a1/pytest-full.xml",
+      "sha256": "b53eb012e0e72094d37717e4b42fe53fdb10c465f8e6f5471b1bde98b6e271f1"
+    },
+    {
+      "path": "work/m4a1/pytest-full-exit.json",
+      "sha256": "d426cb9138e1d2f4f2c2de35daa0e935343ec94b44125941a7c227d6148d4ec3"
+    },
+    {
+      "path": "work/m4a1/draft-rules-verification.json",
+      "sha256": "3d8877cfac7a244825ab9c54cc4d5264bae4599d825531a7424e33d237578c5d"
+    },
+    {
+      "path": "work/m4a1/baseline/223.json",
+      "sha256": "8833840e5380d63d58bc4310f16cac18b4491bc847fde56740fe86c48ec80c73"
+    },
+    {
+      "path": "work/m4a1/baseline/221.json",
+      "sha256": "c4384aa0d948ea1aa7dc564d8d20607e3f3edce1faf114da6522b768169cb18c"
+    },
+    {
+      "path": "work/m4a1/baseline/validation.json",
+      "sha256": "d05511acd110a36305a9109fadb7bfa789586460e9dc2ee12d505ac38c822b41"
+    },
+    {
+      "path": "work/m4a1/acceptance/manifest-source.json",
+      "sha256": "f0313c4caa415a66b4994f9443d709ad72024799cfe7b863646dca5322b33dbd"
+    },
+    {
+      "path": "work/m4a1/acceptance/media-acceptance.json",
+      "sha256": "e064a6370eafb82cb4937a0446b56a5d2b76511d395c1dd7f94772714e5a45e2"
+    },
+    {
+      "path": "work/m4a1/acceptance/media-untouched-chain-index.json",
+      "sha256": "9f58021a480aa4ddfc4ce94afeea015939cf6ab097bedfa53b4fff56997e7f8f"
+    },
+    {
+      "path": "work/m4a1/acceptance/media-source-final.lock.json",
+      "sha256": "7bd0ccdbb0049da101df0f3910a74d53c9ebf332cd9e2b444a452db524d26846"
+    },
+    {
+      "path": "work/m4a1/acceptance/ability-acceptance.json",
+      "sha256": "c1c29bbe5ff03dea2d0a077bf25b3ca221164ab201c36b6cffccb2208662c858"
+    },
+    {
+      "path": "work/m4a1/acceptance/ability-untouched-members.json",
+      "sha256": "2d1b385ceec8c7f7b5549fd421ef01d912d7921a50a9bd88e3597473391a5c15"
+    },
+    {
+      "path": "work/m4a1/acceptance/ability-source.lock.json",
+      "sha256": "7bd0ccdbb0049da101df0f3910a74d53c9ebf332cd9e2b444a452db524d26846"
+    },
+    {
+      "path": "work/m4a1/path-scan.json",
+      "sha256": "327b90e6577b92db4806885a1486edce316021bb715e854a38e1e9a495a62a2b"
+    },
+    {
+      "path": "work/m4a1/hygiene.log",
+      "sha256": "d5344bee3a8de6a0f17004dfdff152f06e389304e04e674a2e91c523c01be8aa"
+    }
+  ],
+  "hygiene": {
+    "command": "bash scripts/check-hygiene.sh --all",
+    "exit_code": 0
+  },
+  "delivery_checksums": {
+    "ok": true,
+    "verified_files_by_delivery": {
+      "media": 20,
+      "ability": 20,
+      "ability-cli": 20
+    }
+  }
+}

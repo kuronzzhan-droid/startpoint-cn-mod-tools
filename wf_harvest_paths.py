@@ -29,7 +29,7 @@ import re
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_mod_tool as core
 
 SALT = "K6R9T9Hz22OpeIGEWB0ui6c6PYFQnJGy"

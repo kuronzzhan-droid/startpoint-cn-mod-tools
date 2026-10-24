@@ -1,0 +1,48 @@
+schema: wf-capability/1
+id: client.apk.patch064@1
+title: 五重首轮 600 帧宽限
+layer: A
+provided_by:
+  patches:
+  - 64
+  match: all
+  methods:
+  - patch: 64
+    abc: boot_ffc6
+    label: BattleScenePlayingStateImpl/proceedBattles
+    sha256: c0dc1c45f6587c6ae0017873763fd4047043537bbca406b92750f30d15860713
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: false
+  features: []
+  note: 无额外服务端改动要求
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: 五重首轮 600 帧宽限
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: 五重首轮 600 帧宽限
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: 五重首轮 600 帧宽限
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/verification/v33-patches-preserved-o8-o12-r2.json

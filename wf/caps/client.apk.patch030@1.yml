@@ -1,0 +1,54 @@
+schema: wf-capability/1
+id: client.apk.patch030@1
+title: 无效回槽演出拒绝
+layer: A
+provided_by:
+  patches:
+  - 30
+  match: all
+  methods:
+  - patch: 30
+    abc: boot_ffc6
+    label: MemberAbilityTotalizerImpl/wfBlocksGauge
+    sha256: c00c039ed5450963581587afefb79a4e0e8185bba082a0f95677263e9a510e37
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 30
+    abc: boot_ffc6
+    label: MemberImpl/applyInstantAbility
+    sha256: 6088e8e59832bca7c260e5f82339395fe1d1fce47c92aa7fa2f0591549052817
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: false
+  features: []
+  note: 无额外服务端改动要求
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: 无效回槽演出拒绝
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: 无效回槽演出拒绝
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: 无效回槽演出拒绝
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/verification/v33-patches-preserved-o8-o12-r2.json

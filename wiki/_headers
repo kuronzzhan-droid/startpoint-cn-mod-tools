@@ -1,0 +1,12 @@
+# Media filenames are the SHA-256 of their bytes (wf_wiki_media.py).
+# Keep HTML, scripts, private data and revocable API responses outside this rule.
+/media/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Second line of defence if text ever reaches an HTML sink. Pages already sends nosniff and Referrer-Policy.
+# Turnstile needs its script and iframe origin; sponsor images may be external HTTPS.
+# data: covers CSS mask icons and the battle audio unlock sample; blob: covers admin upload previews.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; connect-src 'self'; img-src 'self' https: data: blob:; media-src 'self' data:; style-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
+  X-Frame-Options: DENY
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()

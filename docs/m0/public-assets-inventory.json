@@ -1,0 +1,1967 @@
+{
+  "baseline": "fd433b0",
+  "reviewed_tree": "23ac313",
+  "directories": {
+    "art/status-icons-20260917": {
+      "count": 3,
+      "bytes": 10913,
+      "new_count": 3,
+      "types": {
+        ".png": 3
+      }
+    },
+    "assets/abyss-equipment": {
+      "count": 15,
+      "bytes": 6402,
+      "new_count": 0,
+      "types": {
+        ".png": 15
+      }
+    },
+    "assets/abyss-equipment-lv120": {
+      "count": 15,
+      "bytes": 6821,
+      "new_count": 15,
+      "types": {
+        ".png": 15
+      }
+    },
+    "assets/abyss-gacha-banners": {
+      "count": 3,
+      "bytes": 6663738,
+      "new_count": 0,
+      "types": {
+        ".png": 3
+      }
+    },
+    "assets/abyss-gacha-tickets": {
+      "count": 2,
+      "bytes": 1510,
+      "new_count": 0,
+      "types": {
+        ".png": 2
+      }
+    },
+    "assets/bianca-dragon-icons": {
+      "count": 3,
+      "bytes": 13311,
+      "new_count": 3,
+      "types": {
+        ".png": 3
+      }
+    },
+    "assets/bond-weapons": {
+      "count": 18,
+      "bytes": 270538,
+      "new_count": 18,
+      "types": {
+        ".png": 18
+      }
+    },
+    "assets/celtie-fever-icons": {
+      "count": 2,
+      "bytes": 9801,
+      "new_count": 2,
+      "types": {
+        ".png": 2
+      }
+    },
+    "assets/cursed-weapons": {
+      "count": 81,
+      "bytes": 302785,
+      "new_count": 81,
+      "types": {
+        ".png": 81
+      }
+    },
+    "assets/five-boss": {
+      "count": 2,
+      "bytes": 897,
+      "new_count": 2,
+      "types": {
+        ".png": 2
+      }
+    },
+    "assets/five-boss-v2": {
+      "count": 58,
+      "bytes": 550047,
+      "new_count": 58,
+      "types": {
+        ".png": 58
+      }
+    },
+    "assets/nephtim-fever-icons": {
+      "count": 1,
+      "bytes": 5900,
+      "new_count": 1,
+      "types": {
+        ".png": 1
+      }
+    },
+    "assets/paradox": {
+      "count": 8,
+      "bytes": 20985,
+      "new_count": 8,
+      "types": {
+        ".png": 8
+      }
+    },
+    "assets/weapon-awaken": {
+      "count": 18,
+      "bytes": 7509,
+      "new_count": 18,
+      "types": {
+        ".png": 18
+      }
+    },
+    "assets/weapon-gacha": {
+      "count": 2,
+      "bytes": 1574317,
+      "new_count": 2,
+      "types": {
+        ".png": 2
+      }
+    },
+    "tests/fixtures": {
+      "count": 2,
+      "bytes": 8992,
+      "new_count": 2,
+      "types": {
+        ".gz": 2
+      }
+    },
+    "wiki": {
+      "count": 4,
+      "bytes": 2428392,
+      "new_count": 4,
+      "types": {
+        ".png": 2,
+        ".jpg": 2
+      }
+    }
+  },
+  "files": [
+    {
+      "path": "art/status-icons-20260917/gerald_duel.png",
+      "bytes": 3429,
+      "sha256": "290d3fbaf338c8948bdededdb9ed2a75b339d8985ecf77f73b59c7258315409a",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "art/status-icons-20260917/inaho_afterglow.png",
+      "bytes": 3546,
+      "sha256": "1d62b01aca6c96c3b2227403836e10cc5f27ec8ab34b8c03b4ddcbefaba7ce3f",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "art/status-icons-20260917/inaho_foxfire.png",
+      "bytes": 3938,
+      "sha256": "dd7fd7727c8038f2a96621ca3a7457731fac57da98a4230905b87fb0dc387fec",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment-lv120/dark_01_lv120.png",
+      "bytes": 505,
+      "sha256": "e92bca2d694a3ed6300a6cf01d96ae18cf5e5c9f71319451a32f38934ec5161e",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment-lv120/dark_02_lv120.png",
+      "bytes": 449,
+      "sha256": "77de2a42e3762ac2fff0366995a763f68e71b7c59f907004d26160015c88e479",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment-lv120/fire_01_lv120.png",
+      "bytes": 556,
+      "sha256": "7cfd4a36fc563e60e607b2665e5fc03fcf2ec3bc27824d7e1afcc18c2d29df4d",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment-lv120/fire_02_lv120.png",
+      "bytes": 491,
+      "sha256": "c400c0ef7eb925189d6c9e4dc00734095fa0d9203301f6362c11b9244d74787b",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment-lv120/light_01_lv120.png",
+      "bytes": 329,
+      "sha256": "9739678e0176c74e381b09ab21c6e32a37cc9963ae9a3fd3279ada4ffb0e5a0e",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment-lv120/light_02_lv120.png",
+      "bytes": 444,
+      "sha256": "515837261b791febcbdda00f0e193bac7fcec2da255f7c1c0e977d5cc73f3a93",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment-lv120/thunder_01_lv120.png",
+      "bytes": 380,
+      "sha256": "db9f19b0bca1700b0db30d440e041b99bb179557380f6383e4ed911814003dda",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment-lv120/thunder_02_lv120.png",
+      "bytes": 375,
+      "sha256": "c027d98f18dc5a9603ed77e085194dd6d2909032648d4f08c41476bdeef1d656",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment-lv120/universal_01_lv120.png",
+      "bytes": 491,
+      "sha256": "c97c74a57524a2d55f69e694e39b05f6d43a10ab1f57ad853380973efd3ad037",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment-lv120/universal_02_lv120.png",
+      "bytes": 626,
+      "sha256": "6b6eb0f5ed7fac6b226837c6df7109f8cf4f1d8b7cfac6879bdc8d60b28d86c3",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment-lv120/universal_03_lv120.png",
+      "bytes": 466,
+      "sha256": "bb396b99b1408fa30ac617114a75fc7b30b6afe214631a0d469c532a18ede4a1",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment-lv120/water_01_lv120.png",
+      "bytes": 377,
+      "sha256": "85e94f831e62527995e0d7d5c1baddc66e632b737a1b7e8fe691128506f7bc1f",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment-lv120/water_02_lv120.png",
+      "bytes": 448,
+      "sha256": "1946e379aa97a3be253b175ccc84eb61955558b5b2a027a359757963f29832aa",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment-lv120/wind_01_lv120.png",
+      "bytes": 417,
+      "sha256": "8aeb33b3c6bd4c2b82639971156a656aad20740c08dd989db05585252cf670e7",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment-lv120/wind_02_lv120.png",
+      "bytes": 467,
+      "sha256": "e190d5f1925a80927a2724fc5743c49c27c4b4cbba6594af847078be32d575a0",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment/dark_01.png",
+      "bytes": 454,
+      "sha256": "70e728f703bb5d92c85ba0cea5360469d9b29b6331c5e64e7448dad39d67b764",
+      "new_since_master": false,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment/dark_02.png",
+      "bytes": 386,
+      "sha256": "88d63528ed8d0ff2303e77dc57a8808255d70578d4f838fb1b4c352aab84cf10",
+      "new_since_master": false,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment/fire_01.png",
+      "bytes": 534,
+      "sha256": "4c045b9d39db994f19c4477eab0cfd6af75bdaadb05193002814f5615f4a2acd",
+      "new_since_master": false,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment/fire_02.png",
+      "bytes": 442,
+      "sha256": "fbf3a7449548044aac15c9af53808289f2bf301d50f65990fbcf589c4877ad73",
+      "new_since_master": false,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment/light_01.png",
+      "bytes": 330,
+      "sha256": "0d7ee116f37acf59c08a93902786ddba83d0876f657a787e87c2d9fb23b7f112",
+      "new_since_master": false,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment/light_02.png",
+      "bytes": 423,
+      "sha256": "edad9ea41a0043220275363eef4af4316113aab19998faa16df084fade03efda",
+      "new_since_master": false,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment/thunder_01.png",
+      "bytes": 360,
+      "sha256": "bdc1e8cfd273fa226b088fe9ed9637cc286e2bcdfd88df699f55fce168ab9538",
+      "new_since_master": false,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment/thunder_02.png",
+      "bytes": 333,
+      "sha256": "27a3f40b96398601e46505df6caf10c4700e349f6ed37c972baef6fb2dd8a069",
+      "new_since_master": false,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment/universal_01.png",
+      "bytes": 442,
+      "sha256": "2582ebbe99fd2c437f10d17750c12699a811ff55c16aadad50633a498e0a4f2a",
+      "new_since_master": false,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment/universal_02.png",
+      "bytes": 557,
+      "sha256": "dbcafb52f964755bdd04900289c9ae0f245fa3e49a79f8417d899cdec31db690",
+      "new_since_master": false,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment/universal_03.png",
+      "bytes": 481,
+      "sha256": "8e790dbc837b1cb022228c9b784ef74ecf9aadb23fd40c16139fcf2371b434b1",
+      "new_since_master": false,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment/water_01.png",
+      "bytes": 349,
+      "sha256": "bbc913f6dd472034e5c72128ca031d295ddf5c0453e314eba9fdfa4df1b028b9",
+      "new_since_master": false,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment/water_02.png",
+      "bytes": 458,
+      "sha256": "1687c7091c7110e0cba99afa6e849ec74ba1c1756cc6d70f745e012524f24779",
+      "new_since_master": false,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment/wind_01.png",
+      "bytes": 433,
+      "sha256": "ba5b735d8021f3ecfce84e74a0862a703e660c9739e8f1bfe575c906de46d0a5",
+      "new_since_master": false,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-equipment/wind_02.png",
+      "bytes": 420,
+      "sha256": "41e989bee7df274119f887f1891a751eddd221bf9a5c2b5a67f7ac52be556272",
+      "new_since_master": false,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-gacha-banners/abyss_limited_gacha_list_banner.png",
+      "bytes": 165754,
+      "sha256": "c27900816e3e0b896407f2ff6158c8b3f390c3a6c3bb49264956571e56d4d7db",
+      "new_since_master": false,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-gacha-banners/abyss_limited_gacha_top_banner.png",
+      "bytes": 1869565,
+      "sha256": "4ac743beb36658e93fd159c73b13ccbc2ef3f8a42bf63a372a53823f584e4e69",
+      "new_since_master": false,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-gacha-banners/abyss_limited_gacha_top_banner_portrait.png",
+      "bytes": 4628419,
+      "sha256": "07dd71a8579c64c216bbfeb4679505dd2590049dda43c528f13e3f5c9ba9b596",
+      "new_since_master": false,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-gacha-tickets/abyss_once_gacha_character_ticket.png",
+      "bytes": 661,
+      "sha256": "bf6be3234d530c7f206c92fcc4f04544f9e6e102dd10a470766207ef5d168c50",
+      "new_since_master": false,
+      "type": ".png"
+    },
+    {
+      "path": "assets/abyss-gacha-tickets/abyss_ten_times_gacha_character_ticket.png",
+      "bytes": 849,
+      "sha256": "f1a04683c0288783240064e65e5ff3c5f120bb6f89be4204774cd74645a7e454",
+      "new_since_master": false,
+      "type": ".png"
+    },
+    {
+      "path": "assets/bianca-dragon-icons/breath.png",
+      "bytes": 4274,
+      "sha256": "34bb8495094b7796592072fef1dcb5b2d5b302212a2aabe41f25bbe179163259",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/bianca-dragon-icons/fever_stack.png",
+      "bytes": 4644,
+      "sha256": "6001ab8792bab7fdafab4a73ab95104ec2e3a0ab986ca4082de8cf8833b69673",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/bianca-dragon-icons/summon.png",
+      "bytes": 4393,
+      "sha256": "2a006b8395dfa5865479d94871eda6249d388fdc473018ca9ce65eacd563150a",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/bond-weapons/axe_0024.png",
+      "bytes": 453,
+      "sha256": "4035bfc6e3a3a5d9506e0983757ccb863e623fdc8bd171dd1771046e86c0df5a",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/bond-weapons/axe_0024_lv120.png",
+      "bytes": 576,
+      "sha256": "4d0225e08e55e844213d3d3650b9255d9b0fdda8b2df277a0ec26cca7306485a",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/bond-weapons/axe_0041.png",
+      "bytes": 502,
+      "sha256": "2b8b68047ffca298b07cd687a8d7dddb941d0e951178e1b6285198feb1de9085",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/bond-weapons/axe_0041_lv120.png",
+      "bytes": 619,
+      "sha256": "3d9cb38370b22b2b71508f02b7ae7dcb23dc26d8eec28fa272d87d95324a984f",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/bond-weapons/bond_weapon_banner.png",
+      "bytes": 78686,
+      "sha256": "6bdf37ca92a58332634866d1ef32e3fee77bf61e78de8a0536550c8c73194acb",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/bond-weapons/bond_weapon_header.png",
+      "bytes": 181760,
+      "sha256": "35f67683fca803b75878b600d64fd4b8db210bdb0ae4ba17335dadc0e060ecf6",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/bond-weapons/book_0026.png",
+      "bytes": 634,
+      "sha256": "ee89a9d09555dfe9c43a1ea8af34426db1c9bd09ed661b7c1d91041b89a52e68",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/bond-weapons/book_0026_lv120.png",
+      "bytes": 719,
+      "sha256": "b08b0bd4d5e488fbc316350a3537e6a73c00b2648f118edb31ebf3f51574e6dc",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/bond-weapons/bow_0022.png",
+      "bytes": 706,
+      "sha256": "2d6f624bcbc20a4c1a02a305126dc0b9abcde9495c4190abe3fabcc4969be55a",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/bond-weapons/bow_0022_lv120.png",
+      "bytes": 769,
+      "sha256": "0030c596686b1dc01ff2a4bd26a1b6cd4ee1c39928674f1944504a596639a054",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/bond-weapons/fist_0027.png",
+      "bytes": 650,
+      "sha256": "d9bfbc9c3df0692545d525a770d719d1cc271e1c4e968bc3c96f05e4cd7a9770",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/bond-weapons/fist_0027_lv120.png",
+      "bytes": 661,
+      "sha256": "926804a2ce75d231fa1025b9b630eb15fd0835c06a25189915630d58f0353e5d",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/bond-weapons/spear_0005.png",
+      "bytes": 498,
+      "sha256": "4ec602fc2fa1b69b9aa76f128a6ae4ebaa44ec58087272fe8b1ab949f3262534",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/bond-weapons/spear_0005_lv120.png",
+      "bytes": 586,
+      "sha256": "fc556b35cf25e81378ff5c5c07b420779dc2e020af43ddea21fe7ee4665dc21f",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/bond-weapons/staff_0044.png",
+      "bytes": 659,
+      "sha256": "5ab67422ecbe588ce1faf58ef99de146e04fab842c8aab25c44de17b8e4e6acb",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/bond-weapons/staff_0044_lv120.png",
+      "bytes": 735,
+      "sha256": "4151de123d4a786c05ca6342811536ad5d9266ddc59390075575cc2f9d392c99",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/bond-weapons/sword_0005.png",
+      "bytes": 625,
+      "sha256": "bd4ca00c6d83e2f311bf0abdcacf24ad315b1e5403f03023cb4fa9c35d200a4c",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/bond-weapons/sword_0005_lv120.png",
+      "bytes": 700,
+      "sha256": "cdce2d438e52d59b129fcf0c1ff06c6adbdf206a7a9d5c5cc871e1d1684e9c71",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/celtie-fever-icons/starwind-insight.png",
+      "bytes": 4973,
+      "sha256": "3e290fb5c6e48d5621900360bed671b8d5c004c957145463fb5a09cf84fbc937",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/celtie-fever-icons/starwind-shutter.png",
+      "bytes": 4828,
+      "sha256": "4575c3e4d68b4d52823f3fc87bbcfe9cb59646be831609adb44d9b91b52b9894",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/all_in_blade_lv0.png",
+      "bytes": 624,
+      "sha256": "91529da441a96a3cdade236d38b3ab744a18eb739dfa68bc2c19ec373ca02e3e",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/all_in_blade_lv120.png",
+      "bytes": 704,
+      "sha256": "1e5ef177c0a27ac7cfe28a5f300e85f82a49b789a466984e916ca5f433a528f6",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/burnout_candle_lv0.png",
+      "bytes": 507,
+      "sha256": "2d9dc6986331419c1e1f7a14f282bf2f75119c8991f1df31e61d82f06d5a310a",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/burnout_candle_lv120.png",
+      "bytes": 606,
+      "sha256": "66830ce43aa6f699636ac794d64800e8fee0388c02a8d08e17fea574f8a8b6f2",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/coral_venom_claw_lv0.png",
+      "bytes": 647,
+      "sha256": "e2ad1001b940a3c48ed3dd003b151ce5bf638388a7f2d2fc036ba25428674c06",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/coral_venom_claw_lv120.png",
+      "bytes": 810,
+      "sha256": "533b10697790d19c356541404ed86ad89a9a6d7e6cfe78170230b8a6f1b57320",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/cursed_mask_lv0.png",
+      "bytes": 504,
+      "sha256": "c29828b90a531dbced560bb2bc2dc21131ffc7bfa5eda25740c137a564db1dfd",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/cursed_mask_lv120.png",
+      "bytes": 553,
+      "sha256": "03d441ff5dde0bb3ddc690a88198206320cd0c155d5e22e83f5491d7646bdd39",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/cursed_weapon_banner.png",
+      "bytes": 67315,
+      "sha256": "b23a519124f2077c3166e9338a23c64653c95d2342a0e5b93752b2fd967898c6",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/cursed_weapon_header.png",
+      "bytes": 163721,
+      "sha256": "3b2dda530260a54c1fa6a13ef55eca214159c1f9293e5fea97e6fe732b9e44f4",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/dancer_chakram_lv0.png",
+      "bytes": 440,
+      "sha256": "7ea62b50e89f0c7af3b09d8061018d63011dcc79b305b2b335927f100874e625",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/dancer_chakram_lv120.png",
+      "bytes": 578,
+      "sha256": "f83ca324f9a4c2dfa8f19da14a8ef5b4fe66a9198a81b5c7a2c970c6f41e627a",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/diesel_engine_lv0.png",
+      "bytes": 460,
+      "sha256": "619c08534a6338afd4b3965212c6a467f04f55481c50f247e19d13baf6d943f6",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/diesel_engine_lv120.png",
+      "bytes": 557,
+      "sha256": "36877bc235aeab7b815cc2c5f8cbf0c43ff18b01ffd6449111f7a59e2e80233c",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/dormant_dragon_heart_lv0.png",
+      "bytes": 576,
+      "sha256": "b3e657eec15dc395b0ab1866c0467188f59ecf8ff40989ef65047600f7337a80",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/dormant_dragon_heart_lv120.png",
+      "bytes": 733,
+      "sha256": "de6c44cbc3139ea5cdfd782641bf4db5a110021d959834987e07bb9296eea965",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/expired_gasoline_lv0.png",
+      "bytes": 561,
+      "sha256": "b3b52c37a4f1dcfea419c51c9002ff5cd1fac9301ed38512568e2c39cab88e57",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/expired_gasoline_lv120.png",
+      "bytes": 634,
+      "sha256": "dcd51640fecdc52d40bc348f227654b2b383a1632abaf5a388d718a8bb981efc",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/fate_dice_lv0.png",
+      "bytes": 508,
+      "sha256": "a6cbc3bf43fd9902df052e35772f461239706f8248981db1c7974b286f1139f2",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/fate_dice_lv120.png",
+      "bytes": 620,
+      "sha256": "bd51ac29e8afc08530a1a8ec5a0caf3e7944fbe3ba23daeea7ab8ab7a9d31415",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/feast_drum_lv0.png",
+      "bytes": 713,
+      "sha256": "65c5adb31100bc4769c80002e734f2d729c3170f90bbb00a111ccbcad29b0463",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/feast_drum_lv120.png",
+      "bytes": 783,
+      "sha256": "eee6a9f78453836133efb4d8a1a55e641388cfc7211d1e2273a3befb88002da5",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/finality_gauntlet_lv0.png",
+      "bytes": 601,
+      "sha256": "b2b804909b599c5269996bc3fc77871fce8073820d22c5f73824b9969bc1b441",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/finality_gauntlet_lv120.png",
+      "bytes": 695,
+      "sha256": "87040f83b87e757faf7007066218f2330d6e6659c486e26e5d38b96045774864",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/flesh_for_bone_lv0.png",
+      "bytes": 413,
+      "sha256": "ad4dcf683e48a60746d57a37f241dae2323fae92e08b6ae6bc91ea85577e4407",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/flesh_for_bone_lv120.png",
+      "bytes": 539,
+      "sha256": "b0261c78c02d101af016375a4eca7d0348395585f698528260f2e6308940b7da",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/gluttony_knife_lv0.png",
+      "bytes": 517,
+      "sha256": "2ed7c6dd4815071837fb7acbdeff1d9d698d6a15fa07bb3746229e5ab653918d",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/gluttony_knife_lv120.png",
+      "bytes": 645,
+      "sha256": "715c6c227cb3d24cf0cac630f5c9f457aabd3407cb0f494301899e8cdfef21d3",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/hokuto_fist_lv0.png",
+      "bytes": 652,
+      "sha256": "78abe0ba830550568777610307f552813c8420e1b14034342a1024caf4d22a57",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/hokuto_fist_lv120.png",
+      "bytes": 741,
+      "sha256": "ba47b89b5ea77e78847344dd9ec8776f229b47a433723341a3331b821effdd1a",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/lone_star_lv0.png",
+      "bytes": 326,
+      "sha256": "8904755b2571cf34abfc245afc1706e6c9980a8550f877e6df6f7bd9cdc4785d",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/lone_star_lv120.png",
+      "bytes": 392,
+      "sha256": "34e52f101cebea9cff8d30af865c856116ae50114d37e3f9617bd3cf58eb31cc",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/lone_wolf_crown_lv0.png",
+      "bytes": 526,
+      "sha256": "735a5d030c1029147879f3f045eb86e335ccf014a4f9df0fad37d3521c1ae7ec",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/lone_wolf_crown_lv120.png",
+      "bytes": 617,
+      "sha256": "026d843d0b9fb5dea53f914b9440c887b8ca1dfe3f0fad84edad3ac36cb532b9",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/master_eater_sword_lv0.png",
+      "bytes": 471,
+      "sha256": "7dc07f78583125fbf186db0ff6d9bf0530795e6908dfbe79acdee91e560e65a6",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/master_eater_sword_lv120.png",
+      "bytes": 548,
+      "sha256": "64b9c76eb21b52d88e9ad789db2ad3bc4164a5e4ca40aad4f626fcd390b8c6a1",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/overclock_chip_lv0.png",
+      "bytes": 422,
+      "sha256": "09e628b1d116bdb5f609d1ec81127d5c2661bd588aa984580b1b65ea8afa6d9c",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/overclock_chip_lv120.png",
+      "bytes": 554,
+      "sha256": "c1db2dcce544631ebd6e46d03ec1216c19b1d7a7e8f5c390081f4e8b8db2e916",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/overload_capacitor_lv0.png",
+      "bytes": 688,
+      "sha256": "00f44bf8d4d702fc69e62be6981b5591f9f2a26ec4889b1da05f8bb0c6308237",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/overload_capacitor_lv120.png",
+      "bytes": 795,
+      "sha256": "d8037c5fc218f3562eaaddfca2bf0ddacf6422e4cf5b03623a1d18a21371ab93",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/persona_pistol_lv0.png",
+      "bytes": 664,
+      "sha256": "051e08fdcfe9367d25fcefabbc9388e32076ee85c5cac0fef7d60668066199f6",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/persona_pistol_lv120.png",
+      "bytes": 733,
+      "sha256": "e8efa38e816fbbc40c106f5f185bbfd10a3477c917548715f1beb0735e1f353b",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/rebel_banner_lv0.png",
+      "bytes": 466,
+      "sha256": "4433458dfe598581ab4e3136c9975b7d07f7f22dc65c5286ef2138259f7aadf6",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/rebel_banner_lv120.png",
+      "bytes": 578,
+      "sha256": "1f7573d617b28ae70fe1581e9d6e21a68764de0a32f55d503a5992bd353914bc",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/reverse_hourglass_lv0.png",
+      "bytes": 710,
+      "sha256": "7d48534c34566a72a4cd88ca8d9049e81763ba33264af81f9f8b5e32fb4a2105",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/reverse_hourglass_lv120.png",
+      "bytes": 708,
+      "sha256": "f7ad3de99840493ea56a73a76ddf8c7b0accad25b92bf24b6fd162e4660476b9",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/salted_fish_crown_lv0.png",
+      "bytes": 555,
+      "sha256": "f11fbe7597ee157437a02aacbec77b11732daaf7ae719251cdc5a63c11f3d496",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/salted_fish_crown_lv120.png",
+      "bytes": 649,
+      "sha256": "531f3d88a9908cacfd1798ee2d181695efff13fa3e2dd409c500a45bfcac947a",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/sealed_wind_flute_lv0.png",
+      "bytes": 422,
+      "sha256": "d9e98cf451de94cbd0b37df6c47ccb2f489148b3f6fb148499e9902c87fd6f1a",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/sealed_wind_flute_lv120.png",
+      "bytes": 555,
+      "sha256": "8b247d98c92df29584e0f25205d603e5723d027e07406587eaf1d794d1f5677f",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/silent_bell_lv0.png",
+      "bytes": 692,
+      "sha256": "95b21be135c54d80d081cc7c3cd6a85db238cb66eb42eedba0b5106109d4d299",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/silent_bell_lv120.png",
+      "bytes": 734,
+      "sha256": "b74d305a317c1a684ae5aae73b2a944d85d737f0c1691b05a899deaf9577578d",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/sisyphus_stone_lv0.png",
+      "bytes": 676,
+      "sha256": "6e3ef2868f4c0837258b16cddab81a26aca5f32547e0f55c68f5151cfdd4bdfa",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/sisyphus_stone_lv120.png",
+      "bytes": 791,
+      "sha256": "b1b9f69f6f62447f13297db9d00b8c133de4fa48a33e451e13ac1dc38395be17",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/status/cursed_bone_break.png",
+      "bytes": 1897,
+      "sha256": "e8d694e31812eca132108c518d2d66ff1fc1e06a045d703a892759cc942e0db0",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/status/cursed_chakram_clever.png",
+      "bytes": 1594,
+      "sha256": "aea0d9ff153dba0130d74a95f2e30135714abffc79d626ac059a2d6632faf303",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/status/cursed_chakram_dance.png",
+      "bytes": 2532,
+      "sha256": "2069a676bba3118ca7e586604872d3b5cb8558874e77fcbfc08bdd7c6aac8a2c",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/status/cursed_chip_overload.png",
+      "bytes": 2387,
+      "sha256": "3a756754388fe0ee11a353e56698e6168f3acd6f0a2c46910e868c38d0e05580",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/status/cursed_coral_venom.png",
+      "bytes": 2102,
+      "sha256": "7642436388d2f1a5e8d899de90e1e20e71f66cd00b867d2186fdfc4ed5ed68cb",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/status/cursed_diesel_cutoff.png",
+      "bytes": 2027,
+      "sha256": "fe2360debaf7bf88635e2c860dd07e3e7ef2df0edc95e5eca9a12a2a445aea8e",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/status/cursed_dragon_awaken.png",
+      "bytes": 1317,
+      "sha256": "a9775124e17699075b289652fe7b10fa1d181dfc5fb973a4fbd231fbd194014c",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/status/cursed_dragon_dormant.png",
+      "bytes": 1470,
+      "sha256": "fa83d2471f663991b67205856c461d244c51486613a69cf0ccd5b251a65fa50a",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/status/cursed_dragon_dry.png",
+      "bytes": 1684,
+      "sha256": "7604662982bad80d8c5192270870c6751c656d0bcfdd7d977c2fd39224d23de6",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/status/cursed_dragon_wrath.png",
+      "bytes": 1251,
+      "sha256": "756b0e78a37d4f35a1a34570b65fb998547880527ef42e018794b86d25910ee7",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/status/cursed_finality_end.png",
+      "bytes": 1823,
+      "sha256": "5ab813e3b80e6ad7d25aa8243f543e41030e2d169233b95a5087a42033cbbc2f",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/status/cursed_flute_seal.png",
+      "bytes": 2156,
+      "sha256": "697b4653848e9e7a869d25b607e22f57aefb940ba18a321c2b29757220d92886",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/status/cursed_hourglass_sand.png",
+      "bytes": 1673,
+      "sha256": "af603ba4b7b49c890c7887e60617a53492103b6dc28f568e4cfa66d7d930c280",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/status/cursed_key.png",
+      "bytes": 1459,
+      "sha256": "2dfa1aed34d0ee5e21bd690ac875d913aa170a69ad75776aa20cc8ebaf9a75d0",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/status/cursed_rebel_banner.png",
+      "bytes": 1651,
+      "sha256": "731ee97c1dc0e5da56044b85228705b4086ff2c8f479f3825cfbbe7b470bec43",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/status/cursed_saltfish_charge.png",
+      "bytes": 1499,
+      "sha256": "0a9ed0626ace13111b80d771d899386a146e4331ccfb4db81fd7d3abee84f266",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/status/cursed_saltfish_flip.png",
+      "bytes": 1654,
+      "sha256": "bc1a69117b56fb0f48808f7bd974d5a1b87cf41ee2a31021d30ab6fa2c6a9bb9",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/status/cursed_wager_bust.png",
+      "bytes": 2103,
+      "sha256": "cdabdfc78ce34e03794c3771f589b3be3a834760feb6dd566f941455ee65c16e",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/status/cursed_wager_echo.png",
+      "bytes": 1474,
+      "sha256": "8e5e7f338957b6c84f5b8201e002512fd94c34f1e4867fe34940f2a61fd40935",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/status/cursed_wager_opening.png",
+      "bytes": 2238,
+      "sha256": "4e6ab6f3ddd6cccc1558fdad85af3670298c0c55e8e9202254c822561168c9e9",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/status/cursed_wager_table.png",
+      "bytes": 1190,
+      "sha256": "9462ebe98a9e537dc803946d58f9c7d2faca92e4cdedf5791d4ab47dda311242",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/stopped_watch_lv0.png",
+      "bytes": 697,
+      "sha256": "61f039ef2ddf05977a8132cd1c77374d5334f34a9a49f49c9e7097e8fd213a6b",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/stopped_watch_lv120.png",
+      "bytes": 747,
+      "sha256": "2519a49433f25130f1164fdd9d0e0f07896a4f863fbfd87377e59705959331f9",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/triphase_prism_lv0.png",
+      "bytes": 397,
+      "sha256": "dfdf92d8ca5cfdf2e1e47cbbd59a1dd134754fa3b279e40e7298e9226082613e",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/triphase_prism_lv120.png",
+      "bytes": 513,
+      "sha256": "27548696262cbfcb6953633a990dd950a52a0606593654e59b6d654dab86db39",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/triple_curse_key_lv0.png",
+      "bytes": 484,
+      "sha256": "5534fb607c347250d9fcc9859890f4e4e8df08bc75f7910ae0b2ac86de7224de",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/cursed-weapons/triple_curse_key_lv120.png",
+      "bytes": 537,
+      "sha256": "a354b9dfb53f1b459ba77b91288472f34f64700bd1708f731084b25ce577ed65",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/banner.png",
+      "bytes": 78062,
+      "sha256": "14ef0660e6dea2f32106055950f54aa67f05cad586c2abf9d59351a283679c5b",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img00_a.png",
+      "bytes": 2168,
+      "sha256": "055c95d5e392b0011f4fcb122cfe2ad62dd99895f3760d4bd6cfe47637ae6ed3",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img01_b.png",
+      "bytes": 2138,
+      "sha256": "aeef6966957a2ce06996abbefe72691b9e06d0c681956a125d803bff99754de4",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img02_c.png",
+      "bytes": 2109,
+      "sha256": "70fb51d539b134dd379ad5a29adebac6cd734acf4c50ee6e7b340245bdf8596c",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img03_d.png",
+      "bytes": 2132,
+      "sha256": "b652259dfddc2813db25a164b6594013ece14b5f508af0ac2f379b7676137c55",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img04_e.png",
+      "bytes": 2147,
+      "sha256": "d32f61dc1286b2205f7d94d894083cc6a795fc897ae080bf88c578541cf2537a",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img05_f.png",
+      "bytes": 2121,
+      "sha256": "5c2091b9ce6cb78807806311e243c7bdfa359bf65ce055cf3d95805c9b55e55e",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img06_g.png",
+      "bytes": 2250,
+      "sha256": "b5cfc59cd3c203896ad2c188819f52247e98256bffa2d2d8a5adfcaa085d0771",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img07_h.png",
+      "bytes": 2129,
+      "sha256": "786ad7b15fe5684db4ad52c069a1cbaa10eb199ce6edbb3bec8c46f60876690a",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img08_i.png",
+      "bytes": 2322,
+      "sha256": "e57d3a89524b4c7b785768285dda956a63cacada9009c3544264c0d4112eab1f",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img09_j.png",
+      "bytes": 346,
+      "sha256": "3dd18ae637f7a566f4e1810242ceb33f6f627f5ae00cc8fa04b92e61192759c8",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img10_k.png",
+      "bytes": 2379,
+      "sha256": "a0b81c53ae33ccf8584934ab0298b62f6cbcdd432ad3515a1eda2972a7b03fdc",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img11_l.png",
+      "bytes": 457,
+      "sha256": "68ef5015120e4b9aa245e4fbb4f41e23ee35e6bc52811590fc9601f66648a003",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img12_m.png",
+      "bytes": 2330,
+      "sha256": "4ac812abb085b902570541155066c6548aa807ac5b25c413cb3e1dc09d35500e",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img13_n.png",
+      "bytes": 459,
+      "sha256": "7aae2b651d3895a5ba553e9af3d19d4ff78c08d372ca9907c4806ba701d3a7ad",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img14_o.png",
+      "bytes": 2361,
+      "sha256": "83114d6b4ad3019c43cc5f6c0e85e57e2cd10d7891595af19dde9bfc4f30e826",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img15_p.png",
+      "bytes": 2263,
+      "sha256": "a256afee8c5c7a28754b163f24feb614644f6d6bd411f3a2ca4851697c8f25ba",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img16_q.png",
+      "bytes": 2408,
+      "sha256": "8867e1ba3a9bdddc483ec75dfd5d5c147396b655ae339601073180c9eae9aca5",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img17_r.png",
+      "bytes": 2259,
+      "sha256": "8e4b09d9de6c143b443b1d44b689fe49be505d4429c8385c42931f03cdaac26d",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img18_s.png",
+      "bytes": 2249,
+      "sha256": "cef587bdbfbd6b96ec7e52a99770f37531ebfa271b57ebed9b45fac4b7d42661",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img19_t.png",
+      "bytes": 2250,
+      "sha256": "b5cfc59cd3c203896ad2c188819f52247e98256bffa2d2d8a5adfcaa085d0771",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img20_u.png",
+      "bytes": 2129,
+      "sha256": "786ad7b15fe5684db4ad52c069a1cbaa10eb199ce6edbb3bec8c46f60876690a",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img21_v.png",
+      "bytes": 2322,
+      "sha256": "e57d3a89524b4c7b785768285dda956a63cacada9009c3544264c0d4112eab1f",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img22_w.png",
+      "bytes": 2379,
+      "sha256": "a0b81c53ae33ccf8584934ab0298b62f6cbcdd432ad3515a1eda2972a7b03fdc",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img23_x.png",
+      "bytes": 2263,
+      "sha256": "a256afee8c5c7a28754b163f24feb614644f6d6bd411f3a2ca4851697c8f25ba",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img24_y.png",
+      "bytes": 2408,
+      "sha256": "8867e1ba3a9bdddc483ec75dfd5d5c147396b655ae339601073180c9eae9aca5",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img25_z.png",
+      "bytes": 474,
+      "sha256": "d3b8e8a2ebbb492c749403a46e348a46e37d7b675ab93c645b4eb7e6c40f95bb",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img26_aa.png",
+      "bytes": 2259,
+      "sha256": "8e4b09d9de6c143b443b1d44b689fe49be505d4429c8385c42931f03cdaac26d",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img27_ab.png",
+      "bytes": 488,
+      "sha256": "237266d1e3bbca157745395f3ebd177948147d8147b86ab498c515d0309e6f49",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img28_ac.png",
+      "bytes": 2286,
+      "sha256": "cc27951e43c3f1ee154fef517b0caf6d3c2574e7df08ba124f7fac991b4d79da",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img29_ad.png",
+      "bytes": 509,
+      "sha256": "928a57e76b25f794ffd35fdb43817f12a361c354df062422cf7ac59f0fcb3959",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img30_ae.png",
+      "bytes": 2364,
+      "sha256": "e7f20b2bb959c9b5e5e5147b05ca8efc60680100e8f276a701bbd4c4c394f262",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img31_af.png",
+      "bytes": 207,
+      "sha256": "d83073eebd95de1903cb78b351bcc11649b1c97d6cd8e6555cc7bd724ee71317",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img32_ag.png",
+      "bytes": 2249,
+      "sha256": "cef587bdbfbd6b96ec7e52a99770f37531ebfa271b57ebed9b45fac4b7d42661",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img33_ah.png",
+      "bytes": 2129,
+      "sha256": "786ad7b15fe5684db4ad52c069a1cbaa10eb199ce6edbb3bec8c46f60876690a",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img34_ai.png",
+      "bytes": 2034,
+      "sha256": "46ee3adf2fe5616ded87c3e4e50cdc2e465d765d74de6683af4e70d338996220",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img35_aj.png",
+      "bytes": 2094,
+      "sha256": "b958ef4be6c07b170933499adfab1332f59cbe0276e201483c7fe2a4512604d6",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img36_ak.png",
+      "bytes": 2069,
+      "sha256": "bab68c68da6df882226e8011dba6f57924d13aef6d6dbe7ca3347121d101c396",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img37_al.png",
+      "bytes": 2086,
+      "sha256": "5557b0830ed0369329c92c81a5ee9fad9f8b3d1156d7c6eed9389a379cb62948",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img38_am.png",
+      "bytes": 117,
+      "sha256": "6e80df78f6c99de96f9bb8921f0703fc2bc3ef52755a06196fa521af0a41a35f",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img39_an.png",
+      "bytes": 2094,
+      "sha256": "f847ede8dd52ed3f5b0f82d821771a442c4dd28764e8cc19636c08dc3de7e6c5",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img40_ao.png",
+      "bytes": 2228,
+      "sha256": "afdc5ab6977ff4ec17cff3f626862d0fac6cf3ba810837d75688fb38f0ddd760",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img41_ap.png",
+      "bytes": 2141,
+      "sha256": "a8c25d515ce2eba62e2445a4a2f6357a364cf6dadb2185b7945e9304ebeb3db5",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img42_aq.png",
+      "bytes": 2185,
+      "sha256": "adc1eaf3608a3690b2723b4dfae8e5e644897071a78c905c826d800e7fd08909",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img43_ar.png",
+      "bytes": 2103,
+      "sha256": "36baf111607180ae9a12f546fa901c83eeb6bbf3b4de9d4b5424ffbc9953567e",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img44_as.png",
+      "bytes": 2118,
+      "sha256": "80b4b9e730a129a212167f47cbd6504114a332031b770129587daa5f059fe558",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img45_at.png",
+      "bytes": 1895,
+      "sha256": "7850e6c5438db5b2ef7e12d13aeaec41047bff2ef0d5a8f86f6a80fba3b2f08e",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img46_au.png",
+      "bytes": 1611,
+      "sha256": "f2f4b5d28e5b75f23633dd734f1bfafc778a5ccd9742b368633b3078b0d458e7",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img47_av.png",
+      "bytes": 1510,
+      "sha256": "11596313d77b0c9d0bc364232441048f3ebf71bf3e3411b4f9565e1251dd405a",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img48_aw.png",
+      "bytes": 1216,
+      "sha256": "72434db5a238fdbe912060b24b4b9fd2f8719564436a49bfbe7ab176f0e29339",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img49_ax.png",
+      "bytes": 1102,
+      "sha256": "a027c275bc96da7adccde3442331a4ccbe9471b23251b2885a0f8d94d98a1e46",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/deep_king/frames/img50_ay.png",
+      "bytes": 732,
+      "sha256": "f2c997f476eeff2a71aeaa514168c2967446f48cebfb91b2820b14dd0534d92a",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/field_throne_hall.png",
+      "bytes": 53617,
+      "sha256": "ea4f79dba423d7253c5a9786fc9076447cbdc9ff0557f96593e5d68b9ac57b44",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/field_trial_hall.png",
+      "bytes": 64740,
+      "sha256": "ca7bd6b3fc8260a7d95939bb2dd1d7a9c326ffa4aac223c2d2850f5f06919c50",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/header.png",
+      "bytes": 255724,
+      "sha256": "d804468710bad9eabc6b72702327ba33856311b6556b028fbc412059187a1415",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/thumbnail.png",
+      "bytes": 3894,
+      "sha256": "3cc170ef16f2477d3548069b4c1989dabc285a162505124246f763fcc83e4b0f",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/ticket_icon_20.png",
+      "bytes": 430,
+      "sha256": "5d0006a239cf61bb686fc2b690508a116bb3711f10c936476f5069698826c469",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss-v2/ticket_icon_41.png",
+      "bytes": 502,
+      "sha256": "f07eee40fc97fc0eafc2d60168d75d478e7d4f0a85aba6d5a58ba706b5b7c420",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss/deathbringer_final_lv0.png",
+      "bytes": 436,
+      "sha256": "d795751d2e142ba434b1509b6bbeb47aaf14ec303af33f84186ff0b4d43fe27c",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/five-boss/deathbringer_final_lv120.png",
+      "bytes": 461,
+      "sha256": "4af1a1c96ec8fae27d4e6c43212c5b2a8d98c9c7a717065636f9748cb633e401",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/nephtim-fever-icons/starry-tea.png",
+      "bytes": 5900,
+      "sha256": "9bb7e84ace357686e2f193c7d05d2ba666bdf298be56d0f9427be1c8fb14c838",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/paradox/paradox.png",
+      "bytes": 359,
+      "sha256": "7e9ea685d9fd8e123e2002e63e4b2faf48db4b79cc682a2da582ad073f45b9a3",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/paradox/paradox_core.png",
+      "bytes": 449,
+      "sha256": "d296c3fd293d3c892e4cb46981a9b757602e15df133cf4e4931660e05285b16f",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/paradox/paradox_curse.png",
+      "bytes": 2416,
+      "sha256": "33e8d742886edca293dc22464ae3c8bae93b5c8a4d029af9d5d73ded72730d0e",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/paradox/paradox_frame_bluegold.png",
+      "bytes": 8991,
+      "sha256": "ec1840776dc4ca169416e59145b4a385f93cc9c758908120cd0f04f24eeb67c4",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/paradox/paradox_lv120.png",
+      "bytes": 437,
+      "sha256": "1a237ce721224e6ac7e361bcafe2c40f5b4a35a4adc0226fa3f458f5438dc2aa",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/paradox/paradox_lv200.png",
+      "bytes": 511,
+      "sha256": "31ce226abcca1181d523cabbca66e3e93ea570180cc595b3831c38827e3576e1",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/paradox/paradox_party_frame_bluegold.png",
+      "bytes": 7495,
+      "sha256": "cf4b69a4e6fc577ca1f238b53bc0a3d4b01dc0ec59937d1c5690ea90d3e7ee5e",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/paradox/paradox_shard.png",
+      "bytes": 327,
+      "sha256": "81b94eaeef16ad0fd3c55621e7c3e1d3fdf27e2a2d9b0e4c9e7aee9780f912d0",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/weapon-awaken/icons/contradiction_crystal.png",
+      "bytes": 306,
+      "sha256": "1d740e02990d959b59fa9a3ec5fa8857ff0e8139cc867f1d2c4bb669422f8cd3",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/weapon-awaken/icons/contradiction_crystal_c4.png",
+      "bytes": 396,
+      "sha256": "c1b57cbeba30a9b8864ce6548c8608c39fd5dd21d24d9a297a09b5dc46968904",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/weapon-awaken/icons/deathbringer_blueprint_v2.png",
+      "bytes": 281,
+      "sha256": "15d6c1635de742187a45afe1654ff7901b2086d2c256fba2a5f53743a58c86c9",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/weapon-awaken/icons/deathbringer_blueprint_v2_c4.png",
+      "bytes": 309,
+      "sha256": "d62c99b93dcad0ee645bba7c2114b969f65fcdf491620b7a042794fcacebb870",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/weapon-awaken/icons/deep_crystal_v2.png",
+      "bytes": 326,
+      "sha256": "5abbff42407b5c07e775304dc0ea09b6cd17d82a8a8a88f26a0d9da3de4fa698",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/weapon-awaken/icons/deep_crystal_v2_c4.png",
+      "bytes": 384,
+      "sha256": "a967a4251502ab3582d10eab367254e5ac255df3752c0bede9acd480ae11f39d",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/weapon-awaken/icons/five-boss-v2-handoff/ticket_icon_20.png",
+      "bytes": 430,
+      "sha256": "5d0006a239cf61bb686fc2b690508a116bb3711f10c936476f5069698826c469",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/weapon-awaken/icons/five-boss-v2-handoff/ticket_icon_41.png",
+      "bytes": 502,
+      "sha256": "f07eee40fc97fc0eafc2d60168d75d478e7d4f0a85aba6d5a58ba706b5b7c420",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/weapon-awaken/icons/five_king_core_v2.png",
+      "bytes": 443,
+      "sha256": "6fee3ad4155febb4a5f5bb9d0cd9aa112119a005b26d41e2ab8a344e940d4203",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/weapon-awaken/icons/five_king_core_v2_c4.png",
+      "bytes": 476,
+      "sha256": "8076f168576759d16fdfa4bba6996cef65bfaf4be2a2328f871743c03bd9f482",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/weapon-awaken/icons/fivefold_clear_badge_v2.png",
+      "bytes": 454,
+      "sha256": "01464ebfe0fca5db69a33edde23b125b847934dfeb93c1a8502ecb98e6072627",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/weapon-awaken/icons/fivefold_clear_badge_v2_c4.png",
+      "bytes": 454,
+      "sha256": "0dc9a65f35f1d9cd1c126bbd2f5aef387e9f34dad0b8632d860f7e7a8674ceae",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/weapon-awaken/icons/forbidden_star_steel.png",
+      "bytes": 432,
+      "sha256": "dfa1da5b97d683b42d6455436364f032a07ad79c614c5810fbec6583bdbc892a",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/weapon-awaken/icons/forbidden_star_steel_c4.png",
+      "bytes": 477,
+      "sha256": "07944f88405ec6fc837752c67a6d4aaf37bfa249ac8faec7da82f85dae625b13",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/weapon-awaken/icons/king_coin.png",
+      "bytes": 398,
+      "sha256": "31e03ee581b58f07ad5420d47540dc220fe6e20bfc66c79614a5b0a848d77098",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/weapon-awaken/icons/king_coin_c4.png",
+      "bytes": 466,
+      "sha256": "1ae45a66b2a67db0f9b382bed8c1d4b07ce083aba1af5e9d6988acf2dc544c6e",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/weapon-awaken/icons/paradox_core.png",
+      "bytes": 455,
+      "sha256": "abe8e63c6d69598761f245d5840c8b9428b339a11f82d1aa89186d4387a14637",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/weapon-awaken/icons/paradox_core_c4.png",
+      "bytes": 520,
+      "sha256": "22a85f4f77e88bbbfbc69e0904d7a027aa6cbc48420a78cd5a8b0597d23b6558",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/weapon-gacha/cover.png",
+      "bytes": 1477814,
+      "sha256": "4a2e4163e1c3827c34de4eb6671a86ee44b1ed0561ad38d242e24593c2c787d8",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "assets/weapon-gacha/list_banner.png",
+      "bytes": 96503,
+      "sha256": "d323fe08ee1ddf655c1f412824b6b19d3f676ed67bde650080a6cfe9be109ed0",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "tests/fixtures/gacha_pools_before_midautumn.json.gz",
+      "bytes": 4540,
+      "sha256": "5a0b6cd4a682d1122279eda3ee77c3c7d069c33f4b73bce9052fd19b90223684",
+      "new_since_master": true,
+      "type": ".gz"
+    },
+    {
+      "path": "tests/fixtures/gacha_pools_before_seasonal7.json.gz",
+      "bytes": 4452,
+      "sha256": "7ff0f65c88de415b6dff69848c6567273b4d226dc7a1ac3e8b77ea13bfc251ec",
+      "new_since_master": true,
+      "type": ".gz"
+    },
+    {
+      "path": "wiki/brand-logo.png",
+      "bytes": 732593,
+      "sha256": "8a9535d09a1b3b8d58cedadb48ebd6a2d9954619b32a13819303f4100db729e4",
+      "new_since_master": true,
+      "type": ".png"
+    },
+    {
+      "path": "wiki/reborn-group-1.jpg",
+      "bytes": 649535,
+      "sha256": "cc7aad91cdb417f326ae81ba56692b4cb17c323356b9bf0122d62e900bbedf0c",
+      "new_since_master": true,
+      "type": ".jpg"
+    },
+    {
+      "path": "wiki/reborn-group-2.jpg",
+      "bytes": 630756,
+      "sha256": "03c9bf3cc19833b5833047cbfb7e0c277a17188395c1fc7548e05008a5ab447c",
+      "new_since_master": true,
+      "type": ".jpg"
+    },
+    {
+      "path": "wiki/wiki-share-poster.png",
+      "bytes": 415508,
+      "sha256": "4dbedc533a30ca77b18993ed9fad4b3453a1d58eb3e89059fd98cd7eb5d92dbc",
+      "new_since_master": true,
+      "type": ".png"
+    }
+  ],
+  "direct_directories": {
+    "art/status-icons-20260917": {
+      "count": 3,
+      "bytes": 10913,
+      "new_count": 3,
+      "types": {
+        ".png": 3
+      }
+    },
+    "assets/abyss-equipment": {
+      "count": 15,
+      "bytes": 6402,
+      "new_count": 0,
+      "types": {
+        ".png": 15
+      }
+    },
+    "assets/abyss-equipment-lv120": {
+      "count": 15,
+      "bytes": 6821,
+      "new_count": 15,
+      "types": {
+        ".png": 15
+      }
+    },
+    "assets/abyss-gacha-banners": {
+      "count": 3,
+      "bytes": 6663738,
+      "new_count": 0,
+      "types": {
+        ".png": 3
+      }
+    },
+    "assets/abyss-gacha-tickets": {
+      "count": 2,
+      "bytes": 1510,
+      "new_count": 0,
+      "types": {
+        ".png": 2
+      }
+    },
+    "assets/bianca-dragon-icons": {
+      "count": 3,
+      "bytes": 13311,
+      "new_count": 3,
+      "types": {
+        ".png": 3
+      }
+    },
+    "assets/bond-weapons": {
+      "count": 18,
+      "bytes": 270538,
+      "new_count": 18,
+      "types": {
+        ".png": 18
+      }
+    },
+    "assets/celtie-fever-icons": {
+      "count": 2,
+      "bytes": 9801,
+      "new_count": 2,
+      "types": {
+        ".png": 2
+      }
+    },
+    "assets/cursed-weapons": {
+      "count": 60,
+      "bytes": 265604,
+      "new_count": 60,
+      "types": {
+        ".png": 60
+      }
+    },
+    "assets/cursed-weapons/status": {
+      "count": 21,
+      "bytes": 37181,
+      "new_count": 21,
+      "types": {
+        ".png": 21
+      }
+    },
+    "assets/five-boss": {
+      "count": 2,
+      "bytes": 897,
+      "new_count": 2,
+      "types": {
+        ".png": 2
+      }
+    },
+    "assets/five-boss-v2": {
+      "count": 7,
+      "bytes": 456969,
+      "new_count": 7,
+      "types": {
+        ".png": 7
+      }
+    },
+    "assets/five-boss-v2/deep_king/frames": {
+      "count": 51,
+      "bytes": 93078,
+      "new_count": 51,
+      "types": {
+        ".png": 51
+      }
+    },
+    "assets/nephtim-fever-icons": {
+      "count": 1,
+      "bytes": 5900,
+      "new_count": 1,
+      "types": {
+        ".png": 1
+      }
+    },
+    "assets/paradox": {
+      "count": 8,
+      "bytes": 20985,
+      "new_count": 8,
+      "types": {
+        ".png": 8
+      }
+    },
+    "assets/weapon-awaken/icons": {
+      "count": 16,
+      "bytes": 6577,
+      "new_count": 16,
+      "types": {
+        ".png": 16
+      }
+    },
+    "assets/weapon-awaken/icons/five-boss-v2-handoff": {
+      "count": 2,
+      "bytes": 932,
+      "new_count": 2,
+      "types": {
+        ".png": 2
+      }
+    },
+    "assets/weapon-gacha": {
+      "count": 2,
+      "bytes": 1574317,
+      "new_count": 2,
+      "types": {
+        ".png": 2
+      }
+    },
+    "tests/fixtures": {
+      "count": 2,
+      "bytes": 8992,
+      "new_count": 2,
+      "types": {
+        ".gz": 2
+      }
+    },
+    "wiki": {
+      "count": 4,
+      "bytes": 2428392,
+      "new_count": 4,
+      "types": {
+        ".png": 2,
+        ".jpg": 2
+      }
+    }
+  }
+}

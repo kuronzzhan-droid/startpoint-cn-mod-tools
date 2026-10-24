@@ -14,7 +14,7 @@ from __future__ import annotations
 import csv
 import io
 from dataclasses import dataclass
-from typing import Any, Callable, Iterable, Literal, Mapping, TypeAlias
+from typing import Any, Callable, Iterable, Literal, Mapping, Sequence, TypeAlias
 
 
 RequirementCategory = Literal["required", "suggested", "excluded"]
@@ -225,6 +225,28 @@ ACTION_SKILL_TABLE = "master/skill/action_skill.orderedmap"
 SWITCHED_ACTION_SKILL_TABLE = "master/skill/switched_action_skill.orderedmap"
 SKILL_EFFECT_PREFIX = "battle/effect/"
 
+# ShowEffect 第 2 参是枚举 Effect(客户端 pinball/battle/action/dsl/§const§/Effect.as:
+# __constructs__=["SpecifyEffectDirectly","ResolveByElement"]):
+#   ["SpecifyEffectDirectly", "<完整逻辑路径>"]  → 字面路径就是资产
+#   ["ResolveByElement", "<基路径>", <属性码>]    → 运行时派生,基路径本身**不是资产**
+# 派生逐字复刻自 ActionDslAssetResolver.resolveEffect(:102-114):
+#   EffectTools.resolveEffectByElement(base, ActionDslAssetResolver.resolveElement(码, 施法者属性))
+#   EffectTools.createPathFromElementSuffix(p, c) = f"{p}/{name(p)}_{c}/{name(p)}_{c}"
+# 按字面路径校验 ResolveByElement 基路径必然误报缺失(官方 enemy_general 全族只有
+# 分色三层目录,两层扁平名一个都不存在)。
+_EFFECT_ELEMENT_COLOURS = ("red", "blue", "yellow", "green", "white", "black", "colorless")
+# ActionDslAssetResolver.resolveElement(:116-136):DSL 显式属性码 = 内部属性 + 1;
+# 255 = 跟随施法者属性(调用方以 context_element 注入,给不出就不臆测)。
+_EFFECT_ELEMENT_CODES = {1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 7: 6}
+EFFECT_CONTEXT_ELEMENT_CODE = 255
+
+
+def resolve_effect_by_element(base: str, element: int) -> str:
+    """EffectTools.createPathFromElementSuffix 的逐字复刻(element 为内部属性 0-6)。"""
+    name = base.rsplit("/", 1)[-1]
+    colour = _EFFECT_ELEMENT_COLOURS[element]
+    return f"{base}/{name}_{colour}/{name}_{colour}"
+
 # unique_condition 平表列 2 = 图标路径(不带 .png;wf_gui UNIQUE_ICON_DIR)
 _UNIQUE_CONDITION_ICON_COLUMN = 2
 
@@ -309,6 +331,18 @@ def _cell(row: list[str], index: int) -> str:
     return row[index].strip() if index < len(row) else ""
 
 
+def _iter_effect_nodes(node: Any) -> Iterable[Sequence[Any]]:
+    """DSL 树里的 Effect 枚举节点(["SpecifyEffectDirectly"|"ResolveByElement", ...])。"""
+    if isinstance(node, (list, tuple)):
+        if node and node[0] in ("SpecifyEffectDirectly", "ResolveByElement"):
+            yield node
+        for item in node:
+            yield from _iter_effect_nodes(item)
+    elif isinstance(node, Mapping):
+        for value in node.values():
+            yield from _iter_effect_nodes(value)
+
+
 def _iter_tree_strings(node: Any) -> Iterable[str]:
     if isinstance(node, str):
         yield node
@@ -324,11 +358,14 @@ def extract_master_asset_references(
     flat_tables: Mapping[str, Mapping[str, str]],
     nested_tables: Mapping[str, Mapping[str, Mapping[str, str]]] | None = None,
     dsl_trees: Mapping[str, Any] | None = None,
+    context_element: int | None = None,
 ) -> tuple[MasterAssetReference, ...]:
     """解码后的 master 表/DSL 树 → 全局资产引用(按 (kind,value) 去重,保留首个来源)。
 
     ``flat_tables``/``nested_tables`` 是 {逻辑路径: 解码行};``dsl_trees`` 是
     {DSL 文件逻辑路径: wf_dsl.parse_dsl 的 tree}。缺哪张表就跳过哪张,不视为错误。
+    ``context_element`` 是本角色的内部属性(0-6),仅用于解析 ResolveByElement 的
+    255(跟随施法者)属性码;给不出就跳过该条,不按字面基路径臆测。
     """
     references: dict[tuple[str, str], MasterAssetReference] = {}
 
@@ -363,10 +400,35 @@ def extract_master_asset_references(
                     add("skill_program", program, f"{logical}:{outer_key}/{inner_key}")
 
     for logical, tree in (dsl_trees or {}).items():
+        # ResolveByElement 的基路径不是资产:先按客户端规则派生出真实分色路径,
+        # 再把这些基路径从下面的字面扫描里摘掉(同文件里若另有 SpecifyEffectDirectly
+        # 直指同一路径,则该路径仍按字面校验)。
+        derived_bases: set[str] = set()
+        direct_values: set[str] = set()
+        for node in _iter_effect_nodes(tree):
+            if node[0] == "SpecifyEffectDirectly":
+                if len(node) > 1 and isinstance(node[1], str):
+                    direct_values.add(node[1])
+                continue
+            if len(node) < 3 or not isinstance(node[1], str):
+                continue
+            base, code = node[1], node[2]
+            if isinstance(code, bool) or not isinstance(code, int):
+                continue
+            derived_bases.add(base)
+            element = _EFFECT_ELEMENT_CODES.get(code)
+            if element is None and code == EFFECT_CONTEXT_ELEMENT_CODE:
+                element = context_element
+            if element is None or not 0 <= element < len(_EFFECT_ELEMENT_COLOURS):
+                continue
+            add("skill_effect", resolve_effect_by_element(base, element), logical)
+        derived_bases -= direct_values
+
         for value in _iter_tree_strings(tree):
             if (
                 value.startswith(SKILL_EFFECT_PREFIX)
                 and "/" in value[len(SKILL_EFFECT_PREFIX):]
+                and value not in derived_bases
             ):
                 add("skill_effect", value, logical)
 

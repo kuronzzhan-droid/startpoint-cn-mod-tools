@@ -1,0 +1,20 @@
+.community-team-picker{min-width:0;margin:0;padding:12px;border:1px solid var(--admin-border);border-radius:8px;background:var(--soft)}
+.community-team-picker>legend{font-size:14px;font-weight:700;padding:0 5px}
+.community-picker-board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;max-width:390px;margin:auto}
+.community-picker-column{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+.community-picker-position{grid-column:1/-1;text-align:center;font-size:11px;color:var(--admin-muted)}
+.community-team-picker .community-picker-slot{display:flex;flex-direction:column;align-items:center;gap:3px;padding:3px;min-width:0;border:1px solid var(--admin-border);border-radius:6px;background:var(--admin-bg);color:var(--ink);cursor:pointer}
+.community-picker-slot[aria-pressed="true"]{border-color:var(--accent);outline:2px solid var(--accent);outline-offset:0}
+.community-picker-portrait{display:flex;align-items:center;justify-content:center;position:relative;width:100%;aspect-ratio:1;overflow:hidden;border-radius:3px;color:var(--admin-muted)}
+.community-picker-portrait>.catalog-avatar,.community-picker-image{display:block;width:100%;height:100%;object-fit:contain}
+.community-picker-portrait img{display:block;width:100%;height:100%;object-fit:contain}
+.community-picker-portrait .character-label{font-size:8px;padding:1px 2px}
+.community-picker-label{font-size:10px;line-height:1.2}
+.community-picker-library{margin-top:12px}
+.community-picker-library[hidden]{display:none}
+.community-picker-controls{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;font-size:12px}
+.community-picker-controls button{font-size:11px;padding:5px 8px}
+.community-team-picker .team-candidates{height:300px;max-height:40dvh;grid-auto-rows:max-content;align-content:start;overscroll-behavior-y:contain;scrollbar-width:thin;scrollbar-color:var(--accent) var(--soft)}
+.community-team-picker .team-candidate-art{flex-shrink:0}
+.community-team-picker:disabled{opacity:.7}
+@media(max-width:640px){.community-team-picker{padding:8px}.community-picker-board{gap:7px}.community-team-picker .team-candidates[data-kind="character"]>.team-candidate{display:block;aspect-ratio:1}.community-picker-column{gap:4px}}

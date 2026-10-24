@@ -26,8 +26,11 @@ from typing import Any, Callable, Iterable, Literal, Mapping, Protocol, cast
 if os.name == "nt":
     from ctypes import wintypes
 
+from wf.deliver.logical_paths import logical_path_problem, windows_logical_path_key
+
 import wf_mod_tool as core
 import wf_assets
+import wf_client_legality
 
 RootName = Literal["common", "medium", "android", "server"]
 TableKey = tuple[RootName, str]
@@ -54,28 +57,34 @@ FORBIDDEN_ASSET_SEGMENTS = frozenset({
     "story", "words", "login", "expression", "expressions",
 })
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
-WINDOWS_DEVICE_NAME_RE = re.compile(
-    r"^(?:con|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³]|conin\$|conout\$)(?:\.|$)",
-    re.IGNORECASE | re.ASCII,
-)
-WINDOWS_FORBIDDEN_PATH_CHARS = frozenset('<>:"|?*')
-WINDOWS_LOGICAL_PATH_TRANSLATION = str.maketrans(
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ\\",
-    "abcdefghijklmnopqrstuvwxyz/",
-)
+# store 分片布局(<2hex>/<38hex>)= hashed_rel 的输出。logical_path 一旦写成这种
+# 形状,发布时会被再哈希一次,在链里铸出客户端永远不请求的死地址(1.4.441-459
+# 的 seofon ability.orderedmap 副本就是这么来的)。真逻辑路径不可能长这样。
+STORE_SHARD_RE = re.compile(r"^[0-9a-f]{2}/[0-9a-f]{38}$")
 FILESYSTEM_ERRORS = (OSError, RuntimeError, ValueError)
-SERVER_LOGICAL_PATHS = (
+REQUIRED_SERVER_LOGICAL_PATHS = (
     "cdndata/character.json",
     "cdndata/character_text.json",
     "character.json",
     "mana_node.json",
 )
-SERVER_EXTENSION_CODEC_IDS = frozenset({
-    "json_object",
-    "json_integer_set",
-    "json_event_shop_products",
-    "json_rogue_events",
-})
+# 服务端镜像里的**派生**表:内容可以从包自带的客户端表算出来,所以它是可选的。
+# 2026-09-02 之前发布的 119 份 manifest 一律不带 mana_board.json —— 要求"恰好
+# 五项"会让所有老包在 preflight 当场变红(installed manifest 也走同一条断言),
+# 而 manifest 又和 active 链上的 ownership 哈希绑死,不能为了补一行就重建包
+# (见 [[wf-package-manifest-binding]])。因此:必需四项照旧,可选项只放行不强制。
+OPTIONAL_SERVER_LOGICAL_PATHS = (
+    "mana_board.json",
+)
+ALLOWED_SERVER_LOGICAL_PATHS = (
+    *REQUIRED_SERVER_LOGICAL_PATHS,
+    *OPTIONAL_SERVER_LOGICAL_PATHS,
+)
+# 兼容别名:wf_seris_release_pack.SERVER_PATHS 直接引用它来生成 runtime-test 包,
+# 语义必须保持"必需的那四项"。
+SERVER_LOGICAL_PATHS = REQUIRED_SERVER_LOGICAL_PATHS
+SERVER_MANA_BOARD_LOGICAL = "mana_board.json"
+CLIENT_MANA_BOARD_LOGICAL = "master/generated/mana_board.orderedmap"
 CLIENT_ROOTS: tuple[RootName, ...] = ("common", "medium", "android")
 ARCHIVE_PREFIXES = {
     "common": "production/upload/",
@@ -83,6 +92,16 @@ ARCHIVE_PREFIXES = {
     "android": "production/android_upload/",
 }
 UNIQUE_CONDITION_TABLE = "master/character/unique_condition.orderedmap"
+CLIENT_LEGALITY_TABLES: dict[TableKey, str] = {
+    ("common", "master/ability/ability.orderedmap"): "ability",
+    ("common", "master/ability/leader_ability.orderedmap"): "leader_ability",
+    ("common", "master/ability/ability_soul.orderedmap"): "ability_soul",
+    (
+        "common",
+        "master/equipment_enhancement/equipment_enhancement_ability.orderedmap",
+    ): "equipment_enhancement_ability",
+    ("common", "master/ex_boost/ex_ability.orderedmap"): "ex_ability",
+}
 TRANSACTION_MARKER = ".character-pack-transaction.json"
 SNAPSHOT_MARKER = ".character-pack-snapshot.json"
 # 回滚增量在 active 链上的 package_id 后缀（见 wf_character_rollback）；
@@ -103,14 +122,6 @@ class PackFile:
     logical_path: str
     sha256: str
     size: int
-
-
-@dataclass(frozen=True)
-class AcceptedAssetReplacement:
-    root: RootName
-    logical_path: str
-    before_sha256: str
-    before_size: int
 
 
 class PackPreflightError(ValueError):
@@ -257,7 +268,6 @@ class PreflightReport:
     conflicts: tuple[FrozenRecord, ...]
     root_totals: FrozenRecord
     expected_base_hashes: FrozenRecord
-    accepted_asset_replacements: tuple[FrozenRecord, ...]
     capability_warnings: tuple[FrozenRecord, ...]
     can_prepare: bool
     delivery_status: str
@@ -274,9 +284,6 @@ class PreflightReport:
             "conflicts": _plain(self.conflicts),
             "root_totals": _plain(self.root_totals),
             "expected_base_hashes": _plain(self.expected_base_hashes),
-            "accepted_asset_replacements": _plain(
-                self.accepted_asset_replacements
-            ),
             "capability_warnings": _plain(self.capability_warnings),
             "can_prepare": self.can_prepare,
             "delivery_status": self.delivery_status,
@@ -419,137 +426,11 @@ class _NestedCodec:
         return TableImage(outer, inner)
 
 
-class JsonIntegerSetCodec:
-    """Inspect a JSON array whose members are unique positive integer IDs."""
-
-    def inspect(
-        self,
-        raw: bytes,
-        claim: TableClaim,
-        semantic_claims: tuple[SemanticClaim, ...],
-    ) -> TableImage:
-        del claim, semantic_claims
-        try:
-            value = json.loads(
-                raw.decode("utf-8"), parse_constant=_reject_json_constant
-            )
-        except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
-            raise PackPreflightError(f"invalid JSON integer set: {exc}") from exc
-        if not isinstance(value, list):
-            raise PackPreflightError("JSON integer set must be an array")
-        seen: set[int] = set()
-        rows: list[tuple[str, bytes]] = []
-        for index, item in enumerate(value):
-            if type(item) is not int or item <= 0:
-                raise PackPreflightError(
-                    f"JSON integer set[{index}] must be a positive integer"
-                )
-            if item in seen:
-                raise PackPreflightError(
-                    f"JSON integer set[{index}] duplicates {item}"
-                )
-            seen.add(item)
-            rows.append((str(item), str(item).encode("ascii")))
-        return TableImage(tuple(rows))
-
-
-class JsonEventShopProductsCodec:
-    """Expose globally unique product IDs below event-type/event-ID maps."""
-
-    def inspect(
-        self,
-        raw: bytes,
-        claim: TableClaim,
-        semantic_claims: tuple[SemanticClaim, ...],
-    ) -> TableImage:
-        del claim, semantic_claims
-        value = _strict_json_object_bytes(raw, "JSON event shop")
-        seen: set[str] = set()
-        rows: list[tuple[str, bytes]] = []
-        for event_type, events in value.items():
-            _require_canonical_integer_key(
-                event_type, "JSON event shop event type", allow_zero=True
-            )
-            if not isinstance(events, dict):
-                raise PackPreflightError(
-                    f"JSON event shop[{event_type}] must be an object"
-                )
-            for event_id, products in events.items():
-                _require_canonical_integer_key(
-                    event_id,
-                    f"JSON event shop[{event_type}] event ID",
-                    allow_zero=True,
-                )
-                if not isinstance(products, dict):
-                    raise PackPreflightError(
-                        f"JSON event shop[{event_type}][{event_id}] must be an object"
-                    )
-                for product_id, product in products.items():
-                    _require_canonical_integer_key(
-                        product_id,
-                        f"JSON event shop[{event_type}][{event_id}] product ID",
-                    )
-                    if product_id in seen:
-                        raise PackPreflightError(
-                            f"JSON event shop product ID is ambiguous: {product_id}"
-                        )
-                    if not isinstance(product, dict):
-                        raise PackPreflightError(
-                            f"JSON event shop product {product_id} must be an object"
-                        )
-                    seen.add(product_id)
-                    rows.append((product_id, _canonical_json_bytes({
-                        "event_id": event_id,
-                        "event_type": event_type,
-                        "product": product,
-                    })))
-        return TableImage(tuple(rows))
-
-
-class JsonRogueEventsCodec:
-    """Expose event IDs below ``events`` while binding every root sibling."""
-
-    def inspect(
-        self,
-        raw: bytes,
-        claim: TableClaim,
-        semantic_claims: tuple[SemanticClaim, ...],
-    ) -> TableImage:
-        del claim, semantic_claims
-        value = _strict_json_object_bytes(raw, "JSON rogue events")
-        events = value.get("events")
-        if not isinstance(events, dict):
-            raise PackPreflightError("JSON rogue events.events must be an object")
-        rows: list[tuple[str, bytes]] = []
-        for event_id, event in events.items():
-            _require_canonical_integer_key(
-                event_id, "JSON rogue events event ID"
-            )
-            if not isinstance(event, dict):
-                raise PackPreflightError(
-                    f"JSON rogue events.events[{event_id}] must be an object"
-                )
-            rows.append((event_id, _canonical_json_bytes(event)))
-        root_siblings = {
-            key: item for key, item in value.items() if key != "events"
-        }
-        sibling_digest = hashlib.sha256(
-            _canonical_json_bytes(root_siblings)
-        ).hexdigest()
-        return TableImage(
-            tuple(rows),
-            semantic_values=(("json_rogue_root_sha256", sibling_digest),),
-        )
-
-
 DEFAULT_CODECS: dict[str, TableCodec] = {
     "flat": _FlatCodec(compressed_rows=True),
     "raw_outer": _FlatCodec(compressed_rows=False),
     "action_nested": _NestedCodec(),
     "switched_nested": _NestedCodec(),
-    "json_integer_set": JsonIntegerSetCodec(),
-    "json_event_shop_products": JsonEventShopProductsCodec(),
-    "json_rogue_events": JsonRogueEventsCodec(),
 }
 
 
@@ -566,30 +447,135 @@ def _reject_duplicate_object_keys(pairs: list[tuple[str, object]]) -> dict:
     return result
 
 
-def _strict_json_object_bytes(raw: bytes, label: str) -> dict:
+ServerManaBoard = dict[str, dict[str, dict[str, list[list[str]]]]]
+
+
+def _mana_board_layer(
+    raw: bytes, label: str, *, compressed_rows: bool
+) -> tuple[list[str], list[bytes]]:
+    try:
+        return core._strict_orderedmap_rows(  # type: ignore[attr-defined]
+            raw, label=label, compressed_rows=compressed_rows
+        )
+    except Exception as exc:
+        raise PackPreflightError(
+            f"client mana board layer is unreadable ({label}): {exc}"
+        ) from exc
+
+
+def derive_server_mana_board(
+    raw: bytes, character_ids: Iterable[str | int] | None = None
+) -> ServerManaBoard:
+    """客户端 `master/generated/mana_board.orderedmap` → 服务端镜像行。
+
+    客户端表是三层 orderedmap:外层键=角色 ID(行原样)、中层键=板号(行原样)、
+    内层键=槽位(行 zlib CSV)。服务端 `assets/mana_board.json` 的形状是
+    ``mb[cid][board][slot] = [[nodeId, x, y, shape, pedestal, parent]]`` ——
+    叶子就是 CSV 行**原样**,没有任何字段改写。
+
+    该规则在本机对 CN live store 的全部 557 个角色键与仓库现有镜像逐键相等
+    (见 tests/test_character_pack_mana_board.DerivationMatchesRepoMirrorTest)。
+
+    `character_ids` 为 None 时导出整表;给了就只导出这些角色,且缺任何一个都
+    抛错(缺行 = 服务端 `getManaNodeAwakeCost` 返回 null,必须失败关闭)。
+    """
+    wanted: set[str] | None = (
+        None if character_ids is None else {str(item) for item in character_ids}
+    )
+    outer_keys, outer_rows = _mana_board_layer(
+        raw, CLIENT_MANA_BOARD_LOGICAL, compressed_rows=False
+    )
+    derived: ServerManaBoard = {}
+    for character_id, character_raw in zip(outer_keys, outer_rows):
+        if wanted is not None and character_id not in wanted:
+            continue
+        boards: dict[str, dict[str, list[list[str]]]] = {}
+        board_keys, board_rows = _mana_board_layer(
+            character_raw, f"{CLIENT_MANA_BOARD_LOGICAL}#{character_id}",
+            compressed_rows=False,
+        )
+        for board_key, board_raw in zip(board_keys, board_rows):
+            label = f"{CLIENT_MANA_BOARD_LOGICAL}#{character_id}/{board_key}"
+            slot_keys, slot_rows = _mana_board_layer(
+                board_raw, label, compressed_rows=True
+            )
+            slots: dict[str, list[list[str]]] = {}
+            for slot_key, slot_raw in zip(slot_keys, slot_rows):
+                try:
+                    text = slot_raw.decode("utf-8")
+                except UnicodeDecodeError as exc:
+                    raise PackPreflightError(
+                        f"client mana board slot is not UTF-8 ({label}/{slot_key})"
+                    ) from exc
+                slots[slot_key] = core.read_csv_lines(text)
+            boards[board_key] = slots
+        derived[character_id] = boards
+    if wanted is not None:
+        missing = sorted(wanted - set(derived))
+        if missing:
+            raise PackPreflightError(
+                "client mana board table lacks character rows: "
+                + ", ".join(missing)
+            )
+    return derived
+
+
+def load_server_json_mirror(
+    raw: bytes | None, label: str = "server JSON mirror"
+) -> dict:
+    """严格读一张服务端镜像表(拒重复键/非 JSON 常量);`None` = 文件不存在。"""
+    return {} if raw is None else _strict_server_json_object(raw, label)
+
+
+def _strict_server_json_object(raw: bytes, label: str) -> dict:
     try:
         value = json.loads(
             raw.decode("utf-8"),
             parse_constant=_reject_json_constant,
             object_pairs_hook=_reject_duplicate_object_keys,
         )
-    except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
-        raise PackPreflightError(f"{label} is invalid: {exc}") from exc
+    except (UnicodeDecodeError, ValueError) as exc:
+        raise PackPreflightError(f"{label} is not a valid JSON object: {exc}") from exc
     if not isinstance(value, dict):
-        raise PackPreflightError(f"{label} must be an object")
+        raise PackPreflightError(f"{label} must be a JSON object")
     return value
 
 
-def _require_canonical_integer_key(
-    value: object, label: str, *, allow_zero: bool = False
-) -> str:
-    if not isinstance(value, str) or not value.isascii() or not value.isdigit():
-        raise PackPreflightError(f"{label} must be a canonical integer string")
-    number = int(value)
-    minimum = 0 if allow_zero else 1
-    if number < minimum or str(number) != value:
-        raise PackPreflightError(f"{label} must be a canonical integer string")
-    return value
+def merge_server_json_object(
+    live_raw: bytes | None, rows: Mapping[str, Any]
+) -> bytes:
+    """键级合并:只新增/覆盖 `rows` 里的键,其余键与顺序原样保留。
+
+    输出与 `wf_release._ordered_json` / 仓库现有 `assets/*.json` 同一字节口径:
+    UTF-8 原文、紧凑分隔符 `(",", ":")`、不排序、无尾换行。
+    """
+    live = load_server_json_mirror(live_raw)
+    merged = dict(live)
+    for key, value in rows.items():
+        merged[str(key)] = value
+    return json.dumps(
+        merged, ensure_ascii=False, sort_keys=False, separators=(",", ":"),
+        allow_nan=False,
+    ).encode("utf-8")
+
+
+def package_server_mana_board_rows(
+    package_dir: Path, character_id: str | int
+) -> ServerManaBoard | None:
+    """包内客户端玛纳板表 → 本角色的服务端行;包没带该表时返回 None。"""
+    path = (
+        Path(package_dir) / "roots" / "common"
+        / Path(*CLIENT_MANA_BOARD_LOGICAL.split("/"))
+    )
+    if not path.is_file():
+        return None
+    try:
+        raw = path.read_bytes()
+    except OSError as exc:
+        raise PackPreflightError(
+            f"cannot read package mana board table: {exc}"
+        ) from exc
+    return derive_server_mana_board(raw, [character_id])
 
 
 def load_manifest(path: Path) -> dict:
@@ -615,7 +601,7 @@ def canonical_manifest_bytes(manifest: dict) -> bytes:
     ).encode("utf-8")
 
 
-def logical_path_problem(logical_path: str) -> str | None:
+def _path_problem(logical_path: str) -> str | None:
     windows_path = PureWindowsPath(logical_path)
     if logical_path.startswith("/") or windows_path.is_absolute() or windows_path.drive:
         return "must be relative"
@@ -626,29 +612,9 @@ def logical_path_problem(logical_path: str) -> str | None:
         return "must not contain '..' segments"
     if any(segment in ("", ".") for segment in segments):
         return "must not contain empty or '.' segments"
-    if any(segment.endswith((".", " ")) for segment in segments):
-        return "must not contain segments ending in a dot or space"
-    if any(
-        ord(character) < 32 or character in WINDOWS_FORBIDDEN_PATH_CHARS
-        for segment in segments for character in segment
-    ):
-        return "must not contain Win32-forbidden characters"
-    if any(WINDOWS_DEVICE_NAME_RE.match(segment) for segment in segments):
-        return "must not contain reserved Windows device names"
+    if STORE_SHARD_RE.fullmatch(logical_path):
+        return "must not be a hashed store rel (<2hex>/<38hex>); use the pre-hash logical path"
     return None
-
-
-def windows_logical_path_key(logical_path: str) -> str:
-    """Return the ASCII-case-insensitive identity used by logical Win32 roots."""
-    return logical_path.translate(WINDOWS_LOGICAL_PATH_TRANSLATION)
-
-
-def _path_problem(logical_path: str) -> str | None:
-    return logical_path_problem(logical_path)
-
-
-def _windows_logical_path_key(logical_path: str) -> str:
-    return windows_logical_path_key(logical_path)
 
 
 def _sha256_file(path: Path) -> str:
@@ -797,6 +763,97 @@ def _unique_condition_asset_errors(
     return errors
 
 
+# ---------------------------------------------------------------------------
+# 客户端资产形状门禁(2026-08-28 接入)
+#
+# 两条规则都在 wf_client_legality 里(纯函数、带单测),这里只负责把包里的
+# raw-deflate + AMF3 解出来喂进去:
+#   * character/<code>/pixelart/pixelart.timeline.amf3.deflate
+#       → pixelart_timeline_problems(序列齐全/连续/终止码/kachidoki loop/
+#         hp_gauge 与 unit_body 形状)
+#   * battle/action/**/*.action.dsl.amf3.deflate
+#       → action_dsl_element_problems(元素码 1-based;配角色 c3 时抓差一签名)
+#
+# 全量正向对照(2026-08-28,CN store 1.4.55x):官方 1011 个玩家侧 action DSL +
+# 500 份可玩角色 pixelart.timeline **0 误报**。
+#
+# 为什么值得接进 preflight:白虎 1.4.560 的「闪电技能没伤害」与歼灭者 1.4.562 的
+# 118 处元素码差一,都是发布之后靠真机反馈才发现的;这两条规则在发布前就能拦住。
+# ---------------------------------------------------------------------------
+
+PIXELART_TIMELINE_SUFFIX = "/pixelart/pixelart.timeline.amf3.deflate"
+ACTION_DSL_SUFFIX = ".action.dsl.amf3.deflate"
+
+
+def _package_character_element(package_dir: Path, character_id: object) -> int | None:
+    """从包自带的 master/character 表里取角色的 0-based 内部元素(c3)。
+
+    取不到就返回 None —— 门禁退化成纯范围校验,不会因此产生误报。
+    """
+    if not isinstance(character_id, int):
+        return None
+    table = package_dir / "roots" / "common" / Path(
+        *"master/character/character.orderedmap".split("/")
+    )
+    try:
+        keys, rows = core._strict_orderedmap_rows(  # type: ignore[attr-defined]
+            table.read_bytes(), label="character", compressed_rows=True,
+        )
+        raw = dict(zip(keys, rows)).get(str(character_id))
+        if raw is None:
+            return None
+        cells = core.read_csv_lines(raw.decode("utf-8"))[0]
+    except Exception:
+        return None
+    if len(cells) > 3 and cells[3].isdigit():
+        return int(cells[3])
+    return None
+
+
+def _client_asset_shape_errors(
+    manifest: dict,
+    package_dir: Path,
+    declared: list[tuple[str, str, Path]],
+) -> list[str]:
+    """`declared` = [(root, logical_path, 磁盘路径)],只收 CLIENT_ROOTS 的条目。"""
+    import zlib
+
+    import wf_dsl
+
+    errors: list[str] = []
+    element = _package_character_element(
+        package_dir, manifest.get("character_id")
+    )
+    for root, logical_path, candidate in declared:
+        if logical_path.endswith(PIXELART_TIMELINE_SUFFIX):
+            checker = wf_client_legality.pixelart_timeline_problems
+        elif (logical_path.endswith(ACTION_DSL_SUFFIX)
+              and logical_path.startswith("battle/action/")):
+            checker = None
+        else:
+            continue
+        try:
+            tree = wf_dsl.parse_dsl(
+                zlib.decompress(candidate.read_bytes(), -15)
+            )["tree"]
+        except Exception as exc:
+            errors.append(
+                f"roots.{root}: {logical_path}: cannot decode AMF3 payload "
+                f"({type(exc).__name__})"
+            )
+            continue
+        if checker is not None:
+            problems = checker(tree)
+        else:
+            problems = wf_client_legality.action_dsl_element_problems(
+                tree, element
+            )
+        errors.extend(
+            f"roots.{root}: {logical_path}: {problem}" for problem in problems
+        )
+    return errors
+
+
 def validate_manifest(
     manifest: dict,
     package_dir: Path,
@@ -868,6 +925,7 @@ def validate_manifest(
 
     seen_paths: dict[str, str] = {}
     declared_common_paths: set[str] = set()
+    client_shape_targets: list[tuple[str, str, Path]] = []
     qa = manifest.get("qa")
     production_package = (
         isinstance(qa, dict) and qa.get("delivery_mode") == "production"
@@ -924,15 +982,14 @@ def validate_manifest(
                     errors.append(f"{prefix}.logical_path: {problem}")
                 else:
                     path_valid = True
-                    path_key = _windows_logical_path_key(logical_path)
-                    previous = seen_paths.get(path_key)
+                    previous = seen_paths.get(logical_path)
                     if previous is not None:
                         errors.append(
                             f"{prefix}.logical_path: duplicate logical_path {logical_path!r}; "
                             f"first declared at {previous}"
                         )
                     else:
-                        seen_paths[path_key] = prefix
+                        seen_paths[logical_path] = prefix
                         if root == "common":
                             declared_common_paths.add(logical_path)
                 forbidden = sorted(
@@ -987,6 +1044,14 @@ def validate_manifest(
                 production_package
                 and require_referenced_assets
                 and root in CLIENT_ROOTS
+                and (logical_path.endswith(PIXELART_TIMELINE_SUFFIX)
+                     or logical_path.endswith(ACTION_DSL_SUFFIX))
+            ):
+                client_shape_targets.append((root, logical_path, candidate))
+            if (
+                production_package
+                and require_referenced_assets
+                and root in CLIENT_ROOTS
                 and logical_path.endswith(".png")
             ):
                 try:
@@ -1015,6 +1080,11 @@ def validate_manifest(
             manifest,
             package_anchor,
             declared_common_paths,
+        ))
+        errors.extend(_client_asset_shape_errors(
+            manifest,
+            package_anchor,
+            client_shape_targets,
         ))
     if not errors:
         try:
@@ -1173,82 +1243,6 @@ def _parse_transaction_claims(manifest: dict) -> dict[TableKey, TableClaim]:
     return result
 
 
-def _parse_accepted_asset_replacements(
-    manifest: Mapping[str, Any],
-    entries: Mapping[TableKey, Mapping[str, Any]],
-    claims: Mapping[TableKey, TableClaim],
-    *,
-    label: str,
-) -> dict[TableKey, AcceptedAssetReplacement]:
-    snapshot = manifest.get("snapshot")
-    raw = (
-        snapshot.get("accepted_asset_replacements", [])
-        if isinstance(snapshot, Mapping) else []
-    )
-    if not isinstance(raw, list):
-        raise PackPreflightError(
-            f"{label} snapshot.accepted_asset_replacements must be an array"
-        )
-    result: dict[TableKey, AcceptedAssetReplacement] = {}
-    windows_seen: dict[tuple[RootName, PureWindowsPath], str] = {}
-    errors: list[str] = []
-    required = {"root", "logical_path", "before_sha256", "before_size"}
-    for index, item in enumerate(raw):
-        prefix = f"{label} snapshot.accepted_asset_replacements[{index}]"
-        if not isinstance(item, Mapping) or set(item) != required:
-            errors.append(f"{prefix}: must contain only {sorted(required)}")
-            continue
-        root = item["root"]
-        logical = item["logical_path"]
-        digest = item["before_sha256"]
-        size = item["before_size"]
-        if root not in CLIENT_ROOTS:
-            errors.append(f"{prefix}.root: must be a client root")
-            continue
-        root = cast(RootName, root)
-        if not isinstance(logical, str) or _path_problem(logical):
-            errors.append(f"{prefix}.logical_path: invalid canonical logical path")
-            continue
-        windows_key = (root, _windows_logical_path_key(logical))
-        if windows_key in windows_seen:
-            errors.append(
-                f"{prefix}.logical_path: Windows-equivalent duplicate of "
-                f"{windows_seen[windows_key]}"
-            )
-            continue
-        windows_seen[windows_key] = logical
-        table_key: TableKey = (root, logical)
-        if table_key not in entries:
-            errors.append(
-                f"{prefix}.logical_path: path is not an exact candidate root entry"
-            )
-        table_like_path = (
-            logical.casefold().startswith("master/")
-            or logical.casefold().endswith((".orderedmap", ".json"))
-        )
-        if table_key in claims or table_like_path:
-            errors.append(f"{prefix}.logical_path: table paths cannot be accepted")
-        if not isinstance(digest, str) or SHA256_RE.fullmatch(digest) is None:
-            errors.append(f"{prefix}.before_sha256: invalid sha256")
-        if type(size) is not int or size < 0:
-            errors.append(f"{prefix}.before_size: must be a non-negative integer")
-        if (
-            table_key in entries
-            and table_key not in claims
-            and not table_like_path
-            and isinstance(digest, str)
-            and SHA256_RE.fullmatch(digest) is not None
-            and type(size) is int
-            and size >= 0
-        ):
-            result[table_key] = AcceptedAssetReplacement(
-                root, logical, digest, size
-            )
-    if errors:
-        raise PackPreflightError("; ".join(sorted(errors)))
-    return result
-
-
 def _validate_character_speech_claim(
     claims: Mapping[TableKey, TableClaim],
     *,
@@ -1378,6 +1372,72 @@ def _dict_rows(image: TableImage) -> tuple[
             raise PackPreflightError("codec semantic values must be strings")
         semantics.add(marker)
     return outer, inner, semantics
+
+
+def _client_legality_conflicts(
+    candidate_claims: Mapping[TableKey, TableClaim],
+    candidate_images: Mapping[TableKey, TableImage],
+) -> list[dict[str, str]]:
+    conflicts: list[dict[str, str]] = []
+    for table_key, kind in CLIENT_LEGALITY_TABLES.items():
+        claim = candidate_claims.get(table_key)
+        image = candidate_images.get(table_key)
+        if claim is None:
+            continue
+        if image is None:
+            raise PackPreflightError(
+                f"client legality has no candidate image for {claim.logical_path}"
+            )
+        outer_rows = dict(image.outer_rows)
+        for outer_key in sorted(claim.outer_keys):
+            raw = outer_rows.get(outer_key)
+            if raw is None:
+                raise PackPreflightError(
+                    f"client legality has no claimed row "
+                    f"{claim.logical_path}:{outer_key}"
+                )
+            try:
+                rows = core.read_csv_lines(raw.decode("utf-8"))
+            except Exception as exc:
+                raise PackPreflightError(
+                    f"client legality cannot decode "
+                    f"{claim.logical_path}:{outer_key}: {exc}"
+                ) from exc
+            if not rows:
+                conflicts.append({
+                    "kind": "client_legality",
+                    "claim": f"{claim.logical_path}:{outer_key}:row1",
+                    "reason": "claimed client ability key contains no CSV row",
+                })
+                continue
+            for row_index, row in enumerate(rows, 1):
+                try:
+                    problems = wf_client_legality.client_legality_problems(kind, row)
+                except Exception as exc:
+                    raise PackPreflightError(
+                        f"client legality cannot inspect "
+                        f"{claim.logical_path}:{outer_key}:row{row_index}: {exc}"
+                    ) from exc
+                conflicts.extend({
+                    "kind": "client_legality",
+                    "claim": (
+                        f"{claim.logical_path}:{outer_key}:row{row_index}"
+                    ),
+                    "reason": problem,
+                } for problem in problems)
+    return conflicts
+
+
+def _validate_client_legality_codecs(
+    claims: Mapping[TableKey, TableClaim], *, label: str,
+) -> None:
+    for table_key in CLIENT_LEGALITY_TABLES:
+        claim = claims.get(table_key)
+        if claim is not None and claim.codec_id != "flat":
+            raise PackPreflightError(
+                f"{label} known client ability table "
+                f"{claim.root}:{claim.logical_path} must use flat codec"
+            )
 
 
 def _merge_inspection_claims(
@@ -1738,7 +1798,7 @@ class _WindowsOwnedApi:
             return _WindowsRelativeOpenContract(
                 access=(
                     self.FILE_LIST_DIRECTORY | self.FILE_ADD_FILE
-                    | self.FILE_ADD_SUBDIRECTORY | self.FILE_DELETE_CHILD
+                    | self.FILE_ADD_SUBDIRECTORY
                     | self.FILE_READ_ATTRIBUTES | self.FILE_WRITE_ATTRIBUTES
                     | self.FILE_TRAVERSE | self.DELETE | self.SYNCHRONIZE
                 ),
@@ -2330,12 +2390,7 @@ class PackTransaction:
         }
 
     def _validate_inputs(self) -> tuple[
-        ReleaseBaseState,
-        dict[TableKey, TableClaim],
-        dict[TableKey, TableClaim],
-        dict[TableKey, AcceptedAssetReplacement],
-        dict[TableKey, AcceptedAssetReplacement],
-    ]:
+            ReleaseBaseState, dict[str, TableClaim], dict[str, TableClaim]]:
         named_live = {
             "common": self.live_roots.common,
             "medium": self.live_roots.medium,
@@ -2367,16 +2422,9 @@ class PackTransaction:
         if errors:
             raise PackPreflightError("candidate manifest invalid: " + "; ".join(errors))
         candidate_claims = _parse_transaction_claims(self.manifest)
+        _validate_client_legality_codecs(candidate_claims, label="candidate")
         _validate_character_speech_claim(candidate_claims, label="candidate")
-        candidate_entries = self._entries(self.manifest)
-        candidate_replacements = _parse_accepted_asset_replacements(
-            self.manifest,
-            candidate_entries,
-            candidate_claims,
-            label="candidate",
-        )
         installed_claims: dict[TableKey, TableClaim] = {}
-        installed_replacements: dict[TableKey, AcceptedAssetReplacement] = {}
         if self.installed_manifest is not None:
             if self.installed_package_dir is None:
                 raise PackPreflightError(
@@ -2390,21 +2438,7 @@ class PackTransaction:
                     "installed manifest invalid: " + "; ".join(installed_errors)
                 )
             installed_claims = _parse_transaction_claims(self.installed_manifest)
-            installed_replacements = _parse_accepted_asset_replacements(
-                self.installed_manifest,
-                self._entries(self.installed_manifest),
-                installed_claims,
-                label="installed",
-            )
-            for table_key in sorted(
-                set(candidate_replacements) & set(installed_replacements)
-            ):
-                if candidate_replacements[table_key] != installed_replacements[table_key]:
-                    root, logical_path = table_key
-                    raise PackPreflightError(
-                        "candidate/installed accepted_asset_replacements mismatch: "
-                        f"{root}:{logical_path}"
-                    )
+            _validate_client_legality_codecs(installed_claims, label="installed")
 
         def validate_server_contract(
             manifest: dict, claims: dict[TableKey, TableClaim], label: str,
@@ -2412,45 +2446,28 @@ class PackTransaction:
             server_paths = tuple(
                 entry["logical_path"] for entry in manifest["roots"]["server"]
             )
-            actual = set(server_paths)
-            required = set(SERVER_LOGICAL_PATHS)
-            missing = sorted(required - actual)
-            if missing:
+            present = set(server_paths)
+            required = set(REQUIRED_SERVER_LOGICAL_PATHS)
+            allowed = set(ALLOWED_SERVER_LOGICAL_PATHS)
+            # 必需四项一个不能少,可选派生表(mana_board.json)带不带都行,
+            # 其余路径一律拒绝 —— 老包(只有四项)与新包(四项+可选)同时合法。
+            if (
+                len(server_paths) != len(present)
+                or not required <= present
+                or not present <= allowed
+            ):
                 raise PackPreflightError(
-                    f"{label} server root is missing required character tables: "
-                    + ", ".join(missing)
-                )
-            if len(actual) != len(server_paths):
-                raise PackPreflightError(
-                    f"{label} server root contains duplicate logical paths"
+                    f"{label} server root must contain exactly "
+                    + ", ".join(REQUIRED_SERVER_LOGICAL_PATHS)
+                    + " (optional: " + ", ".join(OPTIONAL_SERVER_LOGICAL_PATHS) + ")"
                 )
             server_claims = {
                 logical_path for root, logical_path in claims if root == "server"
             }
-            if server_claims != actual:
+            if server_claims != present:
                 raise PackPreflightError(
-                    f"{label} server tables must claim every server root exactly"
-                )
-            required_codecs = {
-                claims[("server", logical_path)].codec_id
-                for logical_path in required
-            }
-            if len(required_codecs) != 1:
-                raise PackPreflightError(
-                    f"{label} required character server tables must share one codec"
-                )
-            server_codec = next(iter(required_codecs))
-            wrong_codecs = sorted(
-                logical_path for logical_path in server_claims
-                if logical_path not in required
-                and claims[("server", logical_path)].codec_id
-                not in ({server_codec} | SERVER_EXTENSION_CODEC_IDS)
-            )
-            if wrong_codecs:
-                raise PackPreflightError(
-                    f"{label} server extension codec must be one of "
-                    f"{sorted({server_codec} | SERVER_EXTENSION_CODEC_IDS)}: "
-                    + ", ".join(wrong_codecs)
+                    f"{label} server tables must claim exactly "
+                    + ", ".join(sorted(present))
                 )
 
         validate_server_contract(self.manifest, candidate_claims, "candidate")
@@ -2458,6 +2475,7 @@ class PackTransaction:
             validate_server_contract(
                 self.installed_manifest, installed_claims, "installed"
             )
+        candidate_entries = self._entries(self.manifest)
         for (root, logical_path), claim in candidate_claims.items():
             if claim.codec_id not in self.codecs:
                 raise PackPreflightError(
@@ -2495,13 +2513,7 @@ class PackTransaction:
             raise PackPreflightError(
                 "active ownership hash exists but installed manifest was not supplied"
             )
-        return (
-            state,
-            candidate_claims,
-            installed_claims,
-            candidate_replacements,
-            installed_replacements,
-        )
+        return state, candidate_claims, installed_claims
 
     def _inspect_tables(
         self,
@@ -2745,60 +2757,30 @@ class PackTransaction:
         return _record_sort(changes), totals
 
     def preflight(self) -> PreflightReport:
-        (
-            state,
-            candidate_claims,
-            installed_claims,
-            candidate_replacements,
-            _installed_replacements,
-        ) = self._validate_inputs()
+        state, candidate_claims, installed_claims = self._validate_inputs()
         candidate_images, live_images, conflicts, table_changes = self._inspect_tables(
             candidate_claims, installed_claims
         )
+        conflicts.extend(_client_legality_conflicts(
+            candidate_claims, candidate_images
+        ))
         file_changes, totals = self._file_changes(set(candidate_claims))
         installed_entries = (
             self._entries(self.installed_manifest)
             if self.installed_manifest is not None else {}
         )
-        accepted_replacements: list[dict] = []
         for item in file_changes:
             ownership_key = (item["root"], item["logical_path"])
             if (item["root"] in CLIENT_ROOTS
                     and not item["is_table"]
-                    and item["source_path"] is not None):
-                accepted = candidate_replacements.get(ownership_key)
-                before = item["before"]
-                if accepted is not None:
-                    expected = {
-                        "exists": True,
-                        "sha256": accepted.before_sha256,
-                        "size": accepted.before_size,
-                    }
-                    if before == expected:
-                        accepted_replacements.append({
-                            "root": accepted.root,
-                            "logical_path": accepted.logical_path,
-                            "before_sha256": accepted.before_sha256,
-                            "before_size": accepted.before_size,
-                            "live_path": item["live_path"],
-                        })
-                    else:
-                        conflicts.append({
-                            "kind": "asset_path",
-                            "claim": f"{item['root']}:{item['logical_path']}",
-                            "reason": "accepted_live_before_mismatch",
-                            "expected": expected,
-                            "actual": before,
-                        })
-                elif (
-                    before["exists"]
-                    and ownership_key not in installed_entries
-                ):
-                    conflicts.append({
-                        "kind": "asset_path",
-                        "claim": f"{item['root']}:{item['logical_path']}",
-                        "reason": "occupied_without_hash_bound_prior_path_ownership",
-                    })
+                    and item["source_path"] is not None
+                    and item["before"]["exists"]
+                    and ownership_key not in installed_entries):
+                conflicts.append({
+                    "kind": "asset_path",
+                    "claim": f"{item['root']}:{item['logical_path']}",
+                    "reason": "occupied_without_hash_bound_prior_path_ownership",
+                })
         table_file_before = {
             (item["root"], item["logical_path"]): item["before"]
             for item in file_changes if item["is_table"]
@@ -2894,7 +2876,6 @@ class PackTransaction:
                 "expected_from_version": state.expected_from_version,
                 "live": dict(sorted(live_hashes.items())),
             }),
-            accepted_asset_replacements=_record_sort(accepted_replacements),
             capability_warnings=_record_sort(capability_warnings),
             can_prepare=can_prepare,
             delivery_status=delivery,

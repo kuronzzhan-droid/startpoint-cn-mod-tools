@@ -1,0 +1,28 @@
+.character-teams{margin-top:20px;padding-top:16px;border-top:1px solid var(--line);min-width:0}
+.character-teams-heading{display:flex;align-items:baseline;flex-wrap:wrap;gap:5px 12px}
+.character-teams-heading h2{margin:0;font-size:18px;color:var(--ink)}
+.character-teams-hint,.character-teams-status{color:var(--muted);font-size:12px;line-height:1.5}
+.character-teams-status{margin:7px 0 10px;overflow-wrap:anywhere}
+.character-teams-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,210px),1fr));gap:10px;min-width:0}
+.character-team-card{display:flex;flex-direction:column;min-width:0;padding:11px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);text-decoration:none}
+.character-team-card:hover{border-color:var(--accent-dark)}
+.character-team-card:focus-visible{outline:3px solid var(--accent-dark);outline-offset:2px}
+.character-team-card h3{margin:0 0 6px;font-size:14px;line-height:1.4;overflow-wrap:anywhere}
+.character-team-tags{display:flex;flex-wrap:wrap;gap:4px;font-size:10px;color:var(--muted)}
+.character-team-tags span{padding:2px 5px;border-radius:4px;background:var(--soft);overflow-wrap:anywhere}
+.character-team-position{margin:7px 0 2px;font-size:11px;font-weight:700;color:var(--accent-dark);overflow-wrap:anywhere}
+.character-team-preview{margin-top:auto;min-width:0}
+.character-team-card .community-board{width:100%;max-width:180px;gap:5px;margin:9px auto 0}
+.character-team-card .community-board-column{grid-template-columns:minmax(0,1fr);grid-template-areas:"main" "unison";gap:5px}
+.character-team-card .community-slot{box-sizing:border-box;min-width:0}
+.character-team-card .community-slot-label{display:none}
+.character-team-card .community-slot.is-character-match{outline:2px solid var(--accent-dark);outline-offset:1px}
+.character-team-card .is-character-match .community-slot-label{display:block;background:var(--accent-dark)}
+.character-teams-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:10px}
+.character-teams-actions button{min-height:38px;padding:7px 14px;border-radius:6px;font-size:12px}
+.character-teams-actions button[hidden]{display:none}
+@media(max-width:640px){
+ .character-teams{margin-top:16px;padding-top:13px}.character-teams-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .character-team-card{padding:8px}.character-team-card h3{font-size:13px}.character-team-tags{font-size:10px;gap:3px}.character-team-tags span{padding:2px 3px}
+ .character-team-card .community-board,.character-team-card .community-board-column{gap:4px}
+}

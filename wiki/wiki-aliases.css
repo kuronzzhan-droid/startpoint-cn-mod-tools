@@ -1,0 +1,16 @@
+.wiki-aliases{margin:8px 0;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel,#fff);font-size:13px}
+.wiki-aliases-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.wiki-aliases-values,.wiki-aliases-editor-tags{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:5px 0 0;min-width:0}
+.wiki-aliases-values[hidden]{display:none}.wiki-aliases-empty{color:var(--muted)}
+.wiki-alias-chip{display:inline-flex;align-items:center;gap:5px;max-width:100%;min-width:0;padding:4px 9px;border:1px solid var(--line);border-radius:14px;background:var(--surface,#f0f6f5);color:var(--ink);line-height:1.4;overflow-wrap:anywhere}
+.wiki-alias-chip-editable{padding-right:3px}.wiki-alias-chip-editable>span{min-width:0}
+.wiki-alias-remove{flex:none;border:0;border-radius:50%;width:26px;height:26px;padding:0;background:transparent;color:inherit;font:inherit;font-size:20px;line-height:1;cursor:pointer}
+.wiki-alias-remove:hover{background:var(--line)}.wiki-alias-remove:focus-visible{outline:2px solid var(--accent-dark);outline-offset:1px}
+.wiki-aliases-status{font-size:12px;color:var(--muted);margin:6px 0}.wiki-aliases-status:empty{display:none}
+.wiki-aliases-form,.wiki-aliases-editor{display:grid;gap:8px;min-width:0}.wiki-aliases-form{margin-top:8px}.wiki-aliases-form label{display:grid;gap:6px}
+.wiki-aliases-add-row{display:flex;align-items:center;gap:6px;min-width:0}.wiki-aliases-add-row input{flex:1;min-width:0;width:100%;box-sizing:border-box;padding:8px;border:1px solid var(--line);border-radius:6px;color:inherit;background:var(--panel,#fff);font:inherit}
+.wiki-aliases-add-row button{flex:none}.wiki-aliases-editor-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px 8px}
+.wiki-aliases-actions{display:flex;flex-wrap:wrap;gap:8px}.wiki-aliases-form small{color:var(--muted)}
+.wiki-aliases-editor button:disabled{cursor:default;opacity:.55}
+[data-theme="dark"] .wiki-aliases,[data-theme="dark"] .wiki-aliases-add-row input{background:#192a31}
+[data-theme="dark"] .wiki-alias-chip{background:#223942}

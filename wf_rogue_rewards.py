@@ -10,36 +10,47 @@
   equipment_ids.json / item_ids.json(后两个=邮件校验,静态 import 须重启服务端)。
 
 用法(项目根,默认 dry-run):
+  python mod-tools/wf_rogue_rewards.py            # dry-run:只打印计划
   python mod-tools/wf_rogue_rewards.py --write --publish
+★ 2026-09-28 起 --write/--publish 失败关闭(legacy_write_blockers):本入口只写 item/equipment/
+  equipment_status/ability_soul/rush_event 五张表,且写的是**未拆分的满额魂珠行**;觉醒拆分上线后
+  (equipment_enhancement_ability 已有 15 把的强化行)会与强化行叠加翻倍,629 InvokeSkill 行需要的
+  custom_ability_string 文案键(缺 = 详情页 C8601)与 DSL 程序(缺 = 进战斗预载失败)它也不写。
+  改武器词条走暂存脚本(先例 ${WF_ROOT}/out/深渊雷光武器-20260928/stage_thunder_light.py:生成器复算 →
+  wf_abyss_weapon_split 拆分 → 只重打目标键 + 文案键 + DSL → apply)。
 """
 import argparse
 import copy
 import hashlib
 import io
 import json
-import os
 import subprocess
 import sys
 import tempfile
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from pathlib import Path
 from types import MappingProxyType
 
 from PIL import Image, UnidentifiedImageError
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(ROOT, "mod-tools"))
+MOD_DIR = Path(__file__).resolve().parent
+pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_quest_lib as q          # noqa: E402
 import wf_mod_tool as core        # noqa: E402
 import wf_describe                # noqa: E402
 import wf_assets                  # noqa: E402
 import wf_rogue_build as rogue_build  # noqa: E402
+import wf_abyss_weapon_programs as programs  # noqa: E402
+import wf_battle_rules as BR  # noqa: E402
+from wf_abyss_weapon_resonance import gate_row  # noqa: E402
 
 ITEM_T = "master/item/item.orderedmap"
 EQUIP_T = "master/item/equipment.orderedmap"
 EQUIP_STATUS_T = "master/item/equipment_status.orderedmap"
 SOUL_T = "master/ability/ability_soul.orderedmap"
 RUSH_EVENT_T = "master/quest/event/rush_event.orderedmap"
+# 觉醒拆分的强化行表:只读来判断拆分是否已上线(本入口从不写它)
+ENHANCEMENT_ABILITY_T = "master/equipment_enhancement/equipment_enhancement_ability.orderedmap"
 
 TOKEN_ID = "2370099"
 TOKEN_TEMPLATE = "2370007"     # 激战代币
@@ -51,14 +62,24 @@ IMAGE_PREFIX = "item/equipment/mod/abyss"
 ABILITY_SOUL_ALL_ELEMENTS = "0,3,2,1,4,5"
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 SOURCE_ASSET_SIZE = (20, 20)
-SOURCE_ASSET_DIR = Path(ROOT) / "mod-tools" / "assets" / "abyss-equipment"
+SOURCE_ASSET_DIR = MOD_DIR / "assets" / "abyss-equipment"
 DEFAULT_UPLIFT_MULTIPLIER = (3, 2)
 
 
 # ability_soul 行宽与关键列(基址 = ability 基址 −3)
 SOUL_ROW_WIDTH = 123
+SOUL_TRIGGER_MODE_COL = 2         # 0=瞬发 Instant / 1=持续 During / 2=开幕(AbilitySoulValues 构造函数)
 SOUL_PRE1_KIND_COL = 3
 SOUL_TRIGGER_KIND_COL = 24
+# 两种触发模式各自被客户端解析的块(AbilitySoulValues 构造函数:模式 0 只读 parseAt24..44,
+# 模式 1 只读 parseAt82/94/105/106)。前置 c3-c23 两种模式共用。
+SOUL_INSTANT_COLUMNS = range(24, 82)    # instant_trigger(24) .. instant_content 块末
+SOUL_DURING_COLUMNS = range(82, 120)    # during_accumulation_trigger(82) .. during_content 块末
+# 内容块 (kind, target, target.character_groups, (strength.power1, strength.first_max))。
+# 瞬发 = instant_content 44 起;持续 = during_content 106 起(parseAt106/107/108/110,
+# 108 是 Party/ExceptMyself 等的 character_groups,109 只给 MultiballByGroupId)。
+SOUL_INSTANT_CONTENT = (44, 45, 46, (48, 49))
+SOUL_DURING_CONTENT = (106, 107, 108, (110, 111))
 # 规则 A/B(官方实测):kind 清成 0 时这些伴随列必须一并清空,否则会静默继承捐赠行的
 # 元素锁/阈值/限次 —— 2026-07-30 设计初稿 45 条里 6 条"永久不生效"的死词条就是这么来的。
 # 依据:官方 Initial(c24=0)行 338/338 的 c25/c26/c27/c28/c31/c32/c33 全为空。
@@ -106,6 +127,10 @@ class EffectSpec:
     target_groups  WEAPON_GROUP=写武器元素组;None=沿用捐赠行;其余字面写入(常用 "(None)")。
     overrides      (列号, 字面值) 对,最后覆盖、优先级最高;"" 表示写空串。
                    有条件/有触发的词条靠它落地(c3/c6-c9 前置、c24-c33 触发、c54/c55 帧对…)。
+    during         False=瞬发行(c2 写 0,kind/target/组/强度落 c44/c45/c46/c48-49,旧行为);
+                   True=持续行(捐赠行 c2 必须是 1,保持 1;kind/target/组/强度落
+                   c106/c107/c108/c110-111)。持续行的 overrides 不许碰瞬发块 c24-c81
+                   (客户端不解析,官方持续行恒空)—— 所以不能套 _INIT/_trig。
     """
 
     template_id: str
@@ -115,6 +140,7 @@ class EffectSpec:
     target: str | None = "5"
     target_groups: str | None = WEAPON_GROUP
     overrides: tuple[tuple[int, str], ...] = ()
+    during: bool = False
 
 
 @dataclass(frozen=True)
@@ -189,7 +215,9 @@ def _trig(kind, *, puller=None, groups=None, th="100000", limit="(None)", cool="
 #   · 数值普遍取官方 ability_soul 同 kind 上限的 ×1~×3;
 #   · 35 充能速度游戏内上限 50%;211 技能槽满槽即截顶(开幕式多源会互相浪费);
 #     245 = 「自身的技能槽最大值」(不是"2号位技能槽",wf_describe 误报);
-#   · 55/28 强化弹射伤害架构上**只作用于自身**,文案不能写"全队";
+#   · 55 强化弹射伤害进战斗级全局池(InstantAbilitySource.as:963-966 Battle.PowerFlipDamage →
+#     BattleAbilityTotalizerImpl.instantPowerFlipDamage),与持有者无关、多件相加;文案模板
+#     「强化弹射伤害 X」没有主语,不能写"全队"。28 的文案同样不能写"全队";
 #   · 70 = 「免疫疲惫效果」(不是"冻结无效",wf_describe 误报);
 #   · 禁用:723(进 soul 必崩)、43(定值 20 等于 0)、212/701-711(零先例)。
 WEAPONS: tuple[WeaponSpec, ...] = (
@@ -204,6 +232,17 @@ WEAPONS: tuple[WeaponSpec, ...] = (
                    target_groups="(None)", overrides=_INIT),
         EffectSpec("5020041", "33", 200000, donor_line=0, target="5",
                    target_groups="(None)", overrides=_INIT),
+        # 作者 2026-09-28「火属性深渊武器加强,直击和攻击力加成也给协力球」:
+        # 同捐赠行/同强度/同门控,只把 target 换成 8 Multiball(全体协力球)。
+        # 解析器 target=8 不读 c46(soul parseAt45 "8"→Multiball,32/33 共用该解析)→ 写空串。
+        # 先例(1.4.0 官方全量):soul 32/8 共 4 行(4030008#0/100003#1/5060017#0/100012#7),c46 皆空;
+        # soul 无 33/8,33/8 先例在官方 ability 表(1110061#0/3510046#0 等 6 行,c46 皆空)
+        # 与自家 wf_cursed_weapons 叛乱军旗。
+        # 追加在末尾:旧 4 槽逐列不动。202 DirectAttack3 官方 soul/ability 表 target 只用过 0,不镜像。
+        EffectSpec("300001", "32", 200000, donor_line=0, target="8",
+                   target_groups="", overrides=_INIT),
+        EffectSpec("5020041", "33", 200000, donor_line=0, target="8",
+                   target_groups="", overrides=_INIT),
     )),
     # 用户:技能槽+100%、火队要风抗性、贯通时间延长这种词条
     WeaponSpec("8000102", "深渊·熔核法杖", "5020042", 0, "Red", "fire_02", (
@@ -217,6 +256,9 @@ WEAPONS: tuple[WeaponSpec, ...] = (
                    target_groups=None, overrides=_INIT),
         EffectSpec("300001", "32", 200000, donor_line=0, target="5",
                    target_groups="(None)", overrides=_INIT),
+        # 作者 2026-09-28:攻击力加成也给协力球(同 8000101 注释;157 是攻击力↑延长,不是加成)
+        EffectSpec("300001", "32", 200000, donor_line=0, target="8",
+                   target_groups="", overrides=_INIT),
     )),
     # ---- 水 --------------------------------------------------------------
     # 用户:FEVER获得量+150%;直击/攻击力/强弹 各 +200%
@@ -263,16 +305,37 @@ WEAPONS: tuple[WeaponSpec, ...] = (
         EffectSpec("300001", "32", 300000, donor_line=0, target="5",
                    target_groups="(None)", overrides=_INIT),
     )),
-    # 用户:贯通时长+25%、水抗+15%、充能速度+15%、攻击力+250%
+    # 作者 2026-09-28 重做(终版),四条替换原「贯通/水抗/充能/攻击」。作者给的数字是**游戏内满级合计**
+    # (魂珠本体 + 强化 120 级行):这里写满额,觉醒拆分(wf_abyss_weapon_split)对半拆成本体 + 强化 0→一半。
+    #   ① 强化弹射伤害 +300%:200000 ×3/2 = 300000。55 进战斗级全局池(见上方硬约束),不分持有者。
+    #   ② 队伍攻击力 +300%:200000 ×3/2 = 300000(与其余武器同一 300001#0 模板)。
+    #   ③ Power Flip(强化弹射)时对所有敌人造成自身攻击 5 倍雷属性伤害:253 EnemyDamageByAttackYellow。
+    #      捐赠 5070040#1(官方 soul 触发 2 PowerFlip 行,原 kind 38),_trig(2) 清掉其限 20 次/元素组,
+    #      触发 2 属「不带 puller」族。c66 time 必须写字面 (None)=所有敌人(空串 = Some(parseInt(""))
+    #      → 「0 段打最近敌人」静默失效,parseAt66)。500000 ÷ 1.5 不整除 → 登记 ×1 规则直写满额。
+    #      先例(官方 1.4.0 全量 .cdn/cn/archive-common-full):soul 表 251-256 零行,是新组合(解析分支
+    #      AbilitySoulValues.parseAt44 "253" 存在);253 只在 ability 表 1310202#0(触发 23、target 0、time (None));
+    #      强化弹射触发(2)打伤害的是 ability 1510331#1 / 1510453#0(kind 356)。
+    #   ④ 自身发动技能时,立即获得强化弹射效果:触发 23 SkillInvoke(puller 0 Myself)+ 629 InvokeSkill,
+    #      同自制澄波响 169988 队长技第 5 行;载荷树与文案键见 wf_abyss_weapon_programs(雷属性 + Explosion,
+    #      根头 133 按强化弹射 Lv3 结算)。只能挂触发 23:树的命中计为 PF Lv3 命中,挂 183/182/15-17
+    #      (强化弹射命中类)会自我连锁。
+    #      官方 soul 表无 629(1.4.0 全量零行);在役的 soul 629 行是自制诅咒武器/PARADOX(同为触发 23 + puller 0)。
+    #      629 无强度列,不拆,只留在本体。
+    #   「雷属性共鸣时」由 gate_row 统一加在每条前置上。
     WeaponSpec("8000106", "深渊·轰电战锤", "5020038", 2, "Yellow", "thunder_02", (
-        EffectSpec("4030004", "190", 25000, donor_line=0, target=None,
+        EffectSpec("5050009", "55", 200000, donor_line=0, target=None,
                    target_groups=None, overrides=_INIT),
-        EffectSpec("5070040", "38", 15000, donor_line=0, target="5",
+        EffectSpec("300001", "32", 200000, donor_line=0, target="5",
                    target_groups="(None)", overrides=_INIT),
-        EffectSpec("3010035", "35", 15000, donor_line=0, target="5",
-                   target_groups="(None)", overrides=_INIT),
-        EffectSpec("300001", "32", 250000, donor_line=0, target="5",
-                   target_groups="(None)", overrides=_INIT),
+        EffectSpec("5070040", "253", 500000, donor_line=1, target="0",
+                   target_groups="", overrides=_trig(2) + ((66, "(None)"),)),
+        EffectSpec("4010014", "629", "", donor_line=0, target="",
+                   target_groups="",
+                   overrides=_trig(23, puller=0) + (
+                       (67, programs.THUNDER_HAMMER_PF_STRING),
+                       (68, programs.THUNDER_HAMMER_PF_PROGRAM),
+                   )),
     )),
     # ---- 风 --------------------------------------------------------------
     # 用户:每25连击、无上限;强弹/攻击力 各 +200%
@@ -319,9 +382,16 @@ WEAPONS: tuple[WeaponSpec, ...] = (
         EffectSpec("4060023", "220", "", donor_line=2, target="0",
                    target_groups=None, overrides=_INIT),
     )),
-    # 用户:复活所需击破 −15;技能槽+50%;攻击力+200%
+    # 用户(初版):复活所需击破 −15;技能槽+50%;攻击力+200%
+    # 作者 2026-09-28 重做(终版,数字同 8000106 为游戏内满级合计):203、206 两条逐列不动(203 游戏内实为 −22,见下)
+    # (206 现合计 37.5%,作者说的「37%」就是现值);245 由合计 75% 降到 50%;原「队伍攻击力 +200%」
+    # 换成两条 Fever 模式中的持续行:队伍攻击力 +250%、队伍直接攻击伤害 +250%。槽 1-3 位置不变。
     WeaponSpec("8000110", "深渊·辉环法器", "5020039", 4, "White", "light_02", (
-        # 203 是绝对次数:1500000 = −15 次(官方 soul 上限 500000 = −5)
+        # 203 是绝对次数(100000 = 1 次;官方 soul 上限 500000 = −5)。规格值 1500000 是最初口径「−15」,
+        # ×3/2 = 2250000,觉醒拆分后本体 1125000 + 强化 1125000;客户端 CoffinBaseCountDown 走
+        # AbilityPowerValue.resolveInt(Decimal 四舍五入,InstantAbilitySource.as:1678)逐行取整 = 11 + 11,
+        # **游戏内满级 −22 次,不是 −15**。对半拆凑不出 −15(750000×2 = 8+8 = −16);作者 2026-09-28
+        # 要求本条不变,是否改成 −15(只能非对半,如 700000+800000 = 7+8)待作者确认。
         EffectSpec("5050017", "203", 1500000, donor_line=2, target="5",
                    target_groups="(None)", overrides=_INIT),
         EffectSpec("4080015", "206", 25000, donor_line=1, target="0",
@@ -329,10 +399,19 @@ WEAPONS: tuple[WeaponSpec, ...] = (
         # v3.3:211 开幕式与 102@100% 撞截顶(合计 150%,溢出 50%)→ 换 245。
         # ★ 245 的游戏内文案是「自身的技能槽最大值」(用户截图印证;wf_describe 渲染成
         #   「2号位技能槽」是误报,见 memory wf-ability-damage-families #15)。官方 target 恒 0。
+        # 2026-09-28:50000 = 作者给的满级合计 +50%(×1 规则,50000 ÷ 1.5 不整除)。
         EffectSpec("5040019", "245", 50000, donor_line=2, target="0",
                    target_groups=None, overrides=_INIT),
-        EffectSpec("300001", "32", 200000, donor_line=0, target="5",
-                   target_groups="(None)", overrides=_INIT),
+        # Fever 模式中(持续触发 4 Fever)的队伍攻击力(持续 kind 0 AttackPoint)/直接攻击伤害
+        # (持续 kind 1 DirectDamage),250000 = 满级合计 +250%(×1 规则)。捐赠 = 官方 soul
+        # 5030030#0 / 5040033#0(1.4.0 全量:Fever 中光属性队伍 攻击力 / 直击),两行 pre1 本身就是
+        # 「光属性 ≥6」门,与 gate_row 的门逐列相同,不会重复加。组改 (None)=不限属性
+        # (官方 1.4.0 soul 有 Fever 中 0/5/(None) 先例 100005#1)。持续行不能套 _INIT/_trig:
+        # 它们写的 c24 属瞬发块,官方持续行恒空。
+        EffectSpec("5030030", "0", 250000, donor_line=0, target="5",
+                   target_groups="(None)", during=True),
+        EffectSpec("5040033", "1", 250000, donor_line=0, target="5",
+                   target_groups="(None)", during=True),
     )),
     # ---- 暗 --------------------------------------------------------------
     # 用户:光抗;技能后强弹+300%/12秒;直击+300%
@@ -424,11 +503,18 @@ WEAPONS: tuple[WeaponSpec, ...] = (
 
 @dataclass(frozen=True)
 class EffectStrengthRule:
-    """Audited treatment for one official template line's c48/c49 strength pair."""
+    """Audited treatment for one official template line's strength pair.
+
+    The pair is c48/c49 on instant rows and c110/c111 on during rows.  ``uplift``
+    overrides the weapon-wide ×3/2 for ``scale`` rules: ``(1, 1)`` means the EffectSpec
+    already carries the author's in-game full-level total, used where ×3/2 would not
+    produce the exact total (the awakening split then halves it into base + 1→120).
+    """
 
     mode: str
     cap: int | None = None
     note: str = ""
+    uplift: tuple[int, int] | None = None
 
 
 @dataclass(frozen=True)
@@ -454,13 +540,23 @@ _CAP_RESISTANCE = EffectStrengthRule(
     "scale", 33_000, "single-copy resistance redline is 33% (three copies = 99%)"
 )
 _CAP_MAX_SKILL_GAUGE = EffectStrengthRule(
-    "scale", 100_000, "SecondSkillGauge total is clamped to +100% by the client"
+    "scale", 100_000,
+    "SecondSkillGauge total is clamped to +100% by the client; the author gives the "
+    "full-level total (50% / 1.5 is not an integer), so it is written ×1",
+    uplift=(1, 1),
+)
+_AUTHOR_TOTAL = EffectStrengthRule(
+    "scale",
+    note="author gives the in-game full-level total and ×3/2 would not hit it exactly; "
+         "written ×1, then split evenly into base + enhancement",
+    uplift=(1, 1),
 )
 
 # Every canonical (template_id, donor_line, emitted kind) is classified explicitly.
-# All numeric amplitudes live in the paired c48/c49 strength columns. Blank flag rows and
-# the ConditionGuts probability are the only non-amplitudes; c54/c55 frame values are never
-# touched. 5050022#1 intentionally records the pre-existing v3.3 kind override 32 -> 209.
+# All numeric amplitudes live in the paired strength columns (instant c48/c49, during
+# c110/c111). Blank flag rows (including the 629 InvokeSkill row) and the ConditionGuts
+# probability are the only non-amplitudes; c54/c55 frame values are never touched.
+# 5050022#1 intentionally records the pre-existing v3.3 kind override 32 -> 209.
 EFFECT_STRENGTH_RULES = MappingProxyType({
     ("3020011", 0, "51"): _SCALE,
     ("300001", 4, "202"): _SCALE,
@@ -482,7 +578,8 @@ EFFECT_STRENGTH_RULES = MappingProxyType({
     ("5090054", 0, "213"): _SCALE,
     ("5030021", 1, "26"): _KEEP_EMPTY,
     ("5090027", 0, "33"): _SCALE,
-    ("5070040", 0, "38"): _SCALE,
+    ("5070040", 1, "253"): _AUTHOR_TOTAL,
+    ("4010014", 0, "629"): _KEEP_EMPTY,
     ("3010035", 0, "35"): _CAP_CHARGING,
     ("5040009", 1, "211"): _CAP_SKILL_GAUGE,
     ("5070017", 1, "200"): _SCALE,
@@ -494,6 +591,8 @@ EFFECT_STRENGTH_RULES = MappingProxyType({
     ("5050017", 2, "203"): _SCALE,
     ("4080015", 1, "206"): _SCALE,
     ("5040019", 2, "245"): _CAP_MAX_SKILL_GAUGE,
+    ("5030030", 0, "0"): _AUTHOR_TOTAL,
+    ("5040033", 0, "1"): _AUTHOR_TOTAL,
     ("4080016", 2, "67"): _KEEP_EMPTY,
     ("5080038", 1, "41"): _SCALE,
     ("5090024", 2, "28"): _SCALE,
@@ -720,6 +819,20 @@ def _assert_soul_row_legal(spec: WeaponSpec, slot: int, row: list[str]) -> None:
         problems.append(
             f"c{SOUL_PULLER_GROUP_COL} puller.groups={pgrp!r},但 puller=0(Myself) "
             f"官方恒空(97/97)")
+    # 629 InvokeSkill:文案键缺 = 详情页 C8601;程序缺 = 进战斗预载失败。两者都只认本仓
+    # wf_abyss_weapon_programs 登记的键/程序(stage 脚本据此写 custom_ability_string 与 DSL)。
+    if row[SOUL_TRIGGER_MODE_COL].strip() == "0" and row[SOUL_INSTANT_CONTENT[0]].strip() == "629":
+        problems.extend(wf_client_legality.invoke_skill_string_problems(
+            row, frozenset(programs.INVOKE_STRINGS), "ability_soul"))
+        build_program = programs.PROGRAMS.get(row[68].strip())
+        if build_program is None:
+            problems.append(f"c68 action_path={row[68]!r} 不是 wf_abyss_weapon_programs 登记的程序")
+        elif trig in BR.pf_hit_triggers_driven_by(build_program()):
+            # 段覆盖 131-133 的命中计为真实 PF 命中:183 LvAny、对应等级 180-182、
+            # PowerFlipHitLvNHigh 15-17 都会被它驱动(wf_battle_rules.PF_SEGMENT_HIT_TRIGGERS)
+            problems.append(
+                f"c{SOUL_TRIGGER_KIND_COL} 629 载荷按强化弹射段结算,其命中计为强化弹射命中,"
+                f"用 {trig}(强化弹射命中类)触发会被自己的命中连锁触发")
     if problems:
         detail = "\n  ".join(problems)
         raise ValueError(f"{spec.id} 槽{slot} 客户端合法性未通过(会 C7050/C7101):\n  {detail}")
@@ -757,7 +870,9 @@ def resolve_effect_strength(
     if isinstance(effect.strength, bool) or not isinstance(effect.strength, int):
         raise ValueError(f"{spec.id} template {key!r} strength must be an integer")
 
-    raw_scaled = _ceil_scaled(effect.strength, DEFAULT_UPLIFT_MULTIPLIER)
+    raw_scaled = _ceil_scaled(
+        effect.strength, rule.uplift if rule.uplift is not None else DEFAULT_UPLIFT_MULTIPLIER
+    )
     value = min(raw_scaled, rule.cap) if rule.cap is not None else raw_scaled
     return EffectStrengthResolution(value, raw_scaled, value != raw_scaled, rule)
 
@@ -769,6 +884,8 @@ def build_soul_leaf(
 
     覆写顺序:头部(槽/段/触发模式) → kind → target/组 → 强度 → overrides → 规则 A/B 清伴随列。
     overrides 最后生效,所以任何列都能被调用方钉死。
+    瞬发行(旧行为)c2 强写 0,内容落 c44-c49;持续行(effect.during)要求捐赠行本身
+    c2=1,内容落 c106-c111,且 overrides 不许写瞬发块 c24-c81(反之瞬发行不许写持续块)。
     """
     rows: list[list[str]] = []
     output_like: bytes | str = ""
@@ -782,26 +899,44 @@ def build_soul_leaf(
                 f"{spec.id} 槽{slot}: 捐赠键 {effect.template_id} 只有 {len(lines)} 行,"
                 f"donor_line={effect.donor_line} 越界")
         row = core.normalize_row_length(list(lines[effect.donor_line]), SOUL_ROW_WIDTH)
-        row[0], row[1], row[2] = str(slot), "1", "0"
-        row[44] = effect.effect_kind
+        if effect.during:
+            if row[SOUL_TRIGGER_MODE_COL].strip() != "1":
+                raise ValueError(
+                    f"{spec.id} 槽{slot}: during=True 但捐赠行 {effect.template_id}"
+                    f"#{effect.donor_line} c2={row[SOUL_TRIGGER_MODE_COL]!r} 不是持续行(1)")
+            kind_col, target_col, group_col, strength_cols = SOUL_DURING_CONTENT
+            foreign_block = SOUL_INSTANT_COLUMNS
+            mode = "1"
+        else:
+            kind_col, target_col, group_col, strength_cols = SOUL_INSTANT_CONTENT
+            foreign_block = SOUL_DURING_COLUMNS
+            mode = "0"
+        row[0], row[1], row[SOUL_TRIGGER_MODE_COL] = str(slot), "1", mode
+        row[kind_col] = effect.effect_kind
         if effect.target is not None:
-            row[45] = effect.target
+            row[target_col] = effect.target
         if effect.target_groups is WEAPON_GROUP:
-            row[46] = spec.group
+            row[group_col] = spec.group
         elif effect.target_groups is not None:
-            row[46] = effect.target_groups
+            row[group_col] = effect.target_groups
         strength = resolve_effect_strength(spec, effect).value
         if strength is not None:
-            row[48] = row[49] = str(strength)
+            for col in strength_cols:
+                row[col] = str(strength)
         explicit = {int(col): value for col, value in effect.overrides}
         for col, value in explicit.items():
             if not 0 <= col < SOUL_ROW_WIDTH:
                 raise ValueError(f"{spec.id} 槽{slot}: overrides 列号 {col} 越界")
+            if col in foreign_block:
+                raise ValueError(
+                    f"{spec.id} 槽{slot}: overrides 列 c{col} 属于"
+                    f"{'瞬发' if effect.during else '持续'}块,本行触发模式 {mode} 不解析它")
             row[col] = value
         _clear_kind_companions(
             row, explicit, SOUL_TRIGGER_KIND_COL, SOUL_TRIGGER_COMPANION_COLS)
         _clear_kind_companions(
             row, explicit, SOUL_PRE1_KIND_COL, SOUL_PRE1_COMPANION_COLS)
+        row = gate_row(row, spec.id, "ability_soul")
         if validate:
             _assert_soul_row_legal(spec, slot, row)
         rows.append(row)
@@ -1102,12 +1237,12 @@ def apply_server_mirrors(mirrors: ServerMirrors) -> ServerMirrors:
 
 
 def load_json(name: str):
-    with open(os.path.join(ROOT, "assets", name), encoding="utf-8") as fh:
+    with open(core.resolve_server_dir() / "assets" / name, encoding="utf-8") as fh:
         return json.load(fh)
 
 
 def save_json(name: str, data) -> None:
-    with open(os.path.join(ROOT, "assets", name), "w", encoding="utf-8") as fh:
+    with open(core.resolve_server_dir() / "assets" / name, "w", encoding="utf-8") as fh:
         json.dump(data, fh, ensure_ascii=False, indent=0 if isinstance(data, list) else 1)
 
 
@@ -1124,8 +1259,8 @@ def require_cn_profile() -> core.VersionProfile:
     if active.fallback is not None or cn_profile.fallback is not None:
         raise ValueError("CN profile 必须设置 fallback=null")
 
-    active_store = core.require_active_store(profile=active).resolve()
-    cn_store = core.require_active_store(profile=cn_profile).resolve()
+    active_store = active.store.resolve()
+    cn_store = cn_profile.store.resolve()
     if not active_store.exists() or not cn_store.exists():
         raise ValueError(
             f"CN store 不存在: active={active_store}, explicit={cn_store}"
@@ -1142,7 +1277,7 @@ def require_cn_profile() -> core.VersionProfile:
             f"profile={active_store}"
         )
     print(f"[PROFILE] active=cn store={active_store}")
-    return replace(active, store=active_store)
+    return active
 
 
 def _assert_readback_rows(
@@ -1208,6 +1343,35 @@ def _print_asset_validation(sources: dict[str, Path]) -> None:
     )
 
 
+def legacy_write_blockers(awakened_ids: set[str] | None = None) -> list[str]:
+    """旧入口 --write/--publish 的失败关闭条件(空列表 = 可以写)。
+
+    * 629 InvokeSkill 行:本入口不写 custom_ability_string 文案键(缺 = 详情页 C8601,
+      InstantAbilityDescriptionGenerator 的 CustomAbilityStringTable.get)与 DSL 程序
+      (缺 = InstantAbilitySource 预载 addActionDsl 失败,进不了战斗);
+    * 觉醒拆分已上线(equipment_enhancement_ability 里已有任一把保留 ID):本入口写的是未拆分的
+      满额魂珠行,会与强化行叠加翻倍。awakened_ids=None 时从 active store 读强化表的键。
+    """
+    problems: list[str] = []
+    for spec in WEAPONS:
+        for slot, effect in enumerate(spec.effects, 1):
+            if effect.effect_kind == "629" and not effect.during:
+                problems.append(
+                    f"{spec.id} 槽{slot} 629 InvokeSkill:本入口不写 custom_ability_string 文案键"
+                    f"与 DSL 程序(缺键 = C8601,缺程序 = 进战斗预载失败)")
+    if awakened_ids is None:
+        try:
+            awakened_ids = set(q.load_table(ENHANCEMENT_ABILITY_T))
+        except FileNotFoundError:
+            awakened_ids = set()
+    awakened = sorted(awakened_ids & {spec.id for spec in WEAPONS})
+    if awakened:
+        problems.append(
+            f"觉醒拆分已上线(equipment_enhancement_ability 已有 {len(awakened)} 把的强化行):"
+            f"本入口写未拆分的满额魂珠行,会与强化行叠加翻倍")
+    return problems
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="深渊代币 + 连战专属武装")
     ap.add_argument("--write", action="store_true")
@@ -1241,6 +1405,9 @@ def main() -> int:
 
     try:
         profile = require_cn_profile()
+        if args.publish:
+            server_root = core.resolve_server_dir()
+            core.resolve_cdn_root()
         tables = MasterTables(
             items=q.load_table(ITEM_T),
             equipment=q.load_table(EQUIP_T),
@@ -1265,6 +1432,19 @@ def main() -> int:
     if not args.write:
         print("[DRY-RUN] 未写入任何文件。加 --write 生效。")
         return 0
+
+    try:
+        blockers = legacy_write_blockers()
+    except (KeyError, TypeError, ValueError, RuntimeError, OSError) as exc:
+        print(f"[ERR] 读不出觉醒强化表,拒绝写入: {exc}", file=sys.stderr)
+        return 1
+    if blockers:
+        print("[ERR] 旧入口 --write/--publish 已失败关闭,未写入任何文件:", file=sys.stderr)
+        for problem in blockers:
+            print(f"  - {problem}", file=sys.stderr)
+        print("  改武器词条请走暂存脚本(见模块文件头),由 apply 统一投递魂珠/强化/文案/DSL。",
+              file=sys.stderr)
+        return 1
 
     weapon_ids = [spec.id for spec in WEAPONS]
     try:
@@ -1345,7 +1525,7 @@ def main() -> int:
     try:
         release_snapshot = require_release_ready(
             publish_profile.store,
-            Path(ROOT) / "assets",
+            server_root / "assets",
             Path(args.client_verification),
             ffdec=args.ffdec,
             java=args.java,
@@ -1360,13 +1540,13 @@ def main() -> int:
             release_snapshot.write(snapshot_path)
             command = [
                 sys.executable,
-                str(Path(ROOT) / "mod-tools" / "wf_publish.py"),
+                str(MOD_DIR / "wf_publish.py"),
                 "--tables",
                 publish_tables,
                 "--snapshot",
                 str(snapshot_path),
             ]
-            subprocess.run(command, cwd=ROOT, check=True)
+            subprocess.run(command, cwd=server_root, check=True)
     except subprocess.CalledProcessError as exc:
         code = exc.returncode if exc.returncode else 1
         print(f"[ERR] wf_publish 退出码 {code}", file=sys.stderr)

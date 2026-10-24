@@ -1,0 +1,180 @@
+schema: wf-capability/1
+id: client.apk.patch107@1
+title: R4：UI 优化
+layer: platform
+provided_by:
+  patches:
+  - 107
+  match: all
+  methods:
+  - patch: 107
+    abc: boot_ffc6
+    label: pinball.scene.character.cell::PixelArtCharacterAnimationPool/getOrCreate|1
+    sha256: da09aa208ad779ce16beb70bb8db1d85eaabddf2973e05e86fc771964888adc8
+    status: 已记录
+    source: v34/apk-patches-additions/107-client-ui-optimization/entry.json
+  - patch: 107
+    abc: boot_ffc6
+    label: pinball.scene.character.cell::PixelArtCharacterAnimationPool/dispose|1
+    sha256: 6c6fcfd4272a41c382b0b3ebb8cd7725cf99ee7151667ebe64473c925108efb1
+    status: 已记录
+    source: v34/apk-patches-additions/107-client-ui-optimization/entry.json
+  - patch: 107
+    abc: boot_ffc6
+    label: pinball.scene.character.characterTable::CharacterTable/updateCells|1
+    sha256: b5a950adfe6ed6fb927c84b70c1d506597687224a555c246d996731a96df0ac5
+    status: 已记录
+    source: v34/apk-patches-additions/107-client-ui-optimization/entry.json
+  - patch: 107
+    abc: boot_ffc6
+    label: pinball.scene.character.characterTable::CharacterTableView/present|1
+    sha256: c788aeb78ab02d128fccdf9dcc1f9a0a15688d7a049685da292f76c9100f3fe9
+    status: 已记录
+    source: v34/apk-patches-additions/107-client-ui-optimization/entry.json
+  - patch: 107
+    abc: boot_ffc6
+    label: pinball.scene.character.characterTable::CharacterTableView/dispose|1
+    sha256: 213e8a7bfb373006f77e58bda72dc160301b730212a30df5a6a16fd6df381f42
+    status: 已记录
+    source: v34/apk-patches-additions/107-client-ui-optimization/entry.json
+  - patch: 107
+    abc: boot_ffc6
+    label: pinball.scene.character.characterTable::CharacterTableView/applyPatch|1
+    sha256: cb0c28c4d27e12f75beea00da5b6debf08f6e4d96ccf6cd21305227396284f83
+    status: 已记录
+    source: v34/apk-patches-additions/107-client-ui-optimization/entry.json
+  - patch: 107
+    abc: boot_ffc6
+    label: pinball.scene.character.partyCarousel.page::PartyCarouselPageView/draw|1
+    sha256: 9a6358a47e9b0af4fa04e31bf06fc1d56cff83e932e72acfb96e33d6b49212b4
+    status: 已记录
+    source: v34/apk-patches-additions/107-client-ui-optimization/entry.json
+  - patch: 107
+    abc: boot_ffc6
+    label: pinball.scene.character.partyCarousel.page::PartyCarouselPageView/dispose|1
+    sha256: 5160bff75843dd234010b2bc5e5ea985b544e43a6bed16e1229bfc7ab40e764a
+    status: 已记录
+    source: v34/apk-patches-additions/107-client-ui-optimization/entry.json
+  - patch: 107
+    abc: cn.optimize.ui.UiOptimization
+    label: cn.optimize.ui::UiOptimization$/bucketHasRemainder|1
+    sha256: d26c8fda9bb45cf8d11208e6ccb98d69f1f37b7522e2b47b58c5a229150c80e4
+    status: 已记录
+    source: v34/apk-patches-additions/107-client-ui-optimization/entry.json
+  - patch: 107
+    abc: cn.optimize.ui.UiOptimization
+    label: cn.optimize.ui::UiOptimization$/clearAnimationBuckets|1
+    sha256: a34de3ccaf876badcadb0a4b19a34bef693a2e700acf4dd945351363e1b2ed15
+    status: 已记录
+    source: v34/apk-patches-additions/107-client-ui-optimization/entry.json
+  - patch: 107
+    abc: cn.optimize.ui.UiOptimization
+    label: cn.optimize.ui::UiOptimization$/cn.optimize.ui:UiOptimization::copy|1
+    sha256: b919c8b0afbfb7ece8a4ac54d2787dddec8918482fc8a61a3be8f90250557345
+    status: 已记录
+    source: v34/apk-patches-additions/107-client-ui-optimization/entry.json
+  - patch: 107
+    abc: cn.optimize.ui.UiOptimization
+    label: cn.optimize.ui::UiOptimization$/cn.optimize.ui:UiOptimization::same|1
+    sha256: fee1f0793c5a24b95198723d4d17c5dc5239880151c40f0e8baea5516c83ea51
+    status: 已记录
+    source: v34/apk-patches-additions/107-client-ui-optimization/entry.json
+  - patch: 107
+    abc: cn.optimize.ui.UiOptimization
+    label: cn.optimize.ui::UiOptimization$/present|1
+    sha256: 388176a5b16722a3d86c8fea63fafb192a5b6176eeff6a8b81304e94d0f2d914
+    status: 已记录
+    source: v34/apk-patches-additions/107-client-ui-optimization/entry.json
+  - patch: 107
+    abc: cn.optimize.ui.UiOptimization
+    label: cn.optimize.ui::UiOptimization$/invalidatePatch|1
+    sha256: 9fc56168ee41af4640657e6bf5ccb58e9d3abddb608a5fefc1ee71977fc767a4
+    status: 已记录
+    source: v34/apk-patches-additions/107-client-ui-optimization/entry.json
+  - patch: 107
+    abc: cn.optimize.ui.UiOptimization
+    label: cn.optimize.ui::UiOptimization$/disposeList|1
+    sha256: bcd8d85c7006d85a91fea2c900b82e123301d6d0502e819fac17bc0c5e88cac8
+    status: 已记录
+    source: v34/apk-patches-additions/107-client-ui-optimization/entry.json
+  - patch: 107
+    abc: cn.optimize.ui.UiOptimization
+    label: cn.optimize.ui::UiOptimization$/shouldUpdateCell|1
+    sha256: 047f9ab2fac62f60e814276cb15ef08863cb25e23a7341c33c377efbd971e734
+    status: 已记录
+    source: v34/apk-patches-additions/107-client-ui-optimization/entry.json
+  - patch: 107
+    abc: cn.optimize.ui.UiOptimization
+    label: cn.optimize.ui::UiOptimization$/cn.optimize.ui:UiOptimization::stablePage|1
+    sha256: f0cfe3b2ff6f8950937d608d710c97eb712cf3f9b1f57ae13fa6e22906ccbf93
+    status: 已记录
+    source: v34/apk-patches-additions/107-client-ui-optimization/entry.json
+  - patch: 107
+    abc: cn.optimize.ui.UiOptimization
+    label: cn.optimize.ui::UiOptimization$/skipPage|1
+    sha256: b5933478128b9a0042de097886e223d047dd7af7c94e3885ae59521527452e22
+    status: 已记录
+    source: v34/apk-patches-additions/107-client-ui-optimization/entry.json
+  - patch: 107
+    abc: cn.optimize.ui.UiOptimization
+    label: cn.optimize.ui::UiOptimization$/afterPageDraw|1
+    sha256: b66a8792b82f3c396a4b2284a17a4bbf9232e4caf0c2957b916a2530adc6e10b
+    status: 已记录
+    source: v34/apk-patches-additions/107-client-ui-optimization/entry.json
+  - patch: 107
+    abc: cn.optimize.ui.UiOptimization
+    label: cn.optimize.ui::UiOptimization$/disposePage|1
+    sha256: 59d4cfdb5e10b0a78c37a9f33873de36941a8578b072186a53643b69ac3e0b5b
+    status: 已记录
+    source: v34/apk-patches-additions/107-client-ui-optimization/entry.json
+  - patch: 107
+    abc: cn.optimize.ui.UiOptimization
+    label: cn.optimize.ui::UiOptimization$/<cinit>
+    sha256: ca97a6c4915b1b4d81265670fbba55fc441d280dc76d28547df12bf6ea0ed9ad
+    status: 已记录
+    source: v34/apk-patches-additions/107-client-ui-optimization/entry.json
+  - patch: 107
+    abc: cn.optimize.ui.UiOptimization
+    label: cn.optimize.ui::UiOptimization/<ctor>
+    sha256: 8ff32749a852a1d83829c6a3fac8ec00822f06b5c7177f9ebb43a09287b2101a
+    status: 已记录
+    source: v34/apk-patches-additions/107-client-ui-optimization/entry.json
+  - patch: 107
+    abc: cn.optimize.ui.UiOptimization
+    label: script:cn.optimize.ui::UiOptimization/<init>
+    sha256: f0b40d031c79073c9b18f7cf195e953e0ca3696b6d8c9c422413e77294ce573a
+    status: 已记录
+    source: v34/apk-patches-additions/107-client-ui-optimization/entry.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: false
+  features: []
+  note: 无额外服务端改动要求
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: R4：UI 优化
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: R4：UI 优化
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: R4：UI 优化
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/apk-patches-additions/107-client-ui-optimization/entry.json

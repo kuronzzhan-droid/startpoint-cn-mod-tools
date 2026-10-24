@@ -65,6 +65,32 @@ class TestEtc1(unittest.TestCase):
 
 
 class TestAtfContainer(unittest.TestCase):
+    def test_reject_incomplete_or_malformed_mip_payload(self):
+        original = wf_atf.build_cutin_atf(wf_atf.png_encode_rgba(8, 4, bytes(8 * 4 * 4)))
+
+        def sized(raw):
+            raw = bytearray(raw)
+            raw[8:12] = (len(raw) - 12).to_bytes(4, "big")
+            return bytes(raw)
+
+        short_pair = bytearray(original)
+        first_size = int.from_bytes(short_pair[24:28], "big")
+        del short_pair[28:28 + first_size // 2]
+        short_pair[24:28] = (first_size // 2).to_bytes(4, "big")
+        no_mips = bytearray(original[:16])
+        no_mips[15] = 0
+        for label, raw in {
+            "header_only": original[:16],
+            "header_with_forged_length": sized(original[:16]),
+            "partial_length_prefix": sized(original[:18]),
+            "truncated_last_mip": sized(original[:-8]),
+            "missing_alpha_blocks": sized(short_pair),
+            "extra_payload": sized(original + b"unexpected"),
+            "no_mips": sized(no_mips),
+        }.items():
+            with self.subTest(label=label), self.assertRaises(ValueError):
+                wf_atf.parse_atf(raw)
+
     def test_build_parse_roundtrip(self):
         w, h = 64, 32
         png = wf_atf.png_encode_rgba(w, h, bytes(_gradient_rgba(w, h)))

@@ -1,0 +1,63 @@
+schema: wf-capability/1
+id: client.apk.patch127@1
+title: 127 149999准备音迁移通用轮换并核对另三角色
+layer: A
+provided_by:
+  patches:
+  - 127
+  match: all
+  methods:
+  - patch: 127
+    abc: boot_ffc6
+    label: HudMemberStatus/update
+    sha256: 73653cf6cd859df89f878dc7bd2b4b17f6beb38ca754677ec746ae1f8a8cd193
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 127
+    abc: boot_ffc6
+    label: BattleCharacterLogic/resolveFollowingPathCollection
+    sha256: a0821604e1bf62cdcad4ae2a909d888d6b0623f8d96623b6bd6805f283312675
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 127
+    abc: boot_ffc6
+    label: CharacterVoiceLogic/createVoicePathMap
+    sha256: 805998e36e1a816701aa8b751aa40aa88e195afd0b78c32aca649a6a235a2015
+    status: 已记录
+    source: v35/run3/release-locks.json
+  status: 已记录
+  basis: v35e/run5累计本地离线证据；哈希为方法code字节；不声明设备验收或部署
+server:
+  required: false
+  features: []
+  note: 通用客户端数据入口；不声明服务端或资源已部署
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+  allowed_tables: []
+form:
+  label: 127 149999准备音迁移通用轮换并核对另三角色
+  fields: []
+  note: 需要 test-v35e；实际参数规则以累计登记和对应实现说明为准
+describe:
+  template: 127 149999准备音迁移通用轮换并核对另三角色
+  channel: 能力说明
+rules:
+- capability.missing
+- capability.method-hash
+- capability.resolution
+preview:
+  label: 127 149999准备音迁移通用轮换并核对另三角色
+  status: 待验证
+golden:
+- source: v35/run3/apk-patches-additions/127-ready-voice-generic/README.md
+  kind: method-code-sha256
+  note: 最终SWF实际方法与最终release-lock一致；可重复离线验证不等于AIR/Android设备验收
+docs:
+- v35/run3/apk-patches-additions/127-ready-voice-generic/README.md
+- docs/m2/v35e-method-audit.json
+- docs/m2/v35e-registration.md

@@ -1,0 +1,347 @@
+{
+  "format": 1,
+  "tip": 206,
+  "active_zips": [
+    {
+      "name": "pinball-1.4.131-1.4.132-1-mainboss-epuration-pilot.zip",
+      "sha256": "99ebda1aa40f86dac2383886c2f0c7cec3c4f687775c443e66172889915e2857"
+    },
+    {
+      "name": "pinball-1.4.132-1.4.133-1-mainboss-org-local.zip",
+      "sha256": "447905e16f7efaaa8e97b86061815001c4205ee93e0786c4161fdf46b6bef953"
+    },
+    {
+      "name": "pinball-1.4.133-1.4.134-1-mainboss-lord-hard-local.zip",
+      "sha256": "5b820a079bb500ee1aa41b9abd9fa7b8fcfe086098efebcd62ff906c683b2538"
+    },
+    {
+      "name": "pinball-1.4.134-1.4.135-1-mainboss-hard-visible-local.zip",
+      "sha256": "9fef806d6a89a31aa956d7a0196c309e89bc273b8f1b2755514e7824ee067105"
+    },
+    {
+      "name": "pinball-1.4.135-1.4.136-1-mainboss-origins-folder-local.zip",
+      "sha256": "e6dca704d1335a8981c0f41b3d09e2e00c14197c0d41134b39d7c0c779758737"
+    },
+    {
+      "name": "pinball-1.4.136-1.4.137-1-mainboss-element-gate-local.zip",
+      "sha256": "893442fd16614bea7ccea80488208a0659583c4c9918c1df1d863d3c925d666f"
+    },
+    {
+      "name": "pinball-1.4.137-1.4.138-1-mainboss-art-local.zip",
+      "sha256": "f1b65e47707330ef3e99967ba3b1c3609248cb17f486a67ed5f38f56c1a14b1a"
+    },
+    {
+      "name": "pinball-1.4.138-1.4.139-1-mainboss-art-revert-local.zip",
+      "sha256": "bce7e950b14f14f0953962c5947a6ec9be4705571c7e0a2f6299ba7a68c2f0bb"
+    },
+    {
+      "name": "pinball-1.4.139-1.4.140-1-mainboss-art-png-local.zip",
+      "sha256": "c4f35649e1263b006af27235dce70530773f99c9e32d08721d798da2f40109ae"
+    },
+    {
+      "name": "pinball-1.4.140-1.4.141-1-mainboss-no-assist-local.zip",
+      "sha256": "de5eac21dd1996b4ffd98559f2ccf08707c07bbbca4b5f141c3d48895103b773"
+    },
+    {
+      "name": "pinball-1.4.141-1.4.142-1-mainboss-all9-local.zip",
+      "sha256": "17bd062e87c27ea0e3e046a684e978417900f3a094e162fbf4b670c07da966d6"
+    },
+    {
+      "name": "pinball-1.4.142-1.4.143-1-mainboss-27-local.zip",
+      "sha256": "bb9f42f66dff207a3926e8d3f3463f860e774f40f7989889d50b91d6a91a59b4"
+    },
+    {
+      "name": "pinball-1.4.143-1.4.144-1-mainboss-scenes-local.zip",
+      "sha256": "cc2ef744a11e8777aca7a1559c1754e563cf7fca250a34ab1c8bc6c3420a3e83"
+    },
+    {
+      "name": "pinball-1.4.144-1.4.145-1-mainboss-scenes2-local.zip",
+      "sha256": "77c849378e6af6192816e9f0a4c6d5c33754043d17d28e03551b99dc8b186677"
+    },
+    {
+      "name": "pinball-1.4.145-1.4.146-1-boss-weapon-sets-local.zip",
+      "sha256": "d98b5b5a856accc96170b4331dd20409d55878f22047a26b6a16603b7f9233e0"
+    },
+    {
+      "name": "pinball-1.4.146-1.4.147-1-boss-headers-local.zip",
+      "sha256": "5daed0fdd7bff0a52f31601357ebc301079ab783872d41266b605428bc0327c9"
+    },
+    {
+      "name": "pinball-1.4.147-1.4.148-1-boss-icons-banner-local.zip",
+      "sha256": "2b1ae753489a439fa5465b83958b27feb6d97d0bfab94c0d313d577a573169b4"
+    },
+    {
+      "name": "pinball-1.4.148-1.4.149-1-boss-enh-header-local.zip",
+      "sha256": "ec9f4c718da10ffc82f289c75d5c63151da6e8a836414cb173ee8c8377d0b594"
+    },
+    {
+      "name": "pinball-1.4.149-1.4.150-1-cursed-r4-abyss2-local.zip",
+      "sha256": "7a8e4c4d5a8b6852871376cbd64e1ab073eec049143ab2aa4a3952719b23c381"
+    },
+    {
+      "name": "pinball-1.4.150-1.4.151-1-cursed-r4-fix-local.zip",
+      "sha256": "40619e12f923be88fce2d2528cd92cfd342bf1f8d4741cdf028a52416c2ea8e6"
+    },
+    {
+      "name": "pinball-1.4.151-1.4.152-1-paradox-r2-local.zip",
+      "sha256": "1ce9cd136507c36c65e1652a49f2bb9a071d4c0ff13960705d0aa5af44ec19e2"
+    },
+    {
+      "name": "pinball-1.4.152-1.4.153-1-gm-weapons-local.zip",
+      "sha256": "05dfa3b791148ef43118dedd5f941d060b415692c88835e1cbfdf99fe420ec36"
+    },
+    {
+      "name": "pinball-1.4.153-1.4.154-1-modchar-stack-cap-local.zip",
+      "sha256": "a5216e3f45493e1f8f9c37578cef1627667fc6c9db5acc06b109af4642c2b17d"
+    },
+    {
+      "name": "pinball-1.4.154-1.4.155-1-typed-dummies-local.zip",
+      "sha256": "ee57407c7d7036deb5d2adbaebf57783ca4a0fac98c3b59c848e91adf7943fe0"
+    },
+    {
+      "name": "pinball-1.4.155-1.4.156-1-typed-dummies-v2-local.zip",
+      "sha256": "a42e41995bfcbeea76e0a7a1bf5d22c282a465e248c4c5536aa366fc4e35f334"
+    },
+    {
+      "name": "pinball-1.4.156-1.4.157-1-typed-dummies-record-fix-local.zip",
+      "sha256": "0231aa0d02d11f357dcbf580f3caf2a09aeb568daccabb5cc123037c29169a76"
+    },
+    {
+      "name": "pinball-1.4.157-1.4.158-1-anim-seq-fix-local.zip",
+      "sha256": "ce1b9f35d9f4ef082cb8e5d4897fd6b77939a12520fa698ea5d414325b2bded7"
+    },
+    {
+      "name": "pinball-1.4.158-1.4.159-1-balance-1008-local.zip",
+      "sha256": "81b73eeff6848f262d29a9ea133086509de734ee774e7577f7886c99bf602c3c"
+    },
+    {
+      "name": "pinball-1.4.159-1.4.160-1-balance-1008b-local.zip",
+      "sha256": "457a85574b1bf487f02e9ad2d799fa071d41e67fd6bc9f0ba5ca7528490bc655"
+    },
+    {
+      "name": "pinball-1.4.160-1.4.161-1-balance-ginovi-local.zip",
+      "sha256": "4aa2fb522c435c468266e84da309f3e73728df2b6767fa819bf9afedad2ecec4"
+    },
+    {
+      "name": "pinball-1.4.161-1.4.162-1-balance-1008c-local.zip",
+      "sha256": "11bf235b766afa09f2ce545249f4d4bd8565cba190ab562936493e61559c3641"
+    },
+    {
+      "name": "pinball-1.4.162-1.4.163-1-five-boss-hp-half-local.zip",
+      "sha256": "00b75046015a87e6919d8cfb7b60232d9a987ffe1e67c7988846ed6027507875"
+    },
+    {
+      "name": "pinball-1.4.163-1.4.164-1-base-stats-3chars-local.zip",
+      "sha256": "433a67d9a73c05ffc1c74385fe361f444b6082ad4cdfbc0e381f9f0a37997134"
+    },
+    {
+      "name": "pinball-1.4.164-1.4.165-1-kyle-hitfx-local.zip",
+      "sha256": "6a04098c4d64bed4f7e8fb9d232c685ba3959a56b6c1d90bafcf126551146c03"
+    },
+    {
+      "name": "pinball-1.4.165-1.4.166-1-kyle-direct-pf-local.zip",
+      "sha256": "92a5a9d2f863026b06336832e52257a8420859d0847bef0a075b54e2ebe77dbe"
+    },
+    {
+      "name": "pinball-1.4.166-1.4.167-1-kyle-combo-direct-local.zip",
+      "sha256": "e18a261ec993147b58c761e7b473529af20a20f4d09c54f988be139a380b433a"
+    },
+    {
+      "name": "pinball-1.4.167-1.4.168-1-kyle-direct-base-local.zip",
+      "sha256": "520389722bc0d7d1b67f21f958f5a61d489c8f239b2cd8b01aa46cfaaaf81e33"
+    },
+    {
+      "name": "pinball-1.4.168-1.4.169-1-kyle-pf-silent-marker-local.zip",
+      "sha256": "a93c338ff7b9c8c9566a6a45415bf3ee502c665fdfd29eb25ed9ebfaf084efd0"
+    },
+    {
+      "name": "pinball-1.4.169-1.4.170-1-kyle-charge-cap-local.zip",
+      "sha256": "4e5e6a7f1c525a38e4c97a2f934da1d04497f907579424a8d232d72d2e0ee834"
+    },
+    {
+      "name": "pinball-1.4.170-1.4.171-1-kyle-remove-interim-direct-local.zip",
+      "sha256": "8e4f6e46e8ebde4a94b1ae03dccf68f134215db006c2c93384c2b8347867d257"
+    },
+    {
+      "name": "pinball-1.4.171-1.4.172-1-kyle-cap-to-leader-local.zip",
+      "sha256": "6c9c63204c8249d0ac6f68a49ee6cbea4096f48a363b32c365a3f462378c0b9e"
+    },
+    {
+      "name": "pinball-1.4.172-1.4.173-1-kyle-charge-999-local.zip",
+      "sha256": "aef8ce87ea0505dbbe4e204b6d9ea57fcd22ac3522adc0f8806f1ecd4d96f98f"
+    },
+    {
+      "name": "pinball-1.4.173-1.4.174-1-kyle-charge-200-local.zip",
+      "sha256": "4e7184e8b27f5ac5fac5a460c065a3548e40e229ec80cbf0d1cb432d10396ae5"
+    },
+    {
+      "name": "pinball-1.4.174-1.4.175-1-kyle-direct-params-local.zip",
+      "sha256": "e188dd0ee1669747d1a67e9bd56c72481e30e0b3e5b118d86460c7055c26a806"
+    },
+    {
+      "name": "pinball-1.4.175-1.4.176-1-balance-landdragon-local.zip",
+      "sha256": "3bdb4403c1b331e4c8b418b8fc01e056a8dcac987e00320f2c1a8e6dd3bad44c"
+    },
+    {
+      "name": "pinball-1.4.176-1.4.177-1-all-dmg-dummy-local.zip",
+      "sha256": "4a02cc52454b2b47217eabca084c62c9218268f9a2c77c3d258172bb362afbcb"
+    },
+    {
+      "name": "pinball-1.4.177-1.4.178-1-all-dmg-dummies-multi-local.zip",
+      "sha256": "a73f139f5de8838a863fdc3bb254d462965d55a30cf8201c98b348ab59e09e98"
+    },
+    {
+      "name": "pinball-1.4.178-1.4.179-1-kyle-hidden-carriers-local.zip",
+      "sha256": "d8ec6bcab83f711a05467f11b1b2d9e23a3bdcbff2bbb2dcac2e561a65414dc7"
+    },
+    {
+      "name": "pinball-1.4.179-1.4.180-1-dummy-variants-local.zip",
+      "sha256": "1f1d6064f6e8db1271613705e2881ce36a82807054a03d4f0ee052fb7e6f4a82"
+    },
+    {
+      "name": "pinball-1.4.180-1.4.181-1-super-dummies-local.zip",
+      "sha256": "7a3e41337defd52492c35d70118e0dec047788f27f3ea39cc4b618b4ab0fa477"
+    },
+    {
+      "name": "pinball-1.4.181-1.4.182-1-balance-rabbit-local.zip",
+      "sha256": "e11944a140eff6739f89ba57a70065abc5fedc9782e0ad80c264d13a8aecfef2"
+    },
+    {
+      "name": "pinball-1.4.182-1.4.183-1-balance-wolf-scythe-local.zip",
+      "sha256": "ea2ff0f0d4a902a7cac6c20d5c654799a6f5332a6fe17fe18a59428ba37ba290"
+    },
+    {
+      "name": "pinball-1.4.183-1.4.184-1-balance-1008d-local.zip",
+      "sha256": "05a2ecc1756db630649c2d35a6588a7230d20a1ada28230f5b38d78c9feb5330"
+    },
+    {
+      "name": "pinball-1.4.184-1.4.185-1-balance-gerard2-local.zip",
+      "sha256": "fb10765c8698004769ceed036661a71fd97bcca68fe78e060f5fdf729b0c6b73"
+    },
+    {
+      "name": "pinball-1.4.185-1.4.186-1-five-boss-buffs-local.zip",
+      "sha256": "7ff9029148e09936462b663b3987c033ca1dcb9ff5ea2773f47c2296824e3c93"
+    },
+    {
+      "name": "pinball-1.4.186-1.4.187-1-five-boss-tune-local.zip",
+      "sha256": "1a2829a1779199db053a638d1b3e8ba5fe91aec4dc73916f4e5be0660e0f9e09"
+    },
+    {
+      "name": "pinball-1.4.187-1.4.188-1-liangyue-character-local.zip",
+      "sha256": "ff0958175c104aee2b92ee927a93ca3a7aef14de8ea6da8449b527fa168fcbf1"
+    },
+    {
+      "name": "pinball-1.4.187-1.4.188-2-liangyue-character-local.zip",
+      "sha256": "c912ef9a6c6f721e73a03fda25bfe14402c0dc5568f461a83cd0b480ba848f5e"
+    },
+    {
+      "name": "pinball-1.4.187-1.4.188-3-liangyue-character-local.zip",
+      "sha256": "38bc9f7b3f6173c9017c61af0ec741f09854c1c242be36ecde02abedc5302ad0"
+    },
+    {
+      "name": "pinball-1.4.188-1.4.189-1-midautumn-orochi-closure-local.zip",
+      "sha256": "855e6d0516b263300b6b1ac5fc8cea9893756a3dc02631ea88936ed8a457e49f"
+    },
+    {
+      "name": "pinball-1.4.189-1.4.190-1-midautumn-mod-pool-migration-local.zip",
+      "sha256": "5bbfb1a5072bf18b3d1507527b64a116ca9f55b41d4f11e778451fd9558748f0"
+    },
+    {
+      "name": "pinball-1.4.190-1.4.191-1-abyss-race-gacha-art-local.zip",
+      "sha256": "183672b5b1d828d72131620cc5ae0311a4faba566653be7cc69ed569367da227"
+    },
+    {
+      "name": "pinball-1.4.190-1.4.191-2-abyss-race-gacha-art-local.zip",
+      "sha256": "d20e59078cd6d5ad29cb550dcdfd3b8ccf2f73b34d06279b66a2401f357c4dc6"
+    },
+    {
+      "name": "pinball-1.4.190-1.4.191-3-abyss-race-gacha-art-local.zip",
+      "sha256": "7af1463d1ebca8da4588609cd4b36931f48e5b49b057a3bbf3bfd8449376e020"
+    },
+    {
+      "name": "pinball-1.4.191-1.4.192-1-portrait-redesign-local.zip",
+      "sha256": "53a837983f65c456c307b7037d21971f7b958e869778627b53c145786c7a778e"
+    },
+    {
+      "name": "pinball-1.4.191-1.4.192-2-portrait-redesign-local.zip",
+      "sha256": "ab7847a222c7bf296a5c236323ba8466a083786374d138ecabb9febd00da6ee7"
+    },
+    {
+      "name": "pinball-1.4.191-1.4.192-3-portrait-redesign-local.zip",
+      "sha256": "f4d8175927de112cb287dfd23c6dd533326ca067d0525c007adec9273b28cbc6"
+    },
+    {
+      "name": "pinball-1.4.191-1.4.192-4-portrait-redesign-local.zip",
+      "sha256": "836f4a42463ba5027638943f49344827dc9def2783ab4ab91f2231a2dfc1f79b"
+    },
+    {
+      "name": "pinball-1.4.192-1.4.193-1-gm-weapon6-local.zip",
+      "sha256": "395be723ec1fd43434d613ce4a24895a681044dbb6589a40e1d5958f87ef7334"
+    },
+    {
+      "name": "pinball-1.4.192-1.4.193-2-gerald-voice-local.zip",
+      "sha256": "7235ab9ad1f791f5f17bec299ad047583a06a8dbab3d6c5332e6f62fa832410a"
+    },
+    {
+      "name": "pinball-1.4.193-1.4.194-1-icon-reframe-local.zip",
+      "sha256": "05f5e2e64e8509844adf5c9f6adfc518ddc19bb937e05a359a10a3ffc0bd6600"
+    },
+    {
+      "name": "pinball-1.4.193-1.4.194-2-icon-reframe-local.zip",
+      "sha256": "83ee6c7cd819bd0444f4d2971874d64c4e36cee03ea00d8fe72ce32ae6a176de"
+    },
+    {
+      "name": "pinball-1.4.194-1.4.195-1-moon-wolf-art-local.zip",
+      "sha256": "d87c3e5b0b5b21946be03fb827c039bace9002ad7bdc0881aad4d9e3ff37e2da"
+    },
+    {
+      "name": "pinball-1.4.194-1.4.195-2-moon-wolf-art-local.zip",
+      "sha256": "8861c976b0938122538453ad9a058dc7cb2964216db829936e4c15bcbcde0560"
+    },
+    {
+      "name": "pinball-1.4.195-1.4.196-1-balance-1010-local.zip",
+      "sha256": "2959fd96a8e5948ee197ac6daee30edb79781618c66275146e357b27e8db3aeb"
+    },
+    {
+      "name": "pinball-1.4.196-1.4.197-1-balance-1012-local.zip",
+      "sha256": "74f5219f48b3211d29cf79c34f0ea02a7cc5e056bd4bbd6b179bd90a3faf0aba"
+    },
+    {
+      "name": "pinball-1.4.197-1.4.198-1-balance-1014-local.zip",
+      "sha256": "803c24ad6fe75de3bf4287468bc9edf3ec80a546903c6b26640a79c1f6b9a78f"
+    },
+    {
+      "name": "pinball-1.4.198-1.4.199-1-hard-multi-boss-level-fix-local.zip",
+      "sha256": "d42ca94b7633c0813a70d986102f6d560e30b66ffa72e84aed510bd5a8a9e7e0"
+    },
+    {
+      "name": "pinball-1.4.199-1.4.200-1-balance-ginovi2-local.zip",
+      "sha256": "8655eb1eed3c1f80c05a2743a024a82e152aec84993430fbe61db620deeed461"
+    },
+    {
+      "name": "pinball-1.4.200-1.4.201-1-ginovi-text-c8601-local.zip",
+      "sha256": "c97c1511c392d17beb849cb2b11625162fa3e0071d6f6ee8c876ae5199b847ff"
+    },
+    {
+      "name": "pinball-1.4.201-1.4.202-1-funnel-variable-lv100-local.zip",
+      "sha256": "bab5a355e1f7f477ddb23433f07b211f8ce253c58b470e328b11a6715983ccf7"
+    },
+    {
+      "name": "pinball-1.4.202-1.4.203-1-balance-1015-local.zip",
+      "sha256": "d101ffd828e4d2ece2f31478241cbd5a0c0d11e5eb1a4f814d05ba7cc0d2845d"
+    },
+    {
+      "name": "pinball-1.4.203-1.4.204-1-soul-exchange-shop-local.zip",
+      "sha256": "8338bb71d91d5a6d728c7fcd96acc2782975cbd5db2eba2fff86c4c95b566937"
+    },
+    {
+      "name": "pinball-1.4.204-1.4.205-1-rolf-direct-104-local.zip",
+      "sha256": "ed693cb27aa674a1011ec995a7f01fa0a08ff545dbde2c6147636a263b6c87d7"
+    },
+    {
+      "name": "pinball-1.4.205-1.4.206-1-rolf-moon-skill-rework-local.zip",
+      "sha256": "4a6e62e157d840644a328bd032244325abcd19e464c8183ddcf51be33fa6e8bb"
+    }
+  ],
+  "store_members": {}
+}

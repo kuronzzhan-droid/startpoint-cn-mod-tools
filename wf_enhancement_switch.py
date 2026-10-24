@@ -69,8 +69,8 @@ from pathlib import Path
 from typing import Callable, Iterable, Mapping, Sequence
 
 MOD_DIR = Path(__file__).resolve().parent
-ROOT = MOD_DIR.parent
-sys.path.insert(0, str(MOD_DIR))
+ROOT = MOD_DIR
+pass  # Imports resolve from this checkout/package, not external source copies.
 
 import wf_enhancement_policy as pol  # noqa: E402
 import wf_mod_tool as core  # noqa: E402
@@ -435,17 +435,8 @@ def resolve_context(*, store: str | Path | None = None, cdn: str | Path | None =
         profile_id = "explicit"
     else:
         profile = core.resolve_profile()
-        try:
-            store_root = core.require_active_store(repo_root, profile=profile)
-        except (OSError, ValueError) as exc:
-            raise SwitchError(
-                f"没找到可用的 store: {exc}"
-            ) from exc
-        profile_id = (
-            "environment"
-            if "WF_TARGET_STORE" in os.environ
-            else getattr(profile, "id", None) or getattr(profile, "key", "cn")
-        )
+        store_root = core.require_active_store(profile=profile)
+        profile_id = getattr(profile, "id", None) or getattr(profile, "key", "cn")
     if not store_root.is_dir():
         raise SwitchError(f"store 不存在: {store_root}")
     cdn_root = Path(cdn).resolve() if cdn else pol._resolve_cdn(None)
@@ -1402,8 +1393,8 @@ def _print_status(payload: dict) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--store", help="store 根(默认按 profiles.json)")
-    parser.add_argument("--cdn", help="CDN 根(默认 WF_CDN_DIR 或 <repo>/.cdn/cn)")
+    parser.add_argument("--store", help="store 根(默认 WF_STORE 或 profiles/local.json)")
+    parser.add_argument("--cdn", help="CDN 根(默认统一 CDN/服务端配置)")
     parser.add_argument("--repo-root", dest="repo")
     parser.add_argument("--snapshot", help="用哪份增强基线快照(默认最近冻结的)")
     sub = parser.add_subparsers(dest="command", required=True)
