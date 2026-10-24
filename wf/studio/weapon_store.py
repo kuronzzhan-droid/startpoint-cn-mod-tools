@@ -1,12 +1,14 @@
 """Independent weapon draft identities and cross-workshop ID reservations."""
-import re
+from wf.boss.weapon_ids import validate_weapon_id
 
 from .drafts import DraftStore, DraftError, default_root, validate
 
 
 def identity(draft, wid, version=None):
-    if not re.fullmatch(r"[1-9][0-9]{0,8}", wid or ""):
-        raise DraftError("武器 ID 无效")
+    try:
+        validate_weapon_id(wid)
+    except ValueError as exc:
+        raise DraftError("武器 ID 无效：" + str(exc)) from exc
     if draft is None:
         return
     validate(draft)
@@ -48,7 +50,7 @@ class WeaponDraftStore(DraftStore):
 
 
 def reservations(store, exclude=None):
-    """Return clone IDs allocated in this store, including enhancement products."""
+    """Reserve clone identities and existing material-edit targets across stores."""
     result = {"weapons": [], "enhancementProducts": []}
     for entry in store.characters():
         if entry["characterId"] == exclude:
@@ -60,4 +62,8 @@ def reservations(store, exclude=None):
                     spec = request["weapon"]
                     result["weapons"].append(spec["id"])
                     result["enhancementProducts"].extend(spec.get("enhancementProducts", []))
+                elif request.get("operation") == "weapon_materials":
+                    spec = request["weapon"]
+                    result["weapons"].append(spec["id"])
+                    result["enhancementProducts"].extend(stage["productId"] for stage in spec["stages"])
     return result

@@ -15,7 +15,7 @@ from wf.studio.guard import TOKEN_HEADER
 from wf.studio.server import StudioApp
 from wf.studio.source import StudioSource
 from wf.studio.weapon_editor import compile_weapon
-from wf.view.base149 import member
+from wf.view.base149 import join, member
 
 PREFIX = "/api/studio/weapons"
 
@@ -77,6 +77,11 @@ def test_global_routes_and_clone_soul_details_without_a_quest(app):
 
 
 def test_preview_no_write_and_inherited_warning_survives_compile(app):
+    rows = codec.parse_node(app.source.view.files[ITEM])
+    item = s.parse_rows(rows["5010005"])[0]
+    item[12] = "1"
+    rows["5010005"] = join(item)
+    app.source.view.files[ITEM] = codec.build_node(rows)
     code, result = call(app, "POST", "/clone", {"sourceWeapon": "5010005"}, {"preview": ["true"]})
     assert code == 200 and result["checks"][0]["rule"] == "weapon.soul-elements-inherited"
     assert not app.weapons.store.root.exists()
@@ -151,8 +156,8 @@ def test_allocations_reserve_ids_in_both_draft_namespaces(app):
     change["kind"], change["target"] = "boss", {"quest": "7"}
     app.boss.store.put_change("7", "boss_7", app.source.version, change)
     third = clone(app)
-    assert third["weaponId"] == "5950004"
-    assert third["allocation"]["enhancementProducts"] == ["595000402"]
+    assert third["weaponId"] == "5950005"
+    assert third["allocation"]["enhancementProducts"] == ["595000501"]
     assert call(app, "POST", "/clone", {"sourceWeapon": "5010005", "id": first["weaponId"]})[0] == 400
 
 

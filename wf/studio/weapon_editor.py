@@ -28,6 +28,10 @@ def _replay(source, wid, requests, *, server_dir, reserved, client_profile=None,
             if spec["id"] != wid:
                 raise DraftError("weapon materials target does not match draft ID")
             edit_materials(state, spec)
+    blocking = [entry for entry in getattr(state, "weapon_checks", [])
+                if entry.get("blocking") or entry.get("level") == "error"]
+    if blocking:
+        raise DraftError("weapon rules rejected the candidate: " + "; ".join(entry["message"] for entry in blocking))
     return state, wid
 
 
@@ -88,7 +92,7 @@ class WeaponEditor:
                           "createdAt": now(), "target": {"weapon": selected},
                           "params": {"requests": requests, "inputs": state.snapshot()},
                           "files": [], "pending": [],
-                          "checks": [{"level": "warn", "code": c["rule"], "message": c["message"]}
+                          "checks": [{"level": c.get("level", "warn"), "code": c["rule"], "message": c["message"]}
                                      for c in checks]}
                 draft = self.store.put_change(selected, f"weapon_{selected}", self.source.version, change)
                 return {**result, "change": change, "changeset": draft, "status": status(draft)}
