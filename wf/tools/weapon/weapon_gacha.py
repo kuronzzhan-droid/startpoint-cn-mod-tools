@@ -63,7 +63,9 @@ from fractions import Fraction
 from pathlib import Path
 from typing import Any, Callable, Iterable
 
-TOOLS = Path(__file__).resolve().parent
+from wf.paths import REPOSITORY
+
+TOOLS = REPOSITORY  # 仓库根；本文件已从根目录搬到 wf/tools/
 REPO = TOOLS.parent
 if str(TOOLS) not in sys.path:
     pass  # Imports resolve from this checkout/package, not external source copies.

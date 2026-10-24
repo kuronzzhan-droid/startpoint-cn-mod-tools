@@ -44,7 +44,9 @@ import shutil
 import sys
 from pathlib import Path
 
-TOOLS = Path(__file__).resolve().parent
+from wf.paths import REPOSITORY
+
+TOOLS = REPOSITORY  # 仓库根；本文件已从根目录搬到 wf/tools/
 if str(TOOLS) not in sys.path:
     pass  # Imports resolve from this checkout/package, not external source copies.
 

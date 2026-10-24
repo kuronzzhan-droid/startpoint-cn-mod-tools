@@ -17,7 +17,9 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
-TOOLS = Path(__file__).resolve().parent
+from wf.paths import REPOSITORY
+
+TOOLS = REPOSITORY  # 仓库根；本文件已从根目录搬到 wf/tools/
 if str(TOOLS) not in sys.path:
     pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_mod_tool as core  # noqa: E402
