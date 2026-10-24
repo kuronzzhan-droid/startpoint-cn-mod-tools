@@ -1,14 +1,14 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""命令行同步:把待同步的修改推送到模拟器并重启游戏(等同于 GUI 的同步按钮)。"""
-import sys
-from pathlib import Path
+"""Compatibility entry point: this tool now lives in ``wf/tools/release/sync.py``.
 
-pass  # Imports resolve from this checkout/package, not external source copies.
-from wf_gui import sync_to_emulator  # noqa: E402
+``python wf_sync.py ...`` and ``import wf_sync`` keep working unchanged.
+"""
+import sys as _sys
 
 if __name__ == "__main__":
-    result = sync_to_emulator(restart=True)
-    print(result["log"])
-    print("同步成功" if result["ok"] else "同步失败")
-    sys.exit(0 if result["ok"] else 1)
+    from wf.tools import run_as_main
+
+    run_as_main("wf.tools.release.sync")
+else:
+    import importlib as _importlib
+
+    _sys.modules[__name__] = _importlib.import_module("wf.tools.release.sync")

@@ -9,6 +9,6 @@ if __name__ == "__main__":
 
     run_as_main("wf.tools.content.bond_weapon_enhance")
 else:
-    from wf.tools.content import bond_weapon_enhance as _implementation
+    import importlib as _importlib
 
-    _sys.modules[__name__] = _implementation
+    _sys.modules[__name__] = _importlib.import_module("wf.tools.content.bond_weapon_enhance")

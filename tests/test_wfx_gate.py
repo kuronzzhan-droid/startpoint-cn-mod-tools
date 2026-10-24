@@ -27,6 +27,7 @@ MOD_DIR = TESTS.parent
 sys.path.insert(0, str(TESTS))
 sys.path.insert(0, str(MOD_DIR))
 
+from tool_source import tool_source  # noqa: E402
 import wf_describe  # noqa: E402
 import wf_dsl  # noqa: E402
 import wf_mod_tool as core  # noqa: E402
@@ -464,7 +465,7 @@ class ExitCoverageTests(unittest.TestCase):
     """哪些出口接了闸门、哪些没接(及原因),以源码为准钉住;改出口时两张表必须同步。"""
 
     def source(self, module: str) -> str:
-        return (MOD_DIR / f"{module}.py").read_text(encoding="utf-8")
+        return tool_source(MOD_DIR, f"{module}.py").read_text(encoding="utf-8")
 
     def test_gated_exits_call_the_gate(self):
         calls = {"wf_publish": "wfx_gate.check_publish(", "wf_character_flow": "wfx_gate.check_package(",

@@ -9,6 +9,6 @@ if __name__ == "__main__":
 
     run_as_main("wf.tools.content.dual_pf_contract")
 else:
-    from wf.tools.content import dual_pf_contract as _implementation
+    import importlib as _importlib
 
-    _sys.modules[__name__] = _implementation
+    _sys.modules[__name__] = _importlib.import_module("wf.tools.content.dual_pf_contract")

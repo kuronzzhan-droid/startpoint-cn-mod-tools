@@ -9,6 +9,6 @@ if __name__ == "__main__":
 
     run_as_main("wf.tools.wiki.wiki_pixel_output")
 else:
-    from wf.tools.wiki import wiki_pixel_output as _implementation
+    import importlib as _importlib
 
-    _sys.modules[__name__] = _implementation
+    _sys.modules[__name__] = _importlib.import_module("wf.tools.wiki.wiki_pixel_output")
