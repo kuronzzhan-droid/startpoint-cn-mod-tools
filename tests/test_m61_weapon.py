@@ -9,7 +9,7 @@ from wf.boss import schema as s
 from wf.boss.shop_edit import edit_shop
 from wf.boss.shop_model import ENH, ENH_SHOP, SOUL, ITEM
 from wf.boss.weapon_edit import clone_weapon, edit_materials, check_ability_rows
-from wf.boss.weapon_rules import AWAKENING
+from wf.boss.weapon_rules import AWAKENING, CUSTOM
 from wf.studio.drafts import schema_errors
 from wf.view.base149 import join
 
@@ -55,6 +55,8 @@ def test_clone_preserves_restricted_awakening_mapping_and_unrelated_bytes(state,
     clone_weapon(state, spec)
     assert spec["id"] == "5950002"
     assert state.server(AWAKENING)["materialByEquipment"][spec["id"]] == 10000311
+    assert state.table(CUSTOM)["awakening_material_" + spec["id"]] == "10000311"
+    assert state.table(CUSTOM)["unrelated_string"] == "preserved"
     assert value_bytes(state.servers[AWAKENING], "rarityOverrides") == value_bytes(raw, "rarityOverrides")
     assert value_bytes(value_bytes(state.servers[AWAKENING], "materialByEquipment"), source) == b"10000311"
 
@@ -155,8 +157,14 @@ def test_clone_inherits_soul_restriction_with_nonblocking_warning(state):
 
 
 def test_inherited_soul_warning_survives_preview_save_and_delivery_compile(editor):
+    import wf_quest_lib as codec
     from wf.boss.weapon_soul import INHERITED_RULE
     from wf.studio.deliver_bridge import compile_draft
+    items = codec.parse_node(editor.source.view.files[ITEM])
+    donor = s.parse_rows(items["5010005"])[0]
+    donor[12] = "0"
+    items["5010005"] = join(donor)
+    editor.source.view.files[ITEM] = codec.build_node(items)
     request = {"operation": "weapon_clone", "weapon": {"sourceWeapon": "5010005"}}
     preview = editor.preview("1006001", request)
     assert preview["ok"]
@@ -194,13 +202,15 @@ def test_clone_adds_actual_rarity_override_independently_of_material_restriction
     if has_materials:
         assert after["materialByEquipment"] == {"5010005": 10000311, spec["id"]: 10000311}
     else:
-        assert "materialByEquipment" not in after
+        assert after["materialByEquipment"] == {}
 
 
-def test_clone_creates_missing_awakening_document_for_nonstandard_id_rarity(state):
+def test_clone_rejects_missing_awakening_document_for_nonstandard_id_rarity(state):
+    (state.server_dir / AWAKENING).unlink()
     spec = {"sourceWeapon": "5010005", "id": "4950001"}
-    clone_weapon(state, spec)
-    assert state.server(AWAKENING) == {"rarityOverrides": {"4950001": 5}}
+    with pytest.raises(ValueError, match="complete baseline"):
+        clone_weapon(state, spec)
+    assert not state.servers and not state.client
 
 
 def test_clone_reserves_ids_present_only_in_rarity_overrides(state):

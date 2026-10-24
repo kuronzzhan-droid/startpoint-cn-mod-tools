@@ -8,6 +8,7 @@ from .edit_state import merge_keys
 from .shop_model import SOUL, ENH_ABILITY
 
 AWAKENING = "assets/equipment_awakening_material.json"
+CUSTOM = "master/string/custom_ability_string.orderedmap"
 
 
 def check_ability_rows(table, text, *, client_profile=None, provides=None):
@@ -36,6 +37,8 @@ def check_ability_rows(table, text, *, client_profile=None, provides=None):
 
 def awakening_materials(state, source):
     document = state.server(AWAKENING, required=False)
+    if not isinstance(document, dict):
+        raise ValueError("awakening document must be an object")
     materials = document.get("materialByEquipment", {})
     if not isinstance(materials, dict):
         raise ValueError("awakening materialByEquipment must be an object")
@@ -46,23 +49,36 @@ def awakening_materials(state, source):
     return materials
 
 
-def clone_awakening(state, source, identity, materials, rarity):
-    """Copy restrictions and register actual c11 rarity independently of materials."""
+def awakening_updates(state, source, identity, materials, rarity):
+    """Require a real server baseline before emitting any awakening changes."""
     try:
         rarity = int(rarity)
     except (TypeError, ValueError) as exc:
         raise ValueError("weapon rarity c11 must be an integer") from exc
+    if rarity not in range(1, 6):
+        raise ValueError("awakening rarityOverrides only supports rarities 1 to 5")
     updates = {}
     if source in materials:
+        material = materials[source]
+        if type(material) is not int or not 0 < material <= 2147483647:
+            raise ValueError("awakening material must be a positive bounded integer")
         updates["materialByEquipment"] = copy.deepcopy(materials[source])
+        if state.raw(CUSTOM) is None:
+            raise ValueError("missing client custom_ability_string baseline for awakening material")
     if rarity != int(identity) // 1_000_000:
-        if rarity not in range(1, 6):
-            raise ValueError("awakening rarityOverrides only supports rarities 1 to 5")
         updates["rarityOverrides"] = rarity
+    if updates and state.server_original.get(AWAKENING) is None:
+        raise ValueError(f"missing server input: {AWAKENING}; a complete baseline is required")
+    return updates
+
+
+def clone_awakening(state, source, identity, materials, rarity):
+    """Copy restrictions to both clients and register actual c11 rarity."""
+    updates = awakening_updates(state, source, identity, materials, rarity)
     if not updates:
         return
     document = state.server(AWAKENING, required=False)
-    raw = state.servers.get(AWAKENING, state.server_original[AWAKENING]) or b"{}\n"
+    raw = state.servers.get(AWAKENING, state.server_original[AWAKENING])
     for section, value in updates.items():
         if identity in document.get(section, {}):
             raise ValueError(f"awakening {section} ID collision: {identity}")
@@ -74,6 +90,9 @@ def clone_awakening(state, source, identity, materials, rarity):
         changed = merge_keys(text[start:stop].encode("utf-8"), {identity: value})
         raw = (text[:start] + changed.decode("utf-8") + text[stop:]).encode("utf-8")
     state.servers[AWAKENING] = raw
+    if "materialByEquipment" in updates:
+        state.set_leaf(CUSTOM, ["awakening_material_" + identity],
+                       str(updates["materialByEquipment"]), new=True)
 
 
 def check_user_cost(cost):

@@ -16,6 +16,8 @@ def edit_soul_item(item, spec, source):
         validate_text(description, "soulDescription")
         item[5] = description
     if "soul_elements" not in spec:
+        if set(item[12].split(",")) == set(ALL_ELEMENTS.split(",")):
+            return []
         return [result(INHERITED_RULE, "待验证",
             f"未设置 soul_elements，魂珠沿用母本武器 {source} 的可装备属性限制 "
             f"item[12]={item[12]!r}；请确认是否符合新武器设计。",
