@@ -88,9 +88,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
-from wf.paths import REPOSITORY
-
-TOOLS = REPOSITORY  # 仓库根；本文件已从根目录搬到 wf/tools/
+TOOLS = Path(__file__).resolve().parents[3]  # 仓库根（本文件在 wf/tools/<组>/ 下）
 REPO = TOOLS.parent
 if str(TOOLS) not in sys.path:
     pass  # Imports resolve from this checkout/package, not external source copies.

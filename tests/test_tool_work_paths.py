@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import shutil
 import sys
 import tempfile
@@ -21,9 +22,13 @@ import wf_quest_lib  # noqa: F401, E402
 
 
 def load_copied_module(source_name: str, module_name: str, tool_dir: Path):
+    # 复制工具本体（搬进 wf/tools 的按原相对位置放），根目录兼容入口只是转发。
     source = MOD_TOOLS / source_name
-    target = tool_dir / source_name
-    tool_dir.mkdir(parents=True, exist_ok=True)
+    moved = re.search(r'run_as_main\("([\w.]+)"\)', source.read_text(encoding="utf-8"))
+    if moved:
+        source = MOD_TOOLS / (moved.group(1).replace(".", "/") + ".py")
+    target = tool_dir / source.relative_to(MOD_TOOLS)
+    target.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(source, target)
     spec = importlib.util.spec_from_file_location(module_name, target)
     if spec is None or spec.loader is None:  # pragma: no cover

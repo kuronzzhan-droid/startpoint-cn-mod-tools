@@ -9,7 +9,8 @@ import unittest
 import zlib
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
 import wf_boss_buff_harvest as harvest  # noqa: E402
 import wf_dsl  # noqa: E402
 import wf_quest_lib as q  # noqa: E402
@@ -120,7 +121,7 @@ class BossBuffHarvestCase(unittest.TestCase):
     def test_cli_stdout_is_utf8_machine_readable_json_on_windows(self):
         esdl = self.fixture()
         completed = subprocess.run(
-            [sys.executable, str(Path(harvest.__file__)), "测试首领",
+            [sys.executable, str(ROOT / "wf_boss_buff_harvest.py"), "测试首领",
              "--store", str(self.store), "--esdl", esdl],
             capture_output=True, check=False)
         self.assertEqual(completed.returncode, 0,
