@@ -55,8 +55,8 @@ from datetime import date
 from pathlib import Path
 
 # 工具数据始终属于本 checkout；服务端写入在 main 的 --write 分支显式解析。
-ROOT = os.path.dirname(os.path.abspath(__file__))
-MOD_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))  # 仓库根（本文件在 wf/tools/<组>/ 下）
+MOD_DIR = ROOT
 pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_quest_lib as q          # noqa: E402
 import wf_chain_build as cb       # noqa: E402

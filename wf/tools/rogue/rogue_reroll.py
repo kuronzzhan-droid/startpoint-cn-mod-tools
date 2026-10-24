@@ -62,7 +62,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))  # 仓库根（本文件在 wf/tools/<组>/ 下）
 pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_rogue_save as rsave     # noqa: E402  (mumu_sh / WF_PACKAGE / WF_ACTIVITY / DB_PATH)
 import wf_mod_tool as core

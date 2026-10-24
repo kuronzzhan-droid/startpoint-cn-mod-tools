@@ -21,7 +21,7 @@ import json
 import os
 import sys
 
-TOOL_DIR = os.path.dirname(os.path.abspath(__file__))
+TOOL_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))  # 仓库根（本文件在 wf/tools/<组>/ 下）
 pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_assets as wa            # noqa: E402
 import wf_mod_tool as core        # noqa: E402

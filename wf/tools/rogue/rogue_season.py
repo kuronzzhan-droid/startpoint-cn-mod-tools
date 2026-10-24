@@ -93,7 +93,7 @@ import os
 import time
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[4]  # 仓库根的上一级（本文件在 wf/tools/<组>/ 下）
 STATE_PATH = ROOT / "mod-tools" / "work" / "rogue_tower_season.json"
 
 ROGUE_EVENT_ID = "700099"

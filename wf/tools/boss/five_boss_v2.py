@@ -43,7 +43,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Iterable
 
-TOOLS = Path(__file__).resolve().parent
+TOOLS = Path(__file__).resolve().parents[3]  # 仓库根（本文件在 wf/tools/<组>/ 下）
 ROOT = TOOLS.parent
 if str(TOOLS) not in sys.path:
     pass  # Imports resolve from this checkout/package, not external source copies.

@@ -18,7 +18,7 @@ import re
 import sys
 from pathlib import Path
 
-MOD_DIR = Path(__file__).resolve().parent
+MOD_DIR = Path(__file__).resolve().parents[3]  # 仓库根（本文件在 wf/tools/<组>/ 下）
 pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_quest_lib as qlib  # noqa: E402
 

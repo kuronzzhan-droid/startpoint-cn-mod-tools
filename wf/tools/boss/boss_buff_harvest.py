@@ -25,7 +25,7 @@ import zlib
 from pathlib import Path
 from typing import Any, Iterable
 
-HERE = Path(__file__).resolve().parent
+HERE = Path(__file__).resolve().parents[3]  # 仓库根（本文件在 wf/tools/<组>/ 下）
 pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_dsl  # noqa: E402
 import wf_quest_lib as q  # noqa: E402

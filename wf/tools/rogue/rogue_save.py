@@ -45,7 +45,7 @@ from wf.config import database as wf_database_paths, device as wf_device_paths
 from collections.abc import Mapping
 import shutil
 
-TOOL_DIR = Path(__file__).resolve().parent
+TOOL_DIR = Path(__file__).resolve().parents[3]  # 仓库根（本文件在 wf/tools/<组>/ 下）
 
 
 def _explicit_path(environment: Mapping[str, str], key: str) -> Path | None:
