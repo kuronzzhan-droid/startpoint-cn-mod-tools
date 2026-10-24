@@ -63,7 +63,7 @@ def build_boss_guide(repo: Path, media, source=None):
     rewards = read("src/multi/five-boss/rewards.ts")
     for path in ("src/multi/five-boss/contract.ts", "src/multi/five-boss/battle-runtime.ts",
                  "src/multi/five-boss/solo-ledger.ts", "src/multi/five-boss/solo-rewards.ts",
-                 "mod-tools/wf_five_boss_v2.py"):
+                 "mod-tools/wf/tools/boss/five_boss_v2.py"):
         read(path)
     live = builder.Live(loader=source.raw)
     affixes = affix_texts(spec["affix_params"])
