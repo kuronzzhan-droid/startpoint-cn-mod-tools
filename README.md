@@ -174,7 +174,7 @@ mod-tools/
 ## 致谢
 
 - [Duosion/starpoint](https://github.com/Duosion/starpoint) · [DontBeAlarmed/startpoint-cn](https://github.com/DontBeAlarmed/startpoint-cn) — 服务端模拟器
-- [Ku1o/startpoint-cn-kulo](https://github.com/Ku1o/startpoint-cn-kulo)(灰) — 服务端分支;编辑台的像素小人工具与技能时间轴预览参考了灰的工作室工具,部分回放测试改编自该仓库
+- [Ku1o/startpoint-cn-kulo](https://github.com/Ku1o/startpoint-cn-kulo)(灰) — 服务端分支;编辑台的技能时间轴预览参考了灰的 [StarPoint-Character-Studio](https://github.com/Ku1o/StarPoint-Character-Studio),部分回放测试改编自 startpoint-cn-kulo
 - [wfax](https://github.com/blead/wfax) · [wdfp-extractor](https://github.com/ScripterSugar/wdfp-extractor) — 资源提取 / 转换
 
 ## License
