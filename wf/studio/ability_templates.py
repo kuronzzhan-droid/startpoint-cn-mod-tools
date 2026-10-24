@@ -8,6 +8,8 @@ from wf.rules.catalog import result
 from wf.rules.instant_content import fill_instant_content_defaults
 from wf.view.layout import col, mode_col
 
+from .ability_glossary import glossary
+
 
 def templates(source, table="ability", block="instant_content", kind=None):
     if table not in WIDTHS:
@@ -18,6 +20,7 @@ def templates(source, table="ability", block="instant_content", kind=None):
     if block not in groups:
         raise ValueError(f"不支持的模板区块：{block}")
     options = wf_describe.enum_options()[groups[block]]
+    vocabulary = {e["value"]: e for e in glossary(source)["groups"][groups[block]]["values"]}
     if kind is not None and str(kind) not in options:
         raise ValueError(f"kind {kind} 不属于 {block} 枚举")
     view = getattr(source, "view", source)
@@ -50,7 +53,8 @@ def templates(source, table="ability", block="instant_content", kind=None):
             row[col(table, block, "kind")] = value
             row = fill_instant_content_defaults(table, row)
         state = "满足" if precedents else "待验证"
-        entries.append({"kind": value, **options[value], "status": state, "selectable": True,
+        names = {k: vocabulary[value][k] for k in ("official", "officialTemplate", "officialKey", "mappingStatus")}
+        entries.append({"kind": value, **options[value], **names, "status": state, "selectable": True,
                         "defaults": row, "columnSpace": "native", "column_space": "native",
                         "precedentCount": len(precedents),
                         "precedents": [{"key": key, "row": index} for key, index, _ in precedents[:10]],

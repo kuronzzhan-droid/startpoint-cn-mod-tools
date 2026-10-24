@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { api, LookupHit } from "../api";
 import { href } from "../router";
+import { TypeLookup } from "./Glossary";
 
 export function LookupPanel({ onClose, context }: { onClose: () => void; context?: string }) {
+  const [mode, setMode] = useState<"rows" | "types">("rows");
   const [query, setQuery] = useState("");
   const [result, setResult] = useState<{ total: number; count: number; results: LookupHit[]; note: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -11,6 +13,7 @@ export function LookupPanel({ onClose, context }: { onClose: () => void; context
 
   useEffect(() => input.current?.focus(), []);
   useEffect(() => {
+    if (mode !== "rows") return;
     const text = query.trim();
     if (!text) {
       setResult(null);
@@ -22,7 +25,7 @@ export function LookupPanel({ onClose, context }: { onClose: () => void; context
         .finally(() => setBusy(false));
     }, 250);
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, mode]);
 
   return (
     <aside class="lookup" aria-label="词条速查">
@@ -33,6 +36,11 @@ export function LookupPanel({ onClose, context }: { onClose: () => void; context
       <p class="muted small">
         {context ? <>正在查看角色 {context}；速查只读，不会替换当前对象。</> : <>独立查询：只提供查阅。</>}
       </p>
+      <div class="segmented" aria-label="速查模式">
+        <button class={mode === "rows" ? "on" : ""} onClick={() => setMode("rows")}>查词条</button>
+        <button class={mode === "types" ? "on" : ""} onClick={() => setMode("types")}>查类型</button>
+      </div>
+      {mode === "types" ? <TypeLookup /> : <>
       <input ref={input} class="search" type="search" placeholder="效果关键词、角色名或词条键，空格分隔"
         value={query} onInput={(e) => setQuery((e.target as HTMLInputElement).value)} />
       <div class="chips">
@@ -63,6 +71,7 @@ export function LookupPanel({ onClose, context }: { onClose: () => void; context
       ) : !query ? (
         <p class="muted small">输入关键词开始检索。结果只代表当前视图里的数据用法，不是推荐数值，也不代表已验证。</p>
       ) : null}
+      </>}
     </aside>
   );
 }
