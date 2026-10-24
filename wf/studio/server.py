@@ -115,6 +115,9 @@ class StudioApp:
         from .timeline_routes import TimelineRoutes
         self.timelines = TimelineRoutes(self)
         self.routes.extend(self.timelines.routes())
+        from .craft_routes import CraftRoutes
+        self.craft = CraftRoutes(self)
+        self.routes.extend(self.craft.routes())
 
     # -- dispatch -------------------------------------------------------
     def dispatch(self, method: str, path: str, query: dict[str, list[str]], body=None) -> Response | None:

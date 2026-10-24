@@ -160,6 +160,7 @@ mod-tools/
 - **[词条条件代码全表.md](词条条件代码全表.md)** — 真实列图 + 全枚举名(配 `ability_enum_map.json`;被 wf_describe 运行时读取)。
 - [API.md](API.md) — 网页修改器的 HTTP API 契约。
 - [副本工坊后端](docs/studio/boss.md) — M5 副本读模型、参数草稿、共同决战模板、API / CLI 与本地交付。
+- [交稿四件套](docs/studio/craft.md) — 编辑台的像素批量预检、场地比例预览、图集重排(等价校验)、稿主交接单。
 - [WF_mod_tool_usage.md](WF_mod_tool_usage.md) — 命令行 recipe 用法。
 
 分析与方案(docs/):
@@ -174,7 +175,7 @@ mod-tools/
 ## 致谢
 
 - [Duosion/starpoint](https://github.com/Duosion/starpoint) · [DontBeAlarmed/startpoint-cn](https://github.com/DontBeAlarmed/startpoint-cn) — 服务端模拟器
-- [Ku1o/startpoint-cn-kulo](https://github.com/Ku1o/startpoint-cn-kulo)(灰) — 服务端分支;编辑台的技能时间轴预览参考了灰的 [StarPoint-Character-Studio](https://github.com/Ku1o/StarPoint-Character-Studio),部分回放测试改编自 startpoint-cn-kulo
+- [Ku1o/startpoint-cn-kulo](https://github.com/Ku1o/startpoint-cn-kulo)(灰) — 服务端分支;编辑台的技能时间轴预览参考了灰的 [StarPoint-Character-Studio](https://github.com/Ku1o/StarPoint-Character-Studio),部分回放测试改编自 startpoint-cn-kulo;像素批量预检、场地比例预览、图集重排、稿主交接单这四个功能的点子来自 StarPoint-Character-Studio(代码在本仓库里另写,没有拷贝)
 - [wfax](https://github.com/blead/wfax) · [wdfp-extractor](https://github.com/ScripterSugar/wdfp-extractor) — 资源提取 / 转换
 
 ## License
