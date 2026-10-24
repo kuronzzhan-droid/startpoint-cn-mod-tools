@@ -24,7 +24,7 @@
 本仓现在采用独立根目录布局。公共视图、APK 补丁和交付检查分别位于
 `wf/view`、`wf/apk`、`wf/deliver`；现有通用 `wf_*.py` 导入入口继续保留。
 日期、角色专项脚本及旧备份在 `archive/legacy`，不作为活动兼容层或测试入口。
-来源取舍、真实交付重建和验证边界见 [M0-REPORT.md](M0-REPORT.md)。
+来源取舍、真实交付重建和验证边界见 [M0-REPORT.md](docs/reports/M0-REPORT.md)。
 
 复制 `profiles/example.json` 为忽略的 `profiles/local.json`，填写本机资料根或各输入路径。
 环境变量 `WF_ROOT`、`WF_STORE`、`WF_KULO`、`WF_RUNTIMES` 优先于该文件；

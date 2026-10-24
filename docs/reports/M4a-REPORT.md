@@ -23,7 +23,7 @@
 | 文本与技能档位 | 文本复用 `wf text`，同步客户端及两份服务端镜像。技能结构编辑对应连续 1–3 档单行叶，插删移动后同步/清空镜像 c4–c9；缺镜像、错误键绑定、非法新档均拒绝。 |
 | 预览、模板、接口 | GET 前后行及 `wf_describe` 中文说明、五态结果；kind 枚举与先例模板，零先例仍可选并标待验证。API 与 CLI 共用 AbilityEditor，写 API 沿用 Host/Origin/令牌守卫。 |
 
-交付继承 M1/M2 的 ≤5 MiB 分包、两种 manifest、三层归档、requires 推导、629 门禁、prepush、奖励键对照、前后摘要断言脚本和基线锁；没有复制一套独立出包算法。CLI/API 用法、完整参数及请求边界见 [编辑台说明](docs/studio/README.md)。
+交付继承 M1/M2 的 ≤5 MiB 分包、两种 manifest、三层归档、requires 推导、629 门禁、prepush、奖励键对照、前后摘要断言脚本和基线锁；没有复制一套独立出包算法。CLI/API 用法、完整参数及请求边界见 [编辑台说明](../../docs/studio/README.md)。
 
 ## 真实验收
 
@@ -65,7 +65,7 @@
 
 新增测试覆盖草稿版本/身份错误、输入与素材摘要漂移、错误输出目录/覆盖、prepush 和 compat 失败传播、跨根同路径冲突、双形态草稿覆盖、缺图标、稀疏 atlas 串帧、锚点越界、预算超限、未改动作变化、语音新路径/VBR/截断、共享键未确认、错表错块、错误列映射、行数/完整行断言缺失、镜像缺失/漂移、违规文案、文本误绑定及非法技能档位。缺真实视图的 skip 与 ImportError 不应 skip 也有反例。
 
-全量 pytest、路径扫描及卫生检查的最终退出码、计数与 SHA-256 见 [结构化验收摘要](docs/studio/validation-m4a.json)。
+全量 pytest、路径扫描及卫生检查的最终退出码、计数与 SHA-256 见 [结构化验收摘要](../../docs/studio/validation-m4a.json)。
 
 冻结源码 `a4cf8ef` 的全量结果为 **4178 passed、355 skipped、26 warnings，exit 0**；外层耗时 448.35 秒。JUnit 含子测试累计 6799 项、skipped 358、failures 0、errors 0，与终端主测试口径分列。跳过项主要是未配置的外部源码/完整数据和真实视图，不能计为通过。路径扫描 2159 个文本文件、**0 命中**；提交卫生与 `git diff --check` 通过。最终仅补文档与证据摘要，未改变已验证源码。
 
@@ -121,7 +121,7 @@
 - **139985 词条**：四次改格、插行、移行、删行请求保留，378个目标单元格符合独立预期；3553个未改能力叶的文本及压缩字节一致，1466个未改视图成员一致。1 ZIP、1能力表成员；公开CLI build、wf check及compat均exit0，API/CLI变更集及成员相同。移除desc_override能力后compat exit1，错误旧值断言拒绝。两档真实24列技能也通过新增解析门。
 - **223 / 221**：223 3/3成员SHA相同；221用当前归档与manifest代码重放固定历史输入，11 ZIP、310/310成员逐字节相同，差异0；旧manifest语义与固定upstream schema通过。221容器SHA因DOS时间戳不同而变化，去时间戳后11/11相同。此项是历史字节回归，未将旧221认定为通过当前公开交付门禁。
 
-证据入口为 `work/m4a1/acceptance/media-acceptance.json`、`ability-acceptance.json` 及 `work/m4a1/baseline/`。来源锁、逐成员摘要、负例与命令日志均保留。可提交的精简摘要及证据SHA见 [M4a.1结构化验收](docs/studio/validation-m4a1.json)。
+证据入口为 `work/m4a1/acceptance/media-acceptance.json`、`ability-acceptance.json` 及 `work/m4a1/baseline/`。来源锁、逐成员摘要、负例与命令日志均保留。可提交的精简摘要及证据SHA见 [M4a.1结构化验收](../../docs/studio/validation-m4a1.json)。
 
 ### 检查与边界
 

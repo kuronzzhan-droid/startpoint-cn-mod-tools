@@ -206,7 +206,7 @@ bash scripts/check-hygiene.sh --all
 
 回收包括计分鲨鱼候选/身份/深层锚排除、三来源伤害抗性相加和写前门禁、CreateCondition p8 可空及 Option<SLvValue> 精确类型、Standard Funnel 反向引用、混搭的闭包/地形/实际等级校验、能力词条与 GUI 枚举语义、发布根和 Windows 子目录权限，以及禁止自定义 codec 替换内建校验器。DSL 与 rogue 通用规则拆进 `wf/rules/`，没有整体覆盖 C 的角色内容、运行模式或发布协议。
 
-H1 五个专属测试文件 **61 passed，exit 0**；加上最终语音回归为 **71 passed、5 subtests passed**。在独立进程和源码副本中逐项撤回修复，**17 项变异全部得到真实断言失败、exit 1**；活动源码 SHA-256 前后不变。初始 C 在新核心测试上为 27 failed / 4 passed，描述器为 8 failed / 2 passed，这些旧失败与最终通过分开记录。逐变异行为和日志位置见 [`b-lineage-review.md`](docs/m0/b-lineage-review.md)。
+H1 五个专属测试文件 **61 passed，exit 0**；加上最终语音回归为 **71 passed、5 subtests passed**。在独立进程和源码副本中逐项撤回修复，**17 项变异全部得到真实断言失败、exit 1**；活动源码 SHA-256 前后不变。初始 C 在新核心测试上为 27 failed / 4 passed，描述器为 8 failed / 2 passed，这些旧失败与最终通过分开记录。逐变异行为和日志位置见 [`b-lineage-review.md`](../../docs/m0/b-lineage-review.md)。
 
 ### 路径与配置（M1、M2、M4）
 
@@ -214,7 +214,7 @@ H1 五个专属测试文件 **61 passed，exit 0**；加上最终语音回归为
 
 现代外部输入统一为 **环境变量 > `profiles/local.json` > 未配置报错**。规范变量为 `WF_STORE`、`WF_SERVER`；旧别名继续兼容但警告，同值可兼容、不同值报冲突。`WF_PROFILE` 只选版本 ID，`WF_PATHS_PROFILE` 只选路径文件。旧 `profiles.json` 读取就警告，与现代配置冲突即报错。JSON `null` 表示未配置，空字符串、错误类型、显式缺失配置文件或无效目录仍报错。
 
-保留的默认值限于仓内输出/路径表和安全离线占位路径，不把 `wf_root` 当作外部数据目录存在的证明。完整规则见 [`profiles/README.md`](profiles/README.md)，实现和测试汇总见 [`path-config-review.md`](docs/m0/path-config-review.md)。配置与消费者扩展定向回归为 **109 passed、17 subtests passed，exit 0**。全量收集还发现 ASR 在 import 时解析外部模型；已延迟到实际转录，既有音频/文本比较 4 项测试通过。
+保留的默认值限于仓内输出/路径表和安全离线占位路径，不把 `wf_root` 当作外部数据目录存在的证明。完整规则见 [`profiles/README.md`](../../profiles/README.md)，实现和测试汇总见 [`path-config-review.md`](../../docs/m0/path-config-review.md)。配置与消费者扩展定向回归为 **109 passed、17 subtests passed，exit 0**。全量收集还发现 ASR 在 import 时解析外部模型；已延迟到实际转录，既有音频/文本比较 4 项测试通过。
 
 后续逐消费者复查覆盖 B/C 历史同名集合的 75 个模块：70 个仍在活动根目录，5 个已归档；归档项不冒充活动入口。实际修复继续落实到分析/平衡日志与 marker、rogue 资源/镜像/数据库/发布、角色流程、链整合、装备策略、离线工具链和 GUI 调用点。工具资源与输出留在本仓，服务端 assets、认证和事务从显式配置解析；只有实际需要的操作才要求 server。`WF_CDNDATA` / profile 镜像覆盖优先，缺省时必须从已配置 server 的 `assets/cdndata` 取得。GUI 的数据库和镜像改为使用时解析，避免只配置 store 的离线导入被未使用的服务端配置阻断。
 
@@ -236,21 +236,21 @@ H1 五个专属测试文件 **61 passed，exit 0**；加上最终语音回归为
 
 `python -B -m recipes.halloween_full` 现在执行当前源完整构建；`recipes.halloween221` 显式选择历史分支，两模式不得共用 run 目录。本轮均完整执行四角色素材与语音构建；H1 描述器修复后，再执行受影响的全部 kit 和分包，最终结果仍如上。蒙版只读取原 NPZ/JSON 缓存，**没有重算**；缺失时直接拒绝，不触发仓外缓存生成。
 
-最终源码冻结后，对平衡配方再次在内存重算得到 **3/3**，并重新读取全部 **23 个输出 ZIP** 做 CRC 和成员核对，223、历史 221、当前源对 222 叠层的结果保持上表。万圣记录的 57 个运行模块中，后续变更交集仅 describe、core、character_pack：describe 与已复验版本一致，另外两者只改了配方未调用的函数/方法。函数级 AST 与模块摘要证据见 [`recipe-final-impact.json`](docs/m0/recipe-final-impact.json)，因此没有无理由重复素材重编码或蒙版计算；既有完整构建和受影响 kit 重跑证据继续有效。
+最终源码冻结后，对平衡配方再次在内存重算得到 **3/3**，并重新读取全部 **23 个输出 ZIP** 做 CRC 和成员核对，223、历史 221、当前源对 222 叠层的结果保持上表。万圣记录的 57 个运行模块中，后续变更交集仅 describe、core、character_pack：describe 与已复验版本一致，另外两者只改了配方未调用的函数/方法。函数级 AST 与模块摘要证据见 [`recipe-final-impact.json`](../../docs/m0/recipe-final-impact.json)，因此没有无理由重复素材重编码或蒙版计算；既有完整构建和受影响 kit 重跑证据继续有效。
 
-原 prepush 目录的 `WF_PATHLIST_recovered.txt` 本次核查时不存在，不能称两份相同，也不能推断原交付时是否存在。当前缺失文件时原脚本有效路径为内建 58 条，仓内为 100,089 条，增加 100,031 条、减少 0 条。新增 `--pathlist` 参数可显式指定，显式缺失文件返回 exit 2。说明、执行命令与逐成员证据见 [`recipe-repair-review.md`](docs/m0/recipe-repair-review.md)。配方定向验收 **22 passed，exit 0**。
+原 prepush 目录的 `WF_PATHLIST_recovered.txt` 本次核查时不存在，不能称两份相同，也不能推断原交付时是否存在。当前缺失文件时原脚本有效路径为内建 58 条，仓内为 100,089 条，增加 100,031 条、减少 0 条。新增 `--pathlist` 参数可显式指定，显式缺失文件返回 exit 2。说明、执行命令与逐成员证据见 [`recipe-repair-review.md`](../../docs/m0/recipe-repair-review.md)。配方定向验收 **22 passed，exit 0**。
 
 ### 可读性与公开仓准备（L1、L6）
 
 恢复了 67 个被压平的多行模块 docstring，包括审查点名的活动文件和归档文件。转换前后逐文件完整 AST 相同，保留 `${WF_ROOT}` 替换；既有 `pass  # Imports resolve...` 未改。
 
-86 个仅供归档使用的整行 JSON 夹具已移到忽略的 `private-assets/tests/fixtures/`，共 **8,049,592 字节**；其中 `balance_2026092*` 为 75 个、7,931,475 字节。84 个归档测试文件的路径同步修正，原文件与迁移后文件 SHA-256 全部相同。获取与离线恢复方法、逐项摘要见 [`private-fixtures.md`](docs/m0/private-fixtures.md) 和同名 JSON。活动测试依赖的模板和 gz 保留待审，没有改写 Git 历史。
+86 个仅供归档使用的整行 JSON 夹具已移到忽略的 `private-assets/tests/fixtures/`，共 **8,049,592 字节**；其中 `balance_2026092*` 为 75 个、7,931,475 字节。84 个归档测试文件的路径同步修正，原文件与迁移后文件 SHA-256 全部相同。获取与离线恢复方法、逐项摘要见 [`private-fixtures.md`](../../docs/m0/private-fixtures.md) 和同名 JSON。活动测试依赖的模板和 gz 保留待审，没有改写 Git 历史。
 
-当前跟踪树实际二进制清单为 **237 个、11,882,858 字节**：233 PNG、2 JPG、2 gz，分属 20 个直接目录，按完整资源包归为 17 个可勾选目录。相对 `fd433b0` 新增 PNG 实测为 213，和原审查“230 张”的估算不同；本轮逐文件清单包含全部实际文件，未据估算漏项。作者审查表为 [`public-assets-review.md`](docs/m0/public-assets-review.md)，逐文件摘要在同名 inventory JSON。按任务书末尾“作者裁决（10-17 03:39）”，17 行全部勾选“可公开”，全部保留原位；这是作者决定的记录，不是工具自行认定素材权利来源。
+当前跟踪树实际二进制清单为 **237 个、11,882,858 字节**：233 PNG、2 JPG、2 gz，分属 20 个直接目录，按完整资源包归为 17 个可勾选目录。相对 `fd433b0` 新增 PNG 实测为 213，和原审查“230 张”的估算不同；本轮逐文件清单包含全部实际文件，未据估算漏项。作者审查表为 [`public-assets-review.md`](../../docs/m0/public-assets-review.md)，逐文件摘要在同名 inventory JSON。按任务书末尾“作者裁决（10-17 03:39）”，17 行全部勾选“可公开”，全部保留原位；这是作者决定的记录，不是工具自行认定素材权利来源。
 
 `scripts/split_private_assets.py` 已准备，默认只预览，只有审查表中勾选“移出”并运行 `--apply` 才移动到忽略目录并修改可证明的静态引用。当前全“可公开”时实际预览为 **0 个目录、0 个移动、0 个引用修改**。本轮未对真实资源执行迁移。22 项合成测试及独立 5 项实证复核通过，覆盖路径链接、直接 CLI、未知根不误改、输出路径、JS 相对路径和完整回滚。
 
-另外在 `work/m01/asset-rehearsal-d2y4w81j` 独立副本试迁全部 17 目录，真实资源不动；237 项资产 SHA-256 完全相同，Python 消费者子集 **342 passed、101 skipped、184 subtests passed**，Node 两套资源测试 **14 passed**，移动后的图标 builder 可直接运行。跳过分类与日志在 [`private-assets-rehearsal.md`](docs/m0/private-assets-rehearsal.md)。这个演练验证后续改变选择时的工具，不改变当前作者裁决，也不构成发布或 push 授权。
+另外在 `work/m01/asset-rehearsal-d2y4w81j` 独立副本试迁全部 17 目录，真实资源不动；237 项资产 SHA-256 完全相同，Python 消费者子集 **342 passed、101 skipped、184 subtests passed**，Node 两套资源测试 **14 passed**，移动后的图标 builder 可直接运行。跳过分类与日志在 [`private-assets-rehearsal.md`](../../docs/m0/private-assets-rehearsal.md)。这个演练验证后续改变选择时的工具，不改变当前作者裁决，也不构成发布或 push 授权。
 
 ### 最终全量验收
 
@@ -264,7 +264,7 @@ H1 五个专属测试文件 **61 passed，exit 0**；加上最终语音回归为
 | 保留资源与本地夹具 | **237 + 86 项 SHA-256 全部相同，0 mismatch** | `work/m01/final-asset-hashes.json` |
 | 资源拆分默认预览 | 作者裁决全部可公开，**0 目录 / 0 移动 / 0 引用修改** | 当前审查表与 `python -B scripts/split_private_assets.py` |
 
-26 条 pytest 警告来自专门覆盖旧配置别名的兼容用例。完整命令、终端统计、JUnit 两种计数口径、357 条跳过的用例标识与原因在 [`m01-validation.json`](docs/m0/m01-validation.json)。其中 JUnit 套件累计 `tests=6233`，实际 `testcase` 节点为 3967；本报告的主测试与子测试数量取终端摘要，未将 XML 节点数混用为执行数量。
+26 条 pytest 警告来自专门覆盖旧配置别名的兼容用例。完整命令、终端统计、JUnit 两种计数口径、357 条跳过的用例标识与原因在 [`m01-validation.json`](../../docs/m0/m01-validation.json)。其中 JUnit 套件累计 `tests=6233`，实际 `testcase` 节点为 3967；本报告的主测试与子测试数量取终端摘要，未将 XML 节点数混用为执行数量。
 
 | 跳过分类 | 数量 |
 |---|---:|

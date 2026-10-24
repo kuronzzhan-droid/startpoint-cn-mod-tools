@@ -768,4 +768,4 @@ $env:WF_PATHS_PROFILE = (Resolve-Path work/m2_2/compat/profile.json).Path
 python -B -m wf caps scan --all-characters --manifest (Resolve-Path work/m2_2/compat/snapshot/manifest.json).Path --server-assets <本地服务端assets> --apk-bundle <v35e-x86.signed.apk> --output work/m2_2/compat/scan-238-final
 ```
 
-扫描新增回归与既有矩阵测试合计 23 passed。缺能力反证及全仓 pytest、路径/223/221 验收由 [M2-REPORT](../../M2-REPORT.md) 的 M2.2 节汇总，本报告不把未跑的设备/服务器验收算作通过。
+扫描新增回归与既有矩阵测试合计 23 passed。缺能力反证及全仓 pytest、路径/223/221 验收由 [M2-REPORT](../reports/M2-REPORT.md) 的 M2.2 节汇总，本报告不把未跑的设备/服务器验收算作通过。

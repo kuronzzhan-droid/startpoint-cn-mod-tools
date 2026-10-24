@@ -26,7 +26,7 @@
 
 ## 文本 WARN 逐条结论
 
-完整结论在 [text-warnings.md](docs/m1/text-warnings.md) 和对应 JSON。78 条分为 9 类：效果或参数描述不同步 47、旧日文技能名 14、镜像混写两档倍率 4、标点空白 3，其余五类各 2（内部标识符、档位标记、旧倍率、仅强化摘要、高档强化写进低档）。全部保留原“问题”状态，工具没有加入忽略名单或批量替用户决定新文案。
+完整结论在 [text-warnings.md](../../docs/m1/text-warnings.md) 和对应 JSON。78 条分为 9 类：效果或参数描述不同步 47、旧日文技能名 14、镜像混写两档倍率 4、标点空白 3，其余五类各 2（内部标识符、档位标记、旧倍率、仅强化摘要、高档强化写进低档）。全部保留原“问题”状态，工具没有加入忽略名单或批量替用户决定新文案。
 
 角色 `700007` 的 action_skill 描述为内部标识符 `ruin_lady_no_piercing`，已明确说明应先修客户端文本，不能把该值复制到镜像当作修复。官方称号使用**零基 c3**，c2 是角色介绍；三档 action_skill 使用 **1/2/3**，不是 0/1/2。CAS 能力文字没有服务端 character_text 对应列，不编造字段。
 
@@ -70,7 +70,7 @@ JUnit 包含子测试的累计计数为 tests=6366、skipped=357、failures=0、
 
 此前整轮运行也为 exit 0（3714 passed、354 skipped）；随后新增检查边界测试，最终再跑了上述完整冻结轮，未用定向重跑代替全量结论。
 
-路径扫描为 **0 命中**，证据 `work/m1/path-scan-final.json`；原仓提交卫生门禁 `bash scripts/check-hygiene.sh --all` **exit 0**；`git diff --check` 通过。结构化验收汇总、产物 SHA-256 及计数口径在 [validation.json](docs/m1/validation.json)。所有测试缓存及卫生门禁临时文件均在 worktree 内。
+路径扫描为 **0 命中**，证据 `work/m1/path-scan-final.json`；原仓提交卫生门禁 `bash scripts/check-hygiene.sh --all` **exit 0**；`git diff --check` 通过。结构化验收汇总、产物 SHA-256 及计数口径在 [validation.json](../../docs/m1/validation.json)。所有测试缓存及卫生门禁临时文件均在 worktree 内。
 
 ## 保留的验证边界
 
@@ -82,7 +82,7 @@ JUnit 包含子测试的累计计数为 tests=6366、skipped=357、failures=0、
 
 已按模块及独立修复分开提交；完整提交清单见 `git log 3c749fc..HEAD --oneline`。主要实现提交为 balance `3608a7c`、text `5d3097e`、view `6e6e42a`、DSL `87c406e`、统一 check `3576464`、deliver `0714c6c`；审阅修复各有独立提交。未 push。
 
-使用入口和格式示例见 [docs/m1/README.md](docs/m1/README.md)。
+使用入口和格式示例见 [docs/m1/README.md](../../docs/m1/README.md)。
 
 ## M1.1 审查修复与最终验收
 
@@ -108,7 +108,7 @@ JUnit 包含子测试的累计计数为 tests=6366、skipped=357、failures=0、
 
 使用 `OfficialBaseline` 读取指定 CN 官方归档至 **1.4.54**，开启 pinned 表摘要核验；没有把含 MOD 的 store131 当官方语料。四张能力类表共 **3 处 629 引用、3 棵唯一树**，其中 ability 1 处、leader 2 处。RemoveEvent、SetPowerFilpSuppress、NotifyPowerflipEnd、Wait 均为 **0 次**，没有额外子程序引用。因此本次语料没有提供需要降为“待验证”的合法正例，现有禁用类别继续报问题。结论只覆盖这些已核验归档，不能外推其他地区或后续官方版本。
 
-可复现入口与输入成员摘要见 [629 说明](wf/dsl/README.md)、[official-629-corpus.json](docs/m1/official-629-corpus.json)。现有独立签名检查器对官方 CreateSummonsMultiball 的 null 回调有误报；自动 629 门禁检查二进制解析与生命周期，不借该旧签名缺口阻断官方正例。
+可复现入口与输入成员摘要见 [629 说明](../../wf/dsl/README.md)、[official-629-corpus.json](../../docs/m1/official-629-corpus.json)。现有独立签名检查器对官方 CreateSummonsMultiball 的 null 回调有误报；自动 629 门禁检查二进制解析与生命周期，不借该旧签名缺口阻断官方正例。
 
 ### 两次历史字节验收
 

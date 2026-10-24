@@ -2,7 +2,7 @@
 
 本次在 `refactor/m5-boss` 分支、起点 `1507779` 上实施。写入范围限当前 worktree；冻结客户端版本链、服务端 JSON 镜像、客户端档案与反编译源码仅作只读输入。未访问 `m4-integrate`，未 push，未部署或启动业务服务器，未操作设备。
 
-临时脚本、草稿、日志、ZIP 与完整核验记录都保存在被忽略的 `work/m6/`，不纳入版本控制。长期接口说明见 [boss-authoring.md](docs/studio/boss-authoring.md)。本报告记录本地代码、静态检查和交付包证据，不将其写成运行中服务器或真机结果。
+临时脚本、草稿、日志、ZIP 与完整核验记录都保存在被忽略的 `work/m6/`，不纳入版本控制。长期接口说明见 [boss-authoring.md](../../docs/studio/boss-authoring.md)。本报告记录本地代码、静态检查和交付包证据，不将其写成运行中服务器或真机结果。
 
 ## 功能与调用入口
 
@@ -105,7 +105,7 @@
 
 最终功能代码为 `a3ffedb`。该提交的完整 pytest **exit 0：4825 passed、354 skipped、26 warnings，881.67 秒**，没有失败或错误。前两轮全量在新发现的身份引用、路径兼容和整数精度修复后主动终止，保留日志及 `superseded` 记录，不计作完成的全量证据。
 
-最终路径扫描检查 **2,375 个文本文件，发现数 0**；`git diff --check` 和全仓已跟踪文件的提交卫生检查通过。最终验证数字及逐项证据 SHA256 见 [validation.json](docs/m6/validation.json)，全量日志保存在 `work/m6/full-verified.log` 与同名 JUnit XML。提交卫生日志保存在 `work/m6/hygiene-all.log`、`hygiene-staged.log`。
+最终路径扫描检查 **2,375 个文本文件，发现数 0**；`git diff --check` 和全仓已跟踪文件的提交卫生检查通过。最终验证数字及逐项证据 SHA256 见 [validation.json](../../docs/m6/validation.json)，全量日志保存在 `work/m6/full-verified.log` 与同名 JUnit XML。提交卫生日志保存在 `work/m6/hygiene-all.log`、`hygiene-staged.log`。
 
 测试计数采用 pytest 终端汇总和外层进程 exit 0。原始 JUnit 含 5,179 个 testcase，无 error/failure，聚合头记录 7,556 tests、357 skipped，testcase 的 skipped 标记数也为 357。已只读核对本机 pytest 9.1.1 实现：unittest.subTest 会额外发送报告，终端不单列通过/跳过的子报告，JUnit 则累计它们并可能复用父 testcase 的 nodeid。因此这是统计粒度差异；按差值可推得额外 2,374 条通过、3 条跳过的子报告。原 XML 保持生成状态，机器摘要同时保留两种口径，没有把子测试统计混入主套件通过数。
 
@@ -197,7 +197,7 @@ ghost_fox 真实数据反证完成 5 案，每案先用同源合法 HP 草稿验
 
 路径扫描：**2402 个文本文件，0 项命中**。全仓 `bash scripts/check-hygiene.sh --all` 已通过，最终文档另执行暂存区卫生检查及 `git diff --check`。
 
-完整证据摘要及 SHA256 索引见 [m61-validation.json](docs/m6/m61-validation.json)。重要本地证据：
+完整证据摘要及 SHA256 索引见 [m61-validation.json](../../docs/m6/m61-validation.json)。重要本地证据：
 
 - `work/m61/behavior/verified/summary.json`、`watches.json`、`quests.json`：1010/146 档位及 471 关完整扫描。
 - `work/m61/behavior/verified/integration-summary.json`、`watch-entries.json`、`boar-preview.json`、`boar-compiled.json`：真实领主战入口和指定 boar 编译回读。
@@ -248,7 +248,7 @@ ghost_fox 真实数据反证完成 5 案，每案先用同源合法 HP 草稿验
 {"operation":"edit","parameters":{"hpScale":10,"attackValue":1}}
 ```
 
-Boss 定向测试 **88 passed**，TypeScript 静态检查与 Vite 本地构建退出 0。构建证据包含本次工具结果汇总及源码/产物摘要；原始构建日志未保存。长期接口说明见 [boss-authoring.md](docs/studio/boss-authoring.md) 与 [boss.md](docs/studio/boss.md)。
+Boss 定向测试 **88 passed**，TypeScript 静态检查与 Vite 本地构建退出 0。构建证据包含本次工具结果汇总及源码/产物摘要；原始构建日志未保存。长期接口说明见 [boss-authoring.md](../../docs/studio/boss-authoring.md) 与 [boss.md](../../docs/studio/boss.md)。
 
 ### 真实 APK 登记与差异
 
@@ -266,10 +266,10 @@ Boss 定向测试 **88 passed**，TypeScript 静态检查与 Vite 本地构建�
 
 差异逐项保存在以下长期材料中：
 
-- [本地登记用法、能力边界与 30 项补丁说明](docs/m6/local-clients.md)。
-- [APK 全成员差异](docs/m6/m62-package-diff.json)：各 6,131 个成员，6,122 个字节相同、9 个变化；包括 3 个签名成员和 6 个 payload，bundle 内 5 个成员另列。
-- [SWF 全部差异](docs/m6/m62-full-swf-diff.json)：304 个 ABC 中 301 个原字节相同，方法体 96,825 → 96,863，29 个既有方法体变化、38 个新增、0 个删除；常量池、声明及非 ABC 标签差异也保留。
-- [已登记方法与能力差异](docs/m6/m62-registered-method-diff.json)：每项变化的方法名、ABC、涉及补丁、前后 code/context SHA，以及全部未证明能力 ID。
+- [本地登记用法、能力边界与 30 项补丁说明](../../docs/m6/local-clients.md)。
+- [APK 全成员差异](../../docs/m6/m62-package-diff.json)：各 6,131 个成员，6,122 个字节相同、9 个变化；包括 3 个签名成员和 6 个 payload，bundle 内 5 个成员另列。
+- [SWF 全部差异](../../docs/m6/m62-full-swf-diff.json)：304 个 ABC 中 301 个原字节相同，方法体 96,825 → 96,863，29 个既有方法体变化、38 个新增、0 个删除；常量池、声明及非 ABC 标签差异也保留。
+- [已登记方法与能力差异](../../docs/m6/m62-registered-method-diff.json)：每项变化的方法名、ABC、涉及补丁、前后 code/context SHA，以及全部未证明能力 ID。
 
 后续同线本地包可在本 checkout 执行：
 
@@ -293,7 +293,7 @@ APK 定向回归为 **171 passed、10 skipped、361 subtests passed**；随后�
 
 历史构建及核验共保留 1,110 个去重外部输入文件的原 SHA，174 次 ffmpeg 子进程输出均受限于当前 worktree。最初历史验证脚本误将 Windows 子进程参数视为列表，修正证据脚本后在全新目录完成全部重建；原失败记录保留在 `work/m62/history/failed-attempt1/`。首轮全量测试在旧 `wfx_gate` 档案读取处收集失败，记录保留在 `work/m62/full-attempt1/`，未计作通过。
 
-完整验证数字与逐项证据 SHA 索引见 [m62-validation.json](docs/m6/m62-validation.json)。详细原始材料包括 `work/m62/full.log`、`full.xml`、`full-exit.json`、`test-source-snapshot.json`、`history/summary.json`、`apk/acceptance.json`、`review/boss-independent.json`、`review/apk-final.json` 和 `review/apk-gate-final.json`。
+完整验证数字与逐项证据 SHA 索引见 [m62-validation.json](../../docs/m6/m62-validation.json)。详细原始材料包括 `work/m62/full.log`、`full.xml`、`full-exit.json`、`test-source-snapshot.json`、`history/summary.json`、`apk/acceptance.json`、`review/boss-independent.json`、`review/apk-final.json` 和 `review/apk-gate-final.json`。
 
 本地提交按主题拆分：
 
