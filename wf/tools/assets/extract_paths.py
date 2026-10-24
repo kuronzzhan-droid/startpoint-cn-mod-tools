@@ -180,7 +180,7 @@ def main() -> None:
         print("  (生成类清单: java -jar ffdec.jar -dumpAS3 wf.swf > classlist.txt)")
 
     store = Path(args.store) if args.store else core.find_world_upload(
-        Path(__file__).resolve().parent.parent)
+        Path(__file__).resolve().parents[4])
     if not store or not store.exists():
         print("未找到 upload 存储,用 --store 指定")
         sys.exit(1)

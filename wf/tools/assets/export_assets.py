@@ -205,7 +205,7 @@ def main() -> None:
     ap.add_argument("--no-skip", action="store_true", help="不跳过已存在文件(默认跳过=可续跑)")
     args = ap.parse_args()
 
-    mod_dir = Path(__file__).resolve().parent
+    mod_dir = Path(__file__).resolve().parents[3]
     out = Path(args.out); out.mkdir(parents=True, exist_ok=True)
     loc2name = load_names(mod_dir)
     print("命名表:", len(loc2name), "条")

@@ -114,7 +114,7 @@ def main() -> None:
     if args.base:
         base = Path(args.base)
     else:
-        upload = core.find_world_upload(Path(__file__).resolve().parent.parent)
+        upload = core.find_world_upload(Path(__file__).resolve().parents[4])
         if not upload:
             print("未找到数据包(WorldFlipper/dummy/.../upload),请用 --base 指定 production 目录")
             sys.exit(1)

@@ -596,7 +596,7 @@ def _summary_payload(summary: OperationSummary) -> dict[str, Any]:
 
 def generate_restore_wrapper(manifest_path: Path) -> Path:
     manifest = _regular_control_file(manifest_path, "manifest")
-    tool = Path(__file__).with_name("wf_asset_maintenance.py").resolve()
+    tool = (Path(__file__).resolve().parents[3] / "wf_asset_maintenance.py").resolve()  # 根目录入口
     if "'" in str(manifest) or "'" in str(tool):
         raise QuarantineError("restore wrapper paths must not contain a single quote")
     target = manifest.parent / "restore.ps1"

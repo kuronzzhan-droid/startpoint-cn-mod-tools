@@ -585,7 +585,7 @@ def enrich_from_decoded(out: Path, found: dict, allhash: set):
 
 # ==================== 主流程 ====================
 def main():
-    here = Path(__file__).resolve().parent
+    here = Path(__file__).resolve().parents[3]
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", help="下载包 production 目录(不填自动找)")
     ap.add_argument("--bundle", default=('${WF_ROOT}\\wf-bundle\\production'.replace("${WF_ROOT}", str(root_path()))))

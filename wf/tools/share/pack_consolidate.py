@@ -54,7 +54,7 @@ import wf_release  # noqa: E402
 DEFAULT_BASE = squash.DEFAULT_BASE
 CI_ZIP_CAP = 5 << 20
 MEMBER_REL_RE = re.compile(r"^[0-9a-f]{2}/[0-9a-f]{38}$")
-WORK_DIR = Path(__file__).resolve().parent / "work" / "pack_consolidate"
+WORK_DIR = Path(__file__).resolve().parents[3] / "work" / "pack_consolidate"
 ORIGIN_CN = {"legacy": "常规增量", "patch": "asset-patch", "anchored": "锚定角色包", "upload": "上传"}
 
 

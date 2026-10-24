@@ -82,13 +82,13 @@ def main() -> None:
                     help="bundle 包 production 目录(APK bundle.zip 解出);不存在则跳过")
     ap.add_argument("--pathlist", default=('${WF_ROOT}\\wf-extracted\\wf-extracted\\.pathlist'.replace("${WF_ROOT}", str(root_path()))))
     ap.add_argument("--voice", default=('${WF_ROOT}\\角色语音'.replace("${WF_ROOT}", str(root_path()))))
-    ap.add_argument("--out", default=str(Path(__file__).resolve().parent))
+    ap.add_argument("--out", default=str(Path(__file__).resolve().parents[3]))
     args = ap.parse_args()
 
     if args.base:
         base = Path(args.base)
     else:
-        up = core.find_world_upload(Path(__file__).resolve().parent.parent)
+        up = core.find_world_upload(Path(__file__).resolve().parents[4])
         if not up:
             print("未找到 production,请用 --base 指定"); sys.exit(1)
         base = up.parent
