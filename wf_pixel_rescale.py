@@ -44,7 +44,7 @@ class RescaleError(RuntimeError):
 
 
 def salt() -> str:
-    src = (TOOLS / "wf_decrypt_all.py").read_text(encoding="utf-8", errors="ignore")
+    src = (TOOLS / "wf/tools/assets/decrypt_all.py").read_text(encoding="utf-8", errors="ignore")
     m = re.search(r"SALT\s*=\s*['\"]([^'\"]+)['\"]", src)
     if not m:
         raise RescaleError("无法从 wf_decrypt_all.py 提取 SALT")
