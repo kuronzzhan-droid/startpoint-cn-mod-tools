@@ -2,7 +2,7 @@
 import re
 
 CUSTOM_PREFIXES = ("wfx_snapcombo_", "wfx_pf4_", "wfx_unlock_", "wfx_adaptive_",
-                   "ability_visual_", "wfx_fever_voice_", "equipment_rule_")
+                   "ability_visual_", "wfx_fever_voice_", "equipment_rule_", "awakening_material_")
 STRINGS = "master/string/custom_ability_string.orderedmap"
 
 
@@ -54,6 +54,12 @@ def custom_signals(key, value=None):
     for prefix in CUSTOM_PREFIXES:
         if key.startswith(prefix):
             yield "selectors", "custom_ability_string." + prefix
+    if key.startswith("awakening_material_"):
+        import wfx_registry
+        rule = wfx_registry.load()["string_keys"]["awakening_material_"]
+        gap = catalog_gap(wfx_registry.capability_closure([rule["capability"]]))
+        if gap:
+            yield "unsupported", gap
     if value is not None:
         yield from configuration_signals("custom_ability_string", key, value)
 
@@ -67,8 +73,10 @@ def configuration_signals(table, key, value):
 
 
 def character_signals(cid, row):
+    from wf.wfx_tags import tag_tokens
     if len(row) > 5:
-        for tag in row[5].split(","):
+        for tag in tag_tokens(row[5]):
+            yield from configuration_signals("character_tag", tag, None)
             if tag.startswith("ModDualForm:"):
                 yield "selectors", "character_tag.ModDualForm"
     for key in ("wfx_pf4_" + str(cid), "ability_visual_" + row[0], "wfx_fever_voice_" + row[0]):

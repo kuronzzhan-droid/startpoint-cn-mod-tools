@@ -122,8 +122,9 @@ def test_reassigned_codes_never_resolve_to_withdrawn_gauge_capability():
         assert effect["patch_version"] == version
         assert catalog[effect["capability"]]["status"] == "shipped"
         assert effect["arg"] != "gauge_mask"
-        # Synthetic integer-carrier coverage, not a claim about TODO parameters.
-        spec = codec.decode_sid(f"wfx:{code}:0:1:1:carrier")
+        # Known composite arguments must not be replaced by invalid zero tiers.
+        arg = {34: 5050, 35: 50}.get(code, 0)
+        spec = codec.decode_sid(f"wfx:{code}:{arg}:1:1:carrier")
         assert not spec.pin
         assert "wfx-gauge-v1" not in codec.required_capabilities(spec)
     with pytest.raises(codec.WfxError):
@@ -152,11 +153,12 @@ def test_shipped_configuration_rejects_bad_formats(key, value):
 def test_pf4_key_and_character_identity_tag_use_distinct_tables():
     assert wfx_gate.check({"custom_ability_string": {"wfx_pf4_129989": "100:FF4040"}},
                           profile="test-v35e").ok
-    older = wfx_gate.check({"character_tag": {"wfx_cid_129989": "identity"}}, profile="test-v35e")
+    rows = {"character": {"129989": "gerald,,,,,wfx_cid_129989"}}
+    older = wfx_gate.check(rows, profile="test-v35e")
     assert not older.ok
     assert "character-identity-tag-v1" in older.missing_capabilities()
     newer = wfx_gate.ClientProfile("synthetic-v35j", frozenset({"character-identity-tag-v1"}))
-    assert wfx_gate.check({"character_tag": {"wfx_cid_129989": "identity"}}, profile=newer).ok
+    assert wfx_gate.check(rows, profile=newer).ok
 
 
 def test_unlock_payload_keeps_value_when_decoded_by_gate():

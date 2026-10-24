@@ -54,11 +54,12 @@ ABILITY_TABLE_LOGICALS = {
 }
 UNIQUE_CONDITION_LOGICAL = "master/character/unique_condition.orderedmap"
 CUSTOM_STRING_LOGICAL = "master/string/custom_ability_string.orderedmap"
+CHARACTER_LOGICAL = "master/character/character.orderedmap"
 GATE_TABLE_LOGICALS = {
     **ABILITY_TABLE_LOGICALS,
     "unique_condition": UNIQUE_CONDITION_LOGICAL,
     "custom_ability_string": CUSTOM_STRING_LOGICAL,
-    "character_tag": "master/character/character_tag.orderedmap",
+    "character": CHARACTER_LOGICAL,
 }
 DSL_SUFFIX = ".action.dsl.amf3.deflate"
 # 触发模式 → 客户端构造函数实际解析的块（瞬发行的 instant_precontent 也会被解析）。
@@ -389,6 +390,15 @@ class _Collector:
         self.problems: list[str] = []
         self.warnings: list[str] = []
 
+    def configuration(self, table, key, value, source):
+        from wf.wfx_config import configuration_checks
+        names, problems, warnings = configuration_checks(table, key, value)
+        self.problems.extend(f"{source}：{item}" for item in problems)
+        self.warnings.extend(f"{source}：{item}" for item in warnings)
+        for name in names:
+            self.requirements.append(Requirement(
+                name, wfx_registry.capability_level(name) or "semantic", source, "v35配置标记"))
+
     def uid_ref(self, uid_value: Any, source: str, why: str) -> None:
         uid = _norm_uid(uid_value)
         if uid is None or uid not in self.index:
@@ -398,6 +408,8 @@ class _Collector:
             self.requirements += _spec_requirements(spec, source, f"{why} uid {uid}")
             if spec.effect.get("todo"):
                 self.warnings.append(f"{source} uid {uid}：" + "；".join(spec.effect["todo"]))
+            if spec.effect.get("stack_note"):
+                self.warnings.append(f"{source} uid {uid}：{spec.effect['stack_note']}")
         elif kind == "effect":
             self.problems.append(f"{source} {why}了 uid {uid},其 string_id {sid!r} 不合法: {spec}")
         elif kind == "reserved":
@@ -427,6 +439,7 @@ def _ability_requirements(kind: str, key: str, text: str, collector: _Collector)
     import wf_describe
     from wf_client_legality import BLOCK_CASE_KEY, TRIGGER_MODE_BLOCKS, required_client_capabilities
     from wf_client_patch_scope import patch_parser_scope_problems
+    from wf.wfx_tags import ability_tags
 
     layout = wf_describe.layout(kind)
     blocks = {name: int(index) for name, index in layout["blocks"].items()}
@@ -453,6 +466,8 @@ def _ability_requirements(kind: str, key: str, text: str, collector: _Collector)
             collector.requirements.append(Requirement(
                 capability, wfx_registry.capability_level(capability) or "crash", source,
                 "补丁构造/解析器扩展"))
+        for column, tag in ability_tags(kind, record):
+            collector.configuration("character_tag", tag, None, f"{source} c{column}")
         if not collector.index:
             continue
         for block in MODE_BLOCKS.get(cell(mode_col), ()):
@@ -492,7 +507,7 @@ def check(rows: Mapping[str, Mapping[str, str]] | None = None,
           unique_context: Mapping[str, str] | None = None,
           input_problems: Iterable[str] = (),
           input_warnings: Iterable[str] = ()) -> GateReport:
-    """rows = {表种类: {键: 行文本}}（含 custom_ability_string 的值及 character_tag）；
+    """rows = {表种类: {键: 行文本}}（含 custom_ability_string 的值及 character）；
     dsl = {标签: 已解码 DSL 树}；strings = 兼容旧调用方的 custom_ability_string 键；
     unique_context = 本批不含 unique_condition 时，用来解析 uid 的现行表（通常取 store）。"""
     resolved = resolve_profile(profile if profile is not None else default_publish_profile())
@@ -528,6 +543,8 @@ def check(rows: Mapping[str, Mapping[str, str]] | None = None,
             collector.requirements += _spec_requirements(spec, source, "效果状态行")
             if spec.effect.get("todo"):
                 collector.warnings.append(f"{source}：" + "；".join(spec.effect["todo"]))
+            if spec.effect.get("stack_note"):
+                collector.warnings.append(f"{source}：{spec.effect['stack_note']}")
 
     # 1+2. 词条五表
     for kind in ABILITY_TABLE_LOGICALS:
@@ -573,21 +590,15 @@ def check(rows: Mapping[str, Mapping[str, str]] | None = None,
                     collector.requirements.append(Requirement(
                         capability, rule["level"], f"custom_ability_string[{key}]", rule.get("note", prefix)))
 
-    from wf.wfx_config import configuration_checks
-
-    configuration_rows = {"custom_ability_string": {
-        key: custom_rows.get(key) for key in string_keys},
-        "character_tag": rows.get("character_tag") or {}}
-    for table, entries in configuration_rows.items():
-        for key, value in entries.items():
-            names, problems, warnings = configuration_checks(table, key, value)
-            source = f"{table}[{key}]"
-            collector.problems.extend(f"{source}：{item}" for item in problems)
-            collector.warnings.extend(f"{source}：{item}" for item in warnings)
-            for name in names:
-                collector.requirements.append(Requirement(
-                    name, wfx_registry.capability_level(name) or "semantic", source,
-                    "v35配置前缀"))
+    for key in string_keys:
+        collector.configuration("custom_ability_string", key, custom_rows.get(key),
+                                f"custom_ability_string[{key}]")
+    from wf.wfx_tags import tag_tokens
+    for key, text in (rows.get("character") or {}).items():
+        for number, record in enumerate(_records(text)):
+            if len(record) > 5:
+                for tag in tag_tokens(record[5]):
+                    collector.configuration("character_tag", tag, None, f"character[{key}]#{number} c5")
 
     return _evaluate(resolved, collector)
 

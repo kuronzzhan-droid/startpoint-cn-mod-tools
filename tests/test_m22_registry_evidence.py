@@ -24,6 +24,22 @@ def test_final_evidence_covers_every_new_patch_and_semantic_capability():
                 if c.get('integration_evidence', {}).get('swf_sha256')
                 == v35e_evidence()['swf_sha256']}
     assert len(semantic) == 17
+    assert semantic == {
+        'client.wfx.effect_query@1', 'client.direct.base@1', 'client.direct.merge@1',
+        'client.charge.cap@2', 'client.ability.resistance@1', 'client.pf.snapcombo@1',
+        'client.pf.lv4_data@1', 'client.fever.items@2', 'client.leader.unlock@1',
+        'client.element.adaptive@1', 'client.heal.overflow_damage@1',
+        'client.ability.visuals@1', 'client.super_fever@1', 'client.fever.voice@1',
+        'client.dual_form.uid@1', 'client.equipment.rules_data@1',
+        'client.wfx.hidden_unique_icons@1',
+    }
+    # The task's shipping facts update only these two registrations. Binary
+    # presence alone must never promote the other fifteen candidates to shipped.
+    promoted = {'client.pf.lv4_data@1', 'client.leader.unlock@1'}
+    for capability in catalog['capabilities'].values():
+        if capability.get('capability_id') in semantic:
+            expected = 'shipped' if capability['capability_id'] in promoted else 'local_candidate'
+            assert capability['status'] == expected
     assert semantic <= new_ids - old_ids
     for cid in semantic:
         cap = registry[cid]

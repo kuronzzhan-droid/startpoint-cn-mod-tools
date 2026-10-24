@@ -475,6 +475,9 @@
       "sources": [
         "memory/wf-v35-generic-patches.md",
         "memory/wf-water-gerald-20261018.md"
+      ],
+      "depends_on": [
+        "wfx-effect-query-v1"
       ]
     },
     "heal-fever-v1": {
@@ -485,6 +488,9 @@
       "sources": [
         "memory/wf-v35-generic-patches.md",
         "memory/wf-water-gerald-20261018.md"
+      ],
+      "depends_on": [
+        "wfx-effect-query-v1"
       ]
     },
     "shield-executor-hp-v1": {
@@ -495,6 +501,9 @@
       "sources": [
         "memory/wf-v35-generic-patches.md",
         "memory/wf-water-gerald-20261018.md"
+      ],
+      "depends_on": [
+        "wfx-effect-query-v1"
       ]
     },
     "direct-hit-count-v1": {
@@ -505,6 +514,9 @@
       "sources": [
         "memory/wf-v35-generic-patches.md",
         "memory/wf-water-gerald-20261018.md"
+      ],
+      "depends_on": [
+        "wfx-effect-query-v1"
       ]
     },
     "holder-heal-damage-v1": {
@@ -515,6 +527,9 @@
       "sources": [
         "memory/wf-v35-generic-patches.md",
         "memory/wf-water-gerald-20261018.md"
+      ],
+      "depends_on": [
+        "wfx-effect-query-v1"
       ]
     },
     "holder-heal-fever-v1": {
@@ -525,6 +540,9 @@
       "sources": [
         "memory/wf-v35-generic-patches.md",
         "memory/wf-water-gerald-20261018.md"
+      ],
+      "depends_on": [
+        "wfx-effect-query-v1"
       ]
     },
     "unison-power-flip-v1": {
@@ -535,6 +553,9 @@
       "sources": [
         "memory/wf-v35-generic-patches.md",
         "memory/wf-water-gerald-20261018.md"
+      ],
+      "depends_on": [
+        "wfx-effect-query-v1"
       ]
     },
     "leader-unlock-v2": {
@@ -554,7 +575,7 @@
       "level": "semantic",
       "layer": "v35j",
       "status": "shipped",
-      "summary": "wfx_cid_<角色id>身份tag隐含匹配，必须先在character_tag登记",
+      "summary": "wfx_cid_<角色id>角色标签按身份隐含匹配；消费实际角色组/角色标签列",
       "sources": [
         "memory/wf-v35-generic-patches.md",
         "memory/wf-water-gerald-20261018.md"
@@ -1484,8 +1505,8 @@
       "arg": "v35_integer",
       "arg_schema": {
         "min": 0,
-        "max": 2147483647,
-        "note": "仅int32载体校验；语义未确认部分见TODO"
+        "max": 4,
+        "note": "保守限于已登记concept类型0..4；0跟随队长，1技能/2PF/3直击/4能力"
       },
       "value": {
         "min": -2147483648,
@@ -1502,11 +1523,13 @@
       ],
       "todo": [
         "TODO：逐状态聚合、叠层规则及完整方法hook待PR #10或对应补丁源码核实。",
-        "TODO：arg除0之外的类型、value与flags的格式语义/单位/边界待核实。"
+        "TODO：非0类型的完整分支及value/flags格式、单位和边界待补丁源码核实。"
       ],
       "scope": "治疗者持有状态；全队挂载使任何成员治疗生效",
-      "arg_format": "0：跟随队长character_stance_detail concepts[0]分类；其余类型TODO",
-      "damage_reference": 2
+      "arg_format": "0跟随队长concepts[0]；类型仅接受concept已登记范围1..4",
+      "damage_reference": 2,
+      "stack_scaled": null,
+      "stack_note": "TODO：现有事实未确认叠层倍率，null表示未知；不得当作false或true。门禁明确警告。"
     },
     {
       "code": 31,
@@ -1540,7 +1563,9 @@
         "TODO：arg完整含义、value与flags的格式语义/单位/边界待核实。"
       ],
       "scope": "治疗者持有状态；全队挂载使任何成员治疗生效",
-      "runtime": "走724原生addFeverPoint"
+      "runtime": "走724原生addFeverPoint",
+      "stack_scaled": null,
+      "stack_note": "TODO：现有事实未确认叠层倍率，null表示未知；不得当作false或true。门禁明确警告。"
     },
     {
       "code": 32,
@@ -1573,7 +1598,9 @@
         "TODO：逐状态聚合、叠层规则及完整方法hook待PR #10或对应补丁源码核实。",
         "TODO：arg完整含义、value与flags的格式语义/单位/边界待核实。"
       ],
-      "scope": "护盾基数取执行者最大HP，而非各受盾目标最大HP"
+      "scope": "护盾基数取执行者最大HP，而非各受盾目标最大HP",
+      "stack_scaled": null,
+      "stack_note": "TODO：现有事实未确认叠层倍率，null表示未知；不得当作false或true。门禁明确警告。"
     },
     {
       "code": 33,
@@ -1605,7 +1632,9 @@
       "todo": [
         "TODO：逐状态聚合、叠层规则及完整方法hook待PR #10或对应补丁源码核实。",
         "TODO：arg完整含义、value与flags的格式语义/单位/边界待核实。"
-      ]
+      ],
+      "stack_scaled": null,
+      "stack_note": "TODO：现有事实未确认叠层倍率，null表示未知；不得当作false或true。门禁明确警告。"
     },
     {
       "code": 34,
@@ -1619,8 +1648,9 @@
       "arg_schema": {
         "min": 0,
         "max": 2147483647,
-        "note": "仅int32载体校验；语义未确认部分见TODO",
-        "format": "类型 + 10 × 档位百分数 + 1000 × CT秒"
+        "note": "按打包公式保守校验类型0..4和非零两位档位；100%与CT进位有歧义，拒绝零档编码",
+        "format": "类型 + 10 × 档位百分数 + 1000 × CT秒",
+        "validation": "holder_heal"
       },
       "value": {
         "min": -2147483648,
@@ -1637,13 +1667,15 @@
       ],
       "todo": [
         "TODO：逐状态聚合、叠层规则及完整方法hook待PR #10或对应补丁源码核实。",
-        "TODO：类型枚举、档位/CT取值范围、value及flags的单位和用途；不从示例数字推断。"
+        "TODO：100%档位编码与CT进位有歧义；类型分支、CT运行时边界及value/flags单位和用途仍待源码核实。"
       ],
       "scope": "持有者口径；治疗不限来源；存在34/35持有者时跳过旧全队30/31",
       "arg_format": "类型 + 10 × 档位百分数 + 1000 × CT秒",
       "examples": [
         "wfx:34:5050:100000:150000:gerald"
-      ]
+      ],
+      "stack_scaled": null,
+      "stack_note": "TODO：现有事实未确认叠层倍率，null表示未知；不得当作false或true。门禁明确警告。"
     },
     {
       "code": 35,
@@ -1657,8 +1689,9 @@
       "arg_schema": {
         "min": 0,
         "max": 2147483647,
-        "note": "仅int32载体校验；语义未确认部分见TODO",
-        "format": "类型 + 10 × 档位百分数 + 1000 × CT秒"
+        "note": "按打包公式保守校验类型0..4和非零两位档位；100%与CT进位有歧义，拒绝零档编码",
+        "format": "类型 + 10 × 档位百分数 + 1000 × CT秒",
+        "validation": "holder_heal"
       },
       "value": {
         "min": -2147483648,
@@ -1675,13 +1708,15 @@
       ],
       "todo": [
         "TODO：逐状态聚合、叠层规则及完整方法hook待PR #10或对应补丁源码核实。",
-        "TODO：类型枚举、档位/CT取值范围、value及flags的单位和用途；不从示例数字推断。"
+        "TODO：100%档位编码与CT进位有歧义；类型分支、CT运行时边界及value/flags单位和用途仍待源码核实。"
       ],
       "scope": "持有者口径；治疗不限来源；存在34/35持有者时跳过旧全队30/31",
       "arg_format": "类型 + 10 × 档位百分数 + 1000 × CT秒",
       "examples": [
         "wfx:35:50:500:1000:gerald"
-      ]
+      ],
+      "stack_scaled": null,
+      "stack_note": "TODO：现有事实未确认叠层倍率，null表示未知；不得当作false或true。门禁明确警告。"
     },
     {
       "code": 36,
@@ -1694,8 +1729,8 @@
       "arg": "v35_integer",
       "arg_schema": {
         "min": 0,
-        "max": 2147483647,
-        "note": "仅int32载体校验；语义未确认部分见TODO",
+        "max": 1,
+        "note": "仅接受事实卡明确的bit0；其余位未经证实，拒绝写入",
         "bit_0": "只使用类型PF"
       },
       "value": {
@@ -1714,11 +1749,13 @@
       ],
       "todo": [
         "TODO：逐状态聚合、叠层规则及完整方法hook待PR #10或对应补丁源码核实。",
-        "TODO：flags平时倍率的缩放单位、数值边界及arg其余位是否允许，随附事实未明确。"
+        "TODO：flags平时倍率缩放单位、数值运行时边界仍未确认；未知arg位拒绝写入。"
       ],
       "scope": "持有者成员PF后同帧执行其合击角色自己的PF；419/722覆盖优先，否则类型PF；主位查询排除同Member合击来源覆盖",
       "arg_format": "arg & 1：只使用类型PF",
-      "parameter_format": "wfx:36:<arg>:<Fever倍率万分比>:<平时倍率>:<label>"
+      "parameter_format": "wfx:36:<arg>:<Fever倍率万分比>:<平时倍率>:<label>",
+      "stack_scaled": null,
+      "stack_note": "TODO：现有事实未确认叠层倍率，null表示未知；不得当作false或true。门禁明确警告。"
     }
   ],
   "effect_flags_overrides": {
@@ -1940,18 +1977,24 @@
   ],
   "character_tag_patterns": [
     {
+      "prefix": "ModDualForm",
+      "value": "ModDualForm或ModDualForm:<正整数uid>",
+      "default_uid": 22,
+      "capability": "dual-form-uid-v1",
+      "gate": "block"
+    },
+    {
       "prefix": "wfx_cid_",
       "key_suffix": "角色id（十进制正整数）",
       "capability": "character-identity-tag-v1",
       "gate": "block",
       "status": "shipped",
       "patch_version": "v35j",
-      "requires": "character_tag表必须登记该tag；隐含按角色身份匹配",
+      "requires": "词条character_groups字段或character表c5的角色标签token；隐含按角色身份匹配",
       "sources": [
         "memory/wf-v35-generic-patches.md",
         "memory/wf-water-gerald-20261018.md"
-      ],
-      "todo": "TODO：character_tag行值布局未在随附事实中给出，不把此tag登记成custom_ability_string键。"
+      ]
     }
   ],
   "unique_icon_visibility": {

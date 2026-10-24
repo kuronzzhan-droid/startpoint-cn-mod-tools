@@ -154,7 +154,7 @@ class SemanticValidationTests(unittest.TestCase):
     def test_required_capabilities_include_dependencies(self):
         self.assertEqual(["wfx-damage-v1", "wfx-core-v1"],
                          W.required_capabilities(W.decode_sid("wfx:21:0:1:1:a")))
-        self.assertEqual(["holder-heal-fever-v1"],
+        self.assertEqual(["holder-heal-fever-v1", "wfx-effect-query-v1"],
                          W.required_capabilities(W.decode_sid("wfx:35:50:500:1000:a")))
         self.assertEqual(["wfx-dash-v1", "wfx-core-v1", "dash-parameter-v1"],
                          W.required_capabilities(W.decode_sid("wfx:40:0:-0.3:0:a")))

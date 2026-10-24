@@ -82,6 +82,10 @@ def _validate(data: dict[str, Any]) -> None:
             raise RegistryError(f"效果码 {code} 未知聚合规则必须记录 TODO")
         if effect.get("gate") not in ("block", "warn"):
             raise RegistryError(f"效果码 {code} 的 gate 必须是 block/warn")
+        if "stack_scaled" not in effect or type(effect["stack_scaled"]) not in (bool, type(None)):
+            raise RegistryError(f"效果码 {code} 必须显式登记 stack_scaled 为布尔或null（未知）")
+        if effect["stack_scaled"] is None and not effect.get("stack_note"):
+            raise RegistryError(f"效果码 {code} 未知叠层规则必须记录 stack_note")
     for bit, entry in (data.get("flags", {}).get("bits") or {}).items():
         if entry.get("capability") not in capabilities:
             raise RegistryError(f"flags bit{bit} 的 capability 未登记")

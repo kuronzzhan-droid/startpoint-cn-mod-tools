@@ -8,6 +8,7 @@ import re
 from wfx_registry import patch_kinds_borrowing_uid_column
 from wf.dsl.references import program_logical
 from wf.view.layout import EM, col
+from wf.wfx_tags import ability_tags
 from .signals_v35 import (character_signals, configuration_signals, custom_signals,
                          unique_signals)
 from .surfaces import ABILITY_TABLES
@@ -44,8 +45,6 @@ def table_signals(logical, trail, text, *, registry=None):
         yield "selectors", "text.desc_override"
     if logical == STRINGS:
         yield from custom_signals(trail[-1], text)
-    if table == "character_tag":
-        yield from configuration_signals(table, trail[-1], text)
     if logical == UNIQUE:
         yield "unique_ids", str(trail[-1])
         for row in rows(text):
@@ -63,6 +62,8 @@ def table_signals(logical, trail, text, *, registry=None):
                 for block in layout["blocks"]) + 1
             if len(row) < width:
                 raise ValueError(f"{logical}/{'/'.join(trail)}/{index}: truncated ability row ({len(row)} < {width})")
+            for _column, tag in ability_tags(name, row):
+                yield from configuration_signals("character_tag", tag, None)
             trigger = row[heads["trigger"]]
             block = {"0": "instant_content", "1": "during_content"}.get(trigger)
             if block:
