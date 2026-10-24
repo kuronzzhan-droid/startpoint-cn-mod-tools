@@ -18,7 +18,7 @@ import json
 import re
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent
+HERE = Path(__file__).resolve().parents[3]
 
 # md 章节 -> 枚举组键(instant_trigger 与 during_accumulation_trigger 共用 §6.2)
 _MD_SECTIONS = {"6.1": "precondition", "6.2": "trigger", "6.3": "during_trigger",

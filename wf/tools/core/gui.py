@@ -74,7 +74,7 @@ def _cdndata_dir() -> Path:
     return CDNDATA if CDNDATA is not None else core.resolve_cdndata_dir()
 
 
-WORK_DIR = Path(__file__).resolve().parent / "work"
+WORK_DIR = Path(__file__).resolve().parents[3] / "work"
 PENDING_FILE = WORK_DIR / "sync_pending.json"
 
 GUI_PORT = int(os.environ.get("WF_GUI_PORT", "8765"))
@@ -1046,7 +1046,7 @@ def export_annotated() -> dict:
     enums = schema_enums(schema)
     owners = ability_owner_index()
     table = load_ability_table()
-    out_dir = Path(__file__).resolve().parent / "edit"
+    out_dir = Path(__file__).resolve().parents[3] / "edit"
     out_dir.mkdir(parents=True, exist_ok=True)
     import csv as _csv
     out = out_dir / ("ability_annotated_" + time.strftime("%Y%m%d-%H%M%S") + ".csv")
@@ -1092,7 +1092,7 @@ def export_all_abilities() -> dict:
     schema = load_schema()
     names = core.schema_names(schema)
     table = load_ability_table()
-    out_dir = Path(__file__).resolve().parent / "edit"
+    out_dir = Path(__file__).resolve().parents[3] / "edit"
     out_dir.mkdir(parents=True, exist_ok=True)
     import csv as _csv
     out = out_dir / ("ability_all_" + time.strftime("%Y%m%d-%H%M%S") + ".csv")
@@ -5074,7 +5074,7 @@ def _remove_pending_tables(tables: str) -> None:
 def run_publish(tables: str | None = None, list_only: bool = False) -> dict:
     """子进程调 wf_publish.py:打增量包发到 CDN(② 层生效的唯一正道)。
     tables=None 时发布 pending 列表;list_only=True 走 --list 只预览不打包。"""
-    cmd = [sys.executable, str(Path(__file__).resolve().parent / "wf_publish.py")]
+    cmd = [sys.executable, str(Path(__file__).resolve().parents[3] / "wf_publish.py")]
     if tables:
         cmd += ["--tables", tables]
     if list_only:
@@ -5268,7 +5268,7 @@ def adb_status() -> dict:
 import re as _re
 import threading
 
-MOD_DIR = Path(__file__).resolve().parent
+MOD_DIR = Path(__file__).resolve().parents[3]
 
 TOOLBOX_TOOLS = {
     "selftest": {
@@ -6734,7 +6734,7 @@ def chain_apply(body: dict, dry_run: bool) -> dict:
 
 
 def read_page() -> bytes:
-    html_path = Path(__file__).resolve().parent / "wf_gui.html"
+    html_path = Path(__file__).resolve().parents[3] / "wf_gui.html"
     return html_path.read_bytes()
 
 
@@ -7861,7 +7861,7 @@ threading.Thread(target=_rogue_auto_thread, daemon=True).start()
 # 独立功能:手选/上传已发布增量 zip → wf_pack_consolidate 合并去冗余。
 # 产物只写 work/pack_consolidate/<tag>,不碰 CDN(部署由用户自行拷贝)。
 
-PM_UPLOAD_DIR = Path(__file__).resolve().parent / "work" / "pack_consolidate" / "uploads"
+PM_UPLOAD_DIR = Path(__file__).resolve().parents[3] / "work" / "pack_consolidate" / "uploads"
 
 
 def _pack_mod():

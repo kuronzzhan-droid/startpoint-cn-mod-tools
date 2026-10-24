@@ -351,7 +351,7 @@ def project_root() -> Path:
 
 
 def profiles_file() -> Path:
-    return Path(__file__).resolve().parent / "profiles.json"
+    return Path(__file__).resolve().parents[3] / "profiles.json"
 
 
 def _resolve_profile_path(value: str) -> Path:
@@ -389,7 +389,7 @@ def _tool_dir_prefix() -> str:
 
     提示文案要能被直接复制粘贴,写死 mod-tools/ 会让平铺仓的用户照抄后 file not found。
     """
-    return "mod-tools/" if Path(__file__).resolve().parent.name == "mod-tools" else ""
+    return "mod-tools/" if Path(__file__).resolve().parents[3].name == "mod-tools" else ""
 
 
 TARGET_STORE_HINT = (

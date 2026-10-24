@@ -24,15 +24,15 @@ pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_mod_tool as core
 
 HEX = [f"{i:02x}" for i in range(256)]
-WORK = Path(__file__).resolve().parent / "work"
+WORK = Path(__file__).resolve().parents[3] / "work"
 STATE = WORK / "catalog_state.json"
-OUT = Path(__file__).resolve().parent / "DataCatalog.csv"
+OUT = Path(__file__).resolve().parents[3] / "DataCatalog.csv"
 
 
 def load_named() -> dict[str, str]:
     """已知 逻辑路径→存储位置 反表(存储位置 -> 逻辑路径)。"""
     loc2name: dict[str, str] = {}
-    pl = Path(__file__).resolve().parent / "PathList.csv"
+    pl = Path(__file__).resolve().parents[3] / "PathList.csv"
     if pl.exists():
         with pl.open(encoding="utf-8-sig") as fh:
             for row in csv.DictReader(fh):
@@ -50,7 +50,7 @@ def main() -> None:
     args = ap.parse_args()
 
     store = Path(args.store) if args.store else core.find_world_upload(
-        Path(__file__).resolve().parent.parent)
+        Path(__file__).resolve().parents[4])
     WORK.mkdir(parents=True, exist_ok=True)
 
     if args.reset or not STATE.exists():

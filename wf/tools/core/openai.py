@@ -29,7 +29,7 @@ JSON_TIMEOUT_SECONDS = 120
 IMAGE_TIMEOUT_SECONDS = 300
 MAX_ATTEMPTS = 4
 SUPPORTED_IMAGE_SIZES = frozenset({"1024x1024", "1024x1536", "1536x1024"})
-_CONFIG_PATH = Path(__file__).resolve().parent / "work" / "openai.json"
+_CONFIG_PATH = Path(__file__).resolve().parents[3] / "work" / "openai.json"
 
 Transport = Callable[[urllib.request.Request, int], Any]
 

@@ -28,7 +28,7 @@ import sys
 import zlib
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent
+HERE = Path(__file__).resolve().parents[3]
 pass  # Imports resolve from this checkout/package, not external source copies.
 
 PNG_MAGIC = b"\x89PNG\r\n\x1a\n"

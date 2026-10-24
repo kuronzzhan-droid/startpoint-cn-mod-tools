@@ -322,7 +322,7 @@ CHARACTER_LOGICAL = "master/character/character.orderedmap"
 CHARACTER_TEXT_LOGICAL = "master/character/character_text.orderedmap"
 STORY_CHARACTER_LOGICAL = "master/story/story_character.orderedmap"
 
-MOD_DIR = Path(__file__).resolve().parent
+MOD_DIR = Path(__file__).resolve().parents[3]
 PROJECT_ROOT = MOD_DIR
 DEFAULT_STORE = None  # Resolve the configured store when running the command.
 DEFAULT_PATHLIST = MOD_DIR / "WF_PATHLIST_recovered.txt"

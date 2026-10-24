@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
-"""wf_all_analysis — 全六属性角色强度分析(刃值口径)+逐角色增强方案生成。
+"""wf_fire_analysis — 火系全角色强度分析(刃值口径)+逐角色增强方案生成。
 
-在火系版基础上扩展:六属性各一份文档(锚点=本属性基线头部三强均值);
-龙族目标+10%;男性/兽人+5%;风罗尔夫141159=锚点×110%(超越最新五星,多体系融合);
-光系从三/四星挖好玩机制下放+QoL加强档;特殊定制(白花机人/暗龙/风白/水艾莉亚/冲浪拉杰尔特)。
-只分析,不改数据。输出 6×md + json。
+刃值口径(与用户算例校准,瓦格纳=队170/面板205,炎之守护者莉莉丝队长技=500):
+  计入 = 基础行(觉醒等级列 c4∈'',0)中,效果中文名含「攻击力」或本流派伤害词
+        (技能伤害/强化弹射×伤害|特攻/直接攻击|直击/能力伤害)的强度满级值%,
+        暖机类 × 触发次数上限(instant c34/leader c32)或累积上限。
+  不计 = 技能槽/治疗/连击数↓/贯通延长/Fever点等 → 列为「机制项」。
+只分析,不改数据。输出 md + json。
 """
 from __future__ import annotations
 
@@ -13,28 +15,23 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-MOD_DIR = Path(__file__).resolve().parent
+MOD_DIR = Path(__file__).resolve().parents[3]
 ROOT = MOD_DIR
 pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_mod_tool as core  # noqa: E402
 import wf_describe  # noqa: E402
 
 LEADER_LOGICAL = "master/ability/leader_ability.orderedmap"
-ELEM_CN = ["火", "水", "雷", "风", "光", "暗"]
+OUT_MD = MOD_DIR / "docs" / "火系全角色分析与增强方案.md"
+OUT_JSON = ROOT / "logs" / "fire_analysis.json"
 
 FAM_CN = {"skill": "技能伤害", "pf": "强化弹射", "fever": "Fever", "ability": "能力伤害", "direct": "直击(协力球)"}
 FAMILY_OVERRIDE = {"111183": "skill",   # 炎龙王:强化弹射触发的技能伤害堆叠(用户确认)
-                   "111004": "fever",   # 盛装女仆:Fever点辅助定位
-                   "121003": "skill",   # 水艾莉亚:连击技能伤害(用户确认)
-                   "141159": "pf",      # 风罗尔夫:弹射(超越版仍以弹射为主轴)
-                   "10": "pf"}          # 风白:强化弹射触发暖机体系
-NAMED = {"111001", "111007", "111129", "311025", "321005", "151045", "141159"}
+                   "111004": "fever"}   # 盛装女仆:Fever点辅助定位
+NAMED = {"111001", "111007", "111129", "311025"}  # 火系点名(另有风罗尔夫/水克劳斯/光莉莉丝不在火表)
 
-# 目标刃值 = 本属性基线头部三强均值 × 系数
+# 目标刃值 = 基线组中位 × 系数
 TARGET_RATIO = {"5_gen1": 0.85, "5_gen2": 0.88, "5_gen3": 0.92, "5_base": 1.0, "4": 0.80, "3": 0.72}
-SPECIAL_TARGET = {"141159": 1.10}       # 风罗尔夫:超越最新五星
-DRAGON_BONUS = 0.10                     # 龙族目标 +10%
-MINORITY_BONUS = 0.05                   # 男性/兽人 +5%
 SCALE_CAP = 2.5
 
 DET_D = {"2": "skill", "23": "pf", "49": "pf", "50": "pf", "51": "pf", "18": "fever",
@@ -78,7 +75,7 @@ def fam_terms_hit(name: str, fam: str) -> bool:
     return False
 
 
-def load_shared():
+def main() -> None:
     store = core.require_active_store()
     ch = json.loads((core.resolve_cdndata_dir() / "character.json").read_text(encoding="utf-8"))
     tx = json.loads((core.resolve_cdndata_dir() / "character_text.json").read_text(encoding="utf-8"))
@@ -92,29 +89,8 @@ def load_shared():
         ent = core.decode_action_skill_row(ask.rows[i])
         skill_info[k] = {"path": " ".join(f[2] for _l, f in ent if len(f) > 2),
                          "desc": (ent[-1][1][1] if ent and len(ent[-1][1]) > 1 else "")}
+
     wf_describe._load()
-    return ch, tx, parsed, lparsed, skill_info
-
-
-def main() -> None:
-    shared = load_shared()
-    # 第一遍:算各系原生锚点;弱系(如光)锚点被拉到六系中位,保证跨属性同水平线
-    own = [analyze(el, shared, write=False)[0] for el in range(6)]
-    med = sorted(own)[3]
-    print(f"各系原生锚点: {dict(zip(ELEM_CN, own))},全局中位 {med}")
-    all_out = {}
-    for el in range(6):
-        eff = max(own[el], med)
-        all_out[ELEM_CN[el]] = analyze(el, shared, anchor_override=eff)[1]
-    (ROOT / "logs").mkdir(parents=True, exist_ok=True)
-    (ROOT / "logs" / "all_analysis.json").write_text(
-        json.dumps({"anchors_own": dict(zip(ELEM_CN, own)), "anchor_median": med,
-                    "elements": all_out}, ensure_ascii=False, indent=1), encoding="utf-8")
-    print("汇总 json → logs/all_analysis.json")
-
-
-def analyze(element: int, shared, anchor_override=None, write=True):
-    ch, tx, parsed, lparsed, skill_info = shared
     cn_i = wf_describe._cn["instant_content"]
     cn_d = wf_describe._cn["during_content"]
 
@@ -125,10 +101,9 @@ def analyze(element: int, shared, anchor_override=None, write=True):
             rar, el = int(r[2]), int(r[3])
         except ValueError:
             continue
-        if el != element or rar < 3 or (700000 <= int(cid) < 999999):
+        if el != 0 or rar < 3 or (700000 <= int(cid) < 999999):
             continue
         roster.append({"id": cid, "icid": int(cid), "rar": rar, "code": r[0], "role": r[26],
-                       "race": r[4], "gender": r[7],
                        "name": (tx.get(cid) or [["?"]])[0][0],
                        "title": (tx.get(cid) or [[""] * 4])[0][3] if len(tx.get(cid, [[""]])[0]) > 3 else "",
                        "abs": [x for x in (r[19 + i] for i in range(6)) if x and x != "(None)"],
@@ -251,33 +226,21 @@ def analyze(element: int, shared, anchor_override=None, write=True):
         fire.append(c)
 
     base_totals = sorted((c["total"] for c in fire if c["cohort"] == "5_base"), reverse=True)
-    anchor = round(sum(base_totals[:3]) / max(1, len(base_totals[:3])))   # 基线头部三强均值
-    if anchor_override:
-        anchor = anchor_override
-    if not write:
-        return anchor, None
+    anchor = round(sum(base_totals[:3]) / 3)   # 基线头部三强均值(向炎之守护者档看齐)
     for c in fire:
-        ratio = SPECIAL_TARGET.get(c["id"], TARGET_RATIO[c["cohort"]])
-        tags = []
-        if c["id"] in SPECIAL_TARGET:
-            tags.append("超越基线")
-        if "Dragon" in (c["race"] or ""):
-            ratio += DRAGON_BONUS
-            tags.append("龙族+10%")
-        if c["gender"] == "Male" or "Beast" in (c["race"] or ""):
-            ratio += MINORITY_BONUS
-            tags.append("男性/兽人+5%")
-        tgt = anchor * ratio
-        c["tags"] = tags
+        tgt = anchor * TARGET_RATIO[c["cohort"]]
         c["target"] = round(tgt)
         c["scale"] = round(min(SCALE_CAP, max(1.0, tgt / c["total"])), 2) if c["total"] > 0 else SCALE_CAP
 
     fire.sort(key=lambda c: (-c["rar"], c["icid"]))
-    print(f"{ELEM_CN[element]}系角色 {len(fire)},基线组刃值(降序): {base_totals},生效锚点 {anchor}")
-    write_markdown(fire, anchor, base_totals, element)
-    return anchor, [{k: c[k] for k in ("id", "name", "rar", "cohort", "role", "race", "gender", "family",
-                                       "leader_blade", "panel_blade", "total", "target", "scale", "tags")}
-                    for c in fire]
+    OUT_JSON.parent.mkdir(parents=True, exist_ok=True)
+    OUT_JSON.write_text(json.dumps(fire, ensure_ascii=False, indent=1), encoding="utf-8")
+
+    print(f"火系角色 {len(fire)},基线组刃值(降序): {base_totals},头部锚点 {anchor}")
+    for c in fire:
+        print(f"{c['id']:7s} {c['name']:8s} {c['rar']}星 {c['cohort']:6s} {c['role']:9s} {FAM_CN[c['family']]:8s} "
+              f"队{c['leader_blade']:4d}+面{c['panel_blade']:4d}={c['total']:4d} 目标{c['target']:4d} 建议×{c['scale']}")
+    write_markdown(fire, anchor, base_totals)
 
 
 def round05(pct: float) -> float:
@@ -315,7 +278,7 @@ def mech_proposals(row, desc: str, ilim: int, ibase: int) -> list[str]:
         if lim and lim <= 3:
             out.append(f"技能槽增益「限{lim}次」→**去掉次数限制**")
         elif lim:
-            out.append(f"技能槽增益 限{lim}次→{min(99, lim*5)}次,单次 {i:g}%→{round05(max(2.5, i*0.8)):g}%(次数超大幅/单次微降)")
+            out.append(f"技能槽增益 限{lim}次→{lim*4}次,单次 {i:g}%→{round05(max(2.5, i*0.8)):g}%(次数大增/单次微降)")
         elif desc.startswith("自身 技能槽") and 0 < i < 100:
             out.append(f"开局技能槽 {i:g}%→**100%**(开局满槽)")
     if "延长" in desc:
@@ -383,88 +346,27 @@ CUSTOM_PLAN = {
     ],
     "111165": ["对标角色(炎之守护者):数值零改动,仅作为火系刃值标尺(队500+面776)"],
     "111002": ["海盗船协力球定位:专精走直击(协力球);船体召唤物伤害随直击伤害行放大"],
-    # ---- 水系 ----
-    "121003": [
-        "连击技伤特色(用户指定):能力1L2「技能发动(限3次)→技能槽10%」→ **去掉次数限制**(无限回转)",
-        "能力5L1「技能发动→追加连击 5」→ **追加连击 10**(喂连击=喂暖机与全队连击组件)",
-        "能力2L1「连击≥30(限6次)攻击 12.5%」→ 阈值 30→**20**、限 6→**12** 次(暖满 75→150 刃)",
-        "能力1L3 充能 15%→**25%**;能力3L1 技伤「限8次」→16 次",
-    ],
-    "121008": [
-        "承伤转能特色(用户指定):能力6「伤害计数≥15(限4次)→全队技能槽5%」→ 计数 **15→10**、"
-        "限 4→**20** 次、单次 5%→**4%**(总量 20%→80%,坦到就是赚)",
-        "能力3「HP≥80% 强化弹射伤害 230%」阈值 80%→**50%**(高压副本不掉档)",
-        "能力1L2 充能 15%→**25%**;能力1L1 全队屏障 15%→**20%**;能力4 全队HP 7%→**10%**",
-    ],
-    "321005": [
-        "点名(用户):全词条+队长技强度 ×1.25、专精 25%;开局技能槽改满;三星对齐五星通道",
-    ],
-    # ---- 雷系 ----
-    "131020": [
-        "白花机人(用户点名:次数/CT 过长):能力1/能力6 三处「Fever≥1(限3次)」→ **限 9 次**"
-        "(攻击40/技伤40/技伤30 全程可叠)",
-        "能力2 两行「CT15秒」→ **CT 5 秒**(雷伤炮 3000%+Fever点 15000% 高频化);"
-        "追加Fever点 15000%→**30000%**",
-        "能力3 两行「Fever≥1(CT30秒)」→ **CT 10 秒**(技能槽100%/状态攻击100%几乎每 Fever 必触)",
-        "队长L3「Fever≥2(限1次)计数+Fever」→ 限 **3 次**(Fever 循环发动机)",
-    ],
-    # ---- 风系 ----
-    "141159": [
-        "**超越最新五星**(用户指定,目标=锚点×110%):多体系融合——专精行三连:"
-        "弹射伤害+25% / 技能伤害+20% / 直击伤害+20%(常驻,协力位同享)",
-        "队长L2/L3/L4 的 30 秒状态 → **60 秒**;连击加成 5→**10**;强化弹射连击数↓5→**8**;"
-        "贯通维持 60 秒(近似常驻)",
-        "能力3「强化弹射≥10(限3次)攻击120%」→ ≥**5**(限 **6** 次)(360→720 刃);"
-        "能力3L2 状态弹射伤 150%(30秒) → **60 秒**",
-        "能力1/2/5 暖机「≥5(限6次)」→ ≥**3**(限 **10** 次)",
-        "能力4 开局技能槽 50%→**100%**;点名强度 ×1.25 照常叠加",
-    ],
-    "10": [
-        "风白·大胆重做(用户指定):能力2「强化弹射≥4(限5次)攻击13%」→ ≥**2**(限 **10** 次)攻击 **15%**"
-        "(65→150 刃)",
-        "能力4/5「PF≥4→状态攻击10%(15秒,累积5层)」→ **30 秒、累积 10 层**(双行合计 100→200 刃,白虎叠怒气)",
-        "能力6「PF≥5(限10次)攻击5%」→ ≥**3**(限 **20** 次)(50→100 刃)",
-        "**新增机制行**:追加连击 +5(白虎连爪) + 强化弹射连击数↓3(下放自风家)——从无到有给两个好玩组件",
-        "兽人+男性关注:目标+5%;基础数值走四星→基线 95% 通道",
-    ],
-    # ---- 光系 ----
-    "151045": [
-        "点名(用户:能力伤害弱势/冷却长/暖脚久):全部能力伤害触发 CT ×0.6 再取整到 0/5 秒;"
-        "计数阈值 ×0.7;专精 能力伤害+25%(常驻)",
-        "全词条+队长技强度 ×1.25;配合光系机制补强包(见文末光系专章)",
-    ],
-    # ---- 暗系 ----
-    "261089": [
-        "暗龙(用户点名,龙族+10%):全套「技能发动(限4次)」→ **限 8 次**(全队攻击/技伤/充能全程叠)",
-        "能力3L2 全队充能 3.75%→**7.5%**;队长 130/130 → **165/165**(×1.25 取 0/5)",
-        "**同属性移植**:暗系头部成员下放行优先给他(见暗系下放章节),龙族身份再+1 行专属:"
-        "「龙族编成≥1 → 全队(暗) 攻击力+10%」(新增,呼应冥龙传承)",
-    ],
 }
 
 
-def write_markdown(fire, anchor, base_totals, element):
-    el_cn = ELEM_CN[element]
+def write_markdown(fire, anchor, base_totals):
     L = []
-    L.append(f"# {el_cn}系全角色分析与增强方案(刃值口径)\n")
+    L.append("# 火系全角色分析与增强方案(刃值口径)\n")
     L.append("> 刃值 = 队长技+面板中「攻击力%+本流派伤害%」求和(暖机×次数上限;觉醒行不计;"
-             "技能槽/治疗/连击数↓/贯通延长/Fever点列为机制项)。校准锚:"
+             "技能槽/治疗/连击数↓/贯通延长/Fever点列为机制项)。与用户算例校准:"
              "瓦格纳=队170+面205,炎之守护者莉莉丝队长技=500。\n")
-    L.append(f"> {el_cn}系基线组刃值(降序):{base_totals};**目标锚点 = 头部三强均值 {anchor}**。"
+    L.append(f"> 基线组刃值(降序):{base_totals};**目标锚点 = 头部三强均值 {anchor}**。"
              f"各层目标:五星初代 85% / 中期 88% / 近代 92% / 基线 100% / 四星 80% / 三星 72%;"
-             f"**龙族 +10%、男性/兽人 +5%**(可叠);风罗尔夫 141159 特例 = 110%(超越基线);"
              f"单角色放大封顶 ×2.5。\n")
-    L.append("## 全局规则(六属性通用)\n")
+    L.append("## 全局规则(火系先行,后续推全属性)\n")
     L.append("1. **数值**:每角色「流派+攻击力」强度行统一 ×建议倍率(见下),补到目标刃值;辅助/治疗/坦克"
              "定位角色(Healer/Supporter/Tank)倍率减半执行,优先补机制而非伤害。\n"
              "2. **数值卫生**:所有改后数值取 **0/5 结尾**(≥10% 取 5 的倍数,<10% 允许 2.5 步进;次数/层数取整)。\n"
-             "3. **机制词条引擎**(好玩优先):充能速度×1.5;技能槽增益「限≤3次」**直接去掉限制**、限≥4次 → **次数×5(超大幅,封顶99)** 且单次微降;"
-             "提升时间(↑延长)×2;Fever槽上升率×2;追加连击 +5;连击需求↓ 再-3;治疗次数×2(其余次数上限也一律×5);触发冷却×0.6;计数阈值×0.7"
-             + ("——**光系执行加强档:冷却×0.5、次数×3**(特色孱弱补强)" if element == 4 else "") + "。\n"
+             "3. **机制词条引擎**(好玩优先):充能速度×1.5;技能槽增益「限≤3次」**直接去掉限制**、限≥4次 → 次数×4 且单次微降;"
+             "提升时间(↑延长)×2;Fever槽上升率×2;追加连击 +5;连击需求↓ 再-3;治疗次数×2;触发冷却×0.6;计数阈值×0.7。\n"
              "4. **开局技能槽**:凡「开局技能槽+X%(X<100)」→ 一律 **+100%**(开局满槽)。\n"
              "5. **专精行**:按流派加常驻行(点名角色 25%)。\n"
-             "6. **同体系下放**:头部成员特色词条复制给同流派弱势成员(见文末章节),用 append_line_adapted 实现;"
-             "**龙族角色是优先接收方**。\n")
+             "6. **同体系下放**:头部成员特色词条复制给同流派弱势成员(见文末章节),用 append_line_adapted 实现。\n")
     coh_cn = {"5_gen1": "五星·初代", "5_gen2": "五星·中期", "5_gen3": "五星·近代",
               "5_base": "五星·基线", "4": "四星", "3": "三星"}
     role_cn = {"Attacker": "输出", "Balance": "均衡", "Healer": "治疗", "Jammer": "妨害",
@@ -474,9 +376,8 @@ def write_markdown(fire, anchor, base_totals, element):
         if c["cohort"] != cur:
             cur = c["cohort"]
             L.append(f"\n## {coh_cn[cur]}\n")
-        tag_s = ("【" + "/".join(c["tags"]) + "】") if c.get("tags") else ""
         L.append(f"### {c['id']} {c['name']}「{c['title']}」 — {coh_cn[c['cohort']]}·"
-                 f"{role_cn.get(c['role'], c['role'])}·{FAM_CN[c['family']]}流{tag_s}\n")
+                 f"{role_cn.get(c['role'], c['role'])}·{FAM_CN[c['family']]}流\n")
         eff_scale = c["scale"] if c["role"] not in ("Healer", "Supporter", "Tank") \
             else round(1 + (c["scale"] - 1) / 2, 2)
         L.append(f"- **刃值**:队长 {c['leader_blade']} + 面板 {c['panel_blade']} = **{c['total']}**"
@@ -518,44 +419,30 @@ def write_markdown(fire, anchor, base_totals, element):
         if not donor:
             continue
         weak = [c for c in members if c["total"] < c["target"] * 0.7 and c["id"] != donor["id"]]
-        # 龙族优先接收
-        weak.sort(key=lambda c: (0 if "Dragon" in (c["race"] or "") else 1, -c["target"] + c["total"]))
         L.append(f"### {FAM_CN[fam]}流(头部:{donor['name']} {donor['id']},{donor['total']}刃)\n")
         for p, v, d in donor_rows:
             L.append(f"- 下放行:{donor['name']} {p}「{d[:60]}」")
         if weak:
-            L.append(f"- 接收方({len(weak)}人,龙族置顶):" + "、".join(
-                c["name"] + ("(龙)" if "Dragon" in (c["race"] or "") else "") for c in weak[:14]) +
-                ("…" if len(weak) > 14 else ""))
+            L.append(f"- 接收方({len(weak)}人):" + "、".join(c["name"] for c in weak[:14]) +
+                     ("…" if len(weak) > 14 else ""))
         else:
-            L.append(f"- 接收方:该流派{el_cn}系暂无其他弱势成员")
+            L.append("- 接收方:该流派火系暂无其他成员(玛丽安为唯一 Fever 定位时属正常)")
         L.append("")
 
-    # ---- 光系专章:从三/四星挖好玩机制下放(特色孱弱补强) ----
-    if element == 4:
-        L.append("\n## 光系机制补强包:从三/四星挖来的好玩机制\n")
-        L.append("> 光系五星特色孱弱(用户判断),从本系三/四星词条里挑「好玩机制」行,"
-                 "下放给刃值<目标的光系五星(append_line_adapted)。\n")
-        FUN = ("追加连击", "连击数↓", "追加Fever点", "技能槽充能", "延长", "贯通", "连击加成")
-        seen = set()
-        menu = []
-        for c in fire:
-            if c["rar"] == 5:
-                continue
-            for line in c["kit"]:
-                if any(w in line for w in FUN) and "觉醒" not in line:
-                    key = line.split(": ", 1)[-1][:40]
-                    if key not in seen:
-                        seen.add(key)
-                        menu.append(f"- {c['name']}({c['rar']}星) {line[:90]}")
-        L.extend(menu[:12])
-        weak5 = [c["name"] for c in fire if c["rar"] == 5 and c["total"] < c["target"]]
-        L.append(f"\n接收方(全部未达标光五星,共{len(weak5)}人):" + "、".join(weak5[:20]) +
-                 ("…" if len(weak5) > 20 else "") + "\n")
-
-    out_md = MOD_DIR / "docs" / f"{el_cn}系全角色分析与增强方案.md"
-    out_md.write_text("\n".join(L), encoding="utf-8")
-    print(f"文档 → {out_md}")
+    # ---- 跨属性先行单点(用户指定,非火系) ----
+    L.append("\n## 附:跨属性先行单点(用户指定)\n")
+    L.append("### 121003 水·艾莉亚「戏水的毽子板少女」— 连击技能伤害特色\n"
+             "- 能力1L2「技能发动≥1(限3次)→技能槽 5%→10%」→ **去掉次数限制**(无限回转,连击轴成型)\n"
+             "- 能力5L1「技能发动→追加连击 3→5」→ **追加连击 10**(喂连击=喂能力2暖机与全队连击组件)\n"
+             "- 能力2L1「连击≥30(限6次)攻击 12.5%」→ 阈值 30→**20**,限 6→**12** 次(暖满 75→150 刃)\n"
+             "- 能力1L3 充能 15%→**25%**;能力3L1 技伤「限8次」→16 次\n")
+    L.append("### 121008 水·拉杰尔特「冲浪王子」— 承伤转能特色\n"
+             "- 能力6「伤害计数≥15(限4次)→全队(水)技能槽 5%」→ 伤害计数 **15→10**、"
+             "限 4→**20** 次、单次 5%→**4%**(总量 20%→80%,坦到就是赚)\n"
+             "- 能力3「HP≥80% 强化弹射伤害 230%」阈值 80%→**50%**(高压副本更易保持)\n"
+             "- 能力1L2 充能 15%→**25%**;能力1L1 全队屏障 15%→**20%**;能力4 全队HP 7%→**10%**\n")
+    OUT_MD.write_text("\n".join(L), encoding="utf-8")
+    print(f"文档 → {OUT_MD}")
 
 
 if __name__ == "__main__":

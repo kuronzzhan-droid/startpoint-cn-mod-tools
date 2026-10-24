@@ -153,7 +153,7 @@ def main() -> int:
         else (_ for _ in ()).throw(RuntimeError("签名表缺项"))))
 
     def _pathlist():
-        p = Path(__file__).resolve().parent / "WF_PATHLIST_recovered.txt"
+        p = Path(__file__).resolve().parents[3] / "WF_PATHLIST_recovered.txt"
         n = sum(1 for _ in p.open(encoding="utf-8", errors="replace"))
         if n < 50000:
             raise RuntimeError(f"仅 {n} 行(疑似截断)")
@@ -161,7 +161,7 @@ def main() -> int:
     check("路径表 WF_PATHLIST_recovered.txt", _pathlist)
 
     check("语音采集表 HarvestedPaths.csv", lambda: (
-        f"{(Path(__file__).resolve().parent / 'HarvestedPaths.csv').stat().st_size // 1024} KB"),
+        f"{(Path(__file__).resolve().parents[3] / 'HarvestedPaths.csv').stat().st_size // 1024} KB"),
         warn_only=True)
 
     def _apk():

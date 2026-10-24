@@ -11,7 +11,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-REGISTRY_PATH = Path(__file__).resolve().parent / "wfx_registry.json"
+REGISTRY_PATH = Path(__file__).resolve().parents[3] / "wfx_registry.json"
 LEVELS = ("crash", "semantic", "cosmetic")
 
 

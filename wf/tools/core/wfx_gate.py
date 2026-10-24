@@ -36,7 +36,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping
 
-MOD_DIR = Path(__file__).resolve().parent
+MOD_DIR = Path(__file__).resolve().parents[3]
 pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_battle_rules  # noqa: E402
 import wf_wfx  # noqa: E402

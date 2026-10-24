@@ -29,7 +29,7 @@ from wf_character_requirements import (
     classify_asset_category,
 )
 
-HERE = Path(__file__).resolve().parent
+HERE = Path(__file__).resolve().parents[3]
 # 全角色语音 datamine(537 角色,ally/battle/home 三分类 + voiceLines.json 台词文本)。
 # 实测游戏路径 = character/<code>/voice/<分类>/<名>.mp3,与 dump 一一对应(fire_dragon 18/18)。
 VOICE_DUMP = HERE / "voice-dump"

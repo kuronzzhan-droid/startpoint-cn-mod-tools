@@ -35,7 +35,7 @@ import time
 import zlib
 from pathlib import Path
 
-MOD_DIR = Path(__file__).resolve().parent
+MOD_DIR = Path(__file__).resolve().parents[3]
 ROOT = MOD_DIR.parent
 pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_mod_tool as _m  # noqa: E402
