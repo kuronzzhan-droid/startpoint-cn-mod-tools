@@ -10,7 +10,8 @@ from .shop_model import (ITEM, STATUS, SOUL, ENH, ENH_ABILITY, ENH_STATUS, ENH_S
                          SERVER_ENH, WEAPON_TABLES)
 from .shop_edit import one, reserve, image_reference, item_reference, set_costs, validate_text
 from .weapon_rules import (check_ability_rows, awakening_materials, clone_awakening,
-                           check_user_cost)
+                           check_user_cost, AWAKENING)
+from .weapon_soul import edit_soul_item
 
 SERVER_WEAPON_MAPS = tuple("assets/" + name + ".json" for name in (
     "equipment_lookup", "equipment_max_level", "equipment_element", "item_sale", "item_lookup"))
@@ -68,6 +69,7 @@ def clone_weapon(state, spec, reserved=()):
     soul_key = equipment[10]
     occupied = {key for logical in WEAPON_TABLES for key in state.table(logical)}
     occupied.update(materials)
+    occupied.update(state.server(AWAKENING, required=False).get("rarityOverrides", {}))
     for target in SERVER_WEAPON_MAPS:
         occupied.update(state.server(target))
     for target in SERVER_WEAPON_LISTS:
@@ -100,8 +102,9 @@ def clone_weapon(state, spec, reserved=()):
         if name in spec:
             equipment[column] = spec[name]
     state.set_leaf(s.EQUIPMENT, [identity], join(equipment), new=True)
-    item = one(state, ITEM, soul_key)
+    item = one(state, ITEM, soul_key, 23)
     item[0], item[1], item[2] = "boss_workshop_soul_" + identity, identity, equipment[1] + "魂珠"
+    checks = edit_soul_item(item, spec, source)
     if icon_item is not None:
         item[3:5] = icon_item[3:5]
     state.set_leaf(ITEM, [identity], join(item), new=True)
@@ -147,7 +150,9 @@ def clone_weapon(state, spec, reserved=()):
         state.set_server_keys(target, {identity: value}, new=True)
     for target in SERVER_WEAPON_LISTS:
         state.append_server_values(target, [int(identity)])
-    clone_awakening(state, source, identity, materials)
+    clone_awakening(state, source, identity, materials, equipment[11])
+    state.weapon_checks = [*getattr(state, "weapon_checks", []), *checks]
+    return {"id": identity, "warnings": [entry["message"] for entry in checks], "checks": checks}
 
 
 def _clone_stages(state, source, identity, spec, reserved):

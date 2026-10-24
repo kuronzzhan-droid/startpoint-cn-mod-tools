@@ -449,6 +449,8 @@
                     {"required": ["description"]},
                     {"required": ["icon"]},
                     {"required": ["enhancedIcon"]},
+                    {"required": ["soulDescription"]},
+                    {"required": ["soul_elements"]},
                     {"required": ["hpMultiplier"]},
                     {"required": ["attackMultiplier"]},
                     {"required": ["abilities"]},
@@ -534,6 +536,14 @@
         "sourceWeapon": {"type": "string", "pattern": "^[1-9][0-9]*$", "maxLength": 10},
         "name": {"type": "string", "minLength": 1, "maxLength": 80},
         "description": {"type": "string", "minLength": 1, "maxLength": 57},
+        "soulDescription": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "soul_elements": {
+          "oneOf": [
+            {"enum": ["all", "auto"]},
+            {"type": "array", "minItems": 1, "maxItems": 6, "uniqueItems": true,
+             "items": {"type": "integer", "minimum": 0, "maximum": 5}}
+          ]
+        },
         "icon": {"type": "string", "minLength": 1, "maxLength": 240},
         "enhancedIcon": {"type": "string", "minLength": 1, "maxLength": 240},
         "hpMultiplier": {"type": "number", "exclusiveMinimum": 0, "maximum": 1000},

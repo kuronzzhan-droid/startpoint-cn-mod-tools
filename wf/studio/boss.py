@@ -124,6 +124,7 @@ def _replay(source, quest, requests, *, server_dir=None, reserved=(), client_pro
         # Five-tier edits check five quests; each result names the quest it belongs to.
         checks.extend({**entry, "quest": document["quest"]["selector"]} for entry in results)
     checks.extend(getattr(state, "parameter_checks", []))
+    checks.extend(getattr(state, "weapon_checks", []))
     blocking = [entry for entry in checks if entry.get("blocking")]
     if blocking:
         raise BossRulesRejected("boss rules rejected the candidate: " + "; ".join(entry["message"] for entry in blocking),

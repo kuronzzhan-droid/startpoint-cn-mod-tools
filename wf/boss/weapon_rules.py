@@ -39,21 +39,41 @@ def awakening_materials(state, source):
     materials = document.get("materialByEquipment", {})
     if not isinstance(materials, dict):
         raise ValueError("awakening materialByEquipment must be an object")
+    if not isinstance(document.get("rarityOverrides", {}), dict):
+        raise ValueError("awakening rarityOverrides must be an object")
     if (source.startswith("591") or source == "5920001") and source not in materials:
         raise ValueError(f"restricted weapon {source} lacks materialByEquipment awakening evidence")
     return materials
 
 
-def clone_awakening(state, source, identity, materials):
-    if source not in materials:
+def clone_awakening(state, source, identity, materials, rarity):
+    """Copy restrictions and register actual c11 rarity independently of materials."""
+    try:
+        rarity = int(rarity)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("weapon rarity c11 must be an integer") from exc
+    updates = {}
+    if source in materials:
+        updates["materialByEquipment"] = copy.deepcopy(materials[source])
+    if rarity != int(identity) // 1_000_000:
+        if rarity not in range(1, 6):
+            raise ValueError("awakening rarityOverrides only supports rarities 1 to 5")
+        updates["rarityOverrides"] = rarity
+    if not updates:
         return
-    if identity in materials:
-        raise ValueError(f"awakening materialByEquipment ID collision: {identity}")
-    raw = state.servers.get(AWAKENING, state.server_original[AWAKENING])
-    text, _, spans = _json_spans(raw)
-    start, stop = spans["materialByEquipment"]
-    changed = merge_keys(text[start:stop].encode("utf-8"), {identity: copy.deepcopy(materials[source])})
-    state.servers[AWAKENING] = (text[:start] + changed.decode("utf-8") + text[stop:]).encode("utf-8")
+    document = state.server(AWAKENING, required=False)
+    raw = state.servers.get(AWAKENING, state.server_original[AWAKENING]) or b"{}\n"
+    for section, value in updates.items():
+        if identity in document.get(section, {}):
+            raise ValueError(f"awakening {section} ID collision: {identity}")
+        text, _, spans = _json_spans(raw)
+        if section not in spans:
+            raw = merge_keys(raw, {section: {identity: value}})
+            continue
+        start, stop = spans[section]
+        changed = merge_keys(text[start:stop].encode("utf-8"), {identity: value})
+        raw = (text[:start] + changed.decode("utf-8") + text[stop:]).encode("utf-8")
+    state.servers[AWAKENING] = raw
 
 
 def check_user_cost(cost):
