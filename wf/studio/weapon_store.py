@@ -1,7 +1,24 @@
 """Independent weapon draft identities and cross-workshop ID reservations."""
+from wf.boss import schema as s
 from wf.boss.weapon_ids import validate_weapon_id
 
 from .drafts import DraftStore, DraftError, default_root, validate
+
+
+def draft_summary(entry, draft, tables):
+    """Describe active operations without requiring a successful candidate replay."""
+    requests = [request for change in (draft or {}).get("changes", [])
+                for request in change["params"].get("requests", [])]
+    clone = next((request["weapon"] for request in requests
+                  if request.get("operation") == "weapon_clone"), None)
+    wid = entry["characterId"]
+    name = clone.get("name") if clone is not None else None
+    if name is None:
+        source = clone["sourceWeapon"] if clone is not None else wid
+        rows = s.rows_at(tables.table(s.EQUIPMENT), [source])
+        name = s.cell(rows[0][1], 1) if rows else None
+    return {**entry, "weaponId": wid, "name": name if s.present(name) else None,
+            "isNew": clone is not None}
 
 
 def identity(draft, wid, version=None):

@@ -9,6 +9,14 @@ from .drafts import DraftError, new_change_id, now, status, validate
 from .weapon_store import WeaponDraftStore, identity, reservations
 
 
+class WeaponRulesRejected(DraftError):
+    """Preserve candidate rule evidence for HTTP failures and delivery callers."""
+
+    def __init__(self, message, checks, wid, allocation):
+        super().__init__(message)
+        self.checks, self.weapon_id, self.allocation = checks, wid, allocation
+
+
 def _requests(draft):
     return copy.deepcopy(draft["changes"][0]["params"]["requests"]) if draft and draft["changes"] else []
 
@@ -31,7 +39,10 @@ def _replay(source, wid, requests, *, server_dir, reserved, client_profile=None,
     blocking = [entry for entry in getattr(state, "weapon_checks", [])
                 if entry.get("blocking") or entry.get("level") == "error"]
     if blocking:
-        raise DraftError("weapon rules rejected the candidate: " + "; ".join(entry["message"] for entry in blocking))
+        allocation = requests[0]["weapon"] if requests[0]["operation"] == "weapon_clone" else None
+        raise WeaponRulesRejected(
+            "weapon rules rejected the candidate: " + "; ".join(entry["message"] for entry in blocking),
+            state.weapon_checks, wid, allocation)
     return state, wid
 
 
@@ -96,5 +107,7 @@ class WeaponEditor:
                                      for c in checks]}
                 draft = self.store.put_change(selected, f"weapon_{selected}", self.source.version, change)
                 return {**result, "change": change, "changeset": draft, "status": status(draft)}
+        except WeaponRulesRejected:
+            raise
         except (ValueError, KeyError, OSError, TypeError) as exc:
             raise DraftError(str(exc)) from exc

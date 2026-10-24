@@ -2,7 +2,7 @@
 
 武器接口以 `/api/studio/weapons` 为前缀，不需要 quest。读取使用编辑台当前视图和显式配置的本机服务端输入；编辑写入 `work/studio-drafts/weapons/<武器ID>/changeset.json`，保存、生成和导出复用现有编辑台机制。`WF_STUDIO_DRAFTS` 或启动时的草稿根覆盖同样生效。
 
-所有 ID 都用十进制字符串。所有 POST 都要求 `Content-Type: application/json` 和当前会话的 `X-WF-Studio-Token`；Host、Origin、Sec-Fetch-Site 沿用编辑台守卫。失败通常返回 HTTP 400 和 `{"error":"原因"}`；鉴权失败为 403，详情不存在为 404。写入错误不会留下部分草稿。这里的 `runtime: "未执行"` 表示未做设备实测。
+所有 ID 都用十进制字符串。所有 POST 都要求 `Content-Type: application/json` 和当前会话的 `X-WF-Studio-Token`；Host、Origin、Sec-Fetch-Site 沿用编辑台守卫。克隆和材料编辑的预检、正式写入失败返回 HTTP 400、`ok: false`、兼容字段 `error` 及五态 `checks`，详见第 3 节；其他输入错误沿用 `{"error":"原因"}`。鉴权失败为 403，详情不存在为 404。写入错误不会留下部分草稿。这里的 `runtime: "未执行"` 表示未做设备实测。
 
 ## 1. 全局列表
 
@@ -59,6 +59,7 @@
   },
   "references": {"shops": [], "gacha": []},
   "changeset": null, "status": {"state": "clean", "label": "无草稿改动", "changes": 0},
+  "draft_status": {"state": "clean", "label": "无草稿改动", "changes": 0},
   "checks": [], "runtime": "未执行"
 }
 ```
@@ -68,15 +69,18 @@
 | `equipment` | 本体记录，包含 `row`、表路径及来源 |
 | `soul_item` / `ability_soul` | 通过本体 c10 关联魂珠 item 与能力魂记录，二者 ID 不假定与武器相同 |
 | `equipment_enhancement` / `equipment_enhancement_ability` | 强化本体与强化能力记录 |
-| `base_status` / `enhancement_status` | 完整基础曲线和强化曲线；本接口 `status` 单独表示草稿保存状态 |
+| `base_status` / `enhancement_status` | 完整基础曲线和强化曲线；字段含义、类型保持兼容 |
 | `curves` | 两类曲线的点数及首尾 HP/攻击 |
 | `enhancement_chain` | 强化商品阶段、原生行、材料、普通货币、等级范围；`costs[]` 含材料 `itemId`、`amount`、`name`、`icon` |
 | `materials_to_120` / `user_costs_to_120` | 沿用现有模型的到 120 级材料/普通货币累计；材料条目同样含 `name`、`icon` |
 | `awakening` | 本机专用材料限制、稀有度覆盖、客户端材料文案和原生通用材料行；缺少输入时显式标注 |
 | `references` / `referenceCoverage` | 商店及客户端/服务端装备卡池引用及扫描范围；权重 0 的条目仍是引用，不等于开放获取 |
-| `changeset` / `status` / `checks` | 草稿、保存状态及规则结果；未设置魂珠属性时包含继承提醒 |
+| `changeset` / `draft_status` / `checks` | 草稿、保存状态及规则结果；未设置魂珠属性时包含继承提醒 |
+| `status` | `draft_status` 的兼容别名，仍是草稿保存状态对象 |
 
 记录类型字段包含 `table`、`path`、`row`、`source`；找不到关联行时为 null。前端须处理 null，不推断其已经通过验证。
+
+本接口与 BOSS `WeaponDoc` 的命名有历史差异：BOSS `status` 是基础曲线数组，独立武器详情的 `status` 是草稿保存状态对象。新增的 `draft_status` 与本接口 `status` 始终相同，建议新调用方显式读取 `draft_status`；基础曲线继续从 `base_status` 读取。复用 BOSS 武器组件时，仍应把 `base_status` 映射到其 `status` 字段，不能直接把整份详情当作 BOSS `WeaponDoc`。
 
 `enhancement_chain[].costs[]` 与 `materials_to_120[]` 的 `name`、`icon` 从当前候选视图的材料 item 行读取，分别对应 c2 名称和 c3 图标逻辑路径。关联材料不存在或字段为空、`(None)` 时，对应字段为 null；仍保留 `itemId` 和数量，不把图集成员名 c4 当作 PNG 路径。图标可用第 1 节的 `/api/boss/icon.png` 接口读取，路径存在不代表已经验证图像文件可用。阶段的 `amount` 保持原生字符串，累计的 `amount` 保持整数，例如：
 
@@ -134,6 +138,22 @@
 
 实际响应还含 `change`、`changeset`、逐叶 `changes` 和 `serverTargets`。`allocation` 保留原请求字段并补齐 ID。追加 `?preview=true` 可预检，不写草稿、不占用 ID；预检响应包含候选 allocation/changes/checks，但不含 change/changeset/status，正式提交可能获得不同 ID。
 
+克隆和材料编辑在预检或正式写入被拒绝时，HTTP 状态为 400。返回 `ok: false`、`subjectKind: "weapon"`、`runtime: "未执行"`，并保留 `error` 字符串方便旧调用方显示。`checks` 第一项是阻断摘要 `weapon.inputs`；如果规则检查阻断候选，后面保留已经生成的所有规则结果及附加证据，包括通过、提醒和阻断项。各项 `status` 沿用 BOSS 五态：`满足`、`问题`、`待验证`、`不适用`、`未执行`；不是每次都生成五个检查项。
+
+失败响应中的 `weaponId` 是已知的候选 ID 或材料接口路径 ID，尚未确定时为 null；`allocation` 在规则阻断且已经完成克隆分配时返回候选 spec，其他情况为 null。失败不会保存草稿、修改已有草稿或占用候选 ID。例如材料请求的 `id` 与 URL 不同：
+
+```json
+{
+  "ok": false, "error": "请求中的武器 ID 与路径不一致",
+  "weaponId": "5010005", "subjectKind": "weapon", "allocation": null,
+  "checks": [{
+    "rule": "weapon.inputs", "status": "问题", "blocking": true,
+    "message": "请求中的武器 ID 与路径不一致"
+  }],
+  "runtime": "未执行"
+}
+```
+
 ## 4. 编辑强化材料
 
 `POST /api/studio/weapons/5950001/materials`
@@ -156,7 +176,7 @@
 
 | 方法及路径（相对前缀） | 用途 |
 | --- | --- |
-| `GET /drafts` | 返回 `{"subjectKind":"weapon","drafts":[...]}`，列表条目沿用 `characterId` 容器字段，值是武器 ID |
+| `GET /drafts` | 返回 `{"subjectKind":"weapon","drafts":[...]}`；条目新增 `weaponId`、`name`、`isNew`，保留 `characterId` 等原有字段 |
 | `GET /drafts/<id>` | 返回 weaponId、兼容字段 characterId、subjectKind、changeset、status、actions |
 | `POST /drafts/<id>/save`，body `{}` | 校验并保存，返回 `{"status":{...}}` |
 | `POST /drafts/<id>/changes/<changeId>/revert`，body `{}` | 撤销整组可重放武器操作，返回 status |
@@ -165,6 +185,18 @@
 | `POST /drafts/<id>/build/cancel` | 取消后台生成 |
 | `GET /deliveries`、`GET /deliveries/jobs/<name>` | 交付列表、生成进度 |
 | `GET /deliveries/<name>`、`GET /deliveries/<name>/file?path=...` | 交付详情和导出文件 |
+
+草稿列表条目示例：
+
+```json
+{
+  "characterId": "5950001", "weaponId": "5950001", "code": "weapon_5950001",
+  "name": "工坊新武器", "isNew": true, "changes": 1,
+  "updatedAt": "2026-10-25T12:00:00+00:00", "savedAt": null
+}
+```
+
+`isNew` 表示草稿当前包含 `weapon_clone` 操作：克隆草稿为 true，仅编辑已有武器材料为 false，撤销克隆后为 false。它与列表中的 `isMod` 含义不同，不依赖官方基线。`name` 优先取克隆请求中的名称；未指定时取当前视图的母本名称，已有武器则取本体名称。关联本体不存在或名称字段为空时为 null。列表只描述草稿操作，不要求成功重放或验证客户端能力；因此仍可找到需要修复或撤销的草稿，列表可见不代表该草稿可生成交付。
 
 生成示例请求（版本和 clientProfile 应从 defaults 取值）：
 
