@@ -9,6 +9,6 @@ if __name__ == "__main__":
 
     run_as_main("wf.tools.content.gacha_seasonal7_apply")
 else:
-    from wf.tools.content import gacha_seasonal7_apply as _implementation
+    import importlib as _importlib
 
-    _sys.modules[__name__] = _implementation
+    _sys.modules[__name__] = _importlib.import_module("wf.tools.content.gacha_seasonal7_apply")

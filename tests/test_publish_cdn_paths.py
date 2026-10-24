@@ -17,14 +17,18 @@ import wf_mod_tool as core  # noqa: E402
 
 
 class PublishCdnPathCase(unittest.TestCase):
+    # 根目录 wf_publish 只是转发入口；两份都清掉，import 才会重新执行模块顶层代码。
+    NAMES = ("wf_publish", "wf.tools.release.publish")
+
     def setUp(self) -> None:
-        self.previous = sys.modules.pop("wf_publish", None)
+        self.previous = {name: sys.modules.pop(name, None) for name in self.NAMES}
         self.addCleanup(self._restore_publish_module)
 
     def _restore_publish_module(self) -> None:
-        sys.modules.pop("wf_publish", None)
-        if self.previous is not None:
-            sys.modules["wf_publish"] = self.previous
+        for name, module in self.previous.items():
+            sys.modules.pop(name, None)
+            if module is not None:
+                sys.modules[name] = module
 
     def test_explicit_environment_still_uses_shared_resolver(self) -> None:
         with tempfile.TemporaryDirectory() as td:

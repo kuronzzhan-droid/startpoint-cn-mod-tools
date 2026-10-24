@@ -9,6 +9,6 @@ if __name__ == "__main__":
 
     run_as_main("wf.tools.weapon.weapon_awaken")
 else:
-    from wf.tools.weapon import weapon_awaken as _implementation
+    import importlib as _importlib
 
-    _sys.modules[__name__] = _implementation
+    _sys.modules[__name__] = _importlib.import_module("wf.tools.weapon.weapon_awaken")
