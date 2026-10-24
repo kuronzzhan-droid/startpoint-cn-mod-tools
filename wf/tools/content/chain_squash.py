@@ -61,7 +61,7 @@ TAG_RE = re.compile(r"^[a-z0-9]+$")
 ROOT_ORDER = {"common": 0, "medium": 1, "android": 2, "patch": 3}
 # patch 根没有独立归档目录,合集时并入 common
 BUCKET_OF_ROOT = {"common": "common", "medium": "medium", "android": "android", "patch": "common"}
-WORK_DIR = Path(__file__).resolve().parent / "work" / "chain_squash"
+WORK_DIR = Path(__file__).resolve().parents[3] / "work" / "chain_squash"
 
 
 def vkey(version: str) -> tuple[int, ...]:

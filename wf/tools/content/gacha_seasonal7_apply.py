@@ -14,7 +14,7 @@ import sys
 import time
 from pathlib import Path
 
-TOOLS = Path(__file__).resolve().parent
+TOOLS = Path(__file__).resolve().parents[3]
 if str(TOOLS) not in sys.path:
     pass  # Imports resolve from this checkout/package, not external source copies.
 

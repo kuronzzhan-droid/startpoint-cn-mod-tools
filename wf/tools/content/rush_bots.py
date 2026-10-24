@@ -47,7 +47,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[4]
 DB_PATH = ROOT / ".database" / "wdfp_data.db"
 CHARACTER_JSON = ROOT / "assets" / "character.json"
 RANK_TABLE_JSON = ROOT / "assets" / "cdndata" / "player_rank_full.json"

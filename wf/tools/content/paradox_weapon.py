@@ -109,7 +109,7 @@ CURSE_UID = str(UNIQUE_BASE + (int(ID) - 5920000) * 10 + 1)       # 59200011「�
 CURSE_UNIQUE_NAME = "诅咒"
 #: 「诅咒」专属状态图标（48×48，源 assets/paradox/paradox_curse.png → battle/common/unique_condition/paradox_curse.png）
 CURSE_ICON = "paradox_curse"
-CURSE_ICON_SRC = Path(__file__).resolve().parent / "assets/paradox/paradox_curse.png"
+CURSE_ICON_SRC = Path(__file__).resolve().parents[3] / "assets/paradox/paradox_curse.png"
 #: R3 规则码：只拦「能力」类回槽（8；连击触发 24、施技触发 40 同样命中），来源不限。
 GAUGE_MASK = W.GAUGE_MASK
 #: 客户端 capability 门禁：R3 的 423 行在未装 equipment-rules 的客户端 = C7050（EA parseAt109 / 魂 parseAt106）。
@@ -121,7 +121,7 @@ PATCHED_CLIENT_CAPABILITIES = W.PATCHED_CLIENT_CAPABILITIES
 TAG_COLUMN = 5                                  # character 表 c5 = 角色标签列表（逗号分隔）
 PRE_MY_SELF = "3"                                # 前置 MySelf：自身属于角色组
 TAG_PREFIX = "tag_paradox_"
-ECHO_DIR = Path(__file__).resolve().parent / "assets/paradox/echo"
+ECHO_DIR = Path(__file__).resolve().parents[3] / "assets/paradox/echo"
 #: (角色 ID, 技能 code, 回响说明)。说明进 custom_ability_string（629 缺键=C8601）；只用全角标点。
 ECHOES = (
     ("169999", "ginovi", "「掠影协奏」回响：1秒后以25%的效果再次施放（不吞噬协力球、不消耗生命值、不附加贯穿与固有状态）"),
@@ -170,11 +170,11 @@ MAX_LEVEL = 200                                   # 强化满级（强化主表 
 #: event_item_shop 的 100002xx 商品键：客户端 item 表、服务端 item_ids / item_lookup / item_sale 与全仓都未引用。
 SHARD = "10000301"                                # 矛盾结晶（逐级）
 PARADOX_CORE = "10000302"                         # 悖论之核（突破）
-ASSET_DIR = Path(__file__).resolve().parent / "assets/paradox"
+ASSET_DIR = Path(__file__).resolve().parents[3] / "assets/paradox"
 #: 两件材料的图由「武器觉醒与新掉落」图标单元重画（assets/weapon-awaken/build_icons.py 生成，manifest.json 记像素 sha；
 #: 设计 ${WF_ROOT}/out/武器觉醒与新掉落-20260928/设计.md §6.3/§6.4，作者 0928 确认预览）。本生成器直接取那里的源图，
 #: 不再用 assets/paradox 下的旧图（旧图描边近黑、矛盾结晶杂色超标）——否则下一次暂存会把道具行改回旧图。
-AWAKEN_ICON_DIR = Path(__file__).resolve().parent / "assets/weapon-awaken/icons"
+AWAKEN_ICON_DIR = Path(__file__).resolve().parents[3] / "assets/weapon-awaken/icons"
 #: (道具 ID, 克隆模板, 名, 说明, c3 缩略图（独立 PNG，异步 setTexture）, 源图, c4 小图标)。
 #: c3 用重画版新逻辑名 *_v2（旧名 contradiction_crystal / paradox_core 的独立 PNG 已在 live，留作孤儿，不原位覆盖）。
 #: c4 是图集 item_icon/sprite_sheet 里的 PARADOX 专属子纹理，由 wf_weapon_awaken 边 E1 追加（图集整文件替换只归那一条边，

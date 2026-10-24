@@ -55,8 +55,8 @@ import wf_assets  # noqa: E402
 import wf_client_legality as legality  # noqa: E402
 import wf_mod_tool as core  # noqa: E402
 
-ROOT = Path(__file__).resolve().parent.parent
-WORK = Path(__file__).resolve().parent / "work"
+ROOT = Path(__file__).resolve().parents[4]
+WORK = Path(__file__).resolve().parents[3] / "work"
 PENDING = WORK / "sync_pending.json"
 CHANGELOG = WORK / "changelog.jsonl"
 

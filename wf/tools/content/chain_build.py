@@ -31,7 +31,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-MOD_DIR = Path(__file__).resolve().parent
+MOD_DIR = Path(__file__).resolve().parents[3]
 pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_quest_lib as q  # noqa: E402
 
