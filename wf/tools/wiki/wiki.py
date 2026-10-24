@@ -16,7 +16,7 @@ from wf_wiki_media import WikiMedia
 from wf_wiki_media import digest
 from wf_wiki_paths import is_junction
 
-HERE = Path(__file__).resolve().parent
+HERE = Path(__file__).resolve().parents[3]
 MARKER = ".wf-wiki-export.json"
 
 

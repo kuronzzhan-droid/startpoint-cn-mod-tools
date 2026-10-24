@@ -34,7 +34,7 @@ def atlas_entries(tree):
 
 
 def export_ui_assets(media):
-    spec = json.loads((Path(__file__).parent / "wiki-ui-assets.json").read_text(encoding="utf-8"))
+    spec = json.loads((Path(__file__).resolve().parents[3] / "wiki-ui-assets.json").read_text(encoding="utf-8"))
     sheets, atlases, result, slices = {}, {}, {}, {}
     for item in spec:
         sheet_path, atlas_path = item["sheetLogical"], item["atlasLogical"]

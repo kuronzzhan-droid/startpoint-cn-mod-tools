@@ -16,8 +16,8 @@ import subprocess
 from wf_wiki_battle_content import build_content
 from wf_wiki_paths import is_junction
 
-REPO = Path(__file__).resolve().parents[1]
-UI_ROOT = Path(__file__).resolve().parent / "wiki"
+REPO = Path(__file__).resolve().parents[4]
+UI_ROOT = Path(__file__).resolve().parents[3] / "wiki"
 FROZEN_MANIFEST_SHA256 = "e1a7353d53be2404b6a1b8b3b7989fd14820479b3ebeff902218ca83f4596aa7"
 UI_REPLACEMENTS = frozenset({"index.html", "router.js", "pages.js", "dungeons.js"})
 BATTLE_ASSETS = frozenset({"battle-" + name + ".js" for name in
@@ -203,9 +203,9 @@ def _prepare(site, output, definitions, evidence):
     files, old, manifest = _frozen(site)
     source_paths = sorted((_safe_path(UI_ROOT / n) for n in UI_REPLACEMENTS | BATTLE_ASSETS | SOURCE_FRAGMENTS))
     source_paths += [_safe_path(definitions / n) for n in DEFINITION_FILES]
-    tool_paths = [Path(__file__).resolve(), Path(__file__).with_name("wf_wiki_battle_content.py").resolve(),
-                  Path(__file__).with_name("wf_wiki_battle_native.py").resolve(),
-                  Path(__file__).with_name("wf_wiki_paths.py").resolve()]
+    tool_paths = [Path(__file__).resolve(), (Path(__file__).resolve().parents[3] / "wf/tools/wiki/wiki_battle_content.py").resolve(),
+                  (Path(__file__).resolve().parents[3] / "wf/tools/wiki/wiki_battle_native.py").resolve(),
+                  (Path(__file__).resolve().parents[3] / "wf/tools/wiki/wiki_paths.py").resolve()]
     source_paths += tool_paths
     source_commit = _head()
     committed = _committed(source_paths)
@@ -247,7 +247,7 @@ def _prepare(site, output, definitions, evidence):
         "oldPayloadUnchanged": True, "workerUnchanged": all(old[n] == expected[n] for n in RESERVED),
         "frozenManifestSha256": FROZEN_MANIFEST_SHA256, "sourceCommit": source_commit,
         "sourceHashes": {**versions, "source/index.html": _sha(source["index.html"])},
-        "toolHashes": {p.name: inputs[p] for p in tool_paths}, "mediaEvidenceSha256": _sha(evidence_bytes),
+        "toolHashes": {f"wf_{p.name}": inputs[p] for p in tool_paths},  # 键沿用根目录旧文件名 "mediaEvidenceSha256": _sha(evidence_bytes),
         "bytes": {n: {"raw": len(raw), "gzip": len(gzip.compress(raw, mtime=0))} for n, raw in sorted(blobs.items())},
         "manifest": sorted(expected.values(), key=lambda x: x["path"])}
     return site, output, files, old, blobs, additions, expected, inputs, report

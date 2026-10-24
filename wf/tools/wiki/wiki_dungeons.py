@@ -285,7 +285,7 @@ def main():
     parser.add_argument("--gray-quest-assets", type=Path, help="实际灰服关卡 JSON 快照，优先于旧后台查询快照；仅核对配置")
     parser.add_argument("--community-catalog", type=Path, help="仅显式指定时生成社区后端可信 ID/标题模块")
     args = parser.parse_args()
-    result = export_dungeons(Path(__file__).resolve().parent.parent, args.site,
+    result = export_dungeons(Path(__file__).resolve().parents[4], args.site,
                              gray_url=args.gray_url, snapshot=args.gray_snapshot,
                              gray_lookup=args.gray_lookup, gray_quest_assets=args.gray_quest_assets,
                              community_catalog=args.community_catalog)

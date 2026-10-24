@@ -75,7 +75,7 @@ def export_pixels(repo, output, *, catalog=None, store=None, external_package=No
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True, type=Path)
-    parser.add_argument("--repo", default=Path(__file__).resolve().parents[1], type=Path)
+    parser.add_argument("--repo", default=Path(__file__).resolve().parents[4], type=Path)
     parser.add_argument("--store", type=Path)
     parser.add_argument("--external-package", type=Path)
     args = parser.parse_args()
