@@ -151,8 +151,8 @@ export function ChangesPanel({ characterId, scratch, subject, renderChange, empt
         <ol class="change-list">
           {changes.map((change) => {
             const onRevert = () => {
-              if (change.kind === "boss") {
-                if (!confirm(`撤销「${change.title}」？这份副本草稿里的全部操作（共 ${(change.params.requests ?? []).length} 步）会一起删除。`)) return;
+              if (change.kind === "boss" || change.kind === "weapon") {
+                if (!confirm(`撤销「${change.title}」？这份${change.kind === "weapon" ? "武器" : "副本"}草稿里的全部操作（共 ${(change.params.requests ?? []).length} 步）会一起删除。`)) return;
               } else if (!confirm(`撤销「${change.title}」？草稿里这一项${change.kind === "ability_edit" ? "的全部词条操作" : "的文件"}会被删除${change.kind === "ability_edit" ? "" : "（上传的源文件保留）"}。`)) return;
               run(change.id, () => target.revert(change.id), `已撤销：${change.title}`);
             };

@@ -308,7 +308,7 @@ export interface DraftFile {
 
 export interface DraftChange {
   id: string;
-  kind: "portrait" | "pixel_action" | "pixel_family" | "voice_line" | "ability_edit" | "boss";
+  kind: "portrait" | "pixel_action" | "pixel_family" | "voice_line" | "ability_edit" | "boss" | "weapon";
   title: string;
   createdAt: string;
   target: Record<string, string>;
@@ -839,7 +839,7 @@ export interface DeviceResult {
   schema: string;
   status: DeviceStatus;
   reason?: string;
-  delivery: { name: string; kind: "character" | "boss"; subject?: string | null; draftRevision: number | null;
+  delivery: { name: string; kind: "character" | "boss" | "weapon"; subject?: string | null; draftRevision: number | null;
     draftCreatedAt?: string | null;
     from?: string | null; to?: string | null; archives?: { name: string; sha256: string }[] };
   device?: { id?: string; label?: string; emulator?: boolean; package?: string; apk?: string; apkSha256?: string };

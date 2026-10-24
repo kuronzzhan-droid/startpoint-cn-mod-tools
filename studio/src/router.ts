@@ -6,10 +6,12 @@ import { useEffect, useState } from "preact/hooks";
 // #/content/boss                         BOSS工坊总览
 // #/content/boss/q/<selector>[/<tab>[/<sub>]]  副本详情（tab = encounter / rewards / params；changes 打开抽屉，sub = 交付名）
 // #/content/boss/new[/<source selector>] 新建共同决战向导
+// #/content/weapons[/<id>[/changes[/<sub>]]]  武器工坊（列表 + 详情；changes 打开本次修改抽屉，sub = 交付名）
 export type Route =
   | { work: "content"; shop: "characters"; id?: string; tab?: string; sub?: string }
   | { work: "content"; shop: "boss"; quest?: string; tab?: string; sub?: string; wizard?: boolean; source?: string }
   | { work: "content"; shop: "scratch"; id?: string; tab?: string; sub?: string }
+  | { work: "content"; shop: "weapons"; id?: string; tab?: string; sub?: string }
   | { work: "patches"; archive?: string };
 
 export function parse(hash: string): Route {
@@ -24,6 +26,8 @@ export function parse(hash: string): Route {
     if (parts[2] === "q" && parts[3]) return { work: "content", shop: "boss", quest: parts[3], tab: parts[4], sub: parts[5] };
     return { work: "content", shop: "boss" };
   }
+  if (parts[0] === "content" && parts[1] === "weapons")
+    return { work: "content", shop: "weapons", id: parts[2], tab: parts[3], sub: parts[4] };
   if (parts[0] === "content" && parts[1] === "characters" && parts[2])
     return { work: "content", shop: "characters", id: parts[2], tab: parts[3], sub: parts[4] };
   return { work: "content", shop: "characters" };
@@ -39,6 +43,7 @@ export function href(route: Route): string {
   }
   const tail = (r: { tab?: string; sub?: string }) => (r.tab ? "/" + r.tab + (r.sub ? "/" + r.sub : "") : "");
   if (route.shop === "scratch") return "#/scratch" + (route.id ? "/" + route.id + tail(route) : "");
+  if (route.shop === "weapons") return "#/content/weapons" + (route.id ? "/" + encodeURIComponent(route.id) + tail(route) : "");
   if (route.id) return `#/content/characters/${route.id}` + tail(route);
   return "#/content/characters";
 }

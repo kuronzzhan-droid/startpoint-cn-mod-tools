@@ -5,6 +5,7 @@ import { href, useRoute } from "./router";
 import { CharacterList } from "./views/CharacterList";
 import { CharacterDetailView } from "./views/CharacterDetail";
 import { BossWorkshop } from "./views/boss/BossWorkshop";
+import { WeaponWorkshop } from "./views/weapons/WeaponWorkshop";
 import { PatchManager } from "./views/PatchManager";
 import { ScratchDetail, ScratchList } from "./views/ScratchView";
 import { LookupPanel } from "./views/LookupPanel";
@@ -75,6 +76,9 @@ function App() {
           <a role="tab" class={route.shop === "boss" ? "active" : ""} href={href({ work: "content", shop: "boss" })}>
             BOSS工坊
           </a>
+          <a role="tab" class={route.shop === "weapons" ? "active" : ""} href={href({ work: "content", shop: "weapons" })}>
+            武器工坊
+          </a>
         </div>
       ) : null}
       <div class="layout">
@@ -83,6 +87,8 @@ function App() {
             <PatchManager archive={route.archive} />
           ) : route.shop === "boss" ? (
             <BossWorkshop quest={route.quest} tab={route.tab} sub={route.sub} wizard={route.wizard} source={route.source} />
+          ) : route.shop === "weapons" ? (
+            <WeaponWorkshop id={route.id} tab={route.tab} sub={route.sub} />
           ) : route.shop === "scratch" ? (
             route.id ? <ScratchDetail id={route.id} tab={route.tab} sub={route.sub} /> : <ScratchList />
           ) : route.id ? (

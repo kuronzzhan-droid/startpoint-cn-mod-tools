@@ -70,9 +70,11 @@ export function diffParameters(values: Values, current: Values, options: BossOpt
   return { parameters, problems };
 }
 
-/** Debounced live preview through POST …?preview=true; stale answers are dropped. */
+/** Debounced live preview through POST …?preview=true; stale answers are dropped.
+ * `previewWith` swaps the boss draft endpoint for another namespace (武器工坊). */
 export function useLivePreview(target: string | null, request: AnyBossRequest | null, problems: string[],
-  onState: (state: PreviewState) => void): { preview: BossPreview | null; previewedFor: string | null; runNow: () => void } {
+  onState: (state: PreviewState) => void, previewWith: (target: string, request: AnyBossRequest) => Promise<BossPreview> = boss.preview):
+  { preview: BossPreview | null; previewedFor: string | null; runNow: () => void } {
   const [preview, setPreview] = useState<BossPreview | null>(null);
   const [previewedFor, setPreviewedFor] = useState<string | null>(null);
   const seq = useRef(0);
@@ -83,7 +85,7 @@ export function useLivePreview(target: string | null, request: AnyBossRequest | 
     if (!target || !request || problems.length) return;
     const mine = ++seq.current;
     onState({ state: "running", checks: preview?.checks ?? null, ok: false });
-    boss.preview(target, request).then((result) => {
+    previewWith(target, request).then((result) => {
       if (mine !== seq.current) return;
       setPreview(result);
       setPreviewedFor(body);

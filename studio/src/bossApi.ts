@@ -223,6 +223,8 @@ export interface WeaponSpec {
   id?: string; sourceWeapon?: string; name?: string; description?: string; icon?: string; enhancedIcon?: string;
   hpMultiplier?: number; attackMultiplier?: number; abilities?: WeaponAbilityChange[];
   enhancementProducts?: string[]; stages?: WeaponStage[];
+  /** Soul item c5 / c12 (equip elements: "all", "auto" or 0..5 list); omitted = inherit the donor. */
+  soulDescription?: string; soul_elements?: "all" | "auto" | number[];
 }
 
 export type ShopWeaponRequest =
