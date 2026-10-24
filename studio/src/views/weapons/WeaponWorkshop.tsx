@@ -19,7 +19,7 @@ import { PreviewState } from "../boss/BossParams";
 import { cellOf, OpTarget } from "../boss/bossOps";
 import { present } from "../boss/bossModel";
 import {
-  abilityLines, BLOCK_LABEL, CloneWizard, costText, KindName, MaterialsEditor, soulElementsText, TABLE_LABEL, useKindNames,
+  abilityLines, BLOCK_LABEL, CloneWizard, KindName, MaterialList, MaterialsEditor, soulElementsText, TABLE_LABEL, useKindNames,
   USER_COST, WeaponIcon,
 } from "./weaponEditors";
 import "../boss/boss.css";
@@ -126,8 +126,9 @@ function WeaponListPane({ selected, drafts }: { selected?: string; drafts: Weapo
           <ul>
             {drafts.map((d) => (
               <li><a class={selected === d.characterId ? "on" : ""} href={link(d.characterId, "changes")}>
-                <span class="mono">{d.characterId}</span>
-                <span class="small muted">{d.changes} 项 · {d.savedAt ? "已保存" : "未保存"}</span>
+                <span class="weapon-draft-name">{d.name || "（无名）"} <span class="mono small muted">{d.characterId}</span></span>
+                <span class="small muted">{d.isNew ? <span class="tag pend" title="草稿含克隆操作">新建</span> : <span class="tag" title="改已有武器">改</span>}
+                  {" "}{d.changes} 项 · {d.savedAt ? "已保存" : "未保存"}</span>
               </a></li>
             ))}
           </ul>
@@ -197,7 +198,7 @@ function WeaponDetailPane({ id, tab, sub }: { id: string; tab?: string; sub?: st
   if (error) return <div class="boss-main"><Notice kind="error">读取武器 {id} 失败：{error}</Notice></div>;
   if (!detail || !doc) return <div class="boss-main"><div class="loading">正在读取武器 {id}……</div></div>;
 
-  const status = draft.view?.status ?? detail.status;
+  const status = draft.view?.status ?? detail.draft_status ?? detail.status;
   const changes = draft.view?.changeset?.changes ?? [];
   const el = weaponElement(detail.element);
   const checks: RuleResult[] | null = editing ? preview.checks : detail.checks.length ? detail.checks : null;
@@ -235,7 +236,7 @@ function WeaponDetailPane({ id, tab, sub }: { id: string; tab?: string; sub?: st
           build={(built.list ?? []).find((d) => sameDraft(d, draft.view?.changeset) && draft.view?.status.state === "saved") ?? null}
           device={deviceCell(built.list, draft.view?.changeset?.revision)}
           deviceLink={(name) => link(id, "changes", name)} />
-        {detail.changeset ? <Notice>这里显示的是重放了本武器草稿后的候选状态（{detail.status.label}）。</Notice> : null}
+        {detail.changeset ? <Notice>这里显示的是重放了本武器草稿后的候选状态（{(detail.draft_status ?? detail.status).label}）。</Notice> : null}
 
         {editing === "clone" ? (
           <CloneWizard key={id} weapons={[doc]} source={id} target={cloneTarget} kinds={kinds} soul
@@ -249,7 +250,7 @@ function WeaponDetailPane({ id, tab, sub }: { id: string; tab?: string; sub?: st
 
         <CurvesBlock detail={detail} />
         <SoulBlock detail={detail} kinds={kinds} />
-        <EnhancementBlock detail={detail} names={names} />
+        <EnhancementBlock detail={detail} />
         <AwakeningBlock detail={detail} />
         <ReferencesBlock detail={detail} />
         {detail.note ? <p class="small muted">{detail.note}</p> : null}
@@ -343,7 +344,7 @@ function SoulBlock({ detail, kinds }: { detail: WeaponDetail; kinds: ReturnType<
   );
 }
 
-function EnhancementBlock({ detail, names }: { detail: WeaponDetail; names: Map<string, string> }) {
+function EnhancementBlock({ detail }: { detail: WeaponDetail }) {
   const chain = detail.enhancement_chain;
   return (
     <section class="boss-block">
@@ -358,14 +359,14 @@ function EnhancementBlock({ detail, names }: { detail: WeaponDetail; names: Map<
                 {chain.map((s) => (
                   <tr><td class="mono small">{s.stage}</td><td class="mono small">{s.id}</td>
                     <td>{s.startLevel} → {s.maxLevel}</td><td>{s.purchaseCountTo120}</td>
-                    <td class="small">{costText(s.costs, names)}</td>
+                    <td class="small"><MaterialList costs={s.costs} /></td>
                     <td class="small">{s.userCost ? `${USER_COST[s.userCost.type] ?? "类型 " + s.userCost.type} ×${s.userCost.amount}` : "—"}</td>
                     <td>{s.requireAwakeningLevel}</td></tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <p class="small">到 120 累计：{costText(detail.materials_to_120, names)}
+          <p class="small">到 120 累计：<MaterialList costs={detail.materials_to_120} />
             {detail.user_costs_to_120.length ? " + " + detail.user_costs_to_120.map((u) => `${USER_COST[u.type] ?? "类型 " + u.type} ×${u.amount}`).join(" + ") : ""}</p>
           <p class="small muted">{detail.material_semantics}</p>
         </>

@@ -17,8 +17,23 @@ export const BLOCK_LABEL: Record<string, string> = { instant_content: "瞬时", 
 export const USER_COST: Record<string, string> = { "1": "星导石（免费）", "2": "羁绊证" };
 const TEXT_BAD = /[,\n\r"]|::/;
 
-export function costText(costs: { itemId: string; amount: string | number }[], names: Map<string, string>): string {
-  return costs.length ? costs.map((c) => `${names.get(c.itemId) ?? c.itemId} ×${c.amount}`).join(" + ") : "—";
+export function costText(costs: { itemId: string; amount: string | number; name?: string | null }[], names: Map<string, string>): string {
+  return costs.length ? costs.map((c) => `${c.name ?? names.get(c.itemId) ?? c.itemId} ×${c.amount}`).join(" + ") : "—";
+}
+
+/** Materials with their item icon and name (武器工坊 detail fills both); falls back to the bare item ID. */
+export function MaterialList({ costs }: { costs: { itemId: string; amount: string | number; name?: string | null; icon?: string | null }[] }) {
+  if (!costs.length) return <span>—</span>;
+  return (
+    <span class="material-list">
+      {costs.map((c) => (
+        <span class="material" title={`item ${c.itemId}${c.icon ? "\n" + c.icon : ""}`}>
+          {c.icon ? <WeaponIcon path={c.icon} size={20} /> : null}
+          {c.name ?? <span class="mono">{c.itemId}</span>} ×{c.amount}
+        </span>
+      ))}
+    </span>
+  );
 }
 
 export interface AbilityLine {
@@ -105,7 +120,7 @@ export function MaterialsEditor({ weapon, target, names, onPreview, onWritten, o
                 <tr>
                   <td class="mono small">{o.stage}</td><td class="small">{o.startLevel} → {o.maxLevel}（{o.purchaseCountTo120} 次）</td>
                   <td>{s.costs.map((c, j) => (
-                    <label class="cost-input"><span class="small">{names.get(c.itemId) ?? c.itemId}</span>
+                    <label class="cost-input"><span class="small">{o.costs[j]?.name ?? names.get(c.itemId) ?? c.itemId}</span>
                       <input type="number" min={1} step={1} value={c.amount} class={c.amount !== String(o.costs[j]?.amount) ? "changed" : ""}
                         onInput={(e) => setStages(stages.map((x, k) => k === i ? { ...x, costs: x.costs.map((y, m) => m === j ? { ...y, amount: (e.target as HTMLInputElement).value } : y) } : x))} />
                     </label>

@@ -33,3 +33,7 @@
   .weapon-layout { grid-template-columns: minmax(0, 1fr); }
   .weapon-side { position: static; max-height: 360px; }
 }
+.weapon-draft-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.material-list { display: inline-flex; flex-wrap: wrap; gap: 2px 10px; vertical-align: middle; }
+.material { display: inline-flex; align-items: center; gap: 4px; }
+.material .weapon-icon { border-radius: 4px; }

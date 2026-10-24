@@ -87,13 +87,16 @@ export interface WeaponDetail extends Omit<WeaponDoc, "status">, Omit<WeaponList
   referenceCoverage?: { clientShops: string[]; serverShops: Record<string, boolean>; clientGacha: string; serverGachaAvailable: boolean };
   elementInputAvailable?: boolean;
   changeset: Changeset | null;
+  /** Draft save state; `status` is its compatibility alias (not the curve rows). */
+  draft_status?: DraftStatus;
   status: DraftStatus;
   checks: RuleResult[];
   runtime: string;
   note?: string;
 }
 
-/** The boss WeaponDoc shape the shared editors read (curve rows back under `status`). */
+/** The boss WeaponDoc shape the shared editors read: the contract keeps `status` = draft state here,
+ * so the curve rows (base_status) are mapped back under `status`. */
 export function asWeaponDoc(detail: WeaponDetail): WeaponDoc {
   return { ...detail, status: detail.base_status ?? [] } as unknown as WeaponDoc;
 }
@@ -113,6 +116,11 @@ export interface WeaponApplied extends WeaponPreview {
 
 export interface WeaponDraftSummary {
   characterId: string;
+  weaponId?: string;
+  /** Clone request name, else the donor / weapon name; null when unknown. */
+  name?: string | null;
+  /** The draft holds a weapon_clone (vs. material edits of an existing weapon). */
+  isNew?: boolean;
   code: string;
   changes: number;
   updatedAt: string;
@@ -134,7 +142,8 @@ function token(): string {
   return document.querySelector<HTMLMetaElement>('meta[name="wf-studio-token"]')?.content ?? "";
 }
 
-/** Preview POST: a 400 `{"error"}` becomes one blocking check so the editors show it next to the form. */
+/** Preview POST: rejected candidates come back as HTTP 400 with five-state checks (weapon.inputs first);
+ * only a bare `{"error"}` (other input errors) is turned into one synthetic blocking check. */
 async function previewPost(url: string, body: unknown): Promise<BossPreview> {
   const response = await fetch(url, {
     method: "POST",
@@ -142,7 +151,7 @@ async function previewPost(url: string, body: unknown): Promise<BossPreview> {
     body: JSON.stringify(body),
   });
   const data = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
-  if (response.ok && Array.isArray(data.checks)) return { ...data, questId: data.weaponId ?? "", allocation: null } as BossPreview;
+  if (Array.isArray(data.checks)) return { ...data, ok: response.ok && data.ok !== false, questId: data.weaponId ?? "", allocation: null } as BossPreview;
   return {
     ok: false, questId: "", runtime: "未执行",
     checks: [{ rule: "weapon.inputs", status: "问题", blocking: true, message: data.error || `HTTP ${response.status}` }],
