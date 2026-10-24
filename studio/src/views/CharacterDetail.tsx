@@ -15,8 +15,9 @@ import { AttachControl, SkillTiers, slotOf } from "./KeyTools";
 import { TextTab } from "./TextTab";
 import { CharacterProfileBadge, ProgramCapChip } from "./ClientProfile";
 import { SkillPreview } from "./TimelinePreview";
+import { Handoff } from "./Handoff";
 
-// Seven groups (C1): 能力（一板/二板/三板）｜技能｜文案｜立绘｜像素（预览/单动作替换/工坊/整族导入）｜语音;
+// Seven groups (C1): 能力（一板/二板/三板）｜技能｜文案｜立绘｜像素（预览/单动作替换/工坊/整族导入）｜语音｜交接单;
 // 本次修改 and 资源 open as header drawers.
 const GROUPS: { id: string; label: string; ability?: boolean }[] = [
   { id: "ability", label: "能力", ability: true },
@@ -25,6 +26,7 @@ const GROUPS: { id: string; label: string; ability?: boolean }[] = [
   { id: "portrait", label: "立绘" },
   { id: "pixel", label: "像素" },
   { id: "voice", label: "语音" },
+  { id: "handoff", label: "交接单" },
 ];
 const BOARDS = [{ id: "board1", label: "一板" }, { id: "board2", label: "二板" }, { id: "board3", label: "三板（觉醒）" }];
 // Old deep links keep working.
@@ -115,6 +117,8 @@ export function CharacterDetailView({ id, tab, sub }: { id: string; tab?: string
         <PortraitEditor characterId={detail.id} />
       ) : group === "pixel" ? (
         <PixelGroup characterId={detail.id} sub={groupSub} link={(s: PixelSub) => link("pixel", s)} />
+      ) : group === "handoff" ? (
+        <Handoff characterId={detail.id} />
       ) : (
         <VoiceTab characterId={detail.id} />
       )}

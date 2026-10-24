@@ -1,0 +1,23 @@
+/* 交稿四件套：批量预检 / 场地比例 / 图集重排 / 交接单 */
+table.data { border-collapse: collapse; width: 100%; font-size: 13px; margin: 8px 0; }
+table.data th { text-align: left; font-weight: 600; color: var(--muted); font-size: 12px; background: var(--surface-2); }
+table.data td, table.data th { padding: 6px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+table.data tr.row-error td:first-child { box-shadow: inset 3px 0 0 #e03131; }
+table.data input:not([type]) { width: 100%; min-width: 120px; }
+table.data .checks { margin: 0; }
+a.button {
+  display: inline-block; border: 1px solid var(--border); background: var(--surface); border-radius: 8px;
+  padding: 5px 12px; color: inherit; text-decoration: none;
+}
+a.button:hover { border-color: var(--accent); }
+.stage-scale { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+.stage-scale canvas { border-radius: 6px; box-shadow: 0 0 0 1px var(--border); }
+.stage-scale ul { flex: 1; min-width: 220px; padding-left: 18px; }
+.repack-compare { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+.repack-compare figure { margin: 0; }
+.repack-compare img { max-width: 420px; max-height: 420px; display: block; }
+img.pixelated { image-rendering: pixelated; }
+img.checker { background: repeating-conic-gradient(#e9ecf1 0 25%, #f7f8fa 0 50%) 0 0 / 12px 12px; }
+.handoff section { margin: 16px 0; }
+.handoff textarea { width: 100%; font: inherit; }
+.handoff .param-field.wide { display: block; margin: 8px 0; }
