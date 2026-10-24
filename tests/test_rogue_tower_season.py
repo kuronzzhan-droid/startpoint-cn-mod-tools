@@ -18,6 +18,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
+from tool_source import tool_source  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
@@ -321,7 +322,7 @@ class GuiWiringTest(unittest.TestCase):
     """GUI 那两条发布入口真的接上了判据(不是只写在注释里)。"""
 
     def test_both_publish_paths_call_the_season_sync(self) -> None:
-        source = (ROOT / "wf_gui.py").read_text(encoding="utf-8")
+        source = tool_source(ROOT, "wf_gui.py").read_text(encoding="utf-8")
         self.assertIn('_rogue_season_sync("gui-build")', source,
                       "①难度曲线/重摇的「应用+发布」没接换期判定")
         self.assertIn('_rogue_season_sync("gui-publish")', source,

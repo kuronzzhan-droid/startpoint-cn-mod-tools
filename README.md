@@ -104,8 +104,8 @@ python mod-tools/wf_publish.py --tables ability,character_status
 
 ```
 mod-tools/
-├── wf_*.py                可执行工具与库的入口(同目录互 import;见下表)
-├── wf/tools/<组>/         从根目录分批搬进来的工具本体;根目录同名 wf_*.py 留作兼容入口
+├── wf_*.py                旧命令入口:只剩几行转发,`python wf_xxx.py` / `import wf_xxx` 照旧可用(见下表)
+├── wf/tools/<组>/         工具本体(abyss/weapon/rogue/boss/content/wiki/release/share/assets/art/character/core)
 ├── *.bat                  Windows 一键入口(wf-gui / 一键平衡包 / 导出 / 采集)
 ├── README.md / API.md / WF_mod_tool_usage.md      使用文档(留根)
 ├── CN-Mod字段手册.md(.html) / 词条条件代码全表.md   核心参考(全表被 wf_describe 运行时读取)
@@ -121,9 +121,10 @@ mod-tools/
 └── qq_monitor/            QQ 群反馈监控管线(NapCat)
 ```
 
-约定:**文档进 docs/、运行时数据留根、生成物可重建**。根目录 `wf_<名>.py` 正在分批搬到
-`wf/tools/<组>/<名>.py`;搬过的旧文件只剩几行转发,`python wf_<名>.py ...` 与 `import wf_<名>` 照旧可用,
-新代码请直接放进 `wf/` 包里。
+约定:**文档进 docs/、运行时数据留根、生成物可重建**。根目录 `wf_<名>.py` 已搬到
+`wf/tools/<组>/<名>.py`,旧文件只剩几行转发,`python wf_<名>.py ...` 与 `import wf_<名>` 照旧可用;
+直接运行新位置请用 `python -m wf.tools.<组>.<名>`。新代码请直接放进 `wf/` 包里。
+`wf_char_editor.py`、`wf_patch_ability_main_position.py` 暂留根目录(词条编辑相关,另行整理)。
 新增分析/方案类 md 一律放 `docs/`;工具按文件名读取的数据(上面第 5 行)不要挪。
 
 ## 工具一览
