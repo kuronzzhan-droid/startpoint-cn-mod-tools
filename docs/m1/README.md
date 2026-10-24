@@ -49,4 +49,4 @@ python -m pytest --basetemp=work/m1/pytest-tmp
 python -m scripts.check_no_hardcoded_paths --json work/m1/path-scan.json
 ```
 
-完整命令、实际产物及未验证范围见根目录 [M1-REPORT.md](../../M1-REPORT.md)。临时验收文件在忽略的 `work/m1/`，不纳入版本控制。历史游戏成员的字节明细只存本地验收文件；版本控制内保留摘要和结果，不新增原始游戏资源。
+完整命令、实际产物及未验证范围见[M1-REPORT.md](../reports/M1-REPORT.md)。临时验收文件在忽略的 `work/m1/`，不纳入版本控制。历史游戏成员的字节明细只存本地验收文件；版本控制内保留摘要和结果，不新增原始游戏资源。

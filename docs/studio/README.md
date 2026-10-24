@@ -214,7 +214,7 @@ action_skill 的结构编辑按客户端档位处理：`level` 指源/插入档�
 
 ### 验证
 
-运行 `python -B -m pytest --basetemp=work/m4a/pytest-tmp`。测试缓存和临时媒体文件均限制在本 checkout；真实视图缺失时仅跳过依赖该视图的测试，编程错误仍会失败。M4a 新增媒体编译、词条语义、交付回读和反证测试；真实 139985 与历史 223/221 的验收结果见根目录 `M4a-REPORT.md`。
+运行 `python -B -m pytest --basetemp=work/m4a/pytest-tmp`。测试缓存和临时媒体文件均限制在本 checkout；真实视图缺失时仅跳过依赖该视图的测试，编程错误仍会失败。M4a 新增媒体编译、词条语义、交付回读和反证测试；真实 139985 与历史 223/221 的验收结果见 [M4a-REPORT.md](../reports/M4a-REPORT.md)。
 
 ## M4b：前端词条编辑、生成与导出
 

@@ -1274,7 +1274,7 @@
       "subtests_passed": 9,
       "log": "work/m0/pytest-release-v1-long-path.log"
     },
-    "final_full_suite": "See M0-REPORT.md; independent final run covers restored files and C regression."
+    "final_full_suite": "See docs/reports/M0-REPORT.md; independent final run covers restored files and C regression."
   },
   "target_hash_scope": "Local worktree bytes after changes. Git attributes normalize text line endings on commit; source hashes always describe original input bytes."
 }

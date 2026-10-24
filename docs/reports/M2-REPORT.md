@@ -21,7 +21,7 @@
 | `wf caps scan` | 基于ManifestView与官方基线扫描，输出CSV/JSON、输入锁、来源、C层名称与能力ID | 224/229/231均108角色、25种能力、缺失DSL为0；224所有旧字段零差异，原中文CSV逐字节一致 |
 | `wf text` / `wf check text` | 全部10节、56条规范；依据和自动化边界逐项记录；两份服务端镜像继续覆盖 | 13条确定性检查、32条部分检查、11条人工/原数据核对；新旧编辑、读取、双镜像和规则反例通过 |
 
-API与输入格式见 [能力说明](docs/m2/capabilities.md)、[注册表说明](wf/caps/README.md)、[矩阵说明](docs/m2/matrix.md)、[文案规范说明](docs/m2/text-standard.md)。
+API与输入格式见 [能力说明](../../docs/m2/capabilities.md)、[注册表说明](../../wf/caps/README.md)、[矩阵说明](../../docs/m2/matrix.md)、[文案规范说明](../../docs/m2/text-standard.md)。
 
 ## 方法证据与兼容边界
 
@@ -41,7 +41,7 @@ APK同时匹配SWF和全部非签名ZIP成员摘要；只有SWF时不提供上�
 | 1.4.229 | 124 | 108 | 25 | 107 |
 | 1.4.231 | 126 | 108 | 25 | 110 |
 
-229/231与224的角色ID及每角色能力集合一致。全部107/110项差异已逐条说明，主要为227面板改表增加来源记录，其余是休尔特平衡后的觉醒行数/PF行位，以及黑、瑞西塔尔、索恩的覆盖文案重复引用次数。见 [完整差异表](docs/m2/matrix-differences.md) 和 [矩阵验收摘要](docs/m2/matrix-validation.json)。
+229/231与224的角色ID及每角色能力集合一致。全部107/110项差异已逐条说明，主要为227面板改表增加来源记录，其余是休尔特平衡后的觉醒行数/PF行位，以及黑、瑞西塔尔、索恩的覆盖文案重复引用次数。见 [完整差异表](../../docs/m2/matrix-differences.md) 和 [矩阵验收摘要](../../docs/m2/matrix-validation.json)。
 
 新能力投影补齐首行c1=true的普通合击资格，同时保留旧字段口径：231原 `unison` 条件/触发字段命中11角色，新官方合击能力覆盖106角色；新增95项是补齐资格证据，并非新增95种玩法。两种PYTHONHASHSEED重跑231，六个产物全部逐字节相同。
 
@@ -77,7 +77,7 @@ APK同时匹配SWF和全部非签名ZIP成员摘要；只有SWF时不提供上�
 
 JUnit包含子测试的累计计数为 tests=6602、skipped=357、failures=0、errors=0，与终端主测试数量分别报告。354项跳过主要为未配置的完整外部数据、可选包和平台条件，不算已验证。26条警告为既有路径环境变量别名弃用提示。整轮结束后仅新增本报告与验收摘要，未再修改已验证源码。
 
-各项退出码、计数口径、冻结提交和本地产物SHA-256见 [结构化验收摘要](docs/m2/validation.json)。
+各项退出码、计数口径、冻结提交和本地产物SHA-256见 [结构化验收摘要](../../docs/m2/validation.json)。
 
 能力文件全量检查退出0；路径扫描0命中；提交卫生检查退出0；`git diff --check`通过。首次卫生调用被宿主解析到无可用Linux shell的WSL入口，未运行检查；改用已存在的Git Bash显式路径后实际通过，保留初次环境错误与最终日志，未安装任何软件。
 
@@ -137,7 +137,7 @@ manifest 证明这两张客户端表在233前最后修改来自220，之后到23
 
 ### 最终验证与本地提交
 
-全量命令：`python -B -m pytest --basetemp=work/m2_1/full-tmp --junitxml=work/m2_1/pytest-full.xml`。最终退出码、终端计数、含子测试的JUnit计数、耗时和产物SHA见 [M2.1结构化验收摘要](docs/m2/validation-m2.1.json)。
+全量命令：`python -B -m pytest --basetemp=work/m2_1/full-tmp --junitxml=work/m2_1/pytest-full.xml`。最终退出码、终端计数、含子测试的JUnit计数、耗时和产物SHA见 [M2.1结构化验收摘要](../../docs/m2/validation-m2.1.json)。
 
 最终全量为 **4080 passed、354 skipped、26 warnings，exit 0**；pytest计时367.11秒，外层耗时369.13秒。354项跳过主要为未配置的外部客户端补丁源码与live store，不作为通过项；26条警告为既有路径环境变量别名弃用提示。冻结后只补本报告、摘要和最终文档扫描，没有修改已验证的生产源码。
 
@@ -155,7 +155,7 @@ JUnit含子测试累计6700项、skipped357、failures0、errors0，与终端主
 
 ### 能力登记与客户端证据
 
-完整核对最终 SWF 及 x86/arm64 签名 APK 的 SHA，满足任务书给定完整值与前后缀。注册表由141项增加到 **178项**，新增20个逐补丁声明（#112–131）和17个run5语义能力；每项具有来源、方法摘要、data_surface、allowed_tables、form、规则、golden和层级。第四轮目标固有状态层数的码28/29、第五轮隐藏标签均已登记。细节与全部SHA见[登记说明](docs/m2/v35e-registration.md)和[方法审计](docs/m2/v35e-method-audit.json)。
+完整核对最终 SWF 及 x86/arm64 签名 APK 的 SHA，满足任务书给定完整值与前后缀。注册表由141项增加到 **178项**，新增20个逐补丁声明（#112–131）和17个run5语义能力；每项具有来源、方法摘要、data_surface、allowed_tables、form、规则、golden和层级。第四轮目标固有状态层数的码28/29、第五轮隐藏标签均已登记。细节与全部SHA见[登记说明](../../docs/m2/v35e-registration.md)和[方法审计](../../docs/m2/v35e-method-audit.json)。
 
 `wf apk provides` 实读两份x86签名APK，生成 `work/m2_2/test-v34-provides.json`（141项）和 `test-v35e-provides.json`（178项），均无 unresolved/warnings。`client_profiles.json` 登记 `test-v34`、`test-v35e`，包名均为 `com.leiting.wt`；versionCode分别为1008002、1008003，有构建记录依据。档案绑定真实SWF/APK及provides文件SHA。干净检出使用已入库、固定SHA的只读fallback；已验证fallback的Git索引与工作树LF字节一致。历史发布器的默认 `local-mumu` 保持，本次交付/生成默认 `test-v34`。
 
@@ -163,7 +163,7 @@ JUnit含子测试累计6700项、skipped357、failures0、errors0，与终端主
 
 ### 后端与默认门禁
 
-新增只读 `GET /api/client-profiles` 和 `GET /api/capabilities/requirements`，按kind、unique字符串、DSL标记等返回所需能力、可满足的档案及选中档案是否兼容。`wf deliver --client-profile` 和编辑台生成共用档案；显式档案与provides冲突时拒绝，默认provides不能遮蔽用户选择。接口、参数和默认值见[后端说明](docs/m2/client-profiles.md)，前端不在本次施工范围。
+新增只读 `GET /api/client-profiles` 和 `GET /api/capabilities/requirements`，按kind、unique字符串、DSL标记等返回所需能力、可满足的档案及选中档案是否兼容。`wf deliver --client-profile` 和编辑台生成共用档案；显式档案与provides冲突时拒绝，默认provides不能遮蔽用户选择。接口、参数和默认值见[后端说明](../../docs/m2/client-profiles.md)，前端不在本次施工范围。
 
 实际CLI反证使用同一 `wfx_pf4_123` 变更集：默认test-v34缺 `client.pf.lv4_data@1`、**exit 1**；test-v35e **exit 0**。构建、兼容和交付回读保留报告与选档。未知WFX码、写错标记及旧planned码不会被当作无依赖放行。旧的显式“允许未知客户端”仅保留原有可审计边界，明确选择档案后不能豁免其比较。
 
@@ -182,11 +182,11 @@ v35e必需的4位为贝尔赛蒂亚129952、克劳斯129997、凯尔139990、莫
 
 8张角色相关表的全部行和DSL引用另做全内容扫描：resolved、未解析0，13个去重v35e信号，无角色归属的v35e信号0。附加武器两表检查发现**8行、7键**的存量kind423表范围问题，逐行列入报告；本任务未修改这些输入或放宽规则。它们是静态规则发现，未设备确认，不能把角色结果扩写为全游戏内容安全。
 
-[完整兼容报告](docs/m2/compat-v34-v35.md)及[602角色结构化结果](docs/m2/compat-v34-v35.json)保留所有角色、实际状态、原子补丁间接依赖、37条方法变化及输入SHA。调查期间ghmain本地manifest从初见237更新到238；最终ghmain、shipped和锁定工作副本SHA一致。未读取实时服务器，报告只证明本地镜像和固定归档。
+[完整兼容报告](../../docs/m2/compat-v34-v35.md)及[602角色结构化结果](../../docs/m2/compat-v34-v35.json)保留所有角色、实际状态、原子补丁间接依赖、37条方法变化及输入SHA。调查期间ghmain本地manifest从初见237更新到238；最终ghmain、shipped和锁定工作副本SHA一致。未读取实时服务器，报告只证明本地镜像和固定归档。
 
 ### 最终验证与提交
 
-全量 `python -B -m pytest --basetemp=work/m2_2/full-tmp --junitxml=work/m2_2/pytest-full.xml`：**4641 passed、354 skipped、26 warnings，exit 0**，pytest计时664.30秒，外层耗时666.47秒。跳过项保留既有外部输入/平台条件，不算通过；警告为旧路径环境变量弃用提示。含子测试的JUnit共7372项、跳过357、失败0、错误0；冻结提交及日志摘要见[结构化验收](docs/m2/validation-m2.2.json)。本次未在生产源码冻结后引入新的功能改动。
+全量 `python -B -m pytest --basetemp=work/m2_2/full-tmp --junitxml=work/m2_2/pytest-full.xml`：**4641 passed、354 skipped、26 warnings，exit 0**，pytest计时664.30秒，外层耗时666.47秒。跳过项保留既有外部输入/平台条件，不算通过；警告为旧路径环境变量弃用提示。含子测试的JUnit共7372项、跳过357、失败0、错误0；冻结提交及日志摘要见[结构化验收](../../docs/m2/validation-m2.2.json)。本次未在生产源码冻结后引入新的功能改动。
 
 历史223重新回放，**3/3成员逐字节一致**；221从原表、母图和已批准音频重建，经当前归档/双清单实现核对，**11包、310/310成员逐字节一致，差异0**，分层回读310/310一致；排除DOS时间字段后11/11容器一致，不声称完整ZIP SHA相等，也不把旧221的字节兼容性等同于公开交付门禁通过。证据位于 `work/m2_2/history/`。
 
@@ -200,7 +200,7 @@ v35e必需的4位为贝尔赛蒂亚129952、克劳斯129997、凯尔139990、莫
 
 ### 误报更正与能力登记
 
-M2.2 的“8 行、7 键 kind423 表范围问题”是误报，原结论在本节及 [兼容报告更正](docs/m2/compat-v34-v35.md) 中替换。旧依据 `decompile-complete-20261014` 来自装备补丁之前的基础客户端。实际 test-v34/test-v35e 的武器魂与装备强化 `during_content` 均有 423 分支；本次重新读取真实 SWF，并对原 8 行逐行执行两档案兼容检查，全部静态满足。
+M2.2 的“8 行、7 键 kind423 表范围问题”是误报，原结论在本节及 [兼容报告更正](../../docs/m2/compat-v34-v35.md) 中替换。旧依据 `decompile-complete-20261014` 来自装备补丁之前的基础客户端。实际 test-v34/test-v35e 的武器魂与装备强化 `during_content` 均有 423 分支；本次重新读取真实 SWF，并对原 8 行逐行执行两档案兼容检查，全部静态满足。
 
 新增 `client.equipment.gauge_gain_rules@1`，对应 **equipment-rules R3 / equipment-gauge-gain-rules-v1**。只给 test-v34/test-v35e 登记；角色 ability 的 423 保持 `client.kind423.gauge_source_limit@1` / #31。R3 没有可核实的数字归档号，因此不编造归档号，使用独立方法能力：`patches=[]`、`methods.patch=null`，配合完整 SWF 白名单和两份实际 code SHA。方法 code 在两档 SWF 中逐字节相同：
 
@@ -209,7 +209,7 @@ M2.2 的“8 行、7 键 kind423 表范围问题”是误报，原结论在本�
 | `AbilitySoulValues$/parseAt106` | 38944 | `09dab4df4529e9b0272315b616fa9ea4e1882401a9ceadb40be2b5ee515c40ab` |
 | `EquipmentEnhancementAbilityValues$/parseAt109` | 40666 | `dd651c1588b171de60b3617ac33d165d22c726337ee6848caddd88dc0f331577` |
 
-完整观察在 [R3 方法证据](wf/apk/data/equipment-rules-r3-methods.json)，不含 SWF 产物。实际分支读取目标及复用参数列，构造 `GaugeGainRestriction` 后返回。423 在该列存的是规则掩码；复用既有 `patch_kinds_borrowing_uid_column()` 修复掩码 78 被误读成固有状态 ID 的相关误报，并有单测反证。
+完整观察在 [R3 方法证据](../../wf/apk/data/equipment-rules-r3-methods.json)，不含 SWF 产物。实际分支读取目标及复用参数列，构造 `GaugeGainRestriction` 后返回。423 在该列存的是规则掩码；复用既有 `patch_kinds_borrowing_uid_column()` 修复掩码 78 被误读成固有状态 ID 的相关误报，并有单测反证。
 
 ### 实现与反证
 
@@ -227,7 +227,7 @@ M2.2 的“8 行、7 键 kind423 表范围问题”是误报，原结论在本�
 
 历史 223 本轮固定输入内存重放 **3/3 成员一致**；221 只读复用 M2.2 已完整重建的 package，调用本轮归档及双清单层重新封装，**11 包、310/310 成员逐字节一致、差异 0**，分层回读 310/310 一致，排除 DOS 时间字段后 11/11 容器一致。221 本轮未重新生成母图或音频；不声称完整 ZIP SHA 相等，也不表示旧 221 通过当前公开交付门禁。
 
-能力声明全量检查 exit 0；路径扫描 **2327 个文本文件、0 命中**；提交卫生 `check-hygiene.sh --all` 及 `git diff --check` 通过。全量测试与产物验收的子进程显式使用 `stdin=DEVNULL`，临时目录在当前 worktree。完整计数、方法摘要、8 行及缺能力反证、历史产物摘要见 [M2.3 结构化验收](docs/m2/validation-m2.3.json)，原始证据在 `work/m2_3/`。
+能力声明全量检查 exit 0；路径扫描 **2327 个文本文件、0 命中**；提交卫生 `check-hygiene.sh --all` 及 `git diff --check` 通过。全量测试与产物验收的子进程显式使用 `stdin=DEVNULL`，临时目录在当前 worktree。完整计数、方法摘要、8 行及缺能力反证、历史产物摘要见 [M2.3 结构化验收](../../docs/m2/validation-m2.3.json)，原始证据在 `work/m2_3/`。
 
 本地主题提交：R3 登记 `16f5e1e`；真实 SWF 检查 `55daeec`；按表推导与兼容门禁 `82d03ef`；报告更正及验收摘要另作本地文档提交。本次只验证实际方法字节、静态分支与工具行为，未执行设备战斗、服务端或部署验收。
 
@@ -270,7 +270,7 @@ store131 实际混有早期 MOD，不能整体称为官方。逐 CSV 行比对�
 
 两份语料分别在 test-v34、test-v35e 执行同一 `infer_requirements` / `check_compat`，四次整表批量检查覆盖 31,344 个档案与行组合，均为 resolved、unresolved 0、问题 0、blocking 0、待验证 0。逐行表/键/行号/摘要和能力证据全部保留，没有抽样；问题列表为空。9,493 / 6,162 条 active instant/during 行逐站点检查；另外 9 / 8 条 trigger=2 opening 行单独核对真实 opening 分支，34 次判断全部支持，未将无 content kindSite 的行隐去。
 
-两档公开 `wf apk kinds` 均 exit 0，各读取五表、50 个实际 parseAt 方法，注册表不一致 0。15 组人工反证乘两档共 30 次检查全部通过断言。store131 的 279 个引用闭包成员与官方的 18 个成员前后字节一致。完整证据、两 SWF SHA 和输入表 SHA 见 [M2.4 结构化验收](docs/m2/validation-m2.4.json)；原始逐行报告在 `work/m2_4/official_audit/`。
+两档公开 `wf apk kinds` 均 exit 0，各读取五表、50 个实际 parseAt 方法，注册表不一致 0。15 组人工反证乘两档共 30 次检查全部通过断言。store131 的 279 个引用闭包成员与官方的 18 个成员前后字节一致。完整证据、两 SWF SHA 和输入表 SHA 见 [M2.4 结构化验收](../../docs/m2/validation-m2.4.json)；原始逐行报告在 `work/m2_4/official_audit/`。
 
 ### 最终检查与历史字节
 
