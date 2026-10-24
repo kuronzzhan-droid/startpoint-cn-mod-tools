@@ -209,7 +209,7 @@ ICONS = (
 )
 ICON_BY_ITEM = {i.item_id: i for i in ICONS}
 OWNED_ATLAS_NAMES = frozenset(i.c4 for i in ICONS)
-PARADOX_TOOL = TOOLS / "wf_paradox_weapon.py"       # 只读：它的 MATERIALS 是否已同步到重画版逻辑路径
+PARADOX_TOOL = TOOLS / "wf/tools/content/paradox_weapon.py"       # 只读：它的 MATERIALS 是否已同步到重画版逻辑路径
 
 # §6.2/§6.5 图标门禁（口径同图标单元 build_icons.gate：描边只看最大 8 连通块，角上十字星点不算描边）
 ICON_SIZE = (20, 20)

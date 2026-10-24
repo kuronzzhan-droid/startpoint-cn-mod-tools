@@ -4,6 +4,8 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 
+from tool_source import tool_source
+
 
 MOD_TOOLS = Path(__file__).resolve().parent.parent
 
@@ -21,7 +23,7 @@ class BalanceStoreWiringTest(unittest.TestCase):
             "wf_unique_mech.py",
         ):
             with self.subTest(name=name):
-                source = (MOD_TOOLS / name).read_text(encoding="utf-8")
+                source = tool_source(MOD_TOOLS, name).read_text(encoding="utf-8")
                 self.assertIn("core.require_active_store()", source)
                 self.assertNotIn("core.resolve_profile()", source)
 

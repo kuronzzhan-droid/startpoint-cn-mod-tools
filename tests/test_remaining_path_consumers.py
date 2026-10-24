@@ -100,7 +100,7 @@ def test_switch_uses_environment_store_without_legacy_profiles(isolated, monkeyp
     monkeypatch.setenv("WF_STORE", str(store))
     context = switch.resolve_context(cdn=cdn)
     assert context.store == store
-    assert context.repo == Path(switch.__file__).resolve().parent
+    assert context.repo == Path(__file__).resolve().parents[1]
 
 
 @pytest.mark.parametrize("module_name", [
@@ -109,7 +109,7 @@ def test_switch_uses_environment_store_without_legacy_profiles(isolated, monkeyp
 ])
 def test_analysis_reports_and_markers_stay_in_tool_checkout(module_name):
     module = importlib.import_module(module_name)
-    checkout = Path(module.__file__).resolve().parent
+    checkout = Path(__file__).resolve().parents[1]
     assert module.ROOT == checkout
     for name in ("MARKER", "REPORT", "OUT_JSON", "OUT_MD"):
         if hasattr(module, name):

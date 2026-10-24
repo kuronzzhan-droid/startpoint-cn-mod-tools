@@ -4,7 +4,6 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
-import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -20,6 +19,7 @@ import wf_rogue_rewards as rewards
 import wf_rogue_save as save
 import wf_rogue_shop as shop
 import wf_rogue_validate as validate
+from tool_source import tool_source
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -29,10 +29,7 @@ MODULES = ("wf_rogue_rewards", "wf_rogue_shop", "wf_rogue_save",
 
 def copied_module(name, tool_dir, monkeypatch):
     # 复制工具本体（搬进 wf/tools 的按原相对位置放），根目录兼容入口只是转发。
-    source = ROOT / f"{name}.py"
-    moved = re.search(r'run_as_main\("([\w.]+)"\)', source.read_text(encoding="utf-8"))
-    if moved:
-        source = ROOT / (moved.group(1).replace(".", "/") + ".py")
+    source = tool_source(ROOT, f"{name}.py")
     target = tool_dir / source.relative_to(ROOT)
     target.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(source, target)
