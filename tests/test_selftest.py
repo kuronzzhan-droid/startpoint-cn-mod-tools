@@ -5,9 +5,10 @@ import tempfile
 import textwrap
 import unittest
 from pathlib import Path
+from tool_source import tool_source  # noqa: E402
 
 
-SCRIPT = Path(__file__).resolve().parents[1] / "wf_selftest.py"
+SCRIPT = tool_source(Path(__file__).resolve().parents[1], "wf_selftest.py")
 
 
 class SelftestStoreResolutionTests(unittest.TestCase):
