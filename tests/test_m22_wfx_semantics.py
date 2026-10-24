@@ -91,3 +91,93 @@ def test_old_planned_effects_stay_blocked_with_v35e():
     report = wfx_gate.check({"unique_condition": {"99000101": ",".join(row)}}, profile="test-v35e")
     assert not report.ok
     assert "wfx-damage-v1" in report.missing_capabilities()
+
+
+@pytest.mark.parametrize("sid", [
+    "wfx:34:5050:100000:150000:gerald",
+    "wfx:35:50:500:1000:gerald",
+])
+def test_shipped_holder_heal_examples_preserve_parameters_and_require_new_client(sid):
+    spec = codec.decode_sid(sid)
+    assert spec.sid == sid
+    assert not spec.pin
+    assert spec.effect["patch_version"] == "v35k"
+    row = codec.unique_row(sid, "治疗", "unique_zeta", "900", "1", bad=False)
+    rows = {"unique_condition": {"12998901": ",".join(row)}}
+    older = wfx_gate.check(rows, profile="test-v35e")
+    assert not older.ok
+    assert spec.effect["capability"] in older.missing_capabilities()
+    declared = wfx_gate.ClientProfile("synthetic-v35k", frozenset(codec.required_capabilities(spec)))
+    report = wfx_gate.check(rows, profile=declared)
+    assert report.ok, report.problems
+    assert any("TODO" in warning for warning in report.warnings)
+
+
+def test_reassigned_codes_never_resolve_to_withdrawn_gauge_capability():
+    catalog = wfx_registry.capabilities()
+    assert catalog["wfx-gauge-v1"]["status"] == "withdrawn"
+    for code, version in [(30, "v35f"), (31, "v35f"), (32, "v35j"),
+                          (33, "v35k"), (34, "v35k"), (35, "v35k"), (36, "v35l")]:
+        effect = wfx_registry.effect_codes()[code]
+        assert effect["patch_version"] == version
+        assert catalog[effect["capability"]]["status"] == "shipped"
+        assert effect["arg"] != "gauge_mask"
+        # Synthetic integer-carrier coverage, not a claim about TODO parameters.
+        spec = codec.decode_sid(f"wfx:{code}:0:1:1:carrier")
+        assert not spec.pin
+        assert "wfx-gauge-v1" not in codec.required_capabilities(spec)
+    with pytest.raises(codec.WfxError):
+        codec.decode_sid("wfx:31:127:-0.01:0:old_gauge")
+
+
+@pytest.mark.parametrize("mask,needs_v2", [(1, False), (2, False), (4, False),
+                                         (7, False), (8, True), (16, True), (27, True)])
+def test_unlock_revision_is_gated_by_actual_bits(mask, needs_v2):
+    rows = {"custom_ability_string": {"wfx_unlock_129989": str(mask)}}
+    report = wfx_gate.check(rows, profile="test-v35e")
+    assert report.ok is not needs_v2
+    assert ("leader-unlock-v2" in report.required_capabilities()) is needs_v2
+    newer = wfx_gate.ClientProfile("synthetic-v35f", frozenset({"leader-unlock-v1", "leader-unlock-v2"}))
+    assert wfx_gate.check(rows, profile=newer).ok
+
+
+@pytest.mark.parametrize("key,value", [("wfx_unlock_129989", "32"),
+                                      ("wfx_unlock_129989", "1.5"),
+                                      ("wfx_pf4_129989", "100:FF40"),
+                                      ("wfx_pf4_", "100:FF4040")])
+def test_shipped_configuration_rejects_bad_formats(key, value):
+    assert not wfx_gate.check({"custom_ability_string": {key: value}}, profile="test-v35e").ok
+
+
+def test_pf4_key_and_character_identity_tag_use_distinct_tables():
+    assert wfx_gate.check({"custom_ability_string": {"wfx_pf4_129989": "100:FF4040"}},
+                          profile="test-v35e").ok
+    older = wfx_gate.check({"character_tag": {"wfx_cid_129989": "identity"}}, profile="test-v35e")
+    assert not older.ok
+    assert "character-identity-tag-v1" in older.missing_capabilities()
+    newer = wfx_gate.ClientProfile("synthetic-v35j", frozenset({"character-identity-tag-v1"}))
+    assert wfx_gate.check({"character_tag": {"wfx_cid_129989": "identity"}}, profile=newer).ok
+
+
+def test_unlock_payload_keeps_value_when_decoded_by_gate():
+    import wf_quest_lib as nodes
+    payload = nodes.build_node({"wfx_unlock_129989": "27"})
+    entry = wfx_gate.PayloadEntry("unlock", lambda: payload, logical=wfx_gate.CUSTOM_STRING_LOGICAL)
+    report = wfx_gate.check_entries([entry], profile="test-v35e")
+    assert "leader-unlock-v2" in report.missing_capabilities()
+    key_only = wfx_gate.check(strings=iter(["wfx_unlock_129989"]), profile="test-v35e")
+    assert not key_only.ok
+    assert any("未提供位掩码值" in warning for warning in key_only.warnings)
+
+
+def test_modern_capability_reader_does_not_grant_unregistered_method_evidence():
+    from wf.caps.facts import table_signals
+    from wf.caps.signals_v35 import unique_signals
+    assert any(kind == "unsupported" and "方法证据" in value
+               for kind, value in unique_signals("wfx:34:5050:100000:150000:gerald"))
+    values = list(table_signals("master/string/custom_ability_string.orderedmap",
+                               ("wfx_unlock_129989",), "27"))
+    assert any(kind == "unsupported" and "leader-unlock-v2" in value for kind, value in values)
+    older = list(table_signals("master/string/custom_ability_string.orderedmap",
+                              ("wfx_unlock_129989",), "7"))
+    assert not any(kind == "unsupported" for kind, _ in older)

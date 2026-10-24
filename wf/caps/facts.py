@@ -8,7 +8,8 @@ import re
 from wfx_registry import patch_kinds_borrowing_uid_column
 from wf.dsl.references import program_logical
 from wf.view.layout import EM, col
-from .signals_v35 import character_signals, custom_signals, unique_signals
+from .signals_v35 import (character_signals, configuration_signals, custom_signals,
+                         unique_signals)
 from .surfaces import ABILITY_TABLES
 
 UNIQUE = "master/character/unique_condition.orderedmap"
@@ -42,7 +43,9 @@ def table_signals(logical, trail, text, *, registry=None):
     if logical == STRINGS and trail[-1].startswith("desc_override_"):
         yield "selectors", "text.desc_override"
     if logical == STRINGS:
-        yield from custom_signals(trail[-1])
+        yield from custom_signals(trail[-1], text)
+    if table == "character_tag":
+        yield from configuration_signals(table, trail[-1], text)
     if logical == UNIQUE:
         yield "unique_ids", str(trail[-1])
         for row in rows(text):

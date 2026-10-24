@@ -114,9 +114,10 @@ class RegistryDerivationTests(unittest.TestCase):
     def test_effect_codes_keep_plans_separate_from_v35e_local_evidence(self):
         registry = wfx_registry.load()
         codes = wfx_registry.effect_codes()
-        planned_codes = {10, 20, 21, 22, 23, 30, 31, 40, 50, 51, 52}
+        planned_codes = {10, 20, 21, 22, 23, 40, 50, 51, 52}
+        shipped_codes = set(range(30, 37))
         candidate_codes = {24, 25, 26, 27, 28, 29, 60, 61, 62, 71}
-        self.assertEqual(planned_codes | candidate_codes, set(codes))
+        self.assertEqual(planned_codes | candidate_codes | shipped_codes, set(codes))
         for code, effect in codes.items():
             with self.subTest(code=code):
                 band = next(item for item in registry["effect_code_ranges"]
@@ -126,11 +127,16 @@ class RegistryDerivationTests(unittest.TestCase):
                     self.assertEqual(1, band["batch"])
                     self.assertEqual("planned", capability["status"])
                     self.assertIn("wfx-core-v1", wfx_registry.capability_closure([effect["capability"]]))
+                elif code in shipped_codes:
+                    self.assertEqual("shipped", capability["status"])
+                    self.assertEqual("shipped", effect["status"])
+                    self.assertTrue(effect["patch_version"].startswith("v35"))
+                    self.assertTrue(effect["todo"])
                 else:
                     self.assertEqual("local_candidate", capability["status"])
                     self.assertEqual(64, len(capability["integration_evidence"]["swf_sha256"]))
                     self.assertNotIn("wfx-core-v1", wfx_registry.capability_closure([effect["capability"]]))
-                self.assertTrue(effect["hooks"])
+                self.assertTrue(effect.get("hooks") or effect.get("todo"))
         self.assertEqual({"0": "wfx-core-v1"},
                          {bit: entry["capability"] for bit, entry in registry["flags"]["bits"].items()})
 
@@ -364,7 +370,8 @@ class ClientProfileTests(unittest.TestCase):
             self.assertFalse(planned & profile.capabilities, name)
 
     def test_loader_rejects_planned_or_unknown_capabilities(self):
-        for bad, message in ((["wfx-core-v1"], "planned"), (["no-such-capability-v9"], "没有")):
+        for bad, message in ((["wfx-core-v1"], "planned"), (["wfx-gauge-v1"], "withdrawn"),
+                             (["no-such-capability-v9"], "没有")):
             with self.subTest(bad=bad), tempfile.TemporaryDirectory() as tmp:
                 path = Path(tmp) / "client_profiles.json"
                 path.write_text(json.dumps({

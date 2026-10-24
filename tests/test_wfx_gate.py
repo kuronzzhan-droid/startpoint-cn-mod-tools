@@ -125,8 +125,7 @@ class CheckTests(unittest.TestCase):
 
     def test_every_batch_one_code_is_blocked_on_every_current_profile(self):
         samples = {10: "wfx:10:0:-1:1:a", 20: "wfx:20:4:0.3:0:a", 21: "wfx:21:0:1:1:a",
-                   22: "wfx:22:6:-0.5:1:a", 23: "wfx:23:0:50000:1:a", 30: "wfx:30:127:0:0:a",
-                   31: "wfx:31:127:-0.01:0:a", 40: "wfx:40:0:-0.3:0:a", 50: "wfx:50:0:15:1:a",
+                   22: "wfx:22:6:-0.5:1:a", 23: "wfx:23:0:50000:1:a", 40: "wfx:40:0:-0.3:0:a", 50: "wfx:50:0:15:1:a",
                    51: "wfx:51:0:0:1:a", 52: "wfx:52:0:1:1:a"}
         planned = {code for code, effect in wfx_registry.effect_codes().items()
                    if wfx_registry.capabilities()[effect["capability"]]["status"] == "planned"}
@@ -189,7 +188,7 @@ class CheckTests(unittest.TestCase):
 
     def test_malformed_and_reserved_sids_are_blocked_regardless_of_profile(self):
         for sid in ("wfx:21:0:0:1:bad", "wfx:21:0:1:1", "wfx:99:0:1:0:a", "wfxq:990099:0:1:99000101",
-                    "wfx:31:127:-0.01:0:stack_none"):
+                    "wfx:40:0:-0.3:0:stack_none"):
             max_acc = "(None)" if sid.endswith("stack_none") else "1"
             rows = {"unique_condition": {str(UID): unique_text(sid, max_acc=max_acc)}}
             with self.subTest(sid=sid):

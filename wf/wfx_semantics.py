@@ -63,7 +63,7 @@ def candidate_profile_problems(entry, names, catalog):
         if capability["status"] == "shipped":
             continue
         if capability["status"] != "local_candidate":
-            problems.append(f"尚无客户端实现（status=planned）的 capability: {name}")
+            problems.append(f"客户端不可声明（status={capability['status']}）的 capability: {name}")
             continue
         expected = capability.get("integration_evidence", {})
         apks = expected.get("apk_sha256", {})

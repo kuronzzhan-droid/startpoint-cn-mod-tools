@@ -36,14 +36,34 @@ def wfx_problem(value):
         return str(exc)
     catalog = wfx_registry.capabilities()
     unavailable = [name for name in wf_wfx.required_capabilities(spec)
-                   if catalog[name]["status"] == "planned"]
-    return f"WFX 能力尚无客户端实现：{', '.join(unavailable)}" if unavailable else None
+                   if catalog[name]["status"] in {"planned", "withdrawn"}]
+    if unavailable:
+        return f"WFX 能力尚无客户端实现或已撤回：{', '.join(unavailable)}"
+    return catalog_gap(wf_wfx.required_capabilities(spec))
 
 
-def custom_signals(key):
+def catalog_gap(names):
+    """Shipping facts do not manufacture method evidence for the M2 catalog."""
+    import wfx_registry
+    catalog = wfx_registry.capabilities()
+    missing = [name for name in names if not catalog[name].get("capability_id")]
+    return f"TODO：已登记WFX能力尚缺客户端方法证据目录：{', '.join(missing)}" if missing else None
+
+
+def custom_signals(key, value=None):
     for prefix in CUSTOM_PREFIXES:
         if key.startswith(prefix):
             yield "selectors", "custom_ability_string." + prefix
+    if value is not None:
+        yield from configuration_signals("custom_ability_string", key, value)
+
+
+def configuration_signals(table, key, value):
+    from wf.wfx_config import configuration_checks
+    names, problems, _warnings = configuration_checks(table, key, value)
+    gap = catalog_gap(names)
+    for problem in [*problems, *([gap] if gap else [])]:
+        yield "unsupported", problem
 
 
 def character_signals(cid, row):

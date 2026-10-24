@@ -19,8 +19,10 @@ def test_final_evidence_covers_every_new_patch_and_semantic_capability():
     assert {p['number'] for p in new['patches']} == set(range(1, 132))
     assert new['unresolved'] == new['warnings'] == []
     catalog = json.loads((REPOSITORY / 'wfx_registry.json').read_text('utf-8'))
+    # Shipping a capability later does not remove its original v35e evidence.
     semantic = {c['capability_id'] for c in catalog['capabilities'].values()
-                if c['status'] == 'local_candidate'}
+                if c.get('integration_evidence', {}).get('swf_sha256')
+                == v35e_evidence()['swf_sha256']}
     assert len(semantic) == 17
     assert semantic <= new_ids - old_ids
     for cid in semantic:

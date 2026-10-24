@@ -58,6 +58,7 @@ GATE_TABLE_LOGICALS = {
     **ABILITY_TABLE_LOGICALS,
     "unique_condition": UNIQUE_CONDITION_LOGICAL,
     "custom_ability_string": CUSTOM_STRING_LOGICAL,
+    "character_tag": "master/character/character_tag.orderedmap",
 }
 DSL_SUFFIX = ".action.dsl.amf3.deflate"
 # 触发模式 → 客户端构造函数实际解析的块（瞬发行的 instant_precontent 也会被解析）。
@@ -202,9 +203,10 @@ def load_bundled_patch(path: Path | str) -> BundledPatch:
     unknown = sorted(set(added) - set(catalog))
     if unknown:
         raise GateError(f"随包补丁 {source} 声明了注册表里没有的 capability: {unknown}")
-    planned = sorted(item for item in added if catalog[item]["status"] != "shipped")
-    if planned:
-        raise GateError(f"随包补丁 {source} 声明了尚无客户端实现(status=planned)的 capability: {planned}")
+    unavailable = sorted(f"{item} (status={catalog[item]['status']})"
+                         for item in added if catalog[item]["status"] != "shipped")
+    if unavailable:
+        raise GateError(f"随包补丁 {source} 声明了不可随包发布的 capability: {unavailable}")
 
     def first(*keys: str) -> str | None:
         for key in keys:
@@ -394,6 +396,8 @@ class _Collector:
         sid, kind, spec = self.index[uid]
         if kind == "effect" and isinstance(spec, wf_wfx.WfxSpec):
             self.requirements += _spec_requirements(spec, source, f"{why} uid {uid}")
+            if spec.effect.get("todo"):
+                self.warnings.append(f"{source} uid {uid}：" + "；".join(spec.effect["todo"]))
         elif kind == "effect":
             self.problems.append(f"{source} {why}了 uid {uid},其 string_id {sid!r} 不合法: {spec}")
         elif kind == "reserved":
@@ -488,8 +492,8 @@ def check(rows: Mapping[str, Mapping[str, str]] | None = None,
           unique_context: Mapping[str, str] | None = None,
           input_problems: Iterable[str] = (),
           input_warnings: Iterable[str] = ()) -> GateReport:
-    """rows = {表种类: {键: 行文本}}（表种类见 GATE_TABLE_LOGICALS，custom_ability_string 走 strings）；
-    dsl = {标签: 已解码 DSL 树}；strings = custom_ability_string 的键；
+    """rows = {表种类: {键: 行文本}}（含 custom_ability_string 的值及 character_tag）；
+    dsl = {标签: 已解码 DSL 树}；strings = 兼容旧调用方的 custom_ability_string 键；
     unique_context = 本批不含 unique_condition 时，用来解析 uid 的现行表（通常取 store）。"""
     resolved = resolve_profile(profile if profile is not None else default_publish_profile())
     rows = rows or {}
@@ -522,6 +526,8 @@ def check(rows: Mapping[str, Mapping[str, str]] | None = None,
             except wf_wfx.WfxError:
                 continue          # 已由 unique_row_problems 报出
             collector.requirements += _spec_requirements(spec, source, "效果状态行")
+            if spec.effect.get("todo"):
+                collector.warnings.append(f"{source}：" + "；".join(spec.effect["todo"]))
 
     # 1+2. 词条五表
     for kind in ABILITY_TABLE_LOGICALS:
@@ -553,7 +559,9 @@ def check(rows: Mapping[str, Mapping[str, str]] | None = None,
     from wf_client_legality import panel_override_capability
 
     string_rules = wfx_registry.load().get("string_keys", {})
-    for key in strings:
+    custom_rows = rows.get("custom_ability_string") or {}
+    string_keys = list(dict.fromkeys([*strings, *custom_rows]))
+    for key in string_keys:
         capability = panel_override_capability(key)
         if capability is not None:
             collector.requirements.append(Requirement(
@@ -564,6 +572,22 @@ def check(rows: Mapping[str, Mapping[str, str]] | None = None,
                 for capability in wfx_registry.capability_closure([rule["capability"]]):
                     collector.requirements.append(Requirement(
                         capability, rule["level"], f"custom_ability_string[{key}]", rule.get("note", prefix)))
+
+    from wf.wfx_config import configuration_checks
+
+    configuration_rows = {"custom_ability_string": {
+        key: custom_rows.get(key) for key in string_keys},
+        "character_tag": rows.get("character_tag") or {}}
+    for table, entries in configuration_rows.items():
+        for key, value in entries.items():
+            names, problems, warnings = configuration_checks(table, key, value)
+            source = f"{table}[{key}]"
+            collector.problems.extend(f"{source}：{item}" for item in problems)
+            collector.warnings.extend(f"{source}：{item}" for item in warnings)
+            for name in names:
+                collector.requirements.append(Requirement(
+                    name, wfx_registry.capability_level(name) or "semantic", source,
+                    "v35配置前缀"))
 
     return _evaluate(resolved, collector)
 
@@ -623,7 +647,6 @@ def check_entries(entries: Iterable[PayloadEntry], profile: str | ClientProfile 
     by_logical = {logical: kind for kind, logical in GATE_TABLE_LOGICALS.items()}
     by_rel = _rel_to_kind()
     rows: dict[str, dict[str, str]] = {}
-    strings: list[str] = []
     warnings: list[str] = []
     problems: list[str] = []
     candidates: list[tuple[str, bytes, bool]] = []   # (标签, 解压后字节, 是否确知是 DSL)
@@ -646,10 +669,7 @@ def check_entries(entries: Iterable[PayloadEntry], profile: str | ClientProfile 
             if payload is None:
                 continue
             try:
-                if kind == "custom_ability_string":
-                    strings.extend(decode_keys(payload))
-                else:
-                    rows[kind] = decode_rows(payload)
+                rows[kind] = decode_rows(payload)
             except Exception as exc:
                 # 索引都解不开 = 客户端同样读不出这张表,它投递不了任何效果行;能力闸门只判能力,
                 # 不越权替表结构校验拦发布(与 B1-0 之前行为一致),只留警告。
@@ -670,7 +690,7 @@ def check_entries(entries: Iterable[PayloadEntry], profile: str | ClientProfile 
         except Exception as exc:
             if known:
                 warnings.append(f"DSL {label} 无法解析,能力闸门跳过它: {type(exc).__name__}: {exc}")
-    return check(rows, dsl, strings, resolved, unique_context=unique_context,
+    return check(rows, dsl, (), resolved, unique_context=unique_context,
                  input_problems=problems, input_warnings=warnings)
 
 
