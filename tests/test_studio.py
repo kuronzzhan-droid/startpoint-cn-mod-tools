@@ -35,9 +35,10 @@ def test_edge_versions():
 def test_route_table_dispatch():
     app = StudioApp(_FakeSource())
     routes = [(verb, pattern.pattern) for verb, pattern, _ in app.routes]
-    writes = ("^/api/drafts/", "^/api/boss/drafts/", "^/api/boss/drafts$")
+    writes = ("^/api/drafts/", "^/api/boss/drafts/", "^/api/boss/drafts$", "^/api/studio/weapons/")
     assert all(verb == "GET" or (verb == "POST" and pattern.startswith(writes)) for verb, pattern in routes)
-    for expected in ("/api/meta", "/api/characters", "/api/lookup", "/api/patches", "/api/boss/drafts"):
+    for expected in ("/api/meta", "/api/characters", "/api/lookup", "/api/patches", "/api/boss/drafts",
+                     "/api/studio/weapons", "/api/studio/weapons/clone", "/api/studio/weapons/drafts"):
         assert any(pattern.match(expected) for _, pattern, _ in app.routes), expected
     assert len(routes) == len(set(routes))  # one handler per method/path
     assert app.dispatch("GET", "/api/health", {}).status == 200
