@@ -104,6 +104,61 @@ def test_details_join_separate_soul_id_curves_all_shop_reward_slots_and_gacha(st
     assert result["enhancement_chain"][0]["startLevel"] == 0
 
 
+def test_enhancement_material_metadata_uses_current_items_and_preserves_stage_totals(state):
+    for identity, name, icon in (("1", "强化矿石", "item/ore"), ("2", "强化结晶", "item/crystal")):
+        item = s.parse_rows(state.table(ITEM)["1"])[0]
+        item[1:5] = [identity, name, icon, "atlas_member_" + identity]
+        state.set_leaf(ITEM, [identity], join(item), new=identity == "2")
+    first = s.parse_rows(state.table(ENH_SHOP)["501000501"])[0]
+    first[14:18], first[30] = ["1", "2", "2", "3"], "80"
+    state.set_leaf(ENH_SHOP, ["501000501"], join(first))
+    second = list(first)
+    second[3], second[14:18], second[30] = "2", ["1", "4", "2", "5"], "120"
+    state.set_leaf(ENH_SHOP, ["501000502"], join(second), new=True)
+
+    result = detail(state, "5010005")
+
+    assert result["enhancement_chain"][0]["costs"] == [
+        {"itemId": "1", "amount": "2", "name": "强化矿石", "icon": "item/ore"},
+        {"itemId": "2", "amount": "3", "name": "强化结晶", "icon": "item/crystal"}]
+    assert result["enhancement_chain"][1]["costs"] == [
+        {"itemId": "1", "amount": "4", "name": "强化矿石", "icon": "item/ore"},
+        {"itemId": "2", "amount": "5", "name": "强化结晶", "icon": "item/crystal"}]
+    assert result["materials_to_120"] == [
+        {"itemId": "1", "amount": 320, "name": "强化矿石", "icon": "item/ore"},
+        {"itemId": "2", "amount": 440, "name": "强化结晶", "icon": "item/crystal"}]
+    assert [stage["startLevel"] for stage in result["enhancement_chain"]] == [0, 80]
+    assert [stage["purchaseCountTo120"] for stage in result["enhancement_chain"]] == [80, 40]
+    assert [stage["row"] for stage in result["enhancement_chain"]] == [first, second]
+    assert detail(state.base, "5010005")["materials_to_120"][0]["name"] == "soul"
+
+
+def test_missing_enhancement_material_keeps_id_and_amount_with_null_metadata(state):
+    row = s.parse_rows(state.table(ENH_SHOP)["501000501"])[0]
+    row[14] = "999999"
+    state.set_leaf(ENH_SHOP, ["501000501"], join(row))
+
+    result = detail(state, "5010005")
+
+    assert result["enhancement_chain"][0]["costs"] == [
+        {"itemId": "999999", "amount": "2", "name": None, "icon": None}]
+    assert result["materials_to_120"] == [
+        {"itemId": "999999", "amount": 240, "name": None, "icon": None}]
+
+
+@pytest.mark.parametrize("fields", [("", ""), ("(None)", "(None)"), ("矿石", "(None)")])
+def test_unavailable_material_fields_are_null_without_guessing_atlas_paths(state, fields):
+    row = s.parse_rows(state.table(ITEM)["1"])[0]
+    row[2:5] = [*fields, "item_icon/ore_atlas_member"]
+    state.set_leaf(ITEM, ["1"], join(row))
+
+    result = detail(state, "5010005")
+
+    expected = {"name": fields[0] if s.present(fields[0]) else None, "icon": None}
+    for cost in (result["enhancement_chain"][0]["costs"][0], result["materials_to_120"][0]):
+        assert {key: cost[key] for key in expected} == expected
+
+
 def test_studio_overlay_uses_server_draft_awakening_element_and_gacha(state, tmp_path):
     state.set_server_keys("assets/equipment_element.json", {"5010005": 2})
     state.set_server_keys(AWAKENING, {"materialByEquipment": {"5010005": 1},

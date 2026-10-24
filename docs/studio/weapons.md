@@ -70,13 +70,26 @@
 | `equipment_enhancement` / `equipment_enhancement_ability` | 强化本体与强化能力记录 |
 | `base_status` / `enhancement_status` | 完整基础曲线和强化曲线；本接口 `status` 单独表示草稿保存状态 |
 | `curves` | 两类曲线的点数及首尾 HP/攻击 |
-| `enhancement_chain` | 强化商品阶段、原生行、材料、普通货币、等级范围 |
-| `materials_to_120` / `user_costs_to_120` | 沿用现有模型的到 120 级材料/普通货币累计 |
+| `enhancement_chain` | 强化商品阶段、原生行、材料、普通货币、等级范围；`costs[]` 含材料 `itemId`、`amount`、`name`、`icon` |
+| `materials_to_120` / `user_costs_to_120` | 沿用现有模型的到 120 级材料/普通货币累计；材料条目同样含 `name`、`icon` |
 | `awakening` | 本机专用材料限制、稀有度覆盖、客户端材料文案和原生通用材料行；缺少输入时显式标注 |
 | `references` / `referenceCoverage` | 商店及客户端/服务端装备卡池引用及扫描范围；权重 0 的条目仍是引用，不等于开放获取 |
 | `changeset` / `status` / `checks` | 草稿、保存状态及规则结果；未设置魂珠属性时包含继承提醒 |
 
 记录类型字段包含 `table`、`path`、`row`、`source`；找不到关联行时为 null。前端须处理 null，不推断其已经通过验证。
+
+`enhancement_chain[].costs[]` 与 `materials_to_120[]` 的 `name`、`icon` 从当前候选视图的材料 item 行读取，分别对应 c2 名称和 c3 图标逻辑路径。关联材料不存在或字段为空、`(None)` 时，对应字段为 null；仍保留 `itemId` 和数量，不把图集成员名 c4 当作 PNG 路径。图标可用第 1 节的 `/api/boss/icon.png` 接口读取，路径存在不代表已经验证图像文件可用。阶段的 `amount` 保持原生字符串，累计的 `amount` 保持整数，例如：
+
+```json
+{
+  "enhancement_chain": [{"costs": [
+    {"itemId": "1", "amount": "2", "name": "强化矿石", "icon": "item/ore"}
+  ]}],
+  "materials_to_120": [
+    {"itemId": "1", "amount": 240, "name": "强化矿石", "icon": "item/ore"}
+  ]
+}
+```
 
 商店引用扫描客户端的领主币商店、活动道具商店和强化商店，以及本机服务端的 `boss_coin_shop`、`event_item_shop`、`event_item_shop_rank_p5b`、`general_shop`、`star_grain_shop`、`treasure_shop`、`equipment_enhancement_shop` JSON。服务端来源是否可用逐个列在 `referenceCoverage.serverShops`；false 表示缺少输入，不代表没有该类商店。羁绊兑换通过已核实的 `general_shop.json` 奖励关系关联，不猜其他客户端商店列位。
 

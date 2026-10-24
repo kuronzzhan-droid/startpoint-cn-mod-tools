@@ -126,6 +126,19 @@ def _curve(rows):
             "last": points[-1] if points else None}
 
 
+def _material_costs(tables, costs):
+    result = []
+    for cost in costs:
+        item = record(tables, ITEM, [cost["itemId"]])
+        row = item["row"] if item else []
+        # Native item c2 is its display name; c3 is the image logical path.
+        # c4 names an atlas member and must not be invented as a PNG path.
+        name, icon = s.cell(row, 2), s.cell(row, 3)
+        result.append({**cost, "name": name if s.present(name) else None,
+                       "icon": icon if s.present(icon) else None})
+    return result
+
+
 def _awakening(tables, source, identity, row, server_dir):
     document, available = _server(source, AWAKENING, server_dir)
     material_map, rarities = document.get("materialByEquipment", {}), document.get("rarityOverrides", {})
@@ -155,6 +168,9 @@ def detail(source, identifier, *, server_dir=None):
     card = _card(tables, identity, main["row"], elements, _official(source))
     refs, coverage = references(tables, source, identity, card["soulId"], server_dir, _server)
     return {"schema": "wf-studio-weapon/1", "version": tables.version, **model, **card,
+            "enhancement_chain": [{**stage, "costs": _material_costs(tables, stage["costs"])}
+                                  for stage in model["enhancement_chain"]],
+            "materials_to_120": _material_costs(tables, model["materials_to_120"]),
             "curves": {"base": _curve(model["status"]), "enhancement": _curve(model["enhancement_status"])},
             "awakening": _awakening(tables, source, identity, main["row"], server_dir),
             "references": refs, "referenceCoverage": coverage,
