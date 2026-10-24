@@ -112,6 +112,9 @@ class StudioApp:
         from .boss_routes import BossRoutes
         self.boss = BossRoutes(self, server_dir, default_provides)
         self.routes.extend(self.boss.routes())
+        from .weapon_routes import WeaponRoutes
+        self.weapons = WeaponRoutes(self, server_dir, default_provides)
+        self.routes.extend(self.weapons.routes())
         from .timeline_routes import TimelineRoutes
         self.timelines = TimelineRoutes(self)
         self.routes.extend(self.timelines.routes())

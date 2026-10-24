@@ -8,7 +8,7 @@
   "required": ["schema", "characterId", "code", "baseView", "createdAt", "updatedAt", "savedAt", "revision", "savedRevision", "changes"],
   "properties": {
     "schema": {"const": "wf-studio-draft/1"},
-    "subjectKind": {"enum": ["character", "boss"], "description": "旧角色草稿可省略；boss 使用独立草稿目录，characterId 为兼容容器中的副本 ID"},
+    "subjectKind": {"enum": ["character", "boss", "weapon"], "description": "旧角色草稿可省略；boss/weapon 使用独立草稿目录，characterId 为兼容容器中的主体 ID"},
     "characterId": {"type": "string"},
     "code": {"$ref": "#/$defs/code"},
     "scratch": {"$ref": "#/$defs/scratchMeta"},
@@ -28,6 +28,13 @@
     "else": {"properties": {"characterId": {"anyOf": [{"$ref": "#/$defs/characterId"}, {"$ref": "#/$defs/scratchId"}]}}}
   }],
   "$defs": {
+    "weaponRequest": {
+      "allOf": [
+        {"$ref": "#/$defs/bossShopWeaponRequest"},
+        {"properties": {"operation": {"enum": ["weapon_clone", "weapon_materials"]}},
+         "not": {"required": ["atlasBudget"]}}
+      ]
+    },
     "bossParameters": {
       "type": "object", "additionalProperties": false,
       "properties": {
@@ -895,7 +902,7 @@
       "required": ["id", "kind", "title", "createdAt", "target", "params", "files", "pending", "checks"],
       "properties": {
         "id": {"type": "string", "pattern": "^c-[0-9a-f]{12}$"},
-        "kind": {"enum": ["portrait", "pixel_action", "pixel_family", "voice_line", "ability_edit", "boss"]},
+        "kind": {"enum": ["portrait", "pixel_action", "pixel_family", "voice_line", "ability_edit", "boss", "weapon"]},
         "title": {"type": "string", "minLength": 1},
         "createdAt": {"$ref": "#/$defs/timestamp"},
         "target": {"type": "object"},
@@ -905,6 +912,23 @@
         "checks": {"type": "array", "items": {"$ref": "#/$defs/check"}}
       },
       "allOf": [
+        {
+          "if": {"properties": {"kind": {"const": "weapon"}}},
+          "then": {"properties": {
+            "target": {"type": "object", "additionalProperties": false, "required": ["weapon"],
+                       "properties": {"weapon": {"$ref": "#/$defs/characterId"}}},
+            "params": {"type": "object", "additionalProperties": false, "required": ["requests", "inputs"],
+              "properties": {
+                "requests": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/weaponRequest"}},
+                "inputs": {"type": "object", "additionalProperties": false, "required": ["client", "server"],
+                  "properties": {
+                    "client": {"type": "object", "additionalProperties": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]}},
+                    "server": {"type": "object", "additionalProperties": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]}}
+                  }}
+              }},
+            "files": {"maxItems": 0}, "pending": {"maxItems": 0}
+          }}
+        },
         {
           "if": {"properties": {"kind": {"const": "boss"}}},
           "then": {"properties": {

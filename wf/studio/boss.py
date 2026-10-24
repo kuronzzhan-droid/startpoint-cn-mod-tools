@@ -167,6 +167,10 @@ class BossEditor:
                 if request["operation"] == "weapon_clone":
                     weapons.append(request["weapon"]["id"])
                     enhancement_products.extend(request["weapon"].get("enhancementProducts", []))
+        from .weapon_store import WeaponDraftStore, reservations
+        standalone = reservations(WeaponDraftStore(self.store.root.parent / "weapons"))
+        weapons.extend(standalone["weapons"])
+        enhancement_products.extend(standalone["enhancementProducts"])
         return {"quests": quests, "nodes": nodes, "products": products,
                 "weapons": weapons, "enhancementProducts": enhancement_products}
 
