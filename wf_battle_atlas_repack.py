@@ -234,6 +234,7 @@ def repack_atlas(
     max_height: int = 2048,
     gap: int = 2,
     sort_mode: str = "height",
+    exact_width: bool = True,
 ) -> RepackResult:
     source_image = decode_png(png_payload)
     source_records = decode_atlas(atlas_payload)
@@ -247,7 +248,7 @@ def repack_atlas(
         gap=gap,
         sort_mode=sort_mode,
     )
-    if output_size[0] != target_width:
+    if exact_width and output_size[0] != target_width:
         raise ValueError(f"packed width {output_size[0]} does not equal target width {target_width}")
     if expected_height is not None and output_size[1] != expected_height:
         raise ValueError(
