@@ -9,6 +9,6 @@ if __name__ == "__main__":
 
     run_as_main("wf.tools.boss.boss_limit_icon")
 else:
-    from wf.tools.boss import boss_limit_icon as _implementation
+    import importlib as _importlib
 
-    _sys.modules[__name__] = _implementation
+    _sys.modules[__name__] = _importlib.import_module("wf.tools.boss.boss_limit_icon")

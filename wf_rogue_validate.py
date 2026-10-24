@@ -9,6 +9,6 @@ if __name__ == "__main__":
 
     run_as_main("wf.tools.rogue.rogue_validate")
 else:
-    from wf.tools.rogue import rogue_validate as _implementation
+    import importlib as _importlib
 
-    _sys.modules[__name__] = _implementation
+    _sys.modules[__name__] = _importlib.import_module("wf.tools.rogue.rogue_validate")

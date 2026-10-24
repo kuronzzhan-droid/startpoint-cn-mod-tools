@@ -9,6 +9,6 @@ if __name__ == "__main__":
 
     run_as_main("wf.tools.boss.five_boss_v2")
 else:
-    from wf.tools.boss import five_boss_v2 as _implementation
+    import importlib as _importlib
 
-    _sys.modules[__name__] = _implementation
+    _sys.modules[__name__] = _importlib.import_module("wf.tools.boss.five_boss_v2")

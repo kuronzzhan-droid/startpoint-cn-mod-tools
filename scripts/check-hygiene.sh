@@ -65,11 +65,11 @@ ALLOW_LINES=(
     'tests/test_offline_bundle.py|payload = b"prefix\n-----BEGIN EC PRIVATE KEY-----\nsuffix\n"'
     'tests/test_offline_bundle.py|(scan / "marker.txt").write_bytes(b"-----BEGIN PRIVATE KEY-----")'
     'tests/test_wiki_battle_package.py|cases = [r'"'"'C:\Users\fixture\secret.json'"'"', '"'"'C:/Users/fixture/secret.json'"'"','
-    'wf_offline_bundle.py|b"-----BEGIN PRIVATE KEY-----",'
-    'wf_offline_bundle.py|b"-----BEGIN ENCRYPTED PRIVATE KEY-----",'
-    'wf_offline_bundle.py|b"-----BEGIN RSA PRIVATE KEY-----",'
-    'wf_offline_bundle.py|b"-----BEGIN EC PRIVATE KEY-----",'
-    'wf_offline_bundle.py|b"-----BEGIN OPENSSH PRIVATE KEY-----",'
+    'wf/tools/release/offline_bundle.py|b"-----BEGIN PRIVATE KEY-----",'
+    'wf/tools/release/offline_bundle.py|b"-----BEGIN ENCRYPTED PRIVATE KEY-----",'
+    'wf/tools/release/offline_bundle.py|b"-----BEGIN RSA PRIVATE KEY-----",'
+    'wf/tools/release/offline_bundle.py|b"-----BEGIN EC PRIVATE KEY-----",'
+    'wf/tools/release/offline_bundle.py|b"-----BEGIN OPENSSH PRIVATE KEY-----",'
 )
 
 allowed_line() {
