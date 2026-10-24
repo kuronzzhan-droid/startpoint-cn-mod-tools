@@ -30,7 +30,7 @@ from wf_release_migrate_plan import (
 
 
 DEFAULT_CONTRACT_PATH = (
-    Path(__file__).resolve().parent
+    Path(__file__).resolve().parents[3]
     / "release-contracts"
     / "local-live-migrations-1.4.312.json"
 )

@@ -556,7 +556,7 @@ def _contained_read(root: Path, relative: str) -> bytes:
 
 
 def _parser() -> argparse.ArgumentParser:
-    repo = Path(__file__).resolve().parent.parent
+    repo = Path(__file__).resolve().parents[4]
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--contracts", type=Path,

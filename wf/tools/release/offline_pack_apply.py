@@ -76,7 +76,7 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
-TOOLS = Path(__file__).resolve().parent
+TOOLS = Path(__file__).resolve().parents[3]
 ROOT = TOOLS.parent
 if str(TOOLS) not in sys.path:
     pass  # Imports resolve from this checkout/package, not external source copies.

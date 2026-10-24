@@ -54,7 +54,7 @@ import zipfile
 import zlib
 from pathlib import Path
 
-TOOL_DIR = Path(__file__).resolve().parent
+TOOL_DIR = Path(__file__).resolve().parents[3]
 pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_mod_tool as core  # noqa: E402
 

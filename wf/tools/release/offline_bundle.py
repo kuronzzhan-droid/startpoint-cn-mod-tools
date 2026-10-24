@@ -59,7 +59,7 @@ MARKER_PATHS = {
 }
 PATCH_ORDER = ("abyss-mode-equipment", "seris-phase4", "render-scale", "resource-version")
 PASSWORD_ENV = "WF_OFFLINE_KEYSTORE_PASSWORD"
-TEMPLATE_PATH = Path(__file__).resolve().parent / "templates" / "offline-import-guide.zh-CN.txt"
+TEMPLATE_PATH = Path(__file__).resolve().parents[3] / "templates" / "offline-import-guide.zh-CN.txt"
 
 REQUIRED_MANUAL_CHECKS = (
     "home_party_character_list_open",

@@ -24,7 +24,7 @@ from wf_asset_inventory import DEFAULT_CHUNK_SIZE
 from wf_character_pack import ARCHIVE_PREFIXES
 
 
-MOD_DIR = Path(__file__).resolve().parent
+MOD_DIR = Path(__file__).resolve().parents[3]
 REPO_ROOT = MOD_DIR
 RootName = Literal["common", "medium", "android"]
 RootedKey = tuple[RootName, str]

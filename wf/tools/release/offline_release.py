@@ -29,7 +29,7 @@ from types import SimpleNamespace
 from typing import Any, Literal
 
 
-REPO_ROOT = Path(__file__).resolve().parent
+REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_OUTPUT_ROOT = REPO_ROOT / "out" / "wf-offline-android"
 DEFAULT_SNAPSHOT_VERSION = "1.4.196"
 DEFAULT_SOURCE_APK = Path.home() / "Downloads" / "base.apk.1"
