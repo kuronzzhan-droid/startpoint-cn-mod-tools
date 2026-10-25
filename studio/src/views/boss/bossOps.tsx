@@ -2,7 +2,7 @@
 // plus small read helpers (section loading keyed to the draft revision, CSV cells).
 import { useEffect, useState } from "preact/hooks";
 import { Changeset } from "../../api";
-import { AnyBossRequest, boss, SectionResponse } from "../../bossApi";
+import { AnyBossRequest, boss, BossPreview, SectionResponse } from "../../bossApi";
 import { href } from "../../router";
 import { Notice } from "../common";
 import { PreviewState, useLivePreview } from "./BossParams";
@@ -42,14 +42,33 @@ export interface BossOp {
   preview: ReturnType<typeof useLivePreview>["preview"];
   runNow: () => void;
   write: () => Promise<void>;
-  message: { kind: "info" | "error"; text: string; link?: string } | null;
+  message: { kind: "info" | "error"; text: string; link?: string; linkText?: string } | null;
   clearMessage: () => void;
 }
 
-/** Live preview (debounced) + write of one boss operation against this quest's draft. */
-export function useBossOp(questId: string, request: AnyBossRequest | null, problems: string[],
+/** Where one operation previews and writes. A plain quest id means that quest's boss draft;
+ * 武器工坊 passes its own target (weapon namespace, its own 「本次修改」 link). */
+export interface OpTarget {
+  id: string;
+  preview: (id: string, request: AnyBossRequest) => Promise<BossPreview>;
+  apply: (request: AnyBossRequest) => Promise<{ label: string; link: string; linkText?: string }>;
+}
+
+function bossTarget(questId: string): OpTarget {
+  return {
+    id: questId, preview: boss.preview,
+    apply: async (request) => {
+      const result = await boss.apply(questId, request);
+      return { label: result.status.label, link: href({ work: "content", shop: "boss", quest: result.questId, tab: "changes" }) };
+    },
+  };
+}
+
+/** Live preview (debounced) + write of one boss operation against this quest's draft (or another `OpTarget`). */
+export function useBossOp(target: string | OpTarget, request: AnyBossRequest | null, problems: string[],
   onPreview: (state: PreviewState) => void, onWritten?: () => void): BossOp {
-  const live = useLivePreview(questId, request, problems, onPreview);
+  const where = typeof target === "string" ? bossTarget(target) : target;
+  const live = useLivePreview(where.id, request, problems, onPreview, where.preview);
   const [writing, setWriting] = useState(false);
   const [writtenFor, setWrittenFor] = useState<string | null>(null);
   const [message, setMessage] = useState<BossOp["message"]>(null);
@@ -62,11 +81,11 @@ export function useBossOp(questId: string, request: AnyBossRequest | null, probl
     setWriting(true);
     setMessage(null);
     try {
-      const result = await boss.apply(questId, request);
+      const result = await where.apply(request);
       setWrittenFor(key);
       setMessage({
-        kind: "info", text: `已写入草稿（${result.status.label}）。到「本次修改」保存后才能生成。`,
-        link: href({ work: "content", shop: "boss", quest: result.questId, tab: "changes" }),
+        kind: "info", text: `已写入草稿（${result.label}）。到「本次修改」保存后才能生成。`,
+        link: result.link, linkText: result.linkText,
       });
       onWritten?.();
     } catch (e) {
@@ -101,7 +120,7 @@ export function OpActions({ op, problems, onReset, idle = "还没有改动", wri
         <span class="small muted">{status}</span>
       </div>
       {op.message ? (
-        <Notice kind={op.message.kind}>{op.message.text}{op.message.link ? <> <a href={op.message.link}>打开「本次修改」→</a></> : null}</Notice>
+        <Notice kind={op.message.kind}>{op.message.text}{op.message.link ? <> <a href={op.message.link}>{op.message.linkText ?? "打开「本次修改」→"}</a></> : null}</Notice>
       ) : null}
       {op.fresh && op.preview?.changes?.length ? (
         <details class="tech">

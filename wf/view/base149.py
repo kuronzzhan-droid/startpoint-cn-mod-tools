@@ -10,6 +10,7 @@ import zipfile
 from pathlib import Path
 from wf.paths import path
 import wf_quest_lib as q
+from .members import archive_members
 
 SALT = q.SALT
 
@@ -27,14 +28,17 @@ class HistoricalView:
         self.zips = []
         names = sorted(p.name for p in self.active.iterdir())
         for version in range(131, self.tip):
-            pattern = re.compile(rf"^pinball-1\.4\.{version}-1\.4\.{version+1}-\d+-.*\.zip$")
-            self.zips.extend(self.active / name for name in names if pattern.match(name) and "candidate" not in name)
+            pattern = re.compile(rf"^pinball-1\.4\.{version}-1\.4\.{version+1}-(\d+)-.*\.zip$")
+            parts = [(int(match[1]), name) for name in names
+                     if (match := pattern.match(name)) and "candidate" not in name]
+            self.zips.extend(self.active / name for _, name in sorted(parts))
         self.zips.extend(Path(p) for p in extra_zips)
-        self.index = {}
+        self.index, self._zip_members = {}, {}
         for archive in self.zips:
             with zipfile.ZipFile(archive) as z:
-                for name in z.namelist():
+                for name, original in archive_members(z).items():
                     self.index[name] = archive
+                    self._zip_members[name] = original
 
     def read_raw(self, logical):
         return self.read_member(member(logical))
@@ -43,7 +47,7 @@ class HistoricalView:
         if name in self.index:
             archive = self.index[name]
             with zipfile.ZipFile(archive) as z:
-                data, source = z.read(name), archive.name
+                data, source = z.read(self._zip_members.get(name, name)), archive.name
         else:
             data, source = self.read_store_member(name), "store131"
         self.read_members[name] = {"sha256": hashlib.sha256(data).hexdigest(), "source": source}

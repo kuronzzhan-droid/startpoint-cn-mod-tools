@@ -1,0 +1,42 @@
+/* 武器工坊：左列表 / 中详情 / 右检查（复用 BOSS工坊 的 boss-block、boss-table、boss-checks） */
+.weapon-page { max-width: 1480px; }
+.weapon-layout { display: grid; grid-template-columns: 300px minmax(0, 1fr) 300px; gap: 14px; align-items: start; }
+.weapon-layout > .boss-main:only-of-type { grid-column: 2 / span 2; }
+.weapon-side {
+  position: sticky; top: 64px; max-height: calc(100vh - 80px); overflow: auto; padding: 8px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+}
+.weapon-side .search { width: 100%; max-width: none; margin: 0 0 6px; }
+.weapon-filters { display: flex; gap: 6px; margin-bottom: 6px; }
+.weapon-filters select { flex: 1; min-width: 0; }
+.weapon-rows, .weapon-drafts ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 2px; }
+.weapon-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 4px 6px; border-radius: 6px; color: var(--text); }
+.weapon-row:hover { background: var(--surface-2); text-decoration: none; }
+.weapon-row.on { background: var(--accent-soft); }
+.weapon-row-main { display: flex; flex-direction: column; min-width: 0; }
+.weapon-row-main .small { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+.weapon-row-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.weapon-row-side { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.weapon-row-side .el-badge { width: 20px; height: 20px; font-size: 11px; }
+.weapon-row-side .origin { font-size: 10.5px; padding: 0 5px; }
+.weapon-drafts { border: 1px solid var(--accent); border-radius: 8px; padding: 4px 6px 6px; margin-bottom: 8px; }
+.weapon-drafts h4 { margin: 2px 2px 4px; display: flex; align-items: center; gap: 4px; }
+.weapon-drafts a { display: flex; justify-content: space-between; gap: 6px; padding: 2px 6px; border-radius: 6px; color: var(--text); }
+.weapon-drafts a.on, .weapon-drafts a:hover { background: var(--accent-soft); text-decoration: none; }
+.weapon-header .weapon-icon { border-radius: 10px; }
+.weapon-header .header-actions button.header-btn { cursor: pointer; }
+.soul-elements { border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px 8px; }
+.soul-elements legend { font-size: 12.5px; font-weight: 600; padding: 0 4px; }
+.soul-pick { display: flex; gap: 12px; flex-wrap: wrap; margin: 4px 0; }
+.clone-wizard textarea { width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; background: var(--surface); font: inherit; }
+@media (max-width: 1100px) {
+  .weapon-layout { grid-template-columns: minmax(0, 1fr); }
+  .weapon-side { position: static; max-height: 360px; }
+}
+.weapon-draft-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.material-list { display: inline-flex; flex-wrap: wrap; gap: 2px 10px; vertical-align: middle; }
+.material { display: inline-flex; align-items: center; gap: 4px; }
+.material .weapon-icon { border-radius: 4px; }
+.icon-preview { display: flex; align-items: flex-end; gap: 12px; margin: 6px 0; }
+.icon-preview img { background: repeating-conic-gradient(var(--surface-2) 0% 25%, var(--surface) 0% 50%) 50% / 8px 8px; border: 1px solid var(--border); }
+img.pixelated { image-rendering: pixelated; }

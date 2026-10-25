@@ -9,6 +9,8 @@ from .drafts import DraftError
 
 
 def source_arguments(parser):
+    parser.add_argument("--view", dest="view_name", help="profiles/local.json 中的命名视图")
+    parser.add_argument("--view-base-version", dest="view_base_version", help="视图基线版本，默认 1.4.131")
     parser.add_argument("--manifest", type=Path, help="精确版本视图的只读 manifest")
     parser.add_argument("--store", type=Path, help="只读基线 store")
     parser.add_argument("--zip-dir", type=Path, action="append", default=None)
@@ -17,6 +19,14 @@ def source_arguments(parser):
 
 
 def add_commands(sub):
+    from .view_commands import add_commands as add_views
+    from .discovery_commands import add_commands as add_discovery
+    add_views(sub)
+    add_discovery(sub)
+    from .character_routes import add_character_commands
+    from .weapon_cli import add_weapon_commands
+    add_character_commands(sub)
+    add_weapon_commands(sub)
     add_device_result(sub)
     p = sub.add_parser("boss", help="读取、编辑副本草稿；new 按暗凛模板新建共同决战")
     p.add_argument("cid", help="副本 ID、kind:path 选择器或 new")
@@ -51,7 +61,7 @@ def add_commands(sub):
     p.add_argument("--baseline-manifest-extra", type=Path, action="append", default=[])
     p.add_argument("--baseline-zip-dir", type=Path, action="append", default=[])
     p.add_argument("--base-store", type=Path)
-    p.add_argument("--base-version", default="1.4.131")
+    p.add_argument("--base-version", help="交付基线版本；默认沿用所选视图")
     p.add_argument("--view-lock", type=Path)
     p.add_argument("--pathlist", type=Path)
     # Permit the convenient command-local spelling without losing global values.
@@ -82,7 +92,9 @@ def run_ability(args, source, store):
 
 
 def run_build(args, store):
+    from .build_view import baseline_from_args
     from .deliver_bridge import build_draft
+    baseline = baseline_from_args(args)
     if getattr(args, "boss", False):
         from .boss import BossDraftStore
         store = BossDraftStore(store.root / "boss")
@@ -90,11 +102,9 @@ def run_build(args, store):
                        out=args.out, store=store, provides=args.provides,
                        client_profile=args.client_profile,
                        allow_unknown_client=args.allow_unknown_client,
-                       baseline_manifest=args.baseline_manifest or args.manifest,
-                       baseline_manifests=args.baseline_manifest_extra or args.manifest_extra,
-                       baseline_zip_dirs=args.baseline_zip_dir or args.zip_dir,
-                       base_store=args.base_store or args.store, base_version=args.base_version,
-                       view_lock=args.view_lock, server_dir=args.server_dir, pathlist=args.pathlist)
+                       baseline_view=baseline, base_store=baseline.store,
+                       base_version=baseline.base_version,
+                       server_dir=args.server_dir, pathlist=args.pathlist)
 
 
 def add_device_result(sub):

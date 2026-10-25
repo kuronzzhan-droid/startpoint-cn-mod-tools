@@ -8,7 +8,7 @@
   "required": ["schema", "characterId", "code", "baseView", "createdAt", "updatedAt", "savedAt", "revision", "savedRevision", "changes"],
   "properties": {
     "schema": {"const": "wf-studio-draft/1"},
-    "subjectKind": {"enum": ["character", "boss"], "description": "旧角色草稿可省略；boss 使用独立草稿目录，characterId 为兼容容器中的副本 ID"},
+    "subjectKind": {"enum": ["character", "boss", "weapon"], "description": "旧角色草稿可省略；boss/weapon 使用独立草稿目录，characterId 为兼容容器中的主体 ID"},
     "characterId": {"type": "string"},
     "code": {"$ref": "#/$defs/code"},
     "scratch": {"$ref": "#/$defs/scratchMeta"},
@@ -28,6 +28,52 @@
     "else": {"properties": {"characterId": {"anyOf": [{"$ref": "#/$defs/characterId"}, {"$ref": "#/$defs/scratchId"}]}}}
   }],
   "$defs": {
+    "characterCloneRequest": {
+      "type": "object", "additionalProperties": false, "required": ["from", "to", "code"],
+      "properties": {
+        "from": {"$ref": "#/$defs/characterId"}, "to": {"$ref": "#/$defs/characterId"},
+        "code": {"$ref": "#/$defs/code"}, "skill": {"enum": ["copy", "reuse"], "default": "copy"},
+        "element": {"type": "integer", "minimum": 0, "maximum": 5},
+        "name": {"type": "string", "minLength": 1, "maxLength": 80}
+      }
+    },
+    "weaponRequest": {
+      "oneOf": [
+        {"allOf": [
+          {"$ref": "#/$defs/bossShopWeaponRequest"},
+          {"properties": {"operation": {"enum": ["weapon_clone", "weapon_materials"]}},
+           "not": {"required": ["atlasBudget"]}}
+        ]},
+        {"type": "object", "additionalProperties": false, "required": ["operation", "weapon"],
+         "properties": {"operation": {"const": "weapon_icon"}, "weapon": {"$ref": "#/$defs/weaponIconRequest"}}}
+      ]
+    },
+    "weaponIconRequest": {
+      "type": "object", "additionalProperties": false, "required": ["id", "kind", "png"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[1-9][0-9]*$", "maxLength": 8},
+        "kind": {"enum": ["weapon", "soul", "material"]},
+        "png": {"type": "string", "minLength": 1, "maxLength": 2000000},
+        "item_id": {"type": "string", "pattern": "^[1-9][0-9]*$", "maxLength": 10}
+      },
+      "allOf": [{"if": {"properties": {"kind": {"const": "material"}}}, "then": {"required": ["item_id"]}}]
+    },
+    "weaponSoulTemplate": {
+      "type": "object", "additionalProperties": false, "required": ["template", "element", "multiplier"],
+      "properties": {
+        "template": {"enum": ["pf_hit_ability_damage", "pf_use_ability_damage", "pf_hit_invoke_damage", "pf_use_invoke_damage"]},
+        "element": {"type": "integer", "minimum": 0, "maximum": 5},
+        "multiplier": {"type": "number", "exclusiveMinimum": 0, "maximum": 21474},
+        "max_multiplier": {"type": "number", "exclusiveMinimum": 0, "maximum": 21474},
+        "trigger_limit": {"type": ["integer", "null"], "minimum": 1, "maximum": 2147483647},
+        "cooldown_frames": {"type": "integer", "minimum": 0, "maximum": 2147483647},
+        "damage_target": {"enum": ["trigger_enemy", "all_enemies", "nearest_enemy"]},
+        "hit_effect": {"enum": ["Explosion", "None"]},
+        "dsl_element": {"type": "integer", "minimum": 1, "maximum": 6}
+      },
+      "allOf": [{"if": {"properties": {"template": {"enum": ["pf_hit_invoke_damage", "pf_use_invoke_damage"]}}},
+                 "then": {"required": ["hit_effect", "dsl_element"]}}]
+    },
     "bossParameters": {
       "type": "object", "additionalProperties": false,
       "properties": {
@@ -449,6 +495,8 @@
                     {"required": ["description"]},
                     {"required": ["icon"]},
                     {"required": ["enhancedIcon"]},
+                    {"required": ["soulDescription"]},
+                    {"required": ["soul_elements"]},
                     {"required": ["hpMultiplier"]},
                     {"required": ["attackMultiplier"]},
                     {"required": ["abilities"]},
@@ -530,16 +578,27 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "id": {"type": "string", "pattern": "^[1-9][0-9]*$", "maxLength": 10},
+        "code": {"type": "string", "pattern": "^[a-z][a-z0-9_]{0,79}$"},
+        "exclusive_character": {"type": "string", "pattern": "^[1-9][0-9]*$", "maxLength": 10},
+        "soul_template": {"$ref": "#/$defs/weaponSoulTemplate"},
+        "id": {"type": "string", "pattern": "^(?:[1-9][0-9]{0,6}|1[0-9]{7}|20[0-9]{6}|21[0-3][0-9]{5}|214[0-6][0-9]{4}|2147[0-3][0-9]{3}|21474[0-7][0-9]{2}|214748[0-2][0-9]|2147483[0-5])$", "maxLength": 8},
         "sourceWeapon": {"type": "string", "pattern": "^[1-9][0-9]*$", "maxLength": 10},
         "name": {"type": "string", "minLength": 1, "maxLength": 80},
         "description": {"type": "string", "minLength": 1, "maxLength": 57},
+        "soulDescription": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "soul_elements": {
+          "oneOf": [
+            {"enum": ["all", "auto"]},
+            {"type": "array", "minItems": 1, "maxItems": 6, "uniqueItems": true,
+             "items": {"type": "integer", "minimum": 0, "maximum": 5}}
+          ]
+        },
         "icon": {"type": "string", "minLength": 1, "maxLength": 240},
         "enhancedIcon": {"type": "string", "minLength": 1, "maxLength": 240},
         "hpMultiplier": {"type": "number", "exclusiveMinimum": 0, "maximum": 1000},
         "attackMultiplier": {"type": "number", "exclusiveMinimum": 0, "maximum": 1000},
         "abilities": {"type": "array", "minItems": 1, "maxItems": 100, "items": {"$ref": "#/$defs/bossWeaponAbility"}},
-        "enhancementProducts": {"type": "array", "items": {"type": "string", "pattern": "^[1-9][0-9]*$", "maxLength": 10}, "uniqueItems": true},
+        "enhancementProducts": {"type": "array", "maxItems": 99, "items": {"type": "string", "pattern": "^[1-9][0-9]*$", "maxLength": 10}, "uniqueItems": true},
         "stages": {
           "type": "array",
           "minItems": 1,
@@ -631,8 +690,8 @@
     "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "logicalPath": {
       "type": "string",
-      "pattern": "^(character|battle)/[a-z0-9_]+(/[A-Za-z0-9_.\\-]+)+$",
-      "description": "游戏逻辑路径（未哈希），只允许 character/ 与 battle/ 下"
+      "pattern": "^(character|battle|master)/[a-z0-9_]+(/[A-Za-z0-9_.\\-]+)+$",
+      "description": "游戏逻辑路径（未哈希）；媒体使用 character/ 与 battle/，master/ 仅允许 character_clone 的存储态文件"
     },
     "draftPath": {
       "type": "string",
@@ -663,8 +722,8 @@
         "sha256": {"$ref": "#/$defs/sha256", "description": "草稿文件（标准格式）的 SHA-256"},
         "size": {"type": "integer", "minimum": 1},
         "encoding": {
-          "enum": ["png", "mp3", "atf-deflate", "amf3-deflate"],
-          "description": "png/mp3 为标准格式，交付时由 wf_assets.png_encode / mp3_encode 转成存储态；atf-deflate / amf3-deflate（像素 atlas/frame/timeline）已是游戏字节"
+          "enum": ["png", "mp3", "atf-deflate", "amf3-deflate", "stored"],
+          "description": "png/mp3 为标准格式，交付时由 wf_assets.png_encode / mp3_encode 转成存储态；atf-deflate / amf3-deflate 已是游戏字节；stored 仅用于 character_clone 已编码的原始游戏字节"
         },
         "storeSha256": {"$ref": "#/$defs/sha256", "description": "按存储态编码后的 SHA-256（png/mp3 才有）"},
         "base": {
@@ -885,7 +944,7 @@
       "required": ["id", "kind", "title", "createdAt", "target", "params", "files", "pending", "checks"],
       "properties": {
         "id": {"type": "string", "pattern": "^c-[0-9a-f]{12}$"},
-        "kind": {"enum": ["portrait", "pixel_action", "pixel_family", "voice_line", "ability_edit", "boss"]},
+        "kind": {"enum": ["portrait", "pixel_action", "pixel_family", "voice_line", "ability_edit", "boss", "weapon", "character_clone"]},
         "title": {"type": "string", "minLength": 1},
         "createdAt": {"$ref": "#/$defs/timestamp"},
         "target": {"type": "object"},
@@ -895,6 +954,39 @@
         "checks": {"type": "array", "items": {"$ref": "#/$defs/check"}}
       },
       "allOf": [
+        {"if": {"properties": {"kind": {"const": "character_clone"}}}, "then": {"properties": {
+          "target": {"type": "object", "additionalProperties": false, "required": ["character"],
+                     "properties": {"character": {"$ref": "#/$defs/characterId"}}},
+          "params": {"type": "object", "additionalProperties": false,
+                     "required": ["spec", "templateCode", "inputs", "assets", "manaNodes"],
+                     "properties": {"spec": {"$ref": "#/$defs/characterCloneRequest"},
+                       "templateCode": {"$ref": "#/$defs/code"},
+                       "inputs": {"type": "object", "additionalProperties": {"$ref": "#/$defs/sha256"}},
+                       "ownedRows": {"type": "object", "additionalProperties": {"type": "array", "uniqueItems": true, "items": {"type": "string"}}},
+                       "assets": {"type": "array", "minItems": 37, "maxItems": 37, "items": {"type": "object"}},
+                       "manaNodes": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[0-9]+$"}}}},
+          "files": {"minItems": 1, "items": {"properties": {"encoding": {"const": "stored"}}}}, "pending": {"maxItems": 0}
+        }}, "else": {"properties": {"files": {"items": {"properties": {
+          "encoding": {"not": {"const": "stored"}},
+          "logical": {"pattern": "^(character|battle)/"}
+        }}}}}},
+        {
+          "if": {"properties": {"kind": {"const": "weapon"}}},
+          "then": {"properties": {
+            "target": {"type": "object", "additionalProperties": false, "required": ["weapon"],
+                       "properties": {"weapon": {"$ref": "#/$defs/characterId"}}},
+            "params": {"type": "object", "additionalProperties": false, "required": ["requests", "inputs"],
+              "properties": {
+                "requests": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/weaponRequest"}},
+                "inputs": {"type": "object", "additionalProperties": false, "required": ["client", "server"],
+                  "properties": {
+                    "client": {"type": "object", "additionalProperties": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]}},
+                    "server": {"type": "object", "additionalProperties": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]}}
+                  }}
+              }},
+            "files": {"maxItems": 0}, "pending": {"maxItems": 0}
+          }}
+        },
         {
           "if": {"properties": {"kind": {"const": "boss"}}},
           "then": {"properties": {

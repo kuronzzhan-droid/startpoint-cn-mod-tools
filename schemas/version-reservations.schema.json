@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "资源版本预留登记（查询只读）",
+  "type": "object",
+  "patternProperties": {
+    "^1\\.4\\.[0-9]+$": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["purpose", "owner", "date"],
+      "properties": {
+        "purpose": {"type": "string", "minLength": 1},
+        "owner": {"type": "string", "minLength": 1},
+        "date": {"type": "string", "format": "date"}
+      }
+    }
+  },
+  "additionalProperties": false
+}

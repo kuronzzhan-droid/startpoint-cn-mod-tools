@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "registry_version": "b1-0-20260928b",
+  "registry_version": "v35l-alignment-20261025",
   "description": "扩展词条框架（WFX）唯一真源：效果码、保留号、客户端补丁构造的解析器范围与 capability 目录。wf_client_patch_scope / wf_client_legality / wf_wfx / wfx_gate 从这里取表；client-patch 构建器生成常量时读这里并把 sha 写进构建报告。",
   "design_doc": "${WF_ROOT}/out/扩展词条框架-20260928/设计.md（4.2 注册表、4.9 capability 与门禁）",
   "failure_levels": {
@@ -117,12 +117,12 @@
     "wfx-gauge-v1": {
       "level": "semantic",
       "layer": "L2",
-      "status": "planned",
+      "status": "withdrawn",
       "depends_on": [
         "wfx-core-v1",
         "gauge-gain-rules-v1"
       ],
-      "summary": "码 30、31（来源位复用 423 的 gauge_mask）"
+      "summary": "9月gauge.block/gauge.scale计划未有实装证据，原30/31已由v35f治疗效果占用；423原生补丁登记不变"
     },
     "wfx-dash-v1": {
       "level": "semantic",
@@ -284,7 +284,7 @@
     "pf-lv4-data-v1": {
       "level": "semantic",
       "layer": "v35a",
-      "status": "local_candidate",
+      "status": "shipped",
       "summary": "wfx_pf4_<队长角色id>设定PF4连击门槛和RGB颜色，按场缓存；仍要求原override支持Lv4",
       "capability_id": "client.pf.lv4_data@1",
       "integration_evidence": {
@@ -294,7 +294,11 @@
           "arm64": "160658520dae7e2ea2784bc224e0a360f798e45e6752837e31c6200ba236345b"
         },
         "status": "local_offline_verified"
-      }
+      },
+      "sources": [
+        "memory/wf-v35-generic-patches.md",
+        "memory/wf-water-gerald-20261018.md"
+      ]
     },
     "fever-items-v2": {
       "level": "semantic",
@@ -314,7 +318,7 @@
     "leader-unlock-v1": {
       "level": "semantic",
       "layer": "v35b",
-      "status": "local_candidate",
+      "status": "shipped",
       "summary": "当前slot0主位队长技编号选择1/2/4位掩码；放开合击主位能力、合击队长技、队友队长技，保留自身为队长前置",
       "capability_id": "client.leader.unlock@1",
       "integration_evidence": {
@@ -324,7 +328,11 @@
           "arm64": "160658520dae7e2ea2784bc224e0a360f798e45e6752837e31c6200ba236345b"
         },
         "status": "local_offline_verified"
-      }
+      },
+      "sources": [
+        "memory/wf-v35-generic-patches.md",
+        "memory/wf-water-gerald-20261018.md"
+      ]
     },
     "adaptive-element-v1": {
       "level": "semantic",
@@ -458,6 +466,120 @@
         },
         "status": "local_offline_verified"
       }
+    },
+    "heal-damage-v1": {
+      "level": "semantic",
+      "layer": "v35f",
+      "status": "shipped",
+      "summary": "码30 全队口径治疗转伤害",
+      "sources": [
+        "memory/wf-v35-generic-patches.md",
+        "memory/wf-water-gerald-20261018.md"
+      ],
+      "depends_on": [
+        "wfx-effect-query-v1"
+      ]
+    },
+    "heal-fever-v1": {
+      "level": "semantic",
+      "layer": "v35f",
+      "status": "shipped",
+      "summary": "码31 全队口径治疗加Fever",
+      "sources": [
+        "memory/wf-v35-generic-patches.md",
+        "memory/wf-water-gerald-20261018.md"
+      ],
+      "depends_on": [
+        "wfx-effect-query-v1"
+      ]
+    },
+    "shield-executor-hp-v1": {
+      "level": "semantic",
+      "layer": "v35j",
+      "status": "shipped",
+      "summary": "码32 护盾按执行者最大HP",
+      "sources": [
+        "memory/wf-v35-generic-patches.md",
+        "memory/wf-water-gerald-20261018.md"
+      ],
+      "depends_on": [
+        "wfx-effect-query-v1"
+      ]
+    },
+    "direct-hit-count-v1": {
+      "level": "semantic",
+      "layer": "v35k",
+      "status": "shipped",
+      "summary": "码33 直击次数",
+      "sources": [
+        "memory/wf-v35-generic-patches.md",
+        "memory/wf-water-gerald-20261018.md"
+      ],
+      "depends_on": [
+        "wfx-effect-query-v1"
+      ]
+    },
+    "holder-heal-damage-v1": {
+      "level": "semantic",
+      "layer": "v35k",
+      "status": "shipped",
+      "summary": "码34 持有者口径治疗转伤害",
+      "sources": [
+        "memory/wf-v35-generic-patches.md",
+        "memory/wf-water-gerald-20261018.md"
+      ],
+      "depends_on": [
+        "wfx-effect-query-v1"
+      ]
+    },
+    "holder-heal-fever-v1": {
+      "level": "semantic",
+      "layer": "v35k",
+      "status": "shipped",
+      "summary": "码35 持有者口径治疗加Fever",
+      "sources": [
+        "memory/wf-v35-generic-patches.md",
+        "memory/wf-water-gerald-20261018.md"
+      ],
+      "depends_on": [
+        "wfx-effect-query-v1"
+      ]
+    },
+    "unison-power-flip-v1": {
+      "level": "semantic",
+      "layer": "v35l",
+      "status": "shipped",
+      "summary": "码36 合击角色强化弹射",
+      "sources": [
+        "memory/wf-v35-generic-patches.md",
+        "memory/wf-water-gerald-20261018.md"
+      ],
+      "depends_on": [
+        "wfx-effect-query-v1"
+      ]
+    },
+    "leader-unlock-v2": {
+      "level": "semantic",
+      "layer": "v35f",
+      "status": "shipped",
+      "depends_on": [
+        "leader-unlock-v1"
+      ],
+      "summary": "wfx_unlock_新增bit8仅slot0自身合击、bit16同属性六人条件",
+      "sources": [
+        "memory/wf-v35-generic-patches.md",
+        "memory/wf-water-gerald-20261018.md"
+      ]
+    },
+    "character-identity-tag-v1": {
+      "level": "semantic",
+      "layer": "v35j",
+      "status": "shipped",
+      "summary": "wfx_cid_<角色id>角色标签按身份隐含匹配；消费实际角色组/角色标签列",
+      "sources": [
+        "memory/wf-v35-generic-patches.md",
+        "memory/wf-water-gerald-20261018.md"
+      ]
     }
   },
   "patch_content_kinds": [
@@ -577,8 +699,8 @@
     {
       "from": 30,
       "to": 39,
-      "family": "gauge",
-      "label": "回槽",
+      "family": "v35_extensions",
+      "label": "治疗、护盾、直击次数与合击PF（30–36）",
       "batch": 1
     },
     {
@@ -807,6 +929,9 @@
         "max": 2147483647,
         "integer": true
       }
+    },
+    "v35_integer": {
+      "label": "v35整数参数；具体语义以各效果arg_schema和TODO为准"
     }
   },
   "uid_reference_blocks": {
@@ -966,52 +1091,6 @@
       "gate": "block",
       "text_template": "受到{arg}伤害上限 {value}",
       "since_layer": "L2 B1-2"
-    },
-    {
-      "code": 30,
-      "name": "gauge.block",
-      "label": "回槽拦截",
-      "side": "member",
-      "arg": "gauge_mask",
-      "value": {
-        "min": 0,
-        "max": 0,
-        "integer": true,
-        "note": "不读，规范写 0"
-      },
-      "reduce": "any",
-      "stack_scaled": false,
-      "hooks": [
-        "MemberImpl/wfAllowsGauge #67"
-      ],
-      "capability": "wfx-gauge-v1",
-      "gate": "block",
-      "text_template": "无法通过{arg}获得技能槽",
-      "since_layer": "L2 B1-3"
-    },
-    {
-      "code": 31,
-      "name": "gauge.scale",
-      "label": "回槽倍率",
-      "side": "member",
-      "arg": "gauge_mask",
-      "value": {
-        "min": -1.0,
-        "integer": false
-      },
-      "reduce": "prod",
-      "stack_scaled": true,
-      "hooks": [
-        "MemberImpl/addSkillPoint #10",
-        "MemberImpl/reserveSkillPoint",
-        "MemberImpl/reserveFixedSkillPoint",
-        "MemberImpl/applyInitialSkillPointRatio",
-        "MemberImpl/move"
-      ],
-      "capability": "wfx-gauge-v1",
-      "gate": "block",
-      "text_template": "{arg}获得的技能槽 每层 {value:+%}",
-      "since_layer": "L2 B1-3"
     },
     {
       "code": 40,
@@ -1414,6 +1493,269 @@
       "gate": "block",
       "since_layer": "v35d-run4",
       "required_swf_sha256": "4fe2b1ba6267bdcd69f54be3d464ef9aba9cc07a806038ec21161762e708a212"
+    },
+    {
+      "code": 30,
+      "name": "heal.damage",
+      "label": "全队口径治疗转伤害",
+      "status": "shipped",
+      "patch_version": "v35f",
+      "since_layer": "v35f-run6",
+      "side": "member",
+      "arg": "v35_integer",
+      "arg_schema": {
+        "min": 0,
+        "max": 4,
+        "note": "保守限于已登记concept类型0..4；0跟随队长，1技能/2PF/3直击/4能力"
+      },
+      "value": {
+        "min": -2147483648,
+        "max": 2147483647,
+        "integer": true,
+        "note": "仅int32载体校验；单位和运行时边界见TODO"
+      },
+      "reduce": "unknown",
+      "capability": "heal-damage-v1",
+      "gate": "block",
+      "sources": [
+        "memory/wf-v35-generic-patches.md",
+        "memory/wf-water-gerald-20261018.md"
+      ],
+      "todo": [
+        "TODO：逐状态聚合、叠层规则及完整方法hook待PR #10或对应补丁源码核实。",
+        "TODO：非0类型的完整分支及value/flags格式、单位和边界待补丁源码核实。"
+      ],
+      "scope": "治疗者持有状态；全队挂载使任何成员治疗生效",
+      "arg_format": "0跟随队长concepts[0]；类型仅接受concept已登记范围1..4",
+      "damage_reference": 2,
+      "stack_scaled": null,
+      "stack_note": "TODO：现有事实未确认叠层倍率，null表示未知；不得当作false或true。门禁明确警告。"
+    },
+    {
+      "code": 31,
+      "name": "heal.fever",
+      "label": "全队口径治疗加Fever",
+      "status": "shipped",
+      "patch_version": "v35f",
+      "since_layer": "v35f-run6",
+      "side": "member",
+      "arg": "v35_integer",
+      "arg_schema": {
+        "min": 0,
+        "max": 2147483647,
+        "note": "仅int32载体校验；语义未确认部分见TODO"
+      },
+      "value": {
+        "min": -2147483648,
+        "max": 2147483647,
+        "integer": true,
+        "note": "仅int32载体校验；单位和运行时边界见TODO"
+      },
+      "reduce": "unknown",
+      "capability": "heal-fever-v1",
+      "gate": "block",
+      "sources": [
+        "memory/wf-v35-generic-patches.md",
+        "memory/wf-water-gerald-20261018.md"
+      ],
+      "todo": [
+        "TODO：逐状态聚合、叠层规则及完整方法hook待PR #10或对应补丁源码核实。",
+        "TODO：arg完整含义、value与flags的格式语义/单位/边界待核实。"
+      ],
+      "scope": "治疗者持有状态；全队挂载使任何成员治疗生效",
+      "runtime": "走724原生addFeverPoint",
+      "stack_scaled": null,
+      "stack_note": "TODO：现有事实未确认叠层倍率，null表示未知；不得当作false或true。门禁明确警告。"
+    },
+    {
+      "code": 32,
+      "name": "shield.executor_max_hp",
+      "label": "护盾按执行者最大HP",
+      "status": "shipped",
+      "patch_version": "v35j",
+      "since_layer": "v35j-run10",
+      "side": "member",
+      "arg": "v35_integer",
+      "arg_schema": {
+        "min": 0,
+        "max": 2147483647,
+        "note": "仅int32载体校验；语义未确认部分见TODO"
+      },
+      "value": {
+        "min": -2147483648,
+        "max": 2147483647,
+        "integer": true,
+        "note": "仅int32载体校验；单位和运行时边界见TODO"
+      },
+      "reduce": "unknown",
+      "capability": "shield-executor-hp-v1",
+      "gate": "block",
+      "sources": [
+        "memory/wf-v35-generic-patches.md",
+        "memory/wf-water-gerald-20261018.md"
+      ],
+      "todo": [
+        "TODO：逐状态聚合、叠层规则及完整方法hook待PR #10或对应补丁源码核实。",
+        "TODO：arg完整含义、value与flags的格式语义/单位/边界待核实。"
+      ],
+      "scope": "护盾基数取执行者最大HP，而非各受盾目标最大HP",
+      "stack_scaled": null,
+      "stack_note": "TODO：现有事实未确认叠层倍率，null表示未知；不得当作false或true。门禁明确警告。"
+    },
+    {
+      "code": 33,
+      "name": "direct.hit_count",
+      "label": "直击次数",
+      "status": "shipped",
+      "patch_version": "v35k",
+      "since_layer": "v35k-run11",
+      "side": "member",
+      "arg": "v35_integer",
+      "arg_schema": {
+        "min": 0,
+        "max": 2147483647,
+        "note": "仅int32载体校验；语义未确认部分见TODO"
+      },
+      "value": {
+        "min": -2147483648,
+        "max": 2147483647,
+        "integer": true,
+        "note": "仅int32载体校验；单位和运行时边界见TODO"
+      },
+      "reduce": "unknown",
+      "capability": "direct-hit-count-v1",
+      "gate": "block",
+      "sources": [
+        "memory/wf-v35-generic-patches.md",
+        "memory/wf-water-gerald-20261018.md"
+      ],
+      "todo": [
+        "TODO：逐状态聚合、叠层规则及完整方法hook待PR #10或对应补丁源码核实。",
+        "TODO：arg完整含义、value与flags的格式语义/单位/边界待核实。"
+      ],
+      "stack_scaled": null,
+      "stack_note": "TODO：现有事实未确认叠层倍率，null表示未知；不得当作false或true。门禁明确警告。"
+    },
+    {
+      "code": 34,
+      "name": "heal.holder_damage",
+      "label": "持有者口径治疗转伤害",
+      "status": "shipped",
+      "patch_version": "v35k",
+      "since_layer": "v35k-run11",
+      "side": "member",
+      "arg": "v35_integer",
+      "arg_schema": {
+        "min": 0,
+        "max": 2147483647,
+        "note": "按打包公式保守校验类型0..4和非零两位档位；100%与CT进位有歧义，拒绝零档编码",
+        "format": "类型 + 10 × 档位百分数 + 1000 × CT秒",
+        "validation": "holder_heal"
+      },
+      "value": {
+        "min": -2147483648,
+        "max": 2147483647,
+        "integer": true,
+        "note": "仅int32载体校验；单位和运行时边界见TODO"
+      },
+      "reduce": "unknown",
+      "capability": "holder-heal-damage-v1",
+      "gate": "block",
+      "sources": [
+        "memory/wf-v35-generic-patches.md",
+        "memory/wf-water-gerald-20261018.md"
+      ],
+      "todo": [
+        "TODO：逐状态聚合、叠层规则及完整方法hook待PR #10或对应补丁源码核实。",
+        "TODO：100%档位编码与CT进位有歧义；类型分支、CT运行时边界及value/flags单位和用途仍待源码核实。"
+      ],
+      "scope": "持有者口径；治疗不限来源；存在34/35持有者时跳过旧全队30/31",
+      "arg_format": "类型 + 10 × 档位百分数 + 1000 × CT秒",
+      "examples": [
+        "wfx:34:5050:100000:150000:gerald"
+      ],
+      "stack_scaled": null,
+      "stack_note": "TODO：现有事实未确认叠层倍率，null表示未知；不得当作false或true。门禁明确警告。"
+    },
+    {
+      "code": 35,
+      "name": "heal.holder_fever",
+      "label": "持有者口径治疗加Fever",
+      "status": "shipped",
+      "patch_version": "v35k",
+      "since_layer": "v35k-run11",
+      "side": "member",
+      "arg": "v35_integer",
+      "arg_schema": {
+        "min": 0,
+        "max": 2147483647,
+        "note": "按打包公式保守校验类型0..4和非零两位档位；100%与CT进位有歧义，拒绝零档编码",
+        "format": "类型 + 10 × 档位百分数 + 1000 × CT秒",
+        "validation": "holder_heal"
+      },
+      "value": {
+        "min": -2147483648,
+        "max": 2147483647,
+        "integer": true,
+        "note": "仅int32载体校验；单位和运行时边界见TODO"
+      },
+      "reduce": "unknown",
+      "capability": "holder-heal-fever-v1",
+      "gate": "block",
+      "sources": [
+        "memory/wf-v35-generic-patches.md",
+        "memory/wf-water-gerald-20261018.md"
+      ],
+      "todo": [
+        "TODO：逐状态聚合、叠层规则及完整方法hook待PR #10或对应补丁源码核实。",
+        "TODO：100%档位编码与CT进位有歧义；类型分支、CT运行时边界及value/flags单位和用途仍待源码核实。"
+      ],
+      "scope": "持有者口径；治疗不限来源；存在34/35持有者时跳过旧全队30/31",
+      "arg_format": "类型 + 10 × 档位百分数 + 1000 × CT秒",
+      "examples": [
+        "wfx:35:50:500:1000:gerald"
+      ],
+      "stack_scaled": null,
+      "stack_note": "TODO：现有事实未确认叠层倍率，null表示未知；不得当作false或true。门禁明确警告。"
+    },
+    {
+      "code": 36,
+      "name": "power_flip.unison",
+      "label": "合击角色强化弹射",
+      "status": "shipped",
+      "patch_version": "v35l",
+      "since_layer": "v35l-run12",
+      "side": "member",
+      "arg": "v35_integer",
+      "arg_schema": {
+        "min": 0,
+        "max": 1,
+        "note": "仅接受事实卡明确的bit0；其余位未经证实，拒绝写入",
+        "bit_0": "只使用类型PF"
+      },
+      "value": {
+        "min": -2147483648,
+        "max": 2147483647,
+        "integer": true,
+        "note": "仅int32载体校验；单位和运行时边界见TODO",
+        "unit": "Fever倍率，1/10000"
+      },
+      "reduce": "unknown",
+      "capability": "unison-power-flip-v1",
+      "gate": "block",
+      "sources": [
+        "memory/wf-v35-generic-patches.md",
+        "memory/wf-water-gerald-20261018.md"
+      ],
+      "todo": [
+        "TODO：逐状态聚合、叠层规则及完整方法hook待PR #10或对应补丁源码核实。",
+        "TODO：flags平时倍率缩放单位、数值运行时边界仍未确认；未知arg位拒绝写入。"
+      ],
+      "scope": "持有者成员PF后同帧执行其合击角色自己的PF；419/722覆盖优先，否则类型PF；主位查询排除同Member合击来源覆盖",
+      "arg_format": "arg & 1：只使用类型PF",
+      "parameter_format": "wfx:36:<arg>:<Fever倍率万分比>:<平时倍率>:<label>",
+      "stack_scaled": null,
+      "stack_note": "TODO：现有事实未确认叠层倍率，null表示未知；不得当作false或true。门禁明确警告。"
     }
   ],
   "effect_flags_overrides": {
@@ -1486,6 +1828,55 @@
       "max": 2147483647,
       "meaning": "单条状态的目标层数封顶cap；cap<=0不封顶",
       "pin": false
+    },
+    "30": {
+      "type": "integer",
+      "min": 0,
+      "max": 2147483647,
+      "pin": false,
+      "meaning": "TODO：v35效果参数，不沿用已撤回gauge计划的pin位；完整语义待核实"
+    },
+    "31": {
+      "type": "integer",
+      "min": 0,
+      "max": 2147483647,
+      "pin": false,
+      "meaning": "TODO：v35效果参数，不沿用已撤回gauge计划的pin位；完整语义待核实"
+    },
+    "32": {
+      "type": "integer",
+      "min": 0,
+      "max": 2147483647,
+      "pin": false,
+      "meaning": "TODO：v35效果参数，不沿用已撤回gauge计划的pin位；完整语义待核实"
+    },
+    "33": {
+      "type": "integer",
+      "min": 0,
+      "max": 2147483647,
+      "pin": false,
+      "meaning": "TODO：v35效果参数，不沿用已撤回gauge计划的pin位；完整语义待核实"
+    },
+    "34": {
+      "type": "integer",
+      "min": 0,
+      "max": 2147483647,
+      "pin": false,
+      "meaning": "TODO：v35效果参数，不沿用已撤回gauge计划的pin位；完整语义待核实"
+    },
+    "35": {
+      "type": "integer",
+      "min": 0,
+      "max": 2147483647,
+      "pin": false,
+      "meaning": "TODO：v35效果参数，不沿用已撤回gauge计划的pin位；完整语义待核实"
+    },
+    "36": {
+      "type": "integer",
+      "min": 0,
+      "max": 2147483647,
+      "pin": false,
+      "meaning": "平时倍率（单位TODO）"
     }
   },
   "custom_ability_string_patterns": [
@@ -1499,14 +1890,39 @@
       "prefix": "wfx_pf4_",
       "value": "<非负整数门槛>[:<6位RRGGBB>]",
       "capability": "pf-lv4-data-v1",
-      "gate": "block"
+      "gate": "block",
+      "status": "shipped",
+      "patch_version": "v35a",
+      "key_suffix": "队长角色id",
+      "requires": "原PF覆盖树支持Lv4",
+      "sources": [
+        "memory/wf-v35-generic-patches.md",
+        "memory/wf-water-gerald-20261018.md"
+      ],
+      "note": "run19pf4解锁来源id回退规则仍是待并入候选，不冒充v35l已发布能力"
     },
     {
       "prefix": "wfx_unlock_",
       "key_suffix": "当前slot0主位队长的leader_ability表键",
-      "value": "非负整数位掩码，1=合击主位能力，2=合击队长技，4=队友队长技，7=全开",
+      "value": "非负整数位掩码：1=合击主位能力，2=合击队长技，4=队友队长技，8=仅slot0自身合击，16=同属性六人条件；按位组合",
       "capability": "leader-unlock-v1",
-      "gate": "block"
+      "gate": "block",
+      "status": "shipped",
+      "patch_version": "v35f",
+      "bits": {
+        "1": "合击主位能力",
+        "2": "合击队长技",
+        "4": "队友队长技",
+        "8": "仅slot0自身合击",
+        "16": "同属性六人条件"
+      },
+      "known_mask": 31,
+      "revision_capability": "leader-unlock-v2",
+      "revision_mask": 24,
+      "sources": [
+        "memory/wf-v35-generic-patches.md",
+        "memory/wf-water-gerald-20261018.md"
+      ]
     },
     {
       "prefix": "wfx_adaptive_",
@@ -1566,6 +1982,19 @@
       "default_uid": 22,
       "capability": "dual-form-uid-v1",
       "gate": "block"
+    },
+    {
+      "prefix": "wfx_cid_",
+      "key_suffix": "角色id（十进制正整数）",
+      "capability": "character-identity-tag-v1",
+      "gate": "block",
+      "status": "shipped",
+      "patch_version": "v35j",
+      "requires": "词条character_groups字段或character表c5的角色标签token；隐含按角色身份匹配",
+      "sources": [
+        "memory/wf-v35-generic-patches.md",
+        "memory/wf-water-gerald-20261018.md"
+      ]
     }
   ],
   "unique_icon_visibility": {
@@ -1606,5 +2035,30 @@
     "registry": "v35/run5/registry-draft.json",
     "swf_sha256": "89461f676b57a059bde58fe5897190db9b61013ae63947401fe1bf87106d6bcf",
     "evidence": "docs/m2/v35e-method-audit.json"
-  }
+  },
+  "alignment_sources": {
+    "date": "2026-10-25",
+    "scope": "效果码30–36及wfx_unlock_/wfx_cid_/wfx_pf4_；按任务随附事实登记，不扩充现有客户端档案",
+    "files": [
+      "memory/wf-v35-generic-patches.md",
+      "memory/wf-water-gerald-20261018.md"
+    ],
+    "quick_reference": "TODO：本checkout及本地Git历史未包含PR #10 docs/客户端补丁效果码速查.md；未知参数不得从旧gauge计划推断。"
+  },
+  "withdrawn_effect_codes": [
+    {
+      "former_code": 30,
+      "name": "gauge.block",
+      "status": "withdrawn",
+      "capability": "wfx-gauge-v1",
+      "reason": "未有实装证据；该码现为v35f治疗效果，不再按gauge_mask解析"
+    },
+    {
+      "former_code": 31,
+      "name": "gauge.scale",
+      "status": "withdrawn",
+      "capability": "wfx-gauge-v1",
+      "reason": "未有实装证据；该码现为v35f治疗效果，不再按gauge_mask解析"
+    }
+  ]
 }

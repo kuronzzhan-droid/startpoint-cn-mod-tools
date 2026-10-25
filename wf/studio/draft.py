@@ -41,18 +41,8 @@ def _png_b64(image) -> str:
 
 def _ops(args):
     from .operations import DraftOps
-    from .source import build_source
-    if args.manifest:
-        from wf.view import ManifestView
-        from .source import StudioSource
-        if not args.tip:
-            raise DraftError("--manifest 需要 --tip 指定精确来源版本")
-        if args.extra_zips_file:
-            raise DraftError("manifest 视图不能叠加未经清单锁定的 --extra-zips-file")
-        source = StudioSource(ManifestView(f"1.4.{args.tip}", store=args.store, manifest=args.manifest,
-                                          search_dirs=args.zip_dir, manifests=args.manifest_extra))
-    else:
-        source = build_source(tip=args.tip, extra_lists=args.extra_zips_file, use_default_chain=not args.no_chain)
+    from .view_commands import source_from_args
+    source = source_from_args(args)
     return DraftOps(source, store=DraftStore(args.drafts) if args.drafts else None)
 
 
@@ -63,7 +53,7 @@ def _load_json(path: str):
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m wf.studio.draft", description="编辑台草稿与本地交付命令行")
     parser.add_argument("--drafts", type=Path, help="草稿根目录（默认 work/studio-drafts 或 WF_STUDIO_DRAFTS）")
-    parser.add_argument("--tip", type=int, help="视图 TIP 小版本号")
+    parser.add_argument("--tip", help="视图终点（小版本号或 1.4.N）")
     parser.add_argument("--extra-zips-file", action="append", default=[], metavar="TXT")
     parser.add_argument("--no-chain", action="store_true")
     from .draft_commands import source_arguments, add_commands
@@ -202,8 +192,20 @@ def run(args) -> dict:
     if args.command == "device-result":
         from .draft_commands import run_device_result
         return run_device_result(args)
+    if args.command == "export-store":
+        from .view_commands import run as run_view
+        return run_view(args)
 
     ops = _ops(args)
+    if args.command in ("ids", "versions"):
+        from .discovery_commands import run as run_discovery
+        return run_discovery(args, ops.source, store)
+    if args.command in ("character", "scratch-promote"):
+        from .character_routes import run_character_command
+        return run_character_command(args, ops)
+    if args.command == "weapon":
+        from .weapon_cli import run_weapon
+        return run_weapon(args, ops.source, store)
     if args.command == "boss":
         from .boss import BossEditor, BossDraftStore
         editor = BossEditor(ops.source, store=BossDraftStore(store.root / "boss"), server_dir=args.server_dir)

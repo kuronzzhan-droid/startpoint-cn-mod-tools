@@ -219,7 +219,7 @@ def damage_pool_parts(arg: int) -> tuple[dict[str, Any], list[str]]:
 
 
 def gauge_arg(gains: Iterable[str], **kwargs: Iterable[str]) -> int:
-    """码 30/31 的 arg：与 during 423 规则码同一布局，直接复用 wf_battle_rules.gauge_mask。"""
+    """兼容旧调用方的 423 回槽掩码助手；不适用于现有 WFX 30/31 治疗效果。"""
     import wf_battle_rules
     return wf_battle_rules.gauge_mask(list(gains), **kwargs)
 

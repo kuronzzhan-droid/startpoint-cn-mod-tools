@@ -28,6 +28,15 @@ def effect_arg_problems(effect, arg):
     """Return None for legacy mask arguments handled by the original codec."""
     rule = effect.get("arg_schema")
     if isinstance(rule, dict):
+        if rule.get("validation") == "holder_heal":
+            problems = integer_problems(arg, rule, "arg")
+            if problems:
+                return problems
+            if arg % 10 not in range(5):
+                problems.append("arg 类型个位仅接受已登记的 0..4")
+            if (arg // 10) % 100 == 0:
+                problems.append("arg 档位必须非零；100%与CT进位的编码未核实，拒绝零档编码")
+            return problems
         choices = {int(key) for key in rule if str(key).isdigit()}
         if choices:
             return [] if type(arg) is int and arg in choices else [f"arg={arg} 须为 {sorted(choices)}"]
@@ -63,7 +72,7 @@ def candidate_profile_problems(entry, names, catalog):
         if capability["status"] == "shipped":
             continue
         if capability["status"] != "local_candidate":
-            problems.append(f"尚无客户端实现（status=planned）的 capability: {name}")
+            problems.append(f"客户端不可声明（status={capability['status']}）的 capability: {name}")
             continue
         expected = capability.get("integration_evidence", {})
         apks = expected.get("apk_sha256", {})

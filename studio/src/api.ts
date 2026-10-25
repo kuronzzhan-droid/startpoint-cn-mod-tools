@@ -1,8 +1,22 @@
 // Typed wrappers over the read-only backend (python -m wf.studio).
 
+export interface ViewList {
+  views: string[];
+  /** View the process actually loaded; null = not a named view. */
+  current: string | null;
+  source: SourceInfo;
+  runtimeSwitching: false;
+  restartRequired: true;
+}
+
 export interface SourceInfo {
+  /** Highest version after the extra ZIPs; `tip` is the manifest chain end point. */
   version: string;
-  tip: number;
+  tip: number | string;
+  /** Version the base store already has (chain-views.md); absent on older backends. */
+  baseVersion?: string;
+  /** Named view (profiles/local.json views) selected at launch; null = legacy view / local default chain. */
+  view?: string | null;
   zipCount: number;
   memberCount: number;
   extraZips: string[];
@@ -202,6 +216,15 @@ export interface SpeechLine {
 
 export interface CharacterAssets {
   characterId: string;
+  /** Clone drafts only: the 37 required assets (复用母本 / 待替换 / 已派生), updated by later draft edits. */
+  cloneAssets?: import("./studioApi").CloneAsset[];
+  /** Current view's resource version. */
+  sourceVersion?: string;
+  draftRevision?: number | null;
+  /** SHA-256 over the whole inventory + draft: the cache key of this character's media. */
+  assetsVersion?: string;
+  /** Quoted assetsVersion (JSON only; no HTTP conditional requests). */
+  etag?: string;
   code: string;
   groups: AssetGroup[];
   speech: SpeechLine[];
@@ -264,14 +287,39 @@ function cached<T>(url: string): Promise<T> {
   return cache.get(url) as Promise<T>;
 }
 
+/** Last assetsVersion seen per character: media URLs carry it so a changed inventory never shows stale bytes. */
+const assetVersions = new Map<string, string>();
+const assetReads = new Map<string, Promise<CharacterAssets>>();
+let assetListener = false;
+function assetInventory(id: string): Promise<CharacterAssets> {
+  if (!assetListener) {
+    assetListener = true;
+    // Any draft write may change the inventory (cloneAssets, derived portraits): drop that read.
+    onDraftChange((cid) => { assetReads.delete(cid); });
+  }
+  if (!assetReads.has(id)) {
+    const read = get<CharacterAssets>(`/api/characters/${id}/assets`).then((data) => {
+      if (data.assetsVersion) assetVersions.set(id, data.assetsVersion);
+      return data;
+    });
+    read.catch(() => assetReads.delete(id));
+    assetReads.set(id, read);
+  }
+  return assetReads.get(id)!;
+}
+
 export const api = {
   meta: () => cached<Meta>("/api/meta"),
   characters: () => cached<{ version: string; count: number; characters: CharacterSummary[] }>("/api/characters"),
   character: (id: string) => cached<CharacterDetail>(`/api/characters/${id}`),
   pixels: (id: string) => cached<PixelMeta>(`/api/characters/${id}/pixels`),
-  assets: (id: string) => cached<CharacterAssets>(`/api/characters/${id}/assets`),
-  avatarUrl: (id: string, form: "0" | "1" = "0") => `/api/characters/${id}/avatar/${form}.png`,
-  assetUrl: (path: string) => `/api/asset?path=${encodeURIComponent(path)}`,
+  /** Asset inventory; re-read after any write to this character's draft, keyed by assetsVersion (character-media.md). */
+  assets: (id: string) => assetInventory(id),
+  avatarUrl: (id: string, form: "0" | "1" = "0") =>
+    `/api/characters/${id}/avatar/${form}.png` + (assetVersions.has(id) ? `?v=${assetVersions.get(id)!.slice(0, 16)}` : ""),
+  /** `version` (assetsVersion) busts the browser cache of media whose inventory changed. */
+  assetUrl: (path: string, version?: string) =>
+    `/api/asset?path=${encodeURIComponent(path)}${version ? "&v=" + version.slice(0, 16) : ""}`,
   pixelSheetUrl: (id: string, family: string) => `/api/characters/${id}/pixels/${family}.png`,
   lookup: (q: string) =>
     get<{ total: number; count: number; results: LookupHit[]; note: string }>(
@@ -308,7 +356,7 @@ export interface DraftFile {
 
 export interface DraftChange {
   id: string;
-  kind: "portrait" | "pixel_action" | "pixel_family" | "voice_line" | "ability_edit" | "boss";
+  kind: "portrait" | "pixel_action" | "pixel_family" | "voice_line" | "ability_edit" | "boss" | "weapon" | "character_clone";
   title: string;
   createdAt: string;
   target: Record<string, string>;
@@ -839,7 +887,7 @@ export interface DeviceResult {
   schema: string;
   status: DeviceStatus;
   reason?: string;
-  delivery: { name: string; kind: "character" | "boss"; subject?: string | null; draftRevision: number | null;
+  delivery: { name: string; kind: "character" | "boss" | "weapon"; subject?: string | null; draftRevision: number | null;
     draftCreatedAt?: string | null;
     from?: string | null; to?: string | null; archives?: { name: string; sha256: string }[] };
   device?: { id?: string; label?: string; emulator?: boolean; package?: string; apk?: string; apkSha256?: string };

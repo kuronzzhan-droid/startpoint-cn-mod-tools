@@ -61,14 +61,24 @@ def _draft(store, cid, source):
         raise DraftError("草稿复核失败：" + "；".join(errors[:8]))
     if changeset["characterId"] != cid or changeset["baseView"] != source.version:
         raise DraftError("草稿角色或基线版本与 --from 不一致，请在目标视图重建草稿")
+    if changeset.get("subjectKind") == "weapon":
+        from .weapon_store import WeaponDraftStore, identity
+        if not isinstance(store, WeaponDraftStore):
+            raise DraftError("武器交付必须使用独立 WeaponDraftStore 命名空间")
+        identity(changeset, cid, source.version)
+        return changeset
     if changeset.get("subjectKind") == "boss":
         from .boss import _identity, BossDraftStore
         if not isinstance(store, BossDraftStore):
             raise DraftError("副本交付必须使用独立 BossDraftStore 命名空间")
         _identity(changeset, cid, source.version)
         return changeset
-    if any(change["kind"] == "boss" for change in changeset["changes"]):
-        raise DraftError("副本草稿必须使用独立 boss 命名空间")
+    if any(change["kind"] in {"boss", "weapon"} for change in changeset["changes"]):
+        raise DraftError("副本或武器草稿必须使用独立命名空间")
+    from .character_clone import clone_change, identity
+    if clone_change(changeset):
+        identity(source, changeset)
+        return changeset
     rows = source.table("character").get(cid)
     if not rows or not rows[0] or rows[0][0] != changeset["code"]:
         raise DraftError("草稿代码名与来源视图角色不一致")
@@ -77,6 +87,12 @@ def _draft(store, cid, source):
 
 def compile_draft(source, store, changeset, *, server_dir=None, client_profile=None, provides=None):
     """Pure compilation: return stored client bytes and asserted server mirrors."""
+    if changeset.get("subjectKind") == "weapon":
+        from .weapon_editor import compile_weapon
+        weapon = compile_weapon(source, store, changeset, server_dir=server_dir,
+                                client_profile=client_profile, provides=provides)
+        return ({("common", logical): raw for logical, raw in weapon["client"].items()},
+                weapon["servers"], weapon["server_before"], weapon["changes"], weapon["checks"])
     if changeset.get("subjectKind") == "boss":
         from .boss import compile_boss
         evidence = {key: value for key, value in (("client_profile", client_profile), ("provides", provides))
@@ -84,6 +100,9 @@ def compile_draft(source, store, changeset, *, server_dir=None, client_profile=N
         boss = compile_boss(source, store, changeset, server_dir=server_dir, **evidence)
         return ({("common", logical): raw for logical, raw in boss["client"].items()},
                 boss["servers"], boss["server_before"], boss["changes"], boss["checks"])
+    from .character_clone import clone_change, compile_clone
+    if clone_change(changeset):
+        return compile_clone(source, store, changeset, server_dir=server_dir)
     from .deliver_media import compile_media
     media = compile_media(source, store, changeset)
     members = dict(media.members)
@@ -114,6 +133,8 @@ def compile_draft(source, store, changeset, *, server_dir=None, client_profile=N
 def _stage(out, changeset, source, compiled, to_version):
     members, servers, server_before, changes, checks = compiled
     identity = changeset["characterId"]
+    if changeset.get("subjectKind") == "weapon":
+        identity = "weapon-" + identity
     if changeset.get("subjectKind") == "boss":
         from wf.boss.identity import safe_id
         identity = "boss-" + safe_id(identity).replace("_", "-")

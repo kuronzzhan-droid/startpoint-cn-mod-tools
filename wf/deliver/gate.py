@@ -11,6 +11,7 @@ from .assert_box import verify
 from .baseline import verify_client
 from .chain_contract import chain_errors
 from .changeset import write_json
+from .key_guard import check_shared_keys
 
 
 def run_prepush(out, doc, records, server_changes, *, baseline=None, members=None,
@@ -80,6 +81,18 @@ def run_prepush(out, doc, records, server_changes, *, baseline=None, members=Non
             for finding in rewards.items:
                 log.write(f"  {finding.level} {finding.msg}\n")
     if rewards.count("ERROR"):
+        code = 1
+    retention = check_shared_keys(members or {}, server_changes, baseline=baseline,
+                                 base_store=base_store, server_dir=server_dir, changes=doc.get("changes", []),
+                                 no_baseline_i_know=no_baseline_i_know)
+    findings["shared_table_preservation"] = retention
+    for index, message in enumerate(retention["errors"]):
+        findings.setdefault("findings", []).append({"level": "ERROR", "check": "shared-keys",
+            "fid": f"delivery.shared-keys:{index}", "msg": message, "detail": []})
+    for index, message in enumerate(retention["notes"]):
+        findings.setdefault("findings", []).append({"level": "WARN", "check": "shared-keys",
+            "fid": f"delivery.shared-content:{index}", "msg": message, "detail": []})
+    if retention["errors"]:
         code = 1
     local_errors = chain_errors([p.name for p in [*before, *candidates]], doc["to_version"])
     local_errors += verify_client(doc, members or {}, baseline, base_store=base_store, archives=candidates)

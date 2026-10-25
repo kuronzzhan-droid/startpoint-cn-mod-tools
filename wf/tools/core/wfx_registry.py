@@ -37,8 +37,8 @@ def _validate(data: dict[str, Any]) -> None:
     for name, entry in capabilities.items():
         if entry.get("level") not in LEVELS:
             raise RegistryError(f"capability {name} 的 level 不合法: {entry.get('level')!r}")
-        if entry.get("status") not in ("shipped", "planned", "local_candidate"):
-            raise RegistryError(f"capability {name} 的 status 必须是 shipped/planned/local_candidate")
+        if entry.get("status") not in ("shipped", "planned", "local_candidate", "withdrawn"):
+            raise RegistryError(f"capability {name} 的 status 必须是 shipped/planned/local_candidate/withdrawn")
         for dep in entry.get("depends_on", ()):
             if dep not in capabilities:
                 raise RegistryError(f"capability {name} 依赖未登记的 {dep}")
@@ -70,14 +70,22 @@ def _validate(data: dict[str, Any]) -> None:
             raise RegistryError(f"效果码 {code} 不在任何已分配的号段")
         if effect.get("capability") not in capabilities:
             raise RegistryError(f"效果码 {code} 的 capability 未登记")
+        if capabilities[effect["capability"]]["status"] == "withdrawn":
+            raise RegistryError(f"效果码 {code} 不可引用已撤回的 capability")
         if effect.get("arg") not in data.get("arg_kinds", {}):
             raise RegistryError(f"效果码 {code} 的 arg 种类未登记: {effect.get('arg')!r}")
         if effect.get("reduce") not in ("sum", "prod", "min", "any",
                 "sum_by_arg_and_per_row_cap", "any_active_threshold_satisfied",
-                "sum_by_arg_at_heal_then_accumulate_30_frames", "per_instance", "sum_per_row"):
+                "sum_by_arg_at_heal_then_accumulate_30_frames", "per_instance", "sum_per_row", "unknown"):
             raise RegistryError(f"效果码 {code} 的 reduce 不合法")
+        if effect.get("reduce") == "unknown" and not effect.get("todo"):
+            raise RegistryError(f"效果码 {code} 未知聚合规则必须记录 TODO")
         if effect.get("gate") not in ("block", "warn"):
             raise RegistryError(f"效果码 {code} 的 gate 必须是 block/warn")
+        if "stack_scaled" not in effect or type(effect["stack_scaled"]) not in (bool, type(None)):
+            raise RegistryError(f"效果码 {code} 必须显式登记 stack_scaled 为布尔或null（未知）")
+        if effect["stack_scaled"] is None and not effect.get("stack_note"):
+            raise RegistryError(f"效果码 {code} 未知叠层规则必须记录 stack_note")
     for bit, entry in (data.get("flags", {}).get("bits") or {}).items():
         if entry.get("capability") not in capabilities:
             raise RegistryError(f"flags bit{bit} 的 capability 未登记")
