@@ -178,6 +178,11 @@ def test_boss_build_http_uses_existing_bridge_and_boss_store(live, tmp_path, mon
 @pytest.mark.parametrize("boss_flag", [True, False])
 def test_build_cli_boss_flag_selects_only_boss_namespace(tmp_path, monkeypatch, boss_flag):
     seen = {}
+    baseline = SimpleNamespace(store=tmp_path / "baseline", base_version="1.4.0")
+    def baseline_factory(args):
+        seen["baseline_args"] = args
+        return baseline
+    monkeypatch.setattr("wf.studio.build_view.baseline_from_args", baseline_factory)
     def build(cid, **kwargs):
         seen.update(cid=cid, **kwargs)
         return {"ok": True}
@@ -191,6 +196,8 @@ def test_build_cli_boss_flag_selects_only_boss_namespace(tmp_path, monkeypatch, 
     expected = tmp_path / "drafts" / "boss" if boss_flag else tmp_path / "drafts"
     assert seen["store"].root == expected
     assert seen["allow_unknown_client"] is True
+    assert seen["baseline_args"] is args and seen["baseline_view"] is baseline
+    assert (seen["base_store"], seen["base_version"]) == (baseline.store, baseline.base_version)
 
 
 @pytest.mark.parametrize("preview", [True, False])

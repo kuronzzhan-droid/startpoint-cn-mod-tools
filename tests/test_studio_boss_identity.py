@@ -1,6 +1,7 @@
 """Conflicting native quest IDs stay distinct through HTTP, drafts and delivery."""
 import copy
 import json
+from types import SimpleNamespace
 from urllib.parse import quote
 
 import pytest
@@ -105,10 +106,18 @@ def test_cli_namespaced_list_show_save_revert_and_build(tmp_path, monkeypatch):
     assert run("show", SHARED, "--boss")["changeset"] == saved
     assert run("save", SHARED, "--boss")["status"]["state"] == "saved"
     seen = {}
+    baseline = SimpleNamespace(store=tmp_path / "baseline", base_version="1.4.131")
+    def baseline_factory(args):
+        seen["baseline_args"] = args
+        return baseline
+    monkeypatch.setattr("wf.studio.build_view.baseline_from_args", baseline_factory)
     monkeypatch.setattr(deliver_bridge, "build_draft", lambda cid, **kw: seen.update(cid=cid, **kw) or {"ok": True})
     assert run("build", SHARED, "--boss", "--from", "1.4.236", "--to", "1.4.237",
                "--out", str(tmp_path / "output"))["ok"]
     assert seen["cid"] == SHARED and seen["store"].directory(SHARED) == store.directory(SHARED)
+    assert seen["baseline_view"] is baseline and seen["base_store"] == baseline.store
+    assert seen["base_version"] == baseline.base_version
+    assert seen["baseline_args"].cid == SHARED and seen["baseline_args"].boss
     assert run("revert", SHARED, saved["changes"][0]["id"], "--boss")["status"]["state"] == "clean"
     assert run("list")["drafts"] == []
 
