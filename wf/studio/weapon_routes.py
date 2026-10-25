@@ -33,7 +33,8 @@ class WeaponRoutes:
         self.store = WeaponDraftStore(app.ops.store.root / "weapons")
         # Both authoring surfaces reserve the same IDs under the same process lock.
         self.store._lock = app.boss.store._lock
-        self.editor = WeaponEditor(app.source, store=self.store, server_dir=server_dir)
+        self.editor = WeaponEditor(app.source, store=self.store, server_dir=server_dir,
+                                   provides=default_provides)
         proxy = SimpleNamespace(source=app.source, ops=SimpleNamespace(store=self.store),
                                 screenshots=getattr(app, "screenshots", None))
         self.deliveries = WeaponDeliveries(proxy, server_dir, root=DELIVERIES / "weapons",
@@ -74,6 +75,9 @@ class WeaponRoutes:
 
     def materials(self, query, body, wid):
         return self._edit("weapon_materials", query, body, wid=wid)
+
+    def icon(self, query, body, wid):
+        return self._edit("weapon_icon", query, body, wid=wid)
 
     def _edit(self, operation, query, body, wid=None):
         from wf.rules.catalog import result
@@ -123,5 +127,6 @@ class WeaponRoutes:
                   ("POST", r"/drafts/(?P<wid>\d+)/save", self.save),
                   ("POST", r"/drafts/(?P<wid>\d+)/changes/(?P<change>c-[0-9a-f]{12})/revert", self.revert),
                   ("GET", r"/(?P<wid>\d+)", self.detail),
-                  ("POST", r"/(?P<wid>\d+)/materials", self.materials)]
+                  ("POST", r"/(?P<wid>\d+)/materials", self.materials),
+                  ("POST", r"/(?P<wid>\d+)/icon", self.icon)]
         return [(verb, re.compile("^" + PREFIX + path + "$"), handler) for verb, path, handler in routes] + self.deliveries.routes()

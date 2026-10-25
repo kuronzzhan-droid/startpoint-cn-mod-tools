@@ -7,6 +7,7 @@ from wf.boss.weapon_edit import clone_weapon, edit_materials
 from .boss_store import BossDraftStore
 from .drafts import DraftError, new_change_id, now, status, validate
 from .weapon_store import WeaponDraftStore, identity, reservations
+from .weapon_icons import import_icon
 
 
 class WeaponRulesRejected(DraftError):
@@ -34,8 +35,11 @@ def _replay(source, wid, requests, *, server_dir, reserved, client_profile=None,
             wid = spec["id"]
         else:
             if spec["id"] != wid:
-                raise DraftError("weapon materials target does not match draft ID")
-            edit_materials(state, spec)
+                raise DraftError("weapon operation target does not match draft ID")
+            if request["operation"] == "weapon_icon":
+                state.weapon_icons = [*getattr(state, "weapon_icons", []), import_icon(state, spec)]
+            else:
+                edit_materials(state, spec)
     blocking = [entry for entry in getattr(state, "weapon_checks", [])
                 if entry.get("blocking") or entry.get("level") == "error"]
     if blocking:
@@ -61,22 +65,27 @@ def compile_weapon(source, store, draft, *, server_dir=None, client_profile=None
 
 
 class WeaponEditor:
-    def __init__(self, source, *, store=None, server_dir=None):
+    def __init__(self, source, *, store=None, server_dir=None, client_profile=None, provides=None):
         self.source, self.store, self.server_dir = source, store or WeaponDraftStore(), server_dir
+        self.client_profile, self.provides = client_profile, provides
 
     def reserved(self, wid=None):
         result = reservations(self.store, wid)
+        result.setdefault("codes", [])
         # Boss and standalone editors allocate from the same existing native ranges.
         other = reservations(BossDraftStore(self.store.root.parent / "boss"))
         for key in result:
-            result[key].extend(other[key])
+            result[key].extend(other.get(key, []))
+        if not result["codes"]:
+            result.pop("codes")
         return result
 
     def state(self, wid):
         draft = self.store.load(wid)
         identity(draft, wid, self.source.version)
         requests = _requests(draft)
-        state, _ = _replay(self.source, wid, requests, server_dir=self.server_dir, reserved=self.reserved(wid))
+        state, _ = _replay(self.source, wid, requests, server_dir=self.server_dir, reserved=self.reserved(wid),
+                           client_profile=self.client_profile, provides=self.provides)
         if requests:
             state.verify_snapshot(draft["changes"][0]["params"]["inputs"])
         return state, draft
@@ -89,14 +98,15 @@ class WeaponEditor:
                 previous = self.state(wid)[1] if wid is not None else None
                 requests = _requests(previous) + [request]
                 state, selected = _replay(self.source, wid, requests, server_dir=self.server_dir,
-                                           reserved=self.reserved(wid))
+                                           reserved=self.reserved(wid), client_profile=self.client_profile,
+                                           provides=self.provides)
                 if not state.client:
                     raise DraftError("weapon request produces no changes")
                 checks = getattr(state, "weapon_checks", [])
                 result = {"ok": True, "weaponId": selected, "subjectKind": "weapon",
                           "allocation": request["weapon"] if operation == "weapon_clone" else None,
                           "changes": state.changes, "serverTargets": sorted(state.servers),
-                          "checks": checks, "runtime": "未执行"}
+                          "checks": checks, "icons": getattr(state, "weapon_icons", []), "runtime": "未执行"}
                 if preview:
                     return result
                 change = {"id": new_change_id(), "kind": "weapon", "title": "武器草稿",

@@ -68,7 +68,7 @@ class WeaponDraftStore(DraftStore):
 
 def reservations(store, exclude=None):
     """Reserve clone identities and existing material-edit targets across stores."""
-    result = {"weapons": [], "enhancementProducts": []}
+    result = {"weapons": [], "enhancementProducts": [], "codes": []}
     for entry in store.characters():
         if entry["characterId"] == exclude:
             continue
@@ -79,8 +79,13 @@ def reservations(store, exclude=None):
                     spec = request["weapon"]
                     result["weapons"].append(spec["id"])
                     result["enhancementProducts"].extend(spec.get("enhancementProducts", []))
+                    code = spec.get("code", "boss_workshop_" + spec["id"])
+                    result["codes"].extend([code, code + "_soul" if "code" in spec
+                                             else "boss_workshop_soul_" + spec["id"]])
                 elif request.get("operation") == "weapon_materials":
                     spec = request["weapon"]
                     result["weapons"].append(spec["id"])
                     result["enhancementProducts"].extend(stage["productId"] for stage in spec["stages"])
+    if not result["codes"]:
+        result.pop("codes")  # Preserve the legacy empty/material-only reservation shape.
     return result

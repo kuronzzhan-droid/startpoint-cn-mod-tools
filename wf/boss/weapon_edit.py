@@ -12,6 +12,8 @@ from .shop_edit import one, reserve, image_reference, item_reference, set_costs,
 from .weapon_rules import (check_ability_rows, awakening_materials, clone_awakening,
                            awakening_updates, check_user_cost, AWAKENING)
 from .weapon_soul import edit_soul_item
+from .weapon_identity import clone_codes, exclusive_metadata
+from .weapon_templates import apply_template
 from .weapon_ids import (AUTO_WEAPON_START, AUTO_WEAPON_END, MAX_WEAPON_ID,
                          product_owners, reserved_ids, validate_weapon_id)
 
@@ -103,14 +105,15 @@ def clone_weapon(state, spec, reserved=()):
     for name in ("name", "description"):
         if name in spec:
             validate_text(spec[name], f"weapon {name}")
-    equipment[0], equipment[10] = "boss_workshop_" + identity, identity
+    code, soul_code = clone_codes(state, spec, identity, reserved)
+    equipment[0], equipment[10] = code, identity
     for name, column in (("name", 1), ("description", 7), ("icon", 6)):
         if name in spec:
             equipment[column] = spec[name]
     state.set_leaf(s.EQUIPMENT, [identity], join(equipment), new=True)
     item = one(state, ITEM, soul_key, 23)
-    item[0], item[1], item[2] = "boss_workshop_soul_" + identity, identity, equipment[1] + "魂珠"
-    checks = edit_soul_item(item, spec, source)
+    item[0], item[1], item[2] = soul_code, identity, equipment[1] + "魂珠"
+    checks = [*edit_soul_item(item, spec, source), *exclusive_metadata(spec)]
     if icon_item is not None:
         item[3:5] = icon_item[3:5]
     state.set_leaf(ITEM, [identity], join(item), new=True)
@@ -122,9 +125,14 @@ def clone_weapon(state, spec, reserved=()):
             if logical == SOUL or any(c["table"] == table for c in changes):
                 raise ValueError(f"weapon donor lacks {logical}")
             continue
-        value = edit_abilities(s.parse_rows(value), changes, table,
-                              client_profile=getattr(state, "client_profile", None),
-                              provides=getattr(state, "client_provides", None))
+        if logical == SOUL and "soul_template" in spec:
+            if any(c["table"] == table for c in changes):
+                raise ValueError("soul_template and ability_soul edits cannot be combined")
+            value = apply_template(state, spec["soul_template"], code)
+        else:
+            value = edit_abilities(s.parse_rows(value), changes, table,
+                                  client_profile=getattr(state, "client_profile", None),
+                                  provides=getattr(state, "client_provides", None))
         state.set_leaf(logical, [identity], value, new=True)
     for logical in (STATUS, ENH_STATUS):
         value = state.table(logical).get(source)

@@ -154,6 +154,7 @@ class BossEditor:
     def _reservations(self, except_quest):
         quests, nodes = [], []
         products, weapons, enhancement_products = [], [], []
+        codes = []
         for entry in self.store.characters():
             identifier = entry["characterId"]
             if identifier == except_quest:
@@ -166,6 +167,9 @@ class BossEditor:
                     products.append(request["shop"]["productId"])
                 if request["operation"] == "weapon_clone":
                     weapons.append(request["weapon"]["id"])
+                    spec = request["weapon"]
+                    codes.extend([spec.get("code", "boss_workshop_" + spec["id"]),
+                                  spec["code"] + "_soul" if "code" in spec else "boss_workshop_soul_" + spec["id"]])
                     enhancement_products.extend(request["weapon"].get("enhancementProducts", []))
                 elif request["operation"] == "weapon_materials":
                     weapons.append(request["weapon"]["id"])
@@ -174,8 +178,10 @@ class BossEditor:
         standalone = reservations(WeaponDraftStore(self.store.root.parent / "weapons"))
         weapons.extend(standalone["weapons"])
         enhancement_products.extend(standalone["enhancementProducts"])
+        codes.extend(standalone.get("codes", []))
         return {"quests": quests, "nodes": nodes, "products": products,
-                "weapons": weapons, "enhancementProducts": enhancement_products}
+                "weapons": weapons, "enhancementProducts": enhancement_products,
+                **({"codes": codes} if codes else {})}
 
     def canonical(self, quest):
         """One identity for every existing quest; newly allocated drafts keep IDs."""

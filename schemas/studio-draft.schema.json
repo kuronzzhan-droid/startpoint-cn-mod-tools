@@ -38,11 +38,41 @@
       }
     },
     "weaponRequest": {
-      "allOf": [
-        {"$ref": "#/$defs/bossShopWeaponRequest"},
-        {"properties": {"operation": {"enum": ["weapon_clone", "weapon_materials"]}},
-         "not": {"required": ["atlasBudget"]}}
+      "oneOf": [
+        {"allOf": [
+          {"$ref": "#/$defs/bossShopWeaponRequest"},
+          {"properties": {"operation": {"enum": ["weapon_clone", "weapon_materials"]}},
+           "not": {"required": ["atlasBudget"]}}
+        ]},
+        {"type": "object", "additionalProperties": false, "required": ["operation", "weapon"],
+         "properties": {"operation": {"const": "weapon_icon"}, "weapon": {"$ref": "#/$defs/weaponIconRequest"}}}
       ]
+    },
+    "weaponIconRequest": {
+      "type": "object", "additionalProperties": false, "required": ["id", "kind", "png"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[1-9][0-9]*$", "maxLength": 8},
+        "kind": {"enum": ["weapon", "soul", "material"]},
+        "png": {"type": "string", "minLength": 1, "maxLength": 2000000},
+        "item_id": {"type": "string", "pattern": "^[1-9][0-9]*$", "maxLength": 10}
+      },
+      "allOf": [{"if": {"properties": {"kind": {"const": "material"}}}, "then": {"required": ["item_id"]}}]
+    },
+    "weaponSoulTemplate": {
+      "type": "object", "additionalProperties": false, "required": ["template", "element", "multiplier"],
+      "properties": {
+        "template": {"enum": ["pf_hit_ability_damage", "pf_use_ability_damage", "pf_hit_invoke_damage", "pf_use_invoke_damage"]},
+        "element": {"type": "integer", "minimum": 0, "maximum": 5},
+        "multiplier": {"type": "number", "exclusiveMinimum": 0, "maximum": 21474},
+        "max_multiplier": {"type": "number", "exclusiveMinimum": 0, "maximum": 21474},
+        "trigger_limit": {"type": ["integer", "null"], "minimum": 1, "maximum": 2147483647},
+        "cooldown_frames": {"type": "integer", "minimum": 0, "maximum": 2147483647},
+        "damage_target": {"enum": ["trigger_enemy", "all_enemies", "nearest_enemy"]},
+        "hit_effect": {"enum": ["Explosion", "None"]},
+        "dsl_element": {"type": "integer", "minimum": 1, "maximum": 6}
+      },
+      "allOf": [{"if": {"properties": {"template": {"enum": ["pf_hit_invoke_damage", "pf_use_invoke_damage"]}}},
+                 "then": {"required": ["hit_effect", "dsl_element"]}}]
     },
     "bossParameters": {
       "type": "object", "additionalProperties": false,
@@ -548,6 +578,9 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "code": {"type": "string", "pattern": "^[a-z][a-z0-9_]{0,79}$"},
+        "exclusive_character": {"type": "string", "pattern": "^[1-9][0-9]*$", "maxLength": 10},
+        "soul_template": {"$ref": "#/$defs/weaponSoulTemplate"},
         "id": {"type": "string", "pattern": "^(?:[1-9][0-9]{0,6}|1[0-9]{7}|20[0-9]{6}|21[0-3][0-9]{5}|214[0-6][0-9]{4}|2147[0-3][0-9]{3}|21474[0-7][0-9]{2}|214748[0-2][0-9]|2147483[0-5])$", "maxLength": 8},
         "sourceWeapon": {"type": "string", "pattern": "^[1-9][0-9]*$", "maxLength": 10},
         "name": {"type": "string", "minLength": 1, "maxLength": 80},

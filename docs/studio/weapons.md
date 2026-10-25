@@ -114,6 +114,8 @@
 
 支持原有 `id`、`icon`、`enhancedIcon`、`abilities`、`enhancementProducts`。图标沿用既有武器/魂珠配对和加载资源检查，能力编辑沿用武器专用列位及客户端能力检查。`id` 省略时按既有 5950001..5999999 分配；显式指定时接受无前导零的 1..21474835，以保证 `id * 100 + 99` 不超过有符号 32 位整数。会检查客户端表、本机服务端镜像、BOSS 草稿和独立武器草稿的占用，包括仅修改材料的草稿以及强化商品号所占的武器号段。
 
+P0 新增 `code`、`exclusive_character`、`soul_template`。`code` 必须匹配 `[a-z][a-z0-9_]{0,79}`，写入 equipment c0；派生魂珠 item c0 为 `<code>_soul`。两者同时检查当前 equipment/item 表和 BOSS、独立武器草稿预留，冲突拒绝。未传 `code` 时仍使用 `boss_workshop_<id>` / `boss_workshop_soul_<id>`，兼容原 BOSS 页面。草稿命名空间的 `code: weapon_<id>` 保持原契约，和游戏内部代码名是两个字段。
+
 `enhancementProducts` 通常省略；克隆后的阶段号固定为 `武器ID * 100 + 阶段序号`，序号从 1 开始、最多 99。显式传入的阶段号必须与此一致；冲突不会通过跳号规避。旧草稿若保存了错位阶段号，重放会拒绝，须以当前基线重新创建。
 
 克隆专用觉醒材料时，同步生成客户端 `awakening_material_<新ID>` 与服务端 `materialByEquipment` 条目。需要修改觉醒配置时必须提供实际的完整 `equipment_awakening_material.json` 基线；专用材料还要求现有客户端 `custom_ability_string` 表。缺少这些输入会拒绝操作，不生成空基线配置。稀有度与装备 ID 百万位不一致时同步写 `rarityOverrides`，保留其他键与通用材料。
@@ -215,3 +217,86 @@
 能力检查不能用合成测试客户端证明真实可用。当前 `awakening_material_` 对应的 `equipment-awakening-material-v1` 尚缺 M2 能力目录/方法证据时，受限武器仍可生成供审阅的本地文件和键保留报告，但依赖推导会列出 TODO、兼容检查阻断且 `ok: false`；须补齐与所选实际 SWF 绑定的能力证据后才能宣称兼容。真实交付回归使用可解析的合成 SWF，仅验证 native kind 分支扫描和构建链，不代表已安装客户端或设备结果。
 
 原有 device-result 读取、写入及导入接口同样挂在上述交付前缀下，绑定 `kind: "weapon"`。生成成功与设备实测分别报告；本次接口不会执行发布或部署。前端可将 `/drafts` 的武器条目加入“本次修改”，对对应武器调用 build，再使用交付列表和文件接口导出。
+
+## 6. 专属角色的证据边界
+
+克隆 spec 可包含 `"exclusive_character": "139988"`。该字段保留在草稿请求和 allocation 内，返回 `weapon.exclusive-character-metadata`、`enforcement: "metadata_only"` 的非阻断提醒。它只记录设计归属；本次不限制武器装备、魂珠装配或能力生效，也不承诺客户端已有专属限制。
+
+本次核对的客户端源码是本机 `D:/WF/decompile-complete-20261014/scripts/pinball/master/generated/` 下的 `EquipmentValues.as` 与 `ItemValues.as`：前者构造函数只读取 c0..c15，未提供专属角色 ID；后者 `ItemEffectKind.AbilitySoul` 的参数是 `parseAt12(element)`，c12 是属性列表。没有发现可据此写入的角色独占列或已登记补丁。因此没有将角色 ID 写进属性、装备类型或其他列。需要真正限制装备时，应先补充对应客户端及服务端规则的证据和需求。
+
+旧引擎笔记曾以官方样本 c67/c68 为空推断魂珠表无 InvokeSkill 落点；本次直接核对同目录 `AbilitySoulValues.as:11494`，确认 629 分支读取 `parseAt67` / `parseAt68`。实现采用源码实证列位，不沿用那条旧推断。
+
+## 7. 魂珠能力伤害模板
+
+模板随 `POST /api/studio/weapons/clone` 的 `soul_template` 对象提交，**替换母本全部 ability_soul 行**，不会和母本能力叠加；强化能力仍按原克隆规则保留。不能同时提交 `abilities` 中针对 `ability_soul` 的手动修改，以避免覆盖顺序歧义。
+
+```json
+{
+  "sourceWeapon": "5100017", "id": "5950001", "code": "duet_example",
+  "exclusive_character": "139988",
+  "soul_template": {
+    "template": "pf_hit_ability_damage", "element": 2,
+    "multiplier": 1, "max_multiplier": 2,
+    "trigger_limit": 10, "cooldown_frames": 120
+  }
+}
+```
+
+| 模板 | 触发 | 默认伤害对象与 kind |
+| --- | --- | --- |
+| `pf_hit_ability_damage` | PF 命中 183 | 命中的敌人，316..321 |
+| `pf_use_ability_damage` | PF 发动 2 | 全体敌人，251..256 |
+| `pf_hit_invoke_damage` | PF 命中 183 | 全体敌人，629 + 生成的 DSL |
+| `pf_use_invoke_damage` | PF 发动 2 | 全体敌人，629 + 生成的 DSL |
+
+原生模板完全使用现有能力伤害族，不生成 DSL。`damage_target` 可改为 `all_enemies`（251..256）、`trigger_enemy`（316..321）或 `nearest_enemy`（352..357）；PF 发动模板没有命中敌人上下文，不能选择 `trigger_enemy`。元素由 kind 决定，未向无效元素列塞值。其余 251..387 家族中的 HP 基准及不计连击变体不在本次模板选项内。
+
+| 字段 | 约束及含义 |
+| --- | --- |
+| `element` | 必填整数 0..5：火、水、雷、风、光、暗 |
+| `multiplier` | 必填攻击倍率，0.00001..21474；1 表示攻击力 1 倍，写 c48=`100000` |
+| `max_multiplier` | 可选满觉醒倍率，默认等于 multiplier，不能更小；写 c49。魂珠取最低档，武器按觉醒等级插值 |
+| `trigger_limit` | 可选正整数触发次数上限，写 c31；null/省略写 `(None)` 表示不限制。本字段不是单次伤害封顶 |
+| `cooldown_frames` | 可选非负整数，默认 0；写 c32，60 帧为 1 秒 |
+| `damage_target` | 原生模板支持上述三个对象；629 只支持 `all_enemies` |
+
+629 版本还必须显式提供 `dsl_element`（1..6，严格等于 element + 1）及 `hit_effect`（字符串 `Explosion` 或 `None`）。拒绝元素继承 255、空元素和按属性查图的其他命中特效，防止装备主体预载触发 C10013。DSL 使用根头 `buffTargetAs=2`，明确按能力伤害乘区结算；不是默认 InvokeSkill 的技能伤害归属。倍率固定，`max_multiplier` 如给出必须与 multiplier 相同；本模板不声称实现 DSL 觉醒倍率插值。
+
+629 必须通过明确的目标 provides 或 client_profile 选择，并要求 provides 含 `official.kind629.invoke_skill@1` 与 `client.kind424.damage_convert@1`（登记的 patch 20 伤害归属相关方法证据），再检查与 provides 哈希绑定的实际 SWF 在 ability_soul 的 instant_content 中支持 629。缺少证据拒绝。HTTP 使用服务启动时的 `default_provides`；CLI 通过 `--provides` 或 `--client-profile` 传入。它不会把任意机器上的补丁、旧反编译快照或技能表分支当作目标客户端支持。
+
+provides 中还必须有编号 20、状态 `recorded` 的补丁条目，且伤害归属 capability 明确列出补丁 20；仅写 capability 名称不通过。该检查是静态输入证据检查，不代表设备运行通过。
+
+魂珠固定为 123 列，629 的 string_id/action_path 必须位于 c67/c68；要求完整的 `custom_ability_string` 基线，生成其新键和 `battle/action/skill/action/ability_skill/studio_weapon/<code>_pf_damage.action.dsl.amf3.deflate`。文件名冲突或当前布局不符均拒绝。模板、文本和 DSL 随同一草稿重放、快照及交付，不改只读基线。实现参考 `bt_weapon.py` 的原生 183→318 行与诅咒武器 w27/w28 的 CT/触发上限编码，未复制角色 ID 或武器专用常量。
+
+## 8. 上传武器、魂珠及材料图标
+
+`POST /api/studio/weapons/<id>/icon`，JSON 请求，不使用文件选择窗或 multipart：
+
+```json
+{"kind":"weapon","png":"<原始 PNG 的 base64>"}
+```
+
+`kind=weapon` 必须为 20×20 单帧 PNG，写新的独立逻辑 PNG 并更新 equipment c6。`kind=soul` 必须为 40×40，自动选当前武器 equipment c10 指向的魂珠。`kind=material` 必须为 40×40，另外传 `item_id`，例如 `{"kind":"material","item_id":"10000145","png":"..."}`；该 ID 必须为已有 item 行。材料是共享 item，此草稿中的该 item 图标引用会影响使用它的所有消费者。
+
+魂珠/材料 40×40 像素写入 `item_icon/sprite_sheet` 的空位；同时按最近邻派生独立 20×20 PNG，分别更新 item c4 与 c3。复用 `weapon_awaken.find_slot`，保留边距并要求空位及 1px 外圈原本全透明。不扩画布、不移动旧条目，追加后逐像素比较所有旧区域；无空位直接拒绝。图像名包含像素摘要，同图重复导入复用既有槽，换图追加新槽。旧 PNG、旧 atlas 条目和其他 item 行不会被覆盖。
+
+`png` 是原始 PNG 字节的标准 base64，不带 data URL 前缀；上限 2,000,000 字符。尺寸不符、非 PNG、多帧、无效 base64、关联 item 缺失或旧槽同名不同像素均拒绝。可加 `?preview=true`，只编译候选不写草稿。成功响应沿用武器修改结构，新增 `icons`，含 `kind/logical/size`；魂珠/材料还含 `itemId/thumbnail/atlasSize/preservedEntries`。失败使用现有 400 与 `checks` 合同，不改变已保存草稿。
+
+上传写成 `weapon_icon` 可重放请求，图像随请求保存在本地草稿。所有输入图集、表与新增资源的存在状态都进入快照；构建沿用 `build_draft`，服务端文件不因单纯换图而产生修改。HTTP Origin/Token/Host 守卫沿用现有 server.Handler。
+
+## 9. 一行 JSON CLI
+
+无需启动服务器或拼接 Origin/Token。全局视图参数与其他 draft 命令相同，`--drafts` 指普通草稿根，命令自动进入其 `weapons/` 子目录。`--server-dir` 可写在全局或操作子命令后面。
+
+```powershell
+python -m wf.studio.draft --manifest manifest.json --store store131 --zip-dir archives --tip 282 --server-dir server weapon list --q 雷 --limit 100
+python -m wf.studio.draft --tip 282 --server-dir server weapon show 5950001
+python -m wf.studio.draft --tip 282 --server-dir server weapon clone --from 5100017 --to 5950001 --code duet_example --name 二重奏 --exclusive-character 139988 --soul-template template.json
+python -m wf.studio.draft --tip 282 --server-dir server weapon materials 5950001 --request materials.json
+python -m wf.studio.draft --tip 282 --server-dir server weapon icon 5950001 --kind weapon --png weapon20.png
+python -m wf.studio.draft --tip 282 --server-dir server weapon icon 5950001 --kind soul --png soul40.png
+```
+
+`clone/materials/icon --request` 接受对应 HTTP body；clone 的 `--from/--to/--code/--name/--exclusive-character/--soul-template` 和 icon 的 `--kind/--png/--item-id` 可覆盖文件中的同名参数。`--preview` 不落草稿。所有五个子命令支持 `--provides PATH`、`--client-profile NAME`，用于明确目标能力证据。
+
+标准输出始终一行 JSON：成功为 `{"ok":true,"result":...}`，退出码 0；运行期校验失败为 `{"ok":false,"error":"..."}`，退出码 1。`list` 读取当前基线目录，`show` 读取重放后的草稿候选。命令只准备本地草稿；不会发网络请求、连接服务器、提交发布或假装完成设备验证。
