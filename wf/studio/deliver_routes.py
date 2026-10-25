@@ -18,6 +18,7 @@ import threading
 import time
 import traceback
 from pathlib import Path
+from types import SimpleNamespace
 
 from wf.paths import REPOSITORY
 
@@ -36,11 +37,10 @@ def _read_json(path: Path):
         return None
 
 
-def next_version(version: str) -> str:
-    parts = version.split(".")
-    if len(parts) != 3 or not all(p.isdigit() for p in parts):
-        return version
-    return f"{parts[0]}.{parts[1]}.{int(parts[2]) + 1}"
+def next_version(version: str, *, source=None) -> str:
+    from .versions import next_version as suggest
+    view = getattr(source, "view", None)
+    return suggest(SimpleNamespace(version=version, view=view))["next"]
 
 
 class DeliverRoutes:
@@ -110,19 +110,19 @@ class DeliverRoutes:
         from wf.caps.profiles import profile_options, resolve_client
         provides, selected = resolve_client(self.default_provides)
         version = self.app.source.version
-        return json_response({"from": version, "to": next_version(version),
+        return json_response({"from": version, "to": next_version(version, source=self.app.source),
                               "outRoot": self.display_root(),
                               "serverDir": str(self.server_dir) if self.server_dir else None,
                               "provides": str(provides) if provides else None,
                               "clientProfile": selected, **profile_options(),
-                              "note": "来源版本取当前视图末端；目标版本默认 +1，只是本地测试候选，不代表正式版本分配。"})
+                              "note": "来源版本取当前视图末端；默认目标跳过版本预留与已声明版本，只是本地测试候选，不代表正式版本分配。"})
 
     def build(self, query, body, cid):
         from .server import json_response
         from .deliver_bridge import STAGES
         version = self.app.source.version
         from_version = str(body.get("from") or version)
-        to_version = str(body.get("to") or next_version(from_version))
+        to_version = str(body.get("to") or next_version(from_version, source=self.app.source))
         for value in (from_version, to_version):
             if not VERSION.fullmatch(value):
                 raise DraftError(f"版本无效：{value}")

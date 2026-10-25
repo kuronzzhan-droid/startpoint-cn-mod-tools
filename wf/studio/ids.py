@@ -36,7 +36,7 @@ def collect_occupancy(source, drafts_root=None, server_dir=None):
         collect_tables(source, add)
         collect_server(server_dir, add)
         collect_drafts(default_root() if drafts_root is None else drafts_root, add,
-                       known_strings=result["string_id"])
+                       known_strings=result["string_id"], source=source)
     except (ValueError, TypeError, KeyError, OSError) as exc:
         raise DraftError(f"无法完成 ID 来源查询: {exc}") from exc
     return result

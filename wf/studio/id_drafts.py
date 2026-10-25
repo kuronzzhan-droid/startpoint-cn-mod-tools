@@ -18,7 +18,7 @@ def _reservations(reservations, add, owner, origin):
                 add(kind, str(identity), owner, "draft", origin)
 
 
-def _requests(draft, add, origin, known_strings):
+def _requests(draft, add, origin, known_strings, source, table_rows):
     owner = str(draft.get("characterId", "unknown"))
     subject = draft.get("subjectKind", "character")
     if subject == "character" and owner.isdigit():
@@ -28,6 +28,7 @@ def _requests(draft, add, origin, known_strings):
         for kind in ("weapon", "soul_item"):
             add(kind, owner, owner, "draft", origin)
     _reservations(draft.get("reservations", {}), add, owner, origin)
+    operations = []
     for change in draft.get("changes", []):
         if not isinstance(change, dict) or not isinstance(change.get("params", {}), dict):
             raise DraftError(f"草稿 change / params 必须是对象: {origin}")
@@ -49,8 +50,13 @@ def _requests(draft, add, origin, known_strings):
                     if str(identity).isdigit():
                         add("weapon", str(int(identity) // 100), owner, "draft", origin)
                 template = spec.get("soul_template", {}).get("template")
+                code = spec.get("code", "boss_workshop_" + str(spec["id"]))
+                if req.get("operation") == "weapon_clone":
+                    # Same defaults as wf.boss.weapon_identity.clone_codes.
+                    soul = code + "_soul" if "code" in spec else "boss_workshop_soul_" + str(spec["id"])
+                    for key in (code, soul):
+                        add("string_id", key, owner, "draft", origin)
                 if template in {"pf_hit_invoke_damage", "pf_use_invoke_damage"}:
-                    code = spec.get("code", "boss_workshop_" + str(spec["id"]))
                     add("string_id", code + "_pf_damage", owner, "draft", origin)
                 if "awakening_material_" + str(spec.get("sourceWeapon")) in known_strings:
                     add("string_id", "awakening_material_" + str(spec["id"]), owner, "draft", origin)
@@ -60,6 +66,10 @@ def _requests(draft, add, origin, known_strings):
             for section in ("custom_ability_string", "desc_override"):
                 for key in text.get(section, {}):
                     add("string_id", str(key), owner, "draft", origin)
+            operations.extend(req.get("operations", []))
+    from .id_requests import ability_ids
+    for kind, identity in ability_ids(operations, source, table_rows):
+        add(kind, identity, owner, "draft", origin)
 
 
 def _table_payload(payload, item):
@@ -82,7 +92,26 @@ def _table_payload(payload, item):
         raise DraftError(f"无法解码草稿预留表 {payload}: {exc}") from exc
 
 
-def collect_drafts(root, add, *, known_strings=()):
+def _owned_rows(change, logical, rows):
+    """Clone payloads contain full baseline tables; only inserted rows belong here."""
+    if change.get("kind") != "character_clone":
+        return rows
+    params = change.get("params", {})
+    owned = params.get("ownedRows")
+    if owned is not None:
+        if not isinstance(owned, dict) or not isinstance(owned.get(logical, []), list):
+            raise DraftError("克隆 ownedRows 必须是按表列出的键数组")
+        keys = owned.get(logical, [])
+    else:
+        # Older clones only inserted the new character key in identity tables.
+        # Never compare to the selected view: it may be older than the draft.
+        keys = [str(params.get("spec", {}).get("to", ""))]
+    if any(key not in rows for key in keys):
+        raise DraftError(f"克隆 ownedRows 键不在表内: {logical}")
+    return {key: rows[key] for key in keys}
+
+
+def collect_drafts(root, add, *, known_strings=(), source=None):
     root = Path(root).resolve()
     if not root.exists():
         return
@@ -102,8 +131,10 @@ def collect_drafts(root, add, *, known_strings=()):
         if (not isinstance(draft, dict) or not isinstance(draft.get("changes"), list)
                 or not isinstance(draft.get("characterId"), str)):
             raise DraftError(f"草稿 ID 来源结构无效: {filename}")
-        _requests(draft, add, str(filename), known_strings)
+        draft_tables = {}
         for change in draft["changes"]:
+            if not isinstance(change, dict) or not isinstance(change.get("params", {}), dict):
+                raise DraftError(f"草稿 change / params 必须是对象: {filename}")
             if not isinstance(change.get("files", []), list):
                 raise DraftError(f"草稿 files 必须是数组: {filename}")
             for item in change.get("files", []):
@@ -124,9 +155,16 @@ def collect_drafts(root, add, *, known_strings=()):
                 if not payload.is_relative_to(filename.parent.resolve()) or not payload.is_file():
                     raise DraftError(f"草稿预留文件缺失或越界: {payload}")
                 rows = load_json(payload) if is_server else _table_payload(payload, item)
+                if not is_server:
+                    draft_tables[logical] = rows
+                rows = _owned_rows(change, logical, rows)
                 for kind in kinds:
+                    if (change.get("kind") == "character_clone" and kind == "string_id"
+                            and logical != TABLES["string_id"][0]):
+                        continue  # cloned abilities reuse donor text references
                     identities = server_ids(kind, server_name, rows) if is_server else table_ids(kind, logical, rows)
                     for identity, _ in identities:
                         add(kind, identity, str(draft["characterId"]), "draft", str(payload))
                         if kind == "enhancement_shop" and identity.isdigit():
                             add("weapon", str(int(identity) // 100), str(draft["characterId"]), "draft", str(payload))
+        _requests(draft, add, str(filename), known_strings, source, draft_tables)

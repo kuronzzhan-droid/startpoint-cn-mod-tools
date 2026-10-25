@@ -51,6 +51,18 @@ def test_next_version_and_defaults(routes):
     assert (body["from"], body["to"]) == ("1.4.236", "1.4.237")
 
 
+def test_defaults_and_build_share_version_reservations(routes, tmp_path, monkeypatch):
+    from wf.studio import versions
+    _, deliver = routes
+    reservations = tmp_path / "reservations.json"
+    reservations.write_text(json.dumps({"1.4.237": {
+        "purpose": "another task", "owner": "fixture", "date": "2026-10-25"}}), "utf-8")
+    monkeypatch.setattr(versions, "DEFAULT_RESERVATIONS", reservations)
+    monkeypatch.setattr(deliver_bridge, "build_draft", lambda cid, **kw: {"ok": True, "to": kw["to_version"]})
+    assert _json(deliver.defaults({}))["to"] == "1.4.238"
+    assert _json(deliver.build({}, {}, cid="139985"))["to"] == "1.4.238"
+
+
 def test_actions_generate_export_wired_apply_publish_off():
     state = {a["id"]: a["enabled"] for a in ACTIONS}
     assert state == {"save": True, "generate": True, "export": True, "apply": False, "publish": False}

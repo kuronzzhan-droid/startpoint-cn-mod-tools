@@ -11,24 +11,31 @@ from .drafts import DraftError
 
 CHARACTER = "master/character/character.orderedmap"
 MANA = "master/mana_board/mana_node.orderedmap"
+ABILITY_STRINGS = tuple(f"master/ability/{name}.orderedmap" for name in
+                        ("ability", "leader_ability", "ability_soul"))
 TABLES = {
     "character": (CHARACTER, "master/character/character_status.orderedmap",
-                  "master/character/character_text.orderedmap"),
+                  "master/character/character_text.orderedmap",
+                  "master/character/character_speech.orderedmap",
+                  "master/character/character_image.orderedmap"),
     "multiball": ("master/battle/multiball/multiball.orderedmap",
                   "master/battle/multiball/multiball_level.orderedmap"),
     "weapon": WEAPON_TABLES,
     "soul_item": ("master/item/item.orderedmap", "master/ability/ability_soul.orderedmap"),
     "unique_condition": ("master/character/unique_condition.orderedmap",),
-    "string_id": ("master/string/custom_ability_string.orderedmap",),
+    "string_id": ("master/string/custom_ability_string.orderedmap", *ABILITY_STRINGS),
     "mana_node": (MANA, "master/generated/mana_board.orderedmap"),
     "enhancement_shop": (ENH_SHOP,),
 }
 SERVER_FILES = {
-    "character": ("character.json", "cdndata/character.json", "cdndata/character_text.json"),
+    "character": ("character.json", "cdndata/character.json", "cdndata/character_text.json",
+                  "character_rank_p5b.json", "cdndata/character_rank_p5b.json", "cdndata/character_text_rank_p5b.json",
+                  "character_overlimit.json", "mana_node.json", "mana_node_cnmod.json", "mana_board.json"),
     "multiball": ("multiball.json", "multiball_level.json", "cdndata/multiball.json"),
     "weapon": ("equipment_lookup.json", "equipment_ids.json", "equipment_max_level.json",
                "equipment_element.json", "item_ids.json", "item_lookup.json", "item_sale.json",
-               "equipment_awakening_material.json"),
+               "equipment_awakening_material.json", "equipment_dissolve.json",
+               "boss_coin_shop.json", "boss_coin_shop_cnmod.json"),
     "soul_item": ("item_ids.json", "item_lookup.json", "item_sale.json", "ability_soul.json"),
     "unique_condition": ("unique_condition.json", "cdndata/unique_condition.json"),
     "string_id": ("custom_ability_string.json", "cdndata/custom_ability_string.json"),
@@ -77,8 +84,21 @@ def table_ids(kind, logical, rows):
     if not isinstance(rows, dict):
         raise DraftError(f"ID 来源表不是 ordered map: {logical}")
     for identity, value in rows.items():
+        if kind == "string_id" and logical in ABILITY_STRINGS:
+            for _, text in iter_leaves(value):
+                for row in parse_rows(text):
+                    if row and row[0] not in {"", "(None)"}:
+                        yield row[0], str(identity)
+            continue
         # mana_node queries allocate a whole character-owned segment, not a slot.
         yield str(identity), str(identity)
+        if kind == "character" and logical == CHARACTER:
+            for _, text in iter_leaves(value):
+                for row in parse_rows(text):
+                    # CharacterValues c27 is identity_character_id. c17 is a
+                    # leader_ability reference, despite the legacy tool alias.
+                    if len(row) > 27 and row[27].isdigit() and int(row[27]) > 0:
+                        yield row[27], str(identity)
         if kind == "mana_node" and logical == MANA:
             for _, text in iter_leaves(value):
                 for row in parse_rows(text):
@@ -88,6 +108,29 @@ def table_ids(kind, logical, rows):
 
 
 def server_ids(kind, name, rows):
+    if kind == "character" and name == "character_overlimit.json":
+        values = rows.get("characters", []) if isinstance(rows, dict) else None
+        if not isinstance(values, list) or any(type(value) not in (str, int) for value in values):
+            raise DraftError(f"超限角色来源 characters 必须是 ID 数组: {name}")
+        yield from ((str(value), str(value)) for value in values)
+        return
+    if kind == "weapon" and name in {"boss_coin_shop.json", "boss_coin_shop_cnmod.json"}:
+        # Server products use rewards[].{type,id}; itemId is not this format.
+        if not isinstance(rows, dict):
+            raise DraftError(f"领主币商店来源必须是对象: {name}")
+        for category, products in rows.items():
+            if not isinstance(products, dict):
+                raise DraftError(f"领主币商店分类必须是对象: {name}/{category}")
+            for product, entry in products.items():
+                rewards = entry.get("rewards", []) if isinstance(entry, dict) else None
+                if not isinstance(rewards, list):
+                    raise DraftError(f"领主币商店 rewards 必须是数组: {name}/{product}")
+                for reward in rewards:
+                    if not isinstance(reward, dict):
+                        raise DraftError(f"领主币商店 reward 必须是对象: {name}/{product}")
+                    if str(reward.get("type")) in {"0", "4"} and str(reward.get("id", "")).isdigit():
+                        yield str(reward["id"]), str(product)
+        return
     if name.endswith("equipment_awakening_material.json"):
         if not isinstance(rows, dict):
             raise DraftError(f"装备觉醒来源必须是对象: {name}")

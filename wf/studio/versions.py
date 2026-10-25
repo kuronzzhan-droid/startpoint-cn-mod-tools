@@ -30,11 +30,23 @@ def read_reservations(filename=None):
 
 def declared_versions(source):
     """An older selected tip must not reallocate later manifest declarations."""
-    from wf.view.chain import manifest_entries, VERSION
+    from wf.view.chain import ARCHIVE, manifest_entries, VERSION
     view = getattr(source, "view", None)
     manifest = getattr(view, "manifest", None)
     if manifest is None:
-        return {}
+        active = getattr(view, "active", None)
+        if active is None:
+            return {}
+        result = {}
+        try:
+            for archive in Path(active).iterdir():
+                match = ARCHIVE.fullmatch(archive.name)
+                if match and archive.is_file() and "candidate" not in archive.name:
+                    for version in match.group(1, 2):
+                        result[version] = {"source": "active", "location": str(archive)}
+        except OSError as exc:
+            raise DraftError(f"无法读取历史视图版本目录 {active}: {exc}") from exc
+        return result
     try:
         entries = manifest_entries(manifest, view.search_dirs, view.manifests)
     except (ValueError, OSError) as exc:
