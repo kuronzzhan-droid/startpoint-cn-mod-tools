@@ -96,13 +96,20 @@ def test_baseline_pre_hash_drift_is_blocking(case, tmp_path):
     assert result["prepush"]["status"] == "问题" and result["prepush"]["exit_code"] == 1
 
 
-def test_server_pre_hash_never_waived(case, tmp_path):
+@pytest.mark.parametrize("target", ["assets/local_fixture.json", "assets/cdndata/character_text.json"])
+def test_server_pre_hash_never_waived(case, tmp_path, target):
     changes, doc, _, _, _ = case
     raw = b"{}"
     (changes.parent / "server").write_bytes(raw)
-    doc["server_changes"] = [{"target": "assets/cdndata/character_text.json", "source": "server",
+    doc["server_changes"] = [{"target": target, "source": "server",
                               "sha256": sha256(raw), "before_sha256": None}]
     changes.write_text(json.dumps(doc), "utf-8")
+    if target == "assets/cdndata/character_text.json":
+        # Shared character maps now fail before packaging when the full mirror is missing.
+        with pytest.raises(ValueError, match="missing complete server baseline"):
+            build_delivery(changes, tmp_path / "out", no_baseline_i_know=True)
+        assert not (tmp_path / "out").exists()
+        return
     result = build_delivery(changes, tmp_path / "out", no_baseline_i_know=True)
     assert result["prepush"]["status"] == "问题" and result["prepush"]["exit_code"] == 1
     report = json.loads((tmp_path / "out/prepush.json").read_text("utf-8"))
@@ -131,12 +138,16 @@ def test_alternate_asset_layer_cannot_skip_combat_gate(case, tmp_path, root, log
 def test_delivery_readback_requires_server_check_evidence(case, tmp_path, flag):
     from wf.check_delivery import check_delivery
     changes, doc, *_ = case
-    (changes.parent / "server").write_bytes(b"{}")
+    before = b'{"existing":[["preserved"]]}'
+    after = b'{"existing":[["preserved"]],"new":[["added"]]}'
+    (changes.parent / "server").write_bytes(after)
     doc["server_changes"] = [{"target": "assets/cdndata/character_text.json", "source": "server",
-                              "sha256": sha256(b"{}"), "before_sha256": None}]
+                              "sha256": sha256(after), "before_sha256": sha256(before)}]
     changes.write_text(json.dumps(doc), "utf-8")
     server = tmp_path / "server"
-    server.mkdir()
+    mirror = server / "assets/cdndata/character_text.json"
+    mirror.parent.mkdir(parents=True)
+    mirror.write_bytes(before)
     out = tmp_path / "out"
     result = build_delivery(changes, out, no_baseline_i_know=True, server_dir=server)
     assert result["prepush"]["exit_code"] == 0

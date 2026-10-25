@@ -166,19 +166,24 @@ def test_prepush_failure_is_not_success(case, tmp_path, monkeypatch):
 
 def test_server_payload_is_staged_and_asserted_only(case, tmp_path):
     path, doc = case
-    raw = b'{"new": true}'
+    before = b'{"existing": [["preserved"]]}'
+    raw = b'{"existing": [["preserved"]], "new": [["added"]]}'
     (path.parent / "server.json").write_bytes(raw)
     doc["server_changes"] = [{"target": "assets/cdndata/character_text.json", "source": "server.json",
-                               "sha256": sha256(raw), "before_sha256": None}]
+                               "sha256": sha256(raw), "before_sha256": sha256(before)}]
     path.write_text(json.dumps(doc), "utf-8")
     out = tmp_path / "with-server"
     server = tmp_path / "server"
-    server.mkdir()
+    original = server / "assets/cdndata/character_text.json"
+    original.parent.mkdir(parents=True)
+    original.write_bytes(before)
     result = build_delivery(path, out, server_dir=server, no_baseline_i_know=True)
     assert (out / "server/assets/cdndata/character_text.json").read_bytes() == raw
     asserts = json.loads((out / "assert-box.json").read_text("utf-8"))
     assert asserts["files"][-1]["kind"] == "server"
+    assert asserts["files"][-1]["before_sha256"] == sha256(before)
     assert result["prepush"]["exit_code"] == 0
+    assert original.read_bytes() == before
 
 
 def test_output_is_checkout_local_and_never_overwrites(case, delivery):
