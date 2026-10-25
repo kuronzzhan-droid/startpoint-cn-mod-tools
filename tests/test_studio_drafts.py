@@ -237,6 +237,7 @@ def test_route_verbs():
     assert verbs == {"GET", "POST"}
     assert all(pattern.pattern.startswith(("^/api/drafts/", "^/api/boss/drafts", "^/api/studio/weapons/",
                                            "^/api/studio/characters/"))
+               or pattern.pattern == "^/api/studio/views/export-store$"
                for verb, pattern, _ in app.routes if verb == "POST")
 
 
