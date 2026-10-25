@@ -222,7 +222,7 @@ P0 新增 `code`、`exclusive_character`、`soul_template`。`code` 必须匹配
 
 克隆 spec 可包含 `"exclusive_character": "139988"`。该字段保留在草稿请求和 allocation 内，返回 `weapon.exclusive-character-metadata`、`enforcement: "metadata_only"` 的非阻断提醒。它只记录设计归属；本次不限制武器装备、魂珠装配或能力生效，也不承诺客户端已有专属限制。
 
-本次核对的客户端源码是本机 `D:/WF/decompile-complete-20261014/scripts/pinball/master/generated/` 下的 `EquipmentValues.as` 与 `ItemValues.as`：前者构造函数只读取 c0..c15，未提供专属角色 ID；后者 `ItemEffectKind.AbilitySoul` 的参数是 `parseAt12(element)`，c12 是属性列表。没有发现可据此写入的角色独占列或已登记补丁。因此没有将角色 ID 写进属性、装备类型或其他列。需要真正限制装备时，应先补充对应客户端及服务端规则的证据和需求。
+本次核对的客户端源码是反编译客户端 `scripts/pinball/master/generated/` 下的 `EquipmentValues.as` 与 `ItemValues.as`：前者构造函数只读取 c0..c15，未提供专属角色 ID；后者 `ItemEffectKind.AbilitySoul` 的参数是 `parseAt12(element)`，c12 是属性列表。没有发现可据此写入的角色独占列或已登记补丁。因此没有将角色 ID 写进属性、装备类型或其他列。需要真正限制装备时，应先补充对应客户端及服务端规则的证据和需求。
 
 旧引擎笔记曾以官方样本 c67/c68 为空推断魂珠表无 InvokeSkill 落点；本次直接核对同目录 `AbilitySoulValues.as:11494`，确认 629 分支读取 `parseAt67` / `parseAt68`。实现采用源码实证列位，不沿用那条旧推断。
 

@@ -8,7 +8,7 @@
 
 ```json
 {
-  "wf_root": "D:/WF",
+  "wf_root": "<WF_ROOT>",
   "default_view": "local",
   "views": {
     "test175": {
@@ -72,7 +72,7 @@ ZIP 搜索仅遍历指定目录，递归但不跟随子目录符号链接或 Win
 
 `views` 是当前机器配置中的视图名数组；`current` 是进程实际加载的视图名，非命名来源时为 `null`，不会把启动后变动的 `default_view` 冒充当前视图。`source` 是完整 `describe()` 摘要，示例只展示两项。切换视图需要用目标 `--view` 重启编辑台，没有运行时切换接口。GET 仍检查 Host。
 
-`POST /api/studio/views/export-store` 的请求为 `{"out":"D:/WF/outputs/work/view-copy","copy":true}`。`out` 必须是非空本地路径，`copy` 为布尔值，省略时为 `false`；拒绝其他字段。仅导出进程当前视图。该请求与其他写接口共用 `X-WF-Studio-Token`、Host、Origin 和 JSON 请求体守卫。成功返回 200，JSON 为 `ok: true` 加下述 `export_store` 结果，并带 `version` 和 `view`。路径已存在、输入无效或导出失败返回 400 和 `error`；不会覆盖已有输出。导出不创建角色草稿。
+`POST /api/studio/views/export-store` 的请求为 `{"out":"<WF_ROOT>/outputs/work/view-copy","copy":true}`。`out` 必须是非空本地路径，`copy` 为布尔值，省略时为 `false`；拒绝其他字段。仅导出进程当前视图。该请求与其他写接口共用 `X-WF-Studio-Token`、Host、Origin 和 JSON 请求体守卫。成功返回 200，JSON 为 `ok: true` 加下述 `export_store` 结果，并带 `version` 和 `view`。路径已存在、输入无效或导出失败返回 400 和 `error`；不会覆盖已有输出。导出不创建角色草稿。
 
 ## 导出给构建器
 
@@ -85,7 +85,7 @@ python -m wf.studio.draft --view test175 --extra-zips-file extras.txt build 1311
 输入锁与交付清单的 `tip` 仍为 manifest 截止点。离线交付检查从锁中的基线版本和有序 ZIP 重建完整终点，核对其等于 `from_version`，不会把最高文件名当作连续版本证明。
 
 ```powershell
-python -m wf.studio.draft --view test175 export-store --out D:/WF/outputs/work/my-build/viewstore
+python -m wf.studio.draft --view test175 export-store --out <WF_ROOT>/outputs/work/my-build/viewstore
 python -m wf.studio.draft --view test175 export-store --out E:/build/viewstore --copy
 ```
 

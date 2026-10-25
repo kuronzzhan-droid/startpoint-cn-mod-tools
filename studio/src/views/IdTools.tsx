@@ -77,7 +77,7 @@ function ExportStore({ view }: { view: string | null }) {
     <div class="tool-export">
       <h4>导出为 store <InfoTip text="只导出编辑台当前加载的视图。默认对未覆盖文件建硬链接（要求同盘），ZIP 覆盖成员写新文件；跨盘或构建器会原地改文件时勾选「复制」。完成标志是最后写入的 viewstore.json。" /></h4>
       <div class="tool-row">
-        <input class="mono" value={out} placeholder="D:/WF/outputs/work/<主题>/viewstore（必须不存在）" onInput={(e) => setOut((e.target as HTMLInputElement).value)} />
+        <input class="mono" value={out} placeholder="<资料根>/outputs/work/<主题>/viewstore（必须不存在）" onInput={(e) => setOut((e.target as HTMLInputElement).value)} />
         <label class="check"><input type="checkbox" checked={copy} onChange={(e) => setCopy((e.target as HTMLInputElement).checked)} />复制（不用硬链接）</label>
         <button type="button" class="primary" disabled={busy || !out.trim() || !drafts.hasToken()} onClick={run}>{busy ? "导出中……" : `导出 ${view ?? "当前视图"}`}</button>
       </div>
