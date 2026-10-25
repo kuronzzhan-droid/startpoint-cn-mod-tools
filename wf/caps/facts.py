@@ -115,6 +115,9 @@ def table_signals(logical, trail, text, *, registry=None):
                     yield "ref", (target, row[position])
             if len(row) > 14 and row[14].endswith("_voice_ready"):
                 yield "selectors", "voice.skill_ready_alt"
+        elif (logical == "master/battle/multiball/multiball.orderedmap"
+              and len(row) > 9 and row[9] not in {"", "0", "(None)"}):
+            yield "selectors", "multiball.active_skill"
         elif logical in {SKILL, "master/skill/switched_action_skill.orderedmap"}:
             position = 7 if logical == SKILL else 0
             if len(row) > position and row[position] not in {"", "(None)"}:

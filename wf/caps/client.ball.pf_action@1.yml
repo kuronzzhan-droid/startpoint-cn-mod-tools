@@ -1,0 +1,43 @@
+schema: wf-capability/1
+id: client.ball.pf_action@1
+title: 协力球数据指定 PF 动作
+layer: A
+provided_by:
+  patches: []
+  match: all
+  methods: []
+  status: 待补
+  basis: p12 接口说明、P13-REPORT.md 与 p13-capabilities.json（2026-10-25，任务随附只读报告）；本仓登记为报告声明，方法哈希与设备验收待核。
+server:
+  required: false
+  features: []
+  note: 每台客户端模拟各玩家自己的队伍；不新增跨玩家消息。
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors:
+  - custom_ability_string.wfx_ball_pf_action_
+form:
+  label: 协力球数据指定 PF 动作
+  fields:
+  - name: configuration
+    syntax: wfx_ball_pf_action_<multiball id> = PF 动作表新增键；动作及球必须存在，动作不可与目标 APK 内置键撞名。
+  note: 报告声明支持仅为待验证；目标缺能力按降级报告。
+describe:
+  template: wfx_ball_pf_action_<multiball id> = PF 动作表新增键；动作及球必须存在，动作不可与目标 APK 内置键撞名。
+  channel: 能力说明
+rules:
+- capability.degraded
+- capability.declared
+preview:
+  label: 协力球数据指定 PF 动作
+  status: 待验证
+golden:
+- source: p12 接口说明、P13-REPORT.md 与 p13-capabilities.json（2026-10-25，任务随附只读报告）
+  kind: report-declared
+  note: 离线报告不等于本次方法核验或设备验收。
+docs:
+- docs/studio/p13-keys.md

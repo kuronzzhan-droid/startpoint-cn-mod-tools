@@ -580,6 +580,76 @@
         "memory/wf-v35-generic-patches.md",
         "memory/wf-water-gerald-20261018.md"
       ]
+    },
+    "client.summon.cutin_preload@1": {
+      "level": "semantic",
+      "layer": "p12b",
+      "status": "local_candidate",
+      "summary": "召唤球主动技能 cutin 预载",
+      "capability_id": "client.summon.cutin_preload@1",
+      "syntax": "multiball.c9 非空主动技能；按球外观预载 skill_cutin，无新增配置键。",
+      "integration_evidence": {
+        "status": "report_declared",
+        "source": "p12 接口说明、P13-REPORT.md 与 p13-capabilities.json（2026-10-25，任务随附只读报告）",
+        "swf_sha256": "2d748efba919fee44ecf149a02cb87cb703ecc5e365fcf64d44b8f0fbd6a0540"
+      },
+      "note": "SWF 哈希来自 P13 报告，仅定位证据；未执行本次方法核验。"
+    },
+    "client.combo.base@1": {
+      "level": "semantic",
+      "layer": "p12b",
+      "status": "local_candidate",
+      "summary": "常驻连击基数",
+      "capability_id": "client.combo.base@1",
+      "syntax": "wfx:41:0:<非负 int32 基数>:0:<label>；多来源取最大，层数不放大；状态移除撤销。",
+      "integration_evidence": {
+        "status": "report_declared",
+        "source": "p12 接口说明、P13-REPORT.md 与 p13-capabilities.json（2026-10-25，任务随附只读报告）",
+        "swf_sha256": "2d748efba919fee44ecf149a02cb87cb703ecc5e365fcf64d44b8f0fbd6a0540"
+      },
+      "note": "SWF 哈希来自 P13 报告，仅定位证据；未执行本次方法核验。"
+    },
+    "client.pf.dual@1": {
+      "level": "semantic",
+      "layer": "p12b",
+      "status": "local_candidate",
+      "summary": "双实体同批强化弹射",
+      "capability_id": "client.pf.dual@1",
+      "syntax": "wfx:42:<档位1-3>:<正 int32 multiball id>:<flags 0或1>:<label>；每令牌一批，队伍事件一次，不耗连击。",
+      "integration_evidence": {
+        "status": "report_declared",
+        "source": "p12 接口说明、P13-REPORT.md 与 p13-capabilities.json（2026-10-25，任务随附只读报告）",
+        "swf_sha256": "2d748efba919fee44ecf149a02cb87cb703ecc5e365fcf64d44b8f0fbd6a0540"
+      },
+      "note": "SWF 哈希来自 P13 报告，仅定位证据；未执行本次方法核验。"
+    },
+    "client.summon.flip_pf@1": {
+      "level": "semantic",
+      "layer": "p13",
+      "status": "local_candidate",
+      "summary": "召唤球弹起强化弹射",
+      "capability_id": "client.summon.flip_pf@1",
+      "syntax": "wfx_summon_flip_pf_<multiball id> = 1 或 1:<规范十进制非负 int32 最小间隔帧>。",
+      "integration_evidence": {
+        "status": "report_declared",
+        "source": "p12 接口说明、P13-REPORT.md 与 p13-capabilities.json（2026-10-25，任务随附只读报告）",
+        "swf_sha256": "2d748efba919fee44ecf149a02cb87cb703ecc5e365fcf64d44b8f0fbd6a0540"
+      },
+      "note": "SWF 哈希来自 P13 报告，仅定位证据；未执行本次方法核验。"
+    },
+    "client.ball.pf_action@1": {
+      "level": "semantic",
+      "layer": "p13",
+      "status": "local_candidate",
+      "summary": "协力球数据指定 PF 动作",
+      "capability_id": "client.ball.pf_action@1",
+      "syntax": "wfx_ball_pf_action_<multiball id> = PF 动作表新增键；动作及球必须存在，动作不可与目标 APK 内置键撞名。",
+      "integration_evidence": {
+        "status": "report_declared",
+        "source": "p12 接口说明、P13-REPORT.md 与 p13-capabilities.json（2026-10-25，任务随附只读报告）",
+        "swf_sha256": "2d748efba919fee44ecf149a02cb87cb703ecc5e365fcf64d44b8f0fbd6a0540"
+      },
+      "note": "SWF 哈希来自 P13 报告，仅定位证据；未执行本次方法核验。"
     }
   },
   "patch_content_kinds": [
@@ -1756,6 +1826,66 @@
       "parameter_format": "wfx:36:<arg>:<Fever倍率万分比>:<平时倍率>:<label>",
       "stack_scaled": null,
       "stack_note": "TODO：现有事实未确认叠层倍率，null表示未知；不得当作false或true。门禁明确警告。"
+    },
+    {
+      "code": 41,
+      "name": "combo.base",
+      "label": "常驻连击基数",
+      "status": "local_candidate",
+      "patch_version": "p12b",
+      "side": "member",
+      "arg": "v35_integer",
+      "arg_schema": {
+        "min": 0,
+        "max": 0
+      },
+      "value": {
+        "min": 0,
+        "max": 2147483647,
+        "integer": true
+      },
+      "reduce": "per_instance",
+      "capability": "client.combo.base@1",
+      "gate": "warn",
+      "stack_scaled": false,
+      "parameter_format": "wfx:41:0:<非负 int32 基数>:0:<label>；多来源取最大，层数不放大；状态移除撤销。",
+      "hooks": [
+        "ComboCalculatorImpl"
+      ],
+      "sources": [
+        "p12 接口说明、P13-REPORT.md 与 p13-capabilities.json（2026-10-25，任务随附只读报告）"
+      ],
+      "note": "41 多来源取最大；42 层数为待处理令牌，不代表伤害倍率叠乘。"
+    },
+    {
+      "code": 42,
+      "name": "pf.dual",
+      "label": "双实体同批强化弹射",
+      "status": "local_candidate",
+      "patch_version": "p12b",
+      "side": "member",
+      "arg": "v35_integer",
+      "arg_schema": {
+        "min": 1,
+        "max": 3
+      },
+      "value": {
+        "min": 1,
+        "max": 2147483647,
+        "integer": true
+      },
+      "reduce": "per_instance",
+      "capability": "client.pf.dual@1",
+      "gate": "warn",
+      "stack_scaled": true,
+      "parameter_format": "wfx:42:<档位1-3>:<正 int32 multiball id>:<flags 0或1>:<label>；每令牌一批，队伍事件一次，不耗连击。",
+      "hooks": [
+        "MemberImpl / SquadImpl"
+      ],
+      "sources": [
+        "p12 接口说明、P13-REPORT.md 与 p13-capabilities.json（2026-10-25，任务随附只读报告）"
+      ],
+      "note": "41 多来源取最大；42 层数为待处理令牌，不代表伤害倍率叠乘。"
     }
   ],
   "effect_flags_overrides": {
@@ -1877,6 +2007,20 @@
       "max": 2147483647,
       "pin": false,
       "meaning": "平时倍率（单位TODO）"
+    },
+    "41": {
+      "type": "integer",
+      "min": 0,
+      "max": 0,
+      "pin": false,
+      "meaning": "保留，写0"
+    },
+    "42": {
+      "type": "integer",
+      "min": 0,
+      "max": 1,
+      "pin": false,
+      "meaning": "bit0 无球时仅持有者 PF；其余位禁止"
     }
   },
   "custom_ability_string_patterns": [
@@ -1964,6 +2108,30 @@
       "value": "<诅咒阈值>:<衰减步长>:<失效其他装备数>",
       "capability": "equipment-rules-data-v1",
       "gate": "block"
+    },
+    {
+      "prefix": "wfx_summon_flip_pf_",
+      "key_suffix": "规范十进制正 int32 multiball id",
+      "value": "wfx_summon_flip_pf_<multiball id> = 1 或 1:<规范十进制非负 int32 最小间隔帧>。",
+      "capability": "client.summon.flip_pf@1",
+      "gate": "warn",
+      "status": "local_candidate",
+      "report_declared": true,
+      "sources": [
+        "p12 接口说明、P13-REPORT.md 与 p13-capabilities.json（2026-10-25，任务随附只读报告）"
+      ]
+    },
+    {
+      "prefix": "wfx_ball_pf_action_",
+      "key_suffix": "规范十进制正 int32 multiball id",
+      "value": "wfx_ball_pf_action_<multiball id> = PF 动作表新增键；动作及球必须存在，动作不可与目标 APK 内置键撞名。",
+      "capability": "client.ball.pf_action@1",
+      "gate": "warn",
+      "status": "local_candidate",
+      "report_declared": true,
+      "sources": [
+        "p12 接口说明、P13-REPORT.md 与 p13-capabilities.json（2026-10-25，任务随附只读报告）"
+      ]
     }
   ],
   "unique_condition_patterns": [

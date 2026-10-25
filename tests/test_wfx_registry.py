@@ -116,7 +116,7 @@ class RegistryDerivationTests(unittest.TestCase):
         codes = wfx_registry.effect_codes()
         planned_codes = {10, 20, 21, 22, 23, 40, 50, 51, 52}
         shipped_codes = set(range(30, 37))
-        candidate_codes = {24, 25, 26, 27, 28, 29, 60, 61, 62, 71}
+        candidate_codes = {24, 25, 26, 27, 28, 29, 41, 42, 60, 61, 62, 71}
         self.assertEqual(planned_codes | candidate_codes | shipped_codes, set(codes))
         for code, effect in codes.items():
             with self.subTest(code=code):
@@ -331,7 +331,7 @@ class ClientProfileTests(unittest.TestCase):
         self.profiles = wfx_gate.load_profiles()
 
     def test_the_three_profiles_and_the_default(self):
-        self.assertEqual({"local-mumu", "gray-1047", "official", "test-v34", "test-v35e", "local-v35k3"}, set(self.profiles))
+        self.assertEqual({"local-mumu", "gray-1047", "official", "test-v34", "test-v35e", "local-v35k3", "p12b", "p13"}, set(self.profiles))
         self.assertEqual("local-mumu", wfx_gate.default_publish_profile())
         self.assertEqual(frozenset(), self.profiles["official"].capabilities)
 
@@ -363,7 +363,9 @@ class ClientProfileTests(unittest.TestCase):
             needed = set(wfx_registry.capability_closure([effect["capability"]]))
             for name, profile in self.profiles.items():
                 with self.subTest(code=code, profile=name):
-                    implemented = wfx_registry.capabilities()[effect["capability"]]["status"] == "local_candidate"
+                    cap = wfx_registry.capabilities()[effect["capability"]]
+                    implemented = (cap["status"] == "local_candidate"
+                                   and cap.get("integration_evidence", {}).get("status") != "report_declared")
                     self.assertEqual(name == "test-v35e" and implemented, needed <= profile.capabilities)
         planned = {name for name, entry in wfx_registry.capabilities().items() if entry["status"] == "planned"}
         for name, profile in self.profiles.items():

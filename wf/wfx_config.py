@@ -13,12 +13,15 @@ def configuration_checks(table, key, value=None):
     if collection is None:
         return [], [], []
     for rule in wfx_registry.load().get(collection, []):
-        if table != "character_tag" and rule.get("status") != "shipped":
+        if table != "character_tag" and rule.get("status") != "shipped" and not rule.get("report_declared"):
             continue
         if not key.startswith(rule["prefix"]):
             continue
         names, problems, warnings = [rule["capability"]], [], []
         prefix, suffix = rule["prefix"], key[len(rule["prefix"]):]
+        if prefix in {"wfx_summon_flip_pf_", "wfx_ball_pf_action_"}:
+            from wf.caps.p13 import config_problems
+            return names, config_problems(key, value), warnings
         if prefix == "ModDualForm":
             if not suffix:
                 return [], [], []  # Bare tag predates the configurable UID patch.

@@ -11,6 +11,7 @@
     "subjectKind": {"enum": ["character", "boss", "weapon"], "description": "旧角色草稿可省略；boss/weapon 使用独立草稿目录，characterId 为兼容容器中的主体 ID"},
     "characterId": {"type": "string"},
     "code": {"$ref": "#/$defs/code"},
+    "reservations": {"$ref": "#/$defs/reservations"},
     "scratch": {"$ref": "#/$defs/scratchMeta"},
     "baseView": {"type": "string", "pattern": "^1\\.4\\.[0-9]+$", "description": "草稿基于的视图资源版本"},
     "createdAt": {"$ref": "#/$defs/timestamp"},
@@ -28,6 +29,7 @@
     "else": {"properties": {"characterId": {"anyOf": [{"$ref": "#/$defs/characterId"}, {"$ref": "#/$defs/scratchId"}]}}}
   }],
   "$defs": {
+    "reservations": {"type": "object", "additionalProperties": false, "properties": {"character": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "multiball": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "weapon": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "soul_item": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "unique_condition": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "string_id": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "mana_node": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "enhancement_shop": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "soul": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "unique": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "stringcode": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}}},
     "characterCloneRequest": {
       "type": "object", "additionalProperties": false, "required": ["from", "to", "code"],
       "properties": {
@@ -959,7 +961,7 @@
                      "properties": {"character": {"$ref": "#/$defs/characterId"}}},
           "params": {"type": "object", "additionalProperties": false,
                      "required": ["spec", "templateCode", "inputs", "assets", "manaNodes"],
-                     "properties": {"spec": {"$ref": "#/$defs/characterCloneRequest"},
+                     "properties": {"reservations": {"$ref": "#/$defs/reservations"}, "spec": {"$ref": "#/$defs/characterCloneRequest"},
                        "templateCode": {"$ref": "#/$defs/code"},
                        "inputs": {"type": "object", "additionalProperties": {"$ref": "#/$defs/sha256"}},
                        "ownedRows": {"type": "object", "additionalProperties": {"type": "array", "uniqueItems": true, "items": {"type": "string"}}},
@@ -976,7 +978,7 @@
             "target": {"type": "object", "additionalProperties": false, "required": ["weapon"],
                        "properties": {"weapon": {"$ref": "#/$defs/characterId"}}},
             "params": {"type": "object", "additionalProperties": false, "required": ["requests", "inputs"],
-              "properties": {
+              "properties": {"reservations": {"$ref": "#/$defs/reservations"},
                 "requests": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/weaponRequest"}},
                 "inputs": {"type": "object", "additionalProperties": false, "required": ["client", "server"],
                   "properties": {
@@ -993,7 +995,7 @@
             "target": {"type": "object", "additionalProperties": false, "required": ["quest"],
                        "properties": {"quest": {"$ref": "#/$defs/bossId"}}},
             "params": {"type": "object", "additionalProperties": false, "required": ["requests", "inputs"],
-              "properties": {
+              "properties": {"reservations": {"$ref": "#/$defs/reservations"},
                 "requests": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/bossRequest"}},
                 "inputs": {"type": "object", "additionalProperties": false, "required": ["client", "server"],
                   "properties": {
@@ -1011,7 +1013,7 @@
               "target": {"type": "object", "additionalProperties": false, "required": ["character"],
                          "properties": {"character": {"$ref": "#/$defs/characterId"}}},
               "params": {"type": "object", "additionalProperties": false, "required": ["requests", "inputSha256"],
-                         "properties": {
+                         "properties": {"reservations": {"$ref": "#/$defs/reservations"},
                            "requests": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/abilityRequest"}},
                            "inputSha256": {"type": "object", "minProperties": 1,
                                            "additionalProperties": {"$ref": "#/$defs/sha256"}}
@@ -1028,7 +1030,7 @@
                          "properties": {"form": {"enum": ["0", "1"]}}},
               "params": {"type": "object", "additionalProperties": false,
                          "required": ["source", "template", "sourceSize", "trim", "tableRows"],
-                         "properties": {
+                         "properties": {"reservations": {"$ref": "#/$defs/reservations"},
                            "source": {"enum": ["upload", "current"]},
                            "template": {"$ref": "#/$defs/cropTemplate"},
                            "sourceSize": {"type": "array", "items": {"type": "integer"}, "minItems": 2, "maxItems": 2},
@@ -1054,7 +1056,7 @@
                          "properties": {"family": {"enum": ["pixelart", "special"]}, "action": {"type": "string"}}},
               "params": {"type": "object", "additionalProperties": false,
                          "required": ["frames", "totalFrames", "originalTotalFrames", "budget"],
-                         "properties": {
+                         "properties": {"reservations": {"$ref": "#/$defs/reservations"},
                            "frames": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/pixelFrame"}},
                            "totalFrames": {"type": "integer", "minimum": 1},
                            "originalTotalFrames": {"type": ["integer", "null"]},
@@ -1072,7 +1074,7 @@
                          "properties": {"voice": {"type": "string"}}},
               "params": {"type": "object", "additionalProperties": false,
                          "required": ["sourceName", "loudness", "durationSeconds", "format"],
-                         "properties": {
+                         "properties": {"reservations": {"$ref": "#/$defs/reservations"},
                            "sourceName": {"type": "string"},
                            "sourceFile": {"$ref": "#/$defs/draftPath"},
                            "loudness": {"type": "number"},
@@ -1084,7 +1086,7 @@
             }
           }
         },
-        {"if": {"properties": {"kind": {"const": "pixel_family"}}}, "then": {"properties": {"target": {"type": "object", "additionalProperties": false, "required": ["family"], "properties": {"family": {"enum": ["pixelart", "special"]}}}, "params": {"type": "object", "additionalProperties": false, "required": ["mode"], "properties": {"mode": {"enum": ["remap", "import"]}, "base": {"type": "object", "additionalProperties": false, "required": ["characterId", "code"], "properties": {"characterId": {"anyOf": [{"$ref": "#/$defs/characterId"}, {"type": "null"}]}, "code": {"$ref": "#/$defs/code"}, "files": {"type": "object", "minProperties": 4, "maxProperties": 4, "additionalProperties": {"$ref": "#/$defs/sha256"}}}}, "mapping": {"type": "array", "items": {"$ref": "#/$defs/colorPair"}}, "source": {"type": "object", "description": "导入来源：名称、原代码前缀、原四件 SHA-256"}, "provenance": {"type": "object", "description": "导入集与「母本 + 映射表」逐端点对照结果"}, "changedPixels": {"type": "integer", "minimum": 0}, "renamedEntries": {"type": "integer", "minimum": 0}, "groups": {"type": "object"}, "auto": {"enum": ["bind"], "description": "自动补的整族替换：bind = 草稿角色只有逐动作改动，绑定时补母本原色整族"}}, "allOf": [{"if": {"properties": {"mode": {"const": "remap"}}}, "then": {"required": ["base", "mapping"], "properties": {"base": {"required": ["files"]}}}, "else": {"required": ["source"]}}]}, "files": {"minItems": 4, "maxItems": 4}, "pending": {"maxItems": 0}}}}
+        {"if": {"properties": {"kind": {"const": "pixel_family"}}}, "then": {"properties": {"target": {"type": "object", "additionalProperties": false, "required": ["family"], "properties": {"family": {"enum": ["pixelart", "special"]}}}, "params": {"type": "object", "additionalProperties": false, "required": ["mode"], "properties": {"reservations": {"$ref": "#/$defs/reservations"}, "mode": {"enum": ["remap", "import"]}, "base": {"type": "object", "additionalProperties": false, "required": ["characterId", "code"], "properties": {"characterId": {"anyOf": [{"$ref": "#/$defs/characterId"}, {"type": "null"}]}, "code": {"$ref": "#/$defs/code"}, "files": {"type": "object", "minProperties": 4, "maxProperties": 4, "additionalProperties": {"$ref": "#/$defs/sha256"}}}}, "mapping": {"type": "array", "items": {"$ref": "#/$defs/colorPair"}}, "source": {"type": "object", "description": "导入来源：名称、原代码前缀、原四件 SHA-256"}, "provenance": {"type": "object", "description": "导入集与「母本 + 映射表」逐端点对照结果"}, "changedPixels": {"type": "integer", "minimum": 0}, "renamedEntries": {"type": "integer", "minimum": 0}, "groups": {"type": "object"}, "auto": {"enum": ["bind"], "description": "自动补的整族替换：bind = 草稿角色只有逐动作改动，绑定时补母本原色整族"}}, "allOf": [{"if": {"properties": {"mode": {"const": "remap"}}}, "then": {"required": ["base", "mapping"], "properties": {"base": {"required": ["files"]}}}, "else": {"required": ["source"]}}]}, "files": {"minItems": 4, "maxItems": 4}, "pending": {"maxItems": 0}}}}
       ]
     }
   }

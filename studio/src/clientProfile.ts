@@ -59,7 +59,10 @@ export interface CapReference {
 export interface CapRequirement {
   capabilities: CapInfo[];
   requiredClientProfiles: string[];
-  profiles: Record<string, { compatible: boolean; missing: MissingCap[]; pending: { id: string; message: string }[]; error?: string }>;
+  /** degraded: a known p12/p13 capability is missing and the client falls back (not blocking);
+   *  declared: support rests only on an external patch report, not on verified methods. */
+  profiles: Record<string, { compatible: boolean; missing: MissingCap[]; pending: { id: string; message: string }[];
+    degraded?: boolean; declared?: boolean; error?: string }>;
   recognized: boolean;
   unsupported: string[];
   placement: string[];
@@ -309,6 +312,7 @@ export type Verdict =
   | { kind: "none" }
   | { kind: "ok"; label: string; profile: string }
   | { kind: "needs"; label: string; profile: string; satisfied: boolean }
+  | { kind: "pending"; label: string; profile: string; reason: string }
   | { kind: "bad"; label: string; reason: string };
 
 export function verdict(req: CapRequirement | null | undefined, state: Pick<ClientProfileState, "profiles" | "selected" | "label">): Verdict {
@@ -319,7 +323,17 @@ export function verdict(req: CapRequirement | null | undefined, state: Pick<Clie
   if (!relevant.length) return { kind: "none" };
   const order = state.profiles.profiles.map((p) => p.id);
   const required = order.filter((id) => req.requiredClientProfiles.includes(id));
-  if (!required.length) return { kind: "bad", label: "所有档案都不满足", reason: "已登记的客户端档案都没有这些能力" };
+  if (!required.length) {
+    // p12/p13 keys: a profile can be 「报告声明，待验证」 or 「降级」 without being incompatible outright.
+    const pick = (flag: "declared" | "degraded") => order.find((id) => req.profiles[id]?.[flag] && !req.profiles[id]?.missing.length);
+    const declared = pick("declared");
+    if (declared) return { kind: "pending", label: `${state.label(declared)}（报告声明，待验证）`, profile: declared,
+      reason: req.profiles[declared].pending.map((p) => p.message).join("；") };
+    const degraded = pick("degraded");
+    if (degraded) return { kind: "pending", label: `${state.label(degraded)} 会降级`, profile: degraded,
+      reason: req.profiles[degraded].pending.map((p) => p.message).join("；") };
+    return { kind: "bad", label: "所有档案都不满足", reason: "已登记的客户端档案都没有这些能力" };
+  }
   const fallback = state.profiles.defaultClientProfile;
   if (required.includes(fallback)) return { kind: "ok", label: `${state.label(fallback)} 即可`, profile: fallback };
   return { kind: "needs", label: `需要 ${state.label(required[0])}`, profile: required[0],
@@ -341,6 +355,8 @@ export function describeRequirement(req: CapRequirement, state: Pick<ClientProfi
   if (selected && !selected.compatible && selected.missing.length) {
     lines.push(`目标客户端 ${state.label(state.selected)} 缺：` + selected.missing.map((m) => m.title ?? m.id ?? m.message).join("、"));
   }
+  if (selected?.degraded) lines.push(`目标客户端 ${state.label(state.selected)} 会降级：` + selected.pending.map((p) => p.message).join("；"));
+  else if (selected?.declared) lines.push(`目标客户端 ${state.label(state.selected)} 只有补丁报告声明支持，待验证`);
   if (req.placement.length) lines.push(...req.placement.map((p) => "· " + p));
   if (req.unsupported.length) lines.push(...req.unsupported.map((p) => "· " + p));
   return lines.join("\n");

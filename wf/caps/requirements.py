@@ -13,6 +13,7 @@ from wf.dsl.references import DSL_SUFFIX, program_logical
 
 from .facts import dsl_signals, leaves, table_signals
 from .surfaces import matches_kind, matches_signal
+from .p13 import is_extension_leaf
 
 
 def parse_table(raw, logical):
@@ -148,8 +149,10 @@ def infer_requirements(members, *, declared=(), read_raw=None, server=None, regi
                               "detail": "基线缺失；按整张候选表扫描，可能保守地增加能力依赖。"})
             for trail, text in leaves(data):
                 if old.get(trail) == text:
-                    continue
-                changed[logical].add(trail)
+                    if not is_extension_leaf(logical, trail, text):
+                        continue
+                else:
+                    changed[logical].add(trail)
                 signals(table_signals(logical, trail, text, registry=registry),
                         {"logical_path": logical, "key": "/".join(trail)})
         elif logical.endswith(DSL_SUFFIX):

@@ -1,0 +1,43 @@
+schema: wf-capability/1
+id: client.pf.dual@1
+title: 双实体同批强化弹射
+layer: A
+provided_by:
+  patches: []
+  match: all
+  methods: []
+  status: 待补
+  basis: p12 接口说明、P13-REPORT.md 与 p13-capabilities.json（2026-10-25，任务随附只读报告）；本仓登记为报告声明，方法哈希与设备验收待核。
+server:
+  required: false
+  features: []
+  note: 每台客户端模拟各玩家自己的队伍；不新增跨玩家消息。
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors:
+  - unique_condition.wfx:42
+form:
+  label: 双实体同批强化弹射
+  fields:
+  - name: configuration
+    syntax: wfx:42:<档位1-3>:<正 int32 multiball id>:<flags 0或1>:<label>；每令牌一批，队伍事件一次，不耗连击。
+  note: 报告声明支持仅为待验证；目标缺能力按降级报告。
+describe:
+  template: wfx:42:<档位1-3>:<正 int32 multiball id>:<flags 0或1>:<label>；每令牌一批，队伍事件一次，不耗连击。
+  channel: 能力说明
+rules:
+- capability.degraded
+- capability.declared
+preview:
+  label: 双实体同批强化弹射
+  status: 待验证
+golden:
+- source: p12 接口说明、P13-REPORT.md 与 p13-capabilities.json（2026-10-25，任务随附只读报告）
+  kind: report-declared
+  note: 离线报告不等于本次方法核验或设备验收。
+docs:
+- docs/studio/p13-keys.md

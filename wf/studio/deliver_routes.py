@@ -127,10 +127,12 @@ class DeliverRoutes:
             if not VERSION.fullmatch(value):
                 raise DraftError(f"版本无效：{value}")
         from wf.caps.profiles import resolve_client
+        from .delivery_safety import resolve_apks
         try:
             explicit = body.get("provides") or (None if body.get("clientProfile") else self.default_provides)
             provides, selected = resolve_client(explicit,
                                                body.get("clientProfile"))
+            apks = resolve_apks(selected, body.get("apk"))
         except ValueError as exc:
             raise DraftError(str(exc)) from exc
         if provides is not None:
@@ -146,6 +148,7 @@ class DeliverRoutes:
             cancel = self._cancel[name] = threading.Event()
             job = self.jobs[name] = {"name": name, "characterId": cid, "from": from_version, "to": to_version,
                                      "clientProfile": selected,
+                                     "apk": [str(path) for path in apks],
                                      "state": "running", "stage": None, "stages": [
                                          {"id": s, "label": label, "state": "waiting"} for s, label in STAGES],
                                      "startedAt": time.time(), "seconds": 0, "result": None}
@@ -176,6 +179,7 @@ class DeliverRoutes:
             result = build_draft(cid, from_version=from_version, to_version=to_version, out=out,
                                  store=self.app.ops.store, provides=None if selected else provides,
                                  client_profile=selected,
+                                 apk=self.jobs[name].get("apk"),
                                  progress=self._progress(name), cancel=cancel, **self.baseline_options())
             result = {**result, "name": name, "seconds": round(time.time() - started, 1)}
             state = "ok" if result.get("ok") else "failed"
@@ -299,10 +303,18 @@ class DeliverRoutes:
         check = (_read_json(delivery / "check.json") or {}).get("results")
         compat = (_read_json(delivery / "compat.json") or {}).get("results")
         device = self._device(folder)
+        from .key_diff import summarize
+        key_diff = _read_json(delivery / "key-diff.json")
+        if isinstance(report, dict) and isinstance(report.get("keyDiff"), dict):
+            report = {**report, "keyDiff": summarize(report["keyDiff"])}
         return json_response({"name": name, "path": str(folder), "report": report, "error": error,
                               "archives": archives, "members": members, "serverChanges": servers,
                               "requires": _read_json(delivery / "requires.json"),
                               "check": check, "compat": compat, "files": files,
+                              "bundleCheck": _read_json(delivery / "bundle-check.json"),
+                              "keyDiff": summarize(key_diff) if key_diff is not None else None,
+                              "iconAlpha": _read_json(delivery / "icon-alpha.json"),
+                              "clientExtensions": _read_json(delivery / "client-extensions.json"),
                               "deviceResult": device,
                               "deviceValidation": (device.get("result") or {}).get("status", "未执行") if device else "未执行"})
 

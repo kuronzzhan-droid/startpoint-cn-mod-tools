@@ -2,11 +2,20 @@
 import re
 
 CUSTOM_PREFIXES = ("wfx_snapcombo_", "wfx_pf4_", "wfx_unlock_", "wfx_adaptive_",
-                   "ability_visual_", "wfx_fever_voice_", "equipment_rule_", "awakening_material_")
+                   "ability_visual_", "wfx_fever_voice_", "equipment_rule_", "awakening_material_",
+                   "wfx_summon_flip_pf_", "wfx_ball_pf_action_")
 STRINGS = "master/string/custom_ability_string.orderedmap"
 
 
 def unique_signals(value, uid=None):
+    # p12/p13's dedicated handlers have their own report-based capability.
+    # Do not substitute the earlier v35 effect-query/hidden-icon method hashes.
+    if value.startswith(("wfx:41:", "wfx:42:")):
+        yield "selectors", "unique_condition." + ":".join(value.split(":")[:2])
+        problem = wfx_problem(value)
+        if problem:
+            yield "unsupported", problem
+        return
     yield "unique_string", value
     parts = value.split(":")
     # Icon hiding deliberately does not validate the numeric fields, matching
@@ -61,6 +70,14 @@ def custom_signals(key, value=None):
         if gap:
             yield "unsupported", gap
     if value is not None:
+        if key.startswith(("wfx_summon_flip_pf_", "wfx_ball_pf_action_")):
+            import csv
+            from .p13 import decode_config_row
+            try:
+                value = decode_config_row(value)
+            except (ValueError, csv.Error) as error:
+                yield "unsupported", str(error)
+                return
         yield from configuration_signals("custom_ability_string", key, value)
 
 
