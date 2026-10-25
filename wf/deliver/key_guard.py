@@ -23,6 +23,10 @@ SHARED_TABLES = {*WEAPON_TABLES, ENH_SHOP, CUSTOM}
 SERVER_MAPS = {"assets/" + name + ".json" for name in (
     "equipment_lookup", "equipment_max_level", "equipment_element", "item_sale", "item_lookup")}
 SERVER_MAPS.update({SERVER_ENH, AWAKENING})
+CHARACTER_MAPS = {"character.json", "cdndata/character.json", "cdndata/character_text.json",
+                  "mana_node.json", "mana_board.json"}
+# Character delivery accepts either a server repository or its assets directory.
+SERVER_MAPS.update(CHARACTER_MAPS | {"assets/" + name for name in CHARACTER_MAPS})
 SERVER_LISTS = {"assets/equipment_ids.json", "assets/item_ids.json"}
 
 

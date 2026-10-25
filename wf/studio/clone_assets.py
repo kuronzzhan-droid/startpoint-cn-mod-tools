@@ -8,7 +8,7 @@ from .deliver_media import read_root, tree
 from .drafts import DraftError, sha256
 from .pixel_workshop import SPECIAL_REQUIRED, decode_family, family_paths, read_family_raw, remap_family
 
-LABELS = {"reuse": "复用母本", "pending": "待替换", "derived": "已派生"}
+LABELS = {"reuse": "复用母本", "pending": "待替换", "derived": "已派生", "not_applicable": "不适用"}
 
 
 def _roots(logical):
@@ -79,6 +79,10 @@ def collect_assets(source, old, new, rarity):
     for item in required:
         logical = item.logical_path
         donor = logical.replace(f"character/{new}/", f"character/{old}/", 1)
+        if rarity < 4 and logical in family_paths(new, "special"):
+            checklist.append({"logical": logical, "source": donor, "root": "common",
+                              "status": "not_applicable", "label": LABELS["not_applicable"]})
+            continue
         root, raw = None, None
         for candidate in _roots(donor):
             raw = read_root(source, candidate, donor)
@@ -95,6 +99,8 @@ def collect_assets(source, old, new, rarity):
                           "status": status, "label": LABELS[status]})
     # Rename frame and timeline references through the existing pixel-family remapper.
     for family in ("pixelart", "special"):
+        if family == "special" and rarity < 4:
+            continue
         paths = family_paths(old, family)
         raw = [read_root(source, "common", logical) for logical in paths]
         if all(item is not None for item in raw):

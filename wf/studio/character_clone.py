@@ -6,12 +6,12 @@ from pathlib import Path
 
 import wf_character_pack as pack
 from wf.deliver.changeset import member_name
-from .clone_tables import build_tables, server_entries, T
+from .clone_tables import build_tables, rows, validate_speech, T
 from .clone_assets import checklist, collect_assets, special_checks
+from .clone_server import SERVER_FILES, server_root as _server_root, server_files, server_plan
+from .pixel_workshop import family_paths
 from .deliver_media import read_root
 from .drafts import DraftError, new_change_id, now, sha256, status, validate, verify
-
-SERVER_FILES = ("character.json", "cdndata/character.json", "cdndata/character_text.json", "mana_node.json", "mana_board.json")
 
 
 def clone_change(draft):
@@ -33,17 +33,6 @@ def identity(source, draft):
     return change
 
 
-def _server_root(server_dir):
-    root = Path(server_dir)
-    if not root.is_dir():
-        raise DraftError(f"Server input directory does not exist: {root}")
-    root = root / "assets" if (root / "assets").is_dir() else root
-    missing = [name for name in SERVER_FILES[:4] if not (root / name).is_file()]
-    if missing:
-        raise DraftError("Required server mirrors are missing: " + ", ".join(missing))
-    return root
-
-
 def _vacant(ops, spec, server_dir):
     cid, code = spec["to"], spec["code"]
     if cid == "0" or not cid.isdigit() or len(cid) > 9:
@@ -60,7 +49,7 @@ def _vacant(ops, spec, server_dir):
         root = _server_root(server_dir)
         for name in SERVER_FILES:
             path = root / name
-            raw = path.read_bytes() if path.is_file() else None
+            raw = path.read_bytes()
             data = pack.load_server_json_mirror(raw, name)
             if cid in data:
                 raise DraftError(f"目标角色已被服务端镜像占用：{path}/{cid}")
@@ -71,7 +60,9 @@ def _vacant(ops, spec, server_dir):
         raise DraftError("Character ID is reserved: " + json.dumps(occupied, ensure_ascii=False))
 
 
-def clone(ops, request, *, server_dir=None):
+def clone(ops, request, *, server_dir=None, preview=False):
+    if isinstance(request, dict) and "rarity" in request:
+        raise DraftError("不支持 rarity 字段：星级必须继承母本，尚未完成星级相关表与资产的全联动")
     validate(request, "characterCloneRequest")
     spec = {**request, "skill": request.get("skill", "copy")}
     with ops.store._lock:
@@ -83,6 +74,17 @@ def clone(ops, request, *, server_dir=None):
             raise DraftError("Mana node segment is reserved: " + json.dumps(reserved, ensure_ascii=False))
         donor = ops.source.table("character")[spec["from"]][0]
         assets, inputs, matrix, checks = collect_assets(ops.source, donor[0], spec["code"], int(donor[2]))
+        owned = {logical: sorted(set(rows(raw)) - set(rows(tables[logical]))) for logical, raw in client.items()}
+        planned = [{"logical": logical, "root": "common", "addedKeys": owned[logical],
+                    "size": len(raw), "sha256": sha256(raw)} for logical, raw in sorted(client.items())]
+        if preview:
+            server_tables = server_plan(client, spec["to"], server_dir)
+            if server_dir is None:
+                checks.append({"level": "error", "code": "character.server_inputs",
+                               "message": "未提供服务端五表基线；可保存草稿，交付前必须提供 server_dir 并复核"})
+            return {"ok": True, "preview": True, "characterId": spec["to"], "code": spec["code"],
+                    "tables": planned, "serverTables": server_tables, "assets": matrix, "checks": checks,
+                    "buildable": not any(c["level"] == "error" for c in checks), "runtime": "未执行"}
         members = {("common", logical): raw for logical, raw in client.items()}
         members.update(assets)
         inputs.update({f"common:{logical}": sha256(raw) for logical, raw in tables.items()})
@@ -98,7 +100,8 @@ def clone(ops, request, *, server_dir=None):
                           "base": {"sha256": sha256(before) if before is not None else None, "layer": "clone baseline"}})
         change = {"id": new_change_id(), "kind": "character_clone", "title": f"从 {spec['from']} 克隆角色 {cid}",
                   "createdAt": now(), "target": {"character": cid},
-                  "params": {"spec": spec, "templateCode": donor[0], "inputs": inputs, "assets": matrix, "manaNodes": nodes},
+                  "params": {"spec": spec, "templateCode": donor[0], "inputs": inputs, "assets": matrix,
+                             "manaNodes": nodes, "ownedRows": owned},
                   "files": files, "pending": [], "checks": checks}
         validate(change, "change")
         try:
@@ -109,7 +112,7 @@ def clone(ops, request, *, server_dir=None):
             ops.store.discard_all(cid)
             raise
     return {"ok": True, "characterId": cid, "code": spec["code"], "changeset": draft,
-            "status": status(draft), "assets": checklist(draft), "checks": checks,
+            "status": status(draft), "assets": checklist(draft), "tables": planned, "checks": checks,
             "buildable": not any(c["level"] == "error" for c in checks), "runtime": "未执行"}
 
 
@@ -184,8 +187,17 @@ def compile_clone(source, store, draft, *, server_dir=None):
     cid = draft["characterId"]
     final = overlay_source(source, members)
     row = final.table("character")[cid][0]
+    donor = source.table("character")[clone_change(draft)["params"]["spec"]["from"]][0]
+    if row[3] != donor[3] or row[2] != donor[2]:
+        raise DraftError("跨属性或跨星级的旧克隆草稿不能交付；请按母本属性和星级重建")
+    for slot in (17, *range(19, 25)):
+        if row[slot] not in ("", "(None)") and row[slot] != (cid if slot == 17 else cid + str(slot - 18)):
+            raise DraftError("旧克隆草稿仍共享母本队长或能力键；请重新克隆后交付")
+    validate_speech(final.table(T.SPEECH).get(cid, []))
     checks.extend(special_checks(final, draft["code"], int(row[2])))
-    missing = [item["logical"] for item in checklist(draft) if read_root(final, item["root"], item["logical"]) is None]
+    missing = [item["logical"] for item in checklist(draft)
+               if not (int(row[2]) < 4 and item["logical"] in family_paths(draft["code"], "special"))
+               and read_root(final, item["root"], item["logical"]) is None]
     if missing:
         checks.append({"level": "error", "code": "character.assets", "message": "缺少必需资产：" + ", ".join(missing)})
     if any(c.get("level") == "error" or c.get("blocking") for c in checks):
@@ -194,18 +206,8 @@ def compile_clone(source, store, draft, *, server_dir=None):
         raise DraftError("克隆草稿的词条编辑尚未接入；请先生成角色或仅编辑媒体")
     if server_dir is None:
         raise DraftError("克隆角色生成需要显式 --server-dir，用于键级合并服务端五表")
-    root = _server_root(server_dir)
     clients = {logical: raw for (kind, logical), raw in members.items() if kind == "common" and logical.endswith(".orderedmap")}
-    servers, before = {}, {}
-    for name, additions in server_entries(clients, cid).items():
-        path = root / name
-        raw = path.read_bytes() if path.is_file() else None
-        current = pack.load_server_json_mirror(raw, str(path))
-        if cid in current:
-            raise DraftError(f"服务端目标角色已占用：{path}/{cid}")
-        target = ("assets/" if root != Path(server_dir) else "") + name
-        servers[target] = pack.merge_server_json_object(raw, additions)
-        before[target] = sha256(raw) if raw is not None else None
+    servers, before = server_files(clients, cid, server_dir)
     assertions = [{"kind": "character_clone", "from": clone_change(draft)["params"]["spec"]["from"], "to": cid,
                    "code": draft["code"], "manaNodes": clone_change(draft)["params"]["manaNodes"]}, *media.assertions]
     return members, servers, before, assertions, checks

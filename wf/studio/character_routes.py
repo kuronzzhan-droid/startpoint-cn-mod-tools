@@ -49,6 +49,7 @@ def add_character_commands(sub):
     c.add_argument("--skill", choices=("copy", "reuse"), default="copy")
     c.add_argument("--element", type=int, choices=range(6))
     c.add_argument("--name")
+    c.add_argument("--preview", action="store_true", help="只检查与预览，不写草稿")
     p = sub.add_parser("scratch-promote", help="将 scratch 像素草稿升级为新 ID 正式角色")
     p.add_argument("scratch")
     p.add_argument("--to", dest="character_id", required=True)
@@ -63,7 +64,8 @@ def run_character_command(args, ops):
     for key in ("element", "name"):
         if getattr(args, key, None) is not None:
             request[key] = getattr(args, key)
-    return clone(ops, request, server_dir=getattr(args, "server_dir", None))
+    return clone(ops, request, server_dir=getattr(args, "server_dir", None),
+                 preview=getattr(args, "preview", False))
 
 
 class CharacterRoutes:
@@ -72,7 +74,17 @@ class CharacterRoutes:
 
     def clone(self, query, body):
         from .server import json_response
-        return json_response(clone(self.app.ops, body, server_dir=self.server_dir))
+        from .clone_checks import response_checks
+        from wf.rules.catalog import result
+        try:
+            document = clone(self.app.ops, body, server_dir=self.server_dir,
+                             preview=(query.get("preview") or ["false"])[0] == "true")
+            return json_response({**document, "checks": response_checks(document)})
+        except (ValueError, KeyError, OSError, TypeError) as exc:
+            return json_response({"ok": False, "error": str(exc), "subjectKind": "character",
+                "characterId": body.get("to") if isinstance(body, dict) else None,
+                "checks": [result("character.inputs", "问题", str(exc), blocking=True)],
+                "runtime": "未执行"}, 400)
 
     def promote(self, query, body, sid):
         from .server import json_response

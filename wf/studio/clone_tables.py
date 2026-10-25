@@ -33,6 +33,16 @@ def insert(raw, additions, logical):
     return core.build_orderedmap_raw_rows(table)
 
 
+def validate_speech(speech):
+    if not speech or any(len(row) != 5 for row in speech):
+        raise DraftError("character_speech 必须含五列字幕行")
+    if any("\n" in row[4] or "\r" in row[4] for row in speech):
+        raise DraftError("character_speech c4 必须是单个语音路径，不能包含换行")
+    home = [row for row in speech if row[0] == "0"]
+    if not any(row[1] in ("0", "2") for row in home) or not any(row[1] in ("1", "2") for row in home):
+        raise DraftError("character_speech 两态必须都有可见行（避免 2265）")
+
+
 def _node_ids(blob):
     result = []
     for board in rows(blob).values():
@@ -93,15 +103,19 @@ def build_tables(source, spec):
     new_row[3] = str(spec.get("element", int(new_row[3])))
     if not 0 <= int(new_row[3]) <= 5:
         raise DraftError("角色元素只允许 0–5")
+    if new_row[3] != old_row[0][3]:
+        raise DraftError("暂不支持跨属性克隆：技能 DSL、能力条件、音效与玛纳材料尚未完成联动翻转；element 必须等于母本")
     skill_key = old_row[0][8]
     if skill_key not in rows(raw_tables[T.ACTION]):
         raise DraftError(f"母本技能键不存在：{skill_key}")
-    additions = {T.CHAR: {new_id: leaf([new_row])}}
+    additions = {}
+    from .clone_abilities import clone_abilities
+    clone_abilities(source, spec, new_row, raw_tables, additions)
     if spec.get("skill", "copy") == "copy":
         new_row[8] = code
-        additions[T.CHAR][new_id] = leaf([new_row])
         # Independent skill key; DSL program paths deliberately retain the proven donor program.
         additions[T.ACTION] = {code: rows(raw_tables[T.ACTION])[skill_key]}
+    additions[T.CHAR] = {new_id: leaf([new_row])}
     mapper = T.cell_remap(SimpleNamespace(template_id_s=old_id, cid_s=new_id,
         template_mana_prefix=str(int(old_id) * 2), mana_prefix=str(int(new_id) * 2),
         template_code=old, code=code))
@@ -112,16 +126,18 @@ def build_tables(source, spec):
         # All speech paths and status geometry remain valid; speech files copied separately.
         if logical not in (T.STATUS, T.GACHA_SOUND):
             blob = T.clone_blob(blob, mapper)
+        if logical == T.MANA_OPEN:
+            text = zlib.decompress(blob).decode("utf-8")
+            patched = T.open_condition_row(text, [])
+            if patched != text:
+                blob = zlib.compress(patched.encode("utf-8"))
         additions[logical] = {new_id: blob}
     text = core.read_csv_lines(zlib.decompress(additions[T.TEXT][new_id]).decode("utf-8"))
     if spec.get("name"):
         text[0][0] = spec["name"]
         additions[T.TEXT][new_id] = leaf(text)
     speech = core.read_csv_lines(zlib.decompress(additions[T.SPEECH][new_id]).decode("utf-8"))
-    if not speech or any(len(row) != 5 for row in speech):
-        raise DraftError("character_speech 必须含五列字幕行")
-    if not any(row[1] in ("0", "2") for row in speech) or not any(row[1] in ("1", "2") for row in speech):
-        raise DraftError("character_speech 两态必须都有可见行（避免 2265）")
+    validate_speech(speech)
     trimmed = rows(raw_tables[T.TRIMMED])
     targets = {}
     for stem in ("full_shot_1440_1920_0", "full_shot_1440_1920_1", "skill_cutin_0", "skill_cutin_1"):
@@ -131,13 +147,6 @@ def build_tables(source, spec):
         targets[f"character/{code}/ui/{stem}"] = trimmed[key]
     additions[T.TRIMMED] = targets
     mana, ids = _mana(raw_tables, old, code, old_id, new_id)
-    if int(new_row[3]) != int(old_row[0][3]):
-        items = source.raw(T.ITEM)
-        if items is None:
-            raise DraftError("修改元素需要 item 表派生玛纳材料映射")
-        raw_tables[T.ITEM] = items
-        mapping = T.element_material_map(core.read_orderedmap_file_from_bytes(items), int(old_row[0][3]), int(new_row[3]))
-        mana[T.MANA_NODE][new_id] = T.remap_mana_node_items(mana[T.MANA_NODE][new_id], mapping, [])
     additions.update(mana)
     return {logical: insert(raw_tables[logical], patch, logical) for logical, patch in additions.items()}, raw_tables, ids
 

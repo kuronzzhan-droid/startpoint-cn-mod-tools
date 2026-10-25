@@ -17,6 +17,7 @@ from wf.studio.source import StudioSource
 from wf.studio.pixel_workshop import family_paths
 from wf.deliver.changeset import member_name
 from test_studio_pixel_workshop import family_files
+from test_m1_balance import valid_row
 
 OLD, NEW, CODE = "111007", "139988", "clone_demo"
 
@@ -47,7 +48,7 @@ class View:
 def env(tmp_path):
     char = [""] * 37
     char[0], char[2], char[3], char[8], char[27] = "mother", "5", "0", "mother_skill", OLD
-    char[17], char[18] = "leader1", "队长"
+    char[17], char[18] = "3", "队长"
     char[19:25] = [str(100 + i) for i in range(6)]
     char[26] = "Attacker"
     node1, node2 = str(int(OLD) * 2000 + 1), str(int(OLD) * 2000 + 2)
@@ -65,7 +66,8 @@ def env(tmp_path):
               T.SKILL_PREVIEW: ordered({OLD: leaf([["character/mother/battle/character_detail_skill_preview"]])}),
               T.TRIMMED: ordered({f"character/mother/ui/{stem}": leaf([["0", "0", "4", "4"]]) for stem in
                                  ("full_shot_1440_1920_0", "full_shot_1440_1920_1", "skill_cutin_0", "skill_cutin_1")})}
-    tables[T.ABILITY], tables[T.LEADER] = ordered({}), ordered({})
+    tables[T.ABILITY] = ordered({str(100+i): leaf([valid_row("mother_" + str(i))]) for i in range(6)})
+    tables[T.LEADER] = ordered({"3": leaf([valid_row()[:1] + valid_row()[3:]])})
     files = {("common", key): value for key, value in tables.items()}
     for item in requirements.char_asset_requirements("mother"):
         if item.category != "required":
@@ -120,7 +122,7 @@ def test_clone_full_tables_nested_mana_references_and_five_mirrors(env):
         assert NEW in rows(members["common", logical])
     crow = core.read_csv_lines(core.read_orderedmap_file_from_bytes(members["common", T.CHAR])[NEW])[0]
     assert crow[0] == CODE and crow[8] == CODE and crow[27] == NEW
-    assert crow[17] == "leader1" and crow[19:25] == [str(100+i) for i in range(6)]
+    assert crow[17] == NEW and crow[19:25] == [NEW + str(i) for i in range(1, 7)]
     assert len(servers) == len(preimages) == 5
     nodes = json.loads(servers["mana_node.json"])[NEW]["1"]
     assert set(nodes) == {str(int(NEW)*2000+1), str(int(NEW)*2000+2)}

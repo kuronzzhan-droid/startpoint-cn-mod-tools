@@ -962,6 +962,7 @@
                      "properties": {"spec": {"$ref": "#/$defs/characterCloneRequest"},
                        "templateCode": {"$ref": "#/$defs/code"},
                        "inputs": {"type": "object", "additionalProperties": {"$ref": "#/$defs/sha256"}},
+                       "ownedRows": {"type": "object", "additionalProperties": {"type": "array", "uniqueItems": true, "items": {"type": "string"}}},
                        "assets": {"type": "array", "minItems": 37, "maxItems": 37, "items": {"type": "object"}},
                        "manaNodes": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[0-9]+$"}}}},
           "files": {"minItems": 1, "items": {"properties": {"encoding": {"const": "stored"}}}}, "pending": {"maxItems": 0}
