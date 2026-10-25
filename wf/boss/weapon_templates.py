@@ -32,14 +32,24 @@ def _invoke_evidence(state):
         raise ValueError("629 template requires explicit target provides or client_profile")
     path, _ = resolve_client(provides=provides, client_profile=profile)
     document = read_client(path)
-    available = {entry["id"] for entry in document["provides"]}
-    missing = INVOKE_CAPABILITIES - available
+    flags = invoke_declaration(document)
+    missing = {entry["id"] for entry in flags["capabilities"] if not entry["provided"]}
     if missing:
         raise ValueError("629 template target provides lacks " + ", ".join(sorted(missing)))
-    damage = next(entry for entry in document["provides"] if entry["id"] == "client.kind424.damage_convert@1")
-    if 20 not in damage.get("patches", []) or not any(
-            entry["number"] == 20 and entry["status"] == "recorded" for entry in document.get("patches", [])):
+    if not flags["patch20"]["supported"]:
         raise ValueError("629 template requires recorded patch 20 in target provides")
+
+
+def invoke_declaration(document):
+    """Shared declaration gate for authoring and its read-only HTTP affordance."""
+    entries = {entry["id"]: entry for entry in document["provides"]}
+    capabilities = [{"id": cid, "provided": cid in entries} for cid in sorted(INVOKE_CAPABILITIES)]
+    linked = 20 in entries.get("client.kind424.damage_convert@1", {}).get("patches", [])
+    recorded = any(entry["number"] == 20 and entry["status"] == "recorded"
+                   for entry in document.get("patches", []))
+    return {"supported": all(entry["provided"] for entry in capabilities) and linked and recorded,
+            "capabilities": capabilities,
+            "patch20": {"linked": linked, "recorded": recorded, "supported": linked and recorded}}
 
 
 def _attack_tree(multiplier, element, effect):

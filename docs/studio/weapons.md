@@ -300,3 +300,40 @@ python -m wf.studio.draft --tip 282 --server-dir server weapon icon 5950001 --ki
 `clone/materials/icon --request` 接受对应 HTTP body；clone 的 `--from/--to/--code/--name/--exclusive-character/--soul-template` 和 icon 的 `--kind/--png/--item-id` 可覆盖文件中的同名参数。`--preview` 不落草稿。所有五个子命令支持 `--provides PATH`、`--client-profile NAME`，用于明确目标能力证据。
 
 标准输出始终一行 JSON：成功为 `{"ok":true,"result":...}`，退出码 0；运行期校验失败为 `{"ok":false,"error":"..."}`，退出码 1。`list` 读取当前基线目录，`show` 读取重放后的草稿候选。命令只准备本地草稿；不会发网络请求、连接服务器、提交发布或假装完成设备验证。
+# P0 第二轮接口补充
+
+## 当前 provides 对 629 模板的支持
+
+`GET /api/studio/weapons/capabilities` 读取武器编辑器实际使用的 `provides` / `client_profile`，不切换档案、不写草稿。返回 `invoke629`：
+
+```json
+{
+  "invoke629": {
+    "supported": true,
+    "capabilities": [
+      {"id": "client.kind424.damage_convert@1", "provided": true},
+      {"id": "official.kind629.invoke_skill@1", "provided": true}
+    ],
+    "patch20": {"linked": true, "recorded": true, "supported": true},
+    "evidence": {"status": "available", "sha256": "<64 hex>", "clientProfile": null},
+    "checks": [{"rule": "weapon.invoke-provides", "status": "满足", "message": "629 模板所需 provides 声明已齐全", "blocking": false}]
+  },
+  "scope": "provides-declaration",
+  "runtime": "未执行",
+  "note": "只表示当前 provides 声明；候选生成仍检查实际 SWF 分支和输入哈希，不代表装机实测。"
+}
+```
+
+`supported` 必须同时满足两个能力 ID、424 声明中的 `patches` 包含整数 `20`，以及顶层 `patches` 中补丁 20 的 `status=recorded`。该判断与模板创建共用函数。声明缺项时 `supported=false`、check 为「问题」且 blocking；未选择、不可读或无效 provides 时 `supported=false`、能力 `provided` 和补丁 `linked/recorded` 为 `null`、证据 `status=unavailable`、check 为「未执行」且 blocking。它只证明声明条件，生成与交付时的真实 SWF 和兼容检查仍需通过。
+
+## 图标尺寸响应
+
+图标导入成功或 preview 的 `icons[]` 中，`size` 固定为两个整数的数组 `[宽, 高]`，表示提交的 PNG 尺寸；`atlasSize` 固定为 `[宽, 高]` 或 `null`，不再省略该键。
+
+| `kind` | `size` | `atlasSize` | 输出含义 |
+|---|---|---|---|
+| `weapon` | `[20,20]` | `null` | 独立武器 PNG，不写图集 |
+| `soul` | `[40,40]` | 当前图集实际尺寸，例如 `[2048,1024]` | 图集中的 40×40 图标；独立回退 PNG 为 20×20 |
+| `material` | `[40,40]` | 当前图集实际尺寸，例如 `[2048,1024]` | 同上，另需 `item_id` |
+
+图集尺寸来自实际基线，不能在前端硬编码为示例值。仍禁止扩画布，现有图集条目的坐标和像素继续逐项校验。

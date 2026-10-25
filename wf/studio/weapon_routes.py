@@ -73,6 +73,10 @@ class WeaponRoutes:
     def clone(self, query, body):
         return self._edit("weapon_clone", query, body)
 
+    def capabilities(self, query):
+        from .weapon_capabilities import capabilities
+        return self._json(lambda: capabilities(self.editor))
+
     def materials(self, query, body, wid):
         return self._edit("weapon_materials", query, body, wid=wid)
 
@@ -123,6 +127,7 @@ class WeaponRoutes:
 
     def routes(self):
         routes = [("GET", "", self.listing), ("POST", "/clone", self.clone),
+                  ("GET", "/capabilities", self.capabilities),
                   ("GET", "/drafts", self.drafts), ("GET", r"/drafts/(?P<wid>\d+)", self.draft),
                   ("POST", r"/drafts/(?P<wid>\d+)/save", self.save),
                   ("POST", r"/drafts/(?P<wid>\d+)/changes/(?P<change>c-[0-9a-f]{12})/revert", self.revert),

@@ -54,7 +54,7 @@ def import_icon(state, spec):
         _new_resource(state, reference + ".png", store_png(image))
         equipment[6] = reference
         state.set_leaf(s.EQUIPMENT, [wid], join(equipment))
-        return {"kind": kind, "logical": reference + ".png", "size": [20, 20]}
+        return {"kind": kind, "logical": reference + ".png", "size": [20, 20], "atlasSize": None}
     item_id = spec.get("item_id") if kind == "material" else equipment[10]
     if not isinstance(item_id, str) or not item_id.isdigit() or int(item_id) <= 0:
         raise ValueError("material icon requires item_id")
