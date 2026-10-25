@@ -118,6 +118,9 @@ class StudioApp:
         from .discovery_commands import DiscoveryRoutes
         self.discovery = DiscoveryRoutes(self, server_dir)
         self.routes.extend(self.discovery.routes())
+        from .character_routes import CharacterRoutes
+        self.character_clones = CharacterRoutes(self, server_dir)
+        self.routes.extend(self.character_clones.routes())
         from .timeline_routes import TimelineRoutes
         self.timelines = TimelineRoutes(self)
         self.routes.extend(self.timelines.routes())
@@ -211,32 +214,53 @@ class StudioApp:
         return json_response({"version": self.source.version, "count": len(items), "characters": items})
 
     def character(self, query, cid: str) -> Response:
-        detail = character_detail(self.source, cid)
+        source, _, _ = self.character_context(cid)
+        detail = character_detail(source, cid)
         return json_response(detail) if detail else error(404, f"角色 {cid} 不存在于当前视图")
 
-    def _code(self, cid: str) -> str | None:
-        rows = self.source.table("character").get(cid)
+    def character_context(self, cid):
+        """Read a new clone through its candidate without changing the shared view."""
+        if self.source.table("character").get(cid):
+            return self.source, self.assets, self.pixels
+        from .character_clone import ops_for
+        ops = ops_for(self.ops, cid)
+        if ops.source is self.source:
+            return self.source, self.assets, self.pixels
+        return ops.source, ops.assets, PixelCache(ops.source)
+
+    def _code(self, cid: str, source=None) -> str | None:
+        rows = (source or self.source).table("character").get(cid)
         return rows[0][0] if rows and rows[0] else None
 
     def pixel_meta(self, query, cid: str) -> Response:
-        code = self._code(cid)
+        source, _, pixels = self.character_context(cid)
+        code = self._code(cid, source)
         if not code:
             return error(404, f"角色 {cid} 不存在于当前视图")
-        return json_response({"characterId": cid, **self.pixels.meta(code)})
+        return json_response({"characterId": cid, **pixels.meta(code)})
 
     def pixel_sheet(self, query, cid: str, family: str) -> Response:
-        code = self._code(cid)
-        png = self.pixels.sheet(code, family) if code else None
+        source, _, pixels = self.character_context(cid)
+        code = self._code(cid, source)
+        png = pixels.sheet(code, family) if code else None
         if png is None:
             return error(404, "该角色没有这一组像素资源")
         return Response(200, png, "image/png")
 
     def character_assets(self, query, cid: str) -> Response:
-        result = self.assets.character(cid)
+        _, assets, _ = self.character_context(cid)
+        result = assets.character(cid)
+        if result is not None:
+            from .character_clone import clone_change
+            from .clone_assets import checklist
+            draft = self.ops.store.load(cid)
+            if clone_change(draft):
+                result = {**result, "cloneAssets": checklist(draft)}
         return json_response(result) if result else error(404, f"角色 {cid} 不存在于当前视图")
 
     def avatar(self, query, cid: str, form: str) -> Response:
-        found = self.assets.avatar(cid, form)
+        _, assets, _ = self.character_context(cid)
+        found = assets.avatar(cid, form)
         if found is None:
             return error(404, "没有头像资源")
         return Response(200, found[0], "image/png")

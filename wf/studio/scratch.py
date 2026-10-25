@@ -118,7 +118,8 @@ class ScratchDraftOps(DraftOps):
 
 
 def ops_for(ops: DraftOps, cid: str) -> DraftOps:
-    return ScratchDraftOps(ops, cid) if is_scratch(cid) else ops
+    from .character_clone import ops_for as clone_ops
+    return ScratchDraftOps(ops, cid) if is_scratch(cid) else clone_ops(ops, cid)
 
 
 # ---------------------------------------------------------------------------

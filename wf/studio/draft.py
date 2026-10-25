@@ -200,6 +200,9 @@ def run(args) -> dict:
     if args.command in ("ids", "versions"):
         from .discovery_commands import run as run_discovery
         return run_discovery(args, ops.source, store)
+    if args.command in ("character", "scratch-promote"):
+        from .character_routes import run_character_command
+        return run_character_command(args, ops)
     if args.command == "boss":
         from .boss import BossEditor, BossDraftStore
         editor = BossEditor(ops.source, store=BossDraftStore(store.root / "boss"), server_dir=args.server_dir)

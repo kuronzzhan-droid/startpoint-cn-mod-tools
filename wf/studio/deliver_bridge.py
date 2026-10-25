@@ -75,6 +75,10 @@ def _draft(store, cid, source):
         return changeset
     if any(change["kind"] in {"boss", "weapon"} for change in changeset["changes"]):
         raise DraftError("副本或武器草稿必须使用独立命名空间")
+    from .character_clone import clone_change, identity
+    if clone_change(changeset):
+        identity(source, changeset)
+        return changeset
     rows = source.table("character").get(cid)
     if not rows or not rows[0] or rows[0][0] != changeset["code"]:
         raise DraftError("草稿代码名与来源视图角色不一致")
@@ -96,6 +100,9 @@ def compile_draft(source, store, changeset, *, server_dir=None, client_profile=N
         boss = compile_boss(source, store, changeset, server_dir=server_dir, **evidence)
         return ({("common", logical): raw for logical, raw in boss["client"].items()},
                 boss["servers"], boss["server_before"], boss["changes"], boss["checks"])
+    from .character_clone import clone_change, compile_clone
+    if clone_change(changeset):
+        return compile_clone(source, store, changeset, server_dir=server_dir)
     from .deliver_media import compile_media
     media = compile_media(source, store, changeset)
     members = dict(media.members)

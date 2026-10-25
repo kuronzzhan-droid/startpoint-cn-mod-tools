@@ -53,10 +53,18 @@ class DraftOps:
         return self._characters
 
     def character(self, cid: str) -> dict:
+        from .character_clone import ops_for
+        bound = ops_for(self, cid)
+        if bound is not self:
+            return bound.character(cid)
         rows = self.source.table("character").get(cid)
         if not rows or not rows[0]:
             raise DraftError(f"角色 {cid} 不在当前视图")
         summary = next((c for c in self.character_list() if c["id"] == cid), {})
+        if not summary and getattr(self.source, "_clone_cid", None) == cid:
+            from wf_wiki_catalog import ELEMENTS
+            text = self.source.table("text").get(cid, [[]])[0]
+            summary = {"name": text[0] if text else rows[0][0], "element": ELEMENTS.get(rows[0][3], "")}
         return {"id": cid, "code": rows[0][0], "element": summary.get("element", ""),
                 "name": summary.get("name", "")}
 
@@ -102,6 +110,10 @@ class DraftOps:
 
     # -- portrait -------------------------------------------------------
     def portrait_info(self, cid: str, form: str) -> dict:
+        from .character_clone import ops_for
+        bound = ops_for(self, cid)
+        if bound is not self:
+            return bound.portrait_info(cid, form)
         info = self.character(cid)
         result = self.portraits.source_info(cid, info["code"], form, info["element"])
         result["groups"] = [{"name": name, "label": GROUP_LABELS[name], **spec} for name, spec in GROUP_SPECS.items()]
@@ -113,6 +125,10 @@ class DraftOps:
         return result
 
     def portrait_upload(self, cid: str, form: str, png_b64: str) -> dict:
+        from .character_clone import ops_for
+        bound = ops_for(self, cid)
+        if bound is not self:
+            return bound.portrait_upload(cid, form, png_b64)
         if form not in ("0", "1"):
             raise DraftError("立绘槽只有 _0 / _1")
         self.character(cid)
@@ -120,6 +136,10 @@ class DraftOps:
         return {"upload": uploaded, "info": self.portrait_info(cid, form)}
 
     def portrait_save(self, cid: str, request: dict) -> dict:
+        from .character_clone import ops_for
+        bound = ops_for(self, cid)
+        if bound is not self:
+            return bound.portrait_save(cid, request)
         validate(request, "portraitRequest")
         info = self.character(cid)
         built = self.portraits.build_change(cid=cid, code=info["code"], element=info["element"], request=request,
@@ -132,6 +152,10 @@ class DraftOps:
 
     # -- pixel ----------------------------------------------------------
     def pixel_save(self, cid: str, request: dict) -> dict:
+        from .character_clone import ops_for
+        bound = ops_for(self, cid)
+        if bound is not self:
+            return bound.pixel_save(cid, request)
         validate(request, "pixelRequest")
         info = self.character(cid)
         frames = request_frames(request)
@@ -190,6 +214,10 @@ class DraftOps:
 
     # -- voice ----------------------------------------------------------
     def voice_lines(self, cid: str) -> dict:
+        from .character_clone import ops_for
+        bound = ops_for(self, cid)
+        if bound is not self:
+            return bound.voice_lines(cid)
         info = self.character(cid)
         code = info["code"]
         rows = self.assets.speech_rows(cid)
@@ -230,6 +258,10 @@ class DraftOps:
                         "新增台词需要改 speech 表（M4c）。"}
 
     def voice_save(self, cid: str, request: dict) -> dict:
+        from .character_clone import ops_for
+        bound = ops_for(self, cid)
+        if bound is not self:
+            return bound.voice_save(cid, request)
         validate(request, "voiceRequest")
         info = self.character(cid)
         voice = request["voice"]
