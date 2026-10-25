@@ -13,6 +13,7 @@ from wf.rules.instant_content import (
     fill_instant_content_defaults,
     instant_option_value_problems,
 )
+from tool_source import tool_source
 
 
 KINDS = ("ability", "leader_ability", "ability_soul", "equipment_enhancement_ability")
@@ -90,7 +91,7 @@ def test_real_gui_composer_initializes_sentinels_without_a_store(kind):
     # Execute the actual composer function while replacing only the GUI's
     # store-backed blank-template lookup. Importing the whole GUI needs a
     # local game installation, unrelated to this pure generation regression.
-    source = Path(__file__).resolve().parents[1] / "wf_gui.py"
+    source = tool_source(Path(__file__).resolve().parents[1], "wf_gui.py")
     tree = ast.parse(source.read_text(encoding="utf-8-sig"))
     node = next(n for n in tree.body if isinstance(n, ast.FunctionDef)
                 and n.name == "composer_generate")

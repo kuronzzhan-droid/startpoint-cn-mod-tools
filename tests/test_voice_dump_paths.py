@@ -41,7 +41,7 @@ class VoiceDumpPathTests(unittest.TestCase):
     def test_resolve_voice_dump_defaults_to_checkout_local_directory_when_unset(self) -> None:
         with mock.patch.dict(os.environ, {}, clear=True):
             self.assertEqual(
-                (Path(wf_assets.__file__).resolve().parent / "voice-dump").resolve(),
+                (Path(__file__).resolve().parents[1] / "voice-dump").resolve(),
                 wf_assets.resolve_voice_dump(),
             )
 

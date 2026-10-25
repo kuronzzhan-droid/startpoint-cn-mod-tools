@@ -18,10 +18,11 @@ import wf_dsl  # noqa: E402
 import wf_quest_lib as quest  # noqa: E402
 import wf_rogue_validate as rogue_validate  # noqa: E402
 from wf_character_requirements import MasterAssetReference, required_asset_paths, unique_condition_id_columns  # noqa: E402
+from tool_source import tool_source  # noqa: E402
 
 
 def load_module():
-    path = MOD / "wf_offline_content.py"
+    path = tool_source(MOD, "wf_offline_content.py")
     spec = importlib.util.spec_from_file_location("wf_offline_content", path)
     if spec is None or spec.loader is None:
         raise AssertionError("offline content module is missing")

@@ -65,7 +65,6 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, Callable, Iterable
 
-from wf.paths import REPOSITORY
 import wf_battle_rules as BR
 import wf_client_legality as L
 import wf_client_patch_scope as SCOPE
@@ -777,7 +776,7 @@ def unique_row(sid: str, name: str, icon: str, duration: str, max_acc: str, *, b
 
 
 #: 专属状态图标源目录（48×48；发布到 battle/common/unique_condition/<name>.png）
-STATUS_ICON_DIR = REPOSITORY / "assets/cursed-weapons/status"
+STATUS_ICON_DIR = Path(__file__).resolve().parents[3] / "assets/cursed-weapons/status"
 ICON_CURSE = "unique_devil_leader"          # 官方「诅咒」图标
 ICON_TIME = "unique_gerald_time_seal"       # 时之刻印（计时类）
 ICON_BUFF = "unique_fire_dragon_zenith"     # 勇敢之焰（增益类）

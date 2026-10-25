@@ -88,9 +88,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
-from wf.paths import REPOSITORY
-
-TOOLS = REPOSITORY  # 仓库根；本文件已从根目录搬到 wf/tools/
+TOOLS = Path(__file__).resolve().parents[3]  # 仓库根（本文件在 wf/tools/<组>/ 下）
 REPO = TOOLS.parent
 if str(TOOLS) not in sys.path:
     pass  # Imports resolve from this checkout/package, not external source copies.
@@ -211,7 +209,7 @@ ICONS = (
 )
 ICON_BY_ITEM = {i.item_id: i for i in ICONS}
 OWNED_ATLAS_NAMES = frozenset(i.c4 for i in ICONS)
-PARADOX_TOOL = TOOLS / "wf_paradox_weapon.py"       # 只读：它的 MATERIALS 是否已同步到重画版逻辑路径
+PARADOX_TOOL = TOOLS / "wf/tools/content/paradox_weapon.py"       # 只读：它的 MATERIALS 是否已同步到重画版逻辑路径
 
 # §6.2/§6.5 图标门禁（口径同图标单元 build_icons.gate：描边只看最大 8 连通块，角上十字星点不算描边）
 ICON_SIZE = (20, 20)

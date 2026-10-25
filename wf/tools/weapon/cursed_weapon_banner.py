@@ -13,9 +13,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
-from wf.paths import REPOSITORY
-
-TOOLS = REPOSITORY  # 仓库根；本文件已从根目录搬到 wf/tools/
+TOOLS = Path(__file__).resolve().parents[3]  # 仓库根（本文件在 wf/tools/<组>/ 下）
 if str(TOOLS) not in sys.path:
     pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_abyss_weapon_banner as abyss  # noqa: E402

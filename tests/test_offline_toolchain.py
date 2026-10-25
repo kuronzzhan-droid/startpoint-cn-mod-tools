@@ -15,9 +15,11 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
 
+from tool_source import tool_source
+
 
 MOD_TOOLS = Path(__file__).resolve().parents[1]
-MODULE_PATH = MOD_TOOLS / "wf_offline_toolchain.py"
+MODULE_PATH = tool_source(MOD_TOOLS, "wf_offline_toolchain.py")
 SPEC = importlib.util.spec_from_file_location("wf_offline_toolchain", MODULE_PATH)
 if SPEC is None or SPEC.loader is None:
     raise AssertionError("offline toolchain module is missing")
