@@ -9,6 +9,8 @@ from .drafts import DraftError
 
 
 def source_arguments(parser):
+    parser.add_argument("--view", dest="view_name", help="profiles/local.json 中的命名视图")
+    parser.add_argument("--view-base-version", dest="view_base_version", help="视图基线版本，默认 1.4.131")
     parser.add_argument("--manifest", type=Path, help="精确版本视图的只读 manifest")
     parser.add_argument("--store", type=Path, help="只读基线 store")
     parser.add_argument("--zip-dir", type=Path, action="append", default=None)
@@ -17,6 +19,8 @@ def source_arguments(parser):
 
 
 def add_commands(sub):
+    from .view_commands import add_commands as add_views
+    add_views(sub)
     add_device_result(sub)
     p = sub.add_parser("boss", help="读取、编辑副本草稿；new 按暗凛模板新建共同决战")
     p.add_argument("cid", help="副本 ID、kind:path 选择器或 new")
