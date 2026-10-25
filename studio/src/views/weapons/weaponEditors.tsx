@@ -171,15 +171,19 @@ const SOUL_TEMPLATES: { id: SoulTemplateId; label: string; invoke: boolean; pfUs
 const DAMAGE_TARGET: Record<string, string> = { trigger_enemy: "命中的敌人", all_enemies: "全体敌人", nearest_enemy: "最近的敌人" };
 const WEAPON_CODE = /^[a-z][a-z0-9_]{0,79}$/;
 
+/** 629 template availability from GET /api/studio/weapons/capabilities (provides declaration only). */
+export interface InvokeStatus { supported: boolean; message: string }
+
 /** `soul` turns on the 武器工坊-only fields: code, 专属角色 (metadata), the 魂珠 step (soul_elements, soulDescription,
- * soul ability template). `invokeSupported` enables the 629 templates (needs provides evidence on the backend).
+ * soul ability template). `invoke` enables the 629 templates when the selected provides declares them.
  * `donorNote` replaces the BOSS donor hint. Without `soul` the BOSS wizard sends exactly what it always did. */
-export function CloneWizard({ weapons, source, target, kinds, soul, invokeSupported, donorNote, onPreview, onWritten, onClose }: {
+export function CloneWizard({ weapons, source, target, kinds, soul, invoke, donorNote, onPreview, onWritten, onClose }: {
   weapons: WeaponDoc[]; source: string; target: string | OpTarget; kinds: Record<string, Map<string, TemplateOption>>;
-  soul?: boolean; invokeSupported?: boolean; donorNote?: string;
+  soul?: boolean; invoke?: InvokeStatus | null; donorNote?: string;
   onPreview: (s: PreviewState) => void; onWritten: () => void; onClose: () => void;
 }) {
   const steps = soul ? SOUL_STEPS : STEPS;
+  const invokeSupported = !!invoke?.supported;
   const [step, setStep] = useState(0);
   const stepName = steps[step];
   const [src, setSrc] = useState(source);
@@ -431,6 +435,10 @@ export function CloneWizard({ weapons, source, target, kinds, soul, invokeSuppor
               </div>
             ) : null}
             <span class="small muted">原生模板只用现有能力伤害 kind，不生成 DSL；629 模板生成按能力伤害结算的 DSL，需要目标客户端 provides 证据（后端校验）。</span>
+            {invoke === undefined ? null : !invoke ? <span class="small muted">正在读取 629 能力声明……</span>
+              : invoke.supported ? (
+                <span class="small warn-text">629 可选：当前 provides 声明了 629、424 能力和已记录的补丁 20。这只是声明，实际 SWF 分支在预检时核对，也不代表装机实测。</span>
+              ) : <span class="small muted">629 不可选：{invoke.message}</span>}
           </fieldset>
         </div>
       ) : stepName === "图标" ? (

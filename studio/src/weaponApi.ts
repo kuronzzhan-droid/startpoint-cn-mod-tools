@@ -203,10 +203,31 @@ export const weapons = {
 /** POST /<id>/icon: 20×20 weapon PNG, or 40×40 soul / material into item_icon (weapons.md §8). */
 export interface WeaponIconRequest { kind: "weapon" | "soul" | "material"; png: string; item_id?: string }
 export interface WeaponIconResult {
-  kind: string; logical: string; size: [number, number] | number[] | string;
-  itemId?: string; thumbnail?: string; atlasSize?: unknown; preservedEntries?: number;
+  kind: "weapon" | "soul" | "material"; logical: string;
+  /** Submitted PNG [width, height]. */
+  size: [number, number];
+  /** Actual item_icon atlas [width, height]; null for the standalone weapon PNG. */
+  atlasSize: [number, number] | null;
+  itemId?: string; thumbnail?: string; preservedEntries?: number;
+}
+
+/** GET /capabilities: whether the selected provides *declares* what the 629 templates need.
+ * Candidates still check the real SWF branch at preview; this is never a device result. */
+export interface WeaponCapabilities {
+  invoke629: {
+    supported: boolean;
+    capabilities: { id: string; provided: boolean | null }[];
+    patch20: { linked: boolean | null; recorded: boolean | null; supported: boolean };
+    evidence: { status: "available" | "unavailable"; sha256: string | null; clientProfile: string | null };
+    checks: RuleResult[];
+  };
+  scope: "provides-declaration";
+  runtime: string;
+  note: string;
 }
 export type WeaponIconPreview = BossPreview & { icons?: WeaponIconResult[] };
+
+export const weaponCapabilities = () => get<WeaponCapabilities>(`${PREFIX}/capabilities`);
 
 export const weaponIcons = {
   preview: (id: string, body: WeaponIconRequest) =>

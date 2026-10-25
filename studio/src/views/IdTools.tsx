@@ -1,8 +1,8 @@
 // 工具抽屉：链视图（当前视图 / 基线 → 链终点 / 额外 ZIP / 缺包）、ID 占用查询与下一空闲值、下一个资源版本，
 // 以及在表单里复用的 IdField（输入即查 + 「取下一个空闲 ID」）。查询只读，不预留。
 import { useEffect, useState } from "preact/hooks";
-import { api, Meta } from "../api";
-import { ID_KINDS, IdCheck, IdKind, IdNext, ownersText, studio, VersionNext } from "../studioApi";
+import { api, drafts, Meta, ViewList } from "../api";
+import { ID_KINDS, IdCheck, IdKind, IdNext, ownersText, StoreExport, studio, VersionNext } from "../studioApi";
 import { Notice } from "./common";
 import { InfoTip } from "./Delivery";
 
@@ -62,8 +62,40 @@ export function IdField({ kind, label, value, onChange, placeholder, onAvailabil
   );
 }
 
-/** 链视图 summary from /api/meta (switching and store export are launch-time / CLI only). */
+/** 导出当前视图为 store（POST /api/studio/views/export-store）；目标目录须不存在，从不覆盖。 */
+function ExportStore({ view }: { view: string | null }) {
+  const [out, setOut] = useState("");
+  const [copy, setCopy] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<StoreExport | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const run = async () => {
+    setBusy(true); setError(null); setResult(null);
+    try { setResult(await studio.exportStore(out.trim(), copy)); } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
+  };
+  return (
+    <div class="tool-export">
+      <h4>导出为 store <InfoTip text="只导出编辑台当前加载的视图。默认对未覆盖文件建硬链接（要求同盘），ZIP 覆盖成员写新文件；跨盘或构建器会原地改文件时勾选「复制」。完成标志是最后写入的 viewstore.json。" /></h4>
+      <div class="tool-row">
+        <input class="mono" value={out} placeholder="D:/WF/outputs/work/<主题>/viewstore（必须不存在）" onInput={(e) => setOut((e.target as HTMLInputElement).value)} />
+        <label class="check"><input type="checkbox" checked={copy} onChange={(e) => setCopy((e.target as HTMLInputElement).checked)} />复制（不用硬链接）</label>
+        <button type="button" class="primary" disabled={busy || !out.trim() || !drafts.hasToken()} onClick={run}>{busy ? "导出中……" : `导出 ${view ?? "当前视图"}`}</button>
+      </div>
+      {error ? <p class="small error-text">导出失败：{error}</p> : null}
+      {result ? (
+        <Notice>已导出 {result.view ?? "当前视图"} @ {result.version}：构建器 store = <span class="mono">{result.store ?? "（见 viewstore.json）"}</span>
+          <details class="tech"><summary>技术细节</summary><pre class="cmd">{JSON.stringify(result, null, 2)}</pre></details></Notice>
+      ) : null}
+    </div>
+  );
+}
+
+/** 链视图: /api/meta summary + /api/studio/views (switching a view needs a restart with --view). */
 function ChainView({ meta }: { meta: Meta | null }) {
+  const [views, setViews] = useState<ViewList | null>(null);
+  const [viewsError, setViewsError] = useState<string | null>(null);
+  const [pick, setPick] = useState("");
+  useEffect(() => { studio.views().then((v) => { setViews(v); setPick(v.current ?? v.views[0] ?? ""); }, (e: Error) => setViewsError(e.message)); }, []);
   if (!meta) return <p class="small muted">正在读取视图……</p>;
   const s = meta.source;
   const view = s.view ?? "（未命名：旧 view 配置或本机默认链）";
@@ -81,11 +113,25 @@ function ChainView({ meta }: { meta: Meta | null }) {
         <Notice kind="error">补丁链缺 {s.chain.missing.length} 个 ZIP，视图不完整：
           <ul class="small mono">{s.chain.missing.map((m) => <li>{m.version} · {m.name}</li>)}</ul></Notice>
       ) : null}
-      <p class="small muted">切换视图要重启编辑台（启动时选定，所有读取与生成都用同一个完整视图）：</p>
-      <pre class="cmd">python -m wf.studio --view test175{"\n"}python -m wf.studio --view local{"\n"}python -m wf.studio --view prod</pre>
-      <p class="small muted">导出为 store（给现有构建器；目标目录须不存在，跨盘用 --copy）：</p>
-      <pre class="cmd">python -m wf.studio.draft --view {s.view ?? "<视图名>"} export-store --out D:/WF/outputs/work/&lt;主题&gt;/viewstore</pre>
-      <p class="small muted">视图名、store、manifest 与 ZIP 目录在 <span class="mono">profiles/local.json</span> 的 <span class="mono">views</span> 里配置；HTTP 目前不提供视图列表、切换和导出。</p>
+      <h4>切换视图</h4>
+      {viewsError ? <p class="small error-text">视图列表读取失败：{viewsError}</p> : !views ? <p class="small muted">正在读取视图列表……</p> : (
+        <>
+          <div class="segmented" role="radiogroup" aria-label="命名视图">
+            {views.views.map((v) => (
+              <button type="button" role="radio" aria-checked={pick === v} class={pick === v ? "on" : ""} onClick={() => setPick(v)}>
+                {v}{v === views.current ? <span class="count">当前</span> : null}</button>
+            ))}
+          </div>
+          {!views.views.length ? <p class="small muted">本机配置没有命名视图（profiles/local.json 的 views）。</p> : null}
+          {pick && pick !== views.current ? (
+            <>
+              <p class="small warn-text">编辑台不能运行时切换视图（所有读取与生成都绑定启动时的完整视图）。关掉编辑台，用下面的命令重启：</p>
+              <pre class="cmd">python -m wf.studio --view {pick}</pre>
+            </>
+          ) : <p class="small muted">{views.current ? `正在使用 ${views.current}。` : "当前不是命名视图（旧 view 配置或本机默认链）。"}</p>}
+        </>
+      )}
+      <ExportStore view={views?.current ?? s.view ?? null} />
     </section>
   );
 }

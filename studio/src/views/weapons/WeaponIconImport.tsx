@@ -95,7 +95,8 @@ export function WeaponIconImport({ detail, onClose }: { detail: WeaponDetail; on
           <p class={"small " + (preview.ok ? "state-ok" : "error-text")}>{preview.ok ? "预检通过，可以写入" : "预检有阻断项"}</p>
           {preview.icons?.length ? (
             <ul class="small mono">{preview.icons.map((i) => (
-              <li>{i.kind} · {i.logical}{i.itemId ? ` · item ${i.itemId}` : ""}{i.thumbnail ? ` · 20×20 ${i.thumbnail}` : ""}
+              <li>{i.kind} · {i.size[0]}×{i.size[1]} · {i.logical}{i.itemId ? ` · item ${i.itemId}` : ""}
+                {i.atlasSize ? ` · 图集 ${i.atlasSize[0]}×${i.atlasSize[1]}` : " · 独立 PNG"}{i.thumbnail ? ` · 20×20 ${i.thumbnail}` : ""}
                 {i.preservedEntries !== undefined ? ` · 保留旧条目 ${i.preservedEntries}` : ""}</li>
             ))}</ul>
           ) : null}

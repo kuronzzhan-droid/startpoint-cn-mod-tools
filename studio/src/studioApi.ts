@@ -1,6 +1,6 @@
 // P0 discovery and new-character wrappers (contracts: docs/studio/ids.md, character-clone.md, chain-views.md).
 // ID / version answers are evidence queries, never reservations; formal clones still run their own collision checks.
-import { Changeset, DraftCheck, DraftStatus, get, notifyDraft, post } from "./api";
+import { Changeset, DraftStatus, get, notifyDraft, post, RuleResult, ViewList } from "./api";
 
 const enc = encodeURIComponent;
 
@@ -47,10 +47,12 @@ export interface CloneAsset {
   logical: string;
   source: string;
   root: string;
-  status: "reuse" | "pending" | "derived";
+  /** not_applicable: ★1–★3 special four-piece (not copied, not blocking). */
+  status: "reuse" | "pending" | "derived" | "not_applicable";
   label: string;
 }
 
+/** No `rarity` (explicitly rejected) and `element` must equal the template's (cross-element clones block). */
 export interface CharacterCloneRequest {
   from: string;
   to: string;
@@ -60,46 +62,93 @@ export interface CharacterCloneRequest {
   name?: string;
 }
 
-export interface CharacterCloneResult {
+/** A client table the clone writes into the draft. */
+export interface CloneTable { logical: string; root: string; addedKeys: string[]; size: number; sha256: string }
+/** One of the five server tables a later delivery derives; baselineVerified=false without --server-dir. */
+export interface CloneServerTable {
+  target: string; addedKeys: string[]; baselineVerified: boolean; beforeSha256?: string; sha256?: string; size?: number;
+}
+
+export interface CloneCommon {
   ok: boolean;
+  characterId: string | null;
+  code?: string;
+  tables?: CloneTable[];
+  assets?: CloneAsset[];
+  /** HTTP top-level checks are five-state (rule/status/message/blocking). */
+  checks: RuleResult[];
+  buildable?: boolean;
+  runtime: string;
+  error?: string;
+}
+
+export interface ClonePreview extends CloneCommon { preview: true; serverTables?: CloneServerTable[] }
+
+export interface CharacterCloneResult extends CloneCommon {
   characterId: string;
   code: string;
   changeset: Changeset;
   status: DraftStatus;
   assets: CloneAsset[];
-  checks: DraftCheck[];
   /** false while assets are missing; delivery will still block. */
   buildable: boolean;
-  runtime: string;
   scratch?: string;
 }
 
-/** Tables a clone writes (character-clone.md); optional ones only when the template has rows. */
-export const CLONE_TABLES = {
-  required: ["character", "character_status", "character_text", "mana_board", "mana_node", "character_image",
-    "full_shot_image_attribute", "trimmed_image", "character_speech", "skill_preview_character"],
-  optional: ["character_gacha_sound", "character_awake_status", "upskill", "mana_board2_open_condition", "character_stance_detail"],
-};
+export interface StoreExport {
+  ok: true;
+  version: string;
+  view: string | null;
+  /** `.../viewstore/production/upload`, ready for the existing builder. */
+  store?: string;
+  [key: string]: unknown;
+}
 
-/** Native element order of the clone request: 0..5 = 火水雷风光暗. */
-export const CLONE_ELEMENTS = ["火", "水", "雷", "风", "光", "暗"];
+function token(): string {
+  return document.querySelector<HTMLMetaElement>('meta[name="wf-studio-token"]')?.content ?? "";
+}
+
+/** POST that returns the body of a 400 too (character.inputs + five-state checks) instead of throwing it away. */
+async function postChecked<T extends { ok: boolean; checks: RuleResult[] }>(url: string, body: unknown): Promise<T | CloneCommon> {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-WF-Studio-Token": token() },
+    body: JSON.stringify(body),
+  });
+  const data = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
+  if (response.ok && data.ok !== false) return data as T;
+  return {
+    ok: false, characterId: data.characterId ?? null, runtime: data.runtime ?? "未执行", error: data.error ?? `HTTP ${response.status}`,
+    checks: Array.isArray(data.checks) && data.checks.length ? data.checks
+      : [{ rule: "character.inputs", status: "问题", blocking: true, message: data.error ?? `HTTP ${response.status}` }],
+  };
+}
+
+export const isFailure = (r: { ok: boolean }): r is CloneCommon => !r.ok;
 
 export const studio = {
   idCheck: (kind: IdKind, id: string) => get<IdCheck>(`/api/studio/ids/check?kind=${enc(kind)}&id=${enc(id)}`),
   idNext: (kind: IdKind, near?: string) =>
     get<IdNext>(`/api/studio/ids/next?kind=${enc(kind)}${near?.trim() ? "&near=" + enc(near.trim()) : ""}`),
   versionNext: (view?: string) => get<VersionNext>(`/api/studio/versions/next${view?.trim() ? "?view=" + enc(view.trim()) : ""}`),
+  /** Dry run: client tables, server table plan, 37 assets and checks; writes nothing and reserves nothing. */
+  previewClone: (body: CharacterCloneRequest) => postChecked<ClonePreview>("/api/studio/characters/clone?preview=true", body),
   cloneCharacter: async (body: CharacterCloneRequest) => {
-    const result = await post<CharacterCloneResult>("/api/studio/characters/clone", body);
-    notifyDraft(result.characterId, Promise.resolve(null));
+    const result = await postChecked<CharacterCloneResult>("/api/studio/characters/clone", body);
+    if (result.ok && result.characterId) notifyDraft(result.characterId, Promise.resolve(null));
     return result;
   },
   promoteScratch: async (sid: string, body: { to: string; code?: string }) => {
-    const result = await post<CharacterCloneResult>(`/api/studio/characters/${enc(sid)}/promote`, body);
-    notifyDraft(sid, Promise.resolve(null));
-    notifyDraft(result.characterId, Promise.resolve(null));
+    const result = await postChecked<CharacterCloneResult>(`/api/studio/characters/${enc(sid)}/promote`, body);
+    if (result.ok) {
+      notifyDraft(sid, Promise.resolve(null));
+      if (result.characterId) notifyDraft(result.characterId, Promise.resolve(null));
+    }
     return result;
   },
+  views: () => get<ViewList>("/api/studio/views"),
+  /** Exports the process's current view only; `out` must not exist (never overwrites). */
+  exportStore: (out: string, copy: boolean) => post<StoreExport>("/api/studio/views/export-store", { out, copy }),
 };
 
 /** Human summary of who holds an ID. */

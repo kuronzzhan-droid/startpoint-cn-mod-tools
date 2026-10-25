@@ -6,7 +6,7 @@ import { DraftChange, onDraftChange, RuleResult } from "../../api";
 import type { AnyBossRequest, BossRecord } from "../../bossApi";
 import { href, Route } from "../../router";
 import {
-  asWeaponDoc, WEAPON_ANY, WEAPON_ELEMENTS, weaponDeliveries, WeaponDetail, WeaponDraftSummary, weaponElement, weaponKey,
+  asWeaponDoc, weaponCapabilities, WEAPON_ANY, WEAPON_ELEMENTS, weaponDeliveries, WeaponDetail, WeaponDraftSummary, weaponElement, weaponKey,
   WeaponList, weapons, weaponSubject,
 } from "../../weaponApi";
 import { ChangesPanel, ChecksList, useDraftOf } from "../Changes";
@@ -19,7 +19,7 @@ import { PreviewState } from "../boss/BossParams";
 import { cellOf, OpTarget } from "../boss/bossOps";
 import { present } from "../boss/bossModel";
 import {
-  abilityLines, BLOCK_LABEL, CloneWizard, KindName, MaterialList, MaterialsEditor, soulElementsText, TABLE_LABEL, useKindNames,
+  abilityLines, BLOCK_LABEL, CloneWizard, InvokeStatus, KindName, MaterialList, MaterialsEditor, soulElementsText, TABLE_LABEL, useKindNames,
   USER_COST, WeaponIcon,
 } from "./weaponEditors";
 import { WeaponIconImport } from "./WeaponIconImport";
@@ -192,6 +192,13 @@ function WeaponDetailPane({ id, tab, sub }: { id: string; tab?: string; sub?: st
   const built = useDeliveries(id, weaponDeliveries);
   const target = useMemo(() => weaponTarget(id), [id]);
   const cloneTarget = useMemo(() => weaponTarget("clone"), []);
+  const [invoke, setInvoke] = useState<InvokeStatus | null>(null);
+  useEffect(() => {
+    weaponCapabilities().then((c) => setInvoke({
+      supported: c.invoke629.supported,
+      message: c.invoke629.checks.map((x) => `${x.status}：${x.message}`).join("；") || "provides 没有声明 629 所需能力",
+    }), (e: Error) => setInvoke({ supported: false, message: "能力声明读取失败：" + e.message }));
+  }, []);
   const doc = useMemo(() => (detail ? asWeaponDoc(detail) : null), [detail]);
   const names = useMemo(() => itemNames(detail), [detail]);
   const close = () => { setEditing(null); setPreview(IDLE); };
@@ -246,7 +253,7 @@ function WeaponDetailPane({ id, tab, sub }: { id: string; tab?: string; sub?: st
         {editing === "clone" ? (
           <CloneWizard key={id} weapons={[doc]} source={id} target={cloneTarget} kinds={kinds} soul
             donorNote="母本 = 当前打开的武器；要换母本，在左侧列表里打开另一把。觉醒限制和稀有度覆盖按母本一并复制。"
-            invokeSupported={false}
+            invoke={invoke}
             onPreview={setPreview} onWritten={() => undefined} onClose={close} />
         ) : null}
         {editing === "icon" ? <WeaponIconImport detail={detail} onClose={close} /> : null}

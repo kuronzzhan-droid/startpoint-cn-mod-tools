@@ -93,14 +93,14 @@ function AssetGroupView({ group, onlyMissing, data, open, onToggle }: {
       {group.id === "voice" && data.speech.length ? <SpeechTable data={data} /> : null}
       {items.length === 0 ? <p class="muted small">{onlyMissing ? "本组没有缺失项。" : "本组没有找到资源。"}</p> : (
         <div class={group.id === "voice" || group.id === "effect" || group.id === "other" ? "asset-list" : "asset-grid"}>
-          {items.map((item) => <AssetCard item={item} compact={group.id === "voice" || group.id === "effect" || group.id === "other"} />)}
+          {items.map((item) => <AssetCard version={data.assetsVersion} item={item} compact={group.id === "voice" || group.id === "effect" || group.id === "other"} />)}
         </div>
       )}
     </section>
   );
 }
 
-function AssetCard({ item, compact }: { item: AssetItem; compact: boolean }) {
+function AssetCard({ item, compact, version }: { item: AssetItem; compact: boolean; version?: string }) {
   const name = item.path.split("/").slice(-2).join("/");
   const meta = (
     <div class="asset-meta">
@@ -125,8 +125,8 @@ function AssetCard({ item, compact }: { item: AssetItem; compact: boolean }) {
     return (
       <div class={"asset-row" + (item.layer ? "" : " missing")}>
         {meta}
-        {item.media === "audio" && item.layer ? <audio controls preload="none" src={api.assetUrl(item.path)} /> : null}
-        {item.media === "image" && item.layer ? <img class="asset-thumb small-thumb" loading="lazy" src={api.assetUrl(item.path)} alt="" /> : null}
+        {item.media === "audio" && item.layer ? <audio controls preload="none" src={api.assetUrl(item.path, version)} /> : null}
+        {item.media === "image" && item.layer ? <img class="asset-thumb small-thumb" loading="lazy" src={api.assetUrl(item.path, version)} alt="" /> : null}
       </div>
     );
   }
@@ -134,8 +134,8 @@ function AssetCard({ item, compact }: { item: AssetItem; compact: boolean }) {
     <div class={"asset-card" + (item.layer ? "" : " missing")}>
       <div class="asset-preview">
         {item.media === "image" && item.layer ? (
-          <a href={api.assetUrl(item.path)} target="_blank" rel="noreferrer">
-            <img class="asset-thumb" loading="lazy" src={api.assetUrl(item.path)} alt={name} />
+          <a href={api.assetUrl(item.path, version)} target="_blank" rel="noreferrer">
+            <img class="asset-thumb" loading="lazy" src={api.assetUrl(item.path, version)} alt={name} />
           </a>
         ) : <span class="muted small">{item.layer ? "数据文件，无预览" : "缺失"}</span>}
       </div>
@@ -158,7 +158,7 @@ function SpeechTable({ data }: { data: CharacterAssets }) {
               <td class="nowrap small">{s.constraint}{s.evoLevel ? ` · 进化${s.evoLevel}` : ""}</td>
               <td class="speech-text">{s.text}</td>
               <td>
-                {s.path ? (s.present ? <audio controls preload="none" src={api.assetUrl(s.path)} /> : <span class="error-text small">引用但缺失：{s.voice}</span>)
+                {s.path ? (s.present ? <audio controls preload="none" src={api.assetUrl(s.path, data.assetsVersion)} /> : <span class="error-text small">引用但缺失：{s.voice}</span>)
                   : <span class="muted small">无声（(None)）</span>}
               </td>
             </tr>

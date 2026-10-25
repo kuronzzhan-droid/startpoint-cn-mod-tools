@@ -4,21 +4,22 @@
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { api, CharacterSummary, drafts } from "../api";
 import { href } from "../router";
-import { CharacterCloneResult, CLONE_ELEMENTS, CLONE_TABLES, CloneAsset, studio } from "../studioApi";
-import { ChecksList } from "./Changes";
+import { CharacterCloneRequest, CharacterCloneResult, CloneAsset, CloneCommon, ClonePreview, isFailure, studio } from "../studioApi";
+import { BossRuleList } from "./boss/BossChecks";
 import { Avatar, ElementBadge, Notice, Rarity } from "./common";
 import { InfoTip } from "./Delivery";
 import { IdField } from "./IdTools";
 
 const CODE = /^[a-z0-9_]+$/;
-const STEPS = ["母本", "新 ID 与代码名", "元素与技能", "确认"];
-const ASSET_CLASS: Record<string, string> = { reuse: "muted", pending: "warn-text", derived: "state-ok" };
+const STEPS = ["母本", "新 ID 与代码名", "技能", "预检与写入"];
+const ASSET_CLASS: Record<string, string> = { reuse: "muted", pending: "warn-text", derived: "state-ok", not_applicable: "muted" };
 
 export function CloneAssetList({ assets }: { assets: CloneAsset[] }) {
   const counts = assets.reduce<Record<string, number>>((m, a) => ({ ...m, [a.status]: (m[a.status] ?? 0) + 1 }), {});
   return (
     <div class="clone-assets">
-      <p class="small">必需资产 {assets.length} 项：复用母本 {counts.reuse ?? 0} · <span class="warn-text">待替换 {counts.pending ?? 0}</span> · <span class="state-ok">已派生 {counts.derived ?? 0}</span></p>
+      <p class="small">必需资产 {assets.length} 项：复用母本 {counts.reuse ?? 0} · <span class="warn-text">待替换 {counts.pending ?? 0}</span> · <span class="state-ok">已派生 {counts.derived ?? 0}</span>
+        {counts.not_applicable ? <span class="muted"> · 不适用 {counts.not_applicable}（低星没有 special 四件）</span> : null}</p>
       <div class="table-scroll">
         <table class="boss-table">
           <thead><tr><th>状态</th><th>资产</th><th>根</th><th>来源</th></tr></thead>
@@ -28,6 +29,45 @@ export function CloneAssetList({ assets }: { assets: CloneAsset[] }) {
           ))}</tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+/** A rejected clone / promotion (HTTP 400): the blocking character.inputs check first, then any rule evidence. */
+function CloneFailure({ failure, title }: { failure: CloneCommon; title: string }) {
+  return (
+    <Notice kind="error"><strong>{title}</strong>{failure.error ? `：${failure.error}` : ""}
+      <BossRuleList checks={failure.checks} compact /></Notice>
+  );
+}
+
+/** Dry-run result: tables the draft will write, the server table plan, the 37 assets and checks. */
+function ClonePreviewView({ preview }: { preview: ClonePreview }) {
+  return (
+    <div class="clone-preview">
+      <p class={"small " + (preview.buildable ? "state-ok" : "warn-text")}>
+        {preview.buildable ? "预检通过：写入后可以保存并生成。" : "可以写入草稿，但现在还不能生成（资产待替换或缺服务端基线，见下方检查）。"}</p>
+      <BossRuleList checks={preview.checks} compact />
+      <h4>草稿会写的客户端表（{preview.tables?.length ?? 0}）</h4>
+      <div class="table-scroll">
+        <table class="boss-table">
+          <thead><tr><th>表</th><th>新增键</th><th>大小</th></tr></thead>
+          <tbody>{(preview.tables ?? []).map((t) => (
+            <tr><td class="mono small">{t.logical}</td><td class="mono small">{t.addedKeys.join("、") || "—"}</td><td class="small">{t.size} B</td></tr>
+          ))}</tbody>
+        </table>
+      </div>
+      <h4>交付时派生的服务端表（{preview.serverTables?.length ?? 0}）</h4>
+      <div class="table-scroll">
+        <table class="boss-table">
+          <thead><tr><th>目标</th><th>新增键</th><th>基线</th></tr></thead>
+          <tbody>{(preview.serverTables ?? []).map((t) => (
+            <tr><td class="mono small">{t.target}</td><td class="mono small">{t.addedKeys.join("、") || "—"}</td>
+              <td class={"small " + (t.baselineVerified ? "state-ok" : "warn-text")}>{t.baselineVerified ? "已按镜像合并检查" : "未核对（编辑台启动时没有 --server-dir）"}</td></tr>
+          ))}</tbody>
+        </table>
+      </div>
+      {preview.assets ? <CloneAssetList assets={preview.assets} /> : null}
     </div>
   );
 }
@@ -42,7 +82,7 @@ function CloneDone({ result }: { result: CharacterCloneResult }) {
         {result.buildable ? "检查没有错误；到角色页「本次修改」保存后可以生成。" : "还有错误或资产未齐：可以继续在立绘 / 像素 / 语音里替换，生成会阻断直到补齐。"}
         {" "}<a href={href({ work: "content", shop: "characters", id: result.characterId })}>打开新角色页 →</a>
       </Notice>
-      <ChecksList checks={result.checks} empty="克隆检查没有提醒。" />
+      {result.checks.length ? <BossRuleList checks={result.checks} /> : <p class="small muted">克隆检查没有提醒。</p>}
       <CloneAssetList assets={result.assets} />
       {files.length ? (
         <details class="tech"><summary>草稿里实际写的文件（{files.length}）</summary>
@@ -62,11 +102,12 @@ export function CharacterCloneWizard({ source }: { source?: string }) {
   const [toFree, setToFree] = useState<boolean | null>(null);
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
-  const [element, setElement] = useState("");
   const [skill, setSkill] = useState<"copy" | "reuse">("copy");
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [failure, setFailure] = useState<CloneCommon | null>(null);
   const [result, setResult] = useState<CharacterCloneResult | null>(null);
+  const [preview, setPreview] = useState<{ key: string; result: ClonePreview | CloneCommon } | null>(null);
+  const [previewing, setPreviewing] = useState(false);
   useEffect(() => { api.characters().then((d) => setList(d.characters), (e: Error) => setError(e.message)); }, []);
   const donor = list?.find((c) => c.id === from) ?? null;
   const hits = useMemo(() => {
@@ -82,14 +123,29 @@ export function CharacterCloneWizard({ source }: { source?: string }) {
   if (!CODE.test(code)) problems.push("代码名只用小写字母、数字和下划线");
   if (name.length > 80) problems.push("显示名最多 80 字");
 
+  // element / rarity are not sent: both are inherited (cross-element clones block, rarity is rejected).
+  const request: CharacterCloneRequest = { from, to, code, skill, ...(name.trim() ? { name: name.trim() } : {}) };
+  const key = JSON.stringify(request);
+  const fresh = preview?.key === key ? preview.result : null;
+  // Re-run the dry run whenever the confirm step shows a request it has not checked yet.
+  useEffect(() => {
+    if (step !== STEPS.length - 1 || problems.length || fresh) return;
+    let live = true;
+    setPreviewing(true);
+    const timer = window.setTimeout(() => {
+      studio.previewClone(request).then((r) => { if (live) setPreview({ key, result: r }); }, (e: Error) => {
+        if (live) setPreview({ key, result: { ok: false, characterId: null, runtime: "未执行", error: e.message, checks: [] } });
+      }).finally(() => { if (live) setPreviewing(false); });
+    }, 300);
+    return () => { live = false; window.clearTimeout(timer); };
+  }, [step, key, problems.length]);
   const write = async () => {
-    if (problems.length) return;
-    setBusy(true); setMessage(null);
+    if (problems.length || !fresh?.ok) return;
+    setBusy(true); setFailure(null);
     try {
-      setResult(await studio.cloneCharacter({
-        from, to, code, skill, ...(element !== "" ? { element: Number(element) } : {}), ...(name.trim() ? { name: name.trim() } : {}),
-      }));
-    } catch (e) { setMessage((e as Error).message); }
+      const r = await studio.cloneCharacter(request);
+      if (isFailure(r)) setFailure(r); else setResult(r as CharacterCloneResult);
+    } catch (e) { setFailure({ ok: false, characterId: null, runtime: "未执行", error: (e as Error).message, checks: [] }); }
     finally { setBusy(false); }
   };
 
@@ -139,13 +195,10 @@ export function CharacterCloneWizard({ source }: { source?: string }) {
           ) : step === 2 ? (
             <div class="param-fields">
               <label class="param-field"><span>元素</span>
-                <select value={element} onChange={(e) => setElement((e.target as HTMLSelectElement).value)}>
-                  <option value="">沿用母本{donor ? `（${donor.element}）` : ""}</option>
-                  {CLONE_ELEMENTS.map((e, i) => <option value={String(i)}>{e}</option>)}
-                </select>
-                <span class="small muted">改元素会按 item 表换玛纳材料，但不改复用技能 / 能力里写死的元素效果</span></label>
+                <span>{donor ? <ElementBadge element={donor.element} /> : "—"} <span class="small muted">沿用母本</span></span></label>
               <label class="param-field"><span>稀有度</span>
-                <span>{donor ? <Rarity value={donor.rarity} /> : "—"} <span class="small muted">沿用母本（克隆接口不改稀有度）</span></span></label>
+                <span>{donor ? <Rarity value={donor.rarity} /> : "—"} <span class="small muted">沿用母本</span></span></label>
+              <Notice kind="warn">新角色的元素和星级只能和母本相同：跨属性克隆目前会被后端阻断（技能 DSL 元素偏移、能力条件、音效和材料联动还没做完），稀有度字段会被拒绝。要做别的属性，请选同属性的母本。</Notice>
               <fieldset class="param-field wide">
                 <legend>技能</legend>
                 <label class="check"><input type="radio" checked={skill === "copy"} onChange={() => setSkill("copy")} />复制为独立 action_skill 键（默认）</label>
@@ -159,24 +212,26 @@ export function CharacterCloneWizard({ source }: { source?: string }) {
                 <dt>新 ID</dt><dd class="mono">{to || "—"}</dd>
                 <dt>代码名</dt><dd class="mono">{code || "—"}</dd>
                 <dt>显示名</dt><dd>{name.trim() || "沿用母本"}</dd>
-                <dt>元素</dt><dd>{element === "" ? "沿用母本" : CLONE_ELEMENTS[Number(element)]}</dd>
+                <dt>元素 / 星级</dt><dd>沿用母本{donor ? `（${donor.element} · ${donor.rarity ?? "?"}★）` : ""}</dd>
                 <dt>技能</dt><dd>{skill === "copy" ? "复制为新键" : "复用母本键"}</dd>
               </dl>
-              <h4>会写的表 <InfoTip text="克隆接口没有预检：这是契约里的清单；写入后显示草稿实际写的文件和 37 项资产状态。" /></h4>
-              <p class="small mono">{CLONE_TABLES.required.join("、")}{skill === "copy" ? "、action_skill（新键）" : ""}</p>
-              <p class="small muted">母本有行时同步：<span class="mono">{CLONE_TABLES.optional.join("、")}</span>。玛纳节点按「新 ID × 2」重编号。</p>
-              <p class="small muted">资产 37 项先标「复用母本」或「待替换」；在角色页替换立绘后会派生 30 项，状态改为「已派生」。</p>
+              <h4>预检 <InfoTip text="POST …/clone?preview=true：同一套前置检查，不建草稿目录、不写文件、不预留 ID。写入时会重新检查占用和输入。" /></h4>
+              {problems.length ? <p class="small muted">先改正输入再预检。</p>
+                : previewing && !fresh ? <p class="small muted">预检中……</p>
+                : fresh ? (isFailure(fresh) ? <CloneFailure failure={fresh} title="预检被拒绝" /> : <ClonePreviewView preview={fresh as ClonePreview} />)
+                : null}
             </div>
           )}
           {problems.length && step === STEPS.length - 1 ? <ul class="inline-problems">{problems.map((p) => <li>{p}</li>)}</ul> : null}
-          {message ? <Notice kind="error">写入失败：{message}</Notice> : null}
+          {failure ? <CloneFailure failure={failure} title="写入被拒绝" /> : null}
           <div class="save-row">
             <button type="button" disabled={step === 0} onClick={() => setStep(step - 1)}>上一步</button>
             {step < STEPS.length - 1 ? <button type="button" onClick={() => setStep(step + 1)}>下一步</button> : (
-              <button type="button" class="primary" disabled={busy || problems.length > 0 || !drafts.hasToken()} onClick={write}>
+              <button type="button" class="primary" disabled={busy || problems.length > 0 || !fresh?.ok || !drafts.hasToken()} onClick={write}
+                title={!fresh ? "等预检跑完" : !fresh.ok ? "预检被拒绝，不能写入" : ""}>
                 {busy ? "写入中……" : "写入草稿"}</button>
             )}
-            <span class="small muted">{problems.length ? problems[0] : "可以写入"}</span>
+            <span class="small muted">{problems.length ? problems[0] : !fresh ? "预检后可写入" : fresh.ok ? "预检通过，可以写入" : "预检被拒绝"}</span>
           </div>
         </section>
       )}
@@ -190,15 +245,19 @@ export function PromoteForm({ sid, code: placeholder, onClose }: { sid: string; 
   const [free, setFree] = useState<boolean | null>(null);
   const [code, setCode] = useState(placeholder.replace(/^scratch_/, ""));
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [failure, setFailure] = useState<CloneCommon | null>(null);
   const [result, setResult] = useState<CharacterCloneResult | null>(null);
   const problems: string[] = [];
   if (!/^[1-9][0-9]*$/.test(to)) problems.push("新 ID 要是正整数");
   else if (free === false) problems.push(`新 ID ${to} 已被占用`);
   if (!CODE.test(code)) problems.push("代码名只用小写字母、数字和下划线");
   const run = async () => {
-    setBusy(true); setMessage(null);
-    try { setResult(await studio.promoteScratch(sid, { to, code })); } catch (e) { setMessage((e as Error).message); } finally { setBusy(false); }
+    setBusy(true); setFailure(null);
+    try {
+      const r = await studio.promoteScratch(sid, { to, code });
+      if (isFailure(r)) setFailure(r); else setResult(r as CharacterCloneResult);
+    } catch (e) { setFailure({ ok: false, characterId: null, runtime: "未执行", error: (e as Error).message, checks: [] }); }
+    finally { setBusy(false); }
   };
   if (result) return <div class="param-block"><CloneDone result={result} /></div>;
   return (
@@ -211,7 +270,7 @@ export function PromoteForm({ sid, code: placeholder, onClose }: { sid: string; 
           <input class="mono" value={code} onInput={(e) => setCode((e.target as HTMLInputElement).value.trim())} /></label>
       </div>
       {problems.length ? <ul class="inline-problems">{problems.map((p) => <li>{p}</li>)}</ul> : null}
-      {message ? <Notice kind="error">升级失败：{message}</Notice> : null}
+      {failure ? <CloneFailure failure={failure} title="升级被拒绝" /> : null}
       <div class="save-row">
         <button type="button" class="primary" disabled={busy || problems.length > 0 || !drafts.hasToken()} onClick={run}>{busy ? "升级中……" : "升级"}</button>
         <button type="button" class="ghost" onClick={onClose}>取消</button>
