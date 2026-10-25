@@ -6,6 +6,19 @@ from wf.studio.character_clone import clone
 from wf.studio.server import StudioApp
 
 
+def test_character_clone_post_creates_a_formal_draft_and_rejects_invalid_element(env):
+    source, store, _, server = env
+    application = StudioApp(source, drafts=store, server_dir=server, screenshot_dirs=[])
+    invalid = application.dispatch("POST", "/api/studio/characters/clone", {}, {**request(), "element": 6})
+    assert invalid.status == 400 and not (store.root / NEW / "changeset.json").exists()
+    response = application.dispatch("POST", "/api/studio/characters/clone", {}, request())
+    assert response.status == 200
+    payload = json.loads(response.body)
+    assert payload["characterId"] == NEW and len(payload["assets"]) == 37
+    assert (store.root / NEW / "changeset.json").is_file()
+    assert NEW not in source.table("character")
+
+
 def test_existing_character_routes_read_clone_without_mutating_shared_view(env):
     source, store, ops, server = env
     clone(ops, request(), server_dir=server)
