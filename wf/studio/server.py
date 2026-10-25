@@ -121,6 +121,9 @@ class StudioApp:
         from .character_routes import CharacterRoutes
         self.character_clones = CharacterRoutes(self, server_dir)
         self.routes.extend(self.character_clones.routes())
+        from .view_routes import ViewRoutes
+        self.views = ViewRoutes(self)
+        self.routes.extend(self.views.routes())
         from .timeline_routes import TimelineRoutes
         self.timelines = TimelineRoutes(self)
         self.routes.extend(self.timelines.routes())
@@ -256,6 +259,8 @@ class StudioApp:
             draft = self.ops.store.load(cid)
             if clone_change(draft):
                 result = {**result, "cloneAssets": checklist(draft)}
+            from .asset_version import stamp_assets
+            result = stamp_assets(result, source_version=self.source.version, draft=draft)
         return json_response(result) if result else error(404, f"角色 {cid} 不存在于当前视图")
 
     def avatar(self, query, cid: str, form: str) -> Response:

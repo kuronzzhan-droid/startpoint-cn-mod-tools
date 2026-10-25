@@ -5,16 +5,13 @@ import copy
 import hashlib
 import json
 from pathlib import Path
-import re
 import zipfile
 
 from .base149 import HistoricalView, member
 from .chain import digest, manifest_tip, resolve_archives, resolve_chain
 from .config import view_config, view_options
 from .safety import local_output
-
-CDN_ROOTS = ("upload", "small_upload", "medium_upload", "android_upload", "ios_upload")
-CDN_MEMBER = re.compile(r"^production/(upload|small_upload|medium_upload|android_upload|ios_upload)/[0-9a-f]{2}/[0-9a-f]{38}$")
+from .members import CDN_ROOTS, CDN_MEMBER, archive_members
 
 
 class ManifestView(HistoricalView):
@@ -55,15 +52,12 @@ class ManifestView(HistoricalView):
             self.store_member_sha256 = expected.get("store_members")
             if not isinstance(self.store_member_sha256, dict):
                 raise ValueError("view lock requires store_members, including an empty mapping")
-        self._stats = {}
+        self._stats, self._zip_members = {}, {}
         for archive in self.zips:
             with zipfile.ZipFile(archive) as z:
-                names = [info.filename for info in z.infolist() if not info.is_dir()]
-                if len(set(names)) != len(names):
-                    raise ValueError(f"duplicate ZIP member: {archive.name}")
-                for name in names:
-                    self._validate_member(name)
+                for name, original in archive_members(z).items():
                     self.index[name] = archive
+                    self._zip_members[name] = original
             self._stats[archive] = self._stat(archive)
         for name in self.store_member_sha256 or {}:
             self.read_store_member(name)

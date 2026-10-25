@@ -54,7 +54,25 @@ python -m wf.studio.draft --manifest manifest.json --store D:/inputs/production/
 
 ZIP 搜索仅遍历指定目录，递归但不跟随子目录符号链接或 Windows junction，跳过 `.git`、`node_modules`、`__pycache__`。按 manifest 文件名先找候选，再按 `archive_integrity` 的大小和 SHA-256 筛选。同名错误构建不会盖过摘要匹配的正确构建；缺失、摘要不符、无摘要时同名内容冲突、重复 ZIP 成员、链歧义均报错。未提供摘要的历史条目仍兼容，但不能据此任取内容不同的同名包。
 
-允许的 CDN 根包括 `upload`、历史 `small_upload`、`medium_upload`、`android_upload`、`ios_upload`，成员必须满足两位目录加 38 位 SHA-1 尾部的结构。ZIP 路径穿越和任意其他成员均拒绝。额外 ZIP 与清单 ZIP 一起进入 `wf-view-lock/1` 的 SHA-256 输入锁，并在 `verify()` 时复核；同一读取会话也检查 ZIP 和已使用 store 成员的变化。
+允许的 CDN 根包括 `upload`、历史 `small_upload`、`medium_upload`、`android_upload`、`ios_upload`，成员必须满足两位目录加 38 位 SHA-1 尾部的结构。兼容旧 ZIP 的 `<2hex>/<38hex>` 成员，按 `production/upload/` 归一化；根目录 `.empty` 空版本占位文件跳过。归一化后同包重名、ZIP 路径穿越和任意其他文件成员均拒绝。历史 `active/` 同一边的分卷按整数排序（`2` 在 `10` 前）。额外 ZIP 与清单 ZIP 一起进入 `wf-view-lock/1` 的 SHA-256 输入锁，并在 `verify()` 时复核；同一读取会话也检查 ZIP 和已使用 store 成员的变化。
+
+## HTTP 契约
+
+`GET /api/studio/views` 返回：
+
+```json
+{
+  "views": ["local", "prod", "test175"],
+  "current": "test175",
+  "source": {"version": "1.4.282", "view": "test175"},
+  "runtimeSwitching": false,
+  "restartRequired": true
+}
+```
+
+`views` 是当前机器配置中的视图名数组；`current` 是进程实际加载的视图名，非命名来源时为 `null`，不会把启动后变动的 `default_view` 冒充当前视图。`source` 是完整 `describe()` 摘要，示例只展示两项。切换视图需要用目标 `--view` 重启编辑台，没有运行时切换接口。GET 仍检查 Host。
+
+`POST /api/studio/views/export-store` 的请求为 `{"out":"D:/WF/outputs/work/view-copy","copy":true}`。`out` 必须是非空本地路径，`copy` 为布尔值，省略时为 `false`；拒绝其他字段。仅导出进程当前视图。该请求与其他写接口共用 `X-WF-Studio-Token`、Host、Origin 和 JSON 请求体守卫。成功返回 200，JSON 为 `ok: true` 加下述 `export_store` 结果，并带 `version` 和 `view`。路径已存在、输入无效或导出失败返回 400 和 `error`；不会覆盖已有输出。导出不创建角色草稿。
 
 ## 导出给构建器
 
