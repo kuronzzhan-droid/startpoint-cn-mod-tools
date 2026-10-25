@@ -9,8 +9,10 @@ from wf.view.chain import VERSION, manifest_entries, version
 
 
 def check_versions(doc, view):
-    if view.tip != doc["from_version"]:
-        raise ValueError("问题: baseline view tip must equal from_version")
+    from wf.view.overlays import delivery_tip
+    terminal = delivery_tip(view.tip, view.extra_zips)
+    if terminal != view.effective_version or terminal != doc["from_version"]:
+        raise ValueError("问题: baseline effective tip must equal from_version")
     entries = manifest_entries(view.manifest, view.search_dirs, view.manifests)
     target = doc["to_version"]
     if any(entry.get("version") == target for entry in entries):

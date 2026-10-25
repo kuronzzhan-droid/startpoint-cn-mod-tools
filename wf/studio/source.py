@@ -72,7 +72,11 @@ class StudioSource:
     # -- identity -------------------------------------------------------
     @property
     def version(self) -> str:
+        if hasattr(self.view, "effective_version"):
+            return self.view.effective_version
         top = self.view.tip
+        if isinstance(top, str) and not re.fullmatch(r"\d+\.\d+\.\d+", top):
+            return top  # Preserve opaque versions used by non-manifest sources.
         current = tuple(int(v) for v in (top if isinstance(top, str) else f"1.4.{top}").split("."))
         # A manifest tip selects the chain cutoff. Explicit extra archives may
         # advance the actual source version beyond that cutoff.

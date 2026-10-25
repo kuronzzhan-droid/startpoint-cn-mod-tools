@@ -73,6 +73,11 @@ class ManifestView(HistoricalView):
         stat = archive.stat()
         return stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns
 
+    @property
+    def effective_version(self):
+        from .overlays import effective_version
+        return effective_version(self.tip, self.extra_zips)
+
     @staticmethod
     def _validate_member(name):
         if not CDN_MEMBER.fullmatch(name):

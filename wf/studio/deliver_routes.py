@@ -90,6 +90,9 @@ class DeliverRoutes:
             options["baseline_manifest"] = Path(chain.manifest)
         # Exact folders the editor view already resolved (flat lookup by the manifest view).
         view = source.view
+        from wf.view import ManifestView
+        if isinstance(view, ManifestView):
+            options.update(baseline_view=view, base_store=view.store, base_version=view.base_version)
         dirs = []
         for archive in getattr(view, "zips", []):
             parent = Path(archive).parent
