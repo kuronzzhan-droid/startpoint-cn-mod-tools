@@ -225,6 +225,21 @@ export interface WeaponSpec {
   enhancementProducts?: string[]; stages?: WeaponStage[];
   /** Soul item c5 / c12 (equip elements: "all", "auto" or 0..5 list); omitted = inherit the donor. */
   soulDescription?: string; soul_elements?: "all" | "auto" | number[];
+  /** 武器工坊 only: equipment c0 (soul item c0 = <code>_soul); omitted = boss_workshop_<id>. */
+  code?: string;
+  /** Design metadata only (weapon.exclusive-character-metadata); never restricts equipping. */
+  exclusive_character?: string;
+  /** Replaces every ability_soul row of the donor (weapons.md §7). */
+  soul_template?: WeaponSoulTemplate;
+}
+
+export type SoulTemplateId = "pf_hit_ability_damage" | "pf_use_ability_damage" | "pf_hit_invoke_damage" | "pf_use_invoke_damage";
+export interface WeaponSoulTemplate {
+  template: SoulTemplateId; element: number; multiplier: number; max_multiplier?: number;
+  trigger_limit?: number | null; cooldown_frames?: number;
+  damage_target?: "trigger_enemy" | "all_enemies" | "nearest_enemy";
+  /** 629 variants only: dsl_element = element + 1, hit_effect Explosion / None. */
+  hit_effect?: "Explosion" | "None"; dsl_element?: number;
 }
 
 export type ShopWeaponRequest =

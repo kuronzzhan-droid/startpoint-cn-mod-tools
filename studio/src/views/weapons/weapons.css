@@ -37,3 +37,6 @@
 .material-list { display: inline-flex; flex-wrap: wrap; gap: 2px 10px; vertical-align: middle; }
 .material { display: inline-flex; align-items: center; gap: 4px; }
 .material .weapon-icon { border-radius: 4px; }
+.icon-preview { display: flex; align-items: flex-end; gap: 12px; margin: 6px 0; }
+.icon-preview img { background: repeating-conic-gradient(var(--surface-2) 0% 25%, var(--surface) 0% 50%) 50% / 8px 8px; border: 1px solid var(--border); }
+img.pixelated { image-rendering: pixelated; }

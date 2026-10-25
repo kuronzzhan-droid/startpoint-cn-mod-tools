@@ -1,6 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
 import { api, AssetGroup, AssetItem, CharacterAssets } from "../api";
 import { Notice } from "./common";
+import { CloneAssetList } from "./CharacterClone";
 
 function size(bytes?: number): string {
   if (bytes == null) return "";
@@ -35,6 +36,12 @@ export function AssetsTab({ characterId }: { characterId: string }) {
   return (
     <div class="assets">
       <p class="hint">{data.note}</p>
+      {data.cloneAssets ? (
+        <details class="tech" open>
+          <summary>克隆新角色：必需资产 {data.cloneAssets.length} 项</summary>
+          <CloneAssetList assets={data.cloneAssets} />
+        </details>
+      ) : null}
       <div class="asset-summary">
         <span>共 <strong>{data.total}</strong> 项</span>
         <span class={missing ? "error-text" : ""}>缺失 {missing} 项</span>

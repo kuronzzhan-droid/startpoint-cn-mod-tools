@@ -200,6 +200,24 @@ export const weapons = {
   },
 };
 
+/** POST /<id>/icon: 20×20 weapon PNG, or 40×40 soul / material into item_icon (weapons.md §8). */
+export interface WeaponIconRequest { kind: "weapon" | "soul" | "material"; png: string; item_id?: string }
+export interface WeaponIconResult {
+  kind: string; logical: string; size: [number, number] | number[] | string;
+  itemId?: string; thumbnail?: string; atlasSize?: unknown; preservedEntries?: number;
+}
+export type WeaponIconPreview = BossPreview & { icons?: WeaponIconResult[] };
+
+export const weaponIcons = {
+  preview: (id: string, body: WeaponIconRequest) =>
+    previewPost(`${PREFIX}/${enc(id)}/icon?preview=true`, body) as Promise<WeaponIconPreview>,
+  apply: async (id: string, body: WeaponIconRequest) => {
+    const result = await post<WeaponApplied & { icons?: WeaponIconResult[] }>(`${PREFIX}/${enc(id)}/icon`, body);
+    announce(id);
+    return result;
+  },
+};
+
 /** 「本次修改」 adapter of one weapon draft. */
 export function weaponSubject(id: string): DraftSubject {
   return {

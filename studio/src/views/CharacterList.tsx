@@ -83,6 +83,8 @@ export function CharacterList() {
           <h1>找到要修改的角色</h1>
           <p class="muted">按角色名、称号、ID 或代码名搜索。打开角色只是查看，本版不会写入任何数据。</p>
         </div>
+        <a class="header-btn primary-link" href={href({ work: "content", shop: "characters", clone: true })}
+          title="新 ID 的正式角色草稿：表行与资产引用来自母本">＋ 从母本克隆新角色</a>
       </div>
       <div class="search-row">
         <input

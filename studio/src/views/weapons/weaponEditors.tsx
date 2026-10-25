@@ -3,7 +3,8 @@
 // that quest's boss draft; 武器工坊 passes its own (POST /api/studio/weapons/…, own 「本次修改」).
 import { useEffect, useRef, useState } from "preact/hooks";
 import { ability, TemplateOption } from "../../api";
-import { boss, ShopWeaponRequest, WeaponAbilityChange, WeaponDoc, WeaponIcons } from "../../bossApi";
+import { api, CharacterSummary } from "../../api";
+import { boss, ShopWeaponRequest, SoulTemplateId, WeaponAbilityChange, WeaponDoc, WeaponIcons, WeaponSoulTemplate } from "../../bossApi";
 import { Notice } from "../common";
 import { InfoTip } from "../Delivery";
 import { PreviewState } from "../boss/BossParams";
@@ -161,10 +162,21 @@ export function soulElementsText(value: string): string {
   return parts.map((p) => SOUL_ELEMENTS[Number(p)] ?? p).join("、");
 }
 
-/** `soul` adds the 魂珠 step (soul_elements + soulDescription, 武器工坊 only); `donorNote` replaces the BOSS donor hint. */
-export function CloneWizard({ weapons, source, target, kinds, soul, donorNote, onPreview, onWritten, onClose }: {
+const SOUL_TEMPLATES: { id: SoulTemplateId; label: string; invoke: boolean; pfUse: boolean }[] = [
+  { id: "pf_hit_ability_damage", label: "PF 命中 → 能力伤害（原生 316..321）", invoke: false, pfUse: false },
+  { id: "pf_use_ability_damage", label: "PF 发动 → 能力伤害（原生 251..256）", invoke: false, pfUse: true },
+  { id: "pf_hit_invoke_damage", label: "PF 命中 → 629 能力伤害 DSL", invoke: true, pfUse: false },
+  { id: "pf_use_invoke_damage", label: "PF 发动 → 629 能力伤害 DSL", invoke: true, pfUse: true },
+];
+const DAMAGE_TARGET: Record<string, string> = { trigger_enemy: "命中的敌人", all_enemies: "全体敌人", nearest_enemy: "最近的敌人" };
+const WEAPON_CODE = /^[a-z][a-z0-9_]{0,79}$/;
+
+/** `soul` turns on the 武器工坊-only fields: code, 专属角色 (metadata), the 魂珠 step (soul_elements, soulDescription,
+ * soul ability template). `invokeSupported` enables the 629 templates (needs provides evidence on the backend).
+ * `donorNote` replaces the BOSS donor hint. Without `soul` the BOSS wizard sends exactly what it always did. */
+export function CloneWizard({ weapons, source, target, kinds, soul, invokeSupported, donorNote, onPreview, onWritten, onClose }: {
   weapons: WeaponDoc[]; source: string; target: string | OpTarget; kinds: Record<string, Map<string, TemplateOption>>;
-  soul?: boolean; donorNote?: string;
+  soul?: boolean; invokeSupported?: boolean; donorNote?: string;
   onPreview: (s: PreviewState) => void; onWritten: () => void; onClose: () => void;
 }) {
   const steps = soul ? SOUL_STEPS : STEPS;
@@ -184,6 +196,13 @@ export function CloneWizard({ weapons, source, target, kinds, soul, donorNote, o
   const [soulMode, setSoulMode] = useState<SoulMode>("inherit");
   const [soulPick, setSoulPick] = useState<number[]>([]);
   const [soulDescription, setSoulDescription] = useState("");
+  const [code, setCode] = useState("");
+  const [exclusive, setExclusive] = useState("");
+  const [roster, setRoster] = useState<CharacterSummary[] | null>(null);
+  const [tpl, setTpl] = useState<{ template: SoulTemplateId | ""; element: string; multiplier: string; max: string; limit: string;
+    cooldown: string; target: string; hitEffect: "Explosion" | "None" }>(
+    { template: "", element: "0", multiplier: "1", max: "", limit: "", cooldown: "0", target: "", hitEffect: "Explosion" });
+  useEffect(() => { if (soul) api.characters().then((d) => setRoster(d.characters), () => setRoster([])); }, [soul]);
   useEffect(() => { boss.weaponIcons().then(setIcons, () => setIcons(null)); }, []);
   const box = useRef<HTMLElement>(null);
   useEffect(() => { box.current?.scrollIntoView({ block: "start", behavior: "smooth" }); }, []);
@@ -201,6 +220,29 @@ export function CloneWizard({ weapons, source, target, kinds, soul, donorNote, o
     if (soulDescription && TEXT_BAD.test(soulDescription)) problems.push("魂珠说明不能含半角逗号、换行、双引号或「::」");
     if (soulDescription.length > 1000) problems.push("魂珠说明最多 1000 字");
     if (soulMode === "pick" && !soulPick.length) problems.push("指定属性至少选一个");
+    if (code && !WEAPON_CODE.test(code)) problems.push("代码名以小写字母开头，只用 a–z、0–9、_，最多 80 位");
+    if (exclusive && !/^[1-9][0-9]*$/.test(exclusive)) problems.push("专属角色要填角色 ID");
+  }
+  let soulTemplate: WeaponSoulTemplate | null = null;
+  const tplInfo = SOUL_TEMPLATES.find((t) => t.id === tpl.template);
+  if (soul && tplInfo) {
+    const multiplier = Number(tpl.multiplier), max = tpl.max.trim() ? Number(tpl.max) : undefined;
+    const limit = tpl.limit.trim() ? Number(tpl.limit) : null, cooldown = Number(tpl.cooldown || "0");
+    if (tplInfo.invoke && !invokeSupported) problems.push("629 模板需要目标客户端 provides 证据，当前不可用");
+    if (!Number.isFinite(multiplier) || multiplier < 0.00001 || multiplier > 21474) problems.push("攻击倍率要在 0.00001–21474 之间");
+    if (max !== undefined && (!Number.isFinite(max) || max < multiplier || max > 21474)) problems.push("满觉醒倍率不能小于攻击倍率");
+    if (tplInfo.invoke && max !== undefined && max !== multiplier) problems.push("629 模板倍率固定：满觉醒倍率须等于攻击倍率");
+    if (limit !== null && (!Number.isInteger(limit) || limit < 1)) problems.push("触发次数上限要是正整数，或留空表示不限");
+    if (!Number.isInteger(cooldown) || cooldown < 0) problems.push("冷却帧要是非负整数");
+    if (tplInfo.pfUse && tpl.target === "trigger_enemy") problems.push("PF 发动没有命中敌人，不能选「命中的敌人」");
+    if (tplInfo.invoke && tpl.target && tpl.target !== "all_enemies") problems.push("629 模板只支持全体敌人");
+    soulTemplate = {
+      template: tplInfo.id, element: Number(tpl.element), multiplier,
+      ...(max !== undefined ? { max_multiplier: max } : {}), ...(limit !== null ? { trigger_limit: limit } : {}),
+      ...(cooldown ? { cooldown_frames: cooldown } : {}),
+      ...(tpl.target ? { damage_target: tpl.target as WeaponSoulTemplate["damage_target"] } : {}),
+      ...(tplInfo.invoke ? { hit_effect: tpl.hitEffect, dsl_element: Number(tpl.element) + 1 } : {}),
+    };
   }
   for (const [label, v] of [["HP 倍率", hp], ["攻击倍率", atk]] as const) {
     const n = Number(v);
@@ -222,6 +264,8 @@ export function CloneWizard({ weapons, source, target, kinds, soul, donorNote, o
     }
     if (change.kind !== undefined || change.strength) abilities.push(change);
   }
+  if (soulTemplate && abilities.some((a) => a.table === "ability_soul"))
+    problems.push("用了魂珠能力模板就不能再手改魂珠词条（模板替换母本全部魂珠行）；强化词条可以改");
   const request: ShopWeaponRequest | null = donor ? { operation: "weapon_clone", weapon: {
     sourceWeapon: donor.id,
     ...(name.trim() ? { name: name.trim() } : {}), ...(description.trim() ? { description: description.trim() } : {}),
@@ -229,7 +273,10 @@ export function CloneWizard({ weapons, source, target, kinds, soul, donorNote, o
     ...(abilities.length ? { abilities } : {}), ...(icon ? { icon } : {}), ...(enhancedIcon ? { enhancedIcon } : {}),
     ...(soul && soulDescription.trim() ? { soulDescription: soulDescription.trim() } : {}),
     ...(soul && soulMode !== "inherit" ? { soul_elements: soulMode === "pick" ? [...soulPick].sort((a, b) => a - b) : soulMode } : {}),
+    ...(soul && code ? { code } : {}), ...(soul && exclusive ? { exclusive_character: exclusive } : {}),
+    ...(soulTemplate ? { soul_template: soulTemplate } : {}),
   } } : null;
+  const exclusiveName = roster?.find((c) => c.id === exclusive);
   const donorSoul = cellOf(donor?.soul_item?.row, 12);
   const soulText = soulMode === "inherit" ? `沿用母本：${soulElementsText(donorSoul)}`
     : soulMode === "pick" ? soulPick.length ? [...soulPick].sort((a, b) => a - b).map((e) => SOUL_ELEMENTS[e]).join("、") : "（未选）" : SOUL_MODE[soulMode];
@@ -265,6 +312,20 @@ export function CloneWizard({ weapons, source, target, kinds, soul, donorNote, o
           <label class="param-field"><span>HP 倍率</span><input type="number" min={0} step={0.05} value={hp} onInput={(e) => setHp((e.target as HTMLInputElement).value)} />
             <span class="small muted">按母本每级数值相乘取整</span></label>
           <label class="param-field"><span>攻击倍率</span><input type="number" min={0} step={0.05} value={atk} onInput={(e) => setAtk((e.target as HTMLInputElement).value)} /></label>
+          {soul ? (
+            <>
+              <label class="param-field"><span>代码名（equipment c0）</span>
+                <input class="mono" value={code} placeholder="留空 = boss_workshop_<ID>" onInput={(e) => setCode((e.target as HTMLInputElement).value.trim())} />
+                <span class="small muted">魂珠 item c0 自动为 <span class="mono">{code || "<code>"}_soul</span>；与现有表和草稿冲突时后端拒绝</span></label>
+              <label class="param-field"><span>专属角色（仅记录）</span>
+                <input class="mono" list="weapon-exclusive-roster" value={exclusive} placeholder="角色 ID，可留空"
+                  onInput={(e) => setExclusive((e.target as HTMLInputElement).value.trim().replace(/\s.*$/, ""))} />
+                <datalist id="weapon-exclusive-roster">
+                  {(roster ?? []).map((c) => <option value={c.id}>{c.name} {c.title}</option>)}
+                </datalist>
+                <span class="small muted">{exclusiveName ? `${exclusiveName.name} ${exclusiveName.title} · ` : ""}只写进草稿作设计归属：不限制装备、魂珠装配或能力生效（客户端没有专属列）</span></label>
+            </>
+          ) : null}
           {donor ? <p class="small muted wide">母本：{donor.status.map((s) => `Lv${s.level} HP ${cellOf(s.row, 0)} / 攻 ${cellOf(s.row, 1)}`).join(" · ")}
             {Number(hp) !== 1 || Number(atk) !== 1 ? ` → 新：${donor.status.map((s) => `Lv${s.level} HP ${Math.round(Number(cellOf(s.row, 0)) * Number(hp))} / 攻 ${Math.round(Number(cellOf(s.row, 1)) * Number(atk))}`).join(" · ")}` : ""}</p> : null}
         </div>
@@ -332,6 +393,45 @@ export function CloneWizard({ weapons, source, target, kinds, soul, donorNote, o
               onInput={(e) => setSoulDescription((e.target as HTMLTextAreaElement).value)} />
             <span class="small muted">留空沿用母本魂珠说明；最多 1000 字，不能含半角逗号、换行、双引号或「::」</span>
           </label>
+          <fieldset class="param-field wide soul-elements">
+            <legend>魂珠能力模板（替换母本全部魂珠词条行）</legend>
+            <select value={tpl.template} aria-label="魂珠能力模板" onChange={(e) => setTpl({ ...tpl, template: (e.target as HTMLSelectElement).value as SoulTemplateId | "" })}>
+              <option value="">不用模板（保留母本魂珠词条）</option>
+              {SOUL_TEMPLATES.map((t) => (
+                <option value={t.id} disabled={t.invoke && !invokeSupported}>{t.label}{t.invoke && !invokeSupported ? "（需 provides 证据，暂不可用）" : ""}</option>
+              ))}
+            </select>
+            {tplInfo ? (
+              <div class="param-fields compact">
+                <label class="param-field"><span>伤害属性</span>
+                  <select value={tpl.element} onChange={(e) => setTpl({ ...tpl, element: (e.target as HTMLSelectElement).value })}>
+                    {SOUL_ELEMENTS.map((e, i) => <option value={String(i)}>{e}</option>)}</select></label>
+                <label class="param-field"><span>攻击倍率（1 = 攻击力 1 倍）</span>
+                  <input type="number" min={0} step={0.1} value={tpl.multiplier} onInput={(e) => setTpl({ ...tpl, multiplier: (e.target as HTMLInputElement).value })} /></label>
+                <label class="param-field"><span>满觉醒倍率</span>
+                  <input type="number" min={0} step={0.1} value={tpl.max} placeholder="同攻击倍率" disabled={tplInfo.invoke}
+                    onInput={(e) => setTpl({ ...tpl, max: (e.target as HTMLInputElement).value })} /></label>
+                <label class="param-field"><span>触发次数上限</span>
+                  <input type="number" min={1} step={1} value={tpl.limit} placeholder="不限"
+                    onInput={(e) => setTpl({ ...tpl, limit: (e.target as HTMLInputElement).value })} />
+                  <span class="small muted">次数，不是单次伤害封顶</span></label>
+                <label class="param-field"><span>冷却（帧，60 = 1 秒）</span>
+                  <input type="number" min={0} step={1} value={tpl.cooldown} onInput={(e) => setTpl({ ...tpl, cooldown: (e.target as HTMLInputElement).value })} /></label>
+                <label class="param-field"><span>伤害对象</span>
+                  <select value={tpl.target} onChange={(e) => setTpl({ ...tpl, target: (e.target as HTMLSelectElement).value })}>
+                    <option value="">模板默认（{tplInfo.invoke || tplInfo.pfUse ? "全体敌人" : "命中的敌人"}）</option>
+                    {Object.entries(DAMAGE_TARGET).filter(([k]) => tplInfo.invoke ? k === "all_enemies" : !(tplInfo.pfUse && k === "trigger_enemy"))
+                      .map(([k, v]) => <option value={k}>{v}</option>)}
+                  </select></label>
+                {tplInfo.invoke ? (
+                  <label class="param-field"><span>命中特效</span>
+                    <select value={tpl.hitEffect} onChange={(e) => setTpl({ ...tpl, hitEffect: (e.target as HTMLSelectElement).value as "Explosion" | "None" })}>
+                      <option value="Explosion">Explosion</option><option value="None">None</option></select></label>
+                ) : null}
+              </div>
+            ) : null}
+            <span class="small muted">原生模板只用现有能力伤害 kind，不生成 DSL；629 模板生成按能力伤害结算的 DSL，需要目标客户端 provides 证据（后端校验）。</span>
+          </fieldset>
         </div>
       ) : stepName === "图标" ? (
         <div>
@@ -364,7 +464,10 @@ export function CloneWizard({ weapons, source, target, kinds, soul, donorNote, o
             <dt>数值</dt><dd>HP ×{hp} · 攻击 ×{atk}</dd>
             <dt>词条改动</dt><dd>{abilities.length ? abilities.map((a) => `${TABLE_LABEL[a.table]}第 ${a.row + 1} 行${a.kind !== undefined ? ` kind→${a.kind}` : ""}${a.strength ? ` 强度→${a.strength.join("/")}` : ""}`).join("；") : "无"}</dd>
             <dt>图标</dt><dd class="mono small">{icon || "沿用母本"}{enhancedIcon ? " · 强化 " + enhancedIcon : ""}</dd>
-            {soul ? <><dt>魂珠属性</dt><dd>{soulText}</dd><dt>魂珠说明</dt><dd>{soulDescription.trim() || "沿用母本"}</dd></> : null}
+            {soul ? <><dt>魂珠属性</dt><dd>{soulText}</dd><dt>魂珠说明</dt><dd>{soulDescription.trim() || "沿用母本"}</dd>
+              <dt>代码名</dt><dd class="mono">{code || "boss_workshop_<ID>"}</dd>
+              <dt>专属角色</dt><dd>{exclusive ? `${exclusive}${exclusiveName ? " " + exclusiveName.name : ""}（仅记录）` : "无"}</dd>
+              <dt>魂珠模板</dt><dd>{tplInfo ? `${tplInfo.label} · ${SOUL_ELEMENTS[Number(tpl.element)]} ×${tpl.multiplier}` : "不用"}</dd></> : null}
           </dl>
           <p class="small muted">ID 同时避开客户端表、服务端记录和其它草稿；写入后保存在草稿请求里，之后重放用同一组 ID。上架需另做「新增商品」（在对应分类里克隆一行装备奖励商品，再把奖励改成新武器 ID）。</p>
         </div>

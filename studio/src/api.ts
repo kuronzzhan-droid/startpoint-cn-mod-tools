@@ -1,8 +1,13 @@
 // Typed wrappers over the read-only backend (python -m wf.studio).
 
 export interface SourceInfo {
+  /** Highest version after the extra ZIPs; `tip` is the manifest chain end point. */
   version: string;
-  tip: number;
+  tip: number | string;
+  /** Version the base store already has (chain-views.md); absent on older backends. */
+  baseVersion?: string;
+  /** Named view (profiles/local.json views) selected at launch; null = legacy view / local default chain. */
+  view?: string | null;
   zipCount: number;
   memberCount: number;
   extraZips: string[];
@@ -202,6 +207,8 @@ export interface SpeechLine {
 
 export interface CharacterAssets {
   characterId: string;
+  /** Clone drafts only: the 37 required assets (复用母本 / 待替换 / 已派生), updated by later draft edits. */
+  cloneAssets?: import("./studioApi").CloneAsset[];
   code: string;
   groups: AssetGroup[];
   speech: SpeechLine[];
@@ -308,7 +315,7 @@ export interface DraftFile {
 
 export interface DraftChange {
   id: string;
-  kind: "portrait" | "pixel_action" | "pixel_family" | "voice_line" | "ability_edit" | "boss" | "weapon";
+  kind: "portrait" | "pixel_action" | "pixel_family" | "voice_line" | "ability_edit" | "boss" | "weapon" | "character_clone";
   title: string;
   createdAt: string;
   target: Record<string, string>;

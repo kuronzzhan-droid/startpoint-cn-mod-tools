@@ -22,6 +22,7 @@ import {
   abilityLines, BLOCK_LABEL, CloneWizard, KindName, MaterialList, MaterialsEditor, soulElementsText, TABLE_LABEL, useKindNames,
   USER_COST, WeaponIcon,
 } from "./weaponEditors";
+import { WeaponIconImport } from "./WeaponIconImport";
 import "../boss/boss.css";
 import "./weapons.css";
 
@@ -175,7 +176,7 @@ function WeaponListPane({ selected, drafts }: { selected?: string; drafts: Weapo
 
 // ----------------------------------------------------------------------------------- detail
 
-type Editing = "clone" | "materials" | null;
+type Editing = "clone" | "materials" | "icon" | null;
 const IDLE: PreviewState = { state: "idle", checks: null, ok: false };
 
 function WeaponDetailPane({ id, tab, sub }: { id: string; tab?: string; sub?: string }) {
@@ -201,7 +202,9 @@ function WeaponDetailPane({ id, tab, sub }: { id: string; tab?: string; sub?: st
   const status = draft.view?.status ?? detail.draft_status ?? detail.status;
   const changes = draft.view?.changeset?.changes ?? [];
   const el = weaponElement(detail.element);
-  const checks: RuleResult[] | null = editing ? preview.checks : detail.checks.length ? detail.checks : null;
+  // The icon importer shows its own checks inline; the side column then keeps the draft checks.
+  const editingOp = editing === "clone" || editing === "materials";
+  const checks: RuleResult[] | null = editingOp ? preview.checks : detail.checks.length ? detail.checks : null;
 
   return (
     <>
@@ -228,6 +231,8 @@ function WeaponDetailPane({ id, tab, sub }: { id: string; tab?: string; sub?: st
               <button type="button" class="header-btn" disabled={!detail.enhancement_chain.length || editing === "materials"}
                 title={!detail.enhancement_chain.length ? "没有强化商品阶段" : ""}
                 onClick={() => { setEditing("materials"); setPreview(IDLE); }}>改强化材料</button>
+              <button type="button" class="header-btn" disabled={editing === "icon"}
+                onClick={() => { setEditing("icon"); setPreview(IDLE); }}>导入图标</button>
             </div>
             <span class="char-id mono" title={`魂珠 item ${detail.soulId}`}>{id}</span>
           </div>
@@ -241,8 +246,10 @@ function WeaponDetailPane({ id, tab, sub }: { id: string; tab?: string; sub?: st
         {editing === "clone" ? (
           <CloneWizard key={id} weapons={[doc]} source={id} target={cloneTarget} kinds={kinds} soul
             donorNote="母本 = 当前打开的武器；要换母本，在左侧列表里打开另一把。觉醒限制和稀有度覆盖按母本一并复制。"
+            invokeSupported={false}
             onPreview={setPreview} onWritten={() => undefined} onClose={close} />
         ) : null}
+        {editing === "icon" ? <WeaponIconImport detail={detail} onClose={close} /> : null}
         {editing === "materials" ? (
           <MaterialsEditor key={id + (detail.changeset?.revision ?? "")} weapon={doc} target={target} names={names}
             onPreview={setPreview} onWritten={() => load()} onClose={close} />
@@ -255,9 +262,9 @@ function WeaponDetailPane({ id, tab, sub }: { id: string; tab?: string; sub?: st
         <ReferencesBlock detail={detail} />
         {detail.note ? <p class="small muted">{detail.note}</p> : null}
       </div>
-      <ChecksPanel title={editing ? "预检" : "草稿检查"} checks={checks}
-        state={editing ? (preview.state === "running" ? "running" : undefined) : undefined}
-        note={editing
+      <ChecksPanel title={editingOp ? "预检" : "草稿检查"} checks={checks}
+        state={editingOp ? (preview.state === "running" ? "running" : undefined) : undefined}
+        note={editingOp
           ? preview.state === "invalid" ? "输入有问题，先改正：" + (preview.note ?? "") : "未执行：还没有改动。改动后会自动预检。"
           : detail.changeset ? "这份草稿没有检查结果。" : "未执行：这把武器还没有草稿。"} />
       {tab === "changes" ? (
@@ -449,7 +456,15 @@ function WeaponChangeItem({ change, busy, onRevert }: { change: DraftChange; bus
     if (r.operation !== "weapon_clone") return "";
     const e = r.weapon.soul_elements;
     return (e === undefined ? "，魂珠属性沿用母本" : `，魂珠属性 ${e === "all" ? "全属性" : e === "auto" ? "自动" : e.map((x) => WEAPON_ELEMENTS[x]).join("、")}`)
-      + (r.weapon.soulDescription ? "，改魂珠说明" : "");
+      + (r.weapon.soulDescription ? "，改魂珠说明" : "") + (r.weapon.code ? `，代码名 ${r.weapon.code}` : "")
+      + (r.weapon.exclusive_character ? `，专属角色 ${r.weapon.exclusive_character}（仅记录）` : "")
+      + (r.weapon.soul_template ? `，魂珠模板 ${r.weapon.soul_template.template} ×${r.weapon.soul_template.multiplier}` : "");
+  };
+  // weapon_icon requests carry the PNG; show what was imported, never the bytes.
+  const line = (r: AnyBossRequest) => {
+    const x = r as unknown as { operation: string; weapon: { kind?: string; item_id?: string } };
+    if (x.operation === "weapon_icon") return `导入图标：${x.weapon.kind === "weapon" ? "武器本体 20×20" : x.weapon.kind === "soul" ? "魂珠 40×40" : `材料 ${x.weapon.item_id} 40×40`}`;
+    return describeRequest(r) + soul(r);
   };
   return (
     <li class="change">
@@ -462,7 +477,7 @@ function WeaponChangeItem({ change, busy, onRevert }: { change: DraftChange; bus
         <button onClick={onRevert} disabled={busy}>{busy ? "撤销中……" : "撤销整份"}</button>
       </header>
       <ol class="ability-ops small">
-        {requests.map((r) => <li>{describeRequest(r)}{soul(r)}</li>)}
+        {requests.map((r) => <li>{line(r)}</li>)}
       </ol>
       <ChecksList checks={warns} />
     </li>
