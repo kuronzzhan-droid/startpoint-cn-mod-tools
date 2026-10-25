@@ -21,6 +21,8 @@ def source_arguments(parser):
 def add_commands(sub):
     from .view_commands import add_commands as add_views
     add_views(sub)
+    from .discovery_commands import add_commands as add_discovery
+    add_discovery(sub)
     add_device_result(sub)
     p = sub.add_parser("boss", help="读取、编辑副本草稿；new 按暗凛模板新建共同决战")
     p.add_argument("cid", help="副本 ID、kind:path 选择器或 new")

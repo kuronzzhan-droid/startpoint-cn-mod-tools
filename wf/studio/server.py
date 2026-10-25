@@ -115,6 +115,9 @@ class StudioApp:
         from .weapon_routes import WeaponRoutes
         self.weapons = WeaponRoutes(self, server_dir, default_provides)
         self.routes.extend(self.weapons.routes())
+        from .discovery_commands import DiscoveryRoutes
+        self.discovery = DiscoveryRoutes(self, server_dir)
+        self.routes.extend(self.discovery.routes())
         from .timeline_routes import TimelineRoutes
         self.timelines = TimelineRoutes(self)
         self.routes.extend(self.timelines.routes())

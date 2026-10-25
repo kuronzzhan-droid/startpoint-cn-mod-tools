@@ -197,6 +197,9 @@ def run(args) -> dict:
         return run_view(args)
 
     ops = _ops(args)
+    if args.command in ("ids", "versions"):
+        from .discovery_commands import run as run_discovery
+        return run_discovery(args, ops.source, store)
     if args.command == "boss":
         from .boss import BossEditor, BossDraftStore
         editor = BossEditor(ops.source, store=BossDraftStore(store.root / "boss"), server_dir=args.server_dir)
