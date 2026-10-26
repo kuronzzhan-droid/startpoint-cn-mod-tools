@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/wf/studio-rehearsal.schema.json",
+  "title": "交付前只读预演结果",
+  "type": "object",
+  "required": ["schema", "server", "ok", "status", "createdAt", "serverReadOnly", "deliveryDir", "serverRoot", "currentVersion", "from", "to", "checks", "manifestEntry", "manifestEntryJson", "archives", "serverChanges", "restartRequired", "restartReason", "manifestFormat", "manualSteps", "serverSnapshot", "runtime"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"const": "wf-studio-rehearsal/1"},
+    "server": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$"},
+    "ok": {"type": "boolean"},
+    "status": {"enum": ["ready", "blocked"]},
+    "createdAt": {"type": "string", "format": "date-time"},
+    "serverReadOnly": {"const": true},
+    "runtime": {"const": "未执行"},
+    "deliveryDir": {"type": "string"},
+    "serverRoot": {"type": ["string", "null"]},
+    "currentVersion": {"type": ["string", "null"]},
+    "from": {"type": ["string", "null"]},
+    "to": {"type": ["string", "null"]},
+    "checks": {"type": "array", "items": {
+      "type": "object", "required": ["rule", "status", "blocking", "message"],
+      "additionalProperties": false,
+      "properties": {"rule": {"type": "string"}, "status": {"enum": ["满足", "问题"]}, "blocking": {"type": "boolean"}, "message": {"type": "string"}}
+    }},
+    "manifestEntry": {"type": ["object", "null"]},
+    "manifestEntryJson": {"type": ["string", "null"]},
+    "archives": {"type": "array", "items": {"type": "object"}},
+    "serverChanges": {"type": "array", "items": {"type": "object"}},
+    "restartRequired": {"type": ["boolean", "null"]},
+    "restartReason": {"type": "string"},
+    "manifestFormat": {"const": {"encoding": "UTF-8", "bom": false, "newline": "CRLF", "indent": 2}},
+    "manualSteps": {"type": "array", "items": {"type": "string"}},
+    "serverSnapshot": {"type": "object", "additionalProperties": {"type": ["string", "null"]}}
+  },
+  "$defs": {
+    "request": {"type": "object", "required": ["server"], "additionalProperties": false,
+      "properties": {"server": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$"}}}
+  }
+}

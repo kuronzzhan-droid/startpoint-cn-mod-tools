@@ -332,6 +332,8 @@ def build_draft(cid: str, *, from_version: str, to_version: str, out: Path,
               "draftChecks": compiled[4], "safetyChecks": safety_checks, **reports,
               "clientProfile": selected_profile, "buildError": build_error,
               "allowUnknownClient": allow_unknown_client, "deviceValidation": "未执行"}
+    from .rehearsal import auto_rehearse
+    result["rehearsal"] = auto_rehearse(out)
     write_json(out / "build-report.json", result)
     # The extra check/compat artifacts are included in the final delivery checksum list.
     checksum_delivery(out / "delivery")

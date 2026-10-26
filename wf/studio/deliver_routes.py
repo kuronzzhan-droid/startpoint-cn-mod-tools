@@ -304,6 +304,7 @@ class DeliverRoutes:
         compat = (_read_json(delivery / "compat.json") or {}).get("results")
         device = self._device(folder)
         from .key_diff import summarize
+        from .rehearsal_io import latest
         key_diff = _read_json(delivery / "key-diff.json")
         if isinstance(report, dict) and isinstance(report.get("keyDiff"), dict):
             report = {**report, "keyDiff": summarize(report["keyDiff"])}
@@ -315,10 +316,22 @@ class DeliverRoutes:
                               "keyDiff": summarize(key_diff) if key_diff is not None else None,
                               "iconAlpha": _read_json(delivery / "icon-alpha.json"),
                               "clientExtensions": _read_json(delivery / "client-extensions.json"),
+                              "rehearsal": latest(delivery) if delivery.is_dir() else None,
                               "deviceResult": device,
                               "deviceValidation": (device.get("result") or {}).get("status", "未执行") if device else "未执行"})
 
     # -- 实测（device-result.json） ----------------------------------------
+    def rehearse(self, query, body, name):
+        from .server import json_response
+        from .rehearsal import rehearse
+        if set(body) != {"server"}:
+            raise DraftError('预演请求只接受 {"server": "local"}')
+        with self._lock:
+            if name in self.running.values():
+                raise DraftError("交付仍在生成中，请等待生成结束")
+            result = rehearse(self._folder(name), body["server"])
+        return json_response({"name": name, "ok": result["ok"], "rehearsal": result})
+
     def _device(self, folder: Path) -> dict | None:
         entry = device_result.read(folder, self.kind)
         if entry is None:
@@ -378,6 +391,7 @@ class DeliverRoutes:
                 ("GET", re.compile(r"^/api/deliveries/jobs/(?P<name>[^/]+)$"), self.job),
                 ("GET", re.compile(r"^/api/deliveries/(?P<name>[^/]+)$"), self.detail),
                 ("GET", re.compile(r"^/api/deliveries/(?P<name>[^/]+)/file$"), self.file),
+                ("POST", re.compile(r"^/api/deliveries/(?P<name>[^/]+)/rehearse$"), self.rehearse),
                 ("GET", re.compile(r"^/api/deliveries/(?P<name>[^/]+)/device-result$"), self.device_get),
                 ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/deliveries/(?P<name>[^/]+)/device-result$"), self.device_write),
                 ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/deliveries/(?P<name>[^/]+)/device-result/import$"),

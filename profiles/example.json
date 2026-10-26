@@ -1,5 +1,9 @@
 {
   "wf_root": "../work/external",
+  "servers": {
+    "local": {"root": "<服务端目录>"}
+  },
+  "rehearsal_server": null,
   "paths": {
     "store": null,
     "server": null,

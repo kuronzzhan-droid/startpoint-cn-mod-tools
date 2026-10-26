@@ -1,6 +1,7 @@
 # 编辑台（studio）：草稿编辑与本地交付（M4a）
 
 后端交付检查索引：[APK 内置表撞名](bundle-keys.md)、[共享表键级差异](key-diff.md)、
+[交付前本地服只读预演](rehearsal.md)、
 [图标透明区检查](icon-alpha.md)、[p12b/p13 扩展键与兼容性](p13-keys.md)。
 协力角色数据行编辑与前端接口见 [召唤工坊](summon.md)。
 制作接口：[强化弹射动作工坊与前端对接](pf-actions.md)（CDN / APK 母本三档克隆、属性与逐档系数、草稿 PF 键）。
