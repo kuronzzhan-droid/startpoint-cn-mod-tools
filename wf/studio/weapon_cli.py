@@ -33,10 +33,13 @@ def add_weapon_commands(sub):
     icon.add_argument("--kind", choices=("weapon", "soul", "material"))
     icon.add_argument("--png", type=Path)
     icon.add_argument("--item-id")
-    for parser in (clone, material, icon):
+    options = actions.add_parser("set-options", help="从当前视图读取专武类目与材料")
+    weapon_set = actions.add_parser("set", help="配置专武强化、兑换与突破材料")
+    weapon_set.add_argument("wid")
+    for parser in (clone, material, icon, weapon_set):
         parser.add_argument("--request", type=Path, help="与对应 HTTP body 相同的 JSON 文件")
         parser.add_argument("--preview", action="store_true")
-    for parser in (listing, show, clone, material, icon):
+    for parser in (listing, show, clone, material, icon, options, weapon_set):
         parser.add_argument("--server-dir", type=Path, default=argparse.SUPPRESS)
         parser.add_argument("--provides", type=Path)
         parser.add_argument("--client-profile")
@@ -55,6 +58,9 @@ def run_weapon(args, source, store):
     backend = WeaponEditor(source, store=WeaponDraftStore(store.root / "weapons"),
         server_dir=getattr(args, "server_dir", None), provides=args.provides,
         client_profile=args.client_profile)
+    if args.weapon_command == "set-options":
+        from .weapon_set_options import options
+        return options(source, backend.server_dir)
     if args.weapon_command == "list":
         query = {name: [value] for name in ("q", "element", "rarity", "limit")
                  if (value := getattr(args, name, None)) is not None}

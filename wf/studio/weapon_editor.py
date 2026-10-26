@@ -33,11 +33,15 @@ def _replay(source, wid, requests, *, server_dir, reserved, client_profile=None,
                 raise DraftError("weapon clone must be the first operation for its draft ID")
             clone_weapon(state, spec, reserved)
             wid = spec["id"]
+            state.weapon_donors = {wid: spec["sourceWeapon"]}
         else:
             if spec["id"] != wid:
                 raise DraftError("weapon operation target does not match draft ID")
             if request["operation"] == "weapon_icon":
                 state.weapon_icons = [*getattr(state, "weapon_icons", []), import_icon(state, spec)]
+            elif request["operation"] == "weapon_set":
+                from .weapon_set import apply_set
+                apply_set(state, spec, reserved)
             else:
                 edit_materials(state, spec)
     blocking = [entry for entry in getattr(state, "weapon_checks", [])
@@ -74,8 +78,8 @@ class WeaponEditor:
         result.setdefault("codes", [])
         # Boss and standalone editors allocate from the same existing native ranges.
         other = reservations(BossDraftStore(self.store.root.parent / "boss"))
-        for key in result:
-            result[key].extend(other.get(key, []))
+        for key in other:
+            result.setdefault(key, []).extend(other[key])
         if not result["codes"]:
             result.pop("codes")
         return result
@@ -107,6 +111,9 @@ class WeaponEditor:
                           "allocation": request["weapon"] if operation == "weapon_clone" else None,
                           "changes": state.changes, "serverTargets": sorted(state.servers),
                           "checks": checks, "icons": getattr(state, "weapon_icons", []), "runtime": "未执行"}
+                if any(r["operation"] == "weapon_set" for r in requests):
+                    from .weapon_set import preview_rows, requirements
+                    result.update(rows=preview_rows(state), requires=requirements(state))
                 if preview:
                     return result
                 change = {"id": new_change_id(), "kind": "weapon", "title": "武器草稿",

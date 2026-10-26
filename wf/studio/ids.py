@@ -9,8 +9,20 @@ DEFAULTS = {"character": 199000, "multiball": 1990001, "weapon": 5950001,
             "action_skill": "studio_skill_1",
             "soul_item": 5950001, "unique_condition": 199000,
             "string_id": "studio_1", "mana_node": 199000, "enhancement_shop": 595000101,
-            "power_flip_action": "studio_pf_1"}
+            "power_flip_action": "studio_pf_1",
+            "enhancement_category": 9, "exchange_category": 97, "exchange_product": 991000000}
 LIMITS = {"character": 999999999, "weapon": 21474835, "mana_node": (2147483647 - 999) // 2000}
+
+
+def allocate_available(kind, occupied, *, requested=None, near=1):
+    """Allocate against a caller's snapshot-bound view/server/draft evidence."""
+    occupied = set(map(str, occupied))
+    candidate = canonical(kind, requested if requested is not None else near)
+    if requested is not None and candidate in occupied:
+        raise DraftError(f"{kind} ID collision: {candidate}")
+    while candidate in occupied:
+        candidate = canonical(kind, int(candidate) + 1)
+    return candidate
 
 
 def canonical(kind, value):

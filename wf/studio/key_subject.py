@@ -100,6 +100,18 @@ class SubjectKeys:
         if "id" not in spec:
             return
         self.ids["weapon"].add(str(spec["id"]))
+        if request.get("operation") == "weapon_set":
+            from wf.boss.shop_model import ENH_CATEGORY
+            from wf.boss.schema import SHOP, SHOP_CATEGORY
+            for logical, value in ((ENH_CATEGORY, spec.get("enhancementCategory", {})),
+                                   (SHOP_CATEGORY, spec.get("exchange", {}).get("category", {}))):
+                if "id" in value:
+                    self.explicit[logical].add(value["id"])
+            if "productId" in spec.get("exchange", {}):
+                self.explicit[SHOP].add(spec["exchange"]["productId"])
+            self.ids["enhancement_shop"].update(spec.get("enhancement", {}).get("products", []))
+            if "awakeningMaterial" in spec:
+                self.explicit[CUSTOM].add("awakening_material_" + spec["id"])
         # The editor's weapon clone contract explicitly allocates the soul ID.
         # Other weapon operations can reference pre-existing, differently owned souls.
         if request.get("operation") == "weapon_clone":

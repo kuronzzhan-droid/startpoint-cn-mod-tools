@@ -41,6 +41,18 @@ def _requests(draft, add, origin, known_strings, source, table_rows):
             if not isinstance(spec, dict) or not isinstance(spec.get("soul_template", {}), dict):
                 raise DraftError(f"草稿 weapon / soul_template 必须是对象: {origin}")
             if req.get("operation", "").startswith("weapon_") and "id" in spec:
+                if req.get("operation") == "weapon_set":
+                    for kind, value in (("enhancement_category", spec.get("enhancementCategory", {})),
+                                        ("exchange_category", spec.get("exchange", {}).get("category", {}))):
+                        if "id" in value:
+                            add(kind, value["id"], owner, "draft", origin)
+                    exchange = spec.get("exchange", {})
+                    if "productId" in exchange:
+                        add("exchange_product", exchange["productId"], owner, "draft", origin)
+                    for identity in spec.get("enhancement", {}).get("products", []):
+                        add("enhancement_shop", identity, owner, "draft", origin)
+                    if "awakeningMaterial" in spec:
+                        add("string_id", "awakening_material_" + spec["id"], owner, "draft", origin)
                 for kind in ("weapon", "soul_item"):
                     add(kind, str(spec["id"]), owner, "draft", origin)
                 products = list(spec.get("enhancementProducts", []))

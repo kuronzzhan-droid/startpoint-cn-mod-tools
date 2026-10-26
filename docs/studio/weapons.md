@@ -337,3 +337,115 @@ python -m wf.studio.draft --tip 282 --server-dir server weapon icon 5950001 --ki
 | `material` | `[40,40]` | 当前图集实际尺寸，例如 `[2048,1024]` | 同上，另需 `item_id` |
 
 图集尺寸来自实际基线，不能在前端硬编码为示例值。仍禁止扩画布，现有图集条目的坐标和像素继续逐项校验。
+
+## 10. 专属武器全套配置
+
+`POST /api/studio/weapons/<id>/set` 在已有武器或已经克隆的新武器草稿中追加 `weapon_set` 请求。
+各项均可省略；省略时不启用、不额外写入相应配置。可先 `/clone`，再 `/set`，最终仍由同一个武器草稿重放、保存和 `build_draft` 交付。
+`?preview=true` 运行相同校验并返回最终行，不写草稿或预留 ID。所有写接口沿用 Token、Origin、Host 守卫。
+
+```json
+{
+  "noSoul": true,
+  "awakeningMaterial": "10000311",
+  "enhancementCategory": {
+    "sourceCategory": "7", "code": "exclusive_weapon", "name": "专属武器·觉醒"
+  },
+  "enhancement": {
+    "maxLevel": 120,
+    "stages": [
+      {"maxLevel": 68, "costs": []},
+      {"maxLevel": 69, "costs": [{"itemId": "10000311", "amount": 1}]},
+      {"maxLevel": 70, "costs": [{"itemId": "10000311", "amount": 1}]},
+      {"maxLevel": 97, "costs": []},
+      {"maxLevel": 98, "costs": [{"itemId": "10000311", "amount": 2}]},
+      {"maxLevel": 99, "costs": [{"itemId": "10000311", "amount": 2}]},
+      {"maxLevel": 118, "costs": []},
+      {"maxLevel": 119, "costs": [{"itemId": "10000311", "amount": 3}]},
+      {"maxLevel": 120, "costs": [{"itemId": "10000311", "amount": 3}]}
+    ]
+  },
+  "exchange": {
+    "category": {"id": "97"}, "sourceProduct": "990097001",
+    "itemId": "10000311", "amount": 3, "count": 1, "stock": 1
+  }
+}
+```
+
+上述 ID 只是已有数据的示例，必须先从目标视图确认存在。实现不绑定示例武器、材料或角色。
+
+| 请求字段 | 类型与行为 |
+|---|---|
+| `id` | 十进制字符串；HTTP 路径和 CLI 位置参数自动补入，若 body 也提供必须一致 |
+| `noSoul` | 布尔值，默认 false；true 禁止生成可领取的魂珠，false 不执行操作，也不撤销之前的 true |
+| `awakeningMaterial` | 指定突破替代材料 ID；同时写 CAS `awakening_material_<id>`、服务端 `materialByEquipment` 和本体 c11 对应的 `rarityOverrides` |
+| `enhancementCategory` | 类目对象：复用可传 `id` 或已存在的 `code`／`name`；新建需 `sourceCategory`、`code`、`name`，`id` 可省略自动分配 |
+| `enhancement.maxLevel` | 整数 1–200；与末阶段等级一致，禁止降低已有强化上限或删掉原有阶段／曲线键 |
+| `enhancement.sourceWeapon` | 可选强化母本 ID，默认当前武器；母本必须有强化本体、状态曲线和商店行 |
+| `enhancement.stages` | 1–99 项，`maxLevel` 严格递增；每项的 `costs` 必填，允许空数组表示免费区间，否则 1–4 个不重复 `{itemId,amount}`；amount 是正整数 |
+| `enhancement.stages[].requireAwakeningLevel` | 可选整数 0–5，默认本体最大突破等级；不得超过本体 c8 |
+| `enhancement.products` | 后端写回的分配结果；固定为 `武器ID * 100 + 阶段序号`。请求通常省略，若提供必须与实际分配一致 |
+| `exchange.category` | 类目对象，与强化类目相同规则；兑换类目没有独立文字名称列，原生显示采用横幅 |
+| `exchange.sourceProduct` | 已有领主币兑换商品母本 ID，必须为 50 列 |
+| `exchange.productId` | 可选新商品 ID；检查客户端、服务端映射、所有服务端分类及其他草稿的占用 |
+| `exchange.itemId` / `amount` | 价格材料 ID／每次购买所需正整数数量；只写这一种价格，清除母本货币和其他材料 |
+| `exchange.count` | 每次兑换得到的武器数量，正整数，默认 1 |
+| `exchange.stock` | 每人总限购次数，正整数，无日／月重置；不同于每次兑换的 count |
+| `exchange.description` | 可选商品说明，默认“专属武器兑换”；不能含原生 CSV 不支持的分隔符 |
+
+“不出魂珠”使用现有可突破自制武器的结构：equipment c9=false，服务端
+`equipment_dissolve.generate_ability_soul=false`，并保持 c10、内部 item、ability_soul 完整。
+基础能力本来就是通过 c10 供武器本体读取，装备时强化技能等基础能力也因此仍在本体生效。
+不能物理删除这些内部行：客户端在突破／熔炼界面检查 c9 之前会读取它们。
+此开关不创建魂珠发放商品，也不会删除玩家已经持有的历史魂珠。已有武器缺服务端熔炼行时拒绝；
+本草稿克隆的武器可从自己的克隆母本复制完整熔炼配置后关闭产出，保留其他熔炼返还。
+
+强化采用原生 **per_level**：每行价格乘以该行覆盖的等级数。示例九行对应六个付费节点，
+总消耗 12 个材料；不能把六段长区间都写为付费行。每行会清除母本额外货币和材料，
+客户端与 `equipment_enhancement_shop.json` 从同一配置生成。官方类目 1–4 有另一套计费语义，
+本功能生成 per_level 阶段时拒绝使用这些类目。新增曲线终点延用母本最后一个 HP/ATK 值；
+强化能力以母本最大等级作为插值终点的行同步到新上限，不推测新的能力强度或成长数值。
+
+类目按 code／name 查重；已存在则复用，不重写原行。新类目复制所选母本布局和实际存在的横幅，
+顺序追加到最后，不调整其他类目序号。兑换新类目会清除母本任务前置。
+其他草稿已经预留同名新类目时拒绝重复创建；将该类目合并到来源视图后，其他专武即可按同一 ID 复用。
+本功能不生成新横幅美术。所有新增 ID 走 `ids` 规范化／占用查询，版本仍由既有 `versions`／交付参数决定。
+
+材料须同时存在于客户端 item 和服务端 item_ids；图集引用也必须有效。
+突破白名单只约束“使用材料替代重复本体”的路径；现有服务器仍允许使用重复本体突破。
+配置不会声称从 API 层禁止所有其他突破方式。该能力依赖客户端补丁
+`client-patch/equipment-awakening-material`（旧能力 ID `equipment-awakening-material-v1`）和服务端
+`equipment_awakening_material.materialByEquipment`。仅添加 CAS、只写白名单或旧客户端忽略配置，都不算支持。
+
+`requires.json` 会列出上述客户端能力和服务端功能；强化、禁出魂珠分别列出
+`equipment_enhancement_shop.per_level`、`equipment_dissolve.generate_ability_soul`。
+当前旧 WFX 注册表有觉醒材料声明，但新能力目录缺少绑定目标 SWF 的方法哈希；沿用现有 unresolved／unknown
+兼容门禁，**开启此项仍可保存与预览，交付兼容检查会阻断，直到补齐可信能力证据**。
+不会虚构补丁编号、伪造 provides 或把静态表检查当成服务端已部署。
+
+### 选择项与响应
+
+`GET /api/studio/weapons/set-options`：返回 `version`、`categories.enhancement[]`、
+`categories.exchange[]`、`materials[]`、`serverInputAvailable`、`notes` 和 `runtime`。
+类目项为 `{id,code,name,order,row,table}`；强化 name 来自 c3，兑换 name 为 c0 的原生代码。
+材料项为 `{id,name,icon,serverAvailable}`，名称／图标来自 item c2/c3，未配置服务端时
+`serverAvailable=null`。返回当前 item 表中的候选，不在代码中维护“禁忌星铁”等名称或 ID 清单。
+
+POST 成功沿用 `ok/weaponId/subjectKind/allocation/changes/checks/icons/runtime`；有 `weapon_set`
+的序列新增 `rows.client[] = {table,path,value}`、`rows.server[] = {target,updates}` 和
+`requires = {clientCapabilities,serverFeatures}`。`rows` 是整个候选序列的最终写入值；
+client 的 value 可为 CSV 字符串或嵌套状态对象，server updates 为变化的顶层键值／新增列表值。
+保存还返回 `change/changeset/status`。自动分配的类目、商品和阶段 ID 存在
+`changeset.changes[0].params.requests[].weapon`，重放时再次校验。
+强化检查 `weapon.enhancement-cost` 提供 `maxLevel/purchaseMode/materialTotals`；
+`weapon.awakening-material` 返回材料 ID、所需能力及 `duplicateEquipmentAllowed=true`。
+失败返回 HTTP 400、`ok:false/error/checks`，原草稿不变。`ok=true` 仅表示候选生成或草稿写入成功。
+
+```powershell
+python -m wf.studio.draft --view local --server-dir server weapon set-options
+python -m wf.studio.draft --view local --server-dir server weapon set 5950001 --request weapon-set.json --preview
+python -m wf.studio.draft --view local --server-dir server weapon set 5950001 --request weapon-set.json
+```
+
+CLI 支持既有 `--provides`／`--client-profile`，输出一行 JSON。没有新增出包路径，
+保存／生成／导出仍用武器草稿现有接口；ZIP、共享表键差异、APK 内置表撞名与兼容检查继续运行。

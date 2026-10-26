@@ -173,7 +173,12 @@ def infer_requirements(members, *, declared=(), read_raw=None, server=None, regi
         add(cap_id, {"logical_path": "changeset.capabilities"}, "declared", cap_id)
     patches = sorted({number for cap_id in hits for number in registry[cap_id]["provided_by"]["patches"]})
     features = sorted({feature for cap_id in hits for feature in registry[cap_id]["server"].get("features", [])})
-    return {"clientCapabilities": sorted(hits), "clientPatches": [f"#{n}" for n in patches],
+    from .weapon_requirements import weapon_requirements
+    weapon = weapon_requirements(candidate, server or {}, read_raw=read_raw)
+    # This legacy capability has no registered method-hash identity yet. Keep it
+    # visible in requires; the existing unknown/resolution gates must not pass it.
+    features = sorted(set(features) | set(weapon["serverFeatures"]))
+    return {"clientCapabilities": sorted(set(hits) | set(weapon["clientCapabilities"])), "clientPatches": [f"#{n}" for n in patches],
             "serverFeatures": features, "capabilityResolution": "partial" if unresolved else "resolved",
             "capabilityEvidence": [{"id": cap_id, "evidence": evidence} for cap_id, evidence in sorted(hits.items())],
             "unresolved": unresolved, "scannedMembers": scanned, "inferenceNotes": notes,
