@@ -822,5 +822,6 @@ function KindProfileNote({ req, kind }: { req: CapRequirement | undefined; kind:
         插入后写入草稿前会再提示，按 {profile.label(profile.selected)} 生成会被兼容检查拦下。能满足的是 {profile.label(v.profile)}。</Notice>
     );
   }
+  if (v.kind === "pending") return <Notice kind="warn">kind {kind} 需要客户端扩展 {names}：{v.label}。{v.reason}</Notice>;
   return <p class="small muted">需要客户端扩展：{names}。{v.kind === "ok" ? `${profile.label(profile.profiles?.defaultClientProfile)} 已有。` : `目标客户端 ${profile.label(profile.selected)} 已有。`}</p>;
 }

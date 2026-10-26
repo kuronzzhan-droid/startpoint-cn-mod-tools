@@ -204,6 +204,9 @@ class DraftStore:
             if not gone:
                 raise DraftError(f"草稿里没有改动 {change_id}")
             changeset["changes"] = [c for c in changeset["changes"] if c["id"] != change_id]
+            if any(c["kind"] == "summon_clone" for c in gone):
+                from .summon import sync_reservations
+                sync_reservations(changeset, gone)
             changeset["updatedAt"] = now()
             changeset["revision"] += 1
             self._write(cid, changeset)

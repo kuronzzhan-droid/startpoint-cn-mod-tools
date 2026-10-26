@@ -8,11 +8,12 @@ import unittest
 from html.parser import HTMLParser
 from pathlib import Path
 from unittest import mock
+from tool_source import tool_source  # noqa: E402
 
 
 ROOT = Path(__file__).resolve().parents[1]
 MOD_DIR = ROOT
-GUI_PATH = MOD_DIR / "wf_gui.py"
+GUI_PATH = tool_source(MOD_DIR, "wf_gui.py")
 HTML_PATH = MOD_DIR / "wf_gui.html"
 
 

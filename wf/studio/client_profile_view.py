@@ -117,19 +117,27 @@ class ClientProfileView:
         result = {}
         for name, client in self.clients().items():
             if client["document"] is None:
-                result[name] = {"compatible": False, "error": client["error"], "missing": [], "pending": []}
+                result[name] = {"compatible": False, "degraded": False, "declared": False,
+                                "error": client["error"], "missing": [], "pending": []}
                 continue
             try:
                 from wf.apk.local_registry import for_swf
                 selected_registry = for_swf(registry, client["document"]["source"].get("swf_sha256"))
                 checks = check_compat(requires, client["document"], registry=selected_registry)
             except (OSError, ValueError) as exc:
-                result[name] = {"compatible": False, "error": str(exc), "missing": [], "pending": []}
+                result[name] = {"compatible": False, "degraded": False, "declared": False,
+                                "error": str(exc), "missing": [], "pending": []}
                 continue
             missing = [self._missing(c) for c in checks if c.get("blocking")]
             pending = [{"id": c.get("id"), "message": c.get("message")} for c in checks
                        if not c.get("blocking") and c.get("status") == "待验证"]
-            result[name] = {"compatible": not missing, "missing": missing, "pending": pending}
+            degraded = any(c.get("compatibility") == "degraded" for c in checks)
+            declared = any(c.get("compatibility") == "declared" for c in checks)
+            # UI support badges are stricter than the nonblocking build policy.
+            # Keep these reports pending; only real blockers belong in missing.
+            result[name] = {"compatible": not missing and not degraded and not declared,
+                            "degraded": degraded, "declared": declared,
+                            "missing": missing, "pending": pending}
         with self._lock:
             self._compat[key] = result
         return result

@@ -25,6 +25,7 @@ class PixelRoutes:
         self._lock = threading.Lock()
         self._draft_cache: dict[str, tuple[tuple, dict, dict]] = {}
         self._scratch: dict[tuple, PixelWorkshop] = {}
+        self._clones: dict[tuple, PixelWorkshop] = {}
         self._raw: dict[int, tuple[bytes, bytes]] = {}
 
     def routes(self):
@@ -60,7 +61,17 @@ class PixelRoutes:
     # -- which workshop -----------------------------------------------------
     def shop(self, cid) -> PixelWorkshop:
         if not scratch.is_scratch(cid):
-            return self.workshop
+            from .character_clone import ops_for
+            bound = ops_for(self.app.ops, cid)
+            if bound is self.app.ops:
+                return self.workshop
+            changeset = self.app.ops.store.load(cid)
+            key = (cid, changeset["createdAt"], changeset["revision"], changeset["updatedAt"])
+            with self._lock:
+                if key not in self._clones:
+                    self._clones = {k: v for k, v in self._clones.items() if k[0] != cid}
+                    self._clones[key] = PixelWorkshop(bound)
+                return self._clones[key]
         changeset = self.app.ops.store.load(cid)
         if not changeset or "scratch" not in changeset:
             raise DraftError(f"没有草稿角色 {cid}")
@@ -79,9 +90,10 @@ class PixelRoutes:
     def cell(self, query, cid, family, key):
         trimmed = (query.get("trim") or ["1"])[0] != "0"
         draft = (query.get("state") or ["view"])[0] == "draft"
-        png, state = self.shop(cid).cell_png(cid, family, int(key), trimmed=trimmed, draft=draft)
+        shop = self.shop(cid)
+        png, state = shop.cell_png(cid, family, int(key), trimmed=trimmed, draft=draft)
         # View thumbnails never change within a process: default caching, like the pixel sheets.
-        cache = "no-store" if state != "view" or scratch.is_scratch(cid) else None
+        cache = "no-store" if state != "view" or shop is not self.workshop else None
         return self._response(200, png, "image/png", cache)
 
     def suggest(self, query, cid):
@@ -185,16 +197,19 @@ class PixelRoutes:
         return body
 
     def view_rgba(self, query, cid, family):
+        draft_view = scratch.is_scratch(cid)
         if scratch.is_scratch(cid):
             shop = self.shop(cid)
             sheets = self._scratch_families(cid, shop)[1]
         else:
-            code = self.app._code(cid)
-            sheets = {family: self.app.pixels.sheet(code, family)} if code else {}
+            source, _, pixels = self.app.character_context(cid)
+            code = self.app._code(cid, source)
+            sheets = {family: pixels.sheet(code, family)} if code else {}
+            draft_view = source is not self.app.source
         if not sheets.get(family):
             return self._error(404, "该角色没有这一组像素资源")
         return self._response(200, self._rgba(sheets[family]), "application/octet-stream",
-                              "no-store" if scratch.is_scratch(cid) else None)
+                              "no-store" if draft_view else None)
 
     def draft_rgba(self, query, cid, family):
         _, sheets = self._draft_family(cid)

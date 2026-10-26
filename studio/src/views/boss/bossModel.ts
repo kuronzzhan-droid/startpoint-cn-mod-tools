@@ -135,6 +135,8 @@ export const RULE_LABEL: Record<string, string> = {
   "boss.custom-time": "自制内容开放时间",
   "delivery.reward-keys": "奖励键（客户端 / 服务端）",
   "boss.shop-sync": "商店三处同步",
+  "weapon.soul-elements-inherited": "魂珠可装备属性沿用母本",
+  "weapon.inputs": "武器请求",
   "art.atlas-budget": "三人房图集预算",
   "boss.visible-prerequisites": "共同决战无前置",
   "boss.unique-ids": "新 ID 撞号",

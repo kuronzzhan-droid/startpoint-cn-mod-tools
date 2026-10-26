@@ -217,6 +217,12 @@ def test_http_guard_and_token_injection(live):
                     {**ok_headers, "Origin": "http://evil.example"})[0] == 403
     assert _request(port, "POST", "/api/drafts/7/save", {},
                     {**ok_headers, "Host": "attacker.test"})[0] == 403
+    for path in ("/api/studio/characters/clone", "/api/studio/characters/scratch-example/promote",
+                 "/api/deliveries/example/rehearse", "/api/boss/deliveries/example/rehearse",
+                 "/api/studio/weapons/deliveries/example/rehearse"):
+        assert _request(port, "POST", path, {}, {"Content-Type": "application/json"})[0] == 403
+        assert _request(port, "POST", path, {},
+                        {**ok_headers, "Origin": "http://evil.example"})[0] == 403
     status, body = _request(port, "POST", "/api/drafts/7/save", {}, ok_headers)
     assert status == 400 and "没有草稿" in json.loads(body)["error"]
     assert _request(port, "PUT", "/api/drafts/7/save", {}, ok_headers)[0] == 405
@@ -231,7 +237,11 @@ def test_route_verbs():
     app = StudioApp(_FakeSource())
     verbs = {verb for verb, _, _ in app.routes}
     assert verbs == {"GET", "POST"}
-    assert all(pattern.pattern.startswith(("^/api/drafts/", "^/api/boss/drafts"))
+    assert all(pattern.pattern.startswith(("^/api/drafts/", "^/api/boss/drafts", "^/api/studio/weapons/",
+                                           "^/api/studio/characters/"))
+               or pattern.pattern == "^/api/studio/views/export-store$"
+               or pattern.pattern in {r"^/api/deliveries/(?P<name>[^/]+)/rehearse$",
+                                      r"^/api/boss/deliveries/(?P<name>[^/]+)/rehearse$"}
                for verb, pattern, _ in app.routes if verb == "POST")
 
 

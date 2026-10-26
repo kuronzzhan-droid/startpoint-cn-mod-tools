@@ -210,11 +210,22 @@ class AbilityEditor:
     def _base(self, cid):
         """(replayed state of the saved draft requests, draft, requests, key); unfinished, never mutated."""
         draft = self.store.load(cid) or {"changes": []}
-        _identity(self.source, cid, draft)
+        from .skill_template_compile import template_change
+        template = template_change(draft)
+        if not template:
+            _identity(self.source, cid, draft)
         requests = _requests(draft)
         key = self._draft_key(cid, draft)
 
         def build():
+            if template:
+                from .skill_template_inputs import current_source
+                from .skill_template_compile import compile_skill_template
+                from .character_clone import overlay_source
+                effective = current_source(self.source, self.store, draft, server_dir=self.inputs["server_dir"])
+                members, _, _ = compile_skill_template(effective, self.store, draft, official_source=self.source,
+                                                       server_dir=self.inputs["server_dir"])
+                return EditState(overlay_source(effective, members))
             state = EditState(self.source)
             state.character(cid)
             _replay_into(state, cid, requests, self.inputs)
@@ -223,12 +234,20 @@ class AbilityEditor:
         return self._once(("base",) + key, build), draft, requests, key
 
     def _state(self, cid, extra=None):
+        if extra is not None:
+            from .skill_template_compile import template_change
+            if template_change(self.store.load(cid)):
+                raise DraftError("技能模板已接管主技能；请用 skill-template 请求 text 各档 name/description 修改文案；其他词条请先撤销模板再编辑并重新保存模板")
         base, draft, requests, _ = self._base(cid)
         state = base.clone()
         if extra is not None:
             _replay_into(state, cid, [extra], self.inputs)
             _guard_inputs(state, draft)
-        _finish(state, requests + ([extra] if extra is not None else []))
+        from .skill_template_compile import template_change
+        # The template branch already replayed and verified the saved requests
+        # into an immutable source. Its read-only EditState has no pending writes.
+        if not template_change(self.store.load(cid)):
+            _finish(state, requests + ([extra] if extra is not None else []))
         return state, requests
 
     def read(self, cid):

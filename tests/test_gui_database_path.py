@@ -8,10 +8,11 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
+from tool_source import tool_source  # noqa: E402
 
 
 MOD_TOOLS = Path(__file__).resolve().parents[1]
-GUI_PATH = MOD_TOOLS / "wf_gui.py"
+GUI_PATH = tool_source(MOD_TOOLS, "wf_gui.py")
 sys.path.insert(0, str(MOD_TOOLS))
 try:
     import wf_mod_tool as core

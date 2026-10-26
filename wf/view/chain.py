@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 import re
 
+from .archive_index import index_zip_names
+
 VERSION = re.compile(r"^\d+\.\d+\.\d+$")
 ARCHIVE = re.compile(r"^pinball-(\d+\.\d+\.\d+)-(\d+\.\d+\.\d+)-(\d+)-.+\.zip$")
 
@@ -128,20 +130,32 @@ def resolve_chain(manifest, directories, base_version, tip, manifests=None):
 
 def resolve_archives(edges, directories):
     archives, records = [], []
+    found = index_zip_names(directories, {name for edge in edges for name in edge["names"]})
     for edge in edges:
         for name in edge["names"]:
-            candidates = list(dict.fromkeys((directory / name).resolve()
-                                           for directory in directories if (directory / name).is_file()))
+            candidates = list(dict.fromkeys(found.get(name, [])))
             if not candidates:
                 raise FileNotFoundError(f"manifest archive not found in configured directories: {name}")
-            hashes = {digest(candidate) for candidate in candidates}
+            expected = edge["integrity"].get(name, {})
+            if "sha256" in expected and (not isinstance(expected["sha256"], str)
+                    or not re.fullmatch(r"[0-9a-f]{64}", expected["sha256"])):
+                raise ValueError(f"invalid manifest SHA-256: {name}")
+            if "size" in expected and (type(expected["size"]) is not int or expected["size"] < 0):
+                raise ValueError(f"invalid manifest archive size: {name}")
+            matching = []
+            for candidate in candidates:
+                if "size" in expected and candidate.stat().st_size != expected["size"]:
+                    continue
+                sha256 = digest(candidate)
+                if "sha256" in expected and sha256 != expected["sha256"]:
+                    continue
+                matching.append((candidate, sha256))
+            if not matching:
+                raise ValueError(f"manifest archive integrity mismatch: {name}")
+            hashes = {sha256 for _, sha256 in matching}
             if len(hashes) != 1:
                 raise ValueError(f"same-named archive has conflicting bytes: {name}")
             sha256 = hashes.pop()
-            expected = edge["integrity"].get(name, {})
-            size = candidates[0].stat().st_size
-            if expected.get("sha256", sha256) != sha256 or expected.get("size", size) != size:
-                raise ValueError(f"manifest archive integrity mismatch: {name}")
-            archives.append(candidates[0])
+            archives.append(matching[0][0])
             records.append({"name": name, "sha256": sha256})
     return archives, records

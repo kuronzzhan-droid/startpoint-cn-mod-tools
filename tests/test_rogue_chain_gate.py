@@ -2898,8 +2898,8 @@ class RerollProfileForwardingCase(unittest.TestCase):
         env.pop("PYTHONUTF8", None)
         env.pop("PYTHONIOENCODING", None)
         result = subprocess.run(
-            [sys.executable, str(Path(rr.__file__).resolve()), "--help"],
-            cwd=Path(rr.__file__).resolve().parent.parent, env=env,
+            [sys.executable, str(Path(__file__).resolve().parent.parent / "wf_rogue_reroll.py"), "--help"],
+            cwd=Path(__file__).resolve().parent.parent, env=env,
             capture_output=True, text=True, encoding="utf-8", errors="replace",
             timeout=30)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)

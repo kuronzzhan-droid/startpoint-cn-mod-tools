@@ -4,6 +4,7 @@ from __future__ import annotations
 import sys
 import unittest
 from pathlib import Path
+from tool_source import tool_source  # noqa: E402
 
 
 MOD_TOOLS = Path(__file__).resolve().parent.parent
@@ -157,7 +158,7 @@ def test_composer_exposes_distinct_puller_enums_and_third_skill_tier(monkeypatch
     monkeypatch.setattr(core, "resolve_active_store", lambda *args, **kwargs: MOD_TOOLS)
     monkeypatch.setattr(core, "default_source_store", lambda: None)
     monkeypatch.setattr(core, "resolve_server_dir", lambda: MOD_TOOLS)
-    spec = importlib.util.spec_from_file_location("_h1_gui_metadata", MOD_TOOLS / "wf_gui.py")
+    spec = importlib.util.spec_from_file_location("_h1_gui_metadata", tool_source(MOD_TOOLS, "wf_gui.py"))
     wf_gui = importlib.util.module_from_spec(spec)
     monkeypatch.setitem(sys.modules, spec.name, wf_gui)
     spec.loader.exec_module(wf_gui)

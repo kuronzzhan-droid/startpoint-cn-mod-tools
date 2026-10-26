@@ -159,6 +159,10 @@ def compile_portraits(source, store, changeset: dict) -> MediaResult:
         if change["params"]["source"] == "current":
             from .portrait import trim_transparent
             master = trim_transparent(master)[0]
+        from .icon_alpha import check_portrait_delivery
+        icons = {slot: png(result.members["medium", prefix + f"ui/{slot}_{form}.png"])
+                 for slot in gate.OFFICIAL_ICON_SIZES if slot != "skill_cutin"}
+        result.checks.extend(check_portrait_delivery(store, change, master, icons))
         _draw_form(sheet, atlas, form, master)
         cutin = result.members["medium", prefix + f"ui/skill_cutin_{form}.png"]
         if ("android", atf_logical) not in result.members:

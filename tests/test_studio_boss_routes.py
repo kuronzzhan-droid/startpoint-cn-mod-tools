@@ -159,18 +159,24 @@ def test_boss_build_http_uses_existing_bridge_and_boss_store(live, tmp_path, mon
     port, guard, app = live
     app.boss.deliveries.root = tmp_path / "deliveries" / "boss"
     view = app.source.view
-    monkeypatch.setattr(view, "manifest", tmp_path / "manifest.json", raising=False)
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(json.dumps({"patches": [{"version": "1.4.2", "enabled": False}]}), "utf-8")
+    monkeypatch.setattr(view, "manifest", manifest, raising=False)
+    monkeypatch.setattr(view, "search_dirs", [], raising=False)
+    monkeypatch.setattr(view, "manifests", [], raising=False)
     monkeypatch.setattr(view, "verify", lambda: {}, raising=False)
     seen = {}
     def build(cid, **options):
         seen.update(cid=cid, **options)
-        return {"ok": True, "characterId": cid, "from": "1.4.1", "to": "1.4.2"}
+        return {"ok": True, "characterId": cid,
+                "from": options["from_version"], "to": options["to_version"]}
     monkeypatch.setattr(deliver_bridge, "build_draft", build)
     code, result = _request(port, "POST", "/api/boss/drafts/7/build", {}, headers(guard))
     assert code == 200 and json.loads(result)["ok"]
     assert seen["cid"] == "7" and seen["store"] is app.boss.store
     assert isinstance(seen["store"], boss.BossDraftStore)
     assert seen["baseline_view"] is view
+    assert (seen["from_version"], seen["to_version"]) == ("1.4.1", "1.4.3")
     assert seen["out"].parent == app.boss.deliveries.root
     assert app.boss.deliveries.running == {}
 
@@ -178,6 +184,11 @@ def test_boss_build_http_uses_existing_bridge_and_boss_store(live, tmp_path, mon
 @pytest.mark.parametrize("boss_flag", [True, False])
 def test_build_cli_boss_flag_selects_only_boss_namespace(tmp_path, monkeypatch, boss_flag):
     seen = {}
+    baseline = SimpleNamespace(store=tmp_path / "baseline", base_version="1.4.0")
+    def baseline_factory(args):
+        seen["baseline_args"] = args
+        return baseline
+    monkeypatch.setattr("wf.studio.build_view.baseline_from_args", baseline_factory)
     def build(cid, **kwargs):
         seen.update(cid=cid, **kwargs)
         return {"ok": True}
@@ -191,6 +202,8 @@ def test_build_cli_boss_flag_selects_only_boss_namespace(tmp_path, monkeypatch, 
     expected = tmp_path / "drafts" / "boss" if boss_flag else tmp_path / "drafts"
     assert seen["store"].root == expected
     assert seen["allow_unknown_client"] is True
+    assert seen["baseline_args"] is args and seen["baseline_view"] is baseline
+    assert (seen["base_store"], seen["base_version"]) == (baseline.store, baseline.base_version)
 
 
 @pytest.mark.parametrize("preview", [True, False])

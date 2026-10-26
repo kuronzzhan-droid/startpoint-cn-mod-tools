@@ -81,5 +81,23 @@ def test_compile_rechecks_weapon_and_enhancement_ids_from_other_saved_quest(edit
     assert compile_saved(editor, first)["client"] and compile_saved(editor, second)["client"]
     value = first["changes"][0]["params"]["requests"][0]["weapon"][field]
     second = tamper(editor, second, lambda req: req["weapon"].update({field: value}))
-    with pytest.raises(ValueError, match="collision"):
+    # A foreign stage ID also violates the native weapon * 100 + stage mapping;
+    # reject that invalid allocation before looking for an occupied stage ID.
+    reason = ("collision" if field == "id" else
+              r"^allocated enhancement product ID must match weapon ID \* 100 \+ stage$")
+    with pytest.raises(ValueError, match=reason):
+        compile_saved(editor, second)
+
+
+def test_compile_reserves_enhancement_namespace_from_other_saved_quest(editor):
+    payload = {"operation": "weapon_clone", "weapon": {"sourceWeapon": "5010005"}}
+    first = save(editor, "1006001", payload)
+    second = save(editor, "1007001", payload)
+    assert compile_saved(editor, second)["client"]
+    spec = second["changes"][0]["params"]["requests"][0]["weapon"]
+    # The candidate keeps its valid stage mapping; the other restored draft
+    # now reserves its stage namespace and compilation must still block it.
+    tamper(editor, first, lambda req: req["weapon"].update(
+        enhancementProducts=spec["enhancementProducts"]))
+    with pytest.raises(ValueError, match="ID collision: " + spec["id"]):
         compile_saved(editor, second)

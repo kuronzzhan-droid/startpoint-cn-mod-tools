@@ -17,6 +17,7 @@ MOD_TOOLS = Path(__file__).resolve().parent.parent
 CONTRACTS = MOD_TOOLS / "release-contracts"
 sys.path.insert(0, str(MOD_TOOLS))
 
+from tool_source import tool_source  # noqa: E402
 import wf_local_release_receipt as receipt  # noqa: E402
 import wf_local_server_contract as server_contract  # noqa: E402
 import wf_character_pack as character_pack  # noqa: E402
@@ -396,7 +397,7 @@ class LocalReleaseReceiptTest(unittest.TestCase):
         # level on some builds, which is exactly how this test first failed on
         # CI.  Assert the property directly instead: the verifier compresses
         # nothing, so it has no opinion to disagree with.
-        source = (MOD_TOOLS / "wf_local_release_verify.py").read_text(
+        source = tool_source(MOD_TOOLS, "wf_local_release_verify.py").read_text(
             encoding="utf-8"
         )
         self.assertNotIn("compresslevel", source)

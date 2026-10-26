@@ -12,6 +12,7 @@ Each candidate is probed in the view; only present items and *expected* or
 from __future__ import annotations
 
 import os
+import hashlib
 import re
 import struct
 import threading
@@ -158,6 +159,7 @@ class AssetIndex:
         raw = self.source.view.read_member(found[0][1])[0]
         if raw is not None:
             item["size"] = len(raw)
+            item["sha256"] = hashlib.sha256(raw).hexdigest()
             item["official"] = self.official_state(logical, raw)
             if logical.endswith(".png"):
                 dims = png_size(raw)

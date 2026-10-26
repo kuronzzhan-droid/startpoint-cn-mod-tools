@@ -5,15 +5,13 @@ import copy
 import hashlib
 import json
 from pathlib import Path
-import re
 import zipfile
 
 from .base149 import HistoricalView, member
 from .chain import digest, manifest_tip, resolve_archives, resolve_chain
-from .config import view_config
+from .config import view_config, view_options
 from .safety import local_output
-
-CDN_MEMBER = re.compile(r"^production/(upload|medium_upload|android_upload|ios_upload)/[0-9a-f]{2}/[0-9a-f]{38}$")
+from .members import CDN_ROOTS, CDN_MEMBER, archive_members
 
 
 class ManifestView(HistoricalView):
@@ -23,16 +21,22 @@ class ManifestView(HistoricalView):
     including an empty store_members mapping (which forbids every fallback).
     """
 
-    def __init__(self, tip, *, store=None, manifest=None, search_dirs=None,
-                 base_version="1.4.131", lock=None, manifests=None):
+    def __init__(self, tip=None, *, store=None, manifest=None, search_dirs=None,
+                 base_version=None, lock=None, manifests=None, view_name=None, extra_zips=()):
+        self.view_name, options = view_options(view_name)
+        base_version = base_version or options.get("base_version", "1.4.131")
+        tip = tip if tip is not None else options.get("tip")
         self.store, self.manifest, self.search_dirs, self.manifests = view_config(
-            store=store, manifest=manifest, search_dirs=search_dirs, manifests=manifests)
+            store=store, manifest=manifest, search_dirs=search_dirs, manifests=manifests, view_name=view_name)
         self.active = self.manifest.parent / "active"
         if tip is None:
             tip = manifest_tip(self.manifest, self.search_dirs, base_version, self.manifests)
         self.tip, self.base_version = tip, base_version
         self.edges = resolve_chain(self.manifest, self.search_dirs, base_version, tip, self.manifests)
         self.zips, self.zip_records = resolve_archives(self.edges, self.search_dirs)
+        self.extra_zips = [Path(p).resolve() for p in extra_zips]
+        self.zips.extend(self.extra_zips)
+        self.zip_records.extend({"name": p.name, "sha256": digest(p)} for p in self.extra_zips)
         self.read_members, self.index, self._store_reads = {}, {}, {}
         self._lock = json.loads(Path(lock).read_text(encoding="utf-8-sig")) if isinstance(lock, (str, Path)) else copy.deepcopy(lock)
         self.store_member_sha256 = None
@@ -48,15 +52,12 @@ class ManifestView(HistoricalView):
             self.store_member_sha256 = expected.get("store_members")
             if not isinstance(self.store_member_sha256, dict):
                 raise ValueError("view lock requires store_members, including an empty mapping")
-        self._stats = {}
+        self._stats, self._zip_members = {}, {}
         for archive in self.zips:
             with zipfile.ZipFile(archive) as z:
-                names = [info.filename for info in z.infolist() if not info.is_dir()]
-                if len(set(names)) != len(names):
-                    raise ValueError(f"duplicate ZIP member: {archive.name}")
-                for name in names:
-                    self._validate_member(name)
+                for name, original in archive_members(z).items():
                     self.index[name] = archive
+                    self._zip_members[name] = original
             self._stats[archive] = self._stat(archive)
         for name in self.store_member_sha256 or {}:
             self.read_store_member(name)
@@ -65,6 +66,11 @@ class ManifestView(HistoricalView):
     def _stat(archive):
         stat = archive.stat()
         return stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns
+
+    @property
+    def effective_version(self):
+        from .overlays import effective_version
+        return effective_version(self.tip, self.extra_zips)
 
     @staticmethod
     def _validate_member(name):
@@ -95,6 +101,8 @@ class ManifestView(HistoricalView):
         """Recheck discovery, all ZIP bytes and every used store member."""
         edges = resolve_chain(self.manifest, self.search_dirs, self.base_version, self.tip, self.manifests)
         archives, records = resolve_archives(edges, self.search_dirs)
+        archives.extend(self.extra_zips)
+        records.extend({"name": p.name, "sha256": digest(p)} for p in self.extra_zips)
         if archives != self.zips or records != self.zip_records:
             raise ValueError("view inputs changed during use")
         for name, sha256 in list(self._store_reads.items()):

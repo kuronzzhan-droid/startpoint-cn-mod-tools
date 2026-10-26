@@ -1,9 +1,23 @@
 // Typed wrappers over the read-only backend (python -m wf.studio).
 import type { AbilityGlossary } from "./abilityGlossary";
 
+export interface ViewList {
+  views: string[];
+  /** View the process actually loaded; null = not a named view. */
+  current: string | null;
+  source: SourceInfo;
+  runtimeSwitching: false;
+  restartRequired: true;
+}
+
 export interface SourceInfo {
+  /** Highest version after the extra ZIPs; `tip` is the manifest chain end point. */
   version: string;
-  tip: number;
+  tip: number | string;
+  /** Version the base store already has (chain-views.md); absent on older backends. */
+  baseVersion?: string;
+  /** Named view (profiles/local.json views) selected at launch; null = legacy view / local default chain. */
+  view?: string | null;
   zipCount: number;
   memberCount: number;
   extraZips: string[];
@@ -203,6 +217,15 @@ export interface SpeechLine {
 
 export interface CharacterAssets {
   characterId: string;
+  /** Clone drafts only: the 37 required assets (复用母本 / 待替换 / 已派生), updated by later draft edits. */
+  cloneAssets?: import("./studioApi").CloneAsset[];
+  /** Current view's resource version. */
+  sourceVersion?: string;
+  draftRevision?: number | null;
+  /** SHA-256 over the whole inventory + draft: the cache key of this character's media. */
+  assetsVersion?: string;
+  /** Quoted assetsVersion (JSON only; no HTTP conditional requests). */
+  etag?: string;
   code: string;
   groups: AssetGroup[];
   speech: SpeechLine[];
@@ -265,14 +288,39 @@ function cached<T>(url: string): Promise<T> {
   return cache.get(url) as Promise<T>;
 }
 
+/** Last assetsVersion seen per character: media URLs carry it so a changed inventory never shows stale bytes. */
+const assetVersions = new Map<string, string>();
+const assetReads = new Map<string, Promise<CharacterAssets>>();
+let assetListener = false;
+function assetInventory(id: string): Promise<CharacterAssets> {
+  if (!assetListener) {
+    assetListener = true;
+    // Any draft write may change the inventory (cloneAssets, derived portraits): drop that read.
+    onDraftChange((cid) => { assetReads.delete(cid); });
+  }
+  if (!assetReads.has(id)) {
+    const read = get<CharacterAssets>(`/api/characters/${id}/assets`).then((data) => {
+      if (data.assetsVersion) assetVersions.set(id, data.assetsVersion);
+      return data;
+    });
+    read.catch(() => assetReads.delete(id));
+    assetReads.set(id, read);
+  }
+  return assetReads.get(id)!;
+}
+
 export const api = {
   meta: () => cached<Meta>("/api/meta"),
   characters: () => cached<{ version: string; count: number; characters: CharacterSummary[] }>("/api/characters"),
   character: (id: string) => cached<CharacterDetail>(`/api/characters/${id}`),
   pixels: (id: string) => cached<PixelMeta>(`/api/characters/${id}/pixels`),
-  assets: (id: string) => cached<CharacterAssets>(`/api/characters/${id}/assets`),
-  avatarUrl: (id: string, form: "0" | "1" = "0") => `/api/characters/${id}/avatar/${form}.png`,
-  assetUrl: (path: string) => `/api/asset?path=${encodeURIComponent(path)}`,
+  /** Asset inventory; re-read after any write to this character's draft, keyed by assetsVersion (character-media.md). */
+  assets: (id: string) => assetInventory(id),
+  avatarUrl: (id: string, form: "0" | "1" = "0") =>
+    `/api/characters/${id}/avatar/${form}.png` + (assetVersions.has(id) ? `?v=${assetVersions.get(id)!.slice(0, 16)}` : ""),
+  /** `version` (assetsVersion) busts the browser cache of media whose inventory changed. */
+  assetUrl: (path: string, version?: string) =>
+    `/api/asset?path=${encodeURIComponent(path)}${version ? "&v=" + version.slice(0, 16) : ""}`,
   pixelSheetUrl: (id: string, family: string) => `/api/characters/${id}/pixels/${family}.png`,
   lookup: (q: string) =>
     get<{ total: number; count: number; results: LookupHit[]; note: string }>(
@@ -309,7 +357,7 @@ export interface DraftFile {
 
 export interface DraftChange {
   id: string;
-  kind: "portrait" | "pixel_action" | "pixel_family" | "voice_line" | "ability_edit" | "boss";
+  kind: "portrait" | "pixel_action" | "pixel_family" | "voice_line" | "ability_edit" | "boss" | "weapon" | "character_clone" | "summon_clone" | "pf_action_clone" | "skill_template";
   title: string;
   createdAt: string;
   target: Record<string, string>;
@@ -375,6 +423,8 @@ export interface PortraitSource {
   hasAlpha?: boolean;
   backdropSource?: string;
   suggestedBackdrop?: { inner: [number, number, number]; outer: [number, number, number] };
+  /** Painted backdrop of the existing square icon, offered (not applied) for a new upload. */
+  currentBackdrop?: { inner: [number, number, number]; outer: [number, number, number] };
   template: CropTemplate;
 }
 
@@ -842,7 +892,7 @@ export interface DeviceResult {
   schema: string;
   status: DeviceStatus;
   reason?: string;
-  delivery: { name: string; kind: "character" | "boss"; subject?: string | null; draftRevision: number | null;
+  delivery: { name: string; kind: "character" | "boss" | "weapon"; subject?: string | null; draftRevision: number | null;
     draftCreatedAt?: string | null;
     from?: string | null; to?: string | null; archives?: { name: string; sha256: string }[] };
   device?: { id?: string; label?: string; emulator?: boolean; package?: string; apk?: string; apkSha256?: string };
@@ -901,6 +951,96 @@ export interface DeliveryDetail {
   files: { path: string; size: number }[];
   deviceResult?: DeviceEntry | null;
   deviceValidation: string;
+  /** delivery/bundle-check.json: output tables vs the target APK's built-in _iosbundled tables (C7051). */
+  bundleCheck?: BundleCheck | null;
+  /** delivery/key-diff.json summary: per-table key changes against the baseline view's chain tip. */
+  keyDiff?: KeyDiff | null;
+  /** Derived UI icons that paint over transparent portrait areas. */
+  iconAlpha?: IconAlphaResult | null;
+  /** p12/p13 client keys (wfx_summon_flip_pf_<ball>, wfx_ball_pf_action_<ball>, …) and what they require. */
+  clientExtensions?: ClientExtensions | null;
+  /** Latest read-only server rehearsal (delivery/rehearsal-<server>.json); null when never run. */
+  rehearsal?: Rehearsal | null;
+}
+
+export interface Rehearsal {
+  schema: string;
+  server: string;
+  createdAt?: string;
+  ok: boolean;
+  status: "ready" | "blocked";
+  serverRoot?: string | null;
+  currentVersion?: string | null;
+  from?: string | null;
+  to?: string | null;
+  checks?: RuleResult[];
+  archives?: { name: string; size: number; sha256: string }[];
+  manifestEntryJson?: string | null;
+  manifestFormat?: { encoding: string; bom: boolean; newline: string; indent: number };
+  serverChanges?: { target: string; kind: string; addedKeys?: string[]; replacedKeys?: string[]; omittedKeys?: string[];
+    wholeFileOverwriteRisk?: boolean; changed?: boolean }[];
+  restartRequired?: boolean | null;
+  restartReason?: string | null;
+  manualSteps?: string[];
+}
+
+export interface BundleCheck {
+  status: "ok" | "collision" | "skipped" | "error";
+  reason?: string;
+  apks?: { label: string; sha256: string; bundledTables: number }[];
+  tables?: { logical: string; bundledLogical: string; collisions: string[] }[];
+}
+
+type KeyDiffCounts = { added: number; changed: number; removed: number; owned?: number; foreign: number; unknown: number };
+
+export interface KeyDiffTable {
+  logical: string;
+  root?: string;
+  archive?: string;
+  counts: KeyDiffCounts;
+  added?: string[];
+  changed?: string[];
+  removed?: string[];
+  owned?: string[];
+  foreign?: string[];
+  unknown?: string[];
+  /** Deletions inside a kept outer key: nested keys removed or CSV records dropped. */
+  deletions?: { kind: string; path: string[]; beforeRows?: number; afterRows?: number; removedRows?: number }[];
+  truncated?: boolean;
+}
+
+export interface KeyDiff {
+  status: "ok" | "warning" | "blocked";
+  blocking?: boolean;
+  baseline?: { view?: string | null; tip?: string | null; version?: string | null };
+  delivery?: { from?: string | null; to?: string | null; archives?: string[] };
+  counts?: KeyDiffCounts;
+  tables?: KeyDiffTable[];
+  warnings?: string[];
+}
+
+export interface IconAlphaSlot {
+  slot: string;
+  form?: number | string;
+  authorBackdrop?: boolean;
+  ratio?: number;
+  status: "ok" | "warning" | "info" | "skipped";
+  code?: string;
+  message?: string;
+}
+
+export interface IconAlphaResult {
+  /** partial: some icons were checked and passed, others could not be checked. */
+  status: "ok" | "warning" | "info" | "skipped" | "partial";
+  threshold?: number;
+  slots?: IconAlphaSlot[];
+  reason?: string;
+}
+
+export interface ClientExtensions {
+  status: "ok" | "warning" | "error";
+  requires?: string[];
+  checks?: RuleResult[];
 }
 
 export const ability = {
@@ -940,6 +1080,8 @@ export interface DeliveryApi {
   writeDevice: (cid: string, name: string, body: DeviceWrite) => Promise<{ name: string; deviceResult: DeviceEntry }>;
   importDevice: (cid: string, name: string, path: string, allowUnverified?: boolean) =>
     Promise<{ name: string; deviceResult: DeviceEntry }>;
+  /** Read-only rehearsal against a configured server (profiles/local.json servers); writes nothing there. */
+  rehearse: (name: string, server: string) => Promise<{ name: string; ok: boolean; rehearsal: Rehearsal }>;
 }
 
 export function deliveryApi(prefix: string, key: (cid: string) => string = (cid) => cid): DeliveryApi {
@@ -953,6 +1095,7 @@ export function deliveryApi(prefix: string, key: (cid: string) => string = (cid)
     cancel: (cid) => post(`${prefix}/drafts/${id(cid)}/build/cancel`, {}),
     finished: (cid) => notify(key(cid), Promise.resolve(null)),
     detail: (name) => get<DeliveryDetail>(`${prefix}/deliveries/${encodeURIComponent(name)}`),
+    rehearse: (name, server) => post(`${prefix}/deliveries/${encodeURIComponent(name)}/rehearse`, { server }),
     fileUrl: (name, path) => `${prefix}/deliveries/${encodeURIComponent(name)}/file?path=${encodeURIComponent(path)}`,
     device: (name) => get(`${prefix}/deliveries/${encodeURIComponent(name)}/device-result`),
     writeDevice: (cid, name, body) =>

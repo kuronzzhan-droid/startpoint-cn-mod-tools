@@ -17,7 +17,7 @@
       "additionalProperties": false,
       "properties": {
         "name": {"type": "string", "minLength": 1, "maxLength": 200},
-        "kind": {"enum": ["character", "boss"]},
+        "kind": {"enum": ["character", "boss", "weapon"]},
         "subject": {"type": ["string", "null"], "maxLength": 120},
         "draftRevision": {"type": ["integer", "null"], "minimum": 0},
         "draftCreatedAt": {"type": ["string", "null"], "maxLength": 64, "description": "草稿创建时间（inputs/draft.json）；草稿删掉重建后修订号会重复，用它区分"},

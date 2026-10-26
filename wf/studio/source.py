@@ -46,10 +46,12 @@ def newest_tip(directory: Path | None = None) -> int:
 def read_extra_list(files) -> list[Path]:
     result: list[Path] = []
     for file in files or ():
-        for line in Path(file).read_text("utf-8-sig").splitlines():
+        listing = Path(file).resolve()
+        for line in listing.read_text("utf-8-sig").splitlines():
             line = line.strip()
             if line and not line.startswith("#"):
-                result.append(Path(line))
+                value = Path(line)
+                result.append(value if value.is_absolute() else listing.parent / value)
     return result
 
 
@@ -70,22 +72,31 @@ class StudioSource:
     # -- identity -------------------------------------------------------
     @property
     def version(self) -> str:
+        if hasattr(self.view, "effective_version"):
+            return self.view.effective_version
         top = self.view.tip
-        if isinstance(top, str):
-            return top  # ManifestView already binds a complete version string.
-        for archive in self.view.zips:
-            versions = edge_versions(Path(archive).name)
-            if versions:
-                top = max(top, versions[1])
-        return f"1.4.{top}"
+        if isinstance(top, str) and not re.fullmatch(r"\d+\.\d+\.\d+", top):
+            return top  # Preserve opaque versions used by non-manifest sources.
+        current = tuple(int(v) for v in (top if isinstance(top, str) else f"1.4.{top}").split("."))
+        # A manifest tip selects the chain cutoff. Explicit extra archives may
+        # advance the actual source version beyond that cutoff.
+        extras = getattr(self.view, "extra_zips", self.view.zips)
+        for archive in extras:
+            match = EDGE.fullmatch(Path(archive).name)
+            if match:
+                current = max(current, tuple(int(match[i]) for i in (4, 5, 6)))
+        return ".".join(map(str, current))
 
     def describe(self) -> dict:
-        extras = [Path(p).name for p in self.view.zips if Path(p).parent != Path(self.view.active)]
+        extras = [Path(p).name for p in getattr(self.view, "extra_zips", self.view.zips)
+                  if hasattr(self.view, "extra_zips") or Path(p).parent != Path(self.view.active)]
         chain = None
         if self.chain is not None:
             chain = {"manifest": str(self.chain.manifest), "resolved": len(self.chain.zips),
                      "missing": self.chain.missing}
-        return {"version": self.version, "tip": self.view.tip, "zipCount": len(self.view.zips),
+        return {"version": self.version, "tip": self.view.tip,
+                "baseVersion": getattr(self.view, "base_version", "1.4.131"),
+                "view": getattr(self.view, "view_name", None), "zipCount": len(self.view.zips),
                 "memberCount": len(self.view.index), "extraZips": extras, "chain": chain,
                 "officialBaseline": self.baseline_error is None and self._baseline is not None,
                 "officialBaselineError": self.baseline_error}
@@ -182,30 +193,39 @@ def default_chain_settings() -> tuple[Path | None, list[Path]]:
     return manifest, [d for d in dirs if d.is_dir()]
 
 
-def build_source(*, tip: int | None = None, extra_zips=(), extra_lists=(), chain_manifest=None,
-                 search_dirs=None, use_default_chain: bool = True) -> StudioSource:
-    tip = int(tip) if tip else newest_tip()
-    chain = None
+def build_source(*, tip: int | str | None = None, extra_zips=(), extra_lists=(), chain_manifest=None,
+                 search_dirs=None, use_default_chain: bool = True, manifest=None, store=None,
+                 base_version=None, manifests=None, view_name=None) -> StudioSource:
+    from wf.view.config import view_options
+    selected, options = view_options(view_name)
+    if manifest is not None and chain_manifest is not None and Path(manifest) != Path(chain_manifest):
+        raise ValueError("--manifest and --chain-manifest identify different manifests")
+    if manifests is None and manifest is None and chain_manifest is None:
+        manifests = options.get("manifests")
+    manifest = manifest or chain_manifest or options.get("manifest")
     if chain_manifest is None and use_default_chain:
-        chain_manifest, default_dirs = default_chain_settings()
-        search_dirs = default_dirs if search_dirs is None else search_dirs
-    if chain_manifest is not None:
-        from .chain import resolve_chain
-        if search_dirs is None:
-            search_dirs = default_chain_settings()[1]
-        chain = resolve_chain(Path(chain_manifest), search_dirs, after_tip=tip)
-    extras = list(chain.zips if chain else []) + [Path(p) for p in extra_zips] + read_extra_list(extra_lists)
+        if manifest is None and selected is None:
+            manifest, default_dirs = default_chain_settings()
+            search_dirs = default_dirs if search_dirs is None else search_dirs
+    extras = [Path(p) for p in extra_zips] + read_extra_list(extra_lists)
     missing = [str(p) for p in extras if not p.is_file()]
     if missing:
         raise FileNotFoundError("额外补丁 ZIP 不存在: " + ", ".join(missing))
-    # De-duplicate by file name (an extras list may repeat chain ZIPs); keep the first.
-    unique, seen = [], set()
-    for archive in extras:
-        key = Path(archive).name.lower()
-        if key not in seen:
-            seen.add(key)
-            unique.append(Path(archive))
-    view = HistoricalView(tip=tip, extra_zips=unique)
+    if manifest is not None or selected is not None:
+        from wf.view.manifest import ManifestView
+        from .chain import ChainResult
+        full_tip = f"1.4.{tip}" if isinstance(tip, int) or (isinstance(tip, str) and tip.isdigit()) else tip
+        view = ManifestView(full_tip, store=store, manifest=manifest, search_dirs=search_dirs,
+                            base_version=base_version, manifests=manifests, view_name=selected,
+                            extra_zips=extras)
+        chain = ChainResult(manifest=view.manifest, zips=view.zips[:len(view.zips) - len(extras)]
+                            if extras else list(view.zips), patches=view.edges)
+    else:
+        if base_version not in (None, "1.4.131"):
+            raise ValueError("a custom base_version requires a manifest view")
+        legacy_tip = int(str(tip).removeprefix("1.4.")) if tip is not None else newest_tip()
+        view = HistoricalView(tip=legacy_tip, store=store, extra_zips=extras)
+        chain = None
     source = StudioSource(view)
     source.chain = chain
     return source

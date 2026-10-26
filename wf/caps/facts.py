@@ -8,7 +8,9 @@ import re
 from wfx_registry import patch_kinds_borrowing_uid_column
 from wf.dsl.references import program_logical
 from wf.view.layout import EM, col
-from .signals_v35 import character_signals, custom_signals, unique_signals
+from wf.wfx_tags import ability_tags
+from .signals_v35 import (character_signals, configuration_signals, custom_signals,
+                         unique_signals)
 from .surfaces import ABILITY_TABLES
 
 UNIQUE = "master/character/unique_condition.orderedmap"
@@ -42,7 +44,7 @@ def table_signals(logical, trail, text, *, registry=None):
     if logical == STRINGS and trail[-1].startswith("desc_override_"):
         yield "selectors", "text.desc_override"
     if logical == STRINGS:
-        yield from custom_signals(trail[-1])
+        yield from custom_signals(trail[-1], text)
     if logical == UNIQUE:
         yield "unique_ids", str(trail[-1])
         for row in rows(text):
@@ -60,6 +62,8 @@ def table_signals(logical, trail, text, *, registry=None):
                 for block in layout["blocks"]) + 1
             if len(row) < width:
                 raise ValueError(f"{logical}/{'/'.join(trail)}/{index}: truncated ability row ({len(row)} < {width})")
+            for _column, tag in ability_tags(name, row):
+                yield from configuration_signals("character_tag", tag, None)
             trigger = row[heads["trigger"]]
             block = {"0": "instant_content", "1": "during_content"}.get(trigger)
             if block:
@@ -111,6 +115,10 @@ def table_signals(logical, trail, text, *, registry=None):
                     yield "ref", (target, row[position])
             if len(row) > 14 and row[14].endswith("_voice_ready"):
                 yield "selectors", "voice.skill_ready_alt"
+        elif (logical == "master/battle/multiball/multiball.orderedmap"
+              and len(row) > 9 and row[9] not in {"", "0", "(None)"}):
+            yield "selectors", "multiball.active_skill"
+            yield "program", row[9]
         elif logical in {SKILL, "master/skill/switched_action_skill.orderedmap"}:
             position = 7 if logical == SKILL else 0
             if len(row) > position and row[position] not in {"", "(None)"}:

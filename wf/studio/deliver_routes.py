@@ -18,6 +18,7 @@ import threading
 import time
 import traceback
 from pathlib import Path
+from types import SimpleNamespace
 
 from wf.paths import REPOSITORY
 
@@ -36,11 +37,10 @@ def _read_json(path: Path):
         return None
 
 
-def next_version(version: str) -> str:
-    parts = version.split(".")
-    if len(parts) != 3 or not all(p.isdigit() for p in parts):
-        return version
-    return f"{parts[0]}.{parts[1]}.{int(parts[2]) + 1}"
+def next_version(version: str, *, source=None) -> str:
+    from .versions import next_version as suggest
+    view = getattr(source, "view", None)
+    return suggest(SimpleNamespace(version=version, view=view))["next"]
 
 
 class DeliverRoutes:
@@ -77,6 +77,7 @@ class DeliverRoutes:
         self.default_provides = Path(default_provides) if default_provides is not None else None
         self.root = Path(root) if root is not None else DELIVERIES
         self._lock = threading.Lock()
+        self._rehearsing = set()
         self.running: dict[str, str] = {}
         self.jobs: dict[str, dict] = {}       # name -> public job record (kept for the session)
         self._cancel: dict[str, threading.Event] = {}
@@ -90,6 +91,9 @@ class DeliverRoutes:
             options["baseline_manifest"] = Path(chain.manifest)
         # Exact folders the editor view already resolved (flat lookup by the manifest view).
         view = source.view
+        from wf.view import ManifestView
+        if isinstance(view, ManifestView):
+            options.update(baseline_view=view, base_store=view.store, base_version=view.base_version)
         dirs = []
         for archive in getattr(view, "zips", []):
             parent = Path(archive).parent
@@ -107,27 +111,29 @@ class DeliverRoutes:
         from wf.caps.profiles import profile_options, resolve_client
         provides, selected = resolve_client(self.default_provides)
         version = self.app.source.version
-        return json_response({"from": version, "to": next_version(version),
+        return json_response({"from": version, "to": next_version(version, source=self.app.source),
                               "outRoot": self.display_root(),
                               "serverDir": str(self.server_dir) if self.server_dir else None,
                               "provides": str(provides) if provides else None,
                               "clientProfile": selected, **profile_options(),
-                              "note": "来源版本取当前视图末端；目标版本默认 +1，只是本地测试候选，不代表正式版本分配。"})
+                              "note": "来源版本取当前视图末端；默认目标跳过版本预留与已声明版本，只是本地测试候选，不代表正式版本分配。"})
 
     def build(self, query, body, cid):
         from .server import json_response
         from .deliver_bridge import STAGES
         version = self.app.source.version
         from_version = str(body.get("from") or version)
-        to_version = str(body.get("to") or next_version(from_version))
+        to_version = str(body.get("to") or next_version(from_version, source=self.app.source))
         for value in (from_version, to_version):
             if not VERSION.fullmatch(value):
                 raise DraftError(f"版本无效：{value}")
         from wf.caps.profiles import resolve_client
+        from .delivery_safety import resolve_apks
         try:
             explicit = body.get("provides") or (None if body.get("clientProfile") else self.default_provides)
             provides, selected = resolve_client(explicit,
                                                body.get("clientProfile"))
+            apks = resolve_apks(selected, body.get("apk"))
         except ValueError as exc:
             raise DraftError(str(exc)) from exc
         if provides is not None:
@@ -139,10 +145,13 @@ class DeliverRoutes:
             if cid in self.running:
                 raise DraftError(f"角色 {cid} 已在生成中（{self.running[cid]}），请稍候")
             name = f"{output_id}-{from_version}-to-{to_version}-{time.strftime('%Y%m%d-%H%M%S')}"
+            if name in self._rehearsing:
+                raise DraftError("交付正在预演，请等待结束")
             self.running[cid] = name
             cancel = self._cancel[name] = threading.Event()
             job = self.jobs[name] = {"name": name, "characterId": cid, "from": from_version, "to": to_version,
                                      "clientProfile": selected,
+                                     "apk": [str(path) for path in apks],
                                      "state": "running", "stage": None, "stages": [
                                          {"id": s, "label": label, "state": "waiting"} for s, label in STAGES],
                                      "startedAt": time.time(), "seconds": 0, "result": None}
@@ -173,6 +182,7 @@ class DeliverRoutes:
             result = build_draft(cid, from_version=from_version, to_version=to_version, out=out,
                                  store=self.app.ops.store, provides=None if selected else provides,
                                  client_profile=selected,
+                                 apk=self.jobs[name].get("apk"),
                                  progress=self._progress(name), cancel=cancel, **self.baseline_options())
             result = {**result, "name": name, "seconds": round(time.time() - started, 1)}
             state = "ok" if result.get("ok") else "failed"
@@ -296,14 +306,40 @@ class DeliverRoutes:
         check = (_read_json(delivery / "check.json") or {}).get("results")
         compat = (_read_json(delivery / "compat.json") or {}).get("results")
         device = self._device(folder)
+        from .key_diff import summarize
+        from .rehearsal_io import latest
+        key_diff = _read_json(delivery / "key-diff.json")
+        if isinstance(report, dict) and isinstance(report.get("keyDiff"), dict):
+            report = {**report, "keyDiff": summarize(report["keyDiff"])}
         return json_response({"name": name, "path": str(folder), "report": report, "error": error,
                               "archives": archives, "members": members, "serverChanges": servers,
                               "requires": _read_json(delivery / "requires.json"),
                               "check": check, "compat": compat, "files": files,
+                              "bundleCheck": _read_json(delivery / "bundle-check.json"),
+                              "keyDiff": summarize(key_diff) if key_diff is not None else None,
+                              "iconAlpha": _read_json(delivery / "icon-alpha.json"),
+                              "clientExtensions": _read_json(delivery / "client-extensions.json"),
+                              "rehearsal": latest(delivery) if delivery.is_dir() else None,
                               "deviceResult": device,
                               "deviceValidation": (device.get("result") or {}).get("status", "未执行") if device else "未执行"})
 
     # -- 实测（device-result.json） ----------------------------------------
+    def rehearse(self, query, body, name):
+        from .server import json_response
+        from .rehearsal import rehearse
+        if set(body) != {"server"}:
+            raise DraftError('预演请求只接受 {"server": "local"}')
+        with self._lock:
+            if name in self.running.values() or name in self._rehearsing:
+                raise DraftError("交付仍在生成中，请等待生成结束")
+            self._rehearsing.add(name)
+        try:
+            result = rehearse(self._folder(name), body["server"])
+        finally:
+            with self._lock:
+                self._rehearsing.discard(name)
+        return json_response({"name": name, "ok": result["ok"], "rehearsal": result})
+
     def _device(self, folder: Path) -> dict | None:
         entry = device_result.read(folder, self.kind)
         if entry is None:
@@ -363,6 +399,7 @@ class DeliverRoutes:
                 ("GET", re.compile(r"^/api/deliveries/jobs/(?P<name>[^/]+)$"), self.job),
                 ("GET", re.compile(r"^/api/deliveries/(?P<name>[^/]+)$"), self.detail),
                 ("GET", re.compile(r"^/api/deliveries/(?P<name>[^/]+)/file$"), self.file),
+                ("POST", re.compile(r"^/api/deliveries/(?P<name>[^/]+)/rehearse$"), self.rehearse),
                 ("GET", re.compile(r"^/api/deliveries/(?P<name>[^/]+)/device-result$"), self.device_get),
                 ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/deliveries/(?P<name>[^/]+)/device-result$"), self.device_write),
                 ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/deliveries/(?P<name>[^/]+)/device-result/import$"),

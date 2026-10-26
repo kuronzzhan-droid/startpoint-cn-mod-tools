@@ -9,6 +9,8 @@ from .drafts import DraftError
 
 
 def source_arguments(parser):
+    parser.add_argument("--view", dest="view_name", help="profiles/local.json 中的命名视图")
+    parser.add_argument("--view-base-version", dest="view_base_version", help="视图基线版本，默认 1.4.131")
     parser.add_argument("--manifest", type=Path, help="精确版本视图的只读 manifest")
     parser.add_argument("--store", type=Path, help="只读基线 store")
     parser.add_argument("--zip-dir", type=Path, action="append", default=None)
@@ -17,7 +19,22 @@ def source_arguments(parser):
 
 
 def add_commands(sub):
+    from .view_commands import add_commands as add_views
+    from .discovery_commands import add_commands as add_discovery
+    add_views(sub)
+    add_discovery(sub)
+    from .character_routes import add_character_commands
+    from .weapon_cli import add_weapon_commands
+    add_character_commands(sub)
+    add_weapon_commands(sub)
+    from .skill_template_cli import add_skill_template_commands
+    add_skill_template_commands(sub)
     add_device_result(sub)
+    p = sub.add_parser("rehearse", help="只读检查交付对目标服务端的适用性，生成手工上边清单")
+    p.add_argument("--delivery-dir", type=Path, required=True)
+    p.add_argument("--server", default="local")
+    p.add_argument("--zip", type=Path, action="append", dest="rehearsal_zips",
+                   help="显式 ZIP 列表，可重复；结果仍写入 delivery-dir")
     p = sub.add_parser("boss", help="读取、编辑副本草稿；new 按暗凛模板新建共同决战")
     p.add_argument("cid", help="副本 ID、kind:path 选择器或 new")
     p.add_argument("--request", type=Path, help="bossRequest JSON")
@@ -45,13 +62,14 @@ def add_commands(sub):
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--provides", type=Path, help="目标客户端能力与方法摘要")
     p.add_argument("--client-profile", help="目标客户端档案；默认 test-v34")
+    p.add_argument("--apk", type=Path, action="append", help="显式目标 APK；可重复，覆盖 client_apks 配置")
     p.add_argument("--allow-unknown-client", action="store_true",
                    help="显式允许缺少 provides 的本地交付；兼容性仍标未确认并在清单留痕")
     p.add_argument("--baseline-manifest", type=Path)
     p.add_argument("--baseline-manifest-extra", type=Path, action="append", default=[])
     p.add_argument("--baseline-zip-dir", type=Path, action="append", default=[])
     p.add_argument("--base-store", type=Path)
-    p.add_argument("--base-version", default="1.4.131")
+    p.add_argument("--base-version", help="交付基线版本；默认沿用所选视图")
     p.add_argument("--view-lock", type=Path)
     p.add_argument("--pathlist", type=Path)
     # Permit the convenient command-local spelling without losing global values.
@@ -82,19 +100,20 @@ def run_ability(args, source, store):
 
 
 def run_build(args, store):
+    from .build_view import baseline_from_args
     from .deliver_bridge import build_draft
+    baseline = baseline_from_args(args)
     if getattr(args, "boss", False):
         from .boss import BossDraftStore
         store = BossDraftStore(store.root / "boss")
     return build_draft(args.cid, from_version=args.from_version, to_version=args.to_version,
                        out=args.out, store=store, provides=args.provides,
                        client_profile=args.client_profile,
+                       apk=args.apk,
                        allow_unknown_client=args.allow_unknown_client,
-                       baseline_manifest=args.baseline_manifest or args.manifest,
-                       baseline_manifests=args.baseline_manifest_extra or args.manifest_extra,
-                       baseline_zip_dirs=args.baseline_zip_dir or args.zip_dir,
-                       base_store=args.base_store or args.store, base_version=args.base_version,
-                       view_lock=args.view_lock, server_dir=args.server_dir, pathlist=args.pathlist)
+                       baseline_view=baseline, base_store=baseline.store,
+                       base_version=baseline.base_version,
+                       server_dir=args.server_dir, pathlist=args.pathlist)
 
 
 def add_device_result(sub):

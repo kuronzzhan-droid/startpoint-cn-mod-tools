@@ -110,10 +110,11 @@
     },
     "dsl_gate": {"const": "dsl-629.json"},
     "draft_checks": {"const": "draft-checks.json"},
+    "safety_checks": {"const": "safety-checks.json"},
     "client_compatibility": {
       "type": "object",
       "properties": {
-        "status": {"enum": ["满足", "问题", "待验证", "未确认"]},
+        "status": {"enum": ["满足", "问题", "待验证", "未确认", "降级"]},
         "allow_unknown_client": {"type": "boolean"},
         "client_profile": {"type": "string", "minLength": 1},
         "report": {"const": "compat.json"}

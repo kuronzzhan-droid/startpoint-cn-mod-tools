@@ -1,15 +1,14 @@
-"""Read the game's two native square avatars; never crop full illustrations."""
-from __future__ import annotations
+"""Compatibility entry point: this tool now lives in ``wf/tools/wiki/wiki_avatars.py``.
 
+``python wf_wiki_avatars.py ...`` and ``import wf_wiki_avatars`` keep working unchanged.
+"""
+import sys as _sys
 
-def character_avatars(code: str, media) -> dict[str, str]:
-    result = {}
-    for form, name in ((0, "before"), (1, "after")):
-        for kind in ("square", "thumbnail"):
-            logical = f"character/{code}/ui/{kind}_{form}.png"
-            if media.has(logical):
-                url = media.image(logical)
-                if url:
-                    result[name] = url
-                    break
-    return result
+if __name__ == "__main__":
+    from wf.tools import run_as_main
+
+    run_as_main("wf.tools.wiki.wiki_avatars")
+else:
+    import importlib as _importlib
+
+    _sys.modules[__name__] = _importlib.import_module("wf.tools.wiki.wiki_avatars")

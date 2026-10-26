@@ -100,7 +100,7 @@ export function CapChip({ req, what }: { req: CapRequirement | null | undefined;
   const v = verdict(req, state);
   if (v.kind === "none" || !req) return null;
   const miss = v.kind === "needs" && !v.satisfied;
-  const cls = v.kind === "ok" ? "ok" : v.kind === "needs" ? (miss ? "miss" : "needs") : "bad";
+  const cls = v.kind === "ok" ? "ok" : v.kind === "needs" ? (miss ? "miss" : "needs") : v.kind === "pending" ? "needs" : "bad";
   const detail = describeRequirement(req, state);
   const tail = miss ? `\n当前目标客户端是 ${state.label(state.selected)}：按它生成会被兼容检查拦下。` : "";
   const title = (what ? what + "\n" : "") + detail + tail;

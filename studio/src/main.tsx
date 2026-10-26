@@ -5,6 +5,10 @@ import { href, useRoute } from "./router";
 import { CharacterList } from "./views/CharacterList";
 import { CharacterDetailView } from "./views/CharacterDetail";
 import { BossWorkshop } from "./views/boss/BossWorkshop";
+import { WeaponWorkshop } from "./views/weapons/WeaponWorkshop";
+import { CharacterCloneWizard } from "./views/CharacterClone";
+import { ToolsPanel } from "./views/IdTools";
+import { Drawer } from "./views/common";
 import { PatchManager } from "./views/PatchManager";
 import { ScratchDetail, ScratchList } from "./views/ScratchView";
 import { LookupPanel } from "./views/LookupPanel";
@@ -19,6 +23,7 @@ function App() {
   const [meta, setMeta] = useState<Meta | null>(null);
   const [metaError, setMetaError] = useState<string | null>(null);
   const [lookupOpen, setLookupOpen] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
 
   useEffect(() => {
     api.meta().then(setMeta, (e: Error) => setMetaError(e.message));
@@ -46,6 +51,10 @@ function App() {
         </nav>
         <div class="topbar-right">
           <ClientProfilePicker />
+          <button class={"lookup-toggle" + (toolsOpen ? " on" : "")} onClick={() => setToolsOpen(!toolsOpen)}
+            title="链视图、ID 占用查询、下一个资源版本">
+            工具
+          </button>
           <button class={"lookup-toggle" + (lookupOpen ? " on" : "")} onClick={() => setLookupOpen(!lookupOpen)}
             title="随时可用的词条速查（Ctrl+K）">
             词条速查
@@ -55,9 +64,13 @@ function App() {
       <div class="context-bar">
         <span title={meta ? `技术细节：kulo active 补丁链之后再叠加 ${meta.source.extraZips.length} 个补丁 ZIP`
           + (meta.source.chain ? `（按补丁链清单 ${meta.source.chain.manifest} 找到 ${meta.source.chain.resolved} 个）` : "") : ""}>
-          当前内容：<strong>测试服</strong>
+          当前内容：<strong>{meta?.source.view ?? "测试服"}</strong>
           {meta ? <> · 资源版本 {meta.source.version}</> : null}
+          {meta?.source.baseVersion ? <span class="muted"> · 基线 {meta.source.baseVersion} → 链终点 {String(meta.source.tip)}</span> : null}
         </span>
+        {meta?.source.extraZips.length ? (
+          <span class="pill" title={meta.source.extraZips.join("\n")}>额外 ZIP {meta.source.extraZips.length}</span>
+        ) : null}
         <span class="pill draftable" title="只写草稿（work/studio-drafts）和本机交付目录（work/studio-deliveries）；不改测试服、不发布、不写游戏数据">只写草稿</span>
         {meta?.source.chain?.missing.length ? (
           <span class="error-text">补丁链缺 {meta.source.chain.missing.length} 个 ZIP，视图不完整</span>
@@ -75,6 +88,9 @@ function App() {
           <a role="tab" class={route.shop === "boss" ? "active" : ""} href={href({ work: "content", shop: "boss" })}>
             BOSS工坊
           </a>
+          <a role="tab" class={route.shop === "weapons" ? "active" : ""} href={href({ work: "content", shop: "weapons" })}>
+            武器工坊
+          </a>
         </div>
       ) : null}
       <div class="layout">
@@ -83,14 +99,19 @@ function App() {
             <PatchManager archive={route.archive} />
           ) : route.shop === "boss" ? (
             <BossWorkshop quest={route.quest} tab={route.tab} sub={route.sub} wizard={route.wizard} source={route.source} />
+          ) : route.shop === "weapons" ? (
+            <WeaponWorkshop id={route.id} tab={route.tab} sub={route.sub} />
           ) : route.shop === "scratch" ? (
             route.id ? <ScratchDetail id={route.id} tab={route.tab} sub={route.sub} /> : <ScratchList />
+          ) : route.shop === "characters" && route.clone ? (
+            <CharacterCloneWizard key={route.source ?? ""} source={route.source} />
           ) : route.id ? (
             <CharacterDetailView id={route.id} tab={route.tab} sub={route.sub} />
           ) : (
             <CharacterList />
           )}
         </main>
+        {toolsOpen ? <Drawer title="工具" onClose={() => setToolsOpen(false)}><ToolsPanel /></Drawer> : null}
         {lookupOpen ? <LookupPanel onClose={() => setLookupOpen(false)} context={route.work === "content" && route.shop === "characters" ? route.id : undefined} /> : null}
       </div>
     </div>
