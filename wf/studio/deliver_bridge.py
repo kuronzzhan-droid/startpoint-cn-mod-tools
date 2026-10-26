@@ -122,6 +122,15 @@ def compile_draft(source, store, changeset, *, server_dir=None, client_profile=N
         changes.extend(ability["changes"])
         checks.extend(ability["checks"])
     if not members:
+        if not any(c["kind"] == "summon_clone" for c in changeset["changes"]):
+            raise DraftError("草稿没有生成客户端成员")
+    if any(c["kind"] == "summon_clone" for c in changeset["changes"]):
+        from .summon import compile_summons
+        summons = compile_summons(source, store, changeset, members, server_dir=server_dir)
+        members.update({("common", logical): raw for logical, raw in summons["client"].items()})
+        changes.extend(summons["changes"])
+        checks.extend(summons["checks"])
+    if not members:
         raise DraftError("草稿没有生成客户端成员")
     from wf.text.draft import check_compiled_text
     checks.extend(check_compiled_text(source, members))

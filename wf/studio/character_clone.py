@@ -210,4 +210,10 @@ def compile_clone(source, store, draft, *, server_dir=None):
     servers, before = server_files(clients, cid, server_dir)
     assertions = [{"kind": "character_clone", "from": clone_change(draft)["params"]["spec"]["from"], "to": cid,
                    "code": draft["code"], "manaNodes": clone_change(draft)["params"]["manaNodes"]}, *media.assertions]
+    if any(c["kind"] == "summon_clone" for c in draft["changes"]):
+        from .summon import compile_summons
+        summons = compile_summons(source, store, draft, members, server_dir=server_dir)
+        members.update({("common", logical): raw for logical, raw in summons["client"].items()})
+        assertions.extend(summons["changes"])
+        checks.extend(summons["checks"])
     return members, servers, before, assertions, checks

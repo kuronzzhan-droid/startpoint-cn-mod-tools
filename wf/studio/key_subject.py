@@ -72,7 +72,7 @@ class SubjectKeys:
         for change in draft.get("changes", []):
             params = change.get("params", {})
             self._reservations(params.get("reservations", {}))
-            if change.get("kind") == "character_clone":
+            if change.get("kind") in {"character_clone", "summon_clone"}:
                 for logical, keys in params.get("ownedRows", {}).items():
                     self.explicit[logical].update(map(str, keys))
             for request in params.get("requests", []):

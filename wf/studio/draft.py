@@ -62,6 +62,8 @@ def build_parser() -> argparse.ArgumentParser:
     add_commands(sub)
     from .safety_commands import add_commands as add_safety_commands
     add_safety_commands(sub)
+    from .summon_routes import add_summon_commands
+    add_summon_commands(sub)
 
     p = sub.add_parser("list", help="列出有草稿的角色或副本")
     p.add_argument("--boss", action="store_true", help="使用独立副本草稿目录")
@@ -211,6 +213,9 @@ def run(args) -> dict:
     if args.command == "weapon":
         from .weapon_cli import run_weapon
         return run_weapon(args, ops.source, store)
+    if args.command == "summon":
+        from .summon_routes import run_summon
+        return run_summon(args, ops.source, store)
     if args.command == "boss":
         from .boss import BossEditor, BossDraftStore
         editor = BossEditor(ops.source, store=BossDraftStore(store.root / "boss"), server_dir=args.server_dir)
