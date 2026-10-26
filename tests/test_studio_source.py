@@ -28,6 +28,19 @@ def test_chain_settings_use_public_profile_and_environment(tmp_path, monkeypatch
     assert default_chain_settings() == (tmp_path / "override.json", [second, first])
 
 
+def test_default_dirs_include_reorganized_releases(tmp_path, monkeypatch):
+    legacy, release = tmp_path / "rel254", tmp_path / "outputs/releases/rel-1.4.265"
+    for directory in (legacy, release / "shipped", tmp_path / "out"):
+        directory.mkdir(parents=True)
+    profile = tmp_path / "profile.json"
+    profile.write_text(json.dumps({"wf_root": str(tmp_path)}), encoding="utf-8")
+    monkeypatch.setenv("WF_PATHS_PROFILE", str(profile))
+    for variable in ("WF_ROOT", "WF_PROFILE", "WF_STUDIO_CHAIN_MANIFEST", "WF_STUDIO_ZIP_DIRS"):
+        monkeypatch.delenv(variable, raising=False)
+
+    assert default_chain_settings()[1] == [legacy, release, release / "shipped", tmp_path / "out"]
+
+
 def test_manifest_version_stays_locked():
     source = StudioSource(SimpleNamespace(tip="1.4.233", zips=()))
     assert source.version == "1.4.233"

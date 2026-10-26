@@ -188,9 +188,18 @@ def default_chain_settings() -> tuple[Path | None, list[Path]]:
         if listed:
             dirs = [p if p.is_absolute() else root_path(p) for p in map(Path, listed)]
         else:
-            root = root_path()
-            dirs = sorted(root.glob("rel*")) + [root / "out"] if root.is_dir() else []
+            dirs = release_dirs(root_path())
     return manifest, [d for d in dirs if d.is_dir()]
+
+
+def release_dirs(root: Path) -> list[Path]:
+    """Default ZIP search: legacy <root>/rel*, outputs/releases/rel* (since the 2026-10
+    reorg, 1.4.255+ only live there) with their shipped/ subdirs, then <root>/out."""
+    if not root.is_dir():
+        return []
+    releases = sorted((root / "outputs" / "releases").glob("rel*"))
+    return (sorted(root.glob("rel*")) + releases + [d / "shipped" for d in releases]
+            + [root / "out"])
 
 
 def build_source(*, tip: int | str | None = None, extra_zips=(), extra_lists=(), chain_manifest=None,
