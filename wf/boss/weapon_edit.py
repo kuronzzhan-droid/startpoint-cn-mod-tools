@@ -10,7 +10,12 @@ from .shop_model import (ITEM, STATUS, SOUL, ENH, ENH_ABILITY, ENH_STATUS, ENH_S
                          SERVER_ENH, WEAPON_TABLES)
 from .shop_edit import one, reserve, image_reference, item_reference, set_costs, validate_text
 from .weapon_rules import (check_ability_rows, awakening_materials, clone_awakening,
-                           check_user_cost)
+                           awakening_updates, check_user_cost, AWAKENING)
+from .weapon_soul import edit_soul_item
+from .weapon_identity import clone_codes, exclusive_metadata
+from .weapon_templates import apply_template
+from .weapon_ids import (AUTO_WEAPON_START, AUTO_WEAPON_END, MAX_WEAPON_ID,
+                         product_owners, reserved_ids, validate_weapon_id)
 
 SERVER_WEAPON_MAPS = tuple("assets/" + name + ".json" for name in (
     "equipment_lookup", "equipment_max_level", "equipment_element", "item_sale", "item_lookup"))
@@ -63,19 +68,24 @@ def _scale_status(node, spec):
 
 def clone_weapon(state, spec, reserved=()):
     source = str(spec["sourceWeapon"])
+    reserved_weapons, reserved_products = reserved_ids(reserved)
     materials = awakening_materials(state, source)
     equipment = one(state, s.EQUIPMENT, source, 16)
     soul_key = equipment[10]
     occupied = {key for logical in WEAPON_TABLES for key in state.table(logical)}
     occupied.update(materials)
+    occupied.update(state.server(AWAKENING, required=False).get("rarityOverrides", {}))
     for target in SERVER_WEAPON_MAPS:
         occupied.update(state.server(target))
     for target in SERVER_WEAPON_LISTS:
         occupied.update(map(str, state.server(target)))
     occupied.update(str(v.get("equipmentId")) for v in state.server(SERVER_ENH).values())
-    if isinstance(reserved, dict):
-        occupied.update(reserved.get("weapons", []))
-    identity = reserve(occupied, 5950001, spec.get("id"), limit=5999999)
+    occupied.update(reserved_weapons)
+    occupied.update(product_owners(set(state.table(ENH_SHOP)) | set(state.server(SERVER_ENH)) | reserved_products))
+    requested = validate_weapon_id(spec["id"]) if "id" in spec else None
+    identity = reserve(occupied, AUTO_WEAPON_START, requested,
+                       limit=MAX_WEAPON_ID if requested is not None else AUTO_WEAPON_END)
+    awakening_updates(state, source, identity, materials, equipment[11])
     spec["id"] = identity
     icon_item = None
     if "icon" in spec:
@@ -95,13 +105,15 @@ def clone_weapon(state, spec, reserved=()):
     for name in ("name", "description"):
         if name in spec:
             validate_text(spec[name], f"weapon {name}")
-    equipment[0], equipment[10] = "boss_workshop_" + identity, identity
+    code, soul_code = clone_codes(state, spec, identity, reserved)
+    equipment[0], equipment[10] = code, identity
     for name, column in (("name", 1), ("description", 7), ("icon", 6)):
         if name in spec:
             equipment[column] = spec[name]
     state.set_leaf(s.EQUIPMENT, [identity], join(equipment), new=True)
-    item = one(state, ITEM, soul_key)
-    item[0], item[1], item[2] = "boss_workshop_soul_" + identity, identity, equipment[1] + "魂珠"
+    item = one(state, ITEM, soul_key, 23)
+    item[0], item[1], item[2] = soul_code, identity, equipment[1] + "魂珠"
+    checks = [*edit_soul_item(item, spec, source), *exclusive_metadata(spec)]
     if icon_item is not None:
         item[3:5] = icon_item[3:5]
     state.set_leaf(ITEM, [identity], join(item), new=True)
@@ -113,9 +125,14 @@ def clone_weapon(state, spec, reserved=()):
             if logical == SOUL or any(c["table"] == table for c in changes):
                 raise ValueError(f"weapon donor lacks {logical}")
             continue
-        value = edit_abilities(s.parse_rows(value), changes, table,
-                              client_profile=getattr(state, "client_profile", None),
-                              provides=getattr(state, "client_provides", None))
+        if logical == SOUL and "soul_template" in spec:
+            if any(c["table"] == table for c in changes):
+                raise ValueError("soul_template and ability_soul edits cannot be combined")
+            value = apply_template(state, spec["soul_template"], code)
+        else:
+            value = edit_abilities(s.parse_rows(value), changes, table,
+                                  client_profile=getattr(state, "client_profile", None),
+                                  provides=getattr(state, "client_provides", None))
         state.set_leaf(logical, [identity], value, new=True)
     for logical in (STATUS, ENH_STATUS):
         value = state.table(logical).get(source)
@@ -147,17 +164,20 @@ def clone_weapon(state, spec, reserved=()):
         state.set_server_keys(target, {identity: value}, new=True)
     for target in SERVER_WEAPON_LISTS:
         state.append_server_values(target, [int(identity)])
-    clone_awakening(state, source, identity, materials)
+    clone_awakening(state, source, identity, materials, equipment[11])
+    state.weapon_checks = [*getattr(state, "weapon_checks", []), *checks]
+    return {"id": identity, "warnings": [entry["message"] for entry in checks], "checks": checks}
 
 
 def _clone_stages(state, source, identity, spec, reserved):
     server, table = state.server(SERVER_ENH), state.table(ENH_SHOP)
     occupied = set(server) | set(table)
-    if isinstance(reserved, dict):
-        occupied.update(reserved.get("enhancementProducts", []))
+    occupied.update(reserved_ids(reserved)[1])
     stages = [(key, s.parse_rows(value)[0]) for key, value in table.items()
               if s.cell(s.parse_rows(value)[0], 29) == source]
     stages.sort(key=lambda pair: (int(pair[1][30]), int(pair[1][3])))
+    if len(stages) > 99:
+        raise ValueError("weapon enhancement graph exceeds its 99 product slots")
     requested = spec.get("enhancementProducts")
     if requested is not None and len(requested) != len(stages):
         raise ValueError("allocated enhancement products do not match donor stages")
@@ -168,7 +188,10 @@ def _clone_stages(state, source, identity, spec, reserved):
         check_user_cost(server[key].get("userCost"))
         if s.present(row[11]):
             check_user_cost({"type": int(row[11]), "amount": int(row[12])})
-        new_id = reserve(occupied, int(identity) * 100 + index + 1, requested[index] if requested else None)
+        expected = str(int(identity) * 100 + index + 1)
+        if requested is not None and requested[index] != expected:
+            raise ValueError("allocated enhancement product ID must match weapon ID * 100 + stage")
+        new_id = reserve(occupied, int(expected), expected)
         occupied.add(new_id)
         allocated.append(new_id)
         row[2], row[29] = identity, identity

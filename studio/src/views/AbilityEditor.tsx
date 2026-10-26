@@ -5,6 +5,8 @@ import {
   ColumnLabel, drafts, onDraftChange, RowPreview, TemplateOption, TextPanel,
 } from "../api";
 import { Notice } from "./common";
+import { AbilityGlossary, FieldRule } from "../abilityGlossary";
+import { CellMeaning, EnumPicker, useGlossary } from "./Glossary";
 import { RuleChips, ruleCounts, RuleList } from "./rules";
 import {
   CapRequirement, describeRequirement, kindCaps, lookupCaps, RowQuery, useCaps, useClientProfile, useRowCaps, verdict,
@@ -402,6 +404,9 @@ function EffectCard({ ws, entry, rows, index, row, columns, base, sameShape, fir
   onMove: (dir: -1 | 1) => void; onDelete: () => void; onCell: (col: number, value: string) => void;
 }) {
   const after = afterDescription(ws, entry, index, row);
+  const vocabulary = useGlossary(entry.table !== "action_skill");
+  const glossary = vocabulary.data;
+  const rules = glossary?.fields[entry.table] ?? {};
   const changedCols = sameShape && base ? row.map((v, i) => (v !== (base[i] ?? "") ? i : -1)).filter((i) => i >= 0) : [];
   const awake = entry.table === "ability" && isAwake(row);
   const label = (i: number) => columnLabel(entry.table, columns, i);
@@ -436,6 +441,7 @@ function EffectCard({ ws, entry, rows, index, row, columns, base, sameShape, fir
         ) : null}
       </header>
       <RowDescription ws={ws} entry={entry} index={index} after={after} draftDiffers={changedCols.length > 0 || isNew} />
+      {vocabulary.error ? <p class="small error-text">词汇表读取失败：{vocabulary.error}</p> : null}
       {problems.length ? <ul class="inline-problems">{problems.map((c) => <li>问题：{c.message}</li>)}</ul> : null}
       {entry.table === "ability" && index === 0 ? (
         changedCols.includes(1) || ws.pending.ops.some((o) => o.key === entry.key && o.row === 0 && o.cells.some((c) => c.column === "c1"))
@@ -444,6 +450,7 @@ function EffectCard({ ws, entry, rows, index, row, columns, base, sameShape, fir
       <div class="field-grid">
         {filled.map(({ v, i }) => (
           <CellInput label={label(i)} hint={columnHint(entry.table, columns, i)} index={i} value={v} problem={problemCols.has(i)}
+            glossary={glossary} rule={rules[i]} row={row}
             base={sameShape && base ? base[i] ?? "" : undefined}
             text={entry.table === "action_skill" && i < 2} disabled={locked} onCommit={(value) => onCell(i, value)} />
         ))}
@@ -451,7 +458,7 @@ function EffectCard({ ws, entry, rows, index, row, columns, base, sameShape, fir
       <details class="raw-advanced">
         <summary>全部 {row.length} 列（含空列）</summary>
         <table class="raw-table">
-          <thead><tr><th>列</th><th>区块</th><th>字段</th><th>值</th></tr></thead>
+          <thead><tr><th>列</th><th>区块</th><th>字段</th><th>值</th>{entry.table !== "action_skill" ? <th>含义</th> : null}</tr></thead>
           <tbody>
             {row.map((v, i) => {
               const l = columns[i];
@@ -461,7 +468,9 @@ function EffectCard({ ws, entry, rows, index, row, columns, base, sameShape, fir
                   <td>{entry.table === "action_skill" ? (i < 2 ? "文本" : "") : l?.block ?? ""}</td>
                   <td title={l?.note ?? ""}>{entry.table === "action_skill" ? skillField(i) : l?.field ?? ""}</td>
                   <td><CellInput bare index={i} value={v} base={sameShape && base ? base[i] ?? "" : undefined}
+                    glossary={glossary} rule={rules[i]} row={row}
                     text={entry.table === "action_skill" && i < 2} disabled={locked} onCommit={(value) => onCell(i, value)} /></td>
+                  {entry.table !== "action_skill" ? <td><CellMeaning glossary={glossary} rule={rules[i]} value={v} row={row} /></td> : null}
                 </tr>
               );
             })}
@@ -517,11 +526,13 @@ function columnHint(table: AbilityTable, columns: ColumnLabel[], i: number): str
   return `第 ${i} 列（c${i}）` + (l ? ` · ${l.field}${l.note ? " — " + l.note : ""}` : "");
 }
 
-function CellInput({ label, hint, index, value, base, text, bare, problem, disabled, onCommit }: {
+function CellInput({ label, hint, index, value, base, text, bare, problem, disabled, onCommit, glossary, rule, row = [] }: {
   label?: string; hint?: string; index: number; value: string; base?: string; text?: boolean; bare?: boolean; problem?: boolean;
   disabled?: boolean; onCommit: (v: string) => void;
+  glossary?: AbilityGlossary | null; rule?: FieldRule; row?: string[];
 }) {
   const [local, setLocal] = useState(value);
+  const [picking, setPicking] = useState(false);
   useEffect(() => setLocal(value), [value]);
   const changed = base !== undefined && value !== base;
   const commit = () => { if (local !== value) onCommit(local); };
@@ -536,12 +547,21 @@ function CellInput({ label, hint, index, value, base, text, bare, problem, disab
         if (e.key === "Escape") { e.stopPropagation(); setLocal(value); (e.target as HTMLInputElement).blur(); }
       }} />
   );
-  if (bare) return input;
+  const controls = rule?.enum && glossary ? <span class="cell-controls">
+    {input}
+    <button class="ghost small-btn enum-button" type="button" disabled={disabled} aria-label={`按名选择 ${label || `c${index}`}`}
+      onClick={() => setPicking(true)}>选</button>
+    {picking ? <EnumPicker glossary={glossary} group={rule.enum} value={local} onClose={() => setPicking(false)}
+      onPick={(v) => { setLocal(v); setPicking(false); if (v !== value) onCommit(v); }} /> : null}
+  </span> : input;
+  if (bare) return controls;
+  const Field = rule?.enum && glossary ? "div" : "label";
   return (
-    <label class={"field" + (text ? " wide" : "")}>
+    <Field class={"field" + (text ? " wide" : "")}>
       <span class="field-label" title={hint ?? `第 ${index} 列（c${index}）`}>{label || `第 ${index} 列`}</span>
-      {input}
-    </label>
+      {controls}
+      <CellMeaning glossary={glossary ?? null} rule={rule} value={local} row={row.map((v, i) => i === index ? local : v)} />
+    </Field>
   );
 }
 
@@ -633,7 +653,8 @@ function TemplatePicker({ table, rows, awake, onClose, onPick }: {
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return (list ?? []).filter((o) => (only === "all" || (only === "precedent") === (o.precedentCount > 0))
-      && (!q || o.kind === q || (o.cn ?? "").toLowerCase().includes(q) || (o.en ?? "").toLowerCase().includes(q)));
+      && (!q || o.kind === q || (o.official ?? "").toLowerCase().includes(q)
+        || (o.cn ?? "").toLowerCase().includes(q) || (o.en ?? "").toLowerCase().includes(q)));
   }, [list, query, only]);
   useEffect(() => setCursor(0), [query, only, block]);
   useEffect(() => {
@@ -677,7 +698,10 @@ function TemplatePicker({ table, rows, awake, onClose, onPick }: {
                 <li role="option" aria-selected={i === cursor} class={i === cursor ? "on" : ""}
                   onClick={() => setCursor(i)} onDblClick={() => onPick(o.defaults, at)}>
                   <span class="mono kind">{o.kind}</span>
-                  <span class="kind-name">{o.cn || o.en} <CapChip req={kinds?.kinds[o.kind]} what={`kind ${o.kind}（${block}）`} /></span>
+                  <span class="kind-name">{o.official || o.cn || o.en}
+                    {o.official && o.cn !== o.official ? <small class="muted"> · 直译：{o.cn}</small> : null}
+                    {o.mappingStatus === "guess" ? <small class="warn-text"> · 名称推测</small> : null}
+                    <CapChip req={kinds?.kinds[o.kind]} what={`kind ${o.kind}（${block}）`} /></span>
                   <span class={"rs " + (o.precedentCount ? "rs-ok" : "rs-warn")}>{o.precedentCount ? `先例 ${o.precedentCount}` : "待验证"}</span>
                 </li>
               ))}
@@ -686,7 +710,8 @@ function TemplatePicker({ table, rows, awake, onClose, onPick }: {
             </ul>
             {selected ? (
               <div class="picker-detail">
-                <h4>kind {selected.kind} · {selected.cn} <span class="muted mono small">{selected.en}</span></h4>
+                <h4>kind {selected.kind} · {selected.official || selected.cn} <span class="muted mono small">{selected.en}</span></h4>
+                {selected.official && selected.cn !== selected.official ? <p class="small muted">直译：{selected.cn}</p> : null}
                 {selected.precedentCount ? (
                   <p class="small">默认值取自当前视图先例 <span class="mono">{selected.precedents[0]?.key} 行{(selected.precedents[0]?.row ?? 0) + 1}</span>
                     （共 {selected.precedentCount} 处）；引用的对象（string_id、固有、程序等）需要核对。</p>
@@ -797,5 +822,6 @@ function KindProfileNote({ req, kind }: { req: CapRequirement | undefined; kind:
         插入后写入草稿前会再提示，按 {profile.label(profile.selected)} 生成会被兼容检查拦下。能满足的是 {profile.label(v.profile)}。</Notice>
     );
   }
+  if (v.kind === "pending") return <Notice kind="warn">kind {kind} 需要客户端扩展 {names}：{v.label}。{v.reason}</Notice>;
   return <p class="small muted">需要客户端扩展：{names}。{v.kind === "ok" ? `${profile.label(profile.profiles?.defaultClientProfile)} 已有。` : `目标客户端 ${profile.label(profile.selected)} 已有。`}</p>;
 }

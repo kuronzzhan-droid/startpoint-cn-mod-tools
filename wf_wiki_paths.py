@@ -1,18 +1,14 @@
-"""Filesystem link checks compatible with the project's Python 3.11 baseline."""
-from pathlib import Path
-import stat
+"""Compatibility entry point: this tool now lives in ``wf/tools/wiki/wiki_paths.py``.
 
+``python wf_wiki_paths.py ...`` and ``import wf_wiki_paths`` keep working unchanged.
+"""
+import sys as _sys
 
-def is_junction(path: Path) -> bool:
-    """Inspect the entry itself; never follow a junction or require Path 3.12 APIs.
+if __name__ == "__main__":
+    from wf.tools import run_as_main
 
-    Windows lstat exposes the reparse tag on Python 3.8+. Other platforms do
-    not have mount-point reparse tags. Missing paths can be checked before
-    creation, but permission and other unexpected I/O errors must propagate.
-    """
-    try:
-        metadata = Path(path).lstat()
-    except (FileNotFoundError, NotADirectoryError):
-        return False
-    return getattr(metadata, "st_reparse_tag", 0) == getattr(
-        stat, "IO_REPARSE_TAG_MOUNT_POINT", 0xA0000003)
+    run_as_main("wf.tools.wiki.wiki_paths")
+else:
+    import importlib as _importlib
+
+    _sys.modules[__name__] = _importlib.import_module("wf.tools.wiki.wiki_paths")

@@ -154,7 +154,8 @@ def check_delivery(document, directory):
             raise ValueError("baseline waiver does not match prepush evidence")
     else:
         lock = json.loads(local_read(baseline["lock"])[1])
-        if baseline["tip"] != document["from_version"] or lock.get("tip") != baseline["tip"]:
+        from wf.view.overlays import locked_delivery_tip
+        if lock.get("tip") != baseline["tip"] or locked_delivery_tip(lock) != document["from_version"]:
             raise ValueError("baseline tip does not match delivery")
         if gate["exit_code"] == 0 and not contract.get("pre_and_post_hashes_checked"):
             raise ValueError("baseline hashes were not checked")

@@ -10,6 +10,7 @@ from .changeset import load_changeset, sha256, validate_document, write_json
 from .gate import run_prepush
 from .dsl_gate import check_candidate
 from .manifests import write_manifests
+from .key_guard import check_shared_keys
 
 
 def build_delivery(changeset: Path, out: Path, *, provides=None, client_profile=None,
@@ -22,6 +23,17 @@ def build_delivery(changeset: Path, out: Path, *, provides=None, client_profile=
     if out.exists() and any(out.iterdir()):
         raise FileExistsError(f"delivery output must be empty: {out}")
     baseline = resolve_baseline(doc, **prepush_options)
+    # Keep the existing asset-layer contract ahead of table decoding errors.
+    for _raw, entry in members.values():
+        logical = entry["logical_path"]
+        if entry["root"] != "common" and logical.endswith((".orderedmap", ".action.dsl.amf3.deflate")):
+            raise ValueError(f"capability table/DSL must use common root: {logical}")
+    retention = check_shared_keys(members, server, baseline=baseline,
+                                 base_store=prepush_options.get("base_store"),
+                                 server_dir=prepush_options.get("server_dir"), changes=doc.get("changes", []),
+                                 no_baseline_i_know=prepush_options.get("no_baseline_i_know", False))
+    if retention["errors"]:
+        raise ValueError("shared-table preservation failed: " + "; ".join(retention["errors"]))
     out.mkdir(parents=True, exist_ok=True)
     check_candidate(out, members, baseline, prepush_options.get("base_store"))
     from wf.caps.requirements import requirements_document

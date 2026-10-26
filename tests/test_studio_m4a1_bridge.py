@@ -53,14 +53,16 @@ def test_noop_draft_does_not_emit_delivery(case, monkeypatch):
 
 
 @pytest.mark.parametrize("allow", [False, True])
-def test_default_profile_and_explicit_unknown_client_override(case, monkeypatch, capsys, allow):
-    real_build = bridge.build_draft
-    def local_build(cid, **options):
-        options.update(store=case[0], baseline_view=case[2])
-        return real_build(cid, **options)
-    monkeypatch.setattr(bridge, "build_draft", local_build)
+def test_default_profile_and_explicit_unknown_client_override(case, capsys, allow):
+    view = case[2]
     args = ["--drafts", str(case[0].root), "build", "139985", "--from", "1.4.132",
-            "--to", "1.4.133", "--out", str(case[-1])]
+            "--to", "1.4.133", "--out", str(case[-1]),
+            "--baseline-manifest", str(view.manifest), "--base-store", str(view.store),
+            "--base-version", view.base_version]
+    for directory in view.search_dirs:
+        args.extend(["--baseline-zip-dir", str(directory)])
+    for manifest in view.manifests or []:
+        args.extend(["--baseline-manifest-extra", str(manifest)])
     if allow:
         args.append("--allow-unknown-client")
     assert main(args) == 0

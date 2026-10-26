@@ -59,6 +59,11 @@ class AbilityRoutes:
         return json_response(self.editor().templates(table=_value(query, "table", "ability"),
                                                      block=_value(query, "block", "instant_content"), kind=kind))
 
+    def glossary(self, query):
+        from .ability_glossary import glossary
+        from .server import json_response
+        return json_response(glossary(self.app.source))
+
     def text(self, query, cid):
         from .server import json_response
         return json_response(self.editor().text_panel(cid))
@@ -85,6 +90,7 @@ class AbilityRoutes:
         return [("GET", re.compile(r"^/api/characters/(?P<cid>\d+)/ability$"), self.read),
                 ("GET", re.compile(r"^/api/drafts/(?P<cid>\d+)/ability/preview$"), self.preview),
                 ("GET", re.compile(r"^/api/studio/ability/templates$"), self.templates),
+                ("GET", re.compile(r"^/api/studio/ability/glossary$"), self.glossary),
                 ("GET", re.compile(r"^/api/studio/ability/keys$"), self.keys),
                 ("GET", re.compile(r"^/api/characters/(?P<cid>\d+)/text$"), self.text),
                 ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/text/lint$"), self.text_lint),

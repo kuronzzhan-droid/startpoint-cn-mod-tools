@@ -1,0 +1,33 @@
+/* 技能模板 / 强化弹射动作工坊 (SkillTemplate.tsx, PfActionWorkshop.tsx) */
+.skillpf-page .boss-block { margin-bottom: 12px; }
+.skillpf-page .boss-block > h3 { margin: 4px 0 8px; font-size: 15px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.skillpf-layout { display: grid; grid-template-columns: minmax(240px, 320px) minmax(0, 1fr); gap: 12px; align-items: start; }
+@media (max-width: 900px) { .skillpf-layout { grid-template-columns: minmax(0, 1fr); } }
+.skillpf-side { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.skillpf-side ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 3px; max-height: 560px; overflow: auto; }
+.skillpf-side .source-option { grid-template-columns: minmax(0, 1fr); }
+.skillpf-side .source-option .sp-line { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; min-width: 0; }
+.skillpf-side .source-option[disabled] { opacity: 0.6; cursor: not-allowed; }
+.skillpf-main { min-width: 0; }
+.sp-coef { font-family: "JetBrains Mono", "Cascadia Mono", Consolas, monospace; font-size: 12px; white-space: nowrap; }
+.sp-node-input { width: 90px; border: 1px solid var(--border); border-radius: 6px; padding: 2px 6px; background: var(--surface); }
+.sp-node-input.changed, .sp-json.changed { border-color: var(--warn); background: color-mix(in srgb, var(--warn) 8%, var(--surface)); }
+.sp-json { width: 100%; min-width: 220px; min-height: 48px; font-family: "JetBrains Mono", "Cascadia Mono", Consolas, monospace; font-size: 12px;
+  border: 1px solid var(--border); border-radius: 6px; padding: 3px 6px; background: var(--surface); }
+.sp-effects { list-style: none; padding: 0; margin: 6px 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.sp-effects li { border: 1px solid var(--border); border-radius: 6px; padding: 4px; background: var(--surface-2); min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.sp-effects img { max-width: 100%; max-height: 120px; object-fit: contain; image-rendering: pixelated; background: repeating-conic-gradient(#0001 0 25%, transparent 0 50%) 0 0 / 12px 12px; }
+.sp-effects .sp-noprev { height: 60px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 12px; color: var(--warn); }
+.sp-effects .mono { font-size: 11px; overflow-wrap: anywhere; }
+.sp-pairs { display: flex; flex-direction: column; gap: 4px; }
+.sp-pair { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.sp-pair input[type=text] { width: 90px; }
+.sp-pair input[type=color] { width: 32px; height: 24px; padding: 0; border: 1px solid var(--border); border-radius: 4px; }
+.sp-levels { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.sp-level { border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; background: var(--surface-2); min-width: 0; }
+.sp-level h4 { margin: 2px 0 6px; }
+.sp-scale-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: end; }
+.sp-scale-row .param-field { width: 120px; }
+.sp-effect-map { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 4px 8px; align-items: center; }
+.sp-effect-map input { width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 3px 6px; background: var(--surface); }
+.sp-keys { width: 100%; }

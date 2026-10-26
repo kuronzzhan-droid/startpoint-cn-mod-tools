@@ -6,6 +6,7 @@ import re
 from wf.deliver.changeset import validate_document
 from wf.rules.catalog import result
 from .method_evidence import accepted_hashes, selected_method_hash
+from .p13 import DEGRADED
 
 
 def check_compat(requires, provides, *, registry=None, delivery_dir=None):
@@ -56,12 +57,21 @@ def check_compat(requires, provides, *, registry=None, delivery_dir=None):
         patch_label = ", ".join(f"#{number}" for number in needed) or (
             "官方客户端系统" if cap["layer"] == "B" else "独立方法能力")
         if entry is None or missing_patches:
+            if cap_id in DEGRADED:
+                results.append(result("capability.degraded", "待验证", f"降级：{DEGRADED[cap_id]}（缺 {cap_id}）",
+                                      id=cap_id, compatibility="degraded", patches=needed,
+                                      missing_patches=missing_patches))
+                continue
             results.append(result("capability.missing", "问题", f"缺 {cap['title']}（{cap_id}）；需要 {patch_label}",
                                   blocking=True, id=cap_id, patches=needed, missing_patches=missing_patches))
             continue
         if set(entry["patches"]) != set(needed):
             results.append(result("capability.patch-evidence", "问题", f"{cap['title']} 的补丁依据与注册表不符",
                                   blocking=True, id=cap_id, patches=needed))
+            continue
+        if cap_id in DEGRADED and cap["provided_by"]["status"] == "待补":
+            results.append(result("capability.declared", "待验证", f"{cap['title']}：报告声明支持；方法证据及设备实测待核",
+                                  id=cap_id, compatibility="declared", basis=entry["basis"]))
             continue
         expected = cap["provided_by"]["methods"]
         allowed_swfs = cap["provided_by"].get("swf_sha256", [])

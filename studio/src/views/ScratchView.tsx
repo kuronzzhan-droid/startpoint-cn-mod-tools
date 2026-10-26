@@ -6,6 +6,7 @@ import { Drawer, ElementBadge, Notice, StatusStrip } from "./common";
 import { InfoTip, useDeliveries } from "./Delivery";
 import { deviceCell } from "./DeviceResult";
 import { PixelGroup, PixelSub } from "./PixelGroup";
+import { PromoteForm } from "./CharacterClone";
 
 const ELEMENTS = ["火", "水", "雷", "风", "光", "暗"];
 
@@ -123,6 +124,7 @@ export function ScratchDetail({ id, tab, sub }: { id: string; tab?: string; sub?
   const [info, setInfo] = useState<ScratchInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
+  const [promoting, setPromoting] = useState(false);
   const draft = useDraft(id);
   // Old deep links: workshop / import / changes.
   const drawer = tab === "changes";
@@ -156,11 +158,16 @@ export function ScratchDetail({ id, tab, sub }: { id: string; tab?: string; sub?
             <a class={"header-btn" + (status?.state === "dirty" ? " dirty" : status?.changes ? " saved" : "")} href={href(link("changes"))}>
               本次修改 <span class="count">{status?.changes ?? 0}</span>{status?.state === "dirty" ? <span class="dot" title="未保存" /> : null}
             </a>
+            <button class="header-btn" onClick={() => setPromoting(true)}
+              disabled={!!bound || promoting || !info.scratch.base.characterId || !drafts.hasToken()}
+              title={bound ? "已经绑定或升级过" : !info.scratch.base.characterId ? "母本只有像素代码，没有可克隆的角色 ID" : "以母本克隆一个新 ID 的正式角色，并把像素改动迁过去"}>
+              升级为正式角色</button>
             <button class="header-btn danger" onClick={remove} disabled={!drafts.hasToken()}>删除</button>
           </div>
           <span class={"origin " + (bound ? "origin-new" : "origin-unknown")}>{bound ? `已绑定 ${bound.characterId}` : "还没有角色 ID"}</span>
         </div>
       </header>
+      {promoting ? <PromoteForm sid={id} code={info.code} onClose={() => { setPromoting(false); setRefresh((n) => n + 1); }} /> : null}
       {bound ? <BoundStatusStrip cid={bound.characterId} draft={draft.view?.status ?? null}
         checks={draft.view?.changeset?.changes.flatMap((c) => c.checks) ?? []} />
         : <StatusStrip draft={draft.view?.status ?? null} checks={draft.view?.changeset?.changes.flatMap((c) => c.checks) ?? []}

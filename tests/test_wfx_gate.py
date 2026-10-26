@@ -27,6 +27,7 @@ MOD_DIR = TESTS.parent
 sys.path.insert(0, str(TESTS))
 sys.path.insert(0, str(MOD_DIR))
 
+from tool_source import tool_source  # noqa: E402
 import wf_describe  # noqa: E402
 import wf_dsl  # noqa: E402
 import wf_mod_tool as core  # noqa: E402
@@ -125,8 +126,7 @@ class CheckTests(unittest.TestCase):
 
     def test_every_batch_one_code_is_blocked_on_every_current_profile(self):
         samples = {10: "wfx:10:0:-1:1:a", 20: "wfx:20:4:0.3:0:a", 21: "wfx:21:0:1:1:a",
-                   22: "wfx:22:6:-0.5:1:a", 23: "wfx:23:0:50000:1:a", 30: "wfx:30:127:0:0:a",
-                   31: "wfx:31:127:-0.01:0:a", 40: "wfx:40:0:-0.3:0:a", 50: "wfx:50:0:15:1:a",
+                   22: "wfx:22:6:-0.5:1:a", 23: "wfx:23:0:50000:1:a", 40: "wfx:40:0:-0.3:0:a", 50: "wfx:50:0:15:1:a",
                    51: "wfx:51:0:0:1:a", 52: "wfx:52:0:1:1:a"}
         planned = {code for code, effect in wfx_registry.effect_codes().items()
                    if wfx_registry.capabilities()[effect["capability"]]["status"] == "planned"}
@@ -189,7 +189,7 @@ class CheckTests(unittest.TestCase):
 
     def test_malformed_and_reserved_sids_are_blocked_regardless_of_profile(self):
         for sid in ("wfx:21:0:0:1:bad", "wfx:21:0:1:1", "wfx:99:0:1:0:a", "wfxq:990099:0:1:99000101",
-                    "wfx:31:127:-0.01:0:stack_none"):
+                    "wfx:40:0:-0.3:0:stack_none"):
             max_acc = "(None)" if sid.endswith("stack_none") else "1"
             rows = {"unique_condition": {str(UID): unique_text(sid, max_acc=max_acc)}}
             with self.subTest(sid=sid):
@@ -464,7 +464,7 @@ class ExitCoverageTests(unittest.TestCase):
     """哪些出口接了闸门、哪些没接(及原因),以源码为准钉住;改出口时两张表必须同步。"""
 
     def source(self, module: str) -> str:
-        return (MOD_DIR / f"{module}.py").read_text(encoding="utf-8")
+        return tool_source(MOD_DIR, f"{module}.py").read_text(encoding="utf-8")
 
     def test_gated_exits_call_the_gate(self):
         calls = {"wf_publish": "wfx_gate.check_publish(", "wf_character_flow": "wfx_gate.check_package(",

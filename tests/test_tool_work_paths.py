@@ -18,12 +18,14 @@ sys.path.insert(0, str(MOD_TOOLS))
 import wf_assets  # noqa: F401, E402
 import wf_mod_tool  # noqa: F401, E402
 import wf_quest_lib  # noqa: F401, E402
+from tool_source import tool_source  # noqa: E402
 
 
 def load_copied_module(source_name: str, module_name: str, tool_dir: Path):
-    source = MOD_TOOLS / source_name
-    target = tool_dir / source_name
-    tool_dir.mkdir(parents=True, exist_ok=True)
+    # 复制工具本体（搬进 wf/tools 的按原相对位置放），根目录兼容入口只是转发。
+    source = tool_source(MOD_TOOLS, source_name)
+    target = tool_dir / source.relative_to(MOD_TOOLS)
+    target.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(source, target)
     spec = importlib.util.spec_from_file_location(module_name, target)
     if spec is None or spec.loader is None:  # pragma: no cover

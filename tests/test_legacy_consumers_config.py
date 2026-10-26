@@ -19,6 +19,7 @@ import wf_rogue_rewards as rewards
 import wf_rogue_save as save
 import wf_rogue_shop as shop
 import wf_rogue_validate as validate
+from tool_source import tool_source
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,9 +28,11 @@ MODULES = ("wf_rogue_rewards", "wf_rogue_shop", "wf_rogue_save",
 
 
 def copied_module(name, tool_dir, monkeypatch):
-    tool_dir.mkdir(parents=True, exist_ok=True)
-    target = tool_dir / f"{name}.py"
-    shutil.copy2(ROOT / target.name, target)
+    # 复制工具本体（搬进 wf/tools 的按原相对位置放），根目录兼容入口只是转发。
+    source = tool_source(ROOT, f"{name}.py")
+    target = tool_dir / source.relative_to(ROOT)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source, target)
     module_name = f"isolated_{name}"
     spec = importlib.util.spec_from_file_location(module_name, target)
     module = importlib.util.module_from_spec(spec)

@@ -65,6 +65,15 @@ def read_client(path, *, profile=None, expected_digest=None):
     if profile is not None:
         evidence = profile.get("evidence", {})
         source = document["source"]
+        if evidence.get("verification") == "report_declared":
+            expected = expected_digest or profile.get("provides_sha256")
+            if not expected or hashlib.sha256(raw).hexdigest() != expected:
+                raise ValueError("客户端档案 provides 文件哈希不符")
+            if (source["kind"] != "patch-record" or source.get("verification") != "report_declared"
+                    or document["patches"] or any(row["patches"] or row["methods"] for row in document["provides"])
+                    or sorted(row["id"] for row in document["provides"]) != sorted(profile.get("m2_capabilities", []))):
+                raise ValueError("客户端声明档案与 provides 能力列表不符")
+            return document
         if not evidence.get("swf_sha256") or source.get("swf_sha256") != evidence["swf_sha256"]:
             raise ValueError("客户端档案 SWF 哈希与 provides 不符")
         expected = expected_digest or profile.get("provides_sha256")

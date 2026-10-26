@@ -15,14 +15,14 @@ import wf_wfx as W  # noqa: E402
 
 class SidCodecTests(unittest.TestCase):
     def test_design_doc_examples_encode_exactly(self):
-        """设计稿 4.12 调用手册里的 7 个 sid 必须原样产出、原样解回。
+        """设计稿仍保留的 sid 与现行治疗效果示例必须原样往返。
 
         例 5 按作者裁决 #2(2026-09-28)改写:码 20 并入官方乘区池,PF 伤害 = 池号 4(696/413),
         不再是正文里的伤害掩码 112(pf1|pf2|pf3,已被裁决取代,见 test_wfx_registry 的裁决钉)。"""
         cases = [
             ((21, 0, 1, 1, "wfx_leader_dmg1"), "wfx:21:0:1:1:wfx_leader_dmg1"),
             ((10, 0, -1, 1, "wfx_atk_floor100"), "wfx:10:0:-1:1:wfx_atk_floor100"),
-            ((31, 127, -0.01, 0, "wfx_gauge_down1"), "wfx:31:127:-0.01:0:wfx_gauge_down1"),
+            ((35, 50, 500, 1000, "gerald"), "wfx:35:50:500:1000:gerald"),
             ((22, 6, -0.5, 1, "wfx_boss_skill_res50"), "wfx:22:6:-0.5:1:wfx_boss_skill_res50"),
             ((23, 0, 50000, 1, "wfx_boss_cap50k"), "wfx:23:0:50000:1:wfx_boss_cap50k"),
             ((20, 4, 0.3, 0, "wfx_pf_mul30"), "wfx:20:4:0.3:0:wfx_pf_mul30"),
@@ -78,10 +78,10 @@ class SemanticValidationTests(unittest.TestCase):
 
     def test_value_ranges_follow_the_registry(self):
         ok = ["wfx:10:0:-1:0:a", "wfx:10:0:-0.6:0:a", "wfx:21:0:1:0:a", "wfx:23:255:50000:0:a",
-              "wfx:30:1:0:0:a", "wfx:31:127:-1:0:a", "wfx:31:4:2:0:a", "wfx:40:0:-0.3:0:a",
+              "wfx:34:5050:100000:150000:a", "wfx:35:50:500:1000:a", "wfx:40:0:-0.3:0:a",
               "wfx:40:2:120:0:a", "wfx:50:0:1:1:a", "wfx:51:0:0:1:a", "wfx:52:0:0:0:a", "wfx:52:0:3:0:a",
               "wfx:20:0:-1:0:a", "wfx:20:4:0.3:0:a", "wfx:20:260:0.1:0:a", "wfx:22:32512:5:0:a",
-              "wfx:31:2:0.5:0:a"]         # 只选移动充能(423 规则允许)
+              "wfx:36:1:20000:10000:a"]
         for sid in ok:
             with self.subTest(sid=sid):
                 self.assertEqual([], self.problems(sid))
@@ -95,8 +95,8 @@ class SemanticValidationTests(unittest.TestCase):
                "wfx:20:112:0.3:0:a",      # 裁决 #2 之后 112 不是池号(旧伤害掩码写法)
                "wfx:20:5:0.3:0:a",        # 只有 5 个官方池
                "wfx:20:6:0.3:0:a",        # 旧掩码「技能主位|合击位」不再合法
-               "wfx:30:0:0:0:a",          # 回槽掩码至少选一种加槽类型
-               "wfx:30:1:1:0:a",          # 不读的值规范写 0
+               "wfx:30:0:0.5:0:a",        # v35查询要求整数
+               "wfx:31:127:-0.01:0:a",    # 已撤回的gauge.scale写法
                "wfx:40:7:0.1:0:a",        # 冲刺参数号 0–6
                "wfx:50:0:0:0:a",          # 连击上限 >= 1
                "wfx:52:0:4:0:a",          # PF 最高 3 档
@@ -111,9 +111,10 @@ class SemanticValidationTests(unittest.TestCase):
         mask = W.gauge_arg(["skill", "ability"], origins=["weapon"], owners=["other"])
         self.assertEqual(wf_battle_rules.gauge_mask(["skill", "ability"], origins=["weapon"], owners=["other"]),
                          mask)
-        self.assertEqual([], self.problems(f"wfx:31:{mask}:-0.5:0:a"))
-        # 423 的专项规则照样适用:移动充能不能再带来源位
-        self.assertTrue(self.problems(f"wfx:30:{2 | 1024}:0:0:a"))
+        self.assertTrue(self.problems(f"wfx:31:{mask}:-0.5:0:a"))
+        # 兼容助手仍给423调用方使用，30/31不再解释为回槽规则。
+        with self.assertRaises(ValueError):
+            wf_battle_rules.validate_code(423, 2 | 1024)
 
     def test_damage_mask_groups(self):
         self.assertEqual(0, W.damage_mask())
@@ -153,8 +154,8 @@ class SemanticValidationTests(unittest.TestCase):
     def test_required_capabilities_include_dependencies(self):
         self.assertEqual(["wfx-damage-v1", "wfx-core-v1"],
                          W.required_capabilities(W.decode_sid("wfx:21:0:1:1:a")))
-        self.assertEqual(["wfx-gauge-v1", "wfx-core-v1", "gauge-gain-rules-v1"],
-                         W.required_capabilities(W.decode_sid("wfx:31:127:-0.01:0:a")))
+        self.assertEqual(["holder-heal-fever-v1", "wfx-effect-query-v1"],
+                         W.required_capabilities(W.decode_sid("wfx:35:50:500:1000:a")))
         self.assertEqual(["wfx-dash-v1", "wfx-core-v1", "dash-parameter-v1"],
                          W.required_capabilities(W.decode_sid("wfx:40:0:-0.3:0:a")))
         self.assertEqual(["wfx-lock-v1", "wfx-core-v1"],
@@ -184,7 +185,7 @@ class UniqueRowTests(unittest.TestCase):
         self.assertEqual(W.UNIQUE_COLUMNS, len(ours))
 
     def test_row_constraints(self):
-        stacked = W.encode_sid(31, 127, -0.01, 0, "wfx_gauge_down1")
+        stacked = W.encode_sid(40, 0, -0.3, 0, "wfx_dash_down")
         pinned = W.encode_sid(50, 0, 15, 1, "wfx_combo15")
         self.assertEqual(stacked, W.unique_row(stacked, "倒流", "unique_gerald_time_seal", "99999999", "99",
                                                bad=True)[0])

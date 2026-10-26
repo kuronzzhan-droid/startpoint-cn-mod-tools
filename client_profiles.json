@@ -682,6 +682,44 @@
         "test_server_package": false
       },
       "update_rule": "wf apk register-local <apk>；真实方法及上下文比较；不根据版本名授予能力"
+    },
+    "p12b": {
+      "label": "p12b（报告声明，待验证）",
+      "description": "p12b 1008033，登记 N1/N3/N4；其余继承能力待核。",
+      "versionCode": 1008033,
+      "provides": "wf/apk/data/p12b-declared-provides.json",
+      "provides_sha256": "2afa11c4f083762a1eea6ce7e0b2a6a44006505f5254d28ae84ddf2a0b20e121",
+      "capabilities": [],
+      "m2_capabilities": [
+        "client.summon.cutin_preload@1",
+        "client.combo.base@1",
+        "client.pf.dual@1"
+      ],
+      "evidence": {
+        "verification": "report_declared",
+        "source": "p12 接口说明、P13-REPORT.md 与 p13-capabilities.json（2026-10-25，任务随附只读报告）",
+        "note": "未将外部报告提升为本次方法验证、设备安装或已部署证据。m2_capabilities 为编辑台声明；legacy 发布能力列表留空，未授权凭报告绕过发布方法证据门禁。"
+      }
+    },
+    "p13": {
+      "label": "p13（报告声明，待验证）",
+      "description": "p13 1008050，以 p12b 1008033 为底，登记 N1/N3/N4/N5/N6；其余继承能力待核。",
+      "versionCode": 1008050,
+      "provides": "wf/apk/data/p13-declared-provides.json",
+      "provides_sha256": "f68e4a7824cfc003ac375edf940b1e1dfc6a16199936337215890792add2d5a0",
+      "capabilities": [],
+      "m2_capabilities": [
+        "client.summon.cutin_preload@1",
+        "client.combo.base@1",
+        "client.pf.dual@1",
+        "client.summon.flip_pf@1",
+        "client.ball.pf_action@1"
+      ],
+      "evidence": {
+        "verification": "report_declared",
+        "source": "p12 接口说明、P13-REPORT.md 与 p13-capabilities.json（2026-10-25，任务随附只读报告）",
+        "note": "未将外部报告提升为本次方法验证、设备安装或已部署证据。m2_capabilities 为编辑台声明；legacy 发布能力列表留空，未授权凭报告绕过发布方法证据门禁。"
+      }
     }
   },
   "default_client_profile": "test-v34"

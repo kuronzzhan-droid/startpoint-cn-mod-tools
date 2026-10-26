@@ -16,6 +16,9 @@ import { TextTab } from "./TextTab";
 import { CharacterProfileBadge, ProgramCapChip } from "./ClientProfile";
 import { SkillPreview } from "./TimelinePreview";
 import { Handoff } from "./Handoff";
+import { SkillTemplate } from "./SkillTemplate";
+import { PfActionWorkshop } from "./PfActionWorkshop";
+import { SummonWorkshop } from "./SummonWorkshop";
 
 // Seven groups (C1): 能力（一板/二板/三板）｜技能｜文案｜立绘｜像素（预览/单动作替换/工坊/整族导入）｜语音｜交接单;
 // 本次修改 and 资源 open as header drawers.
@@ -245,6 +248,9 @@ function AbilityCard({ title, table, group, rows, columns, awake, filter }: {
 const SKILL_SUBS = [
   { id: "data", label: "技能数据", hint: "能量、程序、档位等字段" },
   { id: "preview", label: "动作预览", hint: "技能 / 强化弹射 / 629 能力技的编排时间轴（L2）" },
+  { id: "template", label: "技能模板", hint: "克隆官方技能，改倍率、属性、特效颜色，可在开头召唤协力角色" },
+  { id: "pf", label: "强化弹射动作", hint: "克隆官方强化弹射三档，改属性和倍率，存成新动作键" },
+  { id: "summon", label: "召唤角色", hint: "从 ★4 母本克隆召唤出来的协力角色：面板、技能、强化弹射类型" },
 ];
 
 function SkillGroupPage({ detail, sub, link, onText }: {
@@ -258,7 +264,11 @@ function SkillGroupPage({ detail, sub, link, onText }: {
           <a class={active === s.id ? "on" : ""} href={href(link(s.id))} title={s.hint} aria-current={active === s.id ? "page" : undefined}>{s.label}</a>
         ))}
       </nav>
-      {active === "preview" ? <SkillPreview characterId={detail.id} /> : <SkillTab detail={detail} onText={onText} />}
+      {active === "preview" ? <SkillPreview characterId={detail.id} />
+        : active === "template" ? <SkillTemplate characterId={detail.id} />
+        : active === "pf" ? <PfActionWorkshop characterId={detail.id} />
+        : active === "summon" ? <SummonWorkshop characterId={detail.id} />
+        : <SkillTab detail={detail} onText={onText} />}
     </div>
   );
 }

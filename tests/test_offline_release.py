@@ -2716,7 +2716,8 @@ class OfflineReleaseCliTests(OfflineReleaseTestCase):
             ) as independent_verify,
             contextlib.redirect_stdout(output),
         ):
-            exit_code = module.main(["verify", "--bundle", str(final_dir)])
+            exit_code = module.main(["verify", "--bundle", str(final_dir),
+                                     "--output-root", str(self.root / "real-cli-final")])
 
         document = json.loads(output.getvalue().splitlines()[-1])
         self.assertEqual(exit_code, 0, document)

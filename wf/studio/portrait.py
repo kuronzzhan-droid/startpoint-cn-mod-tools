@@ -284,6 +284,8 @@ class PortraitService:
             info["current"]["suggestedBackdrop"] = suggested_backdrop(element)
             if found:
                 info["current"]["template"]["backdrop"] = backdrop
+                if backdrop is not None:
+                    info["current"]["currentBackdrop"] = backdrop
                 info["current"]["backdropSource"] = "取自现有 square 图标" if backdrop else "现有图标是透明底"
         uploaded = self.store.read_file(cid, f"sources/portrait_{form}.png")
         if uploaded is not None:
@@ -293,8 +295,12 @@ class PortraitService:
             info["upload"] = {"file": f"sources/portrait_{form}.png", "size": list(image.size), **meta,
                               "template": default_template(image, None, element)}
             info["upload"]["suggestedBackdrop"] = suggested_backdrop(element)
-            if found:
-                info["upload"]["template"]["backdrop"] = backdrop
+            # A new portrait starts transparent like official icons: the existing icon's
+            # painted backdrop belongs to the old art (for a clone, the parent's), so it is
+            # only offered, never applied silently over the new art's transparent areas.
+            info["upload"]["backdropSource"] = "透明底（官方做法）"
+            if found and backdrop is not None:
+                info["upload"]["currentBackdrop"] = backdrop
         return info
 
     # -- render ---------------------------------------------------------
@@ -377,6 +383,11 @@ class PortraitService:
                            "message": f"不透明占比 {opaque:.2f}，官方约 0.27–0.66（不是门禁项）"})
         masks = self.masks(official_codes)
         icons = self.render(master, template, masks, role=f"studio:{cid}")
+        from .icon_alpha import inspect_icons
+        for item in inspect_icons(master, template, icons, masks, form=form):
+            if item["status"] != "ok":
+                checks.append({"level": item["level"], "code": "portrait.icon_alpha",
+                               "message": item["code"] + "：" + item["message"]})
         for problem in gate.derived_icon_problems(icons, masks, level=form):
             checks.append({"level": "warn", "code": "portrait.icon_gate", "message": problem})
         files = []

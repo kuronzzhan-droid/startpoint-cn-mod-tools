@@ -18,14 +18,18 @@ import wf_mod_tool as core  # noqa: E402
 
 
 class DevCatalogPathCase(unittest.TestCase):
+    # 根目录 wf_dev_catalog 只是转发入口；两份都清掉，import 才会重新执行模块顶层代码。
+    NAMES = ("wf_dev_catalog", "wf.tools.core.dev_catalog")
+
     def setUp(self) -> None:
-        self.previous = sys.modules.pop("wf_dev_catalog", None)
+        self.previous = {name: sys.modules.pop(name, None) for name in self.NAMES}
         self.addCleanup(self._restore_module)
 
     def _restore_module(self) -> None:
-        sys.modules.pop("wf_dev_catalog", None)
-        if self.previous is not None:
-            sys.modules["wf_dev_catalog"] = self.previous
+        for name, module in self.previous.items():
+            sys.modules.pop(name, None)
+            if module is not None:
+                sys.modules[name] = module
 
     def test_module_roots_use_shared_resolvers(self) -> None:
         with tempfile.TemporaryDirectory() as td:

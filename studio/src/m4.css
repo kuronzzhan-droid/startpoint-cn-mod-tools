@@ -175,3 +175,13 @@ mark { background: #ffe58f; color: inherit; border-radius: 2px; padding: 0 1px; 
   background: #e8b43a; color: #2b2f3a; font-size: 10px; font-weight: 700; vertical-align: -2px; }
 .danger-line { color: var(--danger); }
 .link { border: 0; background: none; padding: 0 2px; color: var(--accent); cursor: pointer; font-size: inherit; }
+
+/* Delivery guards: APK built-in collisions, key-level diff, icon transparency */
+.guard-block { margin: 10px 0 14px; }
+.guard-block h4 .rs { margin-left: 6px; }
+.guard-block tr.clickable { cursor: pointer; }
+.guard-block tr.clickable:hover td { background: var(--hover, rgba(127, 127, 127, .08)); }
+.kd-keys { display: flex; flex-wrap: wrap; gap: 4px; margin: 2px 0 8px; }
+.kd-keys .tag { margin: 0; }
+.kd-removed .tag { color: var(--danger); }
+.kd-foreign .tag { color: var(--warn); }

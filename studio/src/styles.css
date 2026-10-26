@@ -408,3 +408,15 @@ details.tech { margin: -4px 0 8px; }
 }
 details.speech { overflow-x: auto; }
 @media (max-width: 640px) { audio { max-width: 100%; } .speech-text { min-width: 160px; } }
+
+/* 工具抽屉（链视图 / ID / 版本）与克隆新角色向导 */
+.tools-panel { display: flex; flex-direction: column; gap: 14px; }
+.tool-block h3 { margin: 0 0 6px; display: flex; align-items: center; gap: 4px; }
+.tool-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+.tool-row input { flex: 1; min-width: 120px; }
+pre.cmd { background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.id-input { display: flex; gap: 6px; }
+.id-input input { flex: 1; min-width: 0; }
+.clone-donors { list-style: none; padding: 0; margin: 6px 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 4px; max-height: 420px; overflow: auto; }
+.clone-donor { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.clone-done { display: flex; flex-direction: column; gap: 10px; }

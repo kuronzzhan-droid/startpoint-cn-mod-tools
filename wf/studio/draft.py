@@ -41,18 +41,8 @@ def _png_b64(image) -> str:
 
 def _ops(args):
     from .operations import DraftOps
-    from .source import build_source
-    if args.manifest:
-        from wf.view import ManifestView
-        from .source import StudioSource
-        if not args.tip:
-            raise DraftError("--manifest 需要 --tip 指定精确来源版本")
-        if args.extra_zips_file:
-            raise DraftError("manifest 视图不能叠加未经清单锁定的 --extra-zips-file")
-        source = StudioSource(ManifestView(f"1.4.{args.tip}", store=args.store, manifest=args.manifest,
-                                          search_dirs=args.zip_dir, manifests=args.manifest_extra))
-    else:
-        source = build_source(tip=args.tip, extra_lists=args.extra_zips_file, use_default_chain=not args.no_chain)
+    from .view_commands import source_from_args
+    source = source_from_args(args)
     return DraftOps(source, store=DraftStore(args.drafts) if args.drafts else None)
 
 
@@ -63,13 +53,19 @@ def _load_json(path: str):
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m wf.studio.draft", description="编辑台草稿与本地交付命令行")
     parser.add_argument("--drafts", type=Path, help="草稿根目录（默认 work/studio-drafts 或 WF_STUDIO_DRAFTS）")
-    parser.add_argument("--tip", type=int, help="视图 TIP 小版本号")
+    parser.add_argument("--tip", help="视图终点（小版本号或 1.4.N）")
     parser.add_argument("--extra-zips-file", action="append", default=[], metavar="TXT")
     parser.add_argument("--no-chain", action="store_true")
     from .draft_commands import source_arguments, add_commands
     source_arguments(parser)
     sub = parser.add_subparsers(dest="command", required=True)
     add_commands(sub)
+    from .safety_commands import add_commands as add_safety_commands
+    add_safety_commands(sub)
+    from .summon_routes import add_summon_commands
+    add_summon_commands(sub)
+    from .pf_cli import add_pf_commands
+    add_pf_commands(sub)
 
     p = sub.add_parser("list", help="列出有草稿的角色或副本")
     p.add_argument("--boss", action="store_true", help="使用独立副本草稿目录")
@@ -175,6 +171,12 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def run(args) -> dict:
+    if args.command == "rehearse":
+        from .rehearsal import rehearse
+        return rehearse(args.delivery_dir, args.server, zips=args.rehearsal_zips)
+    if args.command in {"bundle-check", "key-diff"}:
+        from .safety_commands import run as run_safety
+        return run_safety(args)
     store = DraftStore(args.drafts) if args.drafts else DraftStore()
     if getattr(args, "boss", False) and args.command != "build":
         from .boss import BossDraftStore
@@ -202,8 +204,32 @@ def run(args) -> dict:
     if args.command == "device-result":
         from .draft_commands import run_device_result
         return run_device_result(args)
+    if args.command == "export-store":
+        from .view_commands import run as run_view
+        return run_view(args)
+    if args.command == "pf-action" and args.pf_command == "keys":
+        from .pf_actions import draft_keys
+        return draft_keys(store, args.cid)
 
     ops = _ops(args)
+    if args.command == "pf-action":
+        from .pf_cli import run_pf
+        return run_pf(args, ops)
+    if args.command in ("ids", "versions"):
+        from .discovery_commands import run as run_discovery
+        return run_discovery(args, ops.source, store)
+    if args.command in ("character", "scratch-promote"):
+        from .character_routes import run_character_command
+        return run_character_command(args, ops)
+    if args.command == "weapon":
+        from .weapon_cli import run_weapon
+        return run_weapon(args, ops.source, store)
+    if args.command == "summon":
+        from .summon_routes import run_summon
+        return run_summon(args, ops.source, store)
+    if args.command in {"skill-templates", "skill-template"}:
+        from .skill_template_cli import run_skill_template
+        return run_skill_template(args, ops.source, store)
     if args.command == "boss":
         from .boss import BossEditor, BossDraftStore
         editor = BossEditor(ops.source, store=BossDraftStore(store.root / "boss"), server_dir=args.server_dir)
@@ -392,6 +418,9 @@ def main(argv=None) -> int:
     except (DraftError, ValueError, OSError, KeyError) as exc:
         print(json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False))
         return 1
+    if args.command in {"bundle-check", "key-diff"}:
+        print(json.dumps(result, ensure_ascii=False, default=str))
+        return 1 if result.get("status") in {"collision", "error", "blocked"} else 0
     ok = not (isinstance(result, dict) and result.get("ok") is False)
     print(json.dumps({"ok": ok, "result": result}, ensure_ascii=False, default=str))
     return 0 if ok else 1

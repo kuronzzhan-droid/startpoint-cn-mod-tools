@@ -13,13 +13,18 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="python -m wf.studio", description="编辑台后端：读分层视图，只写草稿 work/studio-drafts")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8790)
-    parser.add_argument("--tip", type=int, help="视图 TIP 小版本号（默认取 kulo active 中最新的补丁边）")
+    parser.add_argument("--tip", help="manifest 链终点（175 或 1.4.175）；默认清单最新启用版本")
+    parser.add_argument("--view", dest="view_name", help="profiles/local.json 的命名视图")
+    parser.add_argument("--store", type=Path, help="只读基线 upload store")
+    parser.add_argument("--base-version", help="基线 store 版本；默认 1.4.131 或命名视图配置")
+    parser.add_argument("--manifest", type=Path, help="独立 manifest，可与 --zip-dir 配合")
+    parser.add_argument("--manifest-extra", type=Path, action="append")
     parser.add_argument("--extra-zip", action="append", default=[], metavar="ZIP",
                         help="在 active 链之后按顺序叠加的补丁 ZIP，可重复")
     parser.add_argument("--extra-zips-file", action="append", default=[], metavar="TXT",
                         help="每行一个 ZIP 路径的清单文件，可重复；按出现顺序叠加")
     parser.add_argument("--chain-manifest", type=Path, metavar="JSON",
-                        help="补丁链清单 manifest.json；TIP 之后的已启用边按 archive_integrity 在搜索目录中找 ZIP"
+                        help="补丁链清单 manifest.json（兼容旧参数名）；从基线叠到 --tip"
                              "（默认读 profile 的 paths.studio_chain_manifest）")
     parser.add_argument("--zip-dir", action="append", type=Path, metavar="DIR",
                         help="查找补丁 ZIP 的目录（可重复；默认 profile 的 studio_zip_dirs，否则 wf_root 下 rel* 与 out）")
@@ -40,7 +45,8 @@ def main(argv=None) -> int:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     source = build_source(tip=args.tip, extra_zips=args.extra_zip, extra_lists=args.extra_zips_file,
                           chain_manifest=args.chain_manifest, search_dirs=args.zip_dir,
-                          use_default_chain=not args.no_chain)
+                          use_default_chain=not args.no_chain, manifest=args.manifest, store=args.store,
+                          base_version=args.base_version, manifests=args.manifest_extra, view_name=args.view_name)
     if args.provides is not None and not args.provides.is_file():
         parser.error(f"--provides 文件不存在：{args.provides}")
     from .device_result import configured_screenshot_dirs

@@ -223,6 +223,23 @@ export interface WeaponSpec {
   id?: string; sourceWeapon?: string; name?: string; description?: string; icon?: string; enhancedIcon?: string;
   hpMultiplier?: number; attackMultiplier?: number; abilities?: WeaponAbilityChange[];
   enhancementProducts?: string[]; stages?: WeaponStage[];
+  /** Soul item c5 / c12 (equip elements: "all", "auto" or 0..5 list); omitted = inherit the donor. */
+  soulDescription?: string; soul_elements?: "all" | "auto" | number[];
+  /** 武器工坊 only: equipment c0 (soul item c0 = <code>_soul); omitted = boss_workshop_<id>. */
+  code?: string;
+  /** Design metadata only (weapon.exclusive-character-metadata); never restricts equipping. */
+  exclusive_character?: string;
+  /** Replaces every ability_soul row of the donor (weapons.md §7). */
+  soul_template?: WeaponSoulTemplate;
+}
+
+export type SoulTemplateId = "pf_hit_ability_damage" | "pf_use_ability_damage" | "pf_hit_invoke_damage" | "pf_use_invoke_damage";
+export interface WeaponSoulTemplate {
+  template: SoulTemplateId; element: number; multiplier: number; max_multiplier?: number;
+  trigger_limit?: number | null; cooldown_frames?: number;
+  damage_target?: "trigger_enemy" | "all_enemies" | "nearest_enemy";
+  /** 629 variants only: dsl_element = element + 1, hit_effect Explosion / None. */
+  hit_effect?: "Explosion" | "None"; dsl_element?: number;
 }
 
 export type ShopWeaponRequest =
@@ -255,6 +272,9 @@ export interface TerrainDoc {
   bindings?: { field_data: string; field: string; zone: string; waves: { layer: string; zone_paths: string[][] }[] };
 }
 
+/** A material amount; 武器工坊 detail also fills the item's c2 name / c3 icon path (null: row missing or empty). */
+export interface MaterialRef<A> { itemId: string; amount: A; name?: string | null; icon?: string | null }
+
 export interface ProductFields {
   name: string; description: string; icon: string; rarity: string;
   price: { itemId: string; amount: string }[]; stock: string;
@@ -266,7 +286,7 @@ export interface ProductFields {
 export interface ShopProduct extends BossRecord { id: string; fields: ProductFields; soul_item_ids: string[] }
 export interface EnhancementStage extends BossRecord {
   id: string; categoryId: string; groupId: string; stage: string; maxLevel: string; requireAwakeningLevel: string;
-  costs: { itemId: string; amount: string }[]; priceKind: string; userCost: { type: string; amount: string } | null;
+  costs: MaterialRef<string>[]; priceKind: string; userCost: { type: string; amount: string } | null;
   startLevel: number; purchaseCountTo120: number;
 }
 export interface WeaponDoc {
@@ -276,7 +296,7 @@ export interface WeaponDoc {
   status: { level: string; row: string[]; source: BossCitation }[];
   enhancement_status: { level: string; row: string[]; source: BossCitation }[];
   enhancement_chain: EnhancementStage[];
-  materials_to_120: { itemId: string; amount: number }[];
+  materials_to_120: MaterialRef<number>[];
   user_costs_to_120: { type: string; amount: number }[];
   enhancement_start_level: number; reaches_120: boolean; material_semantics: string;
   kind_columns: Record<string, Record<string, number>>; kind_evidence: string;

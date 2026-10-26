@@ -54,8 +54,9 @@ def query_requirements(*, kinds=(), unique_strings=(), dsl_markers=(), selectors
         except (OSError, ValueError) as exc:
             reports[name] = {"compatible": False, "error": str(exc), "checks": []}
             continue
-        ok = not any(r["blocking"] for r in checks)
-        reports[name] = {"compatible": ok, "checks": checks}
+        ok = not any(r["blocking"] or r.get("compatibility") in {"degraded", "declared"} for r in checks)
+        reports[name] = {"compatible": ok, "checks": checks,
+                         "degraded": any(r.get("compatibility") == "degraded" for r in checks)}
         if ok:
             compatible.append(name)
     return {"clientProfile": selected, "capabilities": ids,

@@ -325,7 +325,11 @@ export function PortraitEditor({ characterId }: { characterId: string }) {
             <h4>图标底色 {active?.backdropSource ? <span class="small muted">（默认{active.backdropSource}）</span> : null}</h4>
             <div class="param-grid">
               <label class="check"><input type="checkbox" checked={template.backdrop === null}
-                onChange={(e) => { const t = clone(template); t.backdrop = (e.target as HTMLInputElement).checked ? null : (active?.suggestedBackdrop ?? { inner: [110, 110, 130], outer: [40, 40, 55] }); setTemplate(t); }} />透明底</label>
+                onChange={(e) => { const t = clone(template); t.backdrop = (e.target as HTMLInputElement).checked ? null : ((source === "upload" ? active?.suggestedBackdrop : active?.currentBackdrop ?? active?.suggestedBackdrop) ?? { inner: [110, 110, 130], outer: [40, 40, 55] }); setTemplate(t); }} />透明底</label>
+              {source === "upload" && template.backdrop === null && active?.currentBackdrop ? (
+                <button class="small-btn" onClick={() => { const t = clone(template); t.backdrop = JSON.parse(JSON.stringify(active.currentBackdrop)); setTemplate(t); }}>
+                  沿用现有图标的底色</button>
+              ) : null}
               {template.backdrop ? (
                 <>
                   <label>内<input type="color" value={hex(template.backdrop.inner)}

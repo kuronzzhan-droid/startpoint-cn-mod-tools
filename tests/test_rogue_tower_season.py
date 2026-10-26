@@ -18,8 +18,11 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
+from tool_source import tool_source  # noqa: E402
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+import wf_rogue_reroll as reroll  # noqa: E402
 import wf_rogue_season as season  # noqa: E402
 
 
@@ -319,7 +322,7 @@ class GuiWiringTest(unittest.TestCase):
     """GUI 那两条发布入口真的接上了判据(不是只写在注释里)。"""
 
     def test_both_publish_paths_call_the_season_sync(self) -> None:
-        source = (Path(season.__file__).resolve().parent / "wf_gui.py").read_text(encoding="utf-8")
+        source = tool_source(ROOT, "wf_gui.py").read_text(encoding="utf-8")
         self.assertIn('_rogue_season_sync("gui-build")', source,
                       "①难度曲线/重摇的「应用+发布」没接换期判定")
         self.assertIn('_rogue_season_sync("gui-publish")', source,
@@ -331,7 +334,7 @@ class GuiWiringTest(unittest.TestCase):
 
     def test_reroll_cli_refreshes_the_baseline(self) -> None:
         """CLI 换期之后必须刷新基线,否则 GUI 会拿重摇前的塔当基线误判。"""
-        source = (Path(season.__file__).resolve().parent / "wf_rogue_reroll.py").read_text(
+        source = Path(reroll.__file__).read_text(
             encoding="utf-8")
         self.assertIn("note_season_baseline", source)
         self.assertIn("wf_rogue_season", source)
@@ -343,7 +346,7 @@ class GuiWiringTest(unittest.TestCase):
         这一条盯的是「别哪天把交叉核对挪到 new-tower 分支之后」——
         挪过去就等于没有这道闸。
         """
-        source = (Path(season.__file__).resolve().parent / "wf_rogue_season.py").read_text(
+        source = Path(season.__file__).read_text(
             encoding="utf-8")
         gate = source.index('if state.get("season") != live["season"]:')
         rollover = source.index("result = reroll.rollover_via_server")

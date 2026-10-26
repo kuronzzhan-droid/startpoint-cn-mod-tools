@@ -12,6 +12,7 @@ from wf.boss.shop_edit import edit_shop, server_product, item_reference
 from wf.boss.shop_model import (ITEM, STATUS, SOUL, ENH, ENH_ABILITY, ENH_STATUS,
                                 ENH_SHOP, ENH_CATEGORY, SERVER_SHOP, SERVER_MAP, SERVER_ENH)
 from wf.boss.weapon_edit import clone_weapon, edit_materials, check_ability_rows
+from wf.boss.weapon_rules import AWAKENING, CUSTOM
 from wf.deliver.json_merge import _json_spans
 from wf.view.base149 import join
 from test_boss_edit_review import RawSource
@@ -39,7 +40,8 @@ def state(tmp_path, monkeypatch):
               STATUS: {"5010005": {"1": "100,20", "5": "200,40"}},
               ENH_STATUS: {"5010005": {"1": "1,1", "120": "120,120"}},
               ENH: {"5010005": "120,70,Weapon,70,item/enhanced,70,Description,120,2000-01-01"},
-              ENH_SHOP: {"501000501": join(enhancement)}, ENH_CATEGORY: {"7": "category"}}
+              ENH_SHOP: {"501000501": join(enhancement)}, ENH_CATEGORY: {"7": "category"},
+              CUSTOM: {"unrelated_string": "preserved"}}
     raw = RawSource(tables, {"item/weapon.png": b"png", "item/soul.png": b"png", "item/enhanced.png": b"png"})
     server = {SERVER_SHOP: {"81": {"100": server_product(shop), "101": server_product(shop)}},
               SERVER_MAP: {"100": 81, "101": 81}, SERVER_ENH: {"501000501": {
@@ -49,7 +51,9 @@ def state(tmp_path, monkeypatch):
               "assets/equipment_max_level.json": {"5010005": 5},
               "assets/equipment_element.json": {"5010005": -1},
               "assets/item_sale.json": {"5010005": {"sale_price": 5}},
-              "assets/item_lookup.json": {}, "assets/equipment_ids.json": [5010005], "assets/item_ids.json": [1, 5010005]}
+              "assets/item_lookup.json": {}, "assets/equipment_ids.json": [5010005], "assets/item_ids.json": [1, 5010005],
+              AWAKENING: {"officialCrystals": {"12001": {"maxRarity": 4}, "12002": {"maxRarity": 5}},
+                          "materialByEquipment": {}, "rarityOverrides": {}}}
     for target, document in server.items():
         filename = tmp_path / target
         filename.parent.mkdir(exist_ok=True)
@@ -125,14 +129,14 @@ def test_clone_uses_weapon_kind_columns_and_copies_entire_material_graph(state):
                            "kind": 34, "strength": [7000, 8000]}]}
     state.set_server_keys("assets/equipment_element.json", {"5950001": -1})
     clone_weapon(state, spec, {"weapons": ["5950002"], "enhancementProducts": ["595000301"]})
-    assert spec["id"] == "5950003" and spec["enhancementProducts"] == ["595000302"]
+    assert spec["id"] == "5950004" and spec["enhancementProducts"] == ["595000401"]
     row = s.parse_rows(state.table(SOUL)[spec["id"]])[0]
     assert row[44] == "34" and row[48:50] == ["7000", "8000"]
     assert row[47] == s.parse_rows(state.table(SOUL)["5010005"])[0][47]
     assert state.table(STATUS)[spec["id"]]["5"] == "400,40"
     assert state.table(ENH_STATUS)[spec["id"]]["120"] == "240,120"
-    assert state.server(SERVER_ENH)["595000302"]["equipmentId"] == 5950003
-    assert 5950003 in state.server("assets/equipment_ids.json")
+    assert state.server(SERVER_ENH)["595000401"]["equipmentId"] == 5950004
+    assert 5950004 in state.server("assets/equipment_ids.json")
     assert state.table(ITEM)["5010005"] != state.table(ITEM)[spec["id"]]
 
 
