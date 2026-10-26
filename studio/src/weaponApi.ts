@@ -246,3 +246,83 @@ export function weaponSubject(id: string): DraftSubject {
     get: () => weapons.draft(id), save: () => weapons.save(id), revert: (change) => weapons.revert(id, change),
   };
 }
+
+// ------------------------------------------------------------------ 专属武器全套 (weapons.md §10)
+
+/** One category row of GET /set-options; exchange `name` is the native c0 code (no text-name column). */
+export interface WeaponSetCategoryOption { id: string; code: string; name: string; order: string; row: string[]; table: string }
+/** Current item rows; serverAvailable null = no server item_ids input (not verified, never "passed"). */
+export interface WeaponSetMaterial { id: string; name: string; icon: string; serverAvailable: boolean | null }
+export interface WeaponSetOptions {
+  version: string;
+  categories: { enhancement: WeaponSetCategoryOption[]; exchange: WeaponSetCategoryOption[] };
+  materials: WeaponSetMaterial[];
+  serverInputAvailable: boolean;
+  notes: string[];
+  runtime: string;
+}
+
+/** Reuse: id or existing code/name. Create: sourceCategory + code + name (id auto-allocated). */
+export interface WeaponSetCategory { id?: string; sourceCategory?: string; code?: string; name?: string }
+export interface WeaponSetStage { maxLevel: number; costs: { itemId: string; amount: number }[]; requireAwakeningLevel?: number }
+/** Omitted keys = option off. noSoul=false is "no action", not an undo (undo = draft revert). */
+export interface WeaponSetRequest {
+  noSoul?: boolean;
+  awakeningMaterial?: string;
+  enhancementCategory?: WeaponSetCategory;
+  enhancement?: { sourceWeapon?: string; maxLevel: number; stages: WeaponSetStage[]; products?: string[] };
+  exchange?: {
+    category: WeaponSetCategory; sourceProduct: string; productId?: string; itemId: string;
+    amount: number; count?: number; stock: number; description?: string;
+  };
+}
+
+/** Five-state check plus the extras weapon.enhancement-cost / weapon.awakening-material carry. */
+export interface WeaponSetCheck extends RuleResult {
+  maxLevel?: number; purchaseMode?: string; materialTotals?: Record<string, number>;
+  materialId?: string; clientCapability?: string; duplicateEquipmentAllowed?: boolean;
+  internalSoulId?: string; generatedSoul?: boolean;
+}
+
+export interface WeaponSetResult {
+  ok: boolean;
+  error?: string;
+  weaponId?: string;
+  subjectKind?: "weapon";
+  changes?: { table: string; path: string[]; old: unknown; new: unknown }[];
+  serverTargets?: string[];
+  checks: WeaponSetCheck[];
+  /** Final rows of the whole draft sequence (clone + set …); value = CSV text or nested status object. */
+  rows?: { client: { table: string; path: string[]; value: unknown }[]; server: { target: string; updates: unknown }[] };
+  requires?: { clientCapabilities: string[]; serverFeatures: string[] };
+  runtime: string;
+  /** Save only. */
+  change?: DraftChange;
+  changeset?: Changeset;
+  status?: DraftStatus;
+}
+
+/** Both preview and write keep the HTTP 400 body (ok:false + checks) instead of throwing. */
+async function setPost(url: string, body: unknown): Promise<WeaponSetResult> {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-WF-Studio-Token": token() },
+    body: JSON.stringify(body),
+  });
+  const data = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
+  if (Array.isArray(data.checks)) return { ...data, ok: response.ok && data.ok !== false } as WeaponSetResult;
+  return {
+    ok: false, error: data.error || `HTTP ${response.status}`, runtime: "未执行",
+    checks: [{ rule: "weapon.inputs", status: "问题", blocking: true, message: data.error || `HTTP ${response.status}` }],
+  };
+}
+
+export const weaponSet = {
+  options: () => get<WeaponSetOptions>(`${PREFIX}/set-options`),
+  preview: (id: string, body: WeaponSetRequest) => setPost(`${PREFIX}/${enc(id)}/set?preview=true`, body),
+  apply: async (id: string, body: WeaponSetRequest) => {
+    const result = await setPost(`${PREFIX}/${enc(id)}/set`, body);
+    if (result.ok) announce(id);
+    return result;
+  },
+};

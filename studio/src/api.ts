@@ -356,7 +356,7 @@ export interface DraftFile {
 
 export interface DraftChange {
   id: string;
-  kind: "portrait" | "pixel_action" | "pixel_family" | "voice_line" | "ability_edit" | "boss" | "weapon" | "character_clone";
+  kind: "portrait" | "pixel_action" | "pixel_family" | "voice_line" | "ability_edit" | "boss" | "weapon" | "character_clone" | "summon_clone" | "pf_action_clone" | "skill_template";
   title: string;
   createdAt: string;
   target: Record<string, string>;
@@ -956,6 +956,29 @@ export interface DeliveryDetail {
   iconAlpha?: IconAlphaResult | null;
   /** p12/p13 client keys (wfx_summon_flip_pf_<ball>, wfx_ball_pf_action_<ball>, …) and what they require. */
   clientExtensions?: ClientExtensions | null;
+  /** Latest read-only server rehearsal (delivery/rehearsal-<server>.json); null when never run. */
+  rehearsal?: Rehearsal | null;
+}
+
+export interface Rehearsal {
+  schema: string;
+  server: string;
+  createdAt?: string;
+  ok: boolean;
+  status: "ready" | "blocked";
+  serverRoot?: string | null;
+  currentVersion?: string | null;
+  from?: string | null;
+  to?: string | null;
+  checks?: RuleResult[];
+  archives?: { name: string; size: number; sha256: string }[];
+  manifestEntryJson?: string | null;
+  manifestFormat?: { encoding: string; bom: boolean; newline: string; indent: number };
+  serverChanges?: { target: string; kind: string; addedKeys?: string[]; replacedKeys?: string[]; omittedKeys?: string[];
+    wholeFileOverwriteRisk?: boolean; changed?: boolean }[];
+  restartRequired?: boolean | null;
+  restartReason?: string | null;
+  manualSteps?: string[];
 }
 
 export interface BundleCheck {
@@ -1053,6 +1076,8 @@ export interface DeliveryApi {
   writeDevice: (cid: string, name: string, body: DeviceWrite) => Promise<{ name: string; deviceResult: DeviceEntry }>;
   importDevice: (cid: string, name: string, path: string, allowUnverified?: boolean) =>
     Promise<{ name: string; deviceResult: DeviceEntry }>;
+  /** Read-only rehearsal against a configured server (profiles/local.json servers); writes nothing there. */
+  rehearse: (name: string, server: string) => Promise<{ name: string; ok: boolean; rehearsal: Rehearsal }>;
 }
 
 export function deliveryApi(prefix: string, key: (cid: string) => string = (cid) => cid): DeliveryApi {
@@ -1066,6 +1091,7 @@ export function deliveryApi(prefix: string, key: (cid: string) => string = (cid)
     cancel: (cid) => post(`${prefix}/drafts/${id(cid)}/build/cancel`, {}),
     finished: (cid) => notify(key(cid), Promise.resolve(null)),
     detail: (name) => get<DeliveryDetail>(`${prefix}/deliveries/${encodeURIComponent(name)}`),
+    rehearse: (name, server) => post(`${prefix}/deliveries/${encodeURIComponent(name)}/rehearse`, { server }),
     fileUrl: (name, path) => `${prefix}/deliveries/${encodeURIComponent(name)}/file?path=${encodeURIComponent(path)}`,
     device: (name) => get(`${prefix}/deliveries/${encodeURIComponent(name)}/device-result`),
     writeDevice: (cid, name, body) =>
