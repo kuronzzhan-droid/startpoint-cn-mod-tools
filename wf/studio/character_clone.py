@@ -184,6 +184,13 @@ def compile_clone(source, store, draft, *, server_dir=None):
     media = compile_media(effective, store, draft)
     members.update(media.members)
     checks = list(media.checks)
+    skill_assertions = []
+    if any(change["kind"] == "skill_template" for change in draft["changes"]):
+        from .skill_template_compile import compile_skill_template
+        added, skill_assertions, skill_checks = compile_skill_template(
+            overlay_source(source, members), store, draft, official_source=source, server_dir=server_dir)
+        members.update(added)
+        checks.extend(skill_checks)
     cid = draft["characterId"]
     final = overlay_source(source, members)
     row = final.table("character")[cid][0]
@@ -209,7 +216,8 @@ def compile_clone(source, store, draft, *, server_dir=None):
     clients = {logical: raw for (kind, logical), raw in members.items() if kind == "common" and logical.endswith(".orderedmap")}
     servers, before = server_files(clients, cid, server_dir)
     assertions = [{"kind": "character_clone", "from": clone_change(draft)["params"]["spec"]["from"], "to": cid,
-                   "code": draft["code"], "manaNodes": clone_change(draft)["params"]["manaNodes"]}, *media.assertions]
+                   "code": draft["code"], "manaNodes": clone_change(draft)["params"]["manaNodes"]},
+                  *media.assertions, *skill_assertions]
     if any(c["kind"] == "summon_clone" for c in draft["changes"]):
         from .summon import compile_summons
         summons = compile_summons(source, store, draft, members, server_dir=server_dir)

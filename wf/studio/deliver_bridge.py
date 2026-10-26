@@ -127,6 +127,15 @@ def compile_draft(source, store, changeset, *, server_dir=None, client_profile=N
         server_before.update(ability["server_before"])
         changes.extend(ability["changes"])
         checks.extend(ability["checks"])
+    if any(change["kind"] == "skill_template" for change in changeset["changes"]):
+        from .character_clone import overlay_source
+        from .skill_template_compile import compile_skill_template
+        skill_members, skill_changes, skill_checks = compile_skill_template(
+            overlay_source(source, members) if members else source, store, changeset,
+            official_source=source, server_dir=server_dir)
+        members.update(skill_members)
+        changes.extend(skill_changes)
+        checks.extend(skill_checks)
     if any(c["kind"] == "pf_action_clone" for c in changeset["changes"]):
         from .pf_compile import extend_compiled
         members, servers, server_before, changes, checks = extend_compiled(
