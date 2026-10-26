@@ -422,6 +422,8 @@ export interface PortraitSource {
   hasAlpha?: boolean;
   backdropSource?: string;
   suggestedBackdrop?: { inner: [number, number, number]; outer: [number, number, number] };
+  /** Painted backdrop of the existing square icon, offered (not applied) for a new upload. */
+  currentBackdrop?: { inner: [number, number, number]; outer: [number, number, number] };
   template: CropTemplate;
 }
 
@@ -946,6 +948,73 @@ export interface DeliveryDetail {
   files: { path: string; size: number }[];
   deviceResult?: DeviceEntry | null;
   deviceValidation: string;
+  /** delivery/bundle-check.json: output tables vs the target APK's built-in _iosbundled tables (C7051). */
+  bundleCheck?: BundleCheck | null;
+  /** delivery/key-diff.json summary: per-table key changes against the baseline view's chain tip. */
+  keyDiff?: KeyDiff | null;
+  /** Derived UI icons that paint over transparent portrait areas. */
+  iconAlpha?: IconAlphaResult | null;
+  /** p12/p13 client keys (wfx_summon_flip_pf_<ball>, wfx_ball_pf_action_<ball>, …) and what they require. */
+  clientExtensions?: ClientExtensions | null;
+}
+
+export interface BundleCheck {
+  status: "ok" | "collision" | "skipped" | "error";
+  reason?: string;
+  apks?: { label: string; sha256: string; bundledTables: number }[];
+  tables?: { logical: string; bundledLogical: string; collisions: string[] }[];
+}
+
+type KeyDiffCounts = { added: number; changed: number; removed: number; owned?: number; foreign: number; unknown: number };
+
+export interface KeyDiffTable {
+  logical: string;
+  root?: string;
+  archive?: string;
+  counts: KeyDiffCounts;
+  added?: string[];
+  changed?: string[];
+  removed?: string[];
+  owned?: string[];
+  foreign?: string[];
+  unknown?: string[];
+  /** Deletions inside a kept outer key: nested keys removed or CSV records dropped. */
+  deletions?: { kind: string; path: string[]; beforeRows?: number; afterRows?: number; removedRows?: number }[];
+  truncated?: boolean;
+}
+
+export interface KeyDiff {
+  status: "ok" | "warning" | "blocked";
+  blocking?: boolean;
+  baseline?: { view?: string | null; tip?: string | null; version?: string | null };
+  delivery?: { from?: string | null; to?: string | null; archives?: string[] };
+  counts?: KeyDiffCounts;
+  tables?: KeyDiffTable[];
+  warnings?: string[];
+}
+
+export interface IconAlphaSlot {
+  slot: string;
+  form?: number | string;
+  authorBackdrop?: boolean;
+  ratio?: number;
+  status: "ok" | "warning" | "info" | "skipped";
+  code?: string;
+  message?: string;
+}
+
+export interface IconAlphaResult {
+  /** partial: some icons were checked and passed, others could not be checked. */
+  status: "ok" | "warning" | "info" | "skipped" | "partial";
+  threshold?: number;
+  slots?: IconAlphaSlot[];
+  reason?: string;
+}
+
+export interface ClientExtensions {
+  status: "ok" | "warning" | "error";
+  requires?: string[];
+  checks?: RuleResult[];
 }
 
 export const ability = {

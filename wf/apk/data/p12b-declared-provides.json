@@ -1,0 +1,40 @@
+{
+  "schema": "wf-apk-provides/1",
+  "source": {
+    "kind": "patch-record",
+    "basis": "p12 接口说明、P13-REPORT.md 与 p13-capabilities.json（2026-10-25，任务随附只读报告）",
+    "verification": "report_declared"
+  },
+  "patches": [],
+  "provides": [
+    {
+      "id": "client.summon.cutin_preload@1",
+      "title": "召唤球主动技能 cutin 预载",
+      "layer": "A",
+      "patches": [],
+      "methods": [],
+      "basis": "p12 接口说明、P13-REPORT.md 与 p13-capabilities.json（2026-10-25，任务随附只读报告）"
+    },
+    {
+      "id": "client.combo.base@1",
+      "title": "常驻连击基数",
+      "layer": "A",
+      "patches": [],
+      "methods": [],
+      "basis": "p12 接口说明、P13-REPORT.md 与 p13-capabilities.json（2026-10-25，任务随附只读报告）"
+    },
+    {
+      "id": "client.pf.dual@1",
+      "title": "双实体同批强化弹射",
+      "layer": "A",
+      "patches": [],
+      "methods": [],
+      "basis": "p12 接口说明、P13-REPORT.md 与 p13-capabilities.json（2026-10-25，任务随附只读报告）"
+    }
+  ],
+  "unresolved": [],
+  "limitations": [
+    "仅登记报告明确列出的 p12/p13 能力；旧客户端能力继承待核，不从版本名推断。",
+    "无本次 APK/SWF 扫描，方法证据待核；真实设备与联机验收未执行。"
+  ]
+}

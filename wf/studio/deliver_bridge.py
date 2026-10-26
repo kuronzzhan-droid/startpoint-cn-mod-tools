@@ -207,7 +207,7 @@ def _checks(delivery, provides, allow_unknown_client=False, progress=None, cance
 def build_draft(cid: str, *, from_version: str, to_version: str, out: Path,
                 store: DraftStore | None = None, provides: Path | None = None,
                 allow_unknown_client: bool = False, client_profile=None,
-                progress=None, cancel=None, **options) -> dict:
+                apk=None, bundle_cache_dir=None, progress=None, cancel=None, **options) -> dict:
     """Everything generated lives under out/{inputs,delivery}; inputs stay read-only.
 
     ``progress(stage)`` is called when a stage of :data:`STAGES` starts; ``cancel`` (an Event)
@@ -220,6 +220,9 @@ def build_draft(cid: str, *, from_version: str, to_version: str, out: Path,
     from wf.caps.profiles import resolve_client
     provides, selected_profile = resolve_client(provides, client_profile,
                                                allow_unknown_client=allow_unknown_client)
+    from .delivery_safety import (checksum_delivery, inspect_output, resolve_apks,
+                                  staged_members, write_reports)
+    apks = resolve_apks(selected_profile, apk)
     out = local_output(out)
     if out.exists() and (not out.is_dir() or any(out.iterdir())):
         raise DraftError(f"交付输出目录必须为空：{out}")
@@ -237,30 +240,68 @@ def build_draft(cid: str, *, from_version: str, to_version: str, out: Path,
     filename = _stage(out, changeset, source, compiled, to_version)
     _step(progress, cancel, "deliver")
     options["baseline_view"] = baseline
-    manifest = build_delivery(filename, out / "delivery", provides=provides,
-                              client_profile=selected_profile,
-                              allow_unknown_client=allow_unknown_client, **options)
-    if selected_profile is not None:
-        manifest["client_compatibility"]["client_profile"] = selected_profile
+    members = staged_members(filename)
+    reports = safety_checks = None
+    build_error = None
+    try:
+        manifest = build_delivery(filename, out / "delivery", provides=provides,
+                                  client_profile=selected_profile,
+                                  allow_unknown_client=allow_unknown_client, **options)
+    except ValueError as error:
+        # Persist the original gate failure even if secondary inspection fails.
+        build_error = {"type": type(error).__name__, "message": str(error), "stage": "deliver"}
+        failure = {"ok": False, "characterId": cid, "from": from_version, "to": to_version,
+                   "buildError": build_error, "delivery": str(out / "delivery")}
+        write_json(out / "build-report.json", failure)
+        try:
+            reports, safety_checks = inspect_output(members, baseline, changeset, apks=apks,
+                                                    cache_dir=bundle_cache_dir)
+        except (ValueError, OSError) as inspection_error:
+            failure["inspectionError"] = {"type": type(inspection_error).__name__,
+                                          "message": str(inspection_error)}
+            write_json(out / "build-report.json", failure)
+            return failure
+        manifest = None
+    if reports is None:
+        reports, safety_checks = inspect_output(members, baseline, changeset, apks=apks,
+                                                cache_dir=bundle_cache_dir)
+    baseline.verify()
+    write_reports(out / "delivery", reports, compiled[4], manifest)
     write_json(out / "delivery/draft-checks.json", compiled[4])
-    manifest["draft_checks"] = "draft-checks.json"
-    write_json(out / "delivery/delivery-manifest.json", manifest)
-    checks, compat = _checks(out / "delivery", provides, allow_unknown_client, progress, cancel)
-    compat_status = compatibility_status(provides, compat)
-    failed = (bool(manifest["prepush"]["exit_code"]) or any(r.get("blocking") for r in checks + compat)
+    write_json(out / "delivery/safety-checks.json", safety_checks)
+    if manifest is not None:
+        if selected_profile is not None:
+            manifest["client_compatibility"]["client_profile"] = selected_profile
+        requirements_path = out / "delivery/requires.json"
+        requirements = json.loads(requirements_path.read_text("utf-8"))
+        requirements["requires"]["clientCapabilities"] = sorted(set(
+            requirements["requires"]["clientCapabilities"]) | set(reports["clientExtensions"]["requires"]))
+        write_json(requirements_path, requirements)
+        manifest["draft_checks"] = "draft-checks.json"
+        manifest["safety_checks"] = "safety-checks.json"
+        write_json(out / "delivery/delivery-manifest.json", manifest)
+        checks, compat = _checks(out / "delivery", provides, allow_unknown_client, progress, cancel)
+        compat_status = compatibility_status(provides, compat)
+        prepush = manifest["prepush"]
+    else:
+        from wf.rules.catalog import result as check_result
+        checks = [*safety_checks, check_result("studio.build-delivery", "问题",
+                  build_error["message"], blocking=True, level="error")]
+        compat, compat_status = [], "未执行"
+        prepush = {"status": "未执行", "exit_code": None, "limitations": [build_error["message"]]}
+        write_json(out / "delivery/check.json", {"schema": "wf-check-results/1", "results": checks})
+    failed = (manifest is None or bool(prepush["exit_code"]) or any(r.get("blocking") for r in checks + compat)
+              or any(r.get("blocking") for r in safety_checks)
               or any(r.get("blocking") or r.get("level") == "error" for r in compiled[4])
               or (provides is None and not allow_unknown_client))
     result = {"ok": not failed, "characterId": cid, "from": from_version, "to": to_version,
               "draftRevision": changeset["revision"], "changeset": str(filename),
-              "delivery": str(out / "delivery"), "prepush": manifest["prepush"],
+              "delivery": str(out / "delivery"), "prepush": prepush,
               "checks": checks, "compat": compat_status, "compatChecks": compat,
-              "draftChecks": compiled[4],
-              "clientProfile": selected_profile,
+              "draftChecks": compiled[4], "safetyChecks": safety_checks, **reports,
+              "clientProfile": selected_profile, "buildError": build_error,
               "allowUnknownClient": allow_unknown_client, "deviceValidation": "未执行"}
     write_json(out / "build-report.json", result)
     # The extra check/compat artifacts are included in the final delivery checksum list.
-    sums = [f"{sha256(p.read_bytes())}  {p.relative_to(out / 'delivery').as_posix()}"
-            for p in sorted((out / "delivery").rglob("*"))
-            if p.is_file() and p.name != "SHA256SUMS" and "validation" not in p.relative_to(out / "delivery").parts]
-    (out / "delivery/SHA256SUMS").write_text("\n".join(sums) + "\n", "utf-8")
+    checksum_delivery(out / "delivery")
     return result

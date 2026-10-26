@@ -55,6 +55,7 @@ def add_commands(sub):
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--provides", type=Path, help="目标客户端能力与方法摘要")
     p.add_argument("--client-profile", help="目标客户端档案；默认 test-v34")
+    p.add_argument("--apk", type=Path, action="append", help="显式目标 APK；可重复，覆盖 client_apks 配置")
     p.add_argument("--allow-unknown-client", action="store_true",
                    help="显式允许缺少 provides 的本地交付；兼容性仍标未确认并在清单留痕")
     p.add_argument("--baseline-manifest", type=Path)
@@ -101,6 +102,7 @@ def run_build(args, store):
     return build_draft(args.cid, from_version=args.from_version, to_version=args.to_version,
                        out=args.out, store=store, provides=args.provides,
                        client_profile=args.client_profile,
+                       apk=args.apk,
                        allow_unknown_client=args.allow_unknown_client,
                        baseline_view=baseline, base_store=baseline.store,
                        base_version=baseline.base_version,

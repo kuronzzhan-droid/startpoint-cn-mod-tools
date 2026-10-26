@@ -9,6 +9,8 @@ def compatibility_status(provides, checks):
         return "未确认"
     if any(r["blocking"] for r in checks):
         return "问题"
+    if any(r.get("compatibility") == "degraded" for r in checks):
+        return "降级"
     return "待验证" if any(r["status"] not in ("满足", "不适用") for r in checks) else "满足"
 
 
@@ -57,11 +59,17 @@ def readback_compatibility(document, directory, local_read, requirements):
 
 
 def readback_draft_checks(document, local_read):
-    if "draft_checks" not in document:
-        return []
-    checks = json.loads(local_read(document["draft_checks"])[1])
-    if not isinstance(checks, list):
-        raise ValueError("draft checks must be an array")
+    checks = []
+    for field in ("draft_checks", "safety_checks"):
+        if field not in document:
+            continue
+        entries = json.loads(local_read(document[field])[1])
+        if not isinstance(entries, list) or any(not isinstance(entry, dict) for entry in entries):
+            raise ValueError(f"{field} must be an array of objects")
+        if field == "safety_checks":
+            from .safety_readback import validate_safety_checks
+            validate_safety_checks(entries, local_read)
+        checks.extend(entries)
     return [result(c.get("rule", c.get("code", "studio.draft")), c.get("state", c.get("status", "待验证")),
                    c.get("message", "草稿检查"), blocking=bool(c.get("blocking") or c.get("level") == "error"),
                    draft_check=c) for c in checks]

@@ -5,6 +5,7 @@ import { RuleChips, ruleCounts, RuleList } from "./rules";
 import { useClientProfile } from "../clientProfile";
 import { MissingCapabilities, ProfileBadge } from "./ClientProfile";
 import { DeviceBadge, DevicePanel, sameDraft, useDeviceEntry } from "./DeviceResult";
+import { BundleCheckPanel, ClientExtensionsPanel, IconAlphaPanel, KeyDiffPanel } from "./DeliveryGuards";
 
 function size(bytes: number | null | undefined): string {
   if (bytes == null) return "—";
@@ -297,6 +298,12 @@ function DeliveryDetailView({ name, api, characterId }: { name: string; api: Del
           <a href={file("delivery/requires.json")} target="_blank" rel="noreferrer">打开原文</a>
         </div>
       ) : <p class="small muted">没有 requires.json（生成未完成）。</p>}
+
+      <BundleCheckPanel check={detail.bundleCheck} />
+      <KeyDiffPanel diff={detail.keyDiff}
+        mdUrl={detail.files.some((f) => f.path === "delivery/key-diff.md") ? file("delivery/key-diff.md") : null} />
+      <IconAlphaPanel result={detail.iconAlpha} />
+      <ClientExtensionsPanel result={detail.clientExtensions} />
 
       {detail.check ? <RuleList checks={detail.check} title="wf check（交付清单）" /> : <p class="small muted">没有 check.json。</p>}
       {detail.compat ? <RuleList checks={detail.compat} title="兼容检查（provides）" /> : null}

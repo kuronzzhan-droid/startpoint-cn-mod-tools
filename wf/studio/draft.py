@@ -60,6 +60,8 @@ def build_parser() -> argparse.ArgumentParser:
     source_arguments(parser)
     sub = parser.add_subparsers(dest="command", required=True)
     add_commands(sub)
+    from .safety_commands import add_commands as add_safety_commands
+    add_safety_commands(sub)
 
     p = sub.add_parser("list", help="列出有草稿的角色或副本")
     p.add_argument("--boss", action="store_true", help="使用独立副本草稿目录")
@@ -165,6 +167,9 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def run(args) -> dict:
+    if args.command in {"bundle-check", "key-diff"}:
+        from .safety_commands import run as run_safety
+        return run_safety(args)
     store = DraftStore(args.drafts) if args.drafts else DraftStore()
     if getattr(args, "boss", False) and args.command != "build":
         from .boss import BossDraftStore
@@ -394,6 +399,9 @@ def main(argv=None) -> int:
     except (DraftError, ValueError, OSError, KeyError) as exc:
         print(json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False))
         return 1
+    if args.command in {"bundle-check", "key-diff"}:
+        print(json.dumps(result, ensure_ascii=False, default=str))
+        return 1 if result.get("status") in {"collision", "error", "blocked"} else 0
     ok = not (isinstance(result, dict) and result.get("ok") is False)
     print(json.dumps({"ok": ok, "result": result}, ensure_ascii=False, default=str))
     return 0 if ok else 1
