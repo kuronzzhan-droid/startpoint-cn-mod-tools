@@ -62,6 +62,8 @@ def build_parser() -> argparse.ArgumentParser:
     add_commands(sub)
     from .safety_commands import add_commands as add_safety_commands
     add_safety_commands(sub)
+    from .pf_cli import add_pf_commands
+    add_pf_commands(sub)
 
     p = sub.add_parser("list", help="列出有草稿的角色或副本")
     p.add_argument("--boss", action="store_true", help="使用独立副本草稿目录")
@@ -200,8 +202,14 @@ def run(args) -> dict:
     if args.command == "export-store":
         from .view_commands import run as run_view
         return run_view(args)
+    if args.command == "pf-action" and args.pf_command == "keys":
+        from .pf_actions import draft_keys
+        return draft_keys(store, args.cid)
 
     ops = _ops(args)
+    if args.command == "pf-action":
+        from .pf_cli import run_pf
+        return run_pf(args, ops)
     if args.command in ("ids", "versions"):
         from .discovery_commands import run as run_discovery
         return run_discovery(args, ops.source, store)

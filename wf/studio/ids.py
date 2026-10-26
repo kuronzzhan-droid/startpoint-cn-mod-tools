@@ -7,7 +7,8 @@ from .id_drafts import collect_drafts
 
 DEFAULTS = {"character": 199000, "multiball": 1990001, "weapon": 5950001,
             "soul_item": 5950001, "unique_condition": 199000,
-            "string_id": "studio_1", "mana_node": 199000, "enhancement_shop": 595000101}
+            "string_id": "studio_1", "mana_node": 199000, "enhancement_shop": 595000101,
+            "power_flip_action": "studio_pf_1"}
 LIMITS = {"character": 999999999, "weapon": 21474835, "mana_node": (2147483647 - 999) // 2000}
 
 
@@ -15,7 +16,10 @@ def canonical(kind, value):
     if kind not in TABLES:
         raise DraftError("未知 ID kind: " + str(kind))
     value = str(value)
-    if kind == "string_id":
+    if kind == "power_flip_action":
+        if not re.fullmatch(r"[a-z][a-z0-9_]{0,79}", value):
+            raise DraftError("power_flip_action 需要小写字母开头的 1–80 位字母、数字或下划线")
+    elif kind == "string_id":
         if not re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9_.:-]{0,127}", value):
             raise DraftError("string_id 需要 1–128 位字母、数字或 _ . : -")
     elif not re.fullmatch(r"[1-9][0-9]*", value) or int(value) > LIMITS.get(kind, 2147483647):
@@ -61,7 +65,7 @@ def next_id(source, kind, near=None, *, drafts_root=None, server_dir=None):
     skipped = []
     while candidate in occupied[kind]:
         skipped.append({"id": candidate, "owners": occupied[kind][candidate]})
-        if kind == "string_id":
+        if kind in {"string_id", "power_flip_action"}:
             match = re.fullmatch(r"(.*?)([0-9]+)", candidate)
             candidate = match[1] + str(int(match[2]) + 1) if match else candidate + "_1"
         else:

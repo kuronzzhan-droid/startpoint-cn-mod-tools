@@ -29,7 +29,26 @@
     "else": {"properties": {"characterId": {"anyOf": [{"$ref": "#/$defs/characterId"}, {"$ref": "#/$defs/scratchId"}]}}}
   }],
   "$defs": {
-    "reservations": {"type": "object", "additionalProperties": false, "properties": {"character": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "multiball": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "weapon": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "soul_item": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "unique_condition": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "string_id": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "mana_node": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "enhancement_shop": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "soul": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "unique": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "stringcode": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}}},
+    "reservations": {"type": "object", "additionalProperties": false, "properties": {"power_flip_action": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/pfActionKey"}}, "character": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "multiball": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "weapon": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "soul_item": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "unique_condition": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "string_id": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "mana_node": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "enhancement_shop": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "soul": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "unique": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "stringcode": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}}},
+    "pfActionKey": {"type": "string", "pattern": "^[a-z][a-z0-9_]{0,79}$"},
+    "pfEffectFamily": {"type": "string", "pattern": "^battle/effect/(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9_/-]+/?$"},
+    "pfActionCloneRequest": {
+      "type": "object", "additionalProperties": false,
+      "required": ["key", "source", "element", "scale"],
+      "properties": {
+        "key": {"$ref": "#/$defs/pfActionKey", "description": "全新的 power_flip_action 键，不能覆盖视图、APK 内置或任何草稿已占键"},
+        "source": {"type": "string", "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:-]{0,127}$", "description": "CDN 或目标 APK 的三档母本键"},
+        "element": {"enum": ["火", "水", "雷", "风", "光", "暗"], "description": "界面属性名；显式 DSL 元素码由后端转换为内部编号 + 1"},
+        "scale": {"oneOf": [
+          {"type": "number", "exclusiveMinimum": 0},
+          {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "number", "exclusiveMinimum": 0}}
+        ], "description": "统一系数，或依次对应 Lv1/Lv2/Lv3 的系数；逐命中项缩放"},
+        "effects": {"type": "object", "propertyNames": {"$ref": "#/$defs/pfEffectFamily"},
+          "additionalProperties": {"allOf": [{"$ref": "#/$defs/pfEffectFamily"}, {"pattern": "^battle/effect/skill_unique/"}]},
+          "description": "母本特效族到现有私有特效族的映射；目标资源须已存在，省略时复用母本"},
+        "dryRun": {"type": "boolean", "default": false}
+      }
+    },
     "characterCloneRequest": {
       "type": "object", "additionalProperties": false, "required": ["from", "to", "code"],
       "properties": {
@@ -946,7 +965,7 @@
       "required": ["id", "kind", "title", "createdAt", "target", "params", "files", "pending", "checks"],
       "properties": {
         "id": {"type": "string", "pattern": "^c-[0-9a-f]{12}$"},
-        "kind": {"enum": ["portrait", "pixel_action", "pixel_family", "voice_line", "ability_edit", "boss", "weapon", "character_clone"]},
+        "kind": {"enum": ["portrait", "pixel_action", "pixel_family", "voice_line", "ability_edit", "boss", "weapon", "character_clone", "pf_action_clone"]},
         "title": {"type": "string", "minLength": 1},
         "createdAt": {"$ref": "#/$defs/timestamp"},
         "target": {"type": "object"},
@@ -956,6 +975,17 @@
         "checks": {"type": "array", "items": {"$ref": "#/$defs/check"}}
       },
       "allOf": [
+        {"if": {"properties": {"kind": {"const": "pf_action_clone"}}}, "then": {"properties": {
+          "target": {"type": "object", "additionalProperties": false, "required": ["key"],
+            "properties": {"key": {"$ref": "#/$defs/pfActionKey"}}},
+          "params": {"type": "object", "additionalProperties": false, "required": ["spec", "inputs", "reservations"],
+            "properties": {
+              "spec": {"allOf": [{"$ref": "#/$defs/pfActionCloneRequest"}, {"not": {"required": ["dryRun"]}}]},
+              "inputs": {"type": "object", "minProperties": 1, "additionalProperties": {"$ref": "#/$defs/sha256"}},
+              "reservations": {"$ref": "#/$defs/reservations"}
+            }},
+          "files": {"maxItems": 0}, "pending": {"maxItems": 0}
+        }}},
         {"if": {"properties": {"kind": {"const": "character_clone"}}}, "then": {"properties": {
           "target": {"type": "object", "additionalProperties": false, "required": ["character"],
                      "properties": {"character": {"$ref": "#/$defs/characterId"}}},

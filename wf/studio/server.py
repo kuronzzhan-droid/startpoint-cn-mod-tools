@@ -121,6 +121,9 @@ class StudioApp:
         from .character_routes import CharacterRoutes
         self.character_clones = CharacterRoutes(self, server_dir)
         self.routes.extend(self.character_clones.routes())
+        from .pf_routes import PFActionsRoutes
+        self.pf_actions = PFActionsRoutes(self)
+        self.routes.extend(self.pf_actions.routes())
         from .view_routes import ViewRoutes
         self.views = ViewRoutes(self)
         self.routes.extend(self.views.routes())
