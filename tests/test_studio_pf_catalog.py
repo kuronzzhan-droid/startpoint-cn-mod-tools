@@ -207,8 +207,9 @@ def test_malformed_dsl_is_a_public_input_error(raw):
     view = source()
     view.files[("common", paths()[0] + DSL_SUFFIX)] = raw
     catalog = PfCatalog(view, apks=[])
-    with pytest.raises(DraftError, match="母本 DSL 无效"):
-        catalog.detail("special")
+    detail = catalog.detail("special")
+    assert detail["selectable"] is False
+    assert "母本 DSL 无效" in detail["error"]
     assert catalog.list()["items"][0]["selectable"] is False
 
 

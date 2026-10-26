@@ -95,11 +95,11 @@ def _previews(source, paths):
     return result
 
 
-def template_detail(source, key, *, include_tree=True, previews=True):
+def template_detail(source, key, *, include_tree=True, previews=True, context_element=None):
     key = resolve_key(source, key)
     characters = _characters(source).get(key, [])
     elements = {character["element"] for character in characters}
-    context_element = next(iter(elements)) if len(elements) == 1 else None
+    context_element = context_element if context_element is not None else next(iter(elements)) if len(elements) == 1 else None
     tiers = []
     for level, records in sorted(_skills(source)[key].items(), key=lambda item: int(item[0])):
         if len(records) != 1 or len(records[0]) < 8:
@@ -116,9 +116,9 @@ def template_detail(source, key, *, include_tree=True, previews=True):
             raise ValueError("官方技能不是完整 ActionDsl：" + logical)
         tier = {"level": str(level), "row": row, "name": row[0], "logical": logical,
                 "program": row[7], "inputSha256": hashlib.sha256(raw).hexdigest(),
-                "damageNodes": damage_nodes(tree), "effectFamilies": effect_families(tree, context_element),
-                "effectPaths": effect_paths(tree, context_element)}
+                "damageNodes": damage_nodes(tree), "effectFamilies": [], "effectPaths": []}
         try:
+            tier.update(effectFamilies=effect_families(tree, context_element), effectPaths=effect_paths(tree, context_element))
             tier["checks"] = validate_tree(tree)
             tier["cloneable"] = True
         except ValueError as exc:

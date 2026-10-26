@@ -33,6 +33,8 @@ def _requests(draft, add, origin, known_strings, source, table_rows):
         if not isinstance(change, dict) or not isinstance(change.get("params", {}), dict):
             raise DraftError(f"草稿 change / params 必须是对象: {origin}")
         params = change.get("params", {})
+        for key in params.get("strings", {}):
+            add("string_id", str(key), owner, "draft", origin)
         _reservations(params.get("reservations", {}), add, owner, origin)
         for req in params.get("requests", []):
             if not isinstance(req, dict):

@@ -257,6 +257,7 @@ export interface WeaponSetOptions {
   version: string;
   categories: { enhancement: WeaponSetCategoryOption[]; exchange: WeaponSetCategoryOption[] };
   materials: WeaponSetMaterial[];
+  products: { id: string; categoryId: string; name: string; row: string[]; table: string }[];
   serverInputAvailable: boolean;
   notes: string[];
   runtime: string;
@@ -285,6 +286,7 @@ export interface WeaponSetCheck extends RuleResult {
 }
 
 export interface WeaponSetResult {
+  allocation?: WeaponSetRequest & { id: string };
   ok: boolean;
   error?: string;
   weaponId?: string;

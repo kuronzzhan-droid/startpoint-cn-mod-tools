@@ -96,7 +96,8 @@ def reservations(store, exclude=None):
                                         ("exchange_category", spec.get("exchange", {}).get("category", {}))):
                         if "id" in value:
                             result.setdefault(kind, []).append(value["id"])
-                            result.setdefault(kind + "_definitions", []).append(value)
+                            if "sourceCategory" in value:
+                                result.setdefault(kind + "_definitions", []).append(value)
                     if "productId" in spec.get("exchange", {}):
                         result.setdefault("exchange_product", []).append(spec["exchange"]["productId"])
     if not result["codes"]:

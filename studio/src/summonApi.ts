@@ -30,6 +30,7 @@ export interface SummonTemplate {
   id: string;
   name: string;
   imagePrefix: string;
+  rarity: number;
   element: number;
   pfType: number;
   skill: SummonSkill;
@@ -89,6 +90,10 @@ export interface SummonSkillTemplate {
   command: string;
   multiballId: string;
   lifetimeFrames: number;
+  durationFrames: number;
+  maxCount: number;
+  selfOnly: boolean;
+  summon: { multiballId: string; durationFrames: number; maxCount: number; selfOnly: boolean };
   parameters: unknown[];
   node: unknown[];
   inserted: boolean;
@@ -169,7 +174,14 @@ async function postChecked<T>(url: string, body: unknown): Promise<T | SummonFai
 }
 
 export const summons = {
-  templates: (q = "") => get<SummonTemplateList>(`/api/studio/summon/templates${q.trim() ? "?q=" + enc(q.trim()) : ""}`),
+  templates: async (q = "") => {
+    const first = await get<SummonTemplateList>(`/api/studio/summon/templates?q=${enc(q.trim())}&limit=500`);
+    for (let offset = first.items.length; offset < first.total; offset += 500) {
+      const page = await get<SummonTemplateList>(`/api/studio/summon/templates?q=${enc(q.trim())}&limit=500&offset=${offset}`);
+      first.items.push(...page.items);
+    }
+    return { ...first, count: first.items.length };
+  },
   list: (cid: string) => get<SummonList>(`/api/drafts/${enc(cid)}/summon`),
   /** Same checks as saving; writes nothing, reserves nothing (the allocated ID is not locked). */
   preview: (cid: string, request: SummonRequest) =>

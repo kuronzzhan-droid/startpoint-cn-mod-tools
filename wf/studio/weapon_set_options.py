@@ -24,7 +24,10 @@ def options(source, server_dir=None):
             "name": s.cell(row, 3) if kind == "enhancement" else s.cell(row, 0),
             "order": s.cell(row, 1), "row": row, "table": logical}
             for path, text in s.iter_leaves(tables.table(logical)) for row in s.parse_rows(text)]
-    return {"version": source.version, "categories": categories, "materials": materials,
+    products = [{"id": path[0], "categoryId": s.cell(row, 0), "name": s.cell(row, 6),
+                 "row": row, "table": s.SHOP}
+                for path, text in s.iter_leaves(tables.table(s.SHOP)) for row in s.parse_rows(text)]
+    return {"version": source.version, "categories": categories, "materials": materials, "products": products,
             "serverInputAvailable": available, "runtime": "未执行",
             "notes": ["兑换类目没有独立名称列，name 返回原生 code；展示横幅复用母本。",
                       "材料来自当前 item 表，保存时还检查服务端 item_ids 及图集引用。"]}

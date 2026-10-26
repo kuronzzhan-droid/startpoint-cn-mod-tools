@@ -190,8 +190,10 @@ def test_resolve_element_effects_use_character_context_and_become_private_direct
     path = base + "/shine_blue/shine_blue"
     assert effect_paths(tree, 1) == [path]
     first = clone_tree(tree, scale=2, element=2, context_element=1)
-    private = "battle/effect/skill_unique/new_actor/private/shine_blue"
-    second = rewrite_effects(first["tree"], {path: private}, context_element=1)
+    target = base + "/shine_yellow/shine_yellow"
+    assert effect_paths(first["tree"], 1) == [target]
+    private = "battle/effect/skill_unique/new_actor/private/shine_yellow"
+    second = rewrite_effects(first["tree"], {target: private}, context_element=1)
     assert second["tree"][11][1][0][1][2] == ["SpecifyEffectDirectly", private]
     assert second["damageNodes"] == first["damageNodes"]
     assert effect_paths(tree, 1) == [path]

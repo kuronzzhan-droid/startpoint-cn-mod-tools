@@ -72,6 +72,9 @@ def skill_env(tmp_path, monkeypatch):
     current["common", ACTION] = ordered({"donor": ordered({"1": leaf([live_row])}),
                                         "unrelated": ordered({"1": leaf([action_row()])})})
     current["common", DSL] = encode_tree(root(attack(999)))
+    current["common", "master/character/character_text.orderedmap"] = ordered({
+        key: leaf([["Hero", "", "", "", "Current modified skill", "Original description", "", "", "", ""]])
+        for key in (CID, OTHER, "151001")})
     current["common", "master/string/custom_ability_string.orderedmap"] = ordered({"keep": leaf([["keep"]])})
     ability_row = valid_row("fixture_ability")
     current["common", "master/ability/ability.orderedmap"] = ordered({"1": leaf([ability_row])})
@@ -270,8 +273,13 @@ def test_real_build_draft_uses_standard_delivery_and_pr26_reports(skill_env, tmp
     logicals = {item["logical"] for item in result["summary"]["files"]}
     logicals.update(logical for _, logical in source.view.files)
     pathlist.write_text("\n".join(sorted(logicals)), encoding="utf-8")
+    server = tmp_path / "server"
+    for target in ("character", "character_text", "character_text_rank_p5b"):
+        path = server / f"assets/cdndata/{target}.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("{}", encoding="utf-8")
     delivered = build_draft(CID, from_version="1.4.233", to_version="1.4.234", out=tmp_path / "build",
-                            store=store, baseline_view=view, pathlist=pathlist, allow_unknown_client=True)
+                            store=store, baseline_view=view, pathlist=pathlist, allow_unknown_client=True, server_dir=server)
     assert delivered["ok"], json.dumps(delivered, ensure_ascii=False, indent=2)
     assert {"bundleCheck", "keyDiff", "iconAlpha", "clientExtensions"} <= delivered.keys()
     delivery = Path(delivered["delivery"])
@@ -294,9 +302,9 @@ def test_character_clone_and_skill_template_compile_together(clone_env, monkeypa
     cloned = clone(ops, clone_request(), server_dir=server)
     clone_file_entries = cloned["changeset"]["changes"][0]["files"]
     editor = SkillTemplateEditor(source, store=store, server_dir=server)
-    # A cloned action key is still occupied even though it belongs to this draft.
-    with pytest.raises(DraftError, match="占用|预留"):
-        editor.preview(NEW, request(source={"key": "mother_skill"}, newKey=CODE))
+    # The verified clone-owned action key may be taken over by its own template.
+    assert editor.preview(NEW, request(source={"key": "mother_skill"}, newKey=CODE))["ok"]
+    (server / "cdndata/character_text_rank_p5b.json").write_text("{}", encoding="utf-8")
     result = editor.apply(NEW, request(source={"key": "mother_skill"}))
     assert {change["kind"] for change in result["changeset"]["changes"]} == {"character_clone", "skill_template"}
     members, servers, preimages, changes, checks = compile_draft(source, store, store.load(NEW), server_dir=server)
@@ -305,7 +313,7 @@ def test_character_clone_and_skill_template_compile_together(clone_env, monkeypa
     assert row[0] == CODE and row[8] == NEW_KEY
     assert NEW_KEY in codec.parse_node(members["common", ACTION])
     assert CODE in codec.parse_node(members["common", ACTION])  # clone's original row remains intact.
-    assert len(servers) == len(preimages) == 5
+    assert len(servers) == len(preimages) == 6
     assert {change["kind"] for change in changes} == {"character_clone", "skill_template"}
     assert all(store.read_file(NEW, entry["draft"]) is not None for entry in clone_file_entries)
     assert source.view.files == before and not any(check.get("blocking") for check in checks)

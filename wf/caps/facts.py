@@ -118,6 +118,7 @@ def table_signals(logical, trail, text, *, registry=None):
         elif (logical == "master/battle/multiball/multiball.orderedmap"
               and len(row) > 9 and row[9] not in {"", "0", "(None)"}):
             yield "selectors", "multiball.active_skill"
+            yield "program", row[9]
         elif logical in {SKILL, "master/skill/switched_action_skill.orderedmap"}:
             position = 7 if logical == SKILL else 0
             if len(row) > position and row[position] not in {"", "(None)"}:

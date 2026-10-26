@@ -13,6 +13,9 @@ def resolve_apks(client_profile, apk=None):
     """Explicit paths override client_apks; relative paths follow wf_root."""
     from wf.paths import profile_data, root_path
     if apk is None:
+        if client_profile is None:
+            from wf.caps.profiles import load_profiles
+            client_profile = load_profiles()[0]
         config, _ = profile_data()
         configured = config.get("client_apks", {})
         if not isinstance(configured, dict):

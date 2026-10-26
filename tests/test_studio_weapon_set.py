@@ -22,9 +22,9 @@ def workshop(app):
     files = app.source.view.files
     # All new rows/art are synthetic. No private paths/assets are copied.
     files[ENH_CATEGORY] = codec.build_node({"7": join([
-        "bond", "0", "", "羁绊", "item/banner", "item/header", "help", "help", "2000-01-01"])})
+        "bond", "0", "", "羁绊", "item/banner", "item/header", "help", "help", "2000-01-01 00:00:00", "(None)"])})
     files[s.SHOP_CATEGORY] = codec.build_node({"81": join([
-        "exchange", "1", "(None)", "", "", "", "", "", "", "item/banner"])})
+        "exchange", "1", "(None)", "", "", "", "", "", "", "item/banner", "item/header", "", "false"])})
     files["item/banner.png"] = files["item/header.png"] = b"synthetic image existence fixture"
     item = s.parse_rows(codec.parse_node(files[ITEM])["1"])[0]
     item[2], item[6] = "测试星铁", "0"

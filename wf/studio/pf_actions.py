@@ -49,7 +49,9 @@ def clone(ops, cid, request, *, preview=False, **options):
                 raise DraftError("PF 动作需要正式角色草稿")
             # Existing formal character-clone drafts expose their identity via DraftOps.
             character = ops.character(cid)
-            result = prepare(ops.source, spec, **options)
+            from .character_clone import ops_for
+            effective = ops_for(ops, cid).source
+            result = prepare(effective, spec, **options)
             vacant(ops.source, ops.store, result["catalog"], spec["key"])
             members = {**result["members"], ("common", PF_TABLE): table_bytes(
                 ops.source, [(spec["key"], result["paths"])])}

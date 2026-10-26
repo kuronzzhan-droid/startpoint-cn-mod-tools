@@ -91,6 +91,7 @@ export interface SkillTemplateRequest {
   source: { key?: string; characterId?: string };
   newKey: string;
   scale?: number;
+  text?: Record<string, { name?: string; description?: string }>;
   nodeCoefficients?: Record<string, Record<string, number | Coefficient[]>>;
   element?: number;
   attribution?: 1 | 3;
@@ -109,7 +110,7 @@ export interface LevelSummary {
     element: number | null;
     elementCode: number | null;
     attribution: number | null;
-    summon: (SummonBlock & { countMode?: string }) | null;
+    summon: (SummonBlock & { countMode?: "live-including-pending" | "native-party-count" }) | null;
     timingAndGeometryPreserved: boolean;
     effectFamilies: string[];
   };
@@ -120,7 +121,7 @@ export interface FamilyResource { root: string; source: string; target: string; 
 export interface FamilySummary {
   source: string;
   target: string;
-  effects: unknown;
+  effects: { source: string; target: string }[];
   changedPixels: number | null;
   resources: FamilyResource[];
   completeDependencies: boolean;

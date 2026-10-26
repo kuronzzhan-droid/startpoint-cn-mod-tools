@@ -27,7 +27,7 @@ def case(tmp_path, monkeypatch):
     delivery.mkdir(parents=True)
     (root / "assets/asset-patch/active").mkdir(parents=True)
     put(root / "assets/asset-patch/manifest.json", {"cdn_version": "1.4.9", "patches": [
-        {"id": "previous", "version": "1.4.9", "depends_on": "1.4.8", "enabled": True},
+        {"id": "previous", "version": "1.4.9", "depends_on": "1.4.8", "enabled": True, "type": "patch"},
         {"id": "disabled", "version": "1.4.99", "depends_on": "1.4.9", "enabled": False}]})
     profile = tmp_path / "profile.json"
     put(profile, {"wf_root": str(tmp_path), "servers": {"local": {"root": "server"}}})
@@ -72,7 +72,7 @@ def test_rehearsal_blocks_unsafe_edges(case, change, rule):
     archive = next(folder.glob("*.zip"))
     if change == "old":
         put(root / "assets/asset-patch/manifest.json", {"cdn_version": "1.4.11", "patches": [
-            {"version": "1.4.11", "depends_on": "1.4.9"}]})
+            {"version": "1.4.11", "depends_on": "1.4.9", "type": "patch", "enabled": True}]})
     elif change == "collision":
         (root / "assets/asset-patch/active" / archive.name).write_bytes(b"different")
     elif change == "gap":

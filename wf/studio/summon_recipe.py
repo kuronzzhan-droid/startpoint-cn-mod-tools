@@ -21,7 +21,9 @@ def handoff(spec):
     params = [1, int(identity), [{"min": frames, "max": frames}], ["E1", ["None"]],
               ["None"], ["None"], 0, False, f"summon_{identity}_activation", 900, 901, ["Block", []], None]
     return {"command": "CreateSummonsMultiball", "multiballId": identity,
-            "lifetimeFrames": frames, "parameters": params,
+            "lifetimeFrames": frames, "durationFrames": frames, "maxCount": 1, "selfOnly": True,
+            "summon": {"multiballId": identity, "durationFrames": frames, "maxCount": 1, "selfOnly": True},
+            "parameters": params,
             "node": ["Command", ["CreateSummonsMultiball", *params]],
             "inserted": False, "callbackSubjectIds": [900, 901],
             "instructions": ["把 node 插入技能 DSL 的 Block；本任务只生成表行，不改技能 DSL。",
@@ -33,6 +35,8 @@ def handoff(spec):
 def recipe(source, spec):
     tables = Tables(source)
     row, active, preserved = native_row(tables, spec)
+    from .summon_assets import validate_image
+    validate_image(tables, row)
     panel = prepare_panel(tables, spec)
     extensions = spec.get("extensions", {})
     flip = extensions.get("flip_pf", {})

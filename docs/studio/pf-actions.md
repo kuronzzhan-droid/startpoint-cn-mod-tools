@@ -74,7 +74,7 @@ HTTP POST 沿用编辑台的 Host、Origin、Sec-Fetch-Site、`X-WF-Studio-Token
 | `levels[].markers` | 各判定区原始判定标记数组，包括 PF Lv3 相关标记 |
 | `levels[].nominalMultiplier/nominalNote` | 名义倍率数字或 null，以及解释该统计口径的文字 |
 
-详情只读取母本，草稿候选的三档结果从克隆预览响应读取。不可选或内容冲突的母本返回 400；不要用空白详情掩盖解析失败。
+详情只读取母本，草稿候选的三档结果从克隆预览响应读取。不可选或内容冲突的已知母本返回 `selectable:false`、`error` 和 `levels:[]`；前端须展示原因。
 
 ### 3. 克隆预览与写入
 
@@ -180,3 +180,13 @@ python -m wf.studio.draft build 123456 --from 1.4.100 --to 1.4.101 --out work/st
 草稿仅保存请求、输入摘要和新键预留，编译时重放母本。共享 `power_flip_action` 表完整投递并只增加新行；新行按既有平表格式压缩。DSL 与必要资源引用随现有交付链处理，官方生命周期节点和 PF Lv3 标记不会被参数编辑删除。
 
 交付继续运行 bundle-check 和 key-diff。缺 APK 时 bundle-check 为 skipped / 未执行，不能冒充通过；输入变化或目标撞名会阻断，必须根据新基线重新制作。来源、草稿保存、交付检查和设备实测是独立状态。最终战斗表现、特效播放和 p13 球引用仍需要实际目标客户端验证。
+
+## 新键统一检查与递归摘要
+
+`GET /api/studio/pf-actions/check?key=<新键>&clientProfile=<可选档案>` 检查当前视图、目标 APK 和全部草稿命名空间。返回 `key/kind/id/owners/warnings/bundledAvailable`：有占用为 `available:false,status:"occupied"`；无占用且 APK 已核对为 `available:true,status:"available"`；缺 APK 且无已知占用为 `available:null,status:"unchecked"`。标准 knight/fighter/ranged/special/supporter 键在缺 APK 时仍不可用。
+
+默认 APK 解析与生成链路一致；单独提供 provides 或允许未知兼容性不会跳过默认 APK 碰撞检查。前端的新键检查直接调用此接口。
+
+`levels[].markers` 为整数数组，如 `[0,133]`，保留每个 CreateHitArea 原始 p24 标记，包含子程序，既不是标记名也不是次数对象。命中项、判定区、系数和特效族涵盖递归子程序；有子程序或静态算法未覆盖的控制流／多参考点形成时 nominalMultiplier=null，不能强行相加。
+
+列表与详情先检查子程序存在性、解码、签名，以及不支持的比例／固定伤害；损坏条目标为不可选，不拖垮其他有效条目。effects 只接受实际引用的完整族目录，拒绝父目录、动画基名和未使用映射，也不会替换普通字符串。当前角色克隆草稿的私有资源会参与候选依赖检查。

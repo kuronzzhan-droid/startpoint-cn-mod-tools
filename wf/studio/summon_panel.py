@@ -39,6 +39,9 @@ def prepare_panel(tables, spec):
     template, panel = spec["template"], spec.get("panel", {"mode": "source"})
     mode, identity = panel.get("mode", "source"), spec["id"]
     scale_hp, scale_atk = panel.get("hp_scale", 1), panel.get("attack_scale", 1)
+    if mode == "scaled":
+        number(scale_hp, "hp_scale", 0.000000000000001)
+        number(scale_atk, "attack_scale", 0.000000000000001)
     if mode == "manual":
         levels = panel["levels"]
         if len({point["level"] for point in levels}) != len(levels):
@@ -89,7 +92,7 @@ def prepare_panel(tables, spec):
 
 def _validate_values(points, hp_scale, attack_scale):
     number(hp_scale, "hp_scale", 0.000000000000001)
-    number(attack_scale, "attack_scale", 0.000000000000001)
+    number(attack_scale, "attack_scale", 0)
     for hp, atk in points.values():
         number(hp * hp_scale, "缩放后 HP", 1)
         number(atk * attack_scale, "缩放后 ATK")

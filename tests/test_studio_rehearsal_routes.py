@@ -84,7 +84,7 @@ def test_auto_rehearsal_real_build(tmp_path, monkeypatch):
     root = tmp_path / "server"
     (root / "assets/asset-patch/active").mkdir(parents=True)
     put(root / "assets/asset-patch/manifest.json", {"cdn_version": "1.4.132", "patches": [
-        {"version": "1.4.132", "depends_on": "1.4.131", "enabled": True}]})
+        {"version": "1.4.132", "depends_on": "1.4.131", "enabled": True, "type": "patch"}]})
     profile = tmp_path / "profile.json"
     put(profile, {"servers": {"local": {"root": str(root)}}, "rehearsal_server": "local"})
     monkeypatch.setenv("WF_PATHS_PROFILE", str(profile))

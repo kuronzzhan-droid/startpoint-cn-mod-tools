@@ -16,7 +16,7 @@ import "./skillpf.css";
 const NEW_KEY = /^[A-Za-z0-9_][A-Za-z0-9_-]{0,127}$/;
 const HEX = /^#[0-9A-Fa-f]{6}$/;
 const BOUND = /^(min|max|alv[2-6]?_(min|max))$/;
-const MAX_DURATION = 268435455;
+const MAX_DURATION = 2147483647;
 
 type RecolorMode = "none" | "hue" | "pairs";
 interface Pair { from: string; to: string }
@@ -49,7 +49,8 @@ function parseSummonPaste(text: string): { form?: Partial<SummonForm>; notes: st
   let value: any;
   try { value = JSON.parse(text); } catch (e) { return { notes: [], error: "不是有效 JSON：" + (e as Error).message }; }
   if (Array.isArray(value?.items) && value.items.length) value = value.items[0];
-  const block = value?.skillTemplate ?? value;
+  const outer = value?.skillTemplate ?? value;
+  const block = outer?.summon ?? outer;
   if (!block || typeof block !== "object") return { notes: [], error: "没有找到参数对象" };
   const notes: string[] = [];
   const id = block.multiballId ?? (Array.isArray(block.parameters) ? block.parameters[1] : undefined);
@@ -57,15 +58,15 @@ function parseSummonPaste(text: string): { form?: Partial<SummonForm>; notes: st
   const form: Partial<SummonForm> = { on: true, multiballId: String(id) };
   const life = block.lifetimeFrames ?? block.durationFrames;
   if (typeof life === "number") {
-    if (life >= 1 && life <= MAX_DURATION) { form.durationFrames = String(life); notes.push(`寿命 ${life} 帧已填入。`); }
-    else { form.durationFrames = ""; notes.push(`参数块寿命 ${life} 帧超出技能模板上限（< 2^28）；已留空，后端按默认 3600 帧。需要常驻请另行确认。`); }
+    if (Number.isInteger(life) && life >= 1 && life <= MAX_DURATION) { form.durationFrames = String(life); notes.push(`寿命 ${life} 帧已填入。`); }
+    else return { notes, error: "参数块寿命必须是 1–2147483647 的整数帧" };
   }
   if (typeof block.maxCount === "number") form.maxCount = String(block.maxCount);
   if (typeof block.selfOnly === "boolean") form.selfOnly = block.selfOnly;
   if (typeof block.effectPrefix === "string") form.effectPrefix = block.effectPrefix;
   if (block.command && block.command !== "CreateSummonsMultiball") notes.push(`参数块命令是 ${block.command}，不是 CreateSummonsMultiball。`);
   if (Array.isArray(block.callbackSubjectIds)) notes.push("回调主体 ID 与 node 不会直接使用：技能模板按自己的规则生成召唤节点。");
-  notes.push("这个球 ID 必须已在当前视图的 multiball 表里；只在召唤工坊草稿里的球要先交付进视图。");
+  notes.push("球 ID 可来自当前视图或同一角色草稿的召唤工坊；生成时会联合编译。");
   return { form, notes };
 }
 
@@ -180,7 +181,7 @@ export function SkillTemplate({ characterId }: { characterId: string }) {
     if (summon.selfOnly && max > 1) problems.push("「仅计自身」目前只支持上限 1；更大的上限请取消「仅计自身」用队伍计数");
     if (summon.durationFrames.trim()) {
       const d = Number(summon.durationFrames);
-      if (!Number.isInteger(d) || d < 1 || d > MAX_DURATION) problems.push("召唤寿命要是 1–268435455 的整数帧");
+      if (!Number.isInteger(d) || d < 1 || d > MAX_DURATION) problems.push("召唤寿命要是 1–2147483647 的整数帧");
       else block.durationFrames = d;
     }
     if (summon.effectPrefix.trim()) {
@@ -494,7 +495,7 @@ function SummonEditor({ value, onChange }: { value: SummonForm; onChange: (v: Su
               <label class="check"><input type="checkbox" checked={value.selfOnly} onChange={(e) => set({ selfOnly: (e.target as HTMLInputElement).checked })} />仅计自身召唤数</label>
               <span class="small muted">仅计自身只支持上限 1；更大上限用队伍计数</span></label>
             <label class="param-field"><span>寿命（帧）</span>
-              <input type="number" min="1" max={MAX_DURATION} value={value.durationFrames} placeholder="默认 3600" onInput={(e) => set({ durationFrames: (e.target as HTMLInputElement).value })} /></label>
+              <input type="number" min="1" max={MAX_DURATION} value={value.durationFrames} placeholder="默认 2147483647（常驻）" onInput={(e) => set({ durationFrames: (e.target as HTMLInputElement).value })} /></label>
             <label class="param-field"><span>召唤特效前缀</span>
               <input class="mono" value={value.effectPrefix} placeholder="留空用官方召唤特效族" onInput={(e) => set({ effectPrefix: (e.target as HTMLInputElement).value })} /></label>
           </div>

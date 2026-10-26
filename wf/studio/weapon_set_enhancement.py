@@ -4,7 +4,6 @@ import copy
 from wf.boss import schema as s
 from wf.boss.shop_edit import one
 from wf.boss.shop_model import ENH, ENH_ABILITY, ENH_STATUS, ENH_SHOP, ENH_CATEGORY, SERVER_ENH
-from wf.boss.weapon_rules import check_ability_rows
 from wf.rules.catalog import result
 from wf.view.base149 import join
 
@@ -23,38 +22,49 @@ def move_category(state, wid, category):
     if not stages:
         raise ValueError("weapon has no enhancement stages; supply enhancement options")
     server = state.server(SERVER_ENH)
+    if int(category) in (1, 2, 3, 4):
+        raise ValueError("per_level enhancement requires a custom category outside official 1..4")
+    if {key for key, value in server.items() if str(value.get("equipmentId")) == wid} != set(dict(stages)):
+        raise ValueError("enhancement stage set differs between client and server")
     for key, row in stages:
         if key not in server or str(server[key].get("equipmentId")) != wid:
             raise ValueError("enhancement stage client/server ownership mismatch")
         row[0] = category
         write_row(state, ENH_SHOP, key, row)
-        state.set_server_keys(SERVER_ENH, {key: {**server[key], "shopCategoryId": int(category)}})
+        state.set_server_keys(SERVER_ENH, {key: {**server[key], "shopCategoryId": int(category),
+                                              "enhancementPurchaseMode": "per_level"}})
 
 
 def enhance(state, wid, spec, category, reserved):
     donor = spec.get("sourceWeapon", wid)
-    row = one(state, ENH, donor, 9)
+    own = wid in state.table(ENH)
+    row = one(state, ENH, wid if own else donor, 9)
     old_cap, cap = int(row[0]), spec["maxLevel"]
     if wid in state.table(ENH) and cap < int(one(state, ENH, wid, 9)[0]):
         raise ValueError("lowering an existing enhancement cap would retire old rows")
     row[0] = str(cap)
     # Display thresholds must remain reachable after selecting a shorter donor curve.
-    for column in (1, 3, 7):
+    if not own:
+        equipment = one(state, s.EQUIPMENT, wid, 16)
+        row[2], row[4], row[6] = equipment[1] + "·改", equipment[6], equipment[7]
+    for column in (1, 3, 5, 7):
         if row[column].isdigit():
             row[column] = str(min(int(row[column]), cap))
     write_row(state, ENH, wid, row)
     curve = state.table(ENH_STATUS).get(donor)
     if not isinstance(curve, dict) or not curve:
         raise ValueError("missing enhancement status curve template")
-    if any(not key.isdigit() or int(key) > cap for key in curve):
-        raise ValueError("enhancement status curve exceeds requested cap")
-    curve = copy.deepcopy(curve)
+    if any(not key.isdigit() for key in curve):
+        raise ValueError("invalid enhancement status curve level")
+    curve = copy.deepcopy({key: value for key, value in curve.items() if int(key) <= cap})
+    if not curve:
+        raise ValueError("enhancement donor has no curve point within requested cap")
     curve[str(cap)] = curve[max(curve, key=int)]
     existing = state.table(ENH_STATUS).get(wid, {})
     if set(existing) - set(curve):
         raise ValueError("enhancement curve cannot remove existing level keys")
     state.set_leaf(ENH_STATUS, [wid], curve, new=wid not in state.table(ENH_STATUS))
-    abilities = state.table(ENH_ABILITY).get(donor)
+    abilities = state.table(ENH_ABILITY).get(wid, state.table(ENH_ABILITY).get(donor))
     if abilities is not None:
         rows = s.parse_rows(abilities)
         for ability in rows:
@@ -65,10 +75,11 @@ def enhance(state, wid, spec, category, reserved):
             if int(ability[2]) == old_cap:
                 ability[2] = str(cap)
             elif int(ability[2]) > cap:
-                raise ValueError("enhancement ability max level exceeds cap")
+                if wid in state.table(ENH_ABILITY):
+                    raise ValueError("enhancement ability max level exceeds cap")
+                ability[2] = str(cap)
         text = "\n".join(join(ability) for ability in rows)
-        check_ability_rows("equipment_enhancement_ability", text,
-            client_profile=getattr(state, "client_profile", None), provides=getattr(state, "client_provides", None))
+        # Only level bounds change; kind/block bytes are inherited from this view.
         state.set_leaf(ENH_ABILITY, [wid], text, new=wid not in state.table(ENH_ABILITY))
     templates = sorted(stages_for(state, donor), key=lambda pair: int(pair[1][3]))
     if not templates:

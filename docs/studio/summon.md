@@ -102,7 +102,7 @@ POST 预览与保存共用以下主要字段：
 | `ok` / `preview` | 请求成功与是否只预览 |
 | `characterId` / `multiballId` | 宿主角色 ID 与本次新球 ID，均为字符串 |
 | `spec` | 本次请求去掉 preview 并补齐实际分配的 id；其余省略参数继续按本文默认规则解释，不展开成全部默认字段 |
-| `allocation` | 写入前的 `ids` 查询结果，含 kind、id、available、owners、viewVersion、serverChecked、reserved；reserved=false 表示查询本身不预留，保存后的预留以 changeset.reservations 为准 |
+| `allocation` | 写入前的 `ids` 查询结果，含 kind、id、available、owners、viewVersion、serverChecked、reserved；reserved=false 表示查询本身不预留，保存后的召唤预留以 changeset.changes[].params.reservations 为准 |
 | `rows` | 待写入行数组：每项有逻辑表路径 `logical` 和键 `key`；平表用 `rows` 二维字符串数组，曲线用 `levels` 展示嵌套断点 |
 | `checks` | 现有五态规则数组，使用 `rule/status/message/blocking`；前端按状态和 blocking 展示 |
 | `requires` | 从生成数据推导的客户端能力 ID 列表；交付时继续合并到 requires.json |
@@ -186,3 +186,13 @@ python -m wf.studio.draft validate work/summon-request.json --def summonCloneReq
 省略 `--request` 为读取；单独 `--preview` 会报错。`templates` 仅接受查询，不接受 `--request/--preview`；`--q` 仅用于 templates。可用全局或 summon 命令后的 `--server-dir` 补充只读服务端 ID 占用证据。
 
 CLI 输出沿用一行 JSON 包装：成功为 `{"ok":true,"result":<上述响应>}`，业务失败为 `{"ok":false,"error":"原因"}` 并以退出码 1 结束。完成写入后，使用现有 `save <cid>` 和 `build <cid> --from ... --to ... --out work/...`；版本分配和检查继续走现有 versions/build 机制。
+
+## 接线补充与安全边界
+
+模板 GET 接受 `limit`（默认100，上限500）、`offset`（默认0）和可选 `rarity`（1..5）；CLI 对应 --limit/--offset/--rarity。返回 items/total/count/limit/offset，每项增加整数 rarity，默认 ★4 优先，再按星级降序和类型／ID 排序。搜索不会将缺失技能键转成字符串 none。
+
+响应 `skillTemplate` 同时给 lifetimeFrames/durationFrames、maxCount=1、selfOnly=true，并提供可直接交给技能模板的 summon 子对象。两端寿命均为 1..2147483647 帧，默认2147483647约定常驻；超出 AMF3 29位整数范围时用精确 Number 编码。同角色草稿的新召唤物可直接被技能模板引用并联合编译。
+
+预览和编译使用本草稿已有角色／词条／PF 的有效输入；任一母本快照漂移都须重新预览保存。重存只释放当前 summon_clone 自己的预留，不能释放手工顶层预留、其他 change 的文案键或 string_id。新预留记录在 change.params.reservations，不再复制到顶层。旧草稿同时声明相同顶层预留且无法证明来源时会阻断，应显式核对后移除重复声明或重建草稿。
+
+无主动技能的母本不能请求继承技能档位；原生 ATK 修正为0的球可克隆。image_prefix 必须有角色、原生球或像素资源证据；非角色前缀的主动技能球还须有 skill_cutin_0。能力需求分析沿 multiball.c9 追踪主动程序、沿 wfx_ball_pf_action 追踪 PF 三档程序，交付继续核对其能力与资源。

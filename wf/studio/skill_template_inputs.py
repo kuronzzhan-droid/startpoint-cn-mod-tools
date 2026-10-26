@@ -68,17 +68,20 @@ class OfficialEffects:
 
 def current_source(source, store, draft, *, server_dir=None):
     """Apply already-authorized clone/ability edits before the skill template."""
-    from .character_clone import clone_change, clone_members, overlay_source
-    members = {}
-    if draft and clone_change(draft):
-        members.update(clone_members(source, store, draft))
-    if draft and any(c["kind"] == "ability_edit" for c in draft["changes"]):
-        if members:
-            raise DraftError("克隆角色的 ability_edit 交付尚未支持")
-        from .ability import compile_ability_operations
-        edited = compile_ability_operations(source, store, draft, server_dir=server_dir)
-        members.update({("common", key): raw for key, raw in edited["client"].items()})
-    return overlay_source(source, members) if members else source
+    from .summon import _effective, compile_summons, changes
+    from .character_clone import overlay_source
+    effective = _effective(source, store, draft, server_dir)
+    if changes(draft):
+        summons = compile_summons(source, store, draft, server_dir=server_dir)
+        effective = overlay_source(effective, {("common", k): v for k, v in summons["client"].items()})
+    return effective
+
+
+def owned_clone_skill(draft, key):
+    from .character_clone import clone_change
+    change = clone_change(draft)
+    return bool(change and key == change["params"]["spec"]["code"]
+                and key in change["params"].get("ownedRows", {}).get(ACTION, []))
 
 
 def vacant(source, store, cid, key, previous=None, *, server_dir=None):
@@ -93,10 +96,14 @@ def vacant(source, store, cid, key, previous=None, *, server_dir=None):
         if key in declared:
             raise DraftError(f"action_skill 键已被本草稿其他改动预留：{key}")
     found = check_id(source, "action_skill", key, drafts_root=store.root, server_dir=server_dir)
+    takeover = owned_clone_skill(draft, key)
     old = previous.get("params", {}).get("request", {}).get("newKey") if previous else None
     own = str((store.directory(cid) / "changeset.json").resolve())
     owners = [entry for entry in found["owners"] if not
               (old == key and entry["source"] == "draft" and entry["owner"] == cid
-               and str(Path(entry["location"]).resolve()) == own)]
+               and str(Path(entry["location"]).resolve()) == own)
+              and not (takeover and (entry["source"] == "view" or
+                  entry["source"] == "draft" and entry["owner"] == cid
+                  and str(Path(entry["location"]).resolve()) != own))]
     if owners:
         raise DraftError(f"action_skill 键已占用或预留：{key}")

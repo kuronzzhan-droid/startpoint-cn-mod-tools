@@ -52,9 +52,9 @@ def rehearse(delivery_dir, server="local", *, zips=None, write=True):
         _check(result, "from", start == tail, f"交付 from={start}；当前启用链尾={tail}")
         _check(result, "to", version(end) > version(tail) and version(end) > version(start),
                f"交付 to={end} 必须高于链尾及 from")
-        _check(result, "local-test-only", not any("local_test_only" in d for d in metadata),
-               "共用条目禁止携带 local_test_only（包括 false）；原交付保持不变")
         records = inspect_archives(paths, metadata)
+        _check(result, "local-test-only", not any("local_test_only" in d for d in [*metadata, *records]),
+               "共用条目禁止携带 local_test_only（包括 false）；原交付保持不变")
         result["archives"] = records
         _check(result, "archives", True, "分包版本、命名、连续序号、ZIP CRC 与摘要已核对")
         for record in records:
@@ -63,8 +63,8 @@ def rehearse(delivery_dir, server="local", *, zips=None, write=True):
             result["serverSnapshot"]["assets/asset-patch/active/" + record["name"]] = current
             _check(result, "active-collision", current is None or current == record["sha256"],
                    record["name"] + ("：active 无同名文件" if current is None else "：比较 active 同名文件 SHA-256"))
-        portable = {"id": entry.get("id", f"rehearsal-{end}"), "type": "patch",
-                    "name": entry.get("name", f"资源补丁 {start} → {end}"), "version": end,
+        portable = {"id": entry.get("id") or metadata[0].get("id") or f"rehearsal-{end}", "type": "patch",
+                    "name": entry.get("name") or metadata[0].get("name") or f"资源补丁 {start} → {end}", "version": end,
                     "depends_on": start, "enabled": True, "archive": records[0]["name"],
                     "archive_size": records[0]["size"], "chain": [r["name"] for r in records],
                     "files": sorted(n for r in records for n in r["files"]),
@@ -78,6 +78,9 @@ def rehearse(delivery_dir, server="local", *, zips=None, write=True):
         result["serverChanges"] = changes
         result["serverSnapshot"].update(snapshots)
         for item in changes:
+            if item.get("existingClaimedKeys"):
+                _check(result, "server-collision", False,
+                       item["target"] + "：声明新增的键已经存在：" + str(item["existingClaimedKeys"]))
             if item["baselineMatches"] is not None:
                 _check(result, "server-baseline", item["baselineMatches"],
                        item["target"] + "：核对交付 before_sha256，漂移需重新基于当前数据生成")
@@ -94,6 +97,8 @@ def rehearse(delivery_dir, server="local", *, zips=None, write=True):
         _check(result, "inputs", False, f"预演输入检查失败：{exc}")
     result["ok"] = bool(result["checks"]) and not any(c["blocking"] for c in result["checks"])
     result["status"] = "ready" if result["ok"] else "blocked"
+    if not result["ok"]:
+        result.update(manifestEntry=None, manifestEntryJson=None)
     result["manualSteps"] = manual_steps(result)
     if write:
         # Invalid/unconfigured roots may produce a blocked report; configured roots remain protected.
@@ -108,7 +113,7 @@ def manual_steps(result):
     root = result["serverRoot"] or "<未配置服务端目录>"
     return [
         "先确认本报告 status=ready；blocked 时停止，修复问题并重新预演。",
-        f"重新读取 {root}/assets/asset-patch/manifest.json，确认启用链尾仍为 {result['from']}，并复核报告中的输入摘要。",
+        f"重新读取 {root}/assets/asset-patch/manifest.json，确认启用链尾 {result['currentVersion']} 与交付 from={result['from']} 一致，并复核报告中的输入摘要。",
         f"手工备份 manifest 和本次服务端目标文件；将同一批 ZIP 放入 {root}/assets/asset-patch/active/，逐个核对 size/SHA-256，同名不同内容必须停止。",
         f"有 serverChanges 时，按 addedKeys/replacedKeys 将候选键合入 {root} 下对应目标；保留 omittedKeys，数组逐项核对，禁止整文件覆盖。",
         f"在 {root}/assets/asset-patch/manifest.json 的 patches 末尾追加本报告 manifestEntryJson，同步 cdn_version=to；保存 UTF-8 无 BOM、CRLF、2 空格缩进及结尾换行。",
@@ -127,6 +132,8 @@ def markdown(result):
     for item in result["serverChanges"]:
         lines.extend([f"### {item['target']}", "", f"整文件覆盖风险：{item['wholeFileOverwriteRisk']}",
                       f"新增键：{item['addedKeys']}", f"替换键：{item['replacedKeys']}",
+                      f"已存在同值键：{item.get('unchangedKeys', [])}",
+                      f"待追加列表值：{item.get('appendValues', [])}；必须保留列表值：{item.get('omittedValues', [])}",
                       f"候选未包含、必须保留的旧键：{item['omittedKeys']}", ""])
     lines.extend(["## 手工上边清单", ""])
     lines.extend(f"{i}. {step}" for i, step in enumerate(result["manualSteps"], 1))

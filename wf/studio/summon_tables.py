@@ -127,6 +127,8 @@ def ball_skill(tables, row, spec):
     if spec.get("mode", "inherit") == "specified":
         return skill(tables, spec["key"], spec.get("level"))
     if "level" in spec:
+        if row[9] in EMPTY:
+            raise DraftError("母本 multiball 无主动技能，无法指定继承档位；请使用 skill.mode='specified'")
         def matches_path(value):
             rows = core.read_csv_lines(value) if isinstance(value, str) else []
             return len(rows) == 1 and len(rows[0]) > 7 and rows[0][7] == row[9]

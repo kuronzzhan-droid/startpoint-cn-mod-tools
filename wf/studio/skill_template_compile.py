@@ -19,14 +19,14 @@ def template_change(draft):
     return found[0] if found else None
 
 
-def prepare(source, official, store, cid, request, *, previous=None, server_dir=None):
+def prepare(source, official, store, cid, request, *, previous=None, server_dir=None, verify_inputs=False):
     """All source and destination bytes stay in memory, including previews."""
     from .skill_template_catalog import resolve_key, template_detail
     from .skill_template_core import clone_tree, effect_paths, effect_families, rewrite_effects
     from .skill_template_effects import clone_effects
     validate(request, "skillTemplateRequest")
     inputs = Inputs(source, official)
-    if previous:
+    if previous and verify_inputs:
         inputs.verify(previous["params"]["inputs"])
         inputs.hashes.clear()
     char_raw = inputs.require(CHARACTER)
@@ -41,7 +41,9 @@ def prepare(source, official, store, cid, request, *, previous=None, server_dir=
     validate(code, "code")
     vacant(source, store, cid, new_key, previous, server_dir=server_dir)
     source_key = resolve_key(official, request["source"])
-    detail = template_detail(official, source_key, include_tree=True, previews=False)
+    target_element = int(request.get("element", character[3]))
+    detail = template_detail(official, source_key, include_tree=True, previews=False,
+                             context_element=target_element)
     if not detail:
         raise DraftError(f"官方母本技能不存在：{source_key}")
     # Catalogue reads are intentionally from the immutable official archive.
@@ -54,24 +56,31 @@ def prepare(source, official, store, cid, request, *, previous=None, server_dir=
             raise DraftError("官方技能目录与角色主技能行不一致；请刷新来源视图")
     overrides = request.get("nodeCoefficients", {})
     tiers = detail["tiers"]
+    if set(request.get("text", {})) - {tier["level"] for tier in tiers}:
+        raise DraftError("text 包含不存在的技能档位")
     if set(overrides) - {tier["level"] for tier in tiers}:
         raise DraftError("nodeCoefficients 包含不存在的技能档位")
     prepared = {}
-    context_element = int(character[3])
+    context_element = target_element
     for tier in tiers:
         level = tier["level"]
         prepared[level] = clone_tree(
             tier["tree"], scale=request.get("scale", 1), node_coefficients=overrides.get(level),
-            element=request.get("element"), attribution=request.get("attribution"),
+            element=target_element, attribution=request.get("attribution"),
             summon=request.get("summon"), context_element=context_element)
+    from .skill_template_colors import choose_effect_colors
+    donor_detail = template_detail(official, source_key, include_tree=False, previews=False)
+    inputs.require(CHARACTER, official=True)
+    color_checks = choose_effect_colors(prepared, tiers, inputs, donor_detail["contextElement"], context_element)
     effects = sorted({value for cloned in prepared.values()
                       for value in effect_paths(cloned["tree"], context_element=context_element)})
     effect_result = clone_effects(OfficialEffects(inputs), effects, code, new_key, request.get("recolor"))
     members = dict(effect_result["members"])
-    checks, levels = list(effect_result["checks"]), []
+    checks, levels = [*effect_result["checks"], *color_checks], []
     action_raw = inputs.require(ACTION)
     action = codec.parse_node(action_raw)
-    if new_key in action:
+    from .skill_template_inputs import owned_clone_skill
+    if new_key in action and not owned_clone_skill(store.load(cid), new_key):
         raise DraftError(f"action_skill 目标键已存在：{new_key}")
     donor_rows = codec.parse_node(inputs.require(ACTION, official=True))[source_key]
     new_rows = copy.deepcopy(donor_rows)
@@ -95,6 +104,8 @@ def prepare(source, official, store, cid, request, *, previous=None, server_dir=
             raise DraftError(f"目标技能 DSL 路径已占用：{logical}")
         members["common", logical] = cloned["raw"]
         row = list(tier["row"])
+        text = request.get("text", {}).get(level, {})
+        row[0], row[1] = text.get("name", row[0]), text.get("description", row[1])
         row[7] = program
         from wf_client_skill_legality import action_skill_problems
         problems = action_skill_problems(row)
@@ -118,9 +129,11 @@ def prepare(source, official, store, cid, request, *, previous=None, server_dir=
     character[8] = new_key
     new_chars = {**chars, cid: join_leaf(chars[cid], [character])}
     members["common", CHARACTER] = _encode(char_raw, chars, new_chars)
+    from .skill_template_text import TEXT, client_text
+    members["common", TEXT] = client_text(inputs, cid, new_rows)
     checks.extend([
         result("skill-template.tables", "满足", "新增压缩技能行并挂接目标角色；保留全部旧键与非目标行"),
-        result("skill-template.text", "待验证", "母本技能名称与说明保留；数值变化后的独立文案请在词条编辑中同步"),
+        result("skill-template.text", "待验证", "技能与角色文案已同步；数值变化后的独立文案通过请求 text 各档 name/description 覆盖"),
         result("skill-template.device", "未执行", "静态编译不代表技能、协力与设备运行验证"),
     ])
     checks = [_check(check) for check in checks]
@@ -150,7 +163,7 @@ def compile_skill_template(source, store, draft, *, official_source=None, server
     if (draft["baseView"] != source.version or change["target"] != {"character": cid}):
         raise DraftError("技能模板草稿身份或基线不匹配")
     compiled = prepare(source, official_source or source, store, cid, change["params"]["request"],
-                       previous=change, server_dir=server_dir)
+                       previous=change, server_dir=server_dir, verify_inputs=True)
     if compiled["code"] != draft["code"] or compiled["reservations"] != change["params"]["reservations"]:
         raise DraftError("技能模板代码名或预留键与草稿不匹配")
     changes = [{"kind": "skill_template", "character": cid, "sourceKey": compiled["summary"]["sourceKey"],

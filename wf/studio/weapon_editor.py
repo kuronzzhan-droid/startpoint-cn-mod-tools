@@ -104,11 +104,11 @@ class WeaponEditor:
                 state, selected = _replay(self.source, wid, requests, server_dir=self.server_dir,
                                            reserved=self.reserved(wid), client_profile=self.client_profile,
                                            provides=self.provides)
-                if not state.client:
+                if not state.client and not state.servers:
                     raise DraftError("weapon request produces no changes")
                 checks = getattr(state, "weapon_checks", [])
                 result = {"ok": True, "weaponId": selected, "subjectKind": "weapon",
-                          "allocation": request["weapon"] if operation == "weapon_clone" else None,
+                          "allocation": request["weapon"] if operation in {"weapon_clone", "weapon_set"} else None,
                           "changes": state.changes, "serverTargets": sorted(state.servers),
                           "checks": checks, "icons": getattr(state, "weapon_icons", []), "runtime": "未执行"}
                 if any(r["operation"] == "weapon_set" for r in requests):

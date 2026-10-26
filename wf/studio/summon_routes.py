@@ -30,6 +30,9 @@ def add_summon_commands(sub):
     command = sub.add_parser("summon", help="协力角色工坊：templates 查母本，角色 ID 读取或编辑草稿")
     command.add_argument("cid", help="templates 或宿主角色 ID")
     command.add_argument("--q", default="", help="母本名称、ID、代码名搜索")
+    command.add_argument("--limit", type=int, default=100)
+    command.add_argument("--offset", type=int, default=0)
+    command.add_argument("--rarity", type=int, choices=range(1, 6))
     command.add_argument("--request", type=Path, help="summonCloneRequest UTF-8 JSON 文件")
     command.add_argument("--preview", action="store_true", help="预览将写入的行与检查，不写草稿")
     command.add_argument("--server-dir", type=Path, default=argparse.SUPPRESS,
@@ -41,7 +44,7 @@ def run_summon(args, source, store):
     if args.cid == "templates":
         if args.request or args.preview:
             raise DraftError("summon templates 不接受 --request 或 --preview")
-        return editor.templates(args.q)
+        return editor.templates(args.q, limit=args.limit, offset=args.offset, rarity=args.rarity)
     if args.q:
         raise DraftError("--q 仅用于 summon templates")
     if args.request:
@@ -68,7 +71,9 @@ class SummonRoutes:
                 "runtime": "未执行"}, 400)
 
     def templates(self, query):
-        return self._response(lambda: self.editor.templates(_query_value(query, "q", "")))
+        return self._response(lambda: self.editor.templates(_query_value(query, "q", ""),
+            limit=int(_query_value(query, "limit", "100")), offset=int(_query_value(query, "offset", "0")),
+            rarity=int(_query_value(query, "rarity", "0")) if "rarity" in query else None))
 
     def read(self, query, cid):
         return self._response(lambda: self.editor.read(cid), cid)

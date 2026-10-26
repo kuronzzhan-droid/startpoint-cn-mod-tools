@@ -10,16 +10,17 @@ import wf_mod_tool as core
 from wf.dsl.references import DSL_SUFFIX, linked_programs
 from .deliver_media import encode_tree, tree as decode_tree
 from .drafts import DraftError, sha256, validate
-from .pf_catalog import PfCatalog, PF_TABLE, decode_program
-from .pf_dsl import ELEMENTS, effects_map, remap, summary, transform
+from .pf_catalog import PfCatalog, PF_TABLE, STANDARD_TYPES
+from .pf_dsl import ELEMENTS, effects_map, remap, closure_summary, transform
 
 
 def vacant(source, store, catalog, key, *, owner=None):
     from .ids import canonical, check_id
     canonical("power_flip_action", key)
-    if key in catalog.keys:
+    if key in catalog.keys | STANDARD_TYPES:
         raise DraftError("PF 新键已被 CDN 或 APK 内置表占用：" + key)
-    result = check_id(source, "power_flip_action", key, drafts_root=store.root)
+    from .ids import collect_occupancy
+    result = check_id(source, "power_flip_action", key, occupancy=collect_occupancy(source, store.root, pf_catalog=catalog))
     conflicts = [o for o in result["owners"] if not (owner is not None and o["source"] == "draft"
                                                     and o["owner"] == owner)]
     if conflicts:
@@ -34,24 +35,9 @@ def _programs(catalog, donor, spec):
         prefix = f"battle/action/power_flip/studio/{spec['key']}$lv{level}"
         root_logical = original.removesuffix(DSL_SUFFIX) + DSL_SUFFIX
         mapping = {root_logical: prefix + DSL_SUFFIX}
-        originals = {}
-
-        def visit(logical, value=None):
-            if logical in originals:
-                return
-            if len(originals) >= 256:
-                raise DraftError("PF 子程序图超过 256 个节点")
-            if value is None:
-                raw = catalog.read(logical)
-                if raw is None:
-                    raise DraftError("PF 子程序缺失：" + logical)
-                value = decode_program(raw, logical)
-            originals[logical] = value
-            for linked in sorted(linked_programs(value)):
-                mapping.setdefault(linked, prefix + "_sub_" + sha256(linked.encode())[:16] + DSL_SUFFIX)
-                visit(linked)
-
-        visit(root_logical, root_tree)
+        originals = donor["closures"][level - 1]
+        for logical in originals:
+            mapping.setdefault(logical, prefix + "_sub_" + sha256(logical.encode())[:16] + DSL_SUFFIX)
         replacements = {**mapping, **{k.removesuffix(DSL_SUFFIX): v.removesuffix(DSL_SUFFIX)
                                       for k, v in mapping.items()}}
         for logical, value in originals.items():
@@ -65,7 +51,8 @@ def _programs(catalog, donor, spec):
                 raise DraftError("PF DSL 编码后语义往返不一致：" + target)
             members["common", target], trees[target] = raw, changed
         paths.append(prefix)
-        levels.append({"level": level, "path": prefix, **summary(trees[prefix + DSL_SUFFIX])})
+        levels.append({"level": level, "path": prefix,
+                       **closure_summary(trees[mapping[p]] for p in originals)})
     if set(effects) != matched:
         raise DraftError("母本未引用指定特效族：" + ", ".join(sorted(set(effects) - matched)))
     return paths, members, trees, levels, scales
@@ -135,6 +122,8 @@ def compile_pf(source, store, draft, *, client_profile=None, apks=None, cache_di
 
 def extend_compiled(compiled, source, store, draft, **options):
     members, servers, server_before, assertions, checks = compiled
+    from .character_clone import overlay_source
+    source = overlay_source(source, members) if members else source
     added, changes, results = compile_pf(source, store, draft, **options)
     if members.keys() & added.keys():
         raise DraftError("PF 与其他草稿修改了同一交付成员")

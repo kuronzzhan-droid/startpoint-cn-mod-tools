@@ -49,48 +49,9 @@ def slv(value, label):
     return value
 
 
-def _coordinates(tree):
-    """Track callback subject types so CD cannot be attached to an enemy/ball."""
-    problems = []
-    sites = {"CreateHitArea": (2, 3), "CreateReferencePoint": (1, 2),
-             "ShowEffect": (3, 6), "MoveHitArea": (1, 2)}
-    bindings = {
-        "CreateHitArea": {20: {19: "point"}, 23: {21: "point", 22: "enemy"}},
-        "CreateReferencePoint": {11: {10: "point"}},
-        "CreateReferencePointAtSpecifiedPosition": {5: {3: "point", 4: "point"}},
-        "FindNearSubjects": {6: {5: "actor"}},
-        "FindAllSubjects": {9: {1: "actor"}},
-        "FindMultiballSubjects": {6: {1: "ball", 2: "member"}},
-        "CreateSummonsMultiball": {12: {10: "ball", 11: "member"}},
-        "ActivatedMultiballOfExecutorSelf": {4: {2: "ball", 3: "member"}},
-        "CollisionOfBallAndEnemy": {5: {4: "enemy"}},
-    }
-
-    def visit(value, scope, path):
-        if not isinstance(value, list):
-            return
-        if value and isinstance(value[0], str):
-            tag = value[0]
-            if tag in sites:
-                subject_slot, coord_slot = sites[tag]
-                if value[coord_slot] == ["CD"] and scope.get(value[subject_slot]) in {
-                        "ball", "member", "enemy", "actor"}:
-                    problems.append(f"{path}/{tag}: CD 坐标不能挂在球、角色或敌人主体上")
-            scoped = bindings.get(tag, {})
-            for index, child in enumerate(value[1:], 1):
-                inner = dict(scope)
-                for slot, kind in scoped.get(index, {}).items():
-                    inner[value[slot]] = kind
-                visit(child, inner, f"{path}/{index}")
-        else:
-            for index, child in enumerate(value):
-                visit(child, scope, f"{path}/{index}")
-
-    visit(tree, {-17: "member", -18: "ball"}, "")
-    return problems
 
 
-def validate_tree(tree):
+def validate_tree(tree, character_element=None):
     """Reject known crash shapes before encode; return honest static check records."""
     if not isinstance(tree, list) or len(tree) != 12 or tree[0] != "ActionDsl":
         raise ValueError("DSL 必须是含 11 个参数的裸 ActionDsl 树，不能传解析结果包装对象")
@@ -126,8 +87,8 @@ def validate_tree(tree):
     for path, node in walk(tree):
         if not isinstance(node, list) or not node or not isinstance(node[0], str):
             continue
-        slots = {"CreateNormalAttack": (6, 7, 13, 14), "CreateRatioAttack": (3,),
-                 "CreateFixedAttack": (2,), "CreateSummonsMultiball": (3,)}.get(node[0], ())
+        from .skill_template_slots import SLV_SLOTS
+        slots = SLV_SLOTS.get(node[0], ())
         for slot in slots:
             # Empty optional numeric arrays are native zero/default values.
             if node[slot]:
@@ -148,9 +109,11 @@ def validate_tree(tree):
             for slot, expected in enumerate(signatures.ENUMS["Shape"][shape[0]], 1):
                 if expected == "Array":
                     slv(shape[slot], f"{path}/shape/{slot}")
-    problems = (legality.action_dsl_element_problems(tree)
+    from .skill_template_coordinates import coordinate_problems
+    problems = (legality.action_dsl_element_problems(tree, character_element=character_element)
+                + legality.action_dsl_hit_area_target_problems(tree) + wf_dsl.beam_direction_problems(tree)
                 + legality.action_dsl_lookup_scope_problems(tree)
-                + wf_dsl.coord_sys_source_problems(tree) + _coordinates(tree))
+                + wf_dsl.coord_sys_source_problems(tree) + coordinate_problems(tree))
     if problems:
         raise ValueError("；".join(dict.fromkeys(problems)))
     checks = [{"level": "info", "code": "skill_template.dsl",

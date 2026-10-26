@@ -23,6 +23,15 @@ def category(state, spec, kind, reserved):
         if len(matches) != 1 or "id" in spec and spec["id"] != matches[0]:
             raise ValueError("category identity/code/name conflict")
         row = one(state, logical, matches[0])
+        import wf_quest_lib as codec
+        original = codec.parse_node(state.original[logical]) if state.original.get(logical) else {}
+        if matches[0] not in original:
+            if "code" in spec:
+                row[0] = spec["code"]
+            if enhancement and "name" in spec:
+                validate_text(spec["name"], "category name")
+                row[3] = spec["name"]
+            write_row(state, logical, matches[0], row)
         if "code" in spec and row[0] != spec["code"]:
             raise ValueError("category code conflicts with existing ID")
         if enhancement and "name" in spec and row[3] != spec["name"]:
@@ -33,7 +42,7 @@ def category(state, spec, kind, reserved):
         raise ValueError("new category requires sourceCategory, code and name")
     validate_text(spec["name"], "category name")
     row = one(state, logical, spec["sourceCategory"])
-    if len(row) < (9 if enhancement else 10):
+    if len(row) < (10 if enhancement else 13):
         raise ValueError("category template layout is incomplete")
     key = kind + "_category"
     for pending in reserved.get(key + "_definitions", []):
@@ -53,10 +62,12 @@ def category(state, spec, kind, reserved):
     row[1] = str(max(int(s.cell(s.parse_rows(text)[0], 1)) for text in table.values()) + 1)
     if enhancement:
         row[3], row[8] = spec["name"], START
+        row[2] = row[9] = "(None)"
         images = (4, 5)
     else:
-        row[2] = "(None)"  # No donor quest prerequisite for a standalone shop.
-        images = (9,)
+        row[3:8] = ["(None)"] * 5
+        row[8], row[11], row[12] = "(None)", "", "false"
+        images = (9, 10)
     for column in images:
         image_reference(state, row[column])
     write_row(state, logical, identity, row)
@@ -77,6 +88,7 @@ def exchange(state, wid, spec, reserved):
     material(state, spec["itemId"])
     image_reference(state, equipment[6])
     row[0], row[2], row[6] = cat, "true", equipment[1]
+    row[1], row[3:6] = "(None)", ["(None)", "", "(None)"]
     row[7:10] = ["1", "1", "100"]
     row[10] = spec.get("description", "专属武器兑换")
     validate_text(row[10], "exchange description")

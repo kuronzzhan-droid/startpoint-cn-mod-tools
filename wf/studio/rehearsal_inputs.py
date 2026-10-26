@@ -30,18 +30,32 @@ def load_inputs(folder, zips=None):
         entries = list(folder.glob("manifest-entry-*.json"))
     if len(entries) > 1:
         raise DraftError("交付目录含多条 manifest 条目，无法唯一选择版本边")
-    entry = read_json(inside(folder, entries[0].name)) if entries else {}
+    entry = read_json(inside(folder, entries[0].relative_to(folder).as_posix())) if entries else {}
     if not isinstance(entry, dict):
         raise DraftError("manifest 条目必须是对象")
     metadata.append(entry)
+    patch = inside(folder, "patch-manifest.json")
+    if patch.is_file():
+        extra = read_json(patch)
+        if not isinstance(extra, dict):
+            raise DraftError("patch-manifest 必须是对象")
+        metadata.append(extra)
     if zips is not None:
-        paths = [Path(p).resolve() for p in zips]
+        paths = []
+        for value in zips:
+            path = Path(value)
+            if path.is_absolute():
+                try:
+                    path = path.relative_to(folder)
+                except ValueError as exc:
+                    raise DraftError("ZIP 必须位于交付目录内") from exc
+            paths.append(inside(folder, path.as_posix()))
     elif delivery.is_file():
         paths = [inside(folder, a["name"]) for a in doc.get("archives", [])]
     elif entry:
         paths = [inside(folder, n) for n in archive_names(entry)]
     else:
-        paths = sorted(folder.glob("*.zip"))
+        paths = [inside(folder, p.name) for p in sorted(folder.glob("*.zip"))]
     if not paths:
         raise DraftError("没有可预演的分包 ZIP")
     parsed = [ARCHIVE.fullmatch(p.name) for p in paths]
@@ -89,12 +103,16 @@ def inspect_archives(paths, metadata):
                   "members": len(members), "files": sorted(members), "member_sha256": hashes}
         if digest(path) != before:
             raise DraftError(f"读取期间 ZIP 变化：{path.name}")
-        sidecar = path.with_suffix(".integrity.json")
+        sidecar = inside(path.parent, path.with_suffix(".integrity.json").name)
         evidence = [read_json(sidecar)] if sidecar.is_file() else []
         for doc in metadata:
             evidence.extend(a for a in doc.get("archives", doc.get("archive_integrity", []))
                             if a.get("name") == path.name)
         for expected in evidence:
+            if not isinstance(expected, dict):
+                raise DraftError("分包 integrity 证据必须是对象")
+            if "local_test_only" in expected:
+                record["local_test_only"] = expected["local_test_only"]
             for key in ("size", "sha256", "members"):
                 if key in expected and expected[key] != record[key]:
                     raise DraftError(f"分包 {path.name} 的 {key} 与交付证据不一致")

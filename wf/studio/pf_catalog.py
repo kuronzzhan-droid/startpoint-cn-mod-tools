@@ -109,8 +109,12 @@ class PfCatalog:
         if key in self._rows:
             if self._sources[key] != origin:
                 self._conflicts[key] = "母本键同时存在于 CDN 与 APK 内置表，违反内置键约束"
-            elif _decode_row(self._rows[key], key) != _decode_row(raw, key):
-                self._conflicts[key] = "多个目标 APK 的同名 PF 三档行不一致"
+            else:
+                try:
+                    if _decode_row(self._rows[key], key) != _decode_row(raw, key):
+                        self._conflicts[key] = "多个目标 APK 的同名 PF 三档行不一致"
+                except DraftError as exc:
+                    self._conflicts[key] = str(exc)
             return
         self._rows[key], self._sources[key] = raw, origin
 
@@ -147,21 +151,27 @@ class PfCatalog:
         if key in self._conflicts:
             raise DraftError(self._conflicts[key] + "：" + key)
         row = _decode_row(self._rows[key], key)
-        trees = []
+        trees, closures = [], []
         for path in row:
             logical = path if path.endswith(DSL_SUFFIX) else path + DSL_SUFFIX
             raw = self.read(logical)
             if raw is None:
                 raise DraftError("PF 母本缺少三档 DSL：" + logical)
             trees.append(decode_program(raw, logical))
+            from .pf_closure import closure
+            closures.append(closure(self, logical, trees[-1]))
         return {"key": key, "source": self._sources[key], "row": row,
-                "trees": trees, "inputs": dict(self.inputs)}
+                "trees": trees, "closures": closures, "inputs": dict(self.inputs)}
 
     def detail(self, key):
-        from .pf_dsl import summary
-        donor = self.resolve(key)
-        levels = [{"level": number, "path": path, **summary(value)}
-                  for number, (path, value) in enumerate(zip(donor["row"], donor["trees"]), 1)]
+        from .pf_dsl import closure_summary
+        try:
+            donor = self.resolve(key)
+        except DraftError as exc:
+            return {"key": key, "source": self._sources.get(key), "type": key if key in STANDARD_TYPES else "custom",
+                    "levels": [], "warnings": list(self.warnings), "selectable": False, "error": str(exc)}
+        levels = [{"level": number, "path": path, **closure_summary(value.values())}
+                  for number, (path, value) in enumerate(zip(donor["row"], donor["closures"]), 1)]
         return {"key": key, "source": donor["source"], "type": _type(key, donor["row"]),
                 "levels": levels, "warnings": list(self.warnings), "selectable": True}
 
@@ -175,6 +185,8 @@ class PfCatalog:
             item = {"key": key, "source": self._sources[key]}
             try:
                 detail = self.detail(key)
+                if not detail["selectable"]:
+                    raise DraftError(detail["error"])
                 item.update(type=detail["type"], selectable=True,
                             levels=[{"level": level["level"],
                                      "nominalMultiplier": copy.deepcopy(level["nominalMultiplier"])}

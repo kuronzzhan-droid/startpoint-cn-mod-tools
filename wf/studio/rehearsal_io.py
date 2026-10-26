@@ -80,8 +80,12 @@ def save_reports(folder, result, markdown, protected):
     # No report may land in any configured server, even through a junction.
     config, _ = profile_data()
     roots = [protected]
-    for name in config.get("servers", {}):
-        roots.append(server_root(name))
+    servers = config.get("servers")
+    for name in servers if isinstance(servers, dict) else ():
+        try:
+            roots.append(server_root(name))
+        except DraftError:
+            continue  # An unconfigured sibling environment is not a target.
     targets = [inside(folder, f"rehearsal-{result['server']}{suffix}") for suffix in (".json", ".md")]
     for target in targets:
         if any(target.is_relative_to(root) for root in roots):

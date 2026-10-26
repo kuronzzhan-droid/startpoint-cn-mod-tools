@@ -29,7 +29,7 @@
     "else": {"properties": {"characterId": {"anyOf": [{"$ref": "#/$defs/characterId"}, {"$ref": "#/$defs/scratchId"}]}}}
   }],
   "$defs": {
-    "reservations": {"type": "object", "additionalProperties": false, "properties": {"character": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "multiball": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "weapon": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "soul_item": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "unique_condition": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "string_id": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "mana_node": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "enhancement_shop": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "soul": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "unique": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "stringcode": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "power_flip_action": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/pfActionKey"}}, "action_skill": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/skillTemplateKey"}}}},
+    "reservations": {"type": "object", "additionalProperties": false, "properties": {"character": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "multiball": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "weapon": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "soul_item": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "unique_condition": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "string_id": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "mana_node": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "enhancement_shop": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "soul": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "unique": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "stringcode": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "power_flip_action": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/pfActionKey"}}, "action_skill": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/skillTemplateKey"}}, "enhancement_category": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[1-9][0-9]*$"}}, "exchange_category": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[1-9][0-9]*$"}}, "exchange_product": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[1-9][0-9]*$"}}}},
     "summonCloneRequest": {
       "type": "object", "additionalProperties": false, "required": ["template"],
       "description": "在角色草稿里从角色或现有 multiball 克隆协力角色；只生成数据行，召唤动作由技能模板另行接入。",
@@ -104,6 +104,9 @@
     "skillTemplateRequest": {
       "type": "object", "additionalProperties": false, "required": ["source", "newKey"],
       "properties": {
+        "text": {"type": "object", "additionalProperties": false, "patternProperties": {
+          "^[1-3]$": {"type": "object", "additionalProperties": false, "properties": {
+            "name": {"type": "string"}, "description": {"type": "string"}}}}},
         "source": {"type": "object", "additionalProperties": false,
           "anyOf": [{"required": ["key"]}, {"required": ["characterId"]}],
           "properties": {"key": {"$ref": "#/$defs/skillTemplateKey"}, "characterId": {"$ref": "#/$defs/characterId"}}},
@@ -124,7 +127,7 @@
           "properties": {"multiballId": {"type": "string", "pattern": "^[1-9][0-9]{0,9}$"},
             "maxCount": {"type": "integer", "minimum": 1, "maximum": 99, "default": 1},
             "selfOnly": {"type": "boolean", "default": true},
-            "durationFrames": {"type": "integer", "minimum": 1, "maximum": 268435455, "default": 3600},
+            "durationFrames": {"type": "integer", "minimum": 1, "maximum": 2147483647, "default": 2147483647},
             "effectPrefix": {"type": "string", "pattern": "^battle/effect/[A-Za-z0-9_/-]+$"}}}
       }
     },

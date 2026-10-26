@@ -130,9 +130,9 @@ def _rewrite_effects(tree, mapping, context_element):
                     break
 
 
-def encode_tree(tree):
+def encode_tree(tree, *, character_element=None):
     """Validate and encode a bare tree without applying coefficient edits again."""
-    checks = validate_tree(tree)
+    checks = validate_tree(tree, character_element=character_element)
     encoded = wf_dsl.encode_amf3(tree)
     if wf_dsl.parse_dsl(encoded)["tree"] != tree:
         raise ValueError("技能 DSL 编码后读回不一致")
@@ -182,6 +182,12 @@ def clone_tree(tree, *, scale=1.0, node_coefficients=None, element=None,
             node[slot] = _scale_coefficients(node[slot], scale)
         if element is not None and node[0] == "CreateNormalAttack":
             node[2] = element + 1
+    if element is not None:
+        for _, node in walk(result):
+            if isinstance(node, list) and node[:1] == ["ResolveByElement"]:
+                node[2] = element + 1
+            elif isinstance(node, list) and node[:1] == ["CreateSummonsMultiball"]:
+                node[7] = element + 1
     if attribution is not None:
         result[10] = attribution
         # A local nonzero hit-area override wins over the root. Rewrite those
@@ -196,7 +202,7 @@ def clone_tree(tree, *, scale=1.0, node_coefficients=None, element=None,
         result[11][1].insert(0, statement)
     if effect_mapping:
         _rewrite_effects(result, effect_mapping, context_element)
-    return {**encode_tree(result),
+    return {**encode_tree(result, character_element=element),
             "summary": {"damageNodeCount": len(original), "scale": scale,
                         "nodeOverrideCount": len(edits), "element": element,
                         "elementCode": element + 1 if element is not None else None,

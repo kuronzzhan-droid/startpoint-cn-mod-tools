@@ -40,7 +40,7 @@ def canonical(kind, value):
     return value
 
 
-def collect_occupancy(source, drafts_root=None, server_dir=None):
+def collect_occupancy(source, drafts_root=None, server_dir=None, *, pf_catalog=None):
     result = {kind: {} for kind in TABLES}
 
     def add(kind, identity, owner, source_kind, location):
@@ -51,6 +51,13 @@ def collect_occupancy(source, drafts_root=None, server_dir=None):
 
     try:
         collect_tables(source, add)
+        from .pf_catalog import PfCatalog, STANDARD_TYPES, PF_TABLE
+        catalog = pf_catalog if pf_catalog is not None else PfCatalog(source)
+        for key in STANDARD_TYPES:
+            add("power_flip_action", key, key, "builtin", "native PF standard keys")
+        for key in catalog.keys:
+            if catalog._sources[key] == "bundled":
+                add("power_flip_action", key, key, "bundled", PF_TABLE)
         collect_server(server_dir, add)
         collect_drafts(default_root() if drafts_root is None else drafts_root, add,
                        known_strings=result["string_id"], source=source)

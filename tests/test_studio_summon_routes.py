@@ -53,7 +53,7 @@ def test_http_save_read_and_schema(summon_env):
     assert result["schema"] == "wf-studio-summons/1"
     assert result["items"][0]["changeId"] == saved["change"]["id"]
     assert result["items"][0]["multiballId"] == NEW_BALL
-    assert store.load(CID)["reservations"]["multiball"] == [NEW_BALL]
+    assert store.load(CID)["changes"][0]["params"]["reservations"]["multiball"] == [NEW_BALL]
 
 
 def test_http_invalid_input_is_structured_and_does_not_write(summon_env):

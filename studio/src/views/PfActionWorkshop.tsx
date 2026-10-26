@@ -283,15 +283,15 @@ function PfDetailView({ detail }: { detail: PfDetail }) {
 
 interface KeyCheckState { key: string; hit: { source: string } | null; bundledAvailable: boolean; error?: string }
 
-/** Exact-match lookup in the template list (view CDN + target APK bundled); draft reservations are checked by the backend. */
+/** Unified occupancy query: view, target APK and every draft namespace. */
 function useKeyCheck(value: string, profile: string | null): KeyCheckState | null {
   const [state, setState] = useState<KeyCheckState | null>(null);
   useEffect(() => {
     if (!PF_KEY.test(value)) { setState(null); return; }
     let live = true;
     const timer = window.setTimeout(() => {
-      pfActions.list(value, profile).then((r) => {
-        const hit = r.items.find((i) => i.key === value);
+      pfActions.check(value, profile).then((r) => {
+        const hit = r.owners[0];
         if (live) setState({ key: value, hit: hit ? { source: hit.source } : null, bundledAvailable: r.bundledAvailable });
       }, (e: Error) => { if (live) setState({ key: value, hit: null, bundledAvailable: false, error: e.message }); });
     }, 300);

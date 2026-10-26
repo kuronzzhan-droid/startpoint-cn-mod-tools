@@ -98,6 +98,15 @@ def fixture_files():
         "master/ability/ability.orderedmap": ordered({"1": leaf([valid_row("fixture_ability")])}),
         "master/ability/leader_ability.orderedmap": ordered({"1": leaf([valid_row()[:1] + valid_row()[3:]])}),
     }
+    from test_studio_skill_template_core import root
+    from wf.studio.deliver_media import encode_tree
+    for program in ("mother_low", "mother_high", "alternate"):
+        tables[f"battle/action/skill/{program}.action.dsl.amf3.deflate"] = encode_tree(root())
+    for program in ("a", "b", "c"):
+        tables[f"battle/action/{program}.action.dsl.amf3.deflate"] = encode_tree(root())
+    tables["character/fixture_override/pixelart/sprite_sheet.png"] = b"synthetic"
+    tables["character/fixture_override/ui/skill_cutin_0.png"] = b"synthetic"
+    tables["character/fixture_mother/ui/skill_cutin_0.png"] = b"synthetic"
     return {("common", logical): raw for logical, raw in tables.items()}
 
 

@@ -44,7 +44,7 @@ Python 函数为 `wf.studio.rehearsal.rehearse(delivery_dir, server="local", zip
 - 回读每个 ZIP，核对 CRC、重复成员（含跨分包）、路径安全、大小、SHA-256，以及已有交付或 integrity sidecar 中的摘要和成员表。
 - active 同名文件 SHA-256 不同则阻断；同名相同可通过。不会写入 active。
 - 输入交付或条目含 `local_test_only` 字段即阻断，值为 false 也不例外。
-- `server/` 按服务端根相对路径读取，限 `assets/` 和 `out/`。历史 `server-entries/` 下文件映射到 `assets/`，README 和 merge-manifest 不作为目标；预演仅列差异，不执行其操作指令。
+- `server/` 按服务端根相对路径读取，限 `assets/` 和 `out/`。历史片段按下文显式映射规则核对；README 和 merge-manifest 不作为目标，操作指令不执行。
 - 服务端 JSON 递归按 JSON Pointer 列出新增、替换和候选未包含的旧键；后者必须保留，绝不默认删除。根数组另列 appendValues/omittedValues，必须逐项人工核对。已有目标标记整文件覆盖风险。标准 `assert-box.json` 中服务端候选摘要、旧值摘要和目标完整性也会核对。
 - 有服务端 JSON/代码时需手工重启；只有资源时由 manifest 热加载，不需重启。预演前后复核所有实际读取的服务端文件及同名 active 文件的 SHA，检测输入漂移。
 
@@ -101,7 +101,7 @@ raw = (json.dumps(manifest, ensure_ascii=False, indent=2).replace("\n", "\r\n") 
 | currentVersion/from/to | 启用链尾与交付边，尚未解析为 null |
 | checks[] | rule/status/blocking/message；逐项结果，错误必须显示 |
 | archives[] | 回读的 name/size/sha256/members/files/member_sha256，可选 logical |
-| manifestEntry/manifestEntryJson | 同一条可移植候选对象及格式化字符串，输入不全可为 null |
+| manifestEntry/manifestEntryJson | 同一条可移植候选对象及格式化字符串，任何 blocked 结果均为 null，不提供可直接追加候选 |
 | manifestFormat | encoding=UTF-8、bom=false、newline=CRLF、indent=2 |
 | serverChanges[] | target/source/destination、beforeSha256/sha256、baselineMatches（未声明旧摘要为 null）、kind=json/code、addedKeys/replacedKeys/omittedKeys、wholeFileOverwriteRisk、changed；JSON 另有 mergeMode，根数组另有 appendValues/omittedValues |
 | restartRequired/restartReason | true/false/null 与中文理由；输入未检查完整时为 null |
@@ -109,3 +109,13 @@ raw = (json.dumps(manifest, ensure_ascii=False, indent=2).replace("\n", "\r\n") 
 | manualSteps[] | 中文操作清单，不可自动执行 |
 
 界面建议将预演结论单列，blocked 显示全部阻断项；不要把旧报告当作当前实时状态。上边前必须重新预演，人工核对同一份 ZIP 与条目。此次仅交付后端与接口说明，未改前端源码。
+
+## 严格核对规则
+
+仅采用 enabled 严格为 true 且 type 为 patch 的条目，保留 manifest 顺序，不排序修补断链。version/depends_on 必须是三段版本号且向前增长。手工清单展示实际 currentVersion，不把交付 from 冒充当前链尾。
+
+历史 `server-entries/merge-manifest.json` 可声明 `targets: {"源文件.json": ["assets/现用表.json"]}`，支持一对多。character、cdndata/character、cdndata/character_text、mana_node 旧名没有显式映射时阻断为“未核对”；其他文件默认 assets 路径。append_object_keys 的 file/object_pointer/keys 用于检查声明新增键；目标已有同值也列入 existingClaimedKeys 并阻断。unchangedKeys 列同值键；数组只列实际新增和需保留的值，不把根数组当整表替换。
+
+legacy_manifest 支持交付目录内的子目录；显式 ZIP、扫描到的 ZIP、sidecar 均不得越界。patch-manifest、ZIP 完整性记录和 sidecar 的 local_test_only 也参与阻断。任何 blocked 结果的 manifestEntry/manifestEntryJson 均清空。
+
+只有完整构建成功才自动预演。预演异常保留原构建结果、报告与校验和，单独返回 rehearsal blocked。预演 IO 不占据全局任务锁，但同一交付的重复预演仍拒绝。无关损坏 server 配置不会阻止有效目标写报告。

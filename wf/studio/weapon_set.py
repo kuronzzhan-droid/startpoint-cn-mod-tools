@@ -29,6 +29,8 @@ def material(state, identity):
 def restrict_awakening(state, wid, identity):
     material(state, identity)
     equipment = one(state, s.EQUIPMENT, wid, 16)
+    if int(equipment[11]) not in range(1, 6):
+        raise ValueError("awakening rarity must be 1..5")
     document = state.server(AWAKENING)
     if state.raw(CUSTOM) is None:
         raise ValueError("missing custom_ability_string baseline")
@@ -36,8 +38,19 @@ def restrict_awakening(state, wid, identity):
     for name, value in (("materialByEquipment", int(identity)), ("rarityOverrides", int(equipment[11]))):
         if not isinstance(document.get(name, {}), dict):
             raise ValueError(f"invalid awakening section: {name}")
-        updates[name] = {**document.get(name, {}), wid: value}
-    state.set_server_keys(AWAKENING, updates)
+        updates[name] = value
+    from wf.deliver.json_merge import _json_spans
+    from wf.boss.edit_state import merge_keys
+    raw = state.servers.get(AWAKENING, state.server_original[AWAKENING])
+    for name, value in updates.items():
+        text, _, spans = _json_spans(raw)
+        if name in spans:
+            start, stop = spans[name]
+            changed = merge_keys(text[start:stop].encode("utf-8"), {wid: value})
+            raw = (text[:start] + changed.decode("utf-8") + text[stop:]).encode("utf-8")
+        else:
+            raw = merge_keys(raw, {name: {wid: value}})
+    state.servers[AWAKENING] = raw
     write_row(state, CUSTOM, "awakening_material_" + wid, [identity])
     return result("weapon.awakening-material", "待验证",
         "材料替代仅接受指定道具；仍允许重复本体突破。需要客户端 equipment-awakening-material-v1 "
@@ -77,6 +90,8 @@ def apply_set(state, spec, reserved):
     from .weapon_set_shops import category, exchange
     from .weapon_set_enhancement import enhance, move_category
     wid = spec["id"]
+    if not spec.get("noSoul") and not (set(spec) - {"id", "noSoul"}):
+        raise ValueError("weapon request produces no changes")
     one(state, s.EQUIPMENT, wid, 16)
     checks = []
     if spec.get("noSoul", False):
@@ -107,11 +122,17 @@ def preview_rows(state):
         before = json.loads(state.server_original[target] or b"{}")
         after = json.loads(raw)
         if isinstance(after, dict):
-            changed = {key: value for key, value in after.items() if before.get(key) != value}
+            changed = changed_keys(before, after)
         else:
             changed = [value for value in after if value not in before]
         servers.append({"target": target, "updates": changed})
     return {"client": clients, "server": servers}
+
+
+def changed_keys(before, after):
+    return {key: changed_keys(before[key], value)
+            if isinstance(value, dict) and isinstance(before.get(key), dict) else value
+            for key, value in after.items() if key not in before or before[key] != value}
 
 
 def requirements(state):

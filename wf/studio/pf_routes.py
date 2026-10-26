@@ -39,6 +39,21 @@ class PFActionsRoutes:
         return json_response(listing(self.app.source, options.get("q", ""),
                                      client_profile=options.get("clientProfile")))
 
+    def check(self, query):
+        from .ids import canonical, check_id, collect_occupancy
+        from .pf_catalog import PfCatalog
+        from .server import json_response
+        options = _query(query, ("key", "clientProfile"))
+        key = canonical("power_flip_action", options.get("key", ""))
+        catalog = PfCatalog(self.app.source, client_profile=options.get("clientProfile"))
+        occupied = collect_occupancy(self.app.source, self.app.ops.store.root, pf_catalog=catalog)
+        info = check_id(self.app.source, "power_flip_action", key, occupancy=occupied)
+        checked = catalog.bundled_available
+        return json_response({**info, "key": key, "bundledAvailable": checked,
+                              "available": info["available"] if checked or info["owners"] else None,
+                              "status": "occupied" if info["owners"] else "available" if checked else "unchecked",
+                              "warnings": catalog.warnings})
+
     def detail(self, query, key):
         from .pf_actions import detail
         from .server import error, json_response
@@ -72,6 +87,7 @@ class PFActionsRoutes:
     def routes(self):
         return [
             ("GET", re.compile(r"^/api/studio/pf-actions$"), self.listing),
+            ("GET", re.compile(r"^/api/studio/pf-actions/check$"), self.check),
             ("GET", re.compile(r"^/api/studio/pf-actions/(?P<key>[^/]+)$"), self.detail),
             ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/pf-action$"), self.clone),
             ("GET", re.compile(r"^/api/drafts/(?P<cid>\d+)/pf-actions$"), self.keys),

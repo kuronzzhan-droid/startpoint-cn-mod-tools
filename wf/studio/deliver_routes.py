@@ -77,6 +77,7 @@ class DeliverRoutes:
         self.default_provides = Path(default_provides) if default_provides is not None else None
         self.root = Path(root) if root is not None else DELIVERIES
         self._lock = threading.Lock()
+        self._rehearsing = set()
         self.running: dict[str, str] = {}
         self.jobs: dict[str, dict] = {}       # name -> public job record (kept for the session)
         self._cancel: dict[str, threading.Event] = {}
@@ -144,6 +145,8 @@ class DeliverRoutes:
             if cid in self.running:
                 raise DraftError(f"角色 {cid} 已在生成中（{self.running[cid]}），请稍候")
             name = f"{output_id}-{from_version}-to-{to_version}-{time.strftime('%Y%m%d-%H%M%S')}"
+            if name in self._rehearsing:
+                raise DraftError("交付正在预演，请等待结束")
             self.running[cid] = name
             cancel = self._cancel[name] = threading.Event()
             job = self.jobs[name] = {"name": name, "characterId": cid, "from": from_version, "to": to_version,
@@ -327,9 +330,14 @@ class DeliverRoutes:
         if set(body) != {"server"}:
             raise DraftError('预演请求只接受 {"server": "local"}')
         with self._lock:
-            if name in self.running.values():
+            if name in self.running.values() or name in self._rehearsing:
                 raise DraftError("交付仍在生成中，请等待生成结束")
+            self._rehearsing.add(name)
+        try:
             result = rehearse(self._folder(name), body["server"])
+        finally:
+            with self._lock:
+                self._rehearsing.discard(name)
         return json_response({"name": name, "ok": result["ok"], "rehearsal": result})
 
     def _device(self, folder: Path) -> dict | None:

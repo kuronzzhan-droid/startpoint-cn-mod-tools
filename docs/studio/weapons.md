@@ -449,3 +449,13 @@ python -m wf.studio.draft --view local --server-dir server weapon set 5950001 --
 
 CLI 支持既有 `--provides`／`--client-profile`，输出一行 JSON。没有新增出包路径，
 保存／生成／导出仍用武器草稿现有接口；ZIP、共享表键差异、APK 内置表撞名与兼容检查继续运行。
+
+## 专武全套补充契约
+
+weapon_set 的成功预览与保存都返回 allocation（已补齐 ID 的 weapon spec），含 enhancementCategory.id、exchange.category.id、exchange.productId 和 enhancement.products；预览不占用 ID，保存仍重新检查。GET set-options 增加 products 数组，每项 id/categoryId/name/row/table，供 sourceProduct 选择。
+
+仅设置 enhancementCategory 与修改 enhancement 一样禁止官方类目1..4；检查客户端／服务端阶段归属和集合一致，并同步 per_level 模式与需求。新增强化类目采用10列，清除c2解锁条件和c9结束时间，图片列为c4/c5；新增兑换类目采用13列，保留c2属性、清除c3..c8前置／期限和c11/c12活动限制，检查c9/c10图片。新增商品清除Pickup、campaign与前缀名。
+
+借用强化母本保留目标既有名称、图标、说明和强化能力；无目标强化行时从目标本体回填展示信息。c1/c3/c5/c7阈值钳制到上限；借用曲线可截到上限，但不能删除目标已有等级键。只调整能力等级不会要求外部SWF，交付仍检查能力需求。
+
+觉醒JSON按目标武器子键合并，预览server updates只列递归变更。ID检查同时扫描服务端强化类目、兑换类目映射值与商品内层键。新建类目允许同草稿后续改名；复用类目不记为新定义。noSoul:false单独提交会拒绝；客户端已正确但服务端失配时可以保存镜像修复，纯服务端输出仍须服从标准交付的客户端成员约束，不能声称已出包。

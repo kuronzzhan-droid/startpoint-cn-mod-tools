@@ -109,7 +109,7 @@ def test_summon_compiles_inside_new_character_clone_draft(clone_env):
     from test_studio_summon import ATTACK, HP, LEVEL, OLD_BALL
     source, store, ops, server = clone_env
     for key, raw in fixture_files().items():
-        if key[1] in {BALL, LEVEL, HP, ATTACK, STRINGS, PF}:
+        if key[1] in {BALL, LEVEL, HP, ATTACK, STRINGS, PF} or key[1].startswith("character/fixture_mother/"):
             source.view.files[key] = raw
     clone(ops, clone_request(), server_dir=server)
     editor = SummonEditor(source, store=store)

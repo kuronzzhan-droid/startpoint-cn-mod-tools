@@ -26,10 +26,10 @@ def opening_summon(tree, spec):
         raw_id = int(raw_id)
     if type(raw_id) is not int or not 0 < raw_id <= 2147483647:
         raise ValueError("multiballId 必须是正整数 ID")
-    cap, own, duration = spec.get("maxCount", 1), spec.get("selfOnly", True), spec.get("durationFrames", 3600)
+    cap, own, duration = spec.get("maxCount", 1), spec.get("selfOnly", True), spec.get("durationFrames", 2147483647)
     if type(cap) is not int or not 1 <= cap <= 99 or type(own) is not bool:
         raise ValueError("召唤 maxCount 需要 1..99，selfOnly 需要布尔值")
-    if type(duration) is not int or not 0 < duration < 2**28:
+    if type(duration) is not int or not 0 < duration <= 2147483647:
         raise ValueError("召唤 durationFrames 必须是正整数帧数")
     if own and cap > 1:
         raise ValueError("原生计数不支持 selfOnly=true 且 maxCount>1；不能冒充仅自身计数")

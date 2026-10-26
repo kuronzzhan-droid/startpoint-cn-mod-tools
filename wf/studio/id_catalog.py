@@ -47,9 +47,9 @@ SERVER_FILES = {
     "string_id": ("custom_ability_string.json", "cdndata/custom_ability_string.json"),
     "mana_node": ("mana_node.json", "mana_node_cnmod.json", "mana_board.json"),
     "enhancement_shop": ("equipment_enhancement_shop.json",),
-    "enhancement_category": (),
-    "exchange_category": ("boss_coin_shop.json",),
-    "exchange_product": ("boss_coin_shop_item_category_map.json",),
+    "enhancement_category": ("equipment_enhancement_shop.json",),
+    "exchange_category": ("boss_coin_shop.json", "boss_coin_shop_item_category_map.json"),
+    "exchange_product": ("boss_coin_shop_item_category_map.json", "boss_coin_shop.json"),
 }
 
 
@@ -120,6 +120,20 @@ def table_ids(kind, logical, rows):
 
 
 def server_ids(kind, name, rows):
+    if kind == "enhancement_category":
+        for key, value in rows.items():
+            if isinstance(value, dict) and "shopCategoryId" in value:
+                yield str(value["shopCategoryId"]), str(key)
+        return
+    if kind == "exchange_category" and name == "boss_coin_shop_item_category_map.json":
+        yield from ((str(value), str(key)) for key, value in rows.items())
+        return
+    if kind == "exchange_product" and name == "boss_coin_shop.json":
+        for category, products in rows.items():
+            if not isinstance(products, dict):
+                raise DraftError("shop category must be an object")
+            yield from ((str(key), str(category)) for key in products)
+        return
     if kind == "character" and name == "character_overlimit.json":
         values = rows.get("characters", []) if isinstance(rows, dict) else None
         if not isinstance(values, list) or any(type(value) not in (str, int) for value in values):

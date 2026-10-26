@@ -130,6 +130,9 @@ const profileQuery = (profile: string | null | undefined, first: boolean) =>
   profile ? `${first ? "?" : "&"}clientProfile=${enc(profile)}` : "";
 
 export const pfActions = {
+  check: (key: string, profile?: string | null) =>
+    get<{ key: string; available: boolean | null; owners: { source: string }[]; bundledAvailable: boolean; status: string }>(
+      `/api/studio/pf-actions/check?key=${enc(key)}${profileQuery(profile, false)}`),
   list: (q: string, profile?: string | null) => {
     const query = q.trim() ? `?q=${enc(q.trim())}` : "";
     return get<PfList>(`/api/studio/pf-actions${query}${profileQuery(profile, !query)}`);

@@ -17,20 +17,30 @@ def changes(draft):
 def sync_reservations(draft, removed=()):
     """Release only this feature's previous declarations, then register survivors."""
     registered = {kind: set(values) for kind, values in draft.get("reservations", {}).items()}
-    for change in [*removed, *changes(draft)]:
+    for change in removed:
         for kind, values in change["params"].get("reservations", {}).items():
             registered.setdefault(kind, set()).difference_update(values)
-    for change in draft["changes"]:
-        for kind, values in change.get("params", {}).get("reservations", {}).items():
-            registered.setdefault(kind, set()).update(values)
+    # Changes declare their own reservations. Do not conflate those declarations
+    # with manual top-level reservations, whose owner cannot otherwise be proven.
     draft["reservations"] = {kind: sorted(values) for kind, values in registered.items() if values}
 
 
-def _effective(source, store, draft):
+def _effective(source, store, draft, server_dir=None, **pf_options):
     from .character_clone import clone_change, clone_members, overlay_source
+    members = {}
     if clone_change(draft):
-        return overlay_source(source, clone_members(source, store, draft))
-    return source
+        members.update(clone_members(source, store, draft))
+    if any(c["kind"] == "ability_edit" for c in (draft or {}).get("changes", [])):
+        from .ability import compile_ability_operations
+        edited = compile_ability_operations(overlay_source(source, members) if members else source,
+                                            store, draft, server_dir=server_dir)
+        members.update({("common", k): v for k, v in edited["client"].items()})
+    effective = overlay_source(source, members) if members else source
+    if any(c["kind"] == "pf_action_clone" for c in (draft or {}).get("changes", [])):
+        from .pf_compile import compile_pf
+        added, _, _ = compile_pf(effective, store, draft, **pf_options)
+        effective = overlay_source(effective, added)
+    return effective
 
 
 def _identity(source, cid, draft):
@@ -47,14 +57,18 @@ def _available(source, store, cid, spec, previous, server_dir):
     occupied = collect_occupancy(source, store.root, server_dir)
     prior = previous["params"].get("reservations", {}) if previous else {}
     filename = (store.directory(cid) / "changeset.json").resolve()
+    remaining = copy.deepcopy(store.load(cid) or {"characterId": cid, "changes": []})
+    if previous:
+        remaining["changes"] = [c for c in remaining["changes"] if c.get("id") != previous["id"]]
+    from .id_drafts import _requests
+    remaining_ids = set()
+    _requests(remaining, lambda kind, identity, *_: remaining_ids.add((kind, identity)),
+              str(filename), occupied["string_id"], source, {})
     # Updating an owned summon may reuse exactly its own declarations. Other
     # drafts, namespaces, manual reservations and baseline rows still conflict.
     for kind, identities in prior.items():
         for identity in identities:
-            other_changes = [c for c in (store.load(cid) or {}).get("changes", [])
-                             if c.get("id") != previous["id"] and identity in
-                             c.get("params", {}).get("reservations", {}).get(kind, [])]
-            if other_changes:
+            if (kind, identity) in remaining_ids:
                 continue
             occupied[kind][identity] = [owner for owner in occupied[kind].get(identity, [])
                 if not (owner["source"] == "draft" and owner["owner"] == cid
@@ -83,13 +97,16 @@ def _verified(source, change):
     return tables, detail
 
 
-def compile_summons(source, store, draft, members=None, *, server_dir=None):
+def compile_summons(source, store, draft, members=None, *, server_dir=None, **pf_options):
     """Merge additions into prior compiler output; retain other modules' edits."""
     output, assertions, checks = dict(members or {}), [], []
-    effective = _effective(source, store, draft)
+    from .character_clone import overlay_source
+    canonical = _effective(source, store, draft, server_dir, **pf_options)
+    effective = overlay_source(canonical, members) if members else canonical
     _identity(effective, draft["characterId"], draft)
     for change in changes(draft):
-        tables, detail = _verified(effective, change)
+        _verified(canonical, change)
+        tables, detail = recipe(effective, change["params"]["spec"])
         _, occupied = _available(effective, store, draft["characterId"], change["params"]["spec"], change, server_dir)
         for key in detail["reservations"]["string_id"]:
             if not check_id(effective, "string_id", key, occupancy=occupied)["available"]:
@@ -108,17 +125,21 @@ class SummonEditor:
     def __init__(self, source, store=None, server_dir=None):
         self.source, self.store, self.server_dir = source, store or DraftStore(), server_dir
 
-    def templates(self, q=""):
+    def templates(self, q="", **options):
         from .summon_catalog import templates
-        return templates(self.source, q)
+        return templates(self.source, q, **options)
 
     def read(self, cid):
         draft = self.store.load(cid)
-        effective = _effective(self.source, self.store, draft)
+        effective = _effective(self.source, self.store, draft, self.server_dir)
         _identity(effective, cid, draft)
         items = []
         for change in changes(draft):
             _, detail = _verified(effective, change)
+            _, occupied = _available(effective, self.store, cid, change["params"]["spec"], change, self.server_dir)
+            if any(not check_id(effective, "string_id", key, occupancy=occupied)["available"]
+                   for key in detail["reservations"]["string_id"]):
+                raise DraftError("召唤字符串键已被其他来源预留")
             items.append({"changeId": change["id"], "characterId": cid,
                           "multiballId": change["params"]["spec"]["id"],
                           "spec": change["params"]["spec"], **detail, "runtime": "未执行"})
@@ -132,7 +153,7 @@ class SummonEditor:
         preview = preview or body_preview
         with self.store._lock:
             current = self.store.load(cid)
-            source = _effective(self.source, self.store, current)
+            source = _effective(self.source, self.store, current, self.server_dir)
             code = _identity(source, cid, current)
             if "id" not in spec:
                 spec["id"] = next_id(source, "multiball", drafts_root=self.store.root,
@@ -159,7 +180,7 @@ class SummonEditor:
             validate(change, "change")
             draft = self.store.load_or_new(cid, code, source.version)
             draft["changes"] = [c for c in draft["changes"] if not self.store.same_target(c, change)] + [change]
-            sync_reservations(draft, [previous] if previous else [])
+            sync_reservations(draft)
             draft["updatedAt"], draft["revision"] = now(), draft["revision"] + 1
             self.store._write(cid, draft)
             return {**result, "change": change, "changeset": draft, "status": status(draft)}

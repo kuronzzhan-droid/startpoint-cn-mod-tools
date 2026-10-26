@@ -1,5 +1,6 @@
 """Read-only enabled-chain checks and key-level server JSON previews."""
 from __future__ import annotations
+import re
 
 from wf.view.chain import version
 
@@ -11,14 +12,17 @@ from .rehearsal_io import inside, read_json
 def chain_tail(manifest):
     if not isinstance(manifest, dict) or not isinstance(manifest.get("patches"), list):
         raise DraftError("服务端 manifest 缺少 patches 数组")
-    enabled = [e for e in manifest["patches"] if e.get("enabled", True) and e.get("type", "patch") == "patch"]
+    if any(not isinstance(e, dict) for e in manifest["patches"]):
+        raise DraftError("服务端 patches 条目必须是对象")
+    enabled = [e for e in manifest["patches"] if e.get("enabled") is True and e.get("type") == "patch"]
     if not enabled:
         raise DraftError("服务端 manifest 没有启用的版本链")
-    ordered = sorted(enabled, key=lambda e: version(e.get("version")))
     seen = set()
     previous = None
-    for entry in ordered:
-        current, parent = entry["version"], entry.get("depends_on")
+    for entry in enabled:
+        current, parent = entry.get("version"), entry.get("depends_on")
+        if any(not isinstance(v, str) or not re.fullmatch(r"\d+\.\d+\.\d+", v) for v in (current, parent)):
+            raise DraftError("启用补丁 version / depends_on 必须是三段版本号")
         if current in seen or version(current) <= version(parent):
             raise DraftError("服务端启用链重复版本或版本回退")
         if previous is not None and parent != previous:
@@ -54,8 +58,10 @@ def key_diff(before, after, pointer=""):
 
 
 def server_preview(folder, root):
+    from .rehearsal_targets import entry_targets, unchanged_keys
     candidates = []
     declared = {}
+    targets, operations = entry_targets(folder)
     assertion_file = inside(folder, "assert-box.json")
     if assertion_file.is_file():
         for entry in read_json(assertion_file).get("files", []):
@@ -72,10 +78,10 @@ def server_preview(folder, root):
             file = inside(staging, rel)
             if dirname == "server-entries" and rel in {"README.md", "merge-manifest.json"}:
                 continue
-            target = rel if dirname == "server" else "assets/" + rel
-            candidates.append((target, file))
+            mapped = [rel] if dirname == "server" else targets(rel)
+            candidates.extend((target, file, operations.get(rel, [])) for target in mapped)
     seen, results, snapshots = set(), [], {}
-    for target, candidate in candidates:
+    for target, candidate, operations_for_file in candidates:
         if target in seen:
             raise DraftError(f"重复服务端目标：{target}")
         seen.add(target)
@@ -96,7 +102,7 @@ def server_preview(folder, root):
                 "baselineMatches": (old_hash == assertion["before_sha256"]
                                     if "before_sha256" in assertion else None),
                 "kind": "json" if target.endswith(".json") else "code",
-                "addedKeys": [], "replacedKeys": [], "omittedKeys": [],
+                "addedKeys": [], "replacedKeys": [], "omittedKeys": [], "unchangedKeys": [],
                 "wholeFileOverwriteRisk": old_hash is not None,
                 "changed": old_hash != new_hash}
         if item["kind"] == "json":
@@ -104,10 +110,21 @@ def server_preview(folder, root):
             after = read_json(candidate)
             a, r, o = key_diff(before, after)
             item.update(addedKeys=a, replacedKeys=r, omittedKeys=o,
+                        unchangedKeys=unchanged_keys(before, after),
                         changed=bool(a or r), mergeMode="按 JSON Pointer 逐键合入，保留 omittedKeys")
+            item["existingClaimedKeys"] = []
+            for operation in operations_for_file:
+                if operation.get("operation") == "append_object_keys":
+                    node = before
+                    for key in operation.get("object_pointer", "").split("/")[1:]:
+                        node = node.get(key.replace("~1", "/").replace("~0", "~"), {})
+                    item["existingClaimedKeys"].extend(
+                        _pointer(operation.get("object_pointer", ""), k)
+                        for k in operation.get("keys", []) if isinstance(node, dict) and k in node)
             if isinstance(before, list) and isinstance(after, list):
                 item.update(appendValues=[v for v in after if v not in before],
                             omittedValues=[v for v in before if v not in after],
+                            addedKeys=[], replacedKeys=[], changed=any(v not in before for v in after),
                             mergeMode="列表逐项核对，禁止整表覆盖")
         results.append(item)
     if set(declared) - seen:
