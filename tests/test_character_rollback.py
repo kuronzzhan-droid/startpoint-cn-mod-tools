@@ -37,6 +37,9 @@ class RollbackFixture:
     ROOTS = ("common", "medium", "android", "server")
 
     def __init__(self, module, root: Path):
+        # Snapshot filenames deliberately include full transaction and content
+        # hashes. Keep that contract while supporting long workspace roots.
+        root = Path(wf_release._extended_length_path(root))
         self.module = module
         self.root = root
         self.repo = root / "repo"
@@ -232,7 +235,7 @@ class TestCharacterRollback(unittest.TestCase):
 
     def test_first_release_binding_preserves_zero_release_base_owner_anchor(self):
         module = self._module()
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(dir=wf_release._extended_length_path(tempfile.gettempdir())) as tmp:
             fixture = RollbackFixture(module, Path(tmp))
             active = json.loads(fixture.store.active_path.read_bytes())
             owners = [["seris", "a" * 64]]
@@ -260,7 +263,7 @@ class TestCharacterRollback(unittest.TestCase):
 
     def test_snapshot_rollback_publishes_before_bytes_as_new_release(self):
         module = self._module()
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(dir=wf_release._extended_length_path(tempfile.gettempdir())) as tmp:
             fixture = RollbackFixture(module, Path(tmp))
             payload = module.prepare_snapshot_rollback(
                 fixture.snapshot_dir,
@@ -282,7 +285,7 @@ class TestCharacterRollback(unittest.TestCase):
 
     def test_rollback_failure_restores_current_live_state(self):
         module = self._module()
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(dir=wf_release._extended_length_path(tempfile.gettempdir())) as tmp:
             fixture = RollbackFixture(module, Path(tmp))
             payload = module.prepare_snapshot_rollback(
                 fixture.snapshot_dir,
@@ -305,7 +308,7 @@ class TestCharacterRollback(unittest.TestCase):
 
     def test_snapshot_absence_deletes_new_live_file_and_keeps_empty_root_archive(self):
         module = self._module()
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(dir=wf_release._extended_length_path(tempfile.gettempdir())) as tmp:
             fixture = RollbackFixture(module, Path(tmp))
             snapshot_path = fixture.snapshot_dir / "snapshot.json"
             snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
@@ -342,7 +345,7 @@ class TestCharacterRollback(unittest.TestCase):
 
     def test_tampered_or_unfinalized_snapshot_is_rejected_before_staging(self):
         module = self._module()
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(dir=wf_release._extended_length_path(tempfile.gettempdir())) as tmp:
             fixture = RollbackFixture(module, Path(tmp))
             (fixture.snapshot_dir / "snapshot.json").write_bytes(b"{}")
 
@@ -380,7 +383,7 @@ class TestCharacterRollback(unittest.TestCase):
             ),
         )
         for label, mutate, expected in cases:
-            with self.subTest(case=label), tempfile.TemporaryDirectory() as tmp:
+            with self.subTest(case=label), tempfile.TemporaryDirectory(dir=wf_release._extended_length_path(tempfile.gettempdir())) as tmp:
                 fixture = RollbackFixture(module, Path(tmp))
                 fixture.rewrite_snapshot(mutate)
                 with self.assertRaisesRegex(wf_release.ReleaseError, expected):
@@ -394,23 +397,17 @@ class TestCharacterRollback(unittest.TestCase):
 
     def test_public_rollback_requires_installed_binding_and_exact_confirmation(self):
         module = self._module()
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(dir=wf_release._extended_length_path(tempfile.gettempdir())) as tmp:
             fixture = RollbackFixture(module, Path(tmp))
-            server_root = fixture.root / "external-server"
-            server_root.mkdir()
-            paths = wf_release._RepoPaths(
-                tool_root=fixture.repo,
-                server_root=server_root,
-                live_roots=fixture.live_roots,
-                cdn_root=fixture.cdn,
-            )
             with mock.patch.object(
-                wf_release, "_resolve_repo_paths", return_value=paths
+                wf_release,
+                "_repo_paths",
+                return_value=(fixture.repo, fixture.live_roots, fixture.cdn),
             ), mock.patch.object(
                 wf_release, "_server_running", return_value=False
-            ) as server_running, mock.patch.object(
+            ), mock.patch.object(
                 wf_release, "detect_canonical_base_version", return_value="1.4.54"
-            ) as detect_base:
+            ):
                 with self.assertRaisesRegex(wf_release.ReleaseError, "ROLLBACK_CHARACTER_PACKAGE"):
                     module.publish_snapshot_rollback(
                         fixture.snapshot_dir, "cn", "yes", fixture.installed
@@ -430,12 +427,6 @@ class TestCharacterRollback(unittest.TestCase):
                     fixture.installed,
                 )
 
-            self.assertTrue(server_running.call_args_list)
-            self.assertTrue(all(
-                call.args[0] == server_root
-                for call in server_running.call_args_list
-            ))
-            detect_base.assert_called_once_with(fixture.cdn, server_root)
             self.assertEqual("1.4.56", result.version)
             for root_name, path in fixture.live_paths.items():
                 self.assertEqual(fixture.original[root_name], path.read_bytes())

@@ -1,0 +1,22 @@
+/* Apply only to explicit character portrait wrappers, never an <img> or equipment. */
+.wf-character-frame{position:relative;--frame-glint:#ffffffe0}
+.wf-character-frame[data-frame-element="fire"]{--frame-color:#ed3853}
+.wf-character-frame[data-frame-element="water"]{--frame-color:#3c86fc}
+.wf-character-frame[data-frame-element="thunder"]{--frame-color:#ba9600}
+.wf-character-frame[data-frame-element="wind"]{--frame-color:#68b428}
+.wf-character-frame[data-frame-element="light"]{--frame-color:#87915c}
+.wf-character-frame[data-frame-element="dark"]{--frame-color:#694178}
+.wf-character-frame::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;border:1px solid var(--frame-color);border-radius:inherit;opacity:.65}
+.wf-character-frame[data-frame-rarity="2"]::after{border-width:2px;opacity:.85}
+.wf-character-frame[data-frame-rarity="3"]::after{border-width:2px;opacity:1;box-shadow:inset 0 0 0 1px var(--frame-glint)}
+.wf-character-frame[data-frame-rarity="4"]::after{border-width:3px;border-style:double;opacity:1}
+.wf-character-frame[data-frame-rarity="5"]::after{border-width:3px;opacity:1;box-shadow:inset 0 0 0 1px var(--frame-glint);background:linear-gradient(135deg,var(--frame-glint) 50%,transparent 50%) left top/4px 4px no-repeat,linear-gradient(225deg,var(--frame-glint) 50%,transparent 50%) right top/4px 4px no-repeat,linear-gradient(45deg,var(--frame-glint) 50%,transparent 50%) left bottom/4px 4px no-repeat,linear-gradient(315deg,var(--frame-glint) 50%,transparent 50%) right bottom/4px 4px no-repeat}
+.card-art.wf-character-frame[data-frame-rarity]{border-color:var(--frame-color);box-shadow:none}
+.team-slot.wf-character-frame:not(.selected):not(.drag-over){border-color:var(--frame-color)}
+[data-theme="dark"] .wf-character-frame{--frame-glint:#efffffcb}
+[data-theme="dark"] .wf-character-frame[data-frame-element="fire"]{--frame-color:#ff657a}
+[data-theme="dark"] .wf-character-frame[data-frame-element="water"]{--frame-color:#6aa8ff}
+[data-theme="dark"] .wf-character-frame[data-frame-element="thunder"]{--frame-color:#e1c148}
+[data-theme="dark"] .wf-character-frame[data-frame-element="wind"]{--frame-color:#90ce5c}
+[data-theme="dark"] .wf-character-frame[data-frame-element="light"]{--frame-color:#c8d18f}
+[data-theme="dark"] .wf-character-frame[data-frame-element="dark"]{--frame-color:#be99d3}

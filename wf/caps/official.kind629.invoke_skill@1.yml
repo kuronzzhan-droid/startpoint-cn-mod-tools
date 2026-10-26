@@ -1,0 +1,44 @@
+schema: wf-capability/1
+id: official.kind629.invoke_skill@1
+title: kind 629 InvokeSkill 能力动作
+layer: B
+provided_by:
+  patches: []
+  match: all
+  methods: []
+  status: 官方系统
+  basis: 总方案 §15 官方数据驱动系统
+server:
+  required: false
+  features: []
+  note: 无额外服务端改动要求
+data_surface:
+  allowed_tables: [ability, leader_ability, ability_soul, equipment_enhancement_ability, ex_ability]
+  allowed_blocks: [instant_content]
+  kind_bindings:
+  - {block: instant_content, kind: 629}
+  kinds:
+  - 629
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: kind 629 InvokeSkill 能力动作
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: kind 629 InvokeSkill 能力动作
+  channel: 能力说明
+rules:
+- capability.unknown
+- dsl.629-lifecycle
+- dsl.signature
+preview:
+  label: kind 629 InvokeSkill 能力动作
+  status: 待验证
+golden: []
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7

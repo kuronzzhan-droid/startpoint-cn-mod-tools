@@ -1,0 +1,117 @@
+schema: wf-capability/1
+id: client.apk.patch120@1
+title: 120 合击主位能力及多角色队长技开关
+layer: A
+provided_by:
+  patches:
+  - 120
+  match: all
+  methods:
+  - patch: 120
+    abc: boot_ffc6
+    label: BattleCharacterLogic/getOpitionAbilitiesWithoutAbilitySoul
+    sha256: a2e15db07a25960667fa958a57813682351f347baf8f2a1afccd95c23c71be26
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 120
+    abc: boot_ffc6
+    label: BattleCharacterLogic/getAvailableAbilities
+    sha256: bb0aff2057665c0a4a1463868942bdd690b665c79b0a86fc2b9fa9a12ebadaad
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 120
+    abc: boot_ffc6
+    label: BattleCharacterLogic/getAvailableAbilitiesWithCond
+    sha256: 447a94c290475756970b51e099b484dea8da1b3a8048cb37a4dfb4e50237b1be
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 120
+    abc: boot_ffc6
+    label: AbilitySummarizer$/summaryAbilities
+    sha256: 894b1ce3edc80e1d47e40a8acaa164b9081890fb920024b14c2a206eb6b10dec
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 120
+    abc: boot_ffc6
+    label: BattleCharacterLogic/resolvePathCollection
+    sha256: 1635d24840bc0c5e81cff3730159741f783528dd20bd417838c61c60aafbd8db
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 120
+    abc: boot_ffc6
+    label: BattleCharacterLogic/getInstantAbiltyCountWithoutLimit
+    sha256: 65dafd49bdcf77015670a32b60a443677a0cbf116d58c136008559756c20c307
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 120
+    abc: boot_ffc6
+    label: BattleCharacterLogic/wfxPartyRead
+    sha256: 2ca6a43a5c62d35b275e3ad45c2e0f2b9fe3e7c434d11caebd2a50438055f423
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 120
+    abc: boot_ffc6
+    label: BattleCharacterLogic/wfxPartyMask
+    sha256: c7a1db19edc1938f331ceee3e029d6e22d700741a17dc5432b5451f5e95bfbda
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 120
+    abc: boot_ffc6
+    label: BattleCharacterLogic/wfxPartyLeader
+    sha256: 475e536059b2866e0adf74378b72bcfbbd5ee2d1b763e6e8bbd6e830c9240946
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 120
+    abc: boot_ffc6
+    label: BattleCharacterLogic/wfxExtraLeaders
+    sha256: 739ab8d642fb22bf761006710b7fb1df09b8dc7a1324d5594312cfe0b110ee41
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 120
+    abc: boot_ffc6
+    label: BattleCharacterLogic/wfxAddExtraLeaders
+    sha256: 9a40c656096f2e1d7100bb05efa45760e3fbaeea212528faecbdc65a610eb8fc
+    status: 已记录
+    source: v35/run2/release-locks.json
+  - patch: 120
+    abc: boot_ffc6
+    label: BattleCharacterLogic/wfxPreloadExtraLeaders
+    sha256: 925c9c3323f723bfe4660c880f677e74d1a1622b745034c8b602b4af415d5fc8
+    status: 已记录
+    source: v35/run2/release-locks.json
+  status: 已记录
+  basis: v35e/run5累计本地离线证据；哈希为方法code字节；不声明设备验收或部署
+server:
+  required: false
+  features: []
+  note: 通用客户端数据入口；不声明服务端或资源已部署
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+  allowed_tables: []
+form:
+  label: 120 合击主位能力及多角色队长技开关
+  fields: []
+  note: 需要 test-v35e；实际参数规则以累计登记和对应实现说明为准
+describe:
+  template: 120 合击主位能力及多角色队长技开关
+  channel: 能力说明
+rules:
+- capability.missing
+- capability.method-hash
+- capability.resolution
+preview:
+  label: 120 合击主位能力及多角色队长技开关
+  status: 待验证
+golden:
+- source: v35/run2/apk-patches-additions/120-leader-unlock/README.md
+  kind: method-code-sha256
+  note: 最终SWF实际方法与最终release-lock一致；可重复离线验证不等于AIR/Android设备验收
+docs:
+- v35/run2/apk-patches-additions/120-leader-unlock/README.md
+- docs/m2/v35e-method-audit.json
+- docs/m2/v35e-registration.md

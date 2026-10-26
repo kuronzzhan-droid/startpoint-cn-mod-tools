@@ -1,0 +1,78 @@
+schema: wf-capability/1
+id: client.apk.patch044@1
+title: 关卡属性耐性
+layer: A
+provided_by:
+  patches:
+  - 44
+  match: all
+  methods:
+  - patch: 44
+    abc: boot_ffc6
+    label: BattleQuestBaseImpl/getInitialEnemyConditions
+    sha256: 36116b39b8e406997d649d04c5d127c9cddca89c2ec6a848fbb8dfdd647e3416
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 44
+    abc: cn.rules.QuestElementResistance
+    label: anonymous-method-0
+    sha256: 65bb9a4ab560f23ed321a6778500f5d6c01cf44a18b5b465c6229d0f316c8439
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 44
+    abc: cn.rules.QuestElementResistance
+    label: QuestElementResistance$/<cinit>
+    sha256: 333e0a1e27815d0ceee55c473fe3dc93d56c63e3bee2b3b4aee8eed6d70191a3
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 44
+    abc: cn.rules.QuestElementResistance
+    label: QuestElementResistance$/apply
+    sha256: ef924e6c2b73679d06650fb71f9159ca0ce2372d2485195abc6c24c682341bc8
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 44
+    abc: cn.rules.QuestElementResistance
+    label: QuestElementResistance/<ctor>
+    sha256: 8ff32749a852a1d83829c6a3fac8ec00822f06b5c7177f9ebb43a09287b2101a
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 44
+    abc: cn.rules.QuestElementResistance
+    label: QuestElementResistance$/parse
+    sha256: 17f628f2111e65e0857c51fc837669a933be8ec2557ef2a85ef19c6ddf91cd7d
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: false
+  features: []
+  note: 无额外服务端改动要求
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: 关卡属性耐性
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: 关卡属性耐性
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: 关卡属性耐性
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/verification/v33-patches-preserved-o8-o12-r2.json

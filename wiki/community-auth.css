@@ -1,0 +1,15 @@
+.community-admin [hidden]{display:none!important}
+.masthead-left{grid-area:brand;display:flex;align-items:center;gap:10px;min-width:0}
+.site-admin{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:0 0 34px;width:34px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;background:var(--surface,#fff);color:var(--ink);text-decoration:none}
+.site-admin svg{display:block;width:19px;height:19px;pointer-events:none}
+.site-admin:hover,.site-admin[data-authenticated="true"]{color:var(--accent-dark);border-color:var(--accent-dark);background:var(--soft,#eff7f6)}
+.site-admin[data-authenticated="true"]::after{content:"";position:absolute;right:2px;bottom:2px;width:6px;height:6px;border-radius:50%;background:#19b65a;box-shadow:0 0 0 2px var(--surface,#fff)}
+@media(max-width:1000px){.masthead-left{gap:6px}}
+@media(max-width:760px){.masthead-left{gap:5px}.site-admin{flex-basis:30px;width:30px}.masthead-left .brand{flex:0 0 32px}}
+@media(max-width:360px){.masthead .masthead-tools{gap:3px}.masthead .masthead-tools :is(.theme-toggle,.reborn-join,.wiki-share-trigger){padding-inline:4px}.masthead .masthead-tools .site-presence{padding-inline:3px}}
+.community-auth-form{display:grid;gap:14px;max-width:450px;padding:20px;background:var(--admin-bg,#fff);border:1px solid var(--admin-border,#cedcde);border-radius:10px;margin:14px 0}
+.community-auth-form h2{font-size:20px;margin:0}.community-auth-form p{margin:0;line-height:1.6}.community-auth-field{display:grid;gap:6px;font-size:14px;min-width:0}
+.community-auth-field input,.community-auth-field select{font:inherit;box-sizing:border-box;min-width:0;width:100%;padding:10px;border:1px solid var(--admin-border,#cedcde);border-radius:6px;background:var(--admin-bg,#fff);color:inherit}
+.community-auth-actions{display:flex;flex-wrap:wrap;gap:10px}.community-auth-status{white-space:pre-wrap;overflow-wrap:anywhere;color:#147267;min-height:22px;font-size:14px}.community-auth-form .muted{font-size:13px;color:var(--admin-muted,#607780)}
+.community-auth-form button:disabled{opacity:.55;cursor:default}.community-auth-field input:focus-visible,.community-auth-field select:focus-visible{outline:3px solid #dea62a;outline-offset:2px}
+[data-theme="dark"] .community-auth-status{color:#8fdccb}@media(max-width:500px){.community-auth-form{padding:14px}.community-auth-actions button{flex:1}}

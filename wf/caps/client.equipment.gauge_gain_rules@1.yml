@@ -1,0 +1,64 @@
+schema: wf-capability/1
+id: client.equipment.gauge_gain_rules@1
+title: 装备回槽来源限制（equipment-gauge-gain-rules-v1 / R3）
+layer: A
+provided_by:
+  patches: []
+  swf_sha256:
+  - 3d5c9745f519beee68557df7bce3e4ff635c9bb127069ed85a8fd02b5cbedb8a
+  - 89461f676b57a059bde58fe5897190db9b61013ae63947401fe1bf87106d6bcf
+  match: all
+  methods:
+  - patch: null
+    abc: boot_ffc6
+    label: AbilitySoulValues$/parseAt106
+    sha256: 09dab4df4529e9b0272315b616fa9ea4e1882401a9ceadb40be2b5ee515c40ab
+    status: 已记录
+    source: wf/apk/data/equipment-rules-r3-methods.json
+  - patch: null
+    abc: boot_ffc6
+    label: EquipmentEnhancementAbilityValues$/parseAt109
+    sha256: dd651c1588b171de60b3617ac33d165d22c726337ee6848caddd88dc0f331577
+    status: 已记录
+    source: wf/apk/data/equipment-rules-r3-methods.json
+  status: 已记录
+  basis: equipment-rules R3；两个真实 SWF 的方法 code 字节一致。R3 未关联数字归档号，不能用仅覆盖角色表的 #31 代替；只绑定 test-v34/test-v35e 的 SWF。
+server:
+  required: false
+  features: []
+  note: 无额外服务端改动要求；方法字节证据不等同设备运行验收
+data_surface:
+  allowed_tables:
+  - ability_soul
+  - equipment_enhancement_ability
+  allowed_blocks:
+  - during_content
+  kind_bindings:
+  - {block: during_content, kind: 423}
+  kinds:
+  - 423
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: 装备回槽来源限制
+  fields: []
+  note: 武器魂和装备强化的 during_content kind 423 需要此能力；角色 ability 使用 client.kind423.gauge_source_limit@1
+describe:
+  template: 装备规则 R3 使武器魂和装备强化表的 kind 423 构造 GaugeGainRestriction，读取目标和 unique_condition_id 后返回。
+  channel: 能力说明
+rules:
+- capability.missing
+- capability.method-hash
+preview:
+  label: 装备回槽来源限制
+  status: 待验证
+golden:
+- source: wf/apk/data/equipment-rules-r3-methods.json
+  kind: method-code-sha256
+  note: 两方法均在指令索引 7 pushstring "423"、索引 8 ifne；匹配分支在索引 24 returnvalue。体索引仅作本次证据，运行检查按类名和方法名定位。
+docs:
+- docs/m2/compat-v34-v35.md
+- wf/apk/data/equipment-rules-r3-methods.json

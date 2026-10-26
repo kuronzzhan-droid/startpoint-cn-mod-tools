@@ -1,0 +1,521 @@
+{
+  "source_commit": "c67d90f",
+  "files": [
+    {
+      "source": "tests/fixtures/balance_20260927b_bai.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_bai.json",
+      "bytes": 153174,
+      "sha256": "393321eb6fb752c17ff42feb9c7d26dfb9d800950a01a3b1eb08c3009e18e090"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_belsetia.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_belsetia.json",
+      "bytes": 16166,
+      "sha256": "1a479abb846c292768e4071e05b35058a0f73841e03910704f581931ea7c4162"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_bianca.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_bianca.json",
+      "bytes": 6604,
+      "sha256": "e3f8d9a6560c2fd3af2c5123b5f6d5d8ef06e661f1c067fa2735293c091211b0"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_celtie.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_celtie.json",
+      "bytes": 118237,
+      "sha256": "1a5b216b459550876cd68a6c1e0bb69e3abc92fbebfc9fc923f22e074f04add3"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_claus_rework.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_claus_rework.json",
+      "bytes": 136156,
+      "sha256": "725d7b3a8a1f84622b067cfd7abbd4859df66efde1d37edf89927887558d9df7"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_fluffy.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_fluffy.json",
+      "bytes": 176833,
+      "sha256": "30571456da0a58e6084e9415cb5383cc3bf25a2692b2019faeb3a6f0a0986ca9"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_gbf.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_gbf.json",
+      "bytes": 128953,
+      "sha256": "45be498e5d85bd2f091a9f9dbeafc3343a6c70c65baf47eabf9663a6477ec6b3"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_gerald2.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_gerald2.json",
+      "bytes": 145857,
+      "sha256": "e2c7b1a47991a568e2743a41831366a0fe267c741834d1bb9fce213a38162666"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_gerald_wolf.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_gerald_wolf.json",
+      "bytes": 183416,
+      "sha256": "6e4b96d4af5ed64fb2f9f2851802f5409b495e734ce67fa1070581331646044c"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_geral_water.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_geral_water.json",
+      "bytes": 59226,
+      "sha256": "bd6c40e194607506d4b6ae9899e933a7b919e390ed2907e18714a545de449a59"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_ginovi.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_ginovi.json",
+      "bytes": 180552,
+      "sha256": "a69e95d0540f0b3d8665066c0438ae52ecfff9215d79b90e5e22959b00afbf20"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_goldendragon.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_goldendragon.json",
+      "bytes": 38405,
+      "sha256": "6f28bf6754922387e26a58db027db00f20b743f443ab422d78671256a4cdc35b"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_gray3.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_gray3.json",
+      "bytes": 604641,
+      "sha256": "4b9f552ab3ac685525cc5641b163d5d434f588d46315b930d6a4b446cb8b9833"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_hibiki.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_hibiki.json",
+      "bytes": 26181,
+      "sha256": "6a51d9f4bd05477efae37593c78df4aca1dd22b42462e83d5b01b91db1392a28"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_inaho.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_inaho.json",
+      "bytes": 195901,
+      "sha256": "3bb24652e64083016bb435c7de8a5c5b673fddd5add96adfa102007367dc0a4d"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_inaho2.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_inaho2.json",
+      "bytes": 46224,
+      "sha256": "bcc86b28792781bbd4694a42cf779722a7848f5a47193468bd7d74a3bb26b23d"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_klaus.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_klaus.json",
+      "bytes": 81502,
+      "sha256": "1c59a8185458a05f7b584915ab32d40c8f2708d715bc8f710e1c75c597018b0d"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_kuro.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_kuro.json",
+      "bytes": 14041,
+      "sha256": "815706905ca974bbc22138818dd562e67844eb44c5739c3812545be6fb725ee7"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_kyle.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_kyle.json",
+      "bytes": 81240,
+      "sha256": "3b9a26d9b49653c64af9c69cf51e0310c6fa3b99c3cb48152506488ef042fee3"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_lilith.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_lilith.json",
+      "bytes": 87484,
+      "sha256": "46880c4546ae2fb7a99d2a76379f6fec894d3d22f17773a54aae3e1fb112a654"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_lionreborn.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_lionreborn.json",
+      "bytes": 85511,
+      "sha256": "b4a724e3c24fe97027fac75ae2404081094f331a8cfd37648c0c5744a38f6283"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_magnus.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_magnus.json",
+      "bytes": 76551,
+      "sha256": "25176a0092be497858f5f7bb1e2717ccecb78d963e5f5d19a718ceddb37f18f5"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_miniboss.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_miniboss.json",
+      "bytes": 299667,
+      "sha256": "28faa62823745976303dbdc0df9b7c5cd75a12bb1cd692a4560dcfb2e10a59c2"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_mosiyike.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_mosiyike.json",
+      "bytes": 95848,
+      "sha256": "dee87765ac9a31e9e85a690852c3f9cb9e155863f0011f1915880077d748e47e"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_nephtim.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_nephtim.json",
+      "bytes": 36528,
+      "sha256": "fcac7d1d4df0a35117ed83252aadc2b438d194179770694525aff632d5a7ea5c"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_nicola.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_nicola.json",
+      "bytes": 12107,
+      "sha256": "e10faa97460a98ed778b1e3ec5d6b65a99535a9fd73c9929a148400ab3824aa9"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_philia.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_philia.json",
+      "bytes": 1323559,
+      "sha256": "ac648aa0e477687c85f76c4bcb88ec83f7449ea7b72bd8aa30416d9c6606888a"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_primula.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_primula.json",
+      "bytes": 32191,
+      "sha256": "43a9cfac6d942cb77f14a9370d649b3d7c246fc6bb88733810c4c8a244278e7f"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_regis.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_regis.json",
+      "bytes": 20885,
+      "sha256": "b85485e41b6eafc1367c1cec0127c148e916c67698aa77bd445bba29f2ab45f9"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_rolfmoon.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_rolfmoon.json",
+      "bytes": 32416,
+      "sha256": "7b69574955b11f34e8f8ae4b1c58beb36e13f180e41b1d32fd1b0dd40fb1fef7"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_siete.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_siete.json",
+      "bytes": 42487,
+      "sha256": "5a03dd4e0622cac2fe02c8684b6dd8975a06a361abe0f1e0c9278b6dd8b82374"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_swimceltie.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_swimceltie.json",
+      "bytes": 11317,
+      "sha256": "18a9f3c845feffc206ec727a41230d26e5b0ca69144fdc497b127dd8506de9db"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_tekuto.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_tekuto.json",
+      "bytes": 164076,
+      "sha256": "585436418265ab0e572dd8188c86630b13211666c1c1071246baa7f097241002"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_thorn.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_thorn.json",
+      "bytes": 13800,
+      "sha256": "fc45b2e94ab043b144b6544d7c5e89ee816e8a88e6a770231f83f4ae9d7b1299"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_winddino.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_winddino.json",
+      "bytes": 23548,
+      "sha256": "2a8712867121eeb816c743230b2b9a5ee5a40fe2e07b261367358f501040ec71"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_witch_move.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_witch_move.json",
+      "bytes": 41151,
+      "sha256": "72e60259e5c3bd66798926f30daaab234e9a6474b0baa6bd2a9733471c078f05"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_zantetsu.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_zantetsu.json",
+      "bytes": 24107,
+      "sha256": "abcb5e79767153a24a5bf40d88f28853453668908808bbbf8ee39d4bb5d6b78b"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927b_zehr.json",
+      "local": "private-assets/tests/fixtures/balance_20260927b_zehr.json",
+      "bytes": 46184,
+      "sha256": "bb63b83760116bfcd6f75cd105b292f9f80f1b5260518632b70ba7e33ca9100b"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927c_bai.json",
+      "local": "private-assets/tests/fixtures/balance_20260927c_bai.json",
+      "bytes": 18429,
+      "sha256": "d5004b1c4af44e7ec187ef48443df757d6919d1402e983d98e0b23666c68040f"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927c_celtie.json",
+      "local": "private-assets/tests/fixtures/balance_20260927c_celtie.json",
+      "bytes": 125856,
+      "sha256": "76a6202049673595fa3146945cff03ec502fd49f0409065504116094dc73245e"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927c_fluffy.json",
+      "local": "private-assets/tests/fixtures/balance_20260927c_fluffy.json",
+      "bytes": 23129,
+      "sha256": "717158c8e3b6ad1da4657d148d238fd5db6decce42d8c0de9691fc43cda83d2f"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927c_gerald_wolf.json",
+      "local": "private-assets/tests/fixtures/balance_20260927c_gerald_wolf.json",
+      "bytes": 144179,
+      "sha256": "e2e03cd57c2792dbdcd54ddea6ebd0f9d5ca48f104e0dec8d17581903e71fe17"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927c_ginovi.json",
+      "local": "private-assets/tests/fixtures/balance_20260927c_ginovi.json",
+      "bytes": 23317,
+      "sha256": "dfaa732a00f198881c6f492044cbdf914d77525a5039b46a06b62c4a1af460dc"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927c_hibiki.json",
+      "local": "private-assets/tests/fixtures/balance_20260927c_hibiki.json",
+      "bytes": 20668,
+      "sha256": "f746f192fba0f401d23f6bfb5086d12d6d53a49b53c5b4c436e8acd0c83d57a7"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927c_inaho.json",
+      "local": "private-assets/tests/fixtures/balance_20260927c_inaho.json",
+      "bytes": 33734,
+      "sha256": "85be281be7a9b33f9dfc07acb50ee0f03f3d87161e671131dcfdf159545bc136"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927c_kuro.json",
+      "local": "private-assets/tests/fixtures/balance_20260927c_kuro.json",
+      "bytes": 349422,
+      "sha256": "eed58d8ed722c5e502d9aa858efcc83dc3079382b34ad5aa9e1e19a296280026"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927c_kyle.json",
+      "local": "private-assets/tests/fixtures/balance_20260927c_kyle.json",
+      "bytes": 39236,
+      "sha256": "b3dc81cf3a2e6fca35100c4b891a9ebd015800079c18f7581359523ed1266a8c"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927c_magnus.json",
+      "local": "private-assets/tests/fixtures/balance_20260927c_magnus.json",
+      "bytes": 148824,
+      "sha256": "ee1cd48ec2395a95ac49329e437526045679e819b64e4abd274918601edc7ef2"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927c_mosiyike.json",
+      "local": "private-assets/tests/fixtures/balance_20260927c_mosiyike.json",
+      "bytes": 62638,
+      "sha256": "1422579708b1262d84ca7d304c1ea0e0f2bacbc24cb0cf6eeeff41b1f84cab67"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927c_nephtim.json",
+      "local": "private-assets/tests/fixtures/balance_20260927c_nephtim.json",
+      "bytes": 148427,
+      "sha256": "e4718b153bc92873379633ad277138fd9439d58311bb8ba11e690543f9d3a85c"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927c_panels.json",
+      "local": "private-assets/tests/fixtures/balance_20260927c_panels.json",
+      "bytes": 178503,
+      "sha256": "829a5e24d43ce3579207496934fe016b047d72410b7ef4808d6f4dbe78f8b77a"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927c_philia.json",
+      "local": "private-assets/tests/fixtures/balance_20260927c_philia.json",
+      "bytes": 9936,
+      "sha256": "2b5d1cce1483bb6feec108b9949292bec964e1823eb08f79fb69f3095478d547"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927c_regis.json",
+      "local": "private-assets/tests/fixtures/balance_20260927c_regis.json",
+      "bytes": 29073,
+      "sha256": "3eb034af00ebd3d5e9c14114ace43cb5570b6562c9e07cc4f153391c0ebd6612"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927c_rolfmoon.json",
+      "local": "private-assets/tests/fixtures/balance_20260927c_rolfmoon.json",
+      "bytes": 51693,
+      "sha256": "ed0a7ba6fcfcdbfb5965fa43cb82da1d93e8bec39a07281ebd7763973c88cff5"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927c_seofonart.json",
+      "local": "private-assets/tests/fixtures/balance_20260927c_seofonart.json",
+      "bytes": 7195,
+      "sha256": "dd092e9570ce5865ab7da7249274cee8bda2797985f9e0e339650396e3d008cc"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927c_soriz.json",
+      "local": "private-assets/tests/fixtures/balance_20260927c_soriz.json",
+      "bytes": 116843,
+      "sha256": "d6e94b65676f6fd8a64c8dc6a48f636914565224c3ccba201c6727169f61f4d1"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927c_swimassets.json",
+      "local": "private-assets/tests/fixtures/balance_20260927c_swimassets.json",
+      "bytes": 4753,
+      "sha256": "85ae0ea9383e2111b94f69bd387f2ab63d998bdec78746804123a0c0f5f0a1bc"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927c_swimceltie.json",
+      "local": "private-assets/tests/fixtures/balance_20260927c_swimceltie.json",
+      "bytes": 26573,
+      "sha256": "74d16eeba6860e25440d073bc980f8bfca755e4502f89bfe25ce75a55de415d7"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927c_tekuto.json",
+      "local": "private-assets/tests/fixtures/balance_20260927c_tekuto.json",
+      "bytes": 181166,
+      "sha256": "86b640de5fa4f4dde2228b547532a4d59001a9dcee7e9b798bc5d167458ce0f8"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927c_zantetsu.json",
+      "local": "private-assets/tests/fixtures/balance_20260927c_zantetsu.json",
+      "bytes": 141043,
+      "sha256": "88fbb5602a5d6ee742221273e93773270bb0331741e11367ea6c8a7236a1db55"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927c_zehr.json",
+      "local": "private-assets/tests/fixtures/balance_20260927c_zehr.json",
+      "bytes": 38908,
+      "sha256": "e26e004a41d2be3ab32f7be778d2747f34c5cdcf328a4886595eb7638b04f60c"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927d_ginovi.json",
+      "local": "private-assets/tests/fixtures/balance_20260927d_ginovi.json",
+      "bytes": 78520,
+      "sha256": "42a6d6e1f4c60087c2fe5ef3ab030917a0dafb06e85b5a4904b546e9192f5b02"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927_charlene.json",
+      "local": "private-assets/tests/fixtures/balance_20260927_charlene.json",
+      "bytes": 24862,
+      "sha256": "9b1ef461a6dbbb7ddb822ab4cef28905296f4d645d547eca816ed4a94e002c37"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927_inaho.json",
+      "local": "private-assets/tests/fixtures/balance_20260927_inaho.json",
+      "bytes": 12678,
+      "sha256": "cf1a1bb27e9c94aa449269262bbfe0576096fc9f34dd976e36a2360f9f912bf7"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927_kyle.json",
+      "local": "private-assets/tests/fixtures/balance_20260927_kyle.json",
+      "bytes": 11076,
+      "sha256": "0c03207bac1ca93d178ff28b9fcd92c443096fbd349d6a22b35962d0f6542fe0"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927_lilith.json",
+      "local": "private-assets/tests/fixtures/balance_20260927_lilith.json",
+      "bytes": 528958,
+      "sha256": "7109589b8d26b62159dad4b51afb7fad4e89552e1b0faf6e11989b49b12c8ded"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927_miniboss.json",
+      "local": "private-assets/tests/fixtures/balance_20260927_miniboss.json",
+      "bytes": 150308,
+      "sha256": "4bc2604300c179140654c19032c28ae67b2acd2e6d1ef620ec8d19afe1c059c7"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927_nephtim.json",
+      "local": "private-assets/tests/fixtures/balance_20260927_nephtim.json",
+      "bytes": 41575,
+      "sha256": "22b6559422ac129f96b7e10db57d0c7c7a54c41a734fa7e7a753513869172fe5"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927_regis.json",
+      "local": "private-assets/tests/fixtures/balance_20260927_regis.json",
+      "bytes": 75362,
+      "sha256": "566bebf185a57c462970a293957b8286e8fd684646dd70dca698eb1c2cb1507c"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927_rolfwt26.json",
+      "local": "private-assets/tests/fixtures/balance_20260927_rolfwt26.json",
+      "bytes": 12025,
+      "sha256": "3af28d6c70e9fb602b26127b2d59ab4e5965814e14d8f1e63a87700ef89afdca"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927_stinel.json",
+      "local": "private-assets/tests/fixtures/balance_20260927_stinel.json",
+      "bytes": 4438,
+      "sha256": "1d304d6a91498fe89b82f8820aaee6b53099c49344a3a4123e820ea60ec6a8fd"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927_tekuto.json",
+      "local": "private-assets/tests/fixtures/balance_20260927_tekuto.json",
+      "bytes": 774,
+      "sha256": "904e15ebfdf7009207fd60c0a1be5622fa7da9f805593ff60f40699b752719b4"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927_vaseraga.json",
+      "local": "private-assets/tests/fixtures/balance_20260927_vaseraga.json",
+      "bytes": 102375,
+      "sha256": "f739757daa45bdf862eb88ae8e15bfb75fce9e431eba15fa0f7f1afc8c72b448"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927_waterab.json",
+      "local": "private-assets/tests/fixtures/balance_20260927_waterab.json",
+      "bytes": 63872,
+      "sha256": "45d14e61627b761a7b7f1053f6987f8b52b9f488dde28d7fe840e8b6ea6bfba6"
+    },
+    {
+      "source": "tests/fixtures/balance_20260927_zantetsu.json",
+      "local": "private-assets/tests/fixtures/balance_20260927_zantetsu.json",
+      "bytes": 38381,
+      "sha256": "76039d5abc683f1b3e8190e891f1c1d45b03e9d4deea84e0dca2bd2a68f9394d"
+    },
+    {
+      "source": "tests/fixtures/philia_no_flying_before.json",
+      "local": "private-assets/tests/fixtures/philia_no_flying_before.json",
+      "bytes": 5263,
+      "sha256": "0ca869dad9f36baf1a0c018797242debc79da1a5bc5cc5f7f8fcabdbfa02e8b5"
+    },
+    {
+      "source": "tests/fixtures/rolf_pf_before_1.json",
+      "local": "private-assets/tests/fixtures/rolf_pf_before_1.json",
+      "bytes": 2149,
+      "sha256": "acad05c4875d6f6ea17a2813b38c34aa70e1ef086b47d4645ab71a0a10cab919"
+    },
+    {
+      "source": "tests/fixtures/rolf_pf_before_2.json",
+      "local": "private-assets/tests/fixtures/rolf_pf_before_2.json",
+      "bytes": 3166,
+      "sha256": "1e6fdb6d9391e8f1956915b47eda5cf59c9c6815f6a494283bf0693b831e9933"
+    },
+    {
+      "source": "tests/fixtures/rolf_pf_before_3.json",
+      "local": "private-assets/tests/fixtures/rolf_pf_before_3.json",
+      "bytes": 4020,
+      "sha256": "65a9769228c766144da18abb64ddf7245c4bd70bb94a8637f0838f33192686f7"
+    },
+    {
+      "source": "tests/fixtures/surge_anchor_before.json",
+      "local": "private-assets/tests/fixtures/surge_anchor_before.json",
+      "bytes": 27803,
+      "sha256": "f107ac0ab1d9b590efccbb3f9f5aae02f17baabdc8a10ebcce440cae94ea1b39"
+    },
+    {
+      "source": "tests/fixtures/tekuto_low_hp_before.json",
+      "local": "private-assets/tests/fixtures/tekuto_low_hp_before.json",
+      "bytes": 38436,
+      "sha256": "148e1948abaa5ef1f3589dac8159c021884a62ded8956d2411de733edb533d9f"
+    },
+    {
+      "source": "tests/fixtures/tekuto_no_endlag_before.json",
+      "local": "private-assets/tests/fixtures/tekuto_no_endlag_before.json",
+      "bytes": 1431,
+      "sha256": "6907a0b588cc3296fd40cc1dd29c443152ba529a6d122cc95f9c9bcc5a2adc4f"
+    },
+    {
+      "source": "tests/fixtures/water_balance_20260924.json",
+      "local": "private-assets/tests/fixtures/water_balance_20260924.json",
+      "bytes": 9686,
+      "sha256": "3dd359c06d99b68fab44dd569a774fc0fcb071f3fd43e91587dabddf2650f677"
+    },
+    {
+      "source": "tests/fixtures/zehr_lamp_before.json",
+      "local": "private-assets/tests/fixtures/zehr_lamp_before.json",
+      "bytes": 17598,
+      "sha256": "2c9b76dd7fb36a985a07da55c259f493d6eded8c5f44834f2f67cf8287d5a683"
+    },
+    {
+      "source": "tests/fixtures/zehr_pf5_before.json",
+      "local": "private-assets/tests/fixtures/zehr_pf5_before.json",
+      "bytes": 1217,
+      "sha256": "b444a8ef6eea0c7a24b11e975665c5c58b787de3ec008d841e8c8a81f3807af9"
+    },
+    {
+      "source": "tests/fixtures/zehr_pf_hit_before.json",
+      "local": "private-assets/tests/fixtures/zehr_pf_hit_before.json",
+      "bytes": 7348,
+      "sha256": "63ed29049422a769228dc47a32ede9629af8d7ddae6d16f65d0ad4e0536d8945"
+    }
+  ]
+}

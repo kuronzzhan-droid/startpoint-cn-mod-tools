@@ -5,9 +5,10 @@ import tempfile
 import textwrap
 import unittest
 from pathlib import Path
+from tool_source import tool_source  # noqa: E402
 
 
-SCRIPT = Path(__file__).resolve().parents[1] / "wf_selftest.py"
+SCRIPT = tool_source(Path(__file__).resolve().parents[1], "wf_selftest.py")
 
 
 class SelftestStoreResolutionTests(unittest.TestCase):
@@ -35,7 +36,6 @@ class SelftestStoreResolutionTests(unittest.TestCase):
             import types
 
             core = types.ModuleType("wf_mod_tool")
-            core.env_target_store = lambda: None
             core.resolve_profile = lambda: None
             sys.modules["wf_mod_tool"] = core
             sys.argv = [{str(SCRIPT)!r}]
@@ -61,11 +61,7 @@ class SelftestStoreResolutionTests(unittest.TestCase):
 
                 module = runpy.run_path({str(SCRIPT)!r})
                 profile = types.SimpleNamespace(store={str(profile_store)!r})
-                core = types.SimpleNamespace(
-                    env_target_store=lambda: None,
-                    resolve_profile=lambda: profile,
-                    resolve_active_store=lambda **_kwargs: profile.store,
-                )
+                core = types.SimpleNamespace(resolve_profile=lambda: profile)
                 print(module["_resolve_selftest_store"](core))
                 """
             )
@@ -83,10 +79,7 @@ class SelftestStoreResolutionTests(unittest.TestCase):
                 import types
 
                 module = runpy.run_path({str(SCRIPT)!r})
-                core = types.SimpleNamespace(
-                    env_target_store=lambda: {str(target_store)!r},
-                    resolve_profile=lambda: None,
-                )
+                core = types.SimpleNamespace(resolve_profile=lambda: None)
                 print(module["_resolve_selftest_store"](core))
                 """,
                 env={"WF_TARGET_STORE": str(target_store)},
@@ -94,30 +87,6 @@ class SelftestStoreResolutionTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout.strip(), str(target_store))
-
-    def test_store_resolution_uses_the_shared_core_environment_validator(self):
-        result = self._run_python(
-            f"""
-            import runpy
-            import types
-
-            module = runpy.run_path({str(SCRIPT)!r})
-            def reject_environment():
-                raise ValueError("WF_TARGET_STORE shared validator sentinel")
-            profile = types.SimpleNamespace(store="must-not-win")
-            core = types.SimpleNamespace(
-                env_target_store=reject_environment,
-                resolve_profile=lambda: profile,
-            )
-            try:
-                module["_resolve_selftest_store"](core)
-            except ValueError as error:
-                print(error)
-            """
-        )
-
-        self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(result.stdout.strip(), "WF_TARGET_STORE shared validator sentinel")
 
 
 if __name__ == "__main__":

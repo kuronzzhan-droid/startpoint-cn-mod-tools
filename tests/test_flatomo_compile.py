@@ -12,11 +12,9 @@ import wf_dsl
 try:
     from wf_flatomo_compile import (
         compile_flipbook_effect,
-        compile_travelling_wave_effect,
     )
 except ImportError:
     compile_flipbook_effect = None
-    compile_travelling_wave_effect = None
 
 
 class FlatomoCompileTests(unittest.TestCase):
@@ -77,8 +75,8 @@ class FlatomoCompileTests(unittest.TestCase):
                 )
 
     def test_compile_flipbook_effect_builds_closed_four_file_asset(self):
-        if compile_travelling_wave_effect is None:
-            self.fail("wf_flatomo_compile.compile_travelling_wave_effect is missing")
+        if compile_flipbook_effect is None:
+            self.fail("wf_flatomo_compile.compile_flipbook_effect is missing")
 
         with tempfile.TemporaryDirectory() as temporary_name:
             temporary = Path(temporary_name)
@@ -90,9 +88,9 @@ class FlatomoCompileTests(unittest.TestCase):
                 image.save(path)
                 frames.append(path)
 
-            root = "battle/effect/skill_unique/cnmod_thunder_dragon_ascendant/fan_lightning"
-            files = compile_travelling_wave_effect(frames)
-            files_again = compile_travelling_wave_effect(frames)
+            root = "battle/effect/skill_unique/synthetic/fan_lightning"
+            files = compile_flipbook_effect(frames, effect_root="battle/effect/skill_unique/synthetic/fan_lightning", texture_name="fan_lightning", effect_name="fan_lightning_wave", repetitions=11, frame_origin=(8, 32))
+            files_again = compile_flipbook_effect(frames, effect_root="battle/effect/skill_unique/synthetic/fan_lightning", texture_name="fan_lightning", effect_name="fan_lightning_wave", repetitions=11, frame_origin=(8, 32))
 
         expected_keys = {
             f"{root}/fan_lightning.png",

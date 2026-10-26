@@ -1,0 +1,174 @@
+{
+  "schema": "wf-studio-m4a-validation/1",
+  "source_commit": "a4cf8ef44b8ee378996cdb224781fa2d2b8540e9",
+  "scope": "本地代码、历史视图、文件与静态能力验收；未发布、未部署、未操作设备或8790",
+  "pytest": {
+    "command": "python -B -m pytest --basetemp=work/m4a/full-tmp --junitxml=work/m4a/pytest-full.xml",
+    "exit_code": 0,
+    "terminal_summary": "4178 passed, 355 skipped, 26 warnings in 446.65s (0:07:26)",
+    "terminal_counts": {
+      "passed": 4178,
+      "skipped": 355,
+      "warnings": 26
+    },
+    "junit_counts_including_subtests": {
+      "tests": 6799,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 358
+    },
+    "elapsed_seconds": 448.3549231
+  },
+  "path_scan": {
+    "scanned_text_files": 2159,
+    "findings": [],
+    "count": 0
+  },
+  "hygiene": {
+    "exit_code": 0
+  },
+  "historical": {
+    "223": {
+      "members": 3,
+      "equal": 3
+    },
+    "221": {
+      "archives": 11,
+      "members": 310,
+      "different": 0
+    }
+  },
+  "media": {
+    "ok": true,
+    "archives": [
+      {
+        "name": "pinball-1.4.233-1.4.234-1-studio-139985.zip",
+        "size": 2829674,
+        "sha256": "0e75076ef2a2c01682418aa6f615fa64b1647df27986054166768f385c2efd58"
+      },
+      {
+        "name": "pinball-1.4.233-1.4.234-2-studio-139985.zip",
+        "size": 5139165,
+        "sha256": "1a799ea0d8ef678045db608dddd01d95191e1032a5d580095512199926ca86e8"
+      },
+      {
+        "name": "pinball-1.4.233-1.4.234-3-studio-139985.zip",
+        "size": 622749,
+        "sha256": "8bf21dc7c7d70bb4d00e6012915efc41773b8b4a17b8558e1641064daa7d8e17"
+      }
+    ],
+    "members": 36,
+    "draft_files_equal": 25,
+    "untouched_view_members": 2378,
+    "pixels": {
+      "changedFrames": 2,
+      "untouchedActions": [
+        "walk_back",
+        "walk_front",
+        "skill_ready",
+        "kachidoki",
+        "into_coffin",
+        "ghost_raise",
+        "ghost_neutral",
+        "revive"
+      ],
+      "untouchedFramePositions": 426,
+      "sheetSize": [
+        127,
+        204
+      ],
+      "frameBytesUnchanged": true,
+      "playerDecoderRoundtrip": true
+    },
+    "prepush_exit_code": 0
+  },
+  "ability": {
+    "ok": true,
+    "archives": [
+      {
+        "name": "pinball-1.4.233-1.4.234-1-studio-139985.zip",
+        "size": 224290,
+        "sha256": "749a76114407b2cb141dce7ff9a899cfb499899138a940ee31a41e78641c75b5"
+      }
+    ],
+    "changedMembers": 1,
+    "operations": [
+      "set_cells",
+      "insert_row",
+      "move_row",
+      "delete_row"
+    ],
+    "matchedCells": 378,
+    "untouchedAbilityLeaves": 3553,
+    "untouchedViewMembers": 1427,
+    "cliExitCodes": {
+      "check": 0,
+      "compat": 0,
+      "compat-negative": 1
+    }
+  },
+  "limitations": [
+    "kulo #35 缺本地编译路由模块，保留待验证",
+    "v34兼容为静态证据，设备实测未执行",
+    "会影响其它动作区间的非末槽时长变化拒绝",
+    "前端生成/导出按钮尚未接线"
+  ],
+  "evidence": [
+    {
+      "path": "work/m4a/pytest-full.log",
+      "sha256": "17da4a3795051c1f9eac1a974253a2d810ba81afb8bd6cdd18fecd3c5f46af54"
+    },
+    {
+      "path": "work/m4a/pytest-full.xml",
+      "sha256": "c8edd4eab8e99cb7e8932e98121876dca23ccab0a98f9d25b904eb65fb38e2b5"
+    },
+    {
+      "path": "work/m4a/pytest-full-exit.json",
+      "sha256": "3196d0e8edcf5694831f24b9befb59541cd4a083047a957b5a92faac020b993d"
+    },
+    {
+      "path": "work/m4a/path-scan.log",
+      "sha256": "0cf6b97f8158790632b9f72537ab6f1d940a96a28f1d131b973d07c9f9a14cc5"
+    },
+    {
+      "path": "work/m4a/hygiene.log",
+      "sha256": "e4216e7abeca380dc8b92e0833d0f14a51d3da369b9b9366b8c4be585f8a25e1"
+    },
+    {
+      "path": "work/m4a/baseline/223.json",
+      "sha256": "8833840e5380d63d58bc4310f16cac18b4491bc847fde56740fe86c48ec80c73"
+    },
+    {
+      "path": "work/m4a/baseline/221.json",
+      "sha256": "d1eb4bda1377f0758bf04a6a9643bc2ebc67956421a1df57a86316a49db7a21c"
+    },
+    {
+      "path": "work/m4a/acceptance-final/media-acceptance.json",
+      "sha256": "8402d42e46fe2d9170915ea9923641e1f10a68a88e6879b868b610d5b41eff8a"
+    },
+    {
+      "path": "work/m4a/acceptance-final/media-untouched-assets.json",
+      "sha256": "0a1e09b68fac086884a5fc43b0890477312d2d16de539996550837a5d49dd1da"
+    },
+    {
+      "path": "work/m4a/acceptance-final/media-source.lock.json",
+      "sha256": "1d1d62886581348bae56064c569709906dacbc9ea9259758e7419da322e067c1"
+    },
+    {
+      "path": "work/m4a/acceptance/ability-acceptance.json",
+      "sha256": "0d68176f9a8c2398a6190ff0b5039750b7a18959e058c1cc627b15319f889ec7"
+    },
+    {
+      "path": "work/m4a/acceptance/ability-source.lock.json",
+      "sha256": "b50695faf193bc7fe623647cb7c56f8a997d312a428136660078df461ccf2612"
+    },
+    {
+      "path": "work/m4a/acceptance/inputs-and-cli-acceptance.json",
+      "sha256": "6a88d9a2755055262da40867207e032935e94b82fdb93531ca2006f766d42895"
+    },
+    {
+      "path": "work/m4a/acceptance-final/source-binding-confirmation.json",
+      "sha256": "1387fe3a6e45c96a7b42a76bd4b6e858e71ebe065f7be69a8160a47847fae453"
+    }
+  ]
+}

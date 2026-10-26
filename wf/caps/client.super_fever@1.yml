@@ -1,0 +1,251 @@
+schema: wf-capability/1
+id: client.super_fever@1
+title: 超级 Fever 能量与结束结算
+layer: A
+provided_by:
+  patches:
+  - 112
+  - 125
+  match: all
+  methods:
+  - patch: 112
+    abc: boot_ffc6
+    label: ConditionSlot$/wfxSpec
+    sha256: 91ca69969bd16ae753041acdb6982603f6c3dc685c2145bd8cf96c33e369dd12
+    status: 已记录
+    source: v35/run4/release-locks.json
+  - patch: 112
+    abc: boot_ffc6
+    label: ConditionSlot/wfxCollect
+    sha256: fefed63f32ea56ea41805ea450a850ebc2d6bfb11e6a43db58411dc3ed89f1cc
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 112
+    abc: boot_ffc6
+    label: ConditionSlot/wfxRows
+    sha256: 043dc1989b5bced086cb2b10ceba115cf29139c75f6b43fe1a18fe7c1d87bba3
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 112
+    abc: boot_ffc6
+    label: ConditionSlot/wfxSum
+    sha256: 1c2e61835f1933dd81e018e91f101ac48fd871bb1ff7913d909017adee235901
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 125
+    abc: boot_ffc6
+    label: AbilityDamageShot/finish
+    sha256: 57d406ca5b723d9f5acc60afd213ac697aadde8127987ccadd3097cf519d1d8f
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 125
+    abc: boot_ffc6
+    label: FeverPointGaugeImpl/addFeverPoint
+    sha256: ced6a6754f7bfdf804a275acffd21e34068f994271f5f0e69cef89c378fdd0f8
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 125
+    abc: boot_ffc6
+    label: ConditionSlot/removeCondition
+    sha256: 01c23dccd42610aff382b891c6d75c42f22d61b9f43aec0ed23f1e18ebf3c222
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 125
+    abc: boot_ffc6
+    label: NormalAttackCalculator/_calculate
+    sha256: 60f34403fc68edd1d79572b02dd4ac271a9fe171094129a15efe6fb130566807
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 125
+    abc: boot_ffc6
+    label: EnemyImpl/applyAttack
+    sha256: 40bf00989633add7098e00901d1d76a41f67269b798e170fc03962b8c0062b03
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 125
+    abc: boot_ffc6
+    label: EnemyImpl/applySlipHandler
+    sha256: 9b57c2ffebbf6713c0794eb4bf8497e48d7eb0197c54440f3ec7223326b38df9
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 125
+    abc: boot_ffc6
+    label: FixedAttackCalculator/calculate
+    sha256: f4d7217dd88a8438cbfeef3d3e786cb13c94574afbd81ae50478ad509b19602d
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 125
+    abc: boot_ffc6
+    label: DamageShareCalculator/calculateFromAttackResult
+    sha256: 688c4151903a7f5ae14ae8d47d947bee039f6ad58334174008f644d661bfb906
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 125
+    abc: boot_ffc6
+    label: EnemyImpl/applyDamageShare
+    sha256: cde94d1fc01d0d80cb316f9ce5e766bf22d6a7ff778e2d71619e4372125c5913
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 125
+    abc: boot_ffc6
+    label: InstantAbilitySource/resolvePathCollection
+    sha256: 9bdc9e225abdba5cc26c939eb1287978285ee10d665957cb754632c83548ad88
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 125
+    abc: boot_ffc6
+    label: InstantAbilitySource/resolveConditionPathCollection
+    sha256: ca2b71568bb55f4c9c1be63973f1b712baf98cfef234487b32a93a23a00cf7ae
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 125
+    abc: boot_ffc6
+    label: ActionDslAssetResolver/eval
+    sha256: 0ba772088a5f1ff0e0d12618c253b3b184ac6313df73db3a1c7e3f56a30134a0
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 125
+    abc: boot_ffc6
+    label: ConditionSlot/wfxSuperEntry
+    sha256: 4a30c42abb20df18cfe407a1c65fa9fb33dfeb3d6a3a114fa69dfc3293a91733
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 125
+    abc: boot_ffc6
+    label: MemberImpl/wfxSuperGrant
+    sha256: f81c8d40830b71777799c9a178f61e329a38c487d4cda4ee0e4b9f71fec44ff7
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 125
+    abc: boot_ffc6
+    label: MemberImpl/wfxSuperEmit
+    sha256: 2567bb2ee8dd46134940dd99c6f9223505bae221e7e70d97666c1689b63ebbb0
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 125
+    abc: boot_ffc6
+    label: MemberImpl/wfxSuperBonus
+    sha256: 76fb3c2120e055c7a0918dbaad75a11ab45e1d38be9aff7f85af2bee5b0b82cc
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 125
+    abc: boot_ffc6
+    label: ConditionSlot/wfxSuperEnd
+    sha256: 45ec946b634e8360359dd884cc5fe02d47f437e81c83167ca3c439f775869d45
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 125
+    abc: boot_ffc6
+    label: MemberImpl/wfxSuperRecordDamage
+    sha256: e55d8c44f2540e7c37d1f14ad587b5f2e77d83add1e2d4735a95ca5324e39c07
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 125
+    abc: boot_ffc6
+    label: FeverPointGaugeImpl/wfxSuperEnergy
+    sha256: a9b08050cd021192d2fe8ef51515377ed1d3892a24633dc192b959de4571fea1
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 125
+    abc: boot_ffc6
+    label: EnemyImpl/wfxSuperRecordAttack
+    sha256: a48c45210581a1820083074f2cfb325c311f6ce71dd8fb2b1c7f1c2050eb2a8a
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 125
+    abc: boot_ffc6
+    label: UniqueConditionLogic/wfxSuperPreloadIcon
+    sha256: 77c42e014f8be91ae28b11c3125b9b037116a4c7d0a0c2b529167463b1985089
+    status: 已记录
+    source: v35/run3/release-locks.json
+  - patch: 125
+    abc: boot_ffc6
+    label: UniqueConditionLogic/wfxSuperPreload
+    sha256: 71cfbb4a334b6f1b5ee637d01caca302bd29dfd4b27e3a8a09caf854cfa243eb
+    status: 已记录
+    source: v35/run3/release-locks.json
+  status: 已记录
+  basis: v35e/run5累计本地离线证据；哈希为方法code字节；不声明设备验收或部署
+server:
+  required: false
+  features: []
+  note: 通用客户端数据入口；不声明服务端或资源已部署
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes:
+  - 'wfx:60:'
+  - 'wfx:61:'
+  - 'wfx:62:'
+  unique_ids: []
+  tables: []
+  selectors: []
+  allowed_tables:
+  - unique_condition
+form:
+  label: 超级 Fever 能量与结束结算
+  fields:
+  - name: effect_60
+    label: 超级Fever能量
+    arg_schema:
+      description: S状态uid
+    value:
+      min: 0
+      max: 2147483647
+      integer: true
+      unit: 每Fever点兑换能量万分比
+    flags:
+      type: integer
+      min: 1
+      max: 2147483647
+      meaning: 所需能量，正整数
+      pin: false
+  - name: effect_61
+    label: 超级Fever状态
+    arg_schema:
+      description: 保留，写0
+    value:
+      min: 0
+      max: 2147483647
+      integer: true
+      unit: 结束爆发基础万分比，0不爆发
+    flags:
+      type: integer
+      min: 0
+      max: 2147483647
+      meaning: 结束标记uid，0不发
+      pin: false
+  - name: effect_62
+    label: 超级Fever结束爆发加成
+    arg_schema:
+      description: 保留，写0
+    value:
+      min: -2147483648
+      max: 2147483647
+      integer: true
+      unit: 结束爆发附加万分比
+    flags:
+      type: integer
+      min: 0
+      max: 0
+      meaning: 保留，写0
+      pin: false
+  note: 需要 test-v35e；实际参数规则以累计登记和对应实现说明为准
+describe:
+  template: 码60独立能量、码61等级状态/一次结束结算、码62加成；只在本端主小队结算，reference4固定基数能力伤害
+  channel: 能力说明
+rules:
+- capability.missing
+- capability.method-hash
+- capability.resolution
+preview:
+  label: 超级 Fever 能量与结束结算
+  status: 待验证
+golden:
+- source: v35/run5/registry-draft.json
+  kind: method-code-sha256
+  note: 最终SWF实际方法与最终release-lock一致；可重复离线验证不等于AIR/Android设备验收
+docs:
+- v35/run5/registry-draft.json
+- docs/m2/v35e-method-audit.json
+- docs/m2/v35e-registration.md

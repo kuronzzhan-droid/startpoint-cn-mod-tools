@@ -1,0 +1,9 @@
+.avatar-shortcut{position:fixed;z-index:50;right:80px;bottom:calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:68px;height:58px;padding:5px;border:2px solid #27bcae;border-bottom-width:4px;border-radius:12px;background:#fff;color:#167f75;box-shadow:0 3px 12px #244e4b26;font-size:13px;font-weight:700;cursor:pointer}
+.avatar-shortcut[hidden]{display:none!important}
+.avatar-shortcut-label{font-size:10px;font-weight:500}
+.avatar-shortcut[aria-pressed="true"]{background:#dff7ef;color:#076e60}
+.avatar-shortcut:hover{background:#e7faf5}
+.avatar-shortcut:focus-visible{outline:3px solid #e6af3a;outline-offset:3px}
+[data-theme="dark"] .avatar-shortcut{background:#253c42;color:#b5e9df;border-color:#43bba8}
+[data-theme="dark"] .avatar-shortcut[aria-pressed="true"]{background:#185a53;color:#caffef}
+@media(max-width:640px){.avatar-shortcut{right:66px;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:60px;height:52px;font-size:12px}}

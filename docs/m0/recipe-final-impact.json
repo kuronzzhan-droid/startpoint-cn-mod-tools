@@ -1,0 +1,1282 @@
+{
+  "reviewed_head": "16c7999f7b891ad41b955023d0145c84180ced1f",
+  "comparison_reference_commit": "0a0b335",
+  "prior_describe_replay_inputs_match_commit": "4be4106",
+  "halloween_runtime_module_count": 57,
+  "changed_files_in_halloween_runtime_inventory": [
+    "wf_character_pack.py",
+    "wf_describe.py",
+    "wf_mod_tool.py"
+  ],
+  "changed_function_asts_since_reference": {
+    "wf_mod_tool.py": [
+      "resolve_cdndata_dir"
+    ],
+    "wf_character_pack.py": [
+      "PackTransaction.__init__",
+      "_WindowsOwnedApi.relative_open_contract"
+    ]
+  },
+  "unchanged_pack_functions_used_by_recipe": {
+    "load_server_json_mirror": "5d1242402e4fe9503817d4d9be8f261b3e55bb65deb214f1697ed6c19d44d19d",
+    "merge_server_json_object": "cc82b1ff6eaaab2efc09a696770267f435b692c4c60a2a27100153309b1875ad",
+    "package_server_mana_board_rows": "feaa682a620f12eb1a893bb596e274e6de286071d0493a7a0e0494abd10b654d"
+  },
+  "halloween_module_sha256": [
+    {
+      "module": "wf",
+      "file": "wf/__init__.py",
+      "sha256": "bdbbff217af1d8534b420537cd4d6fc0ba925ab8d0b331173035e850ce998cad"
+    },
+    {
+      "module": "wf.chars",
+      "file": "wf/chars/__init__.py",
+      "sha256": "600ddcec734011e8fd99be6aea5101ceb90a8835d40c6bb78d0b36cbed421c92"
+    },
+    {
+      "module": "wf.chars.halloween",
+      "file": "wf/chars/halloween/__init__.py",
+      "sha256": "8e5643fe1bce2021ded559a34b9b5b5165834242de3821c5c70d7d8acc08d081"
+    },
+    {
+      "module": "wf.chars.halloween.art",
+      "file": "wf/chars/halloween/art.py",
+      "sha256": "4a71ff2a933d1d2995189a5e50ea233e0db30ba372bee0ee3abd58346d4635fb"
+    },
+    {
+      "module": "wf.chars.halloween.color",
+      "file": "wf/chars/halloween/color.py",
+      "sha256": "65318c02885d8ca935c6725842cfad6d7a159d136ea1a33de5245b4aebe4191c"
+    },
+    {
+      "module": "wf.chars.halloween.common",
+      "file": "wf/chars/halloween/common.py",
+      "sha256": "36d3a6d36d10229168d0e115691a39e8b4e154fb9ff45320f6aa32840bf273dc"
+    },
+    {
+      "module": "wf.chars.halloween.env",
+      "file": "wf/chars/halloween/env.py",
+      "sha256": "f524a46dab32643f3e7747fec917964b5c584e704186969ed3e63efa5afef8ab"
+    },
+    {
+      "module": "wf.chars.halloween.kit_ludi",
+      "file": "wf/chars/halloween/kit_ludi.py",
+      "sha256": "1debb185daa2eca1197945e64d0cdef6b42fcadf36a74a9013464884a38ce78f"
+    },
+    {
+      "module": "wf.chars.halloween.kit_momiya",
+      "file": "wf/chars/halloween/kit_momiya.py",
+      "sha256": "924b579f5bcf029ea794154b0abc0da010b7a5669b9634cc94aa5e35703bf3ec"
+    },
+    {
+      "module": "wf.chars.halloween.kit_recital",
+      "file": "wf/chars/halloween/kit_recital.py",
+      "sha256": "5ed12708050d10f3747900a9a706c3cd81a60dacfdb7ebe72143f440098f787a"
+    },
+    {
+      "module": "wf.chars.halloween.kit_seriol",
+      "file": "wf/chars/halloween/kit_seriol.py",
+      "sha256": "9ce7f8d0a4fb9b22cb5826102dd1e1320729db175157c8abc636dba0415872b8"
+    },
+    {
+      "module": "wf.chars.halloween.kitlib",
+      "file": "wf/chars/halloween/kitlib.py",
+      "sha256": "6685d8408ec78a1bb23b342ed3383e2739b9dedee7e351e93e4edcc29ec5a4bd"
+    },
+    {
+      "module": "wf.chars.halloween.pixel",
+      "file": "wf/chars/halloween/pixel.py",
+      "sha256": "22119e611e956eabae4449ed7e607f823dad17fb2789515ea74f1a7ff70fc71c"
+    },
+    {
+      "module": "wf.chars.halloween.replay",
+      "file": "wf/chars/halloween/replay.py",
+      "sha256": "c90dedb920167211270f9eeabe6d968a183ecc37713799fafce1416cad3384ed"
+    },
+    {
+      "module": "wf.chars.halloween.specs",
+      "file": "wf/chars/halloween/specs.py",
+      "sha256": "8499bbca07f8e3043545d1cca1ee59344d16ac83537fbc5a2e8cd5dc733bab98"
+    },
+    {
+      "module": "wf.chars.halloween.voice",
+      "file": "wf/chars/halloween/voice.py",
+      "sha256": "133903a05c3741c3594b3d3359f5ab96ec76abffeb01fa5e941ef00fef9f6617"
+    },
+    {
+      "module": "wf.chars.support",
+      "file": "wf/chars/support/__init__.py",
+      "sha256": "4f883b03eea84be3d5b8ca7d6b09cc4efe0c8bb501e76ade4f8698711955ea7d"
+    },
+    {
+      "module": "wf.chars.support.actor",
+      "file": "wf/chars/support/actor.py",
+      "sha256": "de7bc3b174a6d3fc33900c549faeeb47da8d9542f90b336bebee0ffffd10c15e"
+    },
+    {
+      "module": "wf.chars.support.assets",
+      "file": "wf/chars/support/assets.py",
+      "sha256": "52f18570b1e5cc17d184e2d98510ae4c000cfa85d77a5690ce2c7d943a8f0329"
+    },
+    {
+      "module": "wf.chars.support.build",
+      "file": "wf/chars/support/build.py",
+      "sha256": "3fc2c8ebdf265649c72730a751e6ab19b583357c4c90092e5aa96a9a61789682"
+    },
+    {
+      "module": "wf.chars.support.common",
+      "file": "wf/chars/support/common.py",
+      "sha256": "2a7bd51379296829648958f5d5b39b6348d28209d44038255be6df6af0d172ea"
+    },
+    {
+      "module": "wf.chars.support.context",
+      "file": "wf/chars/support/context.py",
+      "sha256": "849e7f4d81d89a39157153e35528a4740d718ccf6da8cc27813450438e2759b8"
+    },
+    {
+      "module": "wf.chars.support.images",
+      "file": "wf/chars/support/images.py",
+      "sha256": "d33ded1c8b0b3f1c60a1645cbf0c0cb5360e6a799e9e66f5cfb3ca614925fa92"
+    },
+    {
+      "module": "wf.chars.support.kitlib",
+      "file": "wf/chars/support/kitlib.py",
+      "sha256": "7af4c8fe3447c14010859bf5942e49fedcf7dc4d4758deb249df3ae45f8f4fe4"
+    },
+    {
+      "module": "wf.chars.support.masks",
+      "file": "wf/chars/support/masks.py",
+      "sha256": "48d4da10c7e37bf5bc2628673d43cc6c7ab60b4dae60afdb6f081ab772d941f1"
+    },
+    {
+      "module": "wf.chars.support.pixel_codec",
+      "file": "wf/chars/support/pixel_codec.py",
+      "sha256": "6dabe0ce47e5d1dd279de5b8fe514275e1948f0b457b0a09d389b70da75bb65b"
+    },
+    {
+      "module": "wf.chars.support.portraits",
+      "file": "wf/chars/support/portraits.py",
+      "sha256": "56b9246ba985377b3d99904dabe8876fa2b8937265ee46d6e4810e3a940770ed"
+    },
+    {
+      "module": "wf.chars.support.primitives",
+      "file": "wf/chars/support/primitives.py",
+      "sha256": "f9fa17b44ae93fc3fe8c157b34f2647e48e8ddae19a109a44e55fbb21f0fe4fc"
+    },
+    {
+      "module": "wf.chars.support.rarity",
+      "file": "wf/chars/support/rarity.py",
+      "sha256": "2e1a4006b0a8bdb9bc1261b87377c53bfa70a3f3a6c35c37e6ba3bd4ee6df348"
+    },
+    {
+      "module": "wf.chars.support.specs",
+      "file": "wf/chars/support/specs.py",
+      "sha256": "2186aa4764ea01f7c547b72c31dcf91a36a666a3a59c0c613fe8f9b010fe1be2"
+    },
+    {
+      "module": "wf.chars.support.speech",
+      "file": "wf/chars/support/speech.py",
+      "sha256": "a5009759a00dbb182062490e73c0199333e77245a93db647f3ec7966d193c9a2"
+    },
+    {
+      "module": "wf.chars.support.table_rows",
+      "file": "wf/chars/support/table_rows.py",
+      "sha256": "3e4007750a96bf9df6dbe26fd7ca0588ee9c3c504c066c72c11d57295677039a"
+    },
+    {
+      "module": "wf.chars.support.tables",
+      "file": "wf/chars/support/tables.py",
+      "sha256": "18d1ab69e819ad5c57f150f762777a7a9ba87beed9b5e84d67f935ecb809dda1"
+    },
+    {
+      "module": "wf.deliver",
+      "file": "wf/deliver/__init__.py",
+      "sha256": "6b8df4375b911e27c93f6570d4ca7491962f34fa12bb49149e5251ed81dab603"
+    },
+    {
+      "module": "wf.deliver.logical_paths",
+      "file": "wf/deliver/logical_paths.py",
+      "sha256": "f52893771606c1f9acde96eb6c7d69da8ed61b4291803dab57e664db0b569a34"
+    },
+    {
+      "module": "wf.paths",
+      "file": "wf/paths.py",
+      "sha256": "8c746ed04dac59bda335239e5b5357772430b80b00a655b36b1db673f59b0b73"
+    },
+    {
+      "module": "wf.rules",
+      "file": "wf/rules/__init__.py",
+      "sha256": "e38652da4108f52e2fa9e8939f8bbf89660f35dc35ca73d59411b717a5d42639"
+    },
+    {
+      "module": "wf.rules.instant_content",
+      "file": "wf/rules/instant_content.py",
+      "sha256": "4f29485ec31cf305335efe86133549ddbd09305d5b7cd84951d7f9bc6e0208ee"
+    },
+    {
+      "module": "wf.view",
+      "file": "wf/view/__init__.py",
+      "sha256": "059846728734fdf27c2c6a86dfe15f7e77d5fe685227726f04b449fe05c11b8a"
+    },
+    {
+      "module": "wf.view.base149",
+      "file": "wf/view/base149.py",
+      "sha256": "200131e867f96fce82461a7c61ada1429e0ba839e2429e735d7f2e347d4a98a8"
+    },
+    {
+      "module": "wf.view.recipe_inputs",
+      "file": "wf/view/recipe_inputs.py",
+      "sha256": "75bcdab60b4c0eb0a856144702c68ab69e96339034b2bbea5793f3fed0334901"
+    },
+    {
+      "module": "wf.view.safety",
+      "file": "wf/view/safety.py",
+      "sha256": "24facada4f3d08a1d0f659f338990b26fbdeaa9ea2395b42ee3b327ac546d358"
+    },
+    {
+      "module": "wf_assets",
+      "file": "wf_assets.py",
+      "sha256": "2d4a132c3507ebe68699f1069cb1107646a736424766161aa3516e099e4587f5"
+    },
+    {
+      "module": "wf_atf",
+      "file": "wf_atf.py",
+      "sha256": "a7947da54e6bf0e71fa6e26bfe298f52417ae61ffbb39c4133767235c6e7c41a"
+    },
+    {
+      "module": "wf_battle_rules",
+      "file": "wf_battle_rules.py",
+      "sha256": "81b793aebfa9391a4bf96b035c294170dc4e7eb4b13c6c0467f3d08623da5120"
+    },
+    {
+      "module": "wf_character_pack",
+      "file": "wf_character_pack.py",
+      "sha256": "3521bc4785f316450ad319b23e2dc637ac6bd77a85afa3a03eac3d82bb068ff8"
+    },
+    {
+      "module": "wf_character_requirements",
+      "file": "wf_character_requirements.py",
+      "sha256": "7d7f7e0a725c359429748ce464688d7aaba793c9a3f7fcec970791631a839d77"
+    },
+    {
+      "module": "wf_client_description_legality",
+      "file": "wf_client_description_legality.py",
+      "sha256": "11410bcc07113917ca92c3c19d58e904cc61321f65f9480d7ed0d280373c56fb"
+    },
+    {
+      "module": "wf_client_legality",
+      "file": "wf_client_legality.py",
+      "sha256": "b262d474e08df70770ebc73512cc677583fa3867b673eeec8aa10384639cfbb5"
+    },
+    {
+      "module": "wf_client_patch_scope",
+      "file": "wf_client_patch_scope.py",
+      "sha256": "4ad22d4556f403b2733207127c093a258b85528620e68a13ce5542bf4d2e7af1"
+    },
+    {
+      "module": "wf_describe",
+      "file": "wf_describe.py",
+      "sha256": "8d9b0012ec289866ccff4475aafe4d3745adc051e13635e49644902ea6a42e0b"
+    },
+    {
+      "module": "wf_dsl",
+      "file": "wf_dsl.py",
+      "sha256": "24c4f01c4037a91a603c4c85c00f4f476f56eb6b24b3a45513d054a1d7ca17a2"
+    },
+    {
+      "module": "wf_generated_vfx",
+      "file": "wf_generated_vfx.py",
+      "sha256": "99d650b5e8bb79bd6dd21393937933c73de6f6417241a17ccc3107d7ec862a06"
+    },
+    {
+      "module": "wf_mod_tool",
+      "file": "wf_mod_tool.py",
+      "sha256": "cf93a7702149388a616bfa0665be69b372dc3491d7350b20fa3cefc2e94537f7"
+    },
+    {
+      "module": "wf_pixelart_vfx",
+      "file": "wf_pixelart_vfx.py",
+      "sha256": "3e6db1c3b5e8498e058aefe401a4f98e8946f740f5854f240e3cbd5dcc256cde"
+    },
+    {
+      "module": "wf_quest_lib",
+      "file": "wf_quest_lib.py",
+      "sha256": "ff24dd5dcf513d0c3668a1daa7b31cddada6aa62b779c4f719000227468051bc"
+    },
+    {
+      "module": "wf_ui_derive_gate",
+      "file": "wf_ui_derive_gate.py",
+      "sha256": "e70e413d4448b569780fffb1a331e36af0ec6684ac7ac8f21d9d2922b222a88b"
+    }
+  ],
+  "balance_fresh_evaluation": {
+    "equal_members": 3,
+    "different_members": 0,
+    "member_digest_sha256": "cdf8d816efce8ba8f357265f94a861c3782c3fc5fb8fcf8084061f5292537acf",
+    "members": [
+      {
+        "name": "production/upload/07/0c6e214359ccf27b1cb8078d3fc51aecfe0149",
+        "size": 83817,
+        "sha256": "2712bf39e5dcd3bccdc65cd470761aff5c82ff0e40b51139354fbb90c924aa7d",
+        "equal": true
+      },
+      {
+        "name": "production/upload/1e/664c1cc8d80f4f9a69aae2c49ae8c01d1c4001",
+        "size": 405902,
+        "sha256": "6d9448945f57093d1a52a0f8cfe459e70e93b00829d7f12a207c29c81a0bfb5f",
+        "equal": true
+      },
+      {
+        "name": "production/upload/ff/84353774cb95e8d7dc90c679f96a5bca7f42e5",
+        "size": 73226,
+        "sha256": "6967615bb73fa7bdbc8714810a04e26a3f20808c860b626d60164e35a8f97553",
+        "equal": true
+      }
+    ],
+    "mode": "fresh in-memory table generation; no ZIP rebuild",
+    "changed_dsl": [],
+    "called_functions": [
+      {
+        "file": "recipes/__init__.py",
+        "function": "<module>"
+      },
+      {
+        "file": "recipes/balance1017/__init__.py",
+        "function": "<module>"
+      },
+      {
+        "file": "recipes/balance1017/__main__.py",
+        "function": "<genexpr>"
+      },
+      {
+        "file": "recipes/balance1017/__main__.py",
+        "function": "<module>"
+      },
+      {
+        "file": "recipes/balance1017/c119990.py",
+        "function": "<module>"
+      },
+      {
+        "file": "recipes/balance1017/c119990.py",
+        "function": "apply"
+      },
+      {
+        "file": "recipes/balance1017/c119990.py",
+        "function": "apply.<locals>.<genexpr>"
+      },
+      {
+        "file": "recipes/balance1017/c119991.py",
+        "function": "<module>"
+      },
+      {
+        "file": "recipes/balance1017/c119991.py",
+        "function": "apply"
+      },
+      {
+        "file": "recipes/balance1017/c119992.py",
+        "function": "<module>"
+      },
+      {
+        "file": "recipes/balance1017/c119992.py",
+        "function": "apply"
+      },
+      {
+        "file": "recipes/balance1017/c119992.py",
+        "function": "apply.<locals>.<genexpr>"
+      },
+      {
+        "file": "recipes/balance1017/c129992.py",
+        "function": "<module>"
+      },
+      {
+        "file": "recipes/balance1017/c129992.py",
+        "function": "apply"
+      },
+      {
+        "file": "recipes/balance1017/c129999.py",
+        "function": "<module>"
+      },
+      {
+        "file": "recipes/balance1017/c129999.py",
+        "function": "apply"
+      },
+      {
+        "file": "recipes/balance1017/c139995.py",
+        "function": "<module>"
+      },
+      {
+        "file": "recipes/balance1017/c139995.py",
+        "function": "apply"
+      },
+      {
+        "file": "recipes/balance1017/c139995.py",
+        "function": "apply.<locals>.<genexpr>"
+      },
+      {
+        "file": "recipes/balance1017/c139997.py",
+        "function": "<module>"
+      },
+      {
+        "file": "recipes/balance1017/c139997.py",
+        "function": "apply"
+      },
+      {
+        "file": "recipes/balance1017/c139997.py",
+        "function": "apply.<locals>.<genexpr>"
+      },
+      {
+        "file": "recipes/balance1017/c169980.py",
+        "function": "<module>"
+      },
+      {
+        "file": "recipes/balance1017/c169980.py",
+        "function": "apply"
+      },
+      {
+        "file": "recipes/balance1017/c169980.py",
+        "function": "to_party_ability"
+      },
+      {
+        "file": "recipes/balance1017/common.py",
+        "function": "<module>"
+      },
+      {
+        "file": "recipes/balance1017/common.py",
+        "function": "gate"
+      },
+      {
+        "file": "recipes/balance1017/common.py",
+        "function": "gate.<locals>.<genexpr>"
+      },
+      {
+        "file": "recipes/balance1017/common.py",
+        "function": "setv"
+      },
+      {
+        "file": "wf/deliver/__init__.py",
+        "function": "<module>"
+      },
+      {
+        "file": "wf/deliver/logical_paths.py",
+        "function": "<module>"
+      },
+      {
+        "file": "wf/paths.py",
+        "function": "_expand"
+      },
+      {
+        "file": "wf/paths.py",
+        "function": "_text"
+      },
+      {
+        "file": "wf/paths.py",
+        "function": "configured_path"
+      },
+      {
+        "file": "wf/paths.py",
+        "function": "environment_path"
+      },
+      {
+        "file": "wf/paths.py",
+        "function": "path"
+      },
+      {
+        "file": "wf/paths.py",
+        "function": "profile_data"
+      },
+      {
+        "file": "wf/paths.py",
+        "function": "root_path"
+      },
+      {
+        "file": "wf/rules/__init__.py",
+        "function": "<module>"
+      },
+      {
+        "file": "wf/rules/instant_content.py",
+        "function": "<module>"
+      },
+      {
+        "file": "wf/rules/instant_content.py",
+        "function": "_declared_columns"
+      },
+      {
+        "file": "wf/rules/instant_content.py",
+        "function": "instant_option_value_problems"
+      },
+      {
+        "file": "wf/view/balance.py",
+        "function": "<module>"
+      },
+      {
+        "file": "wf/view/balance.py",
+        "function": "Framework"
+      },
+      {
+        "file": "wf/view/balance.py",
+        "function": "Framework.__init__"
+      },
+      {
+        "file": "wf/view/balance.py",
+        "function": "Framework.ab"
+      },
+      {
+        "file": "wf/view/balance.py",
+        "function": "Framework.cas_replace"
+      },
+      {
+        "file": "wf/view/balance.py",
+        "function": "Framework.le"
+      },
+      {
+        "file": "wf/view/balance.py",
+        "function": "Framework.log"
+      },
+      {
+        "file": "wf/view/balance.py",
+        "function": "Framework.rows"
+      },
+      {
+        "file": "wf/view/balance.py",
+        "function": "Framework.set_string"
+      },
+      {
+        "file": "wf/view/balance.py",
+        "function": "Framework.string"
+      },
+      {
+        "file": "wf/view/balance.py",
+        "function": "Framework.table"
+      },
+      {
+        "file": "wf/view/balance.py",
+        "function": "Framework.touched"
+      },
+      {
+        "file": "wf/view/balance.py",
+        "function": "leaf"
+      },
+      {
+        "file": "wf/view/balance.py",
+        "function": "raw_replace"
+      },
+      {
+        "file": "wf/view/balance.py",
+        "function": "raw_replace.<locals>.<genexpr>"
+      },
+      {
+        "file": "wf/view/balance_inputs.py",
+        "function": "<module>"
+      },
+      {
+        "file": "wf/view/balance_inputs.py",
+        "function": "verify_balance_view"
+      },
+      {
+        "file": "wf/view/base149.py",
+        "function": "<module>"
+      },
+      {
+        "file": "wf/view/base149.py",
+        "function": "HistoricalView"
+      },
+      {
+        "file": "wf/view/base149.py",
+        "function": "HistoricalView.__init__"
+      },
+      {
+        "file": "wf/view/base149.py",
+        "function": "HistoricalView.__init__.<locals>.<genexpr>"
+      },
+      {
+        "file": "wf/view/base149.py",
+        "function": "HistoricalView.load"
+      },
+      {
+        "file": "wf/view/base149.py",
+        "function": "HistoricalView.read_member"
+      },
+      {
+        "file": "wf/view/base149.py",
+        "function": "HistoricalView.read_raw"
+      },
+      {
+        "file": "wf/view/base149.py",
+        "function": "configure"
+      },
+      {
+        "file": "wf/view/base149.py",
+        "function": "current"
+      },
+      {
+        "file": "wf/view/base149.py",
+        "function": "load"
+      },
+      {
+        "file": "wf/view/base149.py",
+        "function": "member"
+      },
+      {
+        "file": "wf/view/base149.py",
+        "function": "read_raw"
+      },
+      {
+        "file": "wf/view/base149.py",
+        "function": "rows"
+      },
+      {
+        "file": "wf/view/dsltools.py",
+        "function": "<module>"
+      },
+      {
+        "file": "wf/view/layout.py",
+        "function": "<module>"
+      },
+      {
+        "file": "wf/view/live149.py",
+        "function": "<module>"
+      },
+      {
+        "file": "wf/view/safety.py",
+        "function": "local_output"
+      },
+      {
+        "file": "wf/view/safety.py",
+        "function": "restrict_writes"
+      },
+      {
+        "file": "wf/view/stage_all.py",
+        "function": "<module>"
+      },
+      {
+        "file": "wf/view/stage_all.py",
+        "function": "csv_text"
+      },
+      {
+        "file": "wf_assets.py",
+        "function": "<genexpr>"
+      },
+      {
+        "file": "wf_assets.py",
+        "function": "<module>"
+      },
+      {
+        "file": "wf_battle_rules.py",
+        "function": "<module>"
+      },
+      {
+        "file": "wf_battle_rules.py",
+        "function": "row_problems"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "<module>"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "FileExpectation"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "FrozenRecord"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "LiveRoots"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "PackFile"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "PackPreflightError"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "PackStagingError"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "PackTransaction"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "PreflightReport"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "PreparedPack"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "ReleaseBaseProvider"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "ReleaseBaseState"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "SemanticClaim"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "SnapshotRecord"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "StagedPack"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "TableClaim"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "TableCodec"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "TableImage"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "_Analysis"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "_FlatCodec"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "_FlatCodec.__init__"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "_NestedCodec"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "_OwnedDirectoryAuthority"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "_OwnedFileAuthority"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "_OwnedFilesystem"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "_TransactionAuthority"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "_WinByHandleInfo"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "_WinDispositionInfo"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "_WinIoStatusBlock"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "_WinObjectAttributes"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "_WinUnicodeString"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "_WindowsOwnedApi"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "_WindowsOwnedApi.__init__"
+      },
+      {
+        "file": "wf_character_pack.py",
+        "function": "_WindowsRelativeOpenContract"
+      },
+      {
+        "file": "wf_character_requirements.py",
+        "function": "<module>"
+      },
+      {
+        "file": "wf_character_requirements.py",
+        "function": "AssetRequirement"
+      },
+      {
+        "file": "wf_character_requirements.py",
+        "function": "MasterAssetReference"
+      },
+      {
+        "file": "wf_character_revision.py",
+        "function": "<module>"
+      },
+      {
+        "file": "wf_character_revision.py",
+        "function": "RevisionCandidate"
+      },
+      {
+        "file": "wf_character_workspace.py",
+        "function": "<module>"
+      },
+      {
+        "file": "wf_character_workspace.py",
+        "function": "Workspace"
+      },
+      {
+        "file": "wf_character_workspace.py",
+        "function": "WorkspaceError"
+      },
+      {
+        "file": "wf_character_workspace.py",
+        "function": "WorkspaceStatus"
+      },
+      {
+        "file": "wf_client_description_legality.py",
+        "function": "<module>"
+      },
+      {
+        "file": "wf_client_description_legality.py",
+        "function": "description_compatibility_problems"
+      },
+      {
+        "file": "wf_client_description_legality.py",
+        "function": "description_compatibility_problems.<locals>.<genexpr>"
+      },
+      {
+        "file": "wf_client_description_legality.py",
+        "function": "description_compatibility_problems.<locals>.<lambda>"
+      },
+      {
+        "file": "wf_client_legality.py",
+        "function": "<module>"
+      },
+      {
+        "file": "wf_client_legality.py",
+        "function": "_block_field_entry_offsets"
+      },
+      {
+        "file": "wf_client_legality.py",
+        "function": "_element_entry"
+      },
+      {
+        "file": "wf_client_legality.py",
+        "function": "ability_element_column_problems"
+      },
+      {
+        "file": "wf_client_legality.py",
+        "function": "client_legality_problems"
+      },
+      {
+        "file": "wf_client_legality.py",
+        "function": "client_legality_problems.<locals>.cell"
+      },
+      {
+        "file": "wf_client_legality.py",
+        "function": "client_legality_problems.<locals>.is_num"
+      },
+      {
+        "file": "wf_client_legality.py",
+        "function": "declared_block_field_problems"
+      },
+      {
+        "file": "wf_client_patch_scope.py",
+        "function": "<module>"
+      },
+      {
+        "file": "wf_client_patch_scope.py",
+        "function": "patch_parser_scope_problems"
+      },
+      {
+        "file": "wf_client_patch_scope.py",
+        "function": "patch_parser_supported"
+      },
+      {
+        "file": "wf_describe.py",
+        "function": "<module>"
+      },
+      {
+        "file": "wf_describe.py",
+        "function": "_load"
+      },
+      {
+        "file": "wf_describe.py",
+        "function": "enum_map"
+      },
+      {
+        "file": "wf_describe.py",
+        "function": "layout"
+      },
+      {
+        "file": "wf_dsl.py",
+        "function": "<module>"
+      },
+      {
+        "file": "wf_dsl.py",
+        "function": "_Parser"
+      },
+      {
+        "file": "wf_enhancement_policy.py",
+        "function": "<genexpr>"
+      },
+      {
+        "file": "wf_enhancement_policy.py",
+        "function": "<module>"
+      },
+      {
+        "file": "wf_enhancement_policy.py",
+        "function": "BaselineEntry"
+      },
+      {
+        "file": "wf_enhancement_policy.py",
+        "function": "BaselineUnavailable"
+      },
+      {
+        "file": "wf_enhancement_policy.py",
+        "function": "EntrySource"
+      },
+      {
+        "file": "wf_enhancement_policy.py",
+        "function": "OfficialBaseline"
+      },
+      {
+        "file": "wf_enhancement_policy.py",
+        "function": "Policy"
+      },
+      {
+        "file": "wf_enhancement_policy.py",
+        "function": "RebuildDetail"
+      },
+      {
+        "file": "wf_enhancement_policy.py",
+        "function": "Verdict"
+      },
+      {
+        "file": "wf_mod_tool.py",
+        "function": "<module>"
+      },
+      {
+        "file": "wf_mod_tool.py",
+        "function": "AMF3Reader"
+      },
+      {
+        "file": "wf_mod_tool.py",
+        "function": "NestedOrderedMap"
+      },
+      {
+        "file": "wf_mod_tool.py",
+        "function": "OrderedMap"
+      },
+      {
+        "file": "wf_mod_tool.py",
+        "function": "ServerDirNotConfiguredError"
+      },
+      {
+        "file": "wf_mod_tool.py",
+        "function": "VersionProfile"
+      },
+      {
+        "file": "wf_mod_tool.py",
+        "function": "_CdnRootNotFoundError"
+      },
+      {
+        "file": "wf_mod_tool.py",
+        "function": "_strict_orderedmap_rows"
+      },
+      {
+        "file": "wf_mod_tool.py",
+        "function": "_strict_orderedmap_rows.<locals>.<genexpr>"
+      },
+      {
+        "file": "wf_mod_tool.py",
+        "function": "_tool_dir_prefix"
+      },
+      {
+        "file": "wf_mod_tool.py",
+        "function": "build_orderedmap_raw_rows"
+      },
+      {
+        "file": "wf_mod_tool.py",
+        "function": "parse_index"
+      },
+      {
+        "file": "wf_mod_tool.py",
+        "function": "read_orderedmap_raw_rows_from_bytes"
+      },
+      {
+        "file": "wf_quest_lib.py",
+        "function": "<module>"
+      },
+      {
+        "file": "wf_quest_lib.py",
+        "function": "_try_parse_map"
+      },
+      {
+        "file": "wf_quest_lib.py",
+        "function": "build_node"
+      },
+      {
+        "file": "wf_quest_lib.py",
+        "function": "parse_node"
+      },
+      {
+        "file": "wfx_registry.py",
+        "function": "<module>"
+      },
+      {
+        "file": "wfx_registry.py",
+        "function": "RegistryError"
+      },
+      {
+        "file": "wfx_registry.py",
+        "function": "_validate"
+      },
+      {
+        "file": "wfx_registry.py",
+        "function": "_validate.<locals>.<genexpr>"
+      },
+      {
+        "file": "wfx_registry.py",
+        "function": "client_patch_content_kinds"
+      },
+      {
+        "file": "wfx_registry.py",
+        "function": "load"
+      },
+      {
+        "file": "wfx_registry.py",
+        "function": "patch_content_kinds"
+      },
+      {
+        "file": "wfx_registry.py",
+        "function": "patch_parser_capabilities"
+      },
+      {
+        "file": "wfx_registry.py",
+        "function": "patch_parser_tables"
+      }
+    ],
+    "loaded_modules": {
+      "wf": "wf/__init__.py",
+      "wf.view": "wf/view/__init__.py",
+      "wf.paths": "wf/paths.py",
+      "wf.view.safety": "wf/view/safety.py",
+      "recipes": "recipes/__init__.py",
+      "recipes.balance1017": "recipes/balance1017/__init__.py",
+      "wf_mod_tool": "wf_mod_tool.py",
+      "wf_quest_lib": "wf_quest_lib.py",
+      "wf.view.base149": "wf/view/base149.py",
+      "wf.view.live149": "wf/view/live149.py",
+      "wf.view.stage_all": "wf/view/stage_all.py",
+      "wf.view.dsltools": "wf/view/dsltools.py",
+      "wf_describe": "wf_describe.py",
+      "wf.view.layout": "wf/view/layout.py",
+      "wf_dsl": "wf_dsl.py",
+      "wf.deliver": "wf/deliver/__init__.py",
+      "wf.deliver.logical_paths": "wf/deliver/logical_paths.py",
+      "wf_character_requirements": "wf_character_requirements.py",
+      "wf_assets": "wf_assets.py",
+      "wf_client_description_legality": "wf_client_description_legality.py",
+      "wfx_registry": "wfx_registry.py",
+      "wf_client_patch_scope": "wf_client_patch_scope.py",
+      "wf_battle_rules": "wf_battle_rules.py",
+      "wf_client_legality": "wf_client_legality.py",
+      "wf_character_pack": "wf_character_pack.py",
+      "wf_character_workspace": "wf_character_workspace.py",
+      "wf_enhancement_policy": "wf_enhancement_policy.py",
+      "wf_character_revision": "wf_character_revision.py",
+      "wf.view.balance": "wf/view/balance.py",
+      "wf.view.balance_inputs": "wf/view/balance_inputs.py",
+      "recipes.balance1017.common": "recipes/balance1017/common.py",
+      "recipes.balance1017.c129999": "recipes/balance1017/c129999.py",
+      "recipes.balance1017.c129992": "recipes/balance1017/c129992.py",
+      "recipes.balance1017.c139995": "recipes/balance1017/c139995.py",
+      "recipes.balance1017.c119992": "recipes/balance1017/c119992.py",
+      "recipes.balance1017.c169980": "recipes/balance1017/c169980.py",
+      "recipes.balance1017.c119991": "recipes/balance1017/c119991.py",
+      "recipes.balance1017.c139997": "recipes/balance1017/c139997.py",
+      "recipes.balance1017.c119990": "recipes/balance1017/c119990.py",
+      "wf.rules": "wf/rules/__init__.py",
+      "wf.rules.instant_content": "wf/rules/instant_content.py"
+    }
+  },
+  "artifact_reread": {
+    "223_existing_delivery": {
+      "equal_members": 3,
+      "different_members": 0,
+      "member_digest_sha256": "cdf8d816efce8ba8f357265f94a861c3782c3fc5fb8fcf8084061f5292537acf"
+    },
+    "221_existing_delivery": {
+      "equal_members": 310,
+      "different_members": 0,
+      "member_digest_sha256": "cdb48b96a3860fc6c2414736ccafd504d059138949005d7ab10b955d2a91c14c"
+    },
+    "222_existing_delivery": {
+      "equal_members": 310,
+      "different_members": 0,
+      "member_digest_sha256": "a7357339cbe6ca836d08ef7a37629ba584e4ea251a7797c6908af0b78a0d6d63"
+    }
+  },
+  "detailed_member_evidence": [
+    "docs/m0/m01-balance-replay.json",
+    "docs/m0/m01-halloween221-replay.json",
+    "docs/m0/m01-halloween-current-replay.json"
+  ],
+  "current222_vs_original221": {
+    "equal_members": 309,
+    "different_members": 1,
+    "member_digest_sha256": "610b20c3978986e62792fd5d524a76c6595da5080a1ec75d13e7811fe3cc38f6"
+  },
+  "current222_fix_members": {
+    "equal_members": 1,
+    "different_members": 0,
+    "member_digest_sha256": "839bb3614cf04448844727f979a98e8760b50c11b10fd364886962dc67814074",
+    "members": [
+      {
+        "name": "production/upload/89/45fd1ab9d8e6c8f32572e98fdf60ece8ddc46d",
+        "size": 463,
+        "sha256": "9c305dfd2a8befc43c2fffeaa1014a036e6a096a1681ca70c40e24deeb08cec5",
+        "equal": true
+      }
+    ]
+  },
+  "existing_archives": {
+    "223": [
+      {
+        "name": "pinball-1.4.222-1.4.223-1-balance-1017-local.zip",
+        "size": 342926,
+        "sha256": "8af5ca5a48dd5e36f9d0e6baa690fa5cc74d7e81ee7cd4fc9f7d90fbcbbee508"
+      }
+    ],
+    "221": [
+      {
+        "name": "pinball-1.4.220-1.4.221-1-halloween4-characters-local.zip",
+        "size": 2787198,
+        "sha256": "6d06e2cefb0fb8a0f66052db693d393a4b8a3508db8fb17b18c38d42045a937f"
+      },
+      {
+        "name": "pinball-1.4.220-1.4.221-10-halloween4-characters-local.zip",
+        "size": 5123656,
+        "sha256": "3783efdc3e15dc2d2f486ef005438c1c05663a0096efaa7a8161068b334513b3"
+      },
+      {
+        "name": "pinball-1.4.220-1.4.221-11-halloween4-characters-local.zip",
+        "size": 1454521,
+        "sha256": "f6f598ae330ef17410ef2f1ed49b8378b2364d81582f0330acd82e1c0f77133d"
+      },
+      {
+        "name": "pinball-1.4.220-1.4.221-2-halloween4-characters-local.zip",
+        "size": 2670401,
+        "sha256": "3c6b8fd97fa0dcada31393ae08bb01537f6e1f1e167f6c7c82f2af0b48b75ea6"
+      },
+      {
+        "name": "pinball-1.4.220-1.4.221-3-halloween4-characters-local.zip",
+        "size": 2670373,
+        "sha256": "7e29b41feabacc50fe52de32af60845dc3cd1c8acfb4a9013d8d739c6ceca715"
+      },
+      {
+        "name": "pinball-1.4.220-1.4.221-4-halloween4-characters-local.zip",
+        "size": 5132386,
+        "sha256": "125333a927fce295dce7cebc7a42e317ed40840da7b87e8aea13ff7f2e0ad0d9"
+      },
+      {
+        "name": "pinball-1.4.220-1.4.221-5-halloween4-characters-local.zip",
+        "size": 4511858,
+        "sha256": "4b80a8aaa51300138a4e170cd5b40b3c44f0fb84655c4012e3179be42ff4cc8e"
+      },
+      {
+        "name": "pinball-1.4.220-1.4.221-6-halloween4-characters-local.zip",
+        "size": 4985101,
+        "sha256": "d46b34edacce876fcf4fa173db4f9a2fb7f8c262b3671756f867d65b9bc70ffc"
+      },
+      {
+        "name": "pinball-1.4.220-1.4.221-7-halloween4-characters-local.zip",
+        "size": 5173458,
+        "sha256": "a57c32a5f98ee08c3e74ee9d02d15df2751ecd48adbdfc263f583ed5ef60b122"
+      },
+      {
+        "name": "pinball-1.4.220-1.4.221-8-halloween4-characters-local.zip",
+        "size": 5059431,
+        "sha256": "cc1d7a2b32cbab605f43750f15364dd67da1ec586446302c716db014aa2090af"
+      },
+      {
+        "name": "pinball-1.4.220-1.4.221-9-halloween4-characters-local.zip",
+        "size": 5135379,
+        "sha256": "a0b59c5db5507c310ae85934d834a40466a71fe2e4be2ee8abc59e624f4da95e"
+      }
+    ],
+    "222": [
+      {
+        "name": "pinball-1.4.220-1.4.222-1-halloween4-characters-local.zip",
+        "size": 2787198,
+        "sha256": "6d06e2cefb0fb8a0f66052db693d393a4b8a3508db8fb17b18c38d42045a937f"
+      },
+      {
+        "name": "pinball-1.4.220-1.4.222-10-halloween4-characters-local.zip",
+        "size": 5123656,
+        "sha256": "3783efdc3e15dc2d2f486ef005438c1c05663a0096efaa7a8161068b334513b3"
+      },
+      {
+        "name": "pinball-1.4.220-1.4.222-11-halloween4-characters-local.zip",
+        "size": 1454487,
+        "sha256": "42aa336b48693536469179714057cddc5003eaf7e599d4126f7c693414db3d50"
+      },
+      {
+        "name": "pinball-1.4.220-1.4.222-2-halloween4-characters-local.zip",
+        "size": 2670401,
+        "sha256": "3c6b8fd97fa0dcada31393ae08bb01537f6e1f1e167f6c7c82f2af0b48b75ea6"
+      },
+      {
+        "name": "pinball-1.4.220-1.4.222-3-halloween4-characters-local.zip",
+        "size": 2670373,
+        "sha256": "7e29b41feabacc50fe52de32af60845dc3cd1c8acfb4a9013d8d739c6ceca715"
+      },
+      {
+        "name": "pinball-1.4.220-1.4.222-4-halloween4-characters-local.zip",
+        "size": 5132386,
+        "sha256": "125333a927fce295dce7cebc7a42e317ed40840da7b87e8aea13ff7f2e0ad0d9"
+      },
+      {
+        "name": "pinball-1.4.220-1.4.222-5-halloween4-characters-local.zip",
+        "size": 4511858,
+        "sha256": "4b80a8aaa51300138a4e170cd5b40b3c44f0fb84655c4012e3179be42ff4cc8e"
+      },
+      {
+        "name": "pinball-1.4.220-1.4.222-6-halloween4-characters-local.zip",
+        "size": 4985101,
+        "sha256": "d46b34edacce876fcf4fa173db4f9a2fb7f8c262b3671756f867d65b9bc70ffc"
+      },
+      {
+        "name": "pinball-1.4.220-1.4.222-7-halloween4-characters-local.zip",
+        "size": 5173458,
+        "sha256": "db809e30fa119648cc2d51e7d6dc4884ddaecf7ae8951b4ffde00b3af365d9f8"
+      },
+      {
+        "name": "pinball-1.4.220-1.4.222-8-halloween4-characters-local.zip",
+        "size": 5059431,
+        "sha256": "cc1d7a2b32cbab605f43750f15364dd67da1ec586446302c716db014aa2090af"
+      },
+      {
+        "name": "pinball-1.4.220-1.4.222-9-halloween4-characters-local.zip",
+        "size": 5135379,
+        "sha256": "a0b59c5db5507c310ae85934d834a40466a71fe2e4be2ee8abc59e624f4da95e"
+      }
+    ]
+  },
+  "mask": {
+    "source": "${WF_ROOT}/out/万圣新角色-20261016/pkgroot/art-official-shape-masks.npz",
+    "size": 9485,
+    "sha256": "abccd9513b0a555aa721a0287d5fa219c108fb502fa7b39eed115bd7bece0dba",
+    "recomputed": false
+  },
+  "decision": "No Halloween rebuild: modified transaction methods are not called; actual JSON helpers are unchanged. Balance evaluated fresh in memory and matched 3/3. Existing complete artifacts reread and matched 3/3,310/310,310/310."
+}

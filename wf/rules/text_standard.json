@@ -1,0 +1,1285 @@
+{
+  "version": "1.2.0",
+  "standard": "MOD 角色面板文案规范 v1（草案）",
+  "source_sha256": "304696b1ffe2702c60d204bfa3f1caae9a327127dfc759a92ee18a76cc321663",
+  "scope_note": "§1—8和§10只检查desc_override；§9检查action_skill c1与档位一致性；c0按名称规则检查，保留升级后缀。官方自动生成能力和非覆盖custom文本不套本规范。全表扫描包含继承文本和无角色归属的键，问题不等同该版本新引入。",
+  "evidence_note": "作者规范是格式约定；官方模板引用只表示规范如此引用，未冒充本次独立真机或模板语料验证。",
+  "rules": [
+    {
+      "id": "text.standard.sentence",
+      "title": "[条件，]对象 效果 数值[（乘区）][（上限/CT/持续）]，一行一条",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §1",
+      "requirement": "[条件，]对象 效果 数值[（乘区）][（上限/CT/持续）]，一行一条",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [],
+        "mode": "review"
+      }
+    },
+    {
+      "id": "text.standard.group-effects",
+      "title": "条件不同的效果分行",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §1",
+      "requirement": "条件不同的效果分行；条件和对象都相同的多个效果合句，用「、」连接",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [],
+        "mode": "review"
+      }
+    },
+    {
+      "id": "text.standard.no-final-stop",
+      "title": "句末不加句号",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §1",
+      "requirement": "句末不加句号",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": "line_stops",
+        "patterns": [],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.prefix-order",
+      "title": "条件前缀顺序：主位图标→属性共鸣→状态/模式→触发",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §2",
+      "requirement": "条件前缀顺序：主位图标→属性共鸣→状态/模式→触发",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": "prefix_order",
+        "patterns": [],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.resonance",
+      "title": "共鸣前缀用「X属性共鸣时，」",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §2",
+      "requirement": "共鸣前缀用「X属性共鸣时，」",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [
+          "[火水雷风光暗]属性共鸣(?:中|状态下|的时候)"
+        ],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.fever",
+      "title": "Fever前缀用「Fever模式中，」「非Fever模式中，」「进入Fever模式时，」",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §2",
+      "requirement": "Fever前缀用「Fever模式中，」「非Fever模式中，」「进入Fever模式时，」",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [
+          "(?:非)?Fever(?:中|时|期间)",
+          "进入Fever时"
+        ],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.battle-start",
+      "title": "战斗开始前缀用「战斗开始时，」",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §2",
+      "requirement": "战斗开始前缀用「战斗开始时，」",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [
+          "战斗开始(?:后|的时候)[，,]"
+        ],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.state-prefix",
+      "title": "持有状态用「自身处于「X」状态时，」或「贯穿效果中，」",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §2",
+      "requirement": "持有状态用「自身处于「X」状态时，」或「贯穿效果中，」",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [],
+        "mode": "review"
+      }
+    },
+    {
+      "id": "text.standard.count-prefix",
+      "title": "计数触发用每达成N连击、每发动N次强化弹射、每直接攻击N次、每经过N秒",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §2",
+      "requirement": "计数触发用每达成N连击、每发动N次强化弹射、每直接攻击N次、每经过N秒；连续按当前连击成长不是计数触发",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [
+          "每(?:触发|使用)\\d+次强化弹射",
+          "每隔\\d+(?:\\.\\d+)?秒"
+        ],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.stack-prefix",
+      "title": "层数用「「X」每1层，…（最多N层）」",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §2",
+      "requirement": "层数用「「X」每1层，…（最多N层）」",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [],
+        "mode": "review"
+      }
+    },
+    {
+      "id": "text.standard.main-icon",
+      "title": "主位限制能力每行开头保留主位图标",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §2",
+      "requirement": "整槽主位限制（ability每行c1=false）的每个非空行须精确以 <icon id='main'>  开头（前1、后2个半角空格）；混合限制槽保留语义核对，已有图标仍检查精确格式",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": "main_icon",
+        "patterns": [
+          "(?:处于|身处)?主位时"
+        ],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.leader-slot",
+      "title": "覆盖文案不写「自身为队长时」",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §2",
+      "requirement": "所有desc_override不写「自身为队长时」；槽位按desc_override_<槽行c0>精确关联，不凭_leader/_ls或数字后缀猜测",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": "leader_slot",
+        "patterns": [],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.leader-relocation",
+      "title": "能力中带队长前置的效果移入队长技",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §2",
+      "requirement": "能力中带队长前置的效果移入队长技；能力只剩此类时写「效果写在队长技中」",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": "leader_relocation",
+        "patterns": [],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.term-pf",
+      "title": "PF、Power Flip、强化弹射伤害提升效果统一为强化弹射/强化弹射伤害",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §3",
+      "requirement": "PF、Power Flip、强化弹射伤害提升效果统一为强化弹射/强化弹射伤害",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [
+          "(?<![A-Za-z])PF(?![A-Za-z])",
+          "Power\\s*Flip",
+          "强化弹射伤害提升效果"
+        ],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.term-direct",
+      "title": "直击、直击伤害、直接攻击造成的伤害统一为直接攻击/直接攻击伤害",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §3",
+      "requirement": "直击、直击伤害、直接攻击造成的伤害统一为直接攻击/直接攻击伤害",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [
+          "直击",
+          "直接攻击造成的伤害"
+        ],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.term-fever",
+      "title": "FEVER/fever/FEVER槽统一为Fever模式/Fever槽",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §3",
+      "requirement": "FEVER/fever/FEVER槽统一为Fever模式/Fever槽",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [
+          "FEVER|fever"
+        ],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.term-pierce",
+      "title": "贯通统一为贯穿效果",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §3",
+      "requirement": "贯通统一为贯穿效果",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [
+          "贯通"
+        ],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.term-team",
+      "title": "全体队员、队伍全体角色、全队统一为队伍全体",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §3",
+      "requirement": "全体队员、队伍全体角色、全队统一为队伍全体",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [
+          "全体队员|队伍全体角色|全队"
+        ],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.term-except-self",
+      "title": "除自身外的X属性角色保持原写法",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §3",
+      "requirement": "除自身外的X属性角色保持原写法；不得擅自改动对象",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [],
+        "mode": "review"
+      }
+    },
+    {
+      "id": "text.standard.term-gauge",
+      "title": "技能槽上限统一为技能槽最大值",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §3",
+      "requirement": "技能槽上限统一为技能槽最大值",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [
+          "技能槽上限"
+        ],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.term-charge",
+      "title": "充能速度统一为技能充能速度",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §3",
+      "requirement": "充能速度统一为技能充能速度",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [
+          "(?<!技能)充能速度"
+        ],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.term-pursuit",
+      "title": "追击伤害指对虚弱中敌人的乘区3",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §3",
+      "requirement": "追击伤害指对虚弱中敌人的乘区3；麻痹・气绝效果属乘区2，不混写",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": "pursuit",
+        "patterns": [
+          "眩晕畏缩特攻|对眩晕敌人的伤害"
+        ],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.term-zone",
+      "title": "额外乘区、独立乘区、状态特攻乘区统一为（独立伤害乘区N）",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §3",
+      "requirement": "额外乘区、独立乘区、状态特攻乘区统一为（独立伤害乘区N）",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [
+          "额外乘区|独立乘区|状态特攻乘区"
+        ],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.number-format",
+      "title": "百分比用半角+X%/-X%",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §4",
+      "requirement": "百分比用半角+X%/-X%；倍率写X倍；连击写连击+N",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": "number_format",
+        "patterns": [],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.limits",
+      "title": "次数（最多N次）、层数（最多N层）、累计量（最大+Y%）",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §4",
+      "requirement": "次数（最多N次）、层数（最多N层）、累计量（最大+Y%）；有次数不重复累计量",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": "limits",
+        "patterns": [],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.timing",
+      "title": "冷却（CT：N秒）",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §4",
+      "requirement": "冷却（CT：N秒）；持续（持续N秒）；单次（仅1次）",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": "timing",
+        "patterns": [],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.max-level",
+      "title": "覆盖文案只写满级数值，不写两档或觉醒后",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §4",
+      "requirement": "固定覆盖文案只写单一满级数值，禁止X%（觉醒后 Y%）双值；低级/满级列不是觉醒前后",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [
+          "\\d+(?:\\.\\d+)?%\\s*[（(]觉醒后\\s*[+\\-]?\\d+(?:\\.\\d+)?%[）)]",
+          "觉醒后",
+          "\\d+(?:\\.\\d+)?%\\s*[/／→]\\s*[+\\-]?\\d+(?:\\.\\d+)?%"
+        ],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.damage-zones",
+      "title": "独立伤害乘区1特攻、2特定状态、3追击、4逆境、5强化弹射、6直接攻击、7技能、8能力、９全伤害",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §5",
+      "requirement": "独立伤害乘区1特攻、2特定状态、3追击、4逆境、5强化弹射、6直接攻击、7技能、8能力、９全伤害；其余不加",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": "damage_zones",
+        "patterns": [],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.named-state",
+      "title": "固有状态名用「」",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §6",
+      "requirement": "固有状态名用「」；第一次出现说明获得方式",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [
+          "(?:获得|持有|消耗)\\d*层?[【『][^】』]+[】』]"
+        ],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.invoke",
+      "title": "629追加技能用发动「技能名」并说明CT",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §6",
+      "requirement": "629追加技能用发动「技能名」并说明CT；伤害类型示例与仅非技能伤害注明条款需保留歧义",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": "invoke",
+        "patterns": [],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.special-pf",
+      "title": "特殊强化弹射写自身的强化弹射变为「名称」：定性说明，不写详细数值",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §6",
+      "requirement": "特殊强化弹射写自身的强化弹射变为「名称」：定性说明，不写详细数值",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": "special_pf",
+        "patterns": [],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.skill-enhance",
+      "title": "技能强化只在队长技/能力写「强化『技能名』：定性说明」，不写数字",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §6",
+      "requirement": "技能强化只在队长技/能力写「强化『技能名』：定性说明」，不写数字",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": "enhance",
+        "patterns": [],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.dash",
+      "title": "改冲刺用「强化自身冲刺：一句话说明」",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §6",
+      "requirement": "改冲刺用「强化自身冲刺：一句话说明」；缩短冲刺冷却的限制保留",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [],
+        "mode": "review"
+      }
+    },
+    {
+      "id": "text.standard.tautology",
+      "title": "不写恒真条件，如生命值100%以下",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §7",
+      "requirement": "不写恒真条件，如生命值100%以下",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": "tautology",
+        "patterns": [],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.internals",
+      "title": "不写实现细节",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §7",
+      "requirement": "不写实现细节；「不消耗技能槽」允许保留",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [
+          "\\b(?:desc_override_|hidden_|ModDualForm|buffTargetAs|forLevels)",
+          "\\bkind\\s*[:=：]?\\s*\\d+"
+        ],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.repetition",
+      "title": "不重复主语、同一句里已写过的条件",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §7",
+      "requirement": "不重复主语、同一句里已写过的条件",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": "repetition",
+        "patterns": [],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.side-effects",
+      "title": "不能从能力看出的副作用仍保留，例如最后一击后连击归零",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §7",
+      "requirement": "不能从能力看出的副作用仍保留，例如最后一击后连击归零",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [],
+        "mode": "review"
+      }
+    },
+    {
+      "id": "text.standard.preserve-data",
+      "title": "数值、条件和效果以数据为准",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §8",
+      "requirement": "数值、条件和效果以数据为准；文案只能改写法",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [],
+        "mode": "review"
+      }
+    },
+    {
+      "id": "text.standard.preserve-names",
+      "title": "技能名、状态名和角色名保持现有译名",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §8",
+      "requirement": "技能名、状态名和角色名保持现有译名",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [],
+        "mode": "review"
+      }
+    },
+    {
+      "id": "text.standard.skill-structure",
+      "title": "技能结构为动作/伤害/附加效果，效果间用／，同类效果用＋",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "官方模板引用",
+      "source": "面板文案规范 v1 §9",
+      "requirement": "技能结构为动作/伤害/附加效果，效果间用／，同类效果用＋",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "action_skill"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [
+          "(?<![/])/(?![/])",
+          "(?<![\\d])\\+(?![\\d])"
+        ],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.skill-branches",
+      "title": "条件分支用官方【】",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "官方模板引用",
+      "source": "面板文案规范 v1 §9",
+      "requirement": "条件分支用官方【】",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "action_skill"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [
+          "[\\[［](?:场上|如果|当|自身)[^\\]］]*[\\]］]"
+        ],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.skill-damage-numbers",
+      "title": "技能不写伤害倍率和段数（合计43倍、3段×2倍率等）",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §9",
+      "requirement": "技能不写伤害倍率和段数（合计43倍、3段×2倍率等）",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "action_skill"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [
+          "合计\\d+(?:\\.\\d+)?\\s*倍[（(][^）)\\n]*[）)](?:[火水雷风光暗]属性)?伤害",
+          "\\d+(?:\\.\\d+)?\\s*倍(?:的)?(?:[火水雷风光暗]属性)?(?:技能|能力|直接攻击|强化弹射)?伤害",
+          "伤害(?:倍率)?(?:变为|提升至|提高至|为)?\\s*\\d+(?:\\.\\d+)?\\s*倍",
+          "\\d+\\s*段(?:[^，。／\\n]{0,12})?(?:伤害|倍率|×)"
+        ],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.skill-buff-numbers",
+      "title": "技能buff只写X提升效果，不写百分比",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §9",
+      "requirement": "技能buff只写X提升效果，不写百分比；持续/层数上限可保留",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "action_skill"
+      ],
+      "implementation": {
+        "check": "skill_buff_numbers",
+        "patterns": [],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.skill-body",
+      "title": "技能只写本体",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §9",
+      "requirement": "技能只写本体；队长技/能力的强化不得重复写入",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "action_skill"
+      ],
+      "implementation": {
+        "check": "skill_body",
+        "patterns": [],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.damage-conversion",
+      "title": "其他类型结算用（伤害量以X伤害判定），紧跟伤害",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "官方模板引用",
+      "source": "面板文案规范 v1 §10",
+      "requirement": "其他类型结算用（伤害量以X伤害判定），紧跟伤害；§6追加技能的以强化弹射伤害计算是明确例外",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override",
+        "action_skill"
+      ],
+      "implementation": {
+        "check": "damage_conversion",
+        "patterns": [],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.six-elements",
+      "title": "六属性能力伤害一句合并，含攻击力N倍及（火／水／雷／风／光／暗各结算1次）",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §10",
+      "requirement": "六属性能力伤害一句合并，含攻击力N倍及（火／水／雷／风／光／暗各结算1次）",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": "six_elements",
+        "patterns": [],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.direct-base",
+      "title": "直接攻击倍率用自身直接攻击的基础伤害变为N倍，每1连击再+X%（无上限）",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §10",
+      "requirement": "直接攻击倍率用自身直接攻击的基础伤害变为N倍，每1连击再+X%（无上限）",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": "direct_base",
+        "patterns": [],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.direct-count",
+      "title": "直接攻击计算为N次，合计伤害+X%（独立伤害乘区6）",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "官方模板引用",
+      "source": "面板文案规范 v1 §10",
+      "requirement": "直接攻击计算为N次，合计伤害+X%（独立伤害乘区6）；层数用「X」每1层，自身直接攻击计算次数+1",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [
+          "直接攻击(?:判定为|判定次数(?:增加|变为))"
+        ],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.pf-hit-count",
+      "title": "多段特殊强化弹射用「X」每N层，强化弹射命中次数+1（最多+M次）",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §10",
+      "requirement": "多段特殊强化弹射用「X」每N层，强化弹射命中次数+1（最多+M次）",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [],
+        "mode": "review"
+      }
+    },
+    {
+      "id": "text.standard.multi-pf",
+      "title": "同时发动A型与B型，三种以上顿号连接最后用与",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §10",
+      "requirement": "同时发动A型与B型，三种以上顿号连接最后用与；五种写全部类型；仅剑士/格斗/射击/辅助/特殊型；形态分别说明",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": "multi_pf",
+        "patterns": [],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.pf-lv4",
+      "title": "强化弹射Lv4「名称」：写全模式和连击门槛、定性效果",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §10",
+      "requirement": "强化弹射Lv4「名称」：写全模式和连击门槛、定性效果；允许来源示例的先条件后Lv4写法",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": "pf_lv4",
+        "patterns": [],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.form-switch",
+      "title": "首次形态切换写清进出条件",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §10",
+      "requirement": "首次形态切换写清进出条件；之后用「X」形态中，",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [],
+        "mode": "review"
+      }
+    },
+    {
+      "id": "text.standard.skill-form",
+      "title": "技能形态切换/强化用强化『技能名』：定性说明，不写数字",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §10",
+      "requirement": "技能形态切换/强化用强化『技能名』：定性说明，不写数字",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": "enhance",
+        "patterns": [],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.fever-items",
+      "title": "场地道具/箭头替换用Fever模式中，场上的加速箭头变为随机道具",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §10",
+      "requirement": "场地道具/箭头替换用Fever模式中，场上的加速箭头变为随机道具",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": "fever_items",
+        "patterns": [],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.enemy-hp",
+      "title": "当前生命值比例伤害写最近敌人/当前生命值X%/每次技能再+Y%/低于Z%击败",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §10",
+      "requirement": "当前生命值比例伤害写最近敌人/当前生命值X%/每次技能再+Y%/低于Z%击败；不写真伤",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [
+          "真伤"
+        ],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.charge-cap",
+      "title": "充能速度上限用自身技能充能速度上限提升至N%",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §10",
+      "requirement": "充能速度上限用自身技能充能速度上限提升至N%",
+      "checker": "text",
+      "revision": "2026-10-17：规范逐项登记；仅确定性文本证据阻断",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [
+          "技能充能速度上限(?:变为|增加到|提高到)"
+        ],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.skill-name",
+      "title": "技能名称不得采用「…之核」",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §8",
+      "requirement": "技能名称不得采用「…之核」",
+      "checker": "text",
+      "revision": "2026-10-18：补充名称和跨档检查",
+      "surfaces": [
+        "action_skill_name"
+      ],
+      "implementation": {
+        "check": "skill_name",
+        "patterns": [],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.skill-tier-wording",
+      "title": "技能各档描述采用同一套写法，允许持续、层数等数值差异",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §9",
+      "requirement": "技能各档描述采用同一套写法，允许持续、层数等数值差异",
+      "checker": "text",
+      "revision": "2026-10-18：补充名称和跨档检查",
+      "surfaces": [
+        "action_skill"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [],
+        "mode": "partial",
+        "document_check": "skill_tiers"
+      }
+    },
+    {
+      "id": "text.standard.literal-main-icon",
+      "title": "禁止字面「Ⓜ」；主位图标使用规定的icon标记",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §2",
+      "requirement": "禁止字面「Ⓜ」；主位图标使用规定的icon标记",
+      "checker": "text",
+      "revision": "2026-10-18：M5.1 对照 wf-leader-override-text-rules 补齐",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": null,
+        "patterns": [
+          "Ⓜ"
+        ],
+        "mode": "partial"
+      }
+    },
+    {
+      "id": "text.standard.compressed-lines",
+      "title": "覆盖文案禁止用「／」把多条效果记录挤在一行；名称和属性等枚举不算记录分隔",
+      "scope": [
+        "text"
+      ],
+      "evidence_nature": "作者规范",
+      "source": "面板文案规范 v1 §2",
+      "requirement": "覆盖文案禁止用「／」把多条效果记录挤在一行；自动检查分隔符两侧均含效果词或增减数值的写法，名称和属性等枚举不算记录分隔",
+      "checker": "text",
+      "revision": "2026-10-18：M5.1 对照 wf-leader-override-text-rules 补齐",
+      "surfaces": [
+        "desc_override"
+      ],
+      "implementation": {
+        "check": "compressed_lines",
+        "patterns": [],
+        "mode": "partial"
+      }
+    }
+  ],
+  "author_rules_sources": [
+    {
+      "name": "wf-leader-override-text-rules",
+      "sha256": "d98cefa4d344a14447ee79b60734583bf5741a3a4fe93f90e44cd4a2b7941e3c"
+    },
+    {
+      "name": "wf-panel-text-standard-1017",
+      "sha256": "2d32c8fc15e6db28552787e19bad278d1feee5cbaf514172ab69247654b3fc10"
+    },
+    {
+      "name": "wf-skill-enhance-text-rule",
+      "sha256": "e6a03301a4091c230118e7ea54fa959ddc470896338c5bd4c3096140073ebd43"
+    }
+  ]
+}

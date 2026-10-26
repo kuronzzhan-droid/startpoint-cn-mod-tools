@@ -1,0 +1,320 @@
+{
+  "characters": [
+    {
+      "id": "c6ffda440dbf2",
+      "role": "melee",
+      "sourceSkill": "凶暗·虚空断界＋",
+      "sourceExcerpt": "潜影无敌、左右双手虚空斩、敌弱化",
+      "skill": {
+        "name": "凶暗·虚空断界＋",
+        "description": "先获得短效 5s 护盾，随后左右双断造成两段伤害；护盾替代无敌，不造成不可受击状态。黑暗裂口保留视觉，无永久弱化堆叠。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"ally","kind":"self","range":0},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"shield","duration":5,"budgetShare":0.4}],"requiresCasterAlive":true},
+          {"offset":0.3,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"rect","center":"self","width":3,"length":2,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":0.9,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"rect","center":"self","width":3,"length":2,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.3}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "cc228672393a7",
+      "role": "melee",
+      "sourceSkill": "深渊地狱／深渊地狱＋",
+      "sourceExcerpt": "俯冲、三道黑羽、爆炸、护罩与两段直击",
+      "skill": {
+        "name": "深渊地狱",
+        "description": "俯冲轨迹、三羽和爆炸依次伤害；自身护盾与普攻两段连击持续短效 5s。角色原格不移动，两段普攻按显式总伤害预算分摊。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"line","center":"self","width":1,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"self","range":0},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"shield","duration":5,"budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0.2,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.06666667}],"requiresCasterAlive":true},
+          {"offset":0.5,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.06666667}],"requiresCasterAlive":true},
+          {"offset":0.8,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.06666667}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"circle","center":"self","radius":1.5,"offsetY":-3},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":1.5,"selector":{"team":"ally","kind":"self","range":0},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"basicHits","duration":5,"hits":2,"budgetShare":0.2}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "ca12720862c6d",
+      "role": "ranged",
+      "sourceSkill": "歼灭程序／歼灭程序＋",
+      "sourceExcerpt": "三连迫击炮、解析后的超重力炮",
+      "skill": {
+        "name": "歼灭程序",
+        "description": "三发迫击炮后释放超重力贯穿炮；所有阶段本次施放内完成。解析表现为本次瞄准进度，不收集五种战斗触发或永久最佳解。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.13333333}],"requiresCasterAlive":true},
+          {"offset":0.6,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.13333333}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.13333333}],"requiresCasterAlive":true},
+          {"offset":1.5,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":5,"direction":"target"},"effects":[{"type":"damage","budgetShare":0.6}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c3d9841b70bac",
+      "role": "ranged",
+      "sourceSkill": "四相崩界／四相崩界＋",
+      "sourceExcerpt": "波动、黑弹、灵魂收割、破界光乱四相与终焉",
+      "skill": {
+        "name": "四相崩界",
+        "description": "四种视觉阶段依次造成范围伤害，终焉扩大宽度；全程只是一套固定连段。无停止弹射球、独立灵魂单位或额外养成。",
+        "cooldown": 30,
+        "cost": 25,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":3,"length":4,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.15}],"requiresCasterAlive":true},
+          {"offset":0.4,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":3,"length":4,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.15}],"requiresCasterAlive":true},
+          {"offset":0.8,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":3,"length":4,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.15}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":3,"length":4,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.15}],"requiresCasterAlive":true},
+          {"offset":1.5,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":5,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.4}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c40dde4bf2116",
+      "role": "support",
+      "sourceSkill": "满月混音·玉兔回响＋",
+      "sourceExcerpt": "持续月光音场、自身攻击强化、参战者强化",
+      "skill": {
+        "name": "满月混音·玉兔回响＋",
+        "description": "月光音场持续伤害，中效 8s；自身攻击提升、邻域友方攻速提升均为 8s。回响只作本次音场层次，不跨次累计。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"circle","center":"self","radius":2},"effects":[{"type":"dot","duration":8,"interval":1,"requiresCasterAlive":true,"budgetShare":0.4,"targetMode":"area"}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"self","range":0},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"attackUp","duration":8,"budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":2},"geometry":{"kind":"circle","center":"self","radius":2},"effects":[{"type":"haste","duration":8,"budgetShare":0.3}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c78386cf8da48",
+      "role": "support",
+      "sourceSkill": "午后星轨·甜蜜续杯＋",
+      "sourceExcerpt": "贯穿、全队直接攻击提升、Fever 多段直击",
+      "skill": {
+        "name": "午后星轨·甜蜜续杯＋",
+        "description": "全队攻击提升且普攻成为两段连击，短效 5s；两段分摊强化后的总普攻伤害。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"attackUp","duration":5,"budgetShare":0.5}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"basicHits","duration":5,"hits":2,"budgetShare":0.5}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c24fccfc08c0b",
+      "role": "healer",
+      "sourceSkill": "月下影戏＋",
+      "sourceExcerpt": "影灯领域、迟缓、低血队友急救",
+      "skill": {
+        "name": "月下影戏＋",
+        "description": "影灯造成一次伤害并减速 5s；立即治疗满足低血条件的友方。阈值取自公开描述以保留急救特色；不足阈值时不添加额外治疗对象。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"circle","center":"self","radius":2},"effects":[{"type":"damage","budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"circle","center":"self","radius":2},"effects":[{"type":"slow","duration":5,"budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12,"hpBelow":0.4},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"heal","budgetShare":0.5}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c8cc94e1ff94c",
+      "role": "ranged",
+      "sourceSkill": "紫百合·烟花扇舞＋",
+      "sourceExcerpt": "最近敌人紫百合花园持续伤害、消散烟花",
+      "skill": {
+        "name": "紫百合·烟花扇舞＋",
+        "description": "花园持续伤害，中效 8s；结束时同一区域烟花爆炸。夜百合不跨次累积；区别于光蛛的网域减速，突出纯伤害的延迟终结。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"dot","duration":8,"interval":1,"requiresCasterAlive":false,"budgetShare":0.6,"targetMode":"area"}],"requiresCasterAlive":true},
+          {"offset":8,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.4}],"requiresCasterAlive":false}
+        ]
+      }
+    },
+    {
+      "id": "c633b80b6a710",
+      "role": "melee",
+      "sourceSkill": "影分身・试刀＋",
+      "sourceExcerpt": "五道影分身、贯通剑气、中毒",
+      "skill": {
+        "name": "影分身・试刀＋",
+        "description": "五条剑气分批贯穿敌人，命中附中效 8s 持续毒伤。分身仅作剑气起点动画，段数配置封顶，不生成五个参战单位。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"line","center":"self","width":1,"length":3,"direction":"up","offsetX":-2},"effects":[{"type":"damage","budgetShare":0.14}],"requiresCasterAlive":true},
+          {"offset":0.2,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"line","center":"self","width":1,"length":3,"direction":"up","offsetX":-1},"effects":[{"type":"damage","budgetShare":0.14}],"requiresCasterAlive":true},
+          {"offset":0.4,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"line","center":"self","width":1,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.14}],"requiresCasterAlive":true},
+          {"offset":0.6,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"line","center":"self","width":1,"length":3,"direction":"up","offsetX":1},"effects":[{"type":"damage","budgetShare":0.14}],"requiresCasterAlive":true},
+          {"offset":0.8,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"line","center":"self","width":1,"length":3,"direction":"up","offsetX":2},"effects":[{"type":"damage","budgetShare":0.14}],"requiresCasterAlive":true},
+          {"offset":1,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"rect","center":"self","width":5,"length":3,"direction":"up"},"effects":[{"type":"dot","duration":8,"interval":1,"requiresCasterAlive":false,"budgetShare":0.3,"targetMode":"attached"}],"requiresCasterAlive":true,"hitTargetsFrom":[0,1,2,3,4]}
+        ]
+      }
+    },
+    {
+      "id": "c60bb1ab2ccfd",
+      "role": "support",
+      "sourceSkill": "众生之愿＋＋",
+      "sourceExcerpt": "全场减攻、全体技能槽增加、伤害与回复随羊群强化",
+      "skill": {
+        "name": "众生之愿＋＋",
+        "description": "愿望脉冲造成伤害；全队获得短效 5s 护盾和攻速提升，将减攻与技能槽支援简化为可见防护和行动增益。羊群为背景演出，不召唤实体或记层。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":5,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.4}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"shield","duration":5,"budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"haste","duration":5,"budgetShare":0.3}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c41b6e2e3dbef",
+      "role": "melee",
+      "sourceSkill": "失落传说·古洛诺斯",
+      "sourceExcerpt": "前方巨镰、延迟血月持续伤害、近身额外伤害与自身防护",
+      "skill": {
+        "name": "失落传说·古洛诺斯",
+        "description": "巨镰伤害后延迟 1s 展开血月，长效 12s 持续伤害；内圈分配较高份额；自身护盾 5s。无无敌、伤痕永久层或修改棺材规则。",
+        "cooldown": 30,
+        "cost": 25,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"rect","center":"self","width":3,"length":2,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"self","range":0},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"shield","duration":5,"budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":1,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"circle","center":"self","radius":3},"effects":[{"type":"dot","duration":12,"interval":1,"requiresCasterAlive":true,"budgetShare":0.3,"targetMode":"area"}],"requiresCasterAlive":true},
+          {"offset":1,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"self","radius":1.5},"effects":[{"type":"dot","duration":12,"interval":1,"requiresCasterAlive":true,"budgetShare":0.3,"targetMode":"area"}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "ca2c6d69b5906",
+      "role": "support",
+      "sourceSkill": "诛罚机构·绯樱唱诗班＋＋",
+      "sourceExcerpt": "巨型机甲全域打击、系统入侵、队伍攻击强化",
+      "skill": {
+        "name": "诛罚机构·绯樱唱诗班＋＋",
+        "description": "机甲重击一次，命中附短效 5s 持续伤害表示系统入侵；全队攻击提升，中效 8s。巨型机甲仅作演出，入侵不另开复杂敌方行为改写。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":5,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.4}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":5,"length":3,"direction":"up"},"effects":[{"type":"dot","duration":5,"interval":1,"requiresCasterAlive":false,"budgetShare":0.3,"targetMode":"attached"}],"requiresCasterAlive":true,"hitTargetsFrom":[0]},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"attackUp","duration":8,"budgetShare":0.3}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c36859f729a9d",
+      "role": "support",
+      "sourceSkill": "掠影协奏＋",
+      "sourceExcerpt": "全队护盾与攻击强化、掠影、消耗生命和吞噬协力球",
+      "skill": {
+        "name": "掠影协奏＋",
+        "description": "全队获得短效 5s 护盾和攻击提升；自身攻击增益份额较高。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"shield","duration":5,"budgetShare":0.4}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"attackUp","duration":5,"budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"self","range":0},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"attackUp","duration":5,"budgetShare":0.4}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c22ca49e2f9aa",
+      "role": "support",
+      "sourceSkill": "菲诺梅那秩序／菲诺梅那秩序＋",
+      "sourceExcerpt": "六核四拍：爆轰、护盾回复、放电、多段与毒爆",
+      "skill": {
+        "name": "菲诺梅那秩序",
+        "description": "一次施放依次爆轰伤害、邻域护盾与治疗、放电连击并减速 5s、终段毒爆附持续伤害 5s；护盾持续 5s。多种效果各占较小预算，四拍完成即结束，无六核积累。",
+        "cooldown": 30,
+        "cost": 25,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0.4,"selector":{"team":"ally","kind":"all","range":2},"geometry":{"kind":"circle","center":"self","radius":2},"effects":[{"type":"shield","duration":5,"budgetShare":0.15}],"requiresCasterAlive":true},
+          {"offset":0.4,"selector":{"team":"ally","kind":"all","range":2},"geometry":{"kind":"circle","center":"self","radius":2},"effects":[{"type":"heal","budgetShare":0.15}],"requiresCasterAlive":true},
+          {"offset":0.7,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.06666667}],"requiresCasterAlive":true},
+          {"offset":0.9,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.06666667}],"requiresCasterAlive":true},
+          {"offset":1.1,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.06666667}],"requiresCasterAlive":true},
+          {"offset":1.1,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"slow","duration":5,"budgetShare":0.1}],"requiresCasterAlive":true},
+          {"offset":1.5,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true},
+          {"offset":1.5,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"dot","duration":5,"interval":1,"requiresCasterAlive":false,"budgetShare":0.1,"targetMode":"attached"}],"requiresCasterAlive":true,"hitTargetsFrom":[7]}
+        ]
+      }
+    },
+    {
+      "id": "c78b748da3786",
+      "role": "ranged",
+      "sourceSkill": "交错圣剑・肃清／交错圣剑・完全肃清",
+      "sourceExcerpt": "六剑交错、四路射线、最终肃清判决",
+      "skill": {
+        "name": "交错圣剑・肃清",
+        "description": "六次交错剑击后四路贯穿射线，最后范围重击；本次施放内完成。",
+        "cooldown": 30,
+        "cost": 25,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"cross","center":"target","width":1,"length":2},"effects":[{"type":"damage","budgetShare":0.05}],"requiresCasterAlive":true},
+          {"offset":0.24,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"cross","center":"target","width":1,"length":2},"effects":[{"type":"damage","budgetShare":0.05}],"requiresCasterAlive":true},
+          {"offset":0.48,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"cross","center":"target","width":1,"length":2},"effects":[{"type":"damage","budgetShare":0.05}],"requiresCasterAlive":true},
+          {"offset":0.7,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"cross","center":"target","width":1,"length":2},"effects":[{"type":"damage","budgetShare":0.075}],"requiresCasterAlive":true},
+          {"offset":0.72,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"cross","center":"target","width":1,"length":2},"effects":[{"type":"damage","budgetShare":0.05}],"requiresCasterAlive":true},
+          {"offset":0.933,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"cross","center":"target","width":1,"length":2},"effects":[{"type":"damage","budgetShare":0.075}],"requiresCasterAlive":true},
+          {"offset":0.96,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"cross","center":"target","width":1,"length":2},"effects":[{"type":"damage","budgetShare":0.05}],"requiresCasterAlive":true},
+          {"offset":1.167,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"cross","center":"target","width":1,"length":2},"effects":[{"type":"damage","budgetShare":0.075}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"cross","center":"target","width":1,"length":2},"effects":[{"type":"damage","budgetShare":0.05}],"requiresCasterAlive":true},
+          {"offset":1.4,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"cross","center":"target","width":1,"length":2},"effects":[{"type":"damage","budgetShare":0.075}],"requiresCasterAlive":true},
+          {"offset":1.5,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":2},"effects":[{"type":"damage","budgetShare":0.4}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "ca70010c6ea6b",
+      "role": "ranged",
+      "sourceSkill": "皇晶游行／皇晶游行＋",
+      "sourceExcerpt": "比特游行、压缩激光、三晶解放与星体净化",
+      "skill": {
+        "name": "皇晶游行",
+        "description": "比特多段打击、贯穿激光、三晶范围爆发一次完成；不保存晶核层数。比特与晶体均为攻击演出，不额外占格或持续承伤。",
+        "cooldown": 30,
+        "cost": 25,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true},
+          {"offset":0.6,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true},
+          {"offset":1,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":4,"direction":"target"},"effects":[{"type":"damage","budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true},
+          {"offset":1.5,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":2},"effects":[{"type":"damage","budgetShare":0.4}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c789c601e51c8",
+      "role": "support",
+      "sourceSkill": "魂魄终局＋",
+      "sourceExcerpt": "领域三段暗伤、麻痹、全队攻击与技能强化",
+      "skill": {
+        "name": "魂魄终局＋",
+        "description": "魂魄领域三段伤害，命中减速 5s；全队攻击提升，中效 8s。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":2},"effects":[{"type":"damage","budgetShare":0.16666667}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":2},"effects":[{"type":"slow","duration":5,"budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"attackUp","duration":8,"budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":0.6,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":2},"effects":[{"type":"damage","budgetShare":0.16666667}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":2},"effects":[{"type":"damage","budgetShare":0.16666667}],"requiresCasterAlive":true}
+        ]
+      }
+    }
+  ]
+}

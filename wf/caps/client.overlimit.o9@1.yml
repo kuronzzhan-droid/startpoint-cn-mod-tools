@@ -1,0 +1,48 @@
+schema: wf-capability/1
+id: client.overlimit.o9@1
+title: 超限 O9
+layer: A
+provided_by:
+  patches:
+  - 109
+  match: all
+  methods:
+  - patch: 109
+    abc: boot_ffc6
+    label: OverLimitWindow/getOverLimitState
+    sha256: ae683cc1f5574ac7b415c43cf779ea642535cd6a66531aa1ee51a150d1492068
+    status: 已记录
+    source: v34/apk-patches-additions/109-overlimit-paradox-core-gate/entry.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: true
+  features: []
+  note: 需要对应服务端规则；本能力声明不证明服务端已部署
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: 超限 O9
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: 超限 O9
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: 超限 O9
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/apk-patches-additions/109-overlimit-paradox-core-gate/entry.json

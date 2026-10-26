@@ -1,0 +1,132 @@
+schema: wf-capability/1
+id: client.apk.patch010@1
+title: 深渊关卡详情
+layer: platform
+provided_by:
+  patches:
+  - 10
+  match: all
+  methods:
+  - patch: 10
+    abc: boot_ffc6
+    label: PartySelectTopPanelView/baseRun
+    sha256: e74bd779ee14e7770dfa25b01dd83a49bc15403231067068b22abfe8ad2f0362
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 10
+    abc: boot_ffc6
+    label: QuestTranslator/translateFormattedQuestNumber
+    sha256: af669ba5cbb13cb958e65a00946d0fad5be92f8ba2c24778cd2345716abf229d
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 10
+    abc: cn.ui.AbyssDetails
+    label: AbyssDetails$/<cinit>
+    sha256: 333e0a1e27815d0ceee55c473fe3dc93d56c63e3bee2b3b4aee8eed6d70191a3
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 10
+    abc: cn.ui.AbyssDetails
+    label: AbyssDetails$/attach
+    sha256: 7f38aef909a00815deb6e8828d17ead178f2c8612a4c6e1ee5aea12dcc76d27d
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 10
+    abc: cn.ui.AbyssDetails
+    label: AbyssDetails/<ctor>
+    sha256: 8ff32749a852a1d83829c6a3fac8ec00822f06b5c7177f9ebb43a09287b2101a
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 10
+    abc: cn.ui.AbyssDetails
+    label: AbyssDetails$/detailsHtml
+    sha256: 5019ab91fe22182ecbc0b35d48cbd99f9805c0bf517dfc92db56c78a89cd3dde
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 10
+    abc: cn.ui.AbyssDetails
+    label: AbyssDetails$/elements
+    sha256: 9c75c105a9da1d99bca695e33e743485ea86d549d4a70c3e97bc1874cfeba7c5
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 10
+    abc: cn.ui.AbyssDetails
+    label: AbyssDetails$/escape
+    sha256: ac714f6bd71c0f2bf49a86b01852870530832ba68d69dc34e6bc51b2f0b02ef6
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 10
+    abc: cn.ui.AbyssDetails
+    label: AbyssDetails$/isAbyss
+    sha256: 41bcfc4e0b063d4a1a194c6b7c0c21ab8d34626d64235a716cdebd258c28892e
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 10
+    abc: cn.ui.AbyssDetails
+    label: AbyssDetails$/openDetails
+    sha256: e4e50796a8508b022a9c3a4942ba205e1377a782308b56bb9de77d827d907218
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 10
+    abc: cn.ui.AbyssDetails
+    label: AbyssDetails$/rawSubtitle
+    sha256: 472f7e8623f2ee2cbbc2747c8de10d6784bb929bb35282c8fea64b4007bcb928
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 10
+    abc: cn.ui.AbyssDetails
+    label: AbyssDetails$/summaryForQuest
+    sha256: 6afec7e29ec4e5ae22dca94e94f750943428798513ba8a29e1912b2e4757d5f1
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 10
+    abc: cn.ui.AbyssDetails
+    label: anonymous-method-0
+    sha256: 84abbac93fc429c844e6208fe70e38f5c7067a94b0312e00ac0c1861e074303a
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 10
+    abc: cn.ui.AbyssDetails
+    label: anonymous-method-10
+    sha256: 333e0a1e27815d0ceee55c473fe3dc93d56c63e3bee2b3b4aee8eed6d70191a3
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 10
+    abc: cn.ui.AbyssDetails
+    label: anonymous-method-8
+    sha256: 1aa65465ac1022a67f67d485ed82892f1265b4d5d26574844141e1d4f2b815aa
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: false
+  features: []
+  note: 无额外服务端改动要求
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: 深渊关卡详情
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: 深渊关卡详情
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: 深渊关卡详情
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/verification/v33-patches-preserved-o8-o12-r2.json

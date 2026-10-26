@@ -1,0 +1,54 @@
+schema: wf-capability/1
+id: client.apk.patch110@1
+title: O10/O11 r2 双 cost 格
+layer: A
+provided_by:
+  patches:
+  - 110
+  match: all
+  methods:
+  - patch: 110
+    abc: boot_ffc6
+    label: OverLimitWindow/run
+    sha256: b96160fc0f1046a50cf78065ed8d907861a2a65fb13c4f365abad60cbd4b2a7e
+    status: 已记录
+    source: v34/apk-patches-additions/110-overlimit-two-cost-slots/entry.json
+  - patch: 110
+    abc: boot_ffc6
+    label: OverLimitWindow/getStatusInformation
+    sha256: c64d19bbf7957fd9490406d4d251abb9d1e16eeb3062e1b49148f56afbd29aa4
+    status: 已记录
+    source: v34/apk-patches-additions/110-overlimit-two-cost-slots/entry.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: true
+  features: []
+  note: 需要对应服务端规则；本能力声明不证明服务端已部署
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: O10/O11 r2 双 cost 格
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: O10/O11 r2 双 cost 格
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: O10/O11 r2 双 cost 格
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/apk-patches-additions/110-overlimit-two-cost-slots/entry.json

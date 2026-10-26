@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:wf:device-result:2",
+  "title": "编辑台交付的真机实测记录",
+  "description": "放在交付目录根（与 delivery/ 同级）的 device-result.json。编辑台写入时补全 delivery 绑定与 recordedAt；旧版 wf-device-result/1（checks 用 what/expect/result）读取与导入时按同一规则转换。",
+  "type": "object",
+  "required": ["schema", "status", "testedAt", "delivery", "checks"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"const": "wf-device-result/2"},
+    "status": {"$ref": "#/$defs/status"},
+    "reason": {"type": "string", "maxLength": 2000, "description": "作废或未执行的原因"},
+    "delivery": {
+      "type": "object",
+      "description": "实测针对的交付；由编辑台按交付目录的 build-report.json 与 delivery-manifest.json 填写",
+      "required": ["name", "kind", "draftRevision"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {"type": "string", "minLength": 1, "maxLength": 200},
+        "kind": {"enum": ["character", "boss", "weapon"]},
+        "subject": {"type": ["string", "null"], "maxLength": 120},
+        "draftRevision": {"type": ["integer", "null"], "minimum": 0},
+        "draftCreatedAt": {"type": ["string", "null"], "maxLength": 64, "description": "草稿创建时间（inputs/draft.json）；草稿删掉重建后修订号会重复，用它区分"},
+        "from": {"type": ["string", "null"], "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+        "to": {"type": ["string", "null"], "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+        "archives": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "sha256"],
+            "additionalProperties": false,
+            "properties": {
+              "name": {"type": "string", "minLength": 1},
+              "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+            }
+          }
+        }
+      }
+    },
+    "device": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "maxLength": 200, "description": "设备或模拟器实例 ID，例如 MuMu-1 / adb 序列号"},
+        "label": {"type": "string", "maxLength": 300},
+        "emulator": {"type": "boolean"},
+        "package": {"type": "string", "maxLength": 200, "description": "客户端包名，例如 com.leiting.wf"},
+        "apk": {"type": "string", "maxLength": 300},
+        "apkSha256": {"type": "string", "pattern": "^([0-9a-f]{64})?$"}
+      }
+    },
+    "server": {"type": "string", "maxLength": 300},
+    "client": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "versionBefore": {"$ref": "#/$defs/versionOrEmpty"},
+        "versionAfter": {"$ref": "#/$defs/versionOrEmpty"},
+        "profile": {"type": "string", "maxLength": 300, "description": "生成时使用的目标客户端档案"}
+      }
+    },
+    "chainEdges": {
+      "type": "array",
+      "description": "这次实测装到服务端链上的边（按安装顺序）",
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "required": ["version"],
+        "additionalProperties": false,
+        "properties": {
+          "version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+          "note": {"type": "string", "maxLength": 500}
+        }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "required": ["item"],
+        "additionalProperties": false,
+        "properties": {
+          "item": {"type": "string", "minLength": 1, "maxLength": 500},
+          "expected": {"type": "string", "maxLength": 2000},
+          "observed": {"type": "string", "maxLength": 4000},
+          "status": {"enum": ["通过", "失败", "未执行"]},
+          "screenshot": {"$ref": "#/$defs/screenshot"}
+        }
+      }
+    },
+    "screenshots": {"type": "array", "maxItems": 200, "items": {"$ref": "#/$defs/screenshot"}},
+    "errorCodes": {"type": "array", "maxItems": 200, "items": {"type": "string", "maxLength": 200}},
+    "errorScan": {"type": "string", "maxLength": 2000},
+    "notes": {"type": "string", "maxLength": 8000},
+    "tester": {"type": "string", "maxLength": 120},
+    "testedAt": {"type": "string", "minLength": 1, "maxLength": 64, "description": "实测时间（ISO 8601，可只到分钟）"},
+    "recordedAt": {"type": "string", "maxLength": 64, "description": "编辑台写入时间"},
+    "restore": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "method": {"type": "string", "maxLength": 500, "description": "恢复方式，例如 恢复边 / 备份还原 / 未恢复"},
+        "edges": {"type": "array", "maxItems": 64, "items": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"}},
+        "verified": {"type": "boolean"},
+        "notes": {"type": "string", "maxLength": 2000}
+      }
+    },
+    "importedFrom": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "schema"],
+      "properties": {
+        "path": {"type": "string", "maxLength": 1000},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "schema": {"type": "string", "maxLength": 64},
+        "delivery": {"type": "string", "maxLength": 200},
+        "archivesMatch": {"type": ["boolean", "null"], "description": "来源交付的 ZIP sha256 与目标交付一致；null = 来源没有清单可比"},
+        "at": {"type": "string", "maxLength": 64}
+      }
+    },
+    "extra": {"type": "object", "description": "旧版字段里没有对应位置的内容原样保留"}
+  },
+  "$defs": {
+    "status": {"enum": ["通过", "失败", "未执行", "作废"]},
+    "versionOrEmpty": {"type": "string", "pattern": "^(\\d+\\.\\d+\\.\\d+)?$"},
+    "screenshot": {"type": "string", "minLength": 1, "maxLength": 1000, "description": "截图文件的绝对路径；编辑台只展示白名单截图目录里的图片"}
+  }
+}

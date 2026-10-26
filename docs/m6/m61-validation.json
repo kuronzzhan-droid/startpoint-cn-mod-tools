@@ -1,0 +1,312 @@
+{
+  "schema": "wf-m61-validation/1",
+  "status": "completed-local",
+  "base_commit": "1fb6633",
+  "tested_code_commit": "253d4f2e65645e2a8bf24aa12aa9c93f3e5f9eae",
+  "source_snapshot_unchanged": true,
+  "pytest": {
+    "passed": 4948,
+    "skipped": 354,
+    "warnings": 26,
+    "failed": 0,
+    "errors": 0,
+    "exit_code": 0,
+    "seconds": 952.5422166000062,
+    "count_source": "pytest terminal summary"
+  },
+  "junit_observation": {
+    "aggregate": {
+      "tests": 7679,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 357
+    },
+    "testcase_elements": 5302,
+    "testcase_skipped_elements": 357,
+    "note": "Keep raw JUnit counters separate from terminal counts; unittest.subTest can produce additional reports."
+  },
+  "path_scan": {
+    "scanned_text_files": 2402,
+    "findings": [],
+    "count": 0
+  },
+  "behavior": {
+    "version": "1.4.236",
+    "bands": 1010,
+    "watch_bands": 146,
+    "watch_parameter_edits": 146,
+    "watch_exact": 146,
+    "quests": 471,
+    "new_blockers": 0,
+    "band_closure_missing": 12,
+    "boar_repro": true,
+    "elapsed": 145.0269510999933,
+    "inputs": {
+      "master/battle/boss/general_boss.orderedmap": "fbbba4ef05225a324cfc8a65c135674ecfd07183ee0385497045cc2e796b40af",
+      "master/battle/boss/general_enemy_watch.orderedmap": "8571f5da4ff6676834367b50adef0edb72e65a71762de95354827fa411f5b5e3",
+      "master/battle/boss/general_boss_state.orderedmap": "fadd63f3af105db4d2c7b1e255cf76e6a0b0b9826728262296c192239d156293"
+    }
+  },
+  "real_watch_edits": {
+    "boss_battle_candidates": 82,
+    "applied": 18,
+    "applied_enemy_occurrences": 36,
+    "entry_only_rejected": 1,
+    "entry_only_occurrences": 2,
+    "identity_locked_rejected": 63,
+    "boar_preview_ok": true,
+    "boar_compile_ok": true,
+    "elapsed": 293.90637559999595
+  },
+  "ghost_fox_negatives": {
+    "summary": {
+      "exit_code": 0,
+      "cases": 5,
+      "preview_rejections": 5,
+      "compile_rejections": 5,
+      "projected_cases": 1,
+      "C14102_cases": 2,
+      "C8016_earlier_gate_cases": 3
+    },
+    "cases": [
+      {
+        "name": "natural-delete-IL1",
+        "scope": "unchanged natural frozen-236 quest",
+        "quest": "boss_battle:1/19/4",
+        "expected_detail": "IL1",
+        "gate": "C14102",
+        "positive_preview": true,
+        "positive_compile": true,
+        "negative_preview_rejected": true,
+        "negative_compile_rejected": true,
+        "error": "cannot delete position: ghost_fox_multi_80: routine/action 引用缺失站位 IL1（C14102）"
+      },
+      {
+        "name": "natural-borrow-slot26",
+        "scope": "unchanged natural receiver; real rush action is rejected by the earlier existing alter-ego preload gate",
+        "quest": "boss_battle:1/13/4",
+        "expected_detail": "alter-ego",
+        "gate": "C8016",
+        "positive_preview": true,
+        "positive_compile": true,
+        "negative_preview_rejected": true,
+        "negative_compile_rejected": true,
+        "error": "C8016: borrowed alter-ego preload closure is unproven: battle/action/enemy/action/boss_ghost_fox/boss_ghost_fox$difficulity10_avator1_rush"
+      },
+      {
+        "name": "natural-borrow-slot27",
+        "scope": "unchanged natural receiver; real rush action is rejected by the earlier existing alter-ego preload gate",
+        "quest": "boss_battle:1/13/4",
+        "expected_detail": "alter-ego",
+        "gate": "C8016",
+        "positive_preview": true,
+        "positive_compile": true,
+        "negative_preview_rejected": true,
+        "negative_compile_rejected": true,
+        "error": "C8016: borrowed alter-ego preload closure is unproven: battle/action/enemy/action/boss_ghost_fox/boss_ghost_fox$difficulity10_avator2_rush"
+      },
+      {
+        "name": "natural-borrow-IL1",
+        "scope": "unchanged natural receiver; real multi80 slot31 also contains SpawnAlterEgo and hits the earlier C8016 gate",
+        "quest": "boss_battle:1/13/4",
+        "gate": "C8016",
+        "positive_preview": true,
+        "positive_compile": true,
+        "negative_preview_rejected": true,
+        "negative_compile_rejected": true,
+        "error": "C8016: borrowed alter-ego preload closure is unproven: battle/action/enemy/action/boss_ghost_fox_ex/boss_ghost_fox_ex$shot31"
+      },
+      {
+        "name": "projected-rush-delete-IL2",
+        "scope": "in-memory quest points to real native rush_05_ghost_fox field_data/zone/terrain; no invented DSL or positions",
+        "quest": "boss_battle:1/19/4",
+        "expected_detail": "IL2",
+        "gate": "C14102",
+        "positive_preview": true,
+        "positive_compile": true,
+        "negative_preview_rejected": true,
+        "negative_compile_rejected": true,
+        "error": "cannot delete position: ghost_fox_rush: routine/action 引用缺失站位 IL2（C14102）"
+      }
+    ]
+  },
+  "historical": {
+    "characters_fully_rebuilt": 4,
+    "steps_per_character": 7,
+    "members_byte_equal": 310,
+    "different_members": 0,
+    "archives_equal_without_dos_timestamps": 11,
+    "legacy_manifest_semantic_equal": true,
+    "layered_manifest_members_byte_equal": 310,
+    "223_members_byte_equal": 3
+  },
+  "timeline": {
+    "reads": [
+      {
+        "quest": "boss_battle:1/13/4",
+        "status": 200,
+        "moves": 45,
+        "events": 920,
+        "seconds": 5.48215359999449,
+        "sha256": "23066c475f02caa70873862724f94aa0c56290897ef33315332eed2694f7ece0"
+      },
+      {
+        "quest": "boss_battle:1/29/4",
+        "status": 200,
+        "moves": 136,
+        "events": 1320,
+        "seconds": 1.169247699988773,
+        "sha256": "9adaba59f72b3f396041fd5f20053ab94af1a05fde608c6cef21b47f0661b799"
+      },
+      {
+        "quest": "boss_battle:1/81/5",
+        "status": 200,
+        "moves": 94,
+        "events": 815,
+        "seconds": 1.032702700002119,
+        "sha256": "62197389f1e42cb0c366c4bf90a79b6147f707384bc9b0e2da95bb59f8da1565"
+      },
+      {
+        "quest": "hard_multi:1006/1",
+        "status": 200,
+        "moves": 171,
+        "events": 1519,
+        "seconds": 2.6600717999972403,
+        "sha256": "69dea94513e51f4e21b546fecff40801ec56310b18f5dede5ed83a824803478d"
+      }
+    ],
+    "created_drafts": false,
+    "view_verified": true
+  },
+  "limitations": [
+    "No deployment, server mutation, device install, combat runtime or purchase executed.",
+    "practice:1021 has four missing native Funnel action inputs; read-only position coverage remains pending and deletion requires complete evidence.",
+    "Bare derived action loading has source inference only and remains pending device verification."
+  ],
+  "evidence": [
+    {
+      "path": "work/m61/full.log",
+      "sha256": "46bf55924a571c2fb64f1cfc3dab88177f7dcd9aac7ddd14c345724a2eb39932"
+    },
+    {
+      "path": "work/m61/full.xml",
+      "sha256": "49c2211a268828533c2a76b79c5280e24137ca6d9546e11118df41a77b3015e1"
+    },
+    {
+      "path": "work/m61/full-exit.json",
+      "sha256": "4026b79e0652d8dd1f771ce71bc8d8f7ba421f7f6a42c8bc60f814566dd9fda2"
+    },
+    {
+      "path": "work/m61/test-source-snapshot.json",
+      "sha256": "8dd8cba18c0a271ae4eae028acf703fba2d479552a317dfd16b356649bfdea80"
+    },
+    {
+      "path": "work/m61/path-scan.json",
+      "sha256": "98518bd9c85dd41df80466d433f3e9b442310cd0846859d10a0fc18ce6cb4121"
+    },
+    {
+      "path": "work/m61/hygiene-all.log",
+      "sha256": "afdf5bc1be4a013fc35f4f5e26cfed89c0e993e752130d26b60bd274a764456e"
+    },
+    {
+      "path": "work/m61/hygiene-all-exit.json",
+      "sha256": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01"
+    },
+    {
+      "path": "work/m61/behavior/verified/summary.json",
+      "sha256": "0ffff55157f7ecd0d66ca3c33c3cfa07d8c15e73a8c37b70912c2a053f3881a5"
+    },
+    {
+      "path": "work/m61/behavior/verified/bands.json",
+      "sha256": "5b041627098e5441a82b7cfcb51f6acff5d2122a9c963d2a6113262e4a14ed43"
+    },
+    {
+      "path": "work/m61/behavior/verified/watches.json",
+      "sha256": "3224099f12c4628c4a73fbef6817a90198d36317ed65dc496942c97a01eb8b72"
+    },
+    {
+      "path": "work/m61/behavior/verified/quests.json",
+      "sha256": "1678fc85ba75d17613b2cba6ee9a45e756ac39ad5c0ea4b1057b64d44be3ab76"
+    },
+    {
+      "path": "work/m61/behavior/verified/integration-summary.json",
+      "sha256": "f023d2f718f3bcdba909c25388915fac51c638e13a049e1690b9e4a5805e73d9"
+    },
+    {
+      "path": "work/m61/behavior/verified/integration-result-check.json",
+      "sha256": "47b4a599f4bce122c7a8ed02b59e0c3cf1a96264206a8a31990da3d4af55abb2"
+    },
+    {
+      "path": "work/m61/behavior/verified/watch-entries.json",
+      "sha256": "619aaa54d6ea260bce0493fa618e573d165e784e716bc0d29b4dc6a882514c07"
+    },
+    {
+      "path": "work/m61/behavior/verified/boar-preview.json",
+      "sha256": "aeffe32a53d1e569b7111865ea1b417131b030a823a1f42c709f2c9fd4fcd7b8"
+    },
+    {
+      "path": "work/m61/behavior/verified/boar-compiled.json",
+      "sha256": "41b305e4d5fbcf803dda6f0c28cdfdd00b873c20d04cafa69c5c099c1231724f"
+    },
+    {
+      "path": "work/m61/behavior/source-evidence.json",
+      "sha256": "bf1f7aa481cd2744c162bb761100ed4f8542b0aeaaf9d13d7ee3095addeeef92"
+    },
+    {
+      "path": "work/m61/history/replay221.json",
+      "sha256": "370cddfc6ce4e96af643b370ebee73cbf8d8b17a00914848c0e2b129d1b51c72"
+    },
+    {
+      "path": "work/m61/history/replay223.json",
+      "sha256": "8833840e5380d63d58bc4310f16cac18b4491bc847fde56740fe86c48ec80c73"
+    },
+    {
+      "path": "work/m61/history/exit.json",
+      "sha256": "e6d6dd028e78ed0bd04e3bda1beab0b9c40856a08eeb3d6d290d6807586fae03"
+    },
+    {
+      "path": "work/m61/timeline/summary.json",
+      "sha256": "7a771c29db30a06b7d5506ecc4f8b4fdfd87eed24d9126ab9a39eab8161c364d"
+    },
+    {
+      "path": "work/m61/behavior/ghost-fox/summary.json",
+      "sha256": "58ee9c5b6558f00a48d87479c26fe74304c92fdfa640c634854268ed46008bef"
+    },
+    {
+      "path": "work/m61/behavior/ghost-fox/exit.json",
+      "sha256": "65e5c8d23799ba25188fabd98d3f38d4a19776156aeae88223192ff1344eafd9"
+    },
+    {
+      "path": "work/m61/behavior/ghost-fox/projection.json",
+      "sha256": "3c1c22ee1e93fe03838d597af3a8926f278b76ef95ea1ffc1bd04c7e286e0532"
+    },
+    {
+      "path": "work/m61/behavior/ghost-fox/dsl-provenance.json",
+      "sha256": "2598eec3ae9f0ff170b7eb1e148f95e46283ef97f4eb28b271a24ab5d4d38a77"
+    },
+    {
+      "path": "work/m61/behavior/ghost-fox/borrow-earlier-gate-evidence.json",
+      "sha256": "d0f04a1719ddbf06c0f8f2d86ca1cdcab41c39e7493df60324c1ae7a9b995166"
+    },
+    {
+      "path": "work/m61/behavior/ghost-fox/natural-delete-IL1.json",
+      "sha256": "14d3f2aa5d88f253348aeed0a72b7a39faab3901e0a44c7dadc812826a60d098"
+    },
+    {
+      "path": "work/m61/behavior/ghost-fox/natural-borrow-slot26.json",
+      "sha256": "9bd641510d139790c2113554e4503b6aa7edb9002c010e9fda844694b735ca53"
+    },
+    {
+      "path": "work/m61/behavior/ghost-fox/natural-borrow-slot27.json",
+      "sha256": "9475dd5fdd11caf23d4c4d3cc8dd63de0f2ee34f9ae036a80af0ceaa40aead3d"
+    },
+    {
+      "path": "work/m61/behavior/ghost-fox/natural-borrow-IL1.json",
+      "sha256": "935b0b9685244419355cfa366f735b5d6af183cb710d14ff3895b25bb89e091c"
+    },
+    {
+      "path": "work/m61/behavior/ghost-fox/projected-rush-delete-IL2.json",
+      "sha256": "6762b6aebd47f3e8d64c4851f6579b9c6668a3523c7d5e0edbaffc364fd13be2"
+    }
+  ]
+}

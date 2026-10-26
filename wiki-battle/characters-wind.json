@@ -1,0 +1,336 @@
+{
+  "characters": [
+    {
+      "id": "c29054cf9d371",
+      "role": "melee",
+      "sourceSkill": "白色咆哮＋",
+      "sourceExcerpt": "突进最近敌人、周身爪击、自身攻击提升",
+      "skill": {
+        "name": "白色咆哮＋",
+        "description": "一次环状爪击造成伤害；自身攻击提升，短效 5s。突进仅作爪影表现，角色不离开部署格。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"self","radius":1.5},"effects":[{"type":"damage","budgetShare":0.7}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"self","range":0},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"attackUp","duration":5,"budgetShare":0.3}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "cb821b8bdcf90",
+      "role": "ranged",
+      "sourceSkill": "歼风·翼刃乱舞＋",
+      "sourceExcerpt": "三道错位翼刃、降低风抗、风队浮游",
+      "skill": {
+        "name": "歼风·翼刃乱舞＋",
+        "description": "翼刃分三段穿过不同列；邻域友方攻速提升，短效 5s，以行动轻盈替代浮游。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":4,"direction":"up","offsetX":-1},"effects":[{"type":"damage","budgetShare":0.25}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":2},"geometry":{"kind":"circle","center":"self","radius":2},"effects":[{"type":"haste","duration":5,"budgetShare":0.25}],"requiresCasterAlive":true},
+          {"offset":0.5,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":4,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.25}],"requiresCasterAlive":true},
+          {"offset":1,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":4,"direction":"up","offsetX":1},"effects":[{"type":"damage","budgetShare":0.25}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c9fee4a115e72",
+      "role": "support",
+      "sourceSkill": "风蛇的诅咒／风蛇的诅咒＋",
+      "sourceExcerpt": "毒风、诅咒爆炸、同伴攻击提升",
+      "skill": {
+        "name": "风蛇的诅咒",
+        "description": "毒风持续伤害中效 8s，结束时一次咒爆；全队攻击提升 5s。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"dot","duration":8,"interval":1,"requiresCasterAlive":false,"budgetShare":0.4,"targetMode":"area"}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"attackUp","duration":5,"budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":8,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.3}],"requiresCasterAlive":false}
+        ]
+      }
+    },
+    {
+      "id": "c7a1f80d5b642",
+      "role": "support",
+      "sourceSkill": "蒸汽守护／蒸汽守护＋",
+      "sourceExcerpt": "翼刃和地毯轰炸、全队护盾、解除弱化",
+      "skill": {
+        "name": "蒸汽守护",
+        "description": "翼刃与轰炸各造成一段伤害；全队护盾持续中效 8s。愁绪只通过护盾强化演出表现，不新增可积攒层数或净化效果。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":3,"length":4,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.25}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"shield","duration":8,"budgetShare":0.5}],"requiresCasterAlive":true},
+          {"offset":0.7,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":3,"length":4,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.25}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c06f389dc86fc",
+      "role": "melee",
+      "sourceSkill": "月下独奏＋",
+      "sourceExcerpt": "最近敌人斩击后周围爆发、队伍直击强化",
+      "skill": {
+        "name": "月下独奏＋",
+        "description": "单体重斩后月风爆发；邻域友方攻击提升，短效 5s。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.4}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":2},"geometry":{"kind":"circle","center":"self","radius":2},"effects":[{"type":"attackUp","duration":5,"budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":0.6,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.3}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c6dcca08975e3",
+      "role": "melee",
+      "sourceSkill": "玉杵捣月·桂风连打",
+      "sourceExcerpt": "精准连续捣杵、重击终结、自身攻击提升",
+      "skill": {
+        "name": "玉杵捣月·桂风连打",
+        "description": "快速捣杵连击后一次扩大范围的地面重击；自身攻击提升 5s。快速段分摊较低伤害，终结段占较高份额。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.0375}],"requiresCasterAlive":true},
+          {"offset":0.171,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.0375}],"requiresCasterAlive":true},
+          {"offset":0.343,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.0375}],"requiresCasterAlive":true},
+          {"offset":0.514,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.0375}],"requiresCasterAlive":true},
+          {"offset":0.686,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.0375}],"requiresCasterAlive":true},
+          {"offset":0.857,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.0375}],"requiresCasterAlive":true},
+          {"offset":1.029,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.0375}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"damage","budgetShare":0.0375}],"requiresCasterAlive":true},
+          {"offset":1.5,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.4}],"requiresCasterAlive":true},
+          {"offset":1.5,"selector":{"team":"ally","kind":"self","range":0},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"attackUp","duration":5,"budgetShare":0.3}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c14022e5e34c2",
+      "role": "healer",
+      "sourceSkill": "青苔的爱＋",
+      "sourceExcerpt": "回复全队、风队直击强化、追加连击",
+      "skill": {
+        "name": "青苔的爱＋",
+        "description": "立即治疗全队，并给予短效 5s 攻速提升。爱之风以回复和快速协攻为特色；浮游与净化不另建系统。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"heal","budgetShare":0.7}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"haste","duration":5,"budgetShare":0.3}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c1cd6268ebf17",
+      "role": "melee",
+      "sourceSkill": "风中快门·十字双空牙＋",
+      "sourceExcerpt": "首领优先突进、十字双空牙连续斩击、星风心得",
+      "skill": {
+        "name": "风中快门·十字双空牙＋",
+        "description": "对锁定目标连续交叉斩，末次十字剑光伤害较高；全程本次施放内完成。快门与剑光保留演出，心得不永久成长。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":1.5,"preferBoss":true},"geometry":{"kind":"cross","center":"target","width":1,"length":1},"effects":[{"type":"damage","budgetShare":0.12}],"requiresCasterAlive":true},
+          {"offset":0.25,"selector":{"team":"enemy","kind":"nearest","range":1.5,"preferBoss":true},"geometry":{"kind":"cross","center":"target","width":1,"length":1},"effects":[{"type":"damage","budgetShare":0.12}],"requiresCasterAlive":true},
+          {"offset":0.5,"selector":{"team":"enemy","kind":"nearest","range":1.5,"preferBoss":true},"geometry":{"kind":"cross","center":"target","width":1,"length":1},"effects":[{"type":"damage","budgetShare":0.12}],"requiresCasterAlive":true},
+          {"offset":0.75,"selector":{"team":"enemy","kind":"nearest","range":1.5,"preferBoss":true},"geometry":{"kind":"cross","center":"target","width":1,"length":1},"effects":[{"type":"damage","budgetShare":0.12}],"requiresCasterAlive":true},
+          {"offset":1,"selector":{"team":"enemy","kind":"nearest","range":1.5,"preferBoss":true},"geometry":{"kind":"cross","center":"target","width":1,"length":1},"effects":[{"type":"damage","budgetShare":0.12}],"requiresCasterAlive":true},
+          {"offset":1.25,"selector":{"team":"enemy","kind":"nearest","range":1.5,"preferBoss":true},"geometry":{"kind":"cross","center":"target","width":1,"length":1},"effects":[{"type":"damage","budgetShare":0.4}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c979aade7359f",
+      "role": "melee",
+      "sourceSkill": "盛夏咆哮＋",
+      "sourceExcerpt": "滚动波沿路打击、麻痹、风队强化",
+      "skill": {
+        "name": "盛夏咆哮＋",
+        "description": "滚动气浪贯穿直线造成多段伤害，命中减速 5s；邻域友方攻击提升 5s。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"line","center":"self","width":1,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.16666667}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"line","center":"self","width":1,"length":3,"direction":"up"},"effects":[{"type":"slow","duration":5,"budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":2},"geometry":{"kind":"circle","center":"self","radius":2},"effects":[{"type":"attackUp","duration":5,"budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":0.6,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"line","center":"self","width":1,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.16666667}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"line","center":"self","width":1,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.16666667}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c33346bb607d9",
+      "role": "melee",
+      "sourceSkill": "愤怒之印＋",
+      "sourceExcerpt": "连续三重环状气浪",
+      "skill": {
+        "name": "愤怒之印＋",
+        "description": "按由内至外顺序造成三次环状伤害；不新增公开说明未出现的嘲讽或治疗。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"circle","center":"self","radius":1},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0.5,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"circle","center":"self","radius":1.5},"effects":[{"type":"damage","budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":1,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"circle","center":"self","radius":2},"effects":[{"type":"damage","budgetShare":0.5}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c4a3674faacb4",
+      "role": "melee",
+      "sourceSkill": "彷徨・环风解甲＋",
+      "sourceExcerpt": "旋转甲片、三道冲击波、队伍攻击与抗性强化",
+      "skill": {
+        "name": "彷徨・环风解甲＋",
+        "description": "旋转甲片后推出三波伤害；邻域友方攻击提升和护盾均为短效 5s。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"self","radius":1.5},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":1.5},"geometry":{"kind":"circle","center":"self","radius":1.5},"effects":[{"type":"attackUp","duration":5,"budgetShare":0.22}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":1.5},"geometry":{"kind":"circle","center":"self","radius":1.5},"effects":[{"type":"shield","duration":5,"budgetShare":0.22}],"requiresCasterAlive":true},
+          {"offset":0.5,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":3,"direction":"up","offsetX":-1},"effects":[{"type":"damage","budgetShare":0.12}],"requiresCasterAlive":true},
+          {"offset":0.8,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.12}],"requiresCasterAlive":true},
+          {"offset":1.1,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":3,"direction":"up","offsetX":1},"effects":[{"type":"damage","budgetShare":0.12}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c02ea0cac472f",
+      "role": "support",
+      "sourceSkill": "哈宁之壁＋",
+      "sourceExcerpt": "土墙、六尊土俑攻击、两波扩散气弹",
+      "skill": {
+        "name": "哈宁之壁＋",
+        "description": "土俑印记造成一轮地面伤害，随后两波气弹；邻域友方护盾持续中效 8s，代表土墙防护。土墙与土俑不占格、不阻路、不生成单位。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":3,"length":2,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":2},"geometry":{"kind":"circle","center":"self","radius":2},"effects":[{"type":"shield","duration":8,"budgetShare":0.5}],"requiresCasterAlive":true},
+          {"offset":0.5,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"fan","center":"self","radius":3,"angle":90,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.15}],"requiresCasterAlive":true},
+          {"offset":1,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"fan","center":"self","radius":3,"angle":90,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.15}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c329d2479d6db",
+      "role": "melee",
+      "sourceSkill": "长爪之击・岚",
+      "sourceExcerpt": "三波贯通长爪、三重扩张爪刃",
+      "skill": {
+        "name": "长爪之击・岚",
+        "description": "先三波窄线贯穿爪击，再三重宽刃伤害；本次施放内完成。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"line","center":"self","width":1,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.13333333}],"requiresCasterAlive":true},
+          {"offset":0.6,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"line","center":"self","width":1,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.13333333}],"requiresCasterAlive":true},
+          {"offset":0.7,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"line","center":"self","width":3,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":1.05,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"line","center":"self","width":3,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"line","center":"self","width":1,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.13333333}],"requiresCasterAlive":true},
+          {"offset":1.4,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"line","center":"self","width":3,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c277166ea1f5a",
+      "role": "support",
+      "sourceSkill": "Cien Mil Espada · 十万剑／Cien Mil Espada · 十万剑＋",
+      "sourceExcerpt": "剑神护盾与加速、剑神突进和灵剑",
+      "skill": {
+        "name": "Cien Mil Espada · 十万剑",
+        "description": "剑神显形给予全队护盾、中效 8s；自身攻速提升 5s，随后一次突击剑光及多把灵剑贯穿。剑神仅作演出，段数固定，不跨次积攒等级。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"shield","duration":8,"budgetShare":0.4}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"self","range":0},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"haste","duration":5,"budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0.3,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":4,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0.6,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":4,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.06666667}],"requiresCasterAlive":true},
+          {"offset":1.05,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":4,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.06666667}],"requiresCasterAlive":true},
+          {"offset":1.5,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":4,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.06666667}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c0160a957e45d",
+      "role": "melee",
+      "sourceSkill": "疾影·瞬闪＋＋",
+      "sourceExcerpt": "前后瞬闪、连击增伤、自身贯通",
+      "skill": {
+        "name": "疾影·瞬闪＋＋",
+        "description": "交替攻击前方和后方，最后前后贯穿剑光合击；总连击固定，本次施放内结束。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"line","center":"self","width":1,"length":2,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0.3,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"line","center":"self","width":1,"length":2,"direction":"down"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0.6,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"line","center":"self","width":1,"length":2,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0.9,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"line","center":"self","width":1,"length":2,"direction":"down"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"line","center":"self","width":1,"length":2,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"line","center":"self","width":1,"length":2,"direction":"down"},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c78ab5173bc00",
+      "role": "support",
+      "sourceSkill": "庇佑之风＋",
+      "sourceExcerpt": "全队风盾、抗性和攻击提升",
+      "skill": {
+        "name": "庇佑之风＋",
+        "description": "全队获得中效 8s 护盾与攻击提升；不附加攻击段。羽龙定位为纯防护鼓舞，原净化和固定移速省略。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"shield","duration":8,"budgetShare":0.6}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"attackUp","duration":8,"budgetShare":0.4}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c2428f776c973",
+      "role": "ranged",
+      "sourceSkill": "荒岚·群龙天袭＋",
+      "sourceExcerpt": "完整荒岚攻势、Fever 状态随机首领技",
+      "skill": {
+        "name": "荒岚·群龙天袭＋",
+        "description": "荒岚连续风刃后，以固定的一次落点爆风收尾；本次施放内完成。把随机首领技转成确定终结段，不引入随机招式库或 Fever。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"fan","center":"self","radius":4,"angle":90,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.15}],"requiresCasterAlive":true},
+          {"offset":0.4,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"fan","center":"self","radius":4,"angle":90,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.15}],"requiresCasterAlive":true},
+          {"offset":0.8,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"fan","center":"self","radius":4,"angle":90,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.15}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"fan","center":"self","radius":4,"angle":90,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.15}],"requiresCasterAlive":true},
+          {"offset":1.5,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.4}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c77a2a08c6159",
+      "role": "melee",
+      "sourceSkill": "四色终轮／四色终轮＋",
+      "sourceExcerpt": "火水风雷四种光轮、第四次终焉",
+      "skill": {
+        "name": "四色终轮",
+        "description": "一次施放连续展现四种颜色的环击，末轮终焉占较高伤害份额；本次施放内完成。伤害属性仍按该角色风属性，不产生四套元素异常。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"circle","center":"self","radius":1},"effects":[{"type":"damage","budgetShare":0.15}],"requiresCasterAlive":true},
+          {"offset":0.4,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"circle","center":"self","radius":1.5},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0.8,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"circle","center":"self","radius":2},"effects":[{"type":"damage","budgetShare":0.25}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"circle","center":"self","radius":2},"effects":[{"type":"damage","budgetShare":0.4}],"requiresCasterAlive":true}
+        ]
+      }
+    }
+  ]
+}

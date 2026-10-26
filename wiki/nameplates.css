@@ -1,0 +1,12 @@
+.portrait-panel:has(.character-nameplates){position:static}
+.character-nameplates{border-top:1px solid #dce5e8;padding:14px 12px;text-align:center}
+.character-nameplates h2{font-size:15px;color:#365966;margin:0 0 12px}
+.character-nameplate{margin:0 0 16px}.character-nameplate:last-child{margin-bottom:0}
+.character-nameplate-image{display:block;max-width:100%;width:320px;height:auto;margin:0 auto;object-fit:contain}
+.character-nameplate figcaption{margin-top:7px;font-size:11px;color:#61767f;line-height:1.55}
+.character-nameplate figcaption strong{font-size:12px;color:#375a65}
+.character-nameplate figcaption p{margin:4px 0 0;white-space:pre-line}
+.nameplate-label{margin-left:6px;font-size:10px}.character-nameplates>.muted{font-size:11px}
+[data-theme="dark"] .character-nameplates{border-color:#354d59}
+[data-theme="dark"] .character-nameplates h2,[data-theme="dark"] .character-nameplate figcaption strong{color:#dce9ee}
+[data-theme="dark"] .character-nameplate figcaption{color:#a8bec6}

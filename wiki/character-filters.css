@@ -1,0 +1,46 @@
+/* One responsive filter panel shared by the catalogue and team candidates. */
+.character-filters{min-width:0;background:#fff;border:1px solid #d2e0df;border-radius:9px}
+.character-filter-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 10px;list-style:none}
+.character-filter-heading::-webkit-details-marker{display:none}
+.character-filter-heading h3{margin:0;font-size:14px;color:#3c5b5b}
+.character-filter-toggle-hint{font-size:10px;color:var(--muted);white-space:nowrap}
+.character-filters[open]>.character-filter-heading{border-bottom:1px solid var(--line)}
+.character-filter-body{display:grid;gap:7px;padding:8px 10px 10px}
+.character-filter-search-row{display:flex;align-items:center;gap:8px;min-width:0}
+.character-filter-search-row .text-button{flex:none;min-height:34px;padding:5px 0;font-size:11px;white-space:nowrap}
+.character-filter-search-label,.character-filter-search-help,.character-filter-field>span{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.character-filter-search{display:block;flex:1;min-width:0;width:100%;min-height:34px;padding:6px 9px;border:1px solid #bfcfd1;border-radius:6px;background:#fafcfc;font-size:12px}
+.character-filter-help{margin:0;color:#819092;font-size:10px;line-height:1.5}.character-filter-help:empty{display:none}
+.character-filter-elements{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.character-filter-element{display:flex;align-items:center;justify-content:center;gap:3px;min-width:0;min-height:32px;padding:3px 2px;background:#f6fafa;border:1px solid #c5d5d5;border-bottom-width:2px;border-radius:5px;font-size:10px;color:#4c6567}
+.character-filter-element .native-icon{width:20px;height:20px;flex:none}
+.character-filter-element[aria-pressed="true"]{border-color:#18ad9f;background:#e5f8f1;color:#117e74;box-shadow:inset 0 1px 0 #fff;font-weight:700}
+.character-filter-element:hover{background:#edf8f4;border-color:#1daf9f}
+.character-filter-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.character-filter-field{display:block;min-width:0;font-size:11px;color:#617777}
+.character-filter-field select{width:100%;min-width:0;min-height:32px;padding:5px 6px;border:1px solid #c4d4d4;border-radius:5px;background:#fafcfc;font-size:12px;color:#3c5558}
+.catalog-character-controls{margin-bottom:6px}
+#catalog-character-filters .character-filter-body{grid-template-columns:minmax(180px,1fr) minmax(260px,1fr);gap:6px 10px}
+#catalog-character-filters .character-filter-search-row{grid-column:1;grid-row:1}
+#catalog-character-filters .character-filter-elements{grid-column:2;grid-row:1}
+#catalog-character-filters .character-filter-fields{grid-column:1 / -1;grid-row:2;max-width:550px}
+#catalog-character-filters .character-filter-help,#catalog-character-filters .character-filter-body>.text-button{grid-column:1 / -1}
+#catalog-character-filters .character-filter-search{max-width:360px}
+.team-library>.character-filters{margin-bottom:7px}.team-library .character-filter-body{padding:7px 8px 8px}
+.team-library .character-filter-element .native-icon{width:18px;height:18px}
+.team-library .character-filter-field select{font-size:11px;padding:5px 3px}
+@media(max-width:900px){
+  #catalog-character-filters .character-filter-body{grid-template-columns:minmax(0,1fr)}
+  #catalog-character-filters .character-filter-search-row,#catalog-character-filters .character-filter-elements,#catalog-character-filters .character-filter-fields{grid-column:1;grid-row:auto;max-width:none}
+  #catalog-character-filters .character-filter-search{max-width:none}
+}
+@media(max-width:640px){
+  #catalog-view>.catalog-header{display:none}
+  #catalog-character-filters .character-filter-body{gap:6px;padding:7px 8px 8px}
+  #catalog-character-filters .character-filter-search-row{gap:6px}
+  #catalog-character-filters .character-filter-fields{gap:5px}
+  #catalog-character-filters .character-filter-elements{padding-top:5px;border-top:1px solid var(--line,#d2e0df)}
+  .character-filter-elements{gap:3px}.character-filter-element{min-height:36px;gap:1px}
+  .character-filter-element .native-icon{width:17px;height:17px}
+  .character-filter-field select{font-size:11px;min-height:36px;padding:5px 3px}
+}

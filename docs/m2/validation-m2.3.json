@@ -1,0 +1,184 @@
+{
+  "schema": "wf-m2.3-validation/1",
+  "scope": "R3登记及真实SWF解析分支检查；只写当前worktree",
+  "source_commit": "82d03ef79dbeae5af22cdb8044645a40d33c49ab",
+  "pytest": {
+    "exit_code": 0,
+    "passed": 4674,
+    "skipped": 354,
+    "warnings": 26,
+    "junit": {
+      "tests": 7405,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 357
+    },
+    "elapsed_seconds": 768.68,
+    "command": "python -B -m pytest --basetemp=work/m2_3/full-tmp --junitxml=work/m2_3/pytest-full.xml",
+    "log": "work/m2_3/pytest-full.log",
+    "log_sha256": "f496a03a90a79a39231f0ef3c090987bde8ce6c2c38a623aa2ed8b949e1f2189",
+    "junit_sha256": "b4ddc0f5c3245971fe23cf2cf7f6f798467831aece5dd86ede3a545bff319af0"
+  },
+  "registry": {
+    "count": 179,
+    "check_exit_code": 0,
+    "r3_id": "client.equipment.gauge_gain_rules@1",
+    "numbered_patch_assigned": false
+  },
+  "profiles": {
+    "test-v34": {
+      "swf_sha256": "3d5c9745f519beee68557df7bce3e4ff635c9bb127069ed85a8fd02b5cbedb8a",
+      "tables": 5,
+      "methods": 50,
+      "mismatches": [],
+      "command_exit_code": 0,
+      "report": "work/m2_3/test-v34-kinds-cli.json",
+      "report_sha256": "17231b69b3481b7ebc1e26baf6587f00b638791fb66cb6ce34802f61c08a03c9",
+      "r3_methods": {
+        "ability_soul": {
+          "label": "AbilitySoulValues$/parseAt106",
+          "body_index": 38944,
+          "sha256": "09dab4df4529e9b0272315b616fa9ea4e1882401a9ceadb40be2b5ee515c40ab",
+          "kind423_supported": true
+        },
+        "equipment_enhancement_ability": {
+          "label": "EquipmentEnhancementAbilityValues$/parseAt109",
+          "body_index": 40666,
+          "sha256": "dd651c1588b171de60b3617ac33d165d22c726337ee6848caddd88dc0f331577",
+          "kind423_supported": true
+        }
+      }
+    },
+    "test-v35e": {
+      "swf_sha256": "89461f676b57a059bde58fe5897190db9b61013ae63947401fe1bf87106d6bcf",
+      "tables": 5,
+      "methods": 50,
+      "mismatches": [],
+      "command_exit_code": 0,
+      "report": "work/m2_3/test-v35e-kinds-cli.json",
+      "report_sha256": "b129b7311620569381cc55229b60cc42a158b04a454b3c8b78b21855bea4482d",
+      "r3_methods": {
+        "ability_soul": {
+          "label": "AbilitySoulValues$/parseAt106",
+          "body_index": 38944,
+          "sha256": "09dab4df4529e9b0272315b616fa9ea4e1882401a9ceadb40be2b5ee515c40ab",
+          "kind423_supported": true
+        },
+        "equipment_enhancement_ability": {
+          "label": "EquipmentEnhancementAbilityValues$/parseAt109",
+          "body_index": 40666,
+          "sha256": "dd651c1588b171de60b3617ac33d165d22c726337ee6848caddd88dc0f331577",
+          "kind423_supported": true
+        }
+      }
+    }
+  },
+  "weapon_rows": {
+    "count": 8,
+    "keys": 7,
+    "both_profiles_blocking": 0,
+    "report": "work/m2_3/weapons-8-compat.json",
+    "report_sha256": "47d82cae2cfda5d477684d7c795d840805418a913f56ff7adc43562375dc179f",
+    "rows": [
+      {
+        "logical_path": "master/ability/ability_soul.orderedmap",
+        "key": "5920001",
+        "row": 23,
+        "source_sha256": "00e67ed0158a0373ce2bee3c7e3d9fd9f69a019214c8a1b7765c316a677c121a"
+      },
+      {
+        "logical_path": "master/ability/ability_soul.orderedmap",
+        "key": "5921001",
+        "row": 23,
+        "source_sha256": "00e67ed0158a0373ce2bee3c7e3d9fd9f69a019214c8a1b7765c316a677c121a"
+      },
+      {
+        "logical_path": "master/ability/ability_soul.orderedmap",
+        "key": "5922001",
+        "row": 23,
+        "source_sha256": "00e67ed0158a0373ce2bee3c7e3d9fd9f69a019214c8a1b7765c316a677c121a"
+      },
+      {
+        "logical_path": "master/ability/ability_soul.orderedmap",
+        "key": "5923001",
+        "row": 23,
+        "source_sha256": "00e67ed0158a0373ce2bee3c7e3d9fd9f69a019214c8a1b7765c316a677c121a"
+      },
+      {
+        "logical_path": "master/equipment_enhancement/equipment_enhancement_ability.orderedmap",
+        "key": "5910113",
+        "row": 6,
+        "source_sha256": "76f77ac8d66e452e94e359bc39c097431f72ddd63fd50ab9c49fa0e59eab95f1"
+      },
+      {
+        "logical_path": "master/equipment_enhancement/equipment_enhancement_ability.orderedmap",
+        "key": "5910122",
+        "row": 10,
+        "source_sha256": "76f77ac8d66e452e94e359bc39c097431f72ddd63fd50ab9c49fa0e59eab95f1"
+      },
+      {
+        "logical_path": "master/equipment_enhancement/equipment_enhancement_ability.orderedmap",
+        "key": "5910122",
+        "row": 11,
+        "source_sha256": "76f77ac8d66e452e94e359bc39c097431f72ddd63fd50ab9c49fa0e59eab95f1"
+      },
+      {
+        "logical_path": "master/equipment_enhancement/equipment_enhancement_ability.orderedmap",
+        "key": "5910125",
+        "row": 5,
+        "source_sha256": "76f77ac8d66e452e94e359bc39c097431f72ddd63fd50ab9c49fa0e59eab95f1"
+      }
+    ]
+  },
+  "counterexamples": {
+    "missing_r3_actual_rows": 16,
+    "all_missing_r3_blocked": true,
+    "report": "work/m2_3/missing-r3-counterexample.json",
+    "report_sha256": "06a9f9741db86cd1aa7317a6395cc15debe453840eb27f8659e8a1f690324551",
+    "base_method_body_fixture": "tests/test_m23_apk_kinds.py",
+    "legacy_requires_fallback": true,
+    "base_swf": {
+      "status": "pre-r3-base-not-found",
+      "report": "work/m2_3/base-client-kinds.json",
+      "report_sha256": "16f68e9acc53b98e2383c6b4066be43839dfccb39e220aaa9ab2bddbddd3f967"
+    }
+  },
+  "historical": {
+    "223": {
+      "status": "满足",
+      "scope": "历史字节兼容性验证；不生成变更集或可交付包，不代表当前门禁通过",
+      "member_count": 3,
+      "report": "work/m2_3/history/replay223.json",
+      "sha256": "8833840e5380d63d58bc4310f16cac18b4491bc847fde56740fe86c48ec80c73",
+      "exit_code": 0
+    },
+    "221": {
+      "status": "满足",
+      "scope": "只读复用M2.2完整重建package，本轮当前归档/双清单字节回归；未重新构建母图或音频，不表示旧221通过当前公开交付门禁",
+      "member_count": 310,
+      "report": "work/m2_3/history/replay221.json",
+      "sha256": "b873a516ff34256e5cd4de7773fb09f6d12848c98ec5499cafe886de1c4ffa3d",
+      "exit_code": 0,
+      "archive_count": 11,
+      "different_members": 0,
+      "layered_members_byte_equal": 310,
+      "archives_equal_without_dos_timestamps": 11,
+      "legacy_manifest_semantic_equal": true,
+      "source_build_reused": true
+    }
+  },
+  "path_scan": {
+    "scanned_text_files": 2327,
+    "findings": [],
+    "count": 0
+  },
+  "hygiene_exit_code": 0,
+  "boundaries": {
+    "push": false,
+    "server_access": false,
+    "device_access": false,
+    "m4_integrate_access": false,
+    "other_paths_read_only": true,
+    "runtime_validation": "未执行；方法分支和哈希为静态证据"
+  }
+}

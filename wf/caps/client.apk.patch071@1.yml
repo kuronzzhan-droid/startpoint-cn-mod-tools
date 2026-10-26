@@ -1,0 +1,186 @@
+schema: wf-capability/1
+id: client.apk.patch071@1
+title: 战斗图集分帧合成
+layer: platform
+provided_by:
+  patches:
+  - 71
+  match: all
+  methods:
+  - patch: 71
+    abc: boot_ffc6
+    label: BattleStartProductionViewService/prepare
+    sha256: 8eb9f901d73b20499ad2b97b3d7a72beab1eda5e0a9a98d480f7196320744c59
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 71
+    abc: cn.loading.BattlePackSlicer
+    label: anonymous-method-0
+    sha256: 1719c0768f2363ec9f8ebd4afaa61bffd019f7f04428410ecf85015c699c9e62
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 71
+    abc: cn.loading.BattlePackSlicer
+    label: anonymous-method-11
+    sha256: e5b5e4ff4f59b1bab0e521f78fe35113a640b885e5fee558118ac3592a8b7d24
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 71
+    abc: cn.loading.BattlePackSlicer
+    label: BattlePackSlicer$/<cinit>
+    sha256: 5bcaf4c4a3b43361e34bc3e4f5d9a001731074ca1073f8a7ccd325715ddcb78b
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 71
+    abc: cn.loading.BattlePackSlicer
+    label: BattlePackSlicer$/active
+    sha256: abb54b1c3cbe42b50347f37336002a766b617e850ec9244c9fe35851accabc0f
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 71
+    abc: cn.loading.BattlePackSlicer
+    label: BattlePackSlicer$/cls
+    sha256: a3e677a1c802473dbd619b5553c5fd68c7c0224f49ba78097694ad493f609308
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 71
+    abc: cn.loading.BattlePackSlicer
+    label: BattlePackSlicer/<ctor>
+    sha256: 2d41a635ebdbaec17c25790d6f1710791abcc1d85000843df87a3a81dca420ae
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 71
+    abc: cn.loading.BattlePackSlicer
+    label: BattlePackSlicer$/start
+    sha256: da6b1a666d9644190ece4d3d1d614b800124b6ac2d35cc91955e64a8ac68cd5f
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 71
+    abc: cn.loading.BattlePackSlicer
+    label: BattlePackSlicer/abort
+    sha256: 0c8f89b4efb9cab8bca11e71f508daee100c5894727b2d264650b097598be48b
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 71
+    abc: cn.loading.BattlePackSlicer
+    label: BattlePackSlicer/build
+    sha256: 0512a7dd91952f85dea98b07d5e0d5f66542298558a1543d4abe7cae03d32f46
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 71
+    abc: cn.loading.BattlePackSlicer
+    label: BattlePackSlicer/colorStep
+    sha256: 138b4e2b5113b7e17ac6715deb3f11c5801345b5787594bbd410982b68b450fe
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 71
+    abc: cn.loading.BattlePackSlicer
+    label: BattlePackSlicer/disposeAll
+    sha256: 96d6ac7a17fd63d60f4679c1ca94f15a623694fda47327d9c46172fa8e51d636
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 71
+    abc: cn.loading.BattlePackSlicer
+    label: BattlePackSlicer/drawStep
+    sha256: 7706ddef0eab2b6499d1bce80627d6bac27e9c58e3b3d822c3ffbd88828fb7b4
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 71
+    abc: cn.loading.BattlePackSlicer
+    label: BattlePackSlicer/dumpStat
+    sha256: eac2a10b7d844a9a69a2f03b801a4c23f26ef6799d7de1163baf6c098e13b85f
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 71
+    abc: cn.loading.BattlePackSlicer
+    label: BattlePackSlicer/fallback
+    sha256: 145473185bf4ce42a1280bea911ca7c95aaea2bed281e45121983040b7778730
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 71
+    abc: cn.loading.BattlePackSlicer
+    label: BattlePackSlicer/finish
+    sha256: 993c0f2ed05bb88937dc9289a1f5014e19d34e823811b75549466690cfdd715a
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 71
+    abc: cn.loading.BattlePackSlicer
+    label: BattlePackSlicer/layer
+    sha256: 8dfb780606e30bec6dd2b8d162193f3338baaba1de29154b0484c19c994fa169
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 71
+    abc: cn.loading.BattlePackSlicer
+    label: BattlePackSlicer/map
+    sha256: ca868ee5b6ce68e7ea3970c9e19f4e3e27b759f9a6ae4f8b06f559f022989ed0
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 71
+    abc: cn.loading.BattlePackSlicer
+    label: BattlePackSlicer/markLost
+    sha256: 4c3ad09a1b7ce8a2ecebb28a99eccb5a2d8d329e994a62076e77897a45253049
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 71
+    abc: cn.loading.BattlePackSlicer
+    label: BattlePackSlicer/newPage
+    sha256: dc4178f06c385b65758d47617da1935633570e8d6e0085265ca8135837a1747c
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 71
+    abc: cn.loading.BattlePackSlicer
+    label: BattlePackSlicer/packStep
+    sha256: e9c8879bf9e6cc3973e69815ee5e6175e875c479048ba8bd3fd2545377e5fa48
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 71
+    abc: cn.loading.BattlePackSlicer
+    label: BattlePackSlicer/progress
+    sha256: 23a77227a14a30753f2661aab87a536c3ef4e78920f84b2e0170afe967206338
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 71
+    abc: cn.loading.BattlePackSlicer
+    label: BattlePackSlicer/stop
+    sha256: 14114c129e4b392df2ac4d18dd2d33b44cbd06173d8bfe75279759b756bcb884
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 71
+    abc: cn.loading.BattlePackSlicer
+    label: BattlePackSlicer/tick
+    sha256: 6665e013c3efe3bc2579a89ea520ba40e90d2a6e30473d0bc2181644d55d2d4d
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: false
+  features: []
+  note: 无额外服务端改动要求
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: 战斗图集分帧合成
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: 战斗图集分帧合成
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: 战斗图集分帧合成
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/verification/v33-patches-preserved-o8-o12-r2.json

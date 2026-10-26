@@ -1,0 +1,134 @@
+schema: wf-capability/1
+id: client.pf.lv4_data@1
+title: PF Lv4 门槛与颜色数据化
+layer: A
+provided_by:
+  patches:
+  - 87
+  - 88
+  - 89
+  - 118
+  match: all
+  methods:
+  - patch: 87
+    abc: boot_ffc6
+    label: BattleFlipperView/draw
+    sha256: 379ac4029668dbf388a33ee321940f77837f1911d14c3f06f19f66c553377375
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+    accepted_variants:
+    - sha256: f0a8da06784d7b9bf54b73101852ca25f5665c1548e75ce00caa4f2a5bdf6516
+      swf_sha256: 89461f676b57a059bde58fe5897190db9b61013ae63947401fe1bf87106d6bcf
+      source: v35/run1/release-locks.json
+      reason: 有意更新：run1–run5通用入口叠加，旧路径保持依据见各轮README/verify-report；最终SWF方法摘要已复核
+  - patch: 88
+    abc: boot_ffc6
+    label: MemberImpl/startPowerFlip
+    sha256: 0aaa43db85c048dda9784925de22fccc38068f638449fcb59938420f12fc2d6b
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+    accepted_variants:
+    - sha256: 030ae3c33da2fe234e174d12fdd251b59251ca36ce2813a5bea1e8fb47cf69b8
+      swf_sha256: 89461f676b57a059bde58fe5897190db9b61013ae63947401fe1bf87106d6bcf
+      source: v35/run1/release-locks.json
+      reason: 有意更新：run1–run5通用入口叠加，旧路径保持依据见各轮README/verify-report；最终SWF方法摘要已复核
+  - patch: 89
+    abc: boot_ffc6
+    label: BattleFlipperImpl/update
+    sha256: 850b7356ba86f981b98d73d4d3619484acf2e7b2b0ff9f4ee8814113b7e9b8f0
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+    accepted_variants:
+    - sha256: c95c944a7f4735ef9e9c62a421c8a035a8bbc2894505a6f25af2814a7c3cc57d
+      swf_sha256: 89461f676b57a059bde58fe5897190db9b61013ae63947401fe1bf87106d6bcf
+      source: v35/run1/release-locks.json
+      reason: 有意更新：run1–run5通用入口叠加，旧路径保持依据见各轮README/verify-report；最终SWF方法摘要已复核
+  - patch: 118
+    abc: boot_ffc6
+    label: MemberImpl/startPowerFlip
+    sha256: 030ae3c33da2fe234e174d12fdd251b59251ca36ce2813a5bea1e8fb47cf69b8
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 118
+    abc: boot_ffc6
+    label: BattleFlipperImpl/update
+    sha256: c95c944a7f4735ef9e9c62a421c8a035a8bbc2894505a6f25af2814a7c3cc57d
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 118
+    abc: boot_ffc6
+    label: BattleFlipperView/draw
+    sha256: f0a8da06784d7b9bf54b73101852ca25f5665c1548e75ce00caa4f2a5bdf6516
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 118
+    abc: boot_ffc6
+    label: Battle$/wfxPfReadString
+    sha256: e5ea4e9a21522cfa9fb2692ea8ee55d53d03a34f420ade692831a9eb67e0cc4d
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 118
+    abc: boot_ffc6
+    label: Battle$/wfxPfParseUInt
+    sha256: 5ada965be7bfd983277a4f7f1523fd61b4434d184b40428df4e288c11163cc8f
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 118
+    abc: boot_ffc6
+    label: Battle$/wfxPf4Config
+    sha256: 8257144592e422abe05e62b0f07522da584579eb780f54be43348d61b5228ff5
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 118
+    abc: boot_ffc6
+    label: Battle$/wfxPf4Gradient
+    sha256: 5173ee112d9837bb75cad68c3b9801d6faf5ec34e9a8c5d1047e0c1af1a5e7a8
+    status: 已记录
+    source: v35/run1/release-locks.json
+  - patch: 118
+    abc: boot_ffc6
+    label: BattleFlipperView/wfxPf4Accent
+    sha256: 70c64a736c9514960c298c6b0fffde17cc2d4f43550f71eaad7b4a3985012904
+    status: 已记录
+    source: v35/run1/release-locks.json
+  status: 已记录
+  basis: v35e/run5累计本地离线证据；哈希为方法code字节；不声明设备验收或部署
+server:
+  required: false
+  features: []
+  note: 通用客户端数据入口；不声明服务端或资源已部署
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors:
+  - custom_ability_string.wfx_pf4_
+  allowed_tables:
+  - custom_ability_string
+form:
+  label: PF Lv4 门槛与颜色数据化
+  fields:
+  - name: key
+    prefix: wfx_pf4_
+    value: <非负整数门槛>[:<6位RRGGBB>]
+  note: 需要 test-v35e；实际参数规则以累计登记和对应实现说明为准
+describe:
+  template: wfx_pf4_<队长角色id>设定PF4连击门槛和RGB颜色，按场缓存；仍要求原override支持Lv4
+  channel: 能力说明
+rules:
+- capability.missing
+- capability.method-hash
+- capability.resolution
+preview:
+  label: PF Lv4 门槛与颜色数据化
+  status: 待验证
+golden:
+- source: v35/run5/registry-draft.json
+  kind: method-code-sha256
+  note: 最终SWF实际方法与最终release-lock一致；可重复离线验证不等于AIR/Android设备验收
+docs:
+- v35/run5/registry-draft.json
+- docs/m2/v35e-method-audit.json
+- docs/m2/v35e-registration.md

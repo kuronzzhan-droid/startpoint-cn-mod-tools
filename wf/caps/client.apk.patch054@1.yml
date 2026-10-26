@@ -1,0 +1,53 @@
+schema: wf-capability/1
+id: client.apk.patch054@1
+title: 凯尔直击参数
+layer: A
+provided_by:
+  patches:
+  - 54
+  match: all
+  methods:
+  - patch: 54
+    abc: boot_ffc6
+    label: MemberImpl/scheduleDirectAttack
+    sha256: 223640cd78b631640313859bb39410d270696644f058435cd1258c88c9f30576
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+    accepted_variants:
+    - sha256: 7f0d02acfc116523f829a639e717fea6e53ce30b61c0f40085082c4b0caf1e07
+      swf_sha256: 89461f676b57a059bde58fe5897190db9b61013ae63947401fe1bf87106d6bcf
+      source: v35/run1/release-locks.json
+      reason: 有意更新：run1–run5通用入口叠加，旧路径保持依据见各轮README/verify-report；最终SWF方法摘要已复核
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: false
+  features: []
+  note: 无额外服务端改动要求
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: 凯尔直击参数
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: 凯尔直击参数
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: 凯尔直击参数
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/verification/v33-patches-preserved-o8-o12-r2.json

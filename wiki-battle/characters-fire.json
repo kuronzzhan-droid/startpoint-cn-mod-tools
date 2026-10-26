@@ -1,0 +1,259 @@
+{
+  "characters": [
+    {
+      "id": "c22d4a8ac42f7",
+      "role": "ranged",
+      "sourceSkill": "灼鳞·岩浆爆发＋",
+      "sourceExcerpt": "三道裂隙、延迟岩浆喷发、末尾冲击波与灼鳞强化",
+      "skill": {
+        "name": "灼鳞·岩浆爆发＋",
+        "description": "先标记三条裂隙，1s 后依次造成喷发伤害；末段在前方 3×2 格冲击。自身攻击提升，短效 5s；灼鳞不作为局外或跨次资源。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"ally","kind":"self","range":0},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"attackUp","duration":5,"budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":1,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":4,"direction":"up","offsetX":-1},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":4,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":1.4,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"line","center":"self","width":1,"length":4,"direction":"up","offsetX":1},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":1.6,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":3,"length":2,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c9a07e74081a3",
+      "role": "ranged",
+      "sourceSkill": "奥尔塔尼亚·伽马／奥尔塔尼亚·伽马＋",
+      "sourceExcerpt": "炎环持续伤害、三道炎狱、末段扩大",
+      "skill": {
+        "name": "奥尔塔尼亚·伽马",
+        "description": "落点炎环持续伤害，中效 8s；开始时三次定向火焰连击，结束时 R=2 爆炎收尾。炎环与收尾共享本次总伤害预算。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"dot","duration":8,"interval":1,"requiresCasterAlive":false,"budgetShare":0.4,"targetMode":"area"}],"requiresCasterAlive":true},
+          {"offset":0.6,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true},
+          {"offset":8,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":2},"effects":[{"type":"damage","budgetShare":0.3}],"requiresCasterAlive":false}
+        ]
+      }
+    },
+    {
+      "id": "c6dc9da865066",
+      "role": "melee",
+      "sourceSkill": "绝杀协议／绝杀协议＋",
+      "sourceExcerpt": "宽幅下劈、绝杀弹爆炸、处刑爆炎",
+      "skill": {
+        "name": "绝杀协议",
+        "description": "宽斩后在斩击最远格爆炸，再以自身周围爆炎收尾；三段瞬时伤害。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"rect","center":"self","width":3,"length":2,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.4}],"requiresCasterAlive":true},
+          {"offset":0.5,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"circle","center":"self","radius":1,"offsetY":-2},"effects":[{"type":"damage","budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":1,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"circle","center":"self","radius":1.5},"effects":[{"type":"damage","budgetShare":0.3}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "cb922553efea6",
+      "role": "support",
+      "sourceSkill": "绯焰实习·幼龙点名＋",
+      "sourceExcerpt": "召唤幼龙、指令吐息、敌攻击降低",
+      "skill": {
+        "name": "绯焰实习·幼龙点名＋",
+        "description": "幼龙只作一次吐息演出，对目标区域造成连续伤害；全队获得短效 5s 护盾，将原敌攻击降低转换为防护。无可独立攻击、承伤或占格的幼龙实体。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":2},"effects":[{"type":"damage","budgetShare":0.16666667}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"shield","duration":5,"budgetShare":0.5}],"requiresCasterAlive":true},
+          {"offset":0.6,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":2},"effects":[{"type":"damage","budgetShare":0.16666667}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":2},"effects":[{"type":"damage","budgetShare":0.16666667}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c3ca327abc43c",
+      "role": "melee",
+      "sourceSkill": "烈焰轰鸣＋",
+      "sourceExcerpt": "火剑斩、身边光圈、火队攻击提升、机车突进爆炸",
+      "skill": {
+        "name": "烈焰轰鸣＋",
+        "description": "火剑与机车轨迹先造成贯穿直线伤害，终点爆炸；自身火圈持续伤害，短效 5s；全队攻击提升 5s。火圈与突进共同分配伤害预算。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"line","center":"self","width":1,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0.5,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"circle","center":"self","radius":1,"offsetY":-3},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0.5,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"self","radius":1},"effects":[{"type":"dot","duration":5,"interval":1,"requiresCasterAlive":true,"budgetShare":0.3,"targetMode":"area"}],"requiresCasterAlive":true},
+          {"offset":0.5,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"attackUp","duration":5,"budgetShare":0.3}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c1ad38008e1dd",
+      "role": "support",
+      "sourceSkill": "月相夜讲＋",
+      "sourceExcerpt": "新月、上弦、满月三相打击，火队技能强化",
+      "skill": {
+        "name": "月相夜讲＋",
+        "description": "三相按固定顺序造成伤害，满月段范围更宽；全队攻击提升，中效 8s。三个阶段在一次施放内结束，不新增月相循环状态。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":3,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"attackUp","duration":8,"budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":0.5,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"rect","center":"self","width":3,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":1,"selector":{"team":"enemy","kind":"nearest","range":4},"geometry":{"kind":"circle","center":"target","radius":2},"effects":[{"type":"damage","budgetShare":0.3}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c907f46378c61",
+      "role": "melee",
+      "sourceSkill": "月下狩宝！＋",
+      "sourceExcerpt": "最近敌人突进爪击、分月饼强化队伍、追加连击",
+      "skill": {
+        "name": "月下狩宝！＋",
+        "description": "虎爪连续打击后分发月饼，自身及邻域友方攻速提升，短效 5s。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"target","radius":1},"effects":[{"type":"damage","budgetShare":0.175}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":2},"geometry":{"kind":"circle","center":"self","radius":2},"effects":[{"type":"haste","duration":5,"budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":0.4,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"target","radius":1},"effects":[{"type":"damage","budgetShare":0.175}],"requiresCasterAlive":true},
+          {"offset":0.8,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"target","radius":1},"effects":[{"type":"damage","budgetShare":0.175}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"target","radius":1},"effects":[{"type":"damage","budgetShare":0.175}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "cbebf6c04269f",
+      "role": "ranged",
+      "sourceSkill": "毒液喷溅＋",
+      "sourceExcerpt": "两波毒液、中毒、短暂麻痹",
+      "skill": {
+        "name": "毒液喷溅＋",
+        "description": "两波喷吐伤害；命中附持续伤害，中效 8s，并减速短效 5s。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"fan","center":"self","radius":3,"angle":90,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0.4,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"fan","center":"self","radius":3,"angle":90,"direction":"up"},"effects":[{"type":"dot","duration":8,"interval":1,"requiresCasterAlive":false,"budgetShare":0.4,"targetMode":"attached"}],"requiresCasterAlive":true,"hitTargetsFrom":[0]},
+          {"offset":0.4,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"fan","center":"self","radius":3,"angle":90,"direction":"up"},"effects":[{"type":"slow","duration":5,"budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"fan","center":"self","radius":3,"angle":90,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"fan","center":"self","radius":3,"angle":90,"direction":"up"},"effects":[],"requiresCasterAlive":true,"hitTargetsFrom":[3],"refreshFrom":1}
+        ]
+      }
+    },
+    {
+      "id": "c393f6e9d484c",
+      "role": "ranged",
+      "sourceSkill": "哈宁喷溅＋",
+      "sourceExcerpt": "三轮扩散火弹、自身追加直接攻击",
+      "skill": {
+        "name": "哈宁喷溅＋",
+        "description": "三轮火弹连击；施放后自身普攻成为两段连击，短效 5s。两段分摊强化后的总普攻伤害，不简单翻倍。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"fan","center":"self","radius":3,"angle":90,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.23333333}],"requiresCasterAlive":true},
+          {"offset":0.6,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"fan","center":"self","radius":3,"angle":90,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.23333333}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"fan","center":"self","radius":3,"angle":90,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.23333333}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"ally","kind":"self","range":0},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"basicHits","duration":5,"hits":2,"budgetShare":0.3}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c5057d866095d",
+      "role": "melee",
+      "sourceSkill": "气势突刺＋",
+      "sourceExcerpt": "三段逐渐扩大的前方枪阵",
+      "skill": {
+        "name": "气势突刺＋",
+        "description": "连续三次枪刺伤害，后续段能够命中更远敌人；本次施放内完成，无额外持续状态。三人枪阵是攻击表现，不生成单位。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"line","center":"self","width":1,"length":1,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0.5,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"line","center":"self","width":1,"length":2,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":1,"selector":{"team":"enemy","kind":"nearest","range":3},"geometry":{"kind":"line","center":"self","width":1,"length":3,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.5}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c14657e92a1c8",
+      "role": "melee",
+      "sourceSkill": "灼原咆哮＋",
+      "sourceExcerpt": "火队攻击提升、地面大爆炸、灼烧领域",
+      "skill": {
+        "name": "灼原咆哮＋",
+        "description": "先咆哮爆炸，再留下原地灼烧领域，中效 8s；全队攻击提升 8s。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"circle","center":"self","radius":2},"effects":[{"type":"damage","budgetShare":0.3}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"circle","center":"self","radius":2},"effects":[{"type":"dot","duration":8,"interval":1,"requiresCasterAlive":true,"budgetShare":0.4,"targetMode":"area"}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"attackUp","duration":8,"budgetShare":0.3}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "cf2639185ac38",
+      "role": "melee",
+      "sourceSkill": "血祭·爆炎＋",
+      "sourceExcerpt": "爆炎三连打、重击终结、自身短时攻击提升",
+      "skill": {
+        "name": "血祭·爆炎＋",
+        "description": "三次爆炎打击后重击收尾；自身攻击提升，短效 5s。",
+        "cooldown": 20,
+        "cost": 15,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true},
+          {"offset":0.6,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true},
+          {"offset":1.2,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.1}],"requiresCasterAlive":true},
+          {"offset":1.5,"selector":{"team":"enemy","kind":"nearest","range":1.5},"geometry":{"kind":"circle","center":"target","radius":1.5},"effects":[{"type":"damage","budgetShare":0.4}],"requiresCasterAlive":true},
+          {"offset":1.5,"selector":{"team":"ally","kind":"self","range":0},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"attackUp","duration":5,"budgetShare":0.3}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "c06d6b4ae50fb",
+      "role": "melee",
+      "sourceSkill": "神圣裁断／神圣裁断＋",
+      "sourceExcerpt": "神圣切割、环面、三体斩击、惩罚",
+      "skill": {
+        "name": "神圣裁断",
+        "description": "按切割、环斩、三连斩、重击的固定顺序造成伤害；本次施放内完成。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"rect","center":"self","width":3,"length":2,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0.3,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"circle","center":"self","radius":1.5},"effects":[{"type":"damage","budgetShare":0.2}],"requiresCasterAlive":true},
+          {"offset":0.5,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"rect","center":"self","width":3,"length":2,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.06666667}],"requiresCasterAlive":true},
+          {"offset":0.75,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"rect","center":"self","width":3,"length":2,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.06666667}],"requiresCasterAlive":true},
+          {"offset":1,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"rect","center":"self","width":3,"length":2,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.06666667}],"requiresCasterAlive":true},
+          {"offset":1.5,"selector":{"team":"enemy","kind":"nearest","range":2},"geometry":{"kind":"rect","center":"self","width":3,"length":2,"direction":"up"},"effects":[{"type":"damage","budgetShare":0.4}],"requiresCasterAlive":true}
+        ]
+      }
+    },
+    {
+      "id": "cff1dc7f5049d",
+      "role": "healer",
+      "sourceSkill": "炉心颂歌＋",
+      "sourceExcerpt": "队长护盾、最低血量角色再生、火风角色强化",
+      "skill": {
+        "name": "炉心颂歌＋",
+        "description": "队长获得中效 8s 护盾；最低血量角色获得 8s 周期治疗，目标在施放时锁定；火风同伴攻击提升 5s。",
+        "cooldown": 24,
+        "cost": 20,
+        "phases": [
+          {"offset":0,"selector":{"team":"ally","kind":"leader","range":12},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"shield","duration":8,"budgetShare":0.35}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"lowestHp","range":12},"geometry":{"kind":"single","center":"target"},"effects":[{"type":"heal","duration":8,"interval":1,"budgetShare":0.45,"targetMode":"attached"}],"requiresCasterAlive":true},
+          {"offset":0,"selector":{"team":"ally","kind":"all","range":12,"elements":["fire","wind"]},"geometry":{"kind":"all","center":"self"},"effects":[{"type":"attackUp","duration":5,"budgetShare":0.2}],"requiresCasterAlive":true}
+        ]
+      }
+    }
+  ]
+}

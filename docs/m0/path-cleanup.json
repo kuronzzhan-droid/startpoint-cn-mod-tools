@@ -1,0 +1,2015 @@
+{
+  "bulk_literal_pass": {
+    "files": 177,
+    "replacements": 275,
+    "details": [
+      {
+        "path": "API.md",
+        "replaced": 1
+      },
+      {
+        "path": "atlas_budget_roster.json",
+        "replaced": 1
+      },
+      {
+        "path": "client_profiles.json",
+        "replaced": 2
+      },
+      {
+        "path": "README.md",
+        "replaced": 2
+      },
+      {
+        "path": "wfx_registry.json",
+        "replaced": 1
+      },
+      {
+        "path": "wf_art_voice_api.py",
+        "replaced": 2
+      },
+      {
+        "path": "wf_art_voice_asr.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_art_voice_audio.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_assets.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_atlas_budget_check.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927b_bai.py",
+        "replaced": 2
+      },
+      {
+        "path": "wf_balance_20260927b_belsetia.py",
+        "replaced": 2
+      },
+      {
+        "path": "wf_balance_20260927b_bianca.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927b_celtie.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927b_claus_rework.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927b_fluffy.py",
+        "replaced": 2
+      },
+      {
+        "path": "wf_balance_20260927b_gbf.py",
+        "replaced": 2
+      },
+      {
+        "path": "wf_balance_20260927b_gerald2.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927b_geral_water.py",
+        "replaced": 2
+      },
+      {
+        "path": "wf_balance_20260927b_ginovi.py",
+        "replaced": 2
+      },
+      {
+        "path": "wf_balance_20260927b_goldendragon.py",
+        "replaced": 2
+      },
+      {
+        "path": "wf_balance_20260927b_gray3.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927b_hibiki.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927b_inaho.py",
+        "replaced": 2
+      },
+      {
+        "path": "wf_balance_20260927b_inaho2.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927b_klaus.py",
+        "replaced": 2
+      },
+      {
+        "path": "wf_balance_20260927b_kuro.py",
+        "replaced": 2
+      },
+      {
+        "path": "wf_balance_20260927b_kyle.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927b_lilith.py",
+        "replaced": 2
+      },
+      {
+        "path": "wf_balance_20260927b_lionreborn.py",
+        "replaced": 2
+      },
+      {
+        "path": "wf_balance_20260927b_miniboss.py",
+        "replaced": 2
+      },
+      {
+        "path": "wf_balance_20260927b_mosiyike.py",
+        "replaced": 2
+      },
+      {
+        "path": "wf_balance_20260927b_nephtim.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927b_nicola.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927b_philia.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927b_primula.py",
+        "replaced": 2
+      },
+      {
+        "path": "wf_balance_20260927b_regis.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927b_rolfmoon.py",
+        "replaced": 2
+      },
+      {
+        "path": "wf_balance_20260927b_siete.py",
+        "replaced": 2
+      },
+      {
+        "path": "wf_balance_20260927b_swimceltie.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927b_tekuto.py",
+        "replaced": 2
+      },
+      {
+        "path": "wf_balance_20260927b_thorn.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927b_witch_move.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927b_zantetsu.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927b_zehr.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927c_gerald_wolf.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927c_ginovi.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927c_inaho.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927c_mosiyike.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927c_regis.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927c_soriz.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927c_swimassets.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927d_ginovi.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927_charlene.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927_inaho.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927_lilith.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927_miniboss.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927_rolfwt26.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927_stinel.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927_vaseraga.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_balance_20260927_waterab.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_bond_weapon_enhance.py",
+        "replaced": 2
+      },
+      {
+        "path": "wf_campus_art.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_campus_bianca.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_campus_celtie_common.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_cursed_weapons.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_decrypt_all.py",
+        "replaced": 5
+      },
+      {
+        "path": "wf_export_assets.py",
+        "replaced": 3
+      },
+      {
+        "path": "wf_extract_paths.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_five_boss_v2_publish.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_gbf_duo.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_gbf_kit_ghandagoza.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_gerald_native_pf_r2.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_gerald_r2.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_gerald_self_flying_fix.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_gerald_voice_level.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_gui.html",
+        "replaced": 2
+      },
+      {
+        "path": "wf_gui.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_inaho_fever_drain.py",
+        "replaced": 2
+      },
+      {
+        "path": "wf_inaho_fever_growth.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_inaho_fever_revision.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_inaho_growth_detail_fix.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_inaho_native_pf_r2.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_inaho_r2.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_inaho_skill_fever_growth.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_kyubi_pf_revision.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_midautumn_kit_hibiki.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_newchars_r3.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_paradox_weapon.py",
+        "replaced": 2
+      },
+      {
+        "path": "wf_recover_pathlist.py",
+        "replaced": 4
+      },
+      {
+        "path": "wf_rogue_rewards.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_rogue_save.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_seasonal7_build.py",
+        "replaced": 2
+      },
+      {
+        "path": "wf_seasonal7_kit_tekuto.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_seasonal7_voice.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_spheal_mascot_media.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_spheal_mascot_pixel.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_studio_bridge.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_voice.py",
+        "replaced": 3
+      },
+      {
+        "path": "wf_weapon_awaken.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_weapon_gacha.py",
+        "replaced": 2
+      },
+      {
+        "path": "wf_weapon_sort_pin.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_wiki.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_wiki_pixels.py",
+        "replaced": 1
+      },
+      {
+        "path": "wf_zantetsu_art_restore.py",
+        "replaced": 1
+      },
+      {
+        "path": "docs/五重决战重做设计-20260928.md",
+        "replaced": 1
+      },
+      {
+        "path": "docs/剧本导出器使用说明.md",
+        "replaced": 1
+      },
+      {
+        "path": "docs/技能形态切换与资产包导入结论.md",
+        "replaced": 1
+      },
+      {
+        "path": "docs/版本切换设计.md",
+        "replaced": 1
+      },
+      {
+        "path": "docs/离线Android整合包.md",
+        "replaced": 2
+      },
+      {
+        "path": "docs/角色生成器-Codex任务书.md",
+        "replaced": 1
+      },
+      {
+        "path": "docs/角色生成器使用说明.md",
+        "replaced": 1
+      },
+      {
+        "path": "docs/角色资产与全角色替换方案.md",
+        "replaced": 1
+      },
+      {
+        "path": "rolf_tools/asset_gap.py",
+        "replaced": 6
+      },
+      {
+        "path": "rolf_tools/bind_skin_orb.py",
+        "replaced": 4
+      },
+      {
+        "path": "rolf_tools/cutin_build.py",
+        "replaced": 5
+      },
+      {
+        "path": "rolf_tools/device_audit.py",
+        "replaced": 5
+      },
+      {
+        "path": "rolf_tools/gate_runner.py",
+        "replaced": 4
+      },
+      {
+        "path": "rolf_tools/haxe_serial.py",
+        "replaced": 1
+      },
+      {
+        "path": "rolf_tools/pixel_rebuild.py",
+        "replaced": 6
+      },
+      {
+        "path": "rolf_tools/prefix_audit_fix.py",
+        "replaced": 4
+      },
+      {
+        "path": "rolf_tools/README.md",
+        "replaced": 1
+      },
+      {
+        "path": "rolf_tools/rolf_install.py",
+        "replaced": 2
+      },
+      {
+        "path": "rolf_tools/rolf_pf_v2.py",
+        "replaced": 5
+      },
+      {
+        "path": "rolf_tools/rolf_push.py",
+        "replaced": 4
+      },
+      {
+        "path": "rolf_tools/slot_audit.py",
+        "replaced": 2
+      },
+      {
+        "path": "rolf_tools/table_regression_fix2.py",
+        "replaced": 4
+      },
+      {
+        "path": "rolf_tools/ui_full_rebuild.py",
+        "replaced": 4
+      },
+      {
+        "path": "tests/test_balance_20260927b_claus_rework.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_balance_20260927b_gerald2.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_balance_20260927b_gerald_wolf.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_balance_20260927b_nephtim.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_bianca_dragon_bridge.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_campus_celtie.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_campus_summon_reentry.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_celtie_fever_leader.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_celtie_fever_skill.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_celtie_fever_stock.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_gerald_cast_growth.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_gerald_native_pf_r2.py",
+        "replaced": 2
+      },
+      {
+        "path": "tests/test_gerald_percent_skill.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_gerald_r2.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_gerald_self_flying_fix.py",
+        "replaced": 2
+      },
+      {
+        "path": "tests/test_inaho_native_pf_r2.py",
+        "replaced": 3
+      },
+      {
+        "path": "tests/test_inaho_r2.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_kyubi_pf_revision.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_nephtim_fever_abilities.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_nephtim_fever_effects.py",
+        "replaced": 2
+      },
+      {
+        "path": "tests/test_nephtim_fever_powerflip.py",
+        "replaced": 2
+      },
+      {
+        "path": "tests/test_nephtim_leader_growth.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_nephtim_multiball_direct.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_newchars_r3.py",
+        "replaced": 2
+      },
+      {
+        "path": "tests/test_offline_apk_builder.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_scutum_effects.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_scutum_skill.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_summer_bai_ability.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_summer_bai_pixels.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_summer_bai_pixel_reference.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_summer_thunder_package_base.py",
+        "replaced": 3
+      },
+      {
+        "path": "tests/test_summer_thunder_voice_compile.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_tekuto_no_endlag_revision.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_weapon_awaken.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_weapon_sort_pin.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/test_workspace_path_independence.py",
+        "replaced": 1
+      },
+      {
+        "path": "tests/fixtures/balance_20260927c_gerald_wolf.json",
+        "replaced": 1
+      },
+      {
+        "path": "tests/fixtures/balance_20260927c_inaho.json",
+        "replaced": 1
+      },
+      {
+        "path": "tests/fixtures/balance_20260927c_nephtim.json",
+        "replaced": 1
+      },
+      {
+        "path": "tests/fixtures/balance_20260927c_rolfmoon.json",
+        "replaced": 1
+      },
+      {
+        "path": "tests/fixtures/balance_20260927c_soriz.json",
+        "replaced": 1
+      },
+      {
+        "path": "tests/fixtures/balance_20260927d_ginovi.json",
+        "replaced": 1
+      },
+      {
+        "path": "tests/fixtures/balance_20260927_vaseraga.json",
+        "replaced": 1
+      },
+      {
+        "path": "docs/frozen/2026-09-02/交接-20260807-塔非破坏性重做与图标形状修复.md",
+        "replaced": 1
+      },
+      {
+        "path": "assets/paradox/build_frame_bluegold.py",
+        "replaced": 5
+      },
+      {
+        "path": "assets/weapon-awaken/build_icons.py",
+        "replaced": 1
+      },
+      {
+        "path": "assets/weapon-awaken/build_review.py",
+        "replaced": 1
+      },
+      {
+        "path": "assets/weapon-awaken/README.md",
+        "replaced": 2
+      },
+      {
+        "path": "wiki/README.md",
+        "replaced": 4
+      }
+    ]
+  },
+  "bulk_import_pass": {
+    "files": 323,
+    "removed": 337,
+    "details": [
+      {
+        "path": "wfx_gate.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_abyss_weapon_banner.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_abyss_weapon_category.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_all_analysis.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_atf.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_atlas_budget_check.py",
+        "removed": 2
+      },
+      {
+        "path": "wf_balance_patch.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_balance_patch_v2.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_balance_suite.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_bond_weapon_banner.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_bond_weapon_enhance.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_boss.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_boss_buff_harvest.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_catalog.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_chain_build.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_chain_squash.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_client_legality.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_cursed_weapon_banner.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_degree.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_degree_shop.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_deploy.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_describe.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_dsl.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_dsl_root_fix.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_enhancement_category_order.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_enhancement_policy.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_enhancement_switch.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_export_assets.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_extract_paths.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_field_catalog.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_fire_analysis.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_five_boss_node.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_five_boss_v2.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_five_boss_v2_publish.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_fullshot_refit.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_gacha_midautumn_apply.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_gacha_odds_sync.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_gacha_seasonal7_apply.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_gui.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_harvest_paths.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_offline_pack_apply.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_pack_backfill.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_pack_consolidate.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_pack_push_keys.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_pixel_frame_align.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_pixel_rescale.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_publish.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_publish_guard.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_quest_lib.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_recover_pathlist.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_rogue_banner.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_rogue_build.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_rogue_nerf.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_rogue_reroll.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_rogue_rewards.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_rogue_save.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_rogue_shop.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_selftest.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_share_variant.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_sync.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_unique_mech.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_weapon_awaken.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_weapon_gacha.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_weapon_gacha_banner.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_weapon_sort_pin.py",
+        "removed": 1
+      },
+      {
+        "path": "wf_wfx.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/rolf_tools/asset_gap.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/rolf_tools/bind_skin_orb.py",
+        "removed": 2
+      },
+      {
+        "path": "archive/legacy/rolf_tools/cutin_build.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/rolf_tools/device_audit.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/rolf_tools/gate_runner.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/rolf_tools/pixel_rebuild.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/rolf_tools/prefix_audit_fix.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/rolf_tools/rolf_install.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/rolf_tools/rolf_pf_v2.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/rolf_tools/rolf_push.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/rolf_tools/table_regression_fix2.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_abyss_ticket_compile.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_abyss_ticket_drop.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_abyss_weapon_release_patch.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_abyss_weapon_thunder_light.py",
+        "removed": 2
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_bai.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_belsetia.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_bianca.py",
+        "removed": 2
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_celtie.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_claus_rework.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_fluffy.py",
+        "removed": 2
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_gbf.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_gerald2.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_gerald_wolf.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_geral_water.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_ginovi.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_goldendragon.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_gray3.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_hibiki.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_inaho.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_inaho2.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_klaus.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_kuro.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_kyle.py",
+        "removed": 2
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_lilith.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_lionreborn.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_magnus.py",
+        "removed": 2
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_miniboss.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_mosiyike.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_nephtim.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_nicola.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_philia.py",
+        "removed": 2
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_primula.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_regis.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_rolfmoon.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_siete.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_swimceltie.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_tekuto.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_thorn.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_winddino.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_witch_move.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_zantetsu.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927b_zehr.py",
+        "removed": 2
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927c_bai.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927c_celtie.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927c_fluffy.py",
+        "removed": 2
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927c_gerald_wolf.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927c_ginovi.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927c_hibiki.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927c_inaho.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927c_kuro.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927c_kyle.py",
+        "removed": 2
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927c_magnus.py",
+        "removed": 2
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927c_mosiyike.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927c_nephtim.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927c_panels.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927c_philia.py",
+        "removed": 2
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927c_regis.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927c_rolfmoon.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927c_seofonart.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927c_soriz.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927c_swimassets.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927c_swimceltie.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927c_tekuto.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927c_zantetsu.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927c_zehr.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927d_ginovi.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927_charlene.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927_inaho.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927_kyle.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927_lilith.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927_miniboss.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927_nephtim.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927_regis.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927_rolfwt26.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927_stinel.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927_tekuto.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927_vaseraga.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927_waterab.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_balance_20260927_zantetsu.py",
+        "removed": 2
+      },
+      {
+        "path": "archive/legacy/tests/test_battle_rules.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_bianca_dragon_abilities.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_bianca_dragon_bridge.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_bianca_dragon_descriptions.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_bianca_dragon_icons.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_bianca_dragon_package.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_bianca_dragon_skill.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_build_three_char_release_patch.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_campus_art.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_campus_art_matte.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_campus_bianca.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_campus_celtie.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_campus_nephtim.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_campus_panel_text.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_campus_summon_reentry.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_canary_skin.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_celtie_boss_lock.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_celtie_fever_abilities.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_celtie_fever_descriptions.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_celtie_fever_leader.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_celtie_fever_skill.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_celtie_fever_stock.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_celtie_skill_growth.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_client_legality.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_client_patch_scope.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_content_revision_patch.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_equipment_desc_override_gate.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_equipment_enhanced_look_gate.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_equipment_enhanced_party_frame_gate.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_equipment_weapon_patches_gate.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_featured_face_crops.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_featured_main_ability.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_gacha_midautumn_pools.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_gbf_duo_draft.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_gbf_kit_ghandagoza.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_gbf_kit_soriz.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_gerald_cast_growth.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_gerald_native_pf_r2.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_gerald_percent_skill.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_gerald_r2.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_gerald_self_flying_fix.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_inaho_fever_growth.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_inaho_growth_detail_fix.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_inaho_native_pf_r2.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_inaho_r2.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_kuro_full_dice.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_kyle_pf_ring.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_kyubi_pf_revision.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_magnus_fx_cleanup.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_magnus_ignition_growth.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_magnus_pf_skill.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_midautumn_degrees.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_midautumn_framework.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_midautumn_kit_charlene.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_midautumn_kit_fluffy.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_midautumn_kit_hibiki.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_midautumn_kit_kuro.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_midautumn_kit_kyle.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_midautumn_kit_magnus.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_midautumn_kit_mia.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_midautumn_kit_nicola.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_midautumn_kit_rebecca.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_midautumn_kit_rolf.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_midautumn_kit_stinel.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_midautumn_kit_thorn.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_midautumn_verify.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_midautumn_voice_v2.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_miniboss_ability_revision.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_miniboss_kits.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_miniboss_package.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_miniboss_stats.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_nephtim_ball_hit_count.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_nephtim_detail_c7050.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_nephtim_fever_abilities.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_nephtim_fever_ball_pixels.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_nephtim_fever_effects.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_nephtim_fever_leader.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_nephtim_fever_package.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_nephtim_fever_pixels.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_nephtim_fever_powerflip.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_nephtim_fever_shield.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_nephtim_fever_skill.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_nephtim_fever_text.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_nephtim_leader_growth.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_nephtim_multiball_direct.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_nephtim_multiball_fever.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_newchars_r3.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_philia_no_flying_revision.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_release_paths.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_scutum_abilities.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_scutum_effects.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_scutum_pixels.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_scutum_skill.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_seasonal7_framework.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_seasonal7_kit_philia.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_seasonal7_kit_primula.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_seasonal7_kit_regis.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_seasonal7_kit_tekuto.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_seasonal7_kit_yuki.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_seasonal7_kit_zantetsu.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_seasonal7_kit_zehr.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_seasonal7_voice.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_seris_rework_client_voice.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_seris_rework_effects.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_seris_rework_pixel.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_spheal_mascot.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_summer_bai_ability.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_summer_bai_fever_damage.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_summer_bai_pixels.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_summer_bai_pixel_reference.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_tekuto_no_endlag_revision.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_water_balance_20260924.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_wind_dragon_revision.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tests/test_zantetsu_art_restore.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/build_abyss_weapon_balance_patch.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/build_three_char_release_patch.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_balance_20260927b_fluffy.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_balance_20260927b_gbf.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_balance_20260927b_hibiki.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_balance_20260927b_kuro.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_balance_20260927b_kyle.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_balance_20260927b_magnus.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_balance_20260927b_nicola.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_balance_20260927b_primula.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_balance_20260927b_rolfmoon.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_balance_20260927b_thorn.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_balance_20260927c_fluffy.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_balance_20260927c_hibiki.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_balance_20260927c_kuro.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_balance_20260927c_kyle.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_balance_20260927c_magnus.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_balance_20260927c_panels.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_balance_20260927c_rolfmoon.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_balance_20260927c_soriz.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_balance_20260927_kyle.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_balance_20260927_stinel.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_campus_nephtim_common.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_gbf_kit_ghandagoza.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_gbf_kit_soriz.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_midautumn_build.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_midautumn_common.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_midautumn_kitlib.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_midautumn_kit_fluffy.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_midautumn_kit_hibiki.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_midautumn_kit_kyle.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_midautumn_kit_mia.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_midautumn_kit_nicola.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_midautumn_kit_rebecca.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_midautumn_kit_rolf.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_midautumn_kit_stinel.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_midautumn_kit_thorn.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_midautumn_specs.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_midautumn_verify.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_midautumn_voice.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_night_pack.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_night_shadow.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_philia_no_flying_revision.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_seasonal7_build.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_seasonal7_common.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_seasonal7_kit_primula.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_seasonal7_kit_regis.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_seasonal7_kit_zantetsu.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_seasonal7_kit_zehr.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_seasonal7_specs.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_seris_rework_client_voice.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_studio_bridge.py",
+        "removed": 1
+      },
+      {
+        "path": "archive/legacy/tools/wf_tekuto_no_endlag_revision.py",
+        "removed": 1
+      }
+    ]
+  },
+  "additional": "Package intake and historical assets were normalized separately. Counts describe the recorded bulk passes, not all edits."
+}

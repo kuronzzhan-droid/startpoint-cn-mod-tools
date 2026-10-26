@@ -1,0 +1,102 @@
+schema: wf-capability/1
+id: client.apk.patch033@1
+title: Rush 独立编队
+layer: A
+provided_by:
+  patches:
+  - 33
+  match: all
+  methods:
+  - patch: 33
+    abc: boot_ffc6
+    label: EventRushPartyRealRemote/<ctor>
+    sha256: 6665250af7d41be817e9b39eaa2ad43b1105c04eb1a345ae6a37eb69d3a64a26
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 33
+    abc: boot_ffc6
+    label: PartyGroupEditSceneView/refreshPartyCategory
+    sha256: 52fb8029eaaee239942cbfcfdd7fee9b9c51c3b35e3007e77566c36765899a3b
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 33
+    abc: boot_ffc6
+    label: RushEventLoadingTask/summaryRemoteInput
+    sha256: 6a29188afd89a123f1009b58048b88f23516801651fdffe22098fba2ecb9f8e5
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 33
+    abc: boot_ffc6
+    label: RushEventPartyGroupHolder/getPartyCategory
+    sha256: 10161f4b71a03f945aae0ef41029ca52df18e59e40d6b942498bccbdf6773e04
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 33
+    abc: cn.mod.IndependentRushParty
+    label: anonymous-method-0
+    sha256: 65bb9a4ab560f23ed321a6778500f5d6c01cf44a18b5b465c6229d0f316c8439
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 33
+    abc: cn.mod.IndependentRushParty
+    label: IndependentRushParty$/<cinit>
+    sha256: 333e0a1e27815d0ceee55c473fe3dc93d56c63e3bee2b3b4aee8eed6d70191a3
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 33
+    abc: cn.mod.IndependentRushParty
+    label: IndependentRushParty$/category
+    sha256: 5cfa51adb717da8391a74dd4b004480ce83e9d1ae93d20abd196a39b2ee47184
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 33
+    abc: cn.mod.IndependentRushParty
+    label: IndependentRushParty/<ctor>
+    sha256: 8ff32749a852a1d83829c6a3fac8ec00822f06b5c7177f9ebb43a09287b2101a
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 33
+    abc: cn.mod.IndependentRushParty
+    label: IndependentRushParty$/getEventId
+    sha256: ecc2cf8144dbd0c3fb6d0dff689064a57148cb13d49263f88dba8fac1cf0595c
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 33
+    abc: cn.mod.IndependentRushParty
+    label: IndependentRushParty$/setEventId
+    sha256: baa6c62433e510eacee4bdb8d3cf0882235d13ab3ca4e49abc9ef2c575f6be5f
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: true
+  features: []
+  note: 需要对应服务端规则；本能力声明不证明服务端已部署
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: Rush 独立编队
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: Rush 独立编队
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: Rush 独立编队
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/verification/v33-patches-preserved-o8-o12-r2.json

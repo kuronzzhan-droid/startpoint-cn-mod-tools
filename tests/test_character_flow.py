@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import contextlib
+import errno
 import hashlib
 import io
 import json
@@ -11,7 +12,6 @@ import shutil
 import sys
 import tempfile
 import unittest
-import zipfile
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -100,58 +100,6 @@ class CdnReleaseModule(FakeReleaseModule):
 
 
 class TestCharacterFlow(unittest.TestCase):
-    def test_master_gate_uses_target_store_before_profile_store(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            env_store = root / "env-store"
-            profile_store = root / "profile-store"
-            fallback = root / "fallback"
-            for directory in (env_store, profile_store, fallback):
-                directory.mkdir()
-            profile = flow.core.VersionProfile(
-                id="cn", label="CN", store=profile_store, fallback=fallback
-            )
-            with patch.object(
-                flow.core, "resolve_profile", return_value=profile
-            ), patch.dict(
-                os.environ, {"WF_TARGET_STORE": str(env_store)}, clear=False
-            ):
-                stores = flow._master_gate_stores("cn")
-
-        self.assertEqual((env_store.resolve(), fallback), stores)
-
-    def test_explicit_apk_wins_over_the_legacy_embedded_bundle(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            tool_dir = root / "mod-tools"
-            legacy_dir = root / "弹国服"
-            tool_dir.mkdir()
-            legacy_dir.mkdir()
-            legacy_bundle = legacy_dir / "bundle.zip"
-            explicit_apk = root / "configured.apk"
-            with zipfile.ZipFile(legacy_bundle, "w") as archive:
-                archive.writestr("legacy/aa/old", b"old")
-            with zipfile.ZipFile(explicit_apk, "w") as archive:
-                archive.writestr("configured/bb/new", b"new")
-
-            flow._BUNDLE_INDEX_CACHE.clear()
-            try:
-                with patch.object(
-                    flow, "__file__", str(tool_dir / "wf_character_flow.py")
-                ), patch.dict(os.environ, {}, clear=False):
-                    os.environ.pop("WF_APK", None)
-                    self.assertEqual(
-                        frozenset({"aa/old"}),
-                        flow._bundle_asset_tails(),
-                    )
-                    os.environ["WF_APK"] = str(explicit_apk)
-                    tails = flow._bundle_asset_tails()
-            finally:
-                flow._BUNDLE_INDEX_CACHE.clear()
-
-            self.assertIn("bb/new", tails)
-            self.assertNotIn("aa/old", tails)
-
     def test_preflight_auto_seals_complete_production_workspace(self):
         with tempfile.TemporaryDirectory() as tmp:
             workspace = workspace_module.init_workspace(
@@ -242,6 +190,189 @@ class TestCharacterFlow(unittest.TestCase):
             self.assertFalse((workspace.package_dir / "rebased.marker").exists())
             self.assertTrue((workspace.root / "rebased-package" / "rebased.marker").is_file())
             self.assertEqual([], list(workspace.root.glob("package-pre-rebase-*")))
+
+    def test_backup_cleanup_failure_keeps_rebased_package(self):
+        """WinError 145 (ERROR_DIR_NOT_EMPTY) 只发生在清垃圾这一步：seal 已经成功，
+        激活是既成事实。清垃圾失败绝不允许触发回滚 —— 回滚会把 rmtree 删了一半的
+        残骸 os.replace 回 package_dir，这正是上一轮 7 个包丢文件的路径。"""
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = workspace_module.init_workspace(
+                Path(tmp), 111165, 129999, "seris_dragon_king", "seris",
+            )
+            (workspace.package_dir / "original.marker").write_text("original", encoding="utf-8")
+            fake = FakeRebaseModule()
+            sealed = SimpleNamespace(
+                release_ready=True,
+                input_digest="c" * 64,
+                to_dict=lambda: {"release_ready": True, "input_digest": "c" * 64},
+            )
+            gutted: list[Path] = []
+
+            def gutting_rmtree(target, *args, **kwargs):
+                # 复刻 _rmtree_unsafe 的真实行为：抛错之前已经原地删掉了一部分文件。
+                target = Path(target)
+                for victim in sorted(target.rglob("*")):
+                    if victim.is_file():
+                        victim.unlink()
+                        gutted.append(victim)
+                        break
+                raise OSError(errno.ENOTEMPTY, "The directory is not empty", str(target))
+
+            with patch.object(
+                flow.workspace_module, "workspace_status",
+                return_value=SimpleNamespace(release_ready=True),
+            ), patch.object(
+                flow.workspace_module, "seal_workspace", return_value=sealed,
+            ), patch.object(
+                flow.shutil, "rmtree", side_effect=gutting_rmtree,
+            ), patch.object(flow.time, "sleep"):
+                code, result = flow.run_command([
+                    "rebase", "--workspace", str(workspace.root),
+                ], release_module=fake)
+
+            self.assertTrue(gutted, "fixture 必须真的删掉过文件，否则测不到破坏")
+            errors = " ".join(result["errors"])
+            # 1) rebase 后的包必须留在 package_dir —— 没有回滚
+            self.assertTrue((workspace.package_dir / "rebased.marker").is_file(), errors)
+            # 2) 残骸不许被搬回 live，rebased 产物也不许被搬回 output
+            self.assertFalse((workspace.root / "rebased-package").exists(), errors)
+            # 3) 报错必须点名是"清垃圾失败"，而不是含混的"激活失败"
+            self.assertEqual(2, code)
+            self.assertIn("backup cleanup failed", errors)
+            # 4) 残骸原样保留，留证给人工处理
+            self.assertEqual(1, len(list(workspace.root.glob("package-pre-rebase-*"))), errors)
+
+    def test_backup_cleanup_retries_transient_enotempty(self):
+        """并发写入者塞进来的新条目让 os.rmdir 撞 145，重试一两次就过；
+        指数退避必须真的退避，且成功后不留残骸。"""
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = workspace_module.init_workspace(
+                Path(tmp), 111165, 129999, "seris_dragon_king", "seris",
+            )
+            fake = FakeRebaseModule()
+            sealed = SimpleNamespace(
+                release_ready=True,
+                input_digest="c" * 64,
+                to_dict=lambda: {"release_ready": True, "input_digest": "c" * 64},
+            )
+            calls: list[Path] = []
+            real_rmtree = shutil.rmtree
+
+            def flaky_rmtree(target, *args, **kwargs):
+                calls.append(Path(target))
+                if len(calls) == 1:
+                    raise OSError(errno.ENOTEMPTY, "The directory is not empty", str(target))
+                return real_rmtree(target, *args, **kwargs)
+
+            with patch.object(
+                flow.workspace_module, "workspace_status",
+                return_value=SimpleNamespace(release_ready=True),
+            ), patch.object(
+                flow.workspace_module, "seal_workspace", return_value=sealed,
+            ), patch.object(
+                flow.shutil, "rmtree", side_effect=flaky_rmtree,
+            ), patch.object(flow.time, "sleep") as slept:
+                code, result = flow.run_command([
+                    "rebase", "--workspace", str(workspace.root),
+                ], release_module=fake)
+
+            self.assertEqual(0, code, result.get("errors"))
+            self.assertEqual(2, len(calls))
+            self.assertTrue(slept.called, "重试必须退避，不能忙等")
+            self.assertTrue((workspace.package_dir / "rebased.marker").is_file())
+            self.assertEqual([], list(workspace.root.glob("package-pre-rebase-*")))
+
+    def test_extended_length_path_only_rewrites_windows_absolute_paths(self):
+        """删除路径必须走扩展长度前缀,否则 MAX_PATH 之外的文件对 os.scandir 隐形。
+
+        非 Windows 平台不许改写(POSIX 没有 260 上限,加前缀反而造出不存在的路径);
+        已带前缀的路径必须幂等,UNC 走 \\\\?\\UNC\\ 分支。
+        """
+        if os.name != "nt":
+            self.assertEqual(
+                os.path.abspath("/tmp/x"), flow._extended_length_path(Path("/tmp/x")),
+            )
+            return
+        self.assertEqual(
+            "\\\\?\\C:\\a\\b", flow._extended_length_path(Path("C:/a/b")),
+        )
+        self.assertEqual(
+            "\\\\?\\C:\\a\\b", flow._extended_length_path("\\\\?\\C:\\a\\b"),
+        )
+        self.assertEqual(
+            "\\\\?\\UNC\\host\\share\\x",
+            flow._extended_length_path("\\\\host\\share\\x"),
+        )
+
+    @unittest.skipUnless(os.name == "nt", "MAX_PATH 只在 Windows 上存在")
+    def test_backup_cleanup_survives_paths_past_max_path(self):
+        """真·确定性 145：`package` 改名成 `package-pre-rebase-<32hex>` 之后路径长 44,
+        本机 LongPathsEnabled=0 时越线的文件 os.stat 直接 FileNotFoundError,
+        rmtree 删不掉它、再 os.rmdir 父目录就撞 ERROR_DIR_NOT_EMPTY。
+        这不是并发瞬时故障,重试多少次都失败 —— 只有扩展长度前缀能救。
+        """
+        tmp = Path(tempfile.mkdtemp())
+        try:
+            package = tmp / "package"
+            # 造一个改名前合法(<260)、改名后越线(>=260)的最深文件。
+            backup_name = "package-pre-rebase-" + "0" * 32
+            grow = len(backup_name) - len("package")
+            target_len = 260 - grow + 8          # 改名前 < 260,改名后 >= 260
+            pad = target_len - len(str(package)) - len("\\f.bin")
+            self.assertGreater(pad, 0, "临时目录太深,构造不出这个几何")
+            deep = package / ("d" * pad)
+            deep.mkdir(parents=True)
+            victim = deep / "f.bin"
+            victim.write_bytes(b"payload")
+            self.assertLess(len(str(victim)), 260)
+
+            backup = tmp / backup_name
+            os.replace(package, backup)
+            moved = backup / victim.relative_to(package)
+            self.assertGreaterEqual(len(str(moved)), 260)
+            self.assertFalse(
+                os.path.exists(moved), "前提不成立:这台机器没有 MAX_PATH 限制",
+            )
+
+            flow._remove_tree_with_retry(backup)
+            self.assertFalse(backup.exists())
+        finally:
+            shutil.rmtree(flow._extended_length_path(tmp), ignore_errors=True)
+
+    def test_backup_cleanup_does_not_retry_unrelated_oserror(self):
+        """只重试并发/占用类错误；其它 OSError 立刻上抛，不许吞。"""
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = workspace_module.init_workspace(
+                Path(tmp), 111165, 129999, "seris_dragon_king", "seris",
+            )
+            fake = FakeRebaseModule()
+            sealed = SimpleNamespace(
+                release_ready=True,
+                input_digest="c" * 64,
+                to_dict=lambda: {"release_ready": True, "input_digest": "c" * 64},
+            )
+            calls: list[Path] = []
+
+            def hard_rmtree(target, *args, **kwargs):
+                calls.append(Path(target))
+                raise OSError(errno.EROFS, "Read-only file system", str(target))
+
+            with patch.object(
+                flow.workspace_module, "workspace_status",
+                return_value=SimpleNamespace(release_ready=True),
+            ), patch.object(
+                flow.workspace_module, "seal_workspace", return_value=sealed,
+            ), patch.object(
+                flow.shutil, "rmtree", side_effect=hard_rmtree,
+            ), patch.object(flow.time, "sleep"):
+                code, result = flow.run_command([
+                    "rebase", "--workspace", str(workspace.root),
+                ], release_module=fake)
+
+            self.assertEqual(2, code)
+            self.assertEqual(1, len(calls), "非并发类错误不许重试")
+            self.assertIn("backup cleanup failed", " ".join(result["errors"]))
+            self.assertTrue((workspace.package_dir / "rebased.marker").is_file())
 
     def test_rollback_requires_distinct_confirmation_before_release_call(self):
         code, result = flow.run_command([
@@ -469,14 +600,7 @@ class TestReleaseQaContract(unittest.TestCase):
             )
             expected = SimpleNamespace(output_dir=base / "out")
             with patch.object(
-                wf_release,
-                "_resolve_repo_paths",
-                return_value=wf_release._RepoPaths(
-                    tool_root=base,
-                    server_root=base,
-                    live_roots=roots,
-                    cdn_root=base / "cdn",
-                ),
+                wf_release, "_repo_paths", return_value=(base, roots, base / "cdn")
             ), patch.object(
                 wf_release, "_current_git_head", return_value="a" * 40
             ), patch.object(

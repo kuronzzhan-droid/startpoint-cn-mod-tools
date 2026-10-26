@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wf-apk-provides/1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema", "source", "patches", "provides", "unresolved", "limitations"],
+  "properties": {
+    "schema": {"const": "wf-apk-provides/1"},
+    "source": {"type": "object", "required": ["kind", "basis"], "properties": {
+      "kind": {"enum": ["apk", "swf", "patch-record"]}, "basis": {"type": "string"},
+      "path": {"type": "string"}, "sha256": {"$ref": "#/$defs/hash"},
+      "swf_sha256": {"anyOf": [{"$ref": "#/$defs/hash"}, {"type": "null"}]},
+      "payload_sha256": {"$ref": "#/$defs/hash"}
+    }},
+    "patches": {"type": "array", "items": {"type": "object", "required": ["number", "status", "methods", "basis"], "properties": {
+      "number": {"type": "integer", "minimum": 1}, "status": {"enum": ["recorded", "declared"]},
+      "methods": {"$ref": "#/$defs/methods"}, "basis": {"type": "string"}
+    }}},
+    "provides": {"type": "array", "items": {"type": "object", "required": ["id", "title", "layer", "patches", "methods", "basis"], "properties": {
+      "id": {"type": "string", "pattern": "^[a-z][a-z0-9_.]*@[1-9][0-9]*$"},
+      "title": {"type": "string"}, "layer": {"enum": ["A", "B", "C", "platform"]},
+      "patches": {"type": "array", "uniqueItems": true, "items": {"type": "integer", "minimum": 1}},
+      "methods": {"$ref": "#/$defs/methods"}, "basis": {"type": "string"}
+    }}},
+    "unresolved": {"type": "array", "items": {"type": "object", "required": ["reason"], "properties": {"reason": {"type": "string"}}}},
+    "warnings": {"type": "array", "items": {"type": "object", "required": ["reason"], "properties": {"reason": {"type": "string"}}}},
+    "limitations": {"type": "array", "items": {"type": "string"}}
+  },
+  "$defs": {
+    "hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "methods": {"type": "array", "items": {"type": "object", "required": ["patch", "abc", "label", "sha256", "status", "source"], "properties": {
+      "patch": {"type": ["integer", "null"], "minimum": 1},
+      "abc": {"type": ["string", "null"]}, "label": {"type": ["string", "null"]},
+      "sha256": {"anyOf": [{"$ref": "#/$defs/hash"}, {"type": "null"}]},
+      "status": {"enum": ["已记录", "待补"]}, "source": {"type": "string"}
+    }}}
+  }
+}

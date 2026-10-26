@@ -1,0 +1,89 @@
+{
+  "schema": "wf-m1-acceptance/1",
+  "source_commit": "5bcaf6be8ebaa65bf644792bd78dcf05e4d7192a",
+  "date": "2026-10-17",
+  "branch": "refactor/m1-p0",
+  "pytest": {
+    "exit_code": 0,
+    "passed": 3746,
+    "skipped_terminal": 354,
+    "warnings": 26,
+    "seconds": 277.15,
+    "junit_tests_including_subtests": 6366,
+    "junit_skips_including_subtests": 357,
+    "junit_failures": 0,
+    "junit_errors": 0,
+    "skip_categories": {
+      "optional-package-or-integration": 33,
+      "store-data": 127,
+      "platform-specific": 8,
+      "external-client-patch": 189
+    }
+  },
+  "view224": {
+    "characters": 602,
+    "matched_members": 1464,
+    "zip_count": 119,
+    "all_character_entries_equal": true,
+    "all_overlay_members_equal": true
+  },
+  "balance223": {
+    "equal_members": 3,
+    "different_members": 0,
+    "container_equal_without_dos_timestamps": true
+  },
+  "deliver221": {
+    "zip_count": 11,
+    "equal_members": 310,
+    "different_members": 0,
+    "legacy_manifest_semantics_equal": true,
+    "upstream_pinned_schema_valid": true,
+    "installed_size": 46654053,
+    "download_size": 44703762
+  },
+  "prepush221": {
+    "exit_code": 0,
+    "errors": 0,
+    "warnings": 103,
+    "info": 10,
+    "status": "待验证",
+    "limitation": "kulo#35 server module not loaded; local chain and pre/post hashes verified"
+  },
+  "text_warnings": {
+    "warning_count": 78,
+    "historical_matches": 78,
+    "categories": {
+      "效果或参数描述不同步": 47,
+      "旧日文技能名": 14,
+      "客户端描述为内部标识符": 2,
+      "技能名档位标记不一致": 2,
+      "镜像混写两档倍率": 4,
+      "倍率仍是旧值": 2,
+      "镜像仅保留强化摘要": 2,
+      "标点或空白不一致": 3,
+      "高档强化文字写入低档镜像": 2
+    }
+  },
+  "rule_count": 17,
+  "source_boundary": {
+    "writes": "current worktree",
+    "push": false,
+    "server_execution": false,
+    "device_execution": false
+  },
+  "artifact_sha256": {
+    "work/m1/pytest-frozen.log": "75f7afa39d67036080d591608613cdd80d4fac45a925ab22ac7592926dc79d8c",
+    "work/m1/pytest-frozen.xml": "f8206955d06fcc6b074a116f04ffe8a97897ed8a2096274870b1a2132579caca",
+    "work/m1/pytest-frozen-exit.json": "d4359f63f5d048234b3b5331dd156f844354efd479597c5b115da6489c1d0c7b",
+    "work/m1/view/acceptance.json": "53b6e08b8793f8135b67307c2f225b736e2fa1ed500007b86fcd8ce5ef9e87bf",
+    "work/m1/view/acceptance.lock.json": "b1243d9800dc21353914bc3307ba7f86eb1902439d6b30a312beb7b55ea2387f",
+    "work/m1/balance/replay223/comparison.json": "d022541d0aa16147703cc2338e4245acee25d51f914aab024cd05b7949e73ebf",
+    "work/m1/deliver/acceptance221-final.json": "53cb662659187d9a235ddf1aa7456942f86c6e63691c07085d2031d360ee4bf6",
+    "work/m1/deliver/assertions221-final.json": "30646a9958626df6728a0b6e4bf5efa0bebc6892b819718ddf878497ef2c14b8",
+    "work/m1/dsl/acceptance.json": "e93052d0fa97916ae6c7452ffd1ef698b1f3eeeb855bdcc212cde117e74246b4",
+    "work/m1/mutation-root.json": "42c843b6468fac77718ecf2ff6ce295619bb20e6cdc4c3d926630bd886e791f5",
+    "work/m1/balance/mutation-results.json": "07739d6df2d7b30b0119cda851a9723714bc0b37f91fe26129fcfcb55a25c6b2",
+    "work/m1/text/mutation-rule-gate.json": "6f1143ac6532691873b22eb7d1800e7a2f505d359f93644f3606c7f0f3e8d5a0",
+    "work/m1/deliver/mutation-source-hash.json": "af5ed8b1ae2ca4a9c6a30c6037377dbe34a404df64c6ae2df148a6b873ed5a65"
+  }
+}

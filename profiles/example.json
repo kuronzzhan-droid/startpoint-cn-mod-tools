@@ -1,0 +1,17 @@
+{
+  "wf_root": "../work/external",
+  "servers": {
+    "local": {"root": "<服务端目录>"}
+  },
+  "rehearsal_server": null,
+  "paths": {
+    "store": null,
+    "server": null,
+    "cdn_dir": null,
+    "cdndata": null,
+    "kulo": null,
+    "store131": null,
+    "runtimes": null,
+    "studio_screenshots": null
+  }
+}

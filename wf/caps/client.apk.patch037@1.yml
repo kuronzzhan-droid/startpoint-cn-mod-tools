@@ -1,0 +1,1020 @@
+schema: wf-capability/1
+id: client.apk.patch037@1
+title: 八岐运行时
+layer: A
+provided_by:
+  patches:
+  - 37
+  match: all
+  methods:
+  - patch: 37
+    abc: boot_ffc6
+    label: EnemySynchronizeOwnerKind$/<cinit>
+    sha256: 8f9a01801d79bf8673b27a7a918a5245f2a95ea09ef8a7373d5986ed429cedc8
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: EnemySynchronizeOwnerKind$/BossMechanics
+    sha256: 29665f2f83e8be2dda60a1fa17158ea327e9995fd8aced862653727eeb1f69f2
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: EnemySynchronizeOwnerKind$/Conductor
+    sha256: 66cca0f18a09746bc4724e8e0559bfa7447daff68b8863798050d92fc08f6b72
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: EnemySynchronizeOwnerKind/<ctor>
+    sha256: 7979072a95c57c395e3c40246f53d8ecd3d89ff1c967d87f9dd114c2cf51751d
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: EnemySynchronizeOwnerKind$/GeneralBoss
+    sha256: 01352bab3abbc6e8e5dc3bba13ab485ecabed4011b14bf577a4ec15a5299a39b
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: EnemySynchronizeOwnerKind$/GeneralEnemy
+    sha256: 476014a4caa147b69dcb05b2131023f17e5636af477ad20d243e9e0a4095e068
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: EnemySynchronizeOwnerKind$/GeneralFunnel
+    sha256: 623231711fcb05ef7cbee7e512054413d53425bc26b4be0573b1032a57cfd8e3
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: EnemySynchronizeOwnerKind$/Kraken
+    sha256: ecb5ec20b72066eedc58b402a9d2ae674450a36e7a60d7dc76e28ca391d289d8
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: EnemySynchronizeOwnerKind$/Orochi
+    sha256: 1fc680cacb141e84e0cb30c120b73bff13a337ecd7a0a14ef944bcf52f869642
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: EnemySynchronizeOwnerKind$/OrochiEx
+    sha256: d8f0489675d7700be7d58ddc4a67e5bc3115613dd3e3eebd111d8f1983a44592
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: EnemySynchronizeOwnerKind$/OrochiExHead
+    sha256: 8c1f8ad1bac55b3da8d1013e21ecd6c3d91958449741aee6daf2d35c035baa26
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: EnemySynchronizeOwnerKind$/registerBossMechanics
+    sha256: f8a49b52685cfa2f5893f716e5abf29004a8a71d6babfc6fae0d252cb161f655
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: EnemySynchronizeOwnerKind$/Tentacle
+    sha256: 7d8717e706b2a912bd8fb6452510bbc0be47394e41bea9c730124bf2eef49fd1
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: EnemySynchronizeOwnerKind$/TouyakirenCeo
+    sha256: 85c8b7acfd55fd1020f7263301eea0de942b89a363778a07f23e873b118baf53
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: EnemySynchronizeOwnerKind/toString
+    sha256: 7b0a4ae6426e151cef7cfc66d964d9a8e28302e9d5aacefdc7bf55a346ba4978
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx$/<cinit>
+    sha256: a97687d77bd5812dbf56fcbc27f918b697e26cfb805ed6a7a8495346e29f3526
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx$/_equals
+    sha256: 646b1e4a5003baddd41a0089e1f286ad77cd03229298a97fb60f0641b153c62d
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx$/_toString
+    sha256: 3d4156578cad8ebeca3aa4caebc79428ea55dd2ae9369c629d13bfde525add98
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx$/back
+    sha256: 38b6f2fcb324450172de98065d4c73f84eabbbf42f94daf2222c0acc5f43a6b3
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/_changeState
+    sha256: 4a701be9510e8d71511c0125e898271beada23403b595ce80fc0db80012316f1
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/<ctor>
+    sha256: 5f6b45d97a1fed23669c25faa46794deb6d16f62d40b2fc323c9f325c96ee039
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx$/getNextStateName
+    sha256: f228ab09009e09ae9166dc82e3a2e69caa116edb12a6627119830f516512ccdc
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx$/isAttack
+    sha256: 0ab66b9a82c535e2a36a6b362ec46848f0019afc595fb23210da6d4172677c42
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx$/isIdleable
+    sha256: df91636e6268b10879dac7e59c1feacee03a7b804c5d12d04f1430063a43f295
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx$/isSkill
+    sha256: 1ca1e46a9c5edf5463663a0f4c7fddff4dabe5aec6bfcb2775c0464bf1a65277
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx$/next
+    sha256: f9ea40e20e977ecc7b6c4f4be7c3922a212ff8b29c3efd3cff779fc0b4cc1c18
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/_state
+    sha256: f77330aefefcde1b43e3898794cd05b8b4e0646722a192aa7ddcbc6e12fb740e
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/acceptUnifiedPhaseDamage
+    sha256: e5db0f61378c7d2f3544763c39e38c677b047dfc7826ae2afaf07ca47d98deef
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/afterAddition
+    sha256: a968960b201420953c59656517f78c74a88e3e2aebf37839d8e70f6e531134c4
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/applyAttack
+    sha256: b26fc55076a3b1a5acce32b20b35fd41a35178b09fd73bb953625474414194dc
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/applyConditionChanges
+    sha256: 4b612aed5aafab33cc88a72edf7e48d45ad0afdb5a53c4aa07569592548fa508
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/applySynchronizeKind
+    sha256: 2efb7a8f2676390a87a2a3bbdef27d52bd29d40fd53f2389cfc77ee8df582eaf
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/backtrackUniqueState
+    sha256: ec3ab737e3ba3660a75adb903b9dfb94dc30ffa2c30b36a472ff8afdbb93f7a8
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/canAdvanceFromPhase2
+    sha256: c6b3929cb480976b82748a43e354dbda0d46221a7dec9a2064d64c76ccd33d9b
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/canEnterStunStateFromUniqueState
+    sha256: 9b92a8fadf5fee15c721ce3c05f0b8f4a53f746e685ec7641eadaf84801f300f
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/canEnterWinceStateFromUniqueState
+    sha256: 6cba9f46fd9acc6080106b8671490c85d057554ba7d6177e0fb757a9e20007d1
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/canRemoveOnContinue
+    sha256: 8bd91b4d6662c2af4743360fdfdadd0ffd59568f99d5771831541eb0e40a633f
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/changePhase
+    sha256: 1ca1a185adbec74ea6803ae4cfe60e1620fd0f1ef4dcfe97f6b9f3ff93c5cdbc
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/changeState
+    sha256: 796d7c3b75be72f407a9a729027d1449239da6b36ee85994b3c88d1c936c8297
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/configurePhase4WeakPointKind
+    sha256: 6c0c6c5154ea75cec37886ce841b82abbcf8e030b4c7acad51c2cd4d01c507d3
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/countBrokenWeakPoints
+    sha256: 358fc2bad0dd52e3113d9e48630a458432720ecf960214b4c5754764fcc1e36e
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/createTargetAttack
+    sha256: 84230d22a5a081c16547036af4b9d13de1a694e58ce52cc2b89861d9d53ca887
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/dieIfPossible
+    sha256: a968960b201420953c59656517f78c74a88e3e2aebf37839d8e70f6e531134c4
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/dispelAllConditions
+    sha256: 1e59ef99a398ad1cb33d3bd40eb12fefc736cd44991b62d51c7c62f368d753ed
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/ensurePhase4Ledger
+    sha256: e636af5a929a6d259eaae4630e89ca8468d7236009002845dca2e87220d1e0e7
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/ensurePhaseDamageLedger
+    sha256: a085f7fe75c3f1456d2cdb05cda4452d2fa4d86640147281f7b9015865c661c9
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/enterDeadState
+    sha256: 723f09a6a64f37a5ac201a8d66f0e1fe59a58f5cf43d5ac84b14a7cdb60b8f3c
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/enterPhase4AwakeState
+    sha256: c4ad77a5770d83f89b5dc8f8b4ef8c15741591358321f2206dbfa18a0125212f
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/enterStunState
+    sha256: ce447cdb581fd0ae2852f3a5a66861a2f3b630a8e25e78e5d5d00baf49bd3ea3
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/enterUniqueState
+    sha256: 441339a33b2e20fe6f0da6574a46337773638cbfc8cff143a0ea68d099418b7d
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/enterWinceState
+    sha256: ca862387625f56fedf996560ce49dda8ac4250e87b0addae5bdc091f52a331ed
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/executeAction
+    sha256: 1d4108c09c24d1c5a0c9408091defaea6cf19c689ab837a59f9bb0daa854ecd6
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/exitUniqueState
+    sha256: 3520c279d89a0f8692216b9ad4cdac3f455a01038e67c0b6a8468daf5d4f0b75
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/forwardDamageFromHead
+    sha256: 9c53f45d311696991d78c94fb7ed04bab189c85126d12a65994ece39b7f4ad23
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/generateAttackAnimationLabel
+    sha256: 739fe81befa4e1311e33cfec432bb9435c8534535199742ec266ce47a24d4a3b
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/getActionSubjects
+    sha256: 2d6e46be4139b6f111ba3aa181a8c3e8351f2d50cb7e5ea6ea120de8c86407d8
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/getAnimationLabel
+    sha256: 2d6c9e11e219f62f095ca7a9865e7b9ec75da1d2a39a33917412535032f36aac
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/getAttackValues
+    sha256: 106b12452c0ed41dec096bab86f0a20a97e412f04ad0ef4adb4f1d0e633fd90a
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/getConditionIconBaseY
+    sha256: de6b89aa3b0a38cfd7aefa0bd4e89896296f1b6d19159890f849aabcc7556ab6
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/getConditionIconVisible
+    sha256: 6de1229675e25aa935a4316b2e6d1cc72d20140728aa0783d7c1054ae799695a
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/getCurrentFrameWeakPointCountdownAnimation
+    sha256: 6445ba04d63450744c62b9225f0e27a44307cc320cab4cd45afe317aae933998
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/getDebugStatus
+    sha256: 145c810f6038f005c9019993936a8d8169ffcf3217f69dd3baeef992a918061f
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/getEnemyCount
+    sha256: f3ad9eb56e11200c747758c56041cb3a97602ec54153b935e6bad75743f4f6aa
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/getInitialState
+    sha256: b50449eb971ab1eb55cf4d32ead190e2d9f293ecc5ed51436857ef48efe6c0d6
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/getLinkConditionEffectCurrentFrame
+    sha256: 69eedd7aa98da5862c8e5de196299b58bdf66a5dbed7e17ebb51659e40f15336
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/getNextPhaseChangeThreshold
+    sha256: d479ffc97d37be3aeed5bdd3b4d323649a0299af04adcd9b829a62992d3b0692
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/getPhaseIconRefreshIndex
+    sha256: eb2e3cb02375ba5a360c536082f5d4fcf90ca3129dc1b8de4e3c56f0c643e47d
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/getRealCurrentHealthPoint
+    sha256: 7b200c0758b7725a45a342ad2b3bd5759283e1c28a087f1c544a276a6e0e41f5
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/getRealHealthPointRatio
+    sha256: 5064bdc75a0a082ea140339ca0ddb7bbd4cdb98d1cea5cf9d162745de79a7895
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/getRealMaximumHealthPoint
+    sha256: 069dad8533adcd86dd8c395926f482f76d5607aa27bf83501fe0b915516b9c91
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/getRemainingFramesOfUniqueStateGroup
+    sha256: 62320b753e31aac9702e912ab36f7162ea0d420fd18c24f1016acfb8418aa661
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/getScriptContext
+    sha256: 3955430267c7daaf757f4cc0f0ff5f3270daf5903d8ad872c796cef0e761f18b
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/getSynchronizeKind
+    sha256: 3ce9520e3211b40669016a43de0fd950bc982f29dfcbf0f9d90315d2de5c6260
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/getTrialGauge
+    sha256: 33909bbfdccab8498877fe988cf2d79cc8ed1ce05c6754bb60d1e06e21ae3a26
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/getTrialIdOfChallenging
+    sha256: e4e54d656e8f586a86dc13808464610e8ee0fd242048f8c27c00c83ba118278d
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/getTrialKindOfChallenging
+    sha256: 1e2452f8540df0ea98973220b467cdb9692ddee0f16b96c1a7d2c7f2e58839c3
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/getTrialNameOfChallenging
+    sha256: bae64dcef22daf250c3242ff5bfe46a6aa836cd8f74e9932b83c9bbcdfa02acc
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/getWeakPointCountdownAnimation
+    sha256: a92f5c15a7f3397b0910e98dffd75a9b12513e8beddcc88ff93bff0947eab163
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/getWeakPointCountdownX
+    sha256: dcf83a40950a05cbd14674e74bf46ab8dbb0cd10944b32e0357e14057d009b90
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/getWeakPointCountdownY
+    sha256: 153a987248bcbeee11e08159e5d9fdefd7a8e84ac38f837a2e2ae98f00f14ae1
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/gotoNextPhaseIfPossible
+    sha256: 14a808e8f3ec478164b42bd6f8f0c50606f1e0190ba4b0de18f6a715b07345d6
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/gotoNextState
+    sha256: 4208c1a297a715745ad92e7568e7d6813a9a6bffaca652c44fbe00b96e84f77d
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/gotoSkillChainStunIfPossible
+    sha256: 81b47d70b51b8fa32c4b13a60101081a93df1cf06556d206b3ffd21b91602d78
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/gotoTrialStun
+    sha256: 2232a87e6eebd62d54f79c2e1bcea3d0bdc0c1bf20b0e77270f72d7e157c7dd8
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/gotoTrialStunIfPossible
+    sha256: 28be89f0d2931d581f3c789f194e4e1f1aa1202c3327b3f23613c880fb3ea286
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/hasPhase4HealthMode
+    sha256: 195868905a7cf59d0b060dd858076ff93447d692cec99135e50086d08878816f
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/hasPinched
+    sha256: e14f063642ed90ce68708e85bad060693fbaa28010127676118bbc81afa8c525
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/hasUnifiedPhaseHealthMode
+    sha256: b613bca595a3265d253b82a8024609acdff9d405ed0e1ce1f65267ba8c41a8b6
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/incrementFunnelSpawnCount
+    sha256: f3f70deaca6e853279769895600e46c900985792ce4ef99fcfbdf4eca27e4e7c
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/init
+    sha256: 108f66137272f086c09e35ca675ebc054663e912db1f7129ac5efc3b7a8f6a68
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/initialize
+    sha256: 6ae503cc170a73e44214bbc52ca28521db9b71b8c2c4f5c44b501e428cbd7178
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/isChargingSpecialAttack
+    sha256: 7df64c4ae27ef6d6ea6da686e7b0bcf3b83e85513b555c85f8d8245c7c5e8a08
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/isContemporizing
+    sha256: ca2fa85333efd90732cdbdb46a7fe5d32bfd7c847b36903022a32b404fb6dcd3
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/isGenericDeathEffect
+    sha256: 8bd91b4d6662c2af4743360fdfdadd0ffd59568f99d5771831541eb0e40a633f
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/isHealthPointGaugeVisible
+    sha256: ca8b4ba43041466cdd88bd130f8a1824a7bf3b96001bdf62a01e4d6a44df79e6
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/isInvincible
+    sha256: f0962643573d1de38f10ee7aad5d132cd67f97a5a30eacc5bd33cda4df6927c0
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/isLinkConditionEffectVisible
+    sha256: 8bd91b4d6662c2af4743360fdfdadd0ffd59568f99d5771831541eb0e40a633f
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/isPhase2TrialGuardReleased
+    sha256: cc0bf64a782325cc60aa7d3657d17b6a60a1131ad580a762bb8a87bfbc825fb6
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/isPhase2TrialStunRunning
+    sha256: ae0bee4df90a968fd018e0cada9905ddd387e536a7372c370b02af7ed67e671e
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/isPhase4AttackRunning
+    sha256: 5b5f3b9a3dba84237e3175b8d5e813181020b6b684695b64c2b389dd7326c6be
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/isTrialGaugeVisible
+    sha256: d585616625656f7803c9407d288dca461830151e2b66e2009440e239c604ef48
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/isUnifiedPhaseComplete
+    sha256: e44f988ef27deb0379ae125b6e4cda26605c86bd803b690e2fe2557644daa4e7
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/loop
+    sha256: 511b9bd85ba7ed58e2ceb8e03575212daa4b3bef06dae3b4417b5914a828acd4
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/matchTrial
+    sha256: ee0681681fe323f91fe4c3249d6e000143363b8c98c92aa440dc3212ad94f9df
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/move
+    sha256: 2d2ad36165bbf997321c09e4ce180fd2b317eafb3df24a9d24ac53c54ec5bccd
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/moveUniqueState
+    sha256: e81b92f78055771191100a2c21a365aaf3710fcb7e219ef7820474d004c5de18
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/numAttackStateFrames
+    sha256: d257fee65c5a14bb0d52787e1709a457cdc60765448caed73818b7b0d51b4c76
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/numIdleStateFrames
+    sha256: cdb719272bd3fce4d128134ff0cfffa605a9d27c420382f78b34331d0e260e9a
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/numNormalStateFrames
+    sha256: 04f3a97fd2b6dc3f6b20a7b05082f1ba22e5d048348c91ee04d144574d707dfc
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/numUniqueStateFrames
+    sha256: dc4ac528c3eed95c9c1d9fa1e38399c80f8472f677c322e2ed77946307030ee0
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/once
+    sha256: 951584dbaae5e3471b7b3c8ce6f4c6415a4c1dc9868761afd955bfcb10ff6298
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/phase4DamageRate
+    sha256: 3a1f53d85f2d85a76d29f173b5f89c42ebd28860ed0dfb8aa3908b00567ca6d3
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/phase4HealthRaw
+    sha256: e94ea1d7ea4f3390194951ce156abfd4ee20022ec76eaea4b16f4556a3700231
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/phase4Profile
+    sha256: 42dfb2e755682cf1365464d5902023e93b49aef51f0b38bf7f31162769c65a3f
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/reinitialize
+    sha256: 9746c5ad87816d480b112a479083fbb37bf04c5e302d5dd8922a7215faab0b2f
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/resetAllWeakPoints
+    sha256: 1d41aba8473a93ae61e2688b69bf5c23e7eafe60ab2dc9c0a2ff9732fc2e1e89
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/resolveCollision
+    sha256: d3ea97c8f672f072c308bfa1b7e20e75da4e96a11ffbb3892dc8c03c035c77a5
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/resolvePhase4Break
+    sha256: 3d354b593e4fcda48d464533e7378799c7ad91179647b1ff0f3376441ff3aa88
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/resolveUniqueStateGroupKey
+    sha256: d83cbbce5a4095bffe56658b98d3be1f307ba1b14180cf20ac43b0ed83da4295
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/resolveUniqueStateGroupKeyFromOwnerKind
+    sha256: 5db4ca3d81b709bff215ca555853ef64a41fea62e09e90469e0a8eef06154b68
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/scoutOut
+    sha256: 63bc6ff7daf625f3672a3cd2078809707b4031dc9af72b94d6dbadcc2b06799d
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/showCutin
+    sha256: 5e6b5f76cbcdd8a3f0dcfa78096fc8fcd323cd04163ba44afd94a1e808a2485b
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/startPhase1Trial2Masked
+    sha256: 2d6af5312a8e9fbe642974ec8fb56ac6b541a9e8eb7038cd9c03996fa730d964
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/startPhase4Reset
+    sha256: 6fcc9ff7d9831e682e3a3ba9c6e1f3b82129372402279660ce6ac922ced7f08a
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/subtractHealthPoint
+    sha256: 9755480bf06a7a5e401f5951f9ec41a372c2e62cea560d9e7bf271541b2430bf
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/tryStartPhase1Trial
+    sha256: 0da23e82bcd372028d33377d9fa807528d0997923ef7815ff298f41d52f65e53
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/unifiedPhaseDamage
+    sha256: 389284ec7545d425db1b3c014136cc9c5f884f4827579e71c7e70d851173dd76
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/unifiedPhaseHealthPoint
+    sha256: 62983fb2c3c4617b15ce1ca2e0a73b045b5cceb8aca9bda04e46ac3ed40c835e
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/update
+    sha256: a092937706f8ac6665ce0a83c857f54de6c4df0fd93aed070934444fbf4821a5
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/updatePhase4Extension
+    sha256: 485da7950c4ccbf716c757392019122a7fe9c50c82708b104c37c90f51f69e0d
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/updateTrialCondition
+    sha256: 02212353e29928a227c693aeb1ad64297ea09e3ee4a7ec965fd72fbb1d194d07
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/updateUniqueState
+    sha256: 525c1b49eb9d28795367d227ac422eebcaac4399e9bfbb9666c986e45556ccbf
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/updateWeakPointCountdown
+    sha256: 485a19874d075b3ee741eb793fdbab482aacf12803b6ddc3cd5da273335ddd25
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/updateWeakPointCountdownPosition
+    sha256: 1ece3d2e7b10baf2ce82e598cb059ca95a9b7e20887c1250bf309e1cfadd39d1
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiEx/willRemoveUniqueState
+    sha256: 2a1a7d3128f19cb89d478c83dbe69ee3d79bad6134d51daecf58fc6816ffe6a7
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiExSource$/<cinit>
+    sha256: a968960b201420953c59656517f78c74a88e3e2aebf37839d8e70f6e531134c4
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiExSource/<ctor>
+    sha256: 67b88a122c30bc7e27ca630c8bf3f6132b550f4ce18b7cc0602f37cb9eff6f11
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiExSource/dynamicWeakPointSource
+    sha256: dfb103ca3a8107bb28e7f4fc217165d313c6d72152eac134a57ae7a8ce01ff3b
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiExSource/resolveEnemyActions
+    sha256: c6c6f0716a2f228f25c3d7cf6507876b8b168e647a8fdc4c5eb3ca5de9060665
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiExSource/resolvePathCollection
+    sha256: 6f245e5ba92f0f16a8e813ab1d87d9105055838c66ca16b25fabb026c95417d2
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiExValues$/<cinit>
+    sha256: a968960b201420953c59656517f78c74a88e3e2aebf37839d8e70f6e531134c4
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiExValues$/_new
+    sha256: b4fed9eca204cbfe429785b2466fda013ded719d4e44dfcc8b143898be701d0d
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiExValues/<ctor>
+    sha256: 41e2e27ed7206a7e712b7ddfb2fd8a68a9491bacd9c9f3da7cbd3456732c1755
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: OrochiExValues$/init
+    sha256: b0885e8a619be441b7c3df8ce589d4be35353eb60b17a1a9f166e50e1de89ed3
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: ZoneSource/get_bossGroupName
+    sha256: 3f0e8c912aeebd0c9529a15cd6f6c8acf27ef0d03a74691e5208f23523d09250
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: boot_ffc6
+    label: ZoneSourceValues/resolveOrochiExsAction
+    sha256: 430d93a9cad247dc0b4d1e56b21c6c5558ca3f7128465b7a390be1dd5a962e04
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: cn.boss.BossMechanicsRuntime
+    label: anonymous-method-0
+    sha256: 88c053ef50955c035114ba76dadfa367a9919ff8b8c411833b3c9a8a6f357566
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: cn.boss.BossMechanicsRuntime
+    label: BossMechanicsRuntime$/<cinit>
+    sha256: 333e0a1e27815d0ceee55c473fe3dc93d56c63e3bee2b3b4aee8eed6d70191a3
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: cn.boss.BossMechanicsRuntime
+    label: BossMechanicsRuntime$/accept
+    sha256: 14669b70ba5eef235f09db03c11829669dc96acbe8f27a22546b521a8e87d3a9
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: cn.boss.BossMechanicsRuntime
+    label: BossMechanicsRuntime$/advanceSegment
+    sha256: edb57f18091bb6356a0ce359624112157195d6a45e9f8cbe804676ec6e0e32dd
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: cn.boss.BossMechanicsRuntime
+    label: BossMechanicsRuntime$/complete
+    sha256: 935b1839567246600555d0b18384ba672eec48df19be70e45b685fdaa00b9d63
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: cn.boss.BossMechanicsRuntime
+    label: BossMechanicsRuntime$/create
+    sha256: 34b8c8e5dc860c47eb2bdc052f298949ebbae004e5c2c6b019bbc45e9f44331d
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: cn.boss.BossMechanicsRuntime
+    label: BossMechanicsRuntime/<ctor>
+    sha256: 8ff32749a852a1d83829c6a3fac8ec00822f06b5c7177f9ebb43a09287b2101a
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: cn.boss.BossMechanicsRuntime
+    label: BossMechanicsRuntime$/currentSegmentComplete
+    sha256: 189fa25c1512c6fed2eebee5acc6c77cba8822e5cace81b3dbb88e62d5ea6885
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: cn.boss.BossMechanicsRuntime
+    label: BossMechanicsRuntime$/currentSegmentMaximum
+    sha256: 7d2d7ed7522c92ef16ed3784a2cb4bc4dab23cd078d2bc29ca43f16624a016f4
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: cn.boss.BossMechanicsRuntime
+    label: BossMechanicsRuntime$/integer
+    sha256: edf97da5d5bffd1e12613ea05be0dec2f2ab84712ac765b7c35c721095cbcc2f
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: cn.boss.BossMechanicsRuntime
+    label: BossMechanicsRuntime$/profile
+    sha256: 7eb9ddb25dfb14622f8661294ff673ad9ebd8928da058bba3b4f1c636fbeec78
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: cn.boss.BossMechanicsRuntime
+    label: BossMechanicsRuntime$/remaining
+    sha256: 9b8150a996a0dd7dfa574b595e8921ae2af6885a587f23730f8f97983f66a2b5
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: cn.boss.BossMechanicsRuntime
+    label: BossMechanicsRuntime$/reset
+    sha256: 790acc11361669af09525245dfb01f406eb44855b7ef82855e0d6b3d9600f20b
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: cn.boss.BossMechanicsRuntime
+    label: BossMechanicsRuntime$/restore
+    sha256: cebc74e8c09b19bb91d2f9921c3d63fb0ce8a8fee272fdaa96e73488db16a5f6
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: cn.boss.BossMechanicsRuntime
+    label: BossMechanicsRuntime$/snapshot
+    sha256: 45e949c987335e23af313d175d6a8170e0344240b8dc70789b3392411f61c3c8
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: cn.boss.BossMechanicsRuntime
+    label: BossMechanicsRuntime$/targets
+    sha256: d52724eb72a1997235ea70d289a27a261b31998c047d3b3db2cf473332a8dffe
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 37
+    abc: cn.boss.BossMechanicsRuntime
+    label: BossMechanicsRuntime$/tick
+    sha256: bdea24437d773d8bb43549b04566a63d0d9e078e91db8b7fa660d199a610e8f3
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: true
+  features: []
+  note: 需要对应服务端规则；本能力声明不证明服务端已部署
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: 八岐运行时
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: 八岐运行时
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: 八岐运行时
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/verification/v33-patches-preserved-o8-o12-r2.json

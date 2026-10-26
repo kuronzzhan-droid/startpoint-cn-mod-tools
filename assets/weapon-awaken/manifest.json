@@ -1,0 +1,424 @@
+{
+ "_doc": "build_icons.py 生成，勿手改。sha256 为解码后 RGBA 像素（与 PNG 压缩实现无关）。",
+ "icons": [
+  {
+   "key": "king_coin",
+   "item_id": "10000310",
+   "name": "深界王币",
+   "rarity": 4,
+   "kind": "token",
+   "rainbow": false,
+   "c3_logical": "item/materials/mod/five_boss/king_coin",
+   "c4_logical": "item_icon/materials/mod/five_boss/king_coin",
+   "mother": "领主币 item/materials/boss_coin/owl_3 的八角币形与环形倒角；币面换成五尖王冠（五王纹章）",
+   "metrics": {
+    "size": [
+     20,
+     20
+    ],
+    "alphas": [
+     0,
+     255
+    ],
+    "bbox": [
+     20,
+     20
+    ],
+    "colors": 13,
+    "speckle": 0.085,
+    "outline": [
+     36,
+     16,
+     84
+    ],
+    "outline_colors": 2,
+    "outline_top2": 1.0,
+    "outline_sat": 0.81,
+    "outline_val": 0.33,
+    "outline_hue_share": 0.72,
+    "light_ul_minus_lr": 16
+   },
+   "c3_rgba_sha256": "2257835d838270955999649a49f29f8dc120983f2377dfb041b578a5d42da6c5",
+   "c4_rgba_sha256": "62006543fe46513ff280732310885abd72144b37807bca9a7a615f413dc40e3e",
+   "c3_file": "icons/king_coin.png",
+   "c4_file": "icons/king_coin_c4.png",
+   "c4_size": [
+    40,
+    40
+   ]
+  },
+  {
+   "key": "forbidden_star_steel",
+   "item_id": "10000311",
+   "name": "禁忌星铁",
+   "rarity": 5,
+   "kind": "material",
+   "rainbow": false,
+   "c3_logical": "item/materials/mod/cursed/forbidden_star_steel",
+   "c4_logical": "item_icon/materials/mod/cursed/forbidden_star_steel",
+   "mother": "★4 星铁钢 equipment_awaking_crystal_4 的锭形逐色映射（与 ★5 星铁钢同一轮廓 20×17），左侧面嵌金色星纹、右侧面一道绯红禁纹",
+   "metrics": {
+    "size": [
+     20,
+     20
+    ],
+    "alphas": [
+     0,
+     255
+    ],
+    "bbox": [
+     20,
+     17
+    ],
+    "colors": 12,
+    "speckle": 0.03,
+    "outline": [
+     44,
+     16,
+     60
+    ],
+    "outline_colors": 1,
+    "outline_top2": 1.0,
+    "outline_sat": 0.73,
+    "outline_val": 0.24,
+    "outline_hue_share": 0.9,
+    "light_ul_minus_lr": 47
+   },
+   "c3_rgba_sha256": "11539376bdf9e4194967efb516171c1fed971c372341df080bd51c993396a7d5",
+   "c4_rgba_sha256": "e9f2f2a74587b0e3d9738e68ca9b3b9c88e4440eb45af8448079db6e7a560b3a",
+   "c3_file": "icons/forbidden_star_steel.png",
+   "c4_file": "icons/forbidden_star_steel_c4.png",
+   "c4_size": [
+    40,
+    40
+   ]
+  },
+  {
+   "key": "deathbringer_blueprint_v2",
+   "item_id": "10000144",
+   "name": "终式武装图纸",
+   "rarity": 3,
+   "kind": "material",
+   "rainbow": false,
+   "c3_logical": "item/materials/mod/five_boss/deathbringer_blueprint_v2",
+   "c4_logical": "item_icon/materials/mod/five_boss/deathbringer_blueprint_v2",
+   "mother": "支线解锁证书 side_story_event_quest_unlock_certificate 的上下卷轴错位结构；纸面换成蓝图与剑形线稿",
+   "metrics": {
+    "size": [
+     20,
+     20
+    ],
+    "alphas": [
+     0,
+     255
+    ],
+    "bbox": [
+     16,
+     17
+    ],
+    "colors": 8,
+    "speckle": 0.021,
+    "outline": [
+     20,
+     36,
+     96
+    ],
+    "outline_colors": 1,
+    "outline_top2": 1.0,
+    "outline_sat": 0.79,
+    "outline_val": 0.38,
+    "outline_hue_share": 0.97,
+    "light_ul_minus_lr": -20
+   },
+   "c3_rgba_sha256": "f4dc67347d94936732af89eb64d8da92868b7e2cffed427756366c17c984ea0b",
+   "c4_rgba_sha256": "c0d5676b27556a57373c855472ece719fd113dd6336fc0277270b96876f80bcc",
+   "c3_file": "icons/deathbringer_blueprint_v2.png",
+   "c4_file": "icons/deathbringer_blueprint_v2_c4.png",
+   "c4_size": [
+    40,
+    40
+   ]
+  },
+  {
+   "key": "deep_crystal_v2",
+   "item_id": "10000145",
+   "name": "深界结晶",
+   "rarity": 4,
+   "kind": "material",
+   "rainbow": false,
+   "c3_logical": "item/materials/mod/five_boss/deep_crystal_v2",
+   "c4_logical": "item_icon/materials/mod/five_boss/deep_crystal_v2",
+   "mother": "记忆晶 equipment_enhancement_material_*_r5 的晶簇构图（主晶柱 + 左右小晶），靛紫配色，底部压暗表「深」",
+   "metrics": {
+    "size": [
+     20,
+     20
+    ],
+    "alphas": [
+     0,
+     255
+    ],
+    "bbox": [
+     17,
+     18
+    ],
+    "colors": 7,
+    "speckle": 0.029,
+    "outline": [
+     26,
+     16,
+     84
+    ],
+    "outline_colors": 1,
+    "outline_top2": 1.0,
+    "outline_sat": 0.81,
+    "outline_val": 0.33,
+    "outline_hue_share": 1.0,
+    "light_ul_minus_lr": 38
+   },
+   "c3_rgba_sha256": "4e8027e59b148a3070be5999b46e30812cd822f1a2812c688dd0217a93f1a1de",
+   "c4_rgba_sha256": "772e63549e5ee0501d1cf6e488daf1160739eff59b3b237ad0720f61bc212b06",
+   "c3_file": "icons/deep_crystal_v2.png",
+   "c4_file": "icons/deep_crystal_v2_c4.png",
+   "c4_size": [
+    40,
+    40
+   ]
+  },
+  {
+   "key": "fivefold_clear_badge_v2",
+   "item_id": "10000146",
+   "name": "五重决战之证",
+   "rarity": 3,
+   "kind": "material",
+   "rainbow": false,
+   "c3_logical": "item/materials/mod/five_boss/fivefold_clear_badge_v2",
+   "c4_logical": "item_icon/materials/mod/five_boss/fivefold_clear_badge_v2",
+   "mother": "称号勋章 etc/degree 与埴轮奖牌的「绶带 + 圆章」结构；章面浮雕五角星",
+   "metrics": {
+    "size": [
+     20,
+     20
+    ],
+    "alphas": [
+     0,
+     255
+    ],
+    "bbox": [
+     14,
+     19
+    ],
+    "colors": 12,
+    "speckle": 0.078,
+    "outline": [
+     104,
+     56,
+     8
+    ],
+    "outline_colors": 2,
+    "outline_top2": 1.0,
+    "outline_sat": 0.92,
+    "outline_val": 0.41,
+    "outline_hue_share": 0.76,
+    "light_ul_minus_lr": -20
+   },
+   "c3_rgba_sha256": "1774ba6eeaf7e63689d017002853539fae50e59fbe0add02dd75de3e386ff64b",
+   "c4_rgba_sha256": "6348e97f43ff01ac08648386df910e3ef780fcfb07625588470eb06ec3e86a97",
+   "c3_file": "icons/fivefold_clear_badge_v2.png",
+   "c4_file": "icons/fivefold_clear_badge_v2_c4.png",
+   "c4_size": [
+    40,
+    40
+   ]
+  },
+  {
+   "key": "five_king_core_v2",
+   "item_id": "10000147",
+   "name": "五王心核",
+   "rarity": 5,
+   "kind": "material",
+   "rainbow": false,
+   "c3_logical": "item/materials/mod/five_boss/five_king_core_v2",
+   "c4_logical": "item_icon/materials/mod/five_boss/five_king_core_v2",
+   "mother": "歼灭心核 / 深渊物质的「核心 + 外凸」构图：五角金座托绯红心核（五尖 = 五王）",
+   "metrics": {
+    "size": [
+     20,
+     20
+    ],
+    "alphas": [
+     0,
+     255
+    ],
+    "bbox": [
+     20,
+     19
+    ],
+    "colors": 11,
+    "speckle": 0.02,
+    "outline": [
+     84,
+     44,
+     8
+    ],
+    "outline_colors": 2,
+    "outline_top2": 1.0,
+    "outline_sat": 0.9,
+    "outline_val": 0.33,
+    "outline_hue_share": 0.47,
+    "light_ul_minus_lr": 56
+   },
+   "c3_rgba_sha256": "0564483d57dd98b4ccad672b3800cf625c4d82e42b6d26b7aaa17a8fd1730eda",
+   "c4_rgba_sha256": "a374b58d0b8d4a5cb1fb46c144190dea30e188d43d32fb4af827b899599542b4",
+   "c3_file": "icons/five_king_core_v2.png",
+   "c4_file": "icons/five_king_core_v2_c4.png",
+   "c4_size": [
+    40,
+    40
+   ]
+  },
+  {
+   "key": "deep_realm_ticket",
+   "item_id": "10000143",
+   "name": "深界连战凭证",
+   "rarity": 5,
+   "kind": "token",
+   "rainbow": false,
+   "c3_logical": "item/materials/mod/five_boss/deep_realm_ticket",
+   "c4_logical": "item_icon/materials/mod/five_boss/deep_realm_ticket",
+   "mother": "高难多人勋章 extreme_multi_battle_token（设计 §6.4 母本）的「交叉双剑 + 中央纹章」徽记结构：紫盾金边嵌紫水晶（沿用旧图母题），剑尖出左右上角、护手与剑柄出左右下角；轮廓与同店的武器扭蛋券 ticket_equipment_001/002（横票）明显不同",
+   "metrics": {
+    "size": [
+     20,
+     20
+    ],
+    "alphas": [
+     0,
+     255
+    ],
+    "bbox": [
+     20,
+     20
+    ],
+    "colors": 13,
+    "speckle": 0.032,
+    "outline": [
+     36,
+     14,
+     66
+    ],
+    "outline_colors": 1,
+    "outline_top2": 1.0,
+    "outline_sat": 0.79,
+    "outline_val": 0.26,
+    "outline_hue_share": 0.6,
+    "light_ul_minus_lr": 32
+   },
+   "c3_rgba_sha256": "05954b10aae79292e6e474cc2f974129e06deba4468c810b63a30936f6fb7bd0",
+   "c4_rgba_sha256": "ee6b78d3e49158c16cb652a61a30b8e04833a5778ad1fffb18ed9a4230128dcc",
+   "c3_file": "icons/five-boss-v2-handoff/ticket_icon_20.png",
+   "c4_file": "icons/five-boss-v2-handoff/ticket_icon_41.png",
+   "c4_size": [
+    41,
+    41
+   ],
+   "c4_offset": [
+    0,
+    1
+   ],
+   "owner": "five-boss-v2 (copy into mod-tools/assets/five-boss-v2/)"
+  },
+  {
+   "key": "contradiction_crystal",
+   "item_id": "10000301",
+   "name": "矛盾结晶",
+   "rarity": 4,
+   "kind": "material",
+   "rainbow": false,
+   "c3_logical": "item/materials/mod/paradox/contradiction_crystal_v2",
+   "c4_logical": "item_icon/materials/mod/paradox/contradiction_crystal",
+   "mother": "旧图 paradox_shard.png 的「光影各半 + 金缝」菱晶，按规范重画：加宽到 12×17、上下晶面分明、杂色 0.188→≤0.10",
+   "metrics": {
+    "size": [
+     20,
+     20
+    ],
+    "alphas": [
+     0,
+     255
+    ],
+    "bbox": [
+     12,
+     17
+    ],
+    "colors": 11,
+    "speckle": 0.083,
+    "outline": [
+     100,
+     60,
+     16
+    ],
+    "outline_colors": 2,
+    "outline_top2": 1.0,
+    "outline_sat": 0.84,
+    "outline_val": 0.39,
+    "outline_hue_share": 0.25,
+    "light_ul_minus_lr": 86
+   },
+   "c3_rgba_sha256": "d201d2aba80a70f4ba77bcc928d68f386b9d3d0484492ddfed757e87701d3f98",
+   "c4_rgba_sha256": "735f2d3c6ae3c45dec3dd143399ba3da87f4f20c2a3a74f6ac4a0bc4872f05ff",
+   "c3_file": "icons/contradiction_crystal.png",
+   "c4_file": "icons/contradiction_crystal_c4.png",
+   "c4_size": [
+    40,
+    40
+   ]
+  },
+  {
+   "key": "paradox_core",
+   "item_id": "10000302",
+   "name": "悖论之核",
+   "rarity": 5,
+   "kind": "material",
+   "rainbow": false,
+   "c3_logical": "item/materials/mod/paradox/paradox_core_v2",
+   "c4_logical": "item_icon/materials/mod/paradox/paradox_core",
+   "mother": "旧图 paradox_core.png 的「金蓝对半环 + 白核 + 四向尖」，按规范重画：金半边改深褐描边、左右亮度差 107→约 60",
+   "metrics": {
+    "size": [
+     20,
+     20
+    ],
+    "alphas": [
+     0,
+     255
+    ],
+    "bbox": [
+     20,
+     20
+    ],
+    "colors": 12,
+    "speckle": 0.008,
+    "outline": [
+     100,
+     60,
+     16
+    ],
+    "outline_colors": 2,
+    "outline_top2": 1.0,
+    "outline_sat": 0.84,
+    "outline_val": 0.39,
+    "outline_hue_share": 0.4,
+    "light_ul_minus_lr": 63
+   },
+   "c3_rgba_sha256": "12ddae27180d40448cab1fab88005aad6a847dcc0fb00928ae1655bbd540cf2d",
+   "c4_rgba_sha256": "20c080ee34e9fe86dc5a9b41de6f179b212edf7ee03cb943a1cb1bf5e8007cc4",
+   "c3_file": "icons/paradox_core.png",
+   "c4_file": "icons/paradox_core_c4.png",
+   "c4_size": [
+    40,
+    40
+   ]
+  }
+ ]
+}

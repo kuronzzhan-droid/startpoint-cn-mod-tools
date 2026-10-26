@@ -312,10 +312,11 @@ class VerifyTest(unittest.TestCase):
 class ContentContractTest(unittest.TestCase):
     """内容契约本身的自检:金样期望值别写错。"""
 
-    def test_expected_rows_cover_three_characters_and_weapons(self):
+    def test_expected_rows_cover_legacy_characters_rank_p5b_bosses_and_weapons(self):
         expected = policy_mod.EXPECTED_CONTENT_ROWS
-        self.assertEqual(("129999", "139999", "149999"),
-                         expected["master/character/character.orderedmap"])
+        characters = expected["master/character/character.orderedmap"]
+        self.assertEqual(("129999", "139999", "149999"), characters[:3])
+        self.assertEqual(("169994", "169980", "179981", "169995"), characters[3:])
         self.assertEqual(15, len(expected["master/ability/ability_soul.orderedmap"]))
         self.assertEqual("8000115",
                          expected["master/ability/ability_soul.orderedmap"][-1])

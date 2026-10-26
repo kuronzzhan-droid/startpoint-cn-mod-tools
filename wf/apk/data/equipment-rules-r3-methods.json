@@ -1,0 +1,1003 @@
+{
+  "schema": "wf-method-observation/1",
+  "capability": "client.equipment.gauge_gain_rules@1",
+  "legacy_capability": "equipment-gauge-gain-rules-v1",
+  "patch_name": "equipment-rules R3",
+  "basis": "从真实 SWF 解析 boot_ffc6，按稳定方法标签定位，SHA-256 仅覆盖方法 code 字节；离线字节证据，不声明设备或部署验收。",
+  "artifacts": [
+    {
+      "profile": "test-v34",
+      "swf_sha256": "3d5c9745f519beee68557df7bce3e4ff635c9bb127069ed85a8fd02b5cbedb8a",
+      "methods": [
+        {
+          "abc": "boot_ffc6",
+          "label": "AbilitySoulValues$/parseAt106",
+          "body_index": 38944,
+          "sha256": "09dab4df4529e9b0272315b616fa9ea4e1882401a9ceadb40be2b5ee515c40ab",
+          "code_length": 21623,
+          "head": [
+            {
+              "index": 0,
+              "op": "getlocal_1",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 1,
+              "op": "pushbyte",
+              "args": [
+                106
+              ],
+              "target": null
+            },
+            {
+              "index": 2,
+              "op": "getproperty",
+              "args": [
+                14
+              ],
+              "target": null
+            },
+            {
+              "index": 3,
+              "op": "coerce",
+              "args": [
+                11
+              ],
+              "target": null
+            },
+            {
+              "index": 4,
+              "op": "coerce",
+              "args": [
+                11
+              ],
+              "target": null
+            },
+            {
+              "index": 5,
+              "op": "setlocal_2",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 6,
+              "op": "getlocal_2",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 7,
+              "op": "pushstring",
+              "args": [
+                46971
+              ],
+              "target": null,
+              "string": "423"
+            },
+            {
+              "index": 8,
+              "op": "ifne",
+              "args": [],
+              "target": 25
+            },
+            {
+              "index": 9,
+              "op": "getlex",
+              "args": [
+                12110
+              ],
+              "target": null,
+              "member": "pinball.common.data.ability.during::CommonAbilityContentMasterValue"
+            },
+            {
+              "index": 10,
+              "op": "pushstring",
+              "args": [
+                93678
+              ],
+              "target": null,
+              "string": "GaugeGainRestriction"
+            },
+            {
+              "index": 11,
+              "op": "pushint",
+              "args": [
+                780
+              ],
+              "target": null
+            },
+            {
+              "index": 12,
+              "op": "pushstring",
+              "args": [
+                3701
+              ],
+              "target": null,
+              "string": "target"
+            },
+            {
+              "index": 13,
+              "op": "getlex",
+              "args": [
+                10095
+              ],
+              "target": null,
+              "member": "pinball.master.generated::AbilitySoulValues"
+            },
+            {
+              "index": 14,
+              "op": "getlocal_1",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 15,
+              "op": "callproperty",
+              "args": [
+                34924,
+                1
+              ],
+              "target": null,
+              "member": "parseAt107"
+            },
+            {
+              "index": 16,
+              "op": "pushstring",
+              "args": [
+                22408
+              ],
+              "target": null,
+              "string": "unique_condition_id"
+            },
+            {
+              "index": 17,
+              "op": "getlex",
+              "args": [
+                10095
+              ],
+              "target": null,
+              "member": "pinball.master.generated::AbilitySoulValues"
+            },
+            {
+              "index": 18,
+              "op": "getlocal_1",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 19,
+              "op": "callproperty",
+              "args": [
+                34928,
+                1
+              ],
+              "target": null,
+              "member": "parseAt115"
+            },
+            {
+              "index": 20,
+              "op": "newobject",
+              "args": [
+                2
+              ],
+              "target": null
+            },
+            {
+              "index": 21,
+              "op": "newarray",
+              "args": [
+                1
+              ],
+              "target": null
+            },
+            {
+              "index": 22,
+              "op": "construct",
+              "args": [
+                3
+              ],
+              "target": null
+            },
+            {
+              "index": 23,
+              "op": "coerce",
+              "args": [
+                12110
+              ],
+              "target": null
+            },
+            {
+              "index": 24,
+              "op": "returnvalue",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 25,
+              "op": "getlocal_2",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 26,
+              "op": "pushstring",
+              "args": [
+                26
+              ],
+              "target": null,
+              "string": "0"
+            },
+            {
+              "index": 27,
+              "op": "ifne",
+              "args": [],
+              "target": 44
+            },
+            {
+              "index": 28,
+              "op": "getlex",
+              "args": [
+                12110
+              ],
+              "target": null,
+              "member": "pinball.common.data.ability.during::CommonAbilityContentMasterValue"
+            },
+            {
+              "index": 29,
+              "op": "pushstring",
+              "args": [
+                3701
+              ],
+              "target": null,
+              "string": "target"
+            }
+          ]
+        },
+        {
+          "abc": "boot_ffc6",
+          "label": "EquipmentEnhancementAbilityValues$/parseAt109",
+          "body_index": 40666,
+          "sha256": "dd651c1588b171de60b3617ac33d165d22c726337ee6848caddd88dc0f331577",
+          "code_length": 21623,
+          "head": [
+            {
+              "index": 0,
+              "op": "getlocal_1",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 1,
+              "op": "pushbyte",
+              "args": [
+                109
+              ],
+              "target": null
+            },
+            {
+              "index": 2,
+              "op": "getproperty",
+              "args": [
+                14
+              ],
+              "target": null
+            },
+            {
+              "index": 3,
+              "op": "coerce",
+              "args": [
+                11
+              ],
+              "target": null
+            },
+            {
+              "index": 4,
+              "op": "coerce",
+              "args": [
+                11
+              ],
+              "target": null
+            },
+            {
+              "index": 5,
+              "op": "setlocal_2",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 6,
+              "op": "getlocal_2",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 7,
+              "op": "pushstring",
+              "args": [
+                46971
+              ],
+              "target": null,
+              "string": "423"
+            },
+            {
+              "index": 8,
+              "op": "ifne",
+              "args": [],
+              "target": 25
+            },
+            {
+              "index": 9,
+              "op": "getlex",
+              "args": [
+                12110
+              ],
+              "target": null,
+              "member": "pinball.common.data.ability.during::CommonAbilityContentMasterValue"
+            },
+            {
+              "index": 10,
+              "op": "pushstring",
+              "args": [
+                93678
+              ],
+              "target": null,
+              "string": "GaugeGainRestriction"
+            },
+            {
+              "index": 11,
+              "op": "pushint",
+              "args": [
+                780
+              ],
+              "target": null
+            },
+            {
+              "index": 12,
+              "op": "pushstring",
+              "args": [
+                3701
+              ],
+              "target": null,
+              "string": "target"
+            },
+            {
+              "index": 13,
+              "op": "getlex",
+              "args": [
+                10281
+              ],
+              "target": null,
+              "member": "pinball.master.generated::EquipmentEnhancementAbilityValues"
+            },
+            {
+              "index": 14,
+              "op": "getlocal_1",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 15,
+              "op": "callproperty",
+              "args": [
+                34925,
+                1
+              ],
+              "target": null,
+              "member": "parseAt110"
+            },
+            {
+              "index": 16,
+              "op": "pushstring",
+              "args": [
+                22408
+              ],
+              "target": null,
+              "string": "unique_condition_id"
+            },
+            {
+              "index": 17,
+              "op": "getlex",
+              "args": [
+                10281
+              ],
+              "target": null,
+              "member": "pinball.master.generated::EquipmentEnhancementAbilityValues"
+            },
+            {
+              "index": 18,
+              "op": "getlocal_1",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 19,
+              "op": "callproperty",
+              "args": [
+                34953,
+                1
+              ],
+              "target": null,
+              "member": "parseAt118"
+            },
+            {
+              "index": 20,
+              "op": "newobject",
+              "args": [
+                2
+              ],
+              "target": null
+            },
+            {
+              "index": 21,
+              "op": "newarray",
+              "args": [
+                1
+              ],
+              "target": null
+            },
+            {
+              "index": 22,
+              "op": "construct",
+              "args": [
+                3
+              ],
+              "target": null
+            },
+            {
+              "index": 23,
+              "op": "coerce",
+              "args": [
+                12110
+              ],
+              "target": null
+            },
+            {
+              "index": 24,
+              "op": "returnvalue",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 25,
+              "op": "getlocal_2",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 26,
+              "op": "pushstring",
+              "args": [
+                26
+              ],
+              "target": null,
+              "string": "0"
+            },
+            {
+              "index": 27,
+              "op": "ifne",
+              "args": [],
+              "target": 44
+            },
+            {
+              "index": 28,
+              "op": "getlex",
+              "args": [
+                12110
+              ],
+              "target": null,
+              "member": "pinball.common.data.ability.during::CommonAbilityContentMasterValue"
+            },
+            {
+              "index": 29,
+              "op": "pushstring",
+              "args": [
+                3701
+              ],
+              "target": null,
+              "string": "target"
+            }
+          ]
+        }
+      ],
+      "swf_path": "${WF_ROOT}/v34-r4-20261016/v34.swf"
+    },
+    {
+      "profile": "test-v35e",
+      "swf_sha256": "89461f676b57a059bde58fe5897190db9b61013ae63947401fe1bf87106d6bcf",
+      "methods": [
+        {
+          "abc": "boot_ffc6",
+          "label": "AbilitySoulValues$/parseAt106",
+          "body_index": 38944,
+          "sha256": "09dab4df4529e9b0272315b616fa9ea4e1882401a9ceadb40be2b5ee515c40ab",
+          "code_length": 21623,
+          "head": [
+            {
+              "index": 0,
+              "op": "getlocal_1",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 1,
+              "op": "pushbyte",
+              "args": [
+                106
+              ],
+              "target": null
+            },
+            {
+              "index": 2,
+              "op": "getproperty",
+              "args": [
+                14
+              ],
+              "target": null
+            },
+            {
+              "index": 3,
+              "op": "coerce",
+              "args": [
+                11
+              ],
+              "target": null
+            },
+            {
+              "index": 4,
+              "op": "coerce",
+              "args": [
+                11
+              ],
+              "target": null
+            },
+            {
+              "index": 5,
+              "op": "setlocal_2",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 6,
+              "op": "getlocal_2",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 7,
+              "op": "pushstring",
+              "args": [
+                46971
+              ],
+              "target": null,
+              "string": "423"
+            },
+            {
+              "index": 8,
+              "op": "ifne",
+              "args": [],
+              "target": 25
+            },
+            {
+              "index": 9,
+              "op": "getlex",
+              "args": [
+                12110
+              ],
+              "target": null,
+              "member": "pinball.common.data.ability.during::CommonAbilityContentMasterValue"
+            },
+            {
+              "index": 10,
+              "op": "pushstring",
+              "args": [
+                93678
+              ],
+              "target": null,
+              "string": "GaugeGainRestriction"
+            },
+            {
+              "index": 11,
+              "op": "pushint",
+              "args": [
+                780
+              ],
+              "target": null
+            },
+            {
+              "index": 12,
+              "op": "pushstring",
+              "args": [
+                3701
+              ],
+              "target": null,
+              "string": "target"
+            },
+            {
+              "index": 13,
+              "op": "getlex",
+              "args": [
+                10095
+              ],
+              "target": null,
+              "member": "pinball.master.generated::AbilitySoulValues"
+            },
+            {
+              "index": 14,
+              "op": "getlocal_1",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 15,
+              "op": "callproperty",
+              "args": [
+                34924,
+                1
+              ],
+              "target": null,
+              "member": "parseAt107"
+            },
+            {
+              "index": 16,
+              "op": "pushstring",
+              "args": [
+                22408
+              ],
+              "target": null,
+              "string": "unique_condition_id"
+            },
+            {
+              "index": 17,
+              "op": "getlex",
+              "args": [
+                10095
+              ],
+              "target": null,
+              "member": "pinball.master.generated::AbilitySoulValues"
+            },
+            {
+              "index": 18,
+              "op": "getlocal_1",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 19,
+              "op": "callproperty",
+              "args": [
+                34928,
+                1
+              ],
+              "target": null,
+              "member": "parseAt115"
+            },
+            {
+              "index": 20,
+              "op": "newobject",
+              "args": [
+                2
+              ],
+              "target": null
+            },
+            {
+              "index": 21,
+              "op": "newarray",
+              "args": [
+                1
+              ],
+              "target": null
+            },
+            {
+              "index": 22,
+              "op": "construct",
+              "args": [
+                3
+              ],
+              "target": null
+            },
+            {
+              "index": 23,
+              "op": "coerce",
+              "args": [
+                12110
+              ],
+              "target": null
+            },
+            {
+              "index": 24,
+              "op": "returnvalue",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 25,
+              "op": "getlocal_2",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 26,
+              "op": "pushstring",
+              "args": [
+                26
+              ],
+              "target": null,
+              "string": "0"
+            },
+            {
+              "index": 27,
+              "op": "ifne",
+              "args": [],
+              "target": 44
+            },
+            {
+              "index": 28,
+              "op": "getlex",
+              "args": [
+                12110
+              ],
+              "target": null,
+              "member": "pinball.common.data.ability.during::CommonAbilityContentMasterValue"
+            },
+            {
+              "index": 29,
+              "op": "pushstring",
+              "args": [
+                3701
+              ],
+              "target": null,
+              "string": "target"
+            }
+          ]
+        },
+        {
+          "abc": "boot_ffc6",
+          "label": "EquipmentEnhancementAbilityValues$/parseAt109",
+          "body_index": 40666,
+          "sha256": "dd651c1588b171de60b3617ac33d165d22c726337ee6848caddd88dc0f331577",
+          "code_length": 21623,
+          "head": [
+            {
+              "index": 0,
+              "op": "getlocal_1",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 1,
+              "op": "pushbyte",
+              "args": [
+                109
+              ],
+              "target": null
+            },
+            {
+              "index": 2,
+              "op": "getproperty",
+              "args": [
+                14
+              ],
+              "target": null
+            },
+            {
+              "index": 3,
+              "op": "coerce",
+              "args": [
+                11
+              ],
+              "target": null
+            },
+            {
+              "index": 4,
+              "op": "coerce",
+              "args": [
+                11
+              ],
+              "target": null
+            },
+            {
+              "index": 5,
+              "op": "setlocal_2",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 6,
+              "op": "getlocal_2",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 7,
+              "op": "pushstring",
+              "args": [
+                46971
+              ],
+              "target": null,
+              "string": "423"
+            },
+            {
+              "index": 8,
+              "op": "ifne",
+              "args": [],
+              "target": 25
+            },
+            {
+              "index": 9,
+              "op": "getlex",
+              "args": [
+                12110
+              ],
+              "target": null,
+              "member": "pinball.common.data.ability.during::CommonAbilityContentMasterValue"
+            },
+            {
+              "index": 10,
+              "op": "pushstring",
+              "args": [
+                93678
+              ],
+              "target": null,
+              "string": "GaugeGainRestriction"
+            },
+            {
+              "index": 11,
+              "op": "pushint",
+              "args": [
+                780
+              ],
+              "target": null
+            },
+            {
+              "index": 12,
+              "op": "pushstring",
+              "args": [
+                3701
+              ],
+              "target": null,
+              "string": "target"
+            },
+            {
+              "index": 13,
+              "op": "getlex",
+              "args": [
+                10281
+              ],
+              "target": null,
+              "member": "pinball.master.generated::EquipmentEnhancementAbilityValues"
+            },
+            {
+              "index": 14,
+              "op": "getlocal_1",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 15,
+              "op": "callproperty",
+              "args": [
+                34925,
+                1
+              ],
+              "target": null,
+              "member": "parseAt110"
+            },
+            {
+              "index": 16,
+              "op": "pushstring",
+              "args": [
+                22408
+              ],
+              "target": null,
+              "string": "unique_condition_id"
+            },
+            {
+              "index": 17,
+              "op": "getlex",
+              "args": [
+                10281
+              ],
+              "target": null,
+              "member": "pinball.master.generated::EquipmentEnhancementAbilityValues"
+            },
+            {
+              "index": 18,
+              "op": "getlocal_1",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 19,
+              "op": "callproperty",
+              "args": [
+                34953,
+                1
+              ],
+              "target": null,
+              "member": "parseAt118"
+            },
+            {
+              "index": 20,
+              "op": "newobject",
+              "args": [
+                2
+              ],
+              "target": null
+            },
+            {
+              "index": 21,
+              "op": "newarray",
+              "args": [
+                1
+              ],
+              "target": null
+            },
+            {
+              "index": 22,
+              "op": "construct",
+              "args": [
+                3
+              ],
+              "target": null
+            },
+            {
+              "index": 23,
+              "op": "coerce",
+              "args": [
+                12110
+              ],
+              "target": null
+            },
+            {
+              "index": 24,
+              "op": "returnvalue",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 25,
+              "op": "getlocal_2",
+              "args": [],
+              "target": null
+            },
+            {
+              "index": 26,
+              "op": "pushstring",
+              "args": [
+                26
+              ],
+              "target": null,
+              "string": "0"
+            },
+            {
+              "index": 27,
+              "op": "ifne",
+              "args": [],
+              "target": 44
+            },
+            {
+              "index": 28,
+              "op": "getlex",
+              "args": [
+                12110
+              ],
+              "target": null,
+              "member": "pinball.common.data.ability.during::CommonAbilityContentMasterValue"
+            },
+            {
+              "index": 29,
+              "op": "pushstring",
+              "args": [
+                3701
+              ],
+              "target": null,
+              "string": "target"
+            }
+          ]
+        }
+      ],
+      "swf_path": "${WF_ROOT}/v35-generic-20261018/run5/v35e.swf"
+    }
+  ]
+}

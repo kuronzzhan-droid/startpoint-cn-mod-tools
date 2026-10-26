@@ -1,0 +1,84 @@
+schema: wf-capability/1
+id: client.apk.patch036@1
+title: 空账号恢复/原子写
+layer: platform
+provided_by:
+  patches:
+  - 36
+  match: all
+  methods:
+  - patch: 36
+    abc: boot_ffc6
+    label: AccountLocalStore_Impl_$/get
+    sha256: 16a02778ee23e4f6fdf43350ef9e735b689669bb75f6710ad04d3fe3110b547c
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 36
+    abc: boot_ffc6
+    label: AccountLocalStore_Impl_$/saveAccountData
+    sha256: 47dc813287972f40c4a72c57dbbeb2ea6e71a2324a88dd654802f4c3032fd5d0
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 36
+    abc: boot_ffc6
+    label: DeviceLocalStore_Impl_$/writeFile
+    sha256: a248484cb9a33d4667109fb1a8e542a9d5a05252b28e3ea48f277c2f17875423
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 36
+    abc: cn/storage/LocalRecordIO
+    label: anonymous-method-0
+    sha256: 154e49820801a489ebb2388ddc5ccde375319ed31d03924bd1b21cc90e4181e1
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 36
+    abc: cn/storage/LocalRecordIO
+    label: LocalRecordIO$/<cinit>
+    sha256: 333e0a1e27815d0ceee55c473fe3dc93d56c63e3bee2b3b4aee8eed6d70191a3
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 36
+    abc: cn/storage/LocalRecordIO
+    label: LocalRecordIO/<ctor>
+    sha256: 8ff32749a852a1d83829c6a3fac8ec00822f06b5c7177f9ebb43a09287b2101a
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  - patch: 36
+    abc: cn/storage/LocalRecordIO
+    label: LocalRecordIO$/writeBinaryFile
+    sha256: 2486d1077a319688498241af0ec4b088b6b0fea257febfbdd0bed4a6945c4b65
+    status: 已记录
+    source: v34/verification/v33-patches-preserved-o8-o12-r2.json
+  status: 已记录
+  basis: v34 实际方法摘要及补丁归档；只证明离线记录，不代表设备验收
+server:
+  required: false
+  features: []
+  note: 无额外服务端改动要求
+data_surface:
+  kinds: []
+  dsl_nodes: []
+  unique_prefixes: []
+  unique_ids: []
+  tables: []
+  selectors: []
+form:
+  label: 空账号恢复/原子写
+  fields: []
+  note: M2 后端声明；表单由后续工坊消费
+describe:
+  template: 空账号恢复/原子写
+  channel: 能力说明
+rules:
+- capability.unknown
+preview:
+  label: 空账号恢复/原子写
+  status: 待验证
+golden:
+- source: v34
+  kind: method-code-sha256
+  note: 方法 SHA 见 provided_by.methods；null 明确保留待补
+docs:
+- MOD工具重构方案 §7.1、§15
+- 测试服相对官方差异清单 §1–3、§7
+- v34/verification/v33-patches-preserved-o8-o12-r2.json

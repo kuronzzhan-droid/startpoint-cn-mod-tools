@@ -1,0 +1,2667 @@
+{
+  "schema": "wf-release-inventory/v1",
+  "contract_id": "local-live-baseline-1-4-311",
+  "members": [
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "android",
+      "logical_path": "character/ginovi/ui/skill_cutin_0.atf.deflate",
+      "size": 95067,
+      "sha256": "4716cc263c37d7edc5e590d893bc2890d1250b18415a7e3c842353821868d8de"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "android",
+      "logical_path": "character/ginovi/ui/skill_cutin_1.atf.deflate",
+      "size": 214740,
+      "sha256": "545566ac750cdc3203d99b7c4a196750f239d718c5ac201f20372ebda96a3689"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "android",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/skill_cutin_0.atf.deflate",
+      "size": 106424,
+      "sha256": "bfb40c3a382b4b39d35833859bb1e5e3672d3885a9bc5f774202bbbf71736399"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "android",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/skill_cutin_1.atf.deflate",
+      "size": 133279,
+      "sha256": "0dd549d5768d98e1f7d02107f7c379b7f5c26c5711b45a6628b32b33008c5d31"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/action/power_flip/action/override/ginovi_pf$ginovi_pf_lv1.action.dsl.amf3.deflate",
+      "size": 1003,
+      "sha256": "2b8749c8dda0f10f740759706aa69152e300f48c253a3783e243425d3f4551c7"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/action/power_flip/action/override/ginovi_pf$ginovi_pf_lv2.action.dsl.amf3.deflate",
+      "size": 1048,
+      "sha256": "24c660a3bbb7829c744038eb867e7cb18ac85408e17876c1cef035ae8d2a5643"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/action/power_flip/action/override/ginovi_pf$ginovi_pf_lv3.action.dsl.amf3.deflate",
+      "size": 1096,
+      "sha256": "9f10e33295fa33f4c620183c970289a6d44ac760f8e4013b05025dd95e1ba332"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/action/skill/action/ability_skill/ability_skill_ginovi_dash$ability_skill_ginovi_dash.action.dsl.amf3.deflate",
+      "size": 693,
+      "sha256": "b515895f9173e070311aee96d232f2414d32bbc3a0153d9a5780d4269a7475aa"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/action/skill/action/ability_skill/ability_skill_ginovi_pf_lv1$ability_skill_ginovi_pf_lv1.action.dsl.amf3.deflate",
+      "size": 787,
+      "sha256": "6e27f62633fcea375eabe5c1e588363dde543fee974585fc18687df787747af3"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/action/skill/action/ability_skill/ability_skill_ginovi_pf_lv2$ability_skill_ginovi_pf_lv2.action.dsl.amf3.deflate",
+      "size": 630,
+      "sha256": "38e60e33476ac322ce09eae1170871a6a004f6abbe226afaa8d7eeb9b63053a8"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/action/skill/action/ability_skill/ability_skill_ginovi_pf_lv3$ability_skill_ginovi_pf_lv3.action.dsl.amf3.deflate",
+      "size": 641,
+      "sha256": "ac6750a25bc4fd9680ff1d2a41f91d9ce50ec615f64e5150a2d9ab2fba14089b"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/action/skill/action/ability_skill/ability_skill_ginovi_ring$ability_skill_ginovi_ring.action.dsl.amf3.deflate",
+      "size": 235,
+      "sha256": "bf4e573c7b9b06943093141d38ec6c90afd3360efd5fa2d3ae5c911bc660c0a0"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/action/skill/action/rare4/darkness_dragon$darkness_dragon_1.action.dsl.amf3.deflate",
+      "size": 907,
+      "sha256": "df5fe168639a76c3dd2371f3d0113cc01e8373289a037d168723f828094f0ebe"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/action/skill/action/rare4/darkness_dragon$darkness_dragon_2.action.dsl.amf3.deflate",
+      "size": 912,
+      "sha256": "6bf13861dce1c650b54e1513687d9c9d83e6747c35cf0a2b53f4a34f71fbaafd"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/action/skill/action/rare5/ginovi$ginovi_1.action.dsl.amf3.deflate",
+      "size": 1016,
+      "sha256": "b3eb16d45c32c44035b68027903cc1c17accd1fe0f0cdc74376c05fb9079ab43"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/action/skill/action/rare5/ginovi$ginovi_2.action.dsl.amf3.deflate",
+      "size": 1016,
+      "sha256": "b3eb16d45c32c44035b68027903cc1c17accd1fe0f0cdc74376c05fb9079ab43"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/action/skill/action/rare5/golden_dragon_jr$golden_dragon_jr_1.action.dsl.amf3.deflate",
+      "size": 965,
+      "sha256": "8f6f81da87dcbc0cd83cc55735507318463f0cc24a0c13427e9f33ee3a6998de"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/action/skill/action/rare5/golden_dragon_jr$golden_dragon_jr_2.action.dsl.amf3.deflate",
+      "size": 969,
+      "sha256": "81c90fa6ad40f2c07e15dd5e1a7984fadcf8a4d50e382e66d63601e387c5f626"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/action/skill/action/rare5/touyakiren_ceo_ny26$touyakiren_ceo_ny26_1.action.dsl.amf3.deflate",
+      "size": 713,
+      "sha256": "56c6cde0939f7aa9206dc34675c9fc1b01fcc16e95e418311a2721f563d4b7f3"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/action/skill/action/rare5/touyakiren_ceo_ny26$touyakiren_ceo_ny26_2.action.dsl.amf3.deflate",
+      "size": 709,
+      "sha256": "3100c5f6a1a92b484fa85e5cb7d45ae2e9769a446b8dfcc868eceb1c7a12f91d"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/action/skill/action/rare5/touyakiren_ceo_ny26$touyakiren_ceo_ny26_3.action.dsl.amf3.deflate",
+      "size": 713,
+      "sha256": "f76fa5570a16f0ddf3f167246da12ee286176e3b5edb31f0ae889e46084d39f5"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/common/unique_condition/unique_darkness_dragon_resist_down.png",
+      "size": 3831,
+      "sha256": "a9f6d5c578ccbf8ccb43c3f1113e7b968bdfa4eaf3fdbdfd451b47ff2b2bcf37"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/common/unique_condition/unique_ginovi.png",
+      "size": 2363,
+      "sha256": "7c1047c33937e8f9076e6d9c00a9c7907550cc0bfae8db5b3c98b842ae7728ea"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/common/unique_condition/unique_ginovi_pact.png",
+      "size": 2346,
+      "sha256": "5cb7babfe630d614ad3e8a82a975cf446b0ac1428575663409ebd51392c3f93d"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/common/unique_condition/unique_golden_dragon_resonance.png",
+      "size": 4448,
+      "sha256": "225b8bca39317a208a45c62b50518b61a6b70d3999e3bd21b17e72ead54f4afb"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/common/unique_condition/unique_lafu_system_intrusion.png",
+      "size": 575,
+      "sha256": "9249efe68498305f3a5a51cfd7a762b8bbaca3eaeff5a7e823a048409692cfc1"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/effect_powerflip_attack_special/effect_powerflip_attack_special.atlas.amf3.deflate",
+      "size": 475,
+      "sha256": "fd6c23543b2e5335cf467b94ee7cc7b0fe1b10597344d3e72c9143475205734e"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/effect_powerflip_attack_special/effect_powerflip_attack_special.png",
+      "size": 10580,
+      "sha256": "6efd06fbf93973b328a6cce2e11439fcd3cb15860e2bf088326df9c185e5e348"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/effect_powerflip_attack_special/powerflip_attack_special_player_one.parts.amf3.deflate",
+      "size": 666,
+      "sha256": "0667397054ecccb8ced5d53ef6bf5dcd5eecabf87e6beb24dbe49d1c1eda899c"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/effect_powerflip_attack_special/powerflip_attack_special_player_one.timeline.amf3.deflate",
+      "size": 87,
+      "sha256": "806e1172492e0eb7206f13f69416f585f1f8fcb84b64470df5cd15f787bee743"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/aura_loop.parts.amf3.deflate",
+      "size": 909,
+      "sha256": "8f898ff2bfc353f246607b33f1624803b17bcc44d4a9be43444ab5fdae403b1b"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/aura_loop.timeline.amf3.deflate",
+      "size": 95,
+      "sha256": "08f9a2871e7b65f3df17696ba7408220a81de3468c2dd3eff808cda4a9a84dfc"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/aura_ring_v1.parts.amf3.deflate",
+      "size": 1544,
+      "sha256": "af48c127889f47fbe131c75d3610d9efafcf1f9281af411725038dd969563429"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/aura_ring_v1.timeline.amf3.deflate",
+      "size": 95,
+      "sha256": "08f9a2871e7b65f3df17696ba7408220a81de3468c2dd3eff808cda4a9a84dfc"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/feather_burst.parts.amf3.deflate",
+      "size": 668,
+      "sha256": "e4c83df7e76bb3438d8e9cd7c9bf1a0b59752f9f6c34e8aada7071bd7711d319"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/feather_burst.timeline.amf3.deflate",
+      "size": 95,
+      "sha256": "7a92069f66692a893033dfbcebba1feb3bf010dc6afa9bf64d5505b34a77fa6a"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/ginovi_effects.atlas.amf3.deflate",
+      "size": 727,
+      "sha256": "37629d04c338c08cde5e8d2908581e6099acd1ac90762f71f1d6e5fb7adbdfff"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/ginovi_effects.png",
+      "size": 592454,
+      "sha256": "8d60b612b2ad2f62208db5b1a82714ae431db574c035c3f548f5062afee8e892"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/hit_spark.parts.amf3.deflate",
+      "size": 498,
+      "sha256": "e8c82152abcfdd553adea7193e9d464465103cc7dcb4d7617cf12f505bb6ae32"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/hit_spark.timeline.amf3.deflate",
+      "size": 94,
+      "sha256": "92468c750251144e9871d35793522c9cfe77e725bb1a0d90aeb58c1f263d5ad0"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/pf_sword_arc.parts.amf3.deflate",
+      "size": 695,
+      "sha256": "2322ce8fd98e23b95f0c0e57c442fa7dd953605191d9e3a7d4987aaa4fd5c2c1"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/pf_sword_arc.timeline.amf3.deflate",
+      "size": 95,
+      "sha256": "7a92069f66692a893033dfbcebba1feb3bf010dc6afa9bf64d5505b34a77fa6a"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/skill_circle.parts.amf3.deflate",
+      "size": 395,
+      "sha256": "045f6899228ce44eb15fa6af02541123fc8d6f33131fe8c238a0a1ce5fd1240f"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/skill_circle.timeline.amf3.deflate",
+      "size": 95,
+      "sha256": "b6cbf7e81e729fe0ba387a005415493ce1ca4f6a5fdb625ee04cf32279c0a5a2"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/slash_lv1.parts.amf3.deflate",
+      "size": 587,
+      "sha256": "e5eb3f56d4630d557a34c64443d9c71132b838e5b36646d7e29b675516e56a8e"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/slash_lv1.timeline.amf3.deflate",
+      "size": 94,
+      "sha256": "92468c750251144e9871d35793522c9cfe77e725bb1a0d90aeb58c1f263d5ad0"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/slash_lv2.parts.amf3.deflate",
+      "size": 843,
+      "sha256": "2c3877a23febbf543fae790eb348e628d67fa876d7351085742435531755e448"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/slash_lv2.timeline.amf3.deflate",
+      "size": 95,
+      "sha256": "b6cbf7e81e729fe0ba387a005415493ce1ca4f6a5fdb625ee04cf32279c0a5a2"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/slash_lv3.parts.amf3.deflate",
+      "size": 847,
+      "sha256": "94ad9b233cef055be3b3647e5b80805b96db4fc25a12a34baf68ac22e8b8c3c3"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/ginovi/ginovi_effects/slash_lv3.timeline.amf3.deflate",
+      "size": 95,
+      "sha256": "b6cbf7e81e729fe0ba387a005415493ce1ca4f6a5fdb625ee04cf32279c0a5a2"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/touyakiren_ceo_ny26/touyakiren_ceo_ny26.atlas.amf3.deflate",
+      "size": 1213,
+      "sha256": "8fd137399b23bf1cb9972279555e20982588b16e0ed3c2113a49af07b9e8006c"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/touyakiren_ceo_ny26/touyakiren_ceo_ny26.parts.amf3.deflate",
+      "size": 17449,
+      "sha256": "26fc4f9617c0257c4a1f88212f95043143822fd08e817f9cc87c0c48f7a5c366"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/touyakiren_ceo_ny26/touyakiren_ceo_ny26.png",
+      "size": 81122,
+      "sha256": "294e96cbc2f9228b8abb6537e6080ed1400821018fe8f22652074d9925fd792d"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/touyakiren_ceo_ny26/touyakiren_ceo_ny26.timeline.amf3.deflate",
+      "size": 254,
+      "sha256": "258bafd978653d13105b88e4b9e2071431c5015266876387bef87d2eab572101"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/touyakiren_ceo_ny26_petal/touyakiren_ceo_ny26_petal.atlas.amf3.deflate",
+      "size": 445,
+      "sha256": "0da9207fef9e43b004f73169c98cacfe55b3437a5793ecc957ace4acbb1db79d"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/touyakiren_ceo_ny26_petal/touyakiren_ceo_ny26_petal.png",
+      "size": 12913,
+      "sha256": "e52e9f9c553de695132b9abc447297525ff3c0f57954699fa798d89405db05e1"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/touyakiren_ceo_ny26_petal/touyakiren_ceo_ny26_petal_hit.parts.amf3.deflate",
+      "size": 6732,
+      "sha256": "8b42f3f19906fae0f4cfdfd04b018043f8d9f58ec90dc626dfd2d7aeee503242"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/touyakiren_ceo_ny26_petal/touyakiren_ceo_ny26_petal_hit.timeline.amf3.deflate",
+      "size": 149,
+      "sha256": "caac742308e8b7117eab9c5f987a3b5e23f57c464f2fd694c9d5977768b6b207"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/touyakiren_ceo_ny26_sakura/touyakiren_ceo_ny26_sakura.atlas.amf3.deflate",
+      "size": 783,
+      "sha256": "d7bdd24e2f6c2d70ca16e1ffe40b5e28121ef6f55d275d46e79ee6a5fbc36d6a"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/touyakiren_ceo_ny26_sakura/touyakiren_ceo_ny26_sakura.png",
+      "size": 48348,
+      "sha256": "37cbce49cf37431b7af72770d560d5bc7280aa462c4ba5f036d7ee7a1cbf11cc"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/touyakiren_ceo_ny26_sakura/touyakiren_ceo_ny26_sakura_all.parts.amf3.deflate",
+      "size": 41668,
+      "sha256": "0fb69d3a8be4e9793178ad3067da78499cb4dde3d28e2a74eb75b0b5227ff38a"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "battle/effect/skill_unique/touyakiren_ceo_ny26_sakura/touyakiren_ceo_ny26_sakura_all.timeline.amf3.deflate",
+      "size": 207,
+      "sha256": "edad5596a48729e15d1cf3389c1cf4bc1b5a2b77ed2b49b6f9b235f4665d06e7"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/battle/character_detail_skill_preview.battle.amf3.deflate",
+      "size": 139,
+      "sha256": "beb1ea7251e539d59bf840ecf35b59dd59ed5b260c510230f2f8dbbf69dd6598"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/pixelart/pixelart.frame.amf3.deflate",
+      "size": 69,
+      "sha256": "07970f90c655d5225e15494f536b87087ff6a30541883ac8530c183899606911"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/pixelart/pixelart.timeline.amf3.deflate",
+      "size": 328,
+      "sha256": "da70363406bf85e6f18cf28a28f8c1f71157cdab4a2610f588a49f51bc9fb2a0"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/pixelart/special.frame.amf3.deflate",
+      "size": 76,
+      "sha256": "2d2770e17592d5f5c5ee1b719495e8fc87359674fedeb47797dbf43439fbeaf7"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/pixelart/special.timeline.amf3.deflate",
+      "size": 108,
+      "sha256": "a10c0b64dbf05796ffbfd365414d91a5a0a81ebef7cbbe4662d049afc01a7dca"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/pixelart/special_sprite_sheet.atlas.amf3.deflate",
+      "size": 153,
+      "sha256": "7f7643ed2693353bc5930f6c5d2aa7afdbc4db19be11d30e630e5b9633aba7df"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/pixelart/special_sprite_sheet.png",
+      "size": 16082,
+      "sha256": "b707b6939ec6f45d0c6b5ead77af09a7445c6f87f8513a3c00bc9faab108cdbf"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/pixelart/sprite_sheet.atlas.amf3.deflate",
+      "size": 718,
+      "sha256": "1b389dd9dd0472ab3ccf9ef97681f53f9c7f707362726cbc0895467a2fc6a3ba"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/pixelart/sprite_sheet.png",
+      "size": 31848,
+      "sha256": "18bc4692a00b235cc944e1536ed683d8e134fbe616b83917267476aceb913a0c"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/ui/illustration_setting_sprite_sheet.atlas.amf3.deflate",
+      "size": 144,
+      "sha256": "5b0f3669f86ffb6e8cf45f2ffd060f078a7e422bd449a8aa70071dba7451577c"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/voice/ally/evolution.mp3",
+      "size": 79455,
+      "sha256": "dc073aa7eaf5f34dfa2db2d67edfdc6b2f9738e47020dd5b5779a17a8ee4c4f7"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/voice/ally/join.mp3",
+      "size": 52287,
+      "sha256": "ea8a51df056f19dab38f8dea01e6e3e78fed74736c370dd26a028eda60236056"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/voice/battle/battle_start_0.mp3",
+      "size": 25956,
+      "sha256": "72cedad169bc2d23b9f7af6cbb363537300ca49ff8ebe9280b881eeb35d58343"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/voice/battle/battle_start_1.mp3",
+      "size": 30972,
+      "sha256": "e44d438be596f168e906fa4a5f90f8158add68ac5ff0398583c49e0a373bf9e0"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/voice/battle/outhole_0.mp3",
+      "size": 8402,
+      "sha256": "0544be70b9c617679edcc27fc83e465714ced9237093424bb928b34e4bec28fb"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/voice/battle/power_flip_0.mp3",
+      "size": 14671,
+      "sha256": "3d087129df873b14b1aa67dfcbb8f59c1237975b55f7afd0c6ae4c5828bb4e87"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/voice/battle/power_flip_1.mp3",
+      "size": 10492,
+      "sha256": "b73470ec26db4aa1f1e3a0fe975ccbc3ac4a5ae89778c36ef97b13683d30a5ec"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/voice/battle/power_flip_2.mp3",
+      "size": 12999,
+      "sha256": "2dd1f9f9cb701c1b2ac6fe61dffd1d6ac473c7ee2fb5518fce066a34218f7a0d"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/voice/battle/skill_0.mp3",
+      "size": 36405,
+      "sha256": "d97d4918f3213da13c15701553698950957fa05a54a7802a7ea5c477ac4d2b19"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/voice/battle/skill_1.mp3",
+      "size": 38495,
+      "sha256": "955c7b57ef616539d4b88c9d1dec49d6dfcdf16ac58969bf9736904a04f9c773"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/voice/battle/skill_ready.mp3",
+      "size": 12999,
+      "sha256": "c3a4aa9e3a7bb9efb208e9d3c5ec498b49e82270a3939c9ecfd527927eec1e64"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/voice/battle/win_0.mp3",
+      "size": 25120,
+      "sha256": "ff9ac59e7e13f5e8ba969233d0f85f0eb6a216de9349ec68d3ccb6c094fb3e80"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/voice/battle/win_1.mp3",
+      "size": 36405,
+      "sha256": "d5207b445c9d0c8a0dd0a7463d8e942dd89f7ddb464df5396d6000b452d614a8"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/voice/home/home_0.mp3",
+      "size": 252908,
+      "sha256": "b516c61cf147a5c0fb79f44d9bf5faab643b6fec86e5559ea2f29a38c482fb5e"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/voice/home/home_1.mp3",
+      "size": 325633,
+      "sha256": "e502f0743f23ea5a2a1aba022ce65ea296909f65db3440a9f0150c256c8a7e33"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/voice/home/home_2.mp3",
+      "size": 283001,
+      "sha256": "b2db6bd608a43ef4e245b3d99b20322899933a4591dda1cba3aa008cc19195ba"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/voice/home/home_3.mp3",
+      "size": 295958,
+      "sha256": "386a326977b36d935b67ee51cf4fa65538e0ddc26eed099432a2db238920cb5b"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/ginovi/voice/home/home_4.mp3",
+      "size": 261267,
+      "sha256": "9931f6ceac48587767bb494f101be7dec5428315a914226de33cb14aeb614bde"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/battle/character_detail_skill_preview.battle.amf3.deflate",
+      "size": 142,
+      "sha256": "b3574f534248bc1e6cae67a56a8dc2a8471068bea296227c192e495036b51767"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/pixelart/pixelart.frame.amf3.deflate",
+      "size": 82,
+      "sha256": "86d74f95179f3771b9cc54a085832f7d10b1dc254b64f8717f0f8712fd57e29b"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/pixelart/pixelart.timeline.amf3.deflate",
+      "size": 333,
+      "sha256": "9a602863ae1c7cfb9f18cc9008e66856d68bbb456d5d8c8926d975cb228d5064"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/pixelart/special.frame.amf3.deflate",
+      "size": 86,
+      "sha256": "e4e8153bc02dc089edeae9b2d3169d1ca4529f999f0d454785319b366925cf06"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/pixelart/special.timeline.amf3.deflate",
+      "size": 110,
+      "sha256": "071d9eb6649dc603b0472c385a8263abfa3e31c720e27b1766dcb6f25d0fee4b"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/pixelart/special_sprite_sheet.atlas.amf3.deflate",
+      "size": 596,
+      "sha256": "667a06d2f8789829175ca522389a456f7efc8820afd92ee110e58b9dd2761802"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/pixelart/special_sprite_sheet.png",
+      "size": 25374,
+      "sha256": "73ec1de7046f31e9b1bc2dc0b3a0a92750019d59cbc5d2079785051b8ee5cf4d"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/pixelart/sprite_sheet.atlas.amf3.deflate",
+      "size": 1051,
+      "sha256": "fb343c9720dd14328a8e41739f7eba1118042cef3e8dfcbb9b655617a5a8910c"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/pixelart/sprite_sheet.png",
+      "size": 18351,
+      "sha256": "58e7ea19c28991ebc7d60af0481a263264187b36eb5ef9359a4acb12f85222f5"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/illustration_setting_sprite_sheet.atlas.amf3.deflate",
+      "size": 158,
+      "sha256": "bfa7551a390843678e6925b4c0579c8e951affd7a564bd00be2057cbf020d7bf"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/ally/evolution.mp3",
+      "size": 147375,
+      "sha256": "c6e2fee9773a3ba69b0f4be5f0422fd1613b94c0b14379f4b4d74f40179b43cd"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/ally/join.mp3",
+      "size": 190320,
+      "sha256": "ae91b72d0413f5092a1220adb91b8621c8bc2fb15fd53aaadead8122d969458d"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/battle/battle_start_0.mp3",
+      "size": 35780,
+      "sha256": "eaecfd0246bbe17f7da22f16e30ec10eb1b1bfb5948f6528790e6e09bcc09189"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/battle/battle_start_1.mp3",
+      "size": 35466,
+      "sha256": "419fdc976299ed9f96ded0375aec3b8b80f34893acb3e66bdb757859ebdfaa46"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/battle/outhole_0.mp3",
+      "size": 15404,
+      "sha256": "baa66bd82b0a9b7085d8ca50c9e3b48b01e80d8266eebb99fdd9f4d2281627bd"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/battle/outhole_1.mp3",
+      "size": 14150,
+      "sha256": "50d53da0654ee648bc5ce5a1c14f9d69d513c4cee0edf858171627ad8dabf3d9"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/battle/power_flip_0.mp3",
+      "size": 9135,
+      "sha256": "a33724e46827150957a1b99bdf65478958356b3b551172e70cea2d1b5c29dde2"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/battle/power_flip_1.mp3",
+      "size": 6313,
+      "sha256": "d120648b62fa3c18a210c558f8d222ace7e4f60aee691c5bb9fd69f478efa833"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/battle/skill_0.mp3",
+      "size": 128566,
+      "sha256": "0fe8466f451cf5ec511874b7eb2358a98a8d27734c6e9893ddd6af78cab2d3af"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/battle/skill_1.mp3",
+      "size": 128880,
+      "sha256": "d6fe8ee48b9f541bcd4f3f0743e2291c6a6ffddf79f8f7715d7b56ad8a69090e"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/battle/skill_ready.mp3",
+      "size": 67126,
+      "sha256": "48035561d01132cda35e81fff8321269059c74eafe81c443a0634223e6ecfe5d"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/battle/win_0.mp3",
+      "size": 51140,
+      "sha256": "cc634a7df98730eb9c89656ef13a0e018ff4edf4d90da29b4f45b281d8ba0e2b"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/battle/win_1.mp3",
+      "size": 31077,
+      "sha256": "7e8e56ffe102c30c41ed42c8e7052c586ba893ecaff7070becaf61065b5c9c5b"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/home/hitoridemo.mp3",
+      "size": 166496,
+      "sha256": "e2f86dce36910356a78e79645b815d0b484f0cf086f4db284dbe33c97c14106b"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/home/konoisu.mp3",
+      "size": 195335,
+      "sha256": "bf8dfa67d552363aae92d84a999641533bc482aea7a61be86f9ca7bf6378fb85"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/home/kyoha.mp3",
+      "size": 216338,
+      "sha256": "6313bed7075a4c580458f8950880fab2df2e3450e5efc5d610d731dd54c833a8"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/home/oshigoto.mp3",
+      "size": 184991,
+      "sha256": "f06a0a0295b0dbb1bdbfab5e18a6031aeade8b8c6b8f8ba184628f41520b639b"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "character/touyakiren_ceo_ny26/voice/home/tamani.mp3",
+      "size": 135463,
+      "sha256": "8bc51cb04f95dcf37e0e1e92fbd16d406bd3213323d612debca37cb76391cc0a"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/dark_01.png",
+      "size": 600,
+      "sha256": "c92c7175d059e2f63b78022b2c443544b715199a92c6632e2631211ed4580669"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/dark_02.png",
+      "size": 570,
+      "sha256": "dae307df2592fe472873679bdf1b6eff70167c86a55de1032fcd8ef42965cc11"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/fire_01.png",
+      "size": 708,
+      "sha256": "139a7e9e2005e88d6d110c36fe6c382bd4132e4fd9b3ef5354176be8a0b697f9"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/fire_02.png",
+      "size": 607,
+      "sha256": "d5ca407aa04d42d9eb0891f3d023299a5516b4b3b9d8dbcf5426b73ce06e51e1"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/light_01.png",
+      "size": 420,
+      "sha256": "1b9274080c8230f8ccbb659f678b9fad8cf0a71c3984b69d899d6bfa9858fa01"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/light_02.png",
+      "size": 702,
+      "sha256": "652f2053faa965ab1005cdd93c4baf3f622e04051d89525c5171acbef3ee5c43"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/thunder_01.png",
+      "size": 903,
+      "sha256": "992752cc02985d338221384876d6fc9205c1a0a491db247e1811e274ef4384ef"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/thunder_02.png",
+      "size": 743,
+      "sha256": "ff693d70355278cf52fd856659a364846ad71aed60d9c3f5d6232178074305df"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/universal_01.png",
+      "size": 654,
+      "sha256": "9ffc873d88ab867a247ea5011d1a1b9cd771bf8950e63193a0a4cdd4088f0700"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/universal_02.png",
+      "size": 1207,
+      "sha256": "6e427f5f420a4cda6134e0f74296e1e59d7d9397eb8bd7ed29334da474a58dc6"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/universal_03.png",
+      "size": 999,
+      "sha256": "83280a099f6e46fd338442155b68f1c1eb8c284e0a8f625e935d1457e413e8d8"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/water_01.png",
+      "size": 539,
+      "sha256": "1681378c93f6eca67c7e099cee4353600505bdbbc00264f8fb6dc487bf0583c1"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/water_02.png",
+      "size": 922,
+      "sha256": "03556f48fe9cb69cf37f0e99c662aedfe6e6de5833f8a2cb579bca5e12bc4aa1"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/wind_01.png",
+      "size": 665,
+      "sha256": "7c9d987a29ec93861062d4d518785c0a1aab9e4e8fe17875a743a95e8b77499c"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "item/equipment/mod/abyss/wind_02.png",
+      "size": 567,
+      "sha256": "7e2df0e4b36c42b2a47787735c901fe035082efb01632989da66c45ae1f8096a"
+    },
+    {
+      "owner": "ginovi",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/ability/ability.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "1699991",
+          "1699992",
+          "1699993",
+          "1699994",
+          "1699995",
+          "1699996"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "9c160e4117e6bac4e275757e54076e1634531d382e8e4295c75f9a8fd842d3fc",
+      "source": {
+        "size": 318701,
+        "sha256": "651c91cd6fb55a6c7324e8917195ef8e798d3ad0bed7dd16901ee0b3771b9271"
+      }
+    },
+    {
+      "owner": "lafu_lunar_ny",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/ability/ability.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "1699981",
+          "1699982",
+          "1699983",
+          "1699984",
+          "1699985",
+          "1699986"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "cb34fc44b135175adfc06ff453b2555dcb12a84975ff39e410e9a8c52bdc847c",
+      "source": {
+        "size": 318701,
+        "sha256": "651c91cd6fb55a6c7324e8917195ef8e798d3ad0bed7dd16901ee0b3771b9271"
+      }
+    },
+    {
+      "owner": "light_dark_dragons",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/ability/ability.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "1511591",
+          "1511592",
+          "1511593",
+          "1511594",
+          "1511595",
+          "1511596",
+          "2610891",
+          "2610892",
+          "2610893",
+          "2610894",
+          "2610895",
+          "2610896"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "d5ce4023dbacfb97efe675ae949721d75967107cba52fb3a6df1e96cc05ded38",
+      "source": {
+        "size": 318701,
+        "sha256": "651c91cd6fb55a6c7324e8917195ef8e798d3ad0bed7dd16901ee0b3771b9271"
+      }
+    },
+    {
+      "owner": "abyss_weapons",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/ability/ability_soul.orderedmap",
+      "claim": {
+        "codec_id": "raw_outer",
+        "outer_keys": [
+          "8000101",
+          "8000102",
+          "8000103",
+          "8000104",
+          "8000105",
+          "8000106",
+          "8000107",
+          "8000108",
+          "8000109",
+          "8000110",
+          "8000111",
+          "8000112",
+          "8000113",
+          "8000114",
+          "8000115"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "00d786f37a0f28dd3fa30bac845cd00d3142afc75c28b5807cd60267a7f07813",
+      "source": {
+        "size": 42048,
+        "sha256": "f939d40055228ea747e40c0c20943387355675c0b0a022d5b3c78dceb7276359"
+      }
+    },
+    {
+      "owner": "ginovi",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/ability/leader_ability.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "169999"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "81be12cb6cd8c004296f3005abd1582b1e7485963f8f8d310be96d0821e37c76",
+      "source": {
+        "size": 54396,
+        "sha256": "98af70fbb29525500ffc91bb960e417b2b686d500d8acc02fb69900a987b0de1"
+      }
+    },
+    {
+      "owner": "lafu_lunar_ny",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/ability/leader_ability.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "169998"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "6ea4289b49f2269c91e7d64b6a94916b938565458859f68a90e545a75acde7f2",
+      "source": {
+        "size": 54396,
+        "sha256": "98af70fbb29525500ffc91bb960e417b2b686d500d8acc02fb69900a987b0de1"
+      }
+    },
+    {
+      "owner": "light_dark_dragons",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/ability/leader_ability.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "151159",
+          "261089"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "63721a4807aee798e862a062b8e760dc0a7cdf0a4293e17e6fd63a415f0962ea",
+      "source": {
+        "size": 54396,
+        "sha256": "98af70fbb29525500ffc91bb960e417b2b686d500d8acc02fb69900a987b0de1"
+      }
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "master/battle/boss/boss_level.orderedmap",
+      "size": 43243,
+      "sha256": "d256e1e2181f21ccafee9ded2e7c95ebed1ddf53523f34161d03f77b3363a203"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "master/battle/boss/general_boss.orderedmap",
+      "size": 345850,
+      "sha256": "92ee5026fd10b935d39068e750ebf95acb4a104f105d9fe82f7e11b2c87c8375"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "master/battle/boss/general_boss_variable.orderedmap",
+      "size": 88321,
+      "sha256": "474b990eb164884d724999fe41fa8d957e9ae8d7c084734469fbb408051e6a32"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "master/battle/field_data.orderedmap",
+      "size": 124987,
+      "sha256": "b869f774464a09595eb9d0ef83cc2ad61d93da4908496cd218fdad01b6d33a29"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "common",
+      "logical_path": "master/battle/zone.orderedmap",
+      "size": 248391,
+      "sha256": "d17892260c87e4636de465482e330c42b23c216f6032faa67bc120e99e1a6bae"
+    },
+    {
+      "owner": "ginovi",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/character/character.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "169999"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "482215f54313aff3b5a97c20c39deebc53afc90c6659af75376e758fea881874",
+      "source": {
+        "size": 76264,
+        "sha256": "d69991d3dfa31b158841c3b77842640687f603e2cba6d7c3fb7f9ab2b6195e22"
+      }
+    },
+    {
+      "owner": "lafu_lunar_ny",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/character/character.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "169998"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "7446af74ada7c807a3814f1b9c5e67e199b568804aa8d090d6d7e3eec300a762",
+      "source": {
+        "size": 76264,
+        "sha256": "d69991d3dfa31b158841c3b77842640687f603e2cba6d7c3fb7f9ab2b6195e22"
+      }
+    },
+    {
+      "owner": "lafu_lunar_ny",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/character/character_awake_status.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "169998"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "f15408e95b9f09c182ba91d603a29d6e3d8e3d77641beb1954d21d63471f86e1",
+      "source": {
+        "size": 757,
+        "sha256": "0fb2031d025e5727b2b609a6280dd61f773d8db082852a826713d8b0e08b6377"
+      }
+    },
+    {
+      "owner": "ginovi",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/character/character_gacha_sound.orderedmap",
+      "claim": {
+        "codec_id": "raw_outer",
+        "outer_keys": [
+          "169999"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "62fb40394574090813da0a8728372996e2e1b032efc522741617c1fb1cea1035",
+      "source": {
+        "size": 101298,
+        "sha256": "01db7ff0790970c9c4206e4793d7037c5019eb78f93953791d0d7be50a20a3aa"
+      }
+    },
+    {
+      "owner": "lafu_lunar_ny",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/character/character_gacha_sound.orderedmap",
+      "claim": {
+        "codec_id": "raw_outer",
+        "outer_keys": [
+          "169998"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "0294c943c2fd169f8e36668ad0d4fa8a164e46d52dee9b395cfdf096138ca6c6",
+      "source": {
+        "size": 101298,
+        "sha256": "01db7ff0790970c9c4206e4793d7037c5019eb78f93953791d0d7be50a20a3aa"
+      }
+    },
+    {
+      "owner": "ginovi",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/character/character_speech.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "169999"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "729e8807baedd2c8b53956a254d58c7e307e28f71bc489140ff2a09e3ae1e881",
+      "source": {
+        "size": 387645,
+        "sha256": "629577526df8cd14063f73219b0b1c239703199f22fb85a17359736d8f1658c9"
+      }
+    },
+    {
+      "owner": "lafu_lunar_ny",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/character/character_speech.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "169998"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "2cdc072e17fdf61d6b689e721f0f312f6715fbd183b1d0d1637fa3feff4ee8ec",
+      "source": {
+        "size": 387645,
+        "sha256": "629577526df8cd14063f73219b0b1c239703199f22fb85a17359736d8f1658c9"
+      }
+    },
+    {
+      "owner": "ginovi",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/character/character_status.orderedmap",
+      "claim": {
+        "codec_id": "raw_outer",
+        "outer_keys": [
+          "169999"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "cb1c100ab39e465f1a310cab6f6fc9a0e39a31f355ce51e05be6565c48d30795",
+      "source": {
+        "size": 58426,
+        "sha256": "c7382e3f65564a0e1630e3798e9e5fcb8e4bfe74fcb60dc88796e059007c3401"
+      }
+    },
+    {
+      "owner": "lafu_lunar_ny",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/character/character_status.orderedmap",
+      "claim": {
+        "codec_id": "raw_outer",
+        "outer_keys": [
+          "169998"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "fb908b190eabc73ce26f0f916a4dc90110d138fbd5ce8403f57bddddced5d540",
+      "source": {
+        "size": 58426,
+        "sha256": "c7382e3f65564a0e1630e3798e9e5fcb8e4bfe74fcb60dc88796e059007c3401"
+      }
+    },
+    {
+      "owner": "light_dark_dragons",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/character/character_status.orderedmap",
+      "claim": {
+        "codec_id": "raw_outer",
+        "outer_keys": [
+          "151159",
+          "261089"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "74d10259cd52e2871371309b8551f5388d70307df537addc24f6b4ce9d67d946",
+      "source": {
+        "size": 58426,
+        "sha256": "c7382e3f65564a0e1630e3798e9e5fcb8e4bfe74fcb60dc88796e059007c3401"
+      }
+    },
+    {
+      "owner": "ginovi",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/character/character_text.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "169999"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "1734a023df7526bd69c748f948e1d4ccada9f3417f380483ad23547f845e3351",
+      "source": {
+        "size": 186139,
+        "sha256": "a031625899a23b33ce660811fdd967a397c5ffc4743ec9119926c54abf285388"
+      }
+    },
+    {
+      "owner": "lafu_lunar_ny",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/character/character_text.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "169998"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "53717a572a2a74b43e711867cf5abfa75582805ac3ebe25523682d345cac9974",
+      "source": {
+        "size": 186139,
+        "sha256": "a031625899a23b33ce660811fdd967a397c5ffc4743ec9119926c54abf285388"
+      }
+    },
+    {
+      "owner": "light_dark_dragons",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/character/character_text.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "151159",
+          "261089"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "cbf4095d739916e8fe37f8ba28bb4cc67d049e924c8667d7068c220784cbd571",
+      "source": {
+        "size": 186139,
+        "sha256": "a031625899a23b33ce660811fdd967a397c5ffc4743ec9119926c54abf285388"
+      }
+    },
+    {
+      "owner": "ginovi",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/character/full_shot_image_attribute.orderedmap",
+      "claim": {
+        "codec_id": "raw_outer",
+        "outer_keys": [
+          "169999"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "f65dc8de8510e85df79fbe99681e38a8f30bbce1f86aa78e22ecaa92f91073ba",
+      "source": {
+        "size": 41405,
+        "sha256": "6349dcb64f9eed64cb5604bf500c29434511961cdd56ec41bdcf68973baf94d9"
+      }
+    },
+    {
+      "owner": "lafu_lunar_ny",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/character/full_shot_image_attribute.orderedmap",
+      "claim": {
+        "codec_id": "raw_outer",
+        "outer_keys": [
+          "169998"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "23e7f19a4143edf92214d8c66c28d91911d3fda104022c9b133dd5335bc0bdbf",
+      "source": {
+        "size": 41405,
+        "sha256": "6349dcb64f9eed64cb5604bf500c29434511961cdd56ec41bdcf68973baf94d9"
+      }
+    },
+    {
+      "owner": "ginovi",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/character/unique_condition.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "169998",
+          "169999"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "4b9340c4d8ac4075bfd741fd0273c6650dcf8a43788bee979f9ffa5b2e595659",
+      "source": {
+        "size": 3079,
+        "sha256": "84f88715028fb915133fdc3a34177aa08c968d68695d4ffafc85e7899f42f8a3"
+      }
+    },
+    {
+      "owner": "lafu_lunar_ny",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/character/unique_condition.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "170000"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "16226f6be5076fce8e49354506ff54771250bc240406ba1ee0b989992d2032a8",
+      "source": {
+        "size": 3079,
+        "sha256": "84f88715028fb915133fdc3a34177aa08c968d68695d4ffafc85e7899f42f8a3"
+      }
+    },
+    {
+      "owner": "light_dark_dragons",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/character/unique_condition.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "151159",
+          "261089"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "228984bc4374526e633a98f85c14fd8bd6b0560007c8351edb1d85b6067bfc71",
+      "source": {
+        "size": 3079,
+        "sha256": "84f88715028fb915133fdc3a34177aa08c968d68695d4ffafc85e7899f42f8a3"
+      }
+    },
+    {
+      "owner": "ginovi",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/generated/character_image.orderedmap",
+      "claim": {
+        "codec_id": "raw_outer",
+        "outer_keys": [
+          "169999"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "7bcf2ca47cd1a1e593c04d8005da769473eb31ff846ac24fee432f84f363add4",
+      "source": {
+        "size": 41909,
+        "sha256": "f6bcc6fa9e69590eec430c9512a8e09f7980f27fbf5ef2439a17abf0f5fa5034"
+      }
+    },
+    {
+      "owner": "lafu_lunar_ny",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/generated/character_image.orderedmap",
+      "claim": {
+        "codec_id": "raw_outer",
+        "outer_keys": [
+          "169998"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "b1b1d344beb1beab23f3583379936d8ff8355251d932fd779c19a0ff122e0b2c",
+      "source": {
+        "size": 41909,
+        "sha256": "f6bcc6fa9e69590eec430c9512a8e09f7980f27fbf5ef2439a17abf0f5fa5034"
+      }
+    },
+    {
+      "owner": "ginovi",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/generated/mana_board.orderedmap",
+      "claim": {
+        "codec_id": "raw_outer",
+        "outer_keys": [
+          "169999"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "2f6ace6b22c300e053dc09b8ce453b71e4a8323edf3019da270b79d83dfd60d5",
+      "source": {
+        "size": 837579,
+        "sha256": "9935349a884059a60f6902963b335fcb8029d71f46d91c0ac949bfd40017919d"
+      }
+    },
+    {
+      "owner": "lafu_lunar_ny",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/generated/mana_board.orderedmap",
+      "claim": {
+        "codec_id": "raw_outer",
+        "outer_keys": [
+          "169998"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "ded233c47cfea74dd3c5b870a11da0f62046abb3ba77fbc4b04727b2cdca77b4",
+      "source": {
+        "size": 837579,
+        "sha256": "9935349a884059a60f6902963b335fcb8029d71f46d91c0ac949bfd40017919d"
+      }
+    },
+    {
+      "owner": "ginovi",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/generated/trimmed_image.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "character/ginovi/ui/full_shot_1440_1920_0",
+          "character/ginovi/ui/full_shot_1440_1920_1",
+          "character/ginovi/ui/skill_cutin_0",
+          "character/ginovi/ui/skill_cutin_1"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "82a68b716240cb7b04bef757d16ae579fc43ef47cad1c67f731b8eb4d557daf5",
+      "source": {
+        "size": 375549,
+        "sha256": "14acb86e339ca8123d4925cf67c4bebeebe4b30301c8e0570826a33be8e57d96"
+      }
+    },
+    {
+      "owner": "lafu_lunar_ny",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/generated/trimmed_image.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "character/touyakiren_ceo_ny26/ui/full_shot_1440_1920_0",
+          "character/touyakiren_ceo_ny26/ui/full_shot_1440_1920_1",
+          "character/touyakiren_ceo_ny26/ui/skill_cutin_0",
+          "character/touyakiren_ceo_ny26/ui/skill_cutin_1"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "4f16b84c4341e444045e3e096af65f39983ac1f422f8023fadb76d3d7ba7f177",
+      "source": {
+        "size": 375549,
+        "sha256": "14acb86e339ca8123d4925cf67c4bebeebe4b30301c8e0570826a33be8e57d96"
+      }
+    },
+    {
+      "owner": "abyss_weapons",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/item/equipment.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "8000101",
+          "8000102",
+          "8000103",
+          "8000104",
+          "8000105",
+          "8000106",
+          "8000107",
+          "8000108",
+          "8000109",
+          "8000110",
+          "8000111",
+          "8000112",
+          "8000113",
+          "8000114",
+          "8000115"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "add65270d0474e8673e0a672e9821aa64540aea74cf0f189be55692e030748ef",
+      "source": {
+        "size": 93643,
+        "sha256": "1738c22203f1063585b92243f7f2812056ba09d8058aeb683fedc82aad614ad6"
+      }
+    },
+    {
+      "owner": "abyss_weapons",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/item/equipment_status.orderedmap",
+      "claim": {
+        "codec_id": "raw_outer",
+        "outer_keys": [
+          "8000101",
+          "8000102",
+          "8000103",
+          "8000104",
+          "8000105",
+          "8000106",
+          "8000107",
+          "8000108",
+          "8000109",
+          "8000110",
+          "8000111",
+          "8000112",
+          "8000113",
+          "8000114",
+          "8000115"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "26872e2005e08f132179e8a0335b4275f42bee1ae0ad03c56fcfbf6fb725201a",
+      "source": {
+        "size": 31833,
+        "sha256": "f88d0371d417af846bf856fc7746c2c88743d9aeb61e8a7c559280be0fc56eaf"
+      }
+    },
+    {
+      "owner": "abyss_weapons",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/item/item.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "2370099",
+          "8000101",
+          "8000102",
+          "8000103",
+          "8000104",
+          "8000105",
+          "8000106",
+          "8000107",
+          "8000108",
+          "8000109",
+          "8000110",
+          "8000111",
+          "8000112",
+          "8000113",
+          "8000114",
+          "8000115"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "ac8d3ac61880ce530b7cfe3498d9cebb385a559b2456b9e9f3b3f6e4945d058d",
+      "source": {
+        "size": 291980,
+        "sha256": "5bf2c166071ff87572b7a0ebff742f66ab20115946e4164abc53159bbd533117"
+      }
+    },
+    {
+      "owner": "ginovi",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/mana_board/mana_board2_open_condition.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "169999"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "756e8ec63883193ba840f324529394f051143022a0f9a23d5bebe43892b8823d",
+      "source": {
+        "size": 26038,
+        "sha256": "dd1eba2073a78d01bfb07b197681f342d73017460fd4f6372aeb7015df578a59"
+      }
+    },
+    {
+      "owner": "lafu_lunar_ny",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/mana_board/mana_board2_open_condition.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "169998"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "970079ff51950ee17374ba05743dbc1f8473dafd018d90f6e7e2dbcbc921c48f",
+      "source": {
+        "size": 26038,
+        "sha256": "dd1eba2073a78d01bfb07b197681f342d73017460fd4f6372aeb7015df578a59"
+      }
+    },
+    {
+      "owner": "ginovi",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/mana_board/mana_node.orderedmap",
+      "claim": {
+        "codec_id": "raw_outer",
+        "outer_keys": [
+          "169999"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "2d079270defe1596b69f498cad0b9c8df51a379dfc4c610ebaf8273eb7695979",
+      "source": {
+        "size": 1021115,
+        "sha256": "1a97bd19e28c1b53cffe32f7d194056f27d1241c2b8e5c0cee1af83fa27feebc"
+      }
+    },
+    {
+      "owner": "lafu_lunar_ny",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/mana_board/mana_node.orderedmap",
+      "claim": {
+        "codec_id": "raw_outer",
+        "outer_keys": [
+          "169998"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "e906c9a544d7837045cb760132944ef47d4a51ab333e7cee2c3abbb7e8b6e57f",
+      "source": {
+        "size": 1021115,
+        "sha256": "1a97bd19e28c1b53cffe32f7d194056f27d1241c2b8e5c0cee1af83fa27feebc"
+      }
+    },
+    {
+      "owner": "ginovi",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/mana_board/upskill.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "169999"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "2d78658866769441e7ad75968954ae08526ba495978d200a34127859ed365828",
+      "source": {
+        "size": 22161,
+        "sha256": "ab06cea316778d79cdfbad8a58a71f9650aa50dbf7ac3d283a13ebd7f7dea8cc"
+      }
+    },
+    {
+      "owner": "lafu_lunar_ny",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/mana_board/upskill.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "169998"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "687ba461d6d5209efb92c0b8d7d1109a95f2c97bd07ed29febd12b8b6386c245",
+      "source": {
+        "size": 22161,
+        "sha256": "ab06cea316778d79cdfbad8a58a71f9650aa50dbf7ac3d283a13ebd7f7dea8cc"
+      }
+    },
+    {
+      "owner": "abyss_tower",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/quest/event/event_list.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "700099"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "e3045efe3c0bd9da1123c859279d84def22470088f224a242d336a076be65fda",
+      "source": {
+        "size": 6660,
+        "sha256": "4f0c705ce89d7f1548b9de13b063c76c26ce53612749ac4fbe4a097a2e8e982d"
+      }
+    },
+    {
+      "owner": "abyss_700099_core",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/quest/event/rush_event.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "700099"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "8c7a7dd552041937bdb9ba8a4523ab9fb47207e09a1fc5d56d3e0e69509a610e",
+      "source": {
+        "size": 3832,
+        "sha256": "9c1d02bdc8609fa5b244fee56da884648a8cfe9b80960507e4ace557e4517a00"
+      }
+    },
+    {
+      "owner": "abyss_tower",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/quest/event/rush_event_battle_quest_correction.orderedmap",
+      "claim": {
+        "codec_id": "raw_outer",
+        "outer_keys": [
+          "700099"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "65f8b6b87cac66431a95aad796cf77cfb7a9b433a4abf52d10c278e3d88ab99c",
+      "source": {
+        "size": 6979,
+        "sha256": "15b3f71fb95e09b66a9ffbc6254a672636ba3d7e12b8de8fe9c54e0b435a0522"
+      }
+    },
+    {
+      "owner": "abyss_tower",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/quest/event/rush_event_quest.orderedmap",
+      "claim": {
+        "codec_id": "action_nested",
+        "outer_keys": [
+          "700099"
+        ],
+        "inner_keys": {
+          "700099": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28",
+            "29",
+            "30",
+            "99"
+          ]
+        }
+      },
+      "projection_sha256": "a440535e60583e1809522f42d6935820bd471afb635d35bd9ec23a706995507f",
+      "source": {
+        "size": 38377,
+        "sha256": "b4637b11e506fb6d3cc513e0d21734d5014dd7861e9703c01e8bbef1a0643c9e"
+      }
+    },
+    {
+      "owner": "abyss_tower",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/quest/event/rush_event_quest_folder.orderedmap",
+      "claim": {
+        "codec_id": "action_nested",
+        "outer_keys": [
+          "700099"
+        ],
+        "inner_keys": {
+          "700099": [
+            "1",
+            "2"
+          ]
+        }
+      },
+      "projection_sha256": "2880bc8e8e559e45b3a6576233d71406c0f081233ec1b4cc4773f09176759c0d",
+      "source": {
+        "size": 9556,
+        "sha256": "7ac5bfcfb5b4c2cf77e705bdf11c464486316738cc6493506583099942a5bd1b"
+      }
+    },
+    {
+      "owner": "abyss_weapons",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/shop/event_item_shop.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "9700101",
+          "9700102",
+          "9700103",
+          "9700104",
+          "9700105",
+          "9700106",
+          "9700107",
+          "9700108",
+          "9700109",
+          "9700110",
+          "9700111",
+          "9700112",
+          "9700113",
+          "9700114",
+          "9700115"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "4529a973089f6e877b2d593c3a87ae03d15e9995bd688bc485199c540fefc9e7",
+      "source": {
+        "size": 2306397,
+        "sha256": "a02c1f54d2d69d63c457ca0a03b1aa1c3de6077354a0231aeb48e4daf9a5a6fb"
+      }
+    },
+    {
+      "owner": "ginovi",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/skill/action_skill.orderedmap",
+      "claim": {
+        "codec_id": "action_nested",
+        "outer_keys": [
+          "ginovi"
+        ],
+        "inner_keys": {
+          "ginovi": [
+            "1",
+            "2"
+          ]
+        }
+      },
+      "projection_sha256": "83f8c4e138b2c052a3f36403ebc0d76f044a40685e150a41808a956ccac44c5e",
+      "source": {
+        "size": 303956,
+        "sha256": "55318d445c97c37b98b667998e4bedfa7164fc99de9d3242d17a2b40e89db381"
+      }
+    },
+    {
+      "owner": "lafu_lunar_ny",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/skill/action_skill.orderedmap",
+      "claim": {
+        "codec_id": "action_nested",
+        "outer_keys": [
+          "touyakiren_ceo_ny26"
+        ],
+        "inner_keys": {
+          "touyakiren_ceo_ny26": [
+            "1",
+            "2",
+            "3"
+          ]
+        }
+      },
+      "projection_sha256": "5998c6cac1d0548826aada858980c829ed06f91dc4dd62b80d15188b5ff4192c",
+      "source": {
+        "size": 303956,
+        "sha256": "55318d445c97c37b98b667998e4bedfa7164fc99de9d3242d17a2b40e89db381"
+      }
+    },
+    {
+      "owner": "light_dark_dragons",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/skill/action_skill.orderedmap",
+      "claim": {
+        "codec_id": "action_nested",
+        "outer_keys": [
+          "golden_dragon_jr",
+          "darkness_dragon"
+        ],
+        "inner_keys": {
+          "golden_dragon_jr": [
+            "1",
+            "2"
+          ],
+          "darkness_dragon": [
+            "1",
+            "2"
+          ]
+        }
+      },
+      "projection_sha256": "4558c3c1414476b59ff8b84356e7c045f0a7d1ddf59e6572ba2a198dddaf0b94",
+      "source": {
+        "size": 303956,
+        "sha256": "55318d445c97c37b98b667998e4bedfa7164fc99de9d3242d17a2b40e89db381"
+      }
+    },
+    {
+      "owner": "ginovi",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/skill/power_flip_action.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "ginovi_pf"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "b1705e6623be317241d0c99c90a896878a2c4dcb4b08084db5df9c9a199133c3",
+      "source": {
+        "size": 974,
+        "sha256": "ff29afea83ddc72d05fd30984961ea150e73761b3093ebccb1656d88813feb03"
+      }
+    },
+    {
+      "owner": "ginovi",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/skill_preview/skill_preview_character.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "169999"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "53610307cf437cbedc2e0bc66b38b79d949317a6aa51f9b05a7ff864184cea60",
+      "source": {
+        "size": 26558,
+        "sha256": "b92e546f73b363a0494291fc48815da4ecb9017d847c91345a7c562cb44dddf2"
+      }
+    },
+    {
+      "owner": "lafu_lunar_ny",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/skill_preview/skill_preview_character.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "169998"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "bc61f4e5e48e9b74389b7f94488e8b45431ab9a7457ebe00e0226c6203c83cb3",
+      "source": {
+        "size": 26558,
+        "sha256": "b92e546f73b363a0494291fc48815da4ecb9017d847c91345a7c562cb44dddf2"
+      }
+    },
+    {
+      "owner": "ginovi",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/stance_detail/character_stance_detail.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "169999"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "119ff42ff9d2c542eae4a403a35fffe15c87431b5d8c8c8f76d5a6482bbdc477",
+      "source": {
+        "size": 14772,
+        "sha256": "e4c9e6c67b70ef2bacbe5073073a7696a943f6b8ad19e83481b0bdcb8ab06441"
+      }
+    },
+    {
+      "owner": "lafu_lunar_ny",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/stance_detail/character_stance_detail.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "169998"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "141a284076f4ca6d1d061bd11566af018a8a73d3e0ff776fed89db3f95e038d9",
+      "source": {
+        "size": 14772,
+        "sha256": "e4c9e6c67b70ef2bacbe5073073a7696a943f6b8ad19e83481b0bdcb8ab06441"
+      }
+    },
+    {
+      "owner": "ginovi",
+      "kind": "table",
+      "root": "common",
+      "logical_path": "master/string/custom_ability_string.orderedmap",
+      "claim": {
+        "codec_id": "flat",
+        "outer_keys": [
+          "ability_skill_ginovi_dash",
+          "ability_skill_ginovi_pf_lv1",
+          "ability_skill_ginovi_pf_lv2",
+          "ability_skill_ginovi_pf_lv3",
+          "ability_skill_ginovi_ring"
+        ],
+        "inner_keys": {}
+      },
+      "projection_sha256": "b938a369d621118de221781e6861df5c96964fcf1ae779ecf9433a6876365665",
+      "source": {
+        "size": 7681,
+        "sha256": "0d935cb27006a405f3e1b5019a390114313d1ab3595755868152316c814fb571"
+      }
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/battle_control_board_0.png",
+      "size": 54089,
+      "sha256": "4f8b330050e7ac902ef015db96efbc65872a39709db734b48de4290a72ef4c8e"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/battle_control_board_1.png",
+      "size": 61224,
+      "sha256": "8cf9be82573ed92f8e9af0a1c8ee082f037a43b8126218448d712ad24091d4b9"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/battle_member_status_0.png",
+      "size": 5933,
+      "sha256": "41a0504758d128ba6cf5ea874cc3b4cb3258cd69bac3ca97acf80b0f74c3aecf"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/battle_member_status_1.png",
+      "size": 9864,
+      "sha256": "018a9f999ebdbd62274e07a718e400621dbb95dc518893b65ea0cde8e9094f3d"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/cutin_skill_chain_0.png",
+      "size": 138674,
+      "sha256": "796e4a6bf183e691a862f75cfe6cdac056e0a962699edbd5d35c254a54a479c1"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/cutin_skill_chain_1.png",
+      "size": 210098,
+      "sha256": "94ee583246f6c048b9ea9f18580181e291870eb43b44a87ad9d9fc90441360e3"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/full_shot_1440_1920_0.png",
+      "size": 3134806,
+      "sha256": "1a058cb370ed4b6ea323462fdd6efae8e2216b2c3d29df18ed498e8146b2f217"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/full_shot_1440_1920_1.png",
+      "size": 4698371,
+      "sha256": "c62f81ce23d477d51f1fbbefc942dd11bb3501ab1b777d4c0d44aef5c618eab4"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/illustration_setting_sprite_sheet.png",
+      "size": 498613,
+      "sha256": "924a718896a2ca8246eb2f60464a62dfe1728f9be1bfb1d6a4da8388dbdfee25"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/skill_cutin_0.png",
+      "size": 341174,
+      "sha256": "2b1d617e0f41121d3d4c2e081f3d63cc740f44266de2691861b0d94e9bef8d19"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/skill_cutin_1.png",
+      "size": 843034,
+      "sha256": "5d6dfa5c7fe00f840cc0f5fd435d889f84560c43cf6c067c35117da05518d933"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/square_0.png",
+      "size": 73300,
+      "sha256": "caa4d624c5ed70a40194ed080f4951eb0bd1e30a6d05e089fdbcf397e675a18f"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/square_1.png",
+      "size": 112346,
+      "sha256": "2e9d30dca80a295f5329d0587d654e20e58f42fa93a9e74daaee0daef4f8f5c1"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/square_132_132_0.png",
+      "size": 30832,
+      "sha256": "3d8c70dd1e84342e385be65766fd8995469c8e6f0a0e2db7388db47a2d85aed5"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/square_132_132_1.png",
+      "size": 46661,
+      "sha256": "78ea5650f7d4b0d663c3e64dfb125847319b97f5d8aff7d5cc9d79a1390dad72"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/square_round_136_136_0.png",
+      "size": 31783,
+      "sha256": "f684244047832d4135129a8413ff728c4ff1f3072b547d08204e38e1a01ba0d1"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/square_round_136_136_1.png",
+      "size": 49257,
+      "sha256": "3e9d597dc6fc2ad7f17fcd1c9f33d9291c2c555048b62a084a0ed95a41ae4526"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/square_round_95_95_0.png",
+      "size": 16412,
+      "sha256": "004eae3512dda3ab555b19cec9b1cafcc1c39c34ee6ef1aef99ee362e9498b79"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/square_round_95_95_1.png",
+      "size": 25274,
+      "sha256": "59c92b30e5a60cfcf776e4ffb3d1f4b3eede84793bd8aee582146a12cbce2f7f"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/thumb_level_up_0.png",
+      "size": 134967,
+      "sha256": "11047ed98c1130c8ecf1347f82b34c54abef5bffdffc79e534fe2c23605403ca"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/thumb_level_up_1.png",
+      "size": 197717,
+      "sha256": "2a4328759feb246f5be0499d1bb5d839ff2e5a729b8ef11ca60361686a6567cf"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/thumb_party_main_0.png",
+      "size": 144029,
+      "sha256": "e4b4159a20c1314b0a00b15a83ac7f68b1608e245befca860e09a4d2fa603a57"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/thumb_party_main_1.png",
+      "size": 158129,
+      "sha256": "a95ff7f5e1e8e72ef3e706aea6b86e2bb285caf5556cbbae6fba0f19adaf7cec"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/thumb_party_unison_0.png",
+      "size": 48729,
+      "sha256": "51c4eab5d7d42c9a7c19a9f5e70ac472e1ad891f52fc2d0bba929c635b823af0"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/ginovi/ui/thumb_party_unison_1.png",
+      "size": 70313,
+      "sha256": "27565ae821057c0f028af6b3dd8c2e164ad22f48b15166136660735dd0314f40"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/battle_control_board_0.png",
+      "size": 66617,
+      "sha256": "d4e8eb7c5ae5faeb989688cea72a9cde2e0fe102349898496ca6d3bfc225a9a9"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/battle_control_board_1.png",
+      "size": 69647,
+      "sha256": "cd82efe1c19877219a7d383ee4c951af231933a253c52d9d424ac8b8aa76b786"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/battle_member_status_0.png",
+      "size": 9599,
+      "sha256": "6f314220750baab95ad9f7d7dd89f21fa473b8100cdb17c36d326693f5832492"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/battle_member_status_1.png",
+      "size": 9570,
+      "sha256": "af4b8874ef1083502dfa01a6d82575a78dc3f7eee6e0b17f0e3e583d2bc0fd1e"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/cutin_skill_chain_0.png",
+      "size": 166573,
+      "sha256": "61de3113623824f2f5cf143466eadc7ac4691bfcfb21339fd4d7a19bd08b0254"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/cutin_skill_chain_1.png",
+      "size": 172692,
+      "sha256": "7dd57b1f818a5e226b29a3d49e18da9d9d6a619888a3413d7e9164022585609e"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/full_shot_1440_1920_0.png",
+      "size": 2360006,
+      "sha256": "c405d136090352b4c8ab86d0e8e1190858ffc01b4a3276173927da8a86896a9a"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/full_shot_1440_1920_1.png",
+      "size": 2403247,
+      "sha256": "8a5dcee0b7615d5d1918d7ffc9f7dec94b3ee505967d8749597e51ef1f53ee54"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/illustration_setting_sprite_sheet.png",
+      "size": 448854,
+      "sha256": "6622c2253159d44fc9b58870fdd8088f97ebce08ffc8e3a0b68722c071e114ff"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/skill_cutin_0.png",
+      "size": 365068,
+      "sha256": "9b3b4f7df65d502d41946741c7f2c24f4f8214e2817282a1a2b62beb9cf66c7d"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/skill_cutin_1.png",
+      "size": 454705,
+      "sha256": "31f56f5f4a0b4e490aa108fb40b7e47354fc8da400eef030d431a8def84195ea"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/square_0.png",
+      "size": 89111,
+      "sha256": "aa01babdfbdef41d3431d9f9fda14d5c1692ac5d93fa80f1014066e168f942e1"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/square_1.png",
+      "size": 91866,
+      "sha256": "98e03fd79d8cfe7bcdc71ec867921db9a01dfe2e35a55451f371a4037dfc2d3a"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/square_132_132_0.png",
+      "size": 39604,
+      "sha256": "839aa6219745f7f2b19e05a65292f88e7bf6dbbe43aac316918fbb3734085533"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/square_132_132_1.png",
+      "size": 40409,
+      "sha256": "9d8c6a72746b7e2fd391ad3db4083ce3c343f7cafb2f634c8628376b81dc409a"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/square_round_136_136_0.png",
+      "size": 42834,
+      "sha256": "6ec6a97a358dd2725a0dea98f3e8636c0d186d815ff2db11040352fc836ed9ab"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/square_round_136_136_1.png",
+      "size": 43094,
+      "sha256": "cfcdea53be73c63924728297deb71766522bf26a05b9466ecd55cb3a4cb1fa8f"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/square_round_95_95_0.png",
+      "size": 22957,
+      "sha256": "57aa51561cfeba7af7e8a9898df4910e6e445872027ecf0fd6605a91b7422a3c"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/square_round_95_95_1.png",
+      "size": 23046,
+      "sha256": "67fa1e80197c0267a220b9c90622da0dcb15bd7a0862abd013d368139d1f379c"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/thumb_level_up_0.png",
+      "size": 157164,
+      "sha256": "2551981f61045639102978cb74617ac5b820ccf7af65896f9e61bad38171db3d"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/thumb_level_up_1.png",
+      "size": 164198,
+      "sha256": "7b6eceac022ca07da748756a5791bbd0f4cc764caefd1dddeba00d7f9cbde1ed"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/thumb_party_main_0.png",
+      "size": 152494,
+      "sha256": "1b27be0151b3fe21244798668bf09a1aab8ef70113c97fde057a597e72d555ca"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/thumb_party_main_1.png",
+      "size": 161463,
+      "sha256": "2c503b0cf17dc667b1e925eb3d73d1f18535f4a2d0adc97b9804588d3af37eb8"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/thumb_party_unison_0.png",
+      "size": 58344,
+      "sha256": "7de6d134dc804d9561e3d0651284a4d3a8236cc529085b1aba9be9d9133cd99a"
+    },
+    {
+      "owner": "baseline-1-4-311",
+      "kind": "file",
+      "root": "medium",
+      "logical_path": "character/touyakiren_ceo_ny26/ui/thumb_party_unison_1.png",
+      "size": 59489,
+      "sha256": "a4b1b1f86f48fe46035628473b57cefc7b6b1e12bc33086bc79b345272383282"
+    }
+  ]
+}

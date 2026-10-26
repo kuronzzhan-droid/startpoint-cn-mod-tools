@@ -12,6 +12,7 @@ import wf_assets
 import wf_character_workspace
 import wf_mod_tool
 from wf_release_v1.canonical import canonical_json_bytes
+from wf_release_v1._path_io import native_path
 from wf_release_v1.errors import ReleaseError
 
 
@@ -31,7 +32,7 @@ def _flat_table(key: str) -> bytes:
 
 class LegacyCharacterAdoptionTests(unittest.TestCase):
     def setUp(self) -> None:
-        temporary = tempfile.TemporaryDirectory()
+        temporary = tempfile.TemporaryDirectory(dir=native_path(Path(tempfile.gettempdir())))
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name)
         self.imported = self.root / "imported"

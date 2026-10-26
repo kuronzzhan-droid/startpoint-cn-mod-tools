@@ -1,0 +1,6 @@
+/* Mobile UI stays still; image/audio playback remains an explicit media action. */
+@media(max-width:768px),(hover:none) and (pointer:coarse){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  /* Stop decorative hover/tilt only; keep static layout and expanded-arrow transforms. */
+  .character-card:hover,#catalog-view .portrait-card,.portrait-card .portrait-card-image{transform:none!important;will-change:auto!important}
+}
