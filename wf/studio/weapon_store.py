@@ -75,6 +75,8 @@ def reservations(store, exclude=None):
         draft = store.load(entry["characterId"])
         for change in draft["changes"]:
             for request in change.get("params", {}).get("requests", []):
+                if request.get("operation") == "shop_add" and "productId" in request.get("shop", {}):
+                    result.setdefault("exchange_product", []).append(request["shop"]["productId"])
                 if request.get("operation") == "weapon_clone":
                     spec = request["weapon"]
                     result["weapons"].append(spec["id"])
@@ -86,6 +88,18 @@ def reservations(store, exclude=None):
                     spec = request["weapon"]
                     result["weapons"].append(spec["id"])
                     result["enhancementProducts"].extend(stage["productId"] for stage in spec["stages"])
+                elif request.get("operation") == "weapon_set":
+                    spec = request["weapon"]
+                    result["weapons"].append(spec["id"])
+                    result["enhancementProducts"].extend(spec.get("enhancement", {}).get("products", []))
+                    for kind, value in (("enhancement_category", spec.get("enhancementCategory", {})),
+                                        ("exchange_category", spec.get("exchange", {}).get("category", {}))):
+                        if "id" in value:
+                            result.setdefault(kind, []).append(value["id"])
+                            if "sourceCategory" in value:
+                                result.setdefault(kind + "_definitions", []).append(value)
+                    if "productId" in spec.get("exchange", {}):
+                        result.setdefault("exchange_product", []).append(spec["exchange"]["productId"])
     if not result["codes"]:
         result.pop("codes")  # Preserve the legacy empty/material-only reservation shape.
     return result

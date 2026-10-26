@@ -29,7 +29,115 @@
     "else": {"properties": {"characterId": {"anyOf": [{"$ref": "#/$defs/characterId"}, {"$ref": "#/$defs/scratchId"}]}}}
   }],
   "$defs": {
-    "reservations": {"type": "object", "additionalProperties": false, "properties": {"character": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "multiball": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "weapon": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "soul_item": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "unique_condition": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "string_id": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "mana_node": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "enhancement_shop": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "soul": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "unique": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "stringcode": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}}},
+    "reservations": {"type": "object", "additionalProperties": false, "properties": {"character": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "multiball": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "weapon": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "soul_item": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "unique_condition": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "string_id": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "mana_node": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "enhancement_shop": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "soul": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "unique": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "stringcode": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "power_flip_action": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/pfActionKey"}}, "action_skill": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/skillTemplateKey"}}, "enhancement_category": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[1-9][0-9]*$"}}, "exchange_category": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[1-9][0-9]*$"}}, "exchange_product": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[1-9][0-9]*$"}}}},
+    "summonCloneRequest": {
+      "type": "object", "additionalProperties": false, "required": ["template"],
+      "description": "在角色草稿里从角色或现有 multiball 克隆协力角色；只生成数据行，召唤动作由技能模板另行接入。",
+      "properties": {
+        "template": {"type": "object", "additionalProperties": false, "required": ["kind", "id"],
+          "properties": {"kind": {"enum": ["character", "multiball"]},
+            "id": {"type": "string", "pattern": "^[1-9][0-9]*$"}}},
+        "id": {"type": "string", "pattern": "^[1-9][0-9]*$", "description": "新 multiball ID；省略时查询下一个空闲 ID，写草稿才预留。"},
+        "image_prefix": {"$ref": "#/$defs/code"},
+        "element": {"type": "integer", "minimum": 0, "maximum": 5, "description": "内部属性码 0..5；DSL 显式属性码另加 1。"},
+        "panel": {"$ref": "#/$defs/summonPanel"},
+        "pf_type": {"type": "integer", "minimum": 0, "maximum": 4},
+        "skill": {"type": "object", "additionalProperties": false, "required": ["mode"],
+          "properties": {"mode": {"enum": ["inherit", "specified"]}, "key": {"type": "string", "minLength": 1},
+            "level": {"type": "string", "pattern": "^[1-9][0-9]*$", "description": "action_skill 嵌套进化等级；省略取最高数值档。"}},
+          "allOf": [{"if": {"properties": {"mode": {"const": "specified"}}},
+                     "then": {"required": ["key"]}, "else": {"not": {"required": ["key"]}}}]},
+        "assist": {"type": "boolean"},
+        "lifetime": {"type": "object", "additionalProperties": false,
+          "oneOf": [{"required": ["frames"]}, {"required": ["seconds"]}],
+          "properties": {"frames": {"type": "integer", "minimum": 1, "maximum": 2147483647},
+            "seconds": {"type": "number", "exclusiveMinimum": 0, "maximum": 35791394.11666667}}},
+        "extensions": {"type": "object", "additionalProperties": false,
+          "properties": {
+            "flip_pf": {"type": "object", "additionalProperties": false, "required": ["enabled"],
+              "properties": {"enabled": {"type": "boolean"},
+                "min_interval_frames": {"type": "integer", "minimum": 0, "maximum": 2147483647}}},
+            "ball_pf_action": {"type": "string", "minLength": 1}
+          }},
+        "preview": {"type": "boolean", "default": false}
+      }
+    },
+    "summonPanel": {
+      "type": "object", "additionalProperties": false, "required": ["mode"],
+      "properties": {
+        "mode": {"enum": ["source", "scaled", "manual"]},
+        "hp_scale": {"type": "number", "exclusiveMinimum": 0, "maximum": 2147483647},
+        "attack_scale": {"type": "number", "exclusiveMinimum": 0, "maximum": 2147483647},
+        "levels": {"type": "array", "minItems": 1, "items": {
+          "type": "object", "additionalProperties": false, "required": ["level", "hp", "attack"],
+          "properties": {"level": {"type": "integer", "minimum": 1, "maximum": 2147483647},
+            "hp": {"type": "number", "minimum": 1, "maximum": 2147483647},
+            "attack": {"type": "number", "minimum": 0, "maximum": 2147483647}}}}
+      },
+      "allOf": [
+        {"if": {"properties": {"mode": {"const": "manual"}}}, "then": {"required": ["levels"],
+          "not": {"anyOf": [{"required": ["hp_scale"]}, {"required": ["attack_scale"]}]}},
+          "else": {"not": {"required": ["levels"]}}},
+        {"if": {"properties": {"mode": {"const": "source"}}}, "then": {
+          "not": {"anyOf": [{"required": ["hp_scale"]}, {"required": ["attack_scale"]}]}}}
+      ]
+    },
+    "pfActionKey": {"type": "string", "pattern": "^[a-z][a-z0-9_]{0,79}$"},
+    "pfEffectFamily": {"type": "string", "pattern": "^battle/effect/(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9_/-]+/?$"},
+    "pfActionCloneRequest": {
+      "type": "object", "additionalProperties": false,
+      "required": ["key", "source", "element", "scale"],
+      "properties": {
+        "key": {"$ref": "#/$defs/pfActionKey", "description": "全新的 power_flip_action 键，不能覆盖视图、APK 内置或任何草稿已占键"},
+        "source": {"type": "string", "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:-]{0,127}$", "description": "CDN 或目标 APK 的三档母本键"},
+        "element": {"enum": ["火", "水", "雷", "风", "光", "暗"], "description": "界面属性名；显式 DSL 元素码由后端转换为内部编号 + 1"},
+        "scale": {"oneOf": [
+          {"type": "number", "exclusiveMinimum": 0},
+          {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "number", "exclusiveMinimum": 0}}
+        ], "description": "统一系数，或依次对应 Lv1/Lv2/Lv3 的系数；逐命中项缩放"},
+        "effects": {"type": "object", "propertyNames": {"$ref": "#/$defs/pfEffectFamily"},
+          "additionalProperties": {"allOf": [{"$ref": "#/$defs/pfEffectFamily"}, {"pattern": "^battle/effect/skill_unique/"}]},
+          "description": "母本特效族到现有私有特效族的映射；目标资源须已存在，省略时复用母本"},
+        "dryRun": {"type": "boolean", "default": false}
+      }
+    },
+    "skillTemplateRequest": {
+      "type": "object", "additionalProperties": false, "required": ["source", "newKey"],
+      "properties": {
+        "text": {"type": "object", "additionalProperties": false, "patternProperties": {
+          "^[1-3]$": {"type": "object", "additionalProperties": false, "properties": {
+            "name": {"type": "string"}, "description": {"type": "string"}}}}},
+        "source": {"type": "object", "additionalProperties": false,
+          "anyOf": [{"required": ["key"]}, {"required": ["characterId"]}],
+          "properties": {"key": {"$ref": "#/$defs/skillTemplateKey"}, "characterId": {"$ref": "#/$defs/characterId"}}},
+        "newKey": {"$ref": "#/$defs/skillTemplateKey"},
+        "scale": {"type": "number", "minimum": 0, "default": 1},
+        "nodeCoefficients": {"type": "object", "propertyNames": {"pattern": "^[1-9][0-9]*$"},
+          "additionalProperties": {"type": "object", "propertyNames": {"pattern": "^(/[0-9]+)+$"},
+            "additionalProperties": {"anyOf": [{"type": "number", "minimum": 0},
+              {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/skillTemplateCoefficient"}}]}}},
+        "element": {"type": "integer", "minimum": 0, "maximum": 5},
+        "attribution": {"type": "integer", "enum": [1, 3]},
+        "recolor": {"type": "object", "additionalProperties": false,
+          "oneOf": [{"required": ["hueShift"]}, {"required": ["pairs"]}],
+          "properties": {"hueShift": {"type": "number", "minimum": -360, "maximum": 360},
+            "pairs": {"type": "array", "minItems": 1, "items": {"type": "object", "additionalProperties": false,
+              "required": ["from", "to"], "properties": {"from": {"$ref": "#/$defs/hexColor"}, "to": {"$ref": "#/$defs/hexColor"}}}}}},
+        "summon": {"type": "object", "additionalProperties": false, "required": ["multiballId"],
+          "properties": {"multiballId": {"type": "string", "pattern": "^[1-9][0-9]{0,9}$"},
+            "maxCount": {"type": "integer", "minimum": 1, "maximum": 99, "default": 1},
+            "selfOnly": {"type": "boolean", "default": true},
+            "durationFrames": {"type": "integer", "minimum": 1, "maximum": 2147483647, "default": 2147483647},
+            "effectPrefix": {"type": "string", "pattern": "^battle/effect/[A-Za-z0-9_/-]+$"}}}
+      }
+    },
+    "skillTemplateCoefficient": {
+      "type": "object", "minProperties": 1,
+      "properties": {"min": {"type": "number", "minimum": 0}, "max": {"type": "number", "minimum": 0},
+        "vlv": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/skillTemplateCoefficient"}}},
+      "patternProperties": {"^alv[2-6]?_(min|max)$": {"type": "number", "minimum": 0}}
+    },
+    "skillTemplateKey": {"type": "string", "pattern": "^[A-Za-z0-9_][A-Za-z0-9_-]{0,127}$"},
     "characterCloneRequest": {
       "type": "object", "additionalProperties": false, "required": ["from", "to", "code"],
       "properties": {
@@ -47,8 +155,57 @@
            "not": {"required": ["atlasBudget"]}}
         ]},
         {"type": "object", "additionalProperties": false, "required": ["operation", "weapon"],
+         "properties": {"operation": {"const": "weapon_set"}, "weapon": {"$ref": "#/$defs/weaponSetRequest"}}},
+        {"type": "object", "additionalProperties": false, "required": ["operation", "weapon"],
          "properties": {"operation": {"const": "weapon_icon"}, "weapon": {"$ref": "#/$defs/weaponIconRequest"}}}
       ]
+    },
+    "weaponSetCategory": {
+      "type": "object", "additionalProperties": false, "minProperties": 1,
+      "properties": {
+        "id": {"$ref": "#/$defs/weaponSetId"}, "sourceCategory": {"$ref": "#/$defs/weaponSetId"},
+        "code": {"type": "string", "pattern": "^[a-z][a-z0-9_]{0,79}$"},
+        "name": {"type": "string", "minLength": 1, "maxLength": 80}
+      }
+    },
+    "weaponSetId": {"type": "string", "pattern": "^[1-9][0-9]*$", "maxLength": 10},
+    "weaponSetRequest": {
+      "type": "object", "additionalProperties": false, "required": ["id"], "minProperties": 2,
+      "properties": {
+        "id": {"$ref": "#/$defs/weaponSetId"},
+        "noSoul": {"type": "boolean", "default": false},
+        "awakeningMaterial": {"$ref": "#/$defs/weaponSetId"},
+        "enhancementCategory": {"$ref": "#/$defs/weaponSetCategory"},
+        "enhancement": {
+          "type": "object", "additionalProperties": false, "required": ["maxLevel", "stages"],
+          "properties": {
+            "sourceWeapon": {"$ref": "#/$defs/weaponSetId"},
+            "maxLevel": {"type": "integer", "minimum": 1, "maximum": 200},
+            "products": {"type": "array", "maxItems": 99, "uniqueItems": true, "items": {"$ref": "#/$defs/weaponSetId"}},
+            "stages": {"type": "array", "minItems": 1, "maxItems": 99, "items": {
+              "type": "object", "additionalProperties": false, "required": ["maxLevel", "costs"],
+              "properties": {
+                "maxLevel": {"type": "integer", "minimum": 1, "maximum": 200},
+                "requireAwakeningLevel": {"type": "integer", "minimum": 0, "maximum": 5},
+                "costs": {"type": "array", "maxItems": 4, "items": {"$ref": "#/$defs/bossMaterialCost"}}
+              }
+            }}
+          }
+        },
+        "exchange": {
+          "type": "object", "additionalProperties": false,
+          "required": ["category", "sourceProduct", "itemId", "amount", "stock"],
+          "properties": {
+            "category": {"$ref": "#/$defs/weaponSetCategory"},
+            "sourceProduct": {"$ref": "#/$defs/weaponSetId"},
+            "productId": {"$ref": "#/$defs/weaponSetId"}, "itemId": {"$ref": "#/$defs/weaponSetId"},
+            "amount": {"type": "integer", "minimum": 1, "maximum": 2147483647},
+            "count": {"type": "integer", "minimum": 1, "maximum": 2147483647, "default": 1},
+            "stock": {"type": "integer", "minimum": 1, "maximum": 2147483647},
+            "description": {"type": "string", "minLength": 1, "maxLength": 1000}
+          }
+        }
+      }
     },
     "weaponIconRequest": {
       "type": "object", "additionalProperties": false, "required": ["id", "kind", "png"],
@@ -946,7 +1103,7 @@
       "required": ["id", "kind", "title", "createdAt", "target", "params", "files", "pending", "checks"],
       "properties": {
         "id": {"type": "string", "pattern": "^c-[0-9a-f]{12}$"},
-        "kind": {"enum": ["portrait", "pixel_action", "pixel_family", "voice_line", "ability_edit", "boss", "weapon", "character_clone"]},
+        "kind": {"enum": ["portrait", "pixel_action", "pixel_family", "voice_line", "ability_edit", "boss", "weapon", "character_clone", "summon_clone", "pf_action_clone", "skill_template"]},
         "title": {"type": "string", "minLength": 1},
         "createdAt": {"$ref": "#/$defs/timestamp"},
         "target": {"type": "object"},
@@ -956,6 +1113,37 @@
         "checks": {"type": "array", "items": {"$ref": "#/$defs/check"}}
       },
       "allOf": [
+        {"if": {"properties": {"kind": {"const": "summon_clone"}}}, "then": {"properties": {
+          "target": {"type": "object", "additionalProperties": false, "required": ["multiball"],
+                     "properties": {"multiball": {"type": "string", "pattern": "^[1-9][0-9]*$"}}},
+          "params": {"type": "object", "additionalProperties": false, "required": ["spec", "inputs", "ownedRows", "reservations"],
+            "properties": {"spec": {"$ref": "#/$defs/summonCloneRequest", "required": ["id"]},
+              "reservations": {"$ref": "#/$defs/reservations"},
+              "inputs": {"type": "object", "additionalProperties": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]}},
+              "ownedRows": {"type": "object", "additionalProperties": {"type": "array", "uniqueItems": true, "items": {"type": "string"}}}}},
+          "files": {"maxItems": 0}, "pending": {"maxItems": 0}
+        }}},
+        {"if": {"properties": {"kind": {"const": "pf_action_clone"}}}, "then": {"properties": {
+          "target": {"type": "object", "additionalProperties": false, "required": ["key"],
+            "properties": {"key": {"$ref": "#/$defs/pfActionKey"}}},
+          "params": {"type": "object", "additionalProperties": false, "required": ["spec", "inputs", "reservations"],
+            "properties": {
+              "spec": {"allOf": [{"$ref": "#/$defs/pfActionCloneRequest"}, {"not": {"required": ["dryRun"]}}]},
+              "inputs": {"type": "object", "minProperties": 1, "additionalProperties": {"$ref": "#/$defs/sha256"}},
+              "reservations": {"$ref": "#/$defs/reservations"}
+            }},
+          "files": {"maxItems": 0}, "pending": {"maxItems": 0}
+        }}},
+        {"if": {"properties": {"kind": {"const": "skill_template"}}}, "then": {"properties": {
+          "target": {"type": "object", "additionalProperties": false, "required": ["character"],
+            "properties": {"character": {"$ref": "#/$defs/characterId"}}},
+          "params": {"type": "object", "additionalProperties": false, "required": ["request", "inputs", "reservations"],
+            "properties": {"request": {"$ref": "#/$defs/skillTemplateRequest"},
+              "inputs": {"type": "object", "minProperties": 1,
+                "additionalProperties": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]}},
+              "reservations": {"$ref": "#/$defs/reservations"}}},
+          "files": {"maxItems": 0}, "pending": {"maxItems": 0}
+        }}},
         {"if": {"properties": {"kind": {"const": "character_clone"}}}, "then": {"properties": {
           "target": {"type": "object", "additionalProperties": false, "required": ["character"],
                      "properties": {"character": {"$ref": "#/$defs/characterId"}}},

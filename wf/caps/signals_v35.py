@@ -79,6 +79,10 @@ def custom_signals(key, value=None):
                 yield "unsupported", str(error)
                 return
         yield from configuration_signals("custom_ability_string", key, value)
+        if key.startswith("wfx_ball_pf_action_"):
+            from .p13 import config_problems
+            if not config_problems(key, value):
+                yield "ref", ("master/skill/power_flip_action.orderedmap", value)
 
 
 def configuration_signals(table, key, value):

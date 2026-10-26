@@ -40,3 +40,12 @@
 .icon-preview { display: flex; align-items: flex-end; gap: 12px; margin: 6px 0; }
 .icon-preview img { background: repeating-conic-gradient(var(--surface-2) 0% 25%, var(--surface) 0% 50%) 50% / 8px 8px; border: 1px solid var(--border); }
 img.pixelated { image-rendering: pixelated; }
+/* 专属武器全套 */
+.weapon-set .set-option { border-top: 1px solid var(--border); padding: 8px 0; }
+.weapon-set .set-option > .check { font-size: 13.5px; }
+.set-material-chosen { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; min-height: 26px; }
+.set-material-hits { display: flex; flex-wrap: wrap; gap: 4px; max-height: 220px; overflow: auto; margin-top: 4px; }
+.set-material-hits .icon-pick { display: inline-flex; flex-direction: column; align-items: center; max-width: 110px; }
+.set-value { white-space: pre-wrap; word-break: break-all; max-height: 200px; overflow: auto; margin: 0; }
+.set-preview { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+.weapon-set .status-strip { margin: 8px 0; }

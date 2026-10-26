@@ -85,7 +85,8 @@ def _draft(store, cid, source):
     return changeset
 
 
-def compile_draft(source, store, changeset, *, server_dir=None, client_profile=None, provides=None):
+def compile_draft(source, store, changeset, *, server_dir=None, client_profile=None, provides=None,
+                  apks=None, bundle_cache_dir=None):
     """Pure compilation: return stored client bytes and asserted server mirrors."""
     if changeset.get("subjectKind") == "weapon":
         from .weapon_editor import compile_weapon
@@ -102,7 +103,9 @@ def compile_draft(source, store, changeset, *, server_dir=None, client_profile=N
                 boss["servers"], boss["server_before"], boss["changes"], boss["checks"])
     from .character_clone import clone_change, compile_clone
     if clone_change(changeset):
-        return compile_clone(source, store, changeset, server_dir=server_dir)
+        compiled = compile_clone(source, store, changeset, server_dir=server_dir,
+                                 client_profile=client_profile, apks=apks, cache_dir=bundle_cache_dir)
+        return compiled
     from .deliver_media import compile_media
     media = compile_media(source, store, changeset)
     members = dict(media.members)
@@ -121,6 +124,30 @@ def compile_draft(source, store, changeset, *, server_dir=None, client_profile=N
         server_before.update(ability["server_before"])
         changes.extend(ability["changes"])
         checks.extend(ability["checks"])
+    if any(c["kind"] == "pf_action_clone" for c in changeset["changes"]):
+        from .pf_compile import extend_compiled
+        members, servers, server_before, changes, checks = extend_compiled(
+            (members, servers, server_before, changes, checks), source, store, changeset,
+            client_profile=client_profile, apks=apks, cache_dir=bundle_cache_dir)
+    if any(c["kind"] == "summon_clone" for c in changeset["changes"]):
+        from .summon import compile_summons
+        summons = compile_summons(source, store, changeset, members, server_dir=server_dir,
+                                  client_profile=client_profile, apks=apks, cache_dir=bundle_cache_dir)
+        members.update({("common", logical): raw for logical, raw in summons["client"].items()})
+        changes.extend(summons["changes"])
+        checks.extend(summons["checks"])
+    if any(change["kind"] == "skill_template" for change in changeset["changes"]):
+        from .character_clone import overlay_source
+        from .skill_template_compile import compile_skill_template
+        skill_members, skill_changes, skill_checks = compile_skill_template(
+            overlay_source(source, members) if members else source, store, changeset,
+            official_source=source, server_dir=server_dir)
+        members.update(skill_members)
+        changes.extend(skill_changes)
+        checks.extend(skill_checks)
+    if any(change["kind"] == "skill_template" for change in changeset["changes"]):
+        from .skill_template_text import server_mirrors
+        server_mirrors(members, changeset["characterId"], server_dir, servers, server_before)
     if not members:
         raise DraftError("草稿没有生成客户端成员")
     from wf.text.draft import check_compiled_text
@@ -233,9 +260,11 @@ def build_draft(cid: str, *, from_version: str, to_version: str, out: Path,
     baseline = open_baseline(from_version, to_version, **options)
     source = StudioSource(baseline)
     changeset = _draft(store, cid, source)
+    pf_options = ({"apks": apks, "bundle_cache_dir": bundle_cache_dir}
+                  if any(c["kind"] == "pf_action_clone" for c in changeset["changes"]) else {})
     compiled = compile_draft(source, store, changeset, server_dir=options.get("server_dir"),
                              client_profile=selected_profile if provides is not None else False,
-                             provides=provides)
+                             provides=provides, **pf_options)
     baseline.verify()
     filename = _stage(out, changeset, source, compiled, to_version)
     _step(progress, cancel, "deliver")
@@ -301,6 +330,13 @@ def build_draft(cid: str, *, from_version: str, to_version: str, out: Path,
               "draftChecks": compiled[4], "safetyChecks": safety_checks, **reports,
               "clientProfile": selected_profile, "buildError": build_error,
               "allowUnknownClient": allow_unknown_client, "deviceValidation": "未执行"}
+    from .rehearsal import auto_rehearse
+    result["rehearsal"] = None
+    if not failed:
+        try:
+            result["rehearsal"] = auto_rehearse(out)
+        except (ValueError, OSError) as exc:
+            result["rehearsal"] = {"ok": False, "status": "blocked", "error": str(exc)}
     write_json(out / "build-report.json", result)
     # The extra check/compat artifacts are included in the final delivery checksum list.
     checksum_delivery(out / "delivery")

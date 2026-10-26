@@ -1,9 +1,14 @@
 # 编辑台（studio）：草稿编辑与本地交付（M4a）
 
 后端交付检查索引：[APK 内置表撞名](bundle-keys.md)、[共享表键级差异](key-diff.md)、
+[交付前本地服只读预演](rehearsal.md)、
 [图标透明区检查](icon-alpha.md)、[p12b/p13 扩展键与兼容性](p13-keys.md)。
+协力角色数据行编辑与前端接口见 [召唤工坊](summon.md)。
+制作接口：[强化弹射动作工坊与前端对接](pf-actions.md)（CDN / APK 母本三档克隆、属性与逐档系数、草稿 PF 键）。
 生成结果与交付详情提供 `bundleCheck`、`keyDiff`、`iconAlpha`、`clientExtensions`；
 缺失历史报告为 null，缺 APK 是 skipped 警告，不能显示为已通过。
+
+技能后端工坊：[技能模板：克隆官方技能、倍率与特效换色](skill-templates.md)。
 
 M3.1 提供只读浏览；M3.2 起可以把立绘、像素、语音替换进**草稿**（`work/studio-drafts/<角色ID>/`，已被 gitignore）。M4a 新增词条草稿 API/CLI，并通过 `draft build` 生成本地交付。输入主表、store、补丁链和服务器目录均只读；应用、发布和前端生成按钮不属于本次后端接口。
 

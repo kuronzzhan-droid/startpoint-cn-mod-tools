@@ -106,11 +106,19 @@ def test_unique_codes_are_registered_once_and_strict():
 def test_all_five_capabilities_infer_from_typed_output_tables():
     output = {**tables(), UNIQUE: nodes.build_node({"1": "wfx:41:0:25:0:hidden_base,0",
                                                   "2": "wfx:42:3:7:0:hidden_dual,0"}),
-              MULTIBALL: nodes.build_node({"7": "ball,appearance,0,0,0,0,0,0,0,skill"})}
+              MULTIBALL: nodes.build_node({"7": "ball,appearance,0,0,0,0,0,0,0,battle/action/skill"})}
     members = {str(i): (raw, {"logical_path": logical}) for i, (logical, raw) in enumerate(output.items())}
     doc = requirements_document({"from_version": "1.0.0", "to_version": "1.0.1"}, members,
                                 ["synthetic.zip"], read_raw=baseline().__getitem__)
     assert set(doc["requires"]["clientCapabilities"]) == set(DEGRADED)
+    assert doc["requires"]["capabilityResolution"] == "partial"  # referenced DSL is missing.
+    from wf.studio.deliver_media import encode_tree
+    from test_studio_skill_template_core import root
+    complete = {**baseline(), PF: nodes.build_node({"custom_pf": "battle/action/pf,battle/action/pf,battle/action/pf"}),
+                "battle/action/skill.action.dsl.amf3.deflate": encode_tree(root()),
+                "battle/action/pf.action.dsl.amf3.deflate": encode_tree(root())}
+    doc = requirements_document({"from_version": "1.0.0", "to_version": "1.0.1"}, members,
+                                ["synthetic.zip"], read_raw=complete.__getitem__)
     assert doc["requires"]["capabilityResolution"] == "resolved"
     report = check_client_extensions(output, baseline(), bundled_keys={})
     assert set(report["requires"]) == set(DEGRADED) and report["status"] == "ok"

@@ -23,6 +23,7 @@ import {
   USER_COST, WeaponIcon,
 } from "./weaponEditors";
 import { WeaponIconImport } from "./WeaponIconImport";
+import { describeSet, WeaponSetEditor } from "./WeaponSetEditor";
 import "../boss/boss.css";
 import "./weapons.css";
 
@@ -176,7 +177,7 @@ function WeaponListPane({ selected, drafts }: { selected?: string; drafts: Weapo
 
 // ----------------------------------------------------------------------------------- detail
 
-type Editing = "clone" | "materials" | "icon" | null;
+type Editing = "clone" | "materials" | "icon" | "set" | null;
 const IDLE: PreviewState = { state: "idle", checks: null, ok: false };
 
 function WeaponDetailPane({ id, tab, sub }: { id: string; tab?: string; sub?: string }) {
@@ -210,7 +211,7 @@ function WeaponDetailPane({ id, tab, sub }: { id: string; tab?: string; sub?: st
   const changes = draft.view?.changeset?.changes ?? [];
   const el = weaponElement(detail.element);
   // The icon importer shows its own checks inline; the side column then keeps the draft checks.
-  const editingOp = editing === "clone" || editing === "materials";
+  const editingOp = editing === "clone" || editing === "materials" || editing === "set";
   const checks: RuleResult[] | null = editingOp ? preview.checks : detail.checks.length ? detail.checks : null;
 
   return (
@@ -238,6 +239,8 @@ function WeaponDetailPane({ id, tab, sub }: { id: string; tab?: string; sub?: st
               <button type="button" class="header-btn" disabled={!detail.enhancement_chain.length || editing === "materials"}
                 title={!detail.enhancement_chain.length ? "没有强化商品阶段" : ""}
                 onClick={() => { setEditing("materials"); setPreview(IDLE); }}>改强化材料</button>
+              <button type="button" class="header-btn" disabled={editing === "set"} title="不出魂珠、强化上限与分段材料、强化类目、兑换商品、突破材料限定"
+                onClick={() => { setEditing("set"); setPreview(IDLE); }}>专属武器全套</button>
               <button type="button" class="header-btn" disabled={editing === "icon"}
                 onClick={() => { setEditing("icon"); setPreview(IDLE); }}>导入图标</button>
             </div>
@@ -257,6 +260,10 @@ function WeaponDetailPane({ id, tab, sub }: { id: string; tab?: string; sub?: st
             onPreview={setPreview} onWritten={() => undefined} onClose={close} />
         ) : null}
         {editing === "icon" ? <WeaponIconImport detail={detail} onClose={close} /> : null}
+        {editing === "set" ? (
+          <WeaponSetEditor key={id} detail={detail} revision={String(detail.changeset?.revision ?? "")}
+            onPreview={setPreview} onWritten={() => load()} onClose={close} />
+        ) : null}
         {editing === "materials" ? (
           <MaterialsEditor key={id + (detail.changeset?.revision ?? "")} weapon={doc} target={target} names={names}
             onPreview={setPreview} onWritten={() => load()} onClose={close} />
@@ -278,7 +285,7 @@ function WeaponDetailPane({ id, tab, sub }: { id: string; tab?: string; sub?: st
         <Drawer title={<>本次修改 · 武器 {id} <span class="small muted">{status.label}</span></>} onClose={() => { location.hash = link(id); }}>
           <ChangesPanel characterId={id} subject={subject} openDelivery={sub ?? null}
             renderChange={(change, actions) => <WeaponChangeItem change={change} {...actions} />}
-            emptyText="还没有改动。在详情页「克隆为新武器」或「改强化材料」，预检通过后写入草稿。"
+            emptyText="还没有改动。在详情页「克隆为新武器」「改强化材料」或「专属武器全套」，预检通过后写入草稿。"
             techNote={<p class="small">武器草稿在 <span class="mono">work/studio-drafts/weapons/{id}/</span>，一份可重放的操作序列（
               <span class="mono">params.requests</span>，每次操作 revision 递增，重放会复核输入哈希）；生成写
               <span class="mono"> work/studio-deliveries/weapons/</span>，变更集 ID <span class="mono">studio-weapon-{id}-&lt;版本&gt;</span>。</p>} />
@@ -470,6 +477,7 @@ function WeaponChangeItem({ change, busy, onRevert }: { change: DraftChange; bus
   // weapon_icon requests carry the PNG; show what was imported, never the bytes.
   const line = (r: AnyBossRequest) => {
     const x = r as unknown as { operation: string; weapon: { kind?: string; item_id?: string } };
+    if (x.operation === "weapon_set") return describeSet(x.weapon as Parameters<typeof describeSet>[0]);
     if (x.operation === "weapon_icon") return `导入图标：${x.weapon.kind === "weapon" ? "武器本体 20×20" : x.weapon.kind === "soul" ? "魂珠 40×40" : `材料 ${x.weapon.item_id} 40×40`}`;
     return describeRequest(r) + soul(r);
   };

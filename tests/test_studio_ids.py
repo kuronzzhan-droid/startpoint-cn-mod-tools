@@ -27,7 +27,7 @@ def write(path, value):
 
 @pytest.mark.parametrize("kind", tuple(TABLES))
 def test_all_kinds_use_current_view_keys_and_report_sources(tmp_path, kind):
-    value = "key" if kind == "string_id" else "199000"
+    value = "key" if kind in {"string_id", "power_flip_action"} else "199000"
     source = Source({TABLES[kind][0]: {value: "native"}})
     result = check_id(source, kind, value, drafts_root=tmp_path)
     assert not result["available"] and result["owners"][0]["source"] == "view"

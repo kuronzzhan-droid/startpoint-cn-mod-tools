@@ -13,6 +13,9 @@ def resolve_apks(client_profile, apk=None):
     """Explicit paths override client_apks; relative paths follow wf_root."""
     from wf.paths import profile_data, root_path
     if apk is None:
+        if client_profile is None:
+            from wf.caps.profiles import load_profiles
+            client_profile = load_profiles()[0]
         config, _ = profile_data()
         configured = config.get("client_apks", {})
         if not isinstance(configured, dict):
@@ -89,7 +92,9 @@ def write_reports(delivery, reports, draft_checks, manifest=None):
 
 def checksum_delivery(delivery):
     from wf.deliver.changeset import sha256
+    # Rehearsals describe mutable server state and may be refreshed after export.
     sums = [f"{sha256(p.read_bytes())}  {p.relative_to(delivery).as_posix()}"
             for p in sorted(delivery.rglob("*")) if p.is_file() and p.name != "SHA256SUMS"
+            and not (p.parent == delivery and p.name.startswith("rehearsal-") and p.suffix in {".json", ".md"})
             and "validation" not in p.relative_to(delivery).parts]
     (delivery / "SHA256SUMS").write_text("\n".join(sums) + "\n", "utf-8")

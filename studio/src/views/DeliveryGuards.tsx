@@ -1,5 +1,5 @@
 import { useState } from "preact/hooks";
-import { BundleCheck, ClientExtensions, IconAlphaResult, KeyDiff } from "../api";
+import { BundleCheck, ClientExtensions, IconAlphaResult, KeyDiff, Rehearsal } from "../api";
 import { Notice } from "./common";
 import { RuleList } from "./rules";
 
@@ -180,6 +180,72 @@ export function ClientExtensionsPanel({ result }: { result: ClientExtensions | n
         <p class="small">召唤球 / 双人 PF 等扩展键需要的客户端能力：{result.requires.map((c) => <span class="tag mono">{c}</span>)}</p>
       ) : null}
       {result.checks?.length ? <RuleList checks={result.checks} title="客户端扩展键（p12 / p13）" /> : null}
+    </div>
+  );
+}
+
+/** Read-only rehearsal of this delivery against the local server (same chain as 175 since 2026-10-26). */
+export function RehearsalPanel({ name, initial, rehearse, fileUrl }: {
+  name: string; initial: Rehearsal | null | undefined;
+  rehearse: (name: string, server: string) => Promise<{ rehearsal: Rehearsal }>;
+  fileUrl: (path: string) => string;
+}) {
+  const [result, setResult] = useState<Rehearsal | null>(initial ?? null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const run = () => {
+    setBusy(true); setError(null);
+    rehearse(name, "local").then((r) => setResult(r.rehearsal), (e: Error) => setError(e.message)).finally(() => setBusy(false));
+  };
+  const blocked = result?.checks?.filter((c) => c.blocking || c.status === "问题") ?? [];
+  return (
+    <div class="guard-block">
+      <h4>本地服预演
+        {result ? <span class={"rs " + (result.ok ? "rs-ok" : "rs-bad")}>{result.ok ? "可以上边" : "有阻断"}</span> : <span class="rs rs-none">未预演</span>}
+      </h4>
+      <p class="small muted">只读：核对链尾、分包名和服务端改动，生成本地和 175 通用的 manifest 条目。不写服务器、不重启；真正上边仍按清单手工做。</p>
+      <div class="save-row">
+        <button onClick={run} disabled={busy}>{busy ? "预演中……" : result ? "重新预演" : "在本地服预演"}</button>
+        {result?.createdAt ? <span class="small muted">上次 {result.createdAt}（上边前要重新预演）</span> : null}
+      </div>
+      {error ? <Notice kind="error">{error}</Notice> : null}
+      {result ? (
+        <>
+          <p class="small">本地链尾 {result.currentVersion ?? "—"} · 交付 {result.from ?? "—"} → {result.to ?? "—"}
+            {result.restartRequired == null ? "" : result.restartRequired ? ` · 需要重启：${result.restartReason ?? ""}` : " · 只有资源，不用重启"}</p>
+          {blocked.length ? <RuleList checks={blocked} title="阻断项" /> : null}
+          {(result.serverChanges ?? []).filter((c) => c.changed).length ? (
+            <table class="files">
+              <thead><tr><th>服务端文件</th><th>新增键</th><th>替换键</th><th></th></tr></thead>
+              <tbody>{(result.serverChanges ?? []).filter((c) => c.changed).map((c) => (
+                <tr>
+                  <td class="mono small">{c.target}</td>
+                  <td>{c.addedKeys?.length ?? 0}</td>
+                  <td>{c.replacedKeys?.length ?? 0}</td>
+                  <td class="small error-text">{c.wholeFileOverwriteRisk ? "有整文件覆盖风险" : ""}</td>
+                </tr>
+              ))}</tbody>
+            </table>
+          ) : null}
+          {result.manifestEntryJson ? (
+            <details>
+              <summary>manifest 条目（本地和 175 追加同一段）</summary>
+              <button class="small-btn" onClick={() => navigator.clipboard?.writeText(result.manifestEntryJson!).then(() => setCopied(true))}>
+                {copied ? "已复制" : "复制条目"}</button>
+              {result.manifestFormat ? <span class="small muted"> 写回格式：{result.manifestFormat.encoding}、{result.manifestFormat.bom ? "带" : "无"} BOM、{result.manifestFormat.newline}、缩进 {result.manifestFormat.indent}</span> : null}
+              <pre class="mono small">{result.manifestEntryJson}</pre>
+            </details>
+          ) : null}
+          {result.manualSteps?.length ? (
+            <details>
+              <summary>手工上边清单（{result.manualSteps.length} 步）</summary>
+              <ol class="small">{result.manualSteps.map((s) => <li>{s}</li>)}</ol>
+              <a class="small" href={fileUrl(`delivery/rehearsal-${result.server}.md`)} target="_blank" rel="noreferrer">打开完整报告</a>
+            </details>
+          ) : null}
+        </>
+      ) : null}
     </div>
   );
 }

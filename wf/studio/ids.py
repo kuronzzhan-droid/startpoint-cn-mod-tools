@@ -6,16 +6,33 @@ from .id_catalog import TABLES, collect_server, collect_tables
 from .id_drafts import collect_drafts
 
 DEFAULTS = {"character": 199000, "multiball": 1990001, "weapon": 5950001,
+            "action_skill": "studio_skill_1",
             "soul_item": 5950001, "unique_condition": 199000,
-            "string_id": "studio_1", "mana_node": 199000, "enhancement_shop": 595000101}
+            "string_id": "studio_1", "mana_node": 199000, "enhancement_shop": 595000101,
+            "power_flip_action": "studio_pf_1",
+            "enhancement_category": 9, "exchange_category": 97, "exchange_product": 991000000}
 LIMITS = {"character": 999999999, "weapon": 21474835, "mana_node": (2147483647 - 999) // 2000}
+
+
+def allocate_available(kind, occupied, *, requested=None, near=1):
+    """Allocate against a caller's snapshot-bound view/server/draft evidence."""
+    occupied = set(map(str, occupied))
+    candidate = canonical(kind, requested if requested is not None else near)
+    if requested is not None and candidate in occupied:
+        raise DraftError(f"{kind} ID collision: {candidate}")
+    while candidate in occupied:
+        candidate = canonical(kind, int(candidate) + 1)
+    return candidate
 
 
 def canonical(kind, value):
     if kind not in TABLES:
         raise DraftError("未知 ID kind: " + str(kind))
     value = str(value)
-    if kind == "string_id":
+    if kind == "power_flip_action":
+        if not re.fullmatch(r"[a-z][a-z0-9_]{0,79}", value):
+            raise DraftError("power_flip_action 需要小写字母开头的 1–80 位字母、数字或下划线")
+    elif kind in {"string_id", "action_skill"}:
         if not re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9_.:-]{0,127}", value):
             raise DraftError("string_id 需要 1–128 位字母、数字或 _ . : -")
     elif not re.fullmatch(r"[1-9][0-9]*", value) or int(value) > LIMITS.get(kind, 2147483647):
@@ -23,7 +40,7 @@ def canonical(kind, value):
     return value
 
 
-def collect_occupancy(source, drafts_root=None, server_dir=None):
+def collect_occupancy(source, drafts_root=None, server_dir=None, *, pf_catalog=None):
     result = {kind: {} for kind in TABLES}
 
     def add(kind, identity, owner, source_kind, location):
@@ -34,6 +51,13 @@ def collect_occupancy(source, drafts_root=None, server_dir=None):
 
     try:
         collect_tables(source, add)
+        from .pf_catalog import PfCatalog, STANDARD_TYPES, PF_TABLE
+        catalog = pf_catalog if pf_catalog is not None else PfCatalog(source)
+        for key in STANDARD_TYPES:
+            add("power_flip_action", key, key, "builtin", "native PF standard keys")
+        for key in catalog.keys:
+            if catalog._sources[key] == "bundled":
+                add("power_flip_action", key, key, "bundled", PF_TABLE)
         collect_server(server_dir, add)
         collect_drafts(default_root() if drafts_root is None else drafts_root, add,
                        known_strings=result["string_id"], source=source)
@@ -61,7 +85,7 @@ def next_id(source, kind, near=None, *, drafts_root=None, server_dir=None):
     skipped = []
     while candidate in occupied[kind]:
         skipped.append({"id": candidate, "owners": occupied[kind][candidate]})
-        if kind == "string_id":
+        if kind in {"string_id", "power_flip_action", "action_skill"}:
             match = re.fullmatch(r"(.*?)([0-9]+)", candidate)
             candidate = match[1] + str(int(match[2]) + 1) if match else candidate + "_1"
         else:

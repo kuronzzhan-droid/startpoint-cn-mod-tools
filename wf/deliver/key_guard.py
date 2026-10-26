@@ -12,19 +12,20 @@ from pathlib import Path
 
 import wf_publish_guard as publish_guard
 
-from wf.boss.shop_model import ENH_SHOP, SERVER_ENH, WEAPON_TABLES
-from wf.boss.schema import SHOP
+from wf.boss.shop_model import ENH_SHOP, ENH_CATEGORY, SERVER_ENH, SERVER_SHOP, SERVER_MAP, WEAPON_TABLES
+from wf.boss.schema import SHOP, SHOP_CATEGORY
 from wf.caps.requirements import parse_table
 from .prepush_base import View
 
 CUSTOM = "master/string/custom_ability_string.orderedmap"
 AWAKENING = "assets/equipment_awakening_material.json"
-SHARED_TABLES = {*WEAPON_TABLES, ENH_SHOP, CUSTOM}
+SHARED_TABLES = {*WEAPON_TABLES, ENH_SHOP, ENH_CATEGORY, SHOP, SHOP_CATEGORY, CUSTOM}
 SERVER_MAPS = {"assets/" + name + ".json" for name in (
     "equipment_lookup", "equipment_max_level", "equipment_element", "item_sale", "item_lookup")}
-SERVER_MAPS.update({SERVER_ENH, AWAKENING})
+SERVER_MAPS.update({SERVER_ENH, AWAKENING, SERVER_SHOP, SERVER_MAP})
+SERVER_MAPS.add("assets/equipment_dissolve.json")
 CHARACTER_MAPS = {"character.json", "cdndata/character.json", "cdndata/character_text.json",
-                  "mana_node.json", "mana_board.json"}
+                  "cdndata/character_text_rank_p5b.json", "mana_node.json", "mana_board.json"}
 # Character delivery accepts either a server repository or its assets directory.
 SERVER_MAPS.update(CHARACTER_MAPS | {"assets/" + name for name in CHARACTER_MAPS})
 SERVER_LISTS = {"assets/equipment_ids.json", "assets/item_ids.json"}
@@ -83,7 +84,7 @@ def _table_problems(logical, old, new, protected, version, changes=()):
     claimed = sorted((set(old_rows) & protected) - set(new_rows))
     if claimed:
         errors.append(f"{logical}: lost protected character-pack claims: {claimed[:12]}")
-    if logical in SHARED_TABLES:
+    if logical in SHARED_TABLES and logical != SHOP:
         errors += _nested_keys(parse_table(old, logical), parse_table(new, logical), logical)
     for key in sorted(set(old_rows) & set(new_rows)):
         before = _record_count(old_rows[key])
@@ -102,7 +103,7 @@ def _map_keys(before, after, label):
     return [f"{label}: lost baseline JSON keys: {lost[:12]}"] if lost else []
 
 
-def _server_problems(target, old, new):
+def _server_problems(target, old, new, deleted=()):
     if old is None:
         return [f"{target}: missing complete server baseline; refusing partial shared file"]
     try:
@@ -114,6 +115,21 @@ def _server_problems(target, old, new):
             return [f"{target}: shared ID list must remain an array"]
         lost = [value for value in before if value not in after]
         return [f"{target}: lost baseline IDs: {lost[:12]}"] if lost else []
+    if target == SERVER_MAP and isinstance(before, dict):
+        before = {k: v for k, v in before.items() if k not in deleted}
+    if target == SERVER_SHOP and isinstance(before, dict) and isinstance(after, dict):
+        required = {k: v for k, v in before.items()
+                    if not isinstance(v, dict) or not v or set(v) - set(deleted)}
+        errors = _map_keys(required, after, target)
+        for category, products in before.items():
+            if not isinstance(products, dict):
+                errors.append(f"{target}/{category}: shop category must be an object")
+                continue
+            retained = {k: v for k, v in products.items() if k not in deleted}
+            # Deleting the last product may remove its now-empty category.
+            if retained:
+                errors += _map_keys(retained, after.get(category), f"{target}/{category}")
+        return errors
     errors = _map_keys(before, after, target)
     if target == AWAKENING and isinstance(before, dict) and isinstance(after, dict):
         for section in ("materialByEquipment", "rarityOverrides", "officialCrystals"):
@@ -136,7 +152,7 @@ def check_shared_keys(members, server_changes, *, baseline=None, base_store=None
     keys and ID lists are protected; arbitrary leaf fields are not frozen.
     """
     guarded = publish_guard.protected_keys() if protected is None else protected
-    errors, notes, checked = [], [], []
+    errors, notes, checked, deleted = [], [], [], set()
     for name, (raw, entry) in members.items():
         logical = entry["logical_path"]
         if not logical.endswith(".orderedmap"):
@@ -168,13 +184,15 @@ def check_shared_keys(members, server_changes, *, baseline=None, base_store=None
         errors += problems
         notes += content
         checked.append(logical)
+        if logical == SHOP:
+            deleted.update(_shop_deletions(logical, old, changes))
     server_checked = []
     for target, raw in server_changes.items():
         if target not in SERVER_MAPS | SERVER_LISTS:
             continue
         filename = Path(server_dir) / target if server_dir is not None else None
         old = filename.read_bytes() if filename is not None and filename.is_file() else None
-        errors += _server_problems(target, old, raw)
+        errors += _server_problems(target, old, raw, deleted)
         server_checked.append(target)
     return {"baseline": baseline.tip if baseline is not None else None,
             "client_tables": checked, "server_targets": server_checked,

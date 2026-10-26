@@ -80,6 +80,13 @@ class WeaponRoutes:
     def materials(self, query, body, wid):
         return self._edit("weapon_materials", query, body, wid=wid)
 
+    def set_options(self, query):
+        from .weapon_set_options import options
+        return self._json(lambda: options(self.app.source, self.server_dir))
+
+    def weapon_set(self, query, body, wid):
+        return self._edit("weapon_set", query, body, wid=wid)
+
     def icon(self, query, body, wid):
         return self._edit("weapon_icon", query, body, wid=wid)
 
@@ -128,10 +135,12 @@ class WeaponRoutes:
     def routes(self):
         routes = [("GET", "", self.listing), ("POST", "/clone", self.clone),
                   ("GET", "/capabilities", self.capabilities),
+                  ("GET", "/set-options", self.set_options),
                   ("GET", "/drafts", self.drafts), ("GET", r"/drafts/(?P<wid>\d+)", self.draft),
                   ("POST", r"/drafts/(?P<wid>\d+)/save", self.save),
                   ("POST", r"/drafts/(?P<wid>\d+)/changes/(?P<change>c-[0-9a-f]{12})/revert", self.revert),
                   ("GET", r"/(?P<wid>\d+)", self.detail),
                   ("POST", r"/(?P<wid>\d+)/materials", self.materials),
+                  ("POST", r"/(?P<wid>\d+)/set", self.weapon_set),
                   ("POST", r"/(?P<wid>\d+)/icon", self.icon)]
         return [(verb, re.compile("^" + PREFIX + path + "$"), handler) for verb, path, handler in routes] + self.deliveries.routes()

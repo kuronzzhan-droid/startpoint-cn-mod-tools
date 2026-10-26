@@ -6,7 +6,8 @@ from pathlib import Path
 
 import wf_quest_lib as codec
 from wf.boss.schema import iter_leaves, parse_rows
-from wf.boss.shop_model import WEAPON_TABLES, ENH_SHOP
+from wf.boss.shop_model import WEAPON_TABLES, ENH_SHOP, ENH_CATEGORY
+from wf.boss.schema import SHOP, SHOP_CATEGORY
 from .drafts import DraftError
 
 CHARACTER = "master/character/character.orderedmap"
@@ -14,6 +15,7 @@ MANA = "master/mana_board/mana_node.orderedmap"
 ABILITY_STRINGS = tuple(f"master/ability/{name}.orderedmap" for name in
                         ("ability", "leader_ability", "ability_soul"))
 TABLES = {
+    "action_skill": ("master/skill/action_skill.orderedmap",),
     "character": (CHARACTER, "master/character/character_status.orderedmap",
                   "master/character/character_text.orderedmap",
                   "master/character/character_speech.orderedmap",
@@ -26,6 +28,10 @@ TABLES = {
     "string_id": ("master/string/custom_ability_string.orderedmap", *ABILITY_STRINGS),
     "mana_node": (MANA, "master/generated/mana_board.orderedmap"),
     "enhancement_shop": (ENH_SHOP,),
+    "power_flip_action": ("master/skill/power_flip_action.orderedmap",),
+    "enhancement_category": (ENH_CATEGORY,),
+    "exchange_category": (SHOP_CATEGORY,),
+    "exchange_product": (SHOP,),
 }
 SERVER_FILES = {
     "character": ("character.json", "cdndata/character.json", "cdndata/character_text.json",
@@ -41,6 +47,9 @@ SERVER_FILES = {
     "string_id": ("custom_ability_string.json", "cdndata/custom_ability_string.json"),
     "mana_node": ("mana_node.json", "mana_node_cnmod.json", "mana_board.json"),
     "enhancement_shop": ("equipment_enhancement_shop.json",),
+    "enhancement_category": ("equipment_enhancement_shop.json",),
+    "exchange_category": ("boss_coin_shop.json", "boss_coin_shop_item_category_map.json"),
+    "exchange_product": ("boss_coin_shop_item_category_map.json", "boss_coin_shop.json"),
 }
 
 
@@ -63,6 +72,9 @@ def table(source, logical):
     if raw is None:
         return {}
     try:
+        import wf_mod_tool as core
+        if not core.read_orderedmap_raw_rows_from_bytes(raw, logical).keys:
+            return {}  # The generic nested codec cannot recognize a zero-key map.
         result = codec.parse_node(raw)
     except (ValueError, TypeError) as exc:
         raise DraftError(f"无法解码 ID 来源表 {logical}: {exc}") from exc
@@ -108,6 +120,20 @@ def table_ids(kind, logical, rows):
 
 
 def server_ids(kind, name, rows):
+    if kind == "enhancement_category":
+        for key, value in rows.items():
+            if isinstance(value, dict) and "shopCategoryId" in value:
+                yield str(value["shopCategoryId"]), str(key)
+        return
+    if kind == "exchange_category" and name == "boss_coin_shop_item_category_map.json":
+        yield from ((str(value), str(key)) for key, value in rows.items())
+        return
+    if kind == "exchange_product" and name == "boss_coin_shop.json":
+        for category, products in rows.items():
+            if not isinstance(products, dict):
+                raise DraftError("shop category must be an object")
+            yield from ((str(key), str(category)) for key in products)
+        return
     if kind == "character" and name == "character_overlimit.json":
         values = rows.get("characters", []) if isinstance(rows, dict) else None
         if not isinstance(values, list) or any(type(value) not in (str, int) for value in values):
