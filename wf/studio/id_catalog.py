@@ -26,6 +26,7 @@ TABLES = {
     "string_id": ("master/string/custom_ability_string.orderedmap", *ABILITY_STRINGS),
     "mana_node": (MANA, "master/generated/mana_board.orderedmap"),
     "enhancement_shop": (ENH_SHOP,),
+    "power_flip_action": ("master/skill/power_flip_action.orderedmap",),
 }
 SERVER_FILES = {
     "character": ("character.json", "cdndata/character.json", "cdndata/character_text.json",
@@ -63,6 +64,9 @@ def table(source, logical):
     if raw is None:
         return {}
     try:
+        import wf_mod_tool as core
+        if not core.read_orderedmap_raw_rows_from_bytes(raw, logical).keys:
+            return {}  # The generic nested codec cannot recognize a zero-key map.
         result = codec.parse_node(raw)
     except (ValueError, TypeError) as exc:
         raise DraftError(f"无法解码 ID 来源表 {logical}: {exc}") from exc

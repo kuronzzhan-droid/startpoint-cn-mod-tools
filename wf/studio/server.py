@@ -124,6 +124,9 @@ class StudioApp:
         from .summon_routes import SummonRoutes
         self.summons = SummonRoutes(self, server_dir)
         self.routes.extend(self.summons.routes())
+        from .pf_routes import PFActionsRoutes
+        self.pf_actions = PFActionsRoutes(self)
+        self.routes.extend(self.pf_actions.routes())
         from .view_routes import ViewRoutes
         self.views = ViewRoutes(self)
         self.routes.extend(self.views.routes())
