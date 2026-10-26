@@ -12,17 +12,18 @@ from pathlib import Path
 
 import wf_publish_guard as publish_guard
 
-from wf.boss.shop_model import ENH_SHOP, SERVER_ENH, WEAPON_TABLES
-from wf.boss.schema import SHOP
+from wf.boss.shop_model import ENH_SHOP, ENH_CATEGORY, SERVER_ENH, WEAPON_TABLES
+from wf.boss.schema import SHOP, SHOP_CATEGORY
 from wf.caps.requirements import parse_table
 from .prepush_base import View
 
 CUSTOM = "master/string/custom_ability_string.orderedmap"
 AWAKENING = "assets/equipment_awakening_material.json"
-SHARED_TABLES = {*WEAPON_TABLES, ENH_SHOP, CUSTOM}
+SHARED_TABLES = {*WEAPON_TABLES, ENH_SHOP, ENH_CATEGORY, SHOP_CATEGORY, CUSTOM}
 SERVER_MAPS = {"assets/" + name + ".json" for name in (
     "equipment_lookup", "equipment_max_level", "equipment_element", "item_sale", "item_lookup")}
 SERVER_MAPS.update({SERVER_ENH, AWAKENING})
+SERVER_MAPS.add("assets/equipment_dissolve.json")
 CHARACTER_MAPS = {"character.json", "cdndata/character.json", "cdndata/character_text.json",
                   "mana_node.json", "mana_board.json"}
 # Character delivery accepts either a server repository or its assets directory.

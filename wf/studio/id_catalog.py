@@ -6,7 +6,8 @@ from pathlib import Path
 
 import wf_quest_lib as codec
 from wf.boss.schema import iter_leaves, parse_rows
-from wf.boss.shop_model import WEAPON_TABLES, ENH_SHOP
+from wf.boss.shop_model import WEAPON_TABLES, ENH_SHOP, ENH_CATEGORY
+from wf.boss.schema import SHOP, SHOP_CATEGORY
 from .drafts import DraftError
 
 CHARACTER = "master/character/character.orderedmap"
@@ -26,6 +27,9 @@ TABLES = {
     "string_id": ("master/string/custom_ability_string.orderedmap", *ABILITY_STRINGS),
     "mana_node": (MANA, "master/generated/mana_board.orderedmap"),
     "enhancement_shop": (ENH_SHOP,),
+    "enhancement_category": (ENH_CATEGORY,),
+    "exchange_category": (SHOP_CATEGORY,),
+    "exchange_product": (SHOP,),
 }
 SERVER_FILES = {
     "character": ("character.json", "cdndata/character.json", "cdndata/character_text.json",
@@ -41,6 +45,9 @@ SERVER_FILES = {
     "string_id": ("custom_ability_string.json", "cdndata/custom_ability_string.json"),
     "mana_node": ("mana_node.json", "mana_node_cnmod.json", "mana_board.json"),
     "enhancement_shop": ("equipment_enhancement_shop.json",),
+    "enhancement_category": (),
+    "exchange_category": ("boss_coin_shop.json",),
+    "exchange_product": ("boss_coin_shop_item_category_map.json",),
 }
 
 

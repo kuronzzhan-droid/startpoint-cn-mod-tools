@@ -47,8 +47,57 @@
            "not": {"required": ["atlasBudget"]}}
         ]},
         {"type": "object", "additionalProperties": false, "required": ["operation", "weapon"],
+         "properties": {"operation": {"const": "weapon_set"}, "weapon": {"$ref": "#/$defs/weaponSetRequest"}}},
+        {"type": "object", "additionalProperties": false, "required": ["operation", "weapon"],
          "properties": {"operation": {"const": "weapon_icon"}, "weapon": {"$ref": "#/$defs/weaponIconRequest"}}}
       ]
+    },
+    "weaponSetCategory": {
+      "type": "object", "additionalProperties": false, "minProperties": 1,
+      "properties": {
+        "id": {"$ref": "#/$defs/weaponSetId"}, "sourceCategory": {"$ref": "#/$defs/weaponSetId"},
+        "code": {"type": "string", "pattern": "^[a-z][a-z0-9_]{0,79}$"},
+        "name": {"type": "string", "minLength": 1, "maxLength": 80}
+      }
+    },
+    "weaponSetId": {"type": "string", "pattern": "^[1-9][0-9]*$", "maxLength": 10},
+    "weaponSetRequest": {
+      "type": "object", "additionalProperties": false, "required": ["id"], "minProperties": 2,
+      "properties": {
+        "id": {"$ref": "#/$defs/weaponSetId"},
+        "noSoul": {"type": "boolean", "default": false},
+        "awakeningMaterial": {"$ref": "#/$defs/weaponSetId"},
+        "enhancementCategory": {"$ref": "#/$defs/weaponSetCategory"},
+        "enhancement": {
+          "type": "object", "additionalProperties": false, "required": ["maxLevel", "stages"],
+          "properties": {
+            "sourceWeapon": {"$ref": "#/$defs/weaponSetId"},
+            "maxLevel": {"type": "integer", "minimum": 1, "maximum": 200},
+            "products": {"type": "array", "maxItems": 99, "uniqueItems": true, "items": {"$ref": "#/$defs/weaponSetId"}},
+            "stages": {"type": "array", "minItems": 1, "maxItems": 99, "items": {
+              "type": "object", "additionalProperties": false, "required": ["maxLevel", "costs"],
+              "properties": {
+                "maxLevel": {"type": "integer", "minimum": 1, "maximum": 200},
+                "requireAwakeningLevel": {"type": "integer", "minimum": 0, "maximum": 5},
+                "costs": {"type": "array", "maxItems": 4, "items": {"$ref": "#/$defs/bossMaterialCost"}}
+              }
+            }}
+          }
+        },
+        "exchange": {
+          "type": "object", "additionalProperties": false,
+          "required": ["category", "sourceProduct", "itemId", "amount", "stock"],
+          "properties": {
+            "category": {"$ref": "#/$defs/weaponSetCategory"},
+            "sourceProduct": {"$ref": "#/$defs/weaponSetId"},
+            "productId": {"$ref": "#/$defs/weaponSetId"}, "itemId": {"$ref": "#/$defs/weaponSetId"},
+            "amount": {"type": "integer", "minimum": 1, "maximum": 2147483647},
+            "count": {"type": "integer", "minimum": 1, "maximum": 2147483647, "default": 1},
+            "stock": {"type": "integer", "minimum": 1, "maximum": 2147483647},
+            "description": {"type": "string", "minLength": 1, "maxLength": 1000}
+          }
+        }
+      }
     },
     "weaponIconRequest": {
       "type": "object", "additionalProperties": false, "required": ["id", "kind", "png"],
