@@ -1,6 +1,7 @@
 # 编辑台（studio）：草稿编辑与本地交付（M4a）
 
 后端交付检查索引：[APK 内置表撞名](bundle-keys.md)、[共享表键级差异](key-diff.md)、
+[交付前本地服只读预演](rehearsal.md)、
 [图标透明区检查](icon-alpha.md)、[p12b/p13 扩展键与兼容性](p13-keys.md)。
 生成结果与交付详情提供 `bundleCheck`、`keyDiff`、`iconAlpha`、`clientExtensions`；
 缺失历史报告为 null，缺 APK 是 skipped 警告，不能显示为已通过。

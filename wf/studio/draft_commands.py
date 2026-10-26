@@ -28,6 +28,11 @@ def add_commands(sub):
     add_character_commands(sub)
     add_weapon_commands(sub)
     add_device_result(sub)
+    p = sub.add_parser("rehearse", help="只读检查交付对目标服务端的适用性，生成手工上边清单")
+    p.add_argument("--delivery-dir", type=Path, required=True)
+    p.add_argument("--server", default="local")
+    p.add_argument("--zip", type=Path, action="append", dest="rehearsal_zips",
+                   help="显式 ZIP 列表，可重复；结果仍写入 delivery-dir")
     p = sub.add_parser("boss", help="读取、编辑副本草稿；new 按暗凛模板新建共同决战")
     p.add_argument("cid", help="副本 ID、kind:path 选择器或 new")
     p.add_argument("--request", type=Path, help="bossRequest JSON")

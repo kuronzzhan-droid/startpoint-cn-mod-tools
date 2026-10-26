@@ -167,6 +167,9 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def run(args) -> dict:
+    if args.command == "rehearse":
+        from .rehearsal import rehearse
+        return rehearse(args.delivery_dir, args.server, zips=args.rehearsal_zips)
     if args.command in {"bundle-check", "key-diff"}:
         from .safety_commands import run as run_safety
         return run_safety(args)
