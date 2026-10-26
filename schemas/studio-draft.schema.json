@@ -29,7 +29,41 @@
     "else": {"properties": {"characterId": {"anyOf": [{"$ref": "#/$defs/characterId"}, {"$ref": "#/$defs/scratchId"}]}}}
   }],
   "$defs": {
-    "reservations": {"type": "object", "additionalProperties": false, "properties": {"character": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "multiball": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "weapon": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "soul_item": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "unique_condition": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "string_id": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "mana_node": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "enhancement_shop": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "soul": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "unique": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "stringcode": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}}},
+    "skillTemplateRequest": {
+      "type": "object", "additionalProperties": false, "required": ["source", "newKey"],
+      "properties": {
+        "source": {"type": "object", "additionalProperties": false,
+          "anyOf": [{"required": ["key"]}, {"required": ["characterId"]}],
+          "properties": {"key": {"$ref": "#/$defs/skillTemplateKey"}, "characterId": {"$ref": "#/$defs/characterId"}}},
+        "newKey": {"$ref": "#/$defs/skillTemplateKey"},
+        "scale": {"type": "number", "minimum": 0, "default": 1},
+        "nodeCoefficients": {"type": "object", "propertyNames": {"pattern": "^[1-9][0-9]*$"},
+          "additionalProperties": {"type": "object", "propertyNames": {"pattern": "^(/[0-9]+)+$"},
+            "additionalProperties": {"anyOf": [{"type": "number", "minimum": 0},
+              {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/skillTemplateCoefficient"}}]}}},
+        "element": {"type": "integer", "minimum": 0, "maximum": 5},
+        "attribution": {"type": "integer", "enum": [1, 3]},
+        "recolor": {"type": "object", "additionalProperties": false,
+          "oneOf": [{"required": ["hueShift"]}, {"required": ["pairs"]}],
+          "properties": {"hueShift": {"type": "number", "minimum": -360, "maximum": 360},
+            "pairs": {"type": "array", "minItems": 1, "items": {"type": "object", "additionalProperties": false,
+              "required": ["from", "to"], "properties": {"from": {"$ref": "#/$defs/hexColor"}, "to": {"$ref": "#/$defs/hexColor"}}}}}},
+        "summon": {"type": "object", "additionalProperties": false, "required": ["multiballId"],
+          "properties": {"multiballId": {"type": "string", "pattern": "^[1-9][0-9]{0,9}$"},
+            "maxCount": {"type": "integer", "minimum": 1, "maximum": 99, "default": 1},
+            "selfOnly": {"type": "boolean", "default": true},
+            "durationFrames": {"type": "integer", "minimum": 1, "maximum": 268435455, "default": 3600},
+            "effectPrefix": {"type": "string", "pattern": "^battle/effect/[A-Za-z0-9_/-]+$"}}}
+      }
+    },
+    "skillTemplateCoefficient": {
+      "type": "object", "minProperties": 1,
+      "properties": {"min": {"type": "number", "minimum": 0}, "max": {"type": "number", "minimum": 0},
+        "vlv": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/skillTemplateCoefficient"}}},
+      "patternProperties": {"^alv[2-6]?_(min|max)$": {"type": "number", "minimum": 0}}
+    },
+    "skillTemplateKey": {"type": "string", "pattern": "^[A-Za-z0-9_][A-Za-z0-9_-]{0,127}$"},
+    "reservations": {"type": "object", "additionalProperties": false, "properties": {"action_skill": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/skillTemplateKey"}}, "character": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "multiball": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "weapon": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "soul_item": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "unique_condition": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "string_id": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "mana_node": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "enhancement_shop": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "soul": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "unique": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "stringcode": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}}},
     "characterCloneRequest": {
       "type": "object", "additionalProperties": false, "required": ["from", "to", "code"],
       "properties": {
@@ -946,7 +980,7 @@
       "required": ["id", "kind", "title", "createdAt", "target", "params", "files", "pending", "checks"],
       "properties": {
         "id": {"type": "string", "pattern": "^c-[0-9a-f]{12}$"},
-        "kind": {"enum": ["portrait", "pixel_action", "pixel_family", "voice_line", "ability_edit", "boss", "weapon", "character_clone"]},
+        "kind": {"enum": ["portrait", "pixel_action", "pixel_family", "voice_line", "ability_edit", "boss", "weapon", "character_clone", "skill_template"]},
         "title": {"type": "string", "minLength": 1},
         "createdAt": {"$ref": "#/$defs/timestamp"},
         "target": {"type": "object"},
@@ -956,6 +990,16 @@
         "checks": {"type": "array", "items": {"$ref": "#/$defs/check"}}
       },
       "allOf": [
+        {"if": {"properties": {"kind": {"const": "skill_template"}}}, "then": {"properties": {
+          "target": {"type": "object", "additionalProperties": false, "required": ["character"],
+            "properties": {"character": {"$ref": "#/$defs/characterId"}}},
+          "params": {"type": "object", "additionalProperties": false, "required": ["request", "inputs", "reservations"],
+            "properties": {"request": {"$ref": "#/$defs/skillTemplateRequest"},
+              "inputs": {"type": "object", "minProperties": 1,
+                "additionalProperties": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]}},
+              "reservations": {"$ref": "#/$defs/reservations"}}},
+          "files": {"maxItems": 0}, "pending": {"maxItems": 0}
+        }}},
         {"if": {"properties": {"kind": {"const": "character_clone"}}}, "then": {"properties": {
           "target": {"type": "object", "additionalProperties": false, "required": ["character"],
                      "properties": {"character": {"$ref": "#/$defs/characterId"}}},

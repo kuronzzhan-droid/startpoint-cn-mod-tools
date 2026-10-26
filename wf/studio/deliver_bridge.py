@@ -121,6 +121,15 @@ def compile_draft(source, store, changeset, *, server_dir=None, client_profile=N
         server_before.update(ability["server_before"])
         changes.extend(ability["changes"])
         checks.extend(ability["checks"])
+    if any(change["kind"] == "skill_template" for change in changeset["changes"]):
+        from .character_clone import overlay_source
+        from .skill_template_compile import compile_skill_template
+        skill_members, skill_changes, skill_checks = compile_skill_template(
+            overlay_source(source, members) if members else source, store, changeset,
+            official_source=source, server_dir=server_dir)
+        members.update(skill_members)
+        changes.extend(skill_changes)
+        checks.extend(skill_checks)
     if not members:
         raise DraftError("草稿没有生成客户端成员")
     from wf.text.draft import check_compiled_text

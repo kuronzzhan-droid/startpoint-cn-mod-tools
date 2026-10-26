@@ -130,6 +130,9 @@ class StudioApp:
         from .craft_routes import CraftRoutes
         self.craft = CraftRoutes(self)
         self.routes.extend(self.craft.routes())
+        from .skill_template_routes import SkillTemplateRoutes
+        self.skill_templates = SkillTemplateRoutes(self, server_dir)
+        self.routes.extend(self.skill_templates.routes())
 
     # -- dispatch -------------------------------------------------------
     def dispatch(self, method: str, path: str, query: dict[str, list[str]], body=None) -> Response | None:

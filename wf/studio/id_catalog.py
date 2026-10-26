@@ -14,6 +14,7 @@ MANA = "master/mana_board/mana_node.orderedmap"
 ABILITY_STRINGS = tuple(f"master/ability/{name}.orderedmap" for name in
                         ("ability", "leader_ability", "ability_soul"))
 TABLES = {
+    "action_skill": ("master/skill/action_skill.orderedmap",),
     "character": (CHARACTER, "master/character/character_status.orderedmap",
                   "master/character/character_text.orderedmap",
                   "master/character/character_speech.orderedmap",

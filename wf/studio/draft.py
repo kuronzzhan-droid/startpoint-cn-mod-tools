@@ -211,6 +211,9 @@ def run(args) -> dict:
     if args.command == "weapon":
         from .weapon_cli import run_weapon
         return run_weapon(args, ops.source, store)
+    if args.command in {"skill-templates", "skill-template"}:
+        from .skill_template_cli import run_skill_template
+        return run_skill_template(args, ops.source, store)
     if args.command == "boss":
         from .boss import BossEditor, BossDraftStore
         editor = BossEditor(ops.source, store=BossDraftStore(store.root / "boss"), server_dir=args.server_dir)
