@@ -47,7 +47,12 @@ def main(argv=None) -> int:
 
     from .config import server_directory
     from .doctor import run_doctor, summary
-    server_dir = server_directory(args.server_dir)
+    try:
+        server_dir = server_directory(args.server_dir)
+    except (ValueError, OSError) as exc:
+        print(summary(run_doctor(fast=True, static=args.static)), flush=True)
+        print(f"启动配置错误：{exc}", file=sys.stderr)
+        return 1
     print(summary(run_doctor(fast=True, server_dir=server_dir, static=args.static)), flush=True)
 
     if sys.stdout and hasattr(sys.stdout, "reconfigure"):

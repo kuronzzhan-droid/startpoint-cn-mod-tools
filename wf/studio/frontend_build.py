@@ -10,6 +10,8 @@ def build_state(root=REPOSITORY, static=None):
     index = Path(static) / "index.html" if static is not None else frontend / "dist/index.html"
     if not index.is_file():
         return {"built": False, "stale": True, "reason": "前端尚未构建"}
+    if not frontend.is_dir() or index.resolve() != (frontend / "dist/index.html").resolve():
+        return {"built": True, "stale": False, "reason": "独立静态产物存在；未与本仓库源码比较"}
     inputs = [p for p in (frontend / "src").rglob("*") if p.is_file()]
     inputs += [p for p in frontend.iterdir() if p.is_file() and (
         p.name in {"index.html", "package.json", "package-lock.json"}

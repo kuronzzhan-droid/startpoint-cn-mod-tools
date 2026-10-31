@@ -18,6 +18,10 @@ from .swfabc import SwfAbc
 _TABLE_CACHE = {}
 
 
+class SwfHashMismatch(ValueError):
+    """A readable candidate belongs to another SWF; alternatives may match."""
+
+
 def _path(value) -> Path:
     value = str(value)
     prefix = "${WF_ROOT}/"
@@ -56,7 +60,7 @@ def inspect_swf(path, *, expected_sha256=None) -> dict:
         raise ValueError(f"实际 APK ZIP 无法解析：{error}") from error
     digest = source["swf_sha256"]
     if expected_sha256 is not None and digest != expected_sha256:
-        raise ValueError("客户端档案 SWF 哈希与实际文件不符")
+        raise SwfHashMismatch("客户端档案 SWF 哈希与实际文件不符")
     if digest not in _TABLE_CACHE:
         try:
             swf = SwfAbc.from_bytes(raw, source=source["path"])
@@ -117,14 +121,23 @@ def inspect_provides(provides, *, registry=None) -> dict:
         if path.is_file():
             return _compare(inspect_swf(path, expected_sha256=expected), provides, registry)
     _, profiles = load_profiles()
+    mismatched = False
     for profile_id, record in profiles.items():
         evidence = record.get("evidence", {})
         if evidence.get("swf_sha256") == expected:
             from wf.studio.delivery_safety import resolve_apks
             for candidate in resolve_apks(profile_id):
                 if candidate.is_file():
-                    return _compare(inspect_swf(candidate, expected_sha256=expected), provides, registry)
+                    try:
+                        return _compare(inspect_swf(candidate, expected_sha256=expected), provides, registry)
+                    except SwfHashMismatch:
+                        mismatched = True
         filename = evidence.get("swf_path") or evidence.get("swf")
         if evidence.get("swf_sha256") == expected and filename and _path(filename).is_file():
-            return _compare(inspect_swf(filename, expected_sha256=expected), provides, registry)
+            try:
+                return _compare(inspect_swf(filename, expected_sha256=expected), provides, registry)
+            except SwfHashMismatch:
+                mismatched = True
+    if mismatched:
+        raise SwfHashMismatch("所有可读候选 SWF/APK 均与 provides SHA-256 不符")
     raise FileNotFoundError("没有可读取且与 provides SHA-256 绑定的实际 SWF/APK；不能用反编译快照代替")

@@ -141,17 +141,19 @@ def test_k3_registered_evidence_is_exact_and_does_not_grant_changed_or_native_me
     assert local["source"]["swf_sha256"] == "c52e01b8a536f78a06f48cce07bd3e0f23b3814b9b7f861e02a20755f74cc2c1"
     assert local["package"]["package_name"] == "com.leiting.wf"
     evidence, withheld = registration.verified_evidence(local["observations"])
-    assert len(evidence["patches"]) == 101 and len(withheld) == 30
+    assert len(evidence["patches"]) == 95 and len(withheld) == 37
     assert {row["patch"] for row in withheld if row["kind"] == "non_swf_evidence_required"} == {79, 82, 86, 97, 98, 99, 100}
     path, selected = profiles.resolve_client(client_profile="local-v35k3")
     provided = profiles.read_client(path)
-    assert selected == "local-v35k3" and len(provided["provides"]) == 123
+    assert selected == "local-v35k3" and len(provided["provides"]) == 112
     assert provided["unresolved"] == []
     assert profiles.load_profiles()[0] == "test-v34"
     ids = {row["id"] for row in provided["provides"]}
-    assert "client.equipment.gauge_gain_rules@1" in ids
+    assert "client.equipment.gauge_gain_rules@1" not in ids
+    assert not {"client.charge.cap@1", "client.unique.sunburn@1"} & ids
     assert "client.direct.base@1" not in ids and "client.heal.overflow_damage@1" not in ids
-    assert not any(row["blocking"] for row in check_compat(required(["client.equipment.gauge_gain_rules@1"]), provided))
+    assert any(row["blocking"] and row.get("id") == "client.equipment.gauge_gain_rules@1"
+               for row in check_compat(required(["client.equipment.gauge_gain_rules@1"]), provided))
     assert any(row["blocking"] for row in check_compat(required(["client.direct.base@1"]), provided))
 
 

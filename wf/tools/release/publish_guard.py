@@ -59,9 +59,10 @@ pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_mod_tool as core  # noqa: E402
 
 ROOT = core.project_root()
-CDN_ROOT = core.resolve_cdn_root_lax()
-CDN_COMMON_DIFF = CDN_ROOT / "archive-common-diff"
-CDN_COMMON_FULL = CDN_ROOT / "archive-common-full"
+# Local delivery imports the table inspectors without needing a publish CDN.
+# Explicit overrides remain available to callers/tests; resolve only on use.
+CDN_COMMON_DIFF = None
+CDN_COMMON_FULL = None
 PACKS = ROOT / "work" / "character_packs"
 
 _EDGE = re.compile(r"^pinball-(\d+\.\d+\.\d+)-(\d+\.\d+\.\d+)-(\d+)-")
@@ -92,7 +93,13 @@ def chain_latest_index() -> dict[str, tuple[str, Path, str]]:
     """store 相对路径 -> (落点版本, zip 路径, zip 内条目名);按版本序后来居上。"""
     index: dict[str, tuple[str, Path, str]] = {}
     edges = []
-    for path in CDN_COMMON_DIFF.glob("*.zip"):
+    diff = CDN_COMMON_DIFF
+    full = CDN_COMMON_FULL
+    if diff is None or full is None:
+        root = core.resolve_cdn_root()
+        diff = diff if diff is not None else root / "archive-common-diff"
+        full = full if full is not None else root / "archive-common-full"
+    for path in diff.glob("*.zip"):
         matched = _EDGE.match(path.name)
         if matched:
             edges.append(((_vkey(matched.group(2)), int(matched.group(3))),
@@ -104,7 +111,7 @@ def chain_latest_index() -> dict[str, tuple[str, Path, str]]:
             continue
         for name in names:
             index[name.replace("production/upload/", "")] = (to_version, path, name)
-    for path in sorted(CDN_COMMON_FULL.glob("*.zip")):
+    for path in sorted(full.glob("*.zip")):
         try:
             names = zipfile.ZipFile(path).namelist()
         except Exception:

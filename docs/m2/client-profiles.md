@@ -42,8 +42,17 @@ python -m wf apk provides <APK> --out work/client/provides.json
 arm64 与 x86 包的内置 SWF 相同：
 `2fa334cca6b104bdcae061c5ed9bc63eb52d59db7e687c90d24742e61759e7b4`。
 838 个方法观察记录保存在 `test-merge-1008094-registration.json`，
-103 项可证明能力保存在 `test-merge-1008094-provides.json`；44 个补丁证据组仍 withheld。
+90 项可证明能力保存在 `test-merge-1008094-provides.json`；51 个补丁证据组及 1 项独立方法能力仍 withheld。
 这是静态能力证据，不是设备验收、安装或部署结果。
+
+登记比较还执行 `wf/apk/runtime_dependencies.py` 的运行时依赖检查：装备回槽解析依赖 #31，
+双形态 UID 依赖 #21 预载，#5/#53/#115/#116 依赖 #112 WFX 查询。
+`callproperty` 的方法名相同不证明被调用方法体相同；下游待验证时撤回上游能力。
+这些限制同样适用于本地登记，不只针对 1008094。
+另撤回 #129 装备规则（方法基准缺少 `wfCountEquipment` 及完整预载调用上下文）
+和 #108 O8（非 SWF 台座资源证据未绑定）。旧 provides 也不能恢复这些待验证声明。
+真实 SWF 中额外出现的队长技 instant kind 724 仅有解析证据，未授予该表的运行时能力。
+使用该位置仍阻断；不使用它的普通能力行不受这个额外分支影响。已声明但缺失的解析分支仍阻断。
 
 **默认仍为 test-v34**：1008094 的 PF4、直击基础倍率、WFX 状态规格等关键方法与 v35e
 已审核基线不同，完整继承尚未证明。还需审核 `MemberImpl/startPowerFlip`、

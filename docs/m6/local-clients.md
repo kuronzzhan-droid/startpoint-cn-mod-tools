@@ -46,16 +46,23 @@ python -B -m wf apk kinds --profile local-v35版本 --out work/my-client/kinds.j
 - [全 SWF 逐条差异](m62-full-swf-diff.json)：304 个 ABC 中 301 个完整原字节相同。方法体总数 96,825 → 96,863；29 个已有方法体变化、38 个新增、0 个删除，96,796 个已有方法体保持。池及声明结构变化另列，敏感常量只保留摘要。
 - [已登记方法逐条差异与能力清单](m62-registered-method-diff.json)：838 个去重已登记方法中，808 个 code 和上下文都相同；23 个 code 改变、7 个仅引用上下文改变。每项均列 ABC、方法名、涉及补丁、完整前后 code/context SHA；这些数字是注册范围，与上一项全 SWF 范围不同。
 
-本档案提供 **123 项能力、101 个补丁**，v35e 原有 179 项能力中的 **56 项未证明**，没有新增能力声明。它包括描述覆盖、普通 kind 422 与独立 R3 装备回充解析；不会复制已变化的直击基础、溢出治疗等能力。4 项旧官方系统声明也未从“这是 v35”推断继承。
+本档案提供 **112 项能力、95 个补丁**，v35e 原有 179 项能力中的 **67 项未证明**，没有新增能力声明。
+运行时依赖复核后，撤回 R3 装备回槽、充能上限、灼伤及 #5/#53/#115/#116：解析入口未变不足以证明下游 #31/#112 的运行时等价。
+它仍包括描述覆盖与普通 kind 422；不会复制已变化的直击基础、溢出治疗等能力。4 项旧官方系统声明也未从“这是 v35”推断继承。
 
-下面逐项列出 30 个暂扣补丁；完整受影响能力 ID 在方法差异 JSON 的 `not_proven_capabilities` 中。
+另撤回 #129 装备规则和 #108 O8：前者缺完整方法基准，后者缺台座资源绑定证据。
+下面逐项列出 36 个暂扣补丁；另暂扣 R3 独立方法能力。
+方法差异 JSON 保留原审计快照，当前能力与 withheld 清单以 `wf/apk/data/local-v35k3-registration.json`
+和可重算的 `local-v35k3-provides.json` 为准。
 
 | 补丁 | 暂扣依据 |
 | --- | --- |
+| 5 | 下游 #112 的 WFX 状态规格未证明等价 |
 | 19 | ClientAdmission 的 beforeQueue、load、refreshSession、transport 及匿名方法 27、31 的引用上下文变化 |
 | 31 | ActionEvaluator/evalCommand 改变 |
 | 42 | DevConfig_gf_android 构造器引用上下文改变 |
 | 52 | 与补丁 19 相同的 6 项 admission 方法依据 |
+| 53 | 下游 #112 的 WFX 状态规格未证明等价 |
 | 54 | MemberImpl/scheduleDirectAttack 改变 |
 | 56 | MemberImpl/scheduleDirectAttack 改变 |
 | 78 | OwnedOverLimitLogic/getAwakingCrystalToOverLimit 改变 |
@@ -71,20 +78,27 @@ python -B -m wf apk kinds --profile local-v35版本 --out work/my-client/kinds.j
 | 99 | 原登记为非 SWF / 空方法证据 |
 | 100 | 原登记为非 SWF / 空方法证据 |
 | 101 | OwnedCharacterLogic/getPossibleOverLimitCountByItem 改变 |
+| 108 | O8 台座资源未绑定非 SWF 资产证据 |
 | 109 | OverLimitWindow/getOverLimitState 改变 |
 | 110 | OverLimitWindow/run、getStatusInformation 改变 |
 | 111 | ExpodOverLimitByItemDialog/getDescription 改变 |
 | 112 | ConditionSlot$/wfxSpec 改变 |
 | 113 | MemberImpl/scheduleDirectAttack 改变 |
 | 114 | MemberImpl/scheduleDirectAttack 改变 |
+| 115 | 下游 #112 的 WFX 状态规格未证明等价 |
+| 116 | 下游 #112 的 WFX 状态规格未证明等价 |
 | 120 | BattleCharacterLogic 的 getOpitionAbilitiesWithoutAbilitySoul、getInstantAbiltyCountWithoutLimit、wfxPartyMask、wfxExtraLeaders 改变 |
 | 121 | BattleCharacterLogic/getElement、wfxAdaptiveElement 改变 |
 | 122 | AbilityDamageShot/finish、MemberImpl/applyHeal、SquadManagerImpl/updatePhase 改变 |
 | 125 | AbilityDamageShot/finish、UniqueConditionLogic/wfxSuperPreload 改变 |
+| 129 | 方法基准未覆盖 wfCountEquipment 及完整预载调用上下文 |
 | 130 | ConditionSlot$/wfxSpec 改变 |
 
 ## 验证证据
 
 M6.2 在真实 APK 上执行了 `provides`、`register-local` 两次及 `kinds --profile local-v35k3`，均退出 0；`kinds.mismatches` 为空。`resolve_client` 成功并核对证据文件与 APK/SWF 摘要。描述覆盖、kind 422、普通 leader instant kind 423、R3 ability_soul during kind 423 的兼容检查通过；请求暂扣的 `client.direct.base@1` 明确阻断。原 APK 和参考 SWF 核验前后完整 SHA 相同。
+
+上段是 M6.2 原执行记录；本次运行时依赖复核已纠正其中 R3 的过度授予。
+当前请求 R3 必须因 #31 证据不足阻断，不能把历史通过结果用作现行授权。
 
 测试覆盖同 code 不同常量、私有 namespace 身份、activation 默认值、newclass 声明、显式 registry 不扩权、缺方法、假 SHA、坏 APK、测试服包、同名冲突、幂等、写入失败不暴露半份档案，以及“同 kind 的另一能力暂扣时不误报已知表越界”。当需要完整设备语义或新能力授权时，必须另行补齐对应方法审阅和验收证据。

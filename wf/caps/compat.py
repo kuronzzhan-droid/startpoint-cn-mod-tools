@@ -46,6 +46,21 @@ def check_compat(requires, provides, *, registry=None, delivery_dir=None):
             raise ValueError(f"unregistered required patch: {patch}")
         if number not in covered and patch_id not in capability_ids:
             capability_ids.append(patch_id)
+    # Saved provides files may predate a registration evidence correction.
+    # Check their runtime closure too; regenerating the profile alone is not a gate.
+    from wf.apk.local_registry import find
+    if find(provides["source"].get("swf_sha256")) is not None:
+        from wf.apk.runtime_dependencies import PENDING_PATCHES, required_runtime_patches
+        for cap_id in capability_ids:
+            if cap_id not in available or cap_id not in registry:
+                continue
+            for number in set(registry[cap_id]["provided_by"]["patches"]) & PENDING_PATCHES.keys():
+                results.append(result("capability.runtime-evidence", "待验证",
+                                      PENDING_PATCHES[number], blocking=True, id=cap_id))
+            for number in sorted(required_runtime_patches(registry[cap_id])):
+                dependency = f"client.apk.patch{number:03d}@1"
+                if dependency not in capability_ids:
+                    capability_ids.append(dependency)
     for cap_id in capability_ids:
         cap = registry.get(cap_id)
         if cap is None:

@@ -426,6 +426,7 @@ def make_handler(app: StudioApp, static_root: Path, guard: WriteGuard):
 
         def _handle(self, method: str):
             parsed = urlparse(self.path)
+            body_read = False
             try:
                 guard.check_host(self.headers)
                 if parsed.path.startswith("/api/"):
@@ -434,6 +435,7 @@ def make_handler(app: StudioApp, static_root: Path, guard: WriteGuard):
                         guard.check(self.headers)
                         length = guard.body_length(self.headers)
                         raw = self.rfile.read(length)
+                        body_read = True
                         if len(raw) != length:
                             raise GuardError(400, "studio_bad_body", "请求体长度不符")
                         body = guard.parse(raw)
@@ -450,6 +452,9 @@ def make_handler(app: StudioApp, static_root: Path, guard: WriteGuard):
             except Exception as exc:  # noqa: BLE001 - report instead of dropping the connection
                 traceback.print_exc()
                 response = error(500, f"{type(exc).__name__}: {exc}")
+            if response.status >= 400 and not body_read:
+                from .http_rejection import discard_rejected_body
+                discard_rejected_body(self)
             self._send(response, head=method == "HEAD")
 
         def do_GET(self):

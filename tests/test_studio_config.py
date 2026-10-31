@@ -31,11 +31,15 @@ def test_unconfigured_server_stays_none(profile):
 def test_draft_resolves_after_subcommand_override(profile, tmp_path, monkeypatch, capsys):
     from wf.studio import draft
     seen = []
-    monkeypatch.setattr(draft, "run", lambda args: seen.append(args.server_dir) or {})
-    assert draft.main(["list"]) == 0
+    monkeypatch.setattr("wf.studio.draft_commands.run_build", lambda args, store: seen.append(args.server_dir) or {})
+    command = ["--drafts", str(tmp_path / "drafts"), "build", "1", "--from", "1.4.1",
+               "--to", "1.4.2", "--out", str(tmp_path / "out")]
+    assert draft.main(command) == 0
     assert seen[-1] == tmp_path / "mirror"
-    assert draft.main(["--server-dir", str(tmp_path / "explicit"), "list"]) == 0
+    assert draft.main(["--server-dir", str(tmp_path / "explicit"), *command]) == 0
     assert seen[-1] == tmp_path / "explicit"
+    assert draft.main([*command, "--server-dir", str(tmp_path / "command-local")]) == 0
+    assert seen[-1] == tmp_path / "command-local"
 
 
 def test_startup_passes_profile_mirror(profile, tmp_path, monkeypatch):

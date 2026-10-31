@@ -15,8 +15,24 @@ def checks(add, *, fast=False, source=None, server_dir=None):
         return ("ok", "路径配置已读取") if data else ("warn", "未找到路径配置，仍可通过环境变量配置")
 
     add("profile", profile, "复制 profiles/example.json 为 profiles/local.json，或设置 WF_PATHS_PROFILE")
-    add("store131", lambda: directory("store131"), "配置 paths.store131 或 WF_STORE131 为基线 upload 目录")
-    add("server", lambda: directory("server", server_dir), "配置 paths.server / WF_SERVER 或 --server-dir 为只读镜像")
+    def store():
+        from wf.view.config import view_options
+        loaded = getattr(getattr(source, "view", None), "store", None)
+        _, options = view_options()
+        value = loaded if loaded is not None else options.get("store")
+        if value is not None:
+            value = Path(value)
+            value = value if value.is_absolute() else paths.root_path() / value
+        return directory("store131", value)
+
+    def server():
+        value = Path(server_dir) if server_dir is not None else paths.configured_path("server")
+        ok = value is not None and (value / "assets/cdndata").is_dir()
+        return ("ok" if ok else "fail", "只读服务端 assets/cdndata 存在；草稿不需要发布 CDN" if ok
+                else "服务端未配置或缺少 assets/cdndata")
+
+    add("store131", store, "配置当前视图 store，或 paths.store131 / WF_STORE131 为基线 upload 目录")
+    add("server", server, "配置 paths.server / WF_SERVER 或 --server-dir 为只读服务端检出；cdn_dir 是独立发布配置")
 
     def named_views():
         from wf.view.config import view_options
@@ -38,10 +54,15 @@ def checks(add, *, fast=False, source=None, server_dir=None):
 
     def apks():
         from .delivery_safety import resolve_apks
-        files = resolve_apks(None)
+        data, _ = paths.profile_data()
+        configured = data.get("client_apks", {})
+        if not isinstance(configured, dict):
+            raise ValueError("client_apks 必须是客户端档案名到 APK 路径列表的对象")
+        files = [p for name in configured for p in resolve_apks(name)]
         missing = sum(not p.is_file() for p in files)
-        return ("ok" if files and not missing else "fail",
-                f"client_apks: 配置 {len(files)} 个，缺少 {missing} 个" +
+        empty = sum(not resolve_apks(name) for name in configured)
+        return ("ok" if files and not missing and not empty else "fail",
+                f"client_apks: {len(configured)} 个档案，配置 {len(files)} 个，缺少 {missing} 个，空列表 {empty} 个" +
                 ("；未配置会跳过撞名检查" if not files else "；这里只检查存在性，不证明 APK 身份"))
 
     add("client_apks", apks, "在本机 profile 的 client_apks.<档案名> 配置 APK 路径列表；勿提交 APK")
@@ -58,9 +79,13 @@ def checks(add, *, fast=False, source=None, server_dir=None):
     add("rehearsal", rehearsal, "配置 rehearsal_server 与 servers.<名称>.root；只检查本地镜像，不连接服务器")
     if fast:
         if source is not None:
-            chain = getattr(source, "chain", None)
-            missing = len(chain.missing) if chain else 0
-            add("patch_chain", lambda: ("fail" if missing else "ok", f"已加载视图缺 {missing} 个 ZIP；未重新扫描"),
+            def loaded_chain():
+                chain = getattr(source, "chain", None)
+                if chain is None:
+                    return "warn", "当前为非 manifest 视图，未启用补丁链"
+                missing = len(chain.missing)
+                return "fail" if missing else "ok", f"已加载视图缺 {missing} 个 ZIP；未重新扫描"
+            add("patch_chain", loaded_chain,
                 "补齐 ZIP 后重启；运行 doctor 做完整文件检查")
         else:
             add("patch_chain", lambda: ("warn", "快速体检未扫描补丁目录"), "运行 python -m wf.studio doctor")
@@ -74,9 +99,13 @@ def chain_check():
     from wf.view.archive_index import index_zip_names
     from .source import default_chain_settings
     selected, options = view_options()
-    manifest, directories = (None, None) if selected else default_chain_settings()
-    _, manifest, directories, extras = view_config(manifest=options.get("manifest") or manifest,
-        search_dirs=options.get("zip_dirs") if selected else directories,
+    # Match build_source: a configured view manifest uses view.zip_dirs;
+    # otherwise the legacy studio chain supplies its own search roots.
+    manifest, directories = options.get("manifest"), None
+    if manifest is None and selected is None:
+        manifest, directories = default_chain_settings()
+    _, manifest, directories, extras = view_config(manifest=manifest,
+        search_dirs=directories,
         manifests=options.get("manifests"), view_name=selected)
     base = options.get("base_version", "1.4.131")
     tip = options.get("tip") or manifest_tip(manifest, directories, base, extras)

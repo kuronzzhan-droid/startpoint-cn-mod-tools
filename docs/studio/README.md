@@ -25,6 +25,10 @@ package/lock/TypeScript/Vite 配置比它新时，先执行前端构建。首次
 规范变量为 `WF_SERVER`；兼容别名 `WF_SERVER_DIR` 的警告及冲突规则见路径文档。
 未配置仍保持原有行为：能浏览离线数据，依赖服务端镜像的操作报缺配置。
 解析默认值不写入或部署服务端。
+草稿 CLI 只在需要镜像的命令中解析此配置；`list/show/schema/validate` 等离线命令不读取它。
+预演报告禁止写入 `servers.*.root` 以及全局 server 目录；配置指向 `assets` 时连同父目录保护。
+草稿交付可使用含 `assets/cdndata` 的纯服务端检出，不要求 `.cdn/cn`。
+发布 CDN 的配置校验仅在实际请求发布链检查时执行；不会因导入草稿模块而解析发布根。
 
 ### 首跑体检
 
@@ -36,7 +40,8 @@ python -m wf.studio doctor --json
 每项返回 `id/status/current/fix`，状态为 `ok/warn/fail`；任一 fail 返回退出码 1。
 检查 Python、Pillow/numpy/PyYAML/jsonschema、可选 scipy、Node、ffmpeg、本机 profile、
 store131、补丁链所需及缺少 ZIP 数、只读服务端目录、默认客户端 provides、
-`client_apks.<档案名>`、命名视图、预演镜像配置以及前端构建新旧。
+所有已配置的 `client_apks.<档案名>`、命名视图、预演镜像配置以及前端构建新旧。
+ffmpeg 按语音处理的 `WF_FFMPEG` 优先、PATH 后备规则检查；显式无效路径不会被 PATH 掩盖。
 scipy 仅独立白底立绘抠图工具使用，编辑台基本功能不需要，缺失为 warn；
 Node 缺失影响前端重建，ffmpeg 缺失影响语音处理，也列为 warn。
 未配置 APK 为 fail，避免将撞名检查跳过误当作环境已就绪。
@@ -56,9 +61,11 @@ ZIP 和 APK 存在性体检不代替生成时的摘要、完整性和撞名验�
 ```
 
 `loaded` 为进程已加载的有效版本；`latest` 为重新读取当前视图主 manifest 及补充 manifest
-得到的最高启用版本，按数字比较。仅 latest 高于 loaded 时 stale 为 true。
+得到的最高启用版本，并与主清单的 `cdn_version` 取较大值，按数字比较。
+读取时复用依赖链校验，非法 enabled、断链或多清单启停冲突返回错误。仅 latest 高于 loaded 时 stale 为 true。
 未使用 manifest 时返回 `latest: null, stale: false`；读文件或版本格式失败时仍返回 HTTP 200，
-附 `error` 字段。接口只读取清单，不扫描 ZIP、不重建视图；补丁推进后需重启编辑台加载新视图。
+附 `error` 字段并保持 `latest: null, stale: false`；调用方应显式展示 error，不能视为未过期。
+接口只读取清单，不扫描 ZIP、不重建视图；补丁推进后需重启编辑台加载新视图。
 
 ```powershell
 # 1. 构建前端（首次或改了 studio/src 之后）

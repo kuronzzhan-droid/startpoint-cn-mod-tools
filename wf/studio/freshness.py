@@ -1,5 +1,8 @@
 """Cheap read-only manifest freshness; never rebuild or hash a view."""
-from wf.view.chain import manifest_entries, version
+import json
+from pathlib import Path
+
+from wf.view.chain import manifest_tip, version
 
 
 def freshness(source):
@@ -9,13 +12,14 @@ def freshness(source):
     if manifest is None:
         return result
     try:
-        entries = manifest_entries(manifest, getattr(view, "search_dirs", []),
-                                   getattr(view, "manifests", []))
-        versions = [entry["version"] for entry in entries
-                    if entry.get("enabled", True) is not False and entry.get("version") is not None]
-        latest = max(versions, key=version) if versions else None
-        result["latest"] = latest
-        result["stale"] = latest is not None and version(latest) > version(source.version)
+        latest = manifest_tip(manifest, getattr(view, "search_dirs", []),
+                              getattr(view, "base_version", "1.4.131"),
+                              getattr(view, "manifests", None))
+        header = json.loads(Path(manifest).read_text("utf-8-sig"))
+        if header.get("cdn_version") is not None:
+            latest = max((latest, header["cdn_version"]), key=version)
+        stale = version(latest) > version(source.version)
+        result.update(latest=latest, stale=stale)
     except (OSError, ValueError, TypeError, KeyError) as exc:
         result["error"] = f"{type(exc).__name__}: {exc}"
     return result

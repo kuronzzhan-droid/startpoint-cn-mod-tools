@@ -98,7 +98,7 @@ def test_unknown_wfx_marker_is_never_compatible(app):
     assert body["unsupported"] and not body["recognized"] and body["requiredClientProfiles"] == []
 
 
-def test_rows_follow_unique_reference_to_v35e_string(app):
+def test_rows_follow_unique_reference_to_v35e_string(actual_swf_evidence, app):
     plain = valid_row("plain")
     linked = valid_row("linked")
     linked[col("ability", "instant_content", "unique_condition_id")] = "16998502"
@@ -113,7 +113,7 @@ def test_rows_follow_unique_reference_to_v35e_string(app):
 
 
 @pytest.mark.parametrize("kind", [419, 422, 423, 424])
-def test_rows_official_instant_collision_is_supported_without_patch_dependency(app, kind):
+def test_rows_official_instant_collision_is_supported_without_patch_dependency(actual_swf_evidence, app, kind):
     row = valid_row("official")
     row[col("ability", "instant_content", "kind")] = str(kind)
     _, body = call(app, "/api/drafts/169985/caps/rows", body={"rows": [{"id": "x", "table": "ability", "key": "1", "cells": row}]})
@@ -131,16 +131,19 @@ def test_rows_official_instant_collision_is_supported_without_patch_dependency(a
     ("ability_soul", 423, "client.equipment.gauge_gain_rules@1"),
     ("equipment_enhancement_ability", 423, "client.equipment.gauge_gain_rules@1"),
 ])
-def test_rows_during_kind_dependency_is_table_scoped(app, table, kind, expected):
+def test_rows_during_kind_dependency_is_table_scoped(actual_swf_evidence, app, table, kind, expected):
     cells = next(csv.reader(io.StringIO(ability(kind, table=table))))
     _, body = call(app, "/api/drafts/169985/caps/rows", body={"rows": [
         {"id": "x", "table": table, "key": "1", "cells": cells}]})
     result = body["rows"]["x"]
     assert [cap["id"] for cap in result["capabilities"]] == [expected]
     expected_profiles = ["test-v34", "test-v35e"]
-    if expected != "client.kind423.gauge_source_limit@1":
+    if expected == "client.kind422.dash@1":
         expected_profiles.append("local-v35k3")
     assert result["requiredClientProfiles"] == expected_profiles
+    if expected == "client.equipment.gauge_gain_rules@1":
+        assert not result["profiles"]["local-v35k3"]["compatible"]
+        assert any(m["id"] == expected for m in result["profiles"]["local-v35k3"]["missing"])
     assert not result["placement"]
 
 
@@ -178,7 +181,7 @@ def test_kind_catalog_per_table_and_block(app, actual_swf_evidence):
     assert trigger["kinds"] == {}
 
 
-def test_lookup_preserves_context_and_explicit_capability_when_combined(app):
+def test_lookup_preserves_context_and_explicit_capability_when_combined(actual_swf_evidence, app):
     _, official = call(app, "/api/studio/caps/lookup", {
         "kind": ["423", "423"], "table": ["leader_ability"], "block": ["instant_content"]})
     assert official["requiredClientProfiles"] == ["test-v34", "test-v35e", "local-v35k3"]

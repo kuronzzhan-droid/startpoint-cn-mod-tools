@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -34,11 +35,12 @@ def run_doctor(*, fast=False, source=None, server_dir=None, static=None):
 
     for executable in ("node", "ffmpeg"):
         def command(executable=executable):
-            location = shutil.which(executable)
+            override = os.environ.get("WF_FFMPEG") if executable == "ffmpeg" else None
+            location = shutil.which(override or executable)
             if not location:
                 return "warn", f"未找到 {executable}；" + ("前端重建不可用" if executable == "node" else "语音处理不可用")
             if fast:
-                return "ok", f"PATH 可找到 {executable}（快速检查未启动进程）"
+                return "ok", f"{'WF_FFMPEG' if override else 'PATH'} 可找到 {executable}（快速检查未启动进程）"
             result = subprocess.run([location, "--version" if executable == "node" else "-version"],
                 capture_output=True, text=True, errors="replace", timeout=5,
                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))

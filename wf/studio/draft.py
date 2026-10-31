@@ -199,6 +199,8 @@ def run(args) -> dict:
         changeset = store.save(args.cid)
         return {"status": status(changeset), "savedAt": changeset["savedAt"]}
     if args.command == "build":
+        from .config import server_directory
+        args.server_dir = server_directory(args.server_dir)
         from .draft_commands import run_build
         return run_build(args, store)
     if args.command == "device-result":
@@ -211,6 +213,10 @@ def run(args) -> dict:
         from .pf_actions import draft_keys
         return draft_keys(store, args.cid)
 
+    if args.command in {"ids", "versions", "character", "scratch-promote", "weapon",
+                        "summon", "skill-templates", "skill-template", "boss", "ability"}:
+        from .config import server_directory
+        args.server_dir = server_directory(args.server_dir)
     ops = _ops(args)
     if args.command == "pf-action":
         from .pf_cli import run_pf
@@ -414,8 +420,6 @@ def main(argv=None) -> int:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     args = build_parser().parse_args(argv)
     try:
-        from .config import server_directory
-        args.server_dir = server_directory(getattr(args, "server_dir", None))
         result = run(args)
     except (DraftError, ValueError, OSError, KeyError) as exc:
         print(json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False))
