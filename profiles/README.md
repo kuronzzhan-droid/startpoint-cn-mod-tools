@@ -79,3 +79,48 @@ CDN 可直接指定 `cdn_dir`，或者从显式 `server` 的 `.env` 中读取 `C
 CLI `--manifest` 显式指定主清单时不继承 `view.manifests`；补充清单通过重复的 `--extra-manifest` 给出。`--zip-dir` 可重复，覆盖 profile 的 ZIP 搜索目录；主清单旁的 `active` 始终加入。`--base-version` 默认 `1.4.131`，其它基线必须明确指定。
 
 `--write-lock work/m1/view.lock.json` 记录有序 ZIP 名称和 SHA-256，以及本次实际读取的 store 成员摘要；`--lock` 强制验证。空 `store_members` 表示禁止任何 store 回退。`--logical` 可重复，用于在创建锁时读取本次任务需要的额外逻辑成员。输入锁与首读摘要在会话内固定，`verify()` 在出包前再次复核。锁、报告和所有 CLI 输出均限定为本 worktree 内路径。
+
+## 编辑台命名视图（`default_view` / `views`）
+
+Studio 编辑台（`python -m wf.studio` 与 `python -m wf.studio.draft`）支持在 `profiles/local.json` 中声明命名只读视图（完整行为见 [`docs/studio/chain-views.md`](../docs/studio/chain-views.md)）：
+
+```json
+{
+  "wf_root": "<工作目录>",
+  "default_view": "local",
+  "views": {
+    "local": {
+      "store": "wf-store/production/upload",
+      "manifest": "startpoint-cn/assets/asset-patch/manifest.json",
+      "zip_dirs": ["startpoint-cn/.cdn/cn/archive-common-diff"],
+      "base_version": "1.4.54"
+    }
+  }
+}
+```
+
+- `default_view`（可选字符串）：未显式传 `--view` 且未设环境变量 `WF_STUDIO_VIEW` 时默认加载的视图名（优先级：`--view` > `WF_STUDIO_VIEW` > `default_view`）。
+- `views.<视图名>.store`：只读基线 `production/upload` 目录（相对路径按 `wf_root` 解析）。
+- `views.<视图名>.manifest`：补丁链 `manifest.json` 路径（相对路径按 `wf_root` 解析）。
+- `views.<视图名>.zip_dirs`：查找清单引用补丁 ZIP 的目录数组（相对路径按 `wf_root` 解析）。
+- `views.<视图名>.base_version`（可选字符串）：基线 `store` 已具备的资源版本号（缺省为 `1.4.131`；基于官方 CN `1.4.54` 物化的 `store` 须显式填 `"1.4.54"`）。
+- `views.<视图名>.tip`（可选字符串）：默认叠加到的清单链终点版本；省略时取清单最高启用版本。
+
+## 交付只读预演服务端（`servers` / `rehearsal_server`）
+
+交付前只读预演（`python -m wf.studio.draft rehearse --delivery-dir <交付目录> --server <名称>` 及编辑台构建后自动预演）使用独立的 `servers` 与 `rehearsal_server` 字段（完整契约见 [`docs/studio/rehearsal.md`](../docs/studio/rehearsal.md)）：
+
+```json
+{
+  "wf_root": "<工作目录>",
+  "servers": {
+    "local": {
+      "root": "startpoint-cn"
+    }
+  },
+  "rehearsal_server": "local"
+}
+```
+
+- `servers.<名称>.root`：用于只读核对版本链与服务端 JSON 变更的服务端根目录（其下应包含 `assets/asset-patch/manifest.json`，相对路径按 `wf_root` 解析；`<名称>` 限 1～64 位字母、数字、下划线或连字符）。预演全程只读，不会向该目录写入或覆盖任何文件。
+- `rehearsal_server`（可选字符串或 `null`）：编辑台执行草稿交付构建（`build_draft`）成功后自动执行一次只读预演的目标服务端名称；设为 `null` 或省略时不自动预演。
