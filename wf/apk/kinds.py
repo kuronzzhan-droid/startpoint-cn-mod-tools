@@ -117,8 +117,13 @@ def inspect_provides(provides, *, registry=None) -> dict:
         if path.is_file():
             return _compare(inspect_swf(path, expected_sha256=expected), provides, registry)
     _, profiles = load_profiles()
-    for record in profiles.values():
+    for profile_id, record in profiles.items():
         evidence = record.get("evidence", {})
+        if evidence.get("swf_sha256") == expected:
+            from wf.studio.delivery_safety import resolve_apks
+            for candidate in resolve_apks(profile_id):
+                if candidate.is_file():
+                    return _compare(inspect_swf(candidate, expected_sha256=expected), provides, registry)
         filename = evidence.get("swf_path") or evidence.get("swf")
         if evidence.get("swf_sha256") == expected and filename and _path(filename).is_file():
             return _compare(inspect_swf(filename, expected_sha256=expected), provides, registry)

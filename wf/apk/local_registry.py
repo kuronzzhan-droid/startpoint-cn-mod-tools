@@ -6,18 +6,20 @@ from pathlib import Path
 from wf.paths import REPOSITORY
 
 BUILTIN = "wf/apk/data/local-v35k3-registration.json"
+REVIEWED = "wf/apk/data/test-merge-1008094-registration.json"
 LOCAL = "work/local-clients"
 
 
 def registrations(root=None):
     root = Path(root or REPOSITORY)
-    paths = [root / BUILTIN, *sorted((root / LOCAL).glob("*/registration.json"))]
+    paths = [root / BUILTIN, root / REVIEWED, *sorted((root / LOCAL).glob("*/registration.json"))]
     seen = {}
     for path in paths:
         if not path.is_file():
             continue
         record = json.loads(path.read_text("utf-8"))
-        if record.get("schema") != "wf-local-client/1":
+        expected_schema = "wf-reviewed-client/1" if path == root / REVIEWED else "wf-local-client/1"
+        if record.get("schema") != expected_schema:
             raise ValueError("invalid local client registration")
         name = record["profile_id"]
         if name in seen:

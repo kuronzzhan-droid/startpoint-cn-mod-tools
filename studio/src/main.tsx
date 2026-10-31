@@ -1,6 +1,6 @@
 import { render } from "preact";
 import { useEffect, useState } from "preact/hooks";
-import { api, Meta } from "./api";
+import { api, get, Meta } from "./api";
 import { href, useRoute } from "./router";
 import { CharacterList } from "./views/CharacterList";
 import { CharacterDetailView } from "./views/CharacterDetail";
@@ -18,15 +18,31 @@ import "./m4.css";
 import "./workshop.css";
 import "./profile.css";
 
+type Freshness = { loaded: string; latest: string | null; stale: boolean; error?: string };
+type Doctor = { items: { id: string; status: "ok" | "warn" | "fail"; current: string; fix: string }[] };
+
 function App() {
   const route = useRoute();
   const [meta, setMeta] = useState<Meta | null>(null);
   const [metaError, setMetaError] = useState<string | null>(null);
   const [lookupOpen, setLookupOpen] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
+  const [freshness, setFreshness] = useState<Freshness | null>(null);
+  const [doctor, setDoctor] = useState<Doctor | null>(null);
+  const doctorIssues = doctor?.items.filter((item) => item.status !== "ok") ?? [];
 
   useEffect(() => {
     api.meta().then(setMeta, (e: Error) => setMetaError(e.message));
+  }, []);
+
+  useEffect(() => {
+    const check = () => {
+      get<Freshness>("/api/studio/freshness").then(setFreshness, () => setFreshness(null));
+    };
+    check();
+    const timer = window.setInterval(check, 60_000);
+    get<Doctor>("/api/studio/doctor").then(setDoctor, () => setDoctor(null));
+    return () => window.clearInterval(timer);
   }, []);
 
   useEffect(() => {
@@ -74,6 +90,16 @@ function App() {
         <span class="pill draftable" title="只写草稿（work/studio-drafts）和本机交付目录（work/studio-deliveries）；不改测试服、不发布、不写游戏数据">只写草稿</span>
         {meta?.source.chain?.missing.length ? (
           <span class="error-text">补丁链缺 {meta.source.chain.missing.length} 个 ZIP，视图不完整</span>
+        ) : null}
+        {freshness?.stale ? (
+          <span class="error-text" title="补丁链已前进；这时生成交付会被拒绝，重启后才会读到新版本">
+            补丁链已到 {freshness.latest}，这里还是 {freshness.loaded}，请重启编辑台
+          </span>
+        ) : null}
+        {doctorIssues.length ? (
+          <span class="pill readonly" title={doctorIssues.map((item) => `${item.id}：${item.current}\n修复：${item.fix}`).join("\n\n")}>
+            环境 {doctor!.items.length - doctorIssues.length}/{doctor!.items.length} 项就绪
+          </span>
         ) : null}
         {metaError ? <span class="error-text">后端不可用：{metaError}</span> : null}
       </div>

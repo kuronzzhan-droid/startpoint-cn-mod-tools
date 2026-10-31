@@ -4,6 +4,54 @@
 `default_client_profile`，当前为 `test-v34`。选择 `test-v35e` 必须明确传入档案名。
 旧发布器的 `default_publish_profile` 保持自己的授权边界。
 
+## 新 APK 登记与 1008094 证据
+
+`python -m wf apk provides <APK> --out work/client/provides.json` 只识别已登记的完整 SWF
+摘要；未知摘要的 `unknown APK/SWF digest; provide a method/patch summary record` 是证据门槛。
+它不会按 APK 文件名、versionCode 或 README 声明自动继承旧版能力。
+
+自用包可执行：
+
+```text
+python -m wf apk register-local <APK> --profile local-example
+python -m wf apk provides <APK> --out work/client/provides.json
+```
+
+`register-local` 仅接受 `com.leiting.wf` 和 `local-...` 档案名，写入忽略目录
+`work/local-clients/<档案名>/registration.json` 与 `provides.json`。
+它解析实际 AndroidManifest 和 SWF，对固定 v35e 基线的每个方法比较 code 摘要和
+常量、namespace、签名、异常表等引用上下文摘要；一项补丁的必需方法全部一致才授予能力。
+变更、缺失、native/ANE 方法列入 withheld。不要改包名或取消此限制去登记测试服 APK。
+
+公开测试服档案采用可审阅的证据文件与 `client_profiles.json`：
+
+1. 从实际 APK 读取包名、versionCode，记录各架构 APK SHA-256 和内置 SWF SHA-256。
+2. 用 `wf.apk.method_snapshot.snapshot` 提取实际方法及上下文摘要，与
+   `wf/apk/data/v35e-method-contexts.json` 比较；`verified_evidence` 仅保留完全证明的补丁。
+   语义已改变的方法需要额外的代码审查和绑定该 SWF 的 accepted_variants，不能仅替换摘要。
+3. 把不含原始代码、官方资产、本机路径的 registration/provides 放在 `wf/apk/data/`，
+   通过 `wf.apk.local_registry` 的固定已审阅记录表注册。`provides_for` 可从 registration 重算结果。
+4. `client_profiles.json` 增加档案：`package_name`、`versionCode`、`provides` 相对路径、
+   `provides_sha256`、`m2_capabilities`，以及 `evidence.swf_sha256`、`apk_sha256_by_arch`。
+   `resolve_client` 会校验 provides 文件摘要及它与档案的 APK/SWF 绑定。
+5. 由配置维护者在忽略的本机 profile 中设置 `client_apks.<档案名>` 路径数组；
+   撞名检查和实际 kind 分支检查使用这些 APK。登记摘要不会替用户下载或安装 APK。
+6. 运行 `wf apk provides`、档案测试和交付检查。只有目标工作流所需能力都有充分证据时才改默认。
+
+已登记 `test-merge-1008094`：包名 `com.leiting.wt`，versionCode `1008094`，
+arm64 与 x86 包的内置 SWF 相同：
+`2fa334cca6b104bdcae061c5ed9bc63eb52d59db7e687c90d24742e61759e7b4`。
+838 个方法观察记录保存在 `test-merge-1008094-registration.json`，
+103 项可证明能力保存在 `test-merge-1008094-provides.json`；44 个补丁证据组仍 withheld。
+这是静态能力证据，不是设备验收、安装或部署结果。
+
+**默认仍为 test-v34**：1008094 的 PF4、直击基础倍率、WFX 状态规格等关键方法与 v35e
+已审核基线不同，完整继承尚未证明。还需审核 `MemberImpl/startPowerFlip`、
+`BattleFlipperImpl/update`、`BattleFlipperView/draw`、`ConditionSlot$/wfxSpec`、
+`MemberImpl/wfxDirectFactor` 等变更方法，以及 native/ANE/资源类证据。
+README 所述 C25/C26、伤害数字配色等新增行为未凭版本说明授予能力；需要相应方法与语义审查。
+withheld 表示待验证，不代表已证明不支持。生成时可显式选择新档案，但缺失能力检查仍阻断。
+
 ## 命令行与生成结果
 
 ```text

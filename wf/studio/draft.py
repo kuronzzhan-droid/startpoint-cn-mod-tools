@@ -414,6 +414,8 @@ def main(argv=None) -> int:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     args = build_parser().parse_args(argv)
     try:
+        from .config import server_directory
+        args.server_dir = server_directory(getattr(args, "server_dir", None))
         result = run(args)
     except (DraftError, ValueError, OSError, KeyError) as exc:
         print(json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False))

@@ -55,6 +55,8 @@ class StudioApp:
                  screenshot_dirs=None):
         from .device_result import Screenshots, configured_screenshot_dirs
         self.source = source
+        self.server_dir = server_dir
+        self.static_root = DEFAULT_STATIC
         # 实测截图白名单：profile paths.studio_screenshots / WF_STUDIO_SCREENSHOTS / --screenshots-dir
         self.screenshots = Screenshots(configured_screenshot_dirs() if screenshot_dirs is None
                                        else screenshot_dirs)
@@ -67,6 +69,8 @@ class StudioApp:
         self.routes: list[tuple[str, re.Pattern, Callable[..., Response]]] = [
             ("GET", re.compile(r"^/api/health$"), self.health),
             ("GET", re.compile(r"^/api/meta$"), self.meta),
+            ("GET", re.compile(r"^/api/studio/freshness$"), self.freshness),
+            ("GET", re.compile(r"^/api/studio/doctor$"), self.doctor),
             ("GET", re.compile(r"^/api/characters$"), self.characters),
             ("GET", re.compile(r"^/api/characters/(?P<cid>\d+)$"), self.character),
             ("GET", re.compile(r"^/api/characters/(?P<cid>\d+)/pixels$"), self.pixel_meta),
@@ -209,6 +213,15 @@ class StudioApp:
             editor._key_index(table, None)
 
     # -- handlers -------------------------------------------------------
+    def freshness(self, query) -> Response:
+        from .freshness import freshness
+        return json_response(freshness(self.source))
+
+    def doctor(self, query) -> Response:
+        from .doctor import run_doctor
+        return json_response(run_doctor(fast=True, source=self.source,
+                                       server_dir=self.server_dir, static=self.static_root))
+
     def health(self, query) -> Response:
         return json_response({"ok": True})
 

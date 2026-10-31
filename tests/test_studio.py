@@ -42,7 +42,7 @@ def test_route_table_dispatch():
     assert all(verb == "GET" or (verb == "POST" and (
         pattern.startswith(writes) or pattern in delivery_previews
         or pattern == "^/api/studio/views/export-store$")) for verb, pattern in routes)
-    for expected in ("/api/meta", "/api/characters", "/api/lookup", "/api/patches", "/api/boss/drafts",
+    for expected in ("/api/studio/doctor", "/api/studio/freshness", "/api/meta", "/api/characters", "/api/lookup", "/api/patches", "/api/boss/drafts",
                      "/api/studio/weapons", "/api/studio/weapons/clone", "/api/studio/weapons/drafts",
                      "/api/studio/characters/clone", "/api/studio/characters/scratch-example/promote",
                      "/api/studio/views", "/api/studio/views/export-store"):

@@ -14,7 +14,51 @@ M3.1 提供只读浏览；M3.2 起可以把立绘、像素、语音替换进**�
 
 ## 启动
 
-前提：`profiles/local.json` 已配置 `wf_root`（见 `profiles/example.json`）；Python 只用标准库 + 仓内已有依赖（Pillow）；Node 24。
+前提：Python 3.11+，安装 `requirements.txt`；构建前端需 Node/npm。
+在 `profiles/local.json` 明确配置输入路径（仅 `wf_root` 不足以推断 store/server），见 `profiles/README.md`。
+Windows 运行根目录 `studio.bat` 会检查 `studio/dist/index.html`：缺失，或 `studio/src`、
+package/lock/TypeScript/Vite 配置比它新时，先执行前端构建。首次无 node_modules 时先执行 `npm ci`；
+构建失败停止启动。可先激活自己的虚拟环境，脚本使用 PATH 中的 Python、Node 和 npm。
+
+`python -m wf.studio` 与 `python -m wf.studio.draft` 的服务端镜像优先级为：
+显式 `--server-dir` > `wf.paths` 的环境变量 > profile `server` 配置。
+规范变量为 `WF_SERVER`；兼容别名 `WF_SERVER_DIR` 的警告及冲突规则见路径文档。
+未配置仍保持原有行为：能浏览离线数据，依赖服务端镜像的操作报缺配置。
+解析默认值不写入或部署服务端。
+
+### 首跑体检
+
+```text
+python -m wf.studio doctor
+python -m wf.studio doctor --json
+```
+
+每项返回 `id/status/current/fix`，状态为 `ok/warn/fail`；任一 fail 返回退出码 1。
+检查 Python、Pillow/numpy/PyYAML/jsonschema、可选 scipy、Node、ffmpeg、本机 profile、
+store131、补丁链所需及缺少 ZIP 数、只读服务端目录、默认客户端 provides、
+`client_apks.<档案名>`、命名视图、预演镜像配置以及前端构建新旧。
+scipy 仅独立白底立绘抠图工具使用，编辑台基本功能不需要，缺失为 warn；
+Node 缺失影响前端重建，ffmpeg 缺失影响语音处理，也列为 warn。
+未配置 APK 为 fail，避免将撞名检查跳过误当作环境已就绪。
+ZIP 和 APK 存在性体检不代替生成时的摘要、完整性和撞名验证。
+
+`GET /api/studio/doctor` 返回同结构的 `mode: "fast"` 报告及 `counts`、`ok`、`items`。
+快速版不运行子进程、不递归扫描补丁目录、不哈希或解析 APK、不连接预演服务器；
+补丁项使用已加载视图的状态，尚无视图时明确标为未扫描。
+正常启动也打印一行快速体检摘要；体检失败不自动修改配置或下载资产。
+
+### 视图新鲜度
+
+`GET /api/studio/freshness` 返回：
+
+```json
+{"loaded":"1.4.340","latest":"1.4.341","stale":true}
+```
+
+`loaded` 为进程已加载的有效版本；`latest` 为重新读取当前视图主 manifest 及补充 manifest
+得到的最高启用版本，按数字比较。仅 latest 高于 loaded 时 stale 为 true。
+未使用 manifest 时返回 `latest: null, stale: false`；读文件或版本格式失败时仍返回 HTTP 200，
+附 `error` 字段。接口只读取清单，不扫描 ZIP、不重建视图；补丁推进后需重启编辑台加载新视图。
 
 ```powershell
 # 1. 构建前端（首次或改了 studio/src 之后）
@@ -32,11 +76,11 @@ python -m wf.studio            # 打开 http://127.0.0.1:8790/
 
 | 参数 | 作用 |
 |---|---|
-| `--tip N` | 视图 TIP 小版本号。默认取 kulo `assets/asset-patch/active` 里最新补丁边的目标版本（当前 206） |
+| `--tip N` | 视图 TIP 小版本号；manifest 视图默认最高启用版本，没有 manifest 时使用 active 中最高补丁边 |
 | `--extra-zip ZIP` | 在 active 链之后叠加一个补丁 ZIP，可重复，按顺序后者覆盖前者 |
 | `--extra-zips-file TXT` | 每行一个 ZIP 路径的清单，可重复；例如万圣角色构建用的 `build/extra_zips.txt` |
 | `--chain-manifest JSON` | 补丁链清单（kulo `asset-patch/manifest.json` 格式）。TIP 之后已启用的边按 `archive_integrity` 的文件名、大小、SHA-256 在搜索目录里找 ZIP 并依次叠加 |
-| `--zip-dir DIR` | 查找补丁 ZIP 的目录，可重复（最多下探 4 层） |
+| `--zip-dir DIR` | 查找补丁 ZIP 的显式目录，可重复；manifest 视图递归搜索，跳过目录链接 |
 | `--no-chain` | 不按清单自动叠加 |
 | `--port` / `--host` | 默认 `127.0.0.1:8790` |
 | `--warm` | 启动时预读角色列表（首次约 1 秒，用于与官方基线比对） |
@@ -48,7 +92,8 @@ python -m wf.studio            # 打开 http://127.0.0.1:8790/
  "studio_zip_dirs": ["rel1016", "rel219", "rel224", "out"]}
 ```
 
-这样直接 `python -m wf.studio` 就叠到 1.4.224（34 个 ZIP，与手写清单逐个 SHA-256 一致；同名不同内容的构建会按哈希挑对）。`--extra-zips-file` 仍可用，和清单重复的同名 ZIP 只叠一次。
+以上仅为配置结构示例，不代表当前链尾。启动时以配置的完整 manifest 和 ZIP 摘要为准；
+缺边或缺 ZIP 会拒绝建立视图。显式额外 ZIP 会按给定顺序叠加。
 
 开发前端：另开终端在 `studio/` 运行 `npm run dev`，Vite 会把 `/api` 代理到 8790。
 

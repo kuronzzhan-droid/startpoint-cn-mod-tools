@@ -31,7 +31,26 @@ class _Source(_FakeSource):
 
 @pytest.fixture(scope="module")
 def app():
-    return StudioApp(_Source())
+    # This regression suite describes the original v34/v35e/v35k3 comparison.
+    # Keep its exact assertions stable as independently reviewed clients arrive.
+    from wf.caps import profiles
+    original = profiles.load_profiles
+    with pytest.MonkeyPatch.context() as patch:
+        def historical_profiles(filename=None):
+            default, records = original(filename)
+            return default, {name: records[name] for name in ("test-v34", "test-v35e", "local-v35k3")}
+        patch.setattr(profiles, "load_profiles", historical_profiles)
+        yield StudioApp(_Source())
+
+
+@pytest.fixture
+def actual_swf_evidence(app):
+    from wf.apk.kinds import inspect_profile
+    for name in app.client_profiles.clients():
+        try:
+            inspect_profile(name)
+        except FileNotFoundError as exc:
+            pytest.skip(f"真实 SWF 分支集成测试缺少本机 {name} 的摘要匹配 SWF/APK：{exc}")
 
 
 def call(app, path, query=None, body=None):
@@ -125,7 +144,7 @@ def test_rows_during_kind_dependency_is_table_scoped(app, table, kind, expected)
     assert not result["placement"]
 
 
-def test_rows_leader_during_423_reports_actual_swf_unsupported(app):
+def test_rows_leader_during_423_reports_actual_swf_unsupported(app, actual_swf_evidence):
     cells = next(csv.reader(io.StringIO(ability(423, table="leader_ability"))))
     _, body = call(app, "/api/drafts/169985/caps/rows", body={"rows": [
         {"id": "x", "table": "leader_ability", "key": "1", "cells": cells}]})
@@ -141,7 +160,7 @@ def test_rows_reject_bad_requests(app):
     assert call(app, "/api/drafts/169985/caps/rows", body={"rows": "x"})[0] == 400
 
 
-def test_kind_catalog_per_table_and_block(app):
+def test_kind_catalog_per_table_and_block(app, actual_swf_evidence):
     _, during = call(app, "/api/studio/caps/kinds", {"table": ["ability"], "block": ["during_content"]})
     assert during["kinds"]["422"]["requiredClientProfiles"] == ["test-v34", "test-v35e", "local-v35k3"]
     assert not during["kinds"]["422"]["placement"]
@@ -174,7 +193,7 @@ def test_lookup_preserves_context_and_explicit_capability_when_combined(app):
     assert call(app, "/api/studio/caps/lookup", {"kind": ["423"], "table": ["ability"]})[0] == 400
 
 
-def test_compat_cache_distinguishes_table_and_block_with_same_capability_set(app):
+def test_compat_cache_distinguishes_table_and_block_with_same_capability_set(app, actual_swf_evidence):
     view = app.client_profiles
     from wf.studio.client_profile_signals import kind_site
     official = kind_site("leader_ability", "instant_content", "423")

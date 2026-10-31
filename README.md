@@ -12,9 +12,22 @@
 - 修改联网正式服数据、用于作弊或商业用途均可能违反游戏服务条款,由使用者自行承担后果。
 - 逆向所得的字段语义 / 解密方式仅供技术交流;上游生态(wfax / wdfp-extractor)已公开同类逻辑。
 
+## 编辑台
+
+主入口是仓库根目录的 `python -m wf.studio`，浏览器打开 `http://localhost:8790/`。
+Windows 可运行 `studio.bat`：先检查前端构建是否缺失或过期，必要时构建，再启动后端。
+首次使用先运行 `python -m wf.studio doctor`（或加 `--json`），按各项修复提示配置
+基线 store、补丁链、只读服务端镜像、目标客户端 APK 和本地预演镜像。
+Python 需 3.11 或更新版本；依赖安装见下方及体检提示。
+
+编辑台只保存草稿及本地交付，不部署。旧的 `wf_gui.py` / `wf-gui.bat` 使用 8765，
+是旧数据工具入口，与 8790 编辑台的草稿、视图及接口不同，不应混用。
+详细入口、配置和只读接口见 [编辑台说明](docs/studio/README.md)，
+客户端证据登记见 [客户端档案](docs/m2/client-profiles.md)。
+
 ## 环境
 
-- Python ≥ 3.10；图像与历史配方依赖见 `requirements.txt`，测试依赖见 `requirements-dev.txt`
+- Python ≥ 3.11；图像与历史配方依赖见 `requirements.txt`，测试依赖见 `requirements-dev.txt`
 - 已部署的 startpoint-cn 服务端(首选仓内已有 `.cdn/cn`;用于物化数据和下发改动)
 - 或一份合法的手机端游戏数据包(`WorldFlipper/dummy/download/production/upload`)
 - 可选:MuMu 12 模拟器 + adb(用于直接同步 / 重启游戏)
