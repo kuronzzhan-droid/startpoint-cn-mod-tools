@@ -79,7 +79,12 @@ def save_reports(folder, result, markdown, protected):
     folder = Path(folder).resolve()
     # No report may land in any configured server, even through a junction.
     config, _ = profile_data()
-    roots = [protected]
+    roots = [Path(protected).resolve()]
+    from .config import server_directory
+    configured = server_directory()
+    if configured is not None:
+        configured = configured.resolve()
+        roots.append(configured.parent if configured.name.lower() == "assets" else configured)
     servers = config.get("servers")
     for name in servers if isinstance(servers, dict) else ():
         try:

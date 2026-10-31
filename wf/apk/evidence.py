@@ -65,7 +65,7 @@ def _binary_record(path: Path, data: bytes, known: dict) -> tuple[dict, dict]:
         from .register_local import verified_evidence
         record, withheld = verified_evidence(registered["observations"])
         record.update(swf_sha256=swf_sha, local_withheld=withheld)
-        source["basis"] = "与本地自用档案的SWF完整摘要一致；只使用真实方法及引用上下文证明的能力，不推断当前包名或部署目标"
+        source["basis"] = "与已登记档案的SWF完整摘要一致；只使用真实方法及引用上下文证明的能力，不推断当前包名或部署目标"
         return record, source
     if swf_sha != known["swf_sha256"]:
         candidate = v35e_evidence()

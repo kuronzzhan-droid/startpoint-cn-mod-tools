@@ -55,6 +55,8 @@ class StudioApp:
                  screenshot_dirs=None):
         from .device_result import Screenshots, configured_screenshot_dirs
         self.source = source
+        self.server_dir = server_dir
+        self.static_root = DEFAULT_STATIC
         # 实测截图白名单：profile paths.studio_screenshots / WF_STUDIO_SCREENSHOTS / --screenshots-dir
         self.screenshots = Screenshots(configured_screenshot_dirs() if screenshot_dirs is None
                                        else screenshot_dirs)
@@ -67,6 +69,8 @@ class StudioApp:
         self.routes: list[tuple[str, re.Pattern, Callable[..., Response]]] = [
             ("GET", re.compile(r"^/api/health$"), self.health),
             ("GET", re.compile(r"^/api/meta$"), self.meta),
+            ("GET", re.compile(r"^/api/studio/freshness$"), self.freshness),
+            ("GET", re.compile(r"^/api/studio/doctor$"), self.doctor),
             ("GET", re.compile(r"^/api/characters$"), self.characters),
             ("GET", re.compile(r"^/api/characters/(?P<cid>\d+)$"), self.character),
             ("GET", re.compile(r"^/api/characters/(?P<cid>\d+)/pixels$"), self.pixel_meta),
@@ -209,6 +213,15 @@ class StudioApp:
             editor._key_index(table, None)
 
     # -- handlers -------------------------------------------------------
+    def freshness(self, query) -> Response:
+        from .freshness import freshness
+        return json_response(freshness(self.source))
+
+    def doctor(self, query) -> Response:
+        from .doctor import run_doctor
+        return json_response(run_doctor(fast=True, source=self.source,
+                                       server_dir=self.server_dir, static=self.static_root))
+
     def health(self, query) -> Response:
         return json_response({"ok": True})
 
@@ -413,6 +426,7 @@ def make_handler(app: StudioApp, static_root: Path, guard: WriteGuard):
 
         def _handle(self, method: str):
             parsed = urlparse(self.path)
+            body_read = False
             try:
                 guard.check_host(self.headers)
                 if parsed.path.startswith("/api/"):
@@ -421,6 +435,7 @@ def make_handler(app: StudioApp, static_root: Path, guard: WriteGuard):
                         guard.check(self.headers)
                         length = guard.body_length(self.headers)
                         raw = self.rfile.read(length)
+                        body_read = True
                         if len(raw) != length:
                             raise GuardError(400, "studio_bad_body", "请求体长度不符")
                         body = guard.parse(raw)
@@ -437,6 +452,9 @@ def make_handler(app: StudioApp, static_root: Path, guard: WriteGuard):
             except Exception as exc:  # noqa: BLE001 - report instead of dropping the connection
                 traceback.print_exc()
                 response = error(500, f"{type(exc).__name__}: {exc}")
+            if response.status >= 400 and not body_read:
+                from .http_rejection import discard_rejected_body
+                discard_rejected_body(self)
             self._send(response, head=method == "HEAD")
 
         def do_GET(self):

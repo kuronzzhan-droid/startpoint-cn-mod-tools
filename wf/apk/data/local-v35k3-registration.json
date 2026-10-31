@@ -5302,6 +5302,56 @@
         "ConditionSlot$/wfxSpec"
       ],
       "kind": "method_changed"
+    },
+    {
+      "patch": 108,
+      "kind": "incomplete_runtime_evidence",
+      "reason": "O8 台座资源未绑定非 SWF 资产证据，待验证，不授予能力"
+    },
+    {
+      "patch": 129,
+      "kind": "incomplete_runtime_evidence",
+      "reason": "装备规则的方法基准未覆盖 wfCountEquipment 及完整预载调用上下文，待验证，不授予能力"
+    },
+    {
+      "patch": 5,
+      "kind": "runtime_dependency_unproven",
+      "dependencies": [
+        112
+      ],
+      "reason": "下游运行时或资源预载未证明等价，不授予能力"
+    },
+    {
+      "patch": 53,
+      "kind": "runtime_dependency_unproven",
+      "dependencies": [
+        112
+      ],
+      "reason": "下游运行时或资源预载未证明等价，不授予能力"
+    },
+    {
+      "patch": 115,
+      "kind": "runtime_dependency_unproven",
+      "dependencies": [
+        112
+      ],
+      "reason": "下游运行时或资源预载未证明等价，不授予能力"
+    },
+    {
+      "patch": 116,
+      "kind": "runtime_dependency_unproven",
+      "dependencies": [
+        112
+      ],
+      "reason": "下游运行时或资源预载未证明等价，不授予能力"
+    },
+    {
+      "id": "client.equipment.gauge_gain_rules@1",
+      "kind": "runtime_dependency_unproven",
+      "dependencies": [
+        31
+      ],
+      "reason": "解析方法相同不足以证明运行时等价，不授予能力"
     }
   ],
   "profile_id": "local-v35k3",
@@ -5312,14 +5362,12 @@
     "versionCode": 1008001,
     "versionName": "1.8.1",
     "provides": "wf/apk/data/local-v35k3-provides.json",
-    "provides_sha256": "dfdb23e0777a4dad71295b89fd4feff780abd6467eb6711587c98f612d8a2672",
+    "provides_sha256": "799c12e18ceade1d118e7e01bab3644edc9af125e77ae63e7b8d0e3bb25db14d",
     "capabilities": [
       "ability-visuals-v1",
       "damage-type-rules-v1",
       "dash-parameter-v1",
       "dual-form-uid-v1",
-      "equipment-gauge-gain-rules-v1",
-      "equipment-rules-data-v1",
       "fever-items-v2",
       "fever-voice-v1",
       "kyubi-fever-ratio-v1",
@@ -5336,7 +5384,6 @@
       "client.apk.patch002@1",
       "client.apk.patch003@1",
       "client.apk.patch004@1",
-      "client.apk.patch005@1",
       "client.apk.patch006@1",
       "client.apk.patch007@1",
       "client.apk.patch008@1",
@@ -5380,7 +5427,6 @@
       "client.apk.patch049@1",
       "client.apk.patch050@1",
       "client.apk.patch051@1",
-      "client.apk.patch053@1",
       "client.apk.patch055@1",
       "client.apk.patch057@1",
       "client.apk.patch058@1",
@@ -5420,9 +5466,6 @@
       "client.apk.patch105@1",
       "client.apk.patch106@1",
       "client.apk.patch107@1",
-      "client.apk.patch108@1",
-      "client.apk.patch115@1",
-      "client.apk.patch116@1",
       "client.apk.patch117@1",
       "client.apk.patch118@1",
       "client.apk.patch119@1",
@@ -5431,13 +5474,9 @@
       "client.apk.patch126@1",
       "client.apk.patch127@1",
       "client.apk.patch128@1",
-      "client.apk.patch129@1",
       "client.apk.patch131@1",
-      "client.charge.cap@1",
       "client.dual_form.uid@1",
       "client.dual_form@1",
-      "client.equipment.gauge_gain_rules@1",
-      "client.equipment.rules_data@1",
       "client.fever.items@1",
       "client.fever.items@2",
       "client.fever.voice@1",
@@ -5445,13 +5484,11 @@
       "client.kind424.damage_convert@1",
       "client.kind724.fever_ratio@1",
       "client.overlimit.o1@1",
-      "client.overlimit.o8@1",
       "client.pf.level4@1",
       "client.pf.lv4_data@1",
       "client.pf.snapcombo@1",
       "client.text.desc_override@1",
       "client.unique.hidden@1",
-      "client.unique.sunburn@1",
       "client.voice.rotation@1",
       "client.wfx.hidden_unique_icons@1"
     ],

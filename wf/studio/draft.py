@@ -199,6 +199,8 @@ def run(args) -> dict:
         changeset = store.save(args.cid)
         return {"status": status(changeset), "savedAt": changeset["savedAt"]}
     if args.command == "build":
+        from .config import server_directory
+        args.server_dir = server_directory(args.server_dir)
         from .draft_commands import run_build
         return run_build(args, store)
     if args.command == "device-result":
@@ -211,6 +213,10 @@ def run(args) -> dict:
         from .pf_actions import draft_keys
         return draft_keys(store, args.cid)
 
+    if args.command in {"ids", "versions", "character", "scratch-promote", "weapon",
+                        "summon", "skill-templates", "skill-template", "boss", "ability"}:
+        from .config import server_directory
+        args.server_dir = server_directory(args.server_dir)
     ops = _ops(args)
     if args.command == "pf-action":
         from .pf_cli import run_pf

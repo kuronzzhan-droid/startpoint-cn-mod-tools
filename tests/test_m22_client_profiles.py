@@ -118,6 +118,13 @@ def test_v35_changeset_default_blocks_v34_and_selected_v35e_passes(tmp_path, cap
     character = store / key[:2] / key[2:]
     character.parent.mkdir(parents=True)
     character.write_bytes(nodes.build_node({}))
+    # Shared-table preservation requires the complete pre-change table, even
+    # when this test explicitly disables the external baseline view.
+    from wf.caps.facts import STRINGS
+    strings_key = digest(STRINGS)
+    strings = store / strings_key[:2] / strings_key[2:]
+    strings.parent.mkdir(parents=True, exist_ok=True)
+    strings.write_bytes(nodes.build_node({}))
     common = [str(source), "--no-baseline-i-know", "--base-store", str(store)]
     assert deliver_main([*common, "--out", str(tmp_path / "v34")]) == 1
     first = json.loads(capsys.readouterr().out)

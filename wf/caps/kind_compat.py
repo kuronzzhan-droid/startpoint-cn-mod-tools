@@ -42,6 +42,12 @@ def check_kind_sites(required, provides, registry):
         return checks + [result("capability.kind-evidence", "待验证",
                                f"无法核对真实 SWF 的 kind 分支：{error}", blocking=True)]
     for mismatch in report.get("mismatches", []):
+        used_extra = any(str(site["kind"]) == str(mismatch["kind"])
+                         and site["block"] == mismatch["block"]
+                         and site["table"] in mismatch.get("unregistered_tables", [])
+                         for site in sites)
+        if not mismatch.get("missing_branches") and not used_extra:
+            continue  # An unused parser branch is not a runtime capability grant.
         checks.append(result("capability.kind-registry", "问题",
                              "注册表 allowed_tables 与真实 SWF 的 kind 分支不一致",
                              blocking=True, mismatch=mismatch))

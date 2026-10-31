@@ -31,7 +31,26 @@ class _Source(_FakeSource):
 
 @pytest.fixture(scope="module")
 def app():
-    return StudioApp(_Source())
+    # This regression suite describes the original v34/v35e/v35k3 comparison.
+    # Keep its exact assertions stable as independently reviewed clients arrive.
+    from wf.caps import profiles
+    original = profiles.load_profiles
+    with pytest.MonkeyPatch.context() as patch:
+        def historical_profiles(filename=None):
+            default, records = original(filename)
+            return default, {name: records[name] for name in ("test-v34", "test-v35e", "local-v35k3")}
+        patch.setattr(profiles, "load_profiles", historical_profiles)
+        yield StudioApp(_Source())
+
+
+@pytest.fixture
+def actual_swf_evidence(app):
+    from wf.apk.kinds import inspect_profile
+    for name in app.client_profiles.clients():
+        try:
+            inspect_profile(name)
+        except FileNotFoundError as exc:
+            pytest.skip(f"真实 SWF 分支集成测试缺少本机 {name} 的摘要匹配 SWF/APK：{exc}")
 
 
 def call(app, path, query=None, body=None):
@@ -79,7 +98,7 @@ def test_unknown_wfx_marker_is_never_compatible(app):
     assert body["unsupported"] and not body["recognized"] and body["requiredClientProfiles"] == []
 
 
-def test_rows_follow_unique_reference_to_v35e_string(app):
+def test_rows_follow_unique_reference_to_v35e_string(actual_swf_evidence, app):
     plain = valid_row("plain")
     linked = valid_row("linked")
     linked[col("ability", "instant_content", "unique_condition_id")] = "16998502"
@@ -94,7 +113,7 @@ def test_rows_follow_unique_reference_to_v35e_string(app):
 
 
 @pytest.mark.parametrize("kind", [419, 422, 423, 424])
-def test_rows_official_instant_collision_is_supported_without_patch_dependency(app, kind):
+def test_rows_official_instant_collision_is_supported_without_patch_dependency(actual_swf_evidence, app, kind):
     row = valid_row("official")
     row[col("ability", "instant_content", "kind")] = str(kind)
     _, body = call(app, "/api/drafts/169985/caps/rows", body={"rows": [{"id": "x", "table": "ability", "key": "1", "cells": row}]})
@@ -112,20 +131,23 @@ def test_rows_official_instant_collision_is_supported_without_patch_dependency(a
     ("ability_soul", 423, "client.equipment.gauge_gain_rules@1"),
     ("equipment_enhancement_ability", 423, "client.equipment.gauge_gain_rules@1"),
 ])
-def test_rows_during_kind_dependency_is_table_scoped(app, table, kind, expected):
+def test_rows_during_kind_dependency_is_table_scoped(actual_swf_evidence, app, table, kind, expected):
     cells = next(csv.reader(io.StringIO(ability(kind, table=table))))
     _, body = call(app, "/api/drafts/169985/caps/rows", body={"rows": [
         {"id": "x", "table": table, "key": "1", "cells": cells}]})
     result = body["rows"]["x"]
     assert [cap["id"] for cap in result["capabilities"]] == [expected]
     expected_profiles = ["test-v34", "test-v35e"]
-    if expected != "client.kind423.gauge_source_limit@1":
+    if expected == "client.kind422.dash@1":
         expected_profiles.append("local-v35k3")
     assert result["requiredClientProfiles"] == expected_profiles
+    if expected == "client.equipment.gauge_gain_rules@1":
+        assert not result["profiles"]["local-v35k3"]["compatible"]
+        assert any(m["id"] == expected for m in result["profiles"]["local-v35k3"]["missing"])
     assert not result["placement"]
 
 
-def test_rows_leader_during_423_reports_actual_swf_unsupported(app):
+def test_rows_leader_during_423_reports_actual_swf_unsupported(app, actual_swf_evidence):
     cells = next(csv.reader(io.StringIO(ability(423, table="leader_ability"))))
     _, body = call(app, "/api/drafts/169985/caps/rows", body={"rows": [
         {"id": "x", "table": "leader_ability", "key": "1", "cells": cells}]})
@@ -141,7 +163,7 @@ def test_rows_reject_bad_requests(app):
     assert call(app, "/api/drafts/169985/caps/rows", body={"rows": "x"})[0] == 400
 
 
-def test_kind_catalog_per_table_and_block(app):
+def test_kind_catalog_per_table_and_block(app, actual_swf_evidence):
     _, during = call(app, "/api/studio/caps/kinds", {"table": ["ability"], "block": ["during_content"]})
     assert during["kinds"]["422"]["requiredClientProfiles"] == ["test-v34", "test-v35e", "local-v35k3"]
     assert not during["kinds"]["422"]["placement"]
@@ -159,7 +181,7 @@ def test_kind_catalog_per_table_and_block(app):
     assert trigger["kinds"] == {}
 
 
-def test_lookup_preserves_context_and_explicit_capability_when_combined(app):
+def test_lookup_preserves_context_and_explicit_capability_when_combined(actual_swf_evidence, app):
     _, official = call(app, "/api/studio/caps/lookup", {
         "kind": ["423", "423"], "table": ["leader_ability"], "block": ["instant_content"]})
     assert official["requiredClientProfiles"] == ["test-v34", "test-v35e", "local-v35k3"]
@@ -174,7 +196,7 @@ def test_lookup_preserves_context_and_explicit_capability_when_combined(app):
     assert call(app, "/api/studio/caps/lookup", {"kind": ["423"], "table": ["ability"]})[0] == 400
 
 
-def test_compat_cache_distinguishes_table_and_block_with_same_capability_set(app):
+def test_compat_cache_distinguishes_table_and_block_with_same_capability_set(app, actual_swf_evidence):
     view = app.client_profiles
     from wf.studio.client_profile_signals import kind_site
     official = kind_site("leader_ability", "instant_content", "423")

@@ -35,7 +35,9 @@
   | `python wf_store_materialize.py --help` | 查看从服务端 `.cdn/cn` 本地物化可读写 `store` 的参数 |
   | `python wf_selftest.py` | 运行 20 项只读环境与往返自检 |
   | `python wf_gui.py` | 启动传统网页修改器（`http://127.0.0.1:8765`） |
-  | `python -m wf.studio --view local` | 启动 Studio 编辑台（`http://127.0.0.1:8790`，需先构建 `studio/`） |
+  | `studio.bat` | 启动 Studio 编辑台（`http://127.0.0.1:8790`），前端缺失或过期时先构建；参数原样传给后端 |
+  | `python -m wf.studio doctor` | 编辑台首跑体检：逐项列出缺什么、怎么修 |
+  | `python -m wf.studio --view local` | 不用脚本、按命名视图启动编辑台（需先构建 `studio/`） |
 
 ## 目录说明
 

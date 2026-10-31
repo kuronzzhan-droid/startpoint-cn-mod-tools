@@ -66,6 +66,8 @@ def verified_evidence(observations):
             standalone.append({**cap, "methods": [observed(m) for m in cap["methods"]]})
         else:
             withheld.append({"id": cap["id"], "reason": "独立方法未证明等价，不授予能力"})
+    from .runtime_dependencies import filter_runtime_dependencies
+    patches, standalone = filter_runtime_dependencies(patches, standalone, withheld)
     return {"schema": "wf-apk-summary/1", "patches": patches,
             "method_capabilities": standalone, "official_systems": False}, withheld
 

@@ -5,11 +5,15 @@ import argparse
 import sys
 from pathlib import Path
 
-from .server import DEFAULT_STATIC, StudioApp, serve
-from .source import build_source
-
-
 def main(argv=None) -> int:
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if sys.stdout and hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if argv[:1] == ["doctor"]:
+        from .doctor import main as doctor_main
+        return doctor_main(argv[1:])
+    from .server import DEFAULT_STATIC, StudioApp, serve
+    from .source import build_source
     parser = argparse.ArgumentParser(prog="python -m wf.studio", description="编辑台后端：读分层视图，只写草稿 work/studio-drafts")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8790)
@@ -41,6 +45,16 @@ def main(argv=None) -> int:
                         help="额外允许写入的 Origin（例如 Vite 开发服务器 http://127.0.0.1:5173），可重复")
     args = parser.parse_args(argv)
 
+    from .config import server_directory
+    from .doctor import run_doctor, summary
+    try:
+        server_dir = server_directory(args.server_dir)
+    except (ValueError, OSError) as exc:
+        print(summary(run_doctor(fast=True, static=args.static)), flush=True)
+        print(f"启动配置错误：{exc}", file=sys.stderr)
+        return 1
+    print(summary(run_doctor(fast=True, server_dir=server_dir, static=args.static)), flush=True)
+
     if sys.stdout and hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     source = build_source(tip=args.tip, extra_zips=args.extra_zip, extra_lists=args.extra_zips_file,
@@ -50,8 +64,9 @@ def main(argv=None) -> int:
     if args.provides is not None and not args.provides.is_file():
         parser.error(f"--provides 文件不存在：{args.provides}")
     from .device_result import configured_screenshot_dirs
-    app = StudioApp(source, server_dir=args.server_dir, default_provides=args.provides,
+    app = StudioApp(source, server_dir=server_dir, default_provides=args.provides,
                     screenshot_dirs=configured_screenshot_dirs(args.screenshots_dir))
+    app.static_root = args.static
     if args.warm:
         app.character_list()
     if not args.no_prewarm:
