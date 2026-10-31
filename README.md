@@ -28,12 +28,14 @@
 - **运行环境**：Windows 10 / 11（64 位推荐）；**Python ≥ 3.11**（运行依赖见 [`requirements.txt`](requirements.txt)，开发测试依赖见 [`requirements-dev.txt`](requirements-dev.txt)）；**Node.js ≥ 20.12.0**（构建 `studio/` 前端及运行上游 `startpoint-cn` 服务端）。
 - **本机路径配置**：在仓库根目录将 [`profiles/example.json`](profiles/example.json) 复制为 **`profiles/local.json`**（已被 Git 忽略），填入本机物化后的 `store`（`.../production/upload`）与 `startpoint-cn` 服务端目录。解析优先级为 **`WF_*` 环境变量 > `profiles/local.json`**，工具不做隐式全盘扫描（字段说明见 [`profiles/README.md`](profiles/README.md)，手把手步骤见 [04｜配置工具](docs/tutorial/04-配置工具.md)）。
 - **常用入口**（均在仓库根目录执行，无需加旧版 `mod-tools/` 前缀）：
-  ```bat
-  python wf_store_materialize.py --help   &:: 从服务端 .cdn/cn 本地物化可读写 store
-  python wf_selftest.py                   &:: 20 项只读环境与往返自检
-  python wf_gui.py                        &:: 启动传统网页修改器（http://127.0.0.1:8765）
-  python -m wf.studio --view local        &:: 启动 Studio 编辑台（http://127.0.0.1:8790，需先构建 studio/）
-  ```
+
+  | 命令 | 说明 |
+  |---|---|
+  | `python -m pip install -r requirements.txt` | 首次使用先安装 Python 运行依赖 |
+  | `python wf_store_materialize.py --help` | 查看从服务端 `.cdn/cn` 本地物化可读写 `store` 的参数 |
+  | `python wf_selftest.py` | 运行 20 项只读环境与往返自检 |
+  | `python wf_gui.py` | 启动传统网页修改器（`http://127.0.0.1:8765`） |
+  | `python -m wf.studio --view local` | 启动 Studio 编辑台（`http://127.0.0.1:8790`，需先构建 `studio/`） |
 
 ## 目录说明
 

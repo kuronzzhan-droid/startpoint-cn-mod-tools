@@ -70,4 +70,4 @@
 - **现象**：随机抽怪或连战进图黑屏崩 `U_50fc52` / `U_3be147`（日志提示缺值 `N`），或者战斗中途小怪一出手就崩 `C8016`。
 - **原因**：关卡在 `c95` 指定了怪物等级 `N` 时，主怪、分身变量表 `general_boss_variable`、`standard_boss`、普通小怪 `general_zako` 及关联召唤物在对应等级表里但凡缺了等级 `N` 的那一行，加载即抛 `U_50fc52` 或 `U_3be147`。此外客户端只按关卡 `c69`（`battle_recommended_element`）预载推荐属性通用特效，若 Boss 或召唤怪打出了其他固定属性的攻击，对应属性时间轴未加载就会崩 `C8016`。
 - **怎么做**：补齐所有参战主怪、分身与召唤物在目标等级 `N` 的等级表行；有跨属性攻击或跨属性召唤物时，在关卡空余敌人槽塞入对应属性的占位哑元单位强制触发预载。
-- **怎么验证**：肉鸽配置运行 `python wf_rogue_validate.py`，常规副本运行 `python -m wf check boss <副本ID>`。预期等级覆盖与属性预载检查零报错，实测打完跨属性招式不崩 `C8016`。
+- **怎么验证**：常规副本运行 `python -m wf check boss <副本ID>`，深渊连战关卡链与等级覆盖运行 `python wf_rogue_build.py --check`（深渊装备发布门禁运行 `python wf_rogue_validate.py --client-verification <核验JSON> --ffdec <ffdec路径> --java <java路径>`）。预期等级覆盖与属性预载检查零报错，实测打完跨属性招式不崩 `C8016`。

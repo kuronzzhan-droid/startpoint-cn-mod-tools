@@ -27,7 +27,7 @@
 
 - **现象**：进图加载或命中敌人瞬间弹 `F1034`、`F1009` 或 `U_f6da5a`。
 - **原因**：多处参数要求固定长度数组或元组：`Sector` 第 2 参（扇形开角）和 3 参数 `AC*`（如 `ACAttackBuff` 第 3 参等级成长）要求技能等级数组，写成单个数字或 `false` 会崩 `F1034`；`Rectangle` 要求 `[宽数组, 高数组, 圆角]` 3 个参数，少写圆角会崩 `F1009`；同一条 `CreateCondition` 的状态列表里包含 `ACUnique` 且状态总数超过 2 个时，客户端内部断言直接抛 `U_f6da5a`。
-- **怎么做**：写新节点前先运行 `python wf_dsl_sig.py` 对照官方母本签名。需要同时挂固有状态和多个普通状态时，把 `ACUnique` 单独拆成一条 `CreateCondition`，其余状态放进下一条 `CreateCondition`。
+- **怎么做**：写新节点前先查阅仓库内置模块 `wf_dsl_sig.py` 中的官方构造签名字典（写完用下方 `wf check dsl` 自动校验）。需要同时挂固有状态和多个普通状态时，把 `ACUnique` 单独拆成一条 `CreateCondition`，其余状态放进下一条 `CreateCondition`。
 - **怎么验证**：运行 `python -m wf check dsl <树文件.json>`。预期全部签名检查通过；若报错则按提示把单值补成数组、补齐 `Rectangle` 第 3 参，或拆分 `CreateCondition`。
 
 ## 5. `ACUnique` 第二参数误填成持续帧数，一下叠满几百层

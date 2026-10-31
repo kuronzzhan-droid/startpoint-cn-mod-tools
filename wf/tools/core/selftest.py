@@ -139,7 +139,7 @@ def main() -> int:
         opts = wf_describe.enum_options()
         sizes = {k: len(v) for k, v in opts.items()}
         want = {"precondition": 209, "trigger": 262, "during_trigger": 230,
-                "instant_content": 724, "during_content": 422}
+                "instant_content": 725, "during_content": 425}
         for k, n in want.items():
             if sizes.get(k) != n:
                 raise RuntimeError(f"{k} 枚举 {sizes.get(k)} ≠ {n}")
