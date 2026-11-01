@@ -128,6 +128,7 @@ export function BossDetail({ quest, tab, sub }: { quest: string; tab?: string; s
           </a>
         ))}
       </nav>
+      {mode === "five" ? <a class="header-btn" href={href({ work: "content", shop: "boss", quest: "five-structure" })}>结构 · 五重轮次与词缀</a> : null}
       <div class="boss-layout">
         <SiblingNav doc={doc} list={list} drafts={drafts} tab={active} />
         <div class="boss-main">

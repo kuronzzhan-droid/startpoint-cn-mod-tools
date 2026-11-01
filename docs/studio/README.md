@@ -1,5 +1,7 @@
 # 编辑台（studio）：草稿编辑与本地交付（M4a）
 
+模式编辑入口：[五重结构与深渊重抽](modes.md)（独立模式草稿、链尾防回退及现有交付检查）。
+
 后端交付检查索引：[APK 内置表撞名](bundle-keys.md)、[共享表键级差异](key-diff.md)、
 [交付前本地服只读预演](rehearsal.md)、
 [应用到本地服与撤销](apply-local.md)、[Patch Overlay 导出](overlay.md)、

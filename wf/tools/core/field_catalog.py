@@ -264,9 +264,18 @@ def forge(program: str, clean: bool = False, scale: float | None = None) -> str:
     新逻辑路径 = battle/action/enemy/action/mod_rogue/f_<指纹>;store 按逻辑名
     sha1 派生,客户端同派生 → 新路径天然可寻址(自制角色资产同机制,已真机验证)。
     """
-    import hashlib
     logical = program + ".action.dsl.amf3.deflate"
-    tree = parse_dsl(q.store_path(logical).read_bytes())
+    new_prog, blob = forge_bytes(program, q.store_path(logical).read_bytes(), clean=clean, scale=scale)
+    dst = q.store_path(new_prog + ".action.dsl.amf3.deflate")
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    dst.write_bytes(blob)
+    return new_prog
+
+
+def forge_bytes(program: str, raw: bytes, *, clean: bool = False, scale: float | None = None):
+    """Pure counterpart of forge, used by the studio's in-memory compiler."""
+    import hashlib
+    tree = parse_dsl(raw)
     if clean:
         tree = clean_tree(tree)
     if scale is not None and abs(scale - 1.0) > 1e-9:
@@ -277,10 +286,7 @@ def forge(program: str, clean: bool = False, scale: float | None = None) -> str:
         raise RuntimeError(f"{program} 锻造自校验失败(build→parse 不等价)")
     tag = hashlib.sha1(f"{program}|{int(clean)}|{scale or 1}".encode()).hexdigest()[:10]
     new_prog = f"battle/action/enemy/action/mod_rogue/f_{tag}"
-    dst = q.store_path(new_prog + ".action.dsl.amf3.deflate")
-    dst.parent.mkdir(parents=True, exist_ok=True)
-    dst.write_bytes(blob)
-    return new_prog
+    return new_prog, blob
 
 
 # ---------------------------------------------------------------- 命令走查

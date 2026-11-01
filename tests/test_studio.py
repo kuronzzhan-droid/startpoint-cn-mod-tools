@@ -38,11 +38,17 @@ def test_route_table_dispatch():
     writes = ("^/api/drafts/", "^/api/boss/drafts/", "^/api/boss/drafts$", "^/api/studio/weapons/",
               "^/api/studio/characters/")
     delivery_actions = {rf"^/api/{prefix}deliveries/(?P<name>[^/]+)/{action}$"
-                        for prefix in ("", "boss/")
+                        for prefix in ("", "boss/", "modes/")
                         for action in ("rehearse", "apply", "unapply", "overlay")}
+    mode_actions = {rf"^/api/modes/drafts/(?P<cid>five|rogue)/{suffix}$"
+                    for suffix in ("build", "build/cancel",
+                                   "deliveries/(?P<name>[^/]+)/device-result",
+                                   "deliveries/(?P<name>[^/]+)/device-result/import")}
+    mode_actions.add("^/api/modes/(?P<mode>five|rogue)/(?P<action>preview|save)$")
     assert {("POST", pattern) for pattern in delivery_actions} <= set(routes)
+    assert {("POST", pattern) for pattern in mode_actions} <= set(routes)
     assert all(verb == "GET" or (verb == "POST" and (
-        pattern.startswith(writes) or pattern in delivery_actions
+        pattern.startswith(writes) or pattern in delivery_actions or pattern in mode_actions
         or pattern == "^/api/studio/views/export-store$")) for verb, pattern in routes)
     for expected in ("/api/studio/doctor", "/api/studio/freshness", "/api/meta", "/api/characters", "/api/lookup", "/api/patches", "/api/boss/drafts",
                      "/api/studio/weapons", "/api/studio/weapons/clone", "/api/studio/weapons/drafts",

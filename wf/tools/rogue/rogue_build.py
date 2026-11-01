@@ -5493,7 +5493,7 @@ def build_event_metadata_leaf(
     return join(row, isinstance(current_leaf, bytes))
 
 
-def main() -> int:
+def main(argv=None, *, candidate_sink=None, forge_candidate=None) -> int:
     ap = argparse.ArgumentParser(description="生成 700099 深渊连战")
     ap.add_argument("--rounds", type=int, default=15)
     ap.add_argument("--seed", type=int, default=int(date.today().strftime("%Y%m%d")))
@@ -5553,7 +5553,9 @@ def main() -> int:
                     help="--check 的事件 id(默认 700099)")
     ap.add_argument("--check-quest-path", metavar="FILE",
                     help="--check 用指定 quest 表文件(如 .bak 备份)代替 store 现状")
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
+    if candidate_sink is not None and (args.write or args.publish or args.check):
+        raise ValueError("candidate compilation cannot write, publish or check external stores")
     # Validate the external write target before any store or forged DSL write.
     # Imports and dry-runs remain available without a configured server.
     import wf_mod_tool as core
@@ -7225,7 +7227,9 @@ def main() -> int:
                                 and str(_c["caster"][1]) == str(fm_[1])):
                             _c["text"] += f"×{factor:g}"
                     fields_tuned = True
-                    if args.write:
+                    if forge_candidate is not None:
+                        action_program = forge_candidate(action_program, factor)
+                    elif args.write:
                         import wf_field_catalog as wfc
                         action_program = wfc.forge(action_program, scale=factor)
                 if action_program.startswith("battle/action/enemy/action/mod_rogue/"):
@@ -7687,6 +7691,9 @@ def main() -> int:
         for _f, _why in sorted(caster_blocked.items()):
             print(f"        {_f} — {_why}")
 
+    if candidate_sink is not None:
+        from wf.tools.rogue.rogue_candidate import collect_candidate
+        candidate_sink(collect_candidate(locals()))
     if not args.write:
         print("[DRY-RUN] 未写入。加 --write 生效,--publish 顺带发 CDN。")
         return 0

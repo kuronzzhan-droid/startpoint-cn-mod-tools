@@ -49,6 +49,10 @@ class DeliverRoutes(DeliveryActions):
     name_pattern = NAME
     kind = "character"
 
+    def compile_delivery(self, cid, **kwargs):
+        from .deliver_bridge import build_draft
+        return build_draft(cid, **kwargs)
+
     def output_identity(self, cid):
         self.app.ops.store.directory(cid)
         return cid
@@ -176,12 +180,12 @@ class DeliverRoutes(DeliveryActions):
         return report
 
     def _run(self, cid, name, from_version, to_version, provides, cancel):
-        from .deliver_bridge import BuildCancelled, build_draft
+        from .deliver_bridge import BuildCancelled
         out = self.root / name
         started = time.time()
         try:
             selected = self.jobs[name].get("clientProfile")
-            result = build_draft(cid, from_version=from_version, to_version=to_version, out=out,
+            result = self.compile_delivery(cid, from_version=from_version, to_version=to_version, out=out,
                                  store=self.app.ops.store, provides=None if selected else provides,
                                  client_profile=selected,
                                  apk=self.jobs[name].get("apk"),
