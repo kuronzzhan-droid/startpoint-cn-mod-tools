@@ -247,8 +247,7 @@ def build_draft(cid: str, *, from_version: str, to_version: str, out: Path,
     from wf.caps.profiles import resolve_client
     provides, selected_profile = resolve_client(provides, client_profile,
                                                allow_unknown_client=allow_unknown_client)
-    from .delivery_safety import (checksum_delivery, inspect_output, resolve_apks,
-                                  staged_members, write_reports)
+    from .delivery_safety import resolve_apks
     apks = resolve_apks(selected_profile, apk)
     out = local_output(out)
     if out.exists() and (not out.is_dir() or any(out.iterdir())):
@@ -265,6 +264,18 @@ def build_draft(cid: str, *, from_version: str, to_version: str, out: Path,
     compiled = compile_draft(source, store, changeset, server_dir=options.get("server_dir"),
                              client_profile=selected_profile if provides is not None else False,
                              provides=provides, **pf_options)
+    return deliver_compiled(changeset, compiled, source=source, baseline=baseline,
+        from_version=from_version, to_version=to_version, out=out, provides=provides,
+        selected_profile=selected_profile, apks=apks, bundle_cache_dir=bundle_cache_dir,
+        allow_unknown_client=allow_unknown_client, progress=progress, cancel=cancel, **options)
+
+
+def deliver_compiled(changeset, compiled, *, source, baseline, from_version, to_version,
+                     out, provides, selected_profile, apks, bundle_cache_dir=None,
+                     allow_unknown_client=False, progress=None, cancel=None, **options):
+    """Common delivery/check/key-diff/rehearsal pipeline for compiled local drafts."""
+    from .delivery_safety import checksum_delivery, inspect_output, staged_members, write_reports
+    cid = changeset["characterId"]
     baseline.verify()
     filename = _stage(out, changeset, source, compiled, to_version)
     from .overlay_export import source_view, availability

@@ -89,6 +89,8 @@ export function BossOverview() {
         <a class="header-btn primary-link" href={href({ work: "content", shop: "boss", wizard: true })}>＋ 新建共同决战</a>
       </div>
       <div class="search-row">
+        <a class="header-btn" href={questLink("five-structure")}>五重决战 · 结构</a>
+        <a class="header-btn" href={questLink("rogue")}>深渊连战</a>
         <input ref={search} class="search" type="search" value={query} autoFocus
           placeholder="搜索 boss 名、quest ID、场景" title="按 / 聚焦；回车打开第一个结果；↓ 进入卡片，方向键移动"
           onInput={(e) => setQuery((e.target as HTMLInputElement).value)}

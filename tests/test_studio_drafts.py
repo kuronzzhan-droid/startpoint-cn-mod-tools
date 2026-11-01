@@ -241,8 +241,14 @@ def test_route_verbs():
                                            "^/api/studio/characters/"))
                or pattern.pattern == "^/api/studio/views/export-store$"
                or pattern.pattern in {rf"^/api/{prefix}deliveries/(?P<name>[^/]+)/{action}$"
-                                      for prefix in ("", "boss/")
+                                      for prefix in ("", "boss/", "modes/")
                                       for action in ("rehearse", "apply", "unapply", "overlay")}
+               or pattern.pattern in {
+                   "^/api/modes/(?P<mode>five|rogue)/(?P<action>preview|save)$",
+                   *(rf"^/api/modes/drafts/(?P<cid>five|rogue)/{suffix}$"
+                     for suffix in ("build", "build/cancel",
+                                    "deliveries/(?P<name>[^/]+)/device-result",
+                                    "deliveries/(?P<name>[^/]+)/device-result/import"))}
                for verb, pattern, _ in app.routes if verb == "POST")
 
 

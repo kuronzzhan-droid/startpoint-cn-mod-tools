@@ -11,9 +11,9 @@
 - 路由：R0 × R1 全组合写进 both_boss_map，每行一个恒真条件（Attack ≥ -99999），三人候选池相同
   ⇒ V7 随机选图补丁按房号种子抽到同一行；结算解散房间 ⇒ 下一局重抽。末尾保留兜底行（id 最大）。
 - 词缀：玩家侧/敌方侧效果写成新的 action DSL，挂在「载体」boss 的出场动作 c109（逗号并列）。
-  c22=1（顺序出场）时每只都是载体；c22=0（同屏）时每波第一只是载体（波切换会清场地效果）。
+  默认载体规则为 c22=1 每只、c22=0 每波首只；dedupe_player_affixes 可让非首只只保留自身狂暴。
 - 血量/眩晕：每个克隆有自己的 boss_level 行 ⇒ 按目标血量反算段数 c2，眩晕基数改用 tp_normal 曲线后反算 c12；
-  quest c99/c105 固定为 1。
+  quest c99 来自 rounds.hp_mult 的 boss 槽（当前默认 0.04375），c105 固定为 1。
 - 修复：还原 1.4.802 在官方共用 routine 上做的嫉妒试炼 ×3（外溢官方 1033001–04）。
 - 美术（spec.art）：事件页头图/横幅/缩略图同尺寸原位替换；两轮各一行自有 field（背景四件套从母本行克隆，
   只换 PNG 与子纹理名）；入场券图标追加进 item_icon 共享图集（既有条目不动），道具行 c3/c4 要等图集那条边
@@ -120,7 +120,7 @@ DSL_CONSTRUCTORS = frozenset({
     "CreateCondition", "DeleteCondition", "DCAll", "Default", "SubtractSkillPoint", "StartModifierField",
     "SubtractFeverPoint", "AddFeverPoint", "GenericConditionHitEffect",
     "ACAttackPoint", "ACToleranceOfElement", "ACSkillDamage", "ACDirectDamage", "ACSilence",
-    "ACFeverPoint", "ACSkillGaugeCharging", "ACHealRejection",
+    "ACFeverPoint", "ACSkillGaugeCharging", "ACHealRejection", "ACToleranceOfDebuff",
     "BuffRejection", "HealRejection", "SkillGaugeCharging", "ComboRestriction", "Slip",
     "MemberDirectAttack", "TotalOfParty", "PowerFlip", "Condition", "DCAttackPoint",
 })
@@ -263,7 +263,12 @@ class Variant:
 
 
 def load_spec(path: Path = SPEC_PATH) -> dict:
-    spec = json.loads(path.read_text(encoding="utf-8"))
+    return parse_spec(json.loads(path.read_text(encoding="utf-8")))
+
+
+def parse_spec(document: dict) -> dict:
+    """The same spec decoder for files and in-memory studio drafts."""
+    spec = copy.deepcopy(document)
     variants = []
     for v in spec["variants"]:
         waves = [[BossSlot(**s) for s in wave] for wave in v["waves"]]
@@ -314,8 +319,9 @@ def _ac_value(kind: str, frames: int, value: float, layers: int) -> list:
     return [kind, _range(frames), _range(value), _range(layers)]
 
 
-def dsl_enrage(interval: int, atk: float, atk_layers: int, res: float, res_layers: int, count: int) -> list:
-    """敌方：全 boss 周期自叠攻 + 全属性耐性（沿用 1.4.758 五重诅咒 FA51 形状）。"""
+def dsl_enrage(interval: int, atk: float, atk_layers: int, res: float, res_layers: int, count: int,
+               self_only: bool = False, include_resistance: bool = True) -> list:
+    """周期叠攻；可选自身作用域与耐性，缺省保留旧 FA51 形状。"""
     boss_block = [
         _cmd(["CreateCondition", 0, [_ac_value("ACAttackPoint", 9999999, atk, atk_layers)], _range(1),
               ["GenericConditionHitEffect"], True, True, "mod_fb2_enrage_atk", None, False, 3, _range(1), False]),
@@ -323,7 +329,13 @@ def dsl_enrage(interval: int, atk: float, atk_layers: int, res: float, res_layer
               _range(1), ["GenericConditionHitEffect"], True, True, "mod_fb2_enrage_res", None, False, 3, _range(1),
               False]),
     ]
-    return _root([_repeat(interval, count, "mod_fb2_enrage", [_find_all(51, boss_block)])])
+    if not include_resistance:
+        boss_block = boss_block[:1]
+    if self_only:
+        for command in boss_block:
+            command[1][1] = -17
+    return _root([_repeat(interval, count, "mod_fb2_enrage",
+                         boss_block if self_only else [_find_all(51, boss_block)])])
 
 
 def dsl_weaken_rotation(period: int, frames: int, value: float, count: int) -> list:
@@ -343,10 +355,10 @@ def dsl_field(kind_node: list, cancel: list, duration: int = 9999999) -> list:
     return _root([_cmd(["StartModifierField", duration, [kind_node], cancel])])
 
 
-def dsl_silence_waves(interval: int, frames: int, count: int) -> list:
-    """玩家：周期沉默窗口（ghost_fox_ex$shot8 的 ACSilence 形状，强制施加）。"""
+def dsl_silence_waves(interval: int, frames: int, count: int, force: bool = True) -> list:
+    """玩家周期沉默；force 缺省为旧强制行为，当前规格显式关闭。"""
     return _root([_repeat(interval, count, "mod_fb2_silence",
-                          [_find_all(33, [_cond(0, ["ACSilence", _range(frames)], force=True)])])])
+                          [_find_all(33, [_cond(0, ["ACSilence", _range(frames)], force=force)])])])
 
 
 def dsl_fever_drain(value: float) -> list:
@@ -370,14 +382,15 @@ def dsl_purge(buff_reject_frames: int, periodic_interval: int, periodic_count: i
 
 
 def dsl_signature(interval: int, count: int, key: str, effects: list | None = None, drain: float | None = None,
-                  silence: int | None = None, purge: int | None = None, on_entry: bool = False) -> list:
+                  silence: int | None = None, purge: int | None = None, on_entry: bool = False,
+                  silence_force: bool = True) -> list:
     """自制 boss 的签名招式：周期对全体成员施加一组效果。只拼已有形状，不引入新构造：
     减益 = weaken_rotation 同形；沉默 = silence_waves 的强制 ACSilence（技能封印）；扣槽 = purge 的
     SubtractSkillPoint；驱散 = purge 的强制 DeleteCondition DCAll（kind 2，可摘不可驱散层）。
     on_entry=True 时登场先执行一次，再按周期重复。"""
     block = [_cond(0, _ac_value(kind, frames, value, 1)) for kind, frames, value in (effects or [])]
     if silence:
-        block.append(_cond(0, ["ACSilence", _range(silence)], force=True))
+        block.append(_cond(0, ["ACSilence", _range(silence)], force=silence_force))
     if drain:
         block.append(_cmd(["SubtractSkillPoint", 0, _range(drain)]))
     if purge:
@@ -488,7 +501,8 @@ def build_terrain(live: Live, spec_t: dict) -> tuple[dict, dict]:
     overrides = spec_t.get("object_overrides")
     if overrides:
         # 按「相对本层 BOUNDS 左上角」给出的矩形整类重设（召唤锚语义随母本地形，不能跨地形照搬坐标）
-        next_id = max([int(o.get("id", 0)) for L in layers for o in L.get("objects", [])] + [0]) + 1
+        next_id = max([int(o.get("id", 0)) for L in layers for o in L.get("objects", [])
+                       if o.get("type") not in overrides] + [0]) + 1
         for L in layers:
             bounds = next((o for o in L["objects"] if o.get("type") == "BOUNDS"), None)
             if bounds is None:
@@ -605,8 +619,8 @@ def curve_hp_corr(name: str, level: int = LEVEL) -> float:
     return float(v)
 
 
-def hits_for_hp(bl_row: list[str], hp_e8: float) -> float:
-    unit = GENERAL_HP_K_LV80 * float(bl_row[BL_HP_MUL]) * curve_hp_corr(bl_row[BL_HP_CORR])
+def hits_for_hp(bl_row: list[str], hp_e8: float, curve=curve_hp_corr) -> float:
+    unit = GENERAL_HP_K_LV80 * float(bl_row[BL_HP_MUL]) * curve(bl_row[BL_HP_CORR])
     return round(hp_e8 * 1e8 / unit, 4)
 
 
@@ -819,7 +833,10 @@ def plan_clone(live: Live, spec: dict, plan: Plan, variant: Variant, wave: int, 
             for action_slot, prog in plan_funnel_preload_shims(live, plan, bs.alias, r).items():
                 r[GB_ACTION_FIRST + action_slot - 1] = prog
         signature = [affix_program(s) for s in bdef.get("signature", [])]
-        pre = strip_v1_curse(split_programs(r[GB_PRE])) + list(bdef.get("pre", [])) + signature + programs
+        from .five_boss_tuning import clone_pre
+        pre = clone_pre(spec, split_programs(r[GB_PRE]), list(bdef.get("pre", [])), signature, programs, slot)
+        for action_slot, program in bdef.get("tier_actions", {}).get(tier, {}).items():
+            r[GB_ACTION_FIRST + int(action_slot) - 1] = program
         # 官方 749 行：无出场动作一律写空串（681 行）；写 "(None)" 客户端会去加载
         # "(None).action.dsl.amf3.deflate" → 转阶段「数据不足」（2026-09-28 实机）
         r[GB_PRE] = ",".join(dict.fromkeys(pre)) if pre else ""
@@ -841,7 +858,9 @@ def plan_clone(live: Live, spec: dict, plan: Plan, variant: Variant, wave: int, 
     # 血量/眩晕随后按目标值重算；攻击差异由 c8 除数与 quest c102 承担。
     bl[BL_HP_CORR] = HP_CURVE_NORM
     bl[BL_ATK_CORR] = ATK_CURVE_NORM
-    bl[BL_HP_HITS] = num(hits_for_hp(bl, bs.hp_e8))
+    if "attack_divisor" in bdef:
+        bl[8] = num(bdef["attack_divisor"])
+    bl[BL_HP_HITS] = num(hits_for_hp(bl, bs.hp_e8, getattr(live, "hp_curve", curve_hp_corr)))
     tp_target = spec["rounds"][variant.round]["tp_target"] * bdef.get("tp_scale", 1.0)
     bl[BL_TP_CURVE] = TP_CURVE
     bl[BL_TP_BASE] = num(round(tp_target / TP_NORMAL_LV80, 2))
@@ -878,11 +897,8 @@ def plan_variant(live: Live, spec: dict, plan: Plan, variant: Variant, terrains:
             row[k1], row[i1], row[k2], row[i2] = "(None)", "", "(None)", ""
         for s, bs in enumerate(wave):
             carrier = variant.group_kind == 1 or s == 0
-            programs = []
-            if carrier:
-                if w == 0:
-                    programs += [affix_program(a) for a in variant.entry_affixes]
-                programs += [affix_program(a) for a in variant.affixes]
+            from .five_boss_tuning import wave_programs
+            programs = wave_programs(spec, variant, w, s)
             rerun = False if (carrier and w == 0 and variant.entry_affixes) else None
             code = plan_clone(live, spec, plan, variant, w, s, bs, programs, rerun)
             k1, i1, k2, i2 = Z_BOSS_SLOTS[s]
@@ -898,6 +914,8 @@ def plan_variant(live: Live, spec: dict, plan: Plan, variant: Variant, terrains:
     r = one_row(qtext)
     r[0] = str(variant.quest)
     r[Q_NAME] = variant.name
+    if "stamina" in rnd:
+        r[69] = num(rnd["stamina"])
     for c in Q_ENEMY_STATE:
         r[c] = "(None)" if (c - 74) % 2 == 0 else ""
     for i, (kind, strength) in enumerate(variant.enemy_states[:5]):
@@ -1528,6 +1546,11 @@ def is_layer0(sheet: str) -> bool:
 
 
 def png_dims(live: Live, logical: str) -> tuple[int, int] | None:
+    if getattr(live, "view_bound", False):
+        head = (live.file(logical) or b"")[:32]
+        if head[1:4] in (b"PNG", b"png") and head[12:16] == b"IHDR":
+            return struct.unpack(">II", head[16:24])
+        return None
     rel = q.hashed_rel(logical)
     base = q.store_path(logical).parents[1]
     for root in (base, base.parent / "medium_upload", base.parent / "android_upload"):
@@ -1651,6 +1674,8 @@ def gate_variant(live: Live, spec: dict, plan: Plan, variant: Variant, terrain_t
 
 
 def gate_codes(live: Live, spec: dict, plan: Plan) -> None:
+    from .five_boss_tuning import entrance_program
+    entrance_files = {wf_dsl.dsl_logical(entrance_program(self_only)) for self_only in (False, True)}
     gb = live.table(T_GB)
     owned_prefix = OWN_CODE_PREFIX
     for code in plan.clones:
@@ -1668,14 +1693,14 @@ def gate_codes(live: Live, spec: dict, plan: Plan) -> None:
         if not path[0].startswith(owned_prefix) and path[0] != "devil_commander_evil_envy_80":   # 唯一例外：嫉妒还原
             plan.problems.append(f"{T_GBS}: non-owned routine {path[0]}")
     for prog_logical in plan.files:
-        if prog_logical.endswith(DSL_SUFFIX) and not prog_logical.startswith(OWN_DSL_DIR):
+        if prog_logical.endswith(DSL_SUFFIX) and not prog_logical.startswith(OWN_DSL_DIR) and prog_logical not in entrance_files:
             plan.problems.append(f"DSL outside own dir: {prog_logical}")
         if prog_logical.endswith(TERRAIN_SUFFIX) and prog_logical.startswith("battle/terrain/") \
                 and not prog_logical.startswith(OWN_TERRAIN_DIR):
             plan.problems.append(f"terrain outside own dir: {prog_logical}")
     # 文件白名单：自有目录 + spec 点名的 UI 图 + item_icon 图集两件
     art = spec.get("art", {})
-    named = {f["logical"] for f in art.get("files", [])} | set(ITEM_ATLAS_FILES)
+    named = {f["logical"] for f in art.get("files", [])} | set(ITEM_ATLAS_FILES) | entrance_files
     for logical in plan.files:
         if not logical.startswith((OWN_DSL_DIR, OWN_TERRAIN_DIR, OWN_FIELD_DIR, OWN_BOSS_DIR)) and logical not in named:
             plan.problems.append(f"file outside owned paths: {logical}")
@@ -1703,10 +1728,17 @@ def gate_codes(live: Live, spec: dict, plan: Plan) -> None:
 # ============================================================ 汇总
 
 def build(spec: dict | None = None, live: Live | None = None, *, official_gbs: Callable[[], bytes] | None = None,
-          with_envy_revert: bool = True) -> Plan:
+          with_envy_revert: bool = True, with_art: bool = True) -> Plan:
     spec = spec or load_spec()
     live = live or Live()
     plan = Plan()
+    if spec.get("entrance"):
+        from .five_boss_tuning import entrance_library
+        for program, tree in entrance_library(spec["entrance"]).items():
+            bad = dsl_constructor_problems(tree)
+            if bad:
+                plan.problems.append(f"entrance {program}: non-whitelisted constructors {bad}")
+            plan.files[wf_dsl.dsl_logical(program)] = encode_dsl(tree)
     # 词缀 DSL
     lib = affix_library(spec["affix_params"])
     used_bosses = {bs.alias for v in spec["_variants"] for wave in v.waves for bs in wave}
@@ -1729,19 +1761,21 @@ def build(spec: dict | None = None, live: Live | None = None, *, official_gbs: C
         trees[rnd] = tree
         plan.report.setdefault("terrains", {})[rnd] = rep
     # 换色 / 新造型 boss 本体与试炼 routine（先生成文件，预算门禁要读到新贴图尺寸）
-    plan_recolors(live, spec, plan)
-    plan_bodies(live, spec, plan)
+    if with_art:
+        plan_recolors(live, spec, plan)
+        plan_bodies(live, spec, plan)
     plan_routines(live, spec, plan)
     # 变体 + 克隆
     for v in spec["_variants"]:
         plan_variant(live, spec, plan, v, terrains)
     plan_routes(live, spec, plan)
     plan_reward_display(spec, plan)
-    plan_ui_files(live, spec, plan)
-    plan_fields(live, spec, plan)
-    plan_item_icons(live, spec, plan)
-    plan_shop_icons(live, spec, plan)
-    plan_node_thumbnail(live, spec, plan)
+    if with_art:
+        plan_ui_files(live, spec, plan)
+        plan_fields(live, spec, plan)
+        plan_item_icons(live, spec, plan)
+        plan_shop_icons(live, spec, plan)
+        plan_node_thumbnail(live, spec, plan)
     if with_envy_revert:
         plan_envy_revert(live, official_gbs or official_table_loader(T_GBS), plan)
     # 门禁

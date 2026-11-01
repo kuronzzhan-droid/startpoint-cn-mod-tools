@@ -28,6 +28,26 @@ import wf_rogue_shop as shop
 ASSETS_DIR: Path | None = None
 
 
+def validate_candidate_references(rows, tables, builder):
+    """Reference gate over a candidate overlay; never resolves a live store."""
+    def table(logical):
+        return tables[logical] if logical in tables else builder.q.load_table(logical)
+    gb, sb, gz = (table(key) for key in (builder.GENERAL_BOSS, builder.STANDARD_BOSS, builder.GENERAL_ZAKO))
+    gv = table(builder.GENERAL_BOSS_VARIABLE)
+    specials = {Path(key).stem: table(key) for key in builder.SPECIAL_BOSS_TABLES}
+    validation = builder.boss_ref_validation_tables(standard_boss=sb, general_boss=gb,
+                    general_boss_variable=gv, special_tables=specials)
+    reports = builder.validate_built_rows(rows, table(builder.FIELD_DATA_T), table(builder.ZONE_T),
+        set(gb) | set(sb) | set(gz), set(gz), lv_ceil=sb, lv_floor=gv, lv_gb=gb,
+        validation_tables=validation)
+    from .rogue_candidate_heads import validate_heads
+    validate_heads(rows, reports, table, builder, validation)
+    broken = [report for report in reports if not report["ok"]]
+    if broken:
+        raise ValueError("rogue_validate 引用门禁失败：" + str(broken))
+    return reports
+
+
 def _strict_json_load(text: str) -> Any:
     """JSON input is release evidence: duplicates and NaN are not benign."""
     def reject_constant(value: str) -> Any:

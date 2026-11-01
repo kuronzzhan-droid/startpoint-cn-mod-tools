@@ -5,6 +5,19 @@ import { api, PixelAction, PixelFamily, PixelMeta, RawImage, workshop } from "..
 
 export type Drawable = HTMLImageElement | HTMLCanvasElement;
 
+/** Shared asynchronous workshop action state (errors stay visible in the page). */
+export function useWorkshopAction() {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const run = async (action: () => Promise<void>) => {
+    if (busy) return;
+    setBusy(true); setError(null);
+    try { await action(); } catch (e) { setError((e as Error).message); }
+    finally { setBusy(false); }
+  };
+  return { busy, error, run };
+}
+
 export function loadImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();

@@ -66,13 +66,17 @@
       15
      ]
     ]
-   }
+   },
+   "remove_types": [
+    "FUNNEL_SPAWN7"
+   ]
   },
   "r1": {
    "base": "battle/terrain/mod/five_boss/desert_bonds_01_big_boss_single_hell_coffin9",
    "out": "battle/terrain/mod/five_boss_v2/r1_throne",
    "remove_types": [
-    "DIRECT_INSTANT_ITEM#ACCUMULATION_ATTACK_POWER_UP_25_500_FEVER"
+    "DIRECT_INSTANT_ITEM#ACCUMULATION_ATTACK_POWER_UP_25_500_FEVER",
+    "FUNNEL_SPAWN7"
    ],
    "object_overrides": {
     "FUNNEL_SPAWN6": [
@@ -223,7 +227,7 @@
    "hp_mult": [
     40,
     6,
-    1
+    0.04375
    ],
    "atk_mult": [
     1,
@@ -231,7 +235,9 @@
     1.5
    ],
    "fever_cap": 5000,
-   "tp_target": 5000
+   "tp_target": 5000,
+   "stamina": 18,
+   "dedupe_player_affixes": true
   },
   "r1": {
    "field": "mod_fb2_throne_hall",
@@ -243,7 +249,7 @@
    "hp_mult": [
     40,
     6,
-    1
+    0.04375
    ],
    "atk_mult": [
     1,
@@ -251,7 +257,8 @@
     2.0
    ],
    "fever_cap": 7500,
-   "tp_target": 15000
+   "tp_target": 15000,
+   "stamina": 18
   }
  },
  "bosses": {
@@ -280,7 +287,8 @@
    "mother": "devil_commander_evil_envy_80"
   },
   "spirit_water": {
-   "mother": "spirit_beast_water"
+   "mother": "spirit_beast_water",
+   "attack_divisor": 20
   },
   "golem_g": {
    "mother": "simon_golem_g_multi"
@@ -292,10 +300,16 @@
    "mother": "hero_middle_boss_multi"
   },
   "crab_light": {
-   "mother": "hermit_crab_another_light_single"
+   "mother": "hermit_crab_another_light_single",
+   "attack_divisor": 20.7
   },
   "evil": {
-   "mother": "devil_commander_evil"
+   "mother": "devil_commander_evil",
+   "tier_actions": {
+    "100": {
+     "39": "battle/action/enemy/action/mod/five_boss_v2/fb2_preload$evil_fixed_green"
+    }
+   }
   },
   "lich": {
    "mother": "lich_wind_multi"
@@ -374,7 +388,8 @@
    },
    "signature": [
     "sig_abyss_curse"
-   ]
+   ],
+   "attack_divisor": 17.25
   },
   "blood_crab": {
    "_doc": "自制第一步：寄居蟹船长专家 100 档（23 招，站位 p0–p3）换色——暗红身、焦铜壳、骨金骷髅、金橙光效；签名「血潮侵蚀」",
@@ -450,7 +465,8 @@
    },
    "signature": [
     "sig_blood_tide"
-   ]
+   ],
+   "attack_divisor": 23
   },
   "deep_king": {
    "_doc": "自制第二步（作者 0928：全新造型、放最后一张图、限制技能、清空 buff、带试炼）：骨架=不死王专家档（动作/碰撞/骷髅犬+超级蓄力机制），本体 51 帧重画（金冠/象牙面具/紫金王袍/紫晶权杖）；暗属性；16 个招式槽借五王招牌招式；射击3蓄力挂强化弹射命中 25、大招2蓄力挂技能命中 12（10 秒倒数，达成跳过大招）；签名：每 25 秒强制沉默 6 秒并扣 30% 技能槽，登场及每 30 秒强制驱散全部增益。召唤物属性不同由构建器自动补 C8016 预载垫片。 0928 作者实机反馈：满场铺地的冰面/暗影领域（enemy_shot_slip_damage）压在角色上，槽 06/16 换成伊劳德雷斯追踪重炮、画龙全屏光束。",
@@ -572,6 +588,12 @@
     "101": "王之守护消失了",
     "102": "王之低语消失了",
     "103": "深渊之力不足"
+   },
+   "attack_divisor": 17.25,
+   "tier_actions": {
+    "100": {
+     "39": "battle/action/enemy/action/mod/five_boss_v2/fb2_preload$deep_king_funnel_lich_wind_expert_0"
+    }
    }
   }
  },
@@ -582,7 +604,9 @@
    "atk_layers": 8,
    "res": 0.1,
    "res_layers": 5,
-   "count": 999
+   "count": 999,
+   "include_resistance": false,
+   "self_only": true
   },
   "enrage_r1": {
    "interval": 360,
@@ -590,7 +614,8 @@
    "atk_layers": 12,
    "res": 0.1,
    "res_layers": 5,
-   "count": 999
+   "count": 999,
+   "include_resistance": false
   },
   "weaken_rotation": {
    "period": 1800,
@@ -616,7 +641,8 @@
   "silence_waves": {
    "interval": 2400,
    "frames": 300,
-   "count": 999
+   "count": 999,
+   "force": false
   },
   "fever_drain": {
    "value": -0.5
@@ -658,14 +684,15 @@
    "drain": 0.25
   },
   "sig_king_seal": {
-   "interval": 1500,
+   "interval": 1000,
    "count": 999,
    "key": "mod_fb2_sig_king_seal",
    "silence": 360,
-   "drain": 0.3
+   "drain": 0.3,
+   "silence_force": false
   },
   "sig_king_purge": {
-   "interval": 1800,
+   "interval": 1000,
    "count": 999,
    "key": "mod_fb2_sig_king_purge",
    "purge": 99,
@@ -1332,5 +1359,18 @@
     "heal_seal"
    ]
   }
- ]
+ ],
+ "entrance": {
+  "debuff_resistance": 0.75,
+  "defense_layers": [
+   0.2346,
+   0.4048,
+   0.7997,
+   2.3229,
+   95.2381
+  ],
+  "player_frames": 1800,
+  "player_attack": -2.0,
+  "player_resistance": -0.3
+ }
 }

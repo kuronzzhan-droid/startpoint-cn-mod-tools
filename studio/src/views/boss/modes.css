@@ -1,0 +1,12 @@
+.mode-workshop details { margin: .7rem 0; }
+.mode-workshop summary { cursor: pointer; }
+.mode-editor { border: 0; padding: 0; min-width: 0; }
+.mode-fields { border-left: 2px solid var(--border, #ddd); padding-left: 1rem; }
+.mode-number, .mode-affixes { display: flex; align-items: center; gap: 1rem; margin: .5rem 0; }
+.mode-number input { width: 9rem; }
+.mode-affixes input { width: min(40rem, 70%); }
+.mode-value { overflow-wrap: anywhere; }
+.mode-table { overflow-x: auto; max-height: 32rem; }
+.mode-workshop table { width: 100%; border-collapse: collapse; }
+.mode-workshop td, .mode-workshop th { text-align: left; padding: .5rem; border-bottom: 1px solid var(--border, #ddd); }
+.mode-workshop pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 28rem; overflow: auto; }
