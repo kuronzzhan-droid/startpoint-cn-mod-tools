@@ -84,7 +84,7 @@ export function DevicePanel({ name, cid, entry, api, onChange }: {
     <section class="device-panel" aria-label="实测记录">
       <header class="device-head">
         <h4>实测记录</h4>
-        {result ? <DeviceBadge status={result.status} /> : entry ? <DeviceBadge status="无效" /> : <DeviceBadge status="未执行" />}
+        {result ? <><DeviceBadge status={result.status} /><span class="tag">{result.testType ?? "未分类"}</span></> : entry ? <DeviceBadge status="无效" /> : <DeviceBadge status="未执行" />}
         {entry?.stale ? <DeviceBadge status="" stale /> : null}
         <span class="spacer" />
         {mode === "view" ? (
@@ -205,6 +205,7 @@ const words = (text: string) => text.split(/[,，\s]+/).map((v) => v.trim()).fil
 const EMPTY_CHECK: DeviceCheck = { item: "", expected: "", observed: "" };
 
 function DeviceForm({ initial, onSubmit }: { initial: DeviceResult | null; onSubmit: (body: DeviceWrite) => Promise<void> }) {
+  const [testType, setTestType] = useState<"" | "单机" | "三开联机">(initial?.testType ?? "");
   const [status, setStatus] = useState<DeviceStatus>(initial?.status ?? "通过");
   const [testedAt, setTestedAt] = useState(initial?.testedAt ?? localNow());
   const [tester, setTester] = useState(initial?.tester ?? "");
@@ -230,7 +231,7 @@ function DeviceForm({ initial, onSubmit }: { initial: DeviceResult | null; onSub
   const submit = async () => {
     setError(null);
     const body: DeviceWrite = {
-      status, testedAt: testedAt.trim(),
+      status, ...(testType ? { testType } : {}), testedAt: testedAt.trim(),
       checks: checks.filter((c) => c.item.trim()).map((c) => ({
         item: c.item.trim(), ...trimmed({ expected: c.expected, observed: c.observed, screenshot: c.screenshot }),
         ...(c.status ? { status: c.status } : {}) })),
@@ -256,6 +257,7 @@ function DeviceForm({ initial, onSubmit }: { initial: DeviceResult | null; onSub
   return (
     <form class="device-form" onSubmit={(e) => { e.preventDefault(); if (!busy) submit(); }}>
       <div class="device-grid">
+        <label>实测类型<select value={testType} onChange={(e) => setTestType(e.currentTarget.value as typeof testType)}><option value="">未分类</option><option>单机</option><option>三开联机</option></select></label>
         <label>结论<select value={status} onChange={(e) => setStatus((e.target as HTMLSelectElement).value as DeviceStatus)}>
           {DEVICE_STATUSES.map((s) => <option value={s}>{s}</option>)}</select></label>
         <label>实测时间{input(testedAt, setTestedAt, { placeholder: "2026-10-19T18:55" })}</label>

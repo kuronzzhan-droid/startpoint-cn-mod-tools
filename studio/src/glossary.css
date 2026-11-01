@@ -10,3 +10,5 @@
 .type-lookup > label { display: flex; gap: 8px; align-items: center; margin: 10px 0; }
 .lookup > .segmented { margin-bottom: 12px; }
 .raw-table .cell-meaning { min-width: 180px; max-width: 360px; }
+.translation-source { white-space: normal; }
+.translation-uncertain { background: #fff0b3; color: #624900; border: 1px solid #c7a536; }

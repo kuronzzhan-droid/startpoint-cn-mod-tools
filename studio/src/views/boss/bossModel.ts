@@ -124,6 +124,10 @@ export function useBossDrafts(): BossDraftSummary[] | null {
 
 /** Rule ids → plain names shown next to five-state results. */
 export const RULE_LABEL: Record<string, string> = {
+  "multiplayer.random": "动作独立随机分支",
+  "multiplayer.state_random": "状态转移随机候选",
+  "multiplayer.death_event": "死亡事件与计数依赖",
+  "multiplayer.incomplete": "联机扫描未完整",
   "boss.inputs": "请求与重放",
   "boss.multiwave-field": "多波场地（c7/c8）",
   "boss.terrain-layers": "地形每层：边界 / 站位 / 9 复活位",

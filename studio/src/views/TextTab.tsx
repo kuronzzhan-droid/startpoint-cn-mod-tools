@@ -1,3 +1,4 @@
+import { TranslationBadge } from "./TranslationBadge";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { ability, onDraftChange, OverrideSlot, TextField, TextPanel, TextRuleRecord } from "../api";
 import { Notice } from "./common";
@@ -285,6 +286,7 @@ function TextFieldEditor({ field, label, value, original, multiline, disabled, e
   };
   return (
     <div class="text-field">
+      <TranslationBadge value={local !== field.value ? { source: "人工", uncertain: false, reason: "正在编辑", evidence: [] } : field.translation} />
       {label ? <span class="field-label">{label}</span> : null}
       {multiline ? <textarea rows={Math.min(8, Math.max(2, local.split("\n").length + 1, Math.ceil(local.length / 64) + 1))} {...props} /> : <input {...props} />}
       {changedFromDraft && original ? <p class="small muted was">草稿当前：{original}</p> : null}

@@ -181,5 +181,19 @@ class BossEditState:
                 "server": {k: digest(v) for k, v in sorted(self.server_original.items())}}
 
     def verify_snapshot(self, expected):
-        if self.snapshot() != expected:
+        actual = self.snapshot()
+        # Earlier D3 drafts enrolled advisory-only behavior reads. Keep those
+        # saved locks effective when opening them, without polluting new input
+        # snapshots or requiring the scanner to repeat the old reads.
+        expected_client = expected.get("client", {})
+        if (actual["server"] != expected.get("server")
+                or any(key not in expected_client or expected_client[key] != value
+                       for key, value in actual["client"].items())):
             raise ValueError("boss draft input SHA-256 drift; rebuild the draft against this view")
+        for logical in expected_client.keys() - actual["client"].keys():
+            try:
+                raw = self.base.read_raw(logical)[0]
+            except (FileNotFoundError, KeyError):
+                raw = None
+            if digest(raw) != expected_client[logical]:
+                raise ValueError("boss draft input SHA-256 drift; rebuild the draft against this view")

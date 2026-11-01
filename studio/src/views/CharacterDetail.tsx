@@ -1,5 +1,6 @@
+import { TranslationBadge } from "./TranslationBadge";
 import { useEffect, useState } from "preact/hooks";
-import { AbilityGroup, AbilityRow, api, CharacterDetail, ColumnLabel } from "../api";
+import { AbilityGroup, AbilityRow, api, CharacterDetail, ColumnLabel, onDraftChange } from "../api";
 import { href, Route } from "../router";
 import { Avatar, Drawer, ElementBadge, Notice, OriginBadge, Rarity, StatusStrip } from "./common";
 import { AssetsTab } from "./AssetsTab";
@@ -19,6 +20,7 @@ import { Handoff } from "./Handoff";
 import { SkillTemplate } from "./SkillTemplate";
 import { PfActionWorkshop } from "./PfActionWorkshop";
 import { SummonWorkshop } from "./SummonWorkshop";
+import { WikiCard } from "./WikiCard";
 import { VariantBatch } from "./VariantBatch";
 
 // Seven groups (C1): 能力（一板/二板/三板）｜技能｜文案｜立绘｜像素（预览/单动作替换/工坊/整族导入）｜语音｜交接单;
@@ -30,6 +32,7 @@ const GROUPS: { id: string; label: string; ability?: boolean }[] = [
   { id: "portrait", label: "立绘" },
   { id: "pixel", label: "像素" },
   { id: "voice", label: "语音" },
+  { id: "wiki", label: "Wiki 卡片" },
   { id: "handoff", label: "交接单" },
   { id: "variants", label: "复制为变体" },
 ];
@@ -54,9 +57,19 @@ export function CharacterDetailView({ id, tab, sub }: { id: string; tab?: string
   const link = (g: string, s?: string): Route => ({ work: "content", shop: "characters", id, tab: g, sub: s });
 
   useEffect(() => {
+    let active = true;
+    let requested = 0;
     setDetail(null);
     setError(null);
-    api.character(id).then(setDetail, (e: Error) => setError(e.message));
+    const reload = () => {
+      const request = ++requested;
+      api.character(id).then((value) => {
+        if (active && request === requested) { setDetail(value); setError(null); }
+      }, (e: Error) => { if (active && request === requested) setError(e.message); });
+    };
+    reload();
+    const unsubscribe = onDraftChange((changed) => { if (changed === id) reload(); });
+    return () => { active = false; unsubscribe(); };
   }, [id]);
 
   if (error) return <section class="page"><BackLink /><Notice kind="error">读取角色失败：{error}</Notice></section>;
@@ -122,6 +135,8 @@ export function CharacterDetailView({ id, tab, sub }: { id: string; tab?: string
         <PortraitEditor characterId={detail.id} />
       ) : group === "pixel" ? (
         <PixelGroup characterId={detail.id} sub={groupSub} link={(s: PixelSub) => link("pixel", s)} />
+      ) : group === "wiki" ? (
+        <WikiCard cid={detail.id} />
       ) : group === "variants" ? (
         <VariantBatch key={detail.id} characterId={detail.id} />
       ) : group === "handoff" ? (
@@ -225,7 +240,7 @@ function AbilityCard({ title, table, group, rows, columns, awake, filter }: {
       {hasOverride && !awake ? (
         <div class="override">
           <span class="label">玩家看到的文字（覆盖文案，在「文案」页编辑）</span>
-          <p>{group.description}</p>
+          <TranslationBadge value={group.translation} /><p>{group.description}</p>
         </div>
       ) : null}
       {empty ? <p class="muted">{group.description}</p> : (
@@ -300,7 +315,7 @@ function SkillTab({ detail, onText }: { detail: CharacterDetail; onText: () => v
             <span class="spacer" />
             {s.kind === "main" && s.level === "1" ? <AttachControl table="action_skill" slot={0} title="技能" /> : null}
           </header>
-          <p class="skill-text">{s.description || <em class="muted">（无文案）</em>}</p>
+          <TranslationBadge value={s.translation} /><p class="skill-text">{s.description || <em class="muted">（无文案）</em>}</p>
           <details class="programs">
             <summary>技能程序 · 节点 {s.commandCount}</summary>
             <p class="mono small">{s.program}</p>

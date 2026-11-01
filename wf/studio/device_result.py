@@ -301,7 +301,7 @@ def summary(entry: dict | None, draft: dict | None = None) -> dict | None:
     if not entry or not entry.get("result"):
         return {"status": "无效", "errors": entry.get("errors", [])} if entry else None
     result = entry["result"]
-    return {"status": result.get("status"), "testedAt": result.get("testedAt"), "tester": result.get("tester") or "",
+    return {"status": result.get("status"), "testedAt": result.get("testedAt"), "testType": result.get("testType"), "tester": result.get("tester") or "",
             "draftRevision": (result.get("delivery") or {}).get("draftRevision"),
             "checks": len(result.get("checks") or []), "legacy": entry.get("legacy", False),
             "imported": "importedFrom" in result, "stale": stale(result, draft)}

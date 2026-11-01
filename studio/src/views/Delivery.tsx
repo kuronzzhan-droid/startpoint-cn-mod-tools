@@ -310,6 +310,8 @@ function DeliveryDetailView({ name, api, characterId }: { name: string; api: Del
 
       {detail.check ? <RuleList checks={detail.check} title="wf check（交付清单）" /> : <p class="small muted">没有 check.json。</p>}
       {detail.compat ? <RuleList checks={detail.compat} title="兼容检查（provides）" /> : null}
+      {detail.report?.draftChecks?.some((c) => c.category === "联机风险") ?
+        <RuleList checks={detail.report.draftChecks.filter((c) => c.category === "联机风险")} title="联机风险（仅提示）" /> : null}
 
       <details>
         <summary>全部文件（{detail.files.length}，不含 inputs/blobs）</summary>

@@ -11,7 +11,7 @@ from .catalog import catalog, result
 
 
 def check_boss(document, *, view=None, baseline=None, server_changes=None,
-               server_before=None, context=None):
+               server_before=None, context=None, multiplayer_scanner=None, include_multiplayer=True):
     """Check a BossReader.show snapshot, optionally with its actual candidate.
 
     ``view`` accepts ManifestView.read_raw or prepush View.raw/table. Server
@@ -41,7 +41,9 @@ def check_boss(document, *, view=None, baseline=None, server_changes=None,
             by_id[identifier] = result(identifier, "未执行", "此项需要独立的行为或客户端能力证据")
         by_id[identifier].update(evidence_nature=metadata["evidence_nature"],
                                  source=metadata["source"], rule_version=rules["version"])
-    return list(by_id.values())
+    from .multiplayer import check_multiplayer
+    hints = check_multiplayer(document, multiplayer_scanner or view, baseline) if include_multiplayer else []
+    return [*by_id.values(), *hints]
 
 
 def assert_boss(document, **options):

@@ -6,6 +6,7 @@ import { Drawer, ElementBadge, Notice, StatusStrip } from "./common";
 import { InfoTip, useDeliveries } from "./Delivery";
 import { deviceCell } from "./DeviceResult";
 import { PixelGroup, PixelSub } from "./PixelGroup";
+import { WikiCard } from "./WikiCard";
 import { PromoteForm } from "./CharacterClone";
 
 const ELEMENTS = ["火", "水", "雷", "风", "光", "暗"];
@@ -118,6 +119,7 @@ export function ScratchList() {
 const GROUPS = [
   { id: "pixel", label: "像素" },
   { id: "bind", label: "绑定到角色" },
+  { id: "wiki", label: "Wiki 卡片" },
 ];
 
 export function ScratchDetail({ id, tab, sub }: { id: string; tab?: string; sub?: string }) {
@@ -128,7 +130,7 @@ export function ScratchDetail({ id, tab, sub }: { id: string; tab?: string; sub?
   const draft = useDraft(id);
   // Old deep links: workshop / import / changes.
   const drawer = tab === "changes";
-  const group = tab === "bind" ? "bind" : "pixel";
+  const group = tab === "wiki" ? "wiki" : tab === "bind" ? "bind" : "pixel";
   const pixelSub = tab === "import" ? "import" : sub;
   const [refresh, setRefresh] = useState(0);
   const link = (g: string, s?: string): Route => ({ work: "content", shop: "scratch", id, tab: g, sub: s });
@@ -182,7 +184,7 @@ export function ScratchDetail({ id, tab, sub }: { id: string; tab?: string; sub?
       </nav>
       {group === "pixel"
         ? <PixelGroup characterId={id} sub={pixelSub} scratch link={(s: PixelSub) => link("pixel", s)} key={refresh} />
-        : <BindPanel info={info} onDone={() => setRefresh((n) => n + 1)} />}
+        : group === "wiki" ? <WikiCard cid={id} /> : <BindPanel info={info} onDone={() => setRefresh((n) => n + 1)} />}
       {drawer ? (
         <Drawer title={<>本次修改 <span class="small muted">{status?.label}</span></>} onClose={() => { location.hash = href(link(group, pixelSub)); }}>
           <ChangesPanel characterId={id} scratch />

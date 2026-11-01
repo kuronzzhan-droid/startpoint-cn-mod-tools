@@ -66,6 +66,7 @@ export interface RelatedProgram {
 }
 
 export interface AbilityGroup {
+  translation?: import("./abilityGlossary").TranslationSource;
   slot?: number;
   key: string;
   name: string;
@@ -86,6 +87,7 @@ export interface Board {
 }
 
 export interface Skill {
+  translation?: import("./abilityGlossary").TranslationSource;
   kind: string;
   level: string;
   label: string;
@@ -357,7 +359,7 @@ export interface DraftFile {
 
 export interface DraftChange {
   id: string;
-  kind: "portrait" | "pixel_action" | "pixel_family" | "voice_line" | "ability_edit" | "boss" | "weapon" | "character_clone" | "summon_clone" | "pf_action_clone" | "skill_template";
+  kind: "portrait" | "pixel_action" | "pixel_family" | "voice_line" | "speech_rows" | "ability_edit" | "boss" | "weapon" | "character_clone" | "summon_clone" | "pf_action_clone" | "skill_template";
   title: string;
   createdAt: string;
   target: Record<string, string>;
@@ -442,6 +444,8 @@ export interface PortraitInfo {
 }
 
 export interface VoiceLine {
+  constraint?: string;
+  evoLevel?: string;
   voice: string | null;
   speechRow: number | null;
   kind: string;
@@ -456,6 +460,8 @@ export interface VoiceLine {
 }
 
 export interface VoiceLines {
+  checks: DraftCheck[];
+  speechChangeId: string | null;
   characterId: string;
   code: string;
   lines: VoiceLine[];
@@ -540,6 +546,7 @@ export const drafts = {
     notify(cid, post<WriteResult>(`/api/drafts/${cid}/portrait`, body)),
   checkPixel: (cid: string, body: unknown) => post<PixelCheckResult>(`/api/drafts/${cid}/pixel`, { ...(body as object), dryRun: true }),
   savePixel: (cid: string, body: unknown) => notify(cid, post<WriteResult>(`/api/drafts/${cid}/pixel`, body)),
+  addSpeech: (cid: string, rows: string[][]) => notify(cid, post<WriteResult>(`/api/drafts/${cid}/speech`, { rows })),
   saveVoice: (cid: string, body: { voice: string; audio: string; filename: string }) =>
     notify(cid, post<WriteResult>(`/api/drafts/${cid}/voice`, body)),
   revert: (cid: string, change: string) => notify(cid, post<WriteResult>(`/api/drafts/${cid}/changes/${change}/revert`, {})),
@@ -552,6 +559,13 @@ export const drafts = {
 export type RuleState = "满足" | "问题" | "待验证" | "不适用" | "未执行";
 
 export interface RuleResult {
+  category?: string;
+  location?: string;
+  hit_count?: number;
+  locations?: string[];
+  new_hit_count?: number | null;
+  new_locations?: string[];
+  baseline_comparison?: "baseline" | "candidate" | "unavailable";
   rule: string;
   status: RuleState | string;
   message: string;
@@ -705,6 +719,7 @@ export interface HouseRuleState {
 }
 
 export interface TextField {
+  translation?: import("./abilityGlossary").TranslationSource;
   surface: "action_skill" | "desc_override" | "custom_ability_string";
   location: string;
   key: string;
@@ -889,6 +904,7 @@ export interface DeviceCheck {
 }
 
 export interface DeviceResult {
+  testType?: "单机" | "三开联机";
   schema: string;
   status: DeviceStatus;
   reason?: string;

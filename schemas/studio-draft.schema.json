@@ -1007,6 +1007,26 @@
         }
       }
     },
+    "speechRow": {
+      "type": "array", "minItems": 5, "maxItems": 5,
+      "prefixItems": [
+        {"enum": ["0", "1", "2"]}, {"enum": ["", "0", "1", "2"]},
+        {"type": "string", "pattern": "^[0-9]*$"},
+        {"type": "string", "minLength": 1, "maxLength": 8000, "pattern": "\\S", "not": {"pattern": "\\r"}},
+        {"type": "string", "pattern": "^(?:\\(None\\)|[a-z0-9_]+(?:/[a-z0-9_]+)+)$", "not": {"pattern": "[\\r\\n]"}}
+      ], "items": false,
+      "allOf": [
+        {"if": {"prefixItems": [{"const": "0"}]},
+         "then": {"prefixItems": [{}, {"enum": ["0", "1", "2"]}]}},
+        {"if": {"prefixItems": [{"const": "1"}]},
+         "then": {"prefixItems": [{}, {}, {"pattern": "^[0-9]+$"}]}}
+      ]
+    },
+    "speechRequest": {
+      "type": "object", "additionalProperties": false, "required": ["rows"],
+      "properties": {"rows": {"type": "array", "minItems": 1, "maxItems": 100,
+        "uniqueItems": true, "items": {"$ref": "#/$defs/speechRow"}}}
+    },
     "voiceRequest": {
       "type": "object",
       "additionalProperties": false,
@@ -1103,7 +1123,7 @@
       "required": ["id", "kind", "title", "createdAt", "target", "params", "files", "pending", "checks"],
       "properties": {
         "id": {"type": "string", "pattern": "^c-[0-9a-f]{12}$"},
-        "kind": {"enum": ["portrait", "pixel_action", "pixel_family", "voice_line", "ability_edit", "boss", "weapon", "character_clone", "summon_clone", "pf_action_clone", "skill_template"]},
+        "kind": {"enum": ["portrait", "pixel_action", "pixel_family", "voice_line", "speech_rows", "ability_edit", "boss", "weapon", "character_clone", "summon_clone", "pf_action_clone", "skill_template"]},
         "title": {"type": "string", "minLength": 1},
         "createdAt": {"$ref": "#/$defs/timestamp"},
         "target": {"type": "object"},
@@ -1263,6 +1283,16 @@
             }
           }
         },
+        {"if": {"properties": {"kind": {"const": "speech_rows"}}},
+         "then": {"properties": {
+           "target": {"type": "object", "additionalProperties": false, "required": ["character"],
+             "properties": {"character": {"$ref": "#/$defs/characterId"}}},
+           "params": {"type": "object", "additionalProperties": false, "required": ["rows", "beforeSha256"],
+             "properties": {"reservations": {"$ref": "#/$defs/reservations"},
+               "rows": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/speechRow"}},
+               "beforeSha256": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]}}},
+           "files": {"maxItems": 0}
+         }}},
         {
           "if": {"properties": {"kind": {"const": "voice_line"}}},
           "then": {

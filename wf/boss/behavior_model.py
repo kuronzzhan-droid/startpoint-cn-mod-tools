@@ -157,8 +157,8 @@ def _display(value):
     return value
 
 
-def read_behavior(view, document):
-    graph, entries, seen = Programs(view), [], set()
+def read_behavior(view, document, *, graph=None):
+    graph, entries, seen = graph if graph is not None else Programs(view), [], set()
     for enemy in document.get('enemies', []):
         key = enemy.get('code'), tuple(enemy.get('path') or []), str(enemy.get('wave', '0'))
         if key in seen or enemy.get('kind') != 'boss':

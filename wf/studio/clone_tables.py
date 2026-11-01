@@ -38,9 +38,17 @@ def validate_speech(speech):
         raise DraftError("character_speech 必须含五列字幕行")
     if any("\n" in row[4] or "\r" in row[4] for row in speech):
         raise DraftError("character_speech c4 必须是单个语音路径，不能包含换行")
+    if any(not row[3].strip() or "\r" in row[3] for row in speech):
+        raise DraftError("character_speech 字幕不能为空白或包含回车 CR；换行请使用 LF")
     home = [row for row in speech if row[0] == "0"]
     if not any(row[1] in ("0", "2") for row in home) or not any(row[1] in ("1", "2") for row in home):
         raise DraftError("character_speech 两态必须都有可见行（避免 2265）")
+    # CharacterSpeechRepository.getJoinSpeech / getSpecificEvolutionSpeech each
+    # raise 2265 independently; the latter selects the requested evolution level.
+    if not any(row[0] == "2" for row in speech):
+        raise DraftError("character_speech 缺少入队台词 kind=2（入队时会触发 2265）")
+    if not any(row[0] == "1" and row[2].isdigit() and int(row[2]) == 1 for row in speech):
+        raise DraftError("character_speech 缺少进化台词 kind=1、evo_level=1（进化时会触发 2265）")
 
 
 def _node_ids(blob):

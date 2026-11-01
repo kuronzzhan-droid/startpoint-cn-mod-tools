@@ -2,6 +2,7 @@ import { ComponentChildren } from "preact";
 import { RuleResult } from "../../api";
 import { RuleChips, ruleCounts } from "../rules";
 import { RULE_LABEL } from "./bossModel";
+import { MultiplayerDetails, MultiplayerNote } from "../MultiplayerAdvisory";
 
 const STATE_ORDER = ["问题", "待验证", "未执行", "满足", "不适用"];
 const STATE_CLASS: Record<string, string> = { 问题: "rs-bad", 待验证: "rs-warn", 未执行: "rs-none", 满足: "rs-ok", 不适用: "rs-na" };
@@ -21,7 +22,9 @@ function questsLabel(quests: string[]): string {
 function merged(checks: QuestResult[]): (QuestResult & { quests: string[] })[] {
   const groups = new Map<string, QuestResult & { quests: string[] }>();
   for (const c of checks) {
-    const key = [c.rule, c.status, c.blocking, c.message, JSON.stringify((c as any).issues ?? [])].join("|");
+    const key = [c.rule, c.category, c.location, c.status, c.blocking, c.message,
+      c.new_hit_count, c.baseline_comparison, JSON.stringify(c.locations ?? []),
+      JSON.stringify(c.new_locations ?? []), JSON.stringify((c as any).issues ?? [])].join("|");
     const entry = groups.get(key);
     if (entry) { if (c.quest) entry.quests.push(c.quest); }
     else groups.set(key, { ...c, quests: c.quest ? [c.quest] : [] });
@@ -43,17 +46,19 @@ export function BossRuleList({ checks, compact }: { checks: RuleResult[]; compac
   return (
     <div class={"boss-rules" + (compact ? " compact" : "")}>
       {summary && rules.length ? <p class="small error-text">{plainSummary(summary.message)}</p> : null}
+      <MultiplayerNote checks={checks} />
       <ul>
         {shown.map((c) => {
           const extra = c as RuleResult & { issues?: string[]; limitations?: string[]; acknowledgment?: { acknowledgePreload: boolean } };
           return (
             <li class={STATE_CLASS[c.status] ?? ""}>
               <div class="br-head">
-                <span class="rs-state">{c.status}{c.blocking ? " · 阻断" : ""}</span>
+                <span class="rs-state">{c.category ?? c.status}{c.blocking ? " · 阻断" : ""}</span>
                 <strong class="br-name">{RULE_LABEL[c.rule] ?? c.rule}</strong>
                 {multi && c.quests.length ? <span class="small muted">{questsLabel(c.quests)}</span> : null}
               </div>
-              <p class="br-msg">{c.message}</p>
+              <p class="br-msg">{c.message}</p>{c.location ? <p class="small mono">{c.location}</p> : null}
+              <MultiplayerDetails check={c} />
               {extra.issues?.length ? (
                 <ul class="br-issues">{extra.issues.map((i) => <li>{i}</li>)}</ul>
               ) : null}
@@ -104,7 +109,7 @@ export function ChecksPanel({ title, checks, state, note, children }: {
         </>
       ) : !state || state === "idle" ? <p class="small muted">{note ?? "未执行：还没有改动。"}</p> : null}
       {children}
-      <p class="small muted boss-checks-foot">五态：满足 / 问题 / 待验证 / 不适用 / 未执行。静态检查通过不等于真机验证；真机一栏始终是「未记录」。</p>
+      <p class="small muted boss-checks-foot">五态：满足 / 问题 / 待验证 / 不适用 / 未执行。另列「联机风险」，只提示不阻断；未命中不代表同步安全，需记录三开联机实测。</p>
     </aside>
   );
 }

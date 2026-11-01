@@ -112,6 +112,7 @@ def compile_media(source, store, changeset: dict) -> MediaResult:
     from .deliver_pixel import compile_pixels
     from .deliver_portrait import compile_portraits
     from .deliver_voice import compile_voices
+    from .speech import compile_speech
 
     if source.version != changeset["baseView"]:
         raise DraftError("问题：草稿基线版本与交付视图不一致，请重新保存草稿")
@@ -124,7 +125,7 @@ def compile_media(source, store, changeset: dict) -> MediaResult:
             raise DraftError("问题：同一个媒体目标在草稿中出现多次")
         targets.add(target)
     result = MediaResult()
-    for compile_part in (compile_portraits, compile_pixels, compile_voices):
+    for compile_part in (compile_portraits, compile_pixels, compile_voices, compile_speech):
         part = compile_part(source, store, changeset)
         duplicate = result.members.keys() & part.members.keys()
         if duplicate:

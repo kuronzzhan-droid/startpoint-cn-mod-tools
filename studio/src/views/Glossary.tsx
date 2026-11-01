@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import { ability } from "../api";
 import { AbilityGlossary, enumEntries, FieldRule, GlossaryEntry, matches, numericMeaning } from "../abilityGlossary";
 import "../glossary.css";
+import { TranslationBadge } from "./TranslationBadge";
 
 export function useGlossary(enabled = true) {
   const [data, setData] = useState<AbilityGlossary | null>(null);
@@ -21,7 +22,7 @@ function EntryName({ entry }: { entry: GlossaryEntry }) {
       `${slot} = ${binding.text} (${binding.sources.map((s) => s.key ?? s.enumToken ?? s.text).join(" / ")})`),
     ...entry.evidence].filter(Boolean).join("\n");
   return <span title={title}>
-    <span>{entry.official || entry.cn || entry.en}</span>
+    <span>{entry.official || entry.cn || entry.en}</span> <TranslationBadge value={entry.translation} />
     {entry.official && entry.cn && entry.cn !== entry.official ? <small class="muted"> · 直译：{entry.cn}</small> : null}
     {entry.mappingStatus === "guess" ? <small class="warn-text"> · 名称推测</small> : null}
   </span>;

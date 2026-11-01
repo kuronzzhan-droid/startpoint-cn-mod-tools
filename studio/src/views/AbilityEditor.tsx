@@ -1,3 +1,4 @@
+import { TranslationBadge } from "./TranslationBadge";
 import { createContext } from "preact";
 import { useContext, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import {
@@ -596,6 +597,7 @@ function RowDescription({ ws, entry, index, after, draftDiffers }: {
   const rowChanged = JSON.stringify(workingRows(entry, ws.pending)[index]) !== JSON.stringify(draftRow);
   return (
     <div class="row-desc">
+      {entry.table !== "action_skill" ? <TranslationBadge /> : null}
       {preview && preview.before.description !== preview.after.description ? (
         <div class="before-after">
           <div><span class="ba-label">改动前</span>{preview.before.description ?? "（无此行）"}</div>

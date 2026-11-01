@@ -20,6 +20,7 @@ from test_studio_pixel_workshop import family_files
 from test_m1_balance import valid_row
 
 OLD, NEW, CODE = "111007", "139988", "clone_demo"
+SPEECH_EVENTS = [["2", "", "", "加入", "(None)"], ["1", "", "1", "进化", "(None)"]]
 
 
 def ordered(entries):
@@ -62,7 +63,7 @@ def env(tmp_path):
               T.MANA_BOARD: ordered({OLD: board}), T.MANA_NODE: ordered({OLD: mana}),
               T.CHAR_IMAGE: ordered({OLD: ordered({"0": leaf([["0", "0", "4", "4"]]), "1": leaf([["0", "0", "4", "4"]])})}),
               T.FULL_SHOT_ATTR: ordered({OLD: ordered({"0": leaf([["1000", "1000", "1", "2", "2"]]), "1": leaf([["1000", "1000", "1", "2", "2"]])})}),
-              T.SPEECH: ordered({OLD: leaf([["0", "2", "0", "你好", "home/home_0"]])}),
+              T.SPEECH: ordered({OLD: leaf([["0", "2", "", "你好", "home/home_0"], *SPEECH_EVENTS])}),
               T.SKILL_PREVIEW: ordered({OLD: leaf([["character/mother/battle/character_detail_skill_preview"]])}),
               T.TRIMMED: ordered({f"character/mother/ui/{stem}": leaf([["0", "0", "4", "4"]]) for stem in
                                  ("full_shot_1440_1920_0", "full_shot_1440_1920_1", "skill_cutin_0", "skill_cutin_1")})}
