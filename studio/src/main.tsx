@@ -14,6 +14,7 @@ import { PatchManager } from "./views/PatchManager";
 import { ScratchDetail, ScratchList } from "./views/ScratchView";
 import { LookupPanel } from "./views/LookupPanel";
 import { ClientProfilePicker } from "./views/ClientProfile";
+import { OpeningConsole } from "./views/OpeningConsole";
 import "./styles.css";
 import "./m4.css";
 import "./workshop.css";
@@ -65,6 +66,7 @@ function App() {
         <nav class="works" aria-label="一级工作">
           <a class={route.work === "content" ? "active" : ""} href="#/content/characters">编辑内容</a>
           <a class={route.work === "patches" ? "active" : ""} href="#/patches">补丁管理</a>
+          <a class={route.work === "opening" ? "active" : ""} href="#/opening">开服台</a>
         </nav>
         <div class="topbar-right">
           <ClientProfilePicker />
@@ -122,7 +124,9 @@ function App() {
       ) : null}
       <div class="layout">
         <main class="main">
-          {route.work === "patches" ? (
+          {route.work === "opening" ? (
+            <OpeningConsole />
+          ) : route.work === "patches" ? (
             <PatchManager archive={route.archive} />
           ) : route.shop === "boss" ? (
             <BossWorkshop quest={route.quest} tab={route.tab} sub={route.sub} wizard={route.wizard} source={route.source} />

@@ -89,6 +89,7 @@ export function BossOverview() {
         <a class="header-btn primary-link" href={href({ work: "content", shop: "boss", wizard: true })}>＋ 新建共同决战</a>
       </div>
       <div class="search-row">
+        <a class="header-btn" href={questLink("scene-spec")}>场景 BOSS · 规格</a>
         <a class="header-btn" href={questLink("five-structure")}>五重决战 · 结构</a>
         <a class="header-btn" href={questLink("rogue")}>深渊连战</a>
         <input ref={search} class="search" type="search" value={query} autoFocus
