@@ -1,3 +1,4 @@
+import { Loading } from "./Loading";
 import { useEffect, useState } from "preact/hooks";
 import { get, onDraftChange } from "../api";
 import { TranslationSource } from "../abilityGlossary";
@@ -21,18 +22,21 @@ export function WikiCard({ cid }: { cid: string }) {
   useEffect(() => {
     let active = true;
     let request = 0;
+    let controller: AbortController | undefined;
     const load = () => {
       const n = ++request;
       setData(null); setError(null);
-      get<Preview>(`/api/drafts/${cid}/wiki-card`).then((v) => { if (active && n === request) setData(v); },
+      controller?.abort();
+      controller = new AbortController();
+      get<Preview>(`/api/drafts/${cid}/wiki-card?compact=1`, controller.signal).then((v) => { if (active && n === request) setData(v); },
         (e: Error) => { if (active && n === request) setError(e.message); });
     };
     load();
     const off = onDraftChange((changed) => { if (changed === cid) load(); });
-    return () => { active = false; off(); };
+    return () => { active = false; controller?.abort(); off(); };
   }, [cid]);
   if (error) return <Notice kind="error">Wiki 卡片预览失败：{error}</Notice>;
-  if (!data) return <p class="loading">正在读取草稿 Wiki 卡片……</p>;
+  if (!data) return <Loading label="正在读取草稿 Wiki 卡片……" />;
   const c = data.card;
   return <div class="board wiki-card-preview">
     <p class="hint">{data.note} 来源 {data.sourceVersion} · 草稿修订 {data.draftRevision ?? "无"}</p>

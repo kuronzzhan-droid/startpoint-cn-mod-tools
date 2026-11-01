@@ -106,7 +106,20 @@ class BossRoutes:
     def timeline_summary(self, query, quest):
         from .server import json_response
         result = self.editor.inspect(quest, "timeline-summary")
-        return json_response({**result["data"], "questId": result["questId"], "checks": result["checks"]})
+        data = result["data"]
+        path = (query.get("path") or [None])[0]
+        enemy = (query.get("enemyCode") or [None])[0]
+        slot = (query.get("slot") or [None])[0]
+        if path is not None or enemy is not None or slot is not None:
+            moves = [move for move in data["moves"] if enemy is None or move.get("enemyCode") == enemy]
+            matching = [move for move in moves if path is None or move.get("name") == path
+                        or move.get("name", "").endswith("/" + path)]
+            if not matching and slot is not None:
+                matching = [move for move in moves if str(move.get("slot")) == slot]
+            elif path is None and slot is not None:
+                matching = [move for move in matching if str(move.get("slot")) == slot]
+            data = {**data, "moves": matching}
+        return json_response({**data, "questId": result["questId"], "checks": result["checks"]})
 
     def drafts(self, query):
         from .server import json_response

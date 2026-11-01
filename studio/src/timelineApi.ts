@@ -1,5 +1,6 @@
 // L2 编排级 preview: typed wrappers over /api/studio/timeline, /api/studio/effect and the per-character program list.
 import { get } from "./api";
+import { HttpError } from "./requests";
 
 export type LaneId = "effect" | "hit" | "action" | "sound" | "wait" | "state" | "other";
 
@@ -131,30 +132,29 @@ export interface EffectBake {
   note?: string;
 }
 
-const memo = new Map<string, Promise<unknown>>();
-function once<T>(url: string): Promise<T> {
-  if (!memo.has(url)) {
-    const p = get<T>(url);
-    p.catch(() => memo.delete(url));
-    memo.set(url, p);
-  }
-  return memo.get(url) as Promise<T>;
-}
-
 export const timelineApi = {
-  programs: (cid: string) => once<{ characterId: string; programs: ProgramEntry[]; note: string }>(`/api/characters/${cid}/programs`),
-  timeline: (path: string, kind: string, cid?: string) =>
-    once<Timeline>(`/api/studio/timeline?path=${encodeURIComponent(path)}&kind=${kind}${cid ? "&cid=" + cid : ""}`),
-  effect: (path: string) => once<EffectBake>(`/api/studio/effect?path=${encodeURIComponent(path)}`),
+  programs: (cid: string, signal?: AbortSignal) => get<{ characterId: string; programs: ProgramEntry[]; note: string }>(`/api/characters/${cid}/programs`, signal),
+  timeline: (path: string, kind: string, cid?: string, signal?: AbortSignal) =>
+    get<Timeline>(`/api/studio/timeline?path=${encodeURIComponent(path)}&kind=${kind}${cid ? "&cid=" + cid : ""}`, signal),
+  effect: (path: string) => get<EffectBake>(`/api/studio/effect?path=${encodeURIComponent(path)}`),
   effectPngUrl: (path: string) => `/api/studio/effect.png?path=${encodeURIComponent(path)}`,
   /** BOSS moves from the esdl timeline summary (M6 backend). 404 → not available yet. */
-  bossMoves: async (quest: string): Promise<{ available: true; moves: { name: string; label?: string; timeline: Timeline }[]; note?: string } | { available: false; reason: string }> => {
-    const response = await fetch(`/api/boss/${encodeURIComponent(quest)}/timeline-summary`);
-    const body = await response.json().catch(() => ({}));
-    if (response.status === 405 || (response.status === 404 && (!body.error || body.error === "未知接口"))) {
-      return { available: false, reason: "后端还没有 BOSS 出招时间轴接口（/api/boss/<关卡>/timeline-summary，M6 的 esdl 时间轴摘要）。" };
+  bossMoves: async (quest: string, filter?: { path: string; enemyCode: string; slot?: number }, signal?: AbortSignal): Promise<{ available: true; moves: { name: string; label?: string; timeline: Timeline }[]; note?: string } | { available: false; reason: string }> => {
+    const query = new URLSearchParams();
+    if (filter) {
+      query.set("path", filter.path); query.set("enemyCode", filter.enemyCode);
+      if (filter.slot !== undefined) query.set("slot", String(filter.slot));
     }
-    if (!response.ok) return { available: false, reason: body.error || `HTTP ${response.status}` };
-    return { available: true, moves: body.moves ?? [], note: body.note };
+    try {
+      const body = await get<{ moves?: { name: string; label?: string; timeline: Timeline }[]; note?: string }>(
+        `/api/boss/${encodeURIComponent(quest)}/timeline-summary${query.size ? "?" + query : ""}`, signal);
+      return { available: true, moves: body.moves ?? [], note: body.note };
+    } catch (error) {
+      if (signal?.aborted) throw error;
+      if (error instanceof HttpError && (error.status === 405 || (error.status === 404 && error.message === "未知接口"))) {
+        return { available: false, reason: "后端还没有 BOSS 出招时间轴接口（/api/boss/<关卡>/timeline-summary，M6 的 esdl 时间轴摘要）。" };
+      }
+      return { available: false, reason: error instanceof Error ? error.message : String(error) };
+    }
   },
 };

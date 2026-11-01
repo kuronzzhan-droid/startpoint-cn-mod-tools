@@ -16,7 +16,10 @@ from test_studio_ability_text import setup, text_operations
 
 
 def test_registry_and_parse_cache_hand_out_independent_copies():
-    assert perf.registry() is perf.registry()
+    first_registry, second_registry = perf.registry(), perf.registry()
+    assert first_registry == second_registry and first_registry is not second_registry
+    first_registry[next(iter(first_registry))]["provided_by"]["patches"].append(-1)
+    assert perf.registry() == second_registry
     import wf_quest_lib as codec
     raw = codec.build_node({"a": "1", "b": {"1": "x"}})
     first = perf.parsed(raw)

@@ -1,27 +1,31 @@
+import { lazyView } from "../lazyView";
+import { Loading } from "./Loading";
 import { TranslationBadge } from "./TranslationBadge";
 import { useEffect, useState } from "preact/hooks";
 import { AbilityGroup, AbilityRow, api, CharacterDetail, ColumnLabel, onDraftChange } from "../api";
 import { href, Route } from "../router";
 import { Avatar, Drawer, ElementBadge, Notice, OriginBadge, Rarity, StatusStrip } from "./common";
-import { AssetsTab } from "./AssetsTab";
 import { ChangesPanel, useDraft } from "./Changes";
-import { PixelGroup, PixelSub } from "./PixelGroup";
-import { PortraitEditor } from "./PortraitEditor";
-import { VoiceTab } from "./VoiceTab";
+import type { PixelSub } from "./PixelGroup";
 import { InfoTip, useDeliveries } from "./Delivery";
 import { deviceCell, sameDraft } from "./DeviceResult";
 import { AbilityProvider, KeyEditor, PendingBar, useAbilityWorkspace, useWorkspace } from "./AbilityEditor";
 import { pendingCount } from "./abilityModel";
 import { AttachControl, SkillTiers, slotOf } from "./KeyTools";
-import { TextTab } from "./TextTab";
 import { CharacterProfileBadge, ProgramCapChip } from "./ClientProfile";
-import { SkillPreview } from "./TimelinePreview";
-import { Handoff } from "./Handoff";
-import { SkillTemplate } from "./SkillTemplate";
-import { PfActionWorkshop } from "./PfActionWorkshop";
-import { SummonWorkshop } from "./SummonWorkshop";
-import { WikiCard } from "./WikiCard";
-import { VariantBatch } from "./VariantBatch";
+
+const AssetsTab = lazyView(() => import("./AssetsTab"), "AssetsTab");
+const PixelGroup = lazyView(() => import("./PixelGroup"), "PixelGroup");
+const PortraitEditor = lazyView(() => import("./PortraitEditor"), "PortraitEditor");
+const VoiceTab = lazyView(() => import("./VoiceTab"), "VoiceTab");
+const TextTab = lazyView(() => import("./TextTab"), "TextTab");
+const SkillPreview = lazyView(() => import("./TimelinePreview"), "SkillPreview");
+const Handoff = lazyView(() => import("./Handoff"), "Handoff");
+const SkillTemplate = lazyView(() => import("./SkillTemplate"), "SkillTemplate");
+const PfActionWorkshop = lazyView(() => import("./PfActionWorkshop"), "PfActionWorkshop");
+const SummonWorkshop = lazyView(() => import("./SummonWorkshop"), "SummonWorkshop");
+const WikiCard = lazyView(() => import("./WikiCard"), "WikiCard");
+const VariantBatch = lazyView(() => import("./VariantBatch"), "VariantBatch");
 
 // Seven groups (C1): 能力（一板/二板/三板）｜技能｜文案｜立绘｜像素（预览/单动作替换/工坊/整族导入）｜语音｜交接单;
 // 本次修改 and 资源 open as header drawers.
@@ -59,21 +63,24 @@ export function CharacterDetailView({ id, tab, sub }: { id: string; tab?: string
   useEffect(() => {
     let active = true;
     let requested = 0;
+    let controller: AbortController | undefined;
     setDetail(null);
     setError(null);
     const reload = () => {
       const request = ++requested;
-      api.character(id).then((value) => {
+      controller?.abort();
+      controller = new AbortController();
+      api.character(id, controller.signal).then((value) => {
         if (active && request === requested) { setDetail(value); setError(null); }
       }, (e: Error) => { if (active && request === requested) setError(e.message); });
     };
     reload();
     const unsubscribe = onDraftChange((changed) => { if (changed === id) reload(); });
-    return () => { active = false; unsubscribe(); };
+    return () => { active = false; controller?.abort(); unsubscribe(); };
   }, [id]);
 
   if (error) return <section class="page"><BackLink /><Notice kind="error">读取角色失败：{error}</Notice></section>;
-  if (!detail) return <section class="page"><BackLink /><div class="loading">正在读取角色 {id}……</div></section>;
+  if (!detail) return <section class="page"><BackLink /><Loading label={`正在读取角色 ${id}……`} /></section>;
 
   const awakeCount = detail.boards.find((b) => b.id === "board3")?.slots.length ?? 0;
   const status = draft.view?.status;

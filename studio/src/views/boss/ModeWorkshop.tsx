@@ -1,3 +1,4 @@
+import { Loading } from "../Loading";
 import { useEffect, useState } from "preact/hooks";
 import { DraftView } from "../../api";
 import { Floor, Json, Mode, ModePreview, ModeRead, modeDeliveries, modes } from "../../modeApi";
@@ -20,13 +21,14 @@ export function ModeWorkshop({ mode }: { mode: Mode }) {
   const action = useWorkshopAction();
   useEffect(() => {
     let alive = true;
+    const controller = new AbortController();
     setRead(null); setError(null); setPreview(null); setTab("edit");
-    modes.read(mode).then(data => {
+    modes.read(mode, controller.signal).then(data => {
       if (!alive) return;
       setRead(data); setPayload(data.payload); setPreview(data.preview ?? null);
       if (mode === "rogue") setSeedText(String((data.payload as { seed: number }).seed));
     }, e => alive && setError(e.message));
-    return () => { alive = false; };
+    return () => { alive = false; controller.abort(); };
   }, [mode]);
   const change = (path: (string | number)[], value: Json) => {
     const next = structuredClone(payload) as any;
@@ -58,7 +60,7 @@ export function ModeWorkshop({ mode }: { mode: Mode }) {
       <button class={tab === "delivery" ? "on" : ""} onClick={() => setTab("delivery")}>交付</button>
     </nav>
     {error || action.error ? <Notice kind="error">{error || action.error}</Notice> : null}
-    {!read && !error ? <p class="loading">正在读取当前视图并核对构建输入……</p> : null}
+    {!read && !error ? <Loading label="正在读取当前视图并核对构建输入……" /> : null}
     {read ? <>
       <div hidden={tab !== "edit"}>
         {read.current ? <details open><summary>当前赛季内容 · 活动 {read.current.event} · {read.current.rounds} 轮</summary>

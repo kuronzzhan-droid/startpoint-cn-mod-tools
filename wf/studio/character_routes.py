@@ -109,7 +109,11 @@ class CharacterRoutes:
     def wiki_card(self, query, cid):
         from .server import json_response
         from .wiki_preview import preview
-        return json_response(preview(self.app.ops, cid, server_dir=self.server_dir))
+        value = preview(self.app.ops, cid, server_dir=self.server_dir)
+        if query.get("compact") == ["1"]:
+            from .response_projection import wiki_card
+            value = wiki_card(value)
+        return json_response(value)
 
     def wiki_image(self, query, cid):
         from .server import Response

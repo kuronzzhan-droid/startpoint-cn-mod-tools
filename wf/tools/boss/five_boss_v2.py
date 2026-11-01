@@ -213,6 +213,7 @@ class Live:
         self._loader = loader or (lambda lg: store_file(lg).read_bytes())
         self.raw: dict[str, bytes] = {}
         self.tree: dict[str, dict] = {}
+        self.dsl_trees: dict[bytes, object] = {}
 
     def table(self, logical: str) -> dict:
         if logical not in self.tree:
@@ -1475,7 +1476,12 @@ def dsl_tree(live: Live, program: str, extra: dict[str, bytes]):
     raw = extra.get(lg) or live.file(lg)
     if raw is None:
         return None
-    return wf_dsl.parse_dsl(zlib.decompress(raw, -15))["tree"]
+    # Gates repeatedly traverse the same closure. The bytes key also follows
+    # staged replacements under the same logical path; callers treat trees as
+    # read-only (the tuning pass explicitly deep-copies before editing).
+    if raw not in live.dsl_trees:
+        live.dsl_trees[raw] = wf_dsl.parse_dsl(zlib.decompress(raw, -15))["tree"]
+    return live.dsl_trees[raw]
 
 
 def dsl_closure(live: Live, roots: list[str], extra: dict[str, bytes], limit: int = 800):
@@ -1820,9 +1826,10 @@ def apply_edits(live: Live, plan: Plan) -> dict[str, bytes]:
             elif got != node:
                 raise BuildError(f"{table} {path}: write-back mismatch")
         old_top = X.unpack(live.raw[table])
+        new_top = X.unpack(new_raw)
         touched = {p[0] for p, _ in edits}
         for k, v in old_top.items():
-            if k not in touched and X.unpack(new_raw).get(k) != v:
+            if k not in touched and new_top.get(k) != v:
                 raise BuildError(f"{table}: untouched key {k} changed")
         out[table] = new_raw
     return out

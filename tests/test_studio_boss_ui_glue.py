@@ -90,6 +90,9 @@ class _Overlay(_View):
 
 def test_leaf_histories_are_shared_only_for_the_same_immutable_view():
     view = _View(["a.zip", "b.zip"])
+    # Path identity alone is not immutable content evidence.
+    assert provenance._histories_for(view) is not provenance._histories_for(view)
+    view.history_digest = lambda logical: (logical, "content-signature")
     first = provenance._histories_for(view)
     first["x"] = {"leaf": "a.zip"}
     assert provenance._histories_for(view) is first

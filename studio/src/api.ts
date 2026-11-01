@@ -1,5 +1,7 @@
 // Typed wrappers over the read-only backend (python -m wf.studio).
 import type { AbilityGlossary } from "./abilityGlossary";
+import { get, invalidateReads } from "./requests";
+export { get } from "./requests";
 
 export interface ViewList {
   views: string[];
@@ -273,49 +275,20 @@ export interface PatchChain {
   note: string;
 }
 
-export async function get<T>(url: string): Promise<T> {
-  const response = await fetch(url);
-  const body = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
-  if (!response.ok) throw new Error(body.error || `HTTP ${response.status}`);
-  return body as T;
-}
-
-const cache = new Map<string, Promise<unknown>>();
-function cached<T>(url: string): Promise<T> {
-  if (!cache.has(url)) {
-    const promise = get<T>(url);
-    promise.catch(() => cache.delete(url));
-    cache.set(url, promise);
-  }
-  return cache.get(url) as Promise<T>;
-}
-
 /** Last assetsVersion seen per character: media URLs carry it so a changed inventory never shows stale bytes. */
 const assetVersions = new Map<string, string>();
-const assetReads = new Map<string, Promise<CharacterAssets>>();
-let assetListener = false;
 function assetInventory(id: string): Promise<CharacterAssets> {
-  if (!assetListener) {
-    assetListener = true;
-    // Any draft write may change the inventory (cloneAssets, derived portraits): drop that read.
-    onDraftChange((cid) => { assetReads.delete(cid); });
-  }
-  if (!assetReads.has(id)) {
-    const read = get<CharacterAssets>(`/api/characters/${id}/assets`).then((data) => {
-      if (data.assetsVersion) assetVersions.set(id, data.assetsVersion);
-      return data;
-    });
-    read.catch(() => assetReads.delete(id));
-    assetReads.set(id, read);
-  }
-  return assetReads.get(id)!;
+  return get<CharacterAssets>(`/api/characters/${id}/assets`).then((data) => {
+    if (data.assetsVersion) assetVersions.set(id, data.assetsVersion);
+    return data;
+  });
 }
 
 export const api = {
-  meta: () => cached<Meta>("/api/meta"),
-  characters: () => cached<{ version: string; count: number; characters: CharacterSummary[] }>("/api/characters"),
-  character: (id: string) => cached<CharacterDetail>(`/api/characters/${id}`),
-  pixels: (id: string) => cached<PixelMeta>(`/api/characters/${id}/pixels`),
+  meta: () => get<Meta>("/api/meta"),
+  characters: () => get<{ version: string; count: number; characters: CharacterSummary[] }>("/api/characters"),
+  character: (id: string, signal?: AbortSignal) => get<CharacterDetail>(`/api/characters/${id}`, signal),
+  pixels: (id: string) => get<PixelMeta>(`/api/characters/${id}/pixels`),
   /** Asset inventory; re-read after any write to this character's draft, keyed by assetsVersion (character-media.md). */
   assets: (id: string) => assetInventory(id),
   avatarUrl: (id: string, form: "0" | "1" = "0") =>
@@ -328,9 +301,9 @@ export const api = {
     get<{ total: number; count: number; results: LookupHit[]; note: string }>(
       `/api/lookup?q=${encodeURIComponent(q)}&limit=80`,
     ),
-  patches: () => cached<PatchChain>("/api/patches"),
+  patches: () => get<PatchChain>("/api/patches"),
   patchMembers: (archive: string) =>
-    cached<{ archive: string; members: string[]; count: number }>(
+    get<{ archive: string; members: string[]; count: number }>(
       `/api/patches/${encodeURIComponent(archive)}/members`,
     ),
 };
@@ -496,7 +469,8 @@ function token(): string {
   return document.querySelector<HTMLMetaElement>('meta[name="wf-studio-token"]')?.content ?? "";
 }
 
-export async function post<T>(url: string, body: unknown): Promise<T> {
+/** Reads use POST for large query bodies; mutations invalidate in-flight read sharing by default. */
+export async function post<T>(url: string, body: unknown, options: { readonly?: boolean } = {}): Promise<T> {
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json", "X-WF-Studio-Token": token() },
@@ -504,6 +478,7 @@ export async function post<T>(url: string, body: unknown): Promise<T> {
   });
   const data = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
   if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+  if (!options.readonly) invalidateReads();
   return data as T;
 }
 
@@ -514,6 +489,7 @@ export function onDraftChange(listener: (cid: string) => void): () => void {
 }
 function notify<T>(cid: string, promise: Promise<T>): Promise<T> {
   return promise.then((value) => {
+    invalidateReads();
     draftListeners.forEach((listener) => listener(cid));
     return value;
   });
@@ -544,7 +520,7 @@ export const drafts = {
     post<{ upload: PortraitSource; info: PortraitInfo }>(`/api/drafts/${cid}/portrait/${form}/source`, { png }),
   savePortrait: (cid: string, body: { form: string; source: string; template: CropTemplate; atf: boolean }) =>
     notify(cid, post<WriteResult>(`/api/drafts/${cid}/portrait`, body)),
-  checkPixel: (cid: string, body: unknown) => post<PixelCheckResult>(`/api/drafts/${cid}/pixel`, { ...(body as object), dryRun: true }),
+  checkPixel: (cid: string, body: unknown) => post<PixelCheckResult>(`/api/drafts/${cid}/pixel`, { ...(body as object), dryRun: true }, { readonly: true }),
   savePixel: (cid: string, body: unknown) => notify(cid, post<WriteResult>(`/api/drafts/${cid}/pixel`, body)),
   addSpeech: (cid: string, rows: string[][]) => notify(cid, post<WriteResult>(`/api/drafts/${cid}/speech`, { rows })),
   saveVoice: (cid: string, body: { voice: string; audio: string; filename: string }) =>
@@ -1073,17 +1049,17 @@ export interface ClientExtensions {
 }
 
 export const ability = {
-  glossary: () => cached<AbilityGlossary>("/api/studio/ability/glossary"),
+  glossary: () => get<AbilityGlossary>("/api/studio/ability/glossary"),
   state: (cid: string) => get<AbilityState>(`/api/characters/${cid}/ability`),
   rowPreview: (cid: string, table: string, key: string, row: number, level?: string | null) =>
     get<RowPreview>(`/api/drafts/${cid}/ability/preview?table=${table}&key=${encodeURIComponent(key)}&row=${row}` +
       (level ? `&level=${level}` : "")),
   templates: (table: string, block: string) =>
-    cached<TemplateList>(`/api/studio/ability/templates?table=${table}&block=${block}`),
-  check: (cid: string, body: AbilityRequest) => post<AbilityCheckResult>(`/api/drafts/${cid}/ability/check`, body),
+    get<TemplateList>(`/api/studio/ability/templates?table=${table}&block=${block}`),
+  check: (cid: string, body: AbilityRequest) => post<AbilityCheckResult>(`/api/drafts/${cid}/ability/check`, body, { readonly: true }),
   apply: (cid: string, body: AbilityRequest) => notify(cid, post<WriteResult>(`/api/drafts/${cid}/ability`, body)),
   text: (cid: string) => get<TextPanel>(`/api/characters/${cid}/text`),
-  lint: (cid: string, text: AbilityTextSections) => post<TextPanel>(`/api/drafts/${cid}/text/lint`, { text }),
+  lint: (cid: string, text: AbilityTextSections) => post<TextPanel>(`/api/drafts/${cid}/text/lint`, { text }, { readonly: true }),
   keys: (table: AbilityTable, q: string, cid: string) =>
     get<KeySearchResult>(`/api/studio/ability/keys?table=${table}&q=${encodeURIComponent(q)}&cid=${cid}&limit=40`),
 };
@@ -1129,7 +1105,7 @@ export function deliveryApi(prefix: string, key: (cid: string) => string = (cid)
     finished: (cid) => notify(key(cid), Promise.resolve(null)),
     detail: (name) => get<DeliveryDetail>(`${prefix}/deliveries/${encodeURIComponent(name)}`),
     rehearse: (name, server) => post(`${prefix}/deliveries/${encodeURIComponent(name)}/rehearse`, { server }),
-    apply: (name, server, dryRun) => post(`${prefix}/deliveries/${encodeURIComponent(name)}/apply`, { server, dryRun }),
+    apply: (name, server, dryRun) => post(`${prefix}/deliveries/${encodeURIComponent(name)}/apply`, { server, dryRun }, { readonly: dryRun }),
     unapply: (name, server) => post(`${prefix}/deliveries/${encodeURIComponent(name)}/unapply`, { server }),
     overlay: (name, compatibleClient) => post(`${prefix}/deliveries/${encodeURIComponent(name)}/overlay`, { compatibleClient }),
     fileUrl: (name, path) => `${prefix}/deliveries/${encodeURIComponent(name)}/file?path=${encodeURIComponent(path)}`,
@@ -1318,11 +1294,11 @@ export const workshop = {
   draftPixels: (cid: string) => get<PixelMeta & { draftRevision: number; draftStamp: string }>(`/api/drafts/${cid}/pixels`),
   draftSheetUrl: (cid: string, family: string, stamp: string | number) => `/api/drafts/${cid}/pixels/${family}.png?v=${stamp}`,
   remap: (cid: string, body: { base: string; mapping: ColorPair[]; families?: string[]; groups?: Record<string, PaletteGroup>; dryRun?: boolean }) =>
-    body.dryRun ? post<RemapResult>(`/api/drafts/${cid}/pixel-remap`, body)
+    body.dryRun ? post<RemapResult>(`/api/drafts/${cid}/pixel-remap`, body, { readonly: true })
       : notify(cid, post<RemapResult>(`/api/drafts/${cid}/pixel-remap`, body)),
   generate: (cid: string, body: { action: string; bases?: Record<string, BaseImageSpec>; totalFrames?: number; save?: boolean }) =>
     body.save ? notify(cid, post<GenerateResult>(`/api/drafts/${cid}/pixel-generate`, body))
-      : post<GenerateResult>(`/api/drafts/${cid}/pixel-generate`, body),
+      : post<GenerateResult>(`/api/drafts/${cid}/pixel-generate`, body, { readonly: true }),
 };
 
 // ---------------------------------------------------------------------------
@@ -1386,10 +1362,10 @@ export const scratchApi = {
   create: (body: { name: string; element: string; base: string; slug?: string; note?: string }) =>
     post<ScratchInfo>("/api/drafts/scratch", body),
   importSet: (cid: string, body: { files?: Record<string, string>; zip?: string; remap?: unknown; name?: string; dryRun?: boolean }) =>
-    body.dryRun ? post<ImportResult>(`/api/drafts/${cid}/pixel-import`, body)
+    body.dryRun ? post<ImportResult>(`/api/drafts/${cid}/pixel-import`, body, { readonly: true })
       : notify(cid, post<ImportResult>(`/api/drafts/${cid}/pixel-import`, body)),
   bind: (sid: string, body: { characterId: string; dryRun?: boolean }) =>
-    body.dryRun ? post<BindResult>(`/api/drafts/${sid}/bind`, body) : notify(sid, post<BindResult>(`/api/drafts/${sid}/bind`, body)),
+    body.dryRun ? post<BindResult>(`/api/drafts/${sid}/bind`, body, { readonly: true }) : notify(sid, post<BindResult>(`/api/drafts/${sid}/bind`, body)),
   rename: (sid: string, body: { name?: string; element?: string }) =>
     notify(sid, post<ScratchInfo>(`/api/drafts/${sid}/scratch-rename`, body)),
   remove: (sid: string) => post<{ deleted: string }>(`/api/drafts/${sid}/scratch-delete`, {}),
