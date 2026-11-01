@@ -93,5 +93,26 @@ class CharacterRoutes:
         return json_response(promote(self.app.ops, sid, server_dir=self.server_dir, **body))
 
     def routes(self):
-        return [("POST", re.compile(r"^/api/studio/characters/clone$"), self.clone),
+        from .scratch import SCRATCH_ID
+        wiki_id = rf"(?P<cid>\d+|{SCRATCH_ID.pattern.removeprefix('^').removesuffix('$')})"
+        return [("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/speech$"), self.speech),
+                ("GET", re.compile(rf"^/api/drafts/{wiki_id}/wiki-image$"), self.wiki_image),
+                ("GET", re.compile(rf"^/api/drafts/{wiki_id}/wiki-card$"), self.wiki_card),
+                ("POST", re.compile(r"^/api/studio/characters/clone$"), self.clone),
                 ("POST", re.compile(r"^/api/studio/characters/(?P<sid>scratch-[a-z0-9-]+)/promote$"), self.promote)]
+
+    def speech(self, query, body, cid):
+        from .server import json_response
+        from .speech import append
+        return json_response(append(self.app.ops, cid, body))
+
+    def wiki_card(self, query, cid):
+        from .server import json_response
+        from .wiki_preview import preview
+        return json_response(preview(self.app.ops, cid, server_dir=self.server_dir))
+
+    def wiki_image(self, query, cid):
+        from .server import Response
+        from .wiki_preview import image
+        return Response(200, image(self.app.ops, cid, (query.get("path") or [""])[0]), "image/png",
+                        "no-store")

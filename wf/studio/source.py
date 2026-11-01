@@ -64,7 +64,7 @@ class StudioSource:
         self._lock = threading.RLock()
         self._raw: dict[tuple[str, bool], tuple[bytes | None, str | None]] = {}
         self._tables: dict[tuple[str, bool], dict] = {}
-        self._trees: dict[str, object] = {}
+        self._trees: dict[tuple[str, bool], object] = {}
         self._baseline = None
         self.baseline_error: str | None = None
         self.chain = None  # ChainResult when built from a chain manifest
@@ -162,12 +162,13 @@ class StudioSource:
             return result
 
     def tree(self, logical: str, official: bool = False):
+        key = logical, official
         with self._lock:
-            if logical not in self._trees:
-                raw = self.raw(logical)
-                self._trees[logical] = None if raw is None else wf_dsl.parse_dsl(
+            if key not in self._trees:
+                raw = self.raw(logical, official)
+                self._trees[key] = None if raw is None else wf_dsl.parse_dsl(
                     zlib.decompress(raw, -15))["tree"]
-            return self._trees[logical]
+            return self._trees[key]
 
     def citation(self, name: str) -> dict:
         logical = TABLES.get(name, name)

@@ -403,7 +403,10 @@ class AbilityEditor:
         ``light`` skips the original-view document and owner scan (used for live lint): with the
         draft document memoized, a lint is only the projection plus the wf text rules.
         """
-        from .text_panel import panel
+        from .text_panel import panel as make_panel
+        from .translation import annotate_panel
+        def panel(*args, **kwargs):
+            return annotate_panel(self.source, make_panel(*args, **kwargs))
         try:
             _, _, _, key = self._base(cid)
             state, workspace, document = self._document(cid, key)

@@ -249,7 +249,12 @@ class StudioApp:
 
     def character(self, query, cid: str) -> Response:
         source, _, _ = self.character_context(cid)
-        detail = character_detail(source, cid)
+        base_source = source
+        draft = self.ops.store.load(cid)
+        if draft and any(c["kind"] in {"ability_edit", "skill_template"} for c in draft["changes"]):
+            state, _, _, _ = self.abilities.editor()._base(cid)
+            source = StudioSource(state.clone())
+        detail = character_detail(source, cid, official_source=self.source, base_source=base_source)
         return json_response(detail) if detail else error(404, f"角色 {cid} 不存在于当前视图")
 
     def character_context(self, cid):

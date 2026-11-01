@@ -220,13 +220,14 @@ class DraftOps:
             return bound.voice_lines(cid)
         info = self.character(cid)
         code = info["code"]
-        rows = self.assets.speech_rows(cid)
+        from .speech import effective_rows, coverage
+        rows = effective_rows(self.source, cid, self.store.load(cid))
         lines, seen = [], set()
         for number, cells in enumerate(rows, 1):
             cells = cells + [""] * (5 - len(cells))
             voice = cells[4]
             entry = {"voice": voice if voice and voice != "(None)" else None, "speechRow": number,
-                     "kind": cells[0], "subtitle": cells[3]}
+                     "kind": cells[0], "constraint": cells[1], "evoLevel": cells[2], "subtitle": cells[3]}
             if entry["voice"]:
                 seen.add(voice)
             lines.append(entry)
@@ -236,10 +237,15 @@ class DraftOps:
                 seen.add(voice)
         changeset = self.store.load(cid) or {"changes": []}
         drafts = {c["target"]["voice"]: c for c in changeset["changes"] if c["kind"] == "voice_line"}
+        for voice, change in drafts.items():
+            if voice not in seen:
+                lines.append({"voice": voice, "speechRow": None, "kind": "",
+                              "subtitle": change["params"].get("subtitle", ""),
+                              "label": f"{voice_mod.label_for(voice)}（未登记语音，可撤销）"})
         result = []
         for entry in lines:
             voice = entry["voice"]
-            item = {**entry, "label": voice_mod.label_for(voice) if voice else "（无声字幕）"}
+            item = {**entry, "label": entry.get("label") or (voice_mod.label_for(voice) if voice else "（无声字幕）")}
             if voice:
                 logical = f"character/{code}/voice/{voice}.mp3"
                 raw = self.assets.read(logical)
@@ -253,9 +259,11 @@ class DraftOps:
                                      "checks": change["checks"], "sourceName": change["params"]["sourceName"]}
             result.append(item)
         return {"characterId": cid, "code": code, "lines": result,
+                "checks": coverage(rows),
+                "speechChangeId": next((c["id"] for c in changeset["changes"] if c["kind"] == "speech_rows"), None),
                 "format": "44.1kHz · 单声道 · 96kbps CBR（官方 40/40 抽样）",
-                "note": "台词来自 character_speech（主页/入队/觉醒）与固定名战斗语音；只替换已有路径，"
-                        "新增台词需要改 speech 表（M4c）。"}
+                "note": "台词来自 character_speech（主页/入队/觉醒）与固定名战斗语音；可追加五列台词，"
+                        "主页必须覆盖未进化和进化两态，缺少会触发 2265。"}
 
     def voice_save(self, cid: str, request: dict) -> dict:
         from .character_clone import ops_for
@@ -269,7 +277,7 @@ class DraftOps:
             raise DraftError("语音路径无效")
         known = {line["voice"] for line in self.voice_lines(cid)["lines"] if line["voice"]}
         if voice not in known:
-            raise DraftError(f"{voice} 不是这个角色已有的语音路径（新增台词需要改 speech 表，M4c）")
+            raise DraftError(f"{voice} 不是已登记的语音路径，请先新增台词")
         audio = b64(request["audio"], "音频")
         if not audio:
             raise DraftError("音频为空")
@@ -300,7 +308,15 @@ class DraftOps:
 
     # -- lifecycle --------------------------------------------------------
     def revert(self, cid: str, change_id: str) -> dict:
-        changeset = self.store.revert(cid, change_id)
+        with self.store._lock:
+            draft = self.store.load(cid)
+            baseline = None
+            if any(c["id"] == change_id and c["kind"] == "speech_rows" for c in (draft or {}).get("changes", [])):
+                from .character_clone import ops_for
+                from .speech import LOGICAL
+                bound = ops_for(self, cid)
+                baseline = {r[4] for r in bound.source.table(LOGICAL).get(cid, []) if len(r) == 5}
+            changeset = self.store.revert(cid, change_id, speech_baseline=baseline)
         return {"changeset": changeset, "status": status(changeset)}
 
     def save(self, cid: str) -> dict:

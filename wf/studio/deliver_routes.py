@@ -262,7 +262,7 @@ class DeliverRoutes(DeliveryActions):
                 compat = (report or {}).get("compatChecks", (report or {}).get("compat", []))
                 entries = (checks if isinstance(checks, list) else []) + (compat if isinstance(compat, list) else [])
                 for item in entries:
-                    if not isinstance(item, dict):
+                    if not isinstance(item, dict) or item.get("category") == "联机风险":
                         continue
                     counts[item.get("status", "?")] = counts.get(item.get("status", "?"), 0) + 1
                 items.append({"name": folder.name, "ok": bool(report and report.get("ok")),

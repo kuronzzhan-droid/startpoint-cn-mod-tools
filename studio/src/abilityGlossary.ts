@@ -1,5 +1,13 @@
+export interface TranslationSource {
+  source: "官方原文" | "ui_string 拼接" | "直译" | "人工";
+  uncertain: boolean;
+  reason: string;
+  evidence: string[];
+}
+
 /** Read-only vocabulary. Numeric edits still use the existing onCell path. */
 export interface GlossaryEntry {
+  translation: TranslationSource;
   value: string;
   en: string;
   cn: string;

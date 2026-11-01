@@ -1,13 +1,14 @@
 import { RuleResult } from "../api";
+import { MultiplayerDetails, MultiplayerNote } from "./MultiplayerAdvisory";
 
 // Five-state rule display
 
 const STATE_ORDER = ["问题", "待验证", "未执行", "满足", "不适用"];
-const STATE_CLASS: Record<string, string> = { 问题: "rs-bad", 待验证: "rs-warn", 未执行: "rs-none", 满足: "rs-ok", 不适用: "rs-na" };
+const STATE_CLASS: Record<string, string> = { 联机风险: "rs-warn", 问题: "rs-bad", 待验证: "rs-warn", 未执行: "rs-none", 满足: "rs-ok", 不适用: "rs-na" };
 
 export function ruleCounts(checks: RuleResult[]): Record<string, number> {
   const counts: Record<string, number> = {};
-  for (const c of checks) counts[c.status] = (counts[c.status] ?? 0) + 1;
+  for (const c of checks) { const key = c.category ?? c.status; counts[key] = (counts[key] ?? 0) + 1; }
   return counts;
 }
 
@@ -27,12 +28,14 @@ export function RuleList({ checks, title }: { checks: RuleResult[]; title?: stri
   return (
     <div class="rule-list">
       {title ? <h4>{title} <RuleChips counts={ruleCounts(checks)} /></h4> : null}
+      <MultiplayerNote checks={checks} />
       <ul>
         {shown.map((c) => (
           <li class={STATE_CLASS[c.status] ?? ""}>
-            <span class="rs-state">{c.status}{c.blocking ? "·阻断" : ""}</span>
+            <span class="rs-state">{c.category ?? c.status}{c.blocking ? "·阻断" : ""}</span>
             <span class="rs-msg"><Message text={c.message} /></span>
             <span class="mono small muted">{c.rule}{c.character ? " · " + c.character : ""}</span>
+            <MultiplayerDetails check={c} />
           </li>
         ))}
       </ul>

@@ -12,7 +12,7 @@ from wf.studio.clone_tables import T, leaf, rows
 from wf.studio.drafts import DraftError, sha256
 from wf.studio.pixel_workshop import family_paths
 from wf.studio.server import StudioApp
-from test_studio_character_clone import env, request, ordered, OLD, NEW, CODE  # noqa: F401
+from test_studio_character_clone import env, request, ordered, OLD, NEW, CODE, SPEECH_EVENTS  # noqa: F401
 from test_studio_deliver_media import mp3_frame
 
 
@@ -71,7 +71,7 @@ def test_cloned_remap_then_generated_action_preview_and_delivery(env):
 def test_multiline_subtitle_keeps_one_editable_voice_and_speech_bytes(env, monkeypatch):
     source, store, ops, server = env
     subtitle = "第一行\n第二行，保留标点"
-    speech = [["0", "2", "0", subtitle, "home/custom_name"]]
+    speech = [["0", "2", "0", subtitle, "home/custom_name"], *SPEECH_EVENTS]
     source.view.files["common", T.SPEECH] = ordered({OLD: leaf(speech)})
     donor = "character/mother/voice/home/custom_name.mp3"
     source.view.files["common", donor] = wf_assets.mp3_encode(mp3_frame() * 3)
@@ -79,7 +79,8 @@ def test_multiline_subtitle_keeps_one_editable_voice_and_speech_bytes(env, monke
     clone(ops, request())
     before = clone_members(source, store, store.load(NEW))["common", T.SPEECH]
     lines = ops.voice_lines(NEW)["lines"]
-    assert len(lines) == 1 and lines[0]["voice"] == "home/custom_name"
+    assert len(lines) == 3 and len([item for item in lines if item["voice"]]) == 1
+    assert lines[0]["voice"] == "home/custom_name"
     assert lines[0]["subtitle"] == subtitle and lines[0]["present"]
     replacement = mp3_frame() * 4
     monkeypatch.setattr("wf.studio.voice.convert", lambda *args: (replacement, {"channels": 1, "sampleRate": 44100}))

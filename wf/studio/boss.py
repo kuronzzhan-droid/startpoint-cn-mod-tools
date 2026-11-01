@@ -62,7 +62,8 @@ def _context(state, created, document, baseline, requests, acknowledgment=False)
                 source_quest=baseline.get("quest", {}).get("id"), supplied=supplied)}
 
 
-def _replay(source, quest, requests, *, server_dir=None, reserved=(), client_profile=None, provides=None):
+def _replay(source, quest, requests, *, server_dir=None, reserved=(), client_profile=None, provides=None,
+            include_multiplayer=True):
     from wf.boss.reader import BossReader
     from wf.rules.boss import check_boss
     from .source import StudioSource
@@ -106,12 +107,15 @@ def _replay(source, quest, requests, *, server_dir=None, reserved=(), client_pro
             state.server(target, required=False)
     candidate = BossReader(StudioSource(state))
     before = BossReader(source)
+    from wf.rules.multiplayer import MultiplayerScanner
+    scanner = MultiplayerScanner(state) if include_multiplayer else None
     checks = []
     for identifier in dict.fromkeys(affected):
         document = candidate.show(identifier)
         baseline = before.show(requests[0].get("sourceQuest", "hard_multi:1006/1")) if created else before.show(identifier)
         results = check_boss(document, view=state, baseline=baseline,
                              server_changes=state.servers, server_before=state.server_original,
+                             multiplayer_scanner=scanner, include_multiplayer=include_multiplayer,
                              context=_context(state, created, document, baseline, requests,
                                               preload_approvals[document["quest"]["selector"]][1]))
         results.extend(getattr(state, "shop_checks", []))
@@ -229,7 +233,7 @@ class BossEditor:
         requests = _requests(draft)
         if draft and requests:
             old, _, _, _ = _replay(self.source, quest, copy.deepcopy(requests), server_dir=self.server_dir,
-                                  client_profile=self.client_profile)
+                                  client_profile=self.client_profile, include_multiplayer=False)
             old.verify_snapshot(draft["changes"][0]["params"]["inputs"])
         if extra is not None:
             requests.append(copy.deepcopy(extra))
@@ -243,7 +247,11 @@ class BossEditor:
         try:
             state, identity, requests, checks, _ = self._state(quest)
             from .boss_dispatch import draft_weapons
-            return {"questId": identity, "boss": BossReader(StudioSource(state)).show(identity),
+            document = BossReader(StudioSource(state)).show(identity)
+            if not requests:
+                from wf.rules.multiplayer import check_multiplayer
+                checks.extend(check_multiplayer(document, state))
+            return {"questId": identity, "boss": document,
                     "draftWeapons": draft_weapons(state, requests),
                     "changeset": self.store.load(identity), "checks": checks,
                     **parameter_report(state), "runtime": "未执行"}
@@ -273,6 +281,9 @@ class BossEditor:
         try:
             state, identity, requests, checks, _ = self._state(quest)
             document = BossReader(StudioSource(state)).show(identity)
+            if not requests:
+                from wf.rules.multiplayer import check_multiplayer
+                checks.extend(check_multiplayer(document, state))
             return {"questId": identity, "section": section,
                     "data": inspect_section(state, document, section, requests),
                     "checks": checks, "runtime": "未执行"}
@@ -290,7 +301,8 @@ class BossEditor:
                           "createdAt": now(), "target": {"quest": identity},
                           "params": {"requests": requests, "inputs": state.snapshot()},
                           "files": [], "pending": [],
-                          "checks": [{"level": "warn" if c["status"] in {"待验证", "问题"} else "info",
+                          "checks": [{"level": "warn" if c.get("category") != "联机风险"
+                                      and c["status"] in {"待验证", "问题"} else "info",
                                       "code": c["rule"], "message": c["message"]} for c in checks]}
                 draft = self.store.put_change(identity, f"boss_{safe_id(identity)}", self.source.version, change)
             return {"ok": True, "questId": identity, "allocation": allocation,

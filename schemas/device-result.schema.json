@@ -9,6 +9,7 @@
   "properties": {
     "schema": {"const": "wf-device-result/2"},
     "status": {"$ref": "#/$defs/status"},
+    "testType": {"enum": ["单机", "三开联机"], "description": "未填写的历史记录不推定为联机实测"},
     "reason": {"type": "string", "maxLength": 2000, "description": "作废或未执行的原因"},
     "delivery": {
       "type": "object",

@@ -39,8 +39,9 @@ def column_labels(kind: str) -> list[dict]:
     return [labels.get(i, {"block": "", "field": "", "note": ""}) for i in range(int(layout.get("ncols", 0)))]
 
 
-def _official_status(source: StudioSource, cid: str, row: list[str]) -> str:
-    official = source.table("character", True)
+def _official_status(source: StudioSource, cid: str, row: list[str], official_source=None) -> str:
+    official_source = official_source or source
+    official = official_source.table("character", True)
     if not official:
         return "unknown"
     if cid not in official:
@@ -49,10 +50,10 @@ def _official_status(source: StudioSource, cid: str, row: list[str]) -> str:
     if base != row:
         return "modified"
     for name, keys in (("ability", row[19:25]), ("leader", [cell(row, 17)])):
-        live, ref = source.table(name), source.table(name, True)
+        live, ref = source.table(name), official_source.table(name, True)
         if any(live.get(k) != ref.get(k) for k in keys if k and k != "(None)"):
             return "modified"
-    if source.table("skill").get(cell(row, 8)) != source.table("skill", True).get(cell(row, 8)):
+    if source.table("skill").get(cell(row, 8)) != official_source.table("skill", True).get(cell(row, 8)):
         return "modified"
     return "official"
 
@@ -101,7 +102,7 @@ def _strip_programs(group: dict) -> dict:
     return group
 
 
-def character_detail(source: StudioSource, cid: str) -> dict | None:
+def character_detail(source: StudioSource, cid: str, *, official_source=None, base_source=None) -> dict | None:
     rows = source.table("character").get(cid)
     if not rows or not rows[0]:
         return None
@@ -111,6 +112,9 @@ def character_detail(source: StudioSource, cid: str) -> dict | None:
     abilities = [_strip_programs(_ability_entry(source, i + 1, key)) for i, key in enumerate(row[19:25])]
     leader = _strip_programs(ability_group(source, "leader", cell(row, 17), cell(row, 18) or "队长技"))
     skills, switch = skills_for(source, row)
+    from .translation import annotate_catalog
+    annotate_catalog(official_source or source, [leader, *abilities], skills, cell(row, 8),
+                     cid=cid, base_source=base_source)
     for skill in skills:
         skill.pop("rawCommands", None)
         skill.pop("numericDetails", None)
@@ -132,7 +136,7 @@ def character_detail(source: StudioSource, cid: str) -> dict | None:
         "role": ROLES.get(cell(row, 26), cell(row, 26)),
         "races": [RACES.get(v, v) for v in cell(row, 4).split(",") if v],
         "gender": GENDERS.get(cell(row, 7), cell(row, 7)), "cv": cell(text, 11), "profile": cell(text, 2),
-        "origin": _official_status(source, cid, row),
+        "origin": _official_status(source, cid, row, official_source),
         "boardRule": BOARD_RULE, "boards": boards, "leader": leader, "abilities": abilities,
         "skills": skills, "switch": switch, "levels": levels,
         "describeNote": "中文描述由 wf_describe 按数据行语义生成，不是游戏客户端原文；有覆盖文案时优先显示覆盖文案。",

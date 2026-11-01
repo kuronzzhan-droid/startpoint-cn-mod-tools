@@ -195,7 +195,7 @@ class DraftStore:
             else:
                 self._write(cid, changeset)
 
-    def revert(self, cid: str, change_id: str) -> dict:
+    def revert(self, cid: str, change_id: str, *, speech_baseline: set[str] | None = None) -> dict:
         with self._lock:
             changeset = self.load(cid)
             if changeset is None:
@@ -203,6 +203,9 @@ class DraftStore:
             gone = [c for c in changeset["changes"] if c["id"] == change_id]
             if not gone:
                 raise DraftError(f"草稿里没有改动 {change_id}")
+            if any(c["kind"] == "speech_rows" for c in gone):
+                from .speech import guard_revert
+                guard_revert(changeset, gone, speech_baseline)
             changeset["changes"] = [c for c in changeset["changes"] if c["id"] != change_id]
             if any(c["kind"] == "summon_clone" for c in gone):
                 from .summon import sync_reservations
@@ -214,12 +217,12 @@ class DraftStore:
             return changeset
 
     def _prune(self, cid: str, changeset: dict, removed: list[dict]) -> None:
-        """Delete files only the removed changes referenced (sources kept for re-cropping)."""
+        """Delete unreferenced files, keeping only portrait sources for re-cropping."""
         alive = {f["draft"] for c in changeset["changes"] for f in c["files"]}
         alive |= {p for c in changeset["changes"] for p in _param_files(c)}
         for change in removed:
             for relative in [f["draft"] for f in change["files"]] + list(_param_files(change)):
-                if relative in alive or relative.startswith("sources/"):
+                if relative in alive or relative.startswith("sources/portrait_"):
                     continue
                 path = self.resolve(cid, relative)
                 if path.is_file():

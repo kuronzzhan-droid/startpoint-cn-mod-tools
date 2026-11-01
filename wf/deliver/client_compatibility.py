@@ -72,4 +72,4 @@ def readback_draft_checks(document, local_read):
         checks.extend(entries)
     return [result(c.get("rule", c.get("code", "studio.draft")), c.get("state", c.get("status", "待验证")),
                    c.get("message", "草稿检查"), blocking=bool(c.get("blocking") or c.get("level") == "error"),
-                   draft_check=c) for c in checks]
+                   draft_check=c) for c in checks if c.get("category") != "联机风险"]
