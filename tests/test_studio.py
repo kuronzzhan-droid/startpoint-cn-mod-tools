@@ -37,10 +37,12 @@ def test_route_table_dispatch():
     routes = [(verb, pattern.pattern) for verb, pattern, _ in app.routes]
     writes = ("^/api/drafts/", "^/api/boss/drafts/", "^/api/boss/drafts$", "^/api/studio/weapons/",
               "^/api/studio/characters/")
-    delivery_previews = {r"^/api/deliveries/(?P<name>[^/]+)/rehearse$",
-                         r"^/api/boss/deliveries/(?P<name>[^/]+)/rehearse$"}
+    delivery_actions = {rf"^/api/{prefix}deliveries/(?P<name>[^/]+)/{action}$"
+                        for prefix in ("", "boss/")
+                        for action in ("rehearse", "apply", "unapply", "overlay")}
+    assert {("POST", pattern) for pattern in delivery_actions} <= set(routes)
     assert all(verb == "GET" or (verb == "POST" and (
-        pattern.startswith(writes) or pattern in delivery_previews
+        pattern.startswith(writes) or pattern in delivery_actions
         or pattern == "^/api/studio/views/export-store$")) for verb, pattern in routes)
     for expected in ("/api/studio/doctor", "/api/studio/freshness", "/api/meta", "/api/characters", "/api/lookup", "/api/patches", "/api/boss/drafts",
                      "/api/studio/weapons", "/api/studio/weapons/clone", "/api/studio/weapons/drafts",

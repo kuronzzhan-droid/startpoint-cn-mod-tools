@@ -1,5 +1,5 @@
 import { useState } from "preact/hooks";
-import { BundleCheck, ClientExtensions, IconAlphaResult, KeyDiff, Rehearsal } from "../api";
+import { ApplyResult, BundleCheck, ClientExtensions, DeliveryApi, IconAlphaResult, KeyDiff, OverlayResult, Rehearsal } from "../api";
 import { Notice } from "./common";
 import { RuleList } from "./rules";
 
@@ -246,6 +246,70 @@ export function RehearsalPanel({ name, initial, rehearse, fileUrl }: {
           ) : null}
         </>
       ) : null}
+    </div>
+  );
+}
+
+/** Writes to the configured local server only after a confirm; the backend re-runs the rehearsal first. */
+export function ApplyPanel({ name, api }: { name: string; api: DeliveryApi }) {
+  const [result, setResult] = useState<ApplyResult | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const run = (call: () => Promise<ApplyResult>) => {
+    setBusy(true); setError(null);
+    call().then(setResult, (e: Error) => setError(e.message)).finally(() => setBusy(false));
+  };
+  return (
+    <div class="guard-block">
+      <h4>应用到本地服
+        {result ? <span class={"rs " + (result.ok ? "rs-ok" : "rs-bad")}>{result.status}</span> : null}
+      </h4>
+      <p class="small muted">写入本地服的补丁目录和 manifest，服务端 JSON 按键合并，先备份。不重启服务，不碰 175 和正式服。</p>
+      <div class="save-row">
+        <button onClick={() => run(() => api.apply(name, "local", true))} disabled={busy}>试运行</button>
+        <button class="primary" disabled={busy} onClick={() => {
+          if (confirm("把这个交付写入本地服？")) run(() => api.apply(name, "local", false));
+        }}>{busy ? "处理中……" : "应用"}</button>
+        <button disabled={busy} onClick={() => {
+          if (confirm("撤销这条边？已经下载过它的客户端版本会高于链尾，需要手动对齐。")) run(() => api.unapply(name, "local"));
+        }}>撤销</button>
+      </div>
+      {error ? <Notice kind="error">{error}</Notice> : null}
+      {result?.error ? <Notice kind="error">{result.error}</Notice> : null}
+      {result?.restartRequired ? <Notice kind="warn">需要手动重启本地服：{result.restartReason ?? ""}</Notice> : null}
+      {result?.clientRisk ? <Notice kind="warn">{result.clientRisk}</Notice> : null}
+      {result?.steps?.length ? (
+        <ul class="small">{result.steps.map((s) => <li>{s.step}：{s.status}{s.path ? ` · ${s.path}` : ""}</li>)}</ul>
+      ) : null}
+    </div>
+  );
+}
+
+/** Patch Overlay package for servers on the upstream dev branch; only offered for dev-based deliveries. */
+export function OverlayPanel({ name, api, available, reason, fileUrl }: {
+  name: string; api: DeliveryApi; available?: boolean; reason?: string; fileUrl: (path: string) => string;
+}) {
+  const [client, setClient] = useState("CN 1.8.1");
+  const [result, setResult] = useState<OverlayResult | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const run = () => {
+    setBusy(true); setError(null);
+    api.overlay(name, client).then(setResult, (e: Error) => setError(e.message)).finally(() => setBusy(false));
+  };
+  const zip = result?.zip?.split(/[\\/]/).pop();
+  return (
+    <div class="guard-block">
+      <h4>导出 Patch Overlay</h4>
+      <p class="small muted">给使用 startpoint-cn dev 分支的服主：解压到 CDN_DIR/patches/&lt;版本&gt;/ 后重启。</p>
+      {available ? (
+        <div class="save-row">
+          <input value={client} onInput={(e) => setClient((e.target as HTMLInputElement).value)} aria-label="兼容客户端" />
+          <button onClick={run} disabled={busy || !client.trim()}>{busy ? "导出中……" : "导出"}</button>
+          {zip ? <a href={fileUrl(`delivery/overlay/${zip}`)}>下载 {zip}</a> : null}
+        </div>
+      ) : <p class="small">不能导出：{reason || "这个交付没有来源记录，请重新生成"}</p>}
+      {error ? <Notice kind="error">{error}</Notice> : null}
     </div>
   );
 }

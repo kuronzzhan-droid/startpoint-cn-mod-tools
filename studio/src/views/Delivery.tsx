@@ -5,7 +5,7 @@ import { RuleChips, ruleCounts, RuleList } from "./rules";
 import { useClientProfile } from "../clientProfile";
 import { MissingCapabilities, ProfileBadge } from "./ClientProfile";
 import { DeviceBadge, DevicePanel, sameDraft, useDeviceEntry } from "./DeviceResult";
-import { BundleCheckPanel, ClientExtensionsPanel, IconAlphaPanel, KeyDiffPanel, RehearsalPanel } from "./DeliveryGuards";
+import { BundleCheckPanel, ClientExtensionsPanel, IconAlphaPanel, KeyDiffPanel, RehearsalPanel, ApplyPanel, OverlayPanel } from "./DeliveryGuards";
 
 function size(bytes: number | null | undefined): string {
   if (bytes == null) return "—";
@@ -305,6 +305,8 @@ function DeliveryDetailView({ name, api, characterId }: { name: string; api: Del
       <IconAlphaPanel result={detail.iconAlpha} />
       <ClientExtensionsPanel result={detail.clientExtensions} />
       <RehearsalPanel name={name} initial={detail.rehearsal} rehearse={api.rehearse} fileUrl={file} />
+      <ApplyPanel name={name} api={api} />
+      <OverlayPanel name={name} api={api} available={detail.overlayAvailable} reason={detail.overlayReason} fileUrl={file} />
 
       {detail.check ? <RuleList checks={detail.check} title="wf check（交付清单）" /> : <p class="small muted">没有 check.json。</p>}
       {detail.compat ? <RuleList checks={detail.compat} title="兼容检查（provides）" /> : null}

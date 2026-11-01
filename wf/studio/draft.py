@@ -2,7 +2,8 @@
 
 每条命令输出一行 JSON；请求体与 HTTP 接口相同，结构见
 ``schemas/studio-draft.schema.json``（``portraitRequest`` / ``pixelRequest`` /
-``voiceRequest``）。只写 ``work/studio-drafts/<角色ID>/``，不写游戏表与服务器。
+``voiceRequest``）。制作命令写草稿与本地交付；apply/unapply 仅写机器配置
+明确开启 apply_enabled 的命名本地服务端，不启停服务或操作客户端。
 
 例::
 
@@ -171,6 +172,13 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def run(args) -> dict:
+    if args.command in {"apply", "unapply"}:
+        from .apply_local import apply, unapply
+        return (apply(args.delivery_dir, args.server, dry_run=args.dry_run)
+                if args.command == "apply" else unapply(args.delivery_dir, args.server))
+    if args.command == "export-overlay":
+        from .overlay_export import export_overlay
+        return export_overlay(args.delivery_dir, args.compatible_client, out=args.out)
     if args.command == "rehearse":
         from .rehearsal import rehearse
         return rehearse(args.delivery_dir, args.server, zips=args.rehearsal_zips)

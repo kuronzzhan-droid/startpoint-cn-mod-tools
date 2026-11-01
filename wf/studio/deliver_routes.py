@@ -24,6 +24,8 @@ from wf.paths import REPOSITORY
 
 from . import device_result
 from .drafts import DraftError
+from .delivery_actions import DeliveryActions
+from .overlay_export import availability
 
 DELIVERIES = REPOSITORY / "work" / "studio-deliveries"
 NAME = re.compile(r"^[0-9]+-[0-9.]+-to-[0-9.]+-[0-9]{8}-[0-9]{6}$")
@@ -43,7 +45,7 @@ def next_version(version: str, *, source=None) -> str:
     return suggest(SimpleNamespace(version=version, view=view))["next"]
 
 
-class DeliverRoutes:
+class DeliverRoutes(DeliveryActions):
     name_pattern = NAME
     kind = "character"
 
@@ -290,11 +292,16 @@ class DeliverRoutes:
         delivery = folder / "delivery"
         files = []
         for path in sorted(folder.rglob("*")):
+            if any(p.startswith((".overlay-", ".studio-")) for p in path.relative_to(folder).parts):
+                continue
             if path.is_file():
                 rel = path.relative_to(folder).as_posix()
                 if rel.startswith("inputs/blobs/"):
                     continue
-                files.append({"path": rel, "size": path.stat().st_size})
+                try:
+                    files.append({"path": rel, "size": path.stat().st_size})
+                except FileNotFoundError:
+                    continue  # An export may publish/remove temporary files concurrently.
         manifest = _read_json(delivery / "delivery-manifest.json") or {}
         archives = [{"name": a.get("name"), "size": a.get("size"), "sha256": a.get("sha256"),
                      "members": a["members"] if isinstance(a.get("members"), int) else len(a.get("files") or []),
@@ -311,7 +318,7 @@ class DeliverRoutes:
         key_diff = _read_json(delivery / "key-diff.json")
         if isinstance(report, dict) and isinstance(report.get("keyDiff"), dict):
             report = {**report, "keyDiff": summarize(report["keyDiff"])}
-        return json_response({"name": name, "path": str(folder), "report": report, "error": error,
+        return json_response({"name": name, **availability(folder), "path": str(folder), "report": report, "error": error,
                               "archives": archives, "members": members, "serverChanges": servers,
                               "requires": _read_json(delivery / "requires.json"),
                               "check": check, "compat": compat, "files": files,
@@ -400,6 +407,9 @@ class DeliverRoutes:
                 ("GET", re.compile(r"^/api/deliveries/(?P<name>[^/]+)$"), self.detail),
                 ("GET", re.compile(r"^/api/deliveries/(?P<name>[^/]+)/file$"), self.file),
                 ("POST", re.compile(r"^/api/deliveries/(?P<name>[^/]+)/rehearse$"), self.rehearse),
+                ("POST", re.compile(r"^/api/deliveries/(?P<name>[^/]+)/apply$"), self.apply),
+                ("POST", re.compile(r"^/api/deliveries/(?P<name>[^/]+)/unapply$"), self.unapply),
+                ("POST", re.compile(r"^/api/deliveries/(?P<name>[^/]+)/overlay$"), self.overlay),
                 ("GET", re.compile(r"^/api/deliveries/(?P<name>[^/]+)/device-result$"), self.device_get),
                 ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/deliveries/(?P<name>[^/]+)/device-result$"), self.device_write),
                 ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/deliveries/(?P<name>[^/]+)/device-result/import$"),

@@ -105,6 +105,7 @@ Studio 编辑台（`python -m wf.studio` 与 `python -m wf.studio.draft`）支�
 - `views.<视图名>.zip_dirs`：查找清单引用补丁 ZIP 的目录数组（相对路径按 `wf_root` 解析）。
 - `views.<视图名>.base_version`（可选字符串）：基线 `store` 已具备的资源版本号（缺省为 `1.4.131`；基于官方 CN `1.4.54` 物化的 `store` 须显式填 `"1.4.54"`）。
 - `views.<视图名>.tip`（可选字符串）：默认叠加到的清单链终点版本；省略时取清单最高启用版本。
+- `views.<视图名>.overlay_base`（可选布尔，默认 false）：明确声明该视图为可分享 Overlay 的 dev 基线。只有严格 true 才开放；交付记录实际来源，内部链及无来源证据的旧交付拒绝导出，无绕过参数。见 [Overlay 导出](../docs/studio/overlay.md)。
 
 ## 交付只读预演服务端（`servers` / `rehearsal_server`）
 
@@ -124,3 +125,13 @@ Studio 编辑台（`python -m wf.studio` 与 `python -m wf.studio.draft`）支�
 
 - `servers.<名称>.root`：用于只读核对版本链与服务端 JSON 变更的服务端根目录（其下应包含 `assets/asset-patch/manifest.json`，相对路径按 `wf_root` 解析；`<名称>` 限 1～64 位字母、数字、下划线或连字符）。预演全程只读，不会向该目录写入或覆盖任何文件。
 - `rehearsal_server`（可选字符串或 `null`）：编辑台执行草稿交付构建（`build_draft`）成功后自动执行一次只读预演的目标服务端名称；设为 `null` 或省略时不自动预演。
+- `servers.<名称>.apply_enabled`（可选布尔，默认 false）：只有严格 true 才允许 [应用与撤销](../docs/studio/apply-local.md) 写入该命名本地根。预演仍始终只读。不要给正式服、175 或远端快照开启；CLI/HTTP 不接受临时目标路径。开启后仍需交付检查与即时预演通过，不执行服务启停。
+
+应用及 Overlay 的配置片段（与现有 store、manifest 等配置合并，不替换整份 profile）：
+
+```json
+{
+  "servers": {"local": {"root": "local-server", "apply_enabled": true}},
+  "views": {"dev": {"overlay_base": true}}
+}
+```
