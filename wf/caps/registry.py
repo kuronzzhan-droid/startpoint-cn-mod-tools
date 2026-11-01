@@ -12,10 +12,15 @@ from wf.balance.recipe import RecipeLoader
 from wf.paths import REPOSITORY
 
 
-@lru_cache(maxsize=1)
+@lru_cache(maxsize=2)
+def _validator_for(raw):
+    return jsonschema.Draft202012Validator(json.loads(raw))
+
+
 def _validator():
-    schema = json.loads((REPOSITORY / "schemas/capability.schema.json").read_text("utf-8"))
-    return jsonschema.Draft202012Validator(schema)
+    # A long-running editor must validate against a changed specification even
+    # when its filename and timestamps are preserved by an external editor.
+    return _validator_for((REPOSITORY / "schemas/capability.schema.json").read_bytes())
 
 
 def validate_capability(document: dict) -> dict:

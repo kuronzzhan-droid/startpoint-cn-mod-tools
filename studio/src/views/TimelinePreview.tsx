@@ -36,22 +36,28 @@ export function SkillPreview({ characterId, prefer }: { characterId: string; pre
   const [timeline, setTimeline] = useState<Timeline | null>(null);
   const [loading, setLoading] = useState(false);
   useEffect(() => {
+    const controller = new AbortController();
     setPrograms(null); setSelected(null); setTimeline(null); setError(null);
-    timelineApi.programs(characterId).then((r) => {
+    timelineApi.programs(characterId, controller.signal).then((r) => {
+      if (controller.signal.aborted) return;
       setPrograms(r.programs); setNote(r.note);
       const usable = r.programs.filter((p) => p.exists);
       const first = (prefer ? usable.find((p) => p.kind === prefer) : null) ?? usable[0];
       if (first) setSelected(first.id);
-    }, (e: Error) => setError(e.message));
+    }, (e: Error) => { if (!controller.signal.aborted) setError(e.message); });
+    return () => controller.abort();
   }, [characterId, prefer]);
   const program = programs?.find((p) => p.id === selected);
   useEffect(() => {
     if (!program || !program.exists) { setTimeline(null); return; }
-    setLoading(true);
-    timelineApi.timeline(program.path, program.kind, characterId)
-      .then((t) => { setTimeline(t); setError(null); }, (e: Error) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, [program?.id]);
+    const controller = new AbortController();
+    setLoading(true); setTimeline(null);
+    timelineApi.timeline(program.path, program.kind, characterId, controller.signal)
+      .then((t) => { if (!controller.signal.aborted) { setTimeline(t); setError(null); } },
+        (e: Error) => { if (!controller.signal.aborted) setError(e.message); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [program?.id, characterId]);
 
   if (error && !programs) return <Notice kind="error">读取程序列表失败：{error}</Notice>;
   if (!programs) return <div class="loading">正在列出技能与强化弹射程序……</div>;
@@ -90,7 +96,14 @@ export function SkillPreview({ characterId, prefer }: { characterId: string; pre
 export function BossMovesPreview({ quest }: { quest: string }) {
   const [state, setState] = useState<Awaited<ReturnType<typeof timelineApi.bossMoves>> | null>(null);
   const [index, setIndex] = useState(0);
-  useEffect(() => { setState(null); timelineApi.bossMoves(quest).then(setState, (e: Error) => setState({ available: false, reason: e.message })); }, [quest]);
+  useEffect(() => {
+    const controller = new AbortController();
+    setState(null); setIndex(0);
+    timelineApi.bossMoves(quest, undefined, controller.signal).then(
+      (value) => { if (!controller.signal.aborted) setState(value); },
+      (e: Error) => { if (!controller.signal.aborted) setState({ available: false, reason: e.message }); });
+    return () => controller.abort();
+  }, [quest]);
   if (!state) return <div class="loading">正在读取出招时间轴……</div>;
   if (!state.available) {
     return (

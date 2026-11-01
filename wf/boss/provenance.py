@@ -3,11 +3,13 @@ from __future__ import annotations
 
 import hashlib
 from pathlib import Path
+import threading
 import weakref
 import zipfile
 
 import wf_quest_lib as codec
 from wf.view.base149 import member
+from wf.view.members import archive_members
 from .schema import get_leaf, iter_leaves, parse_rows
 
 
@@ -15,21 +17,48 @@ def _semantics(text):
     return parse_rows(text)
 
 
-# Leaf histories of one immutable layered view (same object, same ZIP list and
-# store) are identical for every reader, so the studio's per-request readers
-# share them instead of re-parsing every historical table version each time.
-# Draft overlays (``changes``) and views without a ZIP list never share.
+# Only content-signed histories may outlive a request. A ZIP/store path does not
+# establish immutable bytes, even when it belongs to the same view object.
 _SHARED_HISTORIES = weakref.WeakKeyDictionary()
+_SHARED_LOCK = threading.RLock()
+
+
+class _Histories(dict):
+    def __init__(self):
+        super().__init__()
+        self.lock = threading.RLock()
+        self.build_locks = {}
+
+    def get_or_build(self, logical, key, build):
+        with self.lock:
+            if key in self:
+                return self[key]
+            lock = self.build_locks.setdefault(logical, threading.RLock())
+        # Serialize the same table; unrelated tables can decode concurrently.
+        with lock:
+            with self.lock:
+                if key in self:
+                    return self[key]
+            value = build()
+            with self.lock:
+                self[key] = value
+            return value
 
 
 def _histories_for(view):
-    if hasattr(view, "changes") or not hasattr(view, "zips"):
-        return {}
+    signed = callable(getattr(view, "history_digest", None))
+    view = getattr(view, "_read_cache_original", view)
+    if not signed or hasattr(view, "changes") or not hasattr(view, "zips"):
+        return _Histories()
     key = (tuple(str(path) for path in view.zips), str(getattr(view, "store", "")))
     try:
-        return _SHARED_HISTORIES.setdefault(view, {}).setdefault(key, {})
+        with _SHARED_LOCK:
+            caches = _SHARED_HISTORIES.setdefault(view, {})
+            if key not in caches:
+                caches[key] = _Histories()
+            return caches[key]
     except TypeError:  # not weak-referenceable: keep a private cache
-        return {}
+        return _Histories()
 
 
 class BossTables:
@@ -74,12 +103,14 @@ class BossTables:
             self._archive_members = []
             for archive in getattr(self.view, "zips", ()):
                 with zipfile.ZipFile(archive) as package:
-                    self._archive_members.append((Path(archive), set(package.namelist())))
+                    self._archive_members.append((Path(archive), archive_members(package)))
         return self._archive_members
 
     def _history(self, logical):
-        if logical in self.histories:
-            return self.histories[logical]
+        key = (logical, self.view.history_digest(logical)) if hasattr(self.view, "history_digest") else logical
+        return self.histories.get_or_build(logical, key, lambda: self._build_history(logical))
+
+    def _build_history(self, logical):
         name = member(logical)
         previous, origins = {}, {}
         baseline_known = False
@@ -97,18 +128,24 @@ class BossTables:
                 previous = dict(iter_leaves(codec.parse_node(raw)))
                 origins = {p: "store131" for p in previous}
         known = baseline_known
-        for archive, names in self._archives():
-            if name not in names:
-                continue
-            with zipfile.ZipFile(archive) as package:
-                current = dict(iter_leaves(codec.parse_node(package.read(name))))
+        for archive, raw in self._historical_members(logical):
+            current = dict(iter_leaves(codec.parse_node(raw)))
             for path, text in current.items():
                 if path not in previous or _semantics(previous[path]) != _semantics(text):
                     origins[path] = archive.name if known else None
             origins = {path: origins.get(path) for path in current}
             previous, known = current, True
-        self.histories[logical] = origins
         return origins
+
+    def _historical_members(self, logical):
+        if hasattr(self.view, "history_members"):
+            yield from self.view.history_members(logical)
+            return
+        name = member(logical)
+        for archive, names in self._archives():
+            if name in names:
+                with zipfile.ZipFile(archive) as package:
+                    yield archive, package.read(names[name])
 
     def citation(self, logical, path=None):
         raw, table_layer = self.raw_with_origin(logical)

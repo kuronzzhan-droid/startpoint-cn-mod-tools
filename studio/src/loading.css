@@ -1,0 +1,8 @@
+.read-loading { padding: 1rem 0; }
+.read-skeleton { display: grid; gap: .7rem; max-width: 48rem; }
+.read-skeleton span { height: 1.2rem; border-radius: .35rem; background: currentColor; opacity: .08; animation: read-pulse 1.4s ease-in-out infinite alternate; }
+.read-skeleton span:nth-child(2) { width: 85%; }
+.read-skeleton span:nth-child(3) { width: 65%; }
+.read-activity { color: var(--muted, #777); font-size: .8rem; white-space: nowrap; }
+@keyframes read-pulse { to { opacity: .16; } }
+@media (prefers-reduced-motion: reduce) { .read-skeleton span { animation: none; } }

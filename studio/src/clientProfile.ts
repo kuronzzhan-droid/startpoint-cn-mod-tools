@@ -121,7 +121,7 @@ export function loadProfiles(): Promise<ClientProfiles> {
       listeners.forEach((listener) => listener());
       return value;
     });
-    profilesPromise.catch(() => { profilesPromise = null; });
+    profilesPromise.then(() => { profilesPromise = null; }, () => { profilesPromise = null; });
   }
   return profilesPromise;
 }
@@ -177,18 +177,7 @@ export function useClientProfile(): ClientProfileState {
 }
 
 // ---------------------------------------------------------------------------
-// Capability lookups (cached per page; the backend caches the comparisons too)
-
-const lookups = new Map<string, Promise<CapRequirement>>();
-
-function cachedGet<T>(url: string, cache: Map<string, Promise<any>>): Promise<T> {
-  if (!cache.has(url)) {
-    const promise = get<T>(url);
-    promise.catch(() => cache.delete(url));
-    cache.set(url, promise);
-  }
-  return cache.get(url) as Promise<T>;
-}
+// Capability lookups: the backend owns caches and validates all input hashes.
 
 export type LookupParams = Partial<Record<"kind" | "unique" | "uniqueId" | "dsl" | "selector" | "customKey" | "capability", string | string[]>>;
 
@@ -197,24 +186,19 @@ export function lookupCaps(params: LookupParams): Promise<CapRequirement> {
   for (const [name, value] of Object.entries(params)) {
     for (const item of Array.isArray(value) ? value : value === undefined ? [] : [value]) search.append(name, item);
   }
-  return cachedGet<CapRequirement>(`/api/studio/caps/lookup?${search}`, lookups);
+  return get<CapRequirement>(`/api/studio/caps/lookup?${search}`);
 }
 
 export function programCaps(path: string): Promise<CapRequirement> {
-  return cachedGet<CapRequirement>(`/api/studio/caps/program?path=${encodeURIComponent(path)}`, lookups);
+  return get<CapRequirement>(`/api/studio/caps/program?path=${encodeURIComponent(path)}`);
 }
 
 export function kindCaps(table: string, block: string): Promise<{ kinds: Record<string, CapRequirement> }> {
-  return cachedGet(`/api/studio/caps/kinds?table=${table}&block=${block}`, lookups);
+  return get(`/api/studio/caps/kinds?table=${table}&block=${block}`);
 }
 
-let compatPromise: Promise<CharacterCompatReport> | null = null;
 export function characterCompat(): Promise<CharacterCompatReport> {
-  if (!compatPromise) {
-    compatPromise = get<CharacterCompatReport>("/api/studio/character-compat");
-    compatPromise.catch(() => { compatPromise = null; });
-  }
-  return compatPromise;
+  return get<CharacterCompatReport>("/api/studio/character-compat");
 }
 
 export interface RowQuery {
@@ -225,52 +209,47 @@ export interface RowQuery {
   cells: string[];
 }
 
-const rowResults = new Map<string, CapRequirement>();
 const rowKey = (r: RowQuery) => `${r.table}\u0000${r.key}\u0000${r.level ?? ""}\u0000${JSON.stringify(r.cells)}`;
+type RowValue = CapRequirement | undefined;
+type PendingRow = { row: RowQuery; resolve: (value: RowValue) => void; reject: (error: unknown) => void };
+// Batch only simultaneous callers. A later read revalidates referenced data and capability evidence.
+const inflight = new Map<string, Promise<RowValue>>();
+const waiting = new Map<string, Map<string, PendingRow>>();
 
-// Rows asked for within one short window (every key editor on a page mounts together) go out as one request.
-// The endpoint lives under the character's draft path (POST bodies stay under /api/drafts/); it never writes.
-const inflight = new Map<string, Promise<void>>();
-const waiting = new Map<string, Map<string, RowQuery>>();
-const flushing = new Map<string, Promise<void>>();
-
-async function sendRows(cid: string, entries: [string, RowQuery][]): Promise<void> {
+async function sendRows(cid: string, entries: PendingRow[]): Promise<void> {
   for (let i = 0; i < entries.length; i += 150) {
     const chunk = entries.slice(i, i + 150);
-    const body = { rows: chunk.map(([, r], index) => ({ ...r, id: String(index) })) };
-    const result = await post<{ rows: Record<string, CapRequirement> }>(`/api/drafts/${encodeURIComponent(cid)}/caps/rows`, body);
-    chunk.forEach(([key], index) => { const value = result.rows[String(index)]; if (value) rowResults.set(key, value); });
+    try {
+      const body = { rows: chunk.map(({ row }, index) => ({ ...row, id: String(index) })) };
+      const result = await post<{ rows: Record<string, CapRequirement> }>(`/api/drafts/${encodeURIComponent(cid)}/caps/rows`, body, { readonly: true });
+      chunk.forEach((entry, index) => entry.resolve(result.rows[String(index)]));
+    } catch (error) { chunk.forEach((entry) => entry.reject(error)); }
   }
 }
 
-function enqueueRow(cid: string, r: RowQuery): Promise<void> {
-  const key = rowKey(r);
-  if (rowResults.has(key)) return Promise.resolve();
+function enqueueRow(cid: string, row: RowQuery): Promise<RowValue> {
+  const key = cid + "\u0000" + rowKey(row);
   const running = inflight.get(key);
   if (running) return running;
-  if (!waiting.has(cid)) waiting.set(cid, new Map());
-  waiting.get(cid)!.set(key, r);
-  if (!flushing.has(cid)) {
-    flushing.set(cid, new Promise<void>((resolve, reject) => setTimeout(() => {
-      const batch = [...(waiting.get(cid) ?? new Map()).entries()];
+  if (!waiting.has(cid)) {
+    waiting.set(cid, new Map());
+    setTimeout(() => {
+      const batch = [...waiting.get(cid)!.values()];
       waiting.delete(cid);
-      flushing.delete(cid);
-      sendRows(cid, batch).then(resolve, reject);
-    }, 40)));
+      void sendRows(cid, batch);
+    }, 40);
   }
-  const done = flushing.get(cid)!.finally(() => inflight.delete(key));
-  inflight.set(key, done);
-  return done;
+  const promise = new Promise<RowValue>((resolve, reject) => {
+    waiting.get(cid)!.set(key, { row, resolve, reject });
+  }).finally(() => { if (inflight.get(key) === promise) inflight.delete(key); });
+  inflight.set(key, promise);
+  return promise;
 }
 
-/** Requirements of whole data rows (kinds, referenced unique strings, config strings, DSL), batched and cached. */
 export async function rowCaps(cid: string, rows: RowQuery[]): Promise<Record<string, CapRequirement>> {
-  await Promise.all(rows.map((r) => enqueueRow(cid, r)));
+  const values = await Promise.all(rows.map((row) => enqueueRow(cid, row)));
   const out: Record<string, CapRequirement> = {};
-  for (const r of rows) {
-    const value = rowResults.get(rowKey(r));
-    if (value) out[r.id] = value;
-  }
+  rows.forEach((row, index) => { const value = values[index]; if (value) out[row.id] = value; });
   return out;
 }
 
@@ -287,7 +266,7 @@ export function useRowCaps(cid: string, rows: RowQuery[]): { results: Record<str
       rowCaps(cid, rows).then((value) => { if (id === sequence.current) { setResults(value); setError(null); } },
         (e: Error) => { if (id === sequence.current) setError(e.message); });
     }, 250);
-    return () => clearTimeout(timer);
+    return () => { sequence.current++; clearTimeout(timer); };
   }, [signature]);
   return { results, error };
 }

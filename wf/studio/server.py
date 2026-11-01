@@ -220,6 +220,14 @@ class StudioApp:
                     perf.leaf_tokens(leaf)
         for table in ("ability", "leader_ability", "action_skill"):
             editor._key_index(table, None)
+        # These are read-only, content-bound caches. This method runs in the
+        # existing daemon worker after app construction, never on the startup
+        # critical path. Failed warmups remain ordinary cold reads.
+        from .capability_cache import cached_requirements
+        from .prewarm import warm_read
+        warm_read("requirements", cached_requirements)
+        for mode in ("rogue", "five"):
+            warm_read(mode, lambda: self.modes.read({}, mode))
 
     # -- handlers -------------------------------------------------------
     def freshness(self, query) -> Response:
@@ -411,14 +419,21 @@ def make_handler(app: StudioApp, static_root: Path, guard: WriteGuard):
 
         def _send(self, response: Response, head: bool = False):
             try:
+                from .http_encoding import representation
+                body, encoding, varies = representation(response.body, response.content_type,
+                                                         self.headers.get("Accept-Encoding", ""))
                 self.send_response(response.status)
                 self.send_header("Content-Type", response.content_type)
-                self.send_header("Content-Length", str(len(response.body)))
+                self.send_header("Content-Length", str(len(body)))
+                if varies:
+                    self.send_header("Vary", "Accept-Encoding")
+                if encoding:
+                    self.send_header("Content-Encoding", encoding)
                 self.send_header("Cache-Control", response.cache or (
                     "no-store" if response.content_type.startswith("application/json") else "max-age=600"))
                 self.end_headers()
                 if not head:
-                    self.wfile.write(response.body)
+                    self.wfile.write(body)
             except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
                 self.close_connection = True  # the browser navigated away; nothing to report
 

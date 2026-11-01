@@ -23,6 +23,7 @@ from pathlib import Path
 from wf.dsl.references import DSL_SUFFIX, program_logical
 
 from .drafts import DraftError
+from .client_profile_cache import fresh_inputs, kind_inputs
 from .client_profile_signals import (ABILITY_PATHS, CONTENT_BLOCKS, candidate_kinds,
                                      distinct_signals, kind_site, kind_sites, signature)
 
@@ -52,7 +53,7 @@ class ClientProfileView:
 
     def __init__(self, app):
         self.app = app
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
         self._registry = None
         self._clients: dict | None = None
         self._compat: dict = {}
@@ -60,6 +61,7 @@ class ClientProfileView:
         self._default: str | None = None
 
     # -- cached inputs ----------------------------------------------------
+    @fresh_inputs
     def registry(self) -> dict:
         with self._lock:
             if self._registry is None:
@@ -67,6 +69,7 @@ class ClientProfileView:
                 self._registry = load_registry()
             return self._registry
 
+    @fresh_inputs
     def clients(self) -> dict:
         """{profile: {"document": provides | None, "error": str | None, "record": profile record}}."""
         with self._lock:
@@ -88,6 +91,7 @@ class ClientProfileView:
             self._default = default
         return clients
 
+    @fresh_inputs
     def prewarm(self) -> None:
         """Load the registry and every profile's evidence once (the slow part of the first chip)."""
         self.registry()
@@ -99,8 +103,11 @@ class ClientProfileView:
         return self._default
 
     # -- capability sets → per-profile comparison ------------------------
+    @fresh_inputs
     def compat(self, ids, partial=False, *, sites=()) -> dict:
-        key = tuple(sorted(set(ids))), bool(partial), tuple(sorted(signature(site) for site in sites))
+        sites = tuple(sites)
+        key = (tuple(sorted(set(ids))), bool(partial), tuple(sorted(signature(site) for site in sites)),
+               kind_inputs(self) if sites else None)
         with self._lock:
             if key in self._compat:
                 return self._compat[key]
@@ -315,6 +322,7 @@ class ClientProfileView:
                 ("POST", re.compile(r"^/api/drafts/(?P<cid>\d+)/caps/rows$"), self.rows),
                 ("GET", re.compile(r"^/api/studio/character-compat$"), self.character_compat)]
 
+    @fresh_inputs
     def profiles(self, query):
         from .server import json_response
         registry = self.registry()
@@ -336,6 +344,7 @@ class ClientProfileView:
                         "available": client["document"] is not None, "error": client["error"]})
         return json_response({"defaultClientProfile": default, "profiles": out, "note": NOTE})
 
+    @fresh_inputs
     def lookup(self, query):
         from .server import json_response
         if not any(query.get(p) for p in LOOKUP_PARAMS):
@@ -357,6 +366,7 @@ class ClientProfileView:
                               "不证明该 kind 在具体表/块受支持。" + NOTE)
         return json_response(result)
 
+    @fresh_inputs
     def program(self, query):
         from .server import json_response
         path = (query.get("path") or [""])[0]
@@ -365,6 +375,7 @@ class ClientProfileView:
         signals, references = self.close([("program", path)])
         return json_response(self.describe_signals(signals, references=references))
 
+    @fresh_inputs
     def rows(self, query, body, cid):
         from .server import json_response
         items = body.get("rows")
@@ -377,6 +388,7 @@ class ClientProfileView:
             out[str(item.get("id", index))] = self.row(item)
         return json_response({"rows": out})
 
+    @fresh_inputs
     def kinds(self, query):
         """kind → capabilities for one table/block, so the template picker can mark every option at once."""
         from .server import json_response
@@ -392,11 +404,13 @@ class ClientProfileView:
             raise DraftError(str(exc)) from exc
         return json_response({"table": table, "block": block, "kinds": result, "note": NOTE})
 
+    @fresh_inputs
     def character_compat(self, query):
         from .server import json_response
         report = self._load_report()
         return json_response(report)
 
+    @fresh_inputs
     def _load_report(self) -> dict:
         with self._lock:
             if self._report is not None:
