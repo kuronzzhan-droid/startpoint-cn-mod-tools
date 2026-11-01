@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wf-boss-scene/1",
+  "title": "场景 BOSS 规格：语义设置通过 bindings 编译到资源图",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema", "id", "name", "sourceVersion", "event", "tiers", "phases", "summons", "mechanisms", "trials", "shops", "drops", "tables", "resources", "requirements"],
+  "properties": {
+    "schema": {"const": "wf-boss-scene/1"},
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{0,63}$"},
+    "name": {"type": "string", "minLength": 1}, "sourceVersion": {"type": "string"},
+    "event": {"$ref": "#/$defs/group"},
+    "tiers": {"type": "array", "minItems": 5, "maxItems": 5, "items": {"$ref": "#/$defs/group"}},
+    "phases": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/group"}},
+    "shops": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/group"}},
+    "drops": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/group"}},
+    "summons": {"type": "array", "items": {"$ref": "#/$defs/setting"}},
+    "mechanisms": {"type": "array", "items": {"$ref": "#/$defs/setting"}},
+    "trials": {"type": "array", "items": {"$ref": "#/$defs/setting"}},
+    "requirements": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "tables": {"type": "array", "minItems": 1, "items": {
+      "type": "object", "additionalProperties": false, "required": ["logical", "entries"],
+      "properties": {"logical": {"type": "string", "pattern": "^master/.+\\.orderedmap$"},
+        "entries": {"type": "array", "minItems": 1, "items": {
+          "type": "object", "additionalProperties": false, "required": ["path", "value"],
+          "properties": {"path": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}, "value": {"type": "string"}}
+        }}}}},
+    "resources": {"type": "array", "items": {
+      "type": "object", "additionalProperties": false, "required": ["logical", "encoding", "value"],
+      "properties": {"logical": {"type": "string"}, "encoding": {"const": "amf3"}, "value": {}}
+    }},
+    "provenance": {"type": "object"},
+    "creation": {"type": "object", "additionalProperties": false, "required": ["sourceEvent", "tableTargets", "resourceTargets"],
+      "properties": {"sourceEvent": {"type": "string"},
+        "tableTargets": {"type": "array", "items": {"type": "object", "required": ["logical", "path"], "properties": {"logical": {"type": "string"}, "path": {"type": "array", "items": {"type": "string"}}}}},
+        "resourceTargets": {"type": "array", "items": {"type": "string"}}}}
+  },
+  "$defs": {
+    "group": {"type": "object", "additionalProperties": false, "required": ["id", "settings"],
+      "properties": {"id": {"type": "string"}, "name": {"type": "string"}, "quest": {"type": "string"}, "sourceQuest": {"type": "string"}, "settings": {"type": "array", "items": {"$ref": "#/$defs/setting"}}}},
+    "setting": {"type": "object", "additionalProperties": false, "required": ["id", "kind", "value", "bindings"],
+      "properties": {"id": {"type": "string"}, "kind": {"enum": ["bgm", "field", "summon", "mechanism", "threshold", "trial", "hp", "attack", "level", "time", "name", "reward", "shop", "parameter"]}, "value": {},
+        "bindings": {"type": "array", "minItems": 1, "items": {"oneOf": [
+          {"type": "object", "additionalProperties": false, "required": ["table", "path", "column"], "properties": {"table": {"type": "string"}, "path": {"type": "array", "minItems": 1, "items": {"type": "string"}}, "column": {"type": "integer", "minimum": 0}, "row": {"type": "integer", "minimum": 0}}},
+          {"type": "object", "additionalProperties": false, "required": ["resource", "path"], "properties": {"resource": {"type": "string"}, "path": {"type": "array", "minItems": 1, "items": {"type": ["string", "integer"], "minimum": 0}}}}
+        ]}}}}
+  }
+}

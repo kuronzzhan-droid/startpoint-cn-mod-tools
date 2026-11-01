@@ -239,6 +239,15 @@ def test_route_verbs():
     app = StudioApp(_FakeSource())
     verbs = {verb for verb, _, _ in app.routes}
     assert verbs == {"GET", "POST"}
+    scene_slot = r"hell-pumpkin|scene-[3-9][0-9]{5}"
+    scene_actions = {
+        "^/api/scenes/(?P<mode>hell-pumpkin)/clone$",
+        rf"^/api/scenes/(?P<mode>{scene_slot})/(?P<action>preview|save)$",
+        *(rf"^/api/scenes/deliveries/(?P<name>[^/]+)/{action}$" for action in ("rehearse", "overlay")),
+        *(rf"^/api/scenes/drafts/(?P<cid>{scene_slot})/{suffix}$"
+          for suffix in ("build", "build/cancel", "deliveries/(?P<name>[^/]+)/device-result",
+                         "deliveries/(?P<name>[^/]+)/device-result/import")),
+    }
     assert all(pattern.pattern.startswith(("^/api/drafts/", "^/api/boss/drafts", "^/api/studio/weapons/",
                                            "^/api/studio/characters/"))
                or pattern.pattern == "^/api/studio/views/export-store$"
@@ -251,7 +260,10 @@ def test_route_verbs():
                      for suffix in ("build", "build/cancel",
                                     "deliveries/(?P<name>[^/]+)/device-result",
                                     "deliveries/(?P<name>[^/]+)/device-result/import"))}
+               or pattern.pattern in scene_actions
                for verb, pattern, _ in app.routes if verb == "POST")
+    assert not any(pattern.pattern.startswith("^/api/scenes/") and
+                   pattern.pattern.endswith(("/apply$", "/unapply$")) for _, pattern, _ in app.routes)
 
 
 # -- conversions -----------------------------------------------------------
