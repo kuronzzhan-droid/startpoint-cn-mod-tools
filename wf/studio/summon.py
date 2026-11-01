@@ -32,7 +32,8 @@ def _effective(source, store, draft, server_dir=None, **pf_options):
         members.update(clone_members(source, store, draft))
     if any(c["kind"] == "ability_edit" for c in (draft or {}).get("changes", [])):
         from .ability import compile_ability_operations
-        edited = compile_ability_operations(overlay_source(source, members) if members else source,
+        from .clone_edit import edit_source
+        edited = compile_ability_operations(edit_source(source, store, draft),
                                             store, draft, server_dir=server_dir)
         members.update({("common", k): v for k, v in edited["client"].items()})
     effective = overlay_source(source, members) if members else source

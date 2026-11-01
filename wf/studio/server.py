@@ -129,6 +129,9 @@ class StudioApp:
         from .character_routes import CharacterRoutes
         self.character_clones = CharacterRoutes(self, server_dir)
         self.routes.extend(self.character_clones.routes())
+        from .batch_routes import BatchRoutes
+        self.batch = BatchRoutes(self)
+        self.routes.extend(self.batch.routes())
         from .summon_routes import SummonRoutes
         self.summons = SummonRoutes(self, server_dir)
         self.routes.extend(self.summons.routes())

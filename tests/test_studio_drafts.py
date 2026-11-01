@@ -218,6 +218,8 @@ def test_http_guard_and_token_injection(live):
     assert _request(port, "POST", "/api/drafts/7/save", {},
                     {**ok_headers, "Host": "attacker.test"})[0] == 403
     for path in ("/api/studio/characters/clone", "/api/studio/characters/scratch-example/promote",
+                 "/api/studio/characters/balance/apply", "/api/studio/characters/balance/mapping",
+                 "/api/studio/characters/variants/apply",
                  "/api/deliveries/example/rehearse", "/api/boss/deliveries/example/rehearse",
                  "/api/studio/weapons/deliveries/example/rehearse"):
         assert _request(port, "POST", path, {}, {"Content-Type": "application/json"})[0] == 403

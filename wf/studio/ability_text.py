@@ -61,6 +61,9 @@ def load_mirrors(state, server_dir=None, *, server_text=None, server_rank=None):
         perf.mirror(raw, shared=True)
     state.server_original = dict(raws)
     state.servers = dict(raws)
+    if state.clone_text_cid:
+        from .clone_edit import seed_text_mirror
+        seed_text_mirror(state)
 
 
 def workspace_for(state):

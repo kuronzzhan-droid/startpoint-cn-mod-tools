@@ -9,7 +9,7 @@ import { useEffect, useState } from "preact/hooks";
 // #/content/characters/new[/<母本 id>]  从母本克隆新角色向导
 // #/content/weapons[/<id>[/changes[/<sub>]]]  武器工坊（列表 + 详情；changes 打开本次修改抽屉，sub = 交付名）
 export type Route =
-  | { work: "content"; shop: "characters"; id?: string; tab?: string; sub?: string; clone?: boolean; source?: string }
+  | { work: "content"; shop: "characters"; id?: string; tab?: string; sub?: string; clone?: boolean; source?: string; balance?: boolean }
   | { work: "content"; shop: "boss"; quest?: string; tab?: string; sub?: string; wizard?: boolean; source?: string }
   | { work: "content"; shop: "scratch"; id?: string; tab?: string; sub?: string }
   | { work: "content"; shop: "weapons"; id?: string; tab?: string; sub?: string }
@@ -31,6 +31,8 @@ export function parse(hash: string): Route {
     return { work: "content", shop: "weapons", id: parts[2], tab: parts[3], sub: parts[4] };
   if (parts[0] === "content" && parts[1] === "characters" && parts[2] === "new")
     return { work: "content", shop: "characters", clone: true, source: parts[3] };
+  if (parts[0] === "content" && parts[1] === "characters" && parts[2] === "balance-import")
+    return { work: "content", shop: "characters", balance: true };
   if (parts[0] === "content" && parts[1] === "characters" && parts[2])
     return { work: "content", shop: "characters", id: parts[2], tab: parts[3], sub: parts[4] };
   return { work: "content", shop: "characters" };
@@ -48,6 +50,7 @@ export function href(route: Route): string {
   if (route.shop === "scratch") return "#/scratch" + (route.id ? "/" + route.id + tail(route) : "");
   if (route.shop === "weapons") return "#/content/weapons" + (route.id ? "/" + encodeURIComponent(route.id) + tail(route) : "");
   if (route.clone) return "#/content/characters/new" + (route.source ? "/" + encodeURIComponent(route.source) : "");
+  if (route.balance) return "#/content/characters/balance-import";
   if (route.id) return `#/content/characters/${route.id}` + tail(route);
   return "#/content/characters";
 }

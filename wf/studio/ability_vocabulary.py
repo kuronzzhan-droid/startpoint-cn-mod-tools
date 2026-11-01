@@ -59,7 +59,8 @@ def _unit(block, field):
         return "frames"
     if field == "instant_delay":
         return "seconds"
-    if field in ("trigger_limit", "mt.trigger_limit", "flip_limit", "power_flip_limit", "end_power_flip_limit"):
+    if field in ("trigger_limit", "mt.trigger_limit", "flip_limit", "power_flip_limit", "end_power_flip_limit",
+                 "max_accumulation", "initial_multiply", "limit"):
         return "count"
     return None
 

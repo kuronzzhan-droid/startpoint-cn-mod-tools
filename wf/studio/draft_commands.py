@@ -19,6 +19,8 @@ def source_arguments(parser):
 
 
 def add_commands(sub):
+    from .batch import add_commands as add_batch_commands
+    add_batch_commands(sub)
     from .delivery_actions import add_commands as add_delivery_actions
     add_delivery_actions(sub)
     from .view_commands import add_commands as add_views
