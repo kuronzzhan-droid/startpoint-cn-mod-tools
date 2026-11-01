@@ -210,10 +210,12 @@ class AbilityEditor:
     def _base(self, cid):
         """(replayed state of the saved draft requests, draft, requests, key); unfinished, never mutated."""
         draft = self.store.load(cid) or {"changes": []}
+        from .clone_edit import edit_source
+        effective = edit_source(self.source, self.store, draft)
         from .skill_template_compile import template_change
         template = template_change(draft)
         if not template:
-            _identity(self.source, cid, draft)
+            _identity(effective, cid, draft)
         requests = _requests(draft)
         key = self._draft_key(cid, draft)
 
@@ -222,11 +224,11 @@ class AbilityEditor:
                 from .skill_template_inputs import current_source
                 from .skill_template_compile import compile_skill_template
                 from .character_clone import overlay_source
-                effective = current_source(self.source, self.store, draft, server_dir=self.inputs["server_dir"])
-                members, _, _ = compile_skill_template(effective, self.store, draft, official_source=self.source,
+                template_source = current_source(self.source, self.store, draft, server_dir=self.inputs["server_dir"])
+                members, _, _ = compile_skill_template(template_source, self.store, draft, official_source=self.source,
                                                        server_dir=self.inputs["server_dir"])
-                return EditState(overlay_source(effective, members))
-            state = EditState(self.source)
+                return EditState(overlay_source(template_source, members))
+            state = EditState(effective)
             state.character(cid)
             _replay_into(state, cid, requests, self.inputs)
             _guard_inputs(state, draft)
@@ -304,7 +306,13 @@ class AbilityEditor:
                           "files": [], "pending": [],
                           "checks": [{"level": "warn" if check["status"] in {"待验证", "问题"} else "info",
                                       "code": check["rule"], "message": check["message"]} for check in state.checks]}
-                draft = self.store.put_change(cid, state.character(cid)[0], self.source.version, change)
+                from .clone_edit import refreshed_clone
+                refreshed = refreshed_clone(self.source, self.store, self.store.load(cid), state.client)
+                if refreshed:
+                    draft, dropped = self.store.put_changes(cid, state.character(cid)[0], self.source.version, [refreshed, change])
+                    self.store.prune(cid, dropped)
+                else:
+                    draft = self.store.put_change(cid, state.character(cid)[0], self.source.version, change)
             return {"change": change, "changeset": draft, "status": status(draft),
                     "checks": with_metadata(state.checks, "balance"), "runtime": "未执行"}
         except (ValueError, KeyError, OSError, TypeError) as exc:
@@ -327,7 +335,8 @@ class AbilityEditor:
             owners = sorted(owner_index(state)[table].get(key, set()))
             if cid not in owners:
                 raise ValueError(f"{table}/{key}: character {cid} is not an owner; owners={owners}")
-            original = EditState(self.source).table(TABLES[table]).get(key)
+            from .clone_edit import edit_source
+            original = EditState(edit_source(self.source, self.store, self.store.load(cid))).table(TABLES[table]).get(key)
             current = state.table(TABLES[table])[key]
             if table == "action_skill":
                 original = original.get(level) if original else None
@@ -361,7 +370,8 @@ class AbilityEditor:
         from .ability_text import load_mirrors, workspace_for
 
         def build():
-            base = EditState(self.source)
+            from .clone_edit import edit_source
+            base = EditState(edit_source(self.source, self.store, self.store.load(cid)))
             load_mirrors(base, **self.inputs)
             return workspace_for(base).read(cid)
         return self._once(("base-document", cid, self.source.version, self._mirror_signature()), build)

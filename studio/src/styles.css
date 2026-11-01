@@ -420,3 +420,5 @@ pre.cmd { background: var(--surface-2); border: 1px solid var(--border); border-
 .clone-donors { list-style: none; padding: 0; margin: 6px 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 4px; max-height: 420px; overflow: auto; }
 .clone-donor { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .clone-done { display: flex; flex-direction: column; gap: 10px; }
+/* Local batch authoring input: preserve pasted tabs without overflowing the workshop. */
+.batch-input { display: block; width: 100%; box-sizing: border-box; margin: 1rem 0; font: inherit; white-space: pre; overflow: auto; }

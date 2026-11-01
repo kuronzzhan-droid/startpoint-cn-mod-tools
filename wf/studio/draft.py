@@ -226,6 +226,9 @@ def run(args) -> dict:
         from .config import server_directory
         args.server_dir = server_directory(args.server_dir)
     ops = _ops(args)
+    if args.command == "balance-import":
+        from .batch import run_command
+        return run_command(args, ops)
     if args.command == "pf-action":
         from .pf_cli import run_pf
         return run_pf(args, ops)

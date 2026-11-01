@@ -7,6 +7,7 @@ import { CharacterDetailView } from "./views/CharacterDetail";
 import { BossWorkshop } from "./views/boss/BossWorkshop";
 import { WeaponWorkshop } from "./views/weapons/WeaponWorkshop";
 import { CharacterCloneWizard } from "./views/CharacterClone";
+import { BalanceImport } from "./views/BalanceImport";
 import { ToolsPanel } from "./views/IdTools";
 import { Drawer } from "./views/common";
 import { PatchManager } from "./views/PatchManager";
@@ -129,6 +130,8 @@ function App() {
             <WeaponWorkshop id={route.id} tab={route.tab} sub={route.sub} />
           ) : route.shop === "scratch" ? (
             route.id ? <ScratchDetail id={route.id} tab={route.tab} sub={route.sub} /> : <ScratchList />
+          ) : route.shop === "characters" && route.balance ? (
+            <BalanceImport />
           ) : route.shop === "characters" && route.clone ? (
             <CharacterCloneWizard key={route.source ?? ""} source={route.source} />
           ) : route.id ? (

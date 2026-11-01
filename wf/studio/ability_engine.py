@@ -27,6 +27,7 @@ class EditState:
     def __init__(self, source):
         # StudioSource: read through its raw cache instead of reopening the patch ZIPs.
         self.view = perf.view_for(source)
+        self.clone_text_cid = getattr(source, "_clone_text_cid", None)
         self.original = {}
         self.client = {}
         self.changes = []
@@ -39,6 +40,7 @@ class EditState:
         """Independent overlay with the same inputs and edits (inputs and leaves are immutable)."""
         other = EditState.__new__(EditState)
         other.view, other.registry = self.view, self.registry
+        other.clone_text_cid = self.clone_text_cid
         other.original, other.client = dict(self.original), dict(self.client)
         other.servers, other.server_original = dict(self.servers), dict(self.server_original)
         other.changes, other.checks = list(self.changes), list(self.checks)

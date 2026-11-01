@@ -58,9 +58,13 @@ def _vacant(ops, spec, server_dir):
     occupied = check_id(ops.source, "character", cid, drafts_root=ops.store.root, server_dir=server_dir)
     if not occupied["available"]:
         raise DraftError("Character ID is reserved: " + json.dumps(occupied, ensure_ascii=False))
+    from .clone_ids import linked_check
+    linked = linked_check(ops, cid, code=code if spec.get("skill", "copy") == "copy" else None, server_dir=server_dir)
+    if not linked["available"]:
+        raise DraftError("；".join(linked["reasons"]))
 
 
-def clone(ops, request, *, server_dir=None, preview=False):
+def clone(ops, request, *, server_dir=None, preview=False, transform=None):
     if isinstance(request, dict) and "rarity" in request:
         raise DraftError("不支持 rarity 字段：星级必须继承母本，尚未完成星级相关表与资产的全联动")
     validate(request, "characterCloneRequest")
@@ -74,6 +78,9 @@ def clone(ops, request, *, server_dir=None, preview=False):
             raise DraftError("Mana node segment is reserved: " + json.dumps(reserved, ensure_ascii=False))
         donor = ops.source.table("character")[spec["from"]][0]
         assets, inputs, matrix, checks = collect_assets(ops.source, donor[0], spec["code"], int(donor[2]))
+        variant = None
+        if transform is not None:
+            variant = transform(client, tables, assets, inputs, checks)
         owned = {logical: sorted(set(rows(raw)) - set(rows(tables[logical]))) for logical, raw in client.items()}
         planned = [{"logical": logical, "root": "common", "addedKeys": owned[logical],
                     "size": len(raw), "sha256": sha256(raw)} for logical, raw in sorted(client.items())]
@@ -84,7 +91,8 @@ def clone(ops, request, *, server_dir=None, preview=False):
                                "message": "未提供服务端五表基线；可保存草稿，交付前必须提供 server_dir 并复核"})
             return {"ok": True, "preview": True, "characterId": spec["to"], "code": spec["code"],
                     "tables": planned, "serverTables": server_tables, "assets": matrix, "checks": checks,
-                    "buildable": not any(c["level"] == "error" for c in checks), "runtime": "未执行"}
+                    "buildable": not any(c["level"] == "error" for c in checks), "runtime": "未执行",
+                    **({"variant": variant} if variant is not None else {})}
         members = {("common", logical): raw for logical, raw in client.items()}
         members.update(assets)
         inputs.update({f"common:{logical}": sha256(raw) for logical, raw in tables.items()})
@@ -103,6 +111,9 @@ def clone(ops, request, *, server_dir=None, preview=False):
                   "params": {"spec": spec, "templateCode": donor[0], "inputs": inputs, "assets": matrix,
                              "manaNodes": nodes, "ownedRows": owned},
                   "files": files, "pending": [], "checks": checks}
+        if variant is not None:
+            change["params"]["variant"] = variant
+            change["params"]["reservations"] = {"string_id": variant.get("stringIds", [])}
         validate(change, "change")
         try:
             for relative, raw in staged.items():
@@ -113,7 +124,8 @@ def clone(ops, request, *, server_dir=None, preview=False):
             raise
     return {"ok": True, "characterId": cid, "code": spec["code"], "changeset": draft,
             "status": status(draft), "assets": checklist(draft), "tables": planned, "checks": checks,
-            "buildable": not any(c["level"] == "error" for c in checks), "runtime": "未执行"}
+            "buildable": not any(c["level"] == "error" for c in checks), "runtime": "未执行",
+            **({"variant": variant} if variant is not None else {})}
 
 
 def clone_members(source, store, draft):
@@ -178,12 +190,18 @@ def ops_for(ops, cid):
 
 
 def compile_clone(source, store, draft, *, server_dir=None, **pf_options):
+    variant = clone_change(draft)["params"].get("variant")
     members = clone_members(source, store, draft)
+    effective = overlay_source(source, members)
+    effective._clone_text_cid = draft["characterId"]
+    from .ability import compile_ability_operations
+    ability = compile_ability_operations(effective, store, draft, server_dir=server_dir)
+    members.update({("common", logical): raw for logical, raw in ability["client"].items()})
     effective = overlay_source(source, members)
     from .deliver_media import compile_media
     media = compile_media(effective, store, draft)
     members.update(media.members)
-    checks = list(media.checks)
+    checks = [*media.checks, *ability["checks"]]
     extra_assertions = []
     if any(c["kind"] == "pf_action_clone" for c in draft["changes"]):
         from .pf_compile import compile_pf
@@ -222,15 +240,22 @@ def compile_clone(source, store, draft, *, server_dir=None, **pf_options):
         checks.append({"level": "error", "code": "character.assets", "message": "缺少必需资产：" + ", ".join(missing)})
     if any(c.get("level") == "error" or c.get("blocking") for c in checks):
         raise DraftError("角色克隆检查失败：" + json.dumps(checks, ensure_ascii=False))
-    if any(c["kind"] == "ability_edit" for c in draft["changes"]):
-        raise DraftError("克隆草稿的词条编辑尚未接入；请先生成角色或仅编辑媒体")
+    from .clone_edit import pending_text
+    pending = pending_text(variant, final, draft["code"])
+    if pending:
+        raise DraftError("变体存在需人工条目，不能生成交付：" + "；".join(i["reason"] for i in pending))
     if server_dir is None:
         raise DraftError("克隆角色生成需要显式 --server-dir，用于键级合并服务端五表")
     clients = {logical: raw for (kind, logical), raw in members.items() if kind == "common" and logical.endswith(".orderedmap")}
     servers, before = server_files(clients, cid, server_dir)
+    # Clone five-table merge uses the final client text. Extra text mirrors retain their own assertions.
+    for target, raw in ability["servers"].items():
+        if target not in servers:
+            servers[target] = raw
+            before[target] = ability["server_before"][target]
     assertions = [{"kind": "character_clone", "from": clone_change(draft)["params"]["spec"]["from"], "to": cid,
                    "code": draft["code"], "manaNodes": clone_change(draft)["params"]["manaNodes"]},
-                  *media.assertions, *skill_assertions]
+                  *media.assertions, *skill_assertions, *ability["changes"]]
     assertions.extend(extra_assertions)
     if any(c["kind"] == "skill_template" for c in draft["changes"]):
         from .skill_template_text import server_mirrors
