@@ -2,6 +2,7 @@
 
 后端交付检查索引：[APK 内置表撞名](bundle-keys.md)、[共享表键级差异](key-diff.md)、
 [交付前本地服只读预演](rehearsal.md)、
+[应用到本地服与撤销](apply-local.md)、[Patch Overlay 导出](overlay.md)、
 [图标透明区检查](icon-alpha.md)、[p12b/p13 扩展键与兼容性](p13-keys.md)。
 协力角色数据行编辑与前端接口见 [召唤工坊](summon.md)。
 制作接口：[强化弹射动作工坊与前端对接](pf-actions.md)（CDN / APK 母本三档克隆、属性与逐档系数、草稿 PF 键）。
@@ -10,7 +11,7 @@
 
 技能后端工坊：[技能模板：克隆官方技能、倍率与特效换色](skill-templates.md)。
 
-M3.1 提供只读浏览；M3.2 起可以把立绘、像素、语音替换进**草稿**（`work/studio-drafts/<角色ID>/`，已被 gitignore）。M4a 新增词条草稿 API/CLI，并通过 `draft build` 生成本地交付。输入主表、store、补丁链和服务器目录均只读；应用、发布和前端生成按钮不属于本次后端接口。
+M3.1 提供只读浏览；M3.2 起可以把立绘、像素、语音替换进**草稿**（`work/studio-drafts/<角色ID>/`，已被 gitignore）。M4a 新增词条草稿 API/CLI，并通过 `draft build` 生成本地交付。输入主表和 store 始终只读；C 批新增经过机器 apply_enabled 开关的本地服应用/撤销及 Overlay 导出后端。发布、175 和服务启停仍不开放；前端接线独立完成。
 
 ## 启动
 
@@ -299,7 +300,7 @@ action_skill 的结构编辑按客户端档位处理：`level` 指源/插入档�
 | GET | `/api/deliveries/<名>` | ZIP、清单成员、服务端镜像、requires.json、check/compat 结果、文件列表 |
 | GET | `/api/deliveries/<名>/file?path=` | 读取交付目录内文件（限目录内） |
 
-生成沿用编辑台视图的补丁链清单与已解析 ZIP 所在目录作为基线（`ManifestView` 按清单重新锁定），只接受已保存草稿；未提供 provides 时兼容检查为「未执行」。应用/发布按钮保持禁用。
+生成沿用编辑台视图的补丁链清单与已解析 ZIP 所在目录作为基线（`ManifestView` 按清单重新锁定），只接受已保存草稿；未提供 provides 时兼容检查为「未执行」。应用后端见 C 批接口；本批未改前端按钮。发布仍不开放。
 
 ### 实测记录（device-result.json）
 

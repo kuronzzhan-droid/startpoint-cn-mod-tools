@@ -1,7 +1,8 @@
 """Stdlib HTTP server: explicit route table + static frontend.
 
-GET routes read the layered view. POST routes only write the draft workspace
-(``work/studio-drafts``) and are guarded by :class:`~wf.studio.guard.WriteGuard`.
+GET routes read the layered view. POST routes are guarded by
+:class:`~wf.studio.guard.WriteGuard`; delivery apply/unapply additionally require
+an explicitly enabled machine-configured local server. No service is restarted.
 """
 from __future__ import annotations
 
@@ -157,7 +158,9 @@ class StudioApp:
             groups = {k: unquote(v) for k, v in match.groupdict().items()}
             try:
                 if verb == "POST":
-                    return handler(query=query, body=body if isinstance(body, dict) else {}, **groups)
+                    if not isinstance(body, dict):
+                        raise DraftError("POST JSON 请求体必须是对象")
+                    return handler(query=query, body=body, **groups)
                 return handler(query=query, **groups)
             except DraftError as exc:
                 return error(400, str(exc))

@@ -267,6 +267,7 @@ def build_draft(cid: str, *, from_version: str, to_version: str, out: Path,
                              provides=provides, **pf_options)
     baseline.verify()
     filename = _stage(out, changeset, source, compiled, to_version)
+    from .overlay_export import source_view, availability
     _step(progress, cancel, "deliver")
     options["baseline_view"] = baseline
     members = staged_members(filename)
@@ -279,7 +280,7 @@ def build_draft(cid: str, *, from_version: str, to_version: str, out: Path,
     except ValueError as error:
         # Persist the original gate failure even if secondary inspection fails.
         build_error = {"type": type(error).__name__, "message": str(error), "stage": "deliver"}
-        failure = {"ok": False, "characterId": cid, "from": from_version, "to": to_version,
+        failure = {"ok": False, **availability(out), "characterId": cid, "from": from_version, "to": to_version,
                    "buildError": build_error, "delivery": str(out / "delivery")}
         write_json(out / "build-report.json", failure)
         try:
@@ -291,6 +292,8 @@ def build_draft(cid: str, *, from_version: str, to_version: str, out: Path,
             write_json(out / "build-report.json", failure)
             return failure
         manifest = None
+    if manifest is not None:
+        write_json(out / "delivery/source-view.json", source_view(baseline))
     if reports is None:
         reports, safety_checks = inspect_output(members, baseline, changeset, apks=apks,
                                                 cache_dir=bundle_cache_dir)
@@ -323,7 +326,7 @@ def build_draft(cid: str, *, from_version: str, to_version: str, out: Path,
               or any(r.get("blocking") for r in safety_checks)
               or any(r.get("blocking") or r.get("level") == "error" for r in compiled[4])
               or (provides is None and not allow_unknown_client))
-    result = {"ok": not failed, "characterId": cid, "from": from_version, "to": to_version,
+    result = {"ok": not failed, **availability(out), "characterId": cid, "from": from_version, "to": to_version,
               "draftRevision": changeset["revision"], "changeset": str(filename),
               "delivery": str(out / "delivery"), "prepush": prepush,
               "checks": checks, "compat": compat_status, "compatChecks": compat,

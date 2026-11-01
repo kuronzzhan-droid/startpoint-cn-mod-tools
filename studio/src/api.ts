@@ -961,6 +961,19 @@ export interface DeliveryDetail {
   clientExtensions?: ClientExtensions | null;
   /** Latest read-only server rehearsal (delivery/rehearsal-<server>.json); null when never run. */
   rehearsal?: Rehearsal | null;
+  overlayAvailable?: boolean;
+  overlayReason?: string;
+}
+
+export interface ApplyResult {
+  name: string; ok: boolean; status: string; server: string; error?: string;
+  from?: string; to?: string; dryRun?: boolean;
+  steps?: { step: string; status: string; path?: string }[];
+  restartRequired?: boolean; restartReason?: string; clientRisk?: string;
+}
+
+export interface OverlayResult {
+  name: string; ok: boolean; zip?: string; from?: string; to?: string; overlayReason?: string;
 }
 
 export interface Rehearsal {
@@ -1082,6 +1095,10 @@ export interface DeliveryApi {
     Promise<{ name: string; deviceResult: DeviceEntry }>;
   /** Read-only rehearsal against a configured server (profiles/local.json servers); writes nothing there. */
   rehearse: (name: string, server: string) => Promise<{ name: string; ok: boolean; rehearsal: Rehearsal }>;
+  /** Writes to a configured server with apply_enabled; backs up outside it and never restarts it. */
+  apply: (name: string, server: string, dryRun: boolean) => Promise<ApplyResult>;
+  unapply: (name: string, server: string) => Promise<ApplyResult>;
+  overlay: (name: string, compatibleClient: string) => Promise<OverlayResult>;
 }
 
 export function deliveryApi(prefix: string, key: (cid: string) => string = (cid) => cid): DeliveryApi {
@@ -1096,6 +1113,9 @@ export function deliveryApi(prefix: string, key: (cid: string) => string = (cid)
     finished: (cid) => notify(key(cid), Promise.resolve(null)),
     detail: (name) => get<DeliveryDetail>(`${prefix}/deliveries/${encodeURIComponent(name)}`),
     rehearse: (name, server) => post(`${prefix}/deliveries/${encodeURIComponent(name)}/rehearse`, { server }),
+    apply: (name, server, dryRun) => post(`${prefix}/deliveries/${encodeURIComponent(name)}/apply`, { server, dryRun }),
+    unapply: (name, server) => post(`${prefix}/deliveries/${encodeURIComponent(name)}/unapply`, { server }),
+    overlay: (name, compatibleClient) => post(`${prefix}/deliveries/${encodeURIComponent(name)}/overlay`, { compatibleClient }),
     fileUrl: (name, path) => `${prefix}/deliveries/${encodeURIComponent(name)}/file?path=${encodeURIComponent(path)}`,
     device: (name) => get(`${prefix}/deliveries/${encodeURIComponent(name)}/device-result`),
     writeDevice: (cid, name, body) =>

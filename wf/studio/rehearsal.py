@@ -8,7 +8,7 @@ from wf.view.chain import version
 
 from .drafts import DraftError
 from .rehearsal_inputs import digest, inspect_archives, load_inputs
-from .rehearsal_io import (configured_server, delivery_folder, inside, json_bytes,
+from .rehearsal_io import (apply_enabled, configured_server, delivery_folder, inside, json_bytes,
                            read_json, save_reports, server_name, server_root)
 from .rehearsal_server import chain_tail, server_preview
 
@@ -53,8 +53,11 @@ def rehearse(delivery_dir, server="local", *, zips=None, write=True):
         _check(result, "to", version(end) > version(tail) and version(end) > version(start),
                f"交付 to={end} 必须高于链尾及 from")
         records = inspect_archives(paths, metadata)
-        _check(result, "local-test-only", not any("local_test_only" in d for d in [*metadata, *records]),
-               "共用条目禁止携带 local_test_only（包括 false）；原交付保持不变")
+        local_only = any("local_test_only" in d for d in [*metadata, *records])
+        _check(result, "local-test-only", not local_only or apply_enabled(server),
+               ("可应用到本地服，不可直接推 175；仅 apply_enabled=true 的目标允许本地候选；原交付保持不变"
+                if local_only and apply_enabled(server) else
+                "共用条目禁止携带 local_test_only（包括 false）；原交付保持不变"))
         result["archives"] = records
         _check(result, "archives", True, "分包版本、命名、连续序号、ZIP CRC 与摘要已核对")
         for record in records:
@@ -68,7 +71,7 @@ def rehearse(delivery_dir, server="local", *, zips=None, write=True):
                     "depends_on": start, "enabled": True, "archive": records[0]["name"],
                     "archive_size": records[0]["size"], "chain": [r["name"] for r in records],
                     "files": sorted(n for r in records for n in r["files"]),
-                    "archive_integrity": records,
+                    "archive_integrity": [{k: v for k, v in r.items() if k != "local_test_only"} for r in records],
                     "created_at": entry.get("created_at", result["createdAt"][:10])}
         _check(result, "manifest-identity", not any(
             e.get("id") == portable["id"] or e.get("version") == end for e in manifest["patches"]),
@@ -111,6 +114,8 @@ def rehearse(delivery_dir, server="local", *, zips=None, write=True):
 
 def manual_steps(result):
     root = result["serverRoot"] or "<未配置服务端目录>"
+    local_only = any(c["rule"] == "rehearsal.local-test-only" and "不可直接推 175" in c["message"]
+                     for c in result["checks"])
     return [
         "先确认本报告 status=ready；blocked 时停止，修复问题并重新预演。",
         f"重新读取 {root}/assets/asset-patch/manifest.json，确认启用链尾 {result['currentVersion']} 与交付 from={result['from']} 一致，并复核报告中的输入摘要。",
@@ -119,7 +124,8 @@ def manual_steps(result):
         f"在 {root}/assets/asset-patch/manifest.json 的 patches 末尾追加本报告 manifestEntryJson，同步 cdn_version=to；保存 UTF-8 无 BOM、CRLF、2 空格缩进及结尾换行。",
         result["restartReason"] + "；需要重启时由操作者按本机既有流程停启主进程和联机子进程，预演不会执行。",
         "手工核对启用链、ZIP 摘要与 get_path；由操作者完成设备验证，预演结果不代表游戏通过。",
-        "本地验证后，向测试服 175 复制同一批 ZIP、追加完全相同的 manifestEntryJson，并按相同键变更合入服务端；先核对测试服链尾，保持同一版本号。",
+        ("本交付为本地候选：可应用到本地服，不可直接推 175；正式发布需独立验收与授权。" if local_only else
+         "本地验证后，向测试服 175 复制同一批 ZIP、追加完全相同的 manifestEntryJson，并按相同键变更合入服务端；先核对测试服链尾，保持同一版本号。"),
     ]
 
 
@@ -137,7 +143,7 @@ def markdown(result):
                       f"候选未包含、必须保留的旧键：{item['omittedKeys']}", ""])
     lines.extend(["## 手工上边清单", ""])
     lines.extend(f"{i}. {step}" for i, step in enumerate(result["manualSteps"], 1))
-    lines.extend(["", "## 本地与 175 共用 manifest 条目候选", "",
+    lines.extend(["", "## manifest 条目候选（适用范围见检查结果）", "",
                   "仅 status=ready 且人工复核通过后可使用；blocked 时禁止追加。", "", "```json",
                   result["manifestEntryJson"] or "null", "```", ""])
     return "\n".join(lines)

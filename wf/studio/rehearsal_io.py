@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import math
 import os
 import re
 from pathlib import Path
@@ -39,6 +40,11 @@ def configured_server():
 
 
 def read_json(filename):
+    def finite(value):
+        number = float(value)
+        if not math.isfinite(number):
+            raise DraftError(f"JSON 非有限数值：{filename}: {value}")
+        return number
     def unique(pairs):
         result = {}
         for key, value in pairs:
@@ -46,7 +52,8 @@ def read_json(filename):
                 raise DraftError(f"JSON 重复键：{filename}: {key}")
             result[key] = value
         return result
-    return json.loads(Path(filename).read_text("utf-8-sig"), object_pairs_hook=unique)
+    return json.loads(Path(filename).read_text("utf-8-sig"), object_pairs_hook=unique,
+                      parse_constant=finite, parse_float=finite)
 
 
 def inside(root, relative):
@@ -72,7 +79,35 @@ def delivery_folder(directory):
 
 
 def json_bytes(document):
-    return (json.dumps(document, ensure_ascii=False, indent=2).replace("\n", "\r\n") + "\r\n").encode("utf-8")
+    return (json.dumps(document, ensure_ascii=False, indent=2, allow_nan=False).replace("\n", "\r\n") + "\r\n").encode("utf-8")
+
+
+def apply_enabled(name):
+    config, _ = profile_data()
+    servers = config.get("servers") or {}
+    entry = servers.get(name) if isinstance(servers, dict) else None
+    return isinstance(entry, dict) and entry.get("apply_enabled") is True
+
+
+def protected_roots():
+    """All configured input trees, without importing the CDN catalog."""
+    from wf.paths import configured_path
+    from .config import server_directory
+    roots = []
+    configured = server_directory()
+    if configured is not None:
+        roots.append(configured.parent if configured.name.lower() == "assets" else configured)
+    cdn = configured_path("cdn_dir")
+    if cdn is not None:
+        roots.append(cdn)
+    config, _ = profile_data()
+    servers = config.get("servers") or {}
+    for name in servers if isinstance(servers, dict) else ():
+        try:
+            roots.append(server_root(name))
+        except DraftError:
+            continue
+    return [p.resolve() for p in roots]
 
 
 def save_reports(folder, result, markdown, protected):

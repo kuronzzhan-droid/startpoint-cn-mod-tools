@@ -129,4 +129,6 @@ def server_preview(folder, root):
         results.append(item)
     if set(declared) - seen:
         raise DraftError("缺少声明的服务端候选文件：" + ", ".join(sorted(set(declared) - seen)))
+    if assertion_file.is_file() and seen - set(declared):
+        raise DraftError("存在未声明的服务端候选文件：" + ", ".join(sorted(seen - set(declared))))
     return results, snapshots

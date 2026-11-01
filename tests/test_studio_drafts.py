@@ -240,8 +240,9 @@ def test_route_verbs():
     assert all(pattern.pattern.startswith(("^/api/drafts/", "^/api/boss/drafts", "^/api/studio/weapons/",
                                            "^/api/studio/characters/"))
                or pattern.pattern == "^/api/studio/views/export-store$"
-               or pattern.pattern in {r"^/api/deliveries/(?P<name>[^/]+)/rehearse$",
-                                      r"^/api/boss/deliveries/(?P<name>[^/]+)/rehearse$"}
+               or pattern.pattern in {rf"^/api/{prefix}deliveries/(?P<name>[^/]+)/{action}$"
+                                      for prefix in ("", "boss/")
+                                      for action in ("rehearse", "apply", "unapply", "overlay")}
                for verb, pattern, _ in app.routes if verb == "POST")
 
 
