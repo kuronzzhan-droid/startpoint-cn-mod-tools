@@ -2,12 +2,14 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import io
 import csv
 import json
 import math
 import re
 from pathlib import Path, PurePosixPath
+import threading
 
 import jsonschema
 from .schema import parse_rows
@@ -29,9 +31,27 @@ GENERATED_KEY = re.compile(r"^mod_(?:studio_)?scene_([0-9]{6})(?:_|$)")
 GENERATED_CONTINUE = re.compile(r"^continue_cost_([3-9][0-9]{5})[0-9]{3}$")
 GENERATED_RESOURCE = re.compile(r"/mod/studio_scene_([0-9]{6})/")
 
+_SCHEMA_LOCK = threading.RLock()
+_SCHEMA_CACHE: tuple[bytes, dict, jsonschema.Draft202012Validator] | None = None
+
+
+def _validator_and_schema():
+    global _SCHEMA_CACHE
+    from .edit_state import freeze_tree
+    raw = SCHEMA.read_bytes()
+    digest = hashlib.sha256(raw).digest()
+    with _SCHEMA_LOCK:
+        if _SCHEMA_CACHE is not None and _SCHEMA_CACHE[0] == digest:
+            return _SCHEMA_CACHE[1], _SCHEMA_CACHE[2]
+        parsed = freeze_tree(json.loads(raw.decode("utf8")))
+        validator = jsonschema.Draft202012Validator(parsed)
+        _SCHEMA_CACHE = (digest, parsed, validator)
+        return parsed, validator
+
 
 def schema():
-    return json.loads(SCHEMA.read_text("utf8"))
+    parsed, _ = _validator_and_schema()
+    return copy.deepcopy(parsed)
 
 
 def logical_path(value):
@@ -91,7 +111,8 @@ def validate_creation(spec):
 def validate_spec(spec):
     json.dumps(spec, allow_nan=False)
     try:
-        jsonschema.Draft202012Validator(schema()).validate(spec)
+        _, validator = _validator_and_schema()
+        validator.validate(spec)
     except jsonschema.ValidationError as exc:
         raise ValueError("规格 schema 错误 /" + "/".join(map(str, exc.absolute_path)) + ": " + exc.message) from exc
     paths, entries = set(), set()
@@ -156,10 +177,12 @@ def validate_spec(spec):
 def materialize(spec):
     """Apply semantic settings to a copied graph; reject collisions and dead bindings."""
     validate_spec(spec)
-    tables = {t["logical"]: {tuple(e["path"]): copy.deepcopy(e["value"])
+    tables = {t["logical"]: {tuple(e["path"]): e["value"]
                             for e in t["entries"]} for t in spec["tables"]}
-    resources = {r["logical"]: copy.deepcopy(r["value"]) for r in spec["resources"]}
+    resources = {r["logical"]: r["value"] for r in spec["resources"]}
+    copied_resources = set()
     written = {}
+    resource_paths = {}
     for setting in settings(spec):
         for binding in setting["bindings"]:
             canonical = {**binding, **({"row": binding.get("row", 0)} if "table" in binding else {})}
@@ -168,13 +191,12 @@ def materialize(spec):
                 raise ValueError("语义设置重复绑定且值冲突：" + setting["id"])
             written[identity] = setting["value"]
             if "resource" in binding:
-                for previous in written:
-                    other = json.loads(previous)
-                    if other.get("resource") != binding["resource"] or previous == identity:
-                        continue
-                    a, b = other["path"], binding["path"]
-                    if a[:len(b)] == b or b[:len(a)] == a:
+                b = binding["path"]
+                by_res = resource_paths.setdefault(binding["resource"], {})
+                for prev_id, a in by_res.items():
+                    if prev_id != identity and (a[:len(b)] == b or b[:len(a)] == a):
                         raise ValueError("资源父子路径重复绑定：" + setting["id"])
+                by_res[identity] = b
             if "table" in binding:
                 table, path = binding["table"], tuple(binding["path"])
                 if table not in tables or path not in tables[table]:
@@ -194,6 +216,9 @@ def materialize(spec):
                 logical, path = binding["resource"], binding["path"]
                 if logical not in resources or not path:
                     raise ValueError("资源绑定未包含在规格中：" + setting["id"])
+                if logical not in copied_resources:
+                    resources[logical] = copy.deepcopy(resources[logical])
+                    copied_resources.add(logical)
                 node = resources[logical]
                 try:
                     for key in path[:-1]:

@@ -42,7 +42,10 @@ class ViewInputs:
     def verify_read(self):
         """Revalidate a cached read: chain, ZIP stats and every hashed input."""
         view = self.source.view
-        check = getattr(view, "verify_read", None) or getattr(view, "verify", None)
+        if "verify" in getattr(view, "__dict__", {}) and "verify_read" not in getattr(view, "__dict__", {}):
+            check = view.verify
+        else:
+            check = getattr(view, "verify_read", None) or getattr(view, "verify", None)
         if check:
             check()
         self._verify_inputs()

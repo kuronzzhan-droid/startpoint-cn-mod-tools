@@ -1,12 +1,12 @@
 """Read-only import of the Hell Pumpkin encounter into portable scene specs."""
 from __future__ import annotations
 
+import copy
 import re
-import wf_quest_lib as codec
+from .edit_state import parse_readonly_node
 from .schema import iter_leaves, parse_rows
 from .scene_spec import logical_path
 from .scene_types import AE, AQ, CAS, CONTINUE_PREFIX
-from wf.tools.boss.five_boss_v2 import decode_amf
 
 GBS = "master/battle/boss/general_boss_state.orderedmap"
 GFS = "master/battle/boss/funnel/general_funnel_state.orderedmap"
@@ -57,7 +57,8 @@ def _resources(loader, tables):
     def enqueue(value):
         for _, node in walk(value):
             if isinstance(node, str):
-                pending.extend(p for p in PATH.findall(node) if "/mod/hell_pumpkin/" in p and p.startswith("battle/"))
+                pending.extend(p for p in PATH.findall(node)
+                               if "/mod/hell_pumpkin/" in p and "/.gen/" not in p and p.startswith("battle/"))
     enqueue(tables)
     while pending:
         name = pending.pop()
@@ -70,7 +71,8 @@ def _resources(loader, tables):
                 raw = loader(logical)
             except (FileNotFoundError, KeyError):
                 continue
-            value = decode_amf(raw)
+            from .scene import decode_readonly_amf
+            value = copy.deepcopy(decode_readonly_amf(raw))
             found = True
             resources[logical] = {"logical": logical, "encoding": "amf3", "value": value}
             enqueue(value)
@@ -125,7 +127,7 @@ def import_hell_pumpkin(loader, version):
     tables = []
     for logical in TABLES:
         try:
-            tree = codec.parse_node(loader(logical))
+            tree = parse_readonly_node(loader(logical))
         except FileNotFoundError as exc:
             if logical == CAS:
                 continue

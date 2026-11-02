@@ -1,13 +1,50 @@
 """Pure scene compilation against a read-only view; no store/server writes."""
 from __future__ import annotations
 
+from collections import OrderedDict
+import hashlib
+import threading
 from types import SimpleNamespace
 import wf_quest_lib as codec
 from wf.tools.boss.five_boss_v2 import decode_amf, encode_dsl
 from wf.rules.catalog import result
-from .edit_state import BossEditState, leaf, put
+from .edit_state import BossEditState, freeze_tree, leaf, parse_readonly_node
 from .scene_spec import materialize, settings
 from .scene_import import walk
+
+_AMF_CACHE: OrderedDict[tuple[int, bytes], object] = OrderedDict()
+_AMF_LOCK = threading.RLock()
+
+
+def decode_readonly_amf(raw):
+    if not isinstance(raw, bytes):
+        return freeze_tree(decode_amf(raw))
+    key = (len(raw), hashlib.sha256(raw).digest())
+    with _AMF_LOCK:
+        if key in _AMF_CACHE:
+            _AMF_CACHE.move_to_end(key)
+            return _AMF_CACHE[key]
+    decoded = freeze_tree(decode_amf(raw))
+    with _AMF_LOCK:
+        _AMF_CACHE[key] = decoded
+        _AMF_CACHE.move_to_end(key)
+        while len(_AMF_CACHE) > 256:
+            _AMF_CACHE.popitem(last=False)
+    return decoded
+
+
+def _put_cow(tree, path, value):
+    key = str(path[0])
+    if len(path) == 1:
+        copied = dict(tree)
+        copied[key] = value
+        return copied
+    child = tree.get(key, {})
+    if not isinstance(child, dict):
+        raise ValueError("table path traverses a leaf")
+    copied = dict(tree)
+    copied[key] = _put_cow(child, path[1:], value)
+    return copied
 
 
 def _audit(loader, spec):
@@ -17,7 +54,7 @@ def _audit(loader, spec):
     new_resources = set(new.get("resourceTargets", []))
     for table in spec["tables"]:
         try:
-            current = codec.parse_node(loader(table["logical"]))
+            current = parse_readonly_node(loader(table["logical"]))
         except FileNotFoundError:
             current = {}
         for entry in table["entries"]:
@@ -31,7 +68,7 @@ def _audit(loader, spec):
                                     "current": actual, "spec": entry["value"]})
     for resource in spec["resources"]:
         try:
-            actual = decode_amf(loader(resource["logical"]))
+            actual = decode_readonly_amf(loader(resource["logical"]))
         except FileNotFoundError:
             continue
         if resource["logical"] in new_resources:
@@ -50,21 +87,25 @@ def compile_scene(loader, spec, *, source=None, check_encounters=True, server_di
     audit = _audit(loader, spec)
     for logical, entries in tables.items():
         from wf.text.edit import _encode
-        before = state.table(logical)
-        current = __import__("copy").deepcopy(before)
+        before = state.readonly_table(logical)
+        current = before
         for path, value in entries.items():
             old = leaf(current, path)
             if old != value:
-                put(current, path, value)
+                current = _put_cow(current, path, value)
                 state.changes.append({"table": logical, "path": list(path), "old": old, "new": value})
-        if current != before:
+        if current is not before:
             raw = state.raw(logical)
-            state.client[logical] = _encode(raw, before, current) if raw is not None else codec.build_node(current)
-            state.trees[logical] = current
+            encoded = _encode(raw, before, current) if raw is not None else codec.build_node(current)
+            decoded = codec.parse_node(encoded)
+            if decoded != current:
+                raise ValueError(f"boss table roundtrip mismatch: {logical}")
+            state.client[logical] = encoded
+            state.trees[logical] = freeze_tree(decoded)
     for logical, value in resources.items():
         # Keep unchanged wire bytes; semantic equality is the contract.
         before = state.raw(logical)
-        if before is None or decode_amf(before) != value:
+        if before is None or decode_readonly_amf(before) != value:
             state.set_raw(logical, encode_dsl(value))
     from .scene_dsl import references
     problems = references(state, resources)

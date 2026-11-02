@@ -4,7 +4,7 @@ from __future__ import annotations
 from wf.rules.boss_common import CandidateView, cell
 from wf.rules.boss_preload import programs, tier, walk
 from .behavior_identity import GENERAL_FUNNEL, WATCH
-from .behavior_model import Programs
+from .behavior_model import Programs, tree_info
 
 
 def watch_programs(view, code, routine):
@@ -36,12 +36,7 @@ class PositionReferences:
             missing.update(p for p, tree in current.items() if tree is None)
             roots = []
             for tree in current.values():
-                for node in walk(tree):
-                    if not (isinstance(node, list) and len(node) > 1 and node[0] == 'SpawnFunnel'
-                            and isinstance(node[1], list) and len(node[1]) > 1
-                            and node[1][0] == 'Funnel'):
-                        continue
-                    funnel = node[1][1]
+                for funnel in tree_info(tree)[1]:
                     if funnel in seen:
                         continue
                     seen.add(funnel)
@@ -51,7 +46,5 @@ class PositionReferences:
                     if not frow:
                         missing.add(f'{GENERAL_FUNNEL}/{funnel}')
                     roots.extend(p for value in frow for p in programs(value))
-        positions = {node[1] for tree in closure.values() for node in walk(tree)
-                     if isinstance(node, list) and len(node) == 2 and node[0] == 'CustomPosition'
-                     and isinstance(node[1], str)}
+        positions = {pos for tree in closure.values() for pos in tree_info(tree)[2]}
         return positions, sorted(missing)

@@ -1,12 +1,18 @@
 """Prove C8016 shims from decoded candidate DSL and marker action slots."""
 from __future__ import annotations
 
+from collections import OrderedDict
 import copy
+import hashlib
 import re
+import threading
 import zlib
 
 from .boss_common import CandidateView, EMPTY, cell, cells, fields
 from .catalog import result
+
+_DSL_TREE_CACHE: OrderedDict[tuple[int, bytes], object] = OrderedDict()
+_DSL_TREE_LOCK = threading.RLock()
 
 GENERAL = "master/battle/boss/general_boss.orderedmap"
 FUNNEL = "master/battle/boss/funnel/general_funnel.orderedmap"
@@ -63,11 +69,24 @@ class DslEvidence:
                 self.missing.add(logical)
                 self.cache[logical] = None
             else:
+                key = (len(raw), hashlib.sha256(raw).digest())
+                with _DSL_TREE_LOCK:
+                    if key in _DSL_TREE_CACHE:
+                        _DSL_TREE_CACHE.move_to_end(key)
+                        self.cache[logical] = _DSL_TREE_CACHE[key]
+                        return self.cache[logical]
                 import wf_dsl
+                from wf.boss.edit_state import freeze_tree
                 try:
-                    self.cache[logical] = wf_dsl.parse_dsl(zlib.decompress(raw, -15))["tree"]
+                    parsed = freeze_tree(wf_dsl.parse_dsl(zlib.decompress(raw, -15))["tree"])
                 except (ValueError, EOFError, IndexError, KeyError, zlib.error) as error:
                     raise ValueError(f"无法解码候选预载资源 {logical}: {error}") from error
+                with _DSL_TREE_LOCK:
+                    _DSL_TREE_CACHE[key] = parsed
+                    _DSL_TREE_CACHE.move_to_end(key)
+                    while len(_DSL_TREE_CACHE) > 512:
+                        _DSL_TREE_CACHE.popitem(last=False)
+                self.cache[logical] = parsed
         return self.cache[logical]
 
     def dsl(self, program):

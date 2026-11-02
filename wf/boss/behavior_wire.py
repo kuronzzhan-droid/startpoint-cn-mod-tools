@@ -1,4 +1,4 @@
-﻿"""Lossless AMF3 tree documents for packed enemy behavior resources.
+"""Lossless AMF3 tree documents for packed enemy behavior resources.
 
 The wire image retains string references, noncanonical numbers and compression.
 Edits are encoded canonically; surrogateescape preserves legacy non-UTF8 bytes.
@@ -6,12 +6,20 @@ Edits are encoded canonically; surrogateescape preserves legacy non-UTF8 bytes.
 from __future__ import annotations
 
 import base64
+from collections import OrderedDict
 import copy
 import hashlib
 import struct
+import threading
 import zlib
 
 import wf_dsl
+from .edit_state import freeze_tree
+
+_WIRE_TREE_CACHE: OrderedDict[tuple[int, bytes], object] = OrderedDict()
+_WIRE_TREE_KEYS_BY_ID: dict[int, tuple[int, bytes]] = {}
+_WIRE_TREE_INFO: dict[int, tuple[tuple[str, ...], tuple[str, ...], frozenset[str]]] = {}
+_WIRE_TREE_LOCK = threading.RLock()
 
 
 class _Reader(wf_dsl._Parser):
@@ -102,13 +110,35 @@ def compress(data):
     return compressor.compress(data) + compressor.flush()
 
 
-def decode_wire(raw):
+def decode_wire_tree(raw):
     if not isinstance(raw, bytes):
         raise ValueError('behavior resource must be bytes')
+    key = (len(raw), hashlib.sha256(raw).digest())
+    with _WIRE_TREE_LOCK:
+        if key in _WIRE_TREE_CACHE:
+            _WIRE_TREE_CACHE.move_to_end(key)
+            return _WIRE_TREE_CACHE[key]
     try:
-        tree = read_tree(zlib.decompress(raw, -15))
+        tree = freeze_tree(read_tree(zlib.decompress(raw, -15)))
     except zlib.error as error:
         raise ValueError('behavior resource is not raw deflate') from error
+    with _WIRE_TREE_LOCK:
+        old = _WIRE_TREE_CACHE.get(key)
+        if old is not None:
+            _WIRE_TREE_KEYS_BY_ID.pop(id(old), None)
+            _WIRE_TREE_INFO.pop(id(old), None)
+        _WIRE_TREE_CACHE[key] = tree
+        _WIRE_TREE_KEYS_BY_ID[id(tree)] = key
+        _WIRE_TREE_CACHE.move_to_end(key)
+        while len(_WIRE_TREE_CACHE) > 512:
+            _, evicted = _WIRE_TREE_CACHE.popitem(last=False)
+            _WIRE_TREE_KEYS_BY_ID.pop(id(evicted), None)
+            _WIRE_TREE_INFO.pop(id(evicted), None)
+    return tree
+
+
+def decode_wire(raw):
+    tree = copy.deepcopy(decode_wire_tree(raw))
     return {'tree': tree, 'wire': base64.b64encode(raw).decode('ascii'),
             'sha256': hashlib.sha256(raw).hexdigest()}
 

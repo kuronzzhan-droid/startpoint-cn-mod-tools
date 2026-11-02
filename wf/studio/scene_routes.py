@@ -221,7 +221,9 @@ class SceneDeliveries(DeliverRoutes):
             raise DraftError("请先在当前视图预览并保存场景规格")
         if kwargs["from_version"] != self.app.source.version:
             raise DraftError("来源版本必须是当前视图链尾")
-        computed, inputs = self.owner.compute(cid, draft["payload"])
+        computed, inputs = (self.owner.compute(cid, draft["payload"])
+                            if "compute" in self.owner.__dict__
+                            else self.owner.compute(cid, draft["payload"], use_cache=False))
         if not computed["canGenerate"]:
             raise DraftError("；".join(computed["blockers"]))
         if inputs.inputs != draft["inputs"] or computed["outputSha256"] != draft["preview"]["outputSha256"]:
@@ -255,27 +257,100 @@ class SceneDeliveries(DeliverRoutes):
 class SceneRoutes:
     def __init__(self, app, server_dir=None, default_provides=None):
         self.app, self.server_dir = app, server_dir
+        from .mode_cache import ModeReadCache
+        self.read_cache = ModeReadCache()
+        self.import_cache = ModeReadCache()
+        self.clone_cache = ModeReadCache()
         self.store = SceneStore(app.ops.store.root / "scenes")
         proxy = SimpleNamespace(source=app.source, ops=SimpleNamespace(store=self.store),
                                 screenshots=getattr(app, "screenshots", None))
         self.deliveries = SceneDeliveries(self, proxy, server_dir, default_provides)
 
-    def compute(self, mode, payload):
+    def _server_context(self):
+        if self.server_dir is None:
+            return None
+        from wf.boss.scene_server import CONTINUE_COST, FILES
+        try:
+            root = Path(self.server_dir).resolve()
+        except OSError:
+            return "invalid"
+        digests = {}
+        for name in (*FILES, CONTINUE_COST):
+            target = (root / "assets" / name).resolve()
+            if not target.is_relative_to(root):
+                return "escaped"
+            try:
+                digests[name] = sha256(target.read_bytes()) if target.is_file() else None
+            except OSError:
+                return "unreadable"
+        return digests
+
+    @staticmethod
+    def _static_context():
+        from wf.boss.scene_spec import SCHEMA
+        from wf.rules import catalog as rules_catalog
+        catalog_path = Path(rules_catalog.__file__).with_name("catalog.json")
+        out = {}
+        for key, path in (("schema", SCHEMA), ("catalog", catalog_path)):
+            try:
+                out[key] = sha256(path.read_bytes()) if path.is_file() else None
+            except OSError:
+                out[key] = "unreadable"
+        return out
+
+    def _import_mother(self):
+        from wf.boss.scene_import import import_hell_pumpkin
+        def build():
+            inputs = ViewInputs(self.app.source)
+            spec = import_hell_pumpkin(inputs.read, self.app.source.version)
+            inputs.verify_read()
+            return spec, inputs
+        ctx = {"version": self.app.source.version, "static": self._static_context()}
+        return self.import_cache.get(MOTHER_SLOT, self.app.source, ctx, build)
+
+    def _build_compute(self, mode, payload, fresh=None, *, verify_full=False):
         from wf.boss.scene import compile_scene
-        self.store.directory(mode)
         inputs = ViewInputs(self.app.source)
         result = compile_scene(inputs.read, payload, server_dir=self.server_dir)
         expected_slot = slot_for_payload(payload)
         if expected_slot != mode:
             raise DraftError(f"规格槽位 {expected_slot} 与目标草稿槽 {mode} 不一致，拒绝覆盖其他场景草稿")
-        inputs.verify()
-        fresh = freshness(self.app.source)
+        if verify_full:
+            inputs.verify()
+        else:
+            inputs.verify_read()
+        if fresh is None:
+            fresh = freshness(self.app.source)
         if fresh.get("error") or fresh["latest"] != self.app.source.version or payload["sourceVersion"] != self.app.source.version:
             result["canGenerate"] = False
             result["blockers"].append("当前视图不是已确认的新鲜链尾或规格版本过期")
         result.update(version=self.app.source.version, freshness=fresh)
         result["outputSha256"] = {**{logical: sha256(raw) for logical, raw in result["files"].items()},
                                   **{"server:" + key: sha256(raw) for key, raw in result["servers"].items()}}
+        return (result, dict(inputs.inputs)), inputs
+
+    def compute(self, mode, payload, *, use_cache=False):
+        self.store.directory(mode)
+        fresh = freshness(self.app.source)
+        if not use_cache:
+            (result, _), inputs = self._build_compute(mode, payload, fresh=fresh, verify_full=True)
+            return result, inputs
+        try:
+            context = {
+                "payload": payload,
+                "freshness": fresh,
+                "server": self._server_context(),
+                "static": self._static_context(),
+            }
+            json.dumps(context, sort_keys=True, ensure_ascii=False, allow_nan=False)
+        except (TypeError, ValueError):
+            (result, _), inputs = self._build_compute(mode, payload, fresh=fresh)
+            return result, inputs
+        result, recorded_inputs = self.read_cache.get(
+            mode, self.app.source, context, lambda: self._build_compute(mode, payload, fresh=fresh)
+        )
+        inputs = ViewInputs(self.app.source)
+        inputs.inputs = recorded_inputs
         return result, inputs
 
     @staticmethod
@@ -288,14 +363,12 @@ class SceneRoutes:
 
     def read(self, query, mode):
         from .server import json_response
-        from wf.boss.scene_import import import_hell_pumpkin
         draft = self.store.load(mode)
         if mode != MOTHER_SLOT and not draft:
             raise DraftError(f"没有已保存的场景草稿：{mode}")
-        inputs = ViewInputs(self.app.source)
         spec = None
         try:
-            spec = import_hell_pumpkin(inputs.read, self.app.source.version)
+            spec = self._import_mother()
         except (ValueError, OSError, KeyError, TypeError, RuntimeError) as import_exc:
             if mode == MOTHER_SLOT and not draft:
                 return json_response({
@@ -306,7 +379,9 @@ class SceneRoutes:
                 })
         payload = draft["payload"] if draft else spec
         try:
-            result, _ = self.compute(mode, payload)
+            result, _ = (self.compute(mode, payload)
+                         if "compute" in self.__dict__
+                         else self.compute(mode, payload, use_cache=True))
             preview = self.public(result)
         except (ValueError, OSError, KeyError, TypeError, RuntimeError) as exc:
             preview = {"ok": False, "canGenerate": False, "blockers": [str(exc)], "checks": []}
@@ -322,7 +397,9 @@ class SceneRoutes:
         if not isinstance(body, dict) or set(body) - {"payload", "revision"} or "payload" not in body:
             raise DraftError("请求只接受 payload 与 revision")
         try:
-            result, inputs = self.compute(mode, body["payload"])
+            result, inputs = (self.compute(mode, body["payload"])
+                              if "compute" in self.__dict__
+                              else self.compute(mode, body["payload"], use_cache=action == "preview"))
             public = self.public(result)
             public["slot"] = mode
             if action == "save":
@@ -350,7 +427,6 @@ class SceneRoutes:
         if not isinstance(body, dict) or set(body) - {"payload", "eventId", "name"} or "payload" not in body:
             raise DraftError("克隆需要 payload，可选 name 与 eventId")
         try:
-            inputs = ViewInputs(self.app.source)
             reserved = set(self.store.reserved_events()) | delivered_event_ids(self.deliveries.root)
             with self.deliveries._lock:
                 for running_cid in self.deliveries.running:
@@ -363,11 +439,29 @@ class SceneRoutes:
                     raise ValueError(f"新活动 ID {explicit_id} 已被本地草稿或已有交付占用")
                 payload = clone_scene(body["payload"], explicit_id, body.get("name"))
             else:
-                payload = allocate_scene(body["payload"], inputs.read, server_dir=self.server_dir,
-                                         reserved=sorted(reserved), deliveries_dir=self.deliveries.root,
-                                         name=body.get("name"))
+                def build_clone():
+                    clone_inputs = ViewInputs(self.app.source)
+                    cloned = allocate_scene(body["payload"], clone_inputs.read, server_dir=self.server_dir,
+                                            reserved=sorted(reserved), deliveries_dir=self.deliveries.root,
+                                            name=body.get("name"))
+                    clone_inputs.verify_read()
+                    return cloned, clone_inputs
+                try:
+                    clone_ctx = {
+                        "body": body,
+                        "reserved": sorted(reserved),
+                        "server": self._server_context(),
+                        "static": self._static_context(),
+                    }
+                    json.dumps(clone_ctx, sort_keys=True, ensure_ascii=False, allow_nan=False)
+                except (TypeError, ValueError):
+                    payload, _ = build_clone()
+                else:
+                    payload = self.clone_cache.get(mode, self.app.source, clone_ctx, build_clone)
             target_slot = slot_for_payload(payload)
-            result, _ = self.compute(target_slot, payload)
+            result, _ = (self.compute(target_slot, payload)
+                         if "compute" in self.__dict__
+                         else self.compute(target_slot, payload, use_cache=True))
             return json_response({
                 "slot": target_slot,
                 "payload": payload,
