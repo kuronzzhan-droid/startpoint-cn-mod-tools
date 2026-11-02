@@ -34,6 +34,8 @@
 """
 from __future__ import annotations
 
+from contextlib import ExitStack
+
 from wf.paths import path as configured_path
 from .prepush_base import *
 from .prepush_chain import *
@@ -109,76 +111,77 @@ def main(argv=None, *, archive_paths=None) -> int:
     only = set((args.only or "chain,text,companion,level").split(","))
 
     chain = (list_chain(active) if archive_paths is None else list(archive_paths)) + [p.resolve() for p in args.extra_zip]
-    view = View(chain, args.base_store)
-    old = None
-    if args.since:
-        old = View([p for p in chain if archive_key(p.name) and archive_key(p.name)[1] <= vkey(args.since)], args.base_store)
-        new_zips = {p.name for p in chain if p not in set(old.zips)}
-    else:
-        new_zips = {p.name for p in chain}
-    tail = max((archive_key(p.name)[1] for p in chain if archive_key(p.name)), default=None)
-    print(f"视图: 基础 store={args.base_store or '(无,只看链)'}; 链 {len(chain)} 个包,"
-          f"链尾 {'.'.join(map(str, tail)) if tail else '?'}"
-          + (f"; 候选 {', '.join(p.name for p in args.extra_zip)}" if args.extra_zip else "")
-          + (f"; --since {args.since}(新包 {len(new_zips)} 个)" if args.since else ""))
+    with ExitStack() as stack:
+        view = stack.enter_context(View(chain, args.base_store))
+        old = None
+        if args.since:
+            old = stack.enter_context(View([p for p in chain if archive_key(p.name) and archive_key(p.name)[1] <= vkey(args.since)], args.base_store))
+            new_zips = {p.name for p in chain if p not in set(old.zips)}
+        else:
+            new_zips = {p.name for p in chain}
+        tail = max((archive_key(p.name)[1] for p in chain if archive_key(p.name)), default=None)
+        print(f"视图: 基础 store={args.base_store or '(无,只看链)'}; 链 {len(chain)} 个包,"
+              f"链尾 {'.'.join(map(str, tail)) if tail else '?'}"
+              + (f"; 候选 {', '.join(p.name for p in args.extra_zip)}" if args.extra_zip else "")
+              + (f"; --since {args.since}(新包 {len(new_zips)} 个)" if args.since else ""))
 
-    if "chain" in only:
-        check_chain(args, manifest, active, new_zips, rep, load_pathlist(args.pathlist), archive_paths=chain)
-    if "text" in only:
-        check_text(args, view, old, rep)
-    if "companion" in only:
-        check_companion(args, view, old, rep, allow_iqs)
-    if "level" in only:
-        check_level(args, view, old, rep)
+        if "chain" in only:
+            check_chain(args, manifest, active, new_zips, rep, load_pathlist(args.pathlist), archive_paths=chain)
+        if "text" in only:
+            check_text(args, view, old, rep)
+        if "companion" in only:
+            check_companion(args, view, old, rep, allow_iqs)
+        if "level" in only:
+            check_level(args, view, old, rep)
 
-    for v in (view, old):
-        if v is None:
-            continue
-        for lp, err in sorted(v.broken.items()):
-            fid = f"view.broken:{lp}"
-            if fid not in {f.fid for f in rep.items}:
-                rep.add("WARN", "chain", fid, f"{lp} 在视图里解不开,依赖它的检查按「不在视图」处理: {err}")
-    if view.stubs:
-        rep.notes.append("APK 内置表(store 里是 16 字节桩,按不在视图处理): "
-                         + ", ".join(Path(x).stem for x in sorted(view.stubs)))
-
-    labels = {"chain": "补丁链/清单", "text": "改错表", "companion": "伴随表", "level": "等级缺口"}
-    for chk in ("chain", "text", "companion", "level"):
-        if chk not in only:
-            continue
-        order = {"ERROR": 0, "WARN": 1, "INFO": 2}
-        fs = sorted((f for f in rep.items if f.check == chk), key=lambda f: order[f.level])
-        e = sum(f.level == "ERROR" for f in fs)
-        w = sum(f.level == "WARN" for f in fs)
-        print(f"\n[{labels[chk]}] ERROR {e}  WARN {w}  INFO {sum(f.level == 'INFO' for f in fs)}")
-        shown_warn = 0
-        for f in fs:
-            if f.level == "INFO" and not args.verbose:
+        for v in (view, old):
+            if v is None:
                 continue
-            if f.level == "WARN" and not args.verbose:
-                shown_warn += 1
-                if shown_warn > 12:
+            for lp, err in sorted(v.broken.items()):
+                fid = f"view.broken:{lp}"
+                if fid not in {f.fid for f in rep.items}:
+                    rep.add("WARN", "chain", fid, f"{lp} 在视图里解不开,依赖它的检查按「不在视图」处理: {err}")
+        if view.stubs:
+            rep.notes.append("APK 内置表(store 里是 16 字节桩,按不在视图处理): "
+                             + ", ".join(Path(x).stem for x in sorted(view.stubs)))
+
+        labels = {"chain": "补丁链/清单", "text": "改错表", "companion": "伴随表", "level": "等级缺口"}
+        for chk in ("chain", "text", "companion", "level"):
+            if chk not in only:
+                continue
+            order = {"ERROR": 0, "WARN": 1, "INFO": 2}
+            fs = sorted((f for f in rep.items if f.check == chk), key=lambda f: order[f.level])
+            e = sum(f.level == "ERROR" for f in fs)
+            w = sum(f.level == "WARN" for f in fs)
+            print(f"\n[{labels[chk]}] ERROR {e}  WARN {w}  INFO {sum(f.level == 'INFO' for f in fs)}")
+            shown_warn = 0
+            for f in fs:
+                if f.level == "INFO" and not args.verbose:
                     continue
-            print(f"  {f.level:5} {f.msg}")
-            if f.level == "ERROR" or args.verbose:
-                for d in f.detail:
-                    print(f"        {d}")
-            if args.verbose:
-                print(f"        id={f.fid}")
-        if shown_warn > 12:
-            print(f"  ……另有 {shown_warn - 12} 条 WARN(--verbose 或 --json 看全部)")
-    if rep.notes:
-        print("\n说明:")
-        for n in rep.notes:
-            print(f"  - {n}")
-    print(f"\n合计: ERROR {rep.count('ERROR')}  WARN {rep.count('WARN')}  INFO {rep.count('INFO')}"
-          f"  => {'不要推送' if rep.count('ERROR') else '可以推送'}")
-    if args.json:
-        args.json.write_text(json.dumps({
-            "findings": [f.__dict__ for f in rep.items], "notes": rep.notes,
-            "chain": [p.name for p in chain], "since": args.since,
-        }, ensure_ascii=False, indent=1), "utf-8")
-    return 1 if rep.count("ERROR") else 0
+                if f.level == "WARN" and not args.verbose:
+                    shown_warn += 1
+                    if shown_warn > 12:
+                        continue
+                print(f"  {f.level:5} {f.msg}")
+                if f.level == "ERROR" or args.verbose:
+                    for d in f.detail:
+                        print(f"        {d}")
+                if args.verbose:
+                    print(f"        id={f.fid}")
+            if shown_warn > 12:
+                print(f"  ……另有 {shown_warn - 12} 条 WARN(--verbose 或 --json 看全部)")
+        if rep.notes:
+            print("\n说明:")
+            for n in rep.notes:
+                print(f"  - {n}")
+        print(f"\n合计: ERROR {rep.count('ERROR')}  WARN {rep.count('WARN')}  INFO {rep.count('INFO')}"
+              f"  => {'不要推送' if rep.count('ERROR') else '可以推送'}")
+        if args.json:
+            args.json.write_text(json.dumps({
+                "findings": [f.__dict__ for f in rep.items], "notes": rep.notes,
+                "chain": [p.name for p in chain], "since": args.since,
+            }, ensure_ascii=False, indent=1), "utf-8")
+        return 1 if rep.count("ERROR") else 0
 
 
 if __name__ == "__main__":

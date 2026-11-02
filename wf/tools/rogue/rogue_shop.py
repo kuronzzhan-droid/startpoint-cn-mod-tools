@@ -15,15 +15,21 @@ import sys
 import tempfile
 from pathlib import Path
 
-pass  # Imports resolve from this checkout/package, not external source copies.
+MOD_DIR = Path(__file__).resolve().parents[3]
+
 import wf_mod_tool as core  # noqa: E402
 import wf_quest_lib as q  # noqa: E402
-import wf_rogue_rewards as rewards  # noqa: E402
+from wf.tools.rogue import abyss_ticket_compile as ticket_compile  # noqa: E402
+from wf.tools.rogue import rogue_rewards as rewards  # noqa: E402
+
+ROOT: Path | None = None
 
 
 # Re-export the canonical contract instead of maintaining a second copy.
 WeaponSpec = rewards.WeaponSpec
 WEAPONS = rewards.WEAPONS
+TicketSpec = ticket_compile.TicketSpec
+TICKETS = ticket_compile.TICKETS
 require_cn_profile = rewards.require_cn_profile
 
 SHOP_T = "master/shop/event_item_shop.orderedmap"
@@ -45,11 +51,15 @@ STOCK = 5
 AVAILABLE_FROM = "2000-01-01 00:00:00"
 AVAILABLE_UNTIL = "2099-12-31 23:59:59"
 RESERVED_SHOP_IDS = tuple(str(9_700_101 + index) for index in range(15))
+TICKET_SHOP_IDS = ("9700116", "9700117")
+OWNED_SHOP_IDS = RESERVED_SHOP_IDS + TICKET_SHOP_IDS
+TICKET_SHOP_DONOR_BY_KIND = {"1": "310194", "2": "310195"}
+TICKET_DONOR_ITEM_BY_KIND = {"1": "999003", "2": "999001"}
+TICKET_STOCK = 9999
 ASSETS_DIR: Path | None = None
 
 
 def _assets_dir() -> Path:
-    """Resolve at use time; the optional override supports isolated callers."""
     return ASSETS_DIR if ASSETS_DIR is not None else core.resolve_server_dir() / "assets"
 
 
@@ -94,6 +104,20 @@ def _weapon_pairs(weapons: tuple[WeaponSpec, ...]):
     return tuple(zip(RESERVED_SHOP_IDS, weapons))
 
 
+def _ticket_pairs(tickets: tuple[TicketSpec, ...]):
+    if len(tickets) != len(TICKET_SHOP_IDS):
+        raise ValueError(
+            f"兑换商店必须恰好有 {len(TICKET_SHOP_IDS)} 张深渊券,实际 {len(tickets)}"
+        )
+    if tuple(spec.kind for spec in tickets) != ("1", "2"):
+        raise ValueError("深渊券商店顺序必须是单抽(kind 1)、十连(kind 2)")
+    return tuple(zip(TICKET_SHOP_IDS, tickets))
+
+
+def _ticket_price(spec: TicketSpec) -> int:
+    return 5 if spec.kind == "1" else 50
+
+
 def _sort_numeric_mapping(mapping: dict) -> dict:
     """Recursively order numeric-key maps while preserving record field order."""
     items = list(mapping.items())
@@ -113,7 +137,8 @@ def _sort_numeric_mapping(mapping: dict) -> dict:
 
 
 def _expected_client_leaves(
-    table: dict[str, object], weapons: tuple[WeaponSpec, ...]
+    table: dict[str, object], weapons: tuple[WeaponSpec, ...], *,
+    include_tickets: bool = True,
 ) -> dict[str, object]:
     if SHOP_TEMPLATE not in table:
         raise KeyError(f"客户端商店缺少官方模板 {SHOP_TEMPLATE}")
@@ -161,23 +186,75 @@ def _expected_client_leaves(
         if len(row) != CLIENT_COLUMNS:
             raise RuntimeError(f"生成行 {shop_id} 不是 {CLIENT_COLUMNS} 列")
         expected[shop_id] = _join_like(row, template_leaf)
+
+    ticket_pairs = _ticket_pairs(TICKETS) if include_tickets else ()
+    for slot, (shop_id, spec) in enumerate(ticket_pairs, start=16):
+        donor_id = TICKET_SHOP_DONOR_BY_KIND[spec.kind]
+        if donor_id not in table:
+            raise KeyError(f"客户端商店缺少官方券模板 {donor_id}")
+        row, donor_leaf = _single_row(
+            table[donor_id], f"event_item_shop[{donor_id}]"
+        )
+        expected_donor_item = TICKET_DONOR_ITEM_BY_KIND[spec.kind]
+        if len(row) <= 33 or row[32] != "0" or row[33] != expected_donor_item:
+            raise ValueError(
+                f"官方券模板 {donor_id} 奖励基线漂移: "
+                f"expected c32='0', c33={expected_donor_item!r}"
+            )
+        if len(row) > CLIENT_COLUMNS:
+            raise ValueError(
+                f"官方券模板 {donor_id} 超过 {CLIENT_COLUMNS} 列: {len(row)}"
+            )
+        row = core.normalize_row_length(row, CLIENT_COLUMNS)
+        fixed = {
+            0: "6",
+            1: EVENT_ID,
+            2: EVENT_TYPE,
+            7: spec.name,
+            8: shop_id,
+            9: "1",
+            10: str(slot),
+            11: spec.description,
+            13: spec.icon_name,
+            14: "5",
+            18: TOKEN_ID,
+            19: str(_ticket_price(spec)),
+            26: AVAILABLE_FROM,
+            27: AVAILABLE_UNTIL,
+            28: "0",
+            29: str(TICKET_STOCK),
+            30: str(TICKET_STOCK),
+            31: "(None)",
+            32: "0",
+            33: spec.item_id,
+            34: "1",
+        }
+        for column, value in fixed.items():
+            row[column] = value
+        expected[shop_id] = _join_like(row, donor_leaf)
     return expected
 
 
 def build_client_shop(
-    table: dict[str, object], weapons: tuple[WeaponSpec, ...]
+    table: dict[str, object], weapons: tuple[WeaponSpec, ...], *,
+    include_tickets: bool = False,
 ) -> dict[str, object]:
-    """Return a collision-safe client shop table without mutating ``table``."""
+    """Build owned rows; the legacy API owns only the fifteen weapon slots.
+
+    The modern CLI explicitly opts into ticket ownership. Independent writers'
+    ticket and degree rows remain byte-identical for existing API consumers.
+    """
     if not isinstance(table, dict):
         raise TypeError("客户端 event_item_shop 必须是 dict")
-    expected = _expected_client_leaves(table, weapons)
+    expected = _expected_client_leaves(table, weapons, include_tickets=include_tickets)
     for shop_id, leaf in expected.items():
         row, template_leaf = _single_row(leaf, f"event_item_shop[{shop_id}]")
         known_leaves = [leaf]
-        for description in _LEGACY_MODE_DESCRIPTIONS:
-            legacy_row = list(row)
-            legacy_row[11] = description
-            known_leaves.append(_join_like(legacy_row, template_leaf))
+        if shop_id in RESERVED_SHOP_IDS:
+            for description in _LEGACY_MODE_DESCRIPTIONS:
+                legacy_row = list(row)
+                legacy_row[11] = description
+                known_leaves.append(_join_like(legacy_row, template_leaf))
         if shop_id in table and table[shop_id] not in known_leaves:
             raise ValueError(f"保留商店 ID {shop_id} 已被外来客户端条目占用")
 
@@ -185,14 +262,16 @@ def build_client_shop(
     result.pop(EVENT_ID, None)
     # A client orderedmap's insertion order is part of the stored table. Keep every
     # unrelated key in place and normalize only our owned range into one block.
-    for shop_id in RESERVED_SHOP_IDS:
+    owned_ids = OWNED_SHOP_IDS if include_tickets else RESERVED_SHOP_IDS
+    for shop_id in owned_ids:
         result.pop(shop_id, None)
     for shop_id, leaf in expected.items():
         result[shop_id] = leaf
     return result
 
 
-def _expected_products(weapons: tuple[WeaponSpec, ...]) -> dict[str, dict]:
+def _expected_products(weapons: tuple[WeaponSpec, ...], *,
+                       include_tickets: bool = True) -> dict[str, dict]:
     expected: dict[str, dict] = {}
     for shop_id, spec in _weapon_pairs(weapons):
         expected[shop_id] = {
@@ -201,6 +280,14 @@ def _expected_products(weapons: tuple[WeaponSpec, ...]) -> dict[str, dict]:
             "availableFrom": AVAILABLE_FROM,
             "availableUntil": AVAILABLE_UNTIL,
             "stock": STOCK,
+        }
+    for shop_id, spec in (_ticket_pairs(TICKETS) if include_tickets else ()):
+        expected[shop_id] = {
+            "costs": [{"id": int(TOKEN_ID), "amount": _ticket_price(spec)}],
+            "rewards": [{"type": 0, "id": int(spec.item_id), "count": 1}],
+            "availableFrom": AVAILABLE_FROM,
+            "availableUntil": AVAILABLE_UNTIL,
+            "stock": TICKET_STOCK,
         }
     return expected
 
@@ -221,15 +308,18 @@ def build_server_shop(
     shop: dict,
     id_map: dict,
     weapons: tuple[WeaponSpec, ...],
+    *,
+    include_tickets: bool = False,
 ) -> tuple[dict, dict]:
     """Return server mirrors with only owned reserved IDs replaced."""
     if not isinstance(shop, dict) or not isinstance(id_map, dict):
         raise TypeError("服务端商店与 ID map 必须都是 dict")
-    expected = _expected_products(weapons)
+    expected = _expected_products(weapons, include_tickets=include_tickets)
+    owned_ids = OWNED_SHOP_IDS if include_tickets else RESERVED_SHOP_IDS
     expected_map = {"eventType": int(EVENT_TYPE), "eventId": int(EVENT_ID)}
 
     for event_type, event_id, products in _walk_product_maps(shop):
-        for shop_id in RESERVED_SHOP_IDS:
+        for shop_id in owned_ids:
             if shop_id not in products:
                 continue
             owned = (
@@ -242,7 +332,7 @@ def build_server_shop(
                     f"保留商店 ID {shop_id} 已被外来服务端条目占用 "
                     f"({event_type}/{event_id})"
                 )
-    for shop_id in RESERVED_SHOP_IDS:
+    for shop_id in owned_ids:
         if shop_id in id_map and id_map[shop_id] != expected_map:
             raise ValueError(f"保留商店 ID {shop_id} 已被外来 ID-map 条目占用")
 
@@ -280,7 +370,8 @@ def _numeric_order_problems(value, label: str) -> list[str]:
     return problems
 
 
-def validate_shop(client: dict, shop: dict, id_map: dict) -> list[str]:
+def validate_shop(client: dict, shop: dict, id_map: dict, *,
+                  include_tickets: bool = False) -> list[str]:
     """Return every client/server contract violation; an empty list is valid."""
     problems: list[str] = []
     if not isinstance(client, dict) or not isinstance(shop, dict) or not isinstance(id_map, dict):
@@ -288,12 +379,15 @@ def validate_shop(client: dict, shop: dict, id_map: dict) -> list[str]:
 
     if EVENT_ID in client:
         problems.append(f"客户端旧键 {EVENT_ID} 未移除")
-    reserved_order = tuple(key for key in client if key in RESERVED_SHOP_IDS)
-    if reserved_order != RESERVED_SHOP_IDS:
+    owned_ids = OWNED_SHOP_IDS if include_tickets else RESERVED_SHOP_IDS
+    owned_order = tuple(key for key in client if key in owned_ids)
+    if owned_order != owned_ids:
         problems.append(
-            "客户端保留商店键必须组成 9700101..9700115 的升序块"
+            "客户端保留商店键必须组成 "
+            + ("9700101..9700117" if include_tickets else "9700101..9700115")
+            + " 的升序块"
         )
-    expected_products = _expected_products(WEAPONS)
+    expected_products = _expected_products(WEAPONS, include_tickets=include_tickets)
     expected_map = {"eventType": int(EVENT_TYPE), "eventId": int(EVENT_ID)}
 
     for slot, (shop_id, spec) in enumerate(_weapon_pairs(WEAPONS), start=1):
@@ -340,6 +434,38 @@ def validate_shop(client: dict, shop: dict, id_map: dict) -> list[str]:
                     f"actual={row[column]!r}"
                 )
 
+    try:
+        expected_client = (_expected_client_leaves(client, WEAPONS)
+                           if include_tickets else {})
+    except (KeyError, TypeError, ValueError, UnicodeError) as exc:
+        problems.append(str(exc))
+        expected_client = {}
+    for shop_id in (TICKET_SHOP_IDS if include_tickets else ()):
+        if shop_id not in client:
+            problems.append(f"客户端缺少商店键 {shop_id}")
+            continue
+        try:
+            actual_row, _actual_leaf = _single_row(
+                client[shop_id], f"client[{shop_id}]"
+            )
+            expected_row, _expected_leaf = _single_row(
+                expected_client[shop_id], f"expected[{shop_id}]"
+            )
+        except (KeyError, TypeError, ValueError, UnicodeError) as exc:
+            problems.append(str(exc))
+            continue
+        if len(actual_row) != CLIENT_COLUMNS:
+            problems.append(
+                f"客户端 {shop_id} 必须是 {CLIENT_COLUMNS} 列,实际 {len(actual_row)}"
+            )
+            continue
+        for column, (actual, expected) in enumerate(zip(actual_row, expected_row)):
+            if actual != expected:
+                problems.append(
+                    f"客户端 {shop_id} c{column}: expected={expected!r}, "
+                    f"actual={actual!r}"
+                )
+
     target_products = None
     try:
         target_events = shop.get(EVENT_TYPE)
@@ -353,7 +479,7 @@ def validate_shop(client: dict, shop: dict, id_map: dict) -> list[str]:
                 problems.append(
                     f"服务端旧商品键 {EVENT_ID} 未从 {event_type}/{event_id} 移除"
                 )
-            for shop_id in RESERVED_SHOP_IDS:
+            for shop_id in owned_ids:
                 if shop_id in products and not (
                     event_type == EVENT_TYPE and event_id == EVENT_ID
                 ):
@@ -368,7 +494,7 @@ def validate_shop(client: dict, shop: dict, id_map: dict) -> list[str]:
         actual = target_products.get(shop_id) if isinstance(target_products, dict) else None
         if actual != expected:
             problems.append(f"服务端商品 {shop_id} 与规范不一致")
-        if isinstance(actual, dict):
+        if shop_id in RESERVED_SHOP_IDS and isinstance(actual, dict):
             try:
                 total_cost += int(actual["costs"][0]["amount"]) * int(actual["stock"])
             except (KeyError, IndexError, TypeError, ValueError):
@@ -486,8 +612,9 @@ def _print_plan(client_before: dict, shop_before: dict, id_map_before: dict) -> 
     elemental = sum(spec.element != -1 for spec in WEAPONS)
     universal = len(WEAPONS) - elemental
     print(
-        f"[PLAN] {len(WEAPONS)} products; "
-        f"{elemental} * 10 * {STOCK} + {universal} * 15 * {STOCK} = 825"
+        f"[PLAN] {len(OWNED_SHOP_IDS)} products; "
+        f"weapons {elemental} * 10 * {STOCK} + "
+        f"{universal} * 15 * {STOCK} = 825; ticket 5 + 50"
     )
     print(
         f"[PLAN] remove stale key {EVENT_ID}: "
@@ -511,11 +638,11 @@ def main() -> int:
         client_before = q.load_table(SHOP_T)
         shop_before = load_json(SHOP_JSON)
         id_map_before = load_json(SHOP_ID_MAP_JSON)
-        client_after = build_client_shop(client_before, WEAPONS)
+        client_after = build_client_shop(client_before, WEAPONS, include_tickets=True)
         shop_after, id_map_after = build_server_shop(
-            shop_before, id_map_before, WEAPONS
+            shop_before, id_map_before, WEAPONS, include_tickets=True,
         )
-        problems = validate_shop(client_after, shop_after, id_map_after)
+        problems = validate_shop(client_after, shop_after, id_map_after, include_tickets=True)
         if problems:
             raise ValueError("; ".join(problems))
         _print_plan(client_before, shop_before, id_map_before)
@@ -549,7 +676,7 @@ def main() -> int:
             raise RuntimeError("event_item_shop.json 写后复读与计划不一致")
         if id_map_readback != id_map_after:
             raise RuntimeError("event_item_shop_id_map.json 写后复读与计划不一致")
-        problems = validate_shop(client_readback, shop_readback, id_map_readback)
+        problems = validate_shop(client_readback, shop_readback, id_map_readback, include_tickets=True)
         if problems:
             raise RuntimeError("写后复读校验失败: " + "; ".join(problems))
     except Exception as exc:
@@ -564,7 +691,7 @@ def main() -> int:
         _rollback_write_targets(before_images)
         raise
 
-    print("[OK] 15 products passed client/server write-readback validation; 未发布。")
+    print("[OK] 17 products passed client/server write-readback validation; 未发布。")
     return 0
 
 

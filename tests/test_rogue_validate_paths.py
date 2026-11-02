@@ -13,7 +13,7 @@ from unittest import mock
 MOD_TOOLS = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(MOD_TOOLS))
 
-import wf_rogue_validate as validate  # noqa: E402
+from wf.tools.rogue import rogue_validate as validate  # noqa: E402
 
 
 class RogueValidatePathCase(unittest.TestCase):
@@ -22,7 +22,7 @@ class RogueValidatePathCase(unittest.TestCase):
         environment.pop("WF_CLIENT_PATCH_DIR", None)
         environment["WF_SERVER_DIR"] = str(MOD_TOOLS / "missing-server")
         result = subprocess.run(
-            [sys.executable, "-X", "utf8", "-c", "import wf_rogue_validate"],
+            [sys.executable, "-X", "utf8", "-c", "import wf.tools.rogue.rogue_validate"],
             cwd=MOD_TOOLS,
             env=environment,
             stdout=subprocess.PIPE,

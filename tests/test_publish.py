@@ -11,6 +11,7 @@ import tempfile
 import unittest
 import zipfile
 from pathlib import Path
+from types import SimpleNamespace
 from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -102,11 +103,15 @@ class PublisherCase(unittest.TestCase):
     ) -> tuple[int, str, str]:
         stdout = io.StringIO()
         stderr = io.StringIO()
-        profile_patch = (
-            mock.patch.object(core, "resolve_profile", side_effect=profiles)
-            if profiles is not None
-            else mock.patch.object(core, "resolve_profile", return_value=self.profile)
+        # Scope the two publication-profile snapshots to this module. Shared
+        # key/capability guards may resolve their own profiles independently;
+        # they must not consume the publisher's deliberately ordered snapshots.
+        publisher_core = SimpleNamespace(**vars(core))
+        publisher_core.resolve_profile = (
+            mock.Mock(side_effect=profiles) if profiles is not None
+            else mock.Mock(return_value=self.profile)
         )
+        profile_patch = mock.patch.object(wf_publish, "core", publisher_core)
         with (
             profile_patch,
             contextlib.redirect_stdout(stdout),

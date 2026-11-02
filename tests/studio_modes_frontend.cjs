@@ -71,4 +71,21 @@ assert.equal(nodes.find(v => v.type === 'fieldset').props.disabled, false); // E
 assert.equal(nodes.filter(v => v.type === 'fieldset').at(-1).props.disabled, true);
 reset(); state[6] = 'delivery';
 assert.equal(render().filter(v => v.type === 'fieldset').at(-1).props.disabled, false);
-console.log('frontend mode handlers: 8 scenarios passed');
+const tower = (event, name, available = true) => ({ event, name, available, rounds: 30,
+  rows: [], eventRow: [], manualSteps: [{ title: event, command: `manual ${event}` }],
+  seasonNote: '未读取', fingerprint: event, unavailableReason: '当前视图缺少活动' });
+reset(); state[0].current = { ...tower('700099', '普通深渊'),
+  activities: [tower('700099', '普通深渊'), tower('700100', 'EX内容')] };
+nodes = render();
+assert.equal(nodes.filter(v => v.type === 'option').length, 2);
+nodes.find(v => v.type === 'select').props.onChange({ currentTarget: { value: '700100' } });
+assert.equal(state[1].eventId, '700100'); assert.equal(state[2], null);
+nodes = render();
+assert.ok(nodes.some(v => v.type === 'summary' && JSON.stringify(v.props.children).includes('EX内容')));
+assert.ok(nodes.some(v => v.type === 'pre' && v.props.children === 'manual 700100'));
+assert.ok(!nodes.some(v => v.type === 'pre' && v.props.children === 'manual 700099'));
+state[6] = 'delivery';
+assert.equal(render().filter(v => v.type === 'fieldset').at(-1).props.disabled, true);
+state[6] = 'edit'; state[0].current.activities[1] = tower('700100', 'EX内容', false);
+assert.equal(render().find(v => v.type === 'button' && v.props.children === '只读预览与校验').props.disabled, true);
+console.log('frontend mode handlers: 11 scenarios passed');

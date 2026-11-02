@@ -34,8 +34,18 @@ def test_v34_all_recorded_methods_match_and_output_passes_schema(registry):
     document = derive_provides(v34_evidence(), registry=registry)
     validate_document(document, "provides.schema.json")
     assert len(document["patches"]) == 111
+    report_only = {
+        "client.ball.pf_action@1", "client.combo.base@1", "client.pf.dual@1",
+        "client.summon.cutin_preload@1", "client.summon.flip_pf@1",
+    }
     assert {entry["id"] for entry in document["provides"]} == {
-        cid for cid, cap in registry.items() if all(n <= 111 for n in cap["provided_by"]["patches"])}
+        cid for cid, cap in registry.items() if cid not in report_only
+        and all(n <= 111 for n in cap["provided_by"]["patches"])}
+    for cid in report_only:
+        proof = registry[cid]["provided_by"]
+        assert proof["patches"] == proof["methods"] == []
+        assert proof["status"] == "待补"
+    assert report_only.isdisjoint(entry["id"] for entry in document["provides"])
     assert document["unresolved"] == []
     p = next(p for p in document["patches"] if p["number"] == 109)
     assert p["methods"][0]["sha256"] == "ae683cc1f5574ac7b415c43cf779ea642535cd6a66531aa1ee51a150d1492068"

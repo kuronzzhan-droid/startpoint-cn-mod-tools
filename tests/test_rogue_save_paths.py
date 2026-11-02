@@ -15,7 +15,7 @@ MOD_TOOLS = Path(__file__).resolve().parents[1]
 if str(MOD_TOOLS) not in sys.path:
     sys.path.insert(0, str(MOD_TOOLS))
 
-import wf_rogue_save as rogue_save  # noqa: E402
+from wf.tools.rogue import rogue_save as rogue_save  # noqa: E402
 
 
 class RogueSavePathTests(unittest.TestCase):
@@ -123,6 +123,41 @@ class RogueSavePathTests(unittest.TestCase):
             capture_output=True,
         )
 
+    def test_fresh_process_resolves_explicit_configuration_on_use(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            database = root / "database"
+            database.mkdir()
+            manager = root / "MuMuManager.exe"
+            manager.write_bytes(b"fixture")
+            environment = dict(os.environ)
+            environment.update({
+                "WF_DATABASE_DIR": str(database),
+                "WF_MUMU_MANAGER": str(manager),
+            })
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-X",
+                    "utf8",
+                    "-c",
+                    "import json, os; from wf.tools.rogue import rogue_save as r; "
+                    "print(json.dumps([os.fspath(r.resolve_database_path()), os.fspath(r.resolve_mumu_manager())]))",
+                ],
+                cwd=MOD_TOOLS,
+                env=environment,
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+
+            self.assertEqual(
+                [str(database.resolve() / "wdfp_data.db"), str(manager.resolve())],
+                json.loads(result.stdout),
+            )
+
+
     def test_fresh_process_resolves_explicit_configuration_at_use_time(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
@@ -142,7 +177,7 @@ class RogueSavePathTests(unittest.TestCase):
                     "-X",
                     "utf8",
                     "-c",
-                    "import json, os, wf_rogue_save as r; "
+                    "import json, os; from wf.tools.rogue import rogue_save as r; "
                     "print(json.dumps([os.fspath(r.resolve_database_path()), "
                     "os.fspath(r.resolve_mumu_manager())]))",
                 ],

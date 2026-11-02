@@ -24,28 +24,28 @@
 注意:cloneSave 接口会把账号默认存档切到新克隆,本工具默认随后切回 --source;
 开一局 run = admin 后台把默认存档切到肉鸽档 → 重启游戏。
 """
-
-from wf.paths import root_path
 import argparse
 import csv
 import io
 import json
 import os
 import random
+import shutil
 import sqlite3
 import subprocess
 import sys
 import tempfile
 import urllib.request
+from collections.abc import Mapping
 from pathlib import Path
 
 import wf_server_auth
+import wf_database_paths
+import wf_device_paths
 import wf_mod_tool as core
-from wf.config import database as wf_database_paths, device as wf_device_paths
-from collections.abc import Mapping
-import shutil
 
-TOOL_DIR = Path(__file__).resolve().parents[3]  # 仓库根（本文件在 wf/tools/<组>/ 下）
+TOOL_DIR = Path(__file__).resolve().parents[3]
+
 
 
 def _explicit_path(environment: Mapping[str, str], key: str) -> Path | None:
@@ -81,8 +81,7 @@ def resolve_mumu_manager(
     return wf_device_paths.find_mumu_manager(environment, finder=finder)
 
 
-DB_PATH: str | None = None  # Optional explicit override; normal resolution is lazy.
-MUMU = ('${WF_ROOT}\\MuMuPlayer\\nx_main\\MuMuManager.exe'.replace("${WF_ROOT}", str(root_path())))
+DB_PATH: str | None = None  # Resolve configured database inputs only when used.
 WF_PACKAGE = "com.leiting.wf"
 WF_ACTIVITY = "com.leiting.wf/com.leiting.sdk.activity.PrivacyActivity"
 RUSH_QUEST_LOGICAL = "master/quest/event/rush_event_quest.orderedmap"
@@ -135,7 +134,7 @@ def _publish_command(logicals: tuple[str, ...], *, list_only: bool = False) \
     if not logicals or logicals[-1] != RUSH_QUEST_LOGICAL:
         raise ValueError("无尽层发布闭包必须 dependency-first 且 rush quest 最后")
     command = [
-        sys.executable, str(TOOL_DIR / "wf_publish.py"),
+        sys.executable, os.fspath(TOOL_DIR / "wf_publish.py"),
         "--tables", ",".join(logicals),
     ]
     if list_only:
@@ -163,11 +162,8 @@ def _restore_exact_bytes(path: Path, original: bytes) -> None:
 def reroll_endless_field(event: str, quest_no: str, apply: bool) -> None:
     """把 700099/99 投影到正式构建器筛后的原生 boss bundle。"""
     validate_endless_target(event, quest_no)
-    if apply:
-        server_root = core.resolve_server_dir()
-        core.resolve_cdn_root()
 
-    pass  # Imports resolve from this checkout/package, not external source copies.
+    pass  # Resolve imports from this checkout.
     import wf_quest_lib as q
     import wf_rogue_build as rb
 
@@ -207,6 +203,8 @@ def reroll_endless_field(event: str, quest_no: str, apply: bool) -> None:
         enemy_level=enemy_level,
         rng=random,
         require_bgm=True,
+        require_thumbnail=True,
+        thumbnail_asset_exists=q.exists_current,
     )
     print(f"随机战场: {before[98]} -> {row[98]}"
           f"(BGM {row[99]};boss: {','.join(bosses)};lv{row[95]})")
@@ -222,10 +220,9 @@ def reroll_endless_field(event: str, quest_no: str, apply: bool) -> None:
         raise RuntimeError("rush quest 拟写字节 build→parse 不等价")
 
     publish_env = dict(os.environ)
-    publish_env["WF_STORE"] = str(quest_path.parent.parent.resolve())
-    publish_env.pop("WF_TARGET_STORE", None)
+    publish_env["WF_TARGET_STORE"] = str(quest_path.parent.parent.resolve())
     preflight = subprocess.run(
-        _publish_command(publish_items, list_only=True), cwd=server_root,
+        _publish_command(publish_items, list_only=True), cwd=core.resolve_server_dir(),
         env=publish_env)
     print(f"[PREFLIGHT] wf_publish --list 退出码 {preflight.returncode}")
     if preflight.returncode != 0:
@@ -238,7 +235,7 @@ def reroll_endless_field(event: str, quest_no: str, apply: bool) -> None:
             raise RuntimeError(f"rush quest 写后复读与拟写字节不一致:{out}")
         print(f"[OK] 已写入 {out}")
         published = subprocess.run(
-            _publish_command(publish_items), cwd=server_root, env=publish_env)
+            _publish_command(publish_items), cwd=core.resolve_server_dir(), env=publish_env)
         print(f"[PUBLISH] wf_publish 退出码 {published.returncode}")
         if published.returncode != 0:
             raise RuntimeError(

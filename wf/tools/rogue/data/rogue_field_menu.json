@@ -1,0 +1,3401 @@
+[
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_administrator_another_dark_ex/boss_administrator_another_dark_ex$buff_field",
+  "note": "攻击+300%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "administrator_another_dark_ex",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": 3
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "元素耐性领域",
+  "program": "battle/action/enemy/action/boss_administrator_another_dark_ex/boss_administrator_another_dark_ex$field_ability",
+  "note": "暗耐性-45%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "administrator_another_dark_ex",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ElementResistance",
+    "element": 6,
+    "value": -0.45
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "元素耐性领域",
+  "program": "battle/action/enemy/action/boss_administrator_another_dark_ex/boss_administrator_another_dark_ex$field_datk",
+  "note": "暗耐性-45%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "administrator_another_dark_ex",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ElementResistance",
+    "element": 6,
+    "value": -0.45
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "元素耐性领域",
+  "program": "battle/action/enemy/action/boss_administrator_another_dark_ex/boss_administrator_another_dark_ex$field_pf",
+  "note": "暗耐性-45%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "administrator_another_dark_ex",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ElementResistance",
+    "element": 6,
+    "value": -0.45
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "元素耐性领域",
+  "program": "battle/action/enemy/action/boss_administrator_another_dark_ex/boss_administrator_another_dark_ex$field_skill",
+  "note": "暗耐性-45%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "administrator_another_dark_ex",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ElementResistance",
+    "element": 6,
+    "value": -0.45
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_alter_sheep_materia/boss_alter_sheep_materia$difficulity10_ex_shot1_ex",
+  "note": "攻击-100%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "alter_sheep_materia",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": -1
+   }
+  ],
+  "duration_s": 166666.7,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_alter_sheep_materia/boss_alter_sheep_materia$difficulity10_ex_shot1_multi",
+  "note": "攻击-100%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "alter_sheep_materia",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": -1
+   }
+  ],
+  "duration_s": 166666.7,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_alter_sheep_materia/boss_alter_sheep_materia$difficulity10_ex_shot1_single",
+  "note": "攻击-100%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "alter_sheep_materia",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": -1
+   }
+  ],
+  "duration_s": 166666.7,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_alter_sheep_materia/boss_alter_sheep_materia$difficulity20_ex_shot1_multi",
+  "note": "攻击-100%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "alter_sheep_materia",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": -1
+   }
+  ],
+  "duration_s": 166666.7,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_alter_sheep_materia/boss_alter_sheep_materia$difficulity20_ex_shot1_single",
+  "note": "攻击-100%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "alter_sheep_materia",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": -1
+   }
+  ],
+  "duration_s": 166666.7,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_alter_sheep_materia/boss_alter_sheep_materia$ex_shot1_raid1",
+  "note": "攻击-250%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "alter_sheep_materia",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": -2.5
+   }
+  ],
+  "duration_s": 166666.7,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_alter_sheep_materia/boss_alter_sheep_materia$ex_shot1_raid2",
+  "note": "攻击-250%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "alter_sheep_materia",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": -2.5
+   }
+  ],
+  "duration_s": 166666.7,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_alter_sheep_materia/boss_alter_sheep_materia$ex_shot1_raid3",
+  "note": "攻击-250%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "alter_sheep_materia",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": -2.5
+   }
+  ],
+  "duration_s": 166666.7,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_alter_sheep_materia/boss_alter_sheep_materia$ex_shot1_raid4",
+  "note": "攻击-250%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "alter_sheep_materia",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": -2.5
+   }
+  ],
+  "duration_s": 166666.7,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "连击加成领域",
+  "program": "battle/action/enemy/action/boss_anv3_big_boss/boss_anv3_big_boss$field_start",
+  "note": "连击加成+10",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "anv3_big_boss",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboBoost",
+    "value": 10
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/boss_bird_boss_wizard/boss_bird_boss_wizard$shot_ea10",
+  "note": "强风0.5·10秒·方向1",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "bird_wizard",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_bird_boss_wizard/boss_bird_boss_wizard$shot_ea16",
+  "note": "引力1·20秒·中心·复合",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "bird_wizard",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 20.0,
+  "composite": true,
+  "dup": false
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/boss_bird_boss_wizard/boss_bird_boss_wizard$shot_ea2",
+  "note": "狂风1·5秒·方向2",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "bird_wizard",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 5.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/boss_bird_boss_wizard/boss_bird_boss_wizard$shot_ea38",
+  "note": "微风0.1·5秒·方向2",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "bird_wizard",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 4.7,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/boss_bird_boss_wizard/boss_bird_boss_wizard$shot_ea39",
+  "note": "微风0.1·5秒·方向1",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "bird_wizard",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 4.7,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/boss_bird_boss_wizard/boss_bird_boss_wizard$shot_ea4",
+  "note": "狂风1·5秒·方向1",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "bird_wizard",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 5.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/boss_bird_boss_wizard/boss_bird_boss_wizard$shot_ea8",
+  "note": "强风0.5·10秒·方向2",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "bird_wizard",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "禁增益领域",
+  "program": "battle/action/enemy/action/boss_chapter12_boss/boss_chapter12_boss$field_start1",
+  "note": "禁增益",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "chapter12_boss",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "BuffRejection",
+    "value": null
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "充能领域",
+  "program": "battle/action/enemy/action/boss_dark_matter/boss_dark_matter$difficulty10_field_start",
+  "note": "充能+200%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "dark_matter",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillGaugeCharging",
+    "value": 2
+   }
+  ],
+  "duration_s": 16666.7,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "连击加成领域",
+  "program": "battle/action/enemy/action/boss_devil_commander_evil_envy/boss_devil_commander_evil_envy_80$combo_boost",
+  "note": "连击加成+10",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "devil_commander_evil_envy_80",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboBoost",
+    "value": 10
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "技能伤害领域",
+  "program": "battle/action/enemy/action/boss_discarded_dragon_light_rush/boss_discarded_dragon_light_rush$difficulity10_ex3",
+  "note": "技能伤害",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "discarded_dragon_light_rush",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillDamage",
+    "value": -100
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "深渊之水",
+  "program": "battle/action/enemy/action/boss_discarded_dragon_water/boss_discarded_dragon_water$difficulity10_skill_shot5",
+  "note": "全场淹水",
+  "cat": "场地",
+  "cmd": "CreateFlood",
+  "src": "discarded_dragon_water",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 11.7,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "深渊之水",
+  "program": "battle/action/enemy/action/boss_discarded_dragon_water/boss_discarded_dragon_water$difficulity80_skill_shot5",
+  "note": "全场淹水",
+  "cat": "场地",
+  "cmd": "CreateFlood",
+  "src": "discarded_dragon_water",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 1666666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/boss_discarded_dragon_wind/funnel_discarded_dragon_wind_orb$difficulity10_wind_left_shot1",
+  "note": "微风0.05·5秒·方向2",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "funnel_discarded_dragon_wind_orb",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 5.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/boss_discarded_dragon_wind/funnel_discarded_dragon_wind_orb$difficulity10_wind_right_shot1",
+  "note": "微风0.05·5秒·方向1",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "funnel_discarded_dragon_wind_orb",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 5.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "二段伤害领域",
+  "program": "battle/action/enemy/action/boss_epuration/boss_epuration_3anv$element_field",
+  "note": "二段伤害+11·复合",
+  "cat": "加成",
+  "cmd": "StartBuffField",
+  "src": "epuration_3anv",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SeparatedTerm2ndDamage",
+    "value": 11
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": true,
+  "dup": false
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_epuration/boss_epuration_3anv$field_buf",
+  "note": "攻击",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "epuration_3anv",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": -1000
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "充能领域",
+  "program": "battle/action/enemy/action/boss_epuration_boss_dragon/boss_epuration_boss_dragon$ex1",
+  "note": "充能-5%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "epuration_dragon",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillGaugeCharging",
+    "value": -0.05
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_epuration_boss_dragon/boss_epuration_boss_dragon$ex2",
+  "note": "攻击+50%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "epuration_dragon",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": 0.5
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "二段伤害领域",
+  "program": "battle/action/enemy/action/boss_epuration_boss_variant_ver_3anv/boss_epuration_boss_variant_ver_3anv$element_field",
+  "note": "二段伤害+11·复合",
+  "cat": "加成",
+  "cmd": "StartBuffField",
+  "src": "epuration_variant_ver_3anv",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SeparatedTerm2ndDamage",
+    "value": 11
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": true,
+  "dup": true
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_epuration_boss_variant_ver_3anv/boss_epuration_boss_variant_ver_3anv$field_judge",
+  "note": "攻击+100%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "epuration_variant_ver_3anv",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": 1
+   }
+  ],
+  "duration_s": 120.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "技能伤害领域",
+  "program": "battle/action/enemy/action/boss_epuration_boss_variant_ver_3anv/boss_epuration_boss_variant_ver_3anv$field_start",
+  "note": "技能伤害",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "epuration_variant_ver_3anv",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillDamage",
+    "value": -100
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "强化弹射领域",
+  "program": "battle/action/enemy/action/boss_epuration_boss_variant_ver_3anv/boss_epuration_boss_variant_ver_3anv$field_start2",
+  "note": "强化弹射",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "epuration_variant_ver_3anv",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "PowerFlipDamage",
+    "value": -100
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "直击领域",
+  "program": "battle/action/enemy/action/boss_epuration_boss_variant_ver_3anv/boss_epuration_boss_variant_ver_3anv$field_start3",
+  "note": "直击",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "epuration_variant_ver_3anv",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "DirectDamage",
+    "value": -100
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_epuration_boss_variant_ver_3anv/boss_epuration_boss_variant_ver_3anv$lastbuff",
+  "note": "攻击+100%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "epuration_variant_ver_3anv",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": 1
+   }
+  ],
+  "duration_s": 60.0,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "二段伤害领域",
+  "program": "battle/action/enemy/action/boss_epuration_highest/boss_epuration_highest$element_field",
+  "note": "二段伤害+11·复合",
+  "cat": "加成",
+  "cmd": "StartBuffField",
+  "src": "epuration_highest",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SeparatedTerm2ndDamage",
+    "value": 11
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": true,
+  "dup": true
+ },
+ {
+  "label": "禁疗领域",
+  "program": "battle/action/enemy/action/boss_epuration_highest/boss_epuration_highest$field_debuff",
+  "note": "禁疗",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "epuration_highest",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "HealRejection",
+    "value": null
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "连击加成领域",
+  "program": "battle/action/enemy/action/boss_halfanv25_big_boss/boss_halfanv25_big_boss$field_end",
+  "note": "连击加成+10",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "halfanv25_big_boss",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboBoost",
+    "value": 10
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "技能伤害领域",
+  "program": "battle/action/enemy/action/boss_halfanv25_big_boss/boss_halfanv25_big_boss$field_start_expert",
+  "note": "技能伤害-300%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "halfanv25_big_boss",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillDamage",
+    "value": -3
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "技能伤害领域",
+  "program": "battle/action/enemy/action/boss_halfanv25_big_boss/boss_halfanv25_big_boss$field_start_multi2",
+  "note": "技能伤害-300%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "halfanv25_big_boss",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillDamage",
+    "value": -3
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "技能伤害领域",
+  "program": "battle/action/enemy/action/boss_halfanv25_big_boss/boss_halfanv25_big_boss$field_start_multi4",
+  "note": "技能伤害-300%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "halfanv25_big_boss",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillDamage",
+    "value": -3
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "技能伤害领域",
+  "program": "battle/action/enemy/action/boss_halfanv25_big_boss/boss_halfanv25_big_boss$field_start_single2",
+  "note": "技能伤害-300%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "halfanv25_big_boss",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillDamage",
+    "value": -3
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "技能伤害领域",
+  "program": "battle/action/enemy/action/boss_halfanv25_big_boss/boss_halfanv25_big_boss$field_start_single4",
+  "note": "技能伤害-300%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "halfanv25_big_boss",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillDamage",
+    "value": -3
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "技能伤害领域",
+  "program": "battle/action/enemy/action/boss_halfanv25_big_boss/boss_halfanv25_big_boss$field_start_story",
+  "note": "技能伤害-300%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "halfanv25_big_boss",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillDamage",
+    "value": -3
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "禁增益领域",
+  "program": "battle/action/enemy/action/boss_halfanv3/boss_halfanv3$field_condition2",
+  "note": "禁增益",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "halfanv3",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "BuffRejection",
+    "value": null
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "充能领域",
+  "program": "battle/action/enemy/action/boss_halfanv3/boss_halfanv3$field_start",
+  "note": "充能+50%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "halfanv3",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillGaugeCharging",
+    "value": 0.5
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "贯通领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_dark/boss_haniwa_great_dark$direct_penetration_field",
+  "note": "贯通",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "haniwa_great_dark",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Piercing",
+    "value": null
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_dark/boss_haniwa_great_dark$direct_preaction",
+  "note": "攻击-100%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "haniwa_great_dark",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": -1
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_dark/boss_haniwa_great_dark$direct_preaction_hard",
+  "note": "攻击-100%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "haniwa_great_dark",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": -1
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_dark/boss_haniwa_great_dark$direct_preaction_normal",
+  "note": "攻击-100%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "haniwa_great_dark",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": -1
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "连击限制领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_dark/boss_haniwa_great_dark$pf_field",
+  "note": "连击限制+20",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "haniwa_great_dark",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboRestriction",
+    "value": 20
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "连击加成领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_dark/boss_haniwa_great_dark$pf_field_end",
+  "note": "连击加成+10",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "haniwa_great_dark",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboBoost",
+    "value": 10
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "连击限制领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_dark/boss_haniwa_great_dark$pf_field_hard",
+  "note": "连击限制+20",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "haniwa_great_dark",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboRestriction",
+    "value": 20
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "连击限制领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_dark/boss_haniwa_great_dark$pf_field_normal",
+  "note": "连击限制+20",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "haniwa_great_dark",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboRestriction",
+    "value": 20
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "技能伤害领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_dark/boss_haniwa_great_dark$skill_field",
+  "note": "技能伤害-300%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "haniwa_great_dark",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillDamage",
+    "value": -3
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "充能领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_dark/boss_haniwa_great_dark$skill_field_end",
+  "note": "充能+100%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "haniwa_great_dark",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillGaugeCharging",
+    "value": 1
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "技能伤害领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_dark/boss_haniwa_great_dark$skill_field_hard",
+  "note": "技能伤害-150%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "haniwa_great_dark",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillDamage",
+    "value": -1.5
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "技能伤害领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_dark/boss_haniwa_great_dark$skill_field_normal",
+  "note": "技能伤害-60%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "haniwa_great_dark",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillDamage",
+    "value": -0.6
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "充能领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_fire/boss_haniwa_great_fire$pf_preaction",
+  "note": "充能-25%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "haniwa_great_fire",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillGaugeCharging",
+    "value": -0.25
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_fire/boss_haniwa_great_fire$skill_preaction",
+  "note": "攻击-20%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "haniwa_great_fire",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": -0.2
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "连击限制领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_thunder/boss_haniwa_great_thunder$direct_field_start",
+  "note": "连击限制+15",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "haniwa_great_thunder",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboRestriction",
+    "value": 15
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "充能领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_thunder/boss_haniwa_great_thunder$direct_field_start2",
+  "note": "充能+50%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "haniwa_great_thunder",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillGaugeCharging",
+    "value": 0.5
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "连击限制领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_thunder/boss_haniwa_great_thunder$direct_field_start_low",
+  "note": "连击限制+15",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "haniwa_great_thunder",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboRestriction",
+    "value": 15
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "连击限制领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_thunder/boss_haniwa_great_thunder$direct_field_start_middle",
+  "note": "连击限制+15",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "haniwa_great_thunder",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboRestriction",
+    "value": 15
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "连击加成领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_thunder/funnel_haniwa_great_thunder$pf_monitor_combo_up1",
+  "note": "连击加成+300%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "funnel_haniwa_great_thunder",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboBoost",
+    "value": 3
+   }
+  ],
+  "duration_s": 16666.7,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "连击加成领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_thunder/funnel_haniwa_great_thunder$pf_monitor_combo_up2",
+  "note": "连击加成+5",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "funnel_haniwa_great_thunder",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboBoost",
+    "value": 5
+   }
+  ],
+  "duration_s": 16666.7,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "连击加成领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_thunder/funnel_haniwa_great_thunder$pf_monitor_combo_up3",
+  "note": "连击加成+7",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "funnel_haniwa_great_thunder",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboBoost",
+    "value": 7
+   }
+  ],
+  "duration_s": 16666.7,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "连击加成领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_thunder/funnel_haniwa_great_thunder$pf_monitor_combo_up4",
+  "note": "连击加成+9",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "funnel_haniwa_great_thunder",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboBoost",
+    "value": 9
+   }
+  ],
+  "duration_s": 16666.7,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_water/boss_haniwa_great_water$fever_preaction",
+  "note": "攻击-50%",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "haniwa_great_water",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": -0.5
+   }
+  ],
+  "duration_s": 16666.7,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "充能领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_water/boss_haniwa_great_water$funnel1_shot1_skill",
+  "note": "充能+100%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "haniwa_great_water",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillGaugeCharging",
+    "value": 1
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "连击加成领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_water/funnel_haniwa_great_water$pf_monitor_combo_up1",
+  "note": "连击加成+300%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "funnel_haniwa_great_water",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboBoost",
+    "value": 3
+   }
+  ],
+  "duration_s": 16666.7,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "连击加成领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_water/funnel_haniwa_great_water$pf_monitor_combo_up2",
+  "note": "连击加成+5",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "funnel_haniwa_great_water",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboBoost",
+    "value": 5
+   }
+  ],
+  "duration_s": 16666.7,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "连击加成领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_water/funnel_haniwa_great_water$pf_monitor_combo_up3",
+  "note": "连击加成+7",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "funnel_haniwa_great_water",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboBoost",
+    "value": 7
+   }
+  ],
+  "duration_s": 16666.7,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_wind/boss_haniwa_great_wind$gravity_pf",
+  "note": "引力5·10秒·中心",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "haniwa_great_wind",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_wind/boss_haniwa_great_wind$gravity_pf2",
+  "note": "引力5·10秒·中心",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "haniwa_great_wind",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "连击加成领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_wind/boss_haniwa_great_wind$pf_check4_pf",
+  "note": "连击加成+10",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "haniwa_great_wind",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboBoost",
+    "value": 10
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "充能领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_wind/boss_haniwa_great_wind$pf_check4_skill",
+  "note": "充能+50%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "haniwa_great_wind",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillGaugeCharging",
+    "value": 0.5
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "充能领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_wind/boss_haniwa_great_wind$preaction_field_skill",
+  "note": "充能-30%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "haniwa_great_wind",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillGaugeCharging",
+    "value": -0.3
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "连击限制领域",
+  "program": "battle/action/enemy/action/boss_haniwa_great_wind/boss_haniwa_great_wind$preaction_pf",
+  "note": "连击限制+15",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "haniwa_great_wind",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboRestriction",
+    "value": 15
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "充能领域",
+  "program": "battle/action/enemy/action/boss_hermit_crab_another_light_ex/boss_hermit_crab_another_light_ex$skill_charge_field1",
+  "note": "充能+10%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "hermit_crab_another_light_ex",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillGaugeCharging",
+    "value": 0.1
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "充能领域",
+  "program": "battle/action/enemy/action/boss_hermit_crab_another_light_ex/boss_hermit_crab_another_light_ex$skill_charge_field2",
+  "note": "充能+30%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "hermit_crab_another_light_ex",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillGaugeCharging",
+    "value": 0.3
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_high_epuration/funnel_high_epuration$difficulity10_shot3a",
+  "note": "引力0.8·6秒·中心",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "funnel_high_epuration",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 6.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_high_epuration/funnel_high_epuration$difficulity10_shot3b",
+  "note": "引力0.8·6秒·中心",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "funnel_high_epuration",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 6.0,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_high_epuration/funnel_high_epuration$difficulity10_shot3c",
+  "note": "引力0.8·6秒·中心",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "funnel_high_epuration",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 6.0,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_high_epuration/funnel_high_epuration$difficulity10_shot3d",
+  "note": "引力0.8·6秒·中心",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "funnel_high_epuration",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 6.0,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "二段伤害领域",
+  "program": "battle/action/enemy/action/boss_high_epuration_boss_3anv/boss_epuration_3anv$buff_start",
+  "note": "二段伤害+11·复合",
+  "cat": "加成",
+  "cmd": "StartBuffField",
+  "src": "epuration_3anv",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SeparatedTerm2ndDamage",
+    "value": 11
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": true,
+  "dup": true
+ },
+ {
+  "label": "禁疗领域",
+  "program": "battle/action/enemy/action/boss_high_epuration_boss_3anv/boss_epuration_3anv$field_start",
+  "note": "禁疗",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "epuration_3anv",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "HealRejection",
+    "value": null
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_hungry_dragon/boss_hungry_dragon$ea16",
+  "note": "引力5·2秒·中心·复合",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "hungry_dragon",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 1.5,
+  "composite": true,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_lich/boss_lich_another_thunder$diffculty10_ex1_gravity",
+  "note": "引力1·33秒·中心·复合",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "lich_another_thunder",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 33.3,
+  "composite": true,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_lich/boss_lich_another_thunder$diffculty10_ex2_gravity",
+  "note": "引力1·33秒·中心",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "lich_another_thunder",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 33.3,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "连击加成领域",
+  "program": "battle/action/enemy/action/boss_lich/boss_lich_another_thunder_ex$bonus1",
+  "note": "连击加成+10",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "lich_another_thunder_ex",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboBoost",
+    "value": 10
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_lich/boss_lich_another_thunder_ex$shot1",
+  "note": "攻击-5",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "lich_another_thunder_ex",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": -5
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_lich/boss_lich_wind_ex$diff10_ex25",
+  "note": "引力5·50帧·中心·复合",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "lich_wind_ex",
+  "orig": null,
+  "kinds": [],
+  "duration_s": null,
+  "composite": true,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_orochi/boss_orochi$gravity_head_difficulity10_ex_shot1",
+  "note": "引力0.7·1667秒·左侧/上方",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "orochi",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 1666.7,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_orochi/boss_orochi$gravity_head_difficulity10_skill_shot1",
+  "note": "引力0.8·10秒·左侧/上方·复合",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "orochi",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": true,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_orochi/boss_orochi$gravity_head_difficulity20_ex_shot1",
+  "note": "引力0.8·1667秒·左侧/上方",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "orochi",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 1666.7,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_orochi/boss_orochi$gravity_head_difficulity20_skill_shot1",
+  "note": "引力0.8·15秒·左侧/上方·复合",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "orochi",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 15.0,
+  "composite": true,
+  "dup": false
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/boss_orochi/boss_orochi$wind_head_difficulity10_ex_shot1",
+  "note": "轻风0.125·15秒·方向1",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "orochi",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 15.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/boss_orochi/boss_orochi$wind_head_difficulity10_ex_shot2",
+  "note": "轻风0.125·15秒·方向2",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "orochi",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 15.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/boss_orochi/boss_orochi$wind_head_difficulity20_ex_shot1",
+  "note": "轻风0.15·20秒·方向1",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "orochi",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 20.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/boss_orochi/boss_orochi$wind_head_difficulity20_ex_shot2",
+  "note": "轻风0.15·20秒·方向2",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "orochi",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 20.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/boss_owl/boss_owl$difficulity10_ex_shot1",
+  "note": "轻风0.2·8秒·方向1",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "owl",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 8.3,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/boss_owl/boss_owl$difficulity10_ex_shot2",
+  "note": "轻风0.2·8秒·方向2",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "owl",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 8.3,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/boss_owl/boss_owl$difficulity20_ex_shot1",
+  "note": "轻风0.25·8秒·方向1",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "owl",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 8.3,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/boss_owl/boss_owl$difficulity20_ex_shot2",
+  "note": "轻风0.25·8秒·方向2",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "owl",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 8.3,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/boss_owl/boss_owl$difficulity30_ex_shot1",
+  "note": "轻风0.3·12秒·方向1",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "owl",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 11.7,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/boss_owl/boss_owl$difficulity30_ex_shot2",
+  "note": "轻风0.3·12秒·方向2",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "owl",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 11.7,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_psychic_shouta/boss_psychic_shouta$gravity_shot1",
+  "note": "引力1.5·10秒·左侧/上方",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "psychic_shouta",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_psychic_shouta/boss_psychic_shouta$gravity_shot1_sequel",
+  "note": "引力1.1·10秒·左侧/上方",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "psychic_shouta",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_psychic_shouta/boss_psychic_shouta$gravity_shot2",
+  "note": "引力1.5·10秒·左侧/上方",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "psychic_shouta",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_psychic_shouta/boss_psychic_shouta$gravity_shot2_sequel",
+  "note": "引力1.1·10秒·左侧/上方",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "psychic_shouta",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_psychic_shouta/boss_psychic_shouta$gravity_shot3",
+  "note": "引力1.5·10秒·左侧/上方",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "psychic_shouta",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_psychic_shouta/boss_psychic_shouta$gravity_shot3_sequel",
+  "note": "引力1.1·10秒·左侧/上方",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "psychic_shouta",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_psychic_shouta/boss_psychic_shouta$gravity_shot4",
+  "note": "引力0.427·166667秒·左侧/上方",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "psychic_shouta",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_rec_android/boss_rec_android$difficulity10_gravity_shot1",
+  "note": "引力1.5·11秒·左侧/上方·复合",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "rec_android",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 11.0,
+  "composite": true,
+  "dup": false
+ },
+ {
+  "label": "滑行损血领域",
+  "program": "battle/action/enemy/action/boss_reine_rouge/boss_reine_rouge_form1$field_effect_expansion",
+  "note": "滑行损血+20",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "reine_rouge_form1",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Slip",
+    "value": 20
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "滑行损血领域",
+  "program": "battle/action/enemy/action/boss_reine_rouge/boss_reine_rouge_form1$field_effect_expansion_multi",
+  "note": "滑行损血+20",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "reine_rouge_form1",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Slip",
+    "value": 20
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "滑行损血领域",
+  "program": "battle/action/enemy/action/boss_reine_rouge/boss_reine_rouge_form2$field_effect_expansion",
+  "note": "滑行损血",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "reine_rouge_form2",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Slip",
+    "value": 50
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "滑行损血领域",
+  "program": "battle/action/enemy/action/boss_reine_rouge/boss_reine_rouge_form2$field_effect_expansion_multi",
+  "note": "滑行损血",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "reine_rouge_form2",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Slip",
+    "value": 50
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "连击加成领域",
+  "program": "battle/action/enemy/action/boss_smr21_big_boss/boss_smr21_big_boss$difficulity10_continue1",
+  "note": "连击加成+10",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "smr21_big_boss",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboBoost",
+    "value": 10
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "连击加成领域",
+  "program": "battle/action/enemy/action/boss_smr21_big_boss/boss_smr21_big_boss$difficulity10_continue2",
+  "note": "连击加成+20",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "smr21_big_boss",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboBoost",
+    "value": 20
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "连击加成领域",
+  "program": "battle/action/enemy/action/boss_smr21_big_boss/boss_smr21_big_boss$difficulity10_ex3",
+  "note": "连击加成+20",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "smr21_big_boss",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboBoost",
+    "value": 20
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "转化攻击领域",
+  "program": "battle/action/enemy/action/boss_smr21_big_boss/boss_smr21_big_boss$difficulity10_ex3_rush",
+  "note": "转化攻击+100%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "smr21_big_boss",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ConvertToAttack",
+    "value": 1
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "连击加成领域",
+  "program": "battle/action/enemy/action/boss_smr21_middle_boss/smr21_middle_boss$difficulity10_field_buf",
+  "note": "连击加成+5",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "smr21_middle_boss",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboBoost",
+    "value": 5
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "连击加成领域",
+  "program": "battle/action/enemy/action/boss_smr21_middle_boss/smr21_middle_boss$difficulity10_field_buf2",
+  "note": "连击加成+5",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "smr21_middle_boss",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboBoost",
+    "value": 5
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "连击限制领域",
+  "program": "battle/action/enemy/action/boss_spirit_beast_dark/boss_spirit_beast_dark$invincible",
+  "note": "连击限制+15",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "spirit_beast_dark",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboRestriction",
+    "value": 15
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_spirit_beast_dark/boss_spirit_beast_dark$pre_action01",
+  "note": "攻击+5/暗耐性+50%·复合",
+  "cat": "加成",
+  "cmd": "StartBuffField",
+  "src": "spirit_beast_dark",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": 5
+   },
+   {
+    "kind": "ElementResistance",
+    "element": 6,
+    "value": 0.5
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": true,
+  "dup": false
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_spirit_beast_fire/boss_spirit_beast_fire$spirit_beast_field_effect",
+  "note": "攻击+150%/哨兵254耐性+100%·复合",
+  "cat": "加成",
+  "cmd": "StartBuffField",
+  "src": "spirit_beast_fire",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": 1.5
+   },
+   {
+    "kind": "ElementResistance",
+    "element": 254,
+    "value": 1
+   }
+  ],
+  "duration_s": 1666666.6,
+  "composite": true,
+  "dup": false
+ },
+ {
+  "label": "加速领域",
+  "program": "battle/action/enemy/action/boss_spirit_beast_light/boss_spirit_beast_light$buff_field",
+  "note": "加速+15%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "spirit_beast_light",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Speedup",
+    "value": 0.15
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_spirit_beast_light/boss_spirit_beast_light$element_field",
+  "note": "攻击+100%/直击+50%/光耐性+100%·复合",
+  "cat": "加成",
+  "cmd": "StartBuffField",
+  "src": "spirit_beast_light",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": 1
+   },
+   {
+    "kind": "DirectDamage",
+    "value": 0.5
+   },
+   {
+    "kind": "ElementResistance",
+    "element": 5,
+    "value": 1
+   }
+  ],
+  "duration_s": 1666666.6,
+  "composite": true,
+  "dup": false
+ },
+ {
+  "label": "加速领域",
+  "program": "battle/action/enemy/action/boss_spirit_beast_light/boss_spirit_beast_light$speed_debuff",
+  "note": "加速-15%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "spirit_beast_light",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Speedup",
+    "value": -0.15
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "加速领域",
+  "program": "battle/action/enemy/action/boss_spirit_beast_light/boss_spirit_beast_light$speed_debuff_multi",
+  "note": "加速-15%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "spirit_beast_light",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Speedup",
+    "value": -0.15
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_spirit_beast_thunder/boss_spirit_beast_thunder$spirit_beast_field_effect",
+  "note": "攻击+100%/哨兵254耐性+30%·复合",
+  "cat": "加成",
+  "cmd": "StartBuffField",
+  "src": "spirit_beast_thunder",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": 1
+   },
+   {
+    "kind": "ElementResistance",
+    "element": 254,
+    "value": 0.3
+   }
+  ],
+  "duration_s": 1666666.6,
+  "composite": true,
+  "dup": false
+ },
+ {
+  "label": "深渊之水",
+  "program": "battle/action/enemy/action/boss_spirit_beast_water/boss_spirit_beast_water$drown_buf",
+  "note": "全场淹水",
+  "cat": "场地",
+  "cmd": "CreateFlood",
+  "src": "spirit_beast_water",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 1666666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_spirit_beast_water/boss_spirit_beast_water$start_buf1",
+  "note": "攻击+50%/强化弹射+50%/哨兵254耐性+30%·复合",
+  "cat": "加成",
+  "cmd": "StartBuffField",
+  "src": "spirit_beast_water",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": 0.5
+   },
+   {
+    "kind": "PowerFlipDamage",
+    "value": 0.5
+   },
+   {
+    "kind": "ElementResistance",
+    "element": 254,
+    "value": 0.3
+   }
+  ],
+  "duration_s": 1666666.6,
+  "composite": true,
+  "dup": false
+ },
+ {
+  "label": "充能领域",
+  "program": "battle/action/enemy/action/boss_spirit_beast_wind/boss_spirit_beast_wind$ex1",
+  "note": "充能+100%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "spirit_beast_wind",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillGaugeCharging",
+    "value": 1
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "连击加成领域",
+  "program": "battle/action/enemy/action/boss_spirit_beast_wind/boss_spirit_beast_wind$ex3",
+  "note": "连击加成+5",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "spirit_beast_wind",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboBoost",
+    "value": 5
+   }
+  ],
+  "duration_s": 16666.7,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_spirit_beast_wind/boss_spirit_beast_wind$spirit_beast_field_effect",
+  "note": "攻击+150%/风耐性+30%·复合",
+  "cat": "加成",
+  "cmd": "StartBuffField",
+  "src": "spirit_beast_wind",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": 1.5
+   },
+   {
+    "kind": "ElementResistance",
+    "element": 4,
+    "value": 0.3
+   }
+  ],
+  "duration_s": 1666666.6,
+  "composite": true,
+  "dup": false
+ },
+ {
+  "label": "二段伤害领域",
+  "program": "battle/action/enemy/action/boss_steampunk_fire/boss_steampunk_fire$field01",
+  "note": "二段伤害+200%·复合",
+  "cat": "加成",
+  "cmd": "StartBuffField",
+  "src": "steampunk_fire",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SeparatedTerm2ndDamage",
+    "value": 2
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": true,
+  "dup": false
+ },
+ {
+  "label": "二段伤害领域",
+  "program": "battle/action/enemy/action/boss_steampunk_light/boss_steampunk_light$element_field",
+  "note": "二段伤害+200%·复合",
+  "cat": "加成",
+  "cmd": "StartBuffField",
+  "src": "steampunk_light",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SeparatedTerm2ndDamage",
+    "value": 2
+   }
+  ],
+  "duration_s": 1666666.6,
+  "composite": true,
+  "dup": true
+ },
+ {
+  "label": "二段伤害领域",
+  "program": "battle/action/enemy/action/boss_steampunk_water/boss_steampunk_water$element_field",
+  "note": "二段伤害+200%·复合",
+  "cat": "加成",
+  "cmd": "StartBuffField",
+  "src": "steampunk_water",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SeparatedTerm2ndDamage",
+    "value": 2
+   }
+  ],
+  "duration_s": 1666666.6,
+  "composite": true,
+  "dup": true
+ },
+ {
+  "label": "连击加成领域",
+  "program": "battle/action/enemy/action/boss_steampunk_water/boss_steampunk_water$end",
+  "note": "连击加成+20",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "steampunk_water",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboBoost",
+    "value": 20
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "二段伤害领域",
+  "program": "battle/action/enemy/action/boss_steampunk_wind/boss_steampunk_wind$element_field",
+  "note": "二段伤害+200%·复合",
+  "cat": "加成",
+  "cmd": "StartBuffField",
+  "src": "steampunk_wind",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SeparatedTerm2ndDamage",
+    "value": 2
+   }
+  ],
+  "duration_s": 1666666.6,
+  "composite": true,
+  "dup": true
+ },
+ {
+  "label": "禁疗领域",
+  "program": "battle/action/enemy/action/boss_steampunk_wind/boss_steampunk_wind$steam_zone",
+  "note": "禁疗",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "steampunk_wind",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "HealRejection",
+    "value": null
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "技能伤害领域",
+  "program": "battle/action/enemy/action/boss_summer22_helicopter/boss_summer22_helicopter$field_action2",
+  "note": "技能伤害+300%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "summer22_helicopter",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillDamage",
+    "value": 3
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "技能伤害领域",
+  "program": "battle/action/enemy/action/boss_summer22_helicopter/boss_summer22_helicopter$field_action2_expert",
+  "note": "技能伤害+300%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "summer22_helicopter",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillDamage",
+    "value": 3
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "技能伤害领域",
+  "program": "battle/action/enemy/action/boss_summer22_helicopter/boss_summer22_helicopter$field_action2_multi",
+  "note": "技能伤害+300%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "summer22_helicopter",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillDamage",
+    "value": 3
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "技能伤害领域",
+  "program": "battle/action/enemy/action/boss_summer22_helicopter/boss_summer22_helicopter$field_action2_story",
+  "note": "技能伤害+300%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "summer22_helicopter",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillDamage",
+    "value": 3
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_thunder_sphere/boss_thunder_sphere_phase1$difficulty10_gravity_on",
+  "note": "引力1.25·11秒·右侧/上方",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "thunder_sphere_phase1",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.8,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_thunder_sphere/boss_thunder_sphere_phase1$difficulty10_gravity_shift",
+  "note": "引力1.25·11秒·右侧/上方",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "thunder_sphere_phase1",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.8,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "转化攻击领域",
+  "program": "battle/action/enemy/action/boss_turf_boss/boss_turf_boss$field_effect_expansion",
+  "note": "转化攻击+5%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "turf_boss",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ConvertToAttack",
+    "value": 0.05
+   }
+  ],
+  "duration_s": 16666.7,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "禁疗领域",
+  "program": "battle/action/enemy/action/boss_variant_empress/boss_variant_empress$difficulity10_ea35",
+  "note": "禁疗",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "variant_empress",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "HealRejection",
+    "value": null
+   }
+  ],
+  "duration_s": 1666666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "禁疗领域",
+  "program": "battle/action/enemy/action/boss_variant_empress/boss_variant_empress$difficulity10_ea37",
+  "note": "禁疗",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "variant_empress",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "HealRejection",
+    "value": null
+   }
+  ],
+  "duration_s": 1666666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "禁疗领域",
+  "program": "battle/action/enemy/action/boss_variant_empress/boss_variant_empress_phase1$difficulity10_ea33",
+  "note": "禁疗",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "variant_empress_phase1",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "HealRejection",
+    "value": null
+   }
+  ],
+  "duration_s": 1666666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "充能领域",
+  "program": "battle/action/enemy/action/boss_variant_empress_wind/boss_variant_empress_wind_form2$ex2",
+  "note": "充能+20%",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "variant_empress_wind_form2",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "SkillGaugeCharging",
+    "value": 0.2
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_variant_empress_wind/boss_variant_empress_wind_form2$field_effect_expansion_1",
+  "note": "攻击-3",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "variant_empress_wind_form2",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": -3.5
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_variant_empress_wind/boss_variant_empress_wind_form2$field_effect_expansion_2",
+  "note": "攻击-3",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "variant_empress_wind_form2",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": -3.5
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_variant_empress_wind/boss_variant_empress_wind_form2$field_effect_expansion_3",
+  "note": "攻击-3",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "variant_empress_wind_form2",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": -3.5
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_variant_empress_wind/boss_variant_empress_wind_form2$field_effect_expansion_4",
+  "note": "攻击-3",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "variant_empress_wind_form2",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": -3.5
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_variant_empress_wind/boss_variant_empress_wind_form2$field_effect_expansion_5",
+  "note": "攻击-3",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "variant_empress_wind_form2",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": -3.5
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_variant_empress_wind/boss_variant_empress_wind_form2$field_effect_expansion_multi_1",
+  "note": "攻击-3",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "variant_empress_wind_form2",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": -3.5
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_variant_empress_wind/boss_variant_empress_wind_form2$field_effect_expansion_multi_2",
+  "note": "攻击-3",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "variant_empress_wind_form2",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": -3.5
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_variant_empress_wind/boss_variant_empress_wind_form2$field_effect_expansion_multi_3",
+  "note": "攻击-3",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "variant_empress_wind_form2",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": -3.5
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_variant_empress_wind/boss_variant_empress_wind_form2$field_effect_expansion_multi_4",
+  "note": "攻击-3",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "variant_empress_wind_form2",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": -3.5
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "攻击领域",
+  "program": "battle/action/enemy/action/boss_variant_empress_wind/boss_variant_empress_wind_form2$field_effect_expansion_multi_5",
+  "note": "攻击-3",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "variant_empress_wind_form2",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "Attack",
+    "value": -3.5
+   }
+  ],
+  "duration_s": 166666.6,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/boss_waraboss/boss_mamori_waraboss$difficulity10_ex_shot1",
+  "note": "狂风0.8·10秒·方向1",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "mamori_waraboss",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/boss_waraboss/boss_mamori_waraboss$difficulity10_ex_shot2",
+  "note": "狂风0.8·10秒·方向2",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "mamori_waraboss",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_waraboss/boss_mamori_waraboss$difficulity10_gravity1",
+  "note": "引力6·10秒·左侧/上方·复合",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "mamori_waraboss",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": true,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_waraboss/boss_mamori_waraboss$difficulity10_gravity2",
+  "note": "引力6·10秒·左侧/上方·复合",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "mamori_waraboss",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": true,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_water_sphere/boss_water_sphere_phase2$difficulty10_gravity1",
+  "note": "引力1.25·50秒·中心·复合",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "water_sphere_phase2",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 50.0,
+  "composite": true,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_water_sphere/boss_water_sphere_phase2$difficulty10_gravity3",
+  "note": "引力1.25·67秒·中心·复合",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "water_sphere_phase2",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 66.7,
+  "composite": true,
+  "dup": false
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/boss_white_tiger_ghost/boss_white_tiger_ghost_another_wind$difficulity10_ex1",
+  "note": "轻风0.15·50秒·方向1",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "white_tiger_ghost_another_wind",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 50.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/boss_white_tiger_ghost/boss_white_tiger_ghost_another_wind$difficulity10_ex2",
+  "note": "轻风0.15·50秒·方向2",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "white_tiger_ghost_another_wind",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 50.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_white_tiger_ghost/boss_white_tiger_ghost_thunder$difficulity10_gravity1",
+  "note": "引力1.5·10秒·左侧/上方",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "white_tiger_ghost_thunder",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_white_tiger_ghost/boss_white_tiger_ghost_thunder$difficulity10_gravity2",
+  "note": "引力1.5·10秒·左侧/上方",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "white_tiger_ghost_thunder",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_white_tiger_ghost/boss_white_tiger_ghost_thunder$difficulity10_gravity3",
+  "note": "引力1.75·10秒·左侧/上方·复合",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "white_tiger_ghost_thunder",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": true,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_white_tiger_ghost/boss_white_tiger_ghost_thunder$difficulity20_gravity1",
+  "note": "引力1.7·10秒·左侧/上方",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "white_tiger_ghost_thunder",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_white_tiger_ghost/boss_white_tiger_ghost_thunder$difficulity20_gravity2",
+  "note": "引力1.7·10秒·左侧/上方",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "white_tiger_ghost_thunder",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_white_tiger_ghost/boss_white_tiger_ghost_thunder$difficulity20_gravity3",
+  "note": "引力1.9·10秒·左侧/上方·复合",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "white_tiger_ghost_thunder",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": true,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_white_tiger_ghost/boss_white_tiger_ghost_thunder$difficulity30_gravity1",
+  "note": "引力1.8·10秒·左侧/上方",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "white_tiger_ghost_thunder",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_white_tiger_ghost/boss_white_tiger_ghost_thunder$difficulity30_gravity2",
+  "note": "引力1.8·10秒·左侧/上方",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "white_tiger_ghost_thunder",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_white_tiger_ghost/boss_white_tiger_ghost_thunder$difficulity30_gravity3",
+  "note": "引力2·10秒·左侧/上方·复合",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "white_tiger_ghost_thunder",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": true,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_white_tiger_ghost/boss_white_tiger_ghost_thunder$difficulity80_gravity1",
+  "note": "引力1.7·10秒·左侧/上方",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "white_tiger_ghost_thunder",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_white_tiger_ghost/boss_white_tiger_ghost_thunder$difficulity80_gravity2",
+  "note": "引力1.7·10秒·左侧/上方",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "white_tiger_ghost_thunder",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_white_tiger_ghost/boss_white_tiger_ghost_thunder$difficulity80_gravity3",
+  "note": "引力1.7·5秒·左侧/上方·复合",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "white_tiger_ghost_thunder",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 5.0,
+  "composite": true,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_white_tiger_ghost/boss_white_tiger_ghost_thunder$difficulity80_gravity4",
+  "note": "引力1.7·5秒·左侧/上方",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "white_tiger_ghost_thunder",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 5.0,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_white_tiger_ghost/boss_white_tiger_ghost_thunder$difficulity80_gravity5",
+  "note": "引力1.7·7秒·左侧/上方",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "white_tiger_ghost_thunder",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 6.7,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/boss_white_tiger_ghost/boss_white_tiger_ghost_thunder$difficulity80_gravity6",
+  "note": "引力1.7·7秒·左侧/上方",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "white_tiger_ghost_thunder",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 6.7,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "连击加成领域",
+  "program": "battle/action/enemy/action/boss_white_tiger_ghost_another_wind_ex/boss_white_tiger_ghost_another_wind_ex$orb_down_action",
+  "note": "连击加成+15",
+  "cat": "加成",
+  "cmd": "StartModifierField",
+  "src": "white_tiger_ghost_another_wind_ex",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboBoost",
+    "value": 15
+   }
+  ],
+  "duration_s": 60.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/boss_wind_sphere/boss_wind_sphere_crystal3$difficulty10_attack_x1",
+  "note": "轻风0.2·30秒·方向1",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "wind_sphere_crystal3",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 30.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/boss_wind_sphere/boss_wind_sphere_phase1$difficulty10_shot_y1",
+  "note": "轻风0.2·30秒·方向1",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "wind_sphere_phase1",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 30.0,
+  "composite": false,
+  "dup": true
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/boss_wind_sphere/boss_wind_sphere_phase1$difficulty10_shot_y4",
+  "note": "轻风0.2·30秒·方向2",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "wind_sphere_phase1",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 30.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "连击限制领域",
+  "program": "battle/action/enemy/action/boss_wind_sphere/boss_wind_sphere_phase2$difficulty10_field_effect",
+  "note": "连击限制+40",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "wind_sphere_phase2",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboRestriction",
+    "value": 40
+   }
+  ],
+  "duration_s": 16666666.7,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "连击限制领域",
+  "program": "battle/action/enemy/action/boss_wind_sphere/boss_wind_sphere_phase3$difficulty10_field_effect_off_phase3",
+  "note": "连击限制+35",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "wind_sphere_phase3",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboRestriction",
+    "value": 35
+   }
+  ],
+  "duration_s": 16666666.7,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "连击限制领域",
+  "program": "battle/action/enemy/action/boss_wind_sphere/boss_wind_sphere_phase4$difficulty10_field_effect_off_phase4",
+  "note": "连击限制+30",
+  "cat": "诅咒",
+  "cmd": "StartModifierField",
+  "src": "wind_sphere_phase4",
+  "orig": null,
+  "kinds": [
+   {
+    "kind": "ComboRestriction",
+    "value": 30
+   }
+  ],
+  "duration_s": 16666666.7,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/general_boss/boss_bug2$difficulty10_ex1",
+  "note": "引力1.8·8秒·右侧/上方",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "bug2",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 7.5,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/general_boss/boss_bug2$difficulty10_ex2",
+  "note": "引力1.8·8秒·右侧/上方",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "bug2",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 7.5,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/general_boss/boss_enemy_eviltower$difficulity10_shot2",
+  "note": "轻风0.2·10秒·方向1",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "enemy_eviltower",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.5,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/general_boss/boss_enemy_eviltower$difficulity10_shot3",
+  "note": "轻风0.2·10秒·方向2",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "enemy_eviltower",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.5,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "狂风领域",
+  "program": "battle/action/enemy/action/general_boss/boss_harpy$difficulity10_ex_shot1",
+  "note": "轻风0.2·10秒·方向1",
+  "cat": "环境",
+  "cmd": "CreateWindAttack",
+  "src": "harpy",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": false,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/general_boss/boss_middle_level_ghost$difficulity10_gravity1",
+  "note": "引力2·10秒·左侧/上方·复合",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "middle_level_ghost",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 10.0,
+  "composite": true,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/general_boss/boss_middle_level_ghost$difficulity10_gravity2",
+  "note": "引力2·13秒·左侧/上方·复合",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "middle_level_ghost",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 13.3,
+  "composite": true,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/general_boss/boss_mob_ticket_counter$difficulity10_ex1",
+  "note": "引力2.5·8秒·右侧/上方·复合",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "mob_ticket_counter",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 7.5,
+  "composite": true,
+  "dup": false
+ },
+ {
+  "label": "重力领域",
+  "program": "battle/action/enemy/action/general_boss/boss_onmyoji_boy$difficulity10_gravity_shot1",
+  "note": "引力0.5·1667秒·左侧/上方",
+  "cat": "环境",
+  "cmd": "CreateGravitationalField",
+  "src": "onmyoji_boy",
+  "orig": null,
+  "kinds": [],
+  "duration_s": 1666.7,
+  "composite": false,
+  "dup": false
+ }
+]

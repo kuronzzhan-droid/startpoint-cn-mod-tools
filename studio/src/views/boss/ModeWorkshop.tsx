@@ -38,14 +38,18 @@ export function ModeWorkshop({ mode }: { mode: Mode }) {
     setPayload(next); setPreview(null);
   };
   const dirty = JSON.stringify(payload) !== JSON.stringify(read?.draft?.payload);
+  const eventId = mode === "rogue" ? String((payload as { eventId?: string } | null)?.eventId ?? "700099") : null;
+  const current = read?.current?.activities?.find(activity => activity.event === eventId) ?? read?.current;
+  const activityAvailable = mode !== "rogue" || current?.available !== false;
   const seedValid = mode !== "rogue" || (seedText.trim() !== "" && Number.isInteger(Number(seedText))
     && Number(seedText) >= 0 && Number(seedText) <= 4294967295);
-  const saved = !!read?.draft && !dirty && seedValid && read.draft.baseView === read.version;
+  const saved = !!read?.draft && !dirty && seedValid && activityAvailable && read.draft.baseView === read.version;
   const allowed = saved && !!preview?.canGenerate;
   const view: DraftView = { characterId: mode, changeset: read?.draft ?? null,
     status: { state: saved ? "saved" : "dirty", label: saved ? "已保存" : "尚未保存", changes: 1 }, actions: [] };
   const submit = (save: boolean) => action.run(async () => {
     if (!seedValid) throw new Error("种子必须是 0–4294967295 的整数");
+    if (!activityAvailable) throw new Error(current?.unavailableReason ?? "当前视图未包含此活动");
     const result = save ? await modes.save(mode, payload, read?.draft?.revision ?? 0) : await modes.preview(mode, payload);
     setPreview(result);
     if (result.draft && read) setRead({ ...read, draft: result.draft });
@@ -63,10 +67,16 @@ export function ModeWorkshop({ mode }: { mode: Mode }) {
     {!read && !error ? <Loading label="正在读取当前视图并核对构建输入……" /> : null}
     {read ? <>
       <div hidden={tab !== "edit"}>
-        {read.current ? <details open><summary>当前赛季内容 · 活动 {read.current.event} · {read.current.rounds} 轮</summary>
-          <p>{read.current.seasonNote}</p><p class="small mono">内容指纹：{read.current.fingerprint}</p>
-          <FloorTable rows={read.current.rows} />
-          <details><summary>活动原始行</summary><pre>{JSON.stringify(read.current.eventRow, null, 2)}</pre></details>
+        {mode === "rogue" ? <label>活动 <select value={eventId ?? "700099"} disabled={action.busy}
+          onChange={e => change(["eventId"], e.currentTarget.value)}>
+          <option value="700099">深渊连战 · 700099</option>
+          <option value="700100">深渊连战 EX · 700100</option>
+        </select><span class="small muted"> 普通与 EX 共用一个草稿槽；切换活动后重新预览保存。</span></label> : null}
+        {current ? <details open><summary>当前赛季内容 · {current.name} · 活动 {current.event} · {current.rounds} 轮</summary>
+          {!activityAvailable ? <Notice kind="warn">{current.unavailableReason}</Notice> : null}
+          <p>{current.seasonNote}</p><p class="small mono">内容指纹：{current.fingerprint}</p>
+          <FloorTable rows={current.rows} />
+          <details><summary>活动原始行</summary><pre>{JSON.stringify(current.eventRow, null, 2)}</pre></details>
         </details> : null}
         <fieldset disabled={action.busy} class="mode-editor">
           {mode === "five" ? SECTIONS.map(key => <ModeFields key={key} value={(payload as Record<string, Json>)[key]}
@@ -82,14 +92,14 @@ export function ModeWorkshop({ mode }: { mode: Mode }) {
             {!seedValid ? <Notice kind="warn">种子必须是 0–4294967295 的整数</Notice> : null}
           </div>}
           <div class="version-row">
-            <button disabled={!seedValid} onClick={() => submit(false)}>只读预览与校验</button>
-            <button class="primary" disabled={!preview?.ok || !seedValid} onClick={() => submit(true)}>保存独立草稿</button>
+            <button disabled={!seedValid || !activityAvailable} onClick={() => submit(false)}>只读预览与校验</button>
+            <button class="primary" disabled={!preview?.ok || !seedValid || !activityAvailable} onClick={() => submit(true)}>保存独立草稿</button>
             <span class="small muted">{saved ? `已保存 · 修订 ${read.draft?.revision}` : "尚有未保存内容"}</span>
           </div>
         </fieldset>
         {action.busy ? <p class="loading">构建器正在计算与校验，尚未写入游戏数据……</p> : null}
         {preview ? <Preview result={preview} /> : <p class="muted">修改后请重新预览，再保存。</p>}
-        {(preview?.manualSteps ?? read.current?.manualSteps)?.map(step => <details>
+        {(preview?.manualSteps ?? current?.manualSteps)?.map(step => <details>
           <summary>手工步骤：{step.title}</summary><pre>{step.command}</pre>
         </details>)}
       </div>
@@ -113,7 +123,7 @@ function FloorTable({ rows }: { rows: Floor[] }) {
 
 function Preview({ result }: { result: ModePreview }) {
   return <section>
-    <h2>预览结果</h2>
+    <h2>预览结果{result.eventId ? ` · 活动 ${result.eventId}` : ""}</h2>
     <p>{result.ok ? "构建与引用检查已完成" : "存在构建问题"} · {result.canGenerate ? "可保存后生成" : "生成已阻断"}</p>
     {result.blockers.map(message => <Notice kind="warn">{message}</Notice>)}
     {result.audit ? <details open={!result.audit.aligned}><summary>spec 与当前链尾：{result.audit.differences.length} 处差异</summary>

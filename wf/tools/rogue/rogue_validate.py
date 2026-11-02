@@ -20,32 +20,14 @@ import wf_assets
 import wf_describe
 import wf_mod_tool as core
 import wf_quest_lib as q
-import wf_rogue_build as rogue_build
-import wf_rogue_rewards as rewards
-import wf_rogue_shop as shop
+from wf.tools.rogue import rogue_build as rogue_build
+from wf.tools.rogue import rogue_rewards as rewards
+from wf.tools.rogue import rogue_shop as shop
 
 
-ASSETS_DIR: Path | None = None
-
-
-def validate_candidate_references(rows, tables, builder):
-    """Reference gate over a candidate overlay; never resolves a live store."""
-    def table(logical):
-        return tables[logical] if logical in tables else builder.q.load_table(logical)
-    gb, sb, gz = (table(key) for key in (builder.GENERAL_BOSS, builder.STANDARD_BOSS, builder.GENERAL_ZAKO))
-    gv = table(builder.GENERAL_BOSS_VARIABLE)
-    specials = {Path(key).stem: table(key) for key in builder.SPECIAL_BOSS_TABLES}
-    validation = builder.boss_ref_validation_tables(standard_boss=sb, general_boss=gb,
-                    general_boss_variable=gv, special_tables=specials)
-    reports = builder.validate_built_rows(rows, table(builder.FIELD_DATA_T), table(builder.ZONE_T),
-        set(gb) | set(sb) | set(gz), set(gz), lv_ceil=sb, lv_floor=gv, lv_gb=gb,
-        validation_tables=validation)
-    from .rogue_candidate_heads import validate_heads
-    validate_heads(rows, reports, table, builder, validation)
-    broken = [report for report in reports if not report["ok"]]
-    if broken:
-        raise ValueError("rogue_validate 引用门禁失败：" + str(broken))
-    return reports
+TOOL_DIR = Path(__file__).resolve().parents[3]
+ROOT = TOOL_DIR
+ASSETS_DIR = ROOT / "assets"
 
 
 def _strict_json_load(text: str) -> Any:
@@ -66,15 +48,24 @@ def _strict_json_load(text: str) -> Any:
 
 def _resolve_client_patch_dir() -> Path:
     if "WF_CLIENT_PATCH_DIR" in os.environ:
-        raw = os.environ["WF_CLIENT_PATCH_DIR"].strip()
-        configured = Path(raw).expanduser()
-        if not raw or not configured.is_absolute() or not configured.is_dir():
-            raise ValueError("WF_CLIENT_PATCH_DIR must be an existing absolute directory")
-        return configured.resolve()
-    configured = core.resolve_server_dir() / "client-patch"
-    if not configured.is_dir():
-        raise ValueError(f"client-patch directory does not exist: {configured}")
-    return configured.resolve()
+        raw = os.environ["WF_CLIENT_PATCH_DIR"]
+        if not raw.strip():
+            raise ValueError("WF_CLIENT_PATCH_DIR must be a non-empty path")
+        client_patch = Path(raw).expanduser()
+        if not client_patch.is_absolute():
+            raise ValueError(
+                f"WF_CLIENT_PATCH_DIR must be an absolute path: {raw}"
+            )
+    else:
+        client_patch = core.resolve_server_dir() / "client-patch"
+
+    client_patch = client_patch.resolve()
+    if not client_patch.is_dir():
+        raise ValueError(
+            "WF_CLIENT_PATCH_DIR/client-patch is not an existing directory: "
+            f"{client_patch}"
+        )
+    return client_patch
 
 
 def _load_task7_builder():
@@ -82,7 +73,7 @@ def _load_task7_builder():
     existing = sys.modules.get(module_name)
     if existing is not None:
         return existing
-    # Loading the external APK integration is deferred until APK validation.
+    # client-patch 属服务端仓工作区;独立布局只经显式目录/共享服务端解析器定位。
     client_patch = _resolve_client_patch_dir()
     path = client_patch / "abyss-mode-equipment" / "build_apk.py"
     spec = importlib.util.spec_from_file_location(module_name, path)
@@ -92,14 +83,6 @@ def _load_task7_builder():
     sys.modules[module_name] = module
     spec.loader.exec_module(module)
     return module
-
-
-class _LazyApkBuilder:
-    def __getattr__(self, name):
-        return getattr(_load_task7_builder(), name)
-
-
-apk_builder = _LazyApkBuilder()
 
 
 @dataclass(frozen=True)
@@ -346,7 +329,18 @@ def _validate_offline_rounds(
     *,
     access_hook: Callable[[str], None] | None = None,
 ) -> int:
-    """Validate the 15 normal rounds in both client and server representations."""
+    """Validate the configured 10/30 normal rounds in client and server data."""
+    configured_rounds = 30
+    config_path = assets_dir / "rogue_event.json"
+    try:
+        config = _strict_json_load(config_path.read_text(encoding="utf-8"))
+        event_config = config.get("events", {}).get(str(rewards.EVENT_ID), {})
+        configured_rounds = int(event_config.get("rounds", configured_rounds))
+        if configured_rounds not in (10, 30):
+            raise ValueError(f"unsupported rounds={configured_rounds}; expected 10 or 30")
+    except Exception as exc:
+        errors.append(f"assets.rogue_event.rounds.invalid: {type(exc).__name__}: {exc}")
+    normal_rounds = range(1, configured_rounds + 1)
     path = store / q.hashed_rel(rogue_build.Q_QUEST)
     rounds: list[int] = []
     try:
@@ -356,13 +350,16 @@ def _validate_offline_rounds(
         event = client.get(rewards.EVENT_ID) if isinstance(client, dict) else None
         if not isinstance(event, dict):
             raise ValueError("event map is absent")
-        expected_round_keys = {str(value) for value in range(1, 16)} | {"99"}
+        expected_round_keys = {str(value) for value in normal_rounds} | {"99"}
         if set(event) != expected_round_keys:
             rounds = sorted(int(key) for key in event if isinstance(key, str) and key in expected_round_keys and key != "99")
-            errors.append(f"rush_event_quest[{rewards.EVENT_ID}].rounds: expected=1..15 actual={rounds}")
+            errors.append(
+                f"rush_event_quest[{rewards.EVENT_ID}].rounds: "
+                f"expected=1..{configured_rounds} actual={rounds}"
+            )
         else:
-            rounds = list(range(1, 16))
-        for round_number in range(1, 16):
+            rounds = list(normal_rounds)
+        for round_number in normal_rounds:
             rows = _leaf_rows(event[str(round_number)], f"rush_event_quest[{round_number}]", errors)
             expected_id = str(700099000 + round_number)
             if (
@@ -387,7 +384,7 @@ def _validate_offline_rounds(
         server = _strict_json_load(server_path.read_text(encoding="utf-8"))
         if not isinstance(server, dict):
             raise ValueError("root is not object")
-        expected_keys = {str(700099000 + value) for value in range(1, 16)}
+        expected_keys = {str(700099000 + value) for value in normal_rounds}
         event_keys = {
             key for key in server
             if isinstance(key, str) and key.startswith("700099") and key[6:].isdigit()
@@ -395,11 +392,14 @@ def _validate_offline_rounds(
         allowed_keys = expected_keys | {"700099099"}
         actual_keys = event_keys & expected_keys
         if actual_keys != expected_keys:
-            errors.append("assets.rush_event_quest.rounds: expected exactly 15 event rounds")
+            errors.append(
+                "assets.rush_event_quest.rounds: "
+                f"expected exactly {configured_rounds} event rounds"
+            )
         extras = sorted(event_keys - allowed_keys)
         if extras:
             errors.append(f"assets.rush_event_quest.extra_rounds: {extras}")
-        for round_number in range(1, 16):
+        for round_number in normal_rounds:
             row = server.get(str(700099000 + round_number))
             if (
                 not isinstance(row, dict)
@@ -429,8 +429,8 @@ def _validate_offline_rounds(
 
 def validate_rogue_data(store: Path, assets_dir: Path) -> RogueDataReport:
     report = validate_release_data_only(store, assets_dir)
-    if report.event_id != 700099 or report.round_count != 15:
-        raise RogueValidationError("rush event 700099 must have exactly 15 rounds")
+    if report.event_id != 700099 or report.round_count not in (10, 30):
+        raise RogueValidationError("rush event 700099 must have exactly 10 or 30 rounds")
     if report.token_id != 2370099 or report.weapon_ids != tuple(range(8000101, 8000116)):
         raise RogueValidationError("rogue token or weapon set mismatch")
     if report.missing_logicals or not report.ready:
@@ -488,6 +488,7 @@ def _print_result(result: ValidationResult) -> None:
 
 
 def main() -> int:
+    global ROOT, ASSETS_DIR
     parser = argparse.ArgumentParser(
         description="Validate the complete abyss equipment release gate"
     )
@@ -495,16 +496,16 @@ def main() -> int:
     parser.add_argument("--ffdec", required=True, type=Path)
     parser.add_argument("--java", required=True, type=Path)
     args = parser.parse_args()
+    ROOT = core.resolve_server_dir()
+    ASSETS_DIR = ROOT / "assets"
     try:
         profile = rewards.require_cn_profile()
-        assets_dir = (ASSETS_DIR if ASSETS_DIR is not None
-                      else core.resolve_server_dir() / "assets")
     except (OSError, KeyError, TypeError, ValueError, RuntimeError) as exc:
         print(f"[ERR] CN profile validation failed: {exc}", file=sys.stderr)
         return 1
     result = validate_release(
         profile.store,
-        assets_dir,
+        ASSETS_DIR,
         Path(args.client_verification),
         ffdec=args.ffdec,
         java=args.java,
@@ -1000,7 +1001,7 @@ def _validate_shop(
                 errors.append(f"shop.client[{shop_id}].missing")
     if isinstance(client, dict) and isinstance(server, dict) and isinstance(id_map, dict):
         try:
-            for problem in shop.validate_shop(client, server, id_map):
+            for problem in shop.validate_shop(client, server, id_map, include_tickets=True):
                 errors.append(f"shop.contract: {problem}")
         except Exception as exc:
             errors.append(
@@ -1014,7 +1015,7 @@ def _validate_shop(
             if key not in shop.RESERVED_SHOP_IDS
         }
         try:
-            canonical_client = shop.build_client_shop(base_client, rewards.WEAPONS)
+            canonical_client = shop.build_client_shop(base_client, rewards.WEAPONS, include_tickets=True)
         except Exception as exc:
             errors.append(
                 f"shop.client.canonical.invalid: {type(exc).__name__}: {exc}"
@@ -1130,6 +1131,11 @@ def _validate_client_verification(
     if not isinstance(data, dict):
         errors.append("client_verification.report.invalid: root is not an object")
         return
+
+    # APK builder code belongs to the separately configured client-patch tree.
+    # Keep ordinary module import and data-only validation independent from that
+    # optional tree; only the APK verification lane is allowed to resolve it.
+    apk_builder = _load_task7_builder()
 
     if type(data.get("schema_version")) is not int:
         errors.append(
@@ -1251,6 +1257,26 @@ def _validate_client_verification(
             "client_verification.reexport.binding: "
             f"{type(exc).__name__}: {exc}"
         )
+
+
+def validate_candidate_references(rows, tables, builder):
+    """Reference gate over a candidate overlay; never resolves a live store."""
+    def table(logical):
+        return tables[logical] if logical in tables else builder.q.load_table(logical)
+    gb, sb, gz = (table(key) for key in (builder.GENERAL_BOSS, builder.STANDARD_BOSS, builder.GENERAL_ZAKO))
+    gv = table(builder.GENERAL_BOSS_VARIABLE)
+    specials = {Path(key).stem: table(key) for key in builder.SPECIAL_BOSS_TABLES}
+    validation = builder.boss_ref_validation_tables(standard_boss=sb, general_boss=gb,
+                    general_boss_variable=gv, special_tables=specials)
+    reports = builder.validate_built_rows(rows, table(builder.FIELD_DATA_T), table(builder.ZONE_T),
+        set(gb) | set(sb) | set(gz), set(gz), lv_ceil=sb, lv_floor=gv, lv_gb=gb,
+        validation_tables=validation)
+    from .rogue_candidate_heads import validate_heads
+    validate_heads(rows, reports, table, builder, validation)
+    broken = [report for report in reports if not report["ok"]]
+    if broken:
+        raise ValueError("rogue_validate 引用门禁失败：" + str(broken))
+    return reports
 
 
 if __name__ == "__main__":

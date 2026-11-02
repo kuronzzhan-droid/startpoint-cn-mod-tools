@@ -12,6 +12,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 import zipfile
 import zlib
 from pathlib import Path
@@ -122,6 +123,62 @@ class CleanChainTest(PrepushCase):
         self.assertEqual(code, 0, self.stdout)
         self.assertEqual(self.ids(findings, "ERROR"), set())
         self.assertIn("等级检查: 1 张 quest 表, 1 个关卡", self.stdout)
+
+
+class ViewLifetimeTest(PrepushCase):
+    def test_view_context_releases_cached_archive_and_per_view_tables(self):
+        archive = next(self.fx.active.glob("*.zip"))
+        with pc.View([archive], None) as view:
+            table = view.table(pc.CHARACTER)
+            self.assertIs(view.table(pc.CHARACTER), table)
+            opened = view._zf[archive]
+            self.assertIsNotNone(opened.fp)
+        self.assertIsNone(opened.fp)
+        self.assertEqual(view._zf, {})
+        self.assertEqual(view._tables, {})
+        moved = archive.with_suffix(".closed.zip")
+        archive.rename(moved)  # Windows refuses this while the ZipFile is open.
+        moved.rename(archive)
+
+    def check_main_views_closed(self, *, fail: bool):
+        from wf.deliver import prepush as pipeline
+        self.fx.add_patch("1.4.2", "1.4.3", {pc.ITEM: {"1": "new,1,素材,icon"}}, "next")
+        instances, handles = [], []
+        class TrackedView(pc.View):
+            def __init__(view, *args):
+                super().__init__(*args)
+                instances.append(view)
+            def close(view):
+                handles.extend(view._zf.values())
+                super().close()
+        def read_both(_args, view, old, _report):
+            self.assertIsNotNone(view.table(pc.ITEM))
+            self.assertIsNotNone(old.table(pc.ITEM))
+            if fail:
+                raise RuntimeError("synthetic check failure after archive reads")
+        with mock.patch.object(pipeline, "View", TrackedView), mock.patch.object(pipeline, "check_text", read_both):
+            if fail:
+                with self.assertRaisesRegex(RuntimeError, "synthetic check failure"):
+                    self.run_check("--since", "1.4.2", "--only", "text")
+            else:
+                code, findings = self.run_check("--since", "1.4.2", "--only", "text")
+                self.assertEqual(code, 0)
+                self.assertEqual(findings, [])
+        self.assertEqual(len(instances), 2)
+        self.assertEqual(len(handles), 2)
+        self.assertTrue(all(handle.fp is None for handle in handles))
+        self.assertTrue(all(view._zf == {} and view._tables == {} for view in instances))
+        # Actual archive replacement also proves no leaked Windows file handle.
+        for archive in self.fx.active.glob("*.zip"):
+            moved = archive.with_suffix(".closed.zip")
+            archive.rename(moved)
+            moved.rename(archive)
+
+    def test_main_closes_current_and_old_view_after_success(self):
+        self.check_main_views_closed(fail=False)
+
+    def test_main_closes_current_and_old_view_after_failure(self):
+        self.check_main_views_closed(fail=True)
 
 
 class TextTest(PrepushCase):

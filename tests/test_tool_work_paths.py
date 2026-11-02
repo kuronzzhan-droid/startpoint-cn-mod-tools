@@ -49,17 +49,19 @@ class ToolWorkPathCase(unittest.TestCase):
             (cdn / "archive-common-full").mkdir(parents=True)
             diff.mkdir(parents=True)
             archive_path = diff / "pinball-1.4.54-1.4.55-1-test.zip"
+            relative = wf_quest_lib.hashed_rel("master/test/path-fixture.orderedmap").replace("\\", "/")
             with zipfile.ZipFile(archive_path, "w") as archive:
-                archive.writestr("production/upload/aa/bb", b"payload")
+                archive.writestr("production/upload/" + relative, b"payload")
 
             with mock.patch.object(
-                wf_mod_tool, "resolve_cdn_root_lax", return_value=cdn
+                wf_mod_tool, "resolve_cdn_root", return_value=cdn
             ) as resolver:
                 guard = load_copied_module(
                     "wf_publish_guard.py", "isolated_publish_guard_cdn", tool_dir
                 )
+                index = guard.chain_latest_index()
 
-            self.assertIn("aa/bb", guard.chain_latest_index())
+            self.assertIn(relative, index)
             resolver.assert_called_once_with()
 
     def test_publish_guard_reads_pending_from_its_own_tool_directory(self) -> None:

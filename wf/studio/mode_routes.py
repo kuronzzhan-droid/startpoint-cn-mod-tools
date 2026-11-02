@@ -66,6 +66,7 @@ class ModeDeliveries(DeliverRoutes):
 class ModeRoutes:
     def __init__(self, app, server_dir=None, default_provides=None):
         self.app = app
+        self.server_dir = server_dir
         from .mode_cache import ModeReadCache
         self.read_cache = ModeReadCache()
         self.store = ModeStore(app.ops.store.root / "modes")
@@ -77,13 +78,15 @@ class ModeRoutes:
         from . import mode_five, mode_rogue
         if mode not in MODES:
             raise DraftError("未知模式")
-        inputs = ViewInputs(self.app.source)
+        inputs = ViewInputs(self.app.source, server_dir=self.server_dir)
         if mode == "five":
             result = mode_five.preview(inputs.read, payload)
         else:
-            if not isinstance(payload, dict) or set(payload) != {"seed"}:
-                raise DraftError("深渊请求只接受 seed")
-            result = mode_rogue.preview(inputs.read, payload["seed"])
+            if (not isinstance(payload, dict) or "seed" not in payload
+                    or set(payload) - {"seed", "eventId"}):
+                raise DraftError("深渊请求只接受 seed 与可选 eventId")
+            result = mode_rogue.preview(inputs.read, payload["seed"], payload.get("eventId", "700099"),
+                                       server_asset_reader=inputs.read_server_asset)
         inputs.verify()
         fresh = freshness(self.app.source)
         if fresh.get("error") or fresh["latest"] != self.app.source.version:
@@ -125,7 +128,7 @@ class ModeRoutes:
             result["current"] = current
             result["payload"] = draft["payload"] if draft else {"seed": 0}
             if draft:
-                result["preview"] = saved_preview(self.app.source, draft)
+                result["preview"] = saved_preview(self.app.source, draft, server_dir=self.server_dir)
         return json_response(result)
 
     def edit(self, query, body, mode, action):

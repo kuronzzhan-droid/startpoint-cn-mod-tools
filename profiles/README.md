@@ -61,6 +61,31 @@ CDN 可直接指定 `cdn_dir`，或者从显式 `server` 的 `.env` 中读取 `C
 `root_path()` 无显式根时使用本仓 `work/external`，供离线导入和相对路径定位；这不会把外部输入标成已配置。
 `project_root()`、发布保护的 `PACKS`、角色支持层的默认 `ROOT` 和 GUI `ROOT` 都以本工具仓根为准。
 
+## 深渊构建器输入
+
+深渊普通塔（700099）与 EX（700100）共用 `wf/tools/rogue` 的构建器。
+以下可选路径键沿用相同的环境变量与 profile 解析规则，不依赖外部脚本目录：
+
+| `paths` 键 | 环境变量 | 内容 |
+| --- | --- | --- |
+| `rogue_special_bosses` | `WF_ROGUE_SPECIAL_BOSSES` | BOSS 原味保护、白名单与专用池 |
+| `rogue_field_menu` | `WF_ROGUE_FIELD_MENU` | 场地程序目录及能力证据 |
+| `rogue_layout_plan` | `WF_ROGUE_LAYOUT_PLAN` | 阶段与指定楼层的旧布局计划 |
+| `rogue_field_tuning` | `WF_ROGUE_FIELD_TUNING` | 场地程序数值调整 |
+| `rogue_boss_history` | `WF_ROGUE_BOSS_HISTORY` | 最近三座塔的 BOSS 历史 |
+
+前四项未显式配置时，先读本仓已存在的 `work/rogue-config/<文件名>.json`，
+再读随代码维护的 `wf/tools/rogue/data/` 默认文件。旧 GUI 保存配置时写入
+`work/rogue-config/`，不会修改包内默认文件；显式配置的路径仍优先。
+历史未配置时使用本仓 `work/rogue_boss_history.json`。Studio 预览只读这些输入，
+不会写历史，也不会写配置；同一种子要复现同一结果，还须固定上述配置、历史和输入视图。
+
+构建固定奖励需要配置 `server` 指向包含 `assets/rush_event_quest_folder.json`
+的只读本地镜像。EX 候选还读取 `assets/rogue_event.json` 及可选的
+`assets/rogue_event_cnmod.json`，以生成匹配结算组的 `additional_reward` 表。
+这些读取不连接服务端、数据库或设备。原版 CLI 的写入与发布参数不属于 Studio
+预览；编辑台生成本地交付继续执行原有的新鲜度、输入摘要、共享键与能力守卫。
+
 ## M1 自动视图
 
 `python -m wf view --tip 1.4.N` 从 `paths.kulo/assets/asset-patch/manifest.json` 的依赖链读取 ZIP，以 `paths.store131` 为基线。后续离线交付可配置 ZIP 搜索目录与补充 manifest，路径相对 `wf_root`：
