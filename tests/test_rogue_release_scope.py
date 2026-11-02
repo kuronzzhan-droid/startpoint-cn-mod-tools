@@ -1,4 +1,4 @@
-"""Abyss server selectors accept the full shop without claiming the degree row."""
+"""The frozen 1.4.312 abyss_weapons scope stays the 15 weapon shop rows."""
 from dataclasses import replace
 from pathlib import Path
 
@@ -25,8 +25,13 @@ def migration_with_shop_keys(keys, *, map_keys=None):
     return replace(migration, server_members=members)
 
 
-def test_server_scope_accepts_both_current_ticket_rows():
-    contract._validate_server_scope(migration_with_shop_keys(rogue_shop.OWNED_SHOP_IDS))
+def test_server_scope_accepts_the_frozen_weapon_rows():
+    contract._validate_server_scope(migration_with_shop_keys(rogue_shop.RESERVED_SHOP_IDS))
+
+
+def test_server_scope_rejects_ticket_rows_in_the_frozen_contract():
+    with pytest.raises(contract.InventoryError, match="selector scope mismatch"):
+        contract._validate_server_scope(migration_with_shop_keys(rogue_shop.OWNED_SHOP_IDS))
 
 
 @pytest.mark.parametrize("keys", [
@@ -43,5 +48,5 @@ def test_server_scope_rejects_degree_partial_or_reordered_shop(keys):
 def test_server_scope_rejects_mixed_shop_and_id_map_generations():
     with pytest.raises(contract.InventoryError, match="selector scope mismatch"):
         contract._validate_server_scope(migration_with_shop_keys(
-            rogue_shop.OWNED_SHOP_IDS, map_keys=rogue_shop.RESERVED_SHOP_IDS,
+            rogue_shop.RESERVED_SHOP_IDS, map_keys=rogue_shop.OWNED_SHOP_IDS,
         ))

@@ -201,7 +201,7 @@ class TestTokenGeneration(unittest.TestCase):
         expected[1] = rewards.TOKEN_ID
         expected[2] = "深渊代币"
         expected[5] = rewards.TOKEN_DESCRIPTION
-        expected[19:22] = ["2000-01-01 12:00:00", "2099-12-31 11:59:59", "true"]
+        expected[19:22] = ["2000-01-01 00:00:00", "2099-12-31 23:59:59", "true"]
         self.assertEqual([expected], core.read_csv_lines(actual))
         self.assertIs(str, type(actual))
 
@@ -215,7 +215,7 @@ class TestTokenGeneration(unittest.TestCase):
         self.assertIs(bytes, type(actual))
         row = core.read_csv_lines(actual.decode("utf-8"))[0]
         self.assertEqual(
-            ["2000-01-01 12:00:00", "2099-12-31 11:59:59", "true"], row[19:22]
+            ["2000-01-01 00:00:00", "2099-12-31 23:59:59", "true"], row[19:22]
         )
         owned = {0, 1, 2, 5, 19, 20, 21}
         self.assertEqual(
@@ -474,7 +474,7 @@ class TestMasterChanges(unittest.TestCase):
         self.assertEqual("2370099", token[1])
         self.assertEqual("深渊代币", token[2])
         self.assertEqual(
-            ["2000-01-01 12:00:00", "2099-12-31 11:59:59", "true"], token[19:22]
+            ["2000-01-01 00:00:00", "2099-12-31 23:59:59", "true"], token[19:22]
         )
         self.assertEqual(
             [value for index, value in enumerate(template)

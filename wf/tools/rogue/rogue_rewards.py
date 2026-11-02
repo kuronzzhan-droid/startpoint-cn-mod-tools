@@ -54,8 +54,8 @@ ENHANCEMENT_ABILITY_T = "master/equipment_enhancement/equipment_enhancement_abil
 
 TOKEN_ID = "2370099"
 TOKEN_TEMPLATE = "2370007"     # 激战代币
-TOKEN_START = "2000-01-01 12:00:00"
-TOKEN_END = "2099-12-31 11:59:59"
+TOKEN_START = "2000-01-01 00:00:00"
+TOKEN_END = "2099-12-31 23:59:59"
 EVENT_ID = "700099"
 TOKEN_DESCRIPTION = "在「深渊连战」中获得的深渊结晶。凝聚着历战boss的力量,可用于锻造深渊武装。"
 
