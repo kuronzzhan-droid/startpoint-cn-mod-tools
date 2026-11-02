@@ -1,4 +1,4 @@
-"""Source-faithful reward regressions with shared synthetic fixtures."""
+"""Repository reward regressions with shared synthetic fixtures."""
 from __future__ import annotations
 
 from rogue_rewards_support import *  # noqa: F403
@@ -37,8 +37,8 @@ class TestWeaponContract(unittest.TestCase):
             for expected_rows in EXPECTED_EFFECT_ROWS.values()
             for template_id, donor_line, effect_kind, _old, _new in expected_rows
         }
-        self.assertEqual(71, sum(map(len, EXPECTED_EFFECT_ROWS.values())))
-        self.assertEqual(45, len(expected_rule_keys))
+        self.assertEqual(75, sum(map(len, EXPECTED_EFFECT_ROWS.values())))
+        self.assertEqual(48, len(expected_rule_keys))
         self.assertEqual(expected_rule_keys, set(rewards.EFFECT_STRENGTH_RULES))
         with self.assertRaises(TypeError):
             rewards.EFFECT_STRENGTH_RULES[("x", 0, "0")] = object()
@@ -52,10 +52,10 @@ class TestWeaponContract(unittest.TestCase):
                 expected_rows = EXPECTED_EFFECT_ROWS[spec.id]
                 expected_strengths = [expected[4] for expected in expected_rows]
                 self.assertEqual(
-                    list(EXPECTED_LEVEL1_STRENGTHS[spec.id]), [strength_cells(row)[0] for row in rows]
+                    expected_strengths, [strength_cells(row)[0] for row in rows]
                 )
                 self.assertEqual(
-                    expected_strengths,
+                    [strength_cells(row)[0] for row in rows],
                     [strength_cells(row)[1] for row in rows],
                 )
                 expected_durations = []
@@ -63,6 +63,10 @@ class TestWeaponContract(unittest.TestCase):
                     zip(expected_rows, spec.effects), start=1,
                 ):
                     template_id, donor_line = expected[:2]
+                    if effect.during:
+                        # 持续行不带瞬发块:c54/c55 维持捐赠行的空值
+                        expected_durations.append(("", ""))
+                        continue
                     expected_durations.append(EXPECTED_DURATION_OVERRIDES.get(
                         (spec.id, slot),
                         (
@@ -82,12 +86,12 @@ class TestWeaponContract(unittest.TestCase):
             rewards.resolve_effect_strength(legacy_spec, legacy_effect)
 
         max_gauge_spec = next(spec for spec in rewards.WEAPONS if spec.id == "8000110")
-        # Online kind 245 scales by 1.5 and then caps at 100%.
+        # 2026-09-28:245 改为 ×1 满额规则(作者给的是合计 +50%),上限 100% 照旧。
         max_gauge_probe = dataclasses.replace(
             max_gauge_spec.effects[2], strength=120000
         )
         resolution = rewards.resolve_effect_strength(max_gauge_spec, max_gauge_probe)
-        self.assertEqual((100000, 180000, True), (
+        self.assertEqual((100000, 120000, True), (
             resolution.value, resolution.raw_scaled, resolution.capped,
         ))
 
@@ -197,35 +201,59 @@ class TestTokenGeneration(unittest.TestCase):
         expected[1] = rewards.TOKEN_ID
         expected[2] = "深渊代币"
         expected[5] = rewards.TOKEN_DESCRIPTION
-        expected[19:22] = [rewards.TOKEN_START, rewards.TOKEN_END, "true"]
         self.assertEqual([expected], core.read_csv_lines(actual))
         self.assertIs(str, type(actual))
 
 
 @unittest.skipUnless(not MISSING_API, "canonical builder API is not implemented yet")
 class TestSoulGeneration(unittest.TestCase):
-    def test_fire_greatsword_uses_only_online_template_lines(self):
+    def test_fire_greatsword_uses_only_requested_template_lines(self):
         templates = fake_templates()
         donor_mismatch = core.read_csv_lines(templates["5050022"])[1]
         self.assertEqual(["32", "5050022#1"], [donor_mismatch[44], donor_mismatch[122]])
-        rows = core.read_csv_lines(rewards.build_soul_leaf(templates, rewards.WEAPONS[0]))
-        self.assertEqual(4, len(rows))
-        self.assertEqual(["51", "202", "32", "33"], [row[44] for row in rows])
-        self.assertEqual(["5", "0", "5", "5"], [row[45] for row in rows])
-        self.assertEqual(["(None)", "", "(None)", "(None)"], [row[46] for row in rows])
-        self.assertEqual(["112500", "37500", "150000", "150000"], [row[48] for row in rows])
-        self.assertEqual(["225000", "75000", "300000", "300000"], [row[49] for row in rows])
 
-    def test_online_weapon_generator_does_not_add_local_multiball_rows(self):
-        # The online source's 8000101/102 specs contain four/five instant rows.
-        # Local resonance synthesis is a separate builder and must not leak into
-        # this source-faithful migration.
+        leaf = rewards.build_soul_leaf(templates, rewards.WEAPONS[0])
+        rows = core.read_csv_lines(leaf)
+        self.assertEqual(6, len(rows))
+        self.assertEqual(["51", "202", "32", "33", "32", "33"], [row[44] for row in rows])
+        self.assertEqual(["5", "0", "5", "5", "8", "8"], [row[45] for row in rows])
+        self.assertEqual(
+            ["(None)", "", "(None)", "(None)", "", ""], [row[46] for row in rows]
+        )
+        self.assertEqual(
+            ["225000", "75000", "300000", "300000", "300000", "300000"],
+            [row[48] for row in rows],
+        )
+        self.assertEqual([row[48] for row in rows], [row[49] for row in rows])
+
+    def test_fire_weapons_mirror_attack_and_direct_to_multiballs(self):
+        """作者 2026-09-28:火深渊武器的攻击力/直击加成同值给协力球。
+
+        协力球行必须是全队行的逐列镜像,只允许槽号 c0、target c45(5→8)、组 c46((None)→空)不同;
+        target=8 Multiball 解析器(soul parseAt45,32/33 共用)不读 c46。先例:官方 soul 32/8
+        4 行(4030008#0 等)c46 皆空;soul 无 33/8,33/8 先例在官方 ability 表(1110061#0 等)
+        与自家诅咒武器。
+        """
         templates = fake_templates()
+        expected_kinds = {"8000101": ["32", "33"], "8000102": ["32"]}
         for spec in rewards.WEAPONS:
+            rows = core.read_csv_lines(rewards.build_soul_leaf(templates, spec))
+            multiball = [row for row in rows if row[45] == "8"]
             with self.subTest(weapon=spec.id):
-                rows = core.read_csv_lines(rewards.build_soul_leaf(templates, spec))
-                self.assertEqual(len(EXPECTED_EFFECT_ROWS[spec.id]), len(rows))
-                self.assertEqual([], [row for row in rows if row[45] == "8"])
+                self.assertEqual(
+                    expected_kinds.get(spec.id, []), [row[44] for row in multiball]
+                )
+                for row in multiball:
+                    twins = [t for t in rows if t[44] == row[44] and t[45] == "5"]
+                    self.assertEqual(1, len(twins))
+                    diff = {
+                        column for column, (a, b) in enumerate(zip(twins[0], row))
+                        if a != b
+                    }
+                    self.assertEqual({0, 45, 46}, diff)
+                    self.assertEqual(("(None)", ""), (twins[0][46], row[46]))
+                    self.assertEqual(rows[-len(multiball):], multiball,
+                                     "协力球行追加在末尾,旧槽号不动")
 
     def test_each_effect_uses_its_templates_first_line_and_fixed_columns(self):
         templates = fake_templates()
@@ -239,15 +267,16 @@ class TestSoulGeneration(unittest.TestCase):
                 ):
                     template_id, donor_line, effect_kind, _old, uplift = expected
                     kind_col, target_col, group_col, (low, high) = (
-                        (44, 45, 46, (48, 49))
+                        rewards.SOUL_DURING_CONTENT if effect.during
+                        else rewards.SOUL_INSTANT_CONTENT
                     )
                     self.assertEqual(123, len(row))
                     self.assertEqual(
-                        [str(slot), "1", "0"], row[:3]
+                        [str(slot), "1", "1" if effect.during else "0"], row[:3]
                     )
                     self.assertEqual(f"{template_id}#{donor_line}", row[122])
                     self.assertEqual(effect_kind, row[kind_col])
-                    donor_target = "1"
+                    donor_target = "5" if effect.during else "1"
                     self.assertEqual(
                         effect.target if effect.target is not None else donor_target,
                         row[target_col],
@@ -258,8 +287,8 @@ class TestSoulGeneration(unittest.TestCase):
                         else ""
                     )
                     self.assertEqual(expected_group, row[group_col])
-                    self.assertEqual(EXPECTED_LEVEL1_STRENGTHS[spec.id][slot - 1], row[low])
-                    self.assertEqual(uplift, row[high])
+                    self.assertEqual(uplift, row[low])
+                    self.assertEqual(row[low], row[high])
                     expected_bool = EXPECTED_BY_EACH_TRIGGER_PULLER.get(
                         (spec.id, slot)
                     )
@@ -420,10 +449,9 @@ class TestMasterChanges(unittest.TestCase):
         token = core.read_csv_lines(result.items[rewards.TOKEN_ID])[0]
         self.assertEqual("2370099", token[1])
         self.assertEqual("深渊代币", token[2])
-        self.assertEqual([rewards.TOKEN_START, rewards.TOKEN_END, "true"], token[19:22])
         self.assertEqual(
-            [value for index, value in enumerate(template) if index not in (0, 1, 2, 5, 19, 20, 21)],
-            [value for index, value in enumerate(token) if index not in (0, 1, 2, 5, 19, 20, 21)],
+            [value for index, value in enumerate(template) if index not in (0, 1, 2, 5)],
+            [value for index, value in enumerate(token) if index not in (0, 1, 2, 5)],
         )
 
         before = core.read_csv_lines(tables.rush_event["700099"])[0]

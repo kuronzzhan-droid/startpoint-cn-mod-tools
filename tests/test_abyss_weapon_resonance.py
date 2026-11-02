@@ -57,18 +57,13 @@ class AbyssResonanceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "columns"):
             resonance.gate_row(["0"], "8000101", "ability_soul")
 
-    def test_explicit_resonance_wraps_every_online_elemental_effect(self):
+    def test_generator_emits_gates_on_every_elemental_effect(self):
         templates = fake_templates()
         for spec in rewards.WEAPONS:
             rows = rewards.core.read_csv_lines(rewards.build_soul_leaf(templates, spec))
             for row in rows:
-                # The online generator preserves donor conditions. Resonance
-                # remains an explicit local transform, tested across all rows.
-                self.assertEqual([], [row[i:i + 7] for i in (3, 10, 17) if row[i] == "2"])
-                gated = resonance.gate_row(row, spec.id, "ability_soul")
-                gates = [gated[i:i + 7] for i in (3, 10, 17) if gated[i] == "2"]
+                gates = [row[i:i + 7] for i in (3, 10, 17) if row[i] == "2"]
                 if spec.element < 0:
-                    self.assertEqual(row, gated)
                     self.assertEqual([], gates)
                 else:
                     self.assertEqual([["2", "", "", "600000", "600000", spec.group, ""]], gates)

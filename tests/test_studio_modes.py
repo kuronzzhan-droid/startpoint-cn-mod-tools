@@ -124,6 +124,33 @@ def test_candidate_main_rejects_write_before_resolving_server():
         rogue.main(["--write"], candidate_sink=lambda _: None)
 
 
+@pytest.mark.parametrize("event_id", ["700099", "700100"])
+def test_rogue_candidate_requires_strict_target_hp(monkeypatch, event_id):
+    from contextlib import contextmanager
+    from wf.tools.rogue import rogue_candidate, rogue_validate
+
+    called = []
+
+    def main(argv, *, candidate_sink, forge_candidate):
+        called.append(argv)
+        candidate_sink({"tables": {}, "rows": {}, "programs": {},
+                        "resources": {}, "dependencies": []})
+        return 0
+
+    @contextmanager
+    def builder(*args, **kwargs):
+        yield SimpleNamespace(main=main)
+
+    monkeypatch.setattr(rogue_candidate, "isolated_builder", builder)
+    monkeypatch.setattr(rogue_validate, "validate_candidate_references", lambda *args: [])
+    result = build_candidate(lambda _: pytest.fail("must not read"),
+                             seed=101, rounds=30, event_id=event_id)
+    assert "--strict-target-hp" in called[0]
+    assert called[0][called[0].index("--mode") + 1] == (
+        "ex" if event_id == "700100" else "normal")
+    assert result["files"] == {}
+
+
 def test_pure_forge_and_legacy_forge_produce_same_bytes(tmp_path, monkeypatch):
     from wf.tools.core import field_catalog as fields
     program = "battle/action/enemy/test"

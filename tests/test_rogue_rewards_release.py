@@ -1,4 +1,4 @@
-"""Source-faithful reward regressions with shared synthetic fixtures."""
+"""Repository reward regressions with shared synthetic fixtures."""
 from __future__ import annotations
 
 from rogue_rewards_support import *  # noqa: F403

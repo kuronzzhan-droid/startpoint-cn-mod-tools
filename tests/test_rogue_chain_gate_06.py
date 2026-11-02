@@ -793,11 +793,12 @@ class GeneralBossElementResistanceCase(unittest.TestCase):
         gv = q.load_table("master/battle/boss/general_boss_variable.orderedmap")
         # 2026-08-05 用户按 getSurjectivity 独立复算：具体塔层/clone ID 会随 seed
         # 与所选等级行变化，不能再钉“第4/13/20战”或当前 store 的 mod_rogue_boss4。
-        # 门禁应先在官方原型实际等级行成立，克隆后另由构建期最终复核保证继承。
+        # Lens v3 的 strength>0 路径不受 c36=true 限制；旧测试的一律阻断
+        # 断言已失效。门禁先检查官方原型实际等级行，克隆后再复核继承。
         for code, level in (("dark_matter_single", 80), ("smr21_big_boss_ex", 90),
                             ("beasts_big_boss_multi_80", 90)):
             why = rb.general_boss_element_immunity_block(gb, code, level, gv)
-            self.assertIn("c36=true", why or "", code)
+            self.assertIsNone(why, code)
 
 
 class CurseComboCase(unittest.TestCase):

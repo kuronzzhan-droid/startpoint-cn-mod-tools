@@ -164,6 +164,20 @@ class TestApiReuse(unittest.TestCase):
         self.assertIs(rewards.WeaponSpec, shop.WeaponSpec)
         self.assertIs(rewards.WEAPONS, shop.WEAPONS)
 
+    def test_default_apis_build_and_validate_weapon_and_ticket_products(self):
+        client = shop.build_client_shop(client_fixture(), rewards.WEAPONS)
+        server, id_map = shop.build_server_shop(*server_fixture(), rewards.WEAPONS)
+
+        self.assertEqual([], shop.validate_shop(client, server, id_map))
+        for shop_id in TICKET_SHOP_IDS:
+            self.assertIn(shop_id, client)
+            self.assertIn(shop_id, server["11"]["700099"])
+            self.assertIn(shop_id, id_map)
+
+        del client[TICKET_SHOP_IDS[0]]
+        self.assertTrue(any(TICKET_SHOP_IDS[0] in error
+                            for error in shop.validate_shop(client, server, id_map)))
+
 
 class TestClientShop(unittest.TestCase):
     def test_appends_two_ticket_products_after_the_unchanged_weapon_range(self):

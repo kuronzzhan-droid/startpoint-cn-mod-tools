@@ -220,7 +220,8 @@ def reroll_endless_field(event: str, quest_no: str, apply: bool) -> None:
         raise RuntimeError("rush quest 拟写字节 build→parse 不等价")
 
     publish_env = dict(os.environ)
-    publish_env["WF_TARGET_STORE"] = str(quest_path.parent.parent.resolve())
+    publish_env["WF_STORE"] = str(quest_path.parent.parent.resolve())
+    publish_env.pop("WF_TARGET_STORE", None)
     preflight = subprocess.run(
         _publish_command(publish_items, list_only=True), cwd=core.resolve_server_dir(),
         env=publish_env)

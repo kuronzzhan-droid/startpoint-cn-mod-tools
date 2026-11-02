@@ -1,4 +1,7 @@
 """Authored rogue settings stay local and are read by the same builder."""
+import json
+from pathlib import Path
+
 from wf.tools.rogue import rogue_build as b
 
 
@@ -25,3 +28,30 @@ def test_explicit_profile_destination_has_priority_over_defaults(tmp_path, monke
     monkeypatch.setattr(b, "configured_path", lambda name: explicit)
     assert b.rogue_config_path("rogue_layout_plan.json") == explicit
     assert b.rogue_config_output_path("rogue_layout_plan.json") == explicit
+
+
+def test_reviewed_defaults_have_one_packaged_copy_and_keep_checkout_layout():
+    checkout = Path(b.__file__).resolve().parents[3]
+    packaged = checkout / "wf/tools/rogue/data"
+    names = (
+        "rogue_field_menu.json",
+        "rogue_layout_plan.json",
+        "rogue_special_bosses.json",
+    )
+    distribution = json.loads((checkout / "tool-distribution-v1.json").read_text("utf-8"))
+    for name in names:
+        assert not (checkout / name).exists()
+        assert (packaged / name).is_file()
+        assert f"wf/tools/rogue/data/{name}" in distribution["files"]
+        assert name not in distribution["files"]
+    layout = json.loads((packaged / "rogue_layout_plan.json").read_text("utf-8"))
+    assert layout["floors"]["5"]["curses"] == ["元素禁壁"]
+    assert layout["floors"]["12"]["curses"] == ["元素禁壁"]
+    assert "field" not in layout["floors"]["5"]
+
+
+def test_field_catalog_writes_the_packaged_default():
+    from wf.tools.core import field_catalog
+
+    checkout = Path(b.__file__).resolve().parents[3]
+    assert field_catalog.OUT_JSON == checkout / "wf/tools/rogue/data/rogue_field_menu.json"

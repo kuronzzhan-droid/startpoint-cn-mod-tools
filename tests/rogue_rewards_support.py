@@ -1,48 +1,31 @@
+# -*- coding: utf-8 -*-
 """深渊武装纯数据构建器测试（合成行，不读取真实 CN store）。"""
-
 from __future__ import annotations
 
 import contextlib
-
 import dataclasses
-
 import copy
-
 import io
-
 import json
-
 import shutil
-
 import subprocess
-
 import sys
-
 import tempfile
-
 import unittest
-
 from pathlib import Path
-
 from unittest import mock
 
 from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
 import wf_assets  # noqa: E402
-
 import wf_describe  # noqa: E402
-
 import wf_mod_tool as core  # noqa: E402
-
 import wf_publish  # noqa: E402
-
 import wf_rogue_build as rogue_build  # noqa: E402
-
 import wf_rogue_rewards as rewards  # noqa: E402
-
 import wf_rogue_validate as validator  # noqa: E402
+
 
 REQUIRED_API = (
     "WEAPONS",
@@ -52,7 +35,6 @@ REQUIRED_API = (
     "build_equipment_status",
     "build_soul_leaf",
 )
-
 MISSING_API = tuple(name for name in REQUIRED_API if not hasattr(rewards, name))
 
 TASK2_API = (
@@ -67,8 +49,8 @@ TASK2_API = (
     "apply_server_mirrors",
     "patch_rush_token",
 )
-
 MISSING_TASK2_API = tuple(name for name in TASK2_API if not hasattr(rewards, name))
+
 
 def fake_release_snapshot(store: Path) -> validator.ReleaseSnapshot:
     return validator.ReleaseSnapshot(
@@ -88,9 +70,12 @@ TASK3_API = (
     "validate_source_assets",
     "install_source_assets",
 )
-
 MISSING_TASK3_API = tuple(name for name in TASK3_API if not hasattr(rewards, name))
 
+
+# v3.3 canonical metadata and all 75 uplift slots are deliberately static.  Do not
+# derive these oracles from WEAPONS/resolve_effect_strength: the test must catch a
+# production declaration and its resolver drifting together.
 EXPECTED_WEAPON_METADATA = [
     ("8000101", "深渊·灰烬巨剑", "5010060", 0, "Red", "item/equipment/mod/abyss/fire_01", (3, 2)),
     ("8000102", "深渊·熔核法杖", "5020042", 0, "Red", "item/equipment/mod/abyss/fire_02", (3, 2)),
@@ -109,93 +94,117 @@ EXPECTED_WEAPON_METADATA = [
     ("8000115", "深渊·万象铳", "5090045", -1, "(None)", "item/equipment/mod/abyss/universal_03", (3, 2)),
 ]
 
-EXPECTED_EFFECT_ROWS = {'8000101': (('3020011', 0, '51', 150000, '225000'),
-             ('300001', 4, '202', 50000, '75000'),
-             ('300001', 0, '32', 200000, '300000'),
-             ('5020041', 0, '33', 200000, '300000')),
- '8000102': (('3050010', 0, '211', 100000, '100000'),
-             ('5050037', 0, '40', 15000, '22500'),
-             ('4030004', 0, '190', 20000, '30000'),
-             ('5100004', 1, '157', 30000, '45000'),
-             ('300001', 0, '32', 200000, '300000')),
- '8000103': (('5090059', 0, '50', 150000, '225000'),
-             ('5040033', 4, '56', 20000, '30000'),
-             ('5020041', 0, '33', 200000, '300000'),
-             ('300001', 0, '32', 200000, '300000'),
-             ('5050009', 0, '55', 200000, '300000')),
- '8000104': (('5050020', 1, '227', 20000, '30000'),
-             ('4030019', 2, '70', '', ''),
-             ('300001', 8, '226', 600000, '900000'),
-             ('5080029', 0, '205', 25000, '37500'),
-             ('5020024', 0, '34', 400000, '600000'),
-             ('3080008', 0, '36', 20000, '30000')),
- '8000105': (('5090054', 0, '213', 12000000, '18000000'),
-             ('5030021', 1, '26', '', ''),
-             ('5090027', 0, '33', 300000, '450000'),
-             ('300001', 0, '32', 300000, '450000')),
- '8000106': (('4030004', 0, '190', 25000, '37500'),
-             ('5070040', 0, '38', 15000, '22500'),
-             ('3010035', 0, '35', 15000, '16000'),
-             ('300001', 0, '32', 250000, '375000')),
- '8000107': (('300001', 8, '226', 600000, '900000'),
-             ('5040009', 1, '211', 5000, '7500'),
-             ('5070017', 1, '200', 200000, '300000'),
-             ('5050009', 0, '55', 200000, '300000'),
-             ('300001', 0, '32', 200000, '300000')),
- '8000108': (('4040021', 1, '226', 1000000, '1500000'),
-             ('4040007', 0, '191', 20000, '30000'),
-             ('5090027', 0, '33', 200000, '300000'),
-             ('300001', 0, '32', 200000, '300000')),
- '8000109': (('3010027', 1, '209', 45000, '67500'),
-             ('5090029', 0, '388', 250000, '375000'),
-             ('300001', 0, '32', 250000, '375000'),
-             ('5090054', 0, '213', 4000000, '6000000'),
-             ('4060023', 2, '220', '', '')),
- '8000110': (('5050017', 2, '203', 1500000, '2250000'),
-             ('4080015', 1, '206', 25000, '37500'),
-             ('5040019', 2, '245', 50000, '75000'),
-             ('300001', 0, '32', 200000, '300000')),
- '8000111': (('4080016', 2, '67', '', ''),
-             ('5080038', 1, '41', 15000, '22500'),
-             ('5090024', 2, '28', 300000, '450000'),
-             ('5090027', 0, '33', 300000, '450000')),
- '8000112': (('3020003', 0, '59', '', ''),
-             ('3020003', 1, '60', '', ''),
-             ('5010047', 0, '1', 200000, '300000'),
-             ('5050022', 1, '209', 10000, '15000'),
-             ('300001', 0, '32', 200000, '300000')),
- '8000113': (('300001', 5, '468', 100000, '100000'),
-             ('300002', 6, '16', '', ''),
-             ('5045000', 1, '61', '', ''),
-             ('5020024', 0, '34', 350000, '525000')),
- '8000114': (('3050010', 0, '211', 15000, '22500'),
-             ('3060003', 0, '156', 30000, '45000'),
-             ('5040033', 4, '56', 20000, '30000'),
-             ('5080029', 0, '205', 50000, '75000'),
-             ('3010035', 0, '35', 15000, '16000'),
-             ('3080008', 0, '36', 30000, '33000')),
- '8000115': (('3080002', 0, '68', '', ''),
-             ('3080002', 1, '69', '', ''),
-             ('5080029', 0, '205', 30000, '45000'),
-             ('300001', 0, '32', 200000, '300000'),
-             ('5090059', 0, '50', 200000, '300000'),
-             ('5090029', 0, '388', 200000, '300000'))}
-
-EXPECTED_LEVEL1_STRENGTHS = {'8000101': ('112500', '37500', '150000', '150000'),
- '8000102': ('50000', '11250', '15000', '22500', '150000'),
- '8000103': ('112500', '15000', '150000', '150000', '150000'),
- '8000104': ('15000', '', '450000', '18750', '300000', '15000'),
- '8000105': ('9000000', '', '225000', '225000'),
- '8000106': ('18750', '11250', '8000', '187500'),
- '8000107': ('450000', '3750', '150000', '150000', '150000'),
- '8000108': ('750000', '15000', '150000', '150000'),
- '8000109': ('33750', '187500', '187500', '3000000', ''),
- '8000110': ('1125000', '18750', '37500', '150000'),
- '8000111': ('', '11250', '225000', '225000'),
- '8000112': ('', '', '150000', '7500', '150000'),
- '8000113': ('100000', '', '', '262500'),
- '8000114': ('11250', '22500', '15000', '37500', '8000', '16500'),
- '8000115': ('', '', '22500', '150000', '150000', '150000')}
+# (template_id, donor_line, emitted_kind, v3.3 strength, expected strength after uplift)
+# 强度列:瞬发行 c48/c49,持续行(EffectSpec.during)c110/c111;×1 规则的行写的就是满级合计。
+EXPECTED_EFFECT_ROWS = {
+    "8000101": (
+        ("3020011", 0, "51", 150000, "225000"),
+        ("300001", 4, "202", 50000, "75000"),
+        ("300001", 0, "32", 200000, "300000"),
+        ("5020041", 0, "33", 200000, "300000"),
+        # 作者 2026-09-28:同值镜像给协力球(target 8)
+        ("300001", 0, "32", 200000, "300000"),
+        ("5020041", 0, "33", 200000, "300000"),
+    ),
+    "8000102": (
+        ("3050010", 0, "211", 100000, "100000"),
+        ("5050037", 0, "40", 15000, "22500"),
+        ("4030004", 0, "190", 20000, "30000"),
+        ("5100004", 1, "157", 30000, "45000"),
+        ("300001", 0, "32", 200000, "300000"),
+        ("300001", 0, "32", 200000, "300000"),
+    ),
+    "8000103": (
+        ("5090059", 0, "50", 150000, "225000"),
+        ("5040033", 4, "56", 20000, "30000"),
+        ("5020041", 0, "33", 200000, "300000"),
+        ("300001", 0, "32", 200000, "300000"),
+        ("5050009", 0, "55", 200000, "300000"),
+    ),
+    "8000104": (
+        ("5050020", 1, "227", 20000, "30000"),
+        ("4030019", 2, "70", "", ""),
+        ("300001", 8, "226", 600000, "900000"),
+        ("5080029", 0, "205", 25000, "37500"),
+        ("5020024", 0, "34", 400000, "600000"),
+        ("3080008", 0, "36", 20000, "30000"),
+    ),
+    "8000105": (
+        ("5090054", 0, "213", 12000000, "18000000"),
+        ("5030021", 1, "26", "", ""),
+        ("5090027", 0, "33", 300000, "450000"),
+        ("300001", 0, "32", 300000, "450000"),
+    ),
+    # 作者 2026-09-28 重做:数值 = 游戏内满级合计(本体 + 强化 120),觉醒拆分再对半拆。
+    "8000106": (
+        ("5050009", 0, "55", 200000, "300000"),
+        ("300001", 0, "32", 200000, "300000"),
+        ("5070040", 1, "253", 500000, "500000"),     # ×1 规则:5 倍
+        ("4010014", 0, "629", "", ""),
+    ),
+    "8000107": (
+        ("300001", 8, "226", 600000, "900000"),
+        ("5040009", 1, "211", 5000, "7500"),
+        ("5070017", 1, "200", 200000, "300000"),
+        ("5050009", 0, "55", 200000, "300000"),
+        ("300001", 0, "32", 200000, "300000"),
+    ),
+    "8000108": (
+        ("4040021", 1, "226", 1000000, "1500000"),
+        ("4040007", 0, "191", 20000, "30000"),
+        ("5090027", 0, "33", 200000, "300000"),
+        ("300001", 0, "32", 200000, "300000"),
+    ),
+    "8000109": (
+        ("3010027", 1, "209", 45000, "67500"),
+        ("5090029", 0, "388", 250000, "375000"),
+        ("300001", 0, "32", 250000, "375000"),
+        ("5090054", 0, "213", 4000000, "6000000"),
+        ("4060023", 2, "220", "", ""),
+    ),
+    "8000110": (
+        ("5050017", 2, "203", 1500000, "2250000"),
+        ("4080015", 1, "206", 25000, "37500"),
+        ("5040019", 2, "245", 50000, "50000"),       # ×1 规则:合计 +50%
+        ("5030030", 0, "0", 250000, "250000"),       # 持续·Fever 队伍攻击力(c110/c111)
+        ("5040033", 0, "1", 250000, "250000"),       # 持续·Fever 队伍直接攻击伤害
+    ),
+    "8000111": (
+        ("4080016", 2, "67", "", ""),
+        ("5080038", 1, "41", 15000, "22500"),
+        ("5090024", 2, "28", 300000, "450000"),
+        ("5090027", 0, "33", 300000, "450000"),
+    ),
+    "8000112": (
+        ("3020003", 0, "59", "", ""),
+        ("3020003", 1, "60", "", ""),
+        ("5010047", 0, "1", 200000, "300000"),
+        ("5050022", 1, "209", 10000, "15000"),
+        ("300001", 0, "32", 200000, "300000"),
+    ),
+    "8000113": (
+        ("300001", 5, "468", 100000, "100000"),
+        ("300002", 6, "16", "", ""),
+        ("5045000", 1, "61", "", ""),
+        ("5020024", 0, "34", 350000, "525000"),
+    ),
+    "8000114": (
+        ("3050010", 0, "211", 15000, "22500"),
+        ("3060003", 0, "156", 30000, "45000"),
+        ("5040033", 4, "56", 20000, "30000"),
+        ("5080029", 0, "205", 50000, "75000"),
+        ("3010035", 0, "35", 15000, "16000"),
+        ("3080008", 0, "36", 30000, "33000"),
+    ),
+    "8000115": (
+        ("3080002", 0, "68", "", ""),
+        ("3080002", 1, "69", "", ""),
+        ("5080029", 0, "205", 30000, "45000"),
+        ("300001", 0, "32", 200000, "300000"),
+        ("5090059", 0, "50", 200000, "300000"),
+        ("5090029", 0, "388", 200000, "300000"),
+    ),
+}
 
 EXPECTED_DURATION_OVERRIDES = {
     ("8000105", 2): ("120000000", "120000000"),
@@ -209,6 +218,8 @@ EXPECTED_BY_EACH_TRIGGER_PULLER = {
     ("8000112", 3): "false",
 }
 
+# 8000112 slot 4 must keep the donor's HpHigh + skill-trigger shape while changing
+# the donor kind 32 into the audited self-damage kind 209.
 EXPECTED_5050022_OUTPUT_COLUMNS = {
     3: "8",
     4: "0",
@@ -224,6 +235,7 @@ EXPECTED_5050022_OUTPUT_COLUMNS = {
     45: "0",
     46: "",
 }
+
 
 EXPECTED_CONQUEROR_SURVIVAL_COLUMNS = (
     {
@@ -241,10 +253,10 @@ EXPECTED_CONQUEROR_SURVIVAL_COLUMNS = (
     },
 )
 
+
 DONOR_KIND_OVERRIDES = {("5050022", 1): "32"}
-
+# 持续(during, c2=1)捐赠行:官方 5030030#0 / 5040033#0 的形状(pre1 = 光属性 ≥6 门、Fever 持续触发)。
 DURING_DONORS = frozenset({("5030030", 0), ("5040033", 0)})
-
 DONOR_RUNTIME_COLUMNS = {
     ("5030021", 1): {69: "false"},
     ("5090024", 2): {69: "false"},
@@ -259,10 +271,17 @@ DONOR_RUNTIME_COLUMNS = {
     },
 }
 
+
 def donor_duration_sentinel(template_id: str, donor_line: int, column: int) -> str:
     """Return a distinct numeric donor value for independent c54/c55 preservation checks."""
     return f"{column}{int(template_id):07d}{donor_line:02d}"
 
+
+# 捐赠行的 instant_content 块默认值(空列才填)。build_soul_leaf 会把 c44 换成
+# 发射 kind,而新 kind 往往比捐赠 kind 多声明几列;官方 ability_soul 451 键 1001 行
+# 里这些列**一行都没留空**,留空即 Std.parseInt('')=NaN(部分列直接 C7050)。
+# 真实 store 捐赠行本来就是填满的 —— 15 个武器规格跑 build_soul_leaf 全过 ——
+# 所以这里补的是 fixture 与官方形状的差距,不是放宽门禁。
 _CONTENT_FIELD_DEFAULTS = {
     "target": "1",
     "strength": "100",
@@ -283,6 +302,7 @@ _CONTENT_FIELD_DEFAULTS = {
     "by_each_trigger_puller": "false",
 }
 
+
 def _fill_instant_content_defaults(row: list[str]) -> None:
     base = int(wf_describe.layout("ability_soul")["blocks"]["instant_content"])
     fields = wf_describe.enum_map()["block_fields"]["instant_content"]
@@ -297,6 +317,7 @@ def _fill_instant_content_defaults(row: list[str]) -> None:
         col = base + min(offsets)
         if not row[col]:
             row[col] = value
+
 
 def template_row(
     effect_kind: str, *, template_id: str = "9999999", donor_line: int = 0,
@@ -330,6 +351,7 @@ def template_row(
         row[27], row[28], row[31], row[32] = "100000", "100000", "1", "0"
     return row
 
+
 def during_template_row(
     effect_kind: str, *, template_id: str, donor_line: int,
 ) -> list[str]:
@@ -344,9 +366,11 @@ def during_template_row(
     row[122] = f"{template_id}#{donor_line}"
     return row
 
+
 def strength_cells(row: list[str]) -> tuple[str, str]:
     """Instant rows keep strength in c48/c49, during rows in c110/c111."""
     return (row[110], row[111]) if row[2] == "1" else (row[48], row[49])
+
 
 def build_template_fixtures(
     effect_rows: list[tuple[str, int, str]] | tuple[tuple[str, int, str], ...],
@@ -374,12 +398,14 @@ def build_template_fixtures(
         for template_id, rows in rows_by_template.items()
     }
 
+
 def fake_templates() -> dict[str, str]:
     return build_template_fixtures(tuple(
         (template_id, donor_line, effect_kind)
         for expected_rows in EXPECTED_EFFECT_ROWS.values()
         for template_id, donor_line, effect_kind, _old, _new in expected_rows
     ))
+
 
 def templates_for_spec(spec) -> dict[str, str]:
     """Build exact donor-line fixtures for one canonical weapon spec."""
@@ -388,17 +414,20 @@ def templates_for_spec(spec) -> dict[str, str]:
         for effect in spec.effects
     ))
 
+
 def require_task2(name: str):
     value = getattr(rewards, name, None)
     if value is None:
         raise AssertionError(f"Task 2 API {name} is not implemented")
     return value
 
+
 def require_task3(name: str):
     value = getattr(rewards, name, None)
     if value is None:
         raise AssertionError(f"Task 3 API {name} is not implemented")
     return value
+
 
 def write_rgba_fixture(
     path: Path,
@@ -413,6 +442,7 @@ def write_rgba_fixture(
         image.paste(color, visible_box)
     image.save(path, format="PNG")
 
+
 def write_valid_asset_set(directory: Path) -> None:
     directory.mkdir(parents=True, exist_ok=True)
     for index, spec in enumerate(rewards.WEAPONS):
@@ -423,6 +453,7 @@ def write_valid_asset_set(directory: Path) -> None:
             255,
         )
         write_rgba_fixture(directory / f"{spec.image_slug}.png", color=color)
+
 
 def fake_master_tables(*, placeholders: bool = False, binary: bool = False):
     tables_type = require_task2("MasterTables")
@@ -494,6 +525,7 @@ def fake_master_tables(*, placeholders: bool = False, binary: bool = False):
         rush_event=rush_event,
     )
 
+
 def fake_server_mirrors():
     mirrors_type = require_task2("ServerMirrors")
     max_level = {"42": 3}
@@ -515,6 +547,7 @@ def fake_server_mirrors():
         item_ids=[5, 1, 5],
     )
 
+
 MIRROR_FIELDS = (
     "equipment_max_level",
     "equipment_element",
@@ -522,6 +555,7 @@ MIRROR_FIELDS = (
     "equipment_ids",
     "item_ids",
 )
+
 
 def write_temp_mirrors(directory: Path, mirrors) -> dict[str, bytes]:
     result = {}
@@ -534,5 +568,7 @@ def write_temp_mirrors(directory: Path, mirrors) -> dict[str, bytes]:
         )
         result[field] = path.read_bytes()
     return result
+
+
 
 __all__ = [name for name in globals() if not name.startswith("__")]

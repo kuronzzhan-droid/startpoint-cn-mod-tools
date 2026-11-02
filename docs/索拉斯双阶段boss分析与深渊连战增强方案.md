@@ -117,14 +117,14 @@ rush c98→c95、skill_preview c30→c27)。于是 `quest_pool` 改成先取 fie
 **做法 1 · 领主战多位**(`build_schedule` v9):<15 层 1 个 / 15-24 层 2 个 / ≥25 层 3 个。
 比例锚追加 0.62、0.85 两个位;全塔 `used_names` 去重保证三个位不会撞同一个 boss。
 
-**做法 2 · 精选加权**:`rogue_special_bosses.json` 新增 `featured_bosses`(前缀匹配)
+**做法 2 · 精选加权**:`wf/tools/rogue/data/rogue_special_bosses.json` 新增 `featured_bosses`(前缀匹配)
 + `featured_weight`(默认 4)。`weight_featured()` 把命中的候选在候选表里重复 N 份 =
 概率 ×N,**不是硬钉**——池子照常随机,只是天平往稀有 boss 倾斜。挑选顺序:
 全塔去重 → 历史降权 → 精选加权,三者叠加。`src_pick` 与 `tower_pick` 双路生效。
 默认名单 15 个前缀 = P3 新解锁的专用表 boss + 索拉斯双阶段的不死王/猫头鹰八套;
 不想加权把列表清空即可。
 
-**做法 3(GUI「必出 boss」多选框)未做** —— 底层工坊钉选(`rogue_layout_plan.json`
+**做法 3(GUI「必出 boss」多选框)未做** —— 底层工坊钉选(`wf/tools/rogue/data/rogue_layout_plan.json`
 的 `floors.{N}.boss`)本来就能钉,缺的只是 GUI 入口,按需再补。
 
 ### P2 — 人为复刻双阶段体验
@@ -407,7 +407,7 @@ CreateTornado 两个已知失败模式一起踩(坐标烤死在老家地形=C141
 钉选实验(第3战刮风 `shot_ea10` / 第4战重力 `gravity_pf` / 第5战淹水=已验证对照组),
 用户实测:**「第三战刮风正常出现,第四关场地内有重力效果」**。两个新命令 resolver
 都能吃 ⇒ `FIELD_RANDOM_CATS` 加入「环境」,73 项全部放开;实验钉选已从
-`rogue_layout_plan.json` 撤除(否则每座塔第3/4战被钉死)。
+`wf/tools/rogue/data/rogue_layout_plan.json` 撤除(否则每座塔第3/4战被钉死)。
 
 放行不只凭那两个样本,三条结构判据都查过全部 73 项:
 ① 全是**单命令**(46 重力 + 27 刮风),零"复合"夹带;

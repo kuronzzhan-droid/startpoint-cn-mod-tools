@@ -77,13 +77,8 @@ def test_r3_duplicate_method_records_are_rejected():
 def test_evidence_backed_profiles_gain_r3_and_bind_their_provides():
     _, profiles = load_profiles()
     for name, profile in profiles.items():
-        if name not in {"test-v34", "test-v35e"}:
+        if name not in {"test-v34", "test-v35e", "local-v35k3"}:
             assert R3 not in profile.get("m2_capabilities", [])
-            if name == "local-v35k3":
-                assert "equipment-gauge-gain-rules-v1" not in profile["capabilities"]
-                selected, selected_name = resolve_client(client_profile=name)
-                assert selected_name == name
-                assert R3 not in {entry["id"] for entry in read_client(selected)["provides"]}
             continue
         assert R3 in profile["m2_capabilities"]
         assert "equipment-gauge-gain-rules-v1" in profile["capabilities"]

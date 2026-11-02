@@ -861,14 +861,18 @@ class EndlessRerollSafetyCase(unittest.TestCase):
             quest_path.write_bytes(original)
             observed_original = []
             observed_store = []
+            observed_legacy_store = []
 
             def reject_preflight(_command, **kwargs):
                 observed_original.append(quest_path.read_bytes() == original)
                 observed_store.append(
-                    kwargs.get("env", {}).get("WF_TARGET_STORE"))
+                    kwargs.get("env", {}).get("WF_STORE"))
+                observed_legacy_store.append(
+                    "WF_TARGET_STORE" in kwargs.get("env", {}))
                 return mock.Mock(returncode=7)
 
-            with mock.patch.object(q, "store_path", return_value=quest_path), \
+            with mock.patch.dict(os.environ, {"WF_TARGET_STORE": "stale-store"}), \
+                 mock.patch.object(q, "store_path", return_value=quest_path), \
                  mock.patch.object(q, "exists_current", return_value=True), \
                  mock.patch.object(rb, "choose_endless_native_bundle",
                                    return_value=bundle), \
@@ -882,6 +886,7 @@ class EndlessRerollSafetyCase(unittest.TestCase):
 
             self.assertEqual(observed_original, [True])
             self.assertEqual(observed_store, [str(store.resolve())])
+            self.assertEqual(observed_legacy_store, [False])
             self.assertEqual(quest_path.read_bytes(), original)
 
     def test_publish_failure_restores_real_store_file_to_original_bytes(self):

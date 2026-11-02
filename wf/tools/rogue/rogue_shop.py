@@ -237,13 +237,9 @@ def _expected_client_leaves(
 
 def build_client_shop(
     table: dict[str, object], weapons: tuple[WeaponSpec, ...], *,
-    include_tickets: bool = False,
+    include_tickets: bool = True,
 ) -> dict[str, object]:
-    """Build owned rows; the legacy API owns only the fifteen weapon slots.
-
-    The modern CLI explicitly opts into ticket ownership. Independent writers'
-    ticket and degree rows remain byte-identical for existing API consumers.
-    """
+    """Build owned weapon and ticket rows without mutating ``table``."""
     if not isinstance(table, dict):
         raise TypeError("客户端 event_item_shop 必须是 dict")
     expected = _expected_client_leaves(table, weapons, include_tickets=include_tickets)
@@ -309,7 +305,7 @@ def build_server_shop(
     id_map: dict,
     weapons: tuple[WeaponSpec, ...],
     *,
-    include_tickets: bool = False,
+    include_tickets: bool = True,
 ) -> tuple[dict, dict]:
     """Return server mirrors with only owned reserved IDs replaced."""
     if not isinstance(shop, dict) or not isinstance(id_map, dict):
@@ -371,7 +367,7 @@ def _numeric_order_problems(value, label: str) -> list[str]:
 
 
 def validate_shop(client: dict, shop: dict, id_map: dict, *,
-                  include_tickets: bool = False) -> list[str]:
+                  include_tickets: bool = True) -> list[str]:
     """Return every client/server contract violation; an empty list is valid."""
     problems: list[str] = []
     if not isinstance(client, dict) or not isinstance(shop, dict) or not isinstance(id_map, dict):

@@ -183,7 +183,8 @@ def build_candidate(loader, *, seed: int, rounds: int, event_id="700099", server
     mode = "ex" if event_id == "700100" else "normal" if rounds == 30 else "legacy"
     with isolated_builder(loader, server_asset_reader=server_asset_reader) as builder:
         builder.print = lambda *args, **kw: print(*args, **{**kw, "file": logs})
-        rc = builder.main(["--seed", str(seed), "--rounds", str(rounds), "--mode", mode],
+        rc = builder.main(["--seed", str(seed), "--rounds", str(rounds), "--mode", mode,
+                           "--strict-target-hp"],
                           candidate_sink=results.append, forge_candidate=forge)
         if not rc and results:
             from .rogue_validate import validate_candidate_references

@@ -549,7 +549,7 @@ def reserve_schedule_slot(schedule: dict[int, str], rounds: int, label: str,
 
 
 def layout_plan() -> dict:
-    """连战工坊布局计划(GUI 写 mod-tools/rogue_layout_plan.json):
+    """连战工坊布局计划(GUI 写 work/rogue-config/rogue_layout_plan.json):
     {"stages": [{"from":1,"to":2,"tier":"easy|normal|elite|hell"}],
      "floors": {"5": {"curses": ["深渊重甲"], "field": "battle/…program"}}}
     stages 决定该层诅咒档位+难度乘区(PLAN_TIERS);floors 显式指定优先于随机。"""

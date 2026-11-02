@@ -25,9 +25,7 @@ from wf.tools.rogue import rogue_rewards as rewards
 from wf.tools.rogue import rogue_shop as shop
 
 
-TOOL_DIR = Path(__file__).resolve().parents[3]
-ROOT = TOOL_DIR
-ASSETS_DIR = ROOT / "assets"
+ASSETS_DIR: Path | None = None
 
 
 def _strict_json_load(text: str) -> Any:
@@ -83,6 +81,14 @@ def _load_task7_builder():
     sys.modules[module_name] = module
     spec.loader.exec_module(module)
     return module
+
+
+class _LazyApkBuilder:
+    def __getattr__(self, name):
+        return getattr(_load_task7_builder(), name)
+
+
+apk_builder = _LazyApkBuilder()
 
 
 @dataclass(frozen=True)
@@ -329,15 +335,17 @@ def _validate_offline_rounds(
     *,
     access_hook: Callable[[str], None] | None = None,
 ) -> int:
-    """Validate the configured 10/30 normal rounds in client and server data."""
-    configured_rounds = 30
+    """Validate legacy 15 rounds or the configured 10/15/30-round contract."""
+    configured_rounds = 15
     config_path = assets_dir / "rogue_event.json"
     try:
         config = _strict_json_load(config_path.read_text(encoding="utf-8"))
         event_config = config.get("events", {}).get(str(rewards.EVENT_ID), {})
         configured_rounds = int(event_config.get("rounds", configured_rounds))
-        if configured_rounds not in (10, 30):
-            raise ValueError(f"unsupported rounds={configured_rounds}; expected 10 or 30")
+        if configured_rounds not in (10, 15, 30):
+            raise ValueError(f"unsupported rounds={configured_rounds}; expected 10, 15 or 30")
+    except FileNotFoundError:
+        pass  # Legacy releases have fifteen rounds and no rogue_event config.
     except Exception as exc:
         errors.append(f"assets.rogue_event.rounds.invalid: {type(exc).__name__}: {exc}")
     normal_rounds = range(1, configured_rounds + 1)
@@ -429,8 +437,8 @@ def _validate_offline_rounds(
 
 def validate_rogue_data(store: Path, assets_dir: Path) -> RogueDataReport:
     report = validate_release_data_only(store, assets_dir)
-    if report.event_id != 700099 or report.round_count not in (10, 30):
-        raise RogueValidationError("rush event 700099 must have exactly 10 or 30 rounds")
+    if report.event_id != 700099 or report.round_count not in (10, 15, 30):
+        raise RogueValidationError("rush event 700099 must have exactly 10, 15 or 30 rounds")
     if report.token_id != 2370099 or report.weapon_ids != tuple(range(8000101, 8000116)):
         raise RogueValidationError("rogue token or weapon set mismatch")
     if report.missing_logicals or not report.ready:
@@ -488,7 +496,6 @@ def _print_result(result: ValidationResult) -> None:
 
 
 def main() -> int:
-    global ROOT, ASSETS_DIR
     parser = argparse.ArgumentParser(
         description="Validate the complete abyss equipment release gate"
     )
@@ -496,16 +503,16 @@ def main() -> int:
     parser.add_argument("--ffdec", required=True, type=Path)
     parser.add_argument("--java", required=True, type=Path)
     args = parser.parse_args()
-    ROOT = core.resolve_server_dir()
-    ASSETS_DIR = ROOT / "assets"
     try:
         profile = rewards.require_cn_profile()
+        assets_dir = (ASSETS_DIR if ASSETS_DIR is not None
+                      else core.resolve_server_dir() / "assets")
     except (OSError, KeyError, TypeError, ValueError, RuntimeError) as exc:
         print(f"[ERR] CN profile validation failed: {exc}", file=sys.stderr)
         return 1
     result = validate_release(
         profile.store,
-        ASSETS_DIR,
+        assets_dir,
         Path(args.client_verification),
         ffdec=args.ffdec,
         java=args.java,
@@ -1131,11 +1138,6 @@ def _validate_client_verification(
     if not isinstance(data, dict):
         errors.append("client_verification.report.invalid: root is not an object")
         return
-
-    # APK builder code belongs to the separately configured client-patch tree.
-    # Keep ordinary module import and data-only validation independent from that
-    # optional tree; only the APK verification lane is allowed to resolve it.
-    apk_builder = _load_task7_builder()
 
     if type(data.get("schema_version")) is not int:
         errors.append(

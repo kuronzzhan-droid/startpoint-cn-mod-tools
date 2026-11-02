@@ -2379,14 +2379,14 @@ class OfflineContentTests(unittest.TestCase):
             count = rogue_validate._validate_offline_rounds(self.roots.common, assets, errors)
             self.assertEqual(min(configured, len(rounds)), count)
             return errors
-        for configured in (10, 30):
+        for configured in (10, 15, 30):
             with self.subTest(rounds=configured):
                 self.assertEqual([], install(range(1, configured + 1), configured))
                 errors = install(range(1, configured + 2), configured)
                 self.assertTrue(any("extra_rounds" in error for error in errors))
                 errors = install(range(1, configured + 1), configured, folder_id=9)
                 self.assertTrue(any("mapping" in error for error in errors))
-        self.assertTrue(any("rounds.invalid" in error for error in install(range(1, 16), 15)))
+        self.assertTrue(any("rounds.invalid" in error for error in install(range(1, 16), 20)))
 
         self.assertEqual([], install(range(1, 31), 30))
         keys = [str(value) for value in range(1, 31)] + ["1", "99"]
