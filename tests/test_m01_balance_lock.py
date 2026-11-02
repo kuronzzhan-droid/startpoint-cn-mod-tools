@@ -6,11 +6,17 @@ import pytest
 
 from wf.view.base149 import HistoricalView
 from wf.view.balance_inputs import verify_balance_view
+from wf.tools.core import quest_lib as q
+
+
+OVERLAY_MEMBER = "production/upload/" + q.hashed_rel("master/test/overlay.orderedmap").replace("\\", "/")
+BASE_MEMBER = "production/upload/" + q.hashed_rel("master/test/base.orderedmap").replace("\\", "/")
+UNRECORDED_MEMBER = "production/upload/" + q.hashed_rel("master/test/unrecorded.orderedmap").replace("\\", "/")
 
 
 def _zip(path, value=b"overlay"):
     with zipfile.ZipFile(path, "w") as archive:
-        archive.writestr("production/upload/aa/overlay", value)
+        archive.writestr(OVERLAY_MEMBER, value)
 
 
 def _locked_view(tmp_path):
@@ -18,8 +24,8 @@ def _locked_view(tmp_path):
     active.mkdir(); store.mkdir()
     archive = active / "pinball-1.4.131-1.4.132-1-data-local.zip"
     _zip(archive)
-    member = "production/upload/bb/base"
-    source = store / "bb/base"
+    member = BASE_MEMBER
+    source = store / BASE_MEMBER.removeprefix("production/upload/")
     source.parent.mkdir(); source.write_bytes(b"base")
     lock = {"format": 1, "tip": 132,
             "active_zips": [{"name": archive.name, "sha256": hashlib.sha256(archive.read_bytes()).hexdigest()}],
@@ -30,7 +36,7 @@ def _locked_view(tmp_path):
 
 def test_locked_view_accepts_exact_active_and_store(tmp_path):
     view, lock, _, _ = _locked_view(tmp_path)
-    assert view.read_member("production/upload/bb/base") == (b"base", "store131")
+    assert view.read_member(BASE_MEMBER) == (b"base", "store131")
     result = verify_balance_view(view, lock)
     assert result["active_zip_count"] == result["store_member_count"] == 1
 
@@ -54,9 +60,9 @@ def test_store_drift_and_unrecorded_fallback_are_rejected(tmp_path):
     with pytest.raises(ValueError, match="store131 member digest drift"):
         verify_balance_view(view, lock)
     with pytest.raises(ValueError, match="store131 member digest drift"):
-        view.read_member("production/upload/bb/base")
+        view.read_member(BASE_MEMBER)
     with pytest.raises(ValueError, match="unlocked store131 member"):
-        view.read_member("production/upload/cc/unrecorded")
+        view.read_member(UNRECORDED_MEMBER)
 
 
 def test_empty_store_lock_denies_every_fallback(tmp_path):
@@ -64,4 +70,4 @@ def test_empty_store_lock_denies_every_fallback(tmp_path):
     lock["store_members"] = view.store_member_sha256 = {}
     assert verify_balance_view(view, lock)["store_member_count"] == 0
     with pytest.raises(ValueError, match="unlocked store131 member"):
-        view.read_member("production/upload/bb/base")
+        view.read_member(BASE_MEMBER)

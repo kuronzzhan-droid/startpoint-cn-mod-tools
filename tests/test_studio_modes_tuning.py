@@ -66,7 +66,7 @@ def test_frontend_mode_input_and_restore_handlers():
     result = subprocess.run([node, str(root / "tests/studio_modes_frontend.cjs")], cwd=root,
                             capture_output=True, text=True, encoding="utf8")
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "8 scenarios passed" in result.stdout
+    assert "11 scenarios passed" in result.stdout
 
 
 def test_rogue_get_returns_saved_preview_and_rejects_legacy_input_snapshot(tmp_path, monkeypatch):

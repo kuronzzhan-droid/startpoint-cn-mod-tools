@@ -111,8 +111,21 @@ class View:
                 for n in zf.namelist():
                     self.index[n] = z
         self._zf: dict[Path, zipfile.ZipFile] = {}
+        self._tables: dict[str, dict | None] = {}
         self.stubs: set[str] = set()
         self.broken: dict[str, str] = {}
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_exc):
+        self.close()
+
+    def close(self):
+        for archive in self._zf.values():
+            archive.close()
+        self._zf.clear()
+        self._tables.clear()
 
     def _open(self, z: Path) -> zipfile.ZipFile:
         if z not in self._zf:
@@ -147,9 +160,13 @@ class View:
             return self.index[m].name
         return "base" if self._base_file(m) else None
 
-    @functools.lru_cache(maxsize=None)
     def table(self, logical: str):
         """解析好的表;不在视图、APK 内置桩、解不开时返回 None(后两种记进 stubs/broken)。"""
+        if logical not in self._tables:
+            self._tables[logical] = self._read_table(logical)
+        return self._tables[logical]
+
+    def _read_table(self, logical: str):
         raw = self.raw(logical, ("upload",))
         if raw is None:
             return None

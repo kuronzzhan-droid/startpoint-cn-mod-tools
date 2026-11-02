@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import ast
 import copy
-from pathlib import Path
+import inspect
 from types import SimpleNamespace
 
 import pytest
@@ -18,7 +18,7 @@ def test_standard_funnel_links_block_cloning_and_relocation(monkeypatch):
     tables = {rb.GENERAL_BOSS: {"owner": ""}, rb.STANDARD_FUNNEL: {
         "core": {"100": "battle/enemy/core"}}}
     monkeypatch.setattr(rb, "_tbl", lambda name: tables.get(name, {}))
-    monkeypatch.setattr(rb.rbb, "_decoded_store_tree", lambda path: {
+    monkeypatch.setattr(rb, "_read_standard_enemy_dsl", lambda path: {
         "bG": "owner", "au": [{"h": [{"a": ["T1", 0, "standard_owner"]}]}]})
     refs = rb.code_referenced_bosses(tables[rb.GENERAL_BOSS])
     assert not refs["degraded"]
@@ -36,7 +36,7 @@ def test_unreadable_standard_funnel_scan_fails_closed(monkeypatch):
     def missing(path):
         raise FileNotFoundError(path)
 
-    monkeypatch.setattr(rb.rbb, "_decoded_store_tree", missing)
+    monkeypatch.setattr(rb, "_read_standard_enemy_dsl", missing)
     refs = rb.code_referenced_bosses({"owner": ""})
     assert refs["degraded"]
     assert "降级" in rb.identity_locked_boss_reason(["owner"], code_references=refs)
@@ -92,7 +92,7 @@ def test_mix_passes_proved_requirements_to_full_terrain_gate(monkeypatch):
 def test_pinned_mix_does_not_mutate_tables_when_terrain_proof_is_missing():
     # Execute the production nested selection routine with a synthetic snapshot.
     # No store is installed or read, and no reimplementation of its branch exists.
-    tree = ast.parse(Path(rb.__file__).read_text(encoding="utf-8"))
+    tree = ast.parse(inspect.getsource(rb.main))
     node = copy.deepcopy(next(n for n in ast.walk(tree)
                               if isinstance(n, ast.FunctionDef) and n.name == "mix_pick"))
     for child in ast.walk(node):
@@ -107,6 +107,7 @@ def test_pinned_mix_does_not_mutate_tables_when_terrain_proof_is_missing():
     scope = dict(vars(rb))
     scope.update(tower=pool, tower_master=list(pool), fd_t=fields, zone_t=zones,
                  gim_dirty=False, code_refs={"hard": set(), "degraded": False},
+                 mix_bundles_by_field={},
                  thumb_map={}, elem_map={"source": 0}, belem_map={},
                  kind_fixer=lambda code, old_kind: "1",
                  special_bosses=(set(), ()), src={},
@@ -120,7 +121,7 @@ def test_pinned_mix_does_not_mutate_tables_when_terrain_proof_is_missing():
 
 
 def test_mix_proofs_follow_resolved_floor_level_and_cache_each_level():
-    tree = ast.parse(Path(rb.__file__).read_text(encoding="utf-8"))
+    tree = ast.parse(inspect.getsource(rb.main))
     node = next(n for n in ast.walk(tree)
                 if isinstance(n, ast.FunctionDef) and n.name == "mix_compatibility")
     calls = []
@@ -145,7 +146,7 @@ def test_mix_proofs_follow_resolved_floor_level_and_cache_each_level():
 
 
 def test_hp_reorder_validates_existing_mix_against_original_donor():
-    tree = ast.parse(Path(rb.__file__).read_text(encoding="utf-8"))
+    tree = ast.parse(inspect.getsource(rb.main))
     hp_function = next(n for n in ast.walk(tree)
                        if isinstance(n, ast.FunctionDef) and n.name == "hp_curve_fit_pick")
     node = next(n for n in ast.walk(hp_function)
@@ -160,11 +161,14 @@ def test_hp_reorder_validates_existing_mix_against_original_donor():
         return SimpleNamespace(ok=source == "source")
 
     scope = dict(vars(rb))
-    scope.update(current=current, r=3, args=SimpleNamespace(rounds=30),
+    scope.update(current=current, r=3,
+                 args=SimpleNamespace(rounds=30, strict_target_hp=False),
                  field_needed=False, carrier_required=False,
+                 forbidden_cooldown_group=None, mix_bundles_by_field={},
                  code_refs={"hard": set(), "degraded": False},
                  load_transplant_policy=lambda: (True, {"boss"}),
                  special_bosses=(set(), ()), mix_compatibility=compatibility)
     exec(compile(ast.Module(body=[node], type_ignores=[]), rb.__file__, "exec"), scope)
-    assert scope["reject_reason"](current, {"level": 80}) is None
+    assert scope["reject_reason"](current, {
+        "level": 80, "native": {"absolute_verified": True}}) is None
     assert calls == [("source", "target", ["boss"], 3)]

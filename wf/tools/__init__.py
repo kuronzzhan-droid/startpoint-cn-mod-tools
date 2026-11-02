@@ -16,5 +16,8 @@ def run_as_main(name: str) -> None:
         raise ImportError(f"cannot run {name}")
     module = importlib.util.module_from_spec(spec)
     module.__name__ = "__main__"
+    # This is a script entry point. Python 3.14 argparse otherwise prefers the
+    # implementation's module spec over the preserved legacy sys.argv[0].
+    module.__spec__ = None
     sys.modules["__main__"] = module
     exec(spec.loader.get_code(name), module.__dict__)

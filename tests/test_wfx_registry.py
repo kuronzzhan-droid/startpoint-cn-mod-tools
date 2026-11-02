@@ -330,8 +330,8 @@ class ClientProfileTests(unittest.TestCase):
     def setUp(self):
         self.profiles = wfx_gate.load_profiles()
 
-    def test_the_three_profiles_and_the_default(self):
-        self.assertEqual({"local-mumu", "gray-1047", "official", "test-v34", "test-v35e", "local-v35k3", "p12b", "p13"}, set(self.profiles))
+    def test_registered_profiles_and_the_default(self):
+        self.assertEqual({"local-mumu", "gray-1047", "official", "test-v34", "test-v35e", "local-v35k3", "p12b", "p13", "test-merge-1008094"}, set(self.profiles))
         self.assertEqual("local-mumu", wfx_gate.default_publish_profile())
         self.assertEqual(frozenset(), self.profiles["official"].capabilities)
 

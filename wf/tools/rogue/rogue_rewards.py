@@ -54,6 +54,8 @@ ENHANCEMENT_ABILITY_T = "master/equipment_enhancement/equipment_enhancement_abil
 
 TOKEN_ID = "2370099"
 TOKEN_TEMPLATE = "2370007"     # 激战代币
+TOKEN_START = "2000-01-01 00:00:00"
+TOKEN_END = "2099-12-31 23:59:59"
 EVENT_ID = "700099"
 TOKEN_DESCRIPTION = "在「深渊连战」中获得的深渊结晶。凝聚着历战boss的力量,可用于锻造深渊武装。"
 
@@ -1096,13 +1098,18 @@ def patch_rush_token(leaf: bytes | str) -> bytes | str:
 def build_token_leaf(template_leaf: bytes | str) -> bytes | str:
     """Clone the complete canonical token template and patch owned columns."""
     rows = core.read_csv_lines(_leaf_text(template_leaf))
-    if len(rows) != 1 or len(rows[0]) <= 5:
-        raise ValueError(f"item[{TOKEN_TEMPLATE}] must be a single row with 6+ columns")
+    if len(rows) != 1 or len(rows[0]) <= 21:
+        raise ValueError(f"item[{TOKEN_TEMPLATE}] must be a single row with 22+ columns")
     row = list(rows[0])
     row[0] = "rogue_event_item_99"
     row[1] = TOKEN_ID
     row[2] = "深渊代币"
     row[5] = TOKEN_DESCRIPTION
+    # 官方模板只在 2025 年活动期显示；深渊连战是常驻活动，必须同步延长
+    # 物品自身的展示期限，否则服务端虽已发奖，客户端仍会过滤代币图标。
+    row[19] = TOKEN_START
+    row[20] = TOKEN_END
+    row[21] = "true"
     return _join_like([row], template_leaf)
 
 

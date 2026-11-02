@@ -280,7 +280,7 @@ def load_store_terrain(terrain_logical: str) -> dict:
     logical = str(terrain_logical)
     if not logical.endswith(".amf3.deflate"):
         logical += ".amf3.deflate"
-    packed = q.store_path(logical).read_bytes()
+    packed = q.read_raw(logical)
     try:
         raw = zlib.decompress(packed, -15)
         parsed = wf_dsl.parse_dsl(raw)
@@ -501,7 +501,7 @@ def load_store_esdl(logical: str) -> Any:
 
 
 def _decoded_store_tree(logical: str) -> Any:
-    packed = q.store_path(logical).read_bytes()
+    packed = q.read_raw(logical)
     try:
         raw = zlib.decompress(packed, -15)
         parsed = wf_dsl.parse_dsl(raw)
@@ -789,6 +789,79 @@ def _analyze_action_program(program: str, loader: Callable[[str], Any],
         raise _ClosureError(f"cannot load action {clean}: {exc}") from exc
     finally:
         visiting.remove(clean)
+
+
+def audit_action_identity_closure(
+        action_roots: tuple[str, ...] | list[str], identifier: str,
+        loader: Callable[[str], Any], *, enemy_level: int,
+        spawned_ref_gate: Callable[[str, str, int], Any] | None = None) \
+        -> GateResult:
+    """Prove that a static action closure is independent of one master id.
+
+    Dedicated constructors such as Conductor and TouyakirenCeo keep their
+    official field and action resources when the parent table key is cloned.
+    That rename is safe only when every action is parseable, every recursively
+    referenced action is finite, every spawned enemy resolves at the selected
+    level, and no action argument names the old parent id.  Exact string
+    matching is intentional: resource paths can share a descriptive stem with
+    a boss without being a runtime master-id reference.
+    """
+
+    target = str(identifier).strip()
+    roots = tuple(dict.fromkeys(
+        str(root).removesuffix(".action.dsl.amf3.deflate").strip()
+        for root in action_roots if str(root).strip()))
+    if not target:
+        return GateResult(False, "ACTION_CLOSURE_UNAUDITED",
+                          detail="empty identity identifier")
+    if not roots:
+        return GateResult(False, "ACTION_CLOSURE_UNAUDITED",
+                          detail="dedicated boss row has no action roots")
+    if not callable(loader):
+        return GateResult(False, "ACTION_CLOSURE_UNAUDITED",
+                          detail="missing action loader")
+
+    closure: list[str] = []
+    spawned: set[SpawnedRef] = set()
+    try:
+        for root in roots:
+            summary = _analyze_action_program(root, loader, set())
+            _extend_action_closure(closure, summary.action_closure)
+            spawned.update(summary.spawned_refs)
+
+        def walk(value: Any, logical: str) -> None:
+            value = _loaded_tree(value)
+            if isinstance(value, Mapping):
+                for child in value.values():
+                    walk(child, logical)
+                return
+            if isinstance(value, (list, tuple)):
+                for child in value:
+                    walk(child, logical)
+                return
+            if isinstance(value, str) and value == target:
+                raise _ClosureError(
+                    f"action {logical} contains parent master id:{target}")
+
+        for logical in closure:
+            walk(loader(logical), logical)
+        if spawned and not callable(spawned_ref_gate):
+            raise _ClosureError("missing spawned-reference gate")
+        for ref in sorted(spawned,
+                          key=lambda item: (item.source_kind, item.code)):
+            verdict = spawned_ref_gate(
+                ref.source_kind, ref.code, int(enemy_level))
+            gate = _gate_value(verdict, "REFERENCE")
+            if not gate.ok:
+                raise _ClosureError(
+                    "spawned reference rejected:"
+                    f"{ref.source_kind}/{ref.code}:"
+                    f"{gate.reason or 'REFERENCE'} {gate.detail}".strip())
+    except (TerrainGateError, _ClosureError, FileNotFoundError, KeyError,
+            TypeError, ValueError, zlib.error) as exc:
+        return GateResult(False, "ACTION_CLOSURE_UNAUDITED", detail=str(exc))
+    return GateResult(True, detail=(
+        f"actions={len(closure)},spawned={len(spawned)},identity={target}"))
 
 
 def _selected_level_for_slot(bundle: NativeBossBundle,
@@ -1540,7 +1613,7 @@ def build_native_bundle_catalog(
     """
 
     names = display_names or {}
-    is_official = official_field or (lambda field_id: not str(field_id).startswith("mod_"))
+    is_official = official_field or (lambda field_id: not str(field_id).startswith("mod_rogue"))
     official_ids = tuple(sorted(str(field_id) for field_id in field_data
                                 if is_official(str(field_id))))
     discovered: list[NativeBossBundle] = []
@@ -1593,10 +1666,6 @@ def build_native_bundle_catalog(
         # same data always reports the actionable primary reason.
         if any(code.startswith(c8016_prefixes) for code in all_codes):
             gate = GateResult(False, "C8016", detail="element recolor preload is unsafe")
-        if any(ref.kind == 4 or ref.code == "orochi_ex" for ref in actual_refs):
-            gate = GateResult(False, "SPECIAL_PHASE_HP_UNSCALABLE",
-                              detail="phase HP is outside the tower scaling channel")
-
         if gate is None and callable(reference_gate):
             reference_result = _gate_value(
                 reference_gate(field_id, actual_slots, tuple(selected), enemy_level),
@@ -1625,12 +1694,23 @@ def build_native_bundle_catalog(
         identities = [_identity(identity_of, ref, ref_results.get(ref, GateResult(False)).selected_level,
                                 names) for ref in actual_refs]
         orochi_codes = tuple(ref.code for ref in actual_refs)
-        is_parent = (len(orochi_codes) == 1
-                     and orochi_codes[0] in OROCHI_PARENT_VARIANTS)
-        if is_parent:
+        is_orochi_parent = (len(orochi_codes) == 1
+                            and orochi_codes[0] in OROCHI_PARENT_VARIANTS)
+        is_orochi_ex_parent = (
+            len(actual_refs) == 1
+            and actual_refs[0].kind == 4
+            and actual_refs[0].code == "orochi_ex"
+        )
+        has_special_constructor = any(
+            ref.kind not in (0, 1, 8) for ref in actual_refs)
+        if is_orochi_parent:
             family_name = "八岐大蛇"
             family_atoms = ({"display": family_name},)
             variant_name = OROCHI_PARENT_VARIANTS[orochi_codes[0]]
+        elif is_orochi_ex_parent:
+            family_name = "八岐大蛇 EX"
+            family_atoms = ({"display": family_name},)
+            variant_name = "official_three_phase"
         else:
             family_values = []
             for ref, info in zip(actual_refs, identities):
@@ -1699,12 +1779,12 @@ def build_native_bundle_catalog(
                           if str(metadata.get("level") or "0").isdigit() else 0),
         )
 
-        if gate is None and is_parent:
+        if gate is None and has_special_constructor:
             gate = _gate_value(
                 bundle_hp_gate(bundle, enemy_level)
                 if callable(bundle_hp_gate) else None,
                 "SPECIAL_HP_CHANNEL_UNSUPPORTED")
-        if gate is None and any(ref.kind not in (0, 1, 8) for ref in actual_refs):
+        if gate is None and has_special_constructor:
             gate = GateResult(False, "SPECIAL_HP_CHANNEL_UNSUPPORTED",
                               detail="special constructor has no proved whole-bundle HP adapter")
         if gate is None:

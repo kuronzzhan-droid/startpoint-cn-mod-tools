@@ -214,19 +214,17 @@ class DegreeShopContractTest(unittest.TestCase):
             self.assertEqual(0, shop.main([*args, "--verify"]))
 
     def test_rogue_shop_rerun_preserves_ticket_and_degree_rows(self):
+        # Rogue owns weapon/ticket slots 9700101..9700117; degree owns 9700118.
         client = {
             "310200": core.write_csv_lines([template_row()]),
-            "9700116": "ticket-116",
-            "9700117": "ticket-117",
         }
-        server = {"11": {"700099": {
-            "9700116": {"ticket": 116},
-            "9700117": {"ticket": 117},
-        }}}
-        id_map = {
-            "9700116": {"eventType": 11, "eventId": 700099},
-            "9700117": {"eventType": 11, "eventId": 700099},
-        }
+        for kind, donor_id in rogue_shop.TICKET_SHOP_DONOR_BY_KIND.items():
+            row = template_row()
+            row[32], row[33] = "0", rogue_shop.TICKET_DONOR_ITEM_BY_KIND[kind]
+            client[donor_id] = core.write_csv_lines([row])
+        client = rogue_shop.build_client_shop(client, rogue_rewards.WEAPONS)
+        server, id_map = rogue_shop.build_server_shop({}, {}, rogue_rewards.WEAPONS)
+        owned_before = copy.deepcopy((client, server, id_map))
         client, server, id_map = shop.build_contract(client, server, id_map)
 
         rerun_client = rogue_shop.build_client_shop(client, rogue_rewards.WEAPONS)
@@ -234,11 +232,24 @@ class DegreeShopContractTest(unittest.TestCase):
             server, id_map, rogue_rewards.WEAPONS
         )
 
-        self.assertEqual("ticket-116", rerun_client["9700116"])
-        self.assertEqual("ticket-117", rerun_client["9700117"])
+        self.assertEqual(
+            rogue_shop.OWNED_SHOP_IDS,
+            tuple(key for key in rerun_client if key in rogue_shop.OWNED_SHOP_IDS),
+        )
+        for shop_id, spec in zip(rogue_shop.TICKET_SHOP_IDS, rogue_shop.TICKETS):
+            self.assertEqual(owned_before[0][shop_id], client[shop_id])
+            self.assertEqual(owned_before[0][shop_id], rerun_client[shop_id])
+            row = core.read_csv_lines(rerun_client[shop_id])[0]
+            self.assertEqual(("0", spec.item_id), (row[32], row[33]))
+            expected_product = owned_before[1]["11"]["700099"][shop_id]
+            self.assertEqual(expected_product, server["11"]["700099"][shop_id])
+            self.assertEqual(expected_product, rerun_server["11"]["700099"][shop_id])
+            self.assertEqual(
+                [{"type": 0, "id": int(spec.item_id), "count": 1}],
+                rerun_server["11"]["700099"][shop_id]["rewards"],
+            )
+            self.assertEqual(owned_before[2][shop_id], rerun_map[shop_id])
         self.assertEqual(client[shop.SHOP_ITEM_ID], rerun_client[shop.SHOP_ITEM_ID])
-        self.assertEqual({"ticket": 116}, rerun_server["11"]["700099"]["9700116"])
-        self.assertEqual({"ticket": 117}, rerun_server["11"]["700099"]["9700117"])
         self.assertEqual(server["11"]["700099"][shop.SHOP_ITEM_ID], rerun_server["11"]["700099"][shop.SHOP_ITEM_ID])
         self.assertEqual(id_map[shop.SHOP_ITEM_ID], rerun_map[shop.SHOP_ITEM_ID])
         self.assertEqual([], rogue_shop.validate_shop(rerun_client, rerun_server, rerun_map))

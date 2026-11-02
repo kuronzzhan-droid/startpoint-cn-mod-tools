@@ -387,8 +387,14 @@ def _build_complete_fixture(root: Path) -> None:
         _write_table(store, logical, table)
 
     client_template = [f"template-{index}" for index in range(shop.CLIENT_COLUMNS)]
+    client_donors = {shop.SHOP_TEMPLATE: _leaf([client_template])}
+    for kind, donor_id in shop.TICKET_SHOP_DONOR_BY_KIND.items():
+        ticket_row = list(client_template)
+        ticket_row[32] = "0"
+        ticket_row[33] = shop.TICKET_DONOR_ITEM_BY_KIND[kind]
+        client_donors[donor_id] = _leaf([ticket_row])
     client_shop = shop.build_client_shop(
-        {shop.SHOP_TEMPLATE: _leaf([client_template])}, rewards.WEAPONS
+        client_donors, rewards.WEAPONS
     )
     _write_table(store, shop.SHOP_T, client_shop)
 
