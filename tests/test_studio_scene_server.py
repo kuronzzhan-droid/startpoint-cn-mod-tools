@@ -200,3 +200,16 @@ def test_scene_server_missing_creation_mother_and_collision_block(case):
     case.docs["advent_event_quest.json"]["2001"] = {}
     put(case.root, "advent_event_quest.json", case.docs["advent_event_quest.json"])
     assert any(check["blocking"] for check in server_candidate(case.state, spec, case.root)[2])
+
+
+@pytest.mark.parametrize("bad_raw", [
+    '{"7001": {"eventType": 0, "eventId": 1}, "7001": {"eventType": 0, "eventId": 1}}\n'.encode("utf-8"),
+    '{"7001": {"eventType": 0, "eventId": 1}, "extra": NaN}\n'.encode("utf-8"),
+    b'\xef\xbb\xbf{"7001": {"eventType": 0, "eventId": 1}}\n',
+])
+def test_scene_server_strict_json_validation_runs_even_when_unmodified(case, bad_raw):
+    (case.root / "assets" / "event_item_shop_id_map.json").write_bytes(bad_raw)
+    files, _, checks = server_candidate(case.state, case.spec, case.root)
+    assert files == {}
+    assert any(check["blocking"] and check["rule"] == "scene.server" for check in checks)
+

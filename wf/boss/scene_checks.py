@@ -18,8 +18,8 @@ COLS = {"name": 2, "start_time": 5, "end_time": 6, "stamina": 75,
         "bgm": 116, "time_limit": 117}
 
 
-def encounter(source, event, tier):
-    tables = BossTables(source)
+def encounter(source, event, tier, *, tables=None):
+    tables = tables if tables is not None else BossTables(source)
     path = [event, tier]
     text = s.get_leaf(tables.table(AQ), path)
     if text is None:
@@ -46,12 +46,23 @@ def encounter(source, event, tier):
             "entrance": {}, "shops": [], "rewards": {}, "routing": {"kind": "advent_event"}}
 
 
+_DEFAULT_ENCOUNTER = encounter
+
+
 def scene_checks(state, spec):
     scanner = MultiplayerScanner(state)
+    candidate_tables = BossTables(state)
+    baseline_tables = BossTables(state.source)
+    candidate_tables._parent_tables = baseline_tables
     checks = []
     for tier in spec["tiers"]:
-        document = encounter(state, spec["event"]["id"], tier["id"])
-        baseline = encounter(state.source, spec.get("creation", {}).get("sourceEvent", spec["event"]["id"]), tier["id"])
+        source_event = spec.get("creation", {}).get("sourceEvent", spec["event"]["id"])
+        if encounter is _DEFAULT_ENCOUNTER:
+            document = encounter(state, spec["event"]["id"], tier["id"], tables=candidate_tables)
+            baseline = encounter(state.source, source_event, tier["id"], tables=baseline_tables)
+        else:
+            document = encounter(state, spec["event"]["id"], tier["id"])
+            baseline = encounter(state.source, source_event, tier["id"])
         from .atlas import encounter_budget
         budget = encounter_budget(state, document)
         gates = check_boss(document, view=state, baseline=baseline,

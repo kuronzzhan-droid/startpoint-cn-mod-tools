@@ -27,7 +27,8 @@ def number(value, *, fraction=False):
 
 
 def rows(state, logical, keys):
-    selected = [(path, parse_rows(text)) for path, text in iter_leaves(state.table(logical))
+    read_table = getattr(state, "readonly_table", state.table)
+    selected = [(path, parse_rows(text)) for path, text in iter_leaves(read_table(logical))
                 if path[0] in keys]
     if any(len(parsed) != 1 for _, parsed in selected):
         raise ValueError("场景经济表每个叶子必须包含一行 CSV")

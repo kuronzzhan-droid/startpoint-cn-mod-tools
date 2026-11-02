@@ -46,7 +46,7 @@ def references(state, resources):
     errors, tables = [], {}
     def table(logical):
         if logical not in tables:
-            tables[logical] = state.table(logical)
+            tables[logical] = getattr(state, "readonly_table", state.table)(logical)
         return tables[logical]
     for logical, tree in resources.items():
         if not logical.endswith(".action.dsl.amf3.deflate"):

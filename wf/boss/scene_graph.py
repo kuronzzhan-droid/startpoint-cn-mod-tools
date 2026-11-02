@@ -17,6 +17,7 @@ from .scene_types import (
 
 
 def graph_problems(state, spec, tables):
+    read_table = getattr(state, "readonly_table", state.table)
     issues = []
     event = spec["event"]["id"]
     event_text = tables.get(AE, {}).get((event,))
@@ -39,7 +40,7 @@ def graph_problems(state, spec, tables):
                 except ValueError as exc:
                     issues.append(str(exc))
             if code is not None:
-                for other_path, other_text in iter_leaves(state.table(AE)):
+                for other_path, other_text in iter_leaves(read_table(AE)):
                     if other_path == (event,):
                         continue
                     other_rows = parse_rows(other_text)
@@ -48,7 +49,7 @@ def graph_problems(state, spec, tables):
     quests = tables.get(AQ, {})
     if {path for path in quests if path[0] == event} != {(event, str(i)) for i in range(1, 6)}:
         issues.append("规格须完整包含当前活动的 1–5 档")
-    bgm_groups = state.table(BGM_GROUP)
+    bgm_groups = read_table(BGM_GROUP)
     for tier in spec["tiers"]:
         text = quests.get((event, tier["id"]))
         row = parse_rows(text)[0] if text else []
@@ -84,7 +85,7 @@ def graph_problems(state, spec, tables):
         if not required_resources <= set(new["resourceTargets"]):
             issues.append("新场景缺少完整资源防撞声明")
     for logical in (GBS, GFS):
-        tree = state.table(logical)
+        tree = read_table(logical)
         selected = {path[0] for path in tables.get(logical, {})}
         for routine in selected:
             for group, nodes in tree.get(routine, {}).items():

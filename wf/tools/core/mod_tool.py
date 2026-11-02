@@ -683,8 +683,8 @@ def read_orderedmap_raw_rows_from_bytes(
 
 def build_orderedmap(ordered: OrderedMap) -> bytes:
     """写 orderedmap,row_offset 使用行尾语义(与游戏客户端一致)。"""
-    key_blob = b""
-    row_blob = b""
+    key_blob = bytearray()
+    row_blob = bytearray()
     pairs = []
     for key, row in zip(ordered.keys, ordered.rows):
         key_blob += key.encode("utf-8")
@@ -699,7 +699,7 @@ def build_orderedmap(ordered: OrderedMap) -> bytes:
     index += key_blob
 
     packed_index = zlib.compress(bytes(index))
-    return struct.pack("<I", len(packed_index)) + packed_index + row_blob
+    return struct.pack("<I", len(packed_index)) + packed_index + bytes(row_blob)
 
 
 # ---------------------------------------------------------------------------
@@ -729,8 +729,8 @@ def read_orderedmap_file_raw_rows(path: Path, logical_path: str) -> OrderedMap:
 
 def build_orderedmap_raw_rows(ordered: OrderedMap) -> bytes:
     """写外层:索引同 build_orderedmap,行原样拼接(不 zlib)。"""
-    key_blob = b""
-    row_blob = b""
+    key_blob = bytearray()
+    row_blob = bytearray()
     pairs = []
     for key, row in zip(ordered.keys, ordered.rows):
         key_blob += key.encode("utf-8")
@@ -742,7 +742,7 @@ def build_orderedmap_raw_rows(ordered: OrderedMap) -> bytes:
         index += struct.pack("<II", key_end, row_end)
     index += key_blob
     packed_index = zlib.compress(bytes(index))
-    return struct.pack("<I", len(packed_index)) + packed_index + row_blob
+    return struct.pack("<I", len(packed_index)) + packed_index + bytes(row_blob)
 
 
 def decode_status_row(chunk: bytes) -> list[tuple[str, int, int]]:

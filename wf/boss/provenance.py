@@ -90,7 +90,13 @@ class BossTables:
     def table(self, logical):
         if logical not in self.tables:
             raw = self.raw(logical)
-            node = {} if raw is None else codec.parse_node(raw)
+            if raw is None:
+                node = {}
+            elif hasattr(self.source, "readonly_table"):
+                node = self.source.readonly_table(logical)
+            else:
+                from .edit_state import parse_readonly_node
+                node = parse_readonly_node(raw)
             if not isinstance(node, dict):
                 raise ValueError(f"boss master is not an ordered map: {logical}")
             self.tables[logical] = node

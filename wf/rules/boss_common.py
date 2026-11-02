@@ -44,13 +44,15 @@ class CandidateView:
             return None
 
     def table(self, logical):
+        from wf.boss.edit_state import freeze_tree, parse_readonly_node
+        if hasattr(self.view, "readonly_table"):
+            return freeze_tree(self.view.readonly_table(logical))
         if hasattr(self.view, "table"):
-            return self.view.table(logical)
+            return freeze_tree(self.view.table(logical))
         raw = self.raw(logical)
         if raw is None:
             return None
-        import wf_quest_lib
-        return wf_quest_lib.parse_node(raw)
+        return parse_readonly_node(raw)
 
 
 def fields(document):
