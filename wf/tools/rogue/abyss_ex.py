@@ -2,26 +2,40 @@
 from __future__ import annotations
 
 import copy
+import csv
 import hashlib
+import io
 import math
 import json
 from pathlib import Path
 import zlib
 
-FIVE_CURSE = 'battle/action/enemy/action/mod/five_boss/five_boss_curse$'
+FIVE_MODE_PREFIXES = (
+    'battle/action/enemy/action/mod/five_boss/five_boss_curse$',
+    'battle/action/enemy/action/mod/five_boss_v3/fb3_buff$',
+)
 DAMAGE_AC = {'ACAbilityDamageResistance': 0, 'ACDirectAttackDamageResistance': 1,
              'ACPowerFlipDamageResistance': 2, 'ACSkillDamageResistance': 3}
 
 
 def without_five_curse(node, cells, join):
-    """Remove only the old mode's periodic aura from private EX clones."""
+    """Remove five-boss auras and entrance buffs from private EX clones."""
     if isinstance(node, dict):
         return {key: without_five_curse(value, cells, join) for key, value in node.items()}
     row = cells(node)
     for i in range(109, min(161, len(row))):
-        if FIVE_CURSE in row[i]:
-            row[i] = ','.join(p for p in row[i].split(',') if not p.startswith(FIVE_CURSE))
+        # An empty action list must stay empty: (None) is read as an action
+        # path by the client and causes 8100.
+        row[i] = ','.join(p for p in row[i].split(',')
+                          if not p.startswith(FIVE_MODE_PREFIXES))
     return join(row, isinstance(node, bytes))
+
+
+def _join_csv(row, as_bytes):
+    buffer = io.StringIO()
+    csv.writer(buffer, lineterminator='').writerow(row)
+    result = buffer.getvalue()
+    return result.encode('utf-8') if as_bytes else result
 
 
 def nodes(tree):
@@ -86,8 +100,9 @@ def condition_bounds(tree):
 
 
 class NativeLaneAudit:
-    def __init__(self, read_raw, parse_dsl, cells):
+    def __init__(self, read_raw, parse_dsl, cells, join=None):
         self.read_raw, self.parse_dsl, self.cells = read_raw, parse_dsl, cells
+        self.join = join or _join_csv
         self.cache = {}
 
     def audit(self, codes, level, general_boss, select_level):
@@ -96,7 +111,9 @@ class NativeLaneAudit:
         for code in codes:
             if code not in general_boss:
                 raise ValueError(f'{code}: EX hard-condition carrier is not general_boss')
-            source = general_boss[code]
+            # Audit the same native donor that make_caster_boss will emit.
+            # Generated curses are checked separately by output_lane.
+            source = without_five_curse(general_boss[code], self.cells, self.join)
             selected = select_level(source, level)
             if selected is None:
                 raise ValueError(f'{code}: missing native level')
@@ -109,7 +126,7 @@ class NativeLaneAudit:
                     for cell in self.cells(text):
                         programs.update(p for p in cell.split(',')
                                         if p.startswith('battle/action/') and '$' in p
-                                        and not p.startswith(FIVE_CURSE))
+                                        and not p.startswith(FIVE_MODE_PREFIXES))
                 damage, element, evidence = [0.0]*4, [0.0]*7, {}
                 while programs:
                     program = sorted(programs)[0]
@@ -125,7 +142,7 @@ class NativeLaneAudit:
                     element = [a+b for a,b in zip(element, ee)]
                     programs.update(p for p in strings(tree)
                                     if p.startswith('battle/action/') and '$' in p
-                                    and not p.startswith(FIVE_CURSE)
+                                    and not p.startswith(FIVE_MODE_PREFIXES)
                                     and not p.endswith('.deflate'))
                 if not evidence:
                     raise ValueError(f'{code}: no native action evidence')
@@ -135,10 +152,36 @@ class NativeLaneAudit:
             receipt = self.cache[key]
             receipts.append(receipt)
             viable &= {(e,d) for e in range(1,7) for d in range(4)
-                       if receipt['damage_bound'][d] < 1 and receipt['element_bound'][e] < 999}
+                       if receipt['damage_bound'][d] < 1 and receipt['element_bound'][e] < 99}
         if not viable:
             raise ValueError('native Bosses have no common verified output lane')
         return viable, copy.deepcopy(receipts)
+
+
+def assert_final_clones(field, field_data, zones, general_boss, expected,
+                        private_prefix, cells, zone_slots):
+    """Fail before collecting/writing EX if its final zone leaks native actors."""
+    field_row = cells(field_data[field])
+    slots = zone_slots(zones[field_row[2]])
+    # Each active slot includes both single- and multiplayer references.
+    if len(slots) != 2 or any(len(slot) != 1 for slot in slots):
+        raise ValueError(f'EX final zone must contain only two clone slots: {slots}')
+    actual = [next(iter(slot)) for slot in slots]
+    if (len(set(actual)) != 2 or actual != expected or
+            any(not code.startswith(private_prefix+'boss30') for code in actual)):
+        raise ValueError(f'EX final zone must contain the two stripped clones: {actual}')
+    for code in actual:
+        leaves = list(strings(general_boss[code]))
+        if not leaves:
+            raise ValueError(f'EX final clone has no general_boss rows: {code}')
+        for leaf in leaves:
+            row = cells(leaf)
+            if len(row) <= 109:
+                raise ValueError(f'EX final clone has no c109: {code}')
+            if (any(marker in row[109] for marker in ('fb3_buff', 'five_boss_curse')) or
+                    any(p.startswith(FIVE_MODE_PREFIXES)
+                        for cell in row[109:161] for p in cell.split(','))):
+                raise ValueError(f'EX final clone retains a five-boss mode action: {code}')
 
 
 def sequential_pair(source_field, field_data, zones, pair, cells, join):

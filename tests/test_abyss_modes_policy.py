@@ -68,6 +68,19 @@ class AbyssModesTests(unittest.TestCase):
         self.assertTrue(policy.is_five_boss_source('mod_rogue_f30',['mod_rogue_boss30'],['mod_five_boss_var_s1_direct_a']))
         self.assertFalse(policy.is_five_boss_source('orochi_ex',['orochi_ex','orochi_ex_head1']))
 
+    def test_five_boss_v2_and_v3_are_excluded_through_source_entries(self):
+        cases = (
+            ('mod_fb2_fd_1099033', (), ()),
+            ('mod_rogue_f6', ('mod_fb2_033_water_w00',), ()),
+            ('mod_rogue_f6', ('mod_rogue_boss6',), ('mod_fb2_fd_1099033',)),
+            ('mod_rogue_f6', ('mod_fb3_administrator_light_multi_80',), ()),
+            ('mod_rogue_f6', ('mod_rogue_boss6',), ('mod_fb3_yokai_emaki_middle_boss_multi',)),
+        )
+        for field, bosses, provenance in cases:
+            with self.subTest(field=field, bosses=bosses, provenance=provenance):
+                self.assertTrue(policy.is_five_boss_source(field, bosses, provenance))
+        self.assertFalse(policy.is_five_boss_source('mod_fb20_unrelated'))
+
     def test_rewards_use_original_baseline_and_keep_fractional_expected_tokens(self):
         baseline={'config':{'per_round_drops':[
             {'type':'item','id':policy.TOKEN,'count':1,'slots':5,'guaranteed_slots':3,'chance':.3,'rounds':[2,10]},

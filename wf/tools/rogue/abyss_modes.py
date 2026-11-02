@@ -52,7 +52,7 @@ def roll_ex_lanes(rng, floor: int, viable_lanes: set[tuple[int, int]]) -> dict:
 
 def is_five_boss_source(field: str, bosses=(), provenance=()) -> bool:
     """Include donor ancestry so private clones cannot bypass the source gate."""
-    return any(str(value).startswith(('mod_five_boss_', 'mod_fb_'))
+    return any(str(value).startswith(('mod_five_boss_', 'mod_fb_', 'mod_fb2_', 'mod_fb3_'))
                for value in (field, *bosses, *provenance))
 
 def scaled_chance(value, scale):

@@ -1143,7 +1143,7 @@ def main(argv=None, *, candidate_sink=None, forge_candidate=None) -> int:
         else:
             # 纯 HP clone 不追加 action，但仍必须拥有独立 general_boss 子树；
             # 未来若再改 clone 行，不能反向污染官方源代号。
-            gb_t[code] = copy.deepcopy(gb_t[boss_code])
+            gb_t[code] = copy.deepcopy(donor_node)
         damage_contract = None
         if damage_check_plan is not None:
             try:
@@ -1738,7 +1738,7 @@ def main(argv=None, *, candidate_sink=None, forge_candidate=None) -> int:
         )
         return f" 属性:{ELEM_CN[elem] if elem < 6 else '无'}{tag}"
 
-    ex_lane_audit = abyss_ex.NativeLaneAudit(q.read_raw, wf_dsl.parse_dsl, cells)
+    ex_lane_audit = abyss_ex.NativeLaneAudit(q.read_raw, wf_dsl.parse_dsl, cells, join)
     _hp_fit_cache: dict[tuple[str, int, float], dict | None] = {}
     _hp_fit_rejects: dict[tuple[str, int, float], str] = {}
 
@@ -3777,6 +3777,17 @@ def main(argv=None, *, candidate_sink=None, forge_candidate=None) -> int:
                   f"sha256={audit_document['document_sha256']}")
         if args.audit_report:
             print(f"[REPORT] HP 中文验收报告已生成:{args.audit_report}")
+
+    if BUILD_MODE == "ex":
+        try:
+            final_pick = floor_recs[-1]["pick"]
+            abyss_ex.assert_final_clones(
+                quest_rows["30"][98], fd_t, zone_t, gb_t,
+                final_pick.get("runtime_bosses") or [], PRIVATE_PREFIX,
+                cells, zone_boss_slots)
+        except (KeyError, IndexError, TypeError, ValueError) as exc:
+            print(f"[ERR] EX 第30战剥离克隆回读失败:{exc}")
+            return 1
 
     if candidate_sink is not None:
         from wf.tools.rogue.rogue_candidate import collect_candidate
