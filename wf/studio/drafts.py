@@ -15,6 +15,7 @@ import re
 import secrets
 import shutil
 import threading
+from copy import deepcopy
 from pathlib import Path
 
 REPOSITORY = Path(__file__).resolve().parents[2]
@@ -46,13 +47,18 @@ def new_change_id() -> str:
 
 
 _schema_cache: dict | None = None
+_schema_bytes: bytes | None = None
+_schema_lock = threading.RLock()
 
 
 def schema() -> dict:
-    global _schema_cache
-    if _schema_cache is None:
-        _schema_cache = json.loads(SCHEMA_PATH.read_text("utf-8"))
-    return _schema_cache
+    global _schema_cache, _schema_bytes
+    with _schema_lock:
+        raw = SCHEMA_PATH.read_bytes()
+        if _schema_cache is None or raw != _schema_bytes:
+            _schema_cache = json.loads(raw)
+            _schema_bytes = raw
+        return deepcopy(_schema_cache)
 
 
 def _validator(ref: str | None = None):

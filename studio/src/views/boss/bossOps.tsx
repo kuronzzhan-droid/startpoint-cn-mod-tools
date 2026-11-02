@@ -7,7 +7,7 @@ import { href } from "../../router";
 import { Notice } from "../common";
 import { PreviewState, useLivePreview } from "./BossParams";
 
-/** Draft revision key: section reads are cached per (quest, revision). */
+/** Draft revision key: identifies the candidate requested by a section. */
 export function revisionKey(changeset: Changeset | null | undefined): string {
   return changeset ? `${changeset.revision}-${changeset.updatedAt}` : "base";
 }
@@ -21,11 +21,12 @@ export function useSection<T>(quest: string, name: SectionName, rev: string, ena
   useEffect(() => {
     if (!enabled) return;
     let live = true;
+    const controller = new AbortController();
     setState((s) => ({ ...s, loading: true, error: null }));
-    boss.section<T>(quest, name, rev).then(
+    boss.section<T>(quest, name, rev, controller.signal).then(
       (r: SectionResponse<T>) => { if (live) setState({ data: r.data, error: null, loading: false }); },
       (e: Error) => { if (live) setState({ data: null, error: e.message, loading: false }); });
-    return () => { live = false; };
+    return () => { live = false; controller.abort(); };
   }, [quest, name, rev, enabled]);
   return state;
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "preact/hooks";
+import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { ComponentChildren } from "preact";
 import { DraftChange, onDraftChange } from "../../api";
 import {
@@ -8,6 +8,7 @@ import {
 import { href, Route } from "../../router";
 import { ChangesPanel, ChecksList, useDraftOf } from "../Changes";
 import { Drawer, ElementBadge, Notice, StatusStrip } from "../common";
+import { Loading } from "../Loading";
 import { InfoTip, useDeliveries } from "../Delivery";
 import { deviceCell, sameDraft } from "../DeviceResult";
 import { ChecksPanel } from "./BossChecks";
@@ -55,8 +56,21 @@ export function BossDetail({ quest, tab, sub }: { quest: string; tab?: string; s
   useEffect(() => { boss.options().then(setOptions, () => setOptions(null)); }, []);
   const previewFor = (id: string) => (state: PreviewState) => setPreviews((p) => ({ ...p, [id]: state }));
 
-  const load = () => boss.read(quest).then((r) => { setRead(r); setError(null); }, (e: Error) => setError(e.message));
-  useEffect(() => { setRead(null); setError(null); setPreviews({}); setVisited(new Set()); load(); }, [quest]);
+  const request = useRef(0);
+  const controller = useRef<AbortController>();
+  const load = () => {
+    const sequence = ++request.current;
+    controller.current?.abort();
+    controller.current = new AbortController();
+    return boss.read(quest, controller.current.signal).then(
+      (r) => { if (sequence === request.current) { setRead(r); setError(null); } },
+      (e: Error) => { if (sequence === request.current) setError(e.message); },
+    );
+  };
+  useEffect(() => {
+    setRead(null); setError(null); setPreviews({}); setVisited(new Set()); load();
+    return () => { request.current++; controller.current?.abort(); };
+  }, [quest]);
   const questId = read?.questId ?? quest;
   useEffect(() => onDraftChange((key) => { if (key === bossKey(questId)) load(); }), [questId]);
   const subject = useMemo(() => bossSubject(questId), [questId]);
@@ -65,7 +79,7 @@ export function BossDetail({ quest, tab, sub }: { quest: string; tab?: string; s
   const link = (t?: string): Route => ({ work: "content", shop: "boss", quest, tab: t });
 
   if (error) return <section class="page"><BackLink /><Notice kind="error">读取副本失败：{error}</Notice></section>;
-  if (!read) return <section class="page"><BackLink /><div class="loading">正在读取副本 {quest}……</div></section>;
+  if (!read) return <section class="page"><BackLink /><Loading label={`正在读取副本 ${quest}……`} /></section>;
 
   const doc = read.boss;
   const q = doc.quest;

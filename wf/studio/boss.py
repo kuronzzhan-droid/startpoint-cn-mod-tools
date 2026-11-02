@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+import threading
 
 from wf.boss.edit_state import BossEditState, digest
 from wf.boss.parameters import edit_parameters
@@ -154,6 +155,9 @@ class BossEditor:
     def __init__(self, source, *, store=None, server_dir=None, client_profile=None):
         self.source, self.store, self.server_dir = source, store or BossDraftStore(), server_dir
         self.client_profile = client_profile
+        from .read_cache import BossReadMemo
+        self._read_memo = BossReadMemo(self.source, self.store)
+        self._memo_lock = threading.Lock()
 
     def _reservations(self, except_quest):
         quests, nodes = [], []
@@ -242,6 +246,24 @@ class BossEditor:
         return state, identity, requests, checks, allocation
 
     def read(self, quest):
+        return self._cached_read(quest)
+
+    def _cached_read(self, quest, section=None):
+        from .read_cache import BossReadMemo
+        with self._memo_lock:
+            if (self._read_memo.source is not self.source or self._read_memo.store is not self.store):
+                self._read_memo = BossReadMemo(self.source, self.store)
+            memo = self._read_memo
+        def compute(source):
+            editor = BossEditor(source, store=self.store, server_dir=self.server_dir,
+                                client_profile=self.client_profile)
+            return editor._read_current(quest, section)
+        try:
+            return memo.get((quest, section, self.client_profile, str(self.server_dir)), compute)
+        except (ValueError, KeyError, OSError, TypeError) as exc:
+            raise DraftError(str(exc)) from exc
+
+    def _read_current(self, quest, section=None):
         from wf.boss.reader import BossReader
         from .source import StudioSource
         try:
@@ -251,10 +273,19 @@ class BossEditor:
             if not requests:
                 from wf.rules.multiplayer import check_multiplayer
                 checks.extend(check_multiplayer(document, state))
-            return {"questId": identity, "boss": document,
-                    "draftWeapons": draft_weapons(state, requests),
-                    "changeset": self.store.load(identity), "checks": checks,
-                    **parameter_report(state), "runtime": "未执行"}
+            if section is not None:
+                from .boss_dispatch import inspect_section
+                result = {"questId": identity, "section": section,
+                          "data": inspect_section(state, document, section, requests),
+                          "checks": checks, "runtime": "未执行"}
+            else:
+                result = {"questId": identity, "boss": document,
+                          "draftWeapons": draft_weapons(state, requests),
+                          "changeset": self.store.load(identity), "checks": checks,
+                          **parameter_report(state), "runtime": "未执行"}
+            if hasattr(self.source, "note_server"):
+                self.source.note_server(state)
+            return result
         except (ValueError, KeyError, OSError, TypeError) as exc:
             raise DraftError(str(exc)) from exc
 
@@ -275,20 +306,7 @@ class BossEditor:
                 result("boss.inputs", "问题", str(exc), blocking=True), *rules], **parameters, "runtime": "未执行"}
 
     def inspect(self, quest, section):
-        from wf.boss.reader import BossReader
-        from .source import StudioSource
-        from .boss_dispatch import inspect_section
-        try:
-            state, identity, requests, checks, _ = self._state(quest)
-            document = BossReader(StudioSource(state)).show(identity)
-            if not requests:
-                from wf.rules.multiplayer import check_multiplayer
-                checks.extend(check_multiplayer(document, state))
-            return {"questId": identity, "section": section,
-                    "data": inspect_section(state, document, section, requests),
-                    "checks": checks, "runtime": "未执行"}
-        except (ValueError, KeyError, OSError, TypeError) as exc:
-            raise DraftError(str(exc)) from exc
+        return self._cached_read(quest, section)
 
     def apply(self, quest, request):
         try:

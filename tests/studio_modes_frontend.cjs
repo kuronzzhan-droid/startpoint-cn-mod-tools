@@ -41,7 +41,8 @@ affix.props.onInput({ currentTarget: { value: 'two, three' } });
 assert.equal(JSON.stringify(changes[1][1]), '["two","three"]');
 const workshop = load('studio/src/views/boss/ModeWorkshop.tsx', {
   'preact/hooks': hooks, '../../router': { href: () => '#' },
-  '../../modeApi': {}, '../common': { Notice: 'Notice' }, '../Delivery': { DeliveryPanel: 'DeliveryPanel' },
+  '../../modeApi': {}, '../common': { Notice: 'Notice' }, '../Loading': { Loading: 'Loading' },
+  '../Delivery': { DeliveryPanel: 'DeliveryPanel' },
   '../workshopKit': { useWorkshopAction: () => ({ busy: false, run: fn => fn() }) },
   './ModeFields': fields,
 });

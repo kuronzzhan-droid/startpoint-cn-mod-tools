@@ -418,16 +418,6 @@ export const BOSS_ANY = "boss:*";
 
 export const bossDeliveries = deliveryApi("/api/boss", bossKey);
 
-const memo = new Map<string, Promise<unknown>>();
-function once<T>(url: string): Promise<T> {
-  if (!memo.has(url)) {
-    const promise = get<T>(url);
-    promise.catch(() => memo.delete(url));
-    memo.set(url, promise);
-  }
-  return memo.get(url) as Promise<T>;
-}
-
 function announce(quest: string) {
   notifyDraft(bossKey(quest), Promise.resolve(null));
   notifyDraft(BOSS_ANY, Promise.resolve(null));
@@ -455,18 +445,18 @@ function token(): string {
 const draftUrl = (quest: string) => quest === "new" ? "/api/boss/drafts" : `/api/boss/drafts/${enc(quest)}`;
 
 export const boss = {
-  /** The base view never changes while the editor runs: read the list once per page load. */
-  list: () => once<BossList>("/api/boss"),
-  templates: () => once<BossTemplates>("/api/boss/templates"),
-  options: () => once<BossOptions>("/api/boss/options"),
-  read: (quest: string) => get<BossRead>(`/api/boss/${enc(quest)}`),
+  /** The backend validates its content-keyed cache; concurrent reads share one request. */
+  list: () => get<BossList>("/api/boss"),
+  templates: () => get<BossTemplates>("/api/boss/templates"),
+  options: () => get<BossOptions>("/api/boss/options"),
+  read: (quest: string, signal?: AbortSignal) => get<BossRead>(`/api/boss/${enc(quest)}`, signal),
   drafts: () => get<{ drafts: BossDraftSummary[] }>("/api/boss/drafts"),
   draft: (quest: string) => get<DraftView>(`/api/boss/drafts/${enc(quest)}`),
-  /** Read-only candidate sub-model with this quest's draft replayed; `rev` keys the cache to one draft revision. */
-  section: <T>(quest: string, name: "terrain" | "shops" | "weapons" | "behavior" | "timeline", rev = "") =>
-    once<SectionResponse<T>>(`/api/boss/${enc(quest)}/${name}?rev=${enc(rev)}`),
-  terrainPreview: (path: string) => once<TerrainDoc>(`/api/boss/terrain-preview?path=${enc(path)}`),
-  weaponIcons: () => once<WeaponIcons>("/api/boss/weapon-icons"),
+  /** Read-only candidate sub-model with this quest's draft replayed; `rev` identifies the draft revision being displayed. */
+  section: <T>(quest: string, name: "terrain" | "shops" | "weapons" | "behavior" | "timeline", rev = "", signal?: AbortSignal) =>
+    get<SectionResponse<T>>(`/api/boss/${enc(quest)}/${name}?rev=${enc(rev)}`, signal),
+  terrainPreview: (path: string) => get<TerrainDoc>(`/api/boss/terrain-preview?path=${enc(path)}`),
+  weaponIcons: () => get<WeaponIcons>("/api/boss/weapon-icons"),
   iconUrl: (path: string) => `/api/boss/icon.png?path=${enc(path)}`,
   preview: (quest: string, body: AnyBossRequest) => previewPost(draftUrl(quest) + "?preview=true", body),
   apply: async (quest: string, body: AnyBossRequest) => {

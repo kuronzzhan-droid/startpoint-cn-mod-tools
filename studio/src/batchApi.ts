@@ -20,9 +20,9 @@ export const batch = {
   idNext: (from: string, near?: string) => get<LinkedId>(`${root}/variants/ids/next?from=${encodeURIComponent(from)}${near ? `&near=${encodeURIComponent(near)}` : ""}`),
   mapping: () => get<{ mapping: Mapping }>(`${root}/balance/mapping`),
   remember: (mapping: Mapping) => post(`${root}/balance/mapping`, { mapping }),
-  parse: (text: string) => post<{ headers: string[]; rows: string[][] }>(`${root}/balance/parse`, { text }),
-  balance: (body: BalanceBody) => post<BatchPreview>(`${root}/balance/preview`, body),
-  variants: (body: VariantBody) => post<BatchPreview>(`${root}/variants/preview`, body),
+  parse: (text: string) => post<{ headers: string[]; rows: string[][] }>(`${root}/balance/parse`, { text }, { readonly: true }),
+  balance: (body: BalanceBody) => post<BatchPreview>(`${root}/balance/preview`, body, { readonly: true }),
+  variants: (body: VariantBody) => post<BatchPreview>(`${root}/variants/preview`, body, { readonly: true }),
   apply: (kind: "balance" | "variants", body: BalanceBody | VariantBody, review: string, selected: number[]) =>
     post<BatchWritten>(`${root}/${kind}/apply`, { ...body, review, selected }),
 };

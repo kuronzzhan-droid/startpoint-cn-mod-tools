@@ -208,7 +208,8 @@ def test_compat_cache_distinguishes_table_and_block_with_same_capability_set(app
     assert all(profile["compatible"] for profile in first.values())
     assert all(not profile["compatible"] for profile in second.values())
     assert all(profile["compatible"] for profile in third.values())
-    assert view.compat([], sites=[official]) is first
+    again = view.compat([], sites=[official])
+    assert again == first and again is not first
 
 
 def test_character_compat_reads_the_checked_in_report(app):

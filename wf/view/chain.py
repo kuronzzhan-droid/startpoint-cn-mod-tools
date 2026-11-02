@@ -130,6 +130,25 @@ def resolve_chain(manifest, directories, base_version, tip, manifests=None):
 
 def resolve_archives(edges, directories):
     archives, records = [], []
+    # A discovery pass often finds several hard links to one physical archive.
+    # Hash each physical input once within this call, never across verifications.
+    physical_hashes = {}
+
+    def identity(stat):
+        return (stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns)
+
+    def candidate_digest(candidate, stat):
+        key = identity(stat)
+        shareable = stat.st_dev and stat.st_ino and stat.st_nlink > 1
+        if shareable and key in physical_hashes:
+            return physical_hashes[key]
+        value = digest(candidate)
+        if identity(candidate.stat()) != key:
+            raise ValueError(f"archive changed while hashing: {candidate.name}")
+        if shareable:
+            physical_hashes[key] = value
+        return value
+
     found = index_zip_names(directories, {name for edge in edges for name in edge["names"]})
     for edge in edges:
         for name in edge["names"]:
@@ -144,9 +163,10 @@ def resolve_archives(edges, directories):
                 raise ValueError(f"invalid manifest archive size: {name}")
             matching = []
             for candidate in candidates:
-                if "size" in expected and candidate.stat().st_size != expected["size"]:
+                stat = candidate.stat()
+                if "size" in expected and stat.st_size != expected["size"]:
                     continue
-                sha256 = digest(candidate)
+                sha256 = candidate_digest(candidate, stat)
                 if "sha256" in expected and sha256 != expected["sha256"]:
                     continue
                 matching.append((candidate, sha256))

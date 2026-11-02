@@ -2,7 +2,7 @@
 import re
 
 from wf.caps.profiles import profile_options
-from wf.caps.query import query_requirements
+from .capability_cache import cached_requirements
 
 
 def routes():
@@ -18,7 +18,7 @@ def profiles(query):
 def requirements(query):
     from .server import error, json_response
     try:
-        return json_response(query_requirements(
+        return json_response(cached_requirements(
             kinds=query.get("kind", []), unique_strings=query.get("unique", []),
             dsl_markers=query.get("dsl", []), selectors=query.get("selector", []),
             custom_keys=query.get("customKey", []), unique_id=(query.get("uniqueId") or [None])[0],

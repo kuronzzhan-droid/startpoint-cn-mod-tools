@@ -97,9 +97,16 @@ class ManifestView(HistoricalView):
             self._stats[archive] = self._stat(archive)
         return super().read_member(name)
 
+    def verify_chain(self):
+        """Recheck the loaded chain; enabled edges beyond tip may advance."""
+        edges = resolve_chain(self.manifest, self.search_dirs, self.base_version, self.tip, self.manifests)
+        if edges != self.edges:
+            raise ValueError("view manifest chain changed during use")
+        return edges
+
     def verify(self):
         """Recheck discovery, all ZIP bytes and every used store member."""
-        edges = resolve_chain(self.manifest, self.search_dirs, self.base_version, self.tip, self.manifests)
+        edges = self.verify_chain()
         archives, records = resolve_archives(edges, self.search_dirs)
         archives.extend(self.extra_zips)
         records.extend({"name": p.name, "sha256": digest(p)} for p in self.extra_zips)
@@ -109,6 +116,12 @@ class ManifestView(HistoricalView):
             if hashlib.sha256(self.read_store_member(name)).hexdigest() != sha256:
                 raise ValueError(f"used store member changed during use: {name}")
         return self.lock_data()
+
+    def verify_read(self):
+        """Cheap check for repeated reads; deliveries keep using verify()."""
+        self.verify_chain()
+        if any(self._stat(archive) != self._stats[archive] for archive in self.zips):
+            self.verify()
 
     def lock_data(self):
         members = dict(self.store_member_sha256 or {})
