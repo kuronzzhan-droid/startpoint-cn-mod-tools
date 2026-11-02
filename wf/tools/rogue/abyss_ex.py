@@ -19,10 +19,14 @@ DAMAGE_AC = {'ACAbilityDamageResistance': 0, 'ACDirectAttackDamageResistance': 1
 
 
 def without_five_curse(node, cells, join):
-    """Remove five-boss auras and entrance buffs from private EX clones."""
+    """Strip action columns only; reject mode refs in unknown column roles."""
     if isinstance(node, dict):
         return {key: without_five_curse(value, cells, join) for key, value in node.items()}
     row = cells(node)
+    for i, cell in enumerate(row):
+        if not 109 <= i <= 160 and any(
+                p.startswith(FIVE_MODE_PREFIXES) for p in cell.split(',')):
+            raise ValueError(f'five-boss mode action outside action columns: c{i}')
     for i in range(109, min(161, len(row))):
         # An empty action list must stay empty: (None) is read as an action
         # path by the client and causes 8100.
@@ -140,10 +144,15 @@ class NativeLaneAudit:
                     dd, ee = condition_bounds(tree)
                     damage = [a+b for a,b in zip(damage, dd)]
                     element = [a+b for a,b in zip(element, ee)]
-                    programs.update(p for p in strings(tree)
-                                    if p.startswith('battle/action/') and '$' in p
-                                    and not p.startswith(FIVE_MODE_PREFIXES)
-                                    and not p.endswith('.deflate'))
+                    for ref in strings(tree):
+                        if ref.startswith(FIVE_MODE_PREFIXES):
+                            # Only row action entries can be stripped safely.
+                            # A retained DSL that calls one is still mode-bound.
+                            raise ValueError(
+                                f'{code}: recursive five-boss mode action: {logical} -> {ref}')
+                        if (ref.startswith('battle/action/') and '$' in ref
+                                and not ref.endswith('.deflate')):
+                            programs.add(ref)
                 if not evidence:
                     raise ValueError(f'{code}: no native action evidence')
                 self.cache[key] = {'code': code, 'level': selected, 'row_sha256': digest,
@@ -180,7 +189,7 @@ def assert_final_clones(field, field_data, zones, general_boss, expected,
                 raise ValueError(f'EX final clone has no c109: {code}')
             if (any(marker in row[109] for marker in ('fb3_buff', 'five_boss_curse')) or
                     any(p.startswith(FIVE_MODE_PREFIXES)
-                        for cell in row[109:161] for p in cell.split(','))):
+                        for cell in row for p in cell.split(','))):
                 raise ValueError(f'EX final clone retains a five-boss mode action: {code}')
 
 

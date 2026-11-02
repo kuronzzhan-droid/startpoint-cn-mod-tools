@@ -24,9 +24,9 @@ def row(**columns):
 
 @pytest.mark.parametrize('as_bytes', [False, True])
 def test_strip_both_prefixes_per_item_in_all_action_columns(as_bytes):
-    source = row(c108=BUFF+'keep', c109=CURSE+'s1,'+BUFF+'entrance',
+    source = row(c108='before', c109=CURSE+'s1,'+BUFF+'entrance',
                  c111=NATIVE+','+BUFF+'entrance_self,'+CURSE+'s1',
-                 c160=BUFF+'entrance', c161=CURSE+'keep')
+                 c160=BUFF+'entrance', c161='after')
     if as_bytes:
         source = source.encode()
     tree = {'80': source, '100': {'1': source}}
@@ -36,7 +36,7 @@ def test_strip_both_prefixes_per_item_in_all_action_columns(as_bytes):
     for leaf in (stripped['80'], stripped['100']['1']):
         cells = b.cells(leaf)
         assert isinstance(leaf, bytes) == as_bytes
-        assert cells[108] == BUFF+'keep' and cells[161] == CURSE+'keep'
+        assert cells[108] == 'before' and cells[161] == 'after'
         assert cells[109] == cells[160] == ''  # (None) is an invalid action (8100).
         assert cells[111] == NATIVE
 
@@ -50,17 +50,38 @@ def auditor(tree):
     return ex.NativeLaneAudit(read, lambda _: {'tree': tree}, b.cells, b.join), reads
 
 
-def test_audit_hash_and_bounds_match_stripped_clone_and_filter_recursive_refs():
+def test_audit_hash_and_bounds_match_stripped_clone():
     source = row(c109=CURSE+'s1,'+BUFF+'entrance')
     clone = ex.without_five_curse(source, b.cells, b.join)
-    audit, reads = auditor([['ACToleranceOfElement', [600], 254, [.2], [1]],
-                            [BUFF+'entrance_self', CURSE+'s1']])
+    audit, reads = auditor([['ACToleranceOfElement', [600], 254, [.2], [1]]])
     lanes, proof = audit.audit(['source'], 100, {'source': {'100': source}}, b.select_surjective_level)
     clone_lanes, clone_proof = audit.audit(['clone'], 100, {'clone': {'100': clone}}, b.select_surjective_level)
     assert lanes == clone_lanes
     assert proof[0]['row_sha256'] == clone_proof[0]['row_sha256'] == hashlib.sha256(str(clone).encode()).hexdigest()
     assert proof[0]['element_bound'] == [0, .2, .2, .2, .2, .2, .2]
     assert set(reads) == {NATIVE+'.action.dsl.amf3.deflate'}
+
+
+@pytest.mark.parametrize('prefix', [CURSE, BUFF])
+@pytest.mark.parametrize('suffix', ['entrance', 'entrance.action.dsl.amf3.deflate'])
+def test_native_audit_rejects_recursive_mode_refs_without_caching(prefix, suffix):
+    audit, reads = auditor({'nested': [[prefix+suffix]]})
+    for _ in range(2):
+        with pytest.raises(ValueError, match='recursive five-boss mode action'):
+            audit.audit(['boss'], 100, {'boss': {'100': row()}}, b.select_surjective_level)
+        assert not audit.cache
+    assert reads == [NATIVE+'.action.dsl.amf3.deflate'] * 2
+
+
+@pytest.mark.parametrize('prefix', [CURSE, BUFF])
+@pytest.mark.parametrize('column', [0, 108, 161])
+@pytest.mark.parametrize('as_bytes', [False, True])
+def test_strip_rejects_mode_refs_outside_action_columns(prefix, column, as_bytes):
+    source = row(**{f'c{column}': 'ordinary,'+prefix+'entrance'})
+    if as_bytes:
+        source = source.encode()
+    with pytest.raises(ValueError, match=f'outside action columns: c{column}'):
+        ex.without_five_curse({'80': source}, b.cells, b.join)
 
 
 def test_three_argument_auditor_uses_the_same_csv_encoding():
@@ -120,6 +141,17 @@ def test_final_zone_cannot_reference_uncloned_donor_or_another_pair():
 def test_final_check_covers_every_clone_level_and_action_column():
     fd, zones, gb = final_tables()
     gb['private_boss30']['80'] = row(c160=CURSE+'s1')
+    with pytest.raises(ValueError, match='mode action'):
+        check_final(fd, zones, gb)
+
+
+@pytest.mark.parametrize('prefix', [CURSE, BUFF])
+@pytest.mark.parametrize('column', [0, 108, 161])
+@pytest.mark.parametrize('as_bytes', [False, True])
+def test_final_check_rejects_mode_refs_in_any_column(prefix, column, as_bytes):
+    fd, zones, gb = final_tables()
+    source = row(**{f'c{column}': 'ordinary,'+prefix+'entrance'})
+    gb['private_boss30']['80'] = source.encode() if as_bytes else source
     with pytest.raises(ValueError, match='mode action'):
         check_final(fd, zones, gb)
 
