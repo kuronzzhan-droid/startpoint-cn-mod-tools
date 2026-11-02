@@ -24,6 +24,7 @@ SERVER_MAPS = {"assets/" + name + ".json" for name in (
     "equipment_lookup", "equipment_max_level", "equipment_element", "item_sale", "item_lookup")}
 SERVER_MAPS.update({SERVER_ENH, AWAKENING, SERVER_SHOP, SERVER_MAP})
 SERVER_MAPS.add("assets/equipment_dissolve.json")
+SERVER_MAPS.add("assets/continue_cost.json")
 CHARACTER_MAPS = {"character.json", "cdndata/character.json", "cdndata/character_text.json",
                   "cdndata/character_text_rank_p5b.json", "mana_node.json", "mana_board.json"}
 # Character delivery accepts either a server repository or its assets directory.

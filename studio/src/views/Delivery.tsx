@@ -32,9 +32,9 @@ export function useDeliveries(cid: string, api: DeliveryApi = deliveries): {
   return { list, currentRevision, reload };
 }
 
-export function DeliveryPanel({ characterId, mode, view, onMode, api = deliveries, initialPick = null }: {
+export function DeliveryPanel({ characterId, mode, view, onMode, api = deliveries, initialPick = null, allowServerApply = true }: {
   characterId: string; mode: "generate" | "export"; view: DraftView; onMode: (m: "generate" | "export") => void;
-  api?: DeliveryApi; initialPick?: string | null;
+  api?: DeliveryApi; initialPick?: string | null; allowServerApply?: boolean;
 }) {
   const [picked, setPicked] = useState<string | null>(initialPick);
   useEffect(() => { if (initialPick) setPicked(initialPick); }, [initialPick]);
@@ -47,7 +47,7 @@ export function DeliveryPanel({ characterId, mode, view, onMode, api = deliverie
       {mode === "generate" ? (
         <GenerateForm characterId={characterId} view={view} api={api} onBuilt={(name) => { setPicked(name); onMode("export"); }} />
       ) : (
-        <ExportView characterId={characterId} picked={picked} onPick={setPicked} revision={view.changeset?.revision ?? null} changeset={view.changeset} api={api} />
+        <ExportView characterId={characterId} picked={picked} onPick={setPicked} revision={view.changeset?.revision ?? null} changeset={view.changeset} api={api} allowServerApply={allowServerApply} />
       )}
     </section>
   );
@@ -188,9 +188,9 @@ function BuildResultCard({ result, onOpen }: { result: BuildResult; onOpen: () =
   );
 }
 
-function ExportView({ characterId, picked, onPick, revision, changeset, api }: {
+function ExportView({ characterId, picked, onPick, revision, changeset, api, allowServerApply }: {
   characterId: string; picked: string | null; onPick: (name: string) => void; revision: number | null; api: DeliveryApi;
-  changeset?: DraftView["changeset"];
+  changeset?: DraftView["changeset"]; allowServerApply: boolean;
 }) {
   const { list } = useDeliveries(characterId, api);
   useEffect(() => {
@@ -215,12 +215,12 @@ function ExportView({ characterId, picked, onPick, revision, changeset, api }: {
           </li>
         ))}
       </ul>
-      {picked ? <DeliveryDetailView name={picked} api={api} characterId={characterId} /> : null}
+      {picked ? <DeliveryDetailView name={picked} api={api} characterId={characterId} allowServerApply={allowServerApply} /> : null}
     </div>
   );
 }
 
-function DeliveryDetailView({ name, api, characterId }: { name: string; api: DeliveryApi; characterId: string }) {
+function DeliveryDetailView({ name, api, characterId, allowServerApply }: { name: string; api: DeliveryApi; characterId: string; allowServerApply: boolean }) {
   const [detail, setDetail] = useState<DeliveryDetail | null>(null);
   const [device, setDevice] = useDeviceEntry(detail?.deviceResult);
   const [error, setError] = useState<string | null>(null);
@@ -305,7 +305,7 @@ function DeliveryDetailView({ name, api, characterId }: { name: string; api: Del
       <IconAlphaPanel result={detail.iconAlpha} />
       <ClientExtensionsPanel result={detail.clientExtensions} />
       <RehearsalPanel name={name} initial={detail.rehearsal} rehearse={api.rehearse} fileUrl={file} />
-      <ApplyPanel name={name} api={api} />
+      {allowServerApply ? <ApplyPanel name={name} api={api} /> : <p class="small muted">场景交付只生成本地候选。请在<a href="#/opening">开服台</a>查看待执行清单。</p>}
       <OverlayPanel name={name} api={api} available={detail.overlayAvailable} reason={detail.overlayReason} fileUrl={file} />
 
       {detail.check ? <RuleList checks={detail.check} title="wf check（交付清单）" /> : <p class="small muted">没有 check.json。</p>}

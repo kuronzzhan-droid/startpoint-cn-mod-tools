@@ -1,0 +1,17 @@
+.scene-spec-editor { display: block; width: 100%; min-height: 24rem; resize: vertical; tab-size: 2; line-height: 1.5; }
+.scene-workshop .segmented a { padding: 4px 12px; border-right: 1px solid var(--border); text-decoration: none; color: inherit; }
+.scene-workshop .segmented a:last-child { border-right: 0; }
+.scene-workshop .segmented a.on { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.scene-fields { margin: 1rem 0; }
+.scene-fields details { padding: .4rem .6rem; border: 1px solid var(--border, #ddd); border-radius: .4rem; }
+.scene-group { margin: .8rem 0; }
+.scene-group h4 { margin: .8rem 0 .4rem; }
+.scene-setting { display: grid; grid-template-columns: minmax(12rem, 1fr) minmax(12rem, 2fr); align-items: center; gap: .35rem 1rem; margin: .6rem 0; }
+.scene-setting code { overflow-wrap: anywhere; }
+.scene-setting input, .scene-setting textarea { width: 100%; min-width: 0; }
+.scene-setting > .small { grid-column: 2; }
+.scene-preview .pill { display: inline-block; margin: .2rem; }
+.scene-preview .mode-table pre { max-height: 14rem; margin: 0; }
+.scene-import input { max-width: 18rem; }
+.scene-clone { padding: .8rem; border: 1px solid var(--border); border-radius: .5rem; }
+@media (max-width: 650px) { .scene-setting { grid-template-columns: 1fr; } .scene-setting > .small { grid-column: 1; } }

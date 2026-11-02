@@ -98,7 +98,7 @@ def test_native_numbered_wall_tokens_satisfy_boundary_geometry():
 
 class RoutineView:
     def __init__(self, positions):
-        self.states = {"crab_100": {"1": {str(index): [""] * 50 + [name]
+        self.states = {"crab_100": {"1": {str(index): [""] * 49 + ["0", name]
                                        for index, name in enumerate(positions)}}}
 
     def table(self, logical):

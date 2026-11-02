@@ -22,6 +22,7 @@ const PatchManager = lazyView(() => import("./views/PatchManager"), "PatchManage
 const ScratchDetail = lazyView(() => import("./views/ScratchView"), "ScratchDetail");
 const ScratchList = lazyView(() => import("./views/ScratchView"), "ScratchList");
 const LookupPanel = lazyView(() => import("./views/LookupPanel"), "LookupPanel");
+const OpeningConsole = lazyView(() => import("./views/OpeningConsole"), "OpeningConsole");
 
 type Freshness = { loaded: string; latest: string | null; stale: boolean; error?: string };
 type Doctor = { items: { id: string; status: "ok" | "warn" | "fail"; current: string; fix: string }[] };
@@ -69,6 +70,7 @@ function App() {
         <nav class="works" aria-label="一级工作">
           <a class={route.work === "content" ? "active" : ""} href="#/content/characters">编辑内容</a>
           <a class={route.work === "patches" ? "active" : ""} href="#/patches">补丁管理</a>
+          <a class={route.work === "opening" ? "active" : ""} href="#/opening">开服台</a>
         </nav>
         <div class="topbar-right">
           <ClientProfilePicker />
@@ -127,7 +129,9 @@ function App() {
       ) : null}
       <div class="layout">
         <main class="main">
-          {route.work === "patches" ? (
+          {route.work === "opening" ? (
+            <OpeningConsole />
+          ) : route.work === "patches" ? (
             <PatchManager archive={route.archive} />
           ) : route.shop === "boss" ? (
             <BossWorkshop quest={route.quest} tab={route.tab} sub={route.sub} wizard={route.wizard} source={route.source} />

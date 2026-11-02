@@ -1,0 +1,11 @@
+.opening-console details { margin: .8rem 0; }
+.opening-console summary { cursor: pointer; }
+.opening-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 1rem; margin: 1rem 0; }
+.opening-summary article { display: flex; flex-direction: column; gap: .4rem; border: 1px solid var(--border, #ddd); border-radius: .5rem; padding: 1rem; }
+.opening-summary strong { font-size: 1.15rem; }
+.opening-table { overflow-x: auto; }
+.opening-table table { width: 100%; border-collapse: collapse; }
+.opening-table th, .opening-table td { text-align: left; vertical-align: top; padding: .65rem; border-bottom: 1px solid var(--border, #ddd); }
+.opening-table p { overflow-wrap: anywhere; margin: .3rem 0; }
+.opening-console pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 28rem; overflow: auto; }
+.opening-steps li { margin: .65rem 0; white-space: pre-wrap; overflow-wrap: anywhere; }

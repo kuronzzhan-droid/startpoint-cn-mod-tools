@@ -1,6 +1,8 @@
 """Known missing combat references are failures, not absent check input."""
 from __future__ import annotations
 
+import math
+
 from .boss_common import CandidateView, EMPTY, cell, leaves
 
 GENERAL = "master/battle/boss/general_boss.orderedmap"
@@ -38,8 +40,29 @@ def routine_positions(document, view):
         rows = list(leaves(node))
         if routine not in EMPTY and not rows:
             issues.append(f"层 {wave} 敌人 {code} 档 {enemy.get('path')} 引用缺失 routine {routine}")
-        names = {name.strip() for _, row in rows for name in str(cell(row, 50, "")).split(",")
-                 if name.strip() not in EMPTY}
+        names = set()
+        # GeneralBossStateValues.as:1608-1629 reads c50 as a named position
+        # only for c49=0 (Absolute). For c49=1 it is the Relative x offset;
+        # a numeric offset such as 0 must never become a terrain reference.
+        for path, row in rows:
+            movement = cell(row, 49)
+            if movement in EMPTY:
+                continue
+            if movement == "0":
+                name = str(cell(row, 50, "")).strip()
+                if name in EMPTY:
+                    issues.append(f"层 {wave} 敌人 {code} 状态 {path} 绝对移动缺少命名站位")
+                else:
+                    names.add(name)
+            elif movement == "1":
+                try:
+                    valid = all(math.isfinite(float(cell(row, index))) for index in (50, 51))
+                except (ValueError, TypeError):
+                    valid = False
+                if not valid:
+                    issues.append(f"层 {wave} 敌人 {code} 状态 {path} 相对移动坐标不是有限数值")
+            else:
+                issues.append(f"层 {wave} 敌人 {code} 状态 {path} 移动种类 {movement!r} 未知")
         positions, missing = actions.general(enemy)
         names.update(positions)
         # A missing native input cannot establish a missing named position.

@@ -106,6 +106,9 @@ class StudioApp:
         from .client_profile_view import ClientProfileView
         self.client_profiles = ClientProfileView(self)
         self.routes.extend(self.client_profiles.routes())
+        from .opening_routes import OpeningRoutes
+        self.opening = OpeningRoutes(self)
+        self.routes.extend(self.opening.routes())
         self.abilities = AbilityRoutes(self, server_dir)
         self.routes.extend(self.abilities.routes())
         from .pixel_routes import PixelRoutes
@@ -120,6 +123,9 @@ class StudioApp:
         from .mode_routes import ModeRoutes
         self.modes = ModeRoutes(self, server_dir, default_provides)
         self.routes.extend(self.modes.routes())
+        from .scene_routes import SceneRoutes
+        self.scenes = SceneRoutes(self, server_dir, default_provides)
+        self.routes.extend(self.scenes.routes())
         from .weapon_routes import WeaponRoutes
         self.weapons = WeaponRoutes(self, server_dir, default_provides)
         self.routes.extend(self.weapons.routes())

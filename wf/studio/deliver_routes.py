@@ -244,17 +244,20 @@ class DeliverRoutes(DeliveryActions):
         return json_response({"name": name, "cancelling": True,
                               "note": "当前阶段结束后停止；已写出的半成品目录会删除"})
 
+    def _matches_cid(self, folder: Path, raw_cid: str, output_id: str) -> bool:
+        return folder.name.startswith(output_id + "-")
+
     def listing(self, query):
         from .server import json_response
-        cid = (query.get("cid") or [""])[0]
-        cid = self.output_identity(cid) if cid else ""
+        raw_cid = (query.get("cid") or [""])[0]
+        cid = self.output_identity(raw_cid) if raw_cid else ""
         items = []
         draft = self.current_draft(cid) if cid else None
         if self.root.is_dir():
             for folder in sorted(self.root.iterdir(), reverse=True):
                 if not folder.is_dir() or not self.name_pattern.fullmatch(folder.name):
                     continue
-                if cid and not folder.name.startswith(cid + "-"):
+                if cid and not self._matches_cid(folder, raw_cid, cid):
                     continue
                 report = _read_json(folder / "build-report.json") or _read_json(folder / "studio-build-error.json")
                 counts: dict[str, int] = {}
@@ -275,7 +278,7 @@ class DeliverRoutes(DeliveryActions):
                               "counts": counts,
                               "device": device_result.summary(device_result.read(folder, self.kind), draft)})
         with self._lock:
-            jobs = [self._public(job) for job in self.jobs.values() if not cid or job["characterId"] == cid]
+            jobs = [self._public(job) for job in self.jobs.values() if not raw_cid or job["characterId"] == raw_cid]
         return json_response({"root": self.display_root(), "deliveries": items,
                               "currentRevision": (draft or {}).get("revision"),
                               "running": dict(self.running), "jobs": jobs})
