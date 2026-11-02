@@ -26,7 +26,7 @@ export interface ModeRead {
 }
 export const modeDeliveries = deliveryApi("/api/modes", id => "mode:" + id);
 export const modes = {
-  read: (mode: Mode) => get<ModeRead>(`/api/modes/${mode}`),
-  preview: (mode: Mode, payload: Json) => post<ModePreview>(`/api/modes/${mode}/preview`, { payload }),
+  read: (mode: Mode, signal?: AbortSignal) => get<ModeRead>(`/api/modes/${mode}`, signal),
+  preview: (mode: Mode, payload: Json) => post<ModePreview>(`/api/modes/${mode}/preview`, { payload }, { readonly: true }),
   save: (mode: Mode, payload: Json, revision: number) => post<ModePreview>(`/api/modes/${mode}/save`, { payload, revision }),
 };

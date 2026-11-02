@@ -399,8 +399,6 @@ function StateEditor({ edit, can, questId, onPreview, onWritten, onClose }: {
 
 // ------------------------------------------------------------------------------------- player
 
-const summaryOnce: Map<string, ReturnType<typeof timelineApi.bossMoves>> = new Map();
-
 /** 「预览」: backend esdl timeline summary when present, else the move's DSL through /api/studio/timeline. */
 function MovePlayer({ quest, rev, move, onClose }: { quest: string; rev: string; move: MoveRef; onClose: () => void }) {
   const box = useRef<HTMLElement>(null);
@@ -410,17 +408,17 @@ function MovePlayer({ quest, rev, move, onClose }: { quest: string; rev: string;
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     let live = true;
+    const controller = new AbortController();
     setTimeline(null); setError(null);
-    const key = quest + "@" + rev;
-    if (!summaryOnce.has(key)) summaryOnce.set(key, timelineApi.bossMoves(quest));
-    summaryOnce.get(key)!.then(async (summary) => {
+    timelineApi.bossMoves(quest, { path: move.path, enemyCode: move.enemy, slot: move.slot }, controller.signal).then(async (summary) => {
+      if (!live) return;
       const hit = summary.available ? pickMove(summary.moves as SummaryMove[], move) : undefined;
       if (hit) { if (live) { setTimeline(hit.timeline); setSource((hit.timeline as any).timeOrigin === "action_entry" ? "timeline-summary（触发帧未知：从动作开始计时）" : "timeline-summary（从状态进入计时，含本草稿改动）"); } return; }
-      const t = await timelineApi.timeline(move.path, "subprogram");
+      const t = await timelineApi.timeline(move.path, "subprogram", undefined, controller.signal);
       if (live) { setTimeline(t); setSource(summary.available ? "timeline-summary 里没有这一招，改用 DSL 路径直接解析（基线视图）" : "按出招 DSL 路径直接解析（/api/studio/timeline，基线视图）"); }
     }).catch((e: Error) => { if (live) setError(e.message); });
-    return () => { live = false; };
-  }, [quest, rev, move.path, move.state]);
+    return () => { live = false; controller.abort(); };
+  }, [quest, rev, move.path, move.state, move.enemy, move.slot]);
   return (
     <section class="boss-block move-player" aria-label="出招预览" ref={box}>
       <header><h3>出招预览 · {move.label}</h3><span class="small muted">{source}</span><span class="spacer" />

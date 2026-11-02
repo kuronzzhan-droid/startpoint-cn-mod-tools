@@ -1,12 +1,11 @@
 """Process-wide caches for the studio's read paths (view objects are immutable per process).
 
-Everything here is keyed by content (bytes) or by a file signature (path, mtime, size),
-so a cache hit can never serve stale data:
+Parsed results are keyed by actual content; files are reread before reuse:
 
-* :func:`registry` — the capability registry (141 YAML files), keyed by their signature;
+* :func:`registry` — capability YAML and its validation schema, keyed by content;
 * :func:`parsed` — ``parse_node`` results keyed by the raw orderedmap bytes; callers get a
   structural copy (dicts/lists copied, strings shared) so they may mutate it freely;
-* :func:`file_bytes` / :func:`mirror` — server text mirrors keyed by (path, mtime, size);
+* :func:`file_bytes` / :func:`mirror` — server text mirrors keyed by their bytes;
 * :func:`owners` — the character → key ownership index keyed by the character table bytes;
 * :func:`leaf_tokens` — reference tokens / row names of one ability leaf (``custom_owners``).
 
@@ -16,6 +15,7 @@ so a cache hit can never serve stale data:
 from __future__ import annotations
 
 import csv
+import hashlib
 import io
 import re
 import threading
@@ -56,6 +56,8 @@ def copy_tree(value):
         return {k: copy_tree(v) for k, v in value.items()}
     if isinstance(value, list):
         return [copy_tree(v) for v in value]
+    if isinstance(value, tuple):
+        return tuple(copy_tree(v) for v in value)
     return value
 
 
@@ -66,14 +68,15 @@ _REGISTRY: dict = {}
 def registry():
     from wf.caps import registry as module
     root = Path(module.__file__).parent
-    signature = tuple((p.name, p.stat().st_mtime_ns, p.stat().st_size) for p in sorted(root.glob("*.yml")))
+    inputs = [*sorted(root.glob("*.yml")), module.REPOSITORY / "schemas/capability.schema.json"]
+    signature = tuple((str(p), hashlib.sha256(p.read_bytes()).digest()) for p in inputs)
     with _LOCK:
         if _REGISTRY.get("signature") == signature:
-            return _REGISTRY["value"]
+            return copy_tree(_REGISTRY["value"])
     value = module.load_registry(root)
     with _LOCK:
         _REGISTRY.update(signature=signature, value=value)
-    return value
+    return copy_tree(value)
 
 
 # -- orderedmap parsing --------------------------------------------------------
@@ -96,10 +99,10 @@ _MIRRORS = _LRU(8)
 
 def file_bytes(path) -> bytes:
     path = Path(path).resolve()
-    stat = path.stat()
-    key = (str(path), stat.st_mtime_ns, stat.st_size)
+    raw = path.read_bytes()
+    key = (str(path), hashlib.sha256(raw).digest())
     hit = _FILES.get(key)
-    return hit if hit is not None else _FILES.put(key, path.read_bytes())
+    return hit if hit is not None else _FILES.put(key, raw)
 
 
 def mirror(raw: bytes, *, shared: bool = False) -> dict:

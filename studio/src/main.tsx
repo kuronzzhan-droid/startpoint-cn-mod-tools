@@ -1,23 +1,27 @@
+import { lazyView } from "./lazyView";
+import { ReadActivity } from "./views/Loading";
 import { render } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import { api, get, Meta } from "./api";
 import { href, useRoute } from "./router";
-import { CharacterList } from "./views/CharacterList";
-import { CharacterDetailView } from "./views/CharacterDetail";
-import { BossWorkshop } from "./views/boss/BossWorkshop";
-import { WeaponWorkshop } from "./views/weapons/WeaponWorkshop";
-import { CharacterCloneWizard } from "./views/CharacterClone";
-import { BalanceImport } from "./views/BalanceImport";
-import { ToolsPanel } from "./views/IdTools";
 import { Drawer } from "./views/common";
-import { PatchManager } from "./views/PatchManager";
-import { ScratchDetail, ScratchList } from "./views/ScratchView";
-import { LookupPanel } from "./views/LookupPanel";
 import { ClientProfilePicker } from "./views/ClientProfile";
 import "./styles.css";
 import "./m4.css";
 import "./workshop.css";
 import "./profile.css";
+
+const CharacterList = lazyView(() => import("./views/CharacterList"), "CharacterList");
+const CharacterDetailView = lazyView(() => import("./views/CharacterDetail"), "CharacterDetailView");
+const BossWorkshop = lazyView(() => import("./views/boss/BossWorkshop"), "BossWorkshop");
+const WeaponWorkshop = lazyView(() => import("./views/weapons/WeaponWorkshop"), "WeaponWorkshop");
+const CharacterCloneWizard = lazyView(() => import("./views/CharacterClone"), "CharacterCloneWizard");
+const BalanceImport = lazyView(() => import("./views/BalanceImport"), "BalanceImport");
+const ToolsPanel = lazyView(() => import("./views/IdTools"), "ToolsPanel");
+const PatchManager = lazyView(() => import("./views/PatchManager"), "PatchManager");
+const ScratchDetail = lazyView(() => import("./views/ScratchView"), "ScratchDetail");
+const ScratchList = lazyView(() => import("./views/ScratchView"), "ScratchList");
+const LookupPanel = lazyView(() => import("./views/LookupPanel"), "LookupPanel");
 
 type Freshness = { loaded: string; latest: string | null; stale: boolean; error?: string };
 type Doctor = { items: { id: string; status: "ok" | "warn" | "fail"; current: string; fix: string }[] };
@@ -102,6 +106,7 @@ function App() {
             环境 {doctor!.items.length - doctorIssues.length}/{doctor!.items.length} 项就绪
           </span>
         ) : null}
+        <ReadActivity />
         {metaError ? <span class="error-text">后端不可用：{metaError}</span> : null}
       </div>
       {route.work === "content" ? (
@@ -127,15 +132,15 @@ function App() {
           ) : route.shop === "boss" ? (
             <BossWorkshop quest={route.quest} tab={route.tab} sub={route.sub} wizard={route.wizard} source={route.source} />
           ) : route.shop === "weapons" ? (
-            <WeaponWorkshop id={route.id} tab={route.tab} sub={route.sub} />
+            <WeaponWorkshop key={route.id ?? "list"} id={route.id} tab={route.tab} sub={route.sub} />
           ) : route.shop === "scratch" ? (
-            route.id ? <ScratchDetail id={route.id} tab={route.tab} sub={route.sub} /> : <ScratchList />
+            route.id ? <ScratchDetail key={route.id} id={route.id} tab={route.tab} sub={route.sub} /> : <ScratchList />
           ) : route.shop === "characters" && route.balance ? (
             <BalanceImport />
           ) : route.shop === "characters" && route.clone ? (
             <CharacterCloneWizard key={route.source ?? ""} source={route.source} />
           ) : route.id ? (
-            <CharacterDetailView id={route.id} tab={route.tab} sub={route.sub} />
+            <CharacterDetailView key={route.id} id={route.id} tab={route.tab} sub={route.sub} />
           ) : (
             <CharacterList />
           )}

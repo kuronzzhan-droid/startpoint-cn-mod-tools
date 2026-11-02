@@ -66,6 +66,8 @@ class ModeDeliveries(DeliverRoutes):
 class ModeRoutes:
     def __init__(self, app, server_dir=None, default_provides=None):
         self.app = app
+        from .mode_cache import ModeReadCache
+        self.read_cache = ModeReadCache()
         self.store = ModeStore(app.ops.store.root / "modes")
         proxy = SimpleNamespace(source=app.source, ops=SimpleNamespace(store=self.store),
                                 screenshots=getattr(app, "screenshots", None))
@@ -103,17 +105,23 @@ class ModeRoutes:
             result["spec"] = spec
             result["payload"] = draft["payload"] if draft else spec
             try:
-                preview, _ = self.compute(mode, result["payload"])
+                preview = self.read_cache.get(mode, self.app.source,
+                    {"draft": draft, "spec": spec, "freshness": freshness(self.app.source)},
+                    lambda: self.compute(mode, result["payload"]))
             except (ValueError, OSError, KeyError, TypeError, RuntimeError) as exc:
                 preview = {"ok": False, "canGenerate": False, "blockers": [str(exc)],
                            "diff": mode_five.differences(spec, result["payload"])}
             preview.pop("files", None)
             result["preview"] = preview
         else:
-            inputs = ViewInputs(self.app.source)
-            current = mode_rogue.current(inputs.read)
+            def read_current():
+                inputs = ViewInputs(self.app.source)
+                current = mode_rogue.current(inputs.read)
+                inputs.verify()
+                return current, inputs
+            current = self.read_cache.get(mode, self.app.source,
+                {"draft": draft, "freshness": freshness(self.app.source)}, read_current)
             current.pop("_digest")
-            inputs.verify()
             result["current"] = current
             result["payload"] = draft["payload"] if draft else {"seed": 0}
             if draft:

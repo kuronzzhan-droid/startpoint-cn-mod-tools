@@ -99,7 +99,7 @@ export interface HandoffSheet {
 export const craft = {
   precheck: (cid: string, body: PrecheckRequest) => body.apply
     ? notifyDraft(cid, post<PrecheckResult>(`/api/drafts/${cid}/pixel-precheck`, body))
-    : post<PrecheckResult>(`/api/drafts/${cid}/pixel-precheck`, body),
+    : post<PrecheckResult>(`/api/drafts/${cid}/pixel-precheck`, body, { readonly: true }),
   stage: (quest: string, terrain = "") =>
     get<StageInfo>(`/api/stage-scale?${terrain ? "terrain=" + encodeURIComponent(terrain) : "quest=" + encodeURIComponent(quest)}`),
   repack: (cid: string, family: string) => get<RepackReport>(`/api/characters/${cid}/atlas-repack?family=${family}`),

@@ -13,8 +13,14 @@ MODES = ("five", "rogue")
 class ViewInputs:
     def __init__(self, source):
         self.source, self.inputs = source, {}
+        self._raw = {}
 
     def read(self, logical):
+        if logical in self._raw:
+            raw = self._raw[logical]
+            if raw is None:
+                raise FileNotFoundError(logical)
+            return raw
         for root in ("common", "medium", "android"):
             key = root + ":" + logical
             try:
@@ -23,12 +29,25 @@ class ViewInputs:
                 self.inputs[key] = None
                 continue
             self.inputs[key] = sha256(raw)
+            self._raw[logical] = raw
             return raw
+        self._raw[logical] = None
         raise FileNotFoundError(logical)
 
     def verify(self):
         if hasattr(self.source.view, "verify"):
             self.source.view.verify()
+        self._verify_inputs()
+
+    def verify_read(self):
+        """Revalidate a cached read: chain, ZIP stats and every hashed input."""
+        view = self.source.view
+        check = getattr(view, "verify_read", None) or getattr(view, "verify", None)
+        if check:
+            check()
+        self._verify_inputs()
+
+    def _verify_inputs(self):
         for key, digest in self.inputs.items():
             root, logical = key.split(":", 1) if ":" in key else ("common", key)
             try:
