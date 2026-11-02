@@ -1138,5 +1138,3 @@ def _legacy_active_boss_slots(zn) -> tuple[rbb.ActiveBossSlot, ...]:
         )
     except rbb.TerrainGateError:
         return ()
-
-

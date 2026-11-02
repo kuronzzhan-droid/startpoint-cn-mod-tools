@@ -6746,13 +6746,13 @@ API_PREFIX = "/api/mod"
 
 # ================================================================ 深渊连战(700099 rush 活动)编辑
 # 五块:①难度曲线/重摇(wf_rogue_build)②无尽修正(wf_rogue_nerf)③掉落代币(rogue_event.json)
-# ④商店(event_item_shop 9700101-9700115,三处同步)⑤boss 阵容查看。
+# ④商店(event_item_shop 9700101-9700117,含两张券,三处同步)⑤boss 阵容查看。
 # CLI 工具封装为子进程复用;数据侧直读写(qlib 读嵌套/平表,assets json 直改)。
 ROGUE_EVENT_ID = "700099"
 ROGUE_Q_LOGICAL = "master/quest/event/rush_event_quest.orderedmap"
 ROGUE_CORR_LOGICAL = "master/quest/event/rush_event_battle_quest_correction.orderedmap"
 ROGUE_SHOP_LOGICAL = "master/shop/event_item_shop.orderedmap"
-ROGUE_SHOP_KEYS = [str(i) for i in range(9700101, 9700116)]
+ROGUE_SHOP_KEYS = [str(i) for i in range(9700101, 9700118)]
 # event_item_shop 列(51 列,plan Task4 + 真机实证):c7 名 c18 货币id c19 价 c29 库存
 # c32 奖励type c33 奖励id c34 数量
 ROGUE_SHOP_COLS = {"name": 7, "cost_id": 18, "price": 19, "stock": 29,
@@ -6877,7 +6877,7 @@ def rogue_state() -> dict:
         drops = (rj.get("events") or {}).get(ROGUE_EVENT_ID, {})
     except Exception:
         pass
-    # 商店(15 商品)
+    # 商店(15 把武器 + 两张券)
     shop = []
     try:
         srows = core.load_table(ROGUE_SHOP_LOGICAL, TARGET_STORE, SOURCE_STORE).text_rows()

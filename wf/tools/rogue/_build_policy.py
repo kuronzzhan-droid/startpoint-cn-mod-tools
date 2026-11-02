@@ -1266,5 +1266,3 @@ def true_stat(code: str, kind: str, level: int = 100,
 STANDARD_BOSS_BATTLE_HP_SCALE = 0.55
 RUSH_EVENT_STANDARD_HP_SCALE = 1.0
 _STANDARD_HP_CACHE: dict[str, dict] = {}
-
-

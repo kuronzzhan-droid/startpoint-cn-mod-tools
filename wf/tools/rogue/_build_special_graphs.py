@@ -593,5 +593,3 @@ def single_bar_special_native_hp_evidence(
     evidence["components"] = components
     evidence["graph"] = graph
     return evidence
-
-

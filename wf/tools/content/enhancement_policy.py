@@ -108,7 +108,7 @@ CONTENT_KEY_PATTERNS: tuple[str, ...] = (
     r"^(111991|119998|119999|129999|139999|149999|169980|169994|169995|179981)\d*$",
     # 历史自制角色 + Rank P5b 四 boss(含 ability/unique-condition 后缀)
     r"^80001(0[1-9]|1[0-5])$",                           # 深渊武器 8000101-8000115
-    r"^(97001(0[1-9]|1[0-5])|9700118)$",                 # 深渊商店 + 资深玩家称号
+    r"^(97001(0[1-9]|1[0-7])|9700118)$",                 # 深渊商店(含券) + 资深玩家称号
     r"^2370099$",                                        # 模式代币
     r"^99901[56]$",                                      # 灰白卡池两种券
     r"^700099\d*$",                                      # 700099 模式 event/quest
@@ -132,7 +132,7 @@ EXTRA_CONTENT_KEYS: dict[str, frozenset[str]] = {
 }
 
 ABYSS_WEAPONS: tuple[str, ...] = tuple(str(8000100 + n) for n in range(1, 16))
-SHOP_ITEMS: tuple[str, ...] = tuple(str(9700100 + n) for n in range(1, 16))
+SHOP_ITEMS: tuple[str, ...] = tuple(str(9700100 + n) for n in range(1, 18))
 LEGACY_RELEASED_CHARACTERS: tuple[str, ...] = ("129999", "139999", "149999")
 RANK_P5B_BOSSES: tuple[str, ...] = ("169994", "169980", "179981", "169995")
 RELEASED_CHARACTERS: tuple[str, ...] = (*LEGACY_RELEASED_CHARACTERS, *RANK_P5B_BOSSES)
@@ -151,7 +151,7 @@ RANK_P5B_POWER_FLIPS: tuple[str, ...] = tuple(
 RANK_P5B_DEGREES: tuple[str, ...] = tuple(str(value) for value in range(9_900_002, 9_900_007))
 
 # 纯内容变体必须携带的行(金样验证的"齐全"判据):历史三角色 + Rank P5b
-# 四 boss + 15 把深渊武器 + 700099 + 990002 + 五称号 + 9700118。
+# 四 boss + 15 把深渊武器与两张商店券 + 700099 + 990002 + 五称号 + 9700118。
 # 缺任何一条即判失败,防止重建把内容一起洗掉。
 EXPECTED_CONTENT_ROWS: dict[str, tuple[str, ...]] = {
     "master/ability/ability.orderedmap": RANK_P5B_BOSS_ABILITIES,

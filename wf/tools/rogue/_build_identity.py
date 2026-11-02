@@ -871,5 +871,3 @@ def validate_spawned_ref(
     return rbb.GateResult(
         False, "REFERENCE",
         detail=f"unknown spawned reference kind:{source_kind}")
-
-

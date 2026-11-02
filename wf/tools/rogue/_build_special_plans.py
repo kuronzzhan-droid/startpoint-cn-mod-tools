@@ -589,5 +589,3 @@ def clone_single_bar_special_bundle(
         clone_map=((graph.parent_ref, target_ref),),
         bundle=cloned_bundle, evidence=readback,
         touched_tables=("boss_level", family))
-
-

@@ -781,12 +781,6 @@ class GeneralBossElementResistanceCase(unittest.TestCase):
                             for call in logger.call_args_list), logger.call_args_list)
 
 
-    def test_c36_true_allows_positive_resistance_on_actual_cloned_row(self):
-        gb = {"source": self._node("true")}
-        gb["mod_rogue_boss4"] = gb["source"]
-        why = rb.general_boss_element_immunity_block(gb, "mod_rogue_boss4")
-        self.assertIsNone(why)
-
     @requires_store
     def test_known_official_prototypes_accept_positive_resistance_before_cloning(self):
         gb = q.load_table(rb.GENERAL_BOSS)

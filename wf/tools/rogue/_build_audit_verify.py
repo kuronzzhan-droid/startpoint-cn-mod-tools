@@ -1201,5 +1201,3 @@ class SphereCloneResult:
     touched_tables: tuple[str, ...] = ()
     reason: str | None = None
     detail: str = ""
-
-

@@ -69,7 +69,7 @@ def _expected_archive_member(root: str, logical: str) -> str:
 
 def _validate_server_scope(migrations: MigrationContract) -> None:
     weapon_keys = tuple(str(value) for value in range(8000101, 8000116))
-    shop_keys = tuple(str(value) for value in range(9700101, 9700116))
+    shop_keys = tuple(str(value) for value in range(9700101, 9700118))
     quest_keys = tuple(str(700099000 + value) for value in range(1, 31)) + (
         "700099099",
     )
@@ -108,7 +108,19 @@ def _validate_server_scope(migrations: MigrationContract) -> None:
         )
         for member in migrations.server_members
     }
-    if actual != expected or len(migrations.server_members) != len(expected):
+    # 冻结的 1.4.312 契约只含 15 把武器，保留其精确旧范围；当前范围包含
+    # 两张券。两张服务端表必须使用同一完整范围，不能混用或纳入称号商店。
+    legacy_shop_keys = shop_keys[:-2]
+    legacy_expected = {
+        (owner, logical, kind, path,
+         legacy_shop_keys if logical in {
+             "event_item_shop.json", "event_item_shop_id_map.json",
+         } else keys, values)
+        for owner, logical, kind, path, keys, values in expected
+    }
+    if len(migrations.server_members) != len(expected) or (
+        actual != expected and actual != legacy_expected
+    ):
         raise InventoryError("migration server selector scope mismatch")
 
 

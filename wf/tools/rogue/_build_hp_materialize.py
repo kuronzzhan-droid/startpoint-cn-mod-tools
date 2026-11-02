@@ -959,5 +959,3 @@ def build_event_metadata_leaf(
     row[16] = END
     row[17] = EXCHANGE_END
     return join(row, isinstance(current_leaf, bytes))
-
-

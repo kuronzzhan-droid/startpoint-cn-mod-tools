@@ -3987,5 +3987,3 @@ def main(argv=None, *, candidate_sink=None, forge_candidate=None) -> int:
     else:
         print(f"记得发布:python mod-tools/wf_publish.py --tables {pub_tables}")
     return 0
-
-

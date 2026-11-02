@@ -1455,5 +1455,3 @@ def _hp_evidence_source(component: dict) -> str:
     if component.get("fixed_phase_evidence"):
         return wf_orochi_ex.OROCHI_EX_LOGICAL
     return f"{BOSS_LEVEL}:{component.get('code') or '?'}"
-
-

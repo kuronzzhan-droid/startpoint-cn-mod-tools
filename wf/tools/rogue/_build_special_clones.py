@@ -970,5 +970,3 @@ def purge_sphere_clones(tables: dict) -> tuple[str, ...]:
             if orphan_level_keys:
                 touched.append("boss_level")
     return tuple(dict.fromkeys(touched))
-
-

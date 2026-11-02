@@ -201,8 +201,32 @@ class TestTokenGeneration(unittest.TestCase):
         expected[1] = rewards.TOKEN_ID
         expected[2] = "深渊代币"
         expected[5] = rewards.TOKEN_DESCRIPTION
+        expected[19:22] = ["2000-01-01 12:00:00", "2099-12-31 11:59:59", "true"]
         self.assertEqual([expected], core.read_csv_lines(actual))
         self.assertIs(str, type(actual))
+
+    def test_token_display_period_preserves_binary_leaf_and_unowned_columns(self):
+        template = [f"template-{index}" for index in range(25)]
+        template[19:22] = ["2025-01-01 12:00:00", "2025-12-31 11:59:59", "false"]
+        original = core.write_csv_lines([template]).encode("utf-8")
+
+        actual = rewards.build_token_leaf(original)
+
+        self.assertIs(bytes, type(actual))
+        row = core.read_csv_lines(actual.decode("utf-8"))[0]
+        self.assertEqual(
+            ["2000-01-01 12:00:00", "2099-12-31 11:59:59", "true"], row[19:22]
+        )
+        owned = {0, 1, 2, 5, 19, 20, 21}
+        self.assertEqual(
+            [value for index, value in enumerate(template) if index not in owned],
+            [value for index, value in enumerate(row) if index not in owned],
+        )
+
+    def test_short_token_template_fails_with_a_validation_error(self):
+        for width in (6, 19, 21):
+            with self.subTest(width=width), self.assertRaisesRegex(ValueError, "22\\+"):
+                rewards.build_token_leaf(core.write_csv_lines([[""] * width]))
 
 
 @unittest.skipUnless(not MISSING_API, "canonical builder API is not implemented yet")
@@ -450,8 +474,13 @@ class TestMasterChanges(unittest.TestCase):
         self.assertEqual("2370099", token[1])
         self.assertEqual("深渊代币", token[2])
         self.assertEqual(
-            [value for index, value in enumerate(template) if index not in (0, 1, 2, 5)],
-            [value for index, value in enumerate(token) if index not in (0, 1, 2, 5)],
+            ["2000-01-01 12:00:00", "2099-12-31 11:59:59", "true"], token[19:22]
+        )
+        self.assertEqual(
+            [value for index, value in enumerate(template)
+             if index not in (0, 1, 2, 5, 19, 20, 21)],
+            [value for index, value in enumerate(token)
+             if index not in (0, 1, 2, 5, 19, 20, 21)],
         )
 
         before = core.read_csv_lines(tables.rush_event["700099"])[0]

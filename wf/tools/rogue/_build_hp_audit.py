@@ -949,5 +949,3 @@ def _verify_orochi_ex_phase_safety_receipt(
         if receipt.get(key) not in {True, False}:
             errors.append(f"{label} Orochi EX {key} 不是布尔值")
     return errors
-
-

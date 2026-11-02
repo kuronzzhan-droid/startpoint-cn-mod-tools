@@ -848,5 +848,3 @@ def orochi_native_hp_evidence(bundle: rbb.NativeBossBundle, enemy_level: int,
         "reason": None,
         "expanded": expanded,
     }
-
-

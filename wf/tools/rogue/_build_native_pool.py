@@ -1251,5 +1251,3 @@ EARLY_HP_FALLBACK_FIELDS_30 = (
     "advent_s_collabo1",
     "steampunk_another",
 )
-
-
