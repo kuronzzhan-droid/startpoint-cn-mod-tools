@@ -261,6 +261,8 @@ def test_route_verbs():
                                     "deliveries/(?P<name>[^/]+)/device-result",
                                     "deliveries/(?P<name>[^/]+)/device-result/import"))}
                or pattern.pattern in scene_actions
+               # 深渊回廊内容编辑：工作区命令、打包、快照与隔离试验服应用（逐条登记在 test_studio.py）
+               or pattern.pattern.startswith("^/api/corridor/")
                for verb, pattern, _ in app.routes if verb == "POST")
     assert not any(pattern.pattern.startswith("^/api/scenes/") and
                    pattern.pattern.endswith(("/apply$", "/unapply$")) for _, pattern, _ in app.routes)

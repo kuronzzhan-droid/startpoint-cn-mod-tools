@@ -54,19 +54,25 @@ def test_route_table_dispatch():
                           for action in ("rehearse", "overlay")})
     scene_actions.update({"^/api/scenes/(?P<mode>hell-pumpkin)/clone$",
                           rf"^/api/scenes/(?P<mode>{scene_slot})/(?P<action>preview|save)$"})
+    # 深渊回廊内容编辑：每个写接口逐条登记（试验服只经 trialctl 管理的隔离副本）。
+    corridor_actions = {rf"^/api/corridor/{suffix}$" for suffix in (
+        "import/source", "import/workspace", "commands", "validate", "build", "snapshots",
+        r"snapshots/(?P<sid>s\d{4}-\d{8}T\d{6})/restore", "trial/apply", "trial/rollback",
+        "trial/restore-original", "trial/stop", "trial/start")}
     assert {("POST", pattern) for pattern in delivery_actions} <= set(routes)
     assert {("POST", pattern) for pattern in mode_actions} <= set(routes)
     assert {("POST", pattern) for pattern in scene_actions} <= set(routes)
+    assert {("POST", pattern) for pattern in corridor_actions} <= set(routes)
     assert not any(pattern.startswith("^/api/scenes/") and
                    pattern.endswith(("/apply$", "/unapply$")) for _, pattern in routes)
     assert all(verb == "GET" or (verb == "POST" and (
         pattern.startswith(writes) or pattern in delivery_actions or pattern in mode_actions
-        or pattern in scene_actions
+        or pattern in scene_actions or pattern in corridor_actions
         or pattern == "^/api/studio/views/export-store$")) for verb, pattern in routes)
     for expected in ("/api/studio/doctor", "/api/studio/freshness", "/api/meta", "/api/characters", "/api/lookup", "/api/patches", "/api/boss/drafts",
                      "/api/studio/weapons", "/api/studio/weapons/clone", "/api/studio/weapons/drafts",
                      "/api/studio/characters/clone", "/api/studio/characters/scratch-example/promote",
-                     "/api/studio/views", "/api/studio/views/export-store"):
+                     "/api/studio/views", "/api/studio/views/export-store", "/api/corridor/status"):
         assert any(pattern.match(expected) for _, pattern, _ in app.routes), expected
     assert len(routes) == len(set(routes))  # one handler per method/path
     assert app.dispatch("GET", "/api/health", {}).status == 200
