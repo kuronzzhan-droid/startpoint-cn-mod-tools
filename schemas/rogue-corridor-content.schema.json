@@ -1,0 +1,3614 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:wf-studio:rogue-corridor:workspace:1",
+  "title": "深渊回廊内容编辑工作区 Schema v1",
+  "description": "深渊回廊内容工作区（编辑台）。data 原样保存服务端运行时文件（含 v3f 角色池叠加层 pool_overlay），policy 是编辑层语义（服务端未接入的字段由语义校验 B-014 阻断发布），lifecycle 记录保留 ID 与墓碑。完整 tier_table / 魂珠目录只按哈希锁定，不嵌入工作区。改编自 GPT 设计稿 rogue-content.schema.json v1。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "document_type",
+    "schema_version",
+    "content_id",
+    "revision",
+    "source",
+    "data",
+    "policy",
+    "lifecycle"
+  ],
+  "properties": {
+    "document_type": {
+      "const": "rogue_content_workspace"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "content_id": {
+      "const": "abyss_corridor"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "source": {
+      "$ref": "#/$defs/source"
+    },
+    "data": {
+      "$ref": "#/$defs/data"
+    },
+    "policy": {
+      "$ref": "#/$defs/policy"
+    },
+    "lifecycle": {
+      "$ref": "#/$defs/lifecycle"
+    }
+  },
+  "$defs": {
+    "gameId": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[1-9][0-9]*$"
+    },
+    "questId": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[1-9][0-9]{5,11}$"
+    },
+    "relicId": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^r[0-9]{3,6}$"
+    },
+    "eventId": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^e[0-9]{3,6}$"
+    },
+    "optionId": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^opt_[a-f0-9]{32}$"
+    },
+    "soulId": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$"
+    },
+    "sha256": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "act": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3
+    },
+    "tier": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4
+    },
+    "element": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 6
+    },
+    "readonlyNote": {
+      "type": "string"
+    },
+    "positiveWeight": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "weightsMap": {
+      "type": "object",
+      "properties": {
+        "battle": {
+          "$ref": "#/$defs/positiveWeight"
+        },
+        "event": {
+          "$ref": "#/$defs/positiveWeight"
+        },
+        "elite": {
+          "$ref": "#/$defs/positiveWeight"
+        },
+        "rest": {
+          "$ref": "#/$defs/positiveWeight"
+        },
+        "shop": {
+          "$ref": "#/$defs/positiveWeight"
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "battle",
+        "event",
+        "elite",
+        "rest",
+        "shop"
+      ]
+    },
+    "fourTierWeights": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/positiveWeight"
+      },
+      "minItems": 4,
+      "maxItems": 4
+    },
+    "elementWeightPair": {
+      "type": "object",
+      "properties": {
+        "preferred": {
+          "$ref": "#/$defs/positiveWeight"
+        },
+        "secondary": {
+          "$ref": "#/$defs/positiveWeight"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "preferred",
+        "secondary"
+      ]
+    },
+    "elementRule": {
+      "oneOf": [
+        {
+          "enum": [
+            "preferred",
+            "any"
+          ]
+        },
+        {
+          "$ref": "#/$defs/elementWeightPair"
+        }
+      ]
+    },
+    "rarity": {
+      "enum": [
+        "common",
+        "rare",
+        "boss"
+      ]
+    },
+    "sourceFileName": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9_.-]+\\.json$"
+    },
+    "englishOrChinese": {
+      "type": "object",
+      "patternProperties": {
+        "^rogue\\.[A-Za-z0-9._-]+$": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "relicEffect": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "max_lives_bonus"
+            },
+            "value": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "max_lives_up"
+            },
+            "value": {
+              "type": "integer",
+              "minimum": -20,
+              "maximum": 20
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "rest_heal_bonus"
+            },
+            "value": {
+              "type": "integer",
+              "minimum": -20,
+              "maximum": 20
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "battle_gold_multiplier"
+            },
+            "value": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 3
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "battle_gold_pct"
+            },
+            "value": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 300
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "shop_discount"
+            },
+            "value": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "shop_discount_pct"
+            },
+            "value": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 95
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "flawless_battle_gold_bonus"
+            },
+            "value": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2000
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "flawless_gold_bonus"
+            },
+            "value": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2000
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "ignore_first_death_per_battle"
+            },
+            "value": {
+              "type": "object",
+              "properties": {
+                "free_deaths": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 6
+                },
+                "penalty_type": {
+                  "const": "rest_heal_bonus"
+                },
+                "penalty_value": {
+                  "type": "integer",
+                  "minimum": -20,
+                  "maximum": 0
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "free_deaths",
+                "penalty_type",
+                "penalty_value"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "first_fall_free"
+            },
+            "value": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 6
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "enhance_all_on_pickup"
+            },
+            "value": {
+              "const": true
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "character_upgrade_cost_multiplier"
+            },
+            "value": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "level_up_discount_pct"
+            },
+            "value": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 95
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "chest_extra_choice"
+            },
+            "value": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 6
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "elite_extra_weapon_drop"
+            },
+            "value": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 6
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "elite_extra_weapon"
+            },
+            "value": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 6
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "battle_life_cost"
+            },
+            "value": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 20
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "gold_on_pickup"
+            },
+            "value": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "skill_charge_speed_pct"
+            },
+            "value": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 300
+            },
+            "scope": {
+              "const": "party"
+            },
+            "runtime": {
+              "const": "client_pending"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value",
+            "scope",
+            "runtime"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "skill_damage_range_pct"
+            },
+            "value": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 300
+            },
+            "scope": {
+              "const": "party"
+            },
+            "runtime": {
+              "const": "client_pending"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value",
+            "scope",
+            "runtime"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "healing_received_pct"
+            },
+            "value": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 300
+            },
+            "scope": {
+              "const": "party"
+            },
+            "runtime": {
+              "const": "client_pending"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value",
+            "scope",
+            "runtime"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "fever_damage_pct"
+            },
+            "value": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 300
+            },
+            "scope": {
+              "const": "party"
+            },
+            "runtime": {
+              "const": "client_pending"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value",
+            "scope",
+            "runtime"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "power_flip_damage_pct"
+            },
+            "value": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 300
+            },
+            "scope": {
+              "const": "party"
+            },
+            "runtime": {
+              "const": "client_pending"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value",
+            "scope",
+            "runtime"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "direct_damage_pct"
+            },
+            "value": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 300
+            },
+            "scope": {
+              "const": "party"
+            },
+            "runtime": {
+              "const": "client_pending"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value",
+            "scope",
+            "runtime"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "skill_damage_pct"
+            },
+            "value": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 300
+            },
+            "scope": {
+              "const": "party"
+            },
+            "runtime": {
+              "const": "client_pending"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value",
+            "scope",
+            "runtime"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "combo_recharge_pct"
+            },
+            "value": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "scope": {
+              "const": "party"
+            },
+            "runtime": {
+              "const": "client_pending"
+            },
+            "combo_threshold": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value",
+            "scope",
+            "runtime",
+            "combo_threshold"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "skill_invincibility_ms"
+            },
+            "value": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000
+            },
+            "scope": {
+              "const": "party"
+            },
+            "runtime": {
+              "const": "client_pending"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value",
+            "scope",
+            "runtime"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "element_damage_pct"
+            },
+            "value": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 300
+            },
+            "scope": {
+              "const": "party"
+            },
+            "runtime": {
+              "const": "client_pending"
+            },
+            "element": {
+              "$ref": "#/$defs/element"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value",
+            "scope",
+            "runtime",
+            "element"
+          ]
+        }
+      ],
+      "description": "原始 effect.type 白名单；client_pending 允许存储但发布需通过运行时能力校验。数值上限是编辑安全护栏，不是平衡结论。"
+    },
+    "relic": {
+      "type": "object",
+      "properties": {
+        "relic_id": {
+          "$ref": "#/$defs/relicId"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "desc": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rarity": {
+          "$ref": "#/$defs/rarity"
+        },
+        "effect": {
+          "$ref": "#/$defs/relicEffect"
+        },
+        "effects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/relicEffect"
+          },
+          "minItems": 1,
+          "maxItems": 8
+        },
+        "name_key": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^rogue\\.relic\\.r[0-9]{3,6}\\.name$"
+        },
+        "desc_key": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^rogue\\.relic\\.r[0-9]{3,6}\\.desc$"
+        },
+        "name_en": {
+          "type": "string",
+          "minLength": 1
+        },
+        "desc_en": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "relic_id",
+        "name",
+        "desc",
+        "rarity",
+        "name_key",
+        "desc_key"
+      ],
+      "oneOf": [
+        {
+          "required": [
+            "effect"
+          ],
+          "not": {
+            "required": [
+              "effects"
+            ]
+          }
+        },
+        {
+          "required": [
+            "effects"
+          ],
+          "not": {
+            "required": [
+              "effect"
+            ]
+          }
+        }
+      ]
+    },
+    "eventEffect": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "lose_lives"
+            },
+            "value": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "gain_lives"
+            },
+            "value": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "gain_gold"
+            },
+            "value": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "lose_gold"
+            },
+            "value": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "gamble_gold"
+            },
+            "value": {
+              "type": "object",
+              "properties": {
+                "win_chance": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "win_multiplier": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 10
+                },
+                "lose_multiplier": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "win_chance",
+                "win_multiplier",
+                "lose_multiplier"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "gain_relic"
+            },
+            "value": {
+              "type": "object",
+              "properties": {
+                "rarity": {
+                  "enum": [
+                    "common",
+                    "rare",
+                    "boss",
+                    "random"
+                  ]
+                },
+                "relic_id": {
+                  "$ref": "#/$defs/relicId"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "rarity"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "swap_relic"
+            },
+            "value": {
+              "type": "object",
+              "properties": {
+                "match_rarity": {
+                  "type": "boolean"
+                },
+                "target": {
+                  "const": "random"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "match_rarity",
+                "target"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "enhance_weapon"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "extract_soul"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "gain_weapon"
+            },
+            "value": {
+              "type": "object",
+              "properties": {
+                "tier": {
+                  "enum": [
+                    "T1",
+                    "T2",
+                    "T3",
+                    "T4"
+                  ]
+                },
+                "element": {
+                  "oneOf": [
+                    {
+                      "enum": [
+                        "preferred",
+                        "random",
+                        "choose",
+                        "any"
+                      ]
+                    },
+                    {
+                      "$ref": "#/$defs/element"
+                    }
+                  ]
+                },
+                "id": {
+                  "$ref": "#/$defs/gameId"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "tier",
+                "element"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "gain_character"
+            },
+            "value": {
+              "type": "object",
+              "properties": {
+                "tier": {
+                  "enum": [
+                    "T1",
+                    "T2",
+                    "T3",
+                    "T4"
+                  ]
+                },
+                "element": {
+                  "oneOf": [
+                    {
+                      "enum": [
+                        "preferred",
+                        "random",
+                        "choose",
+                        "any"
+                      ]
+                    },
+                    {
+                      "$ref": "#/$defs/element"
+                    }
+                  ]
+                },
+                "id": {
+                  "$ref": "#/$defs/gameId"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "tier",
+                "element"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "fight_elite"
+            },
+            "value": {
+              "const": true
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "leave"
+            },
+            "value": {
+              "const": true
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ]
+        }
+      ],
+      "description": "事件 handler 允许的语法种类；是否已接线由运行时能力表决定。"
+    },
+    "requires": {
+      "type": "object",
+      "properties": {
+        "min_lives": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "min_gold": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "min_relics": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "max_roster_below": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        }
+      },
+      "additionalProperties": false
+    },
+    "eventOption": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label_key": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^rogue\\.event\\.e[0-9]{3,6}\\.option\\.[0-9]+$"
+        },
+        "requires": {
+          "$ref": "#/$defs/requires"
+        },
+        "effects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/eventEffect"
+          },
+          "minItems": 1,
+          "maxItems": 8
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "label_key",
+        "effects"
+      ]
+    },
+    "event": {
+      "type": "object",
+      "properties": {
+        "event_id": {
+          "$ref": "#/$defs/eventId"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title_key": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^rogue\\.event\\.e[0-9]{3,6}\\.title$"
+        },
+        "text_key": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^rogue\\.event\\.e[0-9]{3,6}\\.text$"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/eventOption"
+          },
+          "minItems": 1,
+          "maxItems": 12
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "event_id",
+        "title",
+        "text",
+        "title_key",
+        "text_key",
+        "options"
+      ]
+    },
+    "goldRange": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 10000000
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "rulesGold": {
+      "type": "object",
+      "properties": {
+        "_readme": {
+          "type": "string"
+        },
+        "start": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "battle": {
+          "$ref": "#/$defs/goldRange"
+        },
+        "elite": {
+          "$ref": "#/$defs/goldRange"
+        },
+        "boss": {
+          "$ref": "#/$defs/goldRange"
+        },
+        "event_battle": {
+          "$ref": "#/$defs/goldRange"
+        },
+        "flawless_bonus": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "start",
+        "battle",
+        "elite",
+        "boss",
+        "event_battle",
+        "flawless_bonus"
+      ]
+    },
+    "mapAct": {
+      "type": "object",
+      "properties": {
+        "encounter_ranks": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "weights": {
+          "$ref": "#/$defs/weightsMap"
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "encounter_ranks",
+        "weights"
+      ]
+    },
+    "mapConfig": {
+      "type": "object",
+      "properties": {
+        "_readme": {
+          "type": "string"
+        },
+        "floors": {
+          "const": 45
+        },
+        "lanes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "paths": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 24
+        },
+        "min_nodes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "max_nodes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "max_attempts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "boss_lane": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12
+        },
+        "fixed": {
+          "type": "object",
+          "patternProperties": {
+            "^([1-9]|1[0-5])$": {
+              "enum": [
+                "battle",
+                "event",
+                "elite",
+                "rest",
+                "shop",
+                "chest",
+                "boss"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "weights": {
+          "$ref": "#/$defs/weightsMap"
+        },
+        "elite_min_floor": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 45
+        },
+        "no_consecutive": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "battle",
+              "event",
+              "elite",
+              "rest",
+              "shop",
+              "chest"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 6,
+          "uniqueItems": true
+        },
+        "act_floors": {
+          "const": 15
+        },
+        "between_act_recovery": {
+          "type": "string",
+          "minLength": 1
+        },
+        "acts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/mapAct"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "floors",
+        "lanes",
+        "paths",
+        "min_nodes",
+        "max_nodes",
+        "max_attempts",
+        "boss_lane",
+        "fixed",
+        "weights",
+        "elite_min_floor",
+        "no_consecutive",
+        "act_floors",
+        "between_act_recovery",
+        "acts"
+      ]
+    },
+    "encounterConfig": {
+      "type": "object",
+      "properties": {
+        "_readme": {
+          "type": "string"
+        },
+        "normal_slope": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "normal_offset": {
+          "type": "number"
+        },
+        "elite_round_bonus": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 30
+        },
+        "boss_rounds": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "minItems": 1,
+          "maxItems": 30,
+          "uniqueItems": true
+        },
+        "boss_top_threat": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "exclude_rounds": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "minItems": 0,
+          "maxItems": 100,
+          "uniqueItems": true
+        },
+        "hint_penalty": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "near_window": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 30
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "boss_rounds",
+        "exclude_rounds"
+      ]
+    },
+    "tierWeightBand": {
+      "type": "object",
+      "properties": {
+        "floors": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 45
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "weights": {
+          "$ref": "#/$defs/fourTierWeights"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "floors",
+        "weights"
+      ]
+    },
+    "rarityWeightMap": {
+      "type": "object",
+      "patternProperties": {
+        "^(common|rare|boss)$": {
+          "$ref": "#/$defs/positiveWeight"
+        }
+      },
+      "additionalProperties": false
+    },
+    "rewardConfig": {
+      "type": "object",
+      "properties": {
+        "_readme": {
+          "type": "string"
+        },
+        "choices": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "battle_step_weights": {
+          "type": "object",
+          "properties": {
+            "character": {
+              "$ref": "#/$defs/positiveWeight"
+            },
+            "weapon": {
+              "$ref": "#/$defs/positiveWeight"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "character",
+            "weapon"
+          ]
+        },
+        "tier_weights_by_floor": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/tierWeightBand"
+          },
+          "minItems": 1,
+          "maxItems": 45
+        },
+        "tier_weights_chest_boss": {
+          "$ref": "#/$defs/fourTierWeights"
+        },
+        "elite_tier_shift": {
+          "type": "integer",
+          "minimum": -3,
+          "maximum": 3
+        },
+        "pity": {
+          "type": "object",
+          "properties": {
+            "after": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "tier": {
+              "$ref": "#/$defs/tier"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "after",
+            "tier"
+          ]
+        },
+        "character_element_rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/elementRule"
+          },
+          "minItems": 1,
+          "maxItems": 10
+        },
+        "weapon_element_weights": {
+          "type": "object",
+          "properties": {
+            "preferred": {
+              "$ref": "#/$defs/positiveWeight"
+            },
+            "other": {
+              "$ref": "#/$defs/positiveWeight"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "preferred",
+            "other"
+          ]
+        },
+        "relic_rarity_weights": {
+          "type": "object",
+          "patternProperties": {
+            "^(elite|chest|boss|event|shop)$": {
+              "$ref": "#/$defs/rarityWeightMap"
+            }
+          },
+          "additionalProperties": false
+        },
+        "elite_relic_choices": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12
+        },
+        "chest_relic_choices": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12
+        },
+        "boss_relic_choices": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12
+        },
+        "event_battle_relic_choices": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12
+        },
+        "max_enhanced_per_offer": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12
+        },
+        "start_element_weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "chest_weapon_chance": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "character_cards": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12
+        },
+        "character_max_picks": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12
+        },
+        "elite_soul_chance": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "elite_character_rounds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "choices",
+        "battle_step_weights",
+        "tier_weights_by_floor",
+        "tier_weights_chest_boss",
+        "relic_rarity_weights"
+      ]
+    },
+    "tierPrices": {
+      "type": "object",
+      "properties": {
+        "1": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000000
+        },
+        "2": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000000
+        },
+        "3": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000000
+        },
+        "4": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000000
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ]
+    },
+    "shopConfig": {
+      "type": "object",
+      "properties": {
+        "_readme": {
+          "type": "string"
+        },
+        "characters": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "weapons": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "relics": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "half_price_items": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "character_element_rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/elementRule"
+          },
+          "minItems": 0,
+          "maxItems": 100
+        },
+        "character_prices": {
+          "$ref": "#/$defs/tierPrices"
+        },
+        "weapon_prices": {
+          "$ref": "#/$defs/tierPrices"
+        },
+        "relic_prices": {
+          "type": "object",
+          "properties": {
+            "common": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "rare": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "boss": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "common",
+            "rare",
+            "boss"
+          ]
+        },
+        "level_up_base": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000000
+        },
+        "level_up_increment": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "heal_amount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "heal_price": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "refresh_price": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "souls": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "soul_price": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "extract_soul_price": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "characters",
+        "weapons",
+        "relics",
+        "character_prices",
+        "weapon_prices",
+        "relic_prices",
+        "level_up_base",
+        "level_up_increment",
+        "heal_amount",
+        "heal_price",
+        "refresh_price",
+        "souls",
+        "soul_price",
+        "extract_soul_price"
+      ]
+    },
+    "difficultyConfig": {
+      "type": "object",
+      "properties": {
+        "enemy_scale": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "旧配置，仅兼容读取，不作为 v3 当前倍率来源。"
+        },
+        "active_profile": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9_]{0,31}$"
+        },
+        "profiles": {
+          "type": "object",
+          "properties": {
+            "test": {
+              "type": "object",
+              "properties": {
+                "hp": {
+                  "type": "number",
+                  "minimum": 1e-05,
+                  "maximum": 20
+                },
+                "atk": {
+                  "type": "number",
+                  "minimum": 1e-05,
+                  "maximum": 20
+                }
+              },
+              "additionalProperties": true,
+              "required": [
+                "hp",
+                "atk"
+              ]
+            },
+            "formal": {
+              "type": "object",
+              "properties": {
+                "act_targets": {
+                  "type": "array",
+                  "items": {
+                    "type": "number",
+                    "minimum": 1e-05,
+                    "maximum": 100
+                  },
+                  "minItems": 3,
+                  "maxItems": 3
+                },
+                "hp_exponent": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 2
+                },
+                "formula": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "additionalProperties": true,
+              "required": [
+                "act_targets",
+                "hp_exponent"
+              ]
+            }
+          },
+          "additionalProperties": true,
+          "required": [
+            "test",
+            "formal"
+          ]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "active_profile",
+        "profiles"
+      ]
+    },
+    "aliasMap": {
+      "type": "object",
+      "properties": {
+        "_readme": {
+          "type": "string"
+        }
+      },
+      "patternProperties": {
+        "^(?!_readme$)[a-z][a-z0-9_]*$": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^-?[a-z][a-z0-9_]*$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "rules": {
+      "type": "object",
+      "properties": {
+        "_readme": {
+          "type": "string"
+        },
+        "version": {
+          "const": 1
+        },
+        "protocol": {
+          "const": "v1"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "host": {
+          "type": "object",
+          "properties": {
+            "event_id": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "folder_id": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "additionalProperties": true,
+          "required": [
+            "event_id",
+            "folder_id"
+          ]
+        },
+        "data_dir": {
+          "type": "string",
+          "minLength": 1
+        },
+        "owned_only": {
+          "type": "boolean"
+        },
+        "missing_statistics_policy": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lives": {
+          "type": "object",
+          "properties": {
+            "max": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "start": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            }
+          },
+          "additionalProperties": true,
+          "required": [
+            "max",
+            "start"
+          ]
+        },
+        "gold": {
+          "$ref": "#/$defs/rulesGold"
+        },
+        "roster": {
+          "type": "object",
+          "properties": {
+            "_readme": {
+              "type": "string"
+            },
+            "max": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 10000
+                }
+              ]
+            },
+            "start_level": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000
+            },
+            "max_level": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000
+            },
+            "level_step": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            }
+          },
+          "additionalProperties": true,
+          "required": [
+            "start_level",
+            "max_level",
+            "level_step"
+          ]
+        },
+        "weapons": {
+          "type": "object",
+          "properties": {
+            "_readme": {
+              "type": "string"
+            },
+            "max_enhancement_step": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "max_enhancement_level": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000
+            },
+            "max_count": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 10000
+                }
+              ]
+            }
+          },
+          "additionalProperties": true
+        },
+        "start": {
+          "type": "object",
+          "properties": {
+            "_readme": {
+              "type": "string"
+            },
+            "leaders_per_element": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "leader_tier": {
+              "$ref": "#/$defs/tier"
+            },
+            "support_count": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "support_tier": {
+              "$ref": "#/$defs/tier"
+            },
+            "weapon_count": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "weapon_tier": {
+              "$ref": "#/$defs/tier"
+            }
+          },
+          "additionalProperties": true
+        },
+        "map": {
+          "$ref": "#/$defs/mapConfig"
+        },
+        "encounters": {
+          "$ref": "#/$defs/encounterConfig"
+        },
+        "preference": {
+          "type": "object",
+          "properties": {
+            "_readme": {
+              "type": "string"
+            },
+            "main_points": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "unison_points": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "decay": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "min_battles": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000
+            }
+          },
+          "additionalProperties": true
+        },
+        "rewards": {
+          "$ref": "#/$defs/rewardConfig"
+        },
+        "shop": {
+          "$ref": "#/$defs/shopConfig"
+        },
+        "rest": {
+          "type": "object",
+          "properties": {
+            "heal": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000
+            }
+          },
+          "additionalProperties": true,
+          "required": [
+            "heal"
+          ]
+        },
+        "difficulty": {
+          "$ref": "#/$defs/difficultyConfig"
+        },
+        "relic_effect_aliases": {
+          "$ref": "#/$defs/aliasMap"
+        },
+        "event_effect_aliases": {
+          "$ref": "#/$defs/aliasMap"
+        },
+        "debug": {
+          "type": "object",
+          "properties": {
+            "allow_seed_param": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": true
+        },
+        "rules_revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "souls": {
+          "type": "object",
+          "properties": {
+            "guaranteed_chests_per_act": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 15
+            },
+            "source": {
+              "$ref": "#/$defs/sourceFileName"
+            },
+            "duplicates": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": true
+        },
+        "teams": {
+          "type": "object",
+          "properties": {
+            "count": {
+              "const": 3
+            },
+            "allow_cross_team_duplicates": {
+              "type": "object",
+              "properties": {
+                "characters": {
+                  "type": "boolean"
+                },
+                "weapons": {
+                  "type": "boolean"
+                },
+                "souls": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": true
+            },
+            "legacy_allow_cross_team_duplicates": {
+              "type": "object",
+              "properties": {
+                "characters": {
+                  "type": "boolean"
+                },
+                "weapons": {
+                  "type": "boolean"
+                },
+                "souls": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": true,
+          "required": [
+            "count"
+          ]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "version",
+        "protocol",
+        "host",
+        "lives",
+        "gold",
+        "roster",
+        "weapons",
+        "start",
+        "map",
+        "encounters",
+        "rewards",
+        "shop",
+        "rest",
+        "difficulty",
+        "souls",
+        "teams"
+      ],
+      "description": "原始 rogue_corridor_v1.json 结构。保留未知字段不删，编辑白名单字段与语义校验由应用层负责。"
+    },
+    "encounterEntry": {
+      "type": "object",
+      "properties": {
+        "quest_id": {
+          "$ref": "#/$defs/questId"
+        },
+        "round": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "boss_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0,
+          "maxItems": 100
+        },
+        "element": {
+          "$ref": "#/$defs/element"
+        },
+        "field": {
+          "type": "string",
+          "minLength": 1
+        },
+        "curses": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0,
+          "maxItems": 100
+        },
+        "threat": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1000000000
+        },
+        "kind_hint": {
+          "enum": [
+            "normal",
+            "elite",
+            "boss"
+          ]
+        },
+        "mechanic_text": {
+          "type": "string"
+        },
+        "threat_basis": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "curse_details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "effect": {
+                "type": "string",
+                "minLength": 1
+              },
+              "hard": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": true,
+            "required": [
+              "name",
+              "effect",
+              "hard"
+            ]
+          }
+        },
+        "enemy_label": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "quest_id",
+        "round",
+        "boss_codes",
+        "element",
+        "field",
+        "threat",
+        "kind_hint"
+      ]
+    },
+    "encounterPool": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "source_version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "event_id": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[1-9][0-9]*$"
+                }
+              ]
+            },
+            "folder": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "kind_counts": {
+              "type": "object",
+              "patternProperties": {
+                "^(normal|elite|boss)$": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": true,
+          "required": [
+            "source_version",
+            "event_id"
+          ]
+        },
+        "encounters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/encounterEntry"
+          },
+          "minItems": 1,
+          "maxItems": 3000
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "schema_version",
+        "meta",
+        "encounters"
+      ]
+    },
+    "poolCheck": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 1000
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "ok"
+      ]
+    },
+    "tierCharacter": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/gameId"
+        },
+        "tier": {
+          "$ref": "#/$defs/tier"
+        },
+        "element": {
+          "$ref": "#/$defs/element"
+        },
+        "rarity": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "official": {
+          "type": "boolean"
+        },
+        "pool_check": {
+          "$ref": "#/$defs/poolCheck"
+        },
+        "server_registered": {
+          "type": "boolean"
+        },
+        "rule_tier": {
+          "$ref": "#/$defs/tier"
+        },
+        "overridable": {
+          "type": "boolean"
+        },
+        "starter_profile": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "first_seen": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "id",
+        "tier",
+        "element",
+        "pool_check"
+      ]
+    },
+    "tierWeapon": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/gameId"
+        },
+        "tier": {
+          "$ref": "#/$defs/tier"
+        },
+        "element": {
+          "$ref": "#/$defs/element"
+        },
+        "rarity": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pool_check": {
+          "$ref": "#/$defs/poolCheck"
+        },
+        "level_min": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "level_max": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "awakening_max": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "enhancement_cap": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "overridable": {
+          "type": "boolean"
+        },
+        "first_seen": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "id",
+        "tier",
+        "element",
+        "pool_check"
+      ]
+    },
+    "tierPendingWeapon": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/gameId"
+        },
+        "tier": {
+          "$ref": "#/$defs/tier"
+        },
+        "element": {
+          "type": "null"
+        },
+        "pool_eligible": {
+          "const": false
+        },
+        "source_element": {
+          "type": "integer",
+          "minimum": -100,
+          "maximum": 100
+        },
+        "pool_check": {
+          "$ref": "#/$defs/poolCheck"
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "id",
+        "tier",
+        "element",
+        "pool_eligible"
+      ]
+    },
+    "tierTable": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "source_version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "runtime_tested": {
+              "type": "boolean"
+            },
+            "pending_element_policy": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "counts_by_tier": {
+              "type": "object",
+              "properties": {
+                "characters": {
+                  "type": "object",
+                  "patternProperties": {
+                    "^[1-4]$": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "weapons": {
+                  "type": "object",
+                  "patternProperties": {
+                    "^[1-4]$": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": true,
+          "required": [
+            "source_version"
+          ]
+        },
+        "characters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/tierCharacter"
+          },
+          "minItems": 0,
+          "maxItems": 100000
+        },
+        "weapons": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/tierWeapon"
+          },
+          "minItems": 0,
+          "maxItems": 100000
+        },
+        "weapons_pending_element_policy": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/tierPendingWeapon"
+          },
+          "minItems": 0,
+          "maxItems": 100000
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "schema_version",
+        "meta",
+        "characters",
+        "weapons"
+      ],
+      "description": "对完整外部分档表的可用字段进行结构检查；原文件由主数据脚本生成，额外排除清单/证据字段原样保留。给定截断样本不是合法 JSON。"
+    },
+    "legacyOverrides": {
+      "type": "object",
+      "properties": {
+        "characters": {
+          "type": "object",
+          "patternProperties": {
+            "^[1-9][0-9]*$": {}
+          },
+          "additionalProperties": false
+        },
+        "weapons": {
+          "type": "object",
+          "patternProperties": {
+            "^[1-9][0-9]*$": {}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "characters",
+        "weapons"
+      ],
+      "description": "原始 tier_overrides.json 的非空条目格式未提供；保留任意 JSON 值以保证导入不丢失，写回前必须实测生成器协议。"
+    },
+    "locales": {
+      "type": "object",
+      "properties": {
+        "zh": {
+          "$ref": "#/$defs/englishOrChinese"
+        },
+        "en": {
+          "$ref": "#/$defs/englishOrChinese"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "zh",
+        "en"
+      ]
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "rules": {
+          "$ref": "#/$defs/rules"
+        },
+        "relics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/relic"
+          },
+          "minItems": 0,
+          "maxItems": 10000
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event"
+          },
+          "minItems": 0,
+          "maxItems": 10000
+        },
+        "tier_overrides": {
+          "$ref": "#/$defs/legacyOverrides"
+        },
+        "encounter_pool": {
+          "$ref": "#/$defs/encounterPool"
+        },
+        "locales": {
+          "$ref": "#/$defs/locales"
+        },
+        "pool_overlay": {
+          "$ref": "#/$defs/poolOverlay"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "rules",
+        "relics",
+        "events",
+        "tier_overrides",
+        "encounter_pool",
+        "locales",
+        "pool_overlay"
+      ]
+    },
+    "poolEntryBase": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "starter_eligible": {
+          "type": "boolean"
+        },
+        "min_act": {
+          "$ref": "#/$defs/act"
+        },
+        "tier_override": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/tier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "characterPolicy": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "starter_eligible": {
+          "type": "boolean"
+        },
+        "min_act": {
+          "$ref": "#/$defs/act"
+        },
+        "tier_override": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/tier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "weaponPolicy": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "starter_eligible": {
+          "type": "boolean"
+        },
+        "min_act": {
+          "$ref": "#/$defs/act"
+        },
+        "tier_override": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/tier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "soul_extractable": {
+          "type": "boolean"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "soulPolicy": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "min_act": {
+          "$ref": "#/$defs/act"
+        },
+        "source_weapon_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/gameId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "relicPolicy": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "min_act": {
+          "$ref": "#/$defs/act"
+        },
+        "reward_eligible": {
+          "type": "boolean"
+        },
+        "shop_eligible": {
+          "type": "boolean"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "eventPolicy": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "min_act": {
+          "$ref": "#/$defs/act"
+        },
+        "weight_multiplier": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "encounterPolicy": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "min_act": {
+          "$ref": "#/$defs/act"
+        },
+        "allowed_acts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/act"
+          },
+          "minItems": 1,
+          "maxItems": 3,
+          "uniqueItems": true
+        },
+        "kind_override": {
+          "anyOf": [
+            {
+              "enum": [
+                "normal",
+                "elite",
+                "boss"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "actPolicy": {
+      "type": "object",
+      "properties": {
+        "exclude_quest_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/questId"
+          },
+          "minItems": 0,
+          "maxItems": 3000,
+          "uniqueItems": true
+        },
+        "exclude_rounds": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "minItems": 0,
+          "maxItems": 1000,
+          "uniqueItems": true
+        },
+        "boss_quest_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/questId"
+          },
+          "minItems": 0,
+          "maxItems": 100,
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false,
+      "description": "boss_quest_ids 未提供时继承 rules.encounters.boss_rounds，若提供非空列表则作为本幕白名单；空列表不可表示禁止首领。"
+    },
+    "shopItemOverride": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "price_override": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "half_price_eligible": {
+          "type": "boolean"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "shopServiceOverride": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "price_override": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "shopPolicy": {
+      "type": "object",
+      "properties": {
+        "item_overrides": {
+          "type": "object",
+          "properties": {
+            "character": {
+              "type": "object",
+              "patternProperties": {
+                "^[1-9][0-9]*$": {
+                  "$ref": "#/$defs/shopItemOverride"
+                }
+              },
+              "additionalProperties": false
+            },
+            "weapon": {
+              "type": "object",
+              "patternProperties": {
+                "^[1-9][0-9]*$": {
+                  "$ref": "#/$defs/shopItemOverride"
+                }
+              },
+              "additionalProperties": false
+            },
+            "relic": {
+              "type": "object",
+              "patternProperties": {
+                "^r[0-9]{3,6}$": {
+                  "$ref": "#/$defs/shopItemOverride"
+                }
+              },
+              "additionalProperties": false
+            },
+            "soul": {
+              "type": "object",
+              "patternProperties": {
+                "^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$": {
+                  "$ref": "#/$defs/shopItemOverride"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "service_overrides": {
+          "type": "object",
+          "properties": {
+            "heal": {
+              "$ref": "#/$defs/shopServiceOverride"
+            },
+            "refresh": {
+              "$ref": "#/$defs/shopServiceOverride"
+            },
+            "upgrade_character": {
+              "$ref": "#/$defs/shopServiceOverride"
+            },
+            "upgrade_weapon": {
+              "$ref": "#/$defs/shopServiceOverride"
+            },
+            "extract_soul": {
+              "$ref": "#/$defs/shopServiceOverride"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "policy": {
+      "type": "object",
+      "properties": {
+        "characters": {
+          "type": "object",
+          "patternProperties": {
+            "^[1-9][0-9]*$": {
+              "$ref": "#/$defs/characterPolicy"
+            }
+          },
+          "additionalProperties": false
+        },
+        "weapons": {
+          "type": "object",
+          "patternProperties": {
+            "^[1-9][0-9]*$": {
+              "$ref": "#/$defs/weaponPolicy"
+            }
+          },
+          "additionalProperties": false
+        },
+        "souls": {
+          "type": "object",
+          "patternProperties": {
+            "^[A-Za-z0-9][A-Za-z0-9._:-]{0,79}$": {
+              "$ref": "#/$defs/soulPolicy"
+            }
+          },
+          "additionalProperties": false
+        },
+        "relics": {
+          "type": "object",
+          "patternProperties": {
+            "^r[0-9]{3,6}$": {
+              "$ref": "#/$defs/relicPolicy"
+            }
+          },
+          "additionalProperties": false
+        },
+        "events": {
+          "type": "object",
+          "patternProperties": {
+            "^e[0-9]{3,6}$": {
+              "$ref": "#/$defs/eventPolicy"
+            }
+          },
+          "additionalProperties": false
+        },
+        "encounters": {
+          "type": "object",
+          "patternProperties": {
+            "^[1-9][0-9]{5,11}$": {
+              "$ref": "#/$defs/encounterPolicy"
+            }
+          },
+          "additionalProperties": false
+        },
+        "acts": {
+          "type": "object",
+          "properties": {
+            "1": {
+              "$ref": "#/$defs/actPolicy"
+            },
+            "2": {
+              "$ref": "#/$defs/actPolicy"
+            },
+            "3": {
+              "$ref": "#/$defs/actPolicy"
+            }
+          },
+          "additionalProperties": false
+        },
+        "event_option_ids": {
+          "type": "object",
+          "patternProperties": {
+            "^e[0-9]{3,6}$": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/optionId"
+              },
+              "minItems": 1,
+              "maxItems": 12,
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "shop": {
+          "$ref": "#/$defs/shopPolicy"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "characters",
+        "weapons",
+        "souls",
+        "relics",
+        "events",
+        "encounters",
+        "acts",
+        "event_option_ids",
+        "shop"
+      ],
+      "description": "空映射表示继承已锁定主数据的已有项默认行为；新进主数据的条目默认禁用直至审核。"
+    },
+    "deletedEntity": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "character",
+            "weapon",
+            "soul",
+            "relic",
+            "event",
+            "event_option",
+            "encounter"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "at_revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "id",
+        "at_revision",
+        "reason"
+      ]
+    },
+    "lifecycle": {
+      "type": "object",
+      "properties": {
+        "reserved_relic_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/relicId"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "reserved_event_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/eventId"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "reserved_option_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/optionId"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "tombstones": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/deletedEntity"
+          },
+          "minItems": 0
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "reserved_relic_ids",
+        "reserved_event_ids",
+        "reserved_option_ids",
+        "tombstones"
+      ]
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "game_data_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tier_table_file": {
+          "$ref": "#/$defs/sourceFileName"
+        },
+        "tier_table_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "soul_catalog_file": {
+          "$ref": "#/$defs/sourceFileName"
+        },
+        "soul_catalog_sha256": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "runtime_files_sha256": {
+          "type": "object",
+          "properties": {
+            "rogue_corridor_v1.json": {
+              "$ref": "#/$defs/sha256"
+            },
+            "relics.json": {
+              "$ref": "#/$defs/sha256"
+            },
+            "events.json": {
+              "$ref": "#/$defs/sha256"
+            },
+            "tier_overrides.json": {
+              "$ref": "#/$defs/sha256"
+            },
+            "encounter_pool.json": {
+              "$ref": "#/$defs/sha256"
+            },
+            "locales_v3.json": {
+              "$ref": "#/$defs/sha256"
+            },
+            "rogue_pool_v3f.json": {
+              "$ref": "#/$defs/sha256"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "rogue_corridor_v1.json",
+            "relics.json",
+            "events.json",
+            "tier_overrides.json",
+            "encounter_pool.json",
+            "locales_v3.json",
+            "rogue_pool_v3f.json"
+          ]
+        },
+        "runtime_host_event_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "encounter_source_event_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "imported_at": {
+          "type": "string",
+          "minLength": 1
+        },
+        "import_label": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "game_data_version",
+        "tier_table_file",
+        "tier_table_sha256",
+        "soul_catalog_file",
+        "soul_catalog_sha256",
+        "runtime_files_sha256",
+        "runtime_host_event_id",
+        "encounter_source_event_id"
+      ]
+    },
+    "poolOverlay": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "rule_revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decision": {
+          "type": "string"
+        },
+        "source": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "tier_overrides": {
+          "type": "object",
+          "properties": {
+            "characters": {
+              "type": "object",
+              "patternProperties": {
+                "^[1-9][0-9]*$": {
+                  "type": "object",
+                  "properties": {
+                    "tier": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/tier"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "element": {
+                      "$ref": "#/$defs/element"
+                    },
+                    "from_tier": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/tier"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": true,
+                  "required": [
+                    "tier",
+                    "reason"
+                  ]
+                }
+              },
+              "additionalProperties": false
+            },
+            "weapons": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "characters",
+            "weapons"
+          ]
+        },
+        "boss_playable": {
+          "type": "object",
+          "properties": {
+            "characters": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "element": {
+                    "$ref": "#/$defs/element"
+                  },
+                  "code": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "additionalProperties": true,
+                "required": [
+                  "id",
+                  "element",
+                  "code"
+                ]
+              }
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true,
+      "required": [
+        "schema_version",
+        "rule_revision",
+        "tier_overrides"
+      ]
+    }
+  },
+  "examples": []
+}

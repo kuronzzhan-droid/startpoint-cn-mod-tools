@@ -14,7 +14,8 @@ export type Route =
   | { work: "content"; shop: "scratch"; id?: string; tab?: string; sub?: string }
   | { work: "content"; shop: "weapons"; id?: string; tab?: string; sub?: string }
   | { work: "patches"; archive?: string }
-  | { work: "opening" };
+  | { work: "opening" }
+  | { work: "corridor"; page?: string; id?: string };
 
 export function parse(hash: string): Route {
   const parts = hash.replace(/^#\/?/, "").split("/").filter(Boolean).map(decodeURIComponent);
@@ -23,6 +24,8 @@ export function parse(hash: string): Route {
     return { work: "content", shop: "characters", id: parts[1], tab: parts[2], sub: parts[3] };
   if (parts[0] === "patches") return { work: "patches", archive: parts[1] };
   if (parts[0] === "opening") return { work: "opening" };
+  // #/corridor/<page>[/<id>]  深渊回廊内容编辑
+  if (parts[0] === "corridor") return { work: "corridor", page: parts[1], id: parts[2] };
   if (parts[0] === "scratch") return { work: "content", shop: "scratch", id: parts[1], tab: parts[2], sub: parts[3] };
   if (parts[0] === "content" && parts[1] === "boss") {
     if (parts[2] === "new") return { work: "content", shop: "boss", wizard: true, source: parts[3] };
@@ -43,6 +46,7 @@ export function parse(hash: string): Route {
 export function href(route: Route): string {
   if (route.work === "patches") return "#/patches" + (route.archive ? "/" + encodeURIComponent(route.archive) : "");
   if (route.work === "opening") return "#/opening";
+  if (route.work === "corridor") return "#/corridor" + (route.page ? "/" + route.page + (route.id ? "/" + encodeURIComponent(route.id) : "") : "");
   if (route.shop === "boss") {
     if (route.wizard) return "#/content/boss/new" + (route.source ? "/" + encodeURIComponent(route.source) : "");
     if (route.quest) return "#/content/boss/q/" + encodeURIComponent(route.quest) + (route.tab ? "/" + route.tab
