@@ -6,8 +6,13 @@ CDN_MEMBER = re.compile(r"^production/(upload|small_upload|medium_upload|android
 LEGACY_MEMBER = re.compile(r"^[0-9a-f]{2}/[0-9a-f]{38}$")
 
 
+# Root-level bookkeeping files that patch builders add next to CDN members:
+# ".empty" marks an intentionally empty archive, ".integrity.json" lists member hashes (1.4.367+).
+METADATA_MEMBERS = frozenset({".empty", ".integrity.json"})
+
+
 def canonical_member(name):
-    if name == ".empty":
+    if name in METADATA_MEMBERS:
         return None
     if LEGACY_MEMBER.fullmatch(name):
         return "production/upload/" + name
