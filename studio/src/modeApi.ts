@@ -10,6 +10,7 @@ export interface Floor {
 export interface ManualStep { title: string; command: string }
 export interface ModePreview {
   ok: boolean; canGenerate: boolean; blockers: string[]; version: string;
+  eventId?: string;
   diff?: { path: string; before: Json; after: Json }[];
   audit?: { aligned: boolean; differences: { logical: string; path: string }[]; hpRatios: Json[]; note: string;
     quests?: { quest: string; currentBossHpMultiplier: string; specBossHpMultiplier: string; statesMatch: boolean }[] };
@@ -21,8 +22,12 @@ export interface ModePreview {
 export interface ModeRead {
   mode: Mode; version: string; payload: Json; spec?: Record<string, Json>; draft: ModeDraft | null;
   preview?: ModePreview;
-  current?: { event: string; rounds: number; seasonNote: string; eventRow: string[]; fingerprint: string;
-    rows: Floor[]; manualSteps: ManualStep[] };
+  current?: TowerCurrent & { activities?: TowerCurrent[] };
+}
+export interface TowerCurrent {
+  event: string; name?: string; available?: boolean; unavailableReason?: string | null;
+  rounds: number; seasonNote: string; eventRow: string[]; fingerprint: string;
+  rows: Floor[]; manualSteps: ManualStep[];
 }
 export const modeDeliveries = deliveryApi("/api/modes", id => "mode:" + id);
 export const modes = {

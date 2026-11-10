@@ -30,9 +30,6 @@ from test_character_pack import (  # noqa: E402
     add_file,
 )
 
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-
-
 def _orderedmap(pairs: list[tuple[str, bytes]], *, compress: bool) -> bytes:
     """Build one orderedmap layer; `compress` matches the client's row encoding."""
     ordered = core.OrderedMap(
@@ -157,16 +154,23 @@ class DerivationMatchesRepoMirrorTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.mirror_path = REPO_ROOT / "assets" / "mana_board.json"
         profile = core.resolve_profile("cn")
         cls.table_path = (
             core.table_path(Path(profile.store), cls.LOGICAL)
-            if profile is not None else None
+            if profile is not None and profile.store is not None else None
         )
+        cls.mirror_path = None
+        if cls.table_path is not None and cls.table_path.is_file():
+            try:
+                cls.mirror_path = core.resolve_server_dir() / "assets" / "mana_board.json"
+            except core.ServerDirNotConfiguredError:
+                raise unittest.SkipTest("configured server mana_board.json mirror is unavailable")
 
     def test_derivation_matches_repo_mirror(self) -> None:
         if self.table_path is None or not self.table_path.is_file():
-            self.skipTest("CN live store 不可用")
+            self.skipTest("configured CN store mana_board.orderedmap is unavailable")
+        if self.mirror_path is None or not self.mirror_path.is_file():
+            self.skipTest("configured server is missing assets/mana_board.json")
         mirror = json.loads(self.mirror_path.read_text(encoding="utf-8"))
         derived = pack.derive_server_mana_board(self.table_path.read_bytes())
         shared = sorted(set(derived) & set(mirror))

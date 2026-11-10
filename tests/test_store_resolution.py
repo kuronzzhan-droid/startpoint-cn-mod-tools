@@ -40,6 +40,11 @@ class EnvIsolatedCase(unittest.TestCase):
         temp = tempfile.TemporaryDirectory()
         self.addCleanup(temp.cleanup)
         self.root = Path(temp.name)
+        # Keep modern configuration empty without replacing a function that
+        # lazy consumers may import by name and retain beyond this fixture.
+        profile_path = self.root / "paths-profile.json"
+        profile_path.write_text("{}\n", encoding="utf-8")
+        os.environ["WF_PATHS_PROFILE"] = str(profile_path)
 
     def make_dir(self, *parts: str) -> Path:
         path = self.root.joinpath(*parts)

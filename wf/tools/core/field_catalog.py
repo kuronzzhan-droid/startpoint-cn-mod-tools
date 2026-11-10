@@ -9,8 +9,8 @@ CreateFlood 命令的**效果种类+数值+时长**,过滤掉带攻击判定的�
 wf_rogue_build.FIELD_MENU 与 GUI 图鉴均以此为单一事实源(缺文件回退内置菜单)。
 
 用法(项目根):
-  python mod-tools/wf_field_catalog.py            # 干跑:打印统计
-  python mod-tools/wf_field_catalog.py --write    # 写 mod-tools/rogue_field_menu.json
+  python wf_field_catalog.py            # 干跑:打印统计
+  python wf_field_catalog.py --write    # 写 wf/tools/rogue/data/rogue_field_menu.json
 """
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ pass  # Imports resolve from this checkout/package, not external source copies.
 import wf_quest_lib as q  # noqa: E402
 
 PATHLIST = MOD_DIR / "WF_PATHLIST_recovered.txt"
-OUT_JSON = MOD_DIR / "rogue_field_menu.json"
+OUT_JSON = MOD_DIR / "wf/tools/rogue/data/rogue_field_menu.json"
 
 # ---- 场命令三类(2026-07-29 全库命令词表普查:action DSL 一共只有 14 个命令)----
 # ① 数值领域(原始三件套):预载 resolver case 80/84/65 **静态实锤全覆盖**,最安全。

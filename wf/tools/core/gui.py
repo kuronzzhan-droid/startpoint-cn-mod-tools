@@ -6746,13 +6746,13 @@ API_PREFIX = "/api/mod"
 
 # ================================================================ 深渊连战(700099 rush 活动)编辑
 # 五块:①难度曲线/重摇(wf_rogue_build)②无尽修正(wf_rogue_nerf)③掉落代币(rogue_event.json)
-# ④商店(event_item_shop 9700101-9700115,三处同步)⑤boss 阵容查看。
+# ④商店(event_item_shop 9700101-9700117,含两张券,三处同步)⑤boss 阵容查看。
 # CLI 工具封装为子进程复用;数据侧直读写(qlib 读嵌套/平表,assets json 直改)。
 ROGUE_EVENT_ID = "700099"
 ROGUE_Q_LOGICAL = "master/quest/event/rush_event_quest.orderedmap"
 ROGUE_CORR_LOGICAL = "master/quest/event/rush_event_battle_quest_correction.orderedmap"
 ROGUE_SHOP_LOGICAL = "master/shop/event_item_shop.orderedmap"
-ROGUE_SHOP_KEYS = [str(i) for i in range(9700101, 9700116)]
+ROGUE_SHOP_KEYS = [str(i) for i in range(9700101, 9700118)]
 # event_item_shop 列(51 列,plan Task4 + 真机实证):c7 名 c18 货币id c19 价 c29 库存
 # c32 奖励type c33 奖励id c34 数量
 ROGUE_SHOP_COLS = {"name": 7, "cost_id": 18, "price": 19, "stock": 29,
@@ -6877,7 +6877,7 @@ def rogue_state() -> dict:
         drops = (rj.get("events") or {}).get(ROGUE_EVENT_ID, {})
     except Exception:
         pass
-    # 商店(15 商品)
+    # 商店(15 把武器 + 两张券)
     shop = []
     try:
         srows = core.load_table(ROGUE_SHOP_LOGICAL, TARGET_STORE, SOURCE_STORE).text_rows()
@@ -7018,7 +7018,7 @@ def rogue_tower() -> dict:
     floors.sort(key=lambda item: int(item["round"] or 0))
     cfg = {}
     try:
-        with open(os.path.join(MOD_DIR, "rogue_special_bosses.json"), encoding="utf-8") as fh:
+        with open(_rogue_config_path("rogue_special_bosses.json"), encoding="utf-8") as fh:
             cfg = json.load(fh)
     except Exception:
         pass
@@ -7093,7 +7093,7 @@ def rogue_rewards(body: dict | None = None) -> dict:
 
 def rogue_lists(body: dict | None = None) -> dict:
     """原味保护 / 移植白名单读写(rogue_special_bosses.json)。"""
-    path = os.path.join(MOD_DIR, "rogue_special_bosses.json")
+    path = _rogue_config_path("rogue_special_bosses.json")
     try:
         with open(path, encoding="utf-8") as fh:
             cfg = json.load(fh)
@@ -7106,7 +7106,7 @@ def rogue_lists(body: dict | None = None) -> dict:
                 cfg[key] = body[key]
         if body.get("strict_transplant") is not None:
             cfg["strict_transplant"] = bool(body["strict_transplant"])
-        with open(path, "w", encoding="utf-8") as fh:
+        with open(_rogue_config_write_path("rogue_special_bosses.json"), "w", encoding="utf-8") as fh:
             json.dump(cfg, fh, ensure_ascii=False, indent=1)
     names = wf_boss.boss_names()
     codes = (set(cfg.get("authentic") or []) | set(cfg.get("authentic_movement") or [])
@@ -7135,7 +7135,7 @@ def rogue_curse_info() -> dict:
     # 全量目录(wf_field_catalog 产出)提供扩展项的分类
     json_cat = {}
     try:
-        with open(MOD_DIR / "rogue_field_menu.json", encoding="utf-8") as fh:
+        with open(_rogue_config_path("rogue_field_menu.json"), encoding="utf-8") as fh:
             for c in json.load(fh):
                 json_cat[c["program"]] = c.get("cat", "领域")
     except Exception:
@@ -7206,10 +7206,22 @@ def rogue_curse_fill(body: dict) -> dict:
             "notes": notes}
 
 
+def _rogue_config_path(name: str) -> Path:
+    from wf.tools.rogue import rogue_build
+    return rogue_build.rogue_config_path(name)
+
+
+def _rogue_config_write_path(name: str) -> Path:
+    from wf.tools.rogue import rogue_build
+    destination = rogue_build.rogue_config_output_path(name)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    return destination
+
+
 def rogue_plan_get() -> dict:
     """连战工坊布局计划(阶段难度 + 逐层显式词条/领域)。"""
     try:
-        with open(MOD_DIR / "rogue_layout_plan.json", encoding="utf-8") as fh:
+        with open(_rogue_config_path("rogue_layout_plan.json"), encoding="utf-8") as fh:
             return json.load(fh)
     except Exception:
         return {"stages": [], "floors": {}}
@@ -7238,7 +7250,7 @@ def rogue_plan_save(body: dict) -> dict:
         if ent:
             floors[str(k)] = ent
     data = {"stages": stages, "floors": floors}
-    (MOD_DIR / "rogue_layout_plan.json").write_text(
+    _rogue_config_write_path("rogue_layout_plan.json").write_text(
         json.dumps(data, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     # 软校验:未知诅咒名/目录外程序在生成期会被静默忽略,这里显式提醒
     warnings = []
@@ -7273,13 +7285,16 @@ def rogue_field_tuning_save(body: dict) -> dict:
                 out[k] = f
         return out
     data = {"global": _clean(body.get("global")), "per": _clean(body.get("per"))}
-    (MOD_DIR / "rogue_field_tuning.json").write_text(
+    _rogue_config_write_path("rogue_field_tuning.json").write_text(
         json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
     return {"ok": True, **data}
 
 
+ROGUE_AUDIT_DIR = MOD_DIR / "work" / "rogue_hp_audit"
+
+
 def rogue_build_apply(body: dict, dry_run: bool) -> dict:
-    """难度曲线 + 重摇:封装 wf_rogue_build。dry_run=预览,否则 --write --publish。"""
+    """难度曲线 + 重摇；GUI 默认严格 HP，并留下可读验收报告。"""
     def _num(key, default):
         v = body.get(key)
         return str(default if v in (None, "") else v)
@@ -7306,17 +7321,32 @@ def rogue_build_apply(body: dict, dry_run: bool) -> dict:
         args += ["--difficulty", str(body["difficulty"]).strip()]
     if body.get("seed") not in (None, ""):
         args += ["--seed", str(int(float(body["seed"])))]
-    published = bool(body.get("publish")) and not dry_run
+    audit_json = audit_report = None
+    if body.get("strict_target_hp", True) is not False:
+        args += ["--strict-target-hp"]
+        ROGUE_AUDIT_DIR.mkdir(parents=True, exist_ok=True)
+        seed_token = (str(int(float(body["seed"])))
+                      if body.get("seed") not in (None, "") else "auto")
+        stem = (f"rogue-hp-gui-seed-{seed_token}-"
+                f"{time.strftime('%Y%m%d-%H%M%S')}-{time.time_ns() % 1_000_000_000:09d}")
+        audit_json = ROGUE_AUDIT_DIR / f"{stem}.json"
+        audit_report = ROGUE_AUDIT_DIR / f"{stem}.md"
+        args += ["--audit-json", str(audit_json),
+                 "--audit-report", str(audit_report)]
     if not dry_run:
         args += ["--write"]
         if body.get("publish"):
             args += ["--publish"]
-    r = _rogue_run("wf_rogue_build.py", args)
-    # 只有**真发布**了才判换期:build --write 不发布时塔还没上链,
-    # 期该在⑥「📤 发布」那一刻才动。
-    if published and r.get("ok"):
-        r["log"] = "\n".join([(r.get("log") or ""), _rogue_season_sync("gui-build")])
-    return r
+    result = _rogue_run("wf_rogue_build.py", args)
+    if audit_json is not None:
+        result["audit_json"] = str(audit_json)
+        result["audit_report"] = str(audit_report)
+        # GUI 只承接构建期静态门禁；真机状态不得因日志全绿而被推断为通过。
+        result["verification_scope"] = "static_dry_run"
+        result["gameplay_verified"] = False
+    if bool(body.get("publish")) and not dry_run and result.get("ok"):
+        result["log"] = "\n".join([(result.get("log") or ""), _rogue_season_sync("gui-build")])
+    return result
 
 
 def rogue_nerf_apply(body: dict, dry_run: bool) -> dict:

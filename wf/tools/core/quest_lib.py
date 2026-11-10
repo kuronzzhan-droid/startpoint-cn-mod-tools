@@ -169,11 +169,29 @@ def build_node(node) -> bytes:
 
 # ---------------------------------------------------------------- 文件级 API
 
-def load_table(logical: str, path: Path | None = None) -> dict:
+def read_raw(logical: str, path: Path | None = None) -> bytes:
+    """Read an exact file or the explicitly configured local store.
+
+    In-memory callers may replace this reader with their locked chain view;
+    table loading and existence checks then use that same source of truth.
+    """
     p = path or store_path(logical)
     if path is None:
         _require_store_root(p)
-    tree = parse_node(p.read_bytes())
+    return p.read_bytes()
+
+
+def exists_current(logical: str) -> bool:
+    """Only a missing member is absent; configuration and IO errors propagate."""
+    try:
+        read_raw(logical)
+        return True
+    except FileNotFoundError:
+        return False
+
+
+def load_table(logical: str, path: Path | None = None) -> dict:
+    tree = parse_node(read_raw(logical, path=path))
     if not isinstance(tree, dict):
         raise ValueError(f"{logical} 顶层不是 map")
     return tree

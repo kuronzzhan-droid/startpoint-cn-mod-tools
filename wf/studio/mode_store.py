@@ -8,12 +8,40 @@ from wf.view.safety import local_output
 from .drafts import DraftError, now, sha256
 
 MODES = ("five", "rogue")
+SERVER_ASSETS = frozenset({"rush_event_quest_folder.json", "rogue_event.json", "rogue_event_cnmod.json"})
 
 
 class ViewInputs:
-    def __init__(self, source):
+    def __init__(self, source, *, server_dir=None):
         self.source, self.inputs = source, {}
         self._raw = {}
+        self._server_dir, self._server_root, self._server_raw = server_dir, None, {}
+
+    def _server_bytes(self, name):
+        if not isinstance(name, str) or name not in SERVER_ASSETS:
+            raise DraftError("不允许读取此服务端 JSON：" + str(name))
+        if self._server_root is None:
+            from .config import server_directory
+            self._server_root = server_directory(self._server_dir)
+        if self._server_root is None:
+            raise DraftError("深渊构建需要配置只读服务端镜像")
+        return (self._server_root / "assets" / name).read_bytes()
+
+    def read_server_asset(self, name):
+        """Freeze only allowlisted local JSON, including optional-file absence."""
+        if not isinstance(name, str) or name not in SERVER_ASSETS:
+            raise DraftError("不允许读取此服务端 JSON：" + str(name))
+        if name not in self._server_raw:
+            try:
+                raw = self._server_bytes(name)
+            except FileNotFoundError:
+                raw = None
+            self._server_raw[name] = raw
+            self.inputs["server:" + name] = sha256(raw) if raw is not None else None
+        raw = self._server_raw[name]
+        if raw is None:
+            raise FileNotFoundError("服务端 JSON 不存在：" + name)
+        return json.loads(raw.decode("utf-8-sig"))
 
     def read(self, logical):
         if logical in self._raw:
@@ -54,7 +82,8 @@ class ViewInputs:
         for key, digest in self.inputs.items():
             root, logical = key.split(":", 1) if ":" in key else ("common", key)
             try:
-                raw = self.source.view.read_member(member_name(root, logical))[0]
+                raw = (self._server_bytes(logical) if root == "server" else
+                       self.source.view.read_member(member_name(root, logical))[0])
                 actual = sha256(raw)
             except FileNotFoundError:
                 actual = None

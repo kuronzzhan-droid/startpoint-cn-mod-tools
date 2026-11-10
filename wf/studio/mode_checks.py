@@ -23,7 +23,7 @@ def delivery_checks(mode, result):
     return checks
 
 
-def saved_preview(source, draft):
+def saved_preview(source, draft, *, server_dir=None):
     result = copy.deepcopy(draft.get("preview") or {})
     blockers = list(result.get("blockers", []))
     try:
@@ -31,7 +31,7 @@ def saved_preview(source, draft):
             raise DraftError("草稿基线已过期，请在当前视图重新预览保存")
         if any(":" not in key for key in draft["inputs"]):
             raise DraftError("旧草稿未记录多 CDN 根输入，请重新预览保存")
-        inputs = ViewInputs(source)
+        inputs = ViewInputs(source, server_dir=server_dir)
         inputs.inputs = draft["inputs"]
         inputs.verify()
         fresh = freshness(source)

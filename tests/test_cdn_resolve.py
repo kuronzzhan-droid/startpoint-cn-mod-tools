@@ -33,6 +33,11 @@ class _ResolveBase(unittest.TestCase):
         patcher = mock.patch.object(core, "load_profiles", return_value={})
         patcher.start()
         self.addCleanup(patcher.stop)
+        # A real empty modern profile also survives lazy imports that bind
+        # profile_data by name; patching that function would leak a mock.
+        profile_path = self.root / "paths-profile.json"
+        profile_path.write_text("{}\n", encoding="utf-8")
+        os.environ["WF_PATHS_PROFILE"] = str(profile_path)
         # 嵌套遗留兜底指向不存在的位置,避免测试机真实链干扰
         self.fake_project = self.root / "fake-project"
         patcher2 = mock.patch.object(

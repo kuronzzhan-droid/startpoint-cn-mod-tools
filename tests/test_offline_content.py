@@ -2349,8 +2349,8 @@ class OfflineContentTests(unittest.TestCase):
         integer_signatures["signature_schemes"] = {"v1": 1, "v2": 1, "v3": 1}
         rejected(integer_signatures, "signature")
 
-    def test_round_gate_allows_1_to_15_and_99_but_rejects_16(self) -> None:
-        def install(rounds: range, *, folder_id: int = 1) -> list[str]:
+    def test_round_gate_accepts_configured_rounds_and_99_but_rejects_extra(self) -> None:
+        def install(rounds: range, configured: int, *, folder_id: int = 1) -> list[str]:
             logical = rogue_validate.rogue_build.Q_QUEST
             table = {rogue_validate.rewards.EVENT_ID: {
                 str(value): core.write_csv_lines([[
@@ -2371,19 +2371,25 @@ class OfflineContentTests(unittest.TestCase):
             }
             assets = Path(self.temp.name) / "round-assets"
             assets.mkdir(exist_ok=True)
+            (assets / "rogue_event.json").write_text(json.dumps({
+                "events": {"700099": {"rounds": configured}},
+            }), encoding="utf-8")
             (assets / "rush_event_quest.json").write_text(json.dumps(payload), encoding="utf-8")
             errors: list[str] = []
             count = rogue_validate._validate_offline_rounds(self.roots.common, assets, errors)
-            self.assertEqual(15 if len(rounds) > 15 else len(rounds), count)
+            self.assertEqual(min(configured, len(rounds)), count)
             return errors
-        self.assertEqual([], install(range(1, 16)))
-        errors = install(range(1, 17))
-        self.assertTrue(any("extra_rounds" in error for error in errors))
-        errors = install(range(1, 16), folder_id=9)
-        self.assertTrue(any("mapping" in error for error in errors))
+        for configured in (10, 15, 30):
+            with self.subTest(rounds=configured):
+                self.assertEqual([], install(range(1, configured + 1), configured))
+                errors = install(range(1, configured + 2), configured)
+                self.assertTrue(any("extra_rounds" in error for error in errors))
+                errors = install(range(1, configured + 1), configured, folder_id=9)
+                self.assertTrue(any("mapping" in error for error in errors))
+        self.assertTrue(any("rounds.invalid" in error for error in install(range(1, 16), 20)))
 
-        self.assertEqual([], install(range(1, 16)))
-        keys = [str(value) for value in range(1, 16)] + ["1", "99"]
+        self.assertEqual([], install(range(1, 31), 30))
+        keys = [str(value) for value in range(1, 31)] + ["1", "99"]
         leaves = [
             zlib.compress(core.write_csv_lines([[
                 str(700099000 + (int(key) if key != "99" else 99)),

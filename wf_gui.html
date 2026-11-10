@@ -4048,7 +4048,7 @@ async function twLoad(){
   const bad=d.floors.filter(f=>!f.ok).length;
   const st=$('#rgStatus');
   if(st)st.innerHTML='当前 <b>'+d.count+'</b> 层 · '+
-    (bad?'<span class="bad">'+bad+' 层异常</span>':'<span class="good">全部通过门禁</span>');
+    (bad?'<span class="bad">'+bad+' 层异常</span>':'<span class="good">静态解析链通过 · 未真机验证</span>');
 }
 // 当前设计参数(后端实时从代码读,不写死在前端,免得改了代码文档两头对不上)
 function twDesign(g){
@@ -4150,7 +4150,9 @@ async function ngRun(mode){
   if(mode!=='preview')b.publish=(mode==='publish');
   $('#ngOut').textContent='执行中…';
   let r; try{r=await api('/rogue/build',{...b,dry_run:mode==='preview'});}catch(e){$('#ngOut').textContent='失败';return;}
-  $('#ngOut').textContent=r.log||'(无输出)';
+  const proof=(r.ok&&r.verification_scope==='static_dry_run'&&r.gameplay_verified===false)
+    ?'【静态门禁通过 · 未真机验证】\n':'';
+  $('#ngOut').textContent=proof+(r.log||'(无输出)');
   if(mode!=='preview'){TW_DATA=null;twLoad();log('塔已生成');}
 }
 
