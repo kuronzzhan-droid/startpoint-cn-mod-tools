@@ -39,6 +39,7 @@ class Response:
     body: bytes
     content_type: str = "application/json; charset=utf-8"
     cache: str | None = None  # explicit Cache-Control (e.g. draft-state images change under one URL)
+    headers: tuple = ()  # extra (name, value) pairs, e.g. Content-Disposition for downloads
 
 
 def json_response(value, status: int = 200) -> Response:
@@ -156,6 +157,9 @@ class StudioApp:
         from .skill_template_routes import SkillTemplateRoutes
         self.skill_templates = SkillTemplateRoutes(self, server_dir)
         self.routes.extend(self.skill_templates.routes())
+        from .corridor.routes import CorridorRoutes
+        self.corridor = CorridorRoutes(self)
+        self.routes.extend(self.corridor.routes())
 
     # -- dispatch -------------------------------------------------------
     def dispatch(self, method: str, path: str, query: dict[str, list[str]], body=None) -> Response | None:
@@ -437,6 +441,8 @@ def make_handler(app: StudioApp, static_root: Path, guard: WriteGuard):
                     self.send_header("Content-Encoding", encoding)
                 self.send_header("Cache-Control", response.cache or (
                     "no-store" if response.content_type.startswith("application/json") else "max-age=600"))
+                for name, value in response.headers:
+                    self.send_header(name, value)
                 self.end_headers()
                 if not head:
                     self.wfile.write(body)

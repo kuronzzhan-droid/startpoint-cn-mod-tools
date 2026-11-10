@@ -23,6 +23,7 @@ const ScratchDetail = lazyView(() => import("./views/ScratchView"), "ScratchDeta
 const ScratchList = lazyView(() => import("./views/ScratchView"), "ScratchList");
 const LookupPanel = lazyView(() => import("./views/LookupPanel"), "LookupPanel");
 const OpeningConsole = lazyView(() => import("./views/OpeningConsole"), "OpeningConsole");
+const Corridor = lazyView(() => import("./views/corridor/Corridor"), "Corridor");
 
 type Freshness = { loaded: string; latest: string | null; stale: boolean; error?: string };
 type Doctor = { items: { id: string; status: "ok" | "warn" | "fail"; current: string; fix: string }[] };
@@ -71,6 +72,7 @@ function App() {
           <a class={route.work === "content" ? "active" : ""} href="#/content/characters">编辑内容</a>
           <a class={route.work === "patches" ? "active" : ""} href="#/patches">补丁管理</a>
           <a class={route.work === "opening" ? "active" : ""} href="#/opening">开服台</a>
+          <a class={route.work === "corridor" ? "active" : ""} href="#/corridor/overview">深渊回廊</a>
         </nav>
         <div class="topbar-right">
           <ClientProfilePicker />
@@ -129,7 +131,9 @@ function App() {
       ) : null}
       <div class="layout">
         <main class="main">
-          {route.work === "opening" ? (
+          {route.work === "corridor" ? (
+            <Corridor key={route.page ?? "overview"} page={route.page ?? "overview"} id={route.id} />
+          ) : route.work === "opening" ? (
             <OpeningConsole />
           ) : route.work === "patches" ? (
             <PatchManager archive={route.archive} />

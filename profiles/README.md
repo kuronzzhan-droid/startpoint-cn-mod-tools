@@ -160,3 +160,23 @@ Studio 编辑台（`python -m wf.studio` 与 `python -m wf.studio.draft`）支�
   "views": {"dev": {"overlay_base": true}}
 }
 ```
+
+## 深渊回廊内容编辑（编辑台「深渊回廊」页）
+
+编辑台读取回廊运行时文件与锁定主数据、保存工作区与发布包、应用到隔离试验服，都只看这一节（相对路径以 `wf_root` 为基准）：
+
+```json
+{
+  "rogue_corridor": {
+    "data_dir": "outputs/work/<回廊 spike>/data",
+    "proto_server": "outputs/work/<回廊 spike>/proto-server",
+    "store": "outputs/work/<编辑台回廊存档>"
+  }
+}
+```
+
+`data_dir` 里要有 relics/events/locales_v3/tier_overrides/new-mode/encounter_pool 与完整 `tier_table.json`、`rules_v3_metadata.json`；
+`proto_server` 提供 `src/rogue_corridor_v1.json`、`src/rogue_pool_v3f.json`、`tools/trialctl.py` 和 `trial/tree`。
+`store` 可省略（默认 `work/studio-drafts/rogue-corridor`）。源文件只读；「应用到试验服」只写 `trial/tree/assets`，
+并拒绝端口不是 18011/18013 或与 `paths.server`、`servers.*.root` 重叠的目标。
+
