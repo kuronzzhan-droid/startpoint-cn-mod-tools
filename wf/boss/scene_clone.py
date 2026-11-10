@@ -7,8 +7,9 @@ from .scene_spec import validate_spec
 from .scene_types import CONTINUE_PREFIX
 
 
-def clone_scene(spec, event_id, name=None):
-    validate_spec(spec)
+def clone_scene(spec, event_id, name=None, *, _validated=False):
+    if not _validated:
+        validate_spec(spec)
     if not isinstance(event_id, str) or not re.fullmatch(r"[3-9][0-9]{5}", event_id):
         raise ValueError("新活动 ID 必须是 300000–999999 的六位字符串")
     old = spec["event"]["id"]

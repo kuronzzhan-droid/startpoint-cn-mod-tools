@@ -6,10 +6,46 @@ import re
 from wf.rules.boss_common import CandidateView
 from wf.rules.boss_preload import programs, walk
 from . import schema as s
-from .behavior_wire import decode_wire
+from .behavior_wire import (
+    _WIRE_TREE_CACHE,
+    _WIRE_TREE_INFO as _TREE_INFO_CACHE,
+    _WIRE_TREE_KEYS_BY_ID,
+    _WIRE_TREE_LOCK,
+    decode_wire_tree,
+)
 from .esdl import decode_esdl
 
 STATES = 'master/battle/boss/general_boss_state.orderedmap'
+
+
+def tree_info(tree):
+    if tree is None:
+        return (), (), frozenset()
+    key = id(tree)
+    with _WIRE_TREE_LOCK:
+        if not _WIRE_TREE_CACHE and (_WIRE_TREE_KEYS_BY_ID or _TREE_INFO_CACHE):
+            _WIRE_TREE_KEYS_BY_ID.clear()
+            _TREE_INFO_CACHE.clear()
+        wire_key = _WIRE_TREE_KEYS_BY_ID.get(key)
+        in_wire_cache = wire_key is not None and _WIRE_TREE_CACHE.get(wire_key) is tree
+        if in_wire_cache and key in _TREE_INFO_CACHE:
+            return _TREE_INFO_CACHE[key]
+    progs, funnels, positions = [], [], set()
+    for node in walk(tree):
+        if isinstance(node, str):
+            progs.extend(programs(node))
+        elif isinstance(node, list) and len(node) > 1:
+            if (node[0] == 'SpawnFunnel' and isinstance(node[1], list)
+                    and len(node[1]) > 1 and node[1][0] == 'Funnel'):
+                funnels.append(node[1][1])
+            elif len(node) == 2 and node[0] == 'CustomPosition' and isinstance(node[1], str):
+                positions.add(node[1])
+    res = (tuple(progs), tuple(funnels), frozenset(positions))
+    if in_wire_cache:
+        with _WIRE_TREE_LOCK:
+            if _WIRE_TREE_CACHE.get(wire_key) is tree:
+                _TREE_INFO_CACHE[key] = res
+    return res
 
 
 class Programs:
@@ -20,7 +56,7 @@ class Programs:
         path = program if program.endswith('.action.dsl.amf3.deflate') else program + '.action.dsl.amf3.deflate'
         if program not in self.trees:
             raw = self.view.raw(path)
-            self.trees[program] = decode_wire(raw)['tree'] if raw is not None else None
+            self.trees[program] = decode_wire_tree(raw) if raw is not None else None
             if raw is None:
                 self.missing.add(path)
         return self.trees[program]
@@ -34,7 +70,7 @@ class Programs:
             if len(found) >= 800:
                 raise ValueError('behavior DSL closure exceeds 800 programs')
             tree = self.load(program); found[program] = tree
-            queue.extend(p for item in walk(tree) if isinstance(item, str) for p in programs(item))
+            queue.extend(tree_info(tree)[0])
         return found
 
     def summary(self, roots):
@@ -55,7 +91,7 @@ def marker(view, path):
     if not s.present(path):
         return {'sequences': [], 'points': [], 'missing': True}
     raw = CandidateView(view).raw(path + '.timeline.amf3.deflate')
-    return decode_wire(raw)['tree'] if raw is not None else {'sequences': [], 'points': [], 'missing': True}
+    return decode_wire_tree(raw) if raw is not None else {'sequences': [], 'points': [], 'missing': True}
 
 
 def marker_actions(timeline, sequence, slots):

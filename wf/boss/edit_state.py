@@ -1,14 +1,71 @@
 """Assertion-first boss table overlays; inputs are never mutated or written."""
 from __future__ import annotations
 
+from collections import OrderedDict
 import copy
 import hashlib
 import json
 from pathlib import Path
+import threading
 
 import wf_quest_lib as codec
 from wf.text.edit import _encode
 from wf.deliver.json_merge import _json_spans
+
+_NODE_CACHE: OrderedDict[tuple[int, bytes], object] = OrderedDict()
+_NODE_LOCK = threading.RLock()
+
+
+def _immutable_error(*_args, **_kwargs):
+    raise TypeError("cached read-only object cannot be mutated")
+
+
+class ReadonlyDict(dict):
+    __setitem__ = __delitem__ = clear = pop = popitem = setdefault = update = __ior__ = _immutable_error
+
+    def __deepcopy__(self, memo):
+        res = {copy.deepcopy(k, memo): copy.deepcopy(v, memo) for k, v in self.items()}
+        memo[id(self)] = res
+        return res
+
+
+class ReadonlyList(list):
+    __setitem__ = __delitem__ = append = clear = extend = insert = pop = remove = reverse = sort = __iadd__ = __imul__ = _immutable_error
+
+    def __deepcopy__(self, memo):
+        res = [copy.deepcopy(v, memo) for v in self]
+        memo[id(self)] = res
+        return res
+
+
+def freeze_tree(value):
+    if isinstance(value, dict):
+        if isinstance(value, ReadonlyDict):
+            return value
+        return ReadonlyDict((k, freeze_tree(v)) for k, v in value.items())
+    if isinstance(value, list):
+        if isinstance(value, ReadonlyList):
+            return value
+        return ReadonlyList(freeze_tree(v) for v in value)
+    return value
+
+
+def parse_readonly_node(raw):
+    """Parse an orderedmap/leaf node from bytes without mutating the cached tree."""
+    if not isinstance(raw, bytes):
+        return freeze_tree(codec.parse_node(raw))
+    key = (len(raw), hashlib.sha256(raw).digest())
+    with _NODE_LOCK:
+        if key in _NODE_CACHE:
+            _NODE_CACHE.move_to_end(key)
+            return _NODE_CACHE[key]
+    parsed = freeze_tree(codec.parse_node(raw))
+    with _NODE_LOCK:
+        _NODE_CACHE[key] = parsed
+        _NODE_CACHE.move_to_end(key)
+        while len(_NODE_CACHE) > 128:
+            _NODE_CACHE.popitem(last=False)
+    return parsed
 
 
 def digest(raw):
@@ -81,11 +138,19 @@ class BossEditState:
         except (FileNotFoundError, KeyError):
             return None
 
-    def table(self, logical):
+    def readonly_table(self, logical):
         if logical not in self.trees:
             raw = self.raw(logical)
-            self.trees[logical] = codec.parse_node(raw) if raw is not None else {}
-        return copy.deepcopy(self.trees[logical])
+            if raw is None:
+                self.trees[logical] = freeze_tree({})
+            elif logical in self.client:
+                self.trees[logical] = freeze_tree(codec.parse_node(raw))
+            else:
+                self.trees[logical] = parse_readonly_node(raw)
+        return self.trees[logical]
+
+    def table(self, logical):
+        return copy.deepcopy(self.readonly_table(logical))
 
     load = table
 
@@ -122,7 +187,7 @@ class BossEditState:
         encoded = _encode(raw, codec.parse_node(raw), table) if raw is not None else codec.build_node(table)
         if codec.parse_node(encoded) != table:
             raise ValueError(f"boss table roundtrip mismatch: {logical}")
-        self.client[logical], self.trees[logical] = encoded, table
+        self.client[logical], self.trees[logical] = encoded, freeze_tree(table)
         self.changes.append({"table": logical, "path": list(path), "old": before, "new": value})
 
     def delete_leaf(self, logical, path):
@@ -136,7 +201,7 @@ class BossEditState:
         encoded = _encode(raw, codec.parse_node(raw), table)
         if codec.parse_node(encoded) != table:
             raise ValueError(f"boss table roundtrip mismatch: {logical}")
-        self.client[logical], self.trees[logical] = encoded, table
+        self.client[logical], self.trees[logical] = encoded, freeze_tree(table)
         self.changes.append({"table": logical, "path": list(path), "old": before, "new": None})
 
     def server(self, target, *, required=True):

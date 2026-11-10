@@ -1,21 +1,77 @@
 """Build Advent server JSON candidates in memory; never write the input mirror."""
 from __future__ import annotations
 
+from collections import OrderedDict
 import copy
+import hashlib
 import json
 from pathlib import Path
+import threading
 
-from .edit_state import merge_keys, digest
+from .edit_state import freeze_tree, merge_keys, digest
 from .edit_bytes import append_values
 from .scene_import import AQ
 from .scene_server_projection import (ITEM, RARE, SCORE, SHOP, changed_projection, number,
                                       original_rows, product, quest, reward, rows)
 from .scene_types import CAS, CONTINUE_PREFIX, parse_continue_cost
+from wf.deliver.json_merge import _json_spans, _pairs
 from wf.rules.catalog import result
 
 FILES = ("advent_event_quest.json", "score_reward_cnmod.json", "rare_score_reward_cnmod.json",
          "event_item_shop.json", "event_item_shop_id_map.json", "item_ids.json", "item_lookup_cnmod.json")
 CONTINUE_COST = "continue_cost.json"
+
+_JSON_CACHE: OrderedDict[tuple[int, bytes], object] = OrderedDict()
+_JSON_LOCK = threading.RLock()
+
+
+def _strict_json_array(raw: bytes):
+    text = raw.decode("utf-8")
+
+    def constant(value):
+        raise ValueError("non-finite JSON value: " + value)
+
+    decoder = json.JSONDecoder(object_pairs_hook=_pairs, parse_constant=constant)
+    value, end = decoder.raw_decode(text, len(text) - len(text.lstrip()))
+    if not isinstance(value, list) or text[end:].strip():
+        raise ValueError("expected exactly one JSON array")
+    return value
+
+
+def _strict_loads_cached(raw: bytes, *, is_array: bool = False):
+    key = (len(raw), hashlib.sha256(raw).digest())
+    with _JSON_LOCK:
+        if key in _JSON_CACHE:
+            cached = _JSON_CACHE[key]
+            if isinstance(cached, list if is_array else dict):
+                _JSON_CACHE.move_to_end(key)
+                return cached
+    if is_array:
+        parsed = freeze_tree(_strict_json_array(raw))
+    else:
+        _, value, _ = _json_spans(raw)
+        parsed = freeze_tree(value)
+    with _JSON_LOCK:
+        _JSON_CACHE[key] = parsed
+        _JSON_CACHE.move_to_end(key)
+        while len(_JSON_CACHE) > 32:
+            _JSON_CACHE.popitem(last=False)
+    return parsed
+
+
+def _loads_cached(raw: bytes):
+    key = (len(raw), hashlib.sha256(raw).digest())
+    with _JSON_LOCK:
+        if key in _JSON_CACHE:
+            _JSON_CACHE.move_to_end(key)
+            return _JSON_CACHE[key]
+    try:
+        stripped = raw.lstrip()
+        if stripped.startswith(b"["):
+            return _strict_loads_cached(raw, is_array=True)
+        return _strict_loads_cached(raw, is_array=False)
+    except ValueError:
+        return freeze_tree(json.loads(raw))
 
 
 def _load(root):
@@ -26,7 +82,7 @@ def _load(root):
             raise ValueError("服务端镜像文件越过配置目录")
         raw = target.read_bytes()
         originals["assets/" + name] = raw
-        current[name] = json.loads(raw)
+        current[name] = _loads_cached(raw)
         expected = list if name == "item_ids.json" else dict
         if not isinstance(current[name], expected):
             raise ValueError("服务端镜像表的根类型不符合契约")
@@ -36,7 +92,7 @@ def _load(root):
     if cc_target.exists():
         raw = cc_target.read_bytes()
         originals["assets/" + CONTINUE_COST] = raw
-        current[CONTINUE_COST] = json.loads(raw)
+        current[CONTINUE_COST] = _loads_cached(raw)
         if not isinstance(current[CONTINUE_COST], dict):
             raise ValueError("服务端镜像表的根类型不符合契约")
     return originals, current
@@ -86,14 +142,15 @@ def _project(state, spec, current):
             before = reward(original_rows(spec, logical, {key}), rare=logical == RARE)
             after = reward(rows(state, logical, {key}), rare=logical == RARE)
             project(filename, key, before, after)
+    read_table = getattr(state, "readonly_table", state.table)
     score_keys = set(current["score_reward_cnmod.json"]) | set(updates["score_reward_cnmod.json"])
     rare_keys = set(current["rare_score_reward_cnmod.json"]) | set(updates["rare_score_reward_cnmod.json"])
     for row in candidates.values():
-        if row[76] not in state.table(SCORE) or row[76] not in score_keys:
+        if row[76] not in read_table(SCORE) or row[76] not in score_keys:
             raise ValueError("活动五档引用的掉落组未在客户端和服务端同时登记")
     for entries in updates["score_reward_cnmod.json"].values():
         for entry in entries:
-            if entry.get("type") == 1 and (str(entry["id"]) not in state.table(RARE) or str(entry["id"]) not in rare_keys):
+            if entry.get("type") == 1 and (str(entry["id"]) not in read_table(RARE) or str(entry["id"]) not in rare_keys):
                 raise ValueError("活动掉落引用的稀有池未在客户端和服务端同时登记")
     shop = copy.deepcopy(current["event_item_shop.json"].get("0", {}))
     if not isinstance(shop, dict) or creating and event in shop:
@@ -146,7 +203,7 @@ def _project(state, spec, current):
             raise ValueError("续战消耗行必须是单列 CSV：" + key)
         parsed = parse_continue_cost(row[0], key)
         item_key = str(parsed["item_id"])
-        if item_key not in state.table(ITEM) or item_key not in known_server_items:
+        if item_key not in read_table(ITEM) or item_key not in known_server_items:
             raise ValueError("活动续战消耗道具未在客户端和服务端同时登记：" + item_key)
         parsed_continue[key] = parsed
     if CONTINUE_COST in current:
@@ -180,15 +237,27 @@ def server_candidate(state, spec, server_dir):
         files = {}
         for name, values in updates.items():
             target = "assets/" + name
-            output = merge_keys(originals[target], values)
+            before_doc = _strict_loads_cached(originals[target], is_array=False)
+            if any(k not in before_doc or before_doc[k] != v for k, v in values.items()):
+                output = merge_keys(originals[target], values)
+                if output != originals[target]:
+                    files[target] = output
+        target = "assets/item_ids.json"
+        existing_items = {str(item) for item in _strict_loads_cached(originals[target], is_array=True)}
+        candy_numbers = [number(item) for item in sorted(candy)]
+        if any(str(item) not in existing_items for item in candy_numbers):
+            output = append_values(originals[target], candy_numbers)
             if output != originals[target]:
                 files[target] = output
-        target = "assets/item_ids.json"
-        output = append_values(originals[target], [number(item) for item in sorted(candy)])
-        if output != originals[target]:
-            files[target] = output
+        parsed_files = {}
         for filename, key, expected in desired:
-            actual = json.loads(files.get("assets/" + filename, originals["assets/" + filename]))
+            asset_key = "assets/" + filename
+            if asset_key in files:
+                if asset_key not in parsed_files:
+                    parsed_files[asset_key] = json.loads(files[asset_key])
+                actual = parsed_files[asset_key]
+            else:
+                actual = current[filename]
             if actual.get(key) != expected:
                 raise ValueError("活动经济候选 JSON 回读不匹配")
     except (ValueError, TypeError, KeyError, IndexError) as exc:

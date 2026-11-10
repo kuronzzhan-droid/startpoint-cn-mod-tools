@@ -5,9 +5,7 @@ import json
 from pathlib import Path
 import re
 
-import wf_quest_lib as codec
-
-from .edit_state import leaf
+from .edit_state import leaf, parse_readonly_node
 from .schema import iter_leaves, parse_rows
 from .scene_clone import clone_scene
 from .scene_server import _load
@@ -93,7 +91,7 @@ def allocate_scene(spec, loader, *, server_dir=None, reserved=(), deliveries_dir
             raw = loader(logical)
             if raw is None:
                 raise FileNotFoundError(logical)
-            tables[logical] = codec.parse_node(raw)
+            tables[logical] = parse_readonly_node(raw)
         except (FileNotFoundError, KeyError) as exc:
             raise ValueError("当前视图缺少活动占用表，无法证明新 ID 未占用：" + logical) from exc
         if not isinstance(tables[logical], dict):
@@ -112,6 +110,9 @@ def allocate_scene(spec, loader, *, server_dir=None, reserved=(), deliveries_dir
         except (OSError, ValueError, TypeError) as exc:
             raise ValueError("只读服务端占用镜像不完整，未分配新活动 ID") from exc
     occupied_events = set(tables[EVENTS]) | reserved_ids | server_ids | {spec["event"]["id"]}
+    for table in spec["tables"]:
+        if any(entry["path"] == [spec["event"]["id"]] for entry in table["entries"]):
+            occupied_events.update(tables[table["logical"]])
     existence = {}
 
     def exists(logical):
@@ -122,11 +123,14 @@ def allocate_scene(spec, loader, *, server_dir=None, reserved=(), deliveries_dir
                 existence[logical] = False
         return existence[logical]
 
+    tier_suffixes = [str(int(tier["id"])).zfill(3) for tier in spec["tiers"]]
     for number in range(300001, 1000000):
         event = str(number)
         if event in occupied_events:
             continue
-        cloned = clone_scene(spec, event, name)
+        if server_ids and any(event + suffix in server_ids for suffix in tier_suffixes):
+            continue
+        cloned = clone_scene(spec, event, name, _validated=True)
         cloned_event_entries = [entry["value"] for table in cloned["tables"]
                                 if table["logical"] == EVENTS for entry in table["entries"]
                                 if entry["path"] == [event]]

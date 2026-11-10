@@ -31,6 +31,9 @@ class _ReadOnlyView:
             return CandidateView(self.edit.base).raw(logical)
         return CandidateView(self.source).raw(logical)
 
+    def is_candidate(self, logical):
+        return self.edit is not None and logical in self.edit.client
+
 
 def _programs(value):
     # action_base_path is a prefix, not an action. In real ESDL it ends in '$'.
@@ -69,15 +72,21 @@ class _Inputs:
         if logical not in self.tables:
             import wf_mod_tool as maps
             import wf_quest_lib as codec
+            from wf.boss.edit_state import freeze_tree, parse_readonly_node
             try:
                 raw = self.view.raw(logical)
                 if raw is None:
                     raise FileNotFoundError("missing table")
-                index = maps.read_orderedmap_raw_rows_from_bytes(raw, logical)
-                self.tables[logical] = codec.parse_node(raw) if index.keys else {}
+                parsed = (freeze_tree(codec.parse_node(raw))
+                          if self.view.is_candidate(logical) else parse_readonly_node(raw))
+                if isinstance(parsed, dict) and parsed:
+                    self.tables[logical] = parsed
+                else:
+                    index = maps.read_orderedmap_raw_rows_from_bytes(raw, logical)
+                    self.tables[logical] = parsed if index.keys and isinstance(parsed, dict) else freeze_tree({})
             except Exception as exc:  # Advisory failures are retained per input.
                 self.issue(logical, f"{type(exc).__name__}: {exc}")
-                self.tables[logical] = {}
+                self.tables[logical] = freeze_tree({})
         return self.tables[logical]
 
     def subtree(self, logical, path, *, required=False):

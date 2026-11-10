@@ -172,7 +172,7 @@ def test_five_tier_scanner_decodes_each_shared_behavior_resource_once(tmp_path, 
     edit = {"operation": "edit", "tiers": [{"hpMultiplier": i} for i in range(2, 7)]}
     editor.apply("1080001", edit)
     editor.store.save("boss_battle:1/80/1")
-    original, scan, decoded = model.decode_wire, multiplayer._scan, []
+    original, scan, decoded = model.decode_wire_tree, multiplayer._scan, []
     scanning = False
 
     def advisory(document, view):
@@ -189,7 +189,7 @@ def test_five_tier_scanner_decodes_each_shared_behavior_resource_once(tmp_path, 
         return original(raw)
 
     monkeypatch.setattr(multiplayer, "_scan", advisory)
-    monkeypatch.setattr(model, "decode_wire", counted)
+    monkeypatch.setattr(model, "decode_wire_tree", counted)
     assert editor.read("1080001")["checks"]
     # Two action paths; marker decoding is not needed for static scanning. Payloads are equal,
     # so count paths via their expected multiplicity instead of distinct bytes.
