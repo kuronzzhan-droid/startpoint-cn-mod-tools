@@ -77,7 +77,8 @@ def test_r3_duplicate_method_records_are_rejected():
 def test_evidence_backed_profiles_gain_r3_and_bind_their_provides():
     _, profiles = load_profiles()
     for name, profile in profiles.items():
-        if name not in {"test-v34", "test-v35e", "local-v35k3"}:
+        # local-v35k3 had R3 withdrawn in 69f64cc (runtime dependencies unproven).
+        if name not in {"test-v34", "test-v35e"}:
             assert R3 not in profile.get("m2_capabilities", [])
             continue
         assert R3 in profile["m2_capabilities"]

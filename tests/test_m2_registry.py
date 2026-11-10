@@ -34,8 +34,11 @@ def test_v34_all_recorded_methods_match_and_output_passes_schema(registry):
     document = derive_provides(v34_evidence(), registry=registry)
     validate_document(document, "provides.schema.json")
     assert len(document["patches"]) == 111
+    # A capability with neither archive patches nor recorded methods (e.g. the pending P13 entries)
+    # is only provided when it is an official layer-B system declared by the input.
     assert {entry["id"] for entry in document["provides"]} == {
-        cid for cid, cap in registry.items() if all(n <= 111 for n in cap["provided_by"]["patches"])}
+        cid for cid, cap in registry.items() if all(n <= 111 for n in cap["provided_by"]["patches"])
+        and (cap["provided_by"]["patches"] or cap["provided_by"]["methods"] or cap["layer"] == "B")}
     assert document["unresolved"] == []
     p = next(p for p in document["patches"] if p["number"] == 109)
     assert p["methods"][0]["sha256"] == "ae683cc1f5574ac7b415c43cf779ea642535cd6a66531aa1ee51a150d1492068"
