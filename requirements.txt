@@ -1,6 +1,8 @@
 # Image derivation and historical recipe processing.
 Pillow>=11,<13
 numpy>=2,<3
+# wf/tools/art/portrait_white_matte.py（立绘白底抠图）用 scipy.ndimage 做连通域与距离计算。
+scipy>=1.13,<2
 PyYAML>=6,<7
 # Recipes and studio drafts are validated against schemas/*.schema.json.
 jsonschema>=4.18,<5
